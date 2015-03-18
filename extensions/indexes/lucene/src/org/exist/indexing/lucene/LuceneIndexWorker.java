@@ -1436,7 +1436,11 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     while (configIter.hasNext()) {
                         LuceneIndexConfig configuration = configIter.next();
                         if (configuration.match(path)) {
-                            appendAttrToBeIndexedLater(attrib, configuration);
+			    if (configuration.shouldReindexOnAttributeChange()) {
+				appendAttrToBeIndexedLater(attrib, configuration);
+			    } else {
+				indexText(attrib.getNodeId(), attrib.getQName(), path, configuration, attrib.getValue());
+			    }
                         }
                     }
                 }
@@ -1478,8 +1482,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 		try {
 		    for (PendingAttr pending : pendingAttrs) {
 			org.exist.dom.persistent.NodeImpl node = (org.exist.dom.persistent.NodeImpl) pending.proxy.getNode();
-			PendingDoc pdoc = new PendingDoc(node.getNodeId(), node.getQName(), pending.conf.getNodePath(), node.getNodeValue(), pending.conf.getBoost(node), pending.conf);
-			addPending(pdoc);
+
+			indexText(node, node.getNodeId(), node.getQName(), pending.conf.getNodePath(), pending.conf, node.getNodeValue());
 		    }
 		} finally {
 		    pendingAttrs.clear();
