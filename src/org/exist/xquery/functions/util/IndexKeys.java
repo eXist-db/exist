@@ -21,7 +21,8 @@
  */
 package org.exist.xquery.functions.util;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.QName;
@@ -44,7 +45,7 @@ import java.util.*;
  */
 public class IndexKeys extends BasicFunction {
 	
-	protected static final Logger logger = Logger.getLogger(IndexKeys.class);
+	protected static final Logger logger = LogManager.getLogger(IndexKeys.class);
 
     public final static FunctionSignature[] signatures = {
     	new FunctionSignature(

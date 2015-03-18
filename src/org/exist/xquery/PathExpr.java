@@ -26,7 +26,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.VirtualNodeSet;
 import org.exist.xquery.util.ExpressionDumper;
@@ -48,7 +49,7 @@ import org.xmldb.api.base.CompiledExpression;
 public class PathExpr extends AbstractExpression implements CompiledXQuery,
         CompiledExpression, RewritableExpression {
 
-    protected final static Logger LOG = Logger.getLogger(PathExpr.class);
+    protected final static Logger LOG = LogManager.getLogger(PathExpr.class);
 
     protected boolean keepVirtual = false;
 

@@ -22,7 +22,8 @@
 
 package org.exist.validation.internal;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.security.Subject;
 import org.exist.security.xacml.AccessContext;
 import org.exist.source.ClassLoaderSource;
@@ -65,7 +66,7 @@ public class DatabaseResources {
     private BrokerPool brokerPool = null;
     
     /** Local logger */
-    private final static Logger logger = Logger.getLogger(DatabaseResources.class);
+    private final static Logger logger = LogManager.getLogger(DatabaseResources.class);
     
     
     /**

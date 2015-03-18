@@ -25,7 +25,8 @@ import org.exist.dom.persistent.Match;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.NewArrayNodeSet;
 import org.exist.dom.persistent.NodeSet;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.index.IndexReader;
@@ -53,7 +54,7 @@ import org.apache.lucene.util.AttributeSource.State;
 
 public class LuceneMatchListener extends AbstractMatchListener {
 
-    private static final Logger LOG = Logger.getLogger(LuceneMatchListener.class);
+    private static final Logger LOG = LogManager.getLogger(LuceneMatchListener.class);
 
     private Match match;
 

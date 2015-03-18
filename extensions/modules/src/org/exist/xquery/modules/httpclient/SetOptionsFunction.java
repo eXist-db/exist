@@ -1,6 +1,7 @@
 package org.exist.xquery.modules.httpclient;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.dom.QName;
 
@@ -27,7 +28,7 @@ import org.apache.commons.httpclient.HttpState;
  */
 public class SetOptionsFunction extends BaseHTTPClientFunction {
 
-    protected static final Logger logger       = Logger.getLogger( SetOptionsFunction.class );
+    protected static final Logger logger       = LogManager.getLogger( SetOptionsFunction.class );
 
     public final static FunctionSignature[] signatures   = {
             new FunctionSignature(

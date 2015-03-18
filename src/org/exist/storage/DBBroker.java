@@ -22,7 +22,8 @@
  */
 package org.exist.storage;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.Database;
 import org.exist.EXistException;
 import org.exist.backup.RawDataBackup;
@@ -94,7 +95,7 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
     //TODO : move elsewhere
     public final static String PROPERTY_XUPDATE_CONSISTENCY_CHECKS = "xupdate.consistency-checks";
 
-    protected final static Logger LOG = Logger.getLogger(DBBroker.class);
+    protected final static Logger LOG = LogManager.getLogger(DBBroker.class);
 
     protected boolean caseSensitive = true;
 

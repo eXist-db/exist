@@ -22,7 +22,8 @@
 package org.exist.xquery.pragmas;
 
 import org.exist.xquery.*;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.xquery.value.Item;
@@ -30,7 +31,7 @@ import org.exist.xquery.value.Sequence;
 
 public class NoIndexPragma extends Pragma {
 
-    private final static Logger LOG = Logger.getLogger(NoIndexPragma.class);
+    private final static Logger LOG = LogManager.getLogger(NoIndexPragma.class);
 
     public  final static QName NO_INDEX_PRAGMA = new QName("no-index", Namespaces.EXIST_NS, "exist");
 

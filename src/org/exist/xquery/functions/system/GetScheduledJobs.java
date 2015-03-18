@@ -25,7 +25,8 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.scheduler.ScheduledJobInfo;
@@ -43,7 +44,7 @@ import org.exist.xquery.value.Type;
 
 public class GetScheduledJobs extends BasicFunction {
 
-    protected final static Logger logger = Logger.getLogger(GetScheduledJobs.class);
+    protected final static Logger logger = LogManager.getLogger(GetScheduledJobs.class);
 
     private static final String TODAY_TIMESTAMP				= "HH:mm:ss.SSS Z";
 	private static final String DATE_TIME_FORMAT 			= "yyyy-MM-dd HH:mm:ss.SSS Z";

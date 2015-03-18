@@ -23,7 +23,8 @@ package org.exist.xquery.modules.file;
 
 import java.io.File;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
@@ -47,7 +48,7 @@ import org.exist.xquery.value.Type;
  */
 public class DirectoryCreate extends BasicFunction {
 
-    private final static Logger logger = Logger.getLogger(DirectoryCreate.class);
+    private final static Logger logger = LogManager.getLogger(DirectoryCreate.class);
     public final static FunctionSignature signatures[] = {
         new FunctionSignature(
                 new QName("mkdir", FileModule.NAMESPACE_URI, FileModule.PREFIX),

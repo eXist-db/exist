@@ -48,7 +48,8 @@ import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FilenameUtils;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 
 /**
@@ -62,7 +63,7 @@ import org.apache.log4j.Logger;
  */
 public class HttpRequestWrapper implements RequestWrapper {
 
-    private static Logger LOG = Logger.getLogger(HttpRequestWrapper.class.getName());
+    private static Logger LOG = LogManager.getLogger(HttpRequestWrapper.class.getName());
     
     private HttpServletRequest servletRequest;
     private String formEncoding = null;

@@ -21,7 +21,8 @@
  */
 package org.exist.xquery.functions.xmldb;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.EXistException;
 import org.exist.dom.QName;
@@ -58,7 +59,7 @@ import org.xmldb.api.base.XMLDBException;
  */
 
 public class XMLDBAuthenticate extends BasicFunction {
-    private static final Logger logger = Logger.getLogger(XMLDBAuthenticate.class);
+    private static final Logger logger = LogManager.getLogger(XMLDBAuthenticate.class);
 
 	public final static FunctionSignature authenticateSignature =
 			new FunctionSignature(

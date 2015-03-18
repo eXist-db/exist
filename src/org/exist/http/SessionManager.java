@@ -21,7 +21,8 @@
  */
 package org.exist.http;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.scheduler.JobException;
 import org.exist.scheduler.JobException.JobExceptionAction;
 import org.exist.scheduler.UserJavaJob;
@@ -39,7 +40,7 @@ public class SessionManager {
 
     public final static int NO_SESSION = -1;
     
-    private final static Logger LOG = Logger.getLogger(SessionManager.class);
+    private final static Logger LOG = LogManager.getLogger(SessionManager.class);
     
     private class QueryResult {
 

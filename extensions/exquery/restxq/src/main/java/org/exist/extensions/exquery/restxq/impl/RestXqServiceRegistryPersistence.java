@@ -40,7 +40,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import javax.xml.namespace.QName;
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -67,7 +68,7 @@ public class RestXqServiceRegistryPersistence implements RestXqServiceRegistryLi
     public final static String REGISTRY_FILENAME = "restxq.registry";
     public final static String REGISTRY_FILENAME_TMP = REGISTRY_FILENAME + ".tmp";
     
-    private final Logger log = Logger.getLogger(getClass());
+    private final Logger log = LogManager.getLogger(getClass());
     private final BrokerPool pool;
     private final RestXqServiceRegistry registry;
     

@@ -31,7 +31,8 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.security.xacml.XACMLConstants;
 import org.exist.security.xacml.XACMLUtil;
 
@@ -47,7 +48,7 @@ import com.sun.xacml.cond.FunctionTypeException;
 
 public class TargetTableModel implements TableModel
 {
-	private static final Logger LOG = Logger.getLogger(TargetTableModel.class);
+	private static final Logger LOG = LogManager.getLogger(TargetTableModel.class);
 	private static final String UNSPECIFIED = "[match all]";
 	
 	private static final AttributeDesignator[] SUBJECT_ATTRIBUTES;

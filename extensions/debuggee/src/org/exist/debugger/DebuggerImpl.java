@@ -28,7 +28,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
@@ -55,7 +56,7 @@ import org.w3c.dom.Text;
  */
 public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 
-	protected final static Logger LOG = Logger.getLogger(DebuggerImpl.class);
+	protected final static Logger LOG = LogManager.getLogger(DebuggerImpl.class);
 
 	private static DebuggerImpl instance = null;
 	

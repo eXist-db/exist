@@ -32,7 +32,8 @@ import java.util.Properties;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  *  Wrapper around the MiltonServlet for post-configuring the framework.
@@ -41,7 +42,7 @@ import org.apache.log4j.Logger;
  */
 public class MiltonWebDAVServlet extends MiltonServlet {
 
-    protected final static Logger LOG = Logger.getLogger(MiltonWebDAVServlet.class);
+    protected final static Logger LOG = LogManager.getLogger(MiltonWebDAVServlet.class);
     
     public static String POM_PROP="/META-INF/maven/com.ettrema/milton-api/pom.properties";
 

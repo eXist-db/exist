@@ -32,7 +32,8 @@ import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 import javax.naming.ldap.LdapContext;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.config.Configuration;
 import org.exist.config.annotation.*;
 import org.exist.security.AuthenticationException;
@@ -52,7 +53,7 @@ import org.exist.storage.DBBroker;
 @ConfigurationClass("realm") //TODO: id = ActiveDirectory
 public class ActiveDirectoryRealm extends LDAPRealm {
 
-	private final static Logger LOG = Logger.getLogger(LDAPRealm.class);
+	private final static Logger LOG = LogManager.getLogger(LDAPRealm.class);
 
     @ConfigurationFieldAsAttribute("id")
     public static String ID = "ActiveDirectory";

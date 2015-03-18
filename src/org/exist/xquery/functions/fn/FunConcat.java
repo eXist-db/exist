@@ -21,7 +21,8 @@
  */
 package org.exist.xquery.functions.fn;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.List;
 
@@ -53,7 +54,7 @@ import org.exist.xquery.value.Type;
  */
 public class FunConcat extends Function {
 
-    protected static final Logger logger = Logger.getLogger(FunConcat.class);
+    protected static final Logger logger = LogManager.getLogger(FunConcat.class);
 
     public final static FunctionSignature signature =
         new FunctionSignature(

@@ -27,7 +27,8 @@ import javax.mail.MessagingException;
 import javax.mail.Session;
 import javax.mail.Store;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -54,7 +55,7 @@ import org.exist.xquery.value.Type;
  */
 public class MailStoreFunctions extends BasicFunction
 {
-	protected static final Logger logger = Logger.getLogger(MailStoreFunctions.class);
+	protected static final Logger logger = LogManager.getLogger(MailStoreFunctions.class);
 
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(

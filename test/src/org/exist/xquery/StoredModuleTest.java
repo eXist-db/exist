@@ -27,8 +27,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.EXistResource;
@@ -53,7 +53,7 @@ import static org.junit.Assert.*;
  */
 public class StoredModuleTest {
 
-    private final static Logger LOG = Logger.getLogger(StoredModuleTest.class);
+    private final static Logger LOG = LogManager.getLogger(StoredModuleTest.class);
     private final static String URI = XmldbURI.LOCAL_DB;
 //    private final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
     private final static String MODULE =
@@ -74,7 +74,6 @@ public class StoredModuleTest {
     public static void first() {
         LOG.info("Starting...");
         try {
-            BasicConfigurator.configure();
             Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
             database = (Database) cl.newInstance();
             database.setProperty("create-database", "true");

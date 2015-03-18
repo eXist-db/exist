@@ -33,7 +33,8 @@ import java.util.Properties;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.Database;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
@@ -89,7 +90,7 @@ public class SecurityManagerImpl implements SecurityManager {
     public static final String PROPERTY_PERMISSIONS_COLLECTIONS = "indexer.permissions.collection";
     public static final String PROPERTY_PERMISSIONS_RESOURCES = "indexer.permissions.resource";	
 
-    public final static Logger LOG = Logger.getLogger(SecurityManager.class);
+    public final static Logger LOG = LogManager.getLogger(SecurityManager.class);
 
     private Database pool;
 

@@ -22,7 +22,8 @@
  */
 package org.exist.xquery;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.ContextItem;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.DocumentSet;
@@ -50,7 +51,7 @@ import org.exist.xquery.value.ValueSequence;
 public abstract class BindingExpression extends AbstractExpression implements RewritableExpression {
 
 	protected final static Logger LOG =
-		Logger.getLogger(BindingExpression.class);
+		LogManager.getLogger(BindingExpression.class);
 
     protected final static SequenceType POSITIONAL_VAR_TYPE = 
         new SequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE);

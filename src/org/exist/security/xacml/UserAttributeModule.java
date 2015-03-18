@@ -5,7 +5,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.security.Account;
 
 import com.sun.xacml.EvaluationCtx;
@@ -27,7 +28,7 @@ import com.sun.xacml.finder.AttributeFinderModule;
 */
 public class UserAttributeModule extends AttributeFinderModule
 {
-	private static final Logger LOG = Logger.getLogger(UserAttributeModule.class);
+	private static final Logger LOG = LogManager.getLogger(UserAttributeModule.class);
 	
 	private ExistPDP pdp;
 	

@@ -34,7 +34,8 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamWriter;
 import org.apache.commons.io.IOUtils;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 
 /**
@@ -50,7 +51,7 @@ public class JnlpWriter {
     public static final String CONTENT_TYPE = "content-type";
     public static final String CONTENT_ENCODING = "content-encoding";
     public static final String PACK200_GZIP_ENCODING = "pack200-gzip";
-    private static Logger logger = Logger.getLogger(JnlpWriter.class);
+    private static Logger logger = LogManager.getLogger(JnlpWriter.class);
 
     /**
      * Write JNLP xml file to browser.

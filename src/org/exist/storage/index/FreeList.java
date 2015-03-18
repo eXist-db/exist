@@ -23,7 +23,8 @@ package org.exist.storage.index;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.util.ByteConversion;
 
 /**
@@ -43,7 +44,7 @@ import org.exist.util.ByteConversion;
  */
 public class FreeList {
 
-    //private final static Logger LOG = Logger.getLogger(FreeList.class);
+    //private final static Logger LOG = LogManager.getLogger(FreeList.class);
 
     public final static int MAX_FREE_LIST_LEN = 128;
 

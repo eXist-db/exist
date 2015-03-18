@@ -54,7 +54,7 @@ import org.junit.*;
 public class ValidationFunctions_XSD_Test {
     
     
-//    private final static Logger logger = Logger.getLogger(ValidationFunctions_XSD_Test.class);
+//    private final static Logger logger = LogManager.getLogger(ValidationFunctions_XSD_Test.class);
 //
 //    private static String eXistHome = ConfigurationHelper.getExistHome().getAbsolutePath();
 //

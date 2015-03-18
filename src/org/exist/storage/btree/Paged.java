@@ -71,7 +71,8 @@
  */
 package org.exist.storage.btree;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.journal.Lsn;
 import org.exist.util.ByteConversion;
@@ -116,7 +117,7 @@ public abstract class Paged {
     public static int OFFSET_RECORD_COUNT = OFFSET_MAX_KEY_SIZE + LENGTH_MAX_KEY_SIZE; //43
     public static int OFFSET_REMAINDER = OFFSET_RECORD_COUNT + LENGTH_RECORD_COUNT; //51
 
-    protected final static Logger LOG = Logger.getLogger(Paged.class);
+    protected final static Logger LOG = LogManager.getLogger(Paged.class);
 
     protected final static byte DELETED = 127;
     protected final static byte OVERFLOW = 126;

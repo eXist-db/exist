@@ -29,7 +29,7 @@ import java.util.Stack;
 
 public class SystemTaskManager {
 
-    //private final static Logger LOG = Logger.getLogger(SystemTaskManager.class);
+    //private final static Logger LOG = LogManager.getLogger(SystemTaskManager.class);
 
     /**
 	 * The pending system maintenance tasks of the database instance.

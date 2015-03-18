@@ -1,7 +1,8 @@
 package org.exist.versioning;
 
 import bmsi.util.Diff;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.QName;
@@ -26,7 +27,7 @@ import java.util.TreeMap;
 
 public class StandardDiff implements org.exist.versioning.Diff {
 
-    private final static Logger LOG = Logger.getLogger(StandardDiff.class);
+    private final static Logger LOG = LogManager.getLogger(StandardDiff.class);
 
     public final static String NAMESPACE = "http://exist-db.org/versioning";
     public final static String PREFIX = "v";

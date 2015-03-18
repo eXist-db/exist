@@ -35,7 +35,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.Permission;
@@ -68,7 +69,7 @@ public class ExistXqueryRegistry {
     }
     
     
-    protected final static Logger LOG = Logger.getLogger(ExistXqueryRegistry.class);
+    protected final static Logger LOG = LogManager.getLogger(ExistXqueryRegistry.class);
     
     /**
      * Key is XQuery Module URI

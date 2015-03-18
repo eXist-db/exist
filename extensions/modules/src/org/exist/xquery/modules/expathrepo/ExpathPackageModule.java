@@ -21,7 +21,8 @@
  */
 package org.exist.xquery.modules.expathrepo;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.xquery.*;
 import org.exist.xquery.ErrorCodes.EXistErrorCode;
 import org.exist.xquery.ErrorCodes.ErrorCode;
@@ -40,7 +41,7 @@ import java.util.Map;
  */
 public class ExpathPackageModule extends AbstractInternalModule {
 
-    private final static Logger logger = Logger.getLogger(ExpathPackageModule.class);
+    private final static Logger logger = LogManager.getLogger(ExpathPackageModule.class);
 
     public final static String NAMESPACE_URI = "http://exist-db.org/xquery/repo";
 

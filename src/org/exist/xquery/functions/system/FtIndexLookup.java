@@ -24,7 +24,8 @@ package org.exist.xquery.functions.system;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.QName;
 import org.exist.storage.DBBroker;
@@ -48,7 +49,7 @@ import org.exist.xquery.value.Type;
 
 public class FtIndexLookup extends Function {
 
-    protected final static Logger logger = Logger.getLogger(FtIndexLookup.class);
+    protected final static Logger logger = LogManager.getLogger(FtIndexLookup.class);
 
     public final static FunctionSignature signature = new FunctionSignature(
             new QName("ft-index-lookup", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),

@@ -23,7 +23,8 @@ package org.exist.xquery.modules.simpleql;
 
 import java.io.StringReader;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -43,7 +44,7 @@ import antlr.TokenStreamException;
 public class ParseSimpleQL extends BasicFunction {
 
 	@SuppressWarnings("unused")
-	private static final Logger logger = Logger.getLogger(ParseSimpleQL.class);
+	private static final Logger logger = LogManager.getLogger(ParseSimpleQL.class);
 	
     public final static FunctionSignature signature =
         new FunctionSignature(

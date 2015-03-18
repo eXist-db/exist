@@ -24,7 +24,8 @@ package org.exist.xquery.functions.request;
 
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.http.servlets.RequestWrapper;
 import org.exist.xquery.BasicFunction;
@@ -47,7 +48,7 @@ import org.exist.xquery.value.ValueSequence;
  */
 public class GetUploadedFileName extends BasicFunction {
 
-	protected static final Logger logger = Logger.getLogger(GetUploadedFileName.class);
+	protected static final Logger logger = LogManager.getLogger(GetUploadedFileName.class);
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(

@@ -21,7 +21,8 @@
  */
 package org.exist.xquery.functions.xmldb;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.dom.QName;
 import org.exist.security.Permission;
@@ -47,7 +48,7 @@ import org.exist.xquery.value.Type;
  */
 @Deprecated
 public class XMLDBPermissionsToString extends BasicFunction {
-    protected static final Logger logger = Logger.getLogger(XMLDBPermissionsToString.class);
+    protected static final Logger logger = LogManager.getLogger(XMLDBPermissionsToString.class);
     
     public final static FunctionSignature signatures[] = {
         new FunctionSignature(

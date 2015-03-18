@@ -19,7 +19,8 @@
  */
 package org.exist.xquery.modules.lucene;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.QName;
@@ -45,7 +46,7 @@ import org.exist.xquery.value.Type;
 
 public class Index extends BasicFunction {
 
-    private static final Logger logger = Logger.getLogger(Index.class);
+    private static final Logger logger = LogManager.getLogger(Index.class);
     
     public final static FunctionSignature signatures[] = {
     	new FunctionSignature(

@@ -29,7 +29,8 @@ import org.exist.dom.memtree.NodeImpl;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
@@ -81,7 +82,7 @@ public class Deployment {
 
     public final static String PROPERTY_APP_ROOT = "repo.root-collection";
 
-    private final static Logger LOG = Logger.getLogger(Deployment.class);
+    private final static Logger LOG = LogManager.getLogger(Deployment.class);
 
     private final static String REPO_NAMESPACE = "http://exist-db.org/xquery/repo";
     private final static String PKG_NAMESPACE = "http://expath.org/ns/pkg";

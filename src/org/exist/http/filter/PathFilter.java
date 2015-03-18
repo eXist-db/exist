@@ -21,7 +21,8 @@
  */
 package org.exist.http.filter;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
@@ -49,7 +50,7 @@ import java.util.HashSet;
  */
 public class PathFilter implements Filter {
 
-    private final static Logger LOG = Logger.getLogger(PathFilter.class);
+    private final static Logger LOG = LogManager.getLogger(PathFilter.class);
 
     private FilterConfig filterConfig;
 

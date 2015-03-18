@@ -33,7 +33,8 @@ import java.io.StreamTokenizer;
 import java.util.Observable;
 import java.util.TreeSet;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.collections.Collection;
 import org.exist.fulltext.ElementContent;
 import org.exist.security.PermissionDeniedException;
@@ -58,7 +59,7 @@ import org.exist.xquery.XQueryContext;
 public abstract class TextSearchEngine extends Observable {
 
 	protected final static Logger LOG =
-		Logger.getLogger(TextSearchEngine.class);
+		LogManager.getLogger(TextSearchEngine.class);
 		
     protected TreeSet<String> stoplist = new TreeSet<String>();
 	protected DBBroker broker = null;

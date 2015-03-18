@@ -32,7 +32,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Properties;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.dom.QName;
 import org.exist.storage.serializers.EXistOutputKeys;
@@ -66,7 +67,7 @@ import org.xmldb.api.modules.XMLResource;
  */
 public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 	
-	protected static final Logger logger = Logger.getLogger(XMLDBStore.class);
+	protected static final Logger logger = LogManager.getLogger(XMLDBStore.class);
 
 	protected static final FunctionParameterSequenceType ARG_COLLECTION = new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collection URI");
 	protected static final FunctionParameterSequenceType ARG_RESOURCE_NAME = new FunctionParameterSequenceType("resource-name", Type.STRING, Cardinality.ZERO_OR_ONE, "The resource name");

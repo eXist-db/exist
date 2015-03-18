@@ -26,7 +26,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
@@ -43,7 +44,7 @@ import org.xml.sax.InputSource;
  * @author Dannes Wessels (dizzzz@exist-db.org)
  */
 public class SearchResourceResolver implements XMLEntityResolver {
-    private final static Logger LOG = Logger.getLogger(SearchResourceResolver.class);
+    private final static Logger LOG = LogManager.getLogger(SearchResourceResolver.class);
     
     private String collection=null;
     private BrokerPool brokerPool = null;

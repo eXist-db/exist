@@ -21,7 +21,8 @@
  */
 package org.exist.xquery.functions.xmldb;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.Date;
 
@@ -47,7 +48,7 @@ import org.xmldb.api.base.XMLDBException;
  *
  */
 public class XMLDBCreated extends XMLDBAbstractCollectionManipulator {
-    private static final Logger logger = Logger.getLogger(XMLDBCreated.class);
+    private static final Logger logger = LogManager.getLogger(XMLDBCreated.class);
 
 	public final static FunctionSignature createdSignatures[] = {
         new FunctionSignature(

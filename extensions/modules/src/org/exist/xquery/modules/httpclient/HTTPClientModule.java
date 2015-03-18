@@ -31,7 +31,8 @@ import java.util.Properties;
 
 import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.auth.AuthScope;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 
@@ -47,7 +48,7 @@ import org.exist.xquery.FunctionDef;
  */
 public class HTTPClientModule extends AbstractInternalModule
 {
-    private final static Logger LOG = Logger.getLogger(HTTPClientModule.class);
+    private final static Logger LOG = LogManager.getLogger(HTTPClientModule.class);
 
     public final static String         NAMESPACE_URI                  = "http://exist-db.org/xquery/httpclient";
 

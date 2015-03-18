@@ -21,7 +21,8 @@
  */
 package org.exist.xquery.functions.response;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.dom.QName;
 import org.exist.http.servlets.ResponseWrapper;
@@ -43,7 +44,7 @@ import org.exist.xquery.value.BinaryValue;
 
 public class StreamBinary extends BasicFunction {
 
-    protected static final Logger logger = Logger.getLogger(StreamBinary.class);
+    protected static final Logger logger = LogManager.getLogger(StreamBinary.class);
     protected static final FunctionParameterSequenceType BINARY_DATA_PARAM = new FunctionParameterSequenceType("binary-data", Type.BASE64_BINARY, Cardinality.EXACTLY_ONE, "The binary data to stream");
     protected static final FunctionParameterSequenceType CONTENT_TYPE_PARAM = new FunctionParameterSequenceType("content-type", Type.STRING, Cardinality.EXACTLY_ONE, "The ContentType HTTP header value");
     protected static final FunctionParameterSequenceType FILENAME_PARAM = new FunctionParameterSequenceType("filename", Type.STRING, Cardinality.ZERO_OR_ONE, "The filename.  If no filename is given, then the current request name is used");

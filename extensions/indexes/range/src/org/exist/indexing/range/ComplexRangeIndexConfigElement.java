@@ -21,7 +21,8 @@
  */
 package org.exist.indexing.range;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.exist.dom.QName;
 import org.exist.storage.NodePath;
@@ -37,7 +38,7 @@ public class ComplexRangeIndexConfigElement extends RangeIndexConfigElement {
 
     public final static String FIELD_ELEMENT = "field";
 
-    private static final Logger LOG = Logger.getLogger(ComplexRangeIndexConfigElement.class);
+    private static final Logger LOG = LogManager.getLogger(ComplexRangeIndexConfigElement.class);
 
     private Map<String, RangeIndexConfigField> fields = new HashMap<String, RangeIndexConfigField>();
 

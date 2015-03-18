@@ -22,7 +22,8 @@
  */
 package org.exist.xquery.functions.response;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.dom.QName;
 import org.exist.http.servlets.ResponseWrapper;
@@ -51,7 +52,7 @@ import org.exist.xquery.value.Type;
  */
 public class SetHeader extends Function
 {
-    protected static final Logger logger = Logger.getLogger(SetHeader.class);
+    protected static final Logger logger = LogManager.getLogger(SetHeader.class);
 	protected static final FunctionParameterSequenceType NAME_PARAM = new FunctionParameterSequenceType("name", Type.STRING, Cardinality.EXACTLY_ONE, "The header name");
 	protected static final FunctionParameterSequenceType VALUE_PARAM = new FunctionParameterSequenceType("value", Type.STRING, Cardinality.EXACTLY_ONE, "The header value");
 

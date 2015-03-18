@@ -21,7 +21,8 @@
  */
 package org.exist.stax;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.*;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
@@ -53,7 +54,7 @@ import java.util.Stack;
  */
 public abstract class AbstractEmbeddedXMLStreamReader<T extends IRawNodeIterator> implements IEmbeddedXMLStreamReader, ExtendedXMLStreamReader {
 
-    private static final Logger LOG = Logger.getLogger(AbstractEmbeddedXMLStreamReader.class);
+    private static final Logger LOG = LogManager.getLogger(AbstractEmbeddedXMLStreamReader.class);
 
     protected final T iterator;
     private Value current = null;

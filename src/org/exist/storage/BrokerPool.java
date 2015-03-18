@@ -21,7 +21,8 @@
  */
 package org.exist.storage;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.Database;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
@@ -91,7 +92,7 @@ import java.util.Map.Entry;
 @ConfigurationClass("pool")
 public class BrokerPool implements Database {
 
-    private final static Logger LOG = Logger.getLogger(BrokerPool.class);
+    private final static Logger LOG = LogManager.getLogger(BrokerPool.class);
 
     private final static TreeMap<String, BrokerPool> instances = new TreeMap<>();
     private final static Map<String, Throwable> instancesInitializtionException = new TreeMap<>();

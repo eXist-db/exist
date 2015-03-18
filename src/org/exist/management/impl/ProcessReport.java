@@ -28,7 +28,8 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.ProcessMonitor;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XQueryWatchDog;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.management.openmbean.TabularData;
 import javax.management.openmbean.OpenType;
@@ -42,7 +43,7 @@ import org.exist.storage.ProcessMonitor.QueryHistory;
 
 public class ProcessReport implements ProcessReportMBean {
 
-    private final static Logger LOG = Logger.getLogger(ProcessReport.class);
+    private final static Logger LOG = LogManager.getLogger(ProcessReport.class);
 
     private static String[] pItemNames = { "id", "action", "info" };
     private static String[] pItemDescriptions = {

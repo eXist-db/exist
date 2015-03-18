@@ -28,7 +28,8 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.Properties;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.dom.QName;
 import org.exist.http.servlets.ResponseWrapper;
@@ -53,7 +54,7 @@ import org.xml.sax.SAXException;
 
 public class Stream extends BasicFunction {
 	
-	private static final Logger logger = Logger.getLogger(Stream.class);
+	private static final Logger logger = LogManager.getLogger(Stream.class);
 
 	public final static FunctionSignature signature =
         new FunctionSignature(

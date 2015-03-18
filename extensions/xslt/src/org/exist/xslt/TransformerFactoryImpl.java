@@ -36,7 +36,8 @@ import javax.xml.transform.sax.TemplatesHandler;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamSource;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -51,7 +52,7 @@ import org.xml.sax.XMLFilter;
  */
 public class TransformerFactoryImpl extends SAXTransformerFactory {
 	
-    private final static Logger LOG = Logger.getLogger(TransformerFactoryImpl.class);
+    private final static Logger LOG = LogManager.getLogger(TransformerFactoryImpl.class);
 
     private BrokerPool pool = null;
     

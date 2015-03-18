@@ -31,7 +31,8 @@ import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.text.NumberFormat;
 import java.util.Properties;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.debuggee.Debuggee;
 import org.exist.security.EffectiveSubject;
 import org.exist.security.Permission;
@@ -60,7 +61,7 @@ import org.exist.xquery.value.Sequence;
 //TODO: it possible to have one per database
 public class XQuery {
 
-    private final static Logger LOG = Logger.getLogger(XQuery.class);
+    private final static Logger LOG = LogManager.getLogger(XQuery.class);
     
     private final DBBroker broker;
      

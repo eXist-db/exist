@@ -24,7 +24,8 @@ package org.exist.xquery.functions.request;
 
 import javax.servlet.http.Cookie;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.http.servlets.RequestWrapper;
 import org.exist.xquery.BasicFunction;
@@ -48,7 +49,7 @@ import static java.nio.charset.StandardCharsets.ISO_8859_1;
  */
 public class GetCookieValue extends BasicFunction {
 
-	protected static final Logger logger = Logger.getLogger(GetCookieValue.class);
+	protected static final Logger logger = LogManager.getLogger(GetCookieValue.class);
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(

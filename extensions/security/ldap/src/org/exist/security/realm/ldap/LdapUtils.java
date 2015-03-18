@@ -24,7 +24,8 @@ package org.exist.security.realm.ldap;
 import javax.naming.NamingException;
 import javax.naming.ldap.LdapContext;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -32,7 +33,7 @@ import org.apache.log4j.Logger;
  */
 public class LdapUtils {
 
-	protected final static Logger LOG = Logger.getLogger(LdapUtils.class);
+	protected final static Logger LOG = LogManager.getLogger(LdapUtils.class);
 
 	public static void closeContext(LdapContext ctx) {
 		try {

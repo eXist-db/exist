@@ -24,7 +24,8 @@ package org.exist.util;
 import java.io.File;
 import java.io.IOException;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class SingleInstanceConfiguration extends Configuration {
     
@@ -38,7 +39,7 @@ public class SingleInstanceConfiguration extends Configuration {
          */
     
     @SuppressWarnings("unused")
-	private final static Logger LOG = Logger.getLogger(SingleInstanceConfiguration.class); //Logger
+	private final static Logger LOG = LogManager.getLogger(SingleInstanceConfiguration.class); //Logger
     protected static String _configFile = null; //config file (conf.xml by default)
     protected static File _existHome = null;
     

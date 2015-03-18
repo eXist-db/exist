@@ -21,7 +21,8 @@
  */
 package org.exist.xquery.functions.xmldb;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.dom.QName;
 import org.exist.security.Account;
@@ -48,7 +49,7 @@ import org.exist.xquery.value.Type;
 @Deprecated
 public class XMLDBRemoveUserFromGroup extends BasicFunction {
 
-    protected static final Logger logger = Logger.getLogger(XMLDBRemoveUserFromGroup.class);
+    protected static final Logger logger = LogManager.getLogger(XMLDBRemoveUserFromGroup.class);
 
     public final static FunctionSignature signature = new FunctionSignature(
             new QName("remove-user-from-group", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),

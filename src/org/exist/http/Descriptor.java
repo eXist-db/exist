@@ -35,7 +35,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.memtree.SAXAdapter;
 import org.exist.util.ConfigurationHelper;
 import org.exist.util.SingleInstanceConfiguration;
@@ -67,7 +68,7 @@ public class Descriptor implements ErrorHandler
 	private static final String SYSTEM_LINE_SEPARATOR = System.getProperty("line.separator");
 	//References
 	private static Descriptor singletonRef;
-	private final static Logger LOG = Logger.getLogger(Descriptor.class);		//Logger
+	private final static Logger LOG = LogManager.getLogger(Descriptor.class);		//Logger
 	/** descriptor file (descriptor.xml) */
 	private final static String file = "descriptor.xml";							
 

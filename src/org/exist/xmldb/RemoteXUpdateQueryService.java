@@ -7,7 +7,8 @@ package org.exist.xmldb;
 
 import java.util.Vector;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.xmlrpc.XmlRpcException;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
@@ -18,7 +19,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class RemoteXUpdateQueryService implements XUpdateQueryService {
 
-	private final static Logger LOG = Logger.getLogger(RemoteXUpdateQueryService.class);
+	private final static Logger LOG = LogManager.getLogger(RemoteXUpdateQueryService.class);
 
 	private RemoteCollection parent;
 

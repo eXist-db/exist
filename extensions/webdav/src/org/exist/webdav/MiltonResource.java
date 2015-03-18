@@ -21,7 +21,8 @@
  */
 package org.exist.webdav;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.bradmcevoy.http.Auth;
 import com.bradmcevoy.http.LockInfo;
@@ -52,7 +53,7 @@ import org.exist.xmldb.XmldbURI;
  */
 public class MiltonResource implements Resource {
 
-    protected final static Logger LOG = Logger.getLogger(MiltonResource.class);
+    protected final static Logger LOG = LogManager.getLogger(MiltonResource.class);
     protected XmldbURI resourceXmldbUri;
     protected BrokerPool brokerPool;
     protected String host;

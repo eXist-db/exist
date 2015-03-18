@@ -54,7 +54,8 @@ import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.QName;
@@ -100,7 +101,7 @@ import org.xml.sax.SAXException;
  */
 public class Transform extends BasicFunction {
 	
-	private static final Logger logger = Logger.getLogger(Transform.class);
+	private static final Logger logger = LogManager.getLogger(Transform.class);
 
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(

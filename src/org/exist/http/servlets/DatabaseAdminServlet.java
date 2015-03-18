@@ -7,7 +7,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.storage.BrokerPool;
 import org.exist.util.Configuration;
@@ -27,7 +28,7 @@ public class DatabaseAdminServlet extends AbstractExistHttpServlet {
 
     private static final long serialVersionUID = 866427121174932091L;
 
-    private final static Logger LOG = Logger.getLogger(DatabaseAdminServlet.class);
+    private final static Logger LOG = LogManager.getLogger(DatabaseAdminServlet.class);
     
 
     protected Configuration configuration = null;

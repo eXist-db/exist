@@ -21,7 +21,8 @@
  */
 package org.exist.xquery.functions.util;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 
 import java.io.File;
@@ -59,7 +60,7 @@ import org.xml.sax.SAXException;
 
 public class Serialize extends BasicFunction {
 
-	protected static final Logger logger = Logger.getLogger(Serialize.class);
+	protected static final Logger logger = LogManager.getLogger(Serialize.class);
 
 	public final static FunctionSignature signatures[] = {
         new FunctionSignature(

@@ -22,7 +22,8 @@
 package org.exist.webdav;
 
 import java.util.Properties;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.security.SecurityManager;
 import org.exist.security.AuthenticationException;
@@ -38,7 +39,7 @@ import org.exist.xmldb.XmldbURI;
  */
 public abstract class ExistResource {
 
-    protected final static Logger LOG = Logger.getLogger(ExistResource.class);
+    protected final static Logger LOG = LogManager.getLogger(ExistResource.class);
     protected boolean isInitialized = false;
     protected BrokerPool brokerPool;
     protected Subject subject;

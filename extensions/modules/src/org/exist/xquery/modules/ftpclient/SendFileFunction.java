@@ -3,7 +3,8 @@ package org.exist.xquery.modules.ftpclient;
 import java.io.IOException;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
@@ -32,7 +33,7 @@ public class SendFileFunction extends BasicFunction {
     private static final FunctionParameterSequenceType FILE_NAME_PARAM = new FunctionParameterSequenceType("file-name", Type.STRING, Cardinality.EXACTLY_ONE, "File name");
     private static final FunctionParameterSequenceType DATA_PARAM = new FunctionParameterSequenceType("data", Type.BASE64_BINARY, Cardinality.EXACTLY_ONE, "The binary file data to send" );
     
-    private static final Logger log = Logger.getLogger(SendFileFunction.class);
+    private static final Logger log = LogManager.getLogger(SendFileFunction.class);
     
     public final static FunctionSignature signature = new FunctionSignature(
         new QName("send-binary-file", FTPClientModule.NAMESPACE_URI, FTPClientModule.PREFIX),

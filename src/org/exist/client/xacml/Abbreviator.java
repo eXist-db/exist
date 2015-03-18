@@ -8,7 +8,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.Namespaces;
 import org.exist.security.xacml.XACMLConstants;
 
@@ -25,7 +26,7 @@ import com.sun.xacml.cond.MatchFunction;
  */
 public class Abbreviator
 {
-	private static final Logger LOG = Logger.getLogger(Abbreviator.class);
+	private static final Logger LOG = LogManager.getLogger(Abbreviator.class);
 	private static final String[][] comparisonMap = { {"equal", "="},
 			{"less-than-or-equal", "<="}, {"less-than", "<"},
 			{"greater-than-or-equal", ">="}, {"greater-than", ">"} };

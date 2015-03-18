@@ -22,7 +22,8 @@
  */
 package org.exist.xquery.functions.util;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Function;
@@ -44,7 +45,7 @@ import org.exist.xquery.value.Type;
  */
 public class CatchFunction extends Function {
 
-    protected static final Logger logger = Logger.getLogger(CatchFunction.class);
+    protected static final Logger logger = LogManager.getLogger(CatchFunction.class);
     
     public final static FunctionSignature signature =
             new FunctionSignature(

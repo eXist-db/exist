@@ -23,7 +23,8 @@ package org.exist.xquery.functions.util;
 
 import java.util.Date;
 
-//import org.apache.log4j.Logger;
+//import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
@@ -45,7 +46,7 @@ import org.exist.xquery.value.Type;
 
 public class SystemTime extends Function 
 {
-//	private static final Logger logger = Logger.getLogger(SystemTime.class);
+//	private static final Logger logger = LogManager.getLogger(SystemTime.class);
 
 	public final static FunctionSignature signatures[] = {
         new FunctionSignature(

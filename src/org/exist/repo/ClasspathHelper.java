@@ -1,6 +1,7 @@
 package org.exist.repo;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.start.Classpath;
 import org.exist.start.EXistClassLoader;
 import org.exist.storage.BrokerPool;
@@ -15,7 +16,7 @@ import java.io.*;
  */
 public class ClasspathHelper {
 
-    private final static Logger LOG = Logger.getLogger(ClasspathHelper.class);
+    private final static Logger LOG = LogManager.getLogger(ClasspathHelper.class);
 
     public static void updateClasspath(BrokerPool pool) {
         final ClassLoader loader = pool.getClassLoader();

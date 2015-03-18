@@ -24,7 +24,8 @@ package org.exist.validation.resolver.unstable;
 import java.io.InputStream;
 import java.io.Reader;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.w3c.dom.ls.LSInput;
 
@@ -37,7 +38,7 @@ import org.w3c.dom.ls.LSInput;
 public class eXistLSInput implements LSInput {
 
     @SuppressWarnings("unused")
-	private final static Logger LOG = Logger.getLogger(eXistLSInput.class);
+	private final static Logger LOG = LogManager.getLogger(eXistLSInput.class);
 
     private Reader characterStream;
 

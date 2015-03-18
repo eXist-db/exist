@@ -21,7 +21,8 @@
  */
 package org.exist.xquery.functions.xmldb;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -52,7 +53,7 @@ import org.xmldb.api.base.XMLDBException;
  * @author wolf
  */
 public class XMLDBLoadFromPattern extends XMLDBAbstractCollectionManipulator {
-	protected static final Logger logger = Logger.getLogger(XMLDBLoadFromPattern.class);
+	protected static final Logger logger = LogManager.getLogger(XMLDBLoadFromPattern.class);
 	
 	protected final static QName FUNCTION_NAME = new QName("store-files-from-pattern", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX);
 

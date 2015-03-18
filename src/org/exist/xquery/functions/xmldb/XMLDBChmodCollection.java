@@ -21,7 +21,8 @@
  */
 package org.exist.xquery.functions.xmldb;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xmldb.UserManagementService;
 import org.exist.xquery.Cardinality;
@@ -46,7 +47,7 @@ import org.xmldb.api.base.XMLDBException;
  */
 @Deprecated
 public class XMLDBChmodCollection extends XMLDBAbstractCollectionManipulator {
-    private static final Logger logger = Logger.getLogger(XMLDBChmodCollection.class);
+    private static final Logger logger = LogManager.getLogger(XMLDBChmodCollection.class);
 	public final static FunctionSignature signature = new FunctionSignature(
 			new QName("chmod-collection", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
                         "Sets the mode of collection $collection. $mode is the mode as xs:integer. " +

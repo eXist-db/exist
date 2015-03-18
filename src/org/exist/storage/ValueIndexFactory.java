@@ -29,7 +29,8 @@ import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.storage.btree.Value;
 import org.exist.util.ByteConversion;
@@ -46,7 +47,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 // TODO : rename as NativeIndexValueFactory ? -pb
 public class ValueIndexFactory {
 
-    private static Logger LOG = Logger.getLogger(ValueIndexFactory.class.getName());
+    private static Logger LOG = LogManager.getLogger(ValueIndexFactory.class.getName());
 
     public static int LENGTH_VALUE_TYPE = 1; // sizeof byte
 

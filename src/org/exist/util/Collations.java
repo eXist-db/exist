@@ -31,7 +31,8 @@ import java.util.Comparator;
 import java.util.Locale;
 import java.util.StringTokenizer;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.xquery.Constants;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
@@ -44,7 +45,7 @@ import org.exist.xquery.XQueryContext;
  */
 public class Collations {
 
-    private final static Logger logger = Logger.getLogger(Collations.class);
+    private final static Logger logger = LogManager.getLogger(Collations.class);
 
     /**
      * The default unicode codepoint collation URI as defined by the XQuery

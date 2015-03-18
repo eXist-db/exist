@@ -24,7 +24,8 @@ package org.exist.xquery.functions.xmldb;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.dom.QName;
 import org.exist.security.Account;
@@ -49,7 +50,7 @@ import org.exist.xquery.value.StringValue;
 @Deprecated
 public class XMLDBGetUsers extends BasicFunction {
 
-    protected static final Logger logger = Logger.getLogger(XMLDBGetUsers.class);
+    protected static final Logger logger = LogManager.getLogger(XMLDBGetUsers.class);
 
     public final static FunctionSignature signature = new FunctionSignature(
         new QName("get-users", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),

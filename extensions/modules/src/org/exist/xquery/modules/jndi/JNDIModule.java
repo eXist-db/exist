@@ -33,7 +33,8 @@ import javax.naming.directory.Attribute;
 import javax.naming.directory.BasicAttribute;
 import javax.naming.directory.BasicAttributes;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 import org.exist.xquery.XQueryContext;
@@ -59,7 +60,7 @@ import org.w3c.dom.NodeList;
 public class JNDIModule extends AbstractInternalModule 
 {
 
-	protected final static Logger LOG = Logger.getLogger( JNDIModule.class );
+	protected final static Logger LOG = LogManager.getLogger( JNDIModule.class );
 
 	public final static String NAMESPACE_URI = "http://exist-db.org/xquery/jndi";
 

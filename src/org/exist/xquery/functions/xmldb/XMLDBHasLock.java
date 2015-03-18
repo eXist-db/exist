@@ -21,7 +21,8 @@
  */
 package org.exist.xquery.functions.xmldb;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.dom.QName;
 import org.exist.xmldb.UserManagementService;
@@ -45,7 +46,7 @@ import org.xmldb.api.base.XMLDBException;
  *
  */
 public class XMLDBHasLock extends XMLDBAbstractCollectionManipulator {
-	protected static final Logger logger = Logger.getLogger(XMLDBHasLock.class);
+	protected static final Logger logger = LogManager.getLogger(XMLDBHasLock.class);
 	public final static FunctionSignature signature[] = {
 		new FunctionSignature(
 			new QName("document-has-lock", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),

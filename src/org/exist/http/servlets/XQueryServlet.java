@@ -37,7 +37,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.xml.transform.OutputKeys;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.http.Descriptor;
 import org.exist.security.AuthenticationException;
@@ -105,7 +106,7 @@ public class XQueryServlet extends AbstractExistHttpServlet {
     
     private static final long serialVersionUID = 5266794852401553015L;
 
-    private static final Logger LOG = Logger.getLogger(XQueryServlet.class);
+    private static final Logger LOG = LogManager.getLogger(XQueryServlet.class);
 
     // Request attributes
     public static final String ATTR_XQUERY_USER = "xquery.user";

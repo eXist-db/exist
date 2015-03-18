@@ -21,7 +21,8 @@
  */
 package org.exist.xquery.functions.util;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.QName;
 import org.exist.xquery.AnalyzeContextInfo;
@@ -45,7 +46,7 @@ import org.exist.xquery.value.Type;
  */
 public class IndexType extends BasicFunction {
 	
-	protected static final Logger logger = Logger.getLogger(IndexType.class);
+	protected static final Logger logger = LogManager.getLogger(IndexType.class);
 
     public final static FunctionSignature signature = new FunctionSignature(
             new QName("index-type", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),

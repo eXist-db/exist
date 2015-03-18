@@ -32,7 +32,8 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  *  Helper class for accepting self-signed SSL certificates.
@@ -41,7 +42,7 @@ import org.apache.log4j.Logger;
  */
 public class SSLHelper {
 
-    private final static Logger LOG = Logger.getLogger(SSLHelper.class);
+    private final static Logger LOG = LogManager.getLogger(SSLHelper.class);
     private static TrustManager[] nonvalidatingTrustManager = null;
     private static HostnameVerifier dummyHostnameVerifier = null;
 

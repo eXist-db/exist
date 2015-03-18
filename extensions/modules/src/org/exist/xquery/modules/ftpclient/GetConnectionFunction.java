@@ -3,7 +3,8 @@ package org.exist.xquery.modules.ftpclient;
 import java.io.IOException;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPReply;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -30,7 +31,7 @@ public class GetConnectionFunction extends BasicFunction {
     private static final FunctionParameterSequenceType FTP_USERNAME_PARAM = new FunctionParameterSequenceType("username", Type.STRING, Cardinality.EXACTLY_ONE, "The FTP server username" );
     private static final FunctionParameterSequenceType FTP_HOST_PARAM = new FunctionParameterSequenceType("host", Type.STRING, Cardinality.EXACTLY_ONE, "The host to connect to" );
     
-    private static final Logger log = Logger.getLogger(GetConnectionFunction.class);
+    private static final Logger log = LogManager.getLogger(GetConnectionFunction.class);
 
     public final static FunctionSignature[] signatures = {
         new FunctionSignature(

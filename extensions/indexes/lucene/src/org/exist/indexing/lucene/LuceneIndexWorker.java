@@ -31,7 +31,8 @@ import java.util.Stack;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.*;
@@ -107,7 +108,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         TYPE_NODE_ID.setTokenized(true);
     }
 
-    static final Logger LOG = Logger.getLogger(LuceneIndexWorker.class);
+    static final Logger LOG = LogManager.getLogger(LuceneIndexWorker.class);
     
     protected LuceneIndex index;
     

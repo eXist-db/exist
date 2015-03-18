@@ -21,7 +21,8 @@
  */
 package org.exist.xquery.functions.xmldb;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.dom.QName;
 import org.exist.security.Account;
@@ -58,7 +59,7 @@ import org.xmldb.api.base.XMLDBException;
 public class XMLDBUserAccess extends BasicFunction {
 
     protected static final FunctionParameterSequenceType ARG_USER_ID = new FunctionParameterSequenceType("user-id", Type.STRING, Cardinality.EXACTLY_ONE, "The user-id");
-    protected static final Logger logger = Logger.getLogger(XMLDBUserAccess.class);
+    protected static final Logger logger = LogManager.getLogger(XMLDBUserAccess.class);
     public final static FunctionSignature fnExistsUser = new FunctionSignature(
         new QName("exists-user", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
         "Returns true if the user $user-id exists.",

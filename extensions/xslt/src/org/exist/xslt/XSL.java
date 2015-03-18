@@ -29,7 +29,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.dom.memtree.SAXAdapter;
 import org.exist.storage.BrokerPool;
@@ -72,7 +73,7 @@ import org.xml.sax.XMLReader;
  */
 public class XSL {
 
-    private final static Logger LOG = Logger.getLogger(XSL.class);
+    private final static Logger LOG = LogManager.getLogger(XSL.class);
 
     public XSL() {
 	}

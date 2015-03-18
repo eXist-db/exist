@@ -6,7 +6,8 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.client.ClientFrame;
 import org.exist.security.xacml.XACMLConstants;
@@ -30,7 +31,7 @@ import com.sun.xacml.PolicySet;
 
 public class DatabaseInterface
 {
-	private static final Logger LOG = Logger.getLogger(DatabaseInterface.class);
+	private static final Logger LOG = LogManager.getLogger(DatabaseInterface.class);
 	
 	private Collection policyCollection;
 

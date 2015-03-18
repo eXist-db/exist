@@ -21,7 +21,8 @@
  */
 package org.exist.xquery.modules.image;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 
 import java.awt.Image;
@@ -69,7 +70,7 @@ import org.exist.xquery.value.ValueSequence;
 public class GetThumbnailsFunction extends BasicFunction {
 
 	@SuppressWarnings("unused")
-	private static final Logger logger = Logger.getLogger(GetThumbnailsFunction.class);
+	private static final Logger logger = LogManager.getLogger(GetThumbnailsFunction.class);
 	
 	private final static int MAXTHUMBHEIGHT = 100;
 

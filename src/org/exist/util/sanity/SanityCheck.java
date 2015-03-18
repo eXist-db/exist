@@ -24,7 +24,8 @@ package org.exist.util.sanity;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Utility class for sanity checks. Provides static methods ASSERT, THROW_ASSERT
@@ -36,7 +37,7 @@ import org.apache.log4j.Logger;
  */
 public class SanityCheck {
 
-    private final static Logger LOG = Logger.getLogger(SanityCheck.class);
+    private final static Logger LOG = LogManager.getLogger(SanityCheck.class);
     
     public final static void ASSERT(boolean mustBeTrue) {
         if (!mustBeTrue) {

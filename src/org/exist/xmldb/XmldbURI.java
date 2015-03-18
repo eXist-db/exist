@@ -20,7 +20,8 @@
  */
 package org.exist.xmldb;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.xquery.Constants;
 import org.exist.xquery.util.URIUtils;
@@ -49,7 +50,7 @@ import java.util.regex.Pattern;
  */
 public class XmldbURI implements Comparable<Object>, Serializable {
 
-    protected final static Logger LOG = Logger.getLogger(XmldbURI.class);
+    protected final static Logger LOG = LogManager.getLogger(XmldbURI.class);
     public static final int NO_PORT = -1;
     //Should be provided by org.xmldb.api package !!!
     public static final String XMLDB_SCHEME = "xmldb";

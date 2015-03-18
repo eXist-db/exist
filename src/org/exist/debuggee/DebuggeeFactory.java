@@ -24,7 +24,8 @@ package org.exist.debuggee;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 
@@ -34,7 +35,7 @@ import org.exist.xquery.XQueryContext;
  */
 public class DebuggeeFactory {
     
-	private final static Logger LOG = Logger.getLogger(DebuggeeFactory.class);
+	private final static Logger LOG = LogManager.getLogger(DebuggeeFactory.class);
 
     private static Debuggee instance = null;
 

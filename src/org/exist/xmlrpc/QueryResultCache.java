@@ -1,6 +1,7 @@
 package org.exist.xmlrpc;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.Date;
 
@@ -16,7 +17,7 @@ public class QueryResultCache {
     
     public AbstractCachedResult[] results;
 
-    private static final Logger LOG = Logger.getLogger(QueryResultCache.class);
+    private static final Logger LOG = LogManager.getLogger(QueryResultCache.class);
 
     public QueryResultCache() {
         results = new AbstractCachedResult[INITIAL_SIZE];

@@ -22,7 +22,8 @@
  */
 package org.exist.xquery.functions.util;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.util.Base64Decoder;
 import org.exist.util.Base64Encoder;
@@ -46,7 +47,7 @@ import org.exist.xquery.value.Type;
 
 public class Base64Functions extends BasicFunction
 {
-    protected static final Logger           logger       = Logger.getLogger( Base64Functions.class );
+    protected static final Logger           logger       = LogManager.getLogger( Base64Functions.class );
 
    public final static FunctionSignature signatures[] = {
         new FunctionSignature(

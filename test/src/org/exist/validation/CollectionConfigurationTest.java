@@ -21,13 +21,8 @@
  */
 package org.exist.validation;
 
-import org.apache.log4j.Appender;
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Layout;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
-
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.XmldbURI;
 import org.xmldb.api.DatabaseManager;
@@ -53,7 +48,7 @@ import static org.junit.Assert.*;
 public class CollectionConfigurationTest {
 
     String invalidConfig = "<invalid/>";
-    private static final Logger LOG = Logger.getLogger(CollectionConfigurationValidationModeTest.class);
+    private static final Logger LOG = LogManager.getLogger(CollectionConfigurationValidationModeTest.class);
     private static XPathQueryService xpqservice;
     private static Collection root = null;
     private static Database database = null;
@@ -62,15 +57,8 @@ public class CollectionConfigurationTest {
     public CollectionConfigurationTest() {
     }
 
-    public static void initLog4J() {
-        Layout layout = new PatternLayout("%d [%t] %-5p (%F [%M]:%L) - %m %n");
-        Appender appender = new ConsoleAppender(layout);
-        BasicConfigurator.configure(appender);
-    }
-
     @BeforeClass
     public static void setUpClass() throws Exception {
-        initLog4J();
         startDatabase();
     }
 

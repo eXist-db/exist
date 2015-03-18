@@ -19,7 +19,8 @@
  */
 package org.exist.indexing.lucene;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
@@ -40,7 +41,7 @@ import java.lang.reflect.InvocationTargetException;
  */
 public class ClassicQueryParserWrapper extends QueryParserWrapper {
 
-    private final static Logger LOG = Logger.getLogger(ClassicQueryParserWrapper.class);
+    private final static Logger LOG = LogManager.getLogger(ClassicQueryParserWrapper.class);
 
     private QueryParserBase parser = null;
 

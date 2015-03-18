@@ -1,7 +1,8 @@
 package org.exist.xquery.functions.xmldb;
 
 import java.util.List;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.FunctionSignature;
@@ -22,7 +23,7 @@ import org.exist.xquery.value.StringValue;
  */
 public class XMLDBMatchCollection extends BasicFunction {
 
-    protected static final Logger logger = Logger.getLogger(XMLDBMatchCollection.class);
+    protected static final Logger logger = LogManager.getLogger(XMLDBMatchCollection.class);
 
     public final static FunctionSignature signature = new FunctionSignature(
             new QName("match-collection", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),

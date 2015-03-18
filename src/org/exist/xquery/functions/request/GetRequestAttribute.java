@@ -22,7 +22,8 @@
  */
 package org.exist.xquery.functions.request;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.http.servlets.RequestWrapper;
 import org.exist.xquery.BasicFunction;
@@ -41,7 +42,7 @@ import java.util.Enumeration;
  */
 public class GetRequestAttribute extends BasicFunction {
 
-	protected static final Logger logger = Logger.getLogger(GetRequestAttribute.class);
+	protected static final Logger logger = LogManager.getLogger(GetRequestAttribute.class);
 
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(

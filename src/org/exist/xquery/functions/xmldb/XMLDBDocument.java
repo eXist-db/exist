@@ -21,7 +21,8 @@
  */
 package org.exist.xquery.functions.xmldb;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.dom.persistent.DefaultDocumentSet;
 import org.exist.dom.persistent.DocumentImpl;
@@ -63,7 +64,7 @@ import java.util.List;
  * @author wolf
  */
 public class XMLDBDocument extends Function {
-    private static final Logger logger = Logger.getLogger(XMLDBDocument.class);
+    private static final Logger logger = LogManager.getLogger(XMLDBDocument.class);
  
 
 	public final static FunctionSignature signature =

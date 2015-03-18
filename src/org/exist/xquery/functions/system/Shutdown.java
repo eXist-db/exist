@@ -26,7 +26,8 @@ package org.exist.xquery.functions.system;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.storage.BrokerPool;
 import org.exist.xquery.BasicFunction;
@@ -47,7 +48,7 @@ import org.exist.xquery.value.Type;
  */
 public class Shutdown extends BasicFunction
 {
-	protected final static Logger logger = Logger.getLogger(Shutdown.class);
+	protected final static Logger logger = LogManager.getLogger(Shutdown.class);
 
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(

@@ -8,7 +8,8 @@ import java.text.*;
 import java.util.*;
 import java.util.regex.*;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.xacml.AccessContext;
 import org.exist.source.*;
@@ -27,7 +28,7 @@ import org.exist.xquery.value.*;
 public class QueryService implements Cloneable {
 	
 	private static final Pattern PRE_SUB_PATTERN = Pattern.compile("\\$(\\d+)");
-	private static final Logger LOG = Logger.getLogger(QueryService.class);
+	private static final Logger LOG = LogManager.getLogger(QueryService.class);
 	
 	private static final Statistics STATS = new Statistics();
 	

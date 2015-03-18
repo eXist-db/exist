@@ -24,7 +24,8 @@ package org.exist.xslt;
 import javax.xml.transform.Templates;
 import javax.xml.transform.sax.TemplatesHandler;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.xquery.XPathException;
 import org.exist.dom.memtree.SAXAdapter;
 import org.w3c.dom.Document;
@@ -36,7 +37,7 @@ import org.w3c.dom.Element;
  */
 public class TemplatesHandlerImpl extends SAXAdapter implements TemplatesHandler {
 
-    private final static Logger LOG = Logger.getLogger(TemplatesHandlerImpl.class);
+    private final static Logger LOG = LogManager.getLogger(TemplatesHandlerImpl.class);
 
     private String systemId = null;
     private Templates templates = null;

@@ -1,6 +1,7 @@
 package org.exist.xquery.modules.persistentlogin;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.util.Base64Encoder;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.DateTimeValue;
@@ -31,7 +32,7 @@ public class PersistentLogin {
         return instance;
     }
 
-    private final static Logger LOG = Logger.getLogger(PersistentLogin.class);
+    private final static Logger LOG = LogManager.getLogger(PersistentLogin.class);
 
     public final static int DEFAULT_SERIES_LENGTH = 16;
 

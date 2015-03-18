@@ -26,7 +26,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.EmptyNodeSet;
 import org.exist.dom.persistent.Match;
@@ -78,7 +79,7 @@ public class NGramSearch extends Function implements Optimizable {
         + "'?', '*', '+' and character sequences matching the regular expression {[0-9]+,[0-9]+} not immediately preceeded by an unescaped period, '.', stand for themselves."
         + "'^' and '$' not at the very beginning or end of the search string, respectively, stand for themselves.";
 
-    protected static Logger LOG = Logger.getLogger(NGramSearch.class);
+    protected static Logger LOG = LogManager.getLogger(NGramSearch.class);
 
     public final static FunctionSignature signatures[] = {
         new FunctionSignature(new QName("contains", NGramModule.NAMESPACE_URI, NGramModule.PREFIX),

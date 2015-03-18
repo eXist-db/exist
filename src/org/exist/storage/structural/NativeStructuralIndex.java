@@ -23,7 +23,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.backup.RawDataBackup;
 import org.exist.dom.persistent.SymbolTable;
 import org.exist.indexing.AbstractIndex;
@@ -40,7 +41,7 @@ import org.w3c.dom.Element;
 
 public class NativeStructuralIndex extends AbstractIndex implements RawBackupSupport {
 
-    protected static final Logger LOG = Logger.getLogger(NativeStructuralIndex.class);
+    protected static final Logger LOG = LogManager.getLogger(NativeStructuralIndex.class);
 
     public final static String ID = NativeStructuralIndex.class.getName();
     public static final String FILE_NAME = "structure.dbx";

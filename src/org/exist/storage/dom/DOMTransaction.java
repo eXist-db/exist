@@ -21,7 +21,8 @@
  */
 package org.exist.storage.dom;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.storage.lock.Lock;
 import org.exist.util.LockException;
@@ -39,7 +40,7 @@ import org.exist.util.ReadOnlyException;
  */
 public abstract class DOMTransaction {
 
-    private final static Logger LOG = Logger.getLogger(DOMTransaction.class);
+    private final static Logger LOG = LogManager.getLogger(DOMTransaction.class);
 
     private Object ownerObject;
     private DOMFile file;

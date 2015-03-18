@@ -22,7 +22,8 @@
 
 package org.exist.xquery.modules.image;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 
 import java.awt.Toolkit;
@@ -66,7 +67,7 @@ import org.exist.xquery.value.Type;
  */
 public class CropFunction extends BasicFunction {
     
-    private static final Logger logger = Logger.getLogger(CropFunction.class);
+    private static final Logger logger = LogManager.getLogger(CropFunction.class);
 	
     private final static int MAXHEIGHT = 100;
     private final static int MAXWIDTH = 100;

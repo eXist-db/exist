@@ -46,7 +46,8 @@ import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.Namespaces;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.NodeProxy;
@@ -116,7 +117,7 @@ import org.xml.sax.ext.LexicalHandler;
  */
 public abstract class Serializer implements XMLReader {
 
-	protected final static Logger LOG = Logger.getLogger(Serializer.class);
+	protected final static Logger LOG = LogManager.getLogger(Serializer.class);
 	
 	public static final String CONFIGURATION_ELEMENT_NAME = "serializer";
 	public static final String ENABLE_XINCLUDE_ATTRIBUTE = "enable-xinclude";

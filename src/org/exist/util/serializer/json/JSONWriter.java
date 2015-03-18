@@ -5,7 +5,8 @@ import java.io.Writer;
 import java.util.Properties;
 import java.util.Stack;
 import javax.xml.transform.TransformerException;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.serializer.XMLWriter;
@@ -45,7 +46,7 @@ import org.exist.util.serializer.XMLWriter;
  */
 public class JSONWriter extends XMLWriter {
 
-    private final static Logger LOG = Logger.getLogger(JSONWriter.class);
+    private final static Logger LOG = LogManager.getLogger(JSONWriter.class);
     
     private final static String ARRAY = "array";
     private final static String LITERAL = "literal";

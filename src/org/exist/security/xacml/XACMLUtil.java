@@ -47,7 +47,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
@@ -89,7 +90,7 @@ import org.w3c.dom.Element;
  */
 public class XACMLUtil implements UpdateListener
 {
-	private static final Logger LOG = Logger.getLogger(ExistPolicyModule.class);
+	private static final Logger LOG = LogManager.getLogger(ExistPolicyModule.class);
 	private static final Map<String, AbstractPolicy> POLICY_CACHE = Collections.synchronizedMap(new HashMap<String, AbstractPolicy>(8));
 	private static final XmldbURI[] samplePolicyDocs = { XmldbURI.create("policies/main_modules_policy.xml"),
 		XmldbURI.create("policies/builtin_policy.xml"), XmldbURI.create("policies/external_modules_policy.xml"),
@@ -280,7 +281,7 @@ public class XACMLUtil implements UpdateListener
 		final int documentCount = (documentSet == null) ? 0 : documentSet.getDocumentCount();
 		if(documentCount == 0)
 		{
-			LOG.warn("Could not find " + attributeQName.getLocalPart() + " '" +  attributeValue + "'", null);
+			LOG.warn("Could not find " + attributeQName.getLocalPart() + " '" +  attributeValue + "'");
 			return null;
 		}
 
