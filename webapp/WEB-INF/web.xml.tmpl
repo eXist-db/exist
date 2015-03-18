@@ -35,27 +35,6 @@
     -->
 
     <!--
-        Log4jInit initializes Log4j.
-        Only needed when eXist is deployed as a .war file in e.g. Tomcat.
-    -->
-    <servlet>
-        <servlet-name>log4j-init</servlet-name>
-        <servlet-class>org.exist.http.servlets.Log4jInit</servlet-class>
-
-        <init-param>
-            <param-name>log4j-init-file</param-name>
-            <param-value>WEB-INF/log4j.xml</param-value>
-        </init-param>
-
-        <init-param>
-            <param-name>log4j-log-dir</param-name>
-            <param-value>WEB-INF/logs</param-value>
-        </init-param>
-
-        <load-on-startup>1</load-on-startup>
-    </servlet>
-
-    <!--
         RpcServlet provides XML-RPC access.
     -->
     <servlet>

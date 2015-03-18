@@ -78,7 +78,7 @@ wrapper.java.additional.3=-Dexist.home=../../..
 wrapper.java.additional.4=-Djetty.home=../../../@jetty.dir@
 
 # log4j configuration is read from the conf directory of the wrapper
-wrapper.java.additional.5=-Dlog4j.configuration=file:../conf/log4j.xml
+wrapper.java.additional.5=-Dlog4j.configurationFile=file:../conf/log4j2.xml
 
 # force headless mode
 wrapper.java.additional.6=-Djava.awt.headless=true

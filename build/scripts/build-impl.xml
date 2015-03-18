@@ -480,7 +480,7 @@
             <link href="http://commons.apache.org/pool/apidocs/"/>
             <link href="http://hc.apache.org/httpclient-legacy/apidocs/"/>
             <link href="http://jline.sourceforge.net/javadoc/"/>
-            <link href="http://logging.apache.org/log4j/1.2/apidocs/"/>
+            <link href="http://logging.apache.org/log4j/2.x/log4j-api/apidocs/"/>
             <link href="http://www.slf4j.org/api/"/>
             <link href="http://nekohtml.sourceforge.net/javadoc/"/>
             <link href="http://www.quartz-scheduler.org/api/1.8.5/"/>
@@ -553,7 +553,7 @@
             <link href="http://commons.apache.org/pool/apidocs/"/>
             <link href="http://hc.apache.org/httpclient-3.x/apidocs/"/>
             <link href="http://jline.sourceforge.net/javadoc/"/>
-            <link href="http://logging.apache.org/log4j/1.2/apidocs/"/>
+            <link href="http://logging.apache.org/log4j/2.x/log4j-api/apidocs/"/>
             <link href="http://nekohtml.sourceforge.net/javadoc/"/>
             <link href="http://www.quartz-scheduler.org/docs/api/"/>
             <link href="http://sunxacml.sourceforge.net/javadoc/"/>  
