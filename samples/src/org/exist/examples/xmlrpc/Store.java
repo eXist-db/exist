@@ -24,7 +24,8 @@ package org.exist.examples.xmlrpc;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.net.URL;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
@@ -32,50 +33,55 @@ import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
 /**
  * Store a document to the database using XML-RPC.
  *
- * Execute bin\run.bat org.exist.examples.xmlrpc.Store <localfilename> <remotedocname>
+ * Execute bin\run.bat org.exist.examples.xmlrpc.Store <localfilename>
+ * <remotedocname>
  */
 public class Store {
 
-	protected final static String uri = "http://localhost:8080/exist/xmlrpc";
+    private final static String uri = "http://localhost:8080/exist/xmlrpc";
 
-	protected static void usage() {
-		System.out.println("usage: org.exist.examples.xmlrpc.Store xmlFile [docName]");
-		System.exit(0);
-	}
+    protected static void usage() {
+        System.out.println("usage: org.exist.examples.xmlrpc.Store xmlFile [docName]");
+        System.exit(0);
+    }
 
-	public static void main(String args[]) throws Exception {
-		if(args.length < 1)
-			usage();
-		String docName = (args.length == 2) ? args[1] : args[0];
+    public static void main(final String args[]) throws Exception {
+        if (args.length < 1) {
+            usage();
+        }
+        
+        final String docName = (args.length == 2) ? args[1] : args[0];
 
-        XmlRpcClient client = new XmlRpcClient();
-        XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
+        final XmlRpcClient client = new XmlRpcClient();
+        final XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
         config.setServerURL(new URL(uri));
         config.setBasicUserName("admin");
         config.setBasicPassword("");
         client.setConfig(config);
 
-		// read the file into a string
-		BufferedReader f = new BufferedReader(new FileReader(args[0]));
-		String line;
-		StringBuffer xml = new StringBuffer();
-		while((line = f.readLine()) != null)
-			xml.append(line);
-		f.close();
+        // read the file into a string
+        final StringBuilder xml = new StringBuilder();
+        try (final BufferedReader f = new BufferedReader(new FileReader(args[0]))) {
+            String line;
+            while ((line = f.readLine()) != null) {
+                xml.append(line);
+            }
+        }
 
-		// set parameters for XML-RPC call
-		Vector<Object> params = new Vector<Object>();
-		params.addElement(xml.toString());
-		params.addElement(docName);
-		params.addElement(new Integer(0));
+        // set parameters for XML-RPC call
+        final List<Object> params = new ArrayList<>();
+        params.add(xml.toString());
+        params.add(docName);
+        params.add(0);
 
-		// execute the call
-		Boolean result = (Boolean)client.execute("parse", params);
+        // execute the call
+        final Boolean result = (Boolean) client.execute("parse", params);
 
-		// check result
-		if(result.booleanValue())
-			System.out.println("document stored.");
-		else
-			System.out.println("could not store document.");
-	}
+        // check result
+        if (result) {
+            System.out.println("document stored.");
+        } else {
+            System.out.println("could not store document.");
+        }
+    }
 }
