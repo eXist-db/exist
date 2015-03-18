@@ -868,7 +868,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
             transact.commit(txn);
             collection.deleteObservers();
         } catch(final Exception e) {
-            LOG.error(e);
+            LOG.error(e.getMessage());
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         } finally {
             brokerPool.setSubject(subject);
@@ -893,7 +893,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
             } catch(final Exception e) {
                 LOG.error("Error while involing NekoHTML parser. (" + e.getMessage()
                     + "). If you want to parse non-wellformed HTML files, put "
-                    + "nekohtml.jar into directory 'lib/optional'.", e);
+                    + "nekohtml.jar into directory 'lib/optional'.");
                 throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "NekoHTML parser error", e);
             }
         }

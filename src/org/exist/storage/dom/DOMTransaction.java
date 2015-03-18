@@ -101,7 +101,7 @@ public abstract class DOMTransaction {
             try {
                 lock.acquire( mode );
             } catch( final LockException e ) {
-                System.out.println("Failed to acquire read lock on " + file.getFile().getName());
+                LOG.error("Failed to acquire read lock on " + file.getFile().getName(), e);
                 return null;
             }
             file.setOwnerObject(ownerObject);

@@ -66,7 +66,7 @@ public class TemplatesHandlerImpl extends SAXAdapter implements TemplatesHandler
 			} catch (XPathException e) {
 				LOG.debug(e);
 				e.printStackTrace();
-				System.out.println(e.getDetailMessage()); //TODO: remove 
+				System.err.println(e.getDetailMessage()); //TODO: remove
 			}
 		}
 		return templates;

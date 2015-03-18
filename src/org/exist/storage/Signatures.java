@@ -21,6 +21,8 @@
  */
 package org.exist.storage;
 
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.exist.util.ByteConversion;
 import org.w3c.dom.Node;
 
@@ -39,6 +41,8 @@ import org.w3c.dom.Node;
  *   to store the name of the node (local name for elements and attributes).
  */
 public final class Signatures {
+
+    private final static Logger LOG = LogManager.getLogger(Signatures.class);
 
     public final static int Char = 0x0;
     public final static int Elem = 0x1;
@@ -109,7 +113,7 @@ public final class Signatures {
                 return Node.CDATA_SECTION_NODE;
         }
         //TODO : thorw exception here -pb
-        System.err.println( "Unknown node type : " + type);
+        LOG.error("Unknown node type : " + type);
         return -1;
     }
     

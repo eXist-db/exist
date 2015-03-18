@@ -297,8 +297,7 @@ public class FileLock {
         if (LOG.isInfoEnabled()) {
             LOG.info(message);
         }
-        
-        System.err.println(message);
+
         return message;
     }
 }

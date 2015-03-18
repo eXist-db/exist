@@ -36,6 +36,8 @@ import javax.xml.datatype.Duration;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
 
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.apache.xerces.util.DatatypeMessageFormatter;
 import org.exist.xquery.Constants;
 import org.exist.xquery.ErrorCodes;
@@ -47,7 +49,9 @@ import org.exist.xquery.XPathException;
  * @author ljo
  */
 public abstract class AbstractDateTimeValue extends ComputableValue {
-	
+
+    private final static Logger LOG = LogManager.getLogger(AbstractDateTimeValue.class);
+
 	//Provisionally public
 	public final XMLGregorianCalendar calendar;
 	private XMLGregorianCalendar implicitCalendar, canonicalCalendar, trimmedCalendar;
@@ -342,8 +346,8 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
         	try {
         		//TODO : find something that will consume less resources
         		return calendar.compare(TimeUtils.getInstance().newXMLGregorianCalendar(other.getStringValue()));
-        	} catch (final XPathException e) {
-        		System.out.println("Failed to get string value of '" + other + "'");
+            } catch (final XPathException e) {
+        		LOG.error("Failed to get string value of '" + other + "'", e);
         		//Why not ?
         		return Constants.SUPERIOR;
         	}

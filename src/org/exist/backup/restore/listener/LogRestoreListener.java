@@ -21,7 +21,8 @@
  */
 package org.exist.backup.restore.listener;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 /**
  *
@@ -29,7 +30,7 @@ import org.apache.log4j.Logger;
  */
 public class LogRestoreListener extends AbstractRestoreListener {
 
-    public final static Logger LOG = Logger.getLogger(LogRestoreListener.class );
+    public final static Logger LOG = LogManager.getLogger(LogRestoreListener.class );
 
     @Override
     public void info(String message) {
