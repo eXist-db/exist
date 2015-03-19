@@ -145,8 +145,8 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
         
         logger.info("[jetty.home : " 
                 + System.getProperty("jetty.home") + "]");
-        logger.info("[log4j.configuration : " 
-                + System.getProperty("log4j.configuration") + "]");
+        logger.info("[log4j.configurationFile : "
+                + System.getProperty("log4j.configurationFile") + "]");
 
         try {
             // we register our own shutdown hook
