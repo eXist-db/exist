@@ -26,7 +26,8 @@ import org.exist.security.internal.SecurityManagerImpl;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.util.io.Resource;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.tmatesoft.svn.core.internal.util.SVNHashMap;
 import java.util.Map;
 
@@ -42,7 +43,7 @@ public class SVNConfigFile {
     private Resource myFile;
     private String[] myLines;
     private long myLastModified;
-    final static Logger LOG = Logger.getLogger(SVNConfigFile.class);
+    final static Logger LOG = LogManager.getLogger(SVNConfigFile.class);
 
     public SVNConfigFile(Resource file) {
         myFile = file.getAbsoluteFile();

@@ -22,7 +22,8 @@
 package org.exist.webdav;
 
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.bradmcevoy.http.Resource;
 import com.bradmcevoy.http.ResourceFactory;
@@ -49,7 +50,7 @@ import org.exist.xmldb.XmldbURI;
  */
 public class ExistResourceFactory implements ResourceFactory {
 
-    private final static Logger LOG = Logger.getLogger(ExistResourceFactory.class);
+    private final static Logger LOG = LogManager.getLogger(ExistResourceFactory.class);
     private BrokerPool brokerPool = null;
     
     //	default output properties for the XML serialization

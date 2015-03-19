@@ -31,10 +31,8 @@ import org.junit.*;
 
 import static org.junit.Assert.*;
 
-import org.apache.log4j.BasicConfigurator;
 import org.exist.collections.IndexInfo;
 
-import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
@@ -163,7 +161,6 @@ public class ValidationFunctions_DTD_Test {
 
     @BeforeClass
     public static void startup() throws Exception {
-        BasicConfigurator.configure();
         config = new Configuration();
         config.setProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, "auto");
 

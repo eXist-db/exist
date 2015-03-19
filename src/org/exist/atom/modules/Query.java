@@ -34,7 +34,8 @@ import java.util.Properties;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.atom.Atom;
 import org.exist.atom.IncomingMessage;
@@ -74,7 +75,7 @@ import org.xml.sax.SAXException;
  */
 public class Query extends AtomModuleBase implements Atom {
 
-	protected final static Logger LOG = Logger.getLogger(Query.class);
+	protected final static Logger LOG = LogManager.getLogger(Query.class);
 	MimeType xqueryMimeType;
 
 	public class MethodConfiguration {

@@ -22,7 +22,8 @@
  */
 package org.exist.xquery.functions.request;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.util.List;
@@ -50,7 +51,7 @@ import org.exist.xquery.value.ValueSequence;
  */
 public class GetUploadedFile extends BasicFunction {
 
-    protected static final Logger logger = Logger.getLogger(GetUploadedFile.class);
+    protected static final Logger logger = LogManager.getLogger(GetUploadedFile.class);
     public final static FunctionSignature signatures[] = {
         new FunctionSignature(
         new QName("get-uploaded-file-data", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),

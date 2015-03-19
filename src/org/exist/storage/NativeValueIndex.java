@@ -37,7 +37,8 @@ import org.exist.dom.persistent.NodeHandle;
 import org.exist.dom.persistent.SymbolTable;
 import org.exist.dom.persistent.NewArrayNodeSet;
 import org.exist.dom.persistent.NodeSet;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.xquery.XQueryWatchDog;
 import org.w3c.dom.Node;
@@ -106,7 +107,7 @@ import java.util.TreeMap;
  */
 public class NativeValueIndex implements ContentLoadingObserver {
 
-    private final static Logger LOG = Logger.getLogger(NativeValueIndex.class);
+    private final static Logger LOG = LogManager.getLogger(NativeValueIndex.class);
 
     public static final String FILE_NAME = "values.dbx";
     public static final String FILE_KEY_IN_CONFIG = "db-connection.values";

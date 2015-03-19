@@ -22,7 +22,8 @@
 package org.exist.xquery;
 
 import org.exist.xquery.pragmas.Optimize;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.xquery.functions.fn.ExtFulltext;
 import org.exist.xquery.util.ExpressionDumper;
 
@@ -49,7 +50,7 @@ import java.util.List;
  */
 public class Optimizer extends DefaultExpressionVisitor {
 
-    private static final Logger LOG = Logger.getLogger(Optimizer.class);
+    private static final Logger LOG = LogManager.getLogger(Optimizer.class);
 
     private XQueryContext context;
 

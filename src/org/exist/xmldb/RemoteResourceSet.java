@@ -11,7 +11,8 @@ import java.util.Properties;
 import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
 import javax.xml.transform.OutputKeys;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.xmlrpc.XmlRpcException;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.VirtualTempFile;
@@ -29,7 +30,7 @@ public class RemoteResourceSet implements ResourceSet {
     protected List<Object> resources;
     protected Properties outputProperties;
     
-    private static Logger LOG = Logger.getLogger(RemoteResourceSet.class.getName());
+    private static Logger LOG = LogManager.getLogger(RemoteResourceSet.class.getName());
 
     public RemoteResourceSet(RemoteCollection col, Properties properties, Object[] resources, int handle, int hash) {
         this.handle = handle;

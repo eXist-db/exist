@@ -1,6 +1,7 @@
 package org.exist.indexing.sort;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.backup.RawDataBackup;
 import org.exist.indexing.AbstractIndex;
 import org.exist.indexing.IndexWorker;
@@ -30,7 +31,7 @@ import java.io.OutputStream;
  */
 public class SortIndex extends AbstractIndex implements RawBackupSupport {
 
-    protected static final Logger LOG = Logger.getLogger(SortIndex.class);
+    protected static final Logger LOG = LogManager.getLogger(SortIndex.class);
 
     public static final String ID = SortIndex.class.getName();
     public static final String FILE_NAME = "sort.dbx";

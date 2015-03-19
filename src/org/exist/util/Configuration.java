@@ -21,7 +21,8 @@
  */
 package org.exist.util;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.repo.Deployment;
 
@@ -94,7 +95,7 @@ import org.exist.xquery.Module;
 
 public class Configuration implements ErrorHandler
 {
-    private final static Logger       LOG            = Logger.getLogger( Configuration.class ); //Logger
+    private final static Logger       LOG            = LogManager.getLogger( Configuration.class ); //Logger
     protected String                  configFilePath = null;
     protected File                    existHome      = null;
 

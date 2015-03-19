@@ -22,7 +22,8 @@ package org.exist.collections.triggers;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationException;
 import org.exist.storage.DBBroker;
@@ -84,7 +85,7 @@ import org.exist.storage.DBBroker;
  */
 public interface Trigger {
     
-    public static final Logger LOG = Logger.getLogger(Trigger.class);
+    public static final Logger LOG = LogManager.getLogger(Trigger.class);
 
     public final static int STORE_DOCUMENT_EVENT = 0;
     public final static int CREATE_COLLECTION_EVENT = 1;

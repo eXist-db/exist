@@ -10,7 +10,8 @@ import java.util.TreeMap;
 
 import javax.xml.transform.OutputKeys;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.ExtArrayNodeSet;
@@ -55,7 +56,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class QuerySoapBindingImpl implements org.exist.soap.Query {
     
-    private static Logger LOG = Logger.getLogger("QueryService");
+    private static Logger LOG = LogManager.getLogger("QueryService");
     
     private BrokerPool pool;
     

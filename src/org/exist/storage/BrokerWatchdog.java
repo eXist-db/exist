@@ -9,12 +9,13 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 
 public class BrokerWatchdog {
 
-	private final static Logger LOG = Logger.getLogger(BrokerWatchdog.class);
+	private final static Logger LOG = LogManager.getLogger(BrokerWatchdog.class);
 	
 	private final static DateFormat df = DateFormat.getDateTimeInstance();
 	

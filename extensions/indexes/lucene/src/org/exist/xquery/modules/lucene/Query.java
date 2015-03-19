@@ -27,7 +27,8 @@ import java.util.Properties;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.QName;
@@ -47,7 +48,7 @@ import org.w3c.dom.Element;
 
 public class Query extends Function implements Optimizable {
 	
-	protected static final Logger logger = Logger.getLogger(Query.class);
+	protected static final Logger logger = LogManager.getLogger(Query.class);
 
     public final static FunctionSignature[] signatures = {
         new FunctionSignature(

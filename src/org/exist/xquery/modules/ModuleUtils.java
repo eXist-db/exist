@@ -37,7 +37,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 import javax.xml.transform.Source;
 import javax.xml.transform.sax.SAXSource;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.memtree.DocumentBuilderReceiver;
 import org.exist.dom.memtree.DocumentImpl;
 import org.exist.dom.memtree.MemTreeBuilder;
@@ -60,7 +61,7 @@ import org.xml.sax.XMLReader;
  * @version 1.1
  */
 public class ModuleUtils {
-	protected final static Logger LOG = Logger.getLogger(ModuleUtils.class);
+	protected final static Logger LOG = LogManager.getLogger(ModuleUtils.class);
 
 	/**
 	 * Takes a String of XML and Creates an XML Node from it using SAX in the

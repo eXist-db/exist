@@ -58,7 +58,7 @@ public class ValidationFunctions_Node_Test {
 
     }
 
-//    private final static Logger logger = Logger.getLogger(ValidationFunctions_Node_Test.class);
+//    private final static Logger logger = LogManager.getLogger(ValidationFunctions_Node_Test.class);
 //
 //    private static String eXistHome = ConfigurationHelper.getExistHome().getAbsolutePath();
 //

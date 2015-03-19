@@ -21,7 +21,8 @@
  */
 package org.exist.backup.restore;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.backup.restore.listener.RestoreListener;
 import org.exist.xmldb.UserManagementService;
 import org.exist.xmldb.XmldbURI;
@@ -34,7 +35,7 @@ import org.xmldb.api.base.XMLDBException;
  */
 class CollectionDeferredPermission extends AbstractDeferredPermission<Collection> {
     
-    private final static Logger LOG = Logger.getLogger(CollectionDeferredPermission.class);
+    private final static Logger LOG = LogManager.getLogger(CollectionDeferredPermission.class);
     
     public CollectionDeferredPermission(RestoreListener listener, Collection collection, String owner, String group, Integer mode) {
         super(listener, collection, owner, group, mode);

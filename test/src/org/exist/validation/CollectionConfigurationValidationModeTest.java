@@ -22,13 +22,9 @@
 
 package org.exist.validation;
 
-import org.apache.log4j.Appender;
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Layout;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.xmldb.XmldbURI;
 
 import org.xmldb.api.DatabaseManager;
@@ -63,7 +59,7 @@ public class CollectionConfigurationValidationModeTest {
     String xconf_no = "<collection xmlns=\"http://exist-db.org/collection-config/1.0\"><validation mode=\"no\"/></collection>";
     String xconf_auto = "<collection xmlns=\"http://exist-db.org/collection-config/1.0\"><validation mode=\"auto\"/></collection>";
     @SuppressWarnings("unused")
-	private static final Logger logger = Logger.getLogger(CollectionConfigurationValidationModeTest.class);
+	private static final Logger logger = LogManager.getLogger(CollectionConfigurationValidationModeTest.class);
     private static XPathQueryService xpqservice;
     private static Collection root = null;
     private static Database database = null;
@@ -71,18 +67,9 @@ public class CollectionConfigurationValidationModeTest {
 
     public CollectionConfigurationValidationModeTest() {
     }
-    
-    public static void initLog4J(){
-        Layout layout = new PatternLayout("%d [%t] %-5p (%F [%M]:%L) - %m %n");
-        Appender appender=new ConsoleAppender(layout);
-        BasicConfigurator.configure(appender);       
-    }
 
     @BeforeClass
     public static void setUpClass() throws Exception {
-        
-        initLog4J();
-
         Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
         database = (Database) cl.newInstance();
         database.setProperty("create-database", "true");

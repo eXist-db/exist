@@ -28,7 +28,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-//import org.apache.log4j.Logger;
+//import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.value.Sequence;
 

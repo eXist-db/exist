@@ -28,7 +28,8 @@ import com.vividsolutions.jts.io.WKBReader;
 import com.vividsolutions.jts.io.WKBWriter;
 import com.vividsolutions.jts.io.WKTReader;
 import com.vividsolutions.jts.io.WKTWriter;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.collections.Collection;
 import org.exist.dom.persistent.*;
 import org.exist.indexing.AbstractStreamListener;
@@ -98,7 +99,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     public static final String START_KEY = "start_key";
     public static final String END_KEY = "end_key";
     
-    private static final Logger LOG = Logger.getLogger(AbstractGMLJDBCIndexWorker.class);
+    private static final Logger LOG = LogManager.getLogger(AbstractGMLJDBCIndexWorker.class);
 
     protected IndexController controller;
     protected AbstractGMLJDBCIndex index;

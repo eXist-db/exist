@@ -21,7 +21,8 @@
  */
 package org.exist.xquery.functions.xmldb;
 
-//import org.apache.log4j.Logger;
+//import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
@@ -38,7 +39,7 @@ import org.exist.xquery.value.Type;
  * @author ljo
  */
 public class FunXCollection extends ExtCollection {
-//    private static final Logger logger = Logger.getLogger(FunXCollection.class);
+//    private static final Logger logger = LogManager.getLogger(FunXCollection.class);
 	public final static FunctionSignature signature =
         new FunctionSignature(
             new QName("xcollection", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),

@@ -28,7 +28,8 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Iterator;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.indexing.AbstractIndex;
 import org.exist.indexing.IndexWorker;
 import org.exist.indexing.StreamListener;
@@ -50,7 +51,7 @@ public abstract class AbstractGMLJDBCIndex extends AbstractIndex {
     public final static String ID = AbstractGMLJDBCIndex.class.getName();	
 
     @SuppressWarnings("unused")
-    private final static Logger LOG = Logger.getLogger(AbstractGMLJDBCIndex.class);
+    private final static Logger LOG = LogManager.getLogger(AbstractGMLJDBCIndex.class);
 
     /**
      * An IndexWorker "pool"

@@ -37,7 +37,7 @@
 	    <java fork="true" classname="org.exist.performance.Main"
             maxmemory="2048m">
 	        <sysproperty key="exist.home" value="${basedir}" />
-	        <sysproperty key="log4j.configuration" value="file:log4j.xml"/>
+	        <sysproperty key="log4j.configurationFile" value="file:log4j2.xml"/>
 	        <classpath refid="classpath.core"/>
 	        <classpath refid="classpath.junit"/>
 	        <classpath refid="aspectj"/>

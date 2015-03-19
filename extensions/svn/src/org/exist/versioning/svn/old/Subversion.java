@@ -24,7 +24,8 @@ package org.exist.versioning.svn.old;
 import java.io.File;
 import java.util.Collection;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.xmldb.XmldbURI;
 import org.tmatesoft.svn.core.SVNCancelException;
@@ -63,7 +64,7 @@ import org.tmatesoft.svn.core.wc.SVNWCUtil;
  */
 public class Subversion implements ISVNEventHandler {
 
-	public final static Logger LOG = Logger.getLogger(Subversion.class);
+	public final static Logger LOG = LogManager.getLogger(Subversion.class);
 
 	private SVNURL svnurl = null;
 	private XmldbURI collection = null;

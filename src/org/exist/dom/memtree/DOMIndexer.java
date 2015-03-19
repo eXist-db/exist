@@ -21,7 +21,8 @@
  */
 package org.exist.dom.memtree;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.Namespaces;
 import org.exist.collections.CollectionConfiguration;
@@ -61,7 +62,7 @@ import java.util.Stack;
  */
 public class DOMIndexer {
 
-    private static final Logger LOG = Logger.getLogger(DOMIndexer.class);
+    private static final Logger LOG = LogManager.getLogger(DOMIndexer.class);
     private static final QName ROOT_QNAME = new QName("temp", Namespaces.EXIST_NS, Namespaces.EXIST_NS_PREFIX);
 
     private final DBBroker broker;

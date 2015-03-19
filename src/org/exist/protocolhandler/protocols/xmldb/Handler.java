@@ -27,7 +27,8 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  *  A stream protocol handler knows how to make a connection for a particular
@@ -41,7 +42,7 @@ import org.apache.log4j.Logger;
  */
 public class Handler extends URLStreamHandler {
     
-    private final static Logger LOG = Logger.getLogger(Handler.class);
+    private final static Logger LOG = LogManager.getLogger(Handler.class);
     
     public static final String XMLDB_EXIST  = "xmldb:exist:";
     public static final String XMLDB        = "xmldb:";

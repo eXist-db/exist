@@ -21,7 +21,8 @@
  */
 package org.exist.xquery.functions.fn;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.collections.Collection;
 import org.exist.dom.persistent.DefaultDocumentSet;
@@ -65,7 +66,7 @@ import java.util.List;
  */
 public class ExtCollection extends Function {
 
-    protected static final Logger logger = Logger.getLogger(ExtCollection.class);
+    protected static final Logger logger = LogManager.getLogger(ExtCollection.class);
 
     public final static FunctionSignature signature =
         new FunctionSignature(

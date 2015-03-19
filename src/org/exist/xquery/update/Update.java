@@ -21,7 +21,8 @@
  */
 package org.exist.xquery.update;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.AttrImpl;
@@ -60,7 +61,7 @@ import org.w3c.dom.Node;
  */
 public class Update extends Modification {
 
-	private final static Logger LOG = Logger.getLogger(Update.class);
+	private final static Logger LOG = LogManager.getLogger(Update.class);
 	
 	public Update(XQueryContext context, Expression select, Expression value) {
 		super(context, select, value);

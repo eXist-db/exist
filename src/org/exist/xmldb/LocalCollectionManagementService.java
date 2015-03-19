@@ -26,7 +26,8 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Date;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.DocumentImpl;
@@ -54,7 +55,7 @@ public class LocalCollectionManagementService implements CollectionManagementSer
     protected AccessContext accessCtx;
 
     private static Logger LOG =
-        Logger.getLogger( LocalCollectionManagementService.class );
+        LogManager.getLogger( LocalCollectionManagementService.class );
         
     @SuppressWarnings("unused")
 	private LocalCollectionManagementService() {}

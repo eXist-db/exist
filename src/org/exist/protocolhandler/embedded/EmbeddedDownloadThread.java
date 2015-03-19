@@ -25,7 +25,8 @@ package org.exist.protocolhandler.embedded;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.protocolhandler.xmldb.XmldbURL;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
@@ -37,7 +38,7 @@ import org.exist.storage.BrokerPool;
  */
 public class EmbeddedDownloadThread extends Thread {
     
-    private final static Logger logger = Logger.getLogger(EmbeddedDownloadThread.class);
+    private final static Logger logger = LogManager.getLogger(EmbeddedDownloadThread.class);
     
     private XmldbURL xmldbURL;
     private OutputStream bos;

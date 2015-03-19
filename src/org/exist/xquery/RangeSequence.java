@@ -1,6 +1,7 @@
 package org.exist.xquery;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.xquery.value.AbstractSequence;
 import org.exist.xquery.value.IntegerValue;
@@ -12,7 +13,7 @@ import org.exist.xquery.value.Type;
 
 public class RangeSequence extends AbstractSequence {
 
-	private final static Logger LOG = Logger.getLogger(AbstractSequence.class);
+	private final static Logger LOG = LogManager.getLogger(AbstractSequence.class);
 	
 	private IntegerValue start;
 	private IntegerValue end;

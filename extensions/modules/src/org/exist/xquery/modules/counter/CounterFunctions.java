@@ -1,6 +1,7 @@
 package org.exist.xquery.modules.counter;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.EXistException;
 import org.exist.dom.QName;
@@ -27,7 +28,7 @@ public class CounterFunctions extends BasicFunction {
     private Counters counters = null;
     
 
-    protected static final Logger logger = Logger.getLogger(CounterFunctions.class);
+    protected static final Logger logger = LogManager.getLogger(CounterFunctions.class);
     
     public final static FunctionSignature createCounter =
             new FunctionSignature(

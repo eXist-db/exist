@@ -36,7 +36,8 @@ import java.util.TreeMap;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.util.CharArraySet;
@@ -83,7 +84,7 @@ public class AnalyzerConfig {
      </analyzer>
 
      */
-    private static final Logger LOG = Logger.getLogger(AnalyzerConfig.class);
+    private static final Logger LOG = LogManager.getLogger(AnalyzerConfig.class);
 
     private static final String ID_ATTRIBUTE = "id";
 

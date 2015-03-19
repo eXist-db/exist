@@ -21,7 +21,8 @@
  */
 package org.exist.xmldb;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.xmlrpc.XmlRpcException;
 
 import org.exist.Namespaces;
@@ -88,7 +89,7 @@ public class RemoteXMLResource
     protected LexicalHandler lexicalHandler = null;
 	
 	@SuppressWarnings("unused")
-	private static Logger LOG = Logger.getLogger(RemoteXMLResource.class.getName());
+	private static Logger LOG = LogManager.getLogger(RemoteXMLResource.class.getName());
 	
     public RemoteXMLResource(RemoteCollection parent, XmldbURI docId, String id)
 	throws XMLDBException {

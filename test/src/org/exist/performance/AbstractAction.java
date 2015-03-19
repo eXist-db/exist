@@ -21,7 +21,8 @@
  */
 package org.exist.performance;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.performance.actions.Action;
 import org.exist.util.serializer.DOMSerializer;
@@ -36,7 +37,7 @@ import java.util.Properties;
 
 public abstract class AbstractAction implements Action {
 
-    protected final static Logger LOG = Logger.getLogger(Action.class);
+    protected final static Logger LOG = LogManager.getLogger(Action.class);
 
     protected Action parent = null;
 

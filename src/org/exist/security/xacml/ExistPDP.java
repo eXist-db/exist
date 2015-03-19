@@ -27,7 +27,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
@@ -74,7 +75,7 @@ import com.sun.xacml.finder.impl.CurrentEnvModule;
 */
 public class ExistPDP
 {
-	private static final Logger LOG = Logger.getLogger(ExistPDP.class);
+	private static final Logger LOG = LogManager.getLogger(ExistPDP.class);
 
 	private PDPConfig pdpConfig;
 	//the per database instance util object
@@ -87,11 +88,6 @@ public class ExistPDP
 	 * Assists client in creating <code>RequestCtx</code>s.
 	 */
 	private RequestHelper helper = new RequestHelper();
-
-	static
-	{
-		java.util.logging.Logger.getLogger("com.sun.xacml").setLevel(java.util.logging.Level.WARNING);
-	}
 
 	@SuppressWarnings("unused")
 	private ExistPDP() {}

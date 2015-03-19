@@ -25,7 +25,8 @@ package org.exist.xquery.functions.util;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.QName;
@@ -53,7 +54,7 @@ import org.exist.xquery.value.Type;
  */
 public class IndexKeyDocuments extends BasicFunction {
 	
-	protected static final Logger logger = Logger.getLogger(IndexKeyDocuments.class);
+	protected static final Logger logger = LogManager.getLogger(IndexKeyDocuments.class);
 	protected static final FunctionParameterSequenceType nodeParam = new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE, "The nodes whose content is indexed");
 	protected static final FunctionParameterSequenceType valueParam = new FunctionParameterSequenceType("value", Type.ATOMIC, Cardinality.EXACTLY_ONE, "The indexed value to search for");
 	protected static final FunctionParameterSequenceType indexParam = new FunctionParameterSequenceType("index", Type.STRING, Cardinality.EXACTLY_ONE, "The index in which the search is made");

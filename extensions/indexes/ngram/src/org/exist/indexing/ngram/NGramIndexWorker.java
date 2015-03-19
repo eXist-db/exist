@@ -32,7 +32,8 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.collections.Collection;
 import org.exist.dom.persistent.AttrImpl;
 import org.exist.dom.persistent.AbstractCharacterData;
@@ -90,7 +91,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
-    private static final Logger LOG = Logger.getLogger(NGramIndexWorker.class);
+    private static final Logger LOG = LogManager.getLogger(NGramIndexWorker.class);
 
     private static final String INDEX_ELEMENT = "ngram";
     private static final String QNAME_ATTR = "qname";

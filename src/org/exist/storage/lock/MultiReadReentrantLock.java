@@ -37,7 +37,8 @@
  */
 package org.exist.storage.lock;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.util.DeadlockException;
 import org.exist.util.LockException;
 
@@ -54,7 +55,7 @@ import java.util.List;
  */
 public class MultiReadReentrantLock implements Lock {
 
-    private final static Logger LOG = Logger.getLogger(MultiReadReentrantLock.class);
+    private final static Logger LOG = LogManager.getLogger(MultiReadReentrantLock.class);
 
     private Object id;
 

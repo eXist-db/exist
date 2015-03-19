@@ -22,7 +22,8 @@ package org.exist.http.servlets;
  * $Id$
  */
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.Namespaces;
 import org.exist.source.FileSource;
 import org.exist.xmldb.CollectionImpl;
@@ -107,7 +108,7 @@ public class RedirectorServlet extends HttpServlet {
 
 	private static final long serialVersionUID = 853971301553787943L;
 
-	private static final Logger LOG = Logger.getLogger(RedirectorServlet.class);
+	private static final Logger LOG = LogManager.getLogger(RedirectorServlet.class);
 
     public final static String DEFAULT_USER = "guest";
     public final static String DEFAULT_PASS = "guest";

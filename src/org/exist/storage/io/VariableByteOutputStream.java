@@ -3,7 +3,8 @@ package org.exist.storage.io;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.util.ByteArray;
 import org.exist.util.FastByteBuffer;
 
@@ -20,7 +21,7 @@ public class VariableByteOutputStream extends OutputStream {
     protected FastByteBuffer buf;	
     private final byte[] temp = new byte[5];
     
-    private static final Logger LOG = Logger.getLogger(VariableByteArrayInput.class);
+    private static final Logger LOG = LogManager.getLogger(VariableByteArrayInput.class);
     
     public VariableByteOutputStream() {
         super();

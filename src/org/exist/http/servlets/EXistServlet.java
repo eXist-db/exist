@@ -21,7 +21,8 @@
  */
 package org.exist.http.servlets;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.http.BadRequestException;
@@ -52,7 +53,7 @@ import java.io.IOException;
 public class EXistServlet extends AbstractExistHttpServlet {
 
     private static final long serialVersionUID = -3563999345725645647L;
-    private final static Logger LOG = Logger.getLogger(EXistServlet.class);
+    private final static Logger LOG = LogManager.getLogger(EXistServlet.class);
     private RESTServer srvREST;
     private SOAPServer srvSOAP;
 

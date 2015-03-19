@@ -25,7 +25,8 @@ package org.exist.xquery.functions.request;
 import java.io.IOException;
 import java.io.InputStream;
 import org.apache.commons.io.input.CloseShieldInputStream;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.apache.commons.io.output.ByteArrayOutputStream;
@@ -53,7 +54,7 @@ import org.xml.sax.XMLReader;
  */
 public class GetData extends BasicFunction {
 
-    protected static final Logger logger = Logger.getLogger(GetData.class);
+    protected static final Logger logger = LogManager.getLogger(GetData.class);
 
     public final static FunctionSignature signature = new FunctionSignature(
         new QName("get-data", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),

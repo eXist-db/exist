@@ -21,7 +21,8 @@
  */
 package org.exist.indexing.range.conversion;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.LongField;
 import org.exist.indexing.range.RangeIndexConfigElement;
@@ -39,7 +40,7 @@ import java.util.regex.Pattern;
  */
 public class DateConverter implements TypeConverter {
 
-    protected static final Logger LOG = Logger.getLogger(DateConverter.class);
+    protected static final Logger LOG = LogManager.getLogger(DateConverter.class);
 
     private final static Pattern DATE_REGEX = Pattern.compile("(\\d+)-(\\d+)-(\\d+)");
 

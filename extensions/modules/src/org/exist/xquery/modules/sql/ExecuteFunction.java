@@ -22,7 +22,8 @@
 
 package org.exist.xquery.modules.sql;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -80,7 +81,7 @@ import org.xml.sax.XMLReader;
  */
 public class ExecuteFunction extends BasicFunction
 {
-    private static final Logger             LOG                     = Logger.getLogger( ExecuteFunction.class );
+    private static final Logger             LOG                     = LogManager.getLogger( ExecuteFunction.class );
 
     public final static FunctionSignature[] signatures = {
         new FunctionSignature(

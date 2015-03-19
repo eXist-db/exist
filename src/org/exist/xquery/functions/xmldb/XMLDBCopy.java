@@ -21,7 +21,8 @@
  */
 package org.exist.xquery.functions.xmldb;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.net.URISyntaxException;
 import org.exist.dom.QName;
@@ -45,7 +46,7 @@ import org.xmldb.api.base.XMLDBException;
  *
  */
 public class XMLDBCopy extends XMLDBAbstractCollectionManipulator {
-    private static final Logger logger = Logger.getLogger(XMLDBCopy.class);
+    private static final Logger logger = LogManager.getLogger(XMLDBCopy.class);
     public final static FunctionSignature signatures[] = {
         new FunctionSignature(
 			      new QName("copy", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),

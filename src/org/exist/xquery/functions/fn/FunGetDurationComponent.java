@@ -25,7 +25,8 @@ import java.math.BigDecimal;
 
 import javax.xml.datatype.DatatypeConstants;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
@@ -52,7 +53,7 @@ import org.exist.xquery.value.Type;
  *
  */
 public class FunGetDurationComponent extends BasicFunction {
-	protected static final Logger logger = Logger.getLogger(FunGetDurationComponent.class);
+	protected static final Logger logger = LogManager.getLogger(FunGetDurationComponent.class);
     public final static FunctionParameterSequenceType DAYTIME_DURA_01_PARAM = new FunctionParameterSequenceType("duration", Type.DAY_TIME_DURATION, Cardinality.ZERO_OR_ONE, "The duration as xs:dayTimeDuration");
     public final static FunctionParameterSequenceType YEARMONTH_DURA_01_PARAM = new FunctionParameterSequenceType("duration", Type.YEAR_MONTH_DURATION, Cardinality.ZERO_OR_ONE, "The duration as xs:yearMonthDuration");
 

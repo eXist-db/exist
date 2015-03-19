@@ -51,7 +51,8 @@ package org.exist.storage.btree;
  * $Id$
  */
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -63,7 +64,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class Value implements Comparable<Object> {
 
-    private static Logger LOG = Logger.getLogger(Value.class.getName());
+    private static Logger LOG = LogManager.getLogger(Value.class.getName());
 
     public final static Value EMPTY_VALUE = new Value(new byte[0]);
 

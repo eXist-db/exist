@@ -8,7 +8,8 @@ import org.apache.avalon.framework.configuration.SAXConfigurationHandler;
 import org.apache.fop.apps.FOUserAgent;
 import org.apache.fop.apps.Fop;
 import org.apache.fop.apps.FopFactory;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.exist.storage.DBBroker;
 import org.exist.xquery.value.NodeValue;
 import org.xml.sax.ContentHandler;
@@ -19,7 +20,7 @@ import org.xml.sax.SAXException;
  */
 public class ApacheFopProcessorAdapter implements ProcessorAdapter {
 
-    private static final Logger LOG = Logger.getLogger(ApacheFopProcessorAdapter.class);
+    private static final Logger LOG = LogManager.getLogger(ApacheFopProcessorAdapter.class);
 
     private final FopFactory fopFactory = FopFactory.newInstance();
 

@@ -3,7 +3,8 @@ package org.exist;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  *
@@ -11,7 +12,7 @@ import org.apache.log4j.Logger;
  */
 public class SystemProperties {
 
-    private final static Logger LOG = Logger.getLogger(SystemProperties.class);
+    private final static Logger LOG = LogManager.getLogger(SystemProperties.class);
 
     private final static SystemProperties instance = new SystemProperties();
     private Properties properties = null;

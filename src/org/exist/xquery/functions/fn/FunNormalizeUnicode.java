@@ -21,7 +21,8 @@
 
 package org.exist.xquery.functions.fn;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
@@ -52,7 +53,7 @@ import java.lang.reflect.Method;
  *
  */
 public class FunNormalizeUnicode extends Function {
-    protected static final Logger logger = Logger.getLogger(FunNormalizeUnicode.class);
+    protected static final Logger logger = LogManager.getLogger(FunNormalizeUnicode.class);
 
 	private String normalizationForm = null;
 	private Class<?> clazz = null;	

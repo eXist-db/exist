@@ -22,7 +22,8 @@
  */
 package org.exist.xquery.functions.util;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.dom.QName;
 import org.exist.storage.serializers.Serializer;
@@ -51,7 +52,7 @@ public class LogFunction extends BasicFunction
 	protected static final FunctionParameterSequenceType LOGGER_NAME_PARAMETER = new FunctionParameterSequenceType( "logger-name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the logger, eg: my.app.log" );
 	protected static final FunctionParameterSequenceType MESSAGE_PARAMETER = new FunctionParameterSequenceType( "message", Type.ITEM, Cardinality.ZERO_OR_MORE, "The message to log" );
 
-	protected static final Logger logger = Logger.getLogger(LogFunction.class);
+	protected static final Logger logger = LogManager.getLogger(LogFunction.class);
 	
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
@@ -163,7 +164,7 @@ public class LogFunction extends BasicFunction
 			Logger logger   = LOG;
 			
 			if( logname != null && logname.length() > 0 ) {
-				logger = Logger.getLogger( logname );
+				logger = LogManager.getLogger( logname );
 			} 
 			
 			if( priority.equalsIgnoreCase( "error" ) ) {

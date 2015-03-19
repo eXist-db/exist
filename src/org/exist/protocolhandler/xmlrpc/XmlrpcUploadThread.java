@@ -24,7 +24,8 @@ package org.exist.protocolhandler.xmlrpc;
 
 import java.io.IOException;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.protocolhandler.xmldb.XmldbURL;
 import org.exist.storage.io.BlockingInputStream;
 
@@ -35,7 +36,7 @@ import org.exist.storage.io.BlockingInputStream;
  */
 public class XmlrpcUploadThread extends Thread {
     
-    private final static Logger logger = Logger.getLogger(XmlrpcUploadThread.class);
+    private final static Logger logger = LogManager.getLogger(XmlrpcUploadThread.class);
     private XmldbURL xmldbURL;
     private BlockingInputStream bis;
     

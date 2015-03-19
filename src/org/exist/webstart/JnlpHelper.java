@@ -24,7 +24,8 @@ package org.exist.webstart;
 
 import java.io.File;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  *  Helper class for webstart.
@@ -37,7 +38,7 @@ public class JnlpHelper {
     private final static String LIB_EXIST ="..";
     private final static String LIB_WEBINF="WEB-INF/lib/";
     
-    private static Logger logger = Logger.getLogger(JnlpHelper.class);
+    private static Logger logger = LogManager.getLogger(JnlpHelper.class);
     
     private File coreJarsFolder=null;
     private File existJarFolder=null;

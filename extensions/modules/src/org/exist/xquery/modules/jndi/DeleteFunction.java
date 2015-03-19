@@ -26,7 +26,8 @@ package org.exist.xquery.modules.jndi;
 import javax.naming.NamingException;
 import javax.naming.directory.DirContext;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -54,7 +55,7 @@ import org.exist.xquery.value.Type;
 
 public class DeleteFunction extends BasicFunction 
 {
-	protected static final Logger logger = Logger.getLogger(DeleteFunction.class);
+	protected static final Logger logger = LogManager.getLogger(DeleteFunction.class);
 	
 	public final static String DSML_NAMESPACE = "http://www.dsml.org/DSML";
 

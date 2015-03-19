@@ -21,7 +21,8 @@
  */
 package org.exist.xquery.functions.xmldb;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.net.URISyntaxException;
 import org.exist.dom.QName;
@@ -45,7 +46,7 @@ import org.xmldb.api.base.XMLDBException;
  *
  */
 public class XMLDBRename extends XMLDBAbstractCollectionManipulator {
-	protected static final Logger logger = Logger.getLogger(XMLDBRename.class);
+	protected static final Logger logger = LogManager.getLogger(XMLDBRename.class);
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName("rename", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),

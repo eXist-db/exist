@@ -35,7 +35,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.exist.security.ACLPermission;
@@ -63,7 +64,7 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class RemoteCollection implements CollectionImpl {
 
-    protected final static Logger LOG = Logger.getLogger(RemoteCollection.class);
+    protected final static Logger LOG = LogManager.getLogger(RemoteCollection.class);
     
     // Max size of a resource to be send to the server.
     // If the resource exceeds this limit, the data is split into

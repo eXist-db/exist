@@ -414,14 +414,20 @@ public class Main {
                             + File.separatorChar + config};
             }
 
-            // find log4j.xml
-            String log4j = System.getProperty("log4j.configuration");
+            // find log4j2.xml
+            String log4j = System.getProperty("log4j.configurationFile");
             if (log4j == null) {
-                log4j = _home_dir.getPath() + File.separatorChar + "log4j.xml";
+                log4j = _home_dir.getPath() + File.separatorChar + "log4j2.xml";
                 final File lf = new File(log4j);
                 if (lf.canRead()) {
-                    System.setProperty("log4j.configuration", lf.toURI().toASCIIString());
+                    System.setProperty("log4j.configurationFile", lf.toURI().toASCIIString());
                 }
+            }
+
+            //redirect JUL to log4j2 unless otherwise specified
+            final String jul = System.getProperty("java.util.logging.manager");
+            if(jul == null) {
+                System.setProperty("java.util.logging.manager", "org.apache.logging.log4j.jul.LogManager");
             }
 
             // clean up tempdir for Jetty...

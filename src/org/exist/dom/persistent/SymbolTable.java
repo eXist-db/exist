@@ -21,7 +21,8 @@
  */
 package org.exist.dom.persistent;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.backup.RawDataBackup;
 import org.exist.dom.QName;
@@ -58,7 +59,7 @@ import java.util.Iterator;
  */
 public class SymbolTable {
 
-    private static final Logger LOG = Logger.getLogger(SymbolTable.class);
+    private static final Logger LOG = LogManager.getLogger(SymbolTable.class);
 
     private static final String FILE_NAME = "symbols.dbx";
 

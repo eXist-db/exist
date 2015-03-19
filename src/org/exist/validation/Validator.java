@@ -28,7 +28,8 @@ import com.thaiopensource.validate.ValidationDriver;
 import com.thaiopensource.validate.rng.CompactSchemaReader;
 import java.io.IOException;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.Namespaces;
 import org.exist.storage.BrokerPool;
@@ -56,7 +57,7 @@ import java.io.InputStream;
  */
 public class Validator {
 
-    private final static Logger logger = Logger.getLogger(Validator.class);
+    private final static Logger logger = LogManager.getLogger(Validator.class);
     private BrokerPool brokerPool = null;
     private GrammarPool grammarPool = null;
     private Configuration config = null;

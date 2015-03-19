@@ -11,7 +11,8 @@ import org.exist.util.LockException;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 import org.w3c.dom.Element;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,7 +56,7 @@ public class CreateOrderIndex extends BasicFunction {
             new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, ""))
     };
 
-    protected static final Logger LOG = Logger.getLogger(CreateOrderIndex.class);
+    protected static final Logger LOG = LogManager.getLogger(CreateOrderIndex.class);
 
     private boolean descending = false;
     private boolean emptyLeast = false;

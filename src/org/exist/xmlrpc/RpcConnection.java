@@ -39,7 +39,8 @@ import java.util.*;
 import java.util.zip.DeflaterOutputStream;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.Namespaces;
 import org.exist.Version;
@@ -108,7 +109,7 @@ import org.xml.sax.helpers.AttributesImpl;
  */
 public class RpcConnection implements RpcAPI {
     
-    private final static Logger LOG = Logger.getLogger(RpcConnection.class);
+    private final static Logger LOG = LogManager.getLogger(RpcConnection.class);
 
     private final static int MAX_DOWNLOAD_CHUNK_SIZE = 0x40000;
     

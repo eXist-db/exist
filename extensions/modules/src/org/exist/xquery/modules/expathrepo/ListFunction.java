@@ -1,6 +1,7 @@
 package org.exist.xquery.modules.expathrepo;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.repo.ExistRepository;
 import org.exist.xquery.BasicFunction;
@@ -26,7 +27,7 @@ import org.expath.pkg.repo.Repository;
  */
 public class ListFunction extends BasicFunction {
     @SuppressWarnings("unused")
-	private final static Logger logger = Logger.getLogger(ListFunction.class);
+	private final static Logger logger = LogManager.getLogger(ListFunction.class);
 
     public final static FunctionSignature signature =
 		new FunctionSignature(

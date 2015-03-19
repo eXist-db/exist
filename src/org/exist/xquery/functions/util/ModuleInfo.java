@@ -26,7 +26,8 @@ import java.net.URI;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.security.xacml.AccessContext;
@@ -56,7 +57,7 @@ public class ModuleInfo extends BasicFunction {
 	protected static final FunctionParameterSequenceType NAMESPACE_URI_PARAMETER = new FunctionParameterSequenceType("namespace-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The namespace URI of the module");
 	protected static final FunctionParameterSequenceType LOCATION_URI_PARAMETER = new FunctionParameterSequenceType("location-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The location URI of the module");
 
-	protected static final Logger logger = Logger.getLogger(ModuleInfo.class);
+	protected static final Logger logger = LogManager.getLogger(ModuleInfo.class);
 
 	public final static FunctionSignature registeredModulesSig =
 		new FunctionSignature(

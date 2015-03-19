@@ -25,7 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.config.Configuration;
 import org.exist.config.ConfigurationException;
@@ -51,7 +52,7 @@ import org.scribe.exceptions.OAuthException;
 @ConfigurationClass("realm") //TODO: id = OAuth
 public class OAuthRealm extends AbstractRealm {
 
-    protected final static Logger LOG = Logger.getLogger(OAuthRealm.class);
+    protected final static Logger LOG = LogManager.getLogger(OAuthRealm.class);
     private final static String OAUTH = "OAuth";
     
     protected static OAuthRealm _ = null;

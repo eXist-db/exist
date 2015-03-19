@@ -26,7 +26,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
@@ -48,7 +49,7 @@ import org.exist.xquery.value.Type;
  */
 public class FileReadBinary extends BasicFunction {
 
-	private static final Logger logger = Logger.getLogger(FileReadBinary.class);
+	private static final Logger logger = LogManager.getLogger(FileReadBinary.class);
 	
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(

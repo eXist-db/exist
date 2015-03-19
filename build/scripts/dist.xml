@@ -25,7 +25,7 @@
 
         <!-- create war specific configuration files -->
         <xslt in="conf.xml"  out="webapp/WEB-INF/conf.xml"  style="${build.scripts}/dist-war-conf.xsl"/>
-        <xslt in="log4j.xml" out="webapp/WEB-INF/log4j.xml" style="${build.scripts}/dist-war-log4j.xsl"/>
+        <xslt in="log4j2.xml" out="webapp/WEB-INF/log4j2.xml" style="${build.scripts}/dist-war-log4j.xsl"/>
         
     </target>
 
@@ -112,7 +112,6 @@
                 <include name="server.xml"/>
                 <include name="mime-types.xml"/>
                 <include name="descriptor.xml"/>
-                <include name="log4j.dtd"/>
                 <include name="atom-services.xml"/>
             </webinf>
             
@@ -209,8 +208,7 @@
                 <include name="*.tmpl"/>
                 <include name="descriptor.xml"/>
                 <include name="build.xml"/>
-                <include name="log4j.xml"/>
-                <include name="log4j.dtd"/>
+                <include name="log4j2.xml"/>
                 <include name="examples-setup.xml"/>
                 <include name="stopword"/>
                 <include name="*.properties"/>

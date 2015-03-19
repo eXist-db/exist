@@ -21,7 +21,8 @@
  */
 package org.exist.xquery.functions.fn;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.DocumentImpl;
@@ -60,7 +61,7 @@ public class ParsingFunctions extends BasicFunction {
 	protected static final FunctionParameterSequenceType TO_BE_PARSED_PARAMETER = new FunctionParameterSequenceType(
 			"arg", Type.STRING, Cardinality.ZERO_OR_ONE, "The string to be parsed");
 
-	protected static final Logger logger = Logger.getLogger(ParsingFunctions.class);
+	protected static final Logger logger = LogManager.getLogger(ParsingFunctions.class);
 
 	public final static FunctionSignature signatures[] = {
 			new FunctionSignature(

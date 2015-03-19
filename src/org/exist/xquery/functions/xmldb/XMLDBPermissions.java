@@ -21,7 +21,8 @@
  */
 package org.exist.xquery.functions.xmldb;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.dom.QName;
 import org.exist.security.Permission;
@@ -50,7 +51,7 @@ import org.xmldb.api.base.XMLDBException;
 public class XMLDBPermissions extends XMLDBAbstractCollectionManipulator {
 	protected static final FunctionParameterSequenceType ARG_COLLECTION = new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collection-uri");
 	protected static final FunctionParameterSequenceType ARG_RESOURCE = new FunctionParameterSequenceType("resource", Type.STRING, Cardinality.EXACTLY_ONE, "The resource");
-	protected static final Logger logger = Logger.getLogger(XMLDBPermissions.class);
+	protected static final Logger logger = LogManager.getLogger(XMLDBPermissions.class);
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName("get-permissions", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),

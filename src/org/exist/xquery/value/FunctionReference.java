@@ -24,7 +24,8 @@ package org.exist.xquery.value;
 import java.text.Collator;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.xquery.*;
 
 /**
@@ -34,7 +35,7 @@ import org.exist.xquery.*;
  */
 public class FunctionReference extends AtomicValue {
 
-    private final static Logger LOG = Logger.getLogger(FunctionReference.class);
+    private final static Logger LOG = LogManager.getLogger(FunctionReference.class);
 
     protected FunctionCall functionCall;
 

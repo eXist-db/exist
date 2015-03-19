@@ -8,7 +8,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.QName;
@@ -39,7 +40,7 @@ import org.xml.sax.SAXException;
 public class MetadataFunctions extends BasicFunction {
 
     @SuppressWarnings("unused")
-    private final static Logger logger = Logger.getLogger(MetadataFunctions.class);
+    private final static Logger logger = LogManager.getLogger(MetadataFunctions.class);
 
     public final static FunctionSignature getMetadata = new FunctionSignature(
             new QName("get-metadata", ExiftoolModule.NAMESPACE_URI, ExiftoolModule.PREFIX),

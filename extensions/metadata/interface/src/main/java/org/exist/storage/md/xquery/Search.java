@@ -21,7 +21,8 @@ package org.exist.storage.md.xquery;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.QName;
@@ -38,7 +39,7 @@ import static org.exist.storage.md.MDStorageManager.*;
  */
 public class Search extends BasicFunction {
 
-    private static final Logger logger = Logger.getLogger(Search.class);
+    private static final Logger logger = LogManager.getLogger(Search.class);
     
     /**
      * Function signatures

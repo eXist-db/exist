@@ -21,7 +21,8 @@
  */
 package org.exist.xquery.functions.xmldb;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.net.URISyntaxException;
 
@@ -51,7 +52,7 @@ import org.xmldb.api.base.XMLDBException;
  */
 @Deprecated
 public class XMLDBChangeUser extends BasicFunction {
-    private static final Logger logger = Logger.getLogger(XMLDBChangeUser.class);
+    private static final Logger logger = LogManager.getLogger(XMLDBChangeUser.class);
 
     public final static FunctionSignature signatures[] = {
         new FunctionSignature(

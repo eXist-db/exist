@@ -5,7 +5,8 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.EXistException;
 import org.exist.backup.RawDataBackup;
@@ -22,7 +23,7 @@ import org.exist.util.DatabaseConfigurationException;
  */
 public class Counters implements RawBackupSupport {
 
-    private final static Logger LOG = Logger.getLogger(Counters.class);
+    private final static Logger LOG = LogManager.getLogger(Counters.class);
     
     private static volatile Counters instance;
 

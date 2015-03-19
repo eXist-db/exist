@@ -31,7 +31,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.dom.QName;
 import org.exist.extensions.exquery.restxq.RestXqServiceCompiledXQueryCache;
@@ -90,7 +91,7 @@ import org.exquery.xquery3.FunctionSignature;
  */
 public class ResourceFunctionExecutorImpl implements ResourceFunctionExecuter {
     
-    private final static Logger LOG = Logger.getLogger(ResourceFunctionExecutorImpl.class);
+    private final static Logger LOG = LogManager.getLogger(ResourceFunctionExecutorImpl.class);
     
     public final static QName XQ_VAR_BASE_URI = new QName("base-uri", Namespace.ANNOTATION_NS);
     public final static QName XQ_VAR_URI = new QName("uri", Namespace.ANNOTATION_NS);

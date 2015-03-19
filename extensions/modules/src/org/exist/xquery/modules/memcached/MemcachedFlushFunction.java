@@ -20,7 +20,8 @@ package org.exist.xquery.modules.memcached;
 
 import net.spy.memcached.MemcachedClient;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -35,7 +36,7 @@ import org.exist.xquery.value.Type;
 
 public class MemcachedFlushFunction extends BasicFunction
 {
-	protected static final Logger logger = Logger.getLogger(MemcachedFlushFunction.class);
+	protected static final Logger logger = LogManager.getLogger(MemcachedFlushFunction.class);
 
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(

@@ -32,7 +32,8 @@ import javax.naming.directory.DirContext;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.xquery.BasicFunction;
@@ -63,7 +64,7 @@ import org.exist.xquery.value.Type;
 
 public class SearchFunction extends BasicFunction 
 {
-	protected static final Logger logger = Logger.getLogger(SearchFunction.class);
+	protected static final Logger logger = LogManager.getLogger(SearchFunction.class);
 	
 	public final static String DSML_NAMESPACE = "http://www.dsml.org/DSML";
 

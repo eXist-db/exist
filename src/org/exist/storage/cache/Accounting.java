@@ -21,7 +21,8 @@
  */
 package org.exist.storage.cache;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.util.hashtable.SequencedLongHashMap;
 
 /**
@@ -38,7 +39,7 @@ import org.exist.util.hashtable.SequencedLongHashMap;
  */
 public class Accounting {
     
-    private final static Logger LOG = Logger.getLogger(Accounting.class);
+    private final static Logger LOG = LogManager.getLogger(Accounting.class);
 
     private final static Object DUMMY = new Object();
     

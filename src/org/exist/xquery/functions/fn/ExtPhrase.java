@@ -21,7 +21,8 @@
  */
 package org.exist.xquery.functions.fn;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -52,7 +53,7 @@ import org.exist.xquery.value.Sequence;
  *@author     Bruno Chatel <bcha@chadocs.com> (March 30, 2005)
  */
 public class ExtPhrase extends ExtFulltext {
-    private static final Logger logger = Logger.getLogger(ExtPhrase.class);
+    private static final Logger logger = LogManager.getLogger(ExtPhrase.class);
 
     /**
      * 

@@ -21,7 +21,8 @@
  */
 package org.exist.storage.lock;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.storage.BrokerPool;
 import org.exist.util.ReadOnlyException;
 
@@ -63,7 +64,7 @@ import java.util.Properties;
  */
 public class FileLock {
 
-    private final static Logger LOG = Logger.getLogger(FileLock.class);
+    private final static Logger LOG = LogManager.getLogger(FileLock.class);
 
     /** The heartbeat period in milliseconds */
     private final long HEARTBEAT = 10100;

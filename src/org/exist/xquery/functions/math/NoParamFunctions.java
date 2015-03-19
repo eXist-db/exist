@@ -41,7 +41,7 @@ import org.exist.xquery.value.Type;
  */
 public class NoParamFunctions extends BasicFunction {
     
-    //private static final Logger logger = Logger.getLogger(NoParamFunctions.class);
+    //private static final Logger logger = LogManager.getLogger(NoParamFunctions.class);
 
     public static final String PI = "pi";
 

@@ -21,7 +21,8 @@
  */
 package org.exist.xquery.functions.fn;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.collections.Collection;
 import org.exist.dom.persistent.DocumentSet;
@@ -65,7 +66,7 @@ import java.util.List;
  */
 @Deprecated
 public class DeprecatedExtRegexp extends Function implements Optimizable {
-	protected static final Logger logger = Logger.getLogger(DeprecatedExtRegexp.class);
+	protected static final Logger logger = LogManager.getLogger(DeprecatedExtRegexp.class);
 
 	protected static final FunctionParameterSequenceType SOURCE_PARAM = new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE, "The node set that is to be searched for the keyword set");
 	protected static final FunctionParameterSequenceType REGEX_PARAM = new FunctionParameterSequenceType("regular-expression", Type.STRING, Cardinality.ONE_OR_MORE, "The regular expressions to be matched against the fulltext index");

@@ -23,7 +23,8 @@ package org.expath.exist;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -55,7 +56,7 @@ import org.expath.httpclient.model.exist.EXistSequence;
  */
 public class SendRequestFunction extends BasicFunction {
 
-    private static final Logger logger = Logger.getLogger(SendRequestFunction.class);
+    private static final Logger logger = LogManager.getLogger(SendRequestFunction.class);
     
     private final static FunctionParameterSequenceType REQUEST_PARAM = new FunctionParameterSequenceType("request", Type.ELEMENT, Cardinality.ZERO_OR_ONE, "request contains the various parameters of the request, for instance the HTTP method to use or the HTTP headers. Among other things, it can also contain the other param's values: the URI and the bodies. If they are not set as parameter to the function, their value in $request, if any, is used instead. See the following section (http://www.expath.org/spec/http-client#d2e183) for the detailed definition of the http:request element. If the parameter does not follow the grammar defined in this spec, this is an error [err:HC005].");
     private final static FunctionParameterSequenceType HREF_PARAM = new FunctionParameterSequenceType("href", Type.STRING, Cardinality.ZERO_OR_ONE, "$href is the HTTP or HTTPS URI to send the request to. It is an xs:anyURI, but is declared as a string to be able to pass literal strings (without requiring to explicitly cast it to an xs:anyURI)");

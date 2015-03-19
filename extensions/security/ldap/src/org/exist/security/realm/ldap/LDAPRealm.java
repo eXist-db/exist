@@ -36,7 +36,8 @@ import javax.naming.directory.DirContext;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 import javax.naming.ldap.LdapContext;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.config.Configuration;
 import org.exist.config.annotation.*;
@@ -63,7 +64,7 @@ import org.exist.storage.DBBroker;
 @ConfigurationClass("realm") //TODO: id = LDAP
 public class LDAPRealm extends AbstractRealm {
 
-    private final static Logger LOG = Logger.getLogger(LDAPRealm.class);
+    private final static Logger LOG = LogManager.getLogger(LDAPRealm.class);
 
     @ConfigurationFieldAsAttribute("id")
     public static String ID = "LDAP";

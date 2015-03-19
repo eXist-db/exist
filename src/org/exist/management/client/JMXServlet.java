@@ -45,7 +45,8 @@ import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerException;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.util.serializer.DOMSerializer;
 import org.w3c.dom.Element;
 
@@ -74,7 +75,7 @@ import org.w3c.dom.Element;
  */
 public class JMXServlet extends HttpServlet {
 
-    protected final static Logger LOG = Logger.getLogger(JMXServlet.class);
+    protected final static Logger LOG = LogManager.getLogger(JMXServlet.class);
 
     private static final String TOKEN_KEY = "token";
     private static final String TOKEN_FILE = "jmxservlet.token";

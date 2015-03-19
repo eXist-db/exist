@@ -21,7 +21,8 @@
  */
 package org.exist.xquery.functions.util;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.dom.QName;
 import org.exist.security.UUIDGenerator;
@@ -44,7 +45,7 @@ import org.exist.xquery.value.ValueSequence;
  */
 public class UUID extends BasicFunction {
 
-    private static final Logger logger = Logger.getLogger(UUID.class);
+    private static final Logger logger = LogManager.getLogger(UUID.class);
     
     public final static FunctionSignature signatures[] = {
             new FunctionSignature(

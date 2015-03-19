@@ -1,6 +1,7 @@
 package org.exist.indexing.range;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.exist.dom.NodeListImpl;
@@ -22,7 +23,7 @@ public class RangeIndexConfig {
     private static final String CREATE_ELEM = "create";
     private static final String FIELD_ELEM = "field";
 
-    private static final Logger LOG = Logger.getLogger(RangeIndexConfig.class);
+    private static final Logger LOG = LogManager.getLogger(RangeIndexConfig.class);
 
     private Map<QName, RangeIndexConfigElement> paths = new TreeMap<QName, RangeIndexConfigElement>();
 

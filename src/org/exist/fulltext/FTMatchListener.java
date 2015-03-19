@@ -10,7 +10,8 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.ExtArrayNodeSet;
 import org.exist.dom.persistent.Match;
 import org.exist.dom.persistent.NodeProxy;
@@ -31,7 +32,7 @@ import org.xml.sax.SAXException;
  */
 public class FTMatchListener extends AbstractMatchListener {
 
-    private final static Logger LOG = Logger.getLogger(FTMatchListener.class);
+    private final static Logger LOG = LogManager.getLogger(FTMatchListener.class);
 
     private Match match;
     private Stack<NodeOffset> offsetStack = null;

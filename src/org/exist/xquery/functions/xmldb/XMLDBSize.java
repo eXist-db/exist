@@ -21,7 +21,8 @@
  */
 package org.exist.xquery.functions.xmldb;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.dom.QName;
 import org.exist.xmldb.EXistResource;
@@ -44,7 +45,7 @@ import org.xmldb.api.base.XMLDBException;
  * @author wolf
  */
 public class XMLDBSize extends XMLDBAbstractCollectionManipulator {
-	protected static final Logger logger = Logger.getLogger(XMLDBSize.class);
+	protected static final Logger logger = LogManager.getLogger(XMLDBSize.class);
 	public final static FunctionSignature signature =
         new FunctionSignature(
 			new QName("size", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),

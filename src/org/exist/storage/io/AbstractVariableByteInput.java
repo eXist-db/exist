@@ -23,7 +23,8 @@ package org.exist.storage.io;
 import java.io.EOFException;
 import java.io.IOException;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -34,7 +35,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public abstract class AbstractVariableByteInput implements VariableByteInput {
     
-    private static Logger LOG = Logger.getLogger(AbstractVariableByteInput.class.getName());
+    private static Logger LOG = LogManager.getLogger(AbstractVariableByteInput.class.getName());
 
     public AbstractVariableByteInput() {
         //Nothing to do

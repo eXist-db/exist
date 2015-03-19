@@ -1,6 +1,7 @@
 package org.exist.soap;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
@@ -55,7 +56,7 @@ import java.util.List;
  */
 public class AdminSoapBindingImpl implements org.exist.soap.Admin {
     
-    private static Logger LOG = Logger.getLogger(Admin.class.getName());
+    private static Logger LOG = LogManager.getLogger(Admin.class.getName());
     
     private BrokerPool pool;
     

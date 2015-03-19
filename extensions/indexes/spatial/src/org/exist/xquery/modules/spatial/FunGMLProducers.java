@@ -24,7 +24,8 @@
  */
 package org.exist.xquery.modules.spatial;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.QName;
@@ -56,7 +57,7 @@ import com.vividsolutions.jts.operation.buffer.BufferOp;
 
 public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
 
-    protected static final Logger logger = Logger.getLogger(FunGMLProducers.class);
+    protected static final Logger logger = LogManager.getLogger(FunGMLProducers.class);
     boolean hasUsedIndex = false;
 
     public final static FunctionSignature[] signatures = {
