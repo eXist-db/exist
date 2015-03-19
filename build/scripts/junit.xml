@@ -93,6 +93,10 @@
         <mkdir dir="${junit.reports}/classes"/>
         <mkdir dir="${junit.reports.dat}"/>
         <mkdir dir="${junit.reports.html}"/>
+
+        <!-- create a log4j config for running the tests -->
+        <xslt in="${basedir}/log4j2.xml" out="${basedir}/test/classes/log4j2-test.xml" style="${build.scripts}/log4j2-test.xsl"/>
+
     </target>
 
     <!-- Generate HTML reports -->
@@ -117,6 +121,7 @@
         <junit haltonfailure="${junit.haltonfailure}" haltonerror="${junit.haltonerror}" printsummary="yes" showoutput="${junit.output}" 
             maxmemory="${junit.forked.VM.maxmemory}">
             <sysproperty key="exist.home" value="${basedir}" />
+            <sysproperty key="java.util.logging.manager" value="org.apache.logging.log4j.jul.LogManager"/>
 	    <!-- local database, so should not be needed. /ljo -->
             <sysproperty key="jetty.port" value="${jetty.port}" />
             <sysproperty key="jetty.port.ssl" value="${jetty.port.ssl}" />
@@ -192,6 +197,7 @@
 
         <junit haltonfailure="${junit.haltonfailure}" haltonerror="${junit.haltonerror}" printsummary="yes" showoutput="${junit.output}" maxmemory="${junit.forked.VM.maxmemory}">
             <sysproperty key="exist.home" value="${basedir}" />
+            <sysproperty key="java.util.logging.manager" value="org.apache.logging.log4j.jul.LogManager"/>
 	    <!-- fixme! - jetty.port.jetty /ljo -->
             <sysproperty key="jetty.port" value="${jetty.port}" />
             <sysproperty key="jetty.port.ssl" value="${jetty.port.ssl}" />
@@ -223,6 +229,7 @@
         <echo message="-----------------"/>
         <junit haltonfailure="${junit.haltonfailure}" haltonerror="${junit.haltonerror}" printsummary="on" showoutput="${junit.output}" fork="no">
             <sysproperty key="exist.home" value="${basedir}" />
+            <sysproperty key="java.util.logging.manager" value="org.apache.logging.log4j.jul.LogManager"/>
 	    <!-- local database, so should not be needed. /ljo -->
             <sysproperty key="jetty.port" value="${jetty.port}" />
             <sysproperty key="jetty.port.ssl" value="${jetty.port.ssl}" />
@@ -245,6 +252,7 @@
         <echo message="--------------"/>
         <junit haltonfailure="${junit.haltonfailure}" haltonerror="${junit.haltonerror}" printsummary="on" showoutput="${junit.output}" fork="yes" maxmemory="${junit.forked.VM.maxmemory}">
             <sysproperty key="exist.home" value="${basedir}" />
+            <sysproperty key="java.util.logging.manager" value="org.apache.logging.log4j.jul.LogManager"/>
 	    <!-- local database, so should not be needed. /ljo -->
             <sysproperty key="jetty.port" value="${jetty.port}" />
             <sysproperty key="jetty.port.ssl" value="${jetty.port.ssl}" />
@@ -275,6 +283,7 @@
         </delete>
         <java classname="org.exist.jetty.StandaloneServer">
             <sysproperty key="exist.home" value="${basedir}" />
+            <sysproperty key="java.util.logging.manager" value="org.apache.logging.log4j.jul.LogManager"/>
 	    <!-- fixme! - jetty.port.standalone /ljo -->
             <sysproperty key="jetty.port" value="${jetty.port.standalone}" />
             <sysproperty key="jetty.port.ssl" value="${jetty.port.ssl.standalone}" />
@@ -294,6 +303,7 @@
         <echo message="--------------------------------"/>
         <junit haltonfailure="${junit.haltonfailure}" haltonerror="${junit.haltonerror}" printsummary="yes" showoutput="${junit.output}" maxmemory="${junit.forked.VM.maxmemory}">
             <sysproperty key="exist.home" value="${basedir}" />
+            <sysproperty key="java.util.logging.manager" value="org.apache.logging.log4j.jul.LogManager"/>
 	    <!-- fixme! - jetty.port.standalone /ljo -->
             <sysproperty key="jetty.port" value="${jetty.port.standalone}" />
             <sysproperty key="jetty.port.ssl" value="${jetty.port.ssl.standalone}" />
@@ -323,6 +333,7 @@
         <echo message="--------------------------------"/>
         <junit haltonfailure="${junit.haltonfailure}" haltonerror="${junit.haltonerror}" printsummary="yes" showoutput="${junit.output}" maxmemory="${junit.forked.VM.maxmemory}">
             <sysproperty key="exist.home" value="${basedir}" />
+            <sysproperty key="java.util.logging.manager" value="org.apache.logging.log4j.jul.LogManager"/>
 	    <!-- local database, so should not be needed. /ljo -->
             <sysproperty key="jetty.port" value="${jetty.port}" />
             <sysproperty key="jetty.port.ssl" value="${jetty.port.ssl}" />
@@ -345,6 +356,7 @@
 
         <junit haltonfailure="${junit.haltonfailure}" haltonerror="${junit.haltonerror}" printsummary="yes" showoutput="${junit.output}" maxmemory="${junit.forked.VM.maxmemory}">
             <sysproperty key="exist.home" value="${basedir}" />
+            <sysproperty key="java.util.logging.manager" value="org.apache.logging.log4j.jul.LogManager"/>
 	    <!-- fixme! - jetty.port.jetty /ljo -->
             <sysproperty key="jetty.port" value="${jetty.port}" />
             <sysproperty key="jetty.port.ssl" value="${jetty.port.ssl}" />
@@ -504,6 +516,7 @@
         <echo message="--------------"/>
         <junit haltonfailure="${junit.haltonfailure}" haltonerror="${junit.haltonerror}" printsummary="on" showoutput="${junit.output}" fork="yes" maxmemory="${junit.forked.VM.maxmemory.external}">
             <sysproperty key="exist.home" value="${basedir}" />
+            <sysproperty key="java.util.logging.manager" value="org.apache.logging.log4j.jul.LogManager"/>
 	    <!-- fixme! - jetty.port.jetty /ljo -->
             <sysproperty key="jetty.port" value="${jetty.port}" />
             <sysproperty key="jetty.port.ssl" value="${jetty.port.ssl}" />
@@ -530,6 +543,7 @@
         <echo message="--------------"/>
         <junit haltonfailure="${junit.haltonfailure}" haltonerror="${junit.haltonerror}" printsummary="on" showoutput="${junit.output}" fork="yes" maxmemory="${junit.forked.VM.maxmemory.external}">
             <sysproperty key="exist.home" value="${basedir}" />
+            <sysproperty key="java.util.logging.manager" value="org.apache.logging.log4j.jul.LogManager"/>
 	    <!-- fixme! - jetty.port.jetty /ljo -->
             <sysproperty key="jetty.port" value="${jetty.port}" />
             <sysproperty key="jetty.port.ssl" value="${jetty.port.ssl}" />
@@ -587,6 +601,7 @@
         <echo message="--------------"/>
         <junit haltonfailure="${junit.haltonfailure}" haltonerror="${junit.haltonerror}" printsummary="on" showoutput="${junit.output}" fork="yes" maxmemory="${junit.forked.VM.maxmemory.external}">
             <sysproperty key="exist.home" value="${basedir}" />
+            <sysproperty key="java.util.logging.manager" value="org.apache.logging.log4j.jul.LogManager"/>
 
             <classpath refid="classpath.core"/>
             <classpath refid="classpath.aspectj"/>
