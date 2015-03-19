@@ -1,6 +1,6 @@
 eXist Native XML Database
 =========================
-[![Build Status](https://travis-ci.org/eXist-db/exist.png?branch=develop)](https://travis-ci.org/eXist-db/exist)
+[![Build Status](https://travis-ci.org/eXist-db/exist.png?branch=develop)](https://travis-ci.org/eXist-db/exist) [![Java 8](https://img.shields.io/badge/java-8-blue.svg)](http://java.oracle.com) [![License](https://img.shields.io/badge/license-LGPL%202.1-blue.svg)](https://www.gnu.org/licenses/lgpl-2.1.html)
 
 This is the GitHub for the [eXist](http://www.exist-db.org "eXist") Native XML Database. 
 
@@ -16,7 +16,7 @@ If you wish to work on the eXist source code we're now using [Git](http://git-sc
 
 Building eXist from Source
 --------------------------
-eXist itself is written in Java 7. The build system is [Apache Ant](http://ant.apache.org/ "The Apache Ant Project").
+eXist itself is written in Java 8. The build system is [Apache Ant](http://ant.apache.org/ "The Apache Ant Project").
 
 To build eXist:
 
