@@ -24,6 +24,7 @@ package org.exist.config;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import java.io.File;
 import junit.framework.*;
+import org.apache.logging.log4j.LogManager;
 import org.exist.collections.Collection;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DefaultDocumentSet;
@@ -65,11 +66,11 @@ public class TwoDatabasesTest extends TestCase
    protected void setUp() throws Exception
    {
       // Setup the log4j configuration
-      String log4j = System.getProperty("log4j.configuration");
+      String log4j = System.getProperty("log4j.configurationFile");
       if (log4j == null) {
-         File lf = new File("log4j.xml");
+         File lf = new File("log42j.xml");
          if (lf.canRead()) {
-            System.setProperty("log4j.configuration", lf.toURI().toASCIIString());
+            System.setProperty("log4j.configurationFile", lf.toURI().toASCIIString());
          }
       }
       
