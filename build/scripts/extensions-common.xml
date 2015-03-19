@@ -312,6 +312,8 @@ to add: -pre-compile steps
       <junit haltonfailure="${junit.haltonfailure}" haltonerror="${junit.haltonerror}" printsummary="yes" showoutput="${junit.output}"
          maxmemory="${junit.forked.VM.maxmemory}">
 
+        <sysproperty key="java.util.logging.manager" value="org.apache.logging.log4j.jul.LogManager"/>
+
         <sysproperty key="jetty.port" value="${jetty.port}" />
         <sysproperty key="jetty.port.ssl" value="${jetty.port.ssl}" />
 
