@@ -40,7 +40,8 @@ import javax.management.openmbean.TabularData;
 import javax.management.openmbean.TabularDataSupport;
 import javax.management.openmbean.TabularType;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.backup.ErrorReport;
 import org.exist.management.TaskStatus;
@@ -57,7 +58,7 @@ import org.exist.xquery.XQueryContext;
 
 public class SanityReport extends NotificationBroadcasterSupport implements SanityReportMBean {
 
-    private final static Logger LOG = Logger.getLogger(SanityReport.class.getName());
+    private final static Logger LOG = LogManager.getLogger(SanityReport.class.getName());
 
     public final static String STATUS_OK = "OK";
     public final static String STATUS_FAIL = "FAIL";

@@ -2,8 +2,8 @@
 <!-- $Id$ -->
 <xsl:transform version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 
-    <!-- Convert log4j.xml for use in war-file -->
-    <xsl:output method="xml" doctype-system="log4j.dtd"/>
+    <!-- Convert log4j2.xml for use in war-file -->
+    <xsl:output method="xml"/>
     
     <xsl:template match="category[@name='org.mortbay']">
     </xsl:template>

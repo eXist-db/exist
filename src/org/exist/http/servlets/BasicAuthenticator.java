@@ -27,7 +27,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.security.AuthenticationException;
 import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
@@ -40,7 +41,7 @@ import org.exist.xquery.XQueryContext;
  */
 public class BasicAuthenticator implements Authenticator {
 
-	protected final static Logger LOG = Logger.getLogger(BasicAuthenticator.class);
+	protected final static Logger LOG = LogManager.getLogger(BasicAuthenticator.class);
 
 	private BrokerPool pool;
 

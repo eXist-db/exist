@@ -24,7 +24,8 @@ import java.util.Map;
 
 import net.spy.memcached.MemcachedClient;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 
@@ -40,7 +41,7 @@ import org.exist.xquery.FunctionDef;
  */
 public class MemcachedModule extends AbstractInternalModule
 { 
-	protected final static Logger LOG = Logger.getLogger( MemcachedModule.class );
+	protected final static Logger LOG = LogManager.getLogger( MemcachedModule.class );
 	
 	public final static String NAMESPACE_URI = "http://exist-db.org/xquery/memcached";
 	

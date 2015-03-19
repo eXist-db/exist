@@ -49,7 +49,8 @@ import java.util.concurrent.ConcurrentMap;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.Database;
 import org.exist.EXistException;
 import org.exist.LifeCycle;
@@ -89,7 +90,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class Configurator {
 
-    public final static Logger LOG = Logger.getLogger(Configurator.class);
+    public final static Logger LOG = LogManager.getLogger(Configurator.class);
     private final static String EOL = System.getProperty("line.separator", "\n");
     protected static ConcurrentMap<FullXmldbURI, Configuration> hotConfigs = new ConcurrentHashMap<FullXmldbURI, Configuration>();
 

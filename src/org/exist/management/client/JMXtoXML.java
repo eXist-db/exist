@@ -47,8 +47,8 @@ import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerException;
-import org.apache.log4j.Logger;
-import org.apache.log4j.xml.DOMConfigurator;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.management.impl.SanityReport;
 import org.exist.dom.memtree.MemTreeBuilder;
@@ -65,7 +65,7 @@ import org.xml.sax.SAXException;
  */
 public class JMXtoXML {
 
-    private final static Logger LOG = Logger.getLogger(JMXtoXML.class);
+    private final static Logger LOG = LogManager.getLogger(JMXtoXML.class);
 
     private final static Map<String, ObjectName[]> CATEGORIES = new TreeMap<>();
 
@@ -456,7 +456,6 @@ public class JMXtoXML {
      */
     public static void main(String[] args) {
         final File home = ConfigurationHelper.getExistHome();
-        DOMConfigurator.configure(new File(home, "log4j.xml").getAbsolutePath());
 
         final JMXtoXML client = new JMXtoXML();
         try {

@@ -29,7 +29,8 @@ import java.util.Properties;
 
 import javax.xml.transform.OutputKeys;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.serializer.SAXSerializer;
@@ -41,7 +42,7 @@ import org.exist.xquery.value.NodeValue;
  */
 public class NodeSerializer {
     
-    private final static Logger LOG = Logger.getLogger(NodeSerializer.class);
+    private final static Logger LOG = LogManager.getLogger(NodeSerializer.class);
       
     public static void serialize(Serializer serializer, NodeValue node,
         Properties outputProperties, OutputStream os) throws IOException {

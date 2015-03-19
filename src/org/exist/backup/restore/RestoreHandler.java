@@ -31,7 +31,8 @@ import java.util.Stack;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.Namespaces;
 import org.exist.backup.BackupDescriptor;
 import org.exist.backup.restore.listener.RestoreListener;
@@ -67,7 +68,7 @@ import org.xmldb.api.modules.CollectionManagementService;
  */
 public class RestoreHandler extends DefaultHandler {
     
-    private final static Logger LOG = Logger.getLogger(RestoreHandler.class);
+    private final static Logger LOG = LogManager.getLogger(RestoreHandler.class);
     private final static SAXParserFactory saxFactory = SAXParserFactory.newInstance();
     static {
         saxFactory.setNamespaceAware(true);

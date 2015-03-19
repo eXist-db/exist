@@ -6,7 +6,8 @@ import java.util.Map;
 import java.util.List;
 import java.util.Map.Entry;
 import org.apache.commons.net.ftp.FTPClient;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 import org.exist.xquery.XQueryContext;
@@ -27,7 +28,7 @@ public class FTPClientModule extends AbstractInternalModule {
 
     public final static String CONNECTIONS_CONTEXTVAR = "_eXist_ftp_connections";
     
-    private static final Logger log = Logger.getLogger(FTPClientModule.class);
+    private static final Logger log = LogManager.getLogger(FTPClientModule.class);
 
     private final static FunctionDef[] functions = {
         new FunctionDef(GetConnectionFunction.signatures[0], GetConnectionFunction.class),

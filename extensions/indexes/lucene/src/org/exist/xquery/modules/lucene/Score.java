@@ -19,7 +19,8 @@
  */
 package org.exist.xquery.modules.lucene;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Cardinality;
@@ -34,7 +35,7 @@ import org.exist.indexing.lucene.LuceneIndexWorker;
 
 public class Score extends BasicFunction {
 	
-	protected static final Logger logger = Logger.getLogger(Score.class);
+	protected static final Logger logger = LogManager.getLogger(Score.class);
 
     public final static FunctionSignature signature =
         new FunctionSignature(

@@ -1,6 +1,7 @@
 package org.exist.fluent;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.backup.*;
 import org.exist.collections.*;
@@ -49,7 +50,7 @@ import java.util.*;
  */
 public class Database {
 	
-	private static final Logger LOG = Logger.getLogger(Database.class);
+	private static final Logger LOG = LogManager.getLogger(Database.class);
 
 	/**
 	 * Start up the database, configured using the given config file.  This method must be
@@ -550,7 +551,7 @@ public class Database {
 	private static final Defragmenter defragmenter = new Defragmenter();
 	
 	private static class Defragmenter implements Runnable {
-		private static final Logger LOG = Logger.getLogger("org.exist.fluent.Database.defragmenter");
+		private static final Logger LOG = LogManager.getLogger("org.exist.fluent.Database.defragmenter");
 		private static final long DEFRAG_INTERVAL = 10000;  // ms
 		private Set<DocumentImpl> docsToDefrag = new TreeSet<DocumentImpl>();
 		private Thread thread;

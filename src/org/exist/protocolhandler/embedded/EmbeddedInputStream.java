@@ -28,7 +28,8 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.net.MalformedURLException;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.protocolhandler.xmldb.XmldbURL;
 import org.exist.storage.BrokerPool;
@@ -42,7 +43,7 @@ import org.exist.storage.io.BlockingOutputStream;
  */
 public class EmbeddedInputStream extends InputStream {
     
-    private final static Logger logger = Logger.getLogger(EmbeddedInputStream.class);
+    private final static Logger logger = LogManager.getLogger(EmbeddedInputStream.class);
     
     private PipedInputStream  bis;
     private PipedOutputStream bos;

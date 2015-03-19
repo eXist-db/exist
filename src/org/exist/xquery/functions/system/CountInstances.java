@@ -22,7 +22,8 @@
  */
 package org.exist.xquery.functions.system;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.storage.BrokerPool;
 import org.exist.xquery.BasicFunction;
@@ -42,7 +43,7 @@ import org.exist.xquery.value.Type;
  */
 public class CountInstances extends BasicFunction
 {
-    protected final static Logger logger = Logger.getLogger(CountInstances.class);
+    protected final static Logger logger = LogManager.getLogger(CountInstances.class);
 
 	public final static FunctionSignature countInstancesMax =
 		new FunctionSignature(

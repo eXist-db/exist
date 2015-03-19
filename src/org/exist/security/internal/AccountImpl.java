@@ -21,7 +21,8 @@ package org.exist.security.internal;
 
 import org.exist.security.AbstractRealm;
 import org.exist.security.AbstractAccount;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.config.Configuration;
 import org.exist.config.ConfigurationException;
 import org.exist.config.Configurator;
@@ -52,7 +53,7 @@ import org.exist.storage.DBBroker;
 @ConfigurationClass("account")
 public class AccountImpl extends AbstractAccount {
 
-    private final static Logger LOG = Logger.getLogger(AccountImpl.class);
+    private final static Logger LOG = LogManager.getLogger(AccountImpl.class);
     public static boolean CHECK_PASSWORDS = true;
 
     private final static SecurityProperties securityProperties = new SecurityProperties();

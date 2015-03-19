@@ -22,7 +22,8 @@ package org.exist.util;
 
 import org.apache.commons.pool.PoolableObjectFactory;
 import org.apache.commons.pool.impl.StackObjectPool;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.Namespaces;
 import org.exist.storage.BrokerPool;
 import org.exist.validation.GrammarPool;
@@ -39,7 +40,7 @@ import org.xml.sax.ext.DefaultHandler2;
  */
 public class XMLReaderPool extends StackObjectPool<XMLReader> {
 
-    private final static Logger LOG = Logger.getLogger(XMLReaderPool.class);
+    private final static Logger LOG = LogManager.getLogger(XMLReaderPool.class);
 
     private final static DefaultHandler2 DUMMY_HANDLER = new DefaultHandler2();
 

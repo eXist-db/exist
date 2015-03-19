@@ -27,7 +27,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.Collator;
 import org.apache.commons.io.output.CloseShieldOutputStream;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 
 import org.exist.xquery.Constants;
@@ -38,7 +39,7 @@ import org.exist.xquery.XPathException;
  */
 public abstract class BinaryValue extends AtomicValue {
 
-    private final static Logger LOG = Logger.getLogger(BinaryValue.class);
+    private final static Logger LOG = LogManager.getLogger(BinaryValue.class);
 
     protected final int READ_BUFFER_SIZE = 4 * 1024; //4kb
 

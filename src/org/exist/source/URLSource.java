@@ -28,7 +28,8 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.HttpURLConnection;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
@@ -41,7 +42,7 @@ import org.exist.storage.DBBroker;
  */
 public class URLSource extends AbstractSource {
 
-	private final static Logger LOG = Logger.getLogger(URLSource.class);
+	private final static Logger LOG = LogManager.getLogger(URLSource.class);
 	
 	private URL url;
 	private URLConnection connection = null;

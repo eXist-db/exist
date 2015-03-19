@@ -31,7 +31,8 @@ import org.exist.xquery.ExternalModule;
 import org.exist.xquery.FunctionCall;
 import org.exist.xquery.value.Sequence;
 import org.exist.dom.QName;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -42,7 +43,7 @@ import java.util.ArrayList;
 
 public class ModuleCall extends URLRewrite {
 
-    private final static Logger LOG = Logger.getLogger(ModuleCall.class);
+    private final static Logger LOG = LogManager.getLogger(ModuleCall.class);
     
     private FunctionCall call;
 

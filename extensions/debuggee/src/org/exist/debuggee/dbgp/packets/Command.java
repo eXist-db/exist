@@ -24,7 +24,8 @@ package org.exist.debuggee.dbgp.packets;
 import java.io.File;
 import java.net.MalformedURLException;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.mina.core.session.IoSession;
 import org.exist.debuggee.DebuggeeJoint;
 import org.exist.debuggee.Packet;
@@ -37,7 +38,7 @@ import org.exist.security.xacml.XACMLSource;
  */
 public abstract class Command implements Packet {
 
-    private final static Logger LOG = Logger.getLogger(Packet.class);
+    private final static Logger LOG = LogManager.getLogger(Packet.class);
 
     protected final static String namespaces = 
     	"xmlns=\"urn:debugger_protocol_v1\" " +

@@ -22,12 +22,13 @@ package org.exist.util;
 
 import java.util.Iterator;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class OrderedLinkedList {
 
 	@SuppressWarnings("unused")
-	private final static Logger LOG = Logger.getLogger(OrderedLinkedList.class);
+	private final static Logger LOG = LogManager.getLogger(OrderedLinkedList.class);
 	
 	public abstract static class Node {
 		Node next = null;

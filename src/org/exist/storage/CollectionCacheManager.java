@@ -19,7 +19,8 @@
  */
 package org.exist.storage;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.collections.CollectionCache;
 import org.exist.storage.cache.Cache;
 import org.exist.util.DatabaseConfigurationException;
@@ -28,7 +29,7 @@ import org.exist.management.Agent;
 
 public class CollectionCacheManager implements CacheManager {
 
-    private static final Logger LOG = Logger.getLogger(CollectionCacheManager.class);
+    private static final Logger LOG = LogManager.getLogger(CollectionCacheManager.class);
 
     public static final String CACHE_SIZE_ATTRIBUTE = "collectionCache";
     public static final String PROPERTY_CACHE_SIZE = "db-connection.collection-cache-mem";

@@ -22,7 +22,8 @@
  */
 package org.exist.xquery.functions.util;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.util.LockException;
 import org.exist.xquery.Function;
@@ -35,7 +36,7 @@ import org.exist.xquery.value.Sequence;
 
 public abstract class LockFunction extends Function {
 
-	protected static final Logger logger = Logger.getLogger(LockFunction.class);
+	protected static final Logger logger = LogManager.getLogger(LockFunction.class);
 
 	protected final boolean exclusive;
     

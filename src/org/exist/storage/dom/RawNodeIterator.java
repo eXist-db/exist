@@ -21,7 +21,8 @@
  */
 package org.exist.storage.dom;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.NodeHandle;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.storage.DBBroker;
@@ -45,7 +46,7 @@ import java.io.IOException;
  */
 public class RawNodeIterator implements IRawNodeIterator {
 
-    private final static Logger LOG = Logger.getLogger(RawNodeIterator.class);
+    private final static Logger LOG = LogManager.getLogger(RawNodeIterator.class);
 
     private DBBroker broker;
     private final DOMFile db;

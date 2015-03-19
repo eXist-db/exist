@@ -71,7 +71,8 @@
  */
 package org.exist.storage.btree;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.storage.BrokerPool;
 import org.exist.storage.BufferStats;
@@ -109,7 +110,7 @@ import java.util.*;
  */
 public class BTree extends Paged implements Lockable {
 
-    protected final static Logger LOGSTATS = Logger.getLogger( NativeBroker.EXIST_STATISTICS_LOGGER );
+    protected final static Logger LOGSTATS = LogManager.getLogger( NativeBroker.EXIST_STATISTICS_LOGGER );
     
     /** Used as return value, if a value was not found */
     public final static long KEY_NOT_FOUND = -1;

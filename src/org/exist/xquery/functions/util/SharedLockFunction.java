@@ -22,7 +22,8 @@
  */
 package org.exist.xquery.functions.util;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -35,7 +36,7 @@ import org.exist.xquery.value.Type;
 
 public class SharedLockFunction extends LockFunction {
 
-	protected static final Logger logger = Logger.getLogger(SharedLockFunction.class);
+	protected static final Logger logger = LogManager.getLogger(SharedLockFunction.class);
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(

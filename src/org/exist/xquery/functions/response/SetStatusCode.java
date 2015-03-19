@@ -22,7 +22,8 @@
  */
 package org.exist.xquery.functions.response;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.dom.QName;
 import org.exist.http.servlets.ResponseWrapper;
@@ -51,7 +52,7 @@ import org.exist.xquery.value.Type;
  */
 public class SetStatusCode extends Function
 {
-    protected static final Logger logger = Logger.getLogger(SetStatusCode.class);
+    protected static final Logger logger = LogManager.getLogger(SetStatusCode.class);
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(

@@ -21,7 +21,8 @@
  */
 package org.exist.xquery.functions.xmldb;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.dom.QName;
 import org.exist.security.Account;
@@ -48,7 +49,7 @@ import org.xmldb.api.base.XMLDBException;
  */
 @Deprecated
 public class XMLDBIsAdmin extends BasicFunction {
-	protected static final Logger logger = Logger.getLogger(XMLDBIsAdmin.class);
+	protected static final Logger logger = LogManager.getLogger(XMLDBIsAdmin.class);
 	public final static FunctionSignature signature = new FunctionSignature(
 			new QName("is-admin-user", XMLDBModule.NAMESPACE_URI,
 					XMLDBModule.PREFIX),

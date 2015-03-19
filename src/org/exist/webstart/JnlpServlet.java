@@ -32,7 +32,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Dedicated servlet for Webstart.
@@ -41,7 +42,7 @@ public class JnlpServlet extends HttpServlet {
     
 	private static final long serialVersionUID = 1238966115449192258L;
 
-	private static Logger logger = Logger.getLogger(JnlpServlet.class);
+	private static Logger logger = LogManager.getLogger(JnlpServlet.class);
     
     private JnlpJarFiles jf=null;
     private JnlpHelper jh=null;

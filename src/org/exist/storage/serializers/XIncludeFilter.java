@@ -21,7 +21,8 @@
 */
 package org.exist.storage.serializers;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.INodeHandle;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
@@ -79,7 +80,7 @@ import java.util.StringTokenizer;
  */
 public class XIncludeFilter implements Receiver {
 
-	private final static Logger LOG = Logger.getLogger(XIncludeFilter.class);
+	private final static Logger LOG = LogManager.getLogger(XIncludeFilter.class);
 
 	public final static String XINCLUDE_NS = "http://www.w3.org/2001/XInclude";
 

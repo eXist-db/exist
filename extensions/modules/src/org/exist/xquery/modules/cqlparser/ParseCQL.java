@@ -28,7 +28,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import org.exist.Namespaces;
 import org.exist.dom.QName;
@@ -70,7 +71,7 @@ public class ParseCQL extends BasicFunction {
 	private static final String OutputTypeXCQL = "XCQL";
 	
 	@SuppressWarnings("unused")
-	private static final Logger logger = Logger.getLogger(ParseCQL.class);
+	private static final Logger logger = LogManager.getLogger(ParseCQL.class);
 	
     public final static FunctionSignature signature =
         new FunctionSignature(

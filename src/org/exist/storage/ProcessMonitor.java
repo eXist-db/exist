@@ -23,7 +23,8 @@
 package org.exist.storage;
 
 import java.util.Map.Entry;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.xquery.XQueryWatchDog;
 
 import java.util.HashMap;
@@ -58,7 +59,7 @@ public class ProcessMonitor {
     public final static String ACTION_MOVE_COLLECTION = "move collection";
     public final static String ACTION_BACKUP = "backup";
 
-    private final static Logger LOG = Logger.getLogger(ProcessMonitor.class);
+    private final static Logger LOG = LogManager.getLogger(ProcessMonitor.class);
 
     private final static int MAX_QUERY_HISTORY = 16; //The maximum number of queries to record history for
 

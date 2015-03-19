@@ -30,7 +30,8 @@ import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
 import org.apache.commons.httpclient.methods.multipart.Part;
 import org.apache.commons.httpclient.methods.multipart.StringPart;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -68,7 +69,7 @@ import java.util.Properties;
  */
 public class POSTFunction extends BaseHTTPClientFunction
 {
-    protected static final Logger           logger       = Logger.getLogger( POSTFunction.class );
+    protected static final Logger           logger       = LogManager.getLogger( POSTFunction.class );
 
     public final static FunctionSignature[] signatures   = {
         new FunctionSignature( 

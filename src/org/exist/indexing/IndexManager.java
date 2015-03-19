@@ -19,7 +19,8 @@
  */
 package org.exist.indexing;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.backup.RawDataBackup;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -36,7 +37,7 @@ import java.util.*;
  */
 public class IndexManager {
 
-    private final static Logger LOG = Logger.getLogger(IndexManager.class);
+    private final static Logger LOG = LogManager.getLogger(IndexManager.class);
 
     public static final String CONFIGURATION_ELEMENT_NAME = "modules";
     public static final String CONFIGURATION_MODULE_ELEMENT_NAME = "module";

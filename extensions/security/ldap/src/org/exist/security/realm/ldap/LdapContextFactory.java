@@ -30,7 +30,8 @@ import javax.naming.NamingException;
 import javax.naming.ldap.InitialLdapContext;
 import javax.naming.ldap.LdapContext;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.config.Configurable;
 import org.exist.config.Configuration;
 import org.exist.config.Configurator;
@@ -44,7 +45,7 @@ import org.exist.config.annotation.ConfigurationFieldAsElement;
 @ConfigurationClass("context")
 public class LdapContextFactory implements Configurable {
 
-    protected final static Logger LOG = Logger.getLogger(LdapContextFactory.class);
+    protected final static Logger LOG = LogManager.getLogger(LdapContextFactory.class);
 
     protected static final String SUN_CONNECTION_POOLING_PROPERTY = "com.sun.jndi.ldap.connect.pool";
 

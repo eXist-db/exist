@@ -47,7 +47,8 @@ import javax.xml.datatype.Duration;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.Database;
 import org.exist.EXistException;
 import org.exist.Namespaces;
@@ -129,7 +130,7 @@ public class XQueryContext implements BinaryValueManager, Context
     public static final String                        JAVA_URI_START                                   = "java:";
     //private static final String XMLDB_URI_START = "xmldb:exist://";
 
-    protected final static Logger                      LOG                                              = Logger.getLogger( XQueryContext.class );
+    protected final static Logger                      LOG                                              = LogManager.getLogger( XQueryContext.class );
 
     private static final String                        TEMP_STORE_ERROR                                 = "Error occurred while storing temporary data";
     public static final String                         XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR            = "_eXist_xquery_update_error";

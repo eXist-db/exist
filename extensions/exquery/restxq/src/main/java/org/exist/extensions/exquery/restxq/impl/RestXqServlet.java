@@ -31,7 +31,8 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.extensions.exquery.restxq.impl.adapters.HttpServletRequestAdapter;
 import org.exist.extensions.exquery.restxq.impl.adapters.HttpServletResponseAdapter;
@@ -53,7 +54,7 @@ import org.exquery.restxq.RestXqServiceRegistry;
  */
 public class RestXqServlet extends AbstractExistHttpServlet {
 
-    final Logger log = Logger.getLogger(getClass());
+    final Logger log = LogManager.getLogger(getClass());
 
     private RestXqServiceRegistry getRegistry() {
         return RestXqServiceRegistryManager.getRegistry(getPool());

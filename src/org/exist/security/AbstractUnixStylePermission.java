@@ -23,7 +23,8 @@ package org.exist.security;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.util.SyntaxException;
 
 /**
@@ -35,7 +36,7 @@ import org.exist.util.SyntaxException;
  */
 public abstract class AbstractUnixStylePermission implements Permission {
 
-    private final static Logger LOG = Logger.getLogger(AbstractUnixStylePermission.class);
+    private final static Logger LOG = LogManager.getLogger(AbstractUnixStylePermission.class);
 
     /**
      * The symbolic mode is described by the following grammar:

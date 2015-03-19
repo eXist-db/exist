@@ -44,7 +44,7 @@ import org.exist.xquery.value.Type;
  */
 public class OneParamFunctions extends BasicFunction {
 	
-	//private static final Logger logger = Logger.getLogger(OneParamFunctions.class);
+	//private static final Logger logger = LogManager.getLogger(OneParamFunctions.class);
     
     public static final String ACOS = "acos";
     public static final String ASIN = "asin";

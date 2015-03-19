@@ -24,7 +24,8 @@ package org.exist.storage;
 
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.util.FastStringBuffer;
 
@@ -36,7 +37,7 @@ import javax.xml.XMLConstants;
  */
 public class NodePath implements Comparable<NodePath> {
 
-    private final static Logger LOG = Logger.getLogger(NodePath.class);
+    private final static Logger LOG = LogManager.getLogger(NodePath.class);
 
     /**
      * (Illegal) QNames used as a marker for arbitrary path steps.

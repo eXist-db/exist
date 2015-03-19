@@ -2,7 +2,8 @@ package org.exist.xquery.value;
 
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.io.output.CloseShieldOutputStream;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.xquery.XPathException;
 
 import java.io.*;
@@ -18,7 +19,7 @@ import java.io.*;
  */
 public class BinaryValueFromBinaryString extends BinaryValue {
 
-    private final static Logger LOG = Logger.getLogger(BinaryValueFromBinaryString.class);
+    private final static Logger LOG = LogManager.getLogger(BinaryValueFromBinaryString.class);
     
     private final String value;
 

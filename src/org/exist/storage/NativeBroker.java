@@ -20,7 +20,8 @@
  */
 package org.exist.storage;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.memtree.DOMIndexer;
 import org.exist.dom.persistent.AttrImpl;
 import org.exist.dom.persistent.BinaryDocument;
@@ -114,7 +115,7 @@ public class NativeBroker extends DBBroker {
 
     public final static String EXIST_STATISTICS_LOGGER = "org.exist.statistics";
 
-    protected final static Logger LOG_STATS = Logger.getLogger(EXIST_STATISTICS_LOGGER);
+    protected final static Logger LOG_STATS = LogManager.getLogger(EXIST_STATISTICS_LOGGER);
 
     public final static byte LOG_RENAME_BINARY = 0x40;
     public final static byte LOG_CREATE_BINARY = 0x41;

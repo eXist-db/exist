@@ -22,7 +22,8 @@
 package org.exist.xquery.functions.fn;
 
 import java.util.Map;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -40,7 +41,7 @@ import org.exist.xquery.value.ValueSequence;
 
 public class FunEnvironment extends BasicFunction {
 
-    protected static final Logger logger = Logger.getLogger(FunEnvironment.class);
+    protected static final Logger logger = LogManager.getLogger(FunEnvironment.class);
 
     public final static FunctionSignature signature[] = {
         new FunctionSignature(

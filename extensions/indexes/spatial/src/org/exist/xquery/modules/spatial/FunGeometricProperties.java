@@ -26,7 +26,8 @@ package org.exist.xquery.modules.spatial;
 
 import java.io.ByteArrayInputStream;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.indexing.spatial.AbstractGMLJDBCIndex;
@@ -56,7 +57,7 @@ import com.vividsolutions.jts.io.WKBWriter;
 import com.vividsolutions.jts.io.WKTWriter;
 
 public class FunGeometricProperties extends BasicFunction implements IndexUseReporter {
-    protected static final Logger logger = Logger.getLogger(FunGeometricProperties.class);
+    protected static final Logger logger = LogManager.getLogger(FunGeometricProperties.class);
     boolean hasUsedIndex = false;
 
     protected WKTWriter wktWriter = new WKTWriter();

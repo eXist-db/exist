@@ -21,7 +21,8 @@
  */
 package org.exist.xquery.functions.xmldb;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.security.Group;
 import org.exist.security.SecurityManager;
@@ -46,7 +47,7 @@ import org.exist.xquery.value.Type;
 @Deprecated
 public class XMLDBGroupExists extends BasicFunction {
 	
-    protected static final Logger logger = Logger.getLogger(XMLDBCreateUser.class);
+    protected static final Logger logger = LogManager.getLogger(XMLDBCreateUser.class);
 
     public final static FunctionSignature signatures[] = {
 

@@ -3,7 +3,8 @@ package org.exist.xquery.modules.ftpclient;
 import java.io.IOException;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.xquery.BasicFunction;
@@ -26,7 +27,7 @@ import org.exist.xquery.value.Type;
  */
 public class GetDirListFunction extends BasicFunction {
 
-    private static final Logger log = Logger.getLogger(GetDirListFunction.class);
+    private static final Logger log = LogManager.getLogger(GetDirListFunction.class);
     
     private static final FunctionParameterSequenceType CONNECTION_HANDLE_PARAM = new FunctionParameterSequenceType("connection-handle", Type.LONG, Cardinality.EXACTLY_ONE, "The connection handle");
     private static final FunctionParameterSequenceType REMOTE_DIRECTORY_PARAM = new FunctionParameterSequenceType("remote-directory", Type.STRING, Cardinality.EXACTLY_ONE, "The remote directory");

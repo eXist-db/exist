@@ -40,7 +40,8 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.EXistException;
 import org.exist.atom.Atom;
@@ -76,7 +77,7 @@ public class AtomServlet extends AbstractExistHttpServlet {
 	public final static String DEFAULT_ENCODING = "UTF-8";
 	public final static String CONF_NS = "http://www.exist-db.org/Vocabulary/AtomConfiguration/2006/1/0";
 
-	protected final static Logger LOG = Logger.getLogger(AtomServlet.class);
+	protected final static Logger LOG = LogManager.getLogger(AtomServlet.class);
 
 	@Override
 	public Logger getLog() {

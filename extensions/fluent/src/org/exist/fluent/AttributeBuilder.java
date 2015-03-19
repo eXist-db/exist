@@ -3,7 +3,8 @@ package org.exist.fluent;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.NodeListImpl;
 import org.w3c.dom.*;
 
@@ -20,7 +21,7 @@ public class AttributeBuilder {
 		public void completed(NodeList removeList, NodeList addList);
 	}
 	
-	private static final Logger LOG = Logger.getLogger(AttributeBuilder.class);
+	private static final Logger LOG = LogManager.getLogger(AttributeBuilder.class);
 	
 	private final CompletedCallback callback;
 	private final NamespaceMap namespaceBindings;

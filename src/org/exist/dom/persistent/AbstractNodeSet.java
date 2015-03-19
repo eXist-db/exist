@@ -21,7 +21,8 @@
  */
 package org.exist.dom.persistent;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.collections.Collection;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
@@ -48,7 +49,7 @@ import java.util.Iterator;
  */
 public abstract class AbstractNodeSet extends AbstractSequence implements NodeSet {
 
-    protected static final Logger LOG = Logger.getLogger(AbstractNodeSet.class);
+    protected static final Logger LOG = LogManager.getLogger(AbstractNodeSet.class);
 
     // indicates the type of an optional value index that may have
     // been defined on the nodes in this set.

@@ -20,7 +20,8 @@
  */
 package org.exist.storage;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.util.DatabaseConfigurationException;
 import org.w3c.dom.Element;
@@ -63,7 +64,7 @@ public class FulltextIndexSpec {
     private static final NodePath[] ARRAY_TYPE = new NodePath[0];
     
     @SuppressWarnings("unused")
-	private final static Logger LOG = Logger.getLogger(FulltextIndexSpec.class);
+	private final static Logger LOG = LogManager.getLogger(FulltextIndexSpec.class);
     
     protected NodePath[] includePath;
     protected NodePath[] excludePath;

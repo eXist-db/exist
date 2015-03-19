@@ -23,7 +23,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.collections.triggers.CollectionTrigger;
 import org.exist.collections.triggers.CollectionTriggerProxy;
 import org.exist.collections.triggers.DocumentTrigger;
@@ -76,7 +77,7 @@ public class CollectionConfiguration {
     private final static String VALIDATION_ELEMENT = "validation";
     private final static String VALIDATION_MODE_ATTR = "mode";
 
-    private static final Logger LOG = Logger.getLogger(CollectionConfiguration.class);
+    private static final Logger LOG = LogManager.getLogger(CollectionConfiguration.class);
 
     private List<TriggerProxy<? extends CollectionTrigger>> colTriggers = new ArrayList<TriggerProxy<? extends CollectionTrigger>>();
     private List<TriggerProxy<? extends DocumentTrigger>> docTriggers = new ArrayList<TriggerProxy<? extends DocumentTrigger>>();

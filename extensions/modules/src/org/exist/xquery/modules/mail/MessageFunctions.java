@@ -17,7 +17,8 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.xml.transform.stream.StreamSource;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -39,7 +40,7 @@ import org.xml.sax.SAXException;
  * @see org.exist.xquery.BasicFunction#BasicFunction(org.exist.xquery.XQueryContext, org.exist.xquery.FunctionSignature)
  */
 public class MessageFunctions extends BasicFunction {
-    protected static final Logger logger = Logger.getLogger(MessageListFunctions.class);
+    protected static final Logger logger = LogManager.getLogger(MessageListFunctions.class);
     private static final String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
     private static final Pattern CONTENT_TYPE_RE = Pattern.compile(";\\s*boundary(.*)$"); // Remove unnecessary boundary= from content-type
 

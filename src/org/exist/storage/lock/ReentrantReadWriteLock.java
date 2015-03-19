@@ -33,7 +33,8 @@ package org.exist.storage.lock;
 import java.io.PrintStream;
 import java.util.Stack;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.util.LockException;
 
 /**
@@ -63,7 +64,7 @@ public class ReentrantReadWriteLock implements Lock {
         }
     }
 
-    private final static Logger LOG = Logger.getLogger(ReentrantReadWriteLock.class);
+    private final static Logger LOG = LogManager.getLogger(ReentrantReadWriteLock.class);
 
     protected Object id_ = null;
 	protected Thread owner_ = null;

@@ -4,7 +4,8 @@ import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.QName;
@@ -41,7 +42,7 @@ import org.expath.pkg.repo.tui.BatchUserInteraction;
  */
 public class InstallFunction extends BasicFunction {
 
-	private final static Logger logger = Logger.getLogger(InstallFunction.class);
+	private final static Logger logger = LogManager.getLogger(InstallFunction.class);
 
     public final static FunctionSignature signatureInstall =
 		new FunctionSignature(

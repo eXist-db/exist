@@ -23,7 +23,8 @@ package org.exist.xquery.modules.compression;
 
 import java.util.List;
 import java.util.Map;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 
@@ -36,7 +37,7 @@ import org.exist.xquery.FunctionDef;
  */
 public class CompressionModule extends AbstractInternalModule {
 
-    private final static Logger logger = Logger.getLogger(CompressionModule.class);
+    private final static Logger logger = LogManager.getLogger(CompressionModule.class);
 
     public final static String NAMESPACE_URI = "http://exist-db.org/xquery/compression";
 

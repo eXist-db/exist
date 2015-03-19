@@ -21,7 +21,8 @@
  */
 package org.exist.xquery.functions.util;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
@@ -43,7 +44,7 @@ import org.exist.xquery.value.Type;
  * @author ljo
  */
 public class BaseConverter extends BasicFunction {
-	protected static final Logger logger = Logger.getLogger(BaseConverter.class);
+	protected static final Logger logger = LogManager.getLogger(BaseConverter.class);
 	
 	private static final FunctionParameterSequenceType number_param = new FunctionParameterSequenceType("number", Type.ITEM, Cardinality.EXACTLY_ONE, "The number to convert");
 	private static final FunctionParameterSequenceType int_param = new FunctionParameterSequenceType("number", Type.INTEGER, Cardinality.EXACTLY_ONE, "The number to convert");

@@ -22,7 +22,8 @@
 
 package org.exist.xquery.functions.response;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.dom.QName;
 import org.exist.http.servlets.ResponseWrapper;
@@ -57,7 +58,7 @@ import javax.xml.datatype.Duration;
  */
 public class SetCookie extends Function
 {
-    protected static final Logger logger = Logger.getLogger(SetCookie.class);
+    protected static final Logger logger = LogManager.getLogger(SetCookie.class);
 	protected static final FunctionParameterSequenceType NAME_PARAM = new FunctionParameterSequenceType("name", Type.STRING, Cardinality.EXACTLY_ONE, "The cookie name");
 	protected static final FunctionParameterSequenceType VALUE_PARAM = new FunctionParameterSequenceType("value", Type.STRING, Cardinality.EXACTLY_ONE, "The cookie value");
 	protected static final FunctionParameterSequenceType MAX_AGE_PARAM = new FunctionParameterSequenceType("max-age", Type.DURATION, Cardinality.ZERO_OR_ONE, "The xs:duration of the cookie");

@@ -21,7 +21,8 @@
  */
 package org.exist.validation;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.xerces.util.XMLGrammarPoolImpl;
 import org.apache.xerces.xni.grammars.Grammar;
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
@@ -41,7 +42,7 @@ import org.exist.Namespaces;
  */
 public class GrammarPool implements XMLGrammarPool {
     
-    private final static Logger logger = Logger.getLogger(GrammarPool.class);
+    private final static Logger logger = LogManager.getLogger(GrammarPool.class);
     
     private XMLGrammarPool pool;
     

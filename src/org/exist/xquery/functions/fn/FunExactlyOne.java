@@ -21,7 +21,8 @@
  */
 package org.exist.xquery.functions.fn;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
@@ -45,7 +46,7 @@ import org.exist.xquery.value.Type;
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
 public class FunExactlyOne extends Function {
-	protected static final Logger logger = Logger.getLogger(FunExactlyOne.class);
+	protected static final Logger logger = LogManager.getLogger(FunExactlyOne.class);
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("exactly-one", Function.BUILTIN_FUNCTION_NS),

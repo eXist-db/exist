@@ -21,7 +21,8 @@
  */
 package org.exist.debugger.dbgp;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
@@ -33,7 +34,7 @@ import org.exist.debugger.Debugger;
  */
 public class ProtocolHandler extends IoHandlerAdapter {
 
-    private final static Logger LOG = Logger.getLogger(ProtocolHandler.class);
+    private final static Logger LOG = LogManager.getLogger(ProtocolHandler.class);
 	
 	private Debugger debugger;
 	

@@ -21,7 +21,8 @@
  */
 package org.exist.xquery.functions.xmldb;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.dom.QName;
 import org.exist.security.Permission;
@@ -52,7 +53,7 @@ public class XMLDBGetUserOrGroup extends XMLDBPermissions {
 	protected static final FunctionReturnSequenceType OWNER_RETURN_TYPE = new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the user-id");
 	protected static final FunctionReturnSequenceType GROUP_RETURN_TYPE = new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the owner group");
 
-	protected static final Logger logger = Logger.getLogger(XMLDBGetUserOrGroup.class);
+	protected static final Logger logger = LogManager.getLogger(XMLDBGetUserOrGroup.class);
 	public final static FunctionSignature getGroupSignatures[] = {
 			new FunctionSignature(
 				new QName("get-group", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),

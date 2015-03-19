@@ -21,7 +21,8 @@
  */
 package org.exist.xquery.modules.xmldiff;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.custommonkey.xmlunit.Diff;
 
@@ -39,7 +40,7 @@ import java.util.Properties;
  */
 public class Compare extends Function {
 	
-    private static final Logger logger = Logger.getLogger(Compare.class);
+    private static final Logger logger = LogManager.getLogger(Compare.class);
     private final static Properties OUTPUT_PROPERTIES = new Properties();
 
     static {

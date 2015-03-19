@@ -19,7 +19,8 @@
  */
 package org.exist.indexing;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.AttrImpl;
 import org.exist.dom.persistent.ElementImpl;
 import org.exist.dom.persistent.IStoredNode;
@@ -37,7 +38,7 @@ import java.io.IOException;
  */
 public class IndexUtils {
 
-    protected static final Logger LOG = Logger.getLogger(IndexUtils.class);
+    protected static final Logger LOG = LogManager.getLogger(IndexUtils.class);
 
     public static void scanNode(DBBroker broker, Txn transaction, IStoredNode node, StreamListener listener) {
         try(final INodeIterator iterator = broker.getNodeIterator(node)) {

@@ -28,7 +28,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.net.URL;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
 
@@ -49,7 +50,7 @@ import org.exist.util.MimeType;
  */
 public class XmlrpcUpload {
     
-    private final static Logger LOG = Logger.getLogger(XmlrpcUpload.class);
+    private final static Logger LOG = LogManager.getLogger(XmlrpcUpload.class);
     
     /**
      * Write data from a (input)stream to the specified XMLRPC url and leave

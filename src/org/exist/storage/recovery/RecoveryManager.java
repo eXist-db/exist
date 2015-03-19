@@ -23,7 +23,8 @@ package org.exist.storage.recovery;
 
 import java.io.File;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.storage.DBBroker;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.journal.Journal;
@@ -47,7 +48,7 @@ import org.exist.util.sanity.SanityCheck;
  */
 public class RecoveryManager {
 	
-	private final static Logger LOG = Logger.getLogger(RecoveryManager.class);
+	private final static Logger LOG = LogManager.getLogger(RecoveryManager.class);
 	
 	/**
      * @uml.property name="logManager"

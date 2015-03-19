@@ -31,7 +31,8 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.text.DateFormat;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationFieldAsAttribute;
@@ -74,7 +75,7 @@ public class Journal {
     /**
      * Logger for this class
      */
-    private static final Logger LOG = Logger.getLogger(Journal.class);
+    private static final Logger LOG = LogManager.getLogger(Journal.class);
 
     public final static String RECOVERY_SYNC_ON_COMMIT_ATTRIBUTE = "sync-on-commit";
     public final static String RECOVERY_JOURNAL_DIR_ATTRIBUTE = "journal-dir";

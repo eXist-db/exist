@@ -27,7 +27,8 @@ import java.util.TreeMap;
 import org.apache.commons.collections.MultiMap;
 import org.apache.commons.collections.map.MultiValueMap;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.exist.EXistException;
 import org.exist.dom.INode;
@@ -77,7 +78,7 @@ public class LuceneIndexConfig {
     // This is for the @attr match boosting
     // and the intention is to do a proper predicate check instead in the future. /ljo
     private MultiMap matchAttrs;
-    protected final static Logger LOG = Logger.getLogger(LuceneIndexConfig.class);
+    protected final static Logger LOG = LogManager.getLogger(LuceneIndexConfig.class);
 
 
     public LuceneIndexConfig(Element config, Map<String, String> namespaces, AnalyzerConfig analyzers,

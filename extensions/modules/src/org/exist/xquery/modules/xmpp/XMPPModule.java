@@ -21,7 +21,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 import org.exist.xquery.XQueryContext;
@@ -40,7 +41,7 @@ import org.jivesoftware.smack.XMPPConnection;
  */
 public class XMPPModule extends AbstractInternalModule
 { 
-	protected final static Logger LOG = Logger.getLogger( XMPPModule.class );
+	protected final static Logger LOG = LogManager.getLogger( XMPPModule.class );
 	
 	public final static String NAMESPACE_URI = "http://exist-db.org/xquery/xmpp";
 	

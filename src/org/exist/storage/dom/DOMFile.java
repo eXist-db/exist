@@ -32,7 +32,8 @@ import java.util.ArrayList;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.AttrImpl;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.ElementImpl;
@@ -117,7 +118,7 @@ import org.exist.dom.persistent.StoredNode;
  */
 public class DOMFile extends BTree implements Lockable {
 
-    protected final static Logger LOGSTATS = Logger.getLogger( NativeBroker.EXIST_STATISTICS_LOGGER );
+    protected final static Logger LOGSTATS = LogManager.getLogger( NativeBroker.EXIST_STATISTICS_LOGGER );
 
     public static final String FILE_NAME = "dom.dbx";
     public static final String  CONFIG_KEY_FOR_FILE = "db-connection.dom";

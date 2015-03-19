@@ -21,7 +21,8 @@
  */
 package org.exist.xquery.functions.fn;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.dom.persistent.DefaultDocumentSet;
 import org.exist.dom.persistent.DocumentSet;
@@ -63,7 +64,7 @@ import java.util.TreeSet;
  *
  */
 public class FunIdRef extends Function {
-	protected static final Logger logger = Logger.getLogger(FunIdRef.class);
+	protected static final Logger logger = LogManager.getLogger(FunIdRef.class);
 	public final static FunctionSignature signature[] = {
 		new FunctionSignature(
 			new QName("idref", Function.BUILTIN_FUNCTION_NS),

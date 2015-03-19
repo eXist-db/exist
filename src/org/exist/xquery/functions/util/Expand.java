@@ -22,7 +22,8 @@
  */
 package org.exist.xquery.functions.util;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.DocumentBuilderReceiver;
 import org.exist.dom.memtree.InMemoryNodeSet;
@@ -47,7 +48,7 @@ import java.util.Properties;
 
 public class Expand extends BasicFunction {
 	
-	protected static final Logger logger = Logger.getLogger(Expand.class);
+	protected static final Logger logger = LogManager.getLogger(Expand.class);
 
     public final static FunctionSignature signatures[] = {
         new FunctionSignature(

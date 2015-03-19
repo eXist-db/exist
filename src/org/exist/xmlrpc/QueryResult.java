@@ -5,7 +5,8 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Sequence;
 
 import java.util.Properties;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.xquery.value.BinaryValue;
 
 /**
@@ -17,7 +18,7 @@ import org.exist.xquery.value.BinaryValue;
  */
 public class QueryResult extends AbstractCachedResult {
 
-    protected final static Logger LOG = Logger.getLogger(QueryResult.class);
+    protected final static Logger LOG = LogManager.getLogger(QueryResult.class);
     protected Sequence result;
     protected Properties serialization = null;
     // set upon failure

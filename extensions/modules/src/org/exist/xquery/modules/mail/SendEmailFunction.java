@@ -36,7 +36,8 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.util.Base64Encoder;
 import org.exist.util.MimeTable;
@@ -72,7 +73,7 @@ this function may have issues on non-Windows platforms
 public class SendEmailFunction extends BasicFunction
 {
     
-    protected static final Logger logger = Logger.getLogger(SendEmailFunction.class);
+    protected static final Logger logger = LogManager.getLogger(SendEmailFunction.class);
 
     private final int MIME_BASE64_MAX_LINE_LENGTH = 76; //RFC 2045, page 24
     

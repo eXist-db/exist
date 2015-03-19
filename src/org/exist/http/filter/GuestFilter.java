@@ -1,6 +1,7 @@
 package org.exist.http.filter;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
@@ -18,7 +19,7 @@ import java.util.Enumeration;
  */
 public class GuestFilter implements Filter {
 
-    private final static Logger LOG = Logger.getLogger(GuestFilter.class);
+    private final static Logger LOG = LogManager.getLogger(GuestFilter.class);
 
     private String sslPort = null;
 

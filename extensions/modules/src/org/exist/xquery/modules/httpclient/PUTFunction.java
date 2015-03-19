@@ -26,7 +26,8 @@ import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.RequestEntity;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.dom.QName;
 import org.apache.commons.io.output.ByteArrayOutputStream;
@@ -58,7 +59,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class PUTFunction extends BaseHTTPClientFunction
 {
-    protected static final Logger         logger    = Logger.getLogger( PUTFunction.class );
+    protected static final Logger         logger    = LogManager.getLogger( PUTFunction.class );
 
     public final static FunctionSignature signatures[]  = {
 		new FunctionSignature(

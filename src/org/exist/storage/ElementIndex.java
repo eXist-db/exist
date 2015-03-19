@@ -30,7 +30,8 @@ import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
 import org.exist.util.Occurrences;
 import org.exist.xquery.NodeSelector;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.Observable;
@@ -39,7 +40,7 @@ import java.util.TreeMap;
 /** base class for {@link org.exist.storage.structural.NativeStructuralIndex} */
 public abstract class ElementIndex extends Observable {
 
-    protected static Logger LOG = Logger.getLogger(ElementIndex.class.getName());
+    protected static Logger LOG = LogManager.getLogger(ElementIndex.class.getName());
 
     /** The broker that is using this value index */
     protected DBBroker broker;

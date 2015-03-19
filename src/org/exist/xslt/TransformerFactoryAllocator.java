@@ -27,7 +27,8 @@ import java.util.Hashtable;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXTransformerFactory;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.storage.BrokerPool;
 
 /**
@@ -42,7 +43,7 @@ import org.exist.storage.BrokerPool;
  */
 
 public class TransformerFactoryAllocator {
-    private final static Logger LOG = Logger.getLogger( TransformerFactoryAllocator.class );
+    private final static Logger LOG = LogManager.getLogger( TransformerFactoryAllocator.class );
 
     public static final String CONFIGURATION_ELEMENT_NAME  						= "transformer";
     public final static String TRANSFORMER_CLASS_ATTRIBUTE 						= "class";

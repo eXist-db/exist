@@ -28,7 +28,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.scheduler.*;
 import org.exist.security.Subject;
@@ -60,7 +61,7 @@ import org.quartz.impl.matchers.GroupMatcher;
  */
 public class QuartzSchedulerImpl implements Scheduler {
 
-    private final static Logger LOG = Logger.getLogger(QuartzSchedulerImpl.class); //Logger
+    private final static Logger LOG = LogManager.getLogger(QuartzSchedulerImpl.class); //Logger
 
     //the scheduler
     private final org.quartz.Scheduler scheduler;

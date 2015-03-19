@@ -28,7 +28,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.triggers.DocumentTrigger;
@@ -66,7 +67,7 @@ import org.w3c.dom.NodeList;
  */
 public abstract class Modification {
 
-	protected final static Logger LOG = Logger.getLogger(Modification.class);
+	protected final static Logger LOG = LogManager.getLogger(Modification.class);
 
 	/** select Statement in the current XUpdate definition;
 	 * defines the set of nodes to which this XUpdate might apply. */

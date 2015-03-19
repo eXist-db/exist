@@ -20,7 +20,8 @@
 package org.exist.collections.triggers;
 
 import java.util.List;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  *
@@ -28,7 +29,7 @@ import org.apache.log4j.Logger;
  */
 public class CollectionTriggersVisitor extends AbstractTriggersVisitor<CollectionTrigger> {
 
-    protected Logger LOG = Logger.getLogger(getClass());
+    protected Logger LOG = LogManager.getLogger(getClass());
     
     public CollectionTriggersVisitor(List<CollectionTrigger> triggers) {
         super(triggers);

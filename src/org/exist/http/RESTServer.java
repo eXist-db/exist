@@ -47,7 +47,8 @@ import javax.xml.parsers.SAXParserFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerConfigurationException;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.Namespaces;
 import org.exist.collections.Collection;
@@ -131,7 +132,7 @@ import org.xml.sax.helpers.XMLFilterImpl;
  */
 public class RESTServer {
 
-    protected final static Logger LOG = Logger.getLogger(RESTServer.class);
+    protected final static Logger LOG = LogManager.getLogger(RESTServer.class);
     public final static String SERIALIZATION_METHOD_PROPERTY = "output-as";
     // Should we not obey the instance's defaults? /ljo
     protected final static Properties defaultProperties = new Properties();

@@ -25,7 +25,8 @@ import java.io.StringWriter;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.Database;
 import org.exist.debuggee.dbgp.packets.AbstractCommandContinuation;
 import org.exist.debuggee.dbgp.packets.Command;
@@ -51,7 +52,7 @@ import org.exist.xquery.value.*;
  */
 public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 	
-    private final static Logger LOG = Logger.getLogger(DebuggeeJoint.class);
+    private final static Logger LOG = LogManager.getLogger(DebuggeeJoint.class);
 
     private Map<String, String> features = new HashMap<String, String>(DebuggeeImpl.SET_GET_FEATURES);
 	

@@ -1,6 +1,7 @@
 package org.exist.storage.dom;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.IStoredNode;
@@ -28,7 +29,7 @@ import org.exist.dom.persistent.NodeHandle;
  */
 public final class NodeIterator implements INodeIterator {
 
-    private final static Logger LOG = Logger.getLogger(NodeIterator.class);
+    private final static Logger LOG = LogManager.getLogger(NodeIterator.class);
 
     private DOMFile db = null;
     private NodeHandle node; //= null;

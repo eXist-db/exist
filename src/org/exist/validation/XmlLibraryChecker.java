@@ -28,7 +28,8 @@ import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.util.ExistSAXParserFactory;
 
@@ -64,7 +65,7 @@ public class XmlLibraryChecker {
     };
 	
 	
-	private final static Logger logger = Logger.getLogger( XmlLibraryChecker.class );
+	private final static Logger logger = LogManager.getLogger( XmlLibraryChecker.class );
 
 
     /**

@@ -24,7 +24,8 @@
  */
 package org.exist.xquery.modules.spatial;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.QName;
@@ -51,7 +52,7 @@ import com.vividsolutions.jts.geom.Geometry;
 public class FunSpatialSearch extends BasicFunction implements IndexUseReporter {
     protected static final FunctionParameterSequenceType NODES_PARAMETER = new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE, "The nodes");
     protected static final FunctionParameterSequenceType GEOMETRY_PARAMETER = new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "The geometry");
-    protected static final Logger logger = Logger.getLogger(FunSpatialSearch.class);
+    protected static final Logger logger = LogManager.getLogger(FunSpatialSearch.class);
     boolean hasUsedIndex = false;
 
     public final static FunctionSignature[] signatures = {

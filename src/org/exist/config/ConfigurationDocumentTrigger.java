@@ -23,7 +23,8 @@ package org.exist.config;
 
 import java.util.*;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.triggers.DeferrableFilteringTrigger;
@@ -59,7 +60,7 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
 
     private final static String ID_ATTR = "id";
 
-    protected Logger LOG = Logger.getLogger(getClass());
+    protected Logger LOG = LogManager.getLogger(getClass());
 
     private DBBroker broker = null;
 

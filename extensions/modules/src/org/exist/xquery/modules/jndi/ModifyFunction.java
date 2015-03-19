@@ -31,7 +31,8 @@ import javax.naming.directory.BasicAttribute;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.ModificationItem;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -63,7 +64,7 @@ import org.w3c.dom.NodeList;
 
 public class ModifyFunction extends BasicFunction 
 {
-	protected static final Logger logger = Logger.getLogger(ModifyFunction.class);
+	protected static final Logger logger = LogManager.getLogger(ModifyFunction.class);
 	
 	public final static String DSML_NAMESPACE = "http://www.dsml.org/DSML";
 

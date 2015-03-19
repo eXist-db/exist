@@ -20,7 +20,8 @@ package org.exist.xquery.modules.memcached;
 
 import net.spy.memcached.MemcachedClient;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -37,7 +38,7 @@ import org.exist.xquery.value.Type;
 
 public class MemcachedStoreFunction extends BasicFunction
 {
-	protected static final Logger logger = Logger.getLogger(MemcachedStoreFunction.class);
+	protected static final Logger logger = LogManager.getLogger(MemcachedStoreFunction.class);
 	
 	private static SequenceType[] storeParam = new SequenceType[]{
 			new FunctionParameterSequenceType( "client", Type.LONG, Cardinality.EXACTLY_ONE, 

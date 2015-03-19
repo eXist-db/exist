@@ -30,7 +30,8 @@ import javax.imageio.ImageReader;
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.stream.ImageInputStream;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.DocumentBuilderReceiver;
 import org.exist.dom.memtree.MemTreeBuilder;
@@ -66,7 +67,7 @@ import org.xml.sax.SAXException;
 public class GetMetadataFunction extends BasicFunction
 {   
 	@SuppressWarnings("unused")
-	private static final Logger logger = Logger.getLogger(GetMetadataFunction.class);
+	private static final Logger logger = LogManager.getLogger(GetMetadataFunction.class);
 	
 	public final static FunctionSignature signatures[] = {
             new FunctionSignature(

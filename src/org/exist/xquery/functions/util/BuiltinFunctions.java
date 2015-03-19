@@ -26,7 +26,8 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.*;
 import org.exist.xquery.functions.fn.FunOnFunctions;
@@ -42,7 +43,7 @@ import org.exist.xquery.value.*;
  */
 public class BuiltinFunctions extends BasicFunction {
 	
-	protected static final Logger logger = Logger.getLogger(BuiltinFunctions.class);
+	protected static final Logger logger = LogManager.getLogger(BuiltinFunctions.class);
 
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
