@@ -70,8 +70,6 @@ public class CollectionConfigurationTest {
                 "DatabaseInstanceManager", "1.0");
         dim.shutdown();
         database = null;
-
-        System.out.println("tearDown PASSED");
     }
 
 
@@ -89,7 +87,6 @@ public class CollectionConfigurationTest {
     }
 
     private void createCollection(String collection) throws XMLDBException {
-        System.out.println("createCollection=" + collection);
         Collection testCollection = cmservice.createCollection(collection);
         assertNotNull(testCollection);
 
@@ -98,7 +95,6 @@ public class CollectionConfigurationTest {
     }
 
     private void storeCollectionXconf(String collection, String document) throws XMLDBException {
-        System.out.println("storeCollectionXconf=" + collection);
         ResourceSet result = xpqservice.query("xmldb:store(\"" + collection + "\", \"collection.xconf\", " + document + ")");
         String r = (String) result.getResource(0).getContent();
         assertEquals("Store xconf", collection + "/collection.xconf", r);
@@ -106,7 +102,6 @@ public class CollectionConfigurationTest {
 
     @SuppressWarnings("unused")
 	private void storeDocument(String collection, String name, String document) throws XMLDBException {
-        System.out.println("storeDocument=" + collection + " " + name);
         ResourceSet result = xpqservice.query("xmldb:store(\"" + collection + "\", \"" + name + "\", " + document + ")");
         String r = (String) result.getResource(0).getContent();
         assertEquals("Store doc", collection + "/" + name, r);

@@ -578,7 +578,6 @@ public class QT3TS_case extends TestCase {
         SAXSerializer serializer = new SAXSerializer(writer, properties);
         item.toSAX(broker, serializer, properties);
         String serialized = writer.toString();
-        // System.out.println(serialized);
         return serialized;
     }
 

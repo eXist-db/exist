@@ -54,7 +54,7 @@ public class BTreeRecoverTest extends TestCase {
     private int count = 0;
     
     public void testAdd() {
-        System.out.println("Add some random data and force db corruption ...\n");
+        //Add some random data and force db corruption
         
         TransactionManager mgr = pool.getTransactionManager();
         NodeIdFactory idFact = pool.getNodeFactory();
@@ -97,7 +97,6 @@ public class BTreeRecoverTest extends TestCase {
             
             Writer writer = new StringWriter();
             domDb.dump(writer);
-            System.out.println(writer.toString());
         } catch (Exception e) {
         	e.printStackTrace();
             fail(e.getMessage());
@@ -105,7 +104,7 @@ public class BTreeRecoverTest extends TestCase {
     }
     
     public void testGet() {
-        System.out.println("Recover and read the data ...\n");
+        //Recover and read the data
         @SuppressWarnings("unused")
 		TransactionManager mgr = pool.getTransactionManager();
         NodeIdFactory idFact = pool.getNodeFactory();
@@ -118,12 +117,10 @@ public class BTreeRecoverTest extends TestCase {
             
             IndexQuery query = new IndexQuery(IndexQuery.GEQ, new NativeBroker.NodeRef(500, idFact.createInstance(1)));
             domDb.query(query, new IndexCallback());
-            System.out.println("Found: " + count);
             assertEquals(count, 800);
             
             Writer writer = new StringWriter();
             domDb.dump(writer);
-            System.out.println(writer.toString());
         } catch (Exception e) {
         	e.printStackTrace();
             fail(e.getMessage());
@@ -157,7 +154,6 @@ public class BTreeRecoverTest extends TestCase {
         	@SuppressWarnings("unused")
 			final byte[] data = value.data();
 //        	NodeId id = pool.getNodeFactory().createFromData(data[value.start() + 4], data, value.start() + 5);
-//            System.out.println(id + " -> " + pointer);
             count++;
             return false;
         }

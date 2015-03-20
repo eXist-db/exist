@@ -136,7 +136,6 @@ public class CollectionRemovalTest {
             Serializer serializer = broker.getSerializer();
             serializer.reset();
             String xml = serializer.serialize(doc);
-            System.out.println(xml);
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());

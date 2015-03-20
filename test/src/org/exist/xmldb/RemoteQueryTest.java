@@ -64,8 +64,6 @@ public class RemoteQueryTest extends RemoteDBTest {
 			for (int i = 0; i < result.getSize(); i++) {
 				XMLResource r = (XMLResource) result.getResource(i);
 				Node node = r.getContentAsDOM().getFirstChild();
-				System.out.println(node.getNodeName());
-				System.out.println(r.getContent());
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -92,7 +90,6 @@ public class RemoteQueryTest extends RemoteDBTest {
 			
 			for (int i = 0; i < result.getSize(); i++) {
 				XMLResource r = (XMLResource) result.getResource(i);
-				System.out.println(r.getContent());
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -154,9 +151,6 @@ public class RemoteQueryTest extends RemoteDBTest {
 			}
 			testCollection = null;
 			xmlrpcCollection = null;
-			
-			System.out.println("tearDown PASSED");
-			
 		} catch (XMLDBException e) {
 			e.printStackTrace();
 			fail(e.getMessage());

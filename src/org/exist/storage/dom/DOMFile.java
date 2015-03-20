@@ -1473,10 +1473,7 @@ public class DOMFile extends BTree implements Lockable {
                 writer.write(DLNBase.toBitString(data[key.start() + 4 + i]));
             }
         } catch (final Exception e) {
-            LOG.error(e);
-            e.printStackTrace();
-            System.out.println(e.getMessage() + ": doc: " +
-                    Integer.toString(ByteConversion.byteToInt(key.data(), key.start())));
+            LOG.error(e.getMessage() + ": doc: " + Integer.toString(ByteConversion.byteToInt(key.data(), key.start())), e);
         }
     }
 

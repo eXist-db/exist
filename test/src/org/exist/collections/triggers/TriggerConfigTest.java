@@ -34,14 +34,9 @@ import org.junit.runners.Parameterized;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.*;
 import org.xmldb.api.modules.CollectionManagementService;
-import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XQueryService;
 
 import java.util.LinkedList;
-import org.junit.Rule;
-import org.junit.rules.TestRule;
-import org.junit.rules.TestWatcher;
-import org.junit.runner.Description;
 
 /**
  * Test proper configuration of triggers in collection.xconf, in particular if there's
@@ -86,14 +81,6 @@ public class TriggerConfigTest {
     public TriggerConfigTest(String testCollection) {
         this.testCollection = testCollection;
     }
-    
-    @Rule
-    public TestRule watcher = new TestWatcher() {
-        @Override
-        protected void starting(Description description) {
-            System.out.println("\nStarting test: " + description.getMethodName());
-        }
-    };
 
     @Test
     public void storeDocument() {
@@ -105,7 +92,6 @@ public class TriggerConfigTest {
             Resource resource = root.createResource("data.xml", "XMLResource");
             resource.setContent(DOCUMENT_CONTENT);
             root.storeResource(resource);
-            printMessages();
             XQueryService qs = (XQueryService) root.getService("XQueryService", "1.0");
             ResourceSet result = qs.queryResource("messages.xml", "string(//event[last()]/@collection)");
             assertEquals(1, result.getSize());
@@ -179,17 +165,6 @@ public class TriggerConfigTest {
             ResourceSet result = qs.query("if (doc-available('" + testCollection + "/messages.xml')) then doc('" + testCollection + "/messages.xml')/events/event[@id = 'STORE-DOCUMENT']/string(@collection) else ()");
             assertEquals(1, result.getSize());
             assertEquals(testCollection, result.getResource(0).getContent());
-        } catch (XMLDBException e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        }
-    }
-
-    private void printMessages() {
-        try {
-            Collection root = DatabaseManager.getCollection(BASE_URI + testCollection, "admin", "");
-            XMLResource messages = (XMLResource) root.getResource("messages.xml");
-            System.out.println(messages.getContent().toString());
         } catch (XMLDBException e) {
             e.printStackTrace();
             fail(e.getMessage());

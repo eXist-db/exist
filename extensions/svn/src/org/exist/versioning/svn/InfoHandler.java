@@ -33,7 +33,6 @@ public class InfoHandler implements ISVNInfoHandler {
      * native SVN command line client.
      */
     public void handleInfo(SVNInfo info) {
-        System.out.println("-----------------INFO-----------------");
         System.out.println("Local Path: " + info.getFile().getPath());
         System.out.println("URL: " + info.getURL());
         if (info.isRemote() && info.getRepositoryRootURL() != null) {

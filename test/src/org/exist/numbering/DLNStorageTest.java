@@ -61,11 +61,11 @@ public class DLNStorageTest extends TestCase {
                     null, AccessContext.TEST);
             assertEquals(1, seq.getItemCount());
             NodeProxy href = (NodeProxy) seq.itemAt(0);
-            System.out.println(StorageAddress.toString(href));
+            StorageAddress.toString(href);
             assertEquals("1.3.2.1", href.getNodeId().toString());
             // test Attr deserialization
             Attr attr = (Attr) href.getNode();
-            System.out.println(StorageAddress.toString(((NodeHandle)attr)));
+            StorageAddress.toString(((NodeHandle)attr));
             // test Attr fields
             assertEquals(attr.getNodeName(), "href");
             assertEquals(attr.getName(), "href");
@@ -121,7 +121,6 @@ public class DLNStorageTest extends TestCase {
             test.store(transaction, broker, info, TEST_XML, false);
 
             transact.commit(transaction);
-            System.out.println("Transaction commited ...");
         } catch (Exception e) {
             fail(e.getMessage());
         }

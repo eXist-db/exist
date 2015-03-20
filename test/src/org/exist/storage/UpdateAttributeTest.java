@@ -55,8 +55,6 @@ public class UpdateAttributeTest extends AbstractUpdateTest {
             
             try(final Txn transaction = mgr.beginTransaction()) {
 
-                System.out.println("Transaction started ...");
-
                 // append some new element to records
                 for (int i = 1; i <= 200; i++) {
                     final String xupdate =
@@ -79,14 +77,12 @@ public class UpdateAttributeTest extends AbstractUpdateTest {
                 }
 
                 mgr.commit(transaction);
-                System.out.println("Transaction commited ...");
             }
 
             // the following transaction will not be committed and thus undone during recovery
             final Txn transaction = mgr.beginTransaction();
             assertNotNull(transaction);
-            System.out.println("Transaction started ...");
-            
+
             // update attributes
             for (int i = 1; i <= 200; i++) {
                 final String xupdate =
@@ -103,8 +99,7 @@ public class UpdateAttributeTest extends AbstractUpdateTest {
            
             //Don't commit
             pool.getTransactionManager().getJournal().flushToLog(true);
-            System.out.println("Transaction interrupted ...");    
-        } catch (Exception e) {            
+        } catch (Exception e) {
             fail(e.getMessage());             
         }
     }

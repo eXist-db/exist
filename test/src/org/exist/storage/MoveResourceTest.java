@@ -66,8 +66,6 @@ public class MoveResourceTest {
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
                 final Txn transaction = transact.beginTransaction()) {
 
-            System.out.println("Transaction started ...");
-
             final Collection test = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
             assertNotNull(test);
             broker.saveCollection(transaction, test);
@@ -84,19 +82,16 @@ public class MoveResourceTest {
             assertNotNull(info);
             test2.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
 
-            System.out.println("Moving document /db/test2/test.xml to /db/test/new_test.xml ...");
             final DocumentImpl doc = test2.getDocument(broker, TestConstants.TEST_XML_URI);
             assertNotNull(doc);
             broker.moveResource(transaction, doc, test, XmldbURI.create("new_test.xml"));
             broker.saveCollection(transaction, test);
 
             transact.commit(transaction);
-            System.out.println("Transaction committed ...");
         }
     }
 
     private void doRead() throws EXistException, PermissionDeniedException, SAXException, IOException {
-        System.out.println("testRead() ...\n");
 
         BrokerPool.FORCE_CORRUPTION = false;
         final BrokerPool pool = startDB();
@@ -113,7 +108,6 @@ public class MoveResourceTest {
 
             final TransactionManager transact = pool.getTransactionManager();
             try(final Txn transaction = transact.beginTransaction()) {
-                System.out.println("Transaction started ...");
 
                 final Collection root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, Lock.WRITE_LOCK);
                 assertNotNull(root);
@@ -121,7 +115,6 @@ public class MoveResourceTest {
                 broker.removeCollection(transaction, root);
 
                 transact.commit(transaction);
-                System.out.println("Transaction commited ...");
             }
         }
     }
@@ -142,8 +135,6 @@ public class MoveResourceTest {
 
             try(final Txn transaction = transact.beginTransaction()) {
 
-                System.out.println("Transaction started ...");
-
                 final Collection test2 = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI2);
                 assertNotNull(test2);
                 broker.saveCollection(transaction, test2);
@@ -162,7 +153,6 @@ public class MoveResourceTest {
 
             final Txn transaction = transact.beginTransaction();
 
-            System.out.println("Moving document /db/test2/new_test2.xml to /db/test/new_test2.xml ...");
             final Collection test2 = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI2);
             final DocumentImpl doc = test2.getDocument(broker, XmldbURI.create("new_test2.xml"));
             assertNotNull(doc);
@@ -178,7 +168,6 @@ public class MoveResourceTest {
     }
 
     private void readAborted() throws EXistException, PermissionDeniedException, SAXException, IOException {
-        System.out.println("testRead() ...\n");
 
         BrokerPool.FORCE_CORRUPTION = false;
         final BrokerPool pool = startDB();
@@ -191,13 +180,11 @@ public class MoveResourceTest {
             assertNotNull("Document should not be null", doc);
             final String data = serializer.serialize(doc);
             assertNotNull(data);
-//	        System.out.println(data);
+
             doc.getUpdateLock().release(Lock.READ_LOCK);
 
             final TransactionManager transact = pool.getTransactionManager();
             try(final Txn transaction = transact.beginTransaction()) {
-
-                System.out.println("Transaction started ...");
 
                 final Collection root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, Lock.WRITE_LOCK);
                 assertNotNull(root);
@@ -205,7 +192,6 @@ public class MoveResourceTest {
                 broker.removeCollection(transaction, root);
 
                 transact.commit(transaction);
-                System.out.println("Transaction committed ...");
             }
         }
     }

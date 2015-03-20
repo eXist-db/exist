@@ -209,13 +209,10 @@ public class SearchTest {
     }
     
 	private static DocumentImpl storeDocument(Txn txn, DBBroker broker, Collection col, XmldbURI uri, String data) throws TriggerException, EXistException, PermissionDeniedException, SAXException, LockException, IOException {
-        System.out.println("STORING DOCUMENT....");
         IndexInfo info = col.validateXMLResource(txn, broker, uri.lastSegment(), data);
         assertNotNull(info);
-        System.out.println("STORING DOCUMENT....SECOND ROUND....");
         col.store(txn, broker, info, data, false);
         assertNotNull(info.getDocument());
-        System.out.println("STORING DOCUMENT....DONE.");
 
         return info.getDocument();
 	}
@@ -250,7 +247,6 @@ public class SearchTest {
             doc1 = storeDocument(txn, broker, root, doc1uri, XML1);
             doc2 = storeDocument(txn, broker, root, doc2uri, XML2);
 
-            System.out.println("store "+doc5uri);
             root.addBinaryResource(txn, broker, doc5uri.lastSegment(), BINARY.getBytes(), null);
 
             txnManager.commit(txn);
@@ -281,12 +277,9 @@ public class SearchTest {
         pool = null;
         doc1 = null;
         doc2 = null;
-        System.out.println("stopped");
     }
 
     private static void clean(final DBBroker broker, final Txn txn) throws PermissionDeniedException, IOException, TriggerException {
-    	System.out.println("CLEANING...");
-
         Collection col = broker.getOrCreateCollection(txn, col1uri);
         assertNotNull(col);
         broker.removeCollection(txn, col);
@@ -298,7 +291,5 @@ public class SearchTest {
         col = broker.getOrCreateCollection(txn, col3uri);
         assertNotNull(col);
         broker.removeCollection(txn, col);
-
-    	System.out.println("CLEANED.");
     }
 }

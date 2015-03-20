@@ -92,7 +92,6 @@ public class Base64FunctionsTest
             assertEquals( "VGhpcyBpcyBhIHRlc3Qh", r );
         }
         catch( XMLDBException e ) {
-            System.out.println( "testBase64Encode(): " + e );
             fail( e.getMessage() );
         }
 
@@ -111,7 +110,6 @@ public class Base64FunctionsTest
             assertEquals( "This is a test!", r );		
         }
         catch( XMLDBException e ) {
-            System.out.println( "testBase64Decode(): " + e );
             fail( e.getMessage() );
         }
 
@@ -130,7 +128,6 @@ public class Base64FunctionsTest
             assertEquals( "This is a test!", r );
         }
         catch( XMLDBException e ) {
-            System.out.println( "testBase64EncodeDecode(): " + e );
             fail( e.getMessage() );
         }
 

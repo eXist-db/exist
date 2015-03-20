@@ -47,7 +47,6 @@ public class SecurityManagerRoundtripTest {
     @Before
     public void startServer() {
         try {
-            System.out.println("Starting standalone server...");
             server = new JettyStart();
             server.run();
         } catch (Exception e) {
@@ -58,7 +57,6 @@ public class SecurityManagerRoundtripTest {
 
     @After
     public void stopServer() {
-        System.out.println("Shutdown standalone server...");
         server.shutdown();
         server = null;
     }

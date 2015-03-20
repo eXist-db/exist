@@ -1943,7 +1943,6 @@ public class XMLDBSecurityTest {
     @BeforeClass
     public static void startServer() {
         try {
-            System.out.println("Starting standalone server...");
             server = new JettyStart();
             server.run();
         } catch (Exception e) {
@@ -1954,7 +1953,6 @@ public class XMLDBSecurityTest {
 
     @AfterClass
     public static void stopServer() {
-        System.out.println("Shutdown standalone server...");
         server.shutdown();
         server = null;
     }

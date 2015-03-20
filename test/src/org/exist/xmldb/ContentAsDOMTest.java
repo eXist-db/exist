@@ -75,10 +75,6 @@ public class ContentAsDOMTest {
         for(long i = 0; i < result.getSize(); i++) {
             XMLResource r = (XMLResource) result.getResource(i);
 
-            System.out.println("Output of getContent():");
-            System.out.println(r.getContent());
-
-            System.out.println("Output of getContentAsDOM():");
             Node node = r.getContentAsDOM();
             Transformer t = TransformerFactory.newInstance().newTransformer();
             t.setOutputProperty(OutputKeys.INDENT, "yes");

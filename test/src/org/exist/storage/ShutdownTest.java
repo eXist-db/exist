@@ -35,8 +35,6 @@ public class ShutdownTest {
 	public void shutdown() {
 		for (int i = 0; i < 2; i++) {
 			storeAndShutdown();
-			
-			System.out.println("-----------------------------------------------------");
 		}
 	}
 	
@@ -48,8 +46,6 @@ public class ShutdownTest {
             Collection test;
 
             try(final Txn transaction = transact.beginTransaction()) {
-
-                System.out.println("Transaction started ...");
 
                 test = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
                 assertNotNull(test);
@@ -87,16 +83,13 @@ public class ShutdownTest {
                 assertEquals(result.getItemCount(), 160);
 
                 transact.commit(transaction);
-                System.out.println("Transaction commited ...");
             }
 
             try(final Txn transaction = transact.beginTransaction()) {
-                System.out.println("Transaction started ...");
 
                 broker.removeCollection(transaction, test);
 
                 transact.commit(transaction);
-                System.out.println("Transaction commited ...");
             }
         } catch (Exception e) {            
             fail(e.getMessage()); 
@@ -104,7 +97,6 @@ public class ShutdownTest {
 		
 		// shut down the database
         shutdownDB();
-        System.out.println("Database stopped.");
         
         // try to remove the database files
 //        try {
@@ -117,7 +109,6 @@ public class ShutdownTest {
 //	        	}
 //	        });
 //	        for (int i = 0; i < files.length; i++) {
-//	        	System.out.println("Removing " + files[i].getAbsolutePath());
 //	    		files[i].delete();;
 //	        }
 //        } catch (Exception e) {

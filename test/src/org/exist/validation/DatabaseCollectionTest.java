@@ -56,7 +56,6 @@ public class DatabaseCollectionTest {
     @Before
     public void setUp() {
         try {
-            System.out.println(">>> setUp");
             Class<?> cl = Class.forName(DRIVER);
             Database database = (Database) cl.newInstance();
             database.setProperty("create-database", "true");
@@ -71,7 +70,6 @@ public class DatabaseCollectionTest {
             ums.chmod(Permission.DEFAULT_COLLECTION_PERM);
 
             assertNotNull("Could not connect to database.");
-            System.out.println("<<<\n");
         } catch (Exception e) {
             fail(e.getMessage());
         }

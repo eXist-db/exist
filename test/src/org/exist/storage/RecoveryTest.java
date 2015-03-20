@@ -94,7 +94,6 @@ public class RecoveryTest {
             BinaryDocument doc;
 
             try(final Txn transaction = transact.beginTransaction()) {
-                System.out.println("Transaction started ...");
 
                 Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
                 assertNotNull(root);
@@ -148,20 +147,17 @@ public class RecoveryTest {
                 test2.removeXMLResource(transaction, broker, XmldbURI.create(files[files.length - 1].getName()));
 
                 transact.commit(transaction);
-                System.out.println("Transaction commited ...");
             }
 
             // the following transaction will not be committed. It will thus be rolled back by recovery
             final Txn transaction = transact.beginTransaction();
-            System.out.println("Transaction started ...");
-            
+
             test2.removeXMLResource(transaction, broker, XmldbURI.create(files[0].getName()));            
             test2.removeBinaryResource(transaction, broker, doc);
             
 //          Don't commit...            
             transact.getJournal().flushToLog(true);
-            System.out.println("Transaction interrupted ...");
-            
+
             //DOMFile domDb = ((NativeBroker)broker).getDOMFile();
             //assertNotNull(domDb);
             //Writer writer = new StringWriter();
@@ -174,7 +170,6 @@ public class RecoveryTest {
     }
 
     private void read() {
-        System.out.println("testRead() ...\n");
 
         BrokerPool.FORCE_CORRUPTION = false;
         final BrokerPool pool = startDB();
@@ -188,14 +183,12 @@ public class RecoveryTest {
             assertNotNull("Document '" + XmldbURI.ROOT_COLLECTION + "/test/test2/hamlet.xml' should not be null", doc);
             String data = serializer.serialize(doc);
             assertNotNull(data);
-            //System.out.println(data);
             doc.getUpdateLock().release(Lock.READ_LOCK);
             
             doc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("test/test2/test_string.xml"), Lock.READ_LOCK);
             assertNotNull("Document '" + XmldbURI.ROOT_COLLECTION + "/test/test2/test_string.xml' should not be null", doc);
             data = serializer.serialize(doc);
             assertNotNull(data);
-            //System.out.println(data);
             doc.getUpdateLock().release(Lock.READ_LOCK);
             
             File files[] = dir.listFiles();
@@ -208,11 +201,9 @@ public class RecoveryTest {
             assertNotNull(xquery);
             Sequence seq = xquery.execute("//SPEECH[ft:query(LINE, 'king')]", null, AccessContext.TEST);
             assertNotNull(seq);
-            System.out.println("Found: " + seq.getItemCount());
             for (SequenceIterator i = seq.iterate(); i.hasNext(); ) {
                 Item next = i.nextItem();
                 String value = serializer.serialize((NodeValue) next);
-                //System.out.println(value);
             }
             
             BinaryDocument binDoc = (BinaryDocument) broker.getXMLResource(TestConstants.TEST_COLLECTION_URI2.append(TestConstants.TEST_BINARY_URI), Lock.READ_LOCK);
@@ -222,19 +213,15 @@ public class RecoveryTest {
                 is.read(bdata);
                 data = new String(bdata);
                 assertNotNull(data);
-                System.out.println(data);
             }
             
             DOMFile domDb = ((NativeBroker)broker).getDOMFile();
             assertNotNull(domDb);
             Writer writer = new StringWriter();
             domDb.dump(writer);
-            //System.out.println(writer.toString());
             
             final TransactionManager transact = pool.getTransactionManager();
             try(final Txn transaction = transact.beginTransaction()) {
-
-                System.out.println("Transaction started ...");
 
                 Collection root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, Lock.WRITE_LOCK);
                 assertNotNull(root);
@@ -242,7 +229,6 @@ public class RecoveryTest {
                 broker.removeCollection(transaction, root);
 
                 transact.commit(transaction);
-                System.out.println("Transaction commited ...");
             }
 	    } catch (Exception e) {
 	        fail(e.getMessage());

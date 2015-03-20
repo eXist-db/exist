@@ -76,7 +76,6 @@ public class DocTypeTest extends XMLTestCase {
 		try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
 			final File existHome = pool.getConfiguration().getExistHome();
 			final File testFile = new File(existHome, "/test/src/org/exist/dom/persistent/test_content.xml");
-			System.out.println("path: " + testFile);
 			assertEquals(true, testFile.canRead());
 			
 			final InputSource is = new FileInputSource(testFile);
@@ -103,7 +102,6 @@ public class DocTypeTest extends XMLTestCase {
 			
 			final String serialized = serializer.serialize(doc);
 
-			System.out.println(serialized);
 			assertTrue("Checking for Public Id in output", serialized.contains("-//OASIS//DTD DITA Reference//EN"));
 
 		} finally {
@@ -133,8 +131,6 @@ public class DocTypeTest extends XMLTestCase {
 
             String serialized = serializer.serialize(doc);
 
-            System.out.println(serialized);
-
             assertTrue("Checking for Public Id in output", serialized.contains("-//OASIS//DTD DITA Topic//EN"));
 
         } finally {
@@ -152,7 +148,6 @@ public class DocTypeTest extends XMLTestCase {
 
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
             final Txn transaction = transact.beginTransaction()) {
-            System.out.println("NodeTest#setUp ...");
             
             root = broker.getOrCreateCollection(transaction, XmldbURI.create(XmldbURI.ROOT_COLLECTION + "/test"));
             assertNotNull(root);
@@ -164,7 +159,6 @@ public class DocTypeTest extends XMLTestCase {
             root.store(transaction, broker, info, XML, false);
             
             transact.commit(transaction);
-            System.out.println("NodeTest#setUp finished.");
         }
 	}
 	
@@ -186,7 +180,6 @@ public class DocTypeTest extends XMLTestCase {
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
             final Txn transaction = transact.beginTransaction()) {
-            System.out.println("BasicNodeSetTest#tearDown >>>");
             
             root = broker.getOrCreateCollection(transaction, XmldbURI.create(XmldbURI.ROOT_COLLECTION + "/test"));
             assertNotNull(root);

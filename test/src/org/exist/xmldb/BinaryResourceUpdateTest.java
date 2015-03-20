@@ -63,7 +63,6 @@ public class BinaryResourceUpdateTest  {
 
             Resource resource = testCollection.getResource("test1.xml");
             assertNotNull(resource);
-            System.out.println("Content:\n" + resource.getContent().toString());
 
             XMLResource xmlResource = (XMLResource) testCollection.createResource("test2.xml", "XMLResource");
             xmlResource.setContent(xmlFile);
@@ -71,7 +70,6 @@ public class BinaryResourceUpdateTest  {
 
             resource = testCollection.getResource("test2.xml");
             assertNotNull(resource);
-            System.out.println("Content:\n" + resource.getContent().toString());
         }
         
     }
@@ -86,7 +84,6 @@ public class BinaryResourceUpdateTest  {
 
             Resource resource = testCollection.getResource("test.xml");
             assertNotNull(resource);
-            System.out.println("Content:\n" + resource.getContent().toString());
 
             XMLResource xmlResource = (XMLResource) testCollection.createResource("test.xml", "XMLResource");
             xmlResource.setContent(xmlFile);
@@ -94,7 +91,7 @@ public class BinaryResourceUpdateTest  {
 
             resource = testCollection.getResource("test.xml");
             assertNotNull(resource);
-            System.out.println("Content:\n" + resource.getContent().toString());
+            
         }
     }
 

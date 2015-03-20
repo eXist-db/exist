@@ -34,7 +34,6 @@ public class XMLStringTest extends TestCase {
 		s.append(ch, 0, ch.length);
 		s = s.normalize(XMLString.SUPPRESS_BOTH);
 		String r = s.toString();
-		System.out.println('"' + r + '"');
 		assertEquals(r, "Hello World");
 	}
 
@@ -44,7 +43,6 @@ public class XMLStringTest extends TestCase {
         s.append(ch, 0, ch.length);
         s = s.normalize(XMLString.NORMALIZE);
         String r = s.toString();
-        System.out.println('"' + r + '"');
         assertEquals(r, "Hello World");
     }
 
@@ -54,7 +52,6 @@ public class XMLStringTest extends TestCase {
 		s.append(ch, 0, ch.length);
 		s = s.normalize(XMLString.SUPPRESS_BOTH);
 		String r = s.substring(6, 5);
-		System.out.println('"' + r + '"');
 		assertEquals(r, "World");
 	}
 
@@ -64,11 +61,9 @@ public class XMLStringTest extends TestCase {
 		s.append(ch, 0, ch.length);
 		s.insert(5, " happy");
 		String r = s.toString();
-		System.out.println('"' + r + '"');
 		assertEquals(r, "Hello happy World");
 		s = s.delete(5, 6);
 		r = s.toString();
-		System.out.println('"' + r + '"');
 		assertEquals(r, "Hello World");
 	}
 }

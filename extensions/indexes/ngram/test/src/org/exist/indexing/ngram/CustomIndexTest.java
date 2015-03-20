@@ -590,7 +590,7 @@ public class CustomIndexTest extends TestCase {
             }
             serializer.endDocument();
             //TODO : check content
-            System.out.println(out.toString());
+
 
         } catch (Exception e) {
             e.printStackTrace();

@@ -27,7 +27,7 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.DirSet;
 
 import org.exist.backup.Restore;
-import org.exist.backup.restore.listener.DefaultRestoreListener;
+import org.exist.backup.restore.listener.ConsoleRestoreListener;
 import org.exist.backup.restore.listener.RestoreListener;
 
 import java.io.File;
@@ -86,7 +86,7 @@ public class RestoreTask extends AbstractXMLDBTask
                         }
                     } else {
                         final Restore         restore  = new Restore();
-                        final RestoreListener listener = new DefaultRestoreListener();
+                        final RestoreListener listener = new ConsoleRestoreListener();
                         restore.restore( listener, user, password, restorePassword, file, uri );
                     }
 
@@ -113,7 +113,7 @@ public class RestoreTask extends AbstractXMLDBTask
 
                             // TODO subdirectories as sub-collections?
                             final Restore         restore  = new Restore();
-                            final RestoreListener listener = new DefaultRestoreListener();
+                            final RestoreListener listener = new ConsoleRestoreListener();
                             restore.restore( listener, user, password, restorePassword, contentsFile, uri );
                         }
                     }
@@ -131,7 +131,7 @@ public class RestoreTask extends AbstractXMLDBTask
                         }
                     } else {
                         final Restore         restore  = new Restore();
-                        final RestoreListener listener = new DefaultRestoreListener();
+                        final RestoreListener listener = new ConsoleRestoreListener();
                         restore.restore( listener, user, password, restorePassword, zipFile, uri );
                     }
                 }

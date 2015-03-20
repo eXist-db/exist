@@ -91,7 +91,6 @@ public class MarshallerTest {
             SAXSerializer serializer = new SAXSerializer(writer, new Properties());
             Marshaller.marshall(broker, values, serializer);
             String serialized = writer.toString();
-            System.out.println(serialized);
 
             Sequence seq = Marshaller.demarshall(broker, new StringReader(serialized));
             assertEquals(seq.itemAt(0).getStringValue(), "foo");
@@ -121,7 +120,6 @@ public class MarshallerTest {
             SAXSerializer serializer = new SAXSerializer(writer, new Properties());
             Marshaller.marshall(broker, p, serializer);
             String serialized = writer.toString();
-            System.out.println(serialized);
 
             Sequence seq = Marshaller.demarshall(broker, new StringReader(serialized));
             assertTrue(Type.subTypeOf(seq.getItemType(), Type.NODE));
@@ -131,7 +129,6 @@ public class MarshallerTest {
             serializer.reset();
             serializer.setOutput(writer, new Properties());
             n.toSAX(broker, serializer, new Properties());
-            System.out.println(writer.toString());
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());

@@ -27,13 +27,12 @@ import junit.framework.TestCase;
 import org.exist.EXistException;
 import org.exist.backup.SystemExport;
 import org.exist.backup.SystemImport;
-import org.exist.backup.restore.listener.DefaultRestoreListener;
+import org.exist.backup.restore.listener.LogRestoreListener;
 import org.exist.backup.restore.listener.RestoreListener;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.IndexInfo;
-import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
@@ -81,8 +80,6 @@ public class BackupRestoreMDTest extends TestCase {
 
     //@Test
 	public void test_01() throws Exception {
-    	System.out.println("test_01");
-    	
     	startDB();
     	
     	MetaData md = MetaData.get();
@@ -153,7 +150,7 @@ public class BackupRestoreMDTest extends TestCase {
     	clean();
     	
     	SystemImport restore = new SystemImport(pool);
-		RestoreListener listener = new DefaultRestoreListener();
+		RestoreListener listener = new LogRestoreListener();
 		restore.restore(listener, "admin", "", "", file, "xmldb:exist://");
 
         broker = null;
@@ -239,12 +236,10 @@ public class BackupRestoreMDTest extends TestCase {
             CollectionConfigurationManager mgr = pool.getConfigurationManager();
             mgr.addConfiguration(transaction, broker, root, COLLECTION_CONFIG);
 
-            System.out.println("store " + doc1uri);
             IndexInfo info = root.validateXMLResource(transaction, broker, doc1uri.lastSegment(), XML);
             assertNotNull(info);
             root.store(transaction, broker, info, XML, false);
 
-            System.out.println("store " + doc2uri);
             BinaryDocument doc = root.addBinaryResource(transaction, broker, doc2uri.lastSegment(), BINARY.getBytes(), null);
             assertNotNull(doc);
 
@@ -271,11 +266,9 @@ public class BackupRestoreMDTest extends TestCase {
     	clean();
         BrokerPool.stopAll(false);
         pool = null;
-        System.out.println("stoped");
     }
 
     private static void clean() {
-    	System.out.println("CLEANING...");
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
             final Txn transaction = transact.beginTransaction()) {
@@ -289,6 +282,5 @@ public class BackupRestoreMDTest extends TestCase {
             e.printStackTrace();
             fail(e.getMessage());
         }
-    	System.out.println("CLEANED.");
     }
 }

@@ -99,7 +99,6 @@ public class XSLTestCase {
 						"CollectionManagementService",
 						"1.0");
 				col = mgtService.createCollection(XSLT_COLLECTION);
-				System.out.println("collection created.");
 			}
 			
 			BrokerPool.getInstance().getConfiguration().setProperty(
@@ -370,18 +369,15 @@ public class XSLTestCase {
 			tokenCount++;
 			String refToken = refTokenizer.nextToken();
 			if (!resTokenizer.hasMoreTokens()) {
-				System.out.println(ref);
 				throw new Exception("result should have: "+refToken+", but get EOF (at "+tokenCount+")");
 			}
 			String resToken = resTokenizer.nextToken();
 			if (!refToken.equals(resToken)) {
-				System.out.println(ref);
 				throw new Exception("result should have: "+refToken+", but get "+resToken+" (at "+tokenCount+")");
 			}
 		}
 		if (resTokenizer.hasMoreTokens()) {
 			String resToken = resTokenizer.nextToken();
-			System.out.println(ref);
 			throw new Exception("result should have nothing, but get "+resToken+" (at "+tokenCount+")");
 		}
 		return true;
@@ -410,13 +406,12 @@ public class XSLTestCase {
 			content = null;
 			
 			testInfo = bench.get(testName);
-			
-			System.out.print(testName+": ");
+
 			if (testInfo.containsKey("storeBeforeTest")) {
-				System.out.print("skipping");
-				if (testInfo.containsKey("comment"))
-					System.out.print(" ("+testInfo.get("comment")+")");
-				System.out.println();
+//				System.out.print("skipping");
+//				if (testInfo.containsKey("comment"))
+//					System.out.print(" ("+testInfo.get("comment")+")");
+//				System.out.println();
 				continue;
 			}
 			
@@ -451,21 +446,22 @@ public class XSLTestCase {
 	        } catch (Exception e) {
 //	        	System.out.println("************************************** query ******************************");
 //	        	System.out.println(query);
-	        	System.out.println();
-	        	System.out.println("************************************* content ******************************");
-	        	System.out.println(content);
+//	        	System.out.println();
+//	        	System.out.println("************************************* content ******************************");
+//	        	System.out.println(content);
 				passing = false;
 	            throw new RuntimeException(e);
 	        }
 	        if (passing) {
 	        	end_time = end_time - start_time;
-	        	System.out.println("pass ("+end_time+" ms)");
+//	        	System.out.println("pass ("+end_time+" ms)");
 	        	passed++;
-	        } else
-				System.out.println("faild");
+	        } else {
+				System.err.println("faild");
+            }
 		}
 		
-		System.out.println(" "+passed+" of "+bench.keySet().size());
+//		System.out.println(" "+passed+" of "+bench.keySet().size());
     }
 	
 	//TODO: test <!-- reassembles an xml tree in reverse order -->

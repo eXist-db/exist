@@ -226,8 +226,6 @@ public class SimpleMDTest {
 
     	List<DocumentImpl> ds = md.matchDocuments(KEY1, VALUE1);
     	
-    	System.out.println(" * "+Arrays.toString(ds.toArray()));
-    	
     	assertEquals(1, ds.size());
     	assertEquals(doc1, ds.get(0));
 
@@ -331,7 +329,6 @@ public class SimpleMDTest {
     	//add first key-value
     	docMD.put(KEY1, VALUE1);
 
-    	System.out.println("MOVING...");
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
 
             Collection col = broker.getCollection(col1uri);
@@ -347,7 +344,6 @@ public class SimpleMDTest {
 	            e.printStackTrace();
 	            fail(e.getMessage());
 	        }
-	    	System.out.println("MOVED.");
 
 	    	docMD = md.getMetas(doc2uri);
 	    	assertNotNull(docMD);
@@ -424,7 +420,6 @@ public class SimpleMDTest {
             Collection col = broker.getCollection(col1uri);
         	assertNotNull(col);
 
-        	System.out.println("MOVING...");
             final TransactionManager txnManager = pool.getTransactionManager();
             try(final Txn txn = txnManager.beginTransaction()) {
 	            
@@ -435,7 +430,6 @@ public class SimpleMDTest {
 	            e.printStackTrace();
 	            fail(e.getMessage());
 	        }
-	    	System.out.println("MOVED.");
 
             Collection moved = broker.getCollection(col3uri);
         	assertNotNull(moved);
@@ -523,7 +517,6 @@ public class SimpleMDTest {
             Collection col = broker.getCollection(col1uri);
         	assertNotNull(col);
 
-        	System.out.println("MOVING...");
             try(final Txn txn = txnManager.beginTransaction()) {
 	            
 	            broker.moveCollection(txn, col, parent, col3uri.lastSegment());
@@ -533,7 +526,6 @@ public class SimpleMDTest {
 	            e.printStackTrace();
 	            fail(e.getMessage());
 	        }
-	    	System.out.println("MOVED.");
 
             Collection moved = broker.getCollection(col3uri);
         	assertNotNull(moved);
@@ -599,7 +591,6 @@ public class SimpleMDTest {
             Collection col = broker.getCollection(col1uri);
         	assertNotNull(col);
 
-        	System.out.println("COPY...");
             final TransactionManager txnManager = pool.getTransactionManager();
             try(final Txn txn = txnManager.beginTransaction()) {
 	            
@@ -610,7 +601,6 @@ public class SimpleMDTest {
 	            e.printStackTrace();
 	            fail(e.getMessage());
 	        }
-	    	System.out.println("DONE.");
 
             Collection moved = broker.getCollection(col3uri);
         	assertNotNull(moved);
@@ -662,7 +652,6 @@ public class SimpleMDTest {
             Collection col = broker.getCollection(col1uri);
         	assertNotNull(col);
 
-        	System.out.println("DELETE...");
             final TransactionManager txnManager = pool.getTransactionManager();
             try(final Txn txn = txnManager.beginTransaction()) {
 	            
@@ -673,7 +662,6 @@ public class SimpleMDTest {
 	            e.printStackTrace();
 	            fail(e.getMessage());
 	        }
-	    	System.out.println("DONE.");
 
             col = broker.getCollection(col1uri);
         	assertNull(col);
@@ -725,7 +713,6 @@ public class SimpleMDTest {
                     final CollectionConfigurationManager mgr = pool.getConfigurationManager();
                     mgr.addConfiguration(txn, broker, root, COLLECTION_CONFIG);
 
-                    System.out.println("store " + doc1uri);
                     final IndexInfo info = root.validateXMLResource(txn, broker, doc1uri.lastSegment(), XML1);
                     assertNotNull(info);
                     root.store(txn, broker, info, XML1, false);
@@ -750,7 +737,6 @@ public class SimpleMDTest {
                     final CollectionConfigurationManager mgr = pool.getConfigurationManager();
                     mgr.addConfiguration(txn, broker, root, COLLECTION_CONFIG);
 
-                    System.out.println("store " + doc1uri);
                     final IndexInfo info = root.validateXMLResource(txn, broker, doc1uri.lastSegment(), wrongXML);
                     assertNotNull(info);
                     root.store(txn, broker, info, wrongXML, false);
@@ -782,13 +768,10 @@ public class SimpleMDTest {
 //	}
 	
 	private static DocumentImpl storeDocument(Txn txn, DBBroker broker, Collection col, XmldbURI uri, String data) throws TriggerException, EXistException, PermissionDeniedException, SAXException, LockException, IOException {
-        System.out.println("STORING DOCUMENT....");
         IndexInfo info = col.validateXMLResource(txn, broker, uri.lastSegment(), data);
         assertNotNull(info);
-        System.out.println("STORING DOCUMENT....SECOND ROUND....");
         col.store(txn, broker, info, data, false);
         assertNotNull(info.getDocument());
-        System.out.println("STORING DOCUMENT....DONE.");
 
         return info.getDocument();
 	}
@@ -822,8 +805,6 @@ public class SimpleMDTest {
 
             doc1 = storeDocument(txn, broker, root, doc1uri, XML1);
             doc2 = storeDocument(txn, broker, root, doc2uri, XML2);
-
-            System.out.println("store "+doc5uri);
             root.addBinaryResource(txn, broker, doc5uri.lastSegment(), BINARY.getBytes(), null);
 
             txnManager.commit(txn);
@@ -845,7 +826,6 @@ public class SimpleMDTest {
         pool = null;
         doc1 = null;
         doc2 = null;
-        System.out.println("stopped");
     }
 
     private static void clean() throws EXistException, PermissionDeniedException, IOException, TriggerException {
@@ -858,8 +838,6 @@ public class SimpleMDTest {
     }
 
     private static void clean(final DBBroker broker, final Txn txn) throws PermissionDeniedException, IOException, TriggerException {
-    	System.out.println("CLEANING...");
-
         Collection col = broker.getOrCreateCollection(txn, col1uri);
         assertNotNull(col);
         broker.removeCollection(txn, col);
@@ -871,7 +849,5 @@ public class SimpleMDTest {
         col = broker.getOrCreateCollection(txn, col3uri);
         assertNotNull(col);
         broker.removeCollection(txn, col);
-
-    	System.out.println("CLEANED.");
     }
 }

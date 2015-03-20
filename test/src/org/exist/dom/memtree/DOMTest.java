@@ -63,7 +63,7 @@ public class DOMTest extends TestCase {
 			StringWriter writer = new StringWriter();
 			DOMSerializer serializer = new DOMSerializer(writer, null);
 			serializer.serialize(node);
-			System.out.println(writer.toString());
+			writer.toString();
     	} catch (Exception e) {
     		fail(e.getMessage()); 
     	}			
@@ -170,21 +170,21 @@ public class DOMTest extends TestCase {
                 }
         }
 
-	public void print(Node node) {
-		while (node != null) {
-			switch (node.getNodeType()) {
-				case Node.ELEMENT_NODE :
-					System.out.println('<' + node.getNodeName() + '>');
-					break;
-				case Node.TEXT_NODE :
-					System.out.println(node.getNodeValue());
-					break;
-				default :
-					System.out.println("unknown node type");
-			}
-			if (node.hasChildNodes())
-				print(node.getFirstChild());
-			node = node.getNextSibling();
-		}
-	}
+//	public void print(Node node) {
+//		while (node != null) {
+//			switch (node.getNodeType()) {
+//				case Node.ELEMENT_NODE :
+//					System.out.println('<' + node.getNodeName() + '>');
+//					break;
+//				case Node.TEXT_NODE :
+//					System.out.println(node.getNodeValue());
+//					break;
+//				default :
+//					System.out.println("unknown node type");
+//			}
+//			if (node.hasChildNodes())
+//				print(node.getFirstChild());
+//			node = node.getNextSibling();
+//		}
+//	}
 }

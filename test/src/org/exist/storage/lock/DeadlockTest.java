@@ -141,7 +141,6 @@ public class DeadlockTest {
 	
 	public DeadlockTest(int mode) {
 		this.mode = mode;
-		System.out.println("MODE: " + mode);
 	}
 	
 	@BeforeClass
@@ -271,7 +270,6 @@ public class DeadlockTest {
                         transact.commit(transaction);
                     }
 
-                    System.out.println("Generating " + docCount + " files...");
                     final File[] files = generator.generate(broker, coll, generateXQ);
                     for (int j = 0; j < files.length; j++, fileCount++) {
                         try(final Txn transaction = transact.beginTransaction()) {
@@ -341,7 +339,6 @@ public class DeadlockTest {
 			}
 			
 			String query = buf.toString();
-			System.out.println("Query: " + query);
 			try {
 				org.xmldb.api.base.Collection testCollection = DatabaseManager
 						.getCollection("xmldb:exist://" + collection, "admin", null);
@@ -352,7 +349,7 @@ public class DeadlockTest {
 				service.beginProtected();
 				try {
 					ResourceSet result = service.query(query);
-					System.out.println("Result: " + result.getSize());
+                    result.getSize();
 				} finally {
 					service.endProtected();
 				}

@@ -171,8 +171,6 @@ public class XQueryTest extends XMLTestCase {
         dim.shutdown();
         DatabaseManager.deregisterDatabase(database);
         database = null;
-
-        System.out.println("tearDown PASSED");
     }
 
     private Collection getTestCollection() throws XMLDBException {
@@ -189,27 +187,18 @@ public class XQueryTest extends XMLTestCase {
                     storeXMLStringAndGetQueryService(NUMBERS_XML, numbers);
 
             //Non null context sequence
-            System.out.println("testLet 1: ========");
             query = "/test/item[let $id := ./@id return $id]";
             result = service.queryResource(NUMBERS_XML, query);
-            printResult(result);
             assertEquals("XQuery: " + query, 4, result.getSize());
-
-            System.out.println("testLet 2: ========");
             query = "/test/item[let $id := ./@id return not(/test/set[@id=$id])]";
             result = service.queryResource(NUMBERS_XML, query);
-            printResult(result);
             assertEquals("XQuery: " + query, 4, result.getSize());
-
-            System.out.println("testLet 3: ========");
             query = "let $test := <test><a> a </a><a>a</a></test> " +
                     "return distinct-values($test/a/normalize-space(.))";
             result = service.queryResource(NUMBERS_XML, query);
-            printResult(result);
             assertEquals("XQuery: " + query, 1, result.getSize());
 
             //Ordered value sequence
-            System.out.println("testLet 4: ========");
             query = "let $unordset := (for $val in reverse(1 to 100) return " +
                     "<value>{$val}</value>)" +
                     "let $ordset := (for $newval in $unordset " +
@@ -219,7 +208,6 @@ public class XQueryTest extends XMLTestCase {
                     "return $ordset/ancestor::node()";
 
             result = service.queryResource(NUMBERS_XML, query);
-            printResult(result);
             assertEquals("XQuery: " + query, 50, result.getSize());
 
             //WARNING : the return order CHANGES !!!!!!!!!!!!!!!!!!
@@ -228,7 +216,6 @@ public class XQueryTest extends XMLTestCase {
             assertXMLEqual("<value>1</value>", ((XMLResource) result.getResource(49)).getContent().toString());
 
         } catch (Exception e) {
-            System.out.println("testLet(): XMLDBException: " + e);
             e.printStackTrace();
             fail(e.getMessage());
         }
@@ -241,51 +228,33 @@ public class XQueryTest extends XMLTestCase {
         try {
             XPathQueryService service =
                     storeXMLStringAndGetQueryService(NUMBERS_XML, numbers);
-
-            System.out.println("testFor 1: ========");
             query = "for $f in /*/item return $f";
             result = service.queryResource(NUMBERS_XML, query);
-            printResult(result);
             assertEquals("XQuery: " + query, 4, result.getSize());
-
-            System.out.println("testFor 2: ========");
             query = "for $f in /*/item  order by $f ascending  return $f";
             result = service.queryResource(NUMBERS_XML, query);
-            printResult(result);
             resu = (XMLResource) result.getResource(0);
             assertEquals("XQuery: " + query, "3", ((Element) resu.getContentAsDOM()).getAttribute("id"));
-
-            System.out.println("testFor 3: ========");
             query = "for $f in /*/item  order by $f descending  return $f";
             result = service.queryResource(NUMBERS_XML, query);
-            printResult(result);
             resu = (XMLResource) result.getResource(0);
             assertEquals("XQuery: " + query, "2", ((Element) resu.getContentAsDOM()).getAttribute("id"));
-
-            System.out.println("testFor 4: ========");
             query = "for $f in /*/item  order by xs:double($f/price) descending  return $f";
             result = service.queryResource(NUMBERS_XML, query);
-            printResult(result);
             resu = (XMLResource) result.getResource(0);
             assertEquals("XQuery: " + query, "4", ((Element) resu.getContentAsDOM()).getAttribute("id"));
-
-            System.out.println("testFor 5: ========");
             query = "for $f in //item where $f/@id = '3' return $f";
             result = service.queryResource(NUMBERS_XML, query);
-            printResult(result);
             resu = (XMLResource) result.getResource(0);
             assertEquals("XQuery: " + query, "3", ((Element) resu.getContentAsDOM()).getAttribute("id"));
 
             //Non null context sequence
-            System.out.println("testFor 6: ========");
             query = "/test/item[for $id in ./@id return $id]";
             result = service.queryResource(NUMBERS_XML, query);
-            printResult(result);
             resu = (XMLResource) result.getResource(0);
             assertEquals("XQuery: " + query, 4, result.getSize());
 
             //Ordered value sequence
-            System.out.println("testFor 7: ========");
             query = "let $doc := <doc><value>Z</value><value>Y</value><value>X</value></doc> " +
                     "return " +
                     "let $ordered_values := " +
@@ -295,20 +264,16 @@ public class XQueryTest extends XMLTestCase {
                     "	return $value[. = $ordered_values[position() = 1]]";
 
             result = service.queryResource(NUMBERS_XML, query);
-            printResult(result);
             resu = (XMLResource) result.getResource(0);
             assertEquals("XQuery: " + query, "<value>X</value>", resu.getContent());
 
             //Ordered value sequence
-            System.out.println("testFor 8: ========");
             query = "for $e in (1) order by $e return $e";
             result = service.queryResource(NUMBERS_XML, query);
-            printResult(result);
             resu = (XMLResource) result.getResource(0);
             assertEquals("XQuery: " + query, "1", resu.getContent());
 
         } catch (XMLDBException e) {
-            System.out.println("testFor(): XMLDBException: " + e);
             fail(e.getMessage());
         }
     }
@@ -360,39 +325,29 @@ public class XQueryTest extends XMLTestCase {
                     (XPathQueryService) getTestCollection().getService(
                     "XPathQueryService",
                     "1.0");
-
-            System.out.println("testCombiningNodeSequences 1: ========");
             query = "let $a := <a/> \n" +
                     "let $aa := ($a, $a) \n" +
                     "for $b in ($aa intersect $aa \n)" +
                     "return $b";
             result = service.query(query);
-            printResult(result);
             assertEquals("XQuery: " + query, 1, result.getSize());
             assertEquals("XQuery: " + query, "<a/>", ((XMLResource) result.getResource(0)).getContent());
-
-            System.out.println("testCombiningNodeSequences 2: ========");
             query = "let $a := <a/> \n" +
                     "let $aa := ($a, $a) \n" +
                     "for $b in ($aa union $aa \n)" +
                     "return $b";
             result = service.query(query);
-            printResult(result);
             assertEquals("XQuery: " + query, 1, result.getSize());
             assertEquals("XQuery: " + query, "<a/>", ((XMLResource) result.getResource(0)).getContent());
-
-            System.out.println("testCombiningNodeSequences 3: ========");
             query = "let $a := <a/> \n" +
                     "let $aa := ($a, $a) \n" +
                     "for $b in ($aa except $aa \n)" +
                     "return $b";
             result = service.query(query);
-            printResult(result);
             assertEquals("XQuery: " + query, 0, result.getSize());
 
 
         } catch (XMLDBException e) {
-            System.out.println("testCombiningNodeSequences(): XMLDBException: " + e);
             fail(e.getMessage());
         }
     }
@@ -407,69 +362,38 @@ public class XQueryTest extends XMLTestCase {
                     (XPathQueryService) getTestCollection().getService(
                     "XPathQueryService",
                     "1.0");
-
-            System.out.println("testInMemoryNodeSequences 1: ========");
             query = "let $c := (<a/>,<b/>) return <t>text{$c[1]}</t>";
             result = service.query(query);
-            printResult(result);
             assertEquals("XQuery: " + query, "<t>text<a/></t>", result.getResource(0).getContent());
-
-            System.out.println("testInMemoryNodeSequences 2: ========");
             query = "let $c := (<a/>,<b/>) return <t><text/>{$c[1]}</t>";
             result = service.query(query);
-            printResult(result);
             assertEquals("XQuery: " + query, "<t><text/><a/></t>", result.getResource(0).getContent());
-
-            System.out.println("testInMemoryNodeSequences 3: ========");
             query = "let $c := (<a/>,<b/>) return <t>{\"text\"}{$c[1]}</t>";
             result = service.query(query);
-            printResult(result);
             assertEquals("XQuery: " + query, "<t>text<a/></t>", result.getResource(0).getContent());
-
-            System.out.println("testInMemoryNodeSequences 4: ========");
             query = "let $c := (<a/>,\"b\") return <t>text{$c[1]}</t>";
             result = service.query(query);
-            printResult(result);
             assertEquals("XQuery: " + query, "<t>text<a/></t>", result.getResource(0).getContent());
-
-            System.out.println("testInMemoryNodeSequences 5: ========");
             query = "let $c := (<a/>,\"b\") return <t><text/>{$c[1]}</t>";
             result = service.query(query);
-            printResult(result);
             assertEquals("XQuery: " + query, "<t><text/><a/></t>", result.getResource(0).getContent());
-
-            System.out.println("testInMemoryNodeSequences 6: ========");
             query = "let $c := (<a/>,\"b\") return <t>{\"text\"}{$c[1]}</t>";
             result = service.query(query);
-            printResult(result);
             assertEquals("XQuery: " + query, "<t>text<a/></t>", result.getResource(0).getContent());
-
-            System.out.println("testInMemoryNodeSequences 7: ========");
             query = "let $c := (<a/>,<b/>) return <t>{<text/>,$c[1]}</t>";
             result = service.query(query);
-            printResult(result);
             assertEquals("XQuery: " + query, "<t>text<a/></t>", result.getResource(0).getContent());
-
-            System.out.println("testInMemoryNodeSequences 8: ========");
             query = "let $c := (<a/>,<b/>) return <t>{\"text\",$c[1]}</t>";
             result = service.query(query);
-            printResult(result);
             assertEquals("XQuery: " + query, "<t>text<a/></t>", result.getResource(0).getContent());
-
-            System.out.println("testInMemoryNodeSequences 9: ========");
             query = "let $c := (<a/>,\"b\") return <t>{<text/>,$c[1]}</t>";
             result = service.query(query);
-            printResult(result);
             assertEquals("XQuery: " + query, "<t>text<a/></t>", result.getResource(0).getContent());
-
-            System.out.println("testInMemoryNodeSequences 10: ========");
             query = "let $c := (<a/>,\"b\") return <t>{\"text\",$c[1]}</t>";
             result = service.query(query);
-            printResult(result);
             assertEquals("XQuery: " + query, "<t>text<a/></t>", result.getResource(0).getContent());
 
         } catch (XMLDBException e) {
-            System.out.println("testInMemoryNodeSequences(): XMLDBException: " + e);
             fail(e.getMessage());
         }
     }
@@ -484,48 +408,33 @@ public class XQueryTest extends XMLTestCase {
         try {
             XPathQueryService service =
                     storeXMLStringAndGetQueryService(NUMBERS_XML, numbers);
-
-            System.out.println("testVariable 1: ========");
             query = "xquery version \"1.0\";\n" + "declare namespace param=\"param\";\n" + "declare variable $param:a {\"a\"};\n" + "declare function param:a() {$param:a};\n" + "let $param:a := \"b\" \n" + "return ($param:a, $param:a)";
             result = service.query(query);
-            printResult(result);
             assertEquals("XQuery: " + query, 2, result.getSize());
             assertEquals("XQuery: " + query, "b", ((XMLResource) result.getResource(0)).getContent());
             assertEquals("XQuery: " + query, "b", ((XMLResource) result.getResource(1)).getContent());
-
-            System.out.println("testVariable 2: ========");
             query = "xquery version \"1.0\";\n" + "declare namespace param=\"param\";\n" + "declare variable $param:a {\"a\"};\n" + "declare function param:a() {$param:a};\n" + "let $param:a := \"b\" \n" + "return param:a(), param:a()";
             result = service.query(query);
-            printResult(result);
             assertEquals("XQuery: " + query, 2, result.getSize());
             assertEquals("XQuery: " + query, "a", ((XMLResource) result.getResource(0)).getContent());
             assertEquals("XQuery: " + query, "a", ((XMLResource) result.getResource(1)).getContent());
-
-            System.out.println("testVariable 3: ========");
             query = "declare variable $foo {\"foo1\"};\n" + "let $foo := \"foo2\" \n" + "for $bar in (1 to 1) \n" + "  let $foo := \"foo3\" \n" + "  return $foo";
             result = service.query(query);
-            printResult(result);
             assertEquals("XQuery: " + query, 1, result.getSize());
             assertEquals("XQuery: " + query, "foo3", ((XMLResource) result.getResource(0)).getContent());
 
             try {
                 message = "";
-                System.out.println("testVariable 4 ========");
                 query = "xquery version \"1.0\";\n" + "declare variable $a {\"1st instance\"};\n" + "declare variable $a {\"2nd instance\"};\n" + "$a";
                 result = service.query(query);
             } catch (XMLDBException e) {
                 message = e.getMessage();
             }
             assertTrue(message.indexOf("XQST0049") > -1);
-
-            System.out.println("testVariable 5: ========");
             query = "xquery version \"1.0\";\n" + "declare namespace param=\"param\";\n" + "declare function param:f() { $param:a };\n" + "declare variable $param:a {\"a\"};\n" + "param:f()";
             result = service.query(query);
-            printResult(result);
             assertEquals("XQuery: " + query, 1, result.getSize());
             assertEquals("XQuery: " + query, "a", ((XMLResource) result.getResource(0)).getContent());
-
-            System.out.println("testVariable 6: ========");
             query = "let $a := <root> " +
                     "<b name='1'>" +
                     "  <c name='x'> " +
@@ -542,14 +451,12 @@ public class XQueryTest extends XMLTestCase {
                     "return $b";
             result = service.queryResource(NUMBERS_XML, query);
             assertEquals("XQuery: " + query, 2, result.getSize());
-            printResult(result);
             resu = (XMLResource) result.getResource(0);
             assertEquals("XQuery: " + query, "2", ((Element) resu.getContentAsDOM()).getAttribute("name"));
             resu = (XMLResource) result.getResource(1);
             assertEquals("XQuery: " + query, "3", ((Element) resu.getContentAsDOM()).getAttribute("name"));
 
         } catch (XMLDBException e) {
-            System.out.println("testVariable : XMLDBException: " + e);
             fail(e.getMessage());
         }
     }
@@ -593,7 +500,6 @@ public class XQueryTest extends XMLTestCase {
             assertXMLEqual("<id id='b' />", ((XMLResource) result.getResource(0)).getContent().toString());
 
         } catch (Exception e) {
-            System.out.println("testVirtualNodesets : XMLDBException: " + e);
             fail(e.getMessage());
         }
     }
@@ -626,7 +532,6 @@ public class XQueryTest extends XMLTestCase {
                     ((XMLResource) result.getResource(0)).getContent().toString());
 
         } catch (Exception e) {
-            System.out.println("testWhereClause : XMLDBException: " + e);
             fail(e.getMessage());
         }
     }
@@ -640,30 +545,20 @@ public class XQueryTest extends XMLTestCase {
         try {
             XPathQueryService service =
                     storeXMLStringAndGetQueryService(NUMBERS_XML, numbers);
-
-            System.out.println("testTypedVariables 1: ========");
             query = "let $v as element()* := ( <assign/> , <assign/> )\n" + "let $w := <r>{ $v }</r>\n" + "let $x as element()* := $w/assign\n" + "return $x";
             result = service.query(query);
             assertEquals("XQuery: " + query, 2, result.getSize());
             assertEquals("XQuery: " + query, Node.ELEMENT_NODE, ((XMLResource) result.getResource(0)).getContentAsDOM().getNodeType());
             assertEquals("XQuery: " + query, "assign", ((XMLResource) result.getResource(0)).getContentAsDOM().getNodeName());
-
-            System.out.println("testTypedVariables 2: ========");
             query = "let $v as node()* := ()\n" + "return $v";
             result = service.query(query);
             assertEquals("XQuery: " + query, 0, result.getSize());
-
-            System.out.println("testTypedVariables 3: ========");
             query = "let $v as item()* := ()\n" + "return $v";
             result = service.query(query);
             assertEquals("XQuery: " + query, 0, result.getSize());
-
-            System.out.println("testTypedVariables 4: ========");
             query = "let $v as empty() := ()\n" + "return $v";
             result = service.query(query);
             assertEquals("XQuery: " + query, 0, result.getSize());
-
-            System.out.println("testTypedVariables 5: ========");
             query = "let $v as item() := ()\n" + "return $v";
             try {
                 exceptionThrown = false;
@@ -673,16 +568,12 @@ public class XQueryTest extends XMLTestCase {
                 message = e.getMessage();
             }
             assertTrue("XQuery: " + query, exceptionThrown);
-
-            System.out.println("testTypedVariables 6: ========");
             query = "let $v as item()* := ( <a/> , 1 )\n" + "return $v";
             result = service.query(query);
             assertEquals("XQuery: " + query, 2, result.getSize());
             assertEquals("XQuery: " + query, Node.ELEMENT_NODE, ((XMLResource) result.getResource(0)).getContentAsDOM().getNodeType());
             assertEquals("XQuery: " + query, "a", ((XMLResource) result.getResource(0)).getContentAsDOM().getNodeName());
             assertEquals("XQuery: " + query, "1", ((XMLResource) result.getResource(1)).getContent());
-
-            System.out.println("testTypedVariables 7: ========");
             query = "let $v as node()* := ( <a/> , 1 )\n" + "return $v";
             try {
                 exceptionThrown = false;
@@ -692,8 +583,6 @@ public class XQueryTest extends XMLTestCase {
                 message = e.getMessage();
             }
             assertTrue(exceptionThrown);
-
-            System.out.println("testTypedVariables 8: ========");
             query = "let $v as item()* := ( <a/> , 1 )\n" + "let $w as element()* := $v\n" + "return $w";
             try {
                 exceptionThrown = false;
@@ -704,30 +593,20 @@ public class XQueryTest extends XMLTestCase {
                 message = e.getMessage();
             }
             assertTrue(exceptionThrown);
-
-            System.out.println("testTypedVariables 9: ========");
             query = "declare variable $v as element()* {( <assign/> , <assign/> ) };\n" + "declare variable $w { <r>{ $v }</r> };\n" + "declare variable $x as element()* { $w/assign };\n" + "$x";
             result = service.query(query);
             assertEquals("XQuery: " + query, 2, result.getSize());
             assertEquals("XQuery: " + query, Node.ELEMENT_NODE, ((XMLResource) result.getResource(0)).getContentAsDOM().getNodeType());
             assertEquals("XQuery: " + query, "assign", ((XMLResource) result.getResource(0)).getContentAsDOM().getNodeName());
-
-            System.out.println("testTypedVariables 10: ========");
             query = "declare variable $v as node()* { () };\n" + "$v";
             result = service.query(query);
             assertEquals("XQuery: " + query, 0, result.getSize());
-
-            System.out.println("testTypedVariables 11: ========");
             query = "declare variable $v as item()* { () };\n" + "$v";
             result = service.query(query);
             assertEquals("XQuery: " + query, 0, result.getSize());
-
-            System.out.println("testTypedVariables 12: ========");
             query = "declare variable $v as empty() { () };\n" + "$v";
             result = service.query(query);
             assertEquals("XQuery: " + query, 0, result.getSize());
-
-            System.out.println("testTypedVariables 13: ========");
             query = "declare variable $v as item() { () };\n" + "$v";
             try {
                 exceptionThrown = false;
@@ -737,16 +616,12 @@ public class XQueryTest extends XMLTestCase {
                 message = e.getMessage();
             }
             assertTrue("XQuery: " + query, exceptionThrown);
-
-            System.out.println("testTypedVariables 14: ========");
             query = "declare variable $v as item()* { ( <a/> , 1 ) }; \n" + "$v";
             result = service.query(query);
             assertEquals("XQuery: " + query, 2, result.getSize());
             assertEquals("XQuery: " + query, Node.ELEMENT_NODE, ((XMLResource) result.getResource(0)).getContentAsDOM().getNodeType());
             assertEquals("XQuery: " + query, "a", ((XMLResource) result.getResource(0)).getContentAsDOM().getNodeName());
             assertEquals("XQuery: " + query, "1", ((XMLResource) result.getResource(1)).getContent());
-
-            System.out.println("testTypedVariables 15: ========");
             query = "declare variable $v as node()* { ( <a/> , 1 ) };\n" + "$v";
             try {
                 exceptionThrown = false;
@@ -756,8 +631,6 @@ public class XQueryTest extends XMLTestCase {
                 message = e.getMessage();
             }
             assertTrue(exceptionThrown);
-
-            System.out.println("testTypedVariables 16: ========");
             query = "declare variable $v as item()* { ( <a/> , 1 ) };\n" + "declare variable $w as element()* { $v };\n" + "$w";
             try {
                 exceptionThrown = false;
@@ -767,8 +640,6 @@ public class XQueryTest extends XMLTestCase {
                 message = e.getMessage();
             }
             assertTrue(exceptionThrown);
-
-            System.out.println("testTypedVariables 15: ========");
             query = "let $v as document-node() :=  doc('" + XmldbURI.ROOT_COLLECTION + "/test/" + NUMBERS_XML + "') \n" + "return $v";
             result = service.query(query);
             assertEquals("XQuery: " + query, 1, result.getSize());
@@ -777,7 +648,6 @@ public class XQueryTest extends XMLTestCase {
             assertEquals("XQuery: " + query, "test", ((XMLResource) result.getResource(0)).getContentAsDOM().getNodeName());
 
         } catch (XMLDBException e) {
-            System.out.println("testTypedVariables : XMLDBException: " + e);
             fail(e.getMessage());
         }
     }
@@ -792,8 +662,6 @@ public class XQueryTest extends XMLTestCase {
         try {
             XPathQueryService service =
                     storeXMLStringAndGetQueryService(NUMBERS_XML, numbers);
-
-            System.out.println("testPrecedence 1: ========");
             query = "xquery version \"1.0\";\n" + "declare namespace blah=\"blah\";\n" + "declare variable $blah:param  {\"value-1\"};\n" + "let $blah:param := \"value-2\"\n" + "(:: FLWOR expressions have a higher precedence than the comma operator ::)\n" + "return $blah:param, $blah:param ";
             result = service.query(query);
             assertEquals("XQuery: " + query, 2, result.getSize());
@@ -801,7 +669,6 @@ public class XQueryTest extends XMLTestCase {
             assertEquals("XQuery: " + query, "value-1", ((XMLResource) result.getResource(1)).getContent());
 
         } catch (XMLDBException e) {
-            System.out.println("testTypedVariables : XMLDBException: " + e);
             fail(e.getMessage());
         }
     }
@@ -815,33 +682,24 @@ public class XQueryTest extends XMLTestCase {
         try {
             XPathQueryService service =
                     storeXMLStringAndGetQueryService(NUMBERS_XML, numbers);
-
-            System.out.println("testImprobableAxesAndNodeTestsCombinations 1: ========");
             query = "let $a := <x>a<!--b-->c</x>/self::comment() return <z>{$a}</z>";
             result = service.query(query);
             assertEquals("XQuery: " + query, 1, result.getSize());
             assertEquals("XQuery: " + query, "<z/>", ((XMLResource) result.getResource(0)).getContent());
-
-            System.out.println("testImprobableAxesAndNodeTestsCombinations 2: ========");
             query = "let $a := <x>a<!--b-->c</x>/parent::comment() return <z>{$a}</z>";
             result = service.query(query);
             assertEquals("XQuery: " + query, 1, result.getSize());
             assertEquals("XQuery: " + query, "<z/>", ((XMLResource) result.getResource(0)).getContent());
-
-            System.out.println("testImprobableAxesAndNodeTestsCombinations 3: ========");
             query = "let $a := <x>a<!--b-->c</x>/ancestor::comment() return <z>{$a}</z>";
             result = service.query(query);
             assertEquals("XQuery: " + query, 1, result.getSize());
             assertEquals("XQuery: " + query, "<z/>", ((XMLResource) result.getResource(0)).getContent());
-
-            System.out.println("testImprobableAxesAndNodeTestsCombinations 4: ========");
             query = "let $a := <x>a<!--b-->c</x>/ancestor-or-self::comment() return <z>{$a}</z>";
             result = service.query(query);
             assertEquals("XQuery: " + query, 1, result.getSize());
             assertEquals("XQuery: " + query, "<z/>", ((XMLResource) result.getResource(0)).getContent());
 
 //			This one is intercepted by the parser
-            System.out.println("testImprobableAxesAndNodeTestsCombinations 5: ========");
             query = "let $a := <x>a<!--b-->c</x>/attribute::comment() return <z>{$a}</z>";
             try {
                 exceptionThrown = false;
@@ -853,7 +711,6 @@ public class XQueryTest extends XMLTestCase {
             assertTrue(exceptionThrown);
 
 //			This one is intercepted by the parser
-            System.out.println("testImprobableAxesAndNodeTestsCombinations 6: ========");
             query = "let $a := <x>a<!--b-->c</x>/namespace::comment() return <z>{$a}</z>";
             try {
                 exceptionThrown = false;
@@ -863,75 +720,52 @@ public class XQueryTest extends XMLTestCase {
                 message = e.getMessage();
             }
             assertTrue(exceptionThrown);
-
-            System.out.println("testImprobableAxesAndNodeTestsCombinations 7: ========");
             query = "let $a := <x>a<!--b-->c</x>/self::attribute() return <z>{$a}</z>";
             result = service.query(query);
             assertEquals("XQuery: " + query, 1, result.getSize());
             assertEquals("XQuery: " + query, "<z/>", ((XMLResource) result.getResource(0)).getContent());
-
-            System.out.println("testImprobableAxesAndNodeTestsCombinations 8: ========");
             query = "let $a := <x>a<!--b-->c</x>/parent::attribute() return <z>{$a}</z>";
             result = service.query(query);
             assertEquals("XQuery: " + query, 1, result.getSize());
             assertEquals("XQuery: " + query, "<z/>", ((XMLResource) result.getResource(0)).getContent());
-
-            System.out.println("testImprobableAxesAndNodeTestsCombinations 9: ========");
             query = "let $a := <x>a<!--b-->c</x>/ancestor::attribute() return <z>{$a}</z>";
             result = service.query(query);
             assertEquals("XQuery: " + query, 1, result.getSize());
             assertEquals("XQuery: " + query, "<z/>", ((XMLResource) result.getResource(0)).getContent());
-
-            System.out.println("testImprobableAxesAndNodeTestsCombinations 10: ========");
             query = "let $a := <x>a<!--b-->c</x>/ancestor-or-self::attribute() return <z>{$a}</z>";
             result = service.query(query);
             assertEquals("XQuery: " + query, 1, result.getSize());
             assertEquals("XQuery: " + query, "<z/>", ((XMLResource) result.getResource(0)).getContent());
-
-            System.out.println("testImprobableAxesAndNodeTestsCombinations 11: ========");
             query = "let $a := <x>a<!--b-->c</x>/child::attribute() return <z>{$a}</z>";
             result = service.query(query);
             assertEquals("XQuery: " + query, 1, result.getSize());
             assertEquals("XQuery: " + query, "<z/>", ((XMLResource) result.getResource(0)).getContent());
-
-            System.out.println("testImprobableAxesAndNodeTestsCombinations 12: ========");
             query = "let $a := <x>a<!--b-->c</x>/descendant::attribute() return <z>{$a}</z>";
             result = service.query(query);
             assertEquals("XQuery: " + query, 1, result.getSize());
             assertEquals("XQuery: " + query, "<z/>", ((XMLResource) result.getResource(0)).getContent());
-
-            System.out.println("testImprobableAxesAndNodeTestsCombinations 13: ========");
             query = "let $a := <x>a<!--b-->c</x>/descendant-or-self::attribute() return <z>{$a}</z>";
             result = service.query(query);
             assertEquals("XQuery: " + query, 1, result.getSize());
             assertEquals("XQuery: " + query, "<z/>", ((XMLResource) result.getResource(0)).getContent());
-
-            System.out.println("testImprobableAxesAndNodeTestsCombinations 14: ========");
             query = "let $a := <x>a<!--b-->c</x>/preceding::attribute() return <z>{$a}</z>";
             result = service.query(query);
             assertEquals("XQuery: " + query, 1, result.getSize());
             assertEquals("XQuery: " + query, "<z/>", ((XMLResource) result.getResource(0)).getContent());
-
-            System.out.println("testImprobableAxesAndNodeTestsCombinations 15: ========");
             query = "let $a := <x>a<!--b-->c</x>/preceding-sibling::attribute() return <z>{$a}</z>";
             result = service.query(query);
             assertEquals("XQuery: " + query, 1, result.getSize());
             assertEquals("XQuery: " + query, "<z/>", ((XMLResource) result.getResource(0)).getContent());
-
-            System.out.println("testImprobableAxesAndNodeTestsCombinations 16: ========");
             query = "let $a := <x>a<!--b-->c</x>/following::attribute() return <z>{$a}</z>";
             result = service.query(query);
             assertEquals("XQuery: " + query, 1, result.getSize());
             assertEquals("XQuery: " + query, "<z/>", ((XMLResource) result.getResource(0)).getContent());
-
-            System.out.println("testImprobableAxesAndNodeTestsCombinations 17: ========");
             query = "let $a := <x>a<!--b-->c</x>/following-sibling::attribute() return <z>{$a}</z>";
             result = service.query(query);
             assertEquals("XQuery: " + query, 1, result.getSize());
             assertEquals("XQuery: " + query, "<z/>", ((XMLResource) result.getResource(0)).getContent());
 
 //			This one is intercepted by the parser
-            System.out.println("testImprobableAxesAndNodeTestsCombinations 18: ========");
             query = "let $a := <x>a<!--b-->c</x>/namespace::attribute() return <z>{$a}</z>";
             try {
                 exceptionThrown = false;
@@ -945,25 +779,21 @@ public class XQueryTest extends XMLTestCase {
             //TODO : uncomment when PI are OK
 
             /*
-            System.out.println("testImprobableAxesAndNodeTestsCombinations 19: ========" );
             query = "let $a := <x>a<?foo ?>c</x>/self::processing-instruction('foo') return <z>{$a}</z>";
             result = service.query(query);				
             assertEquals( "XQuery: " + query, 1, result.getSize() );
             assertEquals( "XQuery: " + query, "<z/>", ((XMLResource)result.getResource(0)).getContent());
-            
-            System.out.println("testImprobableAxesAndNodeTestsCombinations 20: ========" );
+
             query = "let $a := <x>a<?foo ?>c</x>/parent::processing-instruction('foo') return <z>{$a}</z>";
             result = service.query(query);				
             assertEquals( "XQuery: " + query, 1, result.getSize() );
             assertEquals( "XQuery: " + query, "<z/>", ((XMLResource)result.getResource(0)).getContent());	
-            
-            System.out.println("testImprobableAxesAndNodeTestsCombinations 21: ========" );
+
             query = "let $a := <x>a<?foo ?>c</x>/ancestor::processing-instruction('foo') return <z>{$a}</z>";
             result = service.query(query);				
             assertEquals( "XQuery: " + query, 1, result.getSize() );
             assertEquals( "XQuery: " + query, "<z/>", ((XMLResource)result.getResource(0)).getContent());
-            
-            System.out.println("testImprobableAxesAndNodeTestsCombinations 22: ========" );
+
             query = "let $a := <x>a<?foo ?>c</x>/ancestor-or-self::processing-instruction('foo') return <z>{$a}</z>";
             result = service.query(query);				
             assertEquals( "XQuery: " + query, 1, result.getSize() );
@@ -971,7 +801,6 @@ public class XQueryTest extends XMLTestCase {
              */
 
 //			This one is intercepted by the parser
-            System.out.println("testImprobableAxesAndNodeTestsCombinations 23: ========");
             query = "let $a := <x>a<?foo ?>c</x>/attribute::processing-instruction('foo') return <z>{$a}</z>";
             try {
                 exceptionThrown = false;
@@ -983,7 +812,6 @@ public class XQueryTest extends XMLTestCase {
             assertTrue(exceptionThrown);
 
 //			This one is intercepted by the parser
-            System.out.println("testImprobableAxesAndNodeTestsCombinations 24: ========");
             query = "let $a := <x>a<?foo ?>c</x>/namespace::processing-instruction('foo') return <z>{$a}</z>";
             try {
                 exceptionThrown = false;
@@ -995,7 +823,6 @@ public class XQueryTest extends XMLTestCase {
             assertTrue(exceptionThrown);
 
         } catch (XMLDBException e) {
-            System.out.println("testTypedVariables : XMLDBException: " + e);
             e.printStackTrace();
             fail(e.getMessage());
         }
@@ -1032,8 +859,6 @@ public class XQueryTest extends XMLTestCase {
                     (XPathQueryService) testCollection.getService(
                     "XPathQueryService",
                     "1.0");
-
-            System.out.println("testNamespace 1: ========");
             query = "xquery version \"1.0\";\n" + "import module namespace blah=\"blah\" at \"" + URI + "/test/" + MODULE1_NAME + "\";\n" + "(:: redefine existing prefix ::)\n" + "declare namespace blah=\"bla\";\n" + "$blah:param";
             try {
                 message = "";
@@ -1042,8 +867,6 @@ public class XQueryTest extends XMLTestCase {
                 message = e.getMessage();
             }
             assertTrue(message.indexOf("XQST0033") > -1);
-
-            System.out.println("testNamespace 2: ========");
             query = "xquery version \"1.0\";\n" + "import module namespace blah=\"blah\" at \"" + URI + "/test/" + MODULE1_NAME + "\";\n" + "(:: redefine existing prefix with same URI ::)\n" + "declare namespace blah=\"blah\";\n" + "declare variable $blah:param  {\"value-2\"};\n" + "$blah:param";
             try {
                 message = "";
@@ -1052,8 +875,6 @@ public class XQueryTest extends XMLTestCase {
                 message = e.getMessage();
             }
             assertTrue(message.indexOf("XQST0033") > -1);
-
-            System.out.println("testNamespace 3: ========");
             query = "xquery version \"1.0\";\n" + "import module namespace foo=\"ho\" at \"" + URI + "/test/" + MODULE1_NAME + "\";\n" + "$foo:bar";
             try {
                 message = "";
@@ -1063,8 +884,6 @@ public class XQueryTest extends XMLTestCase {
                 message = e.getMessage();
             }
             assertTrue(message.indexOf("does not match namespace URI") > -1);
-
-            System.out.println("testNamespace 4: ========");
             query = "xquery version \"1.0\";\n" + "import module namespace foo=\"ho\" at \"" + URI + "/test/" + MODULE2_NAME + "\";\n" + "$bar";
             try {
                 message = "";
@@ -1073,8 +892,6 @@ public class XQueryTest extends XMLTestCase {
                 message = e.getMessage();
             }
             assertTrue(message.indexOf("No namespace defined for prefix") > -1);
-
-            System.out.println("testNamespace 5: ========");
             query = "xquery version \"1.0\";\n" + "import module namespace foo=\"blah\" at \"" + URI + "/test/" + MODULE2_NAME + "\";\n" + "$bar";
             try {
                 message = "";
@@ -1083,15 +900,11 @@ public class XQueryTest extends XMLTestCase {
                 message = e.getMessage();
             }
             assertTrue(message.indexOf("No namespace defined for prefix") > -1);
-
-            System.out.println("testNamespace 6: ========");
             query = "declare namespace x = \"http://www.foo.com\"; \n" +
                     "let $a := doc('" + XmldbURI.ROOT_COLLECTION + "/test/" + NAMESPACED_NAME + "') \n" +
                     "return $a//x:edition";
             result = service.query(query);
             assertEquals("XQuery: " + query, 0, result.getSize());
-
-            System.out.println("testNamespace 7: ========");
             query = "declare namespace x = \"http://www.foo.com\"; \n" +
                     "declare namespace y = \"http://exist.sourceforge.net/dc-ext\"; \n" +
                     "let $a := doc('" + XmldbURI.ROOT_COLLECTION + "/test/" + NAMESPACED_NAME + "') \n" +
@@ -1100,8 +913,6 @@ public class XQueryTest extends XMLTestCase {
             assertEquals("XQuery: " + query, 1, result.getSize());
             assertEquals("XQuery: " + query, "<x:edition xmlns:x=\"http://exist.sourceforge.net/dc-ext\">place</x:edition>",
                     ((XMLResource) result.getResource(0)).getContent());
-
-            System.out.println("testNamespace 8: ========");
             query = "<result xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#'>{//rdf:Description}</result>";
             result = service.query(query);
             assertEquals("XQuery: " + query,
@@ -1114,8 +925,6 @@ public class XQueryTest extends XMLTestCase {
                     "    </rdf:Description>\n" +
                     "</result>",
                     ((XMLResource) result.getResource(0)).getContent());
-
-            System.out.println("testNamespace 9: ========");
             query = "<result xmlns='http://www.w3.org/1999/02/22-rdf-syntax-ns#'>{//Description}</result>";
             result = service.query(query);
             assertEquals("XQuery: " + query,
@@ -1138,8 +947,6 @@ public class XQueryTest extends XMLTestCase {
             the statically known namespaces. This feature provides a way 
             to remove predeclared namespace prefixes such as local.
              */
-
-            System.out.println("testNamespace 9: ========");
             query = "declare option exist:serialize 'indent=no';" +
                     "for $x in <parent4 xmlns=\"http://www.example.com/parent4\"><child4/></parent4> " +
                     "return <new>{$x//*:child4}</new>";
@@ -1148,7 +955,6 @@ public class XQueryTest extends XMLTestCase {
                     ((XMLResource) result.getResource(0)).getContent().toString());
 
         } catch (Exception e) {
-            System.out.println("testNamespace : " + e);
             e.printStackTrace();
             fail(e.getMessage());
         }
@@ -1235,15 +1041,11 @@ public class XQueryTest extends XMLTestCase {
                     (XPathQueryService) testCollection.getService(
                     "XPathQueryService",
                     "1.0");
-
-            System.out.println("testModule 1: ========");
             query = "xquery version \"1.0\";\n" + "import module namespace blah=\"blah\" at \"" + URI + "/test/" + MODULE1_NAME + "\";\n" + "$blah:param";
             result = service.query(query);
-            printResult(result);
             assertEquals("XQuery: " + query, 1, result.getSize());
             assertEquals("XQuery: " + query, "value-1", result.getResource(0).getContent());
 
-//            System.out.println("testModule 2: ========");
 //            query = "xquery version \"1.0\";\n" + "import module namespace blah=\"blah\" at \"" + URI + "/test/" + MODULE1_NAME + "\";\n" + "(:: redefine variable ::)\n" + "declare variable $blah:param  {\"value-2\"};\n" + "$blah:param";
 //            try {
 //                message = "";
@@ -1252,15 +1054,10 @@ public class XQueryTest extends XMLTestCase {
 //                message = e.getMessage();
 //            }
 //            assertTrue(message.indexOf("XQST0049") > -1);
-
-            System.out.println("testModule 3: ========");
             query = "xquery version \"1.0\";\n" + "import module namespace blah=\"blah\" at \"" + URI + "/test/" + MODULE1_NAME + "\";\n" + "declare namespace blah2=\"blah\";\n" + "$blah2:param";
             result = service.query(query);
-            printResult(result);
             assertEquals("XQuery: " + query, 1, result.getSize());
             assertEquals("XQuery: " + query, "value-1", result.getResource(0).getContent());
-
-            System.out.println("testModule 4: ========");
             query = "xquery version \"1.0\";\n" + "import module namespace blah=\"bla\" at \"" + URI + "/test/" + MODULE1_NAME + "\";\n" + "$blah:param";
             try {
                 message = "";
@@ -1269,18 +1066,14 @@ public class XQueryTest extends XMLTestCase {
                 message = e.getMessage();
             }
             assertTrue(message.indexOf("does not match namespace URI") > -1);
-
-            System.out.println("testModule 5: ========");
             query = "xquery version \"1.0\";\n" + "import module namespace foo=\"foo\" at \"" + URI + "/test/" + FATHER_MODULE_NAME + "\";\n" + "$foo:bar, $foo:bar1, $foo:bar2";
             result = service.query(query);
-            printResult(result);
             assertEquals("XQuery: " + query, 3, result.getSize());
             assertEquals("XQuery: " + query, "bar", result.getResource(0).getContent());
             assertEquals("XQuery: " + query, "bar1", result.getResource(1).getContent());
             assertEquals("XQuery: " + query, "bar2", result.getResource(2).getContent());
 
 //			Non-heritance check
-            System.out.println("testModule 6: ========");
             query = "xquery version \"1.0\";\n" + "import module namespace foo=\"foo\" at \"" + URI + "/test/" + FATHER_MODULE_NAME + "\";\n" + "declare namespace foo1=\"foo1\"; \n" + "$foo1:bar";
             try {
                 message = "";
@@ -1291,7 +1084,6 @@ public class XQueryTest extends XMLTestCase {
             assertTrue(message.indexOf("XPDY0002") > -1);
 
 //			Non-heritance check
-            System.out.println("testModule 7: ========");
             query = "xquery version \"1.0\";\n" + "import module namespace foo=\"foo\" at \"" + URI + "/test/" + FATHER_MODULE_NAME + "\";\n" + "declare namespace foo2=\"foo2\"; \n" + "$foo2:bar";
             try {
                 message = "";
@@ -1300,8 +1092,6 @@ public class XQueryTest extends XMLTestCase {
                 message = e.getMessage();
             }
             assertTrue(message.indexOf("XPDY0002") > -1);
-
-            System.out.println("testModule 8: ========");
             query = "xquery version \"1.0\";\n" + "import module namespace foo1=\"foo\" at \"" + URI + "/test/" + CHILD1_MODULE_NAME + "\";\n" + "import module namespace foo2=\"foo\" at \"" + URI + "/test/" + CHILD1_MODULE_NAME + "\";\n" + "$foo1:bar";
             try {
                 message = "";
@@ -1311,8 +1101,6 @@ public class XQueryTest extends XMLTestCase {
             }
 //			Should be a XQST0047 error
             assertTrue(message.indexOf("does not match namespace URI") > -1);
-
-            System.out.println("testModule 9: ========");
             query = "xquery version \"1.0\";\n" + "import module namespace foo=\"foo\" at \"" + URI + "/test/" + MODULE3_NAME + "\";\n" + "$bar:bar";
             try {
                 message = "";
@@ -1321,8 +1109,6 @@ public class XQueryTest extends XMLTestCase {
                 message = e.getMessage();
             }
             assertTrue(message.indexOf("No namespace defined for prefix") > -1);
-
-            System.out.println("testModule 10: ========");
             query = "xquery version \"1.0\";\n" + "import module namespace foo=\"foo\" at \"" + URI + "/test/" + MODULE4_NAME + "\";\n" + "foo:bar()";
             try {
                 message = "";
@@ -1330,7 +1116,6 @@ public class XQueryTest extends XMLTestCase {
                 //WARNING !
                 //This result is false ! The external vairable has not been resolved
                 //Furthermore it is not in the module's namespace !
-                printResult(result);
                 assertEquals("XQuery: " + query, 0, result.getSize());
             } catch (XMLDBException e) {
                 message = e.getMessage();
@@ -1339,7 +1124,6 @@ public class XQueryTest extends XMLTestCase {
         //assertTrue(message.indexOf("XQST0048") > -1);
 
         } catch (XMLDBException e) {
-            System.out.println("testModule : XMLDBException: " + e);
             e.printStackTrace();
             fail(e.getMessage());
         }
@@ -1362,7 +1146,7 @@ public class XQueryTest extends XMLTestCase {
                     "</div>";
             ResourceSet result = service.query(query);
             assertEquals(1, result.getSize());
-            System.out.println("testModulesAndNS result: " + result.getResource(0).getContent().toString());
+            result.getResource(0).getContent();
             assertXMLEqual("<div xmlns='http://www.w3.org/1999/xhtml'><a xmlns=\"\" href='#'>Link</a></div>",
                     result.getResource(0).getContent().toString());
 
@@ -1373,7 +1157,7 @@ public class XQueryTest extends XMLTestCase {
                     "</div>";
             result = service.query(query);
             assertEquals(1, result.getSize());
-            System.out.println("testModulesAndNS result: " + result.getResource(0).getContent().toString());
+            result.getResource(0).getContent();
             assertXMLEqual("<div xmlns='http://www.w3.org/1999/xhtml'><a>Link</a></div>",
                     result.getResource(0).getContent().toString());
         } catch (Exception e) {
@@ -1422,21 +1206,15 @@ public class XQueryTest extends XMLTestCase {
             doc.setContent(module6);
             ((EXistResource) doc).setMimeType("application/xquery");
             testCollection.storeResource(doc);
-
-            System.out.println("testGlobalVars 1: ========");
             XQueryService service = (XQueryService) testCollection.getService("XPathQueryService", "1.0");
             String query = "xquery version \"1.0\";\n" + "import module namespace foo=\"foo\" at \"" + URI + "/test/" + MODULE5_NAME + "\";\n" + "$foo:bar";
             ResourceSet result = service.query(query);
             assertEquals(result.getSize(), 1);
             assertEquals(result.getResource(0).getContent(), "bar");
-
-            System.out.println("testGlobalVars 2: ========");
             query = "xquery version \"1.0\";\n" + "declare variable $local:a := 'abc';" + "$local:a";
             result = service.query(query);
             assertEquals(result.getSize(), 1);
             assertEquals(result.getResource(0).getContent(), "abc");
-
-            System.out.println("testGlobalVars 3: ========");
             boolean gotException = false;
             try {
                 query = "xquery version \"1.0\";\n" + "import module namespace foo=\"foo\" at \"" + URI + "/test/" + MODULE6_NAME + "\";\n" + "$foo:bar";
@@ -1446,8 +1224,6 @@ public class XQueryTest extends XMLTestCase {
                 gotException = true;
             }
             assertTrue("Duplicate global variable should generate error", gotException);
-
-            System.out.println("testGlobalVars 4: ========");
             gotException = false;
             try {
                 query = "xquery version \"1.0\";\n" + "declare variable $local:a := 'abc';" + "declare variable $local:a := 'abc';" + "$local:a";
@@ -1473,29 +1249,21 @@ public class XQueryTest extends XMLTestCase {
         try {
             XPathQueryService service =
                     storeXMLStringAndGetQueryService(NUMBERS_XML, numbers);
-
-            System.out.println("testFunctionDoc 1: ========");
             query = "doc('" + XmldbURI.ROOT_COLLECTION + "/test/" + NUMBERS_XML + "')";
             result = service.query(query);
             assertEquals("XQuery: " + query, 1, result.getSize());
             try {
                 Node n = ((XMLResource) result.getResource(0)).getContentAsDOM();
                 DetailedDiff d = new DetailedDiff(compareXML(numbers, n.toString()));
-                System.out.println(d.toString());
                 assertEquals(0, d.getAllDifferences().size());
             //ignore eXist namespace's attributes				
             //assertEquals(1, d.getAllDifferences().size());
             } catch (Exception e) {
-                System.out.println("testFunctionDoc : XMLDBException: " + e);
                 fail(e.getMessage());
             }
-
-            System.out.println("testFunctionDoc 2: ========");
             query = "let $v := ()\n" + "return doc($v)";
             result = service.query(query);
             assertEquals("XQuery: " + query, 0, result.getSize());
-
-            System.out.println("testFunctionDoc 3: ========");
             query = "doc('" + XmldbURI.ROOT_COLLECTION + "/test/dummy" + NUMBERS_XML + "')";
             try {
                 exceptionThrown = false;
@@ -1507,26 +1275,19 @@ public class XQueryTest extends XMLTestCase {
             //TODO : to be decided !
             //assertTrue(exceptionThrown);
             assertEquals(0, result.getSize());
-
-            System.out.println("testFunctionDoc 4: ========");
             query = "doc-available('" + XmldbURI.ROOT_COLLECTION + "/test/" + NUMBERS_XML + "')";
             result = service.query(query);
             assertEquals("XQuery: " + query, 1, result.getSize());
             assertEquals("XQuery: " + query, "true", result.getResource(0).getContent());
-
-            System.out.println("testFunctionDoc 5: ========");
             query = "let $v := ()\n" + "return doc-available($v)";
             result = service.query(query);
             assertEquals("XQuery: " + query, 1, result.getSize());
             assertEquals("XQuery: " + query, "false", result.getResource(0).getContent());
-
-            System.out.println("testFunctionDoc 6: ========");
             query = "doc-available('" + XmldbURI.ROOT_COLLECTION + "/test/dummy" + NUMBERS_XML + "')";
             assertEquals("XQuery: " + query, 1, result.getSize());
             assertEquals("XQuery: " + query, "false", result.getResource(0).getContent());
 
         } catch (XMLDBException e) {
-            System.out.println("testFunctionDoc : XMLDBException: " + e);
             fail(e.getMessage());
         }
     }
@@ -1559,48 +1320,33 @@ public class XQueryTest extends XMLTestCase {
         try {
             XPathQueryService service =
                     storeXMLStringAndGetQueryService(NUMBERS_XML, numbers);
-
-            System.out.println("testFunctionDocExternal 1: ========");
             query = "if (doc-available(\"http://www.w3.org/XML/Core/\")) then doc(\"http://www.w3.org/XML/Core/\") else ()";
             result = service.query(query);
             assertEquals("XQuery: " + query, 1, result.getSize());
-
-            System.out.println("testFunctionDocExternal 2: ========");
             query = "if (doc-available(\"http://www.w3.org/XML/dummy\")) then doc(\"http://www.w3.org/XML/dummy\") else ()";
             result = service.query(query);
             assertEquals("XQuery: " + query, 0, result.getSize());
-
-            System.out.println("testFunctionDocExternal 3: ========");
             query = "doc-available(\"http://www.w3.org/XML/Core/\")";
             result = service.query(query);
             assertEquals("XQuery: " + query, 1, result.getSize());
             assertEquals("XQuery: " + query, "true", result.getResource(0).getContent());
-
-            System.out.println("testFunctionDocExternal 4: ========");
             query = "doc-available(\"http://www.google.com/404\")";
             result = service.query(query);
             assertEquals("XQuery: " + query, 1, result.getSize());
             assertEquals("XQuery: " + query, "false", result.getResource(0).getContent());
-
-            System.out.println("testFunctionDocExternal 5: ========");
             //A redirected 404
             query = "doc-available(\"http://java.sun.com/404\")";
             assertEquals("XQuery: " + query, 1, result.getSize());
             assertEquals("XQuery: " + query, "false", result.getResource(0).getContent());
-
-            System.out.println("testFunctionDocExternal 6: ========");
             query = "if (doc-available(\"file:////doesnotexist.xml\")) then doc(\"file:////doesnotexist.xml\") else ()";
             result = service.query(query);
             assertEquals("XQuery: " + query, 0, result.getSize());
-
-            System.out.println("testFunctionDocExternal 7: ========");
             query = "doc-available(\"file:////doesnotexist.xml\")";
             result = service.query(query);
             assertEquals("XQuery: " + query, 1, result.getSize());
             assertEquals("XQuery: " + query, "false", result.getResource(0).getContent());
 
         } catch (XMLDBException e) {
-            System.out.println("testFunctionDoc : XMLDBException: " + e);
             e.printStackTrace();
             fail(e.getMessage());
         }
@@ -1616,14 +1362,11 @@ public class XQueryTest extends XMLTestCase {
     }
 
     public void testTextConstructor() {
-        System.out.println("testTextConstructor 1: ========");
-
         String query = "text{ \"a\" }, text{ \"b\" }, text{ \"c\" }, text{ \"d\" }";
 
         try {
             XPathQueryService service = (XPathQueryService) getTestCollection().getService("XPathQueryService", "1.0");
             ResourceSet result = service.query(query);
-            printResult(result);
             assertEquals("XQuery: " + query, 4, result.getSize());
 
             assertEquals("XQuery: " + query, "a", result.getResource(0).getContent().toString());
@@ -1632,21 +1375,16 @@ public class XQueryTest extends XMLTestCase {
             assertEquals("XQuery: " + query, "d", result.getResource(3).getContent().toString());
 
         } catch (XMLDBException e) {
-            System.out.println("testAttributeAxis(): XMLDBException: " + e);
             fail(e.getMessage());
         }
     }
 
     public void testUserEscalationForInMemoryNodes() {
-        System.out.println("testUserEscalationForInMemoryNodes 1: ========");
-
         String query = "xmldb:login(\"xmldb:exist:///db\", \"guest\", \"guest\"), xmldb:get-current-user(), let $node := <node id=\"1\">value</node>, $null := $node[@id eq '1'] return xmldb:get-current-user()";
 
         try {
             XPathQueryService service = (XPathQueryService) getTestCollection().getService("XPathQueryService", "1.0");
             ResourceSet result = service.query(query);
-            printResult(result);
-
             Resource loggedIn = result.getResource(0);
             Resource currentUser = result.getResource(1);
             Resource currentUserAfterInMemoryOp = result.getResource(2);
@@ -1660,7 +1398,6 @@ public class XQueryTest extends XMLTestCase {
             //check that we are still guest
             assertEquals("After Query, User should still be guest and is: " + currentUserAfterInMemoryOp.getContent().toString(), "guest", currentUserAfterInMemoryOp.getContent().toString());
         } catch (XMLDBException e) {
-            System.out.println("testUserEscalationForInMemoryNodes(): XMLDBException: " + e);
             fail(e.getMessage());
         }
     }
@@ -1683,7 +1420,6 @@ public class XQueryTest extends XMLTestCase {
         String query;
         XMLResource resu;
         try {
-            System.out.println("testAttributeAxis 1: ========");
             @SuppressWarnings("unused")
 			String large = createXMLContentWithLargeString();
             XPathQueryService service =
@@ -1692,11 +1428,9 @@ public class XQueryTest extends XMLTestCase {
             query = "let $node := (<c id=\"OK\">b</c>)/descendant-or-self::*/attribute::id " +
                     "return <a>{$node}</a>";
             result = service.query(query);
-            printResult(result);
             resu = (XMLResource) result.getResource(0);
             assertEquals("XQuery: " + query, "OK", ((Element) resu.getContentAsDOM()).getAttribute("id"));
         } catch (XMLDBException e) {
-            System.out.println("testAttributeAxis(): XMLDBException: " + e);
             e.printStackTrace();
             fail(e.getMessage());
         }
@@ -1723,17 +1457,14 @@ public class XQueryTest extends XMLTestCase {
         @SuppressWarnings("unused")
 		XMLResource resu;
         try {
-            System.out.println("testLargeAttributeSimple 1: ========");
             String large = createXMLContentWithLargeString();
             XPathQueryService service =
                     storeXMLStringAndGetQueryService(file_name, xml);
 
             query = "doc('" + file_name + "') / details/metadata[@docid= '" + large + "' ]";
             result = service.queryResource(file_name, query);
-            printResult(result);
             assertEquals("XQuery: " + query, nbElem, result.getSize());
         } catch (XMLDBException e) {
-            System.out.println("testLargeAttributeSimple(): XMLDBException: " + e);
             fail(e.getMessage());
         }
     }
@@ -1752,7 +1483,6 @@ public class XQueryTest extends XMLTestCase {
             resu = (XMLResource) result.getResource(0);
             assertEquals("XQuery: " + query, "gaga", resu.getContent().toString());
         } catch (XMLDBException e) {
-            System.out.println("testAttributeAxis(): XMLDBException: " + e);
             e.printStackTrace();
             fail(e.getMessage());
         }
@@ -1791,7 +1521,6 @@ public class XQueryTest extends XMLTestCase {
             resu = (XMLResource) result.getResource(0);
             assertEquals("XQuery: " + query, xml, resu.getContent().toString());
         } catch (XMLDBException e) {
-            System.out.println("testCDATAQuery(): XMLDBException: " + e);
             e.printStackTrace();
             fail(e.getMessage());
         }
@@ -1819,7 +1548,6 @@ public class XQueryTest extends XMLTestCase {
         @SuppressWarnings("unused")
 		XMLResource resu;
         try {
-            System.out.println("testLargeAttributeSimple 1: ========");
             @SuppressWarnings("unused")
 			String large = createXMLContentWithLargeString();
             XPathQueryService service =
@@ -1829,7 +1557,6 @@ public class XQueryTest extends XMLTestCase {
             result = service.queryResource(file_name, query);
             assertEquals("XQuery: " + query, nbElem, result.getSize());
         } catch (XMLDBException e) {
-            System.out.println("testLargeAttributeSimple(): XMLDBException: " + e);
             fail(e.getMessage());
         }
     }
@@ -1840,7 +1567,6 @@ public class XQueryTest extends XMLTestCase {
         @SuppressWarnings("unused")
 		XMLResource resu;
         try {
-            System.out.println("testLargeAttributeSimple 1: ========");
             String large = createXMLContentWithLargeString();
             XPathQueryService service =
                     storeXMLStringAndGetQueryService(file_name, xml);
@@ -1849,7 +1575,6 @@ public class XQueryTest extends XMLTestCase {
             result = service.queryResource(file_name, query);
             assertEquals("XQuery: " + query, nbElem, result.getSize());
         } catch (XMLDBException e) {
-            System.out.println("testLargeAttributeSimple(): XMLDBException: " + e);
             fail(e.getMessage());
         }
     }
@@ -1914,7 +1639,6 @@ public class XQueryTest extends XMLTestCase {
         //assertTrue(message.indexOf("XQDY0025") > -1); 
 
         } catch (XMLDBException e) {
-            System.out.println("testVariable : XMLDBException: " + e);
             fail(e.getMessage());
         }
     }
@@ -1932,16 +1656,13 @@ public class XQueryTest extends XMLTestCase {
             xml += elem;
         }
         xml += tail;
-        System.out.println("XML:\n" + xml);
         return large;
     }
 
     public void testRetrieveLargeAttribute() throws XMLDBException {
-        System.out.println("testRetrieveLargeAttribute 1: ========");
         createXMLContentWithLargeString();
         storeXMLStringAndGetQueryService(file_name, xml);
         XMLResource res = (XMLResource) getTestCollection().getResource(file_name);
-        System.out.println("res.getContent(): " + res.getContent());
     }
 
     /** This test is obsolete because testLargeAttributeSimple() reproduces the problem without a file,
@@ -1952,7 +1673,6 @@ public class XQueryTest extends XMLTestCase {
         @SuppressWarnings("unused")
 		XMLResource resu;
         try {
-            System.out.println("testLargeAttributeRealFile 1: ========");
             String large;
             large = "challengesininformationretrievalandlanguagemodelingreportofaworkshopheldatthecenterforintelligentinformationretrievaluniversityofmassachusettsamherstseptember2002-extdocid-howardturtlemarksandersonnorbertfuhralansmeatonjayaslamdragomirradevwesselkraaijellenvoorheesamitsinghaldonnaharmanjaypontejamiecallannicholasbelkinjohnlaffertylizliddyronirosenfeldvictorlavrenkodavidjharperrichschwartzjohnpragerchengxiangzhaijinxixusalimroukosstephenrobertsonandrewmccallumbrucecroftrmanmathasuedumaisdjoerdhiemstraeduardhovyralphweischedelthomashofmannjamesallanchrisbuckleyphilipresnikdavidlewis2003";
             if (attributeXML != null) {
@@ -1969,10 +1689,8 @@ public class XQueryTest extends XMLTestCase {
             // query = "doc('"+ FILE_NAME+"') / details/metadata[ docid= '" + large + "' ]"; // test passes!
 
             result = service.queryResource(FILE_NAME, query);
-            printResult(result);
             assertEquals("XQuery: " + query, 2, result.getSize());
         } catch (XMLDBException e) {
-            System.out.println("testLargeAttributeRealFile(): XMLDBException: " + e);
             fail(e.getMessage());
         }
     }
@@ -1995,12 +1713,9 @@ public class XQueryTest extends XMLTestCase {
         try {
             XPathQueryService service =
                     storeXMLStringAndGetQueryService(NUMBERS_XML, numbers);
-
-            System.out.println("testXUpdateWithAdvancentTextNodes 1: ========");
             result = service.query(query);
             assertEquals("XQuery: " + query, 1, result.getSize());
         } catch (XMLDBException e) {
-            System.out.println("testXUpdateWithAdvancentTextNodes(): XMLDBException: " + e);
             fail(e.getMessage());
         }
     }
@@ -2036,12 +1751,9 @@ public class XQueryTest extends XMLTestCase {
         try {
             XPathQueryService service =
                     storeXMLStringAndGetQueryService(BOWLING_XML, bowling);
-
-            System.out.println("testXUpdateAttributesAndElements 1: ========");
             result = service.query(query);
             assertEquals("XQuery: " + query, 3, result.getSize());
         } catch (XMLDBException e) {
-            System.out.println("testXUpdateAttributesAndElements(): XMLDBException: " + e);
             fail(e.getMessage());
         }
     }
@@ -2105,10 +1817,8 @@ public class XQueryTest extends XMLTestCase {
             for (int i = 0; i < 25; i++) { // repeat a few times
 
                 XPathQueryService service = (XPathQueryService) getTestCollection().getService("XPathQueryService", "1.0");
-                System.out.println("Attempt " + i);
                 ResourceSet result = service.query(query);
                 assertEquals(1, result.getSize());
-                printResult(result);
                 assertEquals(expectedresult, result.getResource(0).getContent().toString());
             }
 
@@ -2218,7 +1928,6 @@ public class XQueryTest extends XMLTestCase {
             ResourceSet result = service.query(query);
             assertXMLEqual("<row>titolo giulio</row>", result.getResource(0).getContent().toString());
         } catch (Exception e) {
-            System.out.println("testEnclosedExpressions(): " + e);
             e.printStackTrace();
             fail(e.getMessage());
         }
@@ -3519,7 +3228,7 @@ public class XQueryTest extends XMLTestCase {
             	result = service.query(query);
             } catch (Exception e) {
             	//SENR0001 : OK
-            	System.out.println(e.getMessage());
+            	e.printStackTrace();
             }
             query = "declare option exist:serialize 'method=text'; \n"
             	+ "//@* \n";
@@ -3564,18 +3273,6 @@ public class XQueryTest extends XMLTestCase {
         XPathQueryService service = (XPathQueryService) testCollection.getService(
                 "XPathQueryService", "1.0");
         return service;
-    }
-
-    /**
-     * @param result
-     * @throws XMLDBException
-     */
-    private void printResult(ResourceSet result) throws XMLDBException {
-        for (ResourceIterator i = result.getIterator();
-                i.hasMoreResources();) {
-            Resource r = i.nextResource();
-            System.out.println(r.getContent());
-        }
     }
 
     public static void main(String[] args) {

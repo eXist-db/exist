@@ -51,7 +51,6 @@ public abstract class RemoteDBTest extends TestCase {
 			if (server == null) {
 				server = new JettyStart();
 				if (!server.isStarted()) {
-                    System.out.println("Starting standalone server...");
                     server.run();
                 }
 			}

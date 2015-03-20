@@ -58,7 +58,6 @@ public class EntitiesTest extends XMLTestCase {
         try {
             if (server == null) {
                 server = new JettyStart();
-                System.out.println("Starting standalone server...");
                 server.run();
             }
         } catch(Exception e) {
@@ -75,9 +74,6 @@ public class EntitiesTest extends XMLTestCase {
                 dim.shutdown();
             }
             testCollection = null;
-            
-            System.out.println("tearDown PASSED");
-            
         } catch (XMLDBException e) {
             e.printStackTrace();
             fail(e.getMessage());
@@ -149,20 +145,6 @@ public class EntitiesTest extends XMLTestCase {
                 "XPathQueryService",
                 "1.0");
         return service;
-    }
-    
-    /**
-     * @param result
-     * @throws XMLDBException
-     */
-    @SuppressWarnings("unused")
-	private void printResult(ResourceSet result) throws XMLDBException {
-        for (ResourceIterator i = result.getIterator();
-        i.hasMoreResources();
-        ) {
-            Resource r = i.nextResource();
-            System.out.println(r.getContent());
-        }
     }
     
     public void testAttributeConstructor() {

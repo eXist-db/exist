@@ -242,10 +242,10 @@ public class CompressedWhitespace implements CharSequence {
         }
     }
 
-    public static void main( String[] args ) {
-        final CharSequence c = compress("\t\n\n\t\t\n      ");
-        System.err.println(c);
-    }
+//    public static void main( String[] args ) {
+//        final CharSequence c = compress("\t\n\n\t\t\n      ");
+//        System.err.println(c);
+//    }
 
 }
 

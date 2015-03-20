@@ -167,7 +167,6 @@ public class RestApiSecurityTest extends AbstractApiSecurityTest {
         //Don't worry about closing the server : the shutdownDB hook will do the job
         if (server == null) {
             server = new JettyStart();
-            System.out.println("Starting standalone server...");
             server.run();
             while (!server.isStarted()) {
                 Thread.sleep(1000);

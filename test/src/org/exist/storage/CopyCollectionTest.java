@@ -72,7 +72,6 @@ public class CopyCollectionTest {
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
                 final Txn transaction = transact.beginTransaction()) {
-            System.out.println("Transaction started ...");
 
             Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
             broker.saveCollection(transaction, root);
@@ -93,8 +92,6 @@ public class CopyCollectionTest {
             broker.copyCollection(transaction, test, dest, XmldbURI.create("test3"));
 
             transact.commit(transaction);
-            System.out.println("Transaction commited ...");
-            
 	    } catch (Exception e) {            
 	        fail(e.getMessage());              
         }
@@ -106,7 +103,6 @@ public class CopyCollectionTest {
         DBBroker broker = null;
         
         try {
-        	System.out.println("testRead() ...\n");  
         	pool = startDB();
         	assertNotNull(pool);
         	broker = pool.get(pool.getSecurityManager().getSystemSubject());
@@ -118,8 +114,7 @@ public class CopyCollectionTest {
             DocumentImpl doc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("destination/test3/test.xml"), Lock.READ_LOCK);
             assertNotNull("Document should not be null", doc);
             String data = serializer.serialize(doc);
-            System.out.println(data);
-            doc.getUpdateLock().release(Lock.READ_LOCK);                
+            doc.getUpdateLock().release(Lock.READ_LOCK);
 	    } catch (Exception e) {  
 	    	e.printStackTrace();
 	        fail(e.getMessage());              
@@ -139,8 +134,6 @@ public class CopyCollectionTest {
 
             try(final Txn transaction = transact.beginTransaction()) {
 
-                System.out.println("Transaction started ...");
-
                 Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
                 assertNotNull(root);
                 broker.saveCollection(transaction, root);
@@ -157,12 +150,10 @@ public class CopyCollectionTest {
                 test2.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
 
                 transact.commit(transaction);
-                System.out.println("Transaction commited ...");
             }
             
             final Txn transaction = transact.beginTransaction();
-            System.out.println("Transaction started ...");
-            
+
             Collection dest = broker.getOrCreateCollection(transaction, XmldbURI.ROOT_COLLECTION_URI.append("destination"));
             assertNotNull(dest);
             broker.saveCollection(transaction, dest);            
@@ -170,8 +161,7 @@ public class CopyCollectionTest {
 
 //          Don't commit...
             transact.getJournal().flushToLog(true);
-            System.out.println("Transaction interrupted ...");            
-	    } catch (Exception e) {    
+	    } catch (Exception e) {
 	    	e.printStackTrace();
 	        fail(e.getMessage());              
         }
@@ -183,8 +173,7 @@ public class CopyCollectionTest {
         DBBroker broker = null;
        
         try {
-        	System.out.println("testReadAborted() ...\n");
-        	pool = startDB();
+            pool = startDB();
         	assertNotNull(pool);
         	broker = pool.get(pool.getSecurityManager().getSystemSubject());
         	assertNotNull(broker);
@@ -252,8 +241,6 @@ public class CopyCollectionTest {
 	        assertNotNull(test);
 	        Resource res = test.getResource("test_xmldb.xml");
 	        assertNotNull("Document should not be null", res);
-	        System.out.println(res.getContent());
-	        
 	        org.xmldb.api.base.Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
 	        assertNotNull(root);
 	        CollectionManagementServiceImpl mgr = (CollectionManagementServiceImpl) 

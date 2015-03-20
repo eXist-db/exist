@@ -159,9 +159,6 @@ public class XIncludeSerializerTest {
 	    
 	    final String responseXML = out.toString();
 
-        System.out.println("response XML:"+ responseXML);
-        System.out.println("control XML" + XML_RESULT);
-
         final Diff myDiff = new Diff(XML_RESULT, responseXML);
         assertTrue("pieces of XML are similar " + myDiff, myDiff.similar());
         assertTrue("but are they identical? " + myDiff, myDiff.identical());
@@ -183,9 +180,6 @@ public class XIncludeSerializerTest {
  	        out.append("\r\n");
  	    }
  	    final String responseXML = out.toString();
-
-        System.out.println("response XML:"+ responseXML);
-        System.out.println("control XML" + XML_RESULT);
 
         final Diff myDiff = new Diff(XML_RESULT, responseXML);
         assertTrue("pieces of XML are similar " + myDiff, myDiff.similar());
@@ -210,9 +204,6 @@ public class XIncludeSerializerTest {
  	    }
  	    final String responseXML = out.toString();
 
-        System.out.println("response XML:"+ responseXML);
-        System.out.println("control XML" + XML_RESULT);
-
         final Diff myDiff = new Diff(XML_RESULT, responseXML);
         assertTrue("pieces of XML are similar " + myDiff, myDiff.similar());
         assertTrue("but are they identical? " + myDiff, myDiff.identical());
@@ -234,9 +225,6 @@ public class XIncludeSerializerTest {
             out.append("\r\n");
         }
         final String responseXML = out.toString();
-
-        System.out.println("response XML:"+ responseXML);
-        System.out.println("control XML" + XML_RESULT_XPOINTER);
 
         final Diff myDiff = new Diff(XML_RESULT_XPOINTER, responseXML);
         assertTrue("pieces of XML are similar " + myDiff, myDiff.similar());
@@ -260,9 +248,6 @@ public class XIncludeSerializerTest {
         }
         final String responseXML = out.toString();
 
-        System.out.println("response XML:"+ responseXML);
-        System.out.println("control XML" + XML_RESULT_XPOINTER);
-
         final Diff myDiff = new Diff(XML_RESULT_XPOINTER, responseXML);
         assertTrue("pieces of XML are similar " + myDiff, myDiff.similar());
         assertTrue("but are they identical? " + myDiff, myDiff.identical());
@@ -285,9 +270,6 @@ public class XIncludeSerializerTest {
         }
         String responseXML = out.toString();
 
-        System.out.println("response XML:"+ responseXML);
-        System.out.println("control XML" + XML_RESULT_FALLBACK1);
-
         final Diff myDiff = new Diff(XML_RESULT_FALLBACK1, responseXML);
         assertTrue("pieces of XML are similar " + myDiff, myDiff.similar());
         assertTrue("but are they identical? " + myDiff, myDiff.identical());
@@ -309,7 +291,6 @@ public class XIncludeSerializerTest {
             out.append("\r\n");
         }
         final String responseXML = out.toString();
-        System.out.println("response XML:"+ responseXML);
     }
 
     //TODO add full url test e.g. http://www.example.org/test.xml for xinclude
@@ -379,11 +360,9 @@ public class XIncludeSerializerTest {
         //Don't worry about closing the server : the shutdownDB hook will do the job
         if (server == null) {
             server = new JettyStart();
-            System.out.println("Starting standalone server...");
             server.run();
         }
 
-        System.out.println("Creating collection " + XINCLUDE_COLLECTION);
         final XmlRpcClient xmlrpc = getClient();
         final Vector<Object> params = new Vector<Object>();
         params.addElement(XINCLUDE_COLLECTION.toString());
@@ -393,7 +372,6 @@ public class XIncludeSerializerTest {
         params.addElement(XINCLUDE_NESTED_COLLECTION.toString());
         xmlrpc.execute("createCollection", params);
 
-        System.out.println("Loading test document data");
         params.clear();
         params.addElement(XML_DATA1);
         params.addElement("/db/xinclude_test/test_simple.xml");

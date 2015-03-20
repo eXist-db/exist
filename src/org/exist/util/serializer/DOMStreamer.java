@@ -27,6 +27,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Stack;
 
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.ReferenceNode;
 import org.w3c.dom.Attr;
@@ -49,6 +51,8 @@ import javax.xml.XMLConstants;
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
 public class DOMStreamer {
+
+    private final static Logger LOG = LogManager.getLogger(DOMStreamer.class);
 
     private ContentHandler contentHandler = null;
     private LexicalHandler lexicalHandler = null;
@@ -255,7 +259,7 @@ public class DOMStreamer {
             break;
         default :
             //TODO : what kind of default here ? -pb
-            System.out.println("Found node: " + node.getNodeType());
+            LOG.error("Unknown node type: " + node.getNodeType());
             break;
         }
     }

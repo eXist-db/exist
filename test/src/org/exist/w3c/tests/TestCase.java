@@ -83,8 +83,6 @@ public abstract class TestCase {
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-//		System.out.println("setUpBeforeClass ENTERED");
-
 	    Configuration configuration = new Configuration();
         BrokerPool.configure(1, 10, configuration);
 
@@ -92,19 +90,13 @@ public abstract class TestCase {
         
         broker = db.get(db.getSecurityManager().getSystemSubject());
         Assert.assertNotNull(broker);
-
-//		System.out.println("setUpBeforeClass PASSED");
 	}
 
 	public abstract void loadTS() throws Exception;
 	
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
-//      System.out.println("tearDownAfterClass ENTERED");
-
 	    db.release(broker);
-
-//		System.out.println("tearDownAfterClass PASSED");
 	}
 
 	/**
@@ -112,15 +104,12 @@ public abstract class TestCase {
 	 */
 	@Before
 	public void setUp() throws Exception {
-//		System.out.println("setUp ENTERED");
 		if (testCollection == null) {
 			synchronized (db) {
 				if (testCollection == null) {
 					testCollection = broker.getCollection(getCollection());
 					if (testCollection == null) {
-						System.out.println("setUp no TS data");
 						loadTS();
-						System.out.println("setUp checking TS data");
 	                    testCollection = broker.getCollection(getCollection());
 						if (testCollection == null) {
 							Assert.fail("There is no Test Suite data at database");
@@ -129,18 +118,9 @@ public abstract class TestCase {
 				}
 			}
 		}
-//		System.out.println("setUp PASSED");
 	}
 	
 	protected abstract XmldbURI getCollection();
-
-	/**
-	 * @throws java.lang.Exception
-	 */
-	@After
-	public void tearDown() throws Exception {
-		// System.out.println("tearDown PASSED");
-	}
 
 	public Exception catchError(Sequence result) {
 		

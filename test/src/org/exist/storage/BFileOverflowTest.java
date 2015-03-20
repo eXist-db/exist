@@ -99,7 +99,6 @@ public class BFileOverflowTest extends TestCase {
             
             Value key = new Value("test".getBytes());
             Value val = collectionsDb.get(key);
-            System.out.println(new String(val.data(), val.start(), val.getLength()));
         } catch (Exception e) {
             fail(e.getMessage());
         } finally {

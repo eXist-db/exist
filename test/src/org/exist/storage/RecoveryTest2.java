@@ -71,8 +71,6 @@ public class RecoveryTest2 extends TestCase {
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
                 final Txn transaction = transact.beginTransaction();) {
 
-            System.out.println("Transaction started ...");
-            
             Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
             assertNotNull(root); 
             broker.saveCollection(transaction, root);
@@ -80,14 +78,12 @@ public class RecoveryTest2 extends TestCase {
             Collection test2 = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI2);
             assertNotNull(test2); 
             broker.saveCollection(transaction, test2);
-            
-            System.out.println("Contents of dom.dbx:\n\n");
+
             DOMFile domDb = ((NativeBroker)broker).getDOMFile();
             assertNotNull(domDb); 
             Writer writer = new StringWriter();
             domDb.dump(writer);
-            System.out.println(writer.toString());
-            
+
             File f;
             IndexInfo info;
             
@@ -105,8 +101,7 @@ public class RecoveryTest2 extends TestCase {
             }
             
             transact.commit(transaction);
-            System.out.println("Transaction commited ...");
-            
+
 	    } catch (Exception e) {            
 	        fail(e.getMessage());          
         }
@@ -117,7 +112,6 @@ public class RecoveryTest2 extends TestCase {
         BrokerPool pool = null;
         DBBroker broker = null;
         try {
-        	System.out.println("testRead() ...\n");
         	pool = startDB();
         	assertNotNull(pool);
             broker = pool.get(pool.getSecurityManager().getSystemSubject());
@@ -129,7 +123,6 @@ public class RecoveryTest2 extends TestCase {
             assertNotNull("Document should not be null", doc);
             String data = serializer.serialize(doc);
             assertNotNull(data);
-            System.out.println(data);
             doc.getUpdateLock().release(Lock.READ_LOCK);
 	    } catch (Exception e) {            
 	        fail(e.getMessage()); 

@@ -108,7 +108,6 @@ public class ConstructedNodesTest extends TestCase
 		}
 		catch (XMLDBException e)
 		{
-			System.out.println("testIterateConstructNodes(): " + e);
 			fail(e.getMessage());
 		}
 	}
@@ -152,7 +151,6 @@ public class ConstructedNodesTest extends TestCase
 		}
 		catch (XMLDBException e)
 		{
-			System.out.println("testConstructedNodesSort(): " + e);
 			fail(e.getMessage());
 		}
 	}
@@ -195,7 +193,6 @@ public class ConstructedNodesTest extends TestCase
 		}
 		catch (XMLDBException e)
 		{
-			System.out.println("testConstructedNodesPosition(): " + e);
 			fail(e.getMessage());
 		}
 	}
@@ -234,7 +231,6 @@ public class ConstructedNodesTest extends TestCase
 			service.setProperty(OutputKeys.INDENT, oki);
 			
 		} catch (XMLDBException e) {
-			System.out.println("testConstructedTextNodes(): " + e);
 			fail(e.getMessage());
 		}
 	}
