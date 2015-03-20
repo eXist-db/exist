@@ -73,8 +73,6 @@ public class CopyResourceTest {
 		try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
                 final Txn transaction = transact.beginTransaction()) {
 
-			System.out.println("Transaction started ...");
-
 			Collection root = broker.getOrCreateCollection(transaction,	XmldbURI.ROOT_COLLECTION_URI.append("test"));
 			assertNotNull(root);
 			broker.saveCollection(transaction, root);
@@ -99,8 +97,7 @@ public class CopyResourceTest {
 			broker.saveCollection(transaction, testCollection);
 
 			transact.commit(transaction);
-			System.out.println("Transaction commited ...");
-	    } catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
 	        fail(e.getMessage()); 	      			
 		}
@@ -112,7 +109,6 @@ public class CopyResourceTest {
 		DBBroker broker = null;
 		
 		try {
-			System.out.println("testRead() ...\n");
 			pool = startDB();
 			assertNotNull(pool);
 			broker = pool.get(pool.getSecurityManager().getSystemSubject());
@@ -124,7 +120,7 @@ public class CopyResourceTest {
 			assertNotNull("Document should not be null", doc);
 			String data = serializer.serialize(doc);
 			assertNotNull(data);
-			//System.out.println(data);
+
 			doc.getUpdateLock().release(Lock.READ_LOCK);
 	    } catch (Exception e) {            
 	        fail(e.getMessage()); 			
@@ -144,7 +140,6 @@ public class CopyResourceTest {
             IndexInfo info;
 
             try(final Txn transaction = transact.beginTransaction()) {
-                System.out.println("Transaction started ...");
 
                 Collection root = broker.getOrCreateCollection(transaction, XmldbURI.ROOT_COLLECTION_URI.append("test"));
                 assertNotNull(root);
@@ -167,19 +162,16 @@ public class CopyResourceTest {
                 subTestCollection.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
 
                 transact.commit(transaction);
-                System.out.println("Transaction commited ...");
             }
 
 			final Txn transaction = transact.beginTransaction();
-			System.out.println("Transaction started ...");
 
 			broker.copyResource(transaction, info.getDocument(), testCollection, XmldbURI.create("new_test2.xml"));
 			broker.saveCollection(transaction, testCollection);
 			
 //			Don't commit...
 			pool.getTransactionManager().getJournal().flushToLog(true);
-			System.out.println("Transaction interrupted ...");
-	    } catch (Exception e) {            
+	    } catch (Exception e) {
 	        fail(e.getMessage());			
 		}
 	}
@@ -189,7 +181,6 @@ public class CopyResourceTest {
 		BrokerPool pool = null;
 		DBBroker broker = null;		
 		try {
-			System.out.println("testReadAborted() ...\n");
 			pool = startDB();
 			assertNotNull(pool);
 			broker = pool.get(pool.getSecurityManager().getSystemSubject());
@@ -201,7 +192,7 @@ public class CopyResourceTest {
 			assertNotNull("Document should not be null", doc);
 			String data = serializer.serialize(doc);
 			assertNotNull(data);
-			//System.out.println(data);
+
 			doc.getUpdateLock().release(Lock.READ_LOCK);
 
 			doc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("test").append(testCollectionName).append("new_test2.xml"), Lock.READ_LOCK);

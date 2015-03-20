@@ -193,7 +193,6 @@ public class XPathQueryTest {
 	private void initServer() {
         if (server == null) {
             server = new JettyStart();
-            System.out.println("Starting standalone server...");
             server.run();
         }
     }
@@ -286,8 +285,6 @@ public class XPathQueryTest {
 
         String query = "/test/item[ @id='1' ]";
         ResourceSet result = service.queryResource(testDocument, query);
-        System.out.println("testAttributes 1: ========");
-        printResult(result);
         assertEquals("XPath: " + query, 1, result.getSize());
 
         XMLResource resource = (XMLResource)result.getResource(0);
@@ -298,8 +295,6 @@ public class XPathQueryTest {
 
         query = "/test/item [ @type='alphanum' ]";
         result = service.queryResource(testDocument, query);
-        System.out.println("testAttributes 2: ========");
-        printResult(result);
         assertEquals("XPath: " + query, 1, result.getSize());
     }
 
@@ -309,23 +304,15 @@ public class XPathQueryTest {
                 storeXMLStringAndGetQueryService("numbers.xml", numbers);
 
         ResourceSet result = service.queryResource("numbers.xml", "/*/item");
-        System.out.println("testStarAxis 1: ========");
-        printResult(result);
         assertEquals("XPath: /*/item", 4, result.getSize());
 
         result = service.queryResource("numbers.xml", "/test/*");
-        System.out.println("testStarAxis  2: ========");
-        printResult(result);
         assertEquals("XPath: /test/*", 4, result.getSize());
 
         result = service.queryResource("numbers.xml", "/test/descendant-or-self::*");
-        System.out.println("testStarAxis  3: ========");
-        printResult(result);
         assertEquals("XPath: /test/descendant-or-self::*", 13, result.getSize());
 
         result = service.queryResource("numbers.xml", "/*/*");
-        System.out.println("testStarAxis 4: ========" );
-        printResult(result);
         //Strange !!! Should be 8
         assertEquals("XPath: /*/*", 4, result.getSize());
     }
@@ -335,57 +322,38 @@ public class XPathQueryTest {
         final XQueryService service =
                 storeXMLStringAndGetQueryService("namespaces.xml", namespaces);
         service.setNamespace("t", "http://www.foo.com");
-        System.out.println("testStarAxisConstraints : ========");
 
         String query = "// t:title/text() [ . != 'aaaa' ]";
         ResourceSet result = service.queryResource( "namespaces.xml", query);
-        printResult(result);
         assertEquals("XPath: " + query, 1, result.getSize() );
-        System.out.println("testStarAxisConstraints : ========");
 
         query = "/t:test/*:section[contains(., 'comment')]";
         result = service.queryResource("namespaces.xml", query);
-        printResult(result);
         assertEquals("XPath: " + query, 1, result.getSize());
-        System.out.println("testStarAxisConstraints : ========");
 
         query = "/t:test/t:*[contains(., 'comment')]";
         result = service.queryResource("namespaces.xml", query);
-        printResult(result);
         assertEquals("XPath: " + query, 1, result.getSize());
-        System.out.println("testStarAxisConstraints : ========");
 
         query = "/t:test/t:section[contains(., 'comment')]";
         result = service.queryResource("namespaces.xml", query);
-        printResult(result);
         assertEquals("XPath: " + query, 1, result.getSize());
-        System.out.println("testStarAxisConstraints : ========");
 
         query = "/t:test/t:section/*[contains(., 'comment')]";
         result = service.queryResource("namespaces.xml", query);
-        printResult(result);
         assertEquals("XPath: " + query, 1, result.getSize());
-        System.out.println("testStarAxisConstraints : ========");
 
         query = "/ * / * [ t:title ]";
         result = service.queryResource( "namespaces.xml", query);
-        printResult(result);
         assertEquals("XPath: " + query, 1, result.getSize() );
-        System.out.println("testStarAxisConstraints : ========");
 
         query = "/ t:test / t:section [ t:title ]";
         result = service.queryResource( "namespaces.xml", query);
-        printResult(result);
-        System.out.println("g) 1 / " +  result.getSize());
         assertEquals("XPath: " + query, 1, result.getSize() );
-        System.out.println("testStarAxisConstraints : ========");
 
         query = "/ t:test / t:section";
         result = service.queryResource( "namespaces.xml", query);
-        printResult(result);
-        System.out.println("h) 1 / " +  result.getSize());
         assertEquals("XPath: " + query, 1, result.getSize() );
-        System.out.println("testStarAxisConstraints : ========");
     }
 
     @Test
@@ -396,14 +364,10 @@ public class XPathQueryTest {
 
         String query =  "/ * [ ./ * / t:title ]";
         ResourceSet result = service.queryResource( "namespaces.xml", query);
-        System.out.println("testStarAxisConstraints2 : ========");
-        printResult(result);
         assertEquals("XPath: " + query, 1, result.getSize());
 
         query =  "/ * [ * / t:title ]";
         result = service.queryResource( "namespaces.xml", query);
-        System.out.println("testStarAxisConstraints2 : ========");
-        printResult(result);
         assertEquals("XPath: " + query, 1, result.getSize());
     }
 
@@ -415,8 +379,6 @@ public class XPathQueryTest {
 
         final String query =  "// * [ . = 'Test Document' ]";
         final ResourceSet result = service.queryResource("namespaces.xml", query);
-        System.out.println("testStarAxisConstraints3 : ========");
-        printResult(result);
         assertEquals("XPath: " + query, 1, result.getSize());
     }
 
@@ -1068,8 +1030,8 @@ public class XPathQueryTest {
         final XQueryService service = getQueryService();
         final ResourceSet rs = service.query(xQuery);
         
-        System.out.println("BUG1460791/1" + rs.getResource(0).getContent().toString() );
-        System.out.println("BUG1460791/2" + rs.getResource(1).getContent().toString() );
+//        System.out.println("BUG1460791/1" + rs.getResource(0).getContent().toString() );
+//        System.out.println("BUG1460791/2" + rs.getResource(1).getContent().toString() );
         
         assertEquals("SFBUG 1460791 nr of results", 2, rs.getSize());
         
@@ -1291,8 +1253,6 @@ public class XPathQueryTest {
     @Test
     public void booleans() throws XMLDBException {
 
-        System.out.println("Testing effective boolean value of expressions ...");
-
         final XQueryService service =
                 storeXMLStringAndGetQueryService("numbers.xml", numbers);
 
@@ -1508,7 +1468,6 @@ public class XPathQueryTest {
         String message = "";
         try {
             service.execute(expr);
-            System.out.println(query);
         } catch (XMLDBException e) {
             e.printStackTrace();
             message = e.getMessage();
@@ -1526,7 +1485,6 @@ public class XPathQueryTest {
 
         message = "";
         try {
-            System.out.println(query);
             service.execute(expr);
         } catch (XMLDBException e) {
             e.printStackTrace();
@@ -1642,7 +1600,6 @@ public class XPathQueryTest {
                 storeXMLStringAndGetQueryService("nested.xml", nested);
 
         final ResourceSet result = service.queryResource("nested.xml", "//c");
-        printResult(result);
         assertEquals(3, result.getSize());
     }
     
@@ -1664,19 +1621,10 @@ public class XPathQueryTest {
 
         //ResourceSet result = service.query("//SPEECH[SPEAKER=$name]");
         ResourceSet result = service2.query( doc, "//item[stock=$name]");
-
-        System.out.println("testStaticVariables 1: ========");
-        printResult(result);
         result = service2.query("$name");
         assertEquals(1, result.getSize());
-
-        System.out.println("testStaticVariables 2: ========");
-        printResult(result);
         result = service2.query( doc, "//item[stock=43]");
         assertEquals(1, result.getSize());
-
-        System.out.println("testStaticVariables 3: ========");
-        printResult(result);
         result = service2.query(doc, "//item");
         assertEquals(4, result.getSize());
 
@@ -1709,7 +1657,6 @@ public class XPathQueryTest {
         } else {
             content = (String)r.getContent();
         }
-        System.out.println(content);
 
         final Pattern p = Pattern.compile(".*(<price>.*){4}", Pattern.DOTALL);
         final Matcher m = p.matcher(content);
@@ -1907,11 +1854,9 @@ public class XPathQueryTest {
 
         ResourceSet result = service.queryResource("xpointer.xml",
                 "/test/.[local-name()='xpointer']");
-        printResult(result);
         assertEquals(1, result.getSize());
 
         result = service.queryResource("xpointer.xml", "/test/xpointer");
-        printResult(result);
         assertEquals(1, result.getSize());
     }
 
@@ -1931,7 +1876,6 @@ public class XPathQueryTest {
         service.setProperty(OutputKeys.INDENT, "no");
         final ResourceSet result = service.query(query);
         assertEquals(1, result.getSize());
-        printResult(result);
         assertXMLEqual("<test><test:name xmlns:test=\"http://test.org\"/><test:name xmlns:test=\"http://test.org\"/></test>", result.getResource(0).getContent().toString());
     }
 
@@ -2024,17 +1968,6 @@ public class XPathQueryTest {
                 "XPathQueryService",
                 "1.0");
         return service;
-    }
-
-    /**
-     * @param result
-     * @throws XMLDBException
-     */
-    private void printResult(final ResourceSet result) throws XMLDBException {
-        for (final ResourceIterator i = result.getIterator(); i.hasMoreResources(); ) {
-            final Resource r = i.nextResource();
-            System.out.println(r.getContent());
-        }
     }
 
     public static void main(final String[] args) {

@@ -56,7 +56,6 @@ public class DOMTest {
 	 */
 	public void runTest1() {
 		try {
-			System.out.println("Running test1 ...");
 			Class<?> dbc = Class.forName(driver);
 			Database database = (Database) dbc.newInstance();
 			DatabaseManager.registerDatabase(database);
@@ -90,9 +89,6 @@ public class DOMTest {
 				r = (XMLResource) i.nextResource();
 				String s = (String) r.getContent();
 				Node content = r.getContentAsDOM();
-				System.out.println("Resource: " + r.getId());
-				System.out.println("getContent: " + s);
-				System.out.println("getContentAsDOM: " + content);
 				coll.removeResource(r);
 			}
 
@@ -103,9 +99,7 @@ public class DOMTest {
 					"DatabaseInstanceManager",
 					"1.0");
 			dim.shutdown();
-			System.out.println("test 1: PASSED");
 		} catch (Exception e) {
-			System.err.println("test 1: FAILED");
 			e.printStackTrace();
 		}
 	}
@@ -116,7 +110,6 @@ public class DOMTest {
 	 * */
 	public void runTest2() {
 		try {
-			System.out.println("Running test 2 ...");
 			for (int i = 0; i < 2; i++) {
 				Class<?> dbc = Class.forName(driver);
 				Database database = (Database) dbc.newInstance();
@@ -126,7 +119,6 @@ public class DOMTest {
 					DatabaseManager.getCollection(baseURI, username, password);
 				XMLResource resource = (XMLResource) coll.getResource(name);
 				if (resource == null) {
-					System.out.println("Creating resource!");
 					resource =
 						(XMLResource) coll.createResource(
 							name,
@@ -148,15 +140,10 @@ public class DOMTest {
 							username,
 							password);
 					resource = (XMLResource) coll.getResource(name);
-				} else {
-					System.out.println("Found resource!");
 				}
 
 				String s = (String) resource.getContent();
 				Node content = resource.getContentAsDOM();
-				System.out.println("Resource: " + resource);
-				System.out.println("getContent: " + s);
-				System.out.println("getContentAsDOM: " + content);
 
 				DatabaseManager.deregisterDatabase(database);
 				DatabaseInstanceManager dim =
@@ -180,9 +167,7 @@ public class DOMTest {
 					"1.0");
 			dim.shutdown();
 
-			System.out.println("test 2: PASSED");
 		} catch (Exception e) {
-			System.out.println("test 2: FAILED");
 			e.printStackTrace();
 		}
 	}
@@ -190,7 +175,6 @@ public class DOMTest {
 	/** like test 2 but add attribute and text as well */
 	public void runTest3() {
 		try {
-			System.out.println("Running test 3 ...");
 
 			Class<?> dbc = Class.forName("org.exist.xmldb.DatabaseImpl");
 			Database database = (Database) dbc.newInstance();
@@ -223,8 +207,6 @@ public class DOMTest {
 			resource = (XMLResource) coll.getResource(name);
 			String s = (String) resource.getContent();
 			Node n = resource.getContentAsDOM();
-			System.out.println("getContent: " + s);
-			System.out.println("getContentAsDOM: " + n);
 
 			coll.removeResource(resource);
 
@@ -234,9 +216,7 @@ public class DOMTest {
 					"DatabaseInstanceManager",
 					"1.0");
 			dim.shutdown();
-			System.out.println("test 3 : PASSED");
 		} catch (Exception e) {
-			System.out.println("test 3 : FAILED");
 			e.printStackTrace();
 		}
 	}
@@ -245,7 +225,6 @@ public class DOMTest {
 	public void runTest4(boolean getContentAsDOM) {
 		Database database = null;
 		try {
-			System.out.println("Running test 4 ...");
 
 			Class<?> dbc = Class.forName("org.exist.xmldb.DatabaseImpl");
 			database = (Database) dbc.newInstance();
@@ -290,8 +269,6 @@ public class DOMTest {
 				n = db.parse(bais);
 			}
 
-			System.out.println("getContentAsDOM: " + n.getNodeName());
-
 			Transformer t = TransformerFactory.newInstance().newTransformer();
 			DOMSource source = new DOMSource(n);
 			SAXResult result = new SAXResult(new DOMTest.SAXHandler());
@@ -299,9 +276,7 @@ public class DOMTest {
 
 			coll.removeResource(resource);
 
-			System.out.println("test 4 : PASSED");
 		} catch (Exception e) {
-			System.out.println("test 4 : FAILED");
 			e.printStackTrace();
 		} finally {
 			if (database != null) {
@@ -318,6 +293,7 @@ public class DOMTest {
 							"1.0");
 					dim.shutdown();
 				} catch (Exception e) {
+                    e.printStackTrace();
 				}
 			}
 		}

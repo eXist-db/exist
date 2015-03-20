@@ -46,7 +46,6 @@ public class HashtableTest extends TestCase {
 		int keys[] = new int[tabSize];
 		Int2ObjectHashMap<String> table = new Int2ObjectHashMap<String>(tabSize);
 		Random rand = new Random(System.currentTimeMillis());
-		System.out.println("Generating " + tabSize + " random keys...");
 		for(int i = 0; i < tabSize; i++) {
 			do {
 				keys[i] = rand.nextInt(Integer.MAX_VALUE);
@@ -54,12 +53,12 @@ public class HashtableTest extends TestCase {
 			values[i] = new String("a" + keys[i]);
 			table.put(keys[i], values[i]);
 		}
-		System.out.println("Testing get(key) ...");
+
 		for(int i = 0; i < tabSize; i++) {
 			String v = table.get(keys[i]);
 			assertEquals( values[i], v );
 		}
-		System.out.println("Testing remove(key) ...");
+
 		int r;
 		for(int i = 0; i < tabSize / 10; i++) {
 			do {
@@ -80,8 +79,6 @@ public class HashtableTest extends TestCase {
 			@SuppressWarnings("unused")
 			Integer v = (Integer)i.next();
 		}
-		System.out.println(table.size() + " = " + c);
-		System.out.println("maxRehash: " + table.getMaxRehash());
 		assertEquals(table.size(), c);
 	}
 
@@ -90,7 +87,6 @@ public class HashtableTest extends TestCase {
         long values[] = new long[tabSize];
         Object2LongHashMap<String> table = new Object2LongHashMap<String>(tabSize / 4);
 		Random rand = new Random(System.currentTimeMillis());
-		System.out.println("Generating " + tabSize + " random keys...");
 		for(int i = 0; i < tabSize; i++) {
 			do {
 				keys[i] = "/db/" + rand.nextInt(Integer.MAX_VALUE);
@@ -98,12 +94,12 @@ public class HashtableTest extends TestCase {
             values[i] = rand.nextInt(Integer.MAX_VALUE);
             table.put(keys[i], values[i]);
 		}
-        System.out.println("Testing get(key) ...");
+
 		for(int i = 0; i < tabSize; i++) {
 			long k = table.get(keys[i]);
 			assertEquals( values[i], k );
 		}
-        System.out.println("Remove/add keys ...");
+
         for(int i = 0; i < tabSize * 10; i++) {
             int idx0 = rand.nextInt(tabSize);
             table.remove(keys[idx0]);
@@ -112,7 +108,7 @@ public class HashtableTest extends TestCase {
             table.put(keys[idx0], values[idx0]);
             table.put(keys[idx1], values[idx1]);
         }
-        System.out.println("Testing get(key) ...");
+
 		for(int i = 0; i < tabSize; i++) {
 			long k = table.get(keys[i]);
 			assertEquals( values[i], k );
@@ -123,7 +119,7 @@ public class HashtableTest extends TestCase {
 		long keys[] = new long[tabSize];
 		SequencedLongHashMap<String> table = new SequencedLongHashMap<String>(tabSize);
 		Random rand = new Random(System.currentTimeMillis());
-		System.out.println("Generating " + tabSize + " random keys...");
+
 		for(int i = 0; i < tabSize; i++) {
 			do {
 				keys[i] = rand.nextInt(Integer.MAX_VALUE);
@@ -156,7 +152,6 @@ public class HashtableTest extends TestCase {
 			values[k] = null;
 			assertNull(table.get(keys[k]));
 		}
-		System.out.println("Hashtable size: " + table.size());
 		
 		// iterate through the sequence again
 		int k = 0;
@@ -220,9 +215,6 @@ public class HashtableTest extends TestCase {
 		Iterator<Long> iter = table.iterator();
 		assertFalse("Hashtable should be empty", iter.hasNext());
 		assertTrue(table.size() == 0);
-		
-		System.out.println("Hashtable size: " + table.size());
-		System.out.println("maxRehash: " + table.getMaxRehash());
 	}
     
     public void testSequencedMap2() {
@@ -237,11 +229,8 @@ public class HashtableTest extends TestCase {
         int i = 0;
         while(next != null) {
             assertEquals(next.getKey(), expected[i]);
-            System.out.print(next.getKey());
-            System.out.print(' ');
             next = next.getNext();
             i++;
         }
-        System.out.println();
     }
 }

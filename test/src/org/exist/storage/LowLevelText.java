@@ -46,7 +46,6 @@ public class LowLevelText extends TestCase {
 		XQuery xquery = broker.getXQueryService();
 		XQueryContext context = new XQueryContext(broker.getBrokerPool(), AccessContext.TEST);
 		preCompiledXQuery = xquery.compile(context, stringSource);
-		System.out.println("pre-compiled XQuery: " + preCompiledXQuery);
 	}
 
 //	protected void tearDown() {
@@ -102,7 +101,6 @@ public class LowLevelText extends TestCase {
 		CompiledXQuery compiledXQuery = null;
 		try {
 			compiledXQuery = pool.borrowCompiledXQuery(broker, stringSourceArg);
-			System.out.println("compiledXQuery: " + compiledXQuery);
 		} catch (PermissionDeniedException e) {
 			e.printStackTrace();
 		}

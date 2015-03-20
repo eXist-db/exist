@@ -285,7 +285,6 @@ public class XQueryFunctionsTest {
                 System.err.print(results);
                 fail(fails.toString());
             }
-            System.out.println(results);
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());

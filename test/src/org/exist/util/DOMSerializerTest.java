@@ -65,7 +65,6 @@ public class DOMSerializerTest extends TestCase {
 			StringWriter writer = new StringWriter();
 			DOMSerializer serializer = new DOMSerializer(writer, null);
 			serializer.serialize(doc.getDocumentElement());
-			System.out.println(writer.toString());
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());

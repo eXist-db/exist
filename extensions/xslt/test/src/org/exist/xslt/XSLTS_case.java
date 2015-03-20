@@ -187,22 +187,22 @@ public class XSLTS_case extends TestCase {
 			tokenCount++;
 			String refToken = refTokenizer.nextToken();
 			if (!resTokenizer.hasMoreTokens()) {
-				System.out.println("expected:");
-				System.out.println(ref);
-				System.out.println("get:");
-				System.out.println(result);
+//				System.out.println("expected:");
+//				System.out.println(ref);
+//				System.out.println("get:");
+//				System.out.println(result);
 				throw new Exception("result should have: "+refToken+", but get EOF (at "+tokenCount+")");
 			}
 			String resToken = resTokenizer.nextToken();
 			if (!refToken.equals(resToken)) {
-				System.out.println(ref);
-				System.out.println(result);
+//				System.out.println(ref);
+//				System.out.println(result);
 				throw new Exception("result should have: "+refToken+", but get "+resToken+" (at "+tokenCount+")");
 			}
 		}
 		if (resTokenizer.hasMoreTokens()) {
 			String resToken = resTokenizer.nextToken();
-			System.out.println(ref);
+//			System.out.println(ref);
 			throw new Exception("result should have nothing, but get "+resToken+" (at "+tokenCount+")");
 		}
 		return true;

@@ -34,6 +34,8 @@ import java.util.Properties;
 
 import javax.xml.transform.OutputKeys;
 
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.Collection.CollectionEntry;
@@ -70,6 +72,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  *
  */
 public class Resource extends File {
+
+    private final static Logger LOG = LogManager.getLogger(Resource.class);
 
 	private static final long serialVersionUID = -3450182389919974961L;
 
@@ -814,8 +818,9 @@ public class Resource extends File {
 
     public OutputStream getOutputStream(boolean append) throws IOException {
     	//XXX: code append
-    	if (append)
-    		{System.err.println("BUG: OutputStream in append mode!");}
+    	if (append) {
+            LOG.error("BUG: OutputStream in append mode!");
+        }
     	return getConnection().getOutputStream();
     }
 

@@ -59,7 +59,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 
 import javax.xml.parsers.ParserConfigurationException;
-import org.exist.backup.restore.listener.DefaultRestoreListener;
+import org.exist.backup.restore.listener.ConsoleRestoreListener;
 import org.exist.backup.restore.listener.GuiRestoreListener;
 import org.exist.backup.restore.listener.RestoreListener;
 import org.exist.client.ClientFrame;
@@ -330,7 +330,7 @@ public class Main
     private static void restoreWithoutGui(final String username, final String password, final String dbaPassword, final File f,
                                           final String uri, final boolean rebuildRepo) {
         
-        final RestoreListener listener = new DefaultRestoreListener();
+        final RestoreListener listener = new ConsoleRestoreListener();
         final Restore restore = new Restore();
 
         try {

@@ -102,7 +102,6 @@ public class MultiDBTest extends TestCase {
 	        XQueryService service = (XQueryService)
 	            collection.getService("XQueryService", "1.0");
 	        ResourceSet result = service.query(query);
-	        System.out.println("Found " + result.getSize() + " results.");
 	        for(ResourceIterator i = result.getIterator(); i.hasMoreResources(); ) {
 	            @SuppressWarnings("unused")
 				String content = i.nextResource().getContent().toString();
@@ -116,7 +115,6 @@ public class MultiDBTest extends TestCase {
     protected void setUp() 
        throws Exception
     {
-       System.out.println("Setting up "+INSTANCE_COUNT+" databases...");
        String homeDir = SingleInstanceConfiguration.getPath();
        if (homeDir == null) {
           homeDir = ".";
@@ -132,7 +130,6 @@ public class MultiDBTest extends TestCase {
        for (int i = 0; i < INSTANCE_COUNT; i++) {
           File dir = new File(testDir, "db" + i);
           dir.mkdirs();
-          System.out.println("Storing database test" + i + " in " + dir.getAbsolutePath());
           File conf = new File(dir, "conf.xml");
           FileOutputStream os = new FileOutputStream(conf);
           os.write(CONFIG.getBytes(UTF_8));
@@ -153,7 +150,6 @@ public class MultiDBTest extends TestCase {
         long free = rt.freeMemory() / 1024;
         long total = rt.totalMemory() / 1024;
         for (int i = 0; i < INSTANCE_COUNT; i++) {
-            System.out.println("Shutting down instance test"+i);
             Collection root = DatabaseManager.getCollection("xmldb:test" + i + "://" + XmldbURI.ROOT_COLLECTION, "admin", null);
             CollectionManagementService service = (CollectionManagementService)
                 root.getService("CollectionManagementService", "1.0");
@@ -163,7 +159,5 @@ public class MultiDBTest extends TestCase {
                 root.getService("DatabaseInstanceManager", "1.0");
             mgr.shutdown();
         }
-        System.out.println("Mem total: " + total + "K");
-        System.out.println("Mem free: " + free + "K");
     }
 }

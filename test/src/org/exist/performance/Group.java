@@ -79,9 +79,7 @@ public class Group {
         runner.getResults().groupStart(this);
 
         if (setupAction != null) {
-            System.out.println("Running setup ...");
             setupAction.run();
-            System.out.println("Setup done ...");
         }
 
         Stack<Thread> stack = new Stack<Thread>();
@@ -100,9 +98,7 @@ public class Group {
         }
 
         if (tearDownAction != null) {
-            System.out.println("Tearing down ...");
             tearDownAction.run();
-            System.out.println("Done.");
         }
 
         runner.getResults().groupEnd(this);

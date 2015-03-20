@@ -101,7 +101,6 @@ public class ExpandTest {
             assertEquals(expected, r);
 
         } catch (XMLDBException e) {
-            System.out.println("testEval(): " + e);
             fail(e.getMessage());
         }
     }

@@ -138,7 +138,6 @@ public class DocTest {
             n = res.getContentAsDOM();
             assertEquals("x", n.getLocalName());
         } catch (XMLDBException e) {
-            System.out.println("testEval(): " + e);
             fail(e.getMessage());
         }
     }
@@ -153,7 +152,7 @@ public class DocTest {
 		// jetty.port.jetty
 		PostMethod method = new PostMethod("http://localhost:" + System.getProperty("jetty.port") + "/exist/rest/test/text.xq");
 
-    	System.out.println( client.executeMethod(method) );
+    	client.executeMethod(method);
 
     }
 }

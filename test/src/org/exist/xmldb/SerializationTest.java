@@ -54,7 +54,6 @@ public class SerializationTest extends XMLTestCase {
 			ResourceSet result = service.query("declare namespace foo=\"http://foo.com\"; //foo:entry");
 			Resource resource = result.getMembersAsResource();
 			String str = resource.getContent().toString();
-			System.out.println(str);
 			assertXMLEqual(XML_EXPECTED1, str);
 			
 			//TODO : THIS IS BUGGY !
@@ -67,7 +66,6 @@ public class SerializationTest extends XMLTestCase {
 					"</c:Site>");
 			resource = result.getMembersAsResource();
 			str = resource.getContent().toString();
-			System.out.println(str);
 			assertXMLEqual(XML_EXPECTED2, str);
 			
 		} catch (Exception e) {
@@ -126,7 +124,6 @@ public class SerializationTest extends XMLTestCase {
 	        dim.shutdown();
             database = null;
             testCollection = null;
-	        System.out.println("tearDown PASSED");
 		} catch (XMLDBException e) {
 			fail(e.getMessage());
 		}

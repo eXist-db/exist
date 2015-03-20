@@ -271,7 +271,6 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 	}
 
 	public void reset() {
-		System.out.println("reset");
 		firstExpression = null;
 		
 		stack = new ArrayList<Expression>();

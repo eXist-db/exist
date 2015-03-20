@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2010-2011 The eXist Project
+ *  Copyright (C) 2001-2015 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -16,8 +16,6 @@
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- *  $Id$
  */
 package xquery;
 
@@ -45,198 +43,297 @@ import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
 
-import java.io.File;
-import java.io.FileFilter;
-import java.io.IOException;
-import java.io.StringWriter;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.*;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.fail;
 
 public abstract class TestRunner {
-
-    private final static String EOL = System.getProperty("line.separator");
 
     private Collection rootCollection;
     protected abstract String getDirectory();
 
     @Test
-    public void runXMLBasedTests() throws TransformerException {
-    	XMLFilenameFilter filter = new XMLFilenameFilter();
+    public void runXMLBasedTests() throws TransformerException, XMLDBException, ParserConfigurationException, SAXException, IOException {
+    	final XMLFilenameFilter filter = new XMLFilenameFilter();
     	
-        File dir = new File(getDirectory());
-        File[] files;
-        if (dir.isDirectory())
-        	files = dir.listFiles(filter);
-        else if (filter.accept(dir.getParentFile(), dir.getName()))
-        	files = new File[] {dir};
-        else
-        	return;
-
-        try {
-            StringBuilder fails = new StringBuilder();
-            StringBuilder results = new StringBuilder();
-            XQueryService xqs = (XQueryService) rootCollection.getService("XQueryService", "1.0");
-            Source query = new FileSource(new File("test/src/xquery/runTests.xql"), "UTF-8", false);
-            for (File file : files) {
-                Document doc = parse(file);
-
-                xqs.declareVariable("doc", doc);
-				xqs.declareVariable("id", Sequence.EMPTY_SEQUENCE);
-                ResourceSet result = xqs.execute(query);
-                XMLResource resource = (XMLResource) result.getResource(0);
-                results.append(resource.getContent()).append(EOL);
-                Element root = (Element) resource.getContentAsDOM();
-                NodeList tests = root.getElementsByTagName("test");
-                for (int i = 0; i < tests.getLength(); i++) {
-                    Element test = (Element) tests.item(i);
-                    String passed = test.getAttribute("pass");
-                    if (passed == null || passed.equals("false")) {
-                        fails
-                            .append("Test '").append(test.getAttribute("n"))
-                            .append("' in file '").append(file.getName())
-                            .append("' failed; Expected '").append(extractExpected(test))
-                            .append("', actual '").append(extractActual(test)).append("'.").append(EOL);
-                    }
-                }
-            }
-            if (fails.length() > 0) {
-                System.err.print(results);
-                fail(fails.toString());
-            }
-            System.out.println(results);
-        } catch (XMLDBException e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } catch (IOException e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } catch (SAXException e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } catch (ParserConfigurationException e) {
-            e.printStackTrace();
-            fail(e.getMessage());
+        final File dir = new File(getDirectory());
+        final File[] files;
+        if (dir.isDirectory()) {
+            files = dir.listFiles(filter);
+        } else if(filter.accept(dir.getParentFile(), dir.getName())) {
+            files = new File[]{ dir };
+        }  else {
+            return;
         }
-    }
 
-    private final String extractExpected(final Element test) {
-        final NodeList nlXpath = test.getElementsByTagName("xpath");
-        if(nlXpath.getLength() > 0) {
-            final StringBuilder xpaths = new StringBuilder();
-            for(int i = 0; i < nlXpath.getLength(); i++) {
-                if(i > 0) {
-                    xpaths.append(", ");
-                }
-                xpaths.append("xpath: " + nlXpath.item(i).getNodeValue());
-            }
-            return xpaths.toString();
-        } else {
-            final NodeList nlExpected = test.getElementsByTagName("expected");
-            if(nlExpected.getLength() == 1) {
-                final Node expected = nlExpected.item(0);
-                final Element expectedElement = getFirstChildElement(expected);
-                if(expectedElement != null) {
-                    return serialize(expectedElement);
-                } else {
-                    return nlExpected.item(0).getNodeValue();
-                }
-            }
-        }
-        return "";
-    }
+        final List<TestSuite> all = new ArrayList<>();
+        final XQueryService xqs = (XQueryService) rootCollection.getService("XQueryService", "1.0");
+        final Source query = new FileSource(new File("test/src/xquery/runTests.xql"), "UTF-8", false);
+        for(final File file : files) {
+            final Document doc = parse(file);
 
-    private Element getFirstChildElement(final Node n) {
-        final NodeList nl = n.getChildNodes();
-        for(int i = 0; i < nl.getLength(); i++) {
-            if(nl.item(i) instanceof Element) {
-                return (Element)nl.item(i);
-            }
-        }
-        return null;
-    }
+            xqs.declareVariable("doc", doc);
+            xqs.declareVariable("id", Sequence.EMPTY_SEQUENCE);
+            final ResourceSet result = xqs.execute(query);
+            final XMLResource resource = (XMLResource) result.getResource(0);
 
-    private final String serialize(final Element elem) {
-        try(final StringWriter writer = new StringWriter()) {
-            final Transformer transformer = TransformerFactory.newInstance().newTransformer();
-            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-            transformer.transform(new DOMSource(elem), new StreamResult(writer));
-            return writer.toString();
-        } catch(final TransformerException | IOException e) {
-            e.printStackTrace();
-            return null;
+            final List<TestSuite> tsResults = parseXmlResults((Element) resource.getContentAsDOM());
+            all.addAll(tsResults);
+            tsResults.forEach(this::printResults);
         }
-    }
 
-    private final String extractActual(final Element test) throws TransformerException {
-        final NodeList nlXpath = test.getElementsByTagName("result");
-        if(nlXpath.getLength() == 1) {
-            final Transformer transformer = TransformerFactory.newInstance().newTransformer();
-            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-            final StringWriter writer = new StringWriter();
-            transformer.transform(new DOMSource(nlXpath.item(0).getFirstChild()), new StreamResult(writer));
-            return writer.toString();
-        } else {
-            return "";
-        }
+        assertSuccess(all);
     }
 
     @Test
-    public void runXQueryBasedTests() {
-        File dir = new File(getDirectory());
-        File[] suites = dir.listFiles(new FileFilter() {
-            @Override
-            public boolean accept(File file) {
-                return (file.canRead() && file.getName().startsWith("suite") && file.getName().endsWith(".xql"));
-            }
-        });
-        for (File suite: suites) {
-            try {
-                StringBuilder fails = new StringBuilder();
-                StringBuilder results = new StringBuilder();
-                XQueryService xqs = (XQueryService) rootCollection.getService("XQueryService", "1.0");
-                xqs.setModuleLoadPath(getDirectory());
-                Source query = new FileSource(suite, "UTF-8", false);
+    public void runXQueryBasedTests() throws XMLDBException {
+        final File dir = new File(getDirectory());
+        final File[] suites = dir.listFiles(file -> (file.canRead() && file.getName().startsWith("suite") && file.getName().endsWith(".xql")));
 
-                ResourceSet result = xqs.execute(query);
-                XMLResource resource = (XMLResource) result.getResource(0);
-                results.append(resource.getContent()).append('\n');
+        final List<TestSuite> all = new ArrayList<>();
 
-                Element root = (Element) resource.getContentAsDOM();
-                NodeList testsuites = root.getElementsByTagName("testsuite");
-                for (int i = 0; i < testsuites.getLength(); i++) {
-                    Element testsuite = (Element) testsuites.item(i);
-                    NodeList tests = testsuite.getElementsByTagName("testcase");
-                    for (int j = 0; j < tests.getLength(); j++) {
-                        Element test = (Element) tests.item(j);
-                        NodeList failures = test.getElementsByTagName("failure");
-                        if (failures.getLength() > 0) {
-                            fails.append("Test '" + test.getAttribute("name") + "' in module '" +
-                                    testsuite.getAttribute("package") + "' failed.\n");
-                        }
+        for (final File suite: suites) {
+            final XQueryService xqs = (XQueryService) rootCollection.getService("XQueryService", "1.0");
+            xqs.setModuleLoadPath(getDirectory());
+            final Source query = new FileSource(suite, "UTF-8", false);
 
-                        NodeList errors = test.getElementsByTagName("error");
-                        if (errors.getLength() > 0) {
-                            fails.append("Test '" + test.getAttribute("name") + "' in module '" +
-                                    testsuite.getAttribute("package") + "' failed with an error.\n");
-                        }
+            final ResourceSet result = xqs.execute(query);
+            final XMLResource resource = (XMLResource) result.getResource(0);
+
+            final List<TestSuite> tsResults = parseXQueryResults((Element) resource.getContentAsDOM());
+            all.addAll(tsResults);
+            tsResults.forEach(this::printResults);
+        }
+
+        assertSuccess(all);
+    }
+
+    /**
+     * Uses JUnits assertArrayEquals to report test failures and errors
+     */
+    private void assertSuccess(final List<TestSuite> tss) {
+        final List<String> expected = new ArrayList<>();
+        final List<String> actual = new ArrayList<>();
+
+        tss.forEach(ts ->
+                ts.getTestCases().forEach(tc -> {
+                    if (tc instanceof TestCaseFailed) {
+                        expected.add(((TestCaseFailed) tc).expected.orElse("{UNKNOWN EXPECTED: " + tc.name + "}"));
+                        actual.add(((TestCaseFailed) tc).actual.orElse("{UNKNOWN ACTUAL: " + tc.name + "}"));
+                    } else if(tc instanceof TestCaseError) {
+                        expected.add("{UNKNOWN EXPECTED: " + tc.name + "}");
+                        actual.add("{ERROR: " + ((TestCaseError)tc).reason + "}");
                     }
-                }
-                if (fails.length() > 0) {
-                    System.err.print(results);
-                    fail(fails.toString());
-                }
-                System.out.println(results);
-            } catch (XMLDBException e) {
-                e.printStackTrace();
-                fail(e.getMessage());
+                })
+        );
+
+        assertArrayEquals(expected.toArray(), actual.toArray());
+    }
+
+    /**
+     * Prints the results of a test suite to the console
+     */
+    private void printResults(final TestSuite ts) {
+        System.out.println("XQuery Test suite: " + ts.getName());
+        ts.getTestCases().forEach(testCase -> {
+            System.out.println('\t' + testCase.toString());
+        });
+    }
+
+    /**
+     * Parses the output of eXist's XML based XQuery test suite
+     *
+     * @param The XML element <testset> from the test suite output
+     * @return The results of the tests
+     */
+    private List<TestSuite> parseXmlResults(final Element testset) {
+        final List<TestSuite> results = new ArrayList<>();
+
+        final TestSuite ts = new TestSuite(getFirstChildElement(testset, "testName").map(this::getText).orElse("{UNKNOWN}"));
+        final NodeList nlTests = testset.getElementsByTagName("test");
+        for(int i = 0; i < nlTests.getLength(); i++) {
+            final Element test = (Element)nlTests.item(i);
+            final String name = test.getAttribute("n");
+            final boolean pass = Boolean.parseBoolean(test.getAttribute("pass"));
+
+            final TestCase tc;
+            if(pass) {
+                tc = new TestCasePassed(name);
+            } else {
+                tc = getFirstChildElement(test, "result").map(result -> getFirstChildElement(result, "error").map(this::getText).<TestCase>map(err -> new TestCaseError(name, err))
+                    .orElse(
+                        new TestCaseFailed(name, getFirstChildElement(test, "task").map(this::getText).orElse("{UNKNOWN}"), getFirstChildElement(test, "expected").map(this::getText), Optional.of(getText(result)))
+                    )
+                ).orElse(null);
             }
+            ts.add(tc);
+        }
+        results.add(ts);
+
+        return results;
+    }
+
+    /**
+     * Parses the output of eXist's XQuery based XQuery test suite
+     *
+     * @param The XML element <testsuites> from the test suite output
+     * @return The results of the tests
+     */
+    private List<TestSuite> parseXQueryResults(final Element testsuites) {
+
+        final List<TestSuite> results = new ArrayList<>();
+
+        final NodeList nlTestSuite = testsuites.getElementsByTagName("testsuite");
+        for(int i = 0; i < nlTestSuite.getLength(); i++) {
+            final Element testsuite = (Element)nlTestSuite.item(i);
+
+            final TestSuite ts = new TestSuite(testsuite.getAttribute("package"));
+            final NodeList nlTestCase = testsuite.getElementsByTagName("testcase");
+
+            for(int j = 0; j < nlTestCase.getLength(); j++) {
+                final Element testcase = (Element)nlTestCase.item(j);
+                final Optional<Element> maybeFailure = getFirstChildElement(testcase, "failure");
+                final Optional<Element> maybeError = getFirstChildElement(testcase, "error");
+
+                final String name = testcase.getAttribute("name");
+                final TestCase tc = maybeFailure.<TestCase>map(failure -> {
+                    final Optional<Element> output = getFirstChildElement(testcase, "output");
+                    return new TestCaseFailed(name, failure.getAttribute("message"), Optional.of(getText(failure)), output.map(this::getText));
+                }).orElse(
+                        maybeError.<TestCase>map(error ->
+                                new TestCaseError(name, error.getAttribute("message"))
+                        ).orElse(
+                                new TestCasePassed(name)
+                        )
+                );
+
+                ts.add(tc);
+            }
+            results.add(ts);
+        }
+
+        return results;
+    }
+
+    /**
+     * Extracts all child text node values from an element
+     * (non-recursive)
+     */
+    private final String getText(final Element elem) {
+        final StringBuilder builder = new StringBuilder();
+        final NodeList nlChildren = elem.getChildNodes();
+        for(int i = 0; i < nlChildren.getLength(); i++) {
+            final Node n = nlChildren.item(i);
+            if(n.getNodeType() == Node.TEXT_NODE) {
+                builder.append(n.getNodeValue());
+            }
+        }
+        return builder.toString();
+    }
+
+    /**
+     * Gets the first named child element from a parent element that matches
+     */
+    private Optional<Element> getFirstChildElement(final Element parent, final String name) {
+        return Optional.of(parent.getElementsByTagName(name)).map(nl -> (Element)nl.item(0));
+    }
+
+    private class TestSuite {
+        private final String name;
+        private final List<TestCase> testCases = new ArrayList<>();
+
+        private TestSuite(final String name) {
+            this.name = name;
+        }
+
+        public final String getName() {
+            return name;
+        }
+
+        public void add(final TestCase testCase) {
+            testCases.add(testCase);
+        }
+
+        public List<TestCase> getTestCases() {
+            return testCases;
+        }
+    }
+
+    private abstract class TestCase {
+        protected final String name;
+
+        private TestCase(final String name) {
+            this.name = name;
+        }
+
+        @Override
+        public abstract String toString();
+    }
+
+    private class TestCasePassed  extends TestCase {
+        private TestCasePassed(final String name) {
+            super(name);
+        }
+
+        @Override
+        public String toString() {
+            return "PASSED: " + name;
+        }
+    }
+
+    private class TestCaseError extends TestCase {
+        final String reason;
+
+        private TestCaseError(final String name, final String reason) {
+            super(name);
+            this.reason = reason;
+        }
+
+        @Override
+        public String toString() {
+            return "ERROR: " + name + ". " + reason + ".";
+        }
+    }
+
+    private class TestCaseFailed extends TestCase {
+        private final String reason;
+        private final Optional<String> expected;
+        private final Optional<String> actual;
+
+        private TestCaseFailed(final String name, final String reason, final Optional<String> expected, final Optional<String> actual) {
+            super(name);
+            this.reason = reason;
+            this.expected = expected;
+            this.actual = actual;
+        }
+
+        @Override
+        public String toString() {
+            final StringBuilder builder = new StringBuilder()
+                .append("FAILED: ")
+                .append(name)
+                .append(". ")
+                .append(reason)
+                .append(".");
+
+            expected.map(e -> builder
+                    .append(" Expected: '")
+                    .append(e).append("'"));
+
+            actual.map(a -> builder
+                    .append(" Actual: '")
+                    .append(a).append("'"));
+
+            return builder.toString();
         }
     }
 

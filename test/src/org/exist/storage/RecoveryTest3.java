@@ -68,8 +68,6 @@ public class RecoveryTest3 extends TestCase {
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
                 final Txn transaction = transact.beginTransaction()) {
 
-            System.out.println("Transaction started ...");
-
             Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
             assertNotNull(root);
             broker.saveCollection(transaction, root);
@@ -99,7 +97,6 @@ public class RecoveryTest3 extends TestCase {
             }
 
             transact.commit(transaction);
-            System.out.println("Transaction commited ...");
 	    } catch (Exception e) {
             e.printStackTrace();
 	        fail(e.getMessage());             
@@ -107,7 +104,6 @@ public class RecoveryTest3 extends TestCase {
     }
     
     public void testRead() {
-        System.out.println("testRead() ...\n");
 
     	BrokerPool.FORCE_CORRUPTION = false;
         final BrokerPool pool = startDB();
@@ -119,7 +115,6 @@ public class RecoveryTest3 extends TestCase {
             Collection root;
 
             try(final Txn transaction = transact.beginTransaction()) {
-                System.out.println("Transaction started ...");
 
                 root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, Lock.WRITE_LOCK);
                 assertNotNull(root);
@@ -127,11 +122,9 @@ public class RecoveryTest3 extends TestCase {
                 broker.removeCollection(transaction, root);
 
                 transact.commit(transaction);
-                System.out.println("Transaction commited ...");
             }
             
             try(final Txn transaction = transact.beginTransaction()) {
-                System.out.println("Transaction started ...");
 
                 root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
                 assertNotNull(root);
@@ -161,7 +154,6 @@ public class RecoveryTest3 extends TestCase {
                 }
 
                 transact.commit(transaction);
-                System.out.println("Transaction commited ...");
             }
 	    } catch (Exception e) {
             e.printStackTrace();
@@ -174,7 +166,6 @@ public class RecoveryTest3 extends TestCase {
         BrokerPool pool = null;
         DBBroker broker = null;
         try {
-        	System.out.println("testRead2() ...\n");
         	pool = startDB();
         	assertNotNull(pool);        
             broker = pool.get(pool.getSecurityManager().getSystemSubject());

@@ -101,7 +101,6 @@ public class XQueryFunctionsTest extends TestCase {
 			assertEquals(0,result.getSize());
 
 		} catch (XMLDBException e) {
-			System.out.println("testSum(): " + e);
 			fail(e.getMessage());
 		}
 	}	
@@ -131,7 +130,6 @@ public class XQueryFunctionsTest extends TestCase {
 			assertEquals( "0", r );
 		
 		} catch (XMLDBException e) {
-			System.out.println("testRoundHtE_INTEGER(): "+e);
 			fail(e.getMessage());
 		}
 	}
@@ -160,7 +158,6 @@ public class XQueryFunctionsTest extends TestCase {
 				assertEquals( resultvalues[i], r );
 			}
 		} catch (XMLDBException e) {
-			System.out.println("testRoundHtE_DOUBLE(): "+e);
 			fail(e.getMessage());
 		}
 	}
@@ -190,7 +187,6 @@ public class XQueryFunctionsTest extends TestCase {
 			assertEquals( "true", r );
 			
 		} catch (XMLDBException e) {
-			System.out.println("testTokenize(): " + e);
 			fail(e.getMessage());
 		}
 	}
@@ -206,7 +202,6 @@ public class XQueryFunctionsTest extends TestCase {
 			r 		= (String) result.getResource(0).getContent();
 			assertEquals( "true", r );
 		} catch (XMLDBException e) {
-			System.out.println("testDeepEqual(): " + e);
 			fail(e.getMessage());
 		}
 	}
@@ -229,7 +224,6 @@ public class XQueryFunctionsTest extends TestCase {
 			
 			
 		} catch (XMLDBException e) {
-			System.out.println("testCompare(): " + e);
 			fail(e.getMessage());
 		}
 	}	
@@ -255,7 +249,6 @@ public class XQueryFunctionsTest extends TestCase {
             assertEquals(2, result.getSize());
 		
 		} catch (XMLDBException e) {
-			System.out.println("testDistinctValues(): " + e);
 			fail(e.getMessage());
 		}
 	}	
@@ -279,7 +272,6 @@ public class XQueryFunctionsTest extends TestCase {
 			
 
 		} catch (XMLDBException e) {
-			System.out.println("testSum(): " + e);
 			fail(e.getMessage());
 		}
 	}	
@@ -329,7 +321,6 @@ public class XQueryFunctionsTest extends TestCase {
 
 		} catch (XMLDBException e) {
 			e.printStackTrace();
-			System.out.println("testAvg(): " + e);
 			fail(e.getMessage());
 		}
 	}	
@@ -630,7 +621,6 @@ public class XQueryFunctionsTest extends TestCase {
 	        assertEquals(2, result.getSize());
 	        
 		} catch (XMLDBException e) {
-			System.out.println("testEncodeForURI(): " + e);
 			fail(e.getMessage());
 		}			
 	}
@@ -665,7 +655,6 @@ public class XQueryFunctionsTest extends TestCase {
 			assertEquals(expected, r);
 			
 		} catch (XMLDBException e) {
-			System.out.println("testIRIToURI(): " + e);
 			fail(e.getMessage());
 		}
 	}	
@@ -702,7 +691,6 @@ public class XQueryFunctionsTest extends TestCase {
 	        assertEquals(2, result.getSize());			
 
 		} catch (XMLDBException e) {
-			System.out.println("EscapeHTMLURI(): " + e);
 			fail(e.getMessage());
 		}		
 	}		
@@ -717,7 +705,6 @@ public class XQueryFunctionsTest extends TestCase {
 			r 		= (String) result.getResource(0).getContent();
 			assertEquals( "a", r );
 		} catch (XMLDBException e) {
-			System.out.println("local-name(): " + e);
 			fail(e.getMessage());
 		}
 	}
@@ -733,7 +720,6 @@ public class XQueryFunctionsTest extends TestCase {
 			r 		= (String) result.getResource(0).getContent();
 			assertEquals( "2007-05-02T15:12:52.421+02:00", r );
 		} catch (XMLDBException e) {
-			System.out.println("local-name(): " + e);
 			fail(e.getMessage());
 		}
     }	
@@ -760,7 +746,6 @@ public class XQueryFunctionsTest extends TestCase {
 		    assertEquals("2007-08-23T00:01:02.062+02:00", r);          
         
         } catch (XMLDBException e) {
-            System.out.println("current-dateTime(): " + e);
             fail(e.getMessage());
         }
     }
@@ -1119,7 +1104,6 @@ public class XQueryFunctionsTest extends TestCase {
 		}
 		catch(XMLDBException e)
 		{
-			System.out.println("testBase64Binary: XMLDBException: "+e);
 			fail(e.getMessage());
 		}
 	}
@@ -1150,7 +1134,6 @@ public class XQueryFunctionsTest extends TestCase {
         // clear instance variables
         service = null;
         root = null;
-		//System.out.println("tearDown PASSED");
 	}
 
 }

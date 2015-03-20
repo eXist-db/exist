@@ -53,7 +53,8 @@ public class NodeTest extends XMLTestCase {
             NodeList children = doc.getChildNodes();
             for (int i = 0; i < children.getLength(); i++) {
                 IStoredNode node = (IStoredNode) children.item(i);
-                System.out.println(node.getNodeId() + ": " + node.getNodeName());
+                node.getNodeId();
+                node.getNodeName();
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -71,18 +72,18 @@ public class NodeTest extends XMLTestCase {
             doc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"),Lock.READ_LOCK);
             Element rootNode = doc.getDocumentElement();
             
-            System.out.println("Testing getChildNodes() ...");
+            //Testing getChildNodes()
             NodeList cl = rootNode.getChildNodes();
             assertEquals(((IStoredNode)rootNode).getChildCount(), cl.getLength());
             assertEquals(4, cl.getLength());
         	assertEquals(cl.item(0).getNodeName(), "a");
         	assertEquals(cl.item(1).getNodeName(), "b");
         	
-        	System.out.println("Testing getFirstChild() ...");
+        	//Testing getFirstChild()
         	StoredNode node = (StoredNode) cl.item(1).getFirstChild();
             assertEquals(node.getNodeValue(), "def");
             
-            System.out.println("Testing getChildNodes() ...");
+            //Testing getChildNodes()
             node = (StoredNode) cl.item(0);
             assertEquals(3, node.getChildCount());
             assertEquals(2, node.getAttributes().getLength());
@@ -90,7 +91,7 @@ public class NodeTest extends XMLTestCase {
         	assertEquals(3, cl.getLength());
         	assertEquals(cl.item(2).getNodeValue(), "abc");
         	
-        	System.out.println("Testing getParentNode() ...");
+        	//Testing getParentNode()
         	Node parent = cl.item(0).getParentNode();
         	assertNotNull(parent);
         	assertEquals(parent.getNodeName(), "a");
@@ -111,7 +112,6 @@ public class NodeTest extends XMLTestCase {
     public void testSiblingAxis() {
         DocumentImpl doc = null;
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
-            System.out.println("testSiblingAxis() ...");
             
             doc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"),Lock.READ_LOCK);
             Element rootNode = doc.getDocumentElement();
@@ -122,26 +122,21 @@ public class NodeTest extends XMLTestCase {
             assertNotNull(sibling);
             assertEquals(sibling.getNodeName(), "b");
             while (sibling != null) {
-                System.out.println(sibling);
                 sibling = sibling.getNextSibling();
             }
             
             NodeList cl = rootNode.getChildNodes();
             sibling = cl.item(2).getFirstChild();
-            System.out.println("Sibling = " + sibling);
             sibling = sibling.getNextSibling();
             // should be null - there's no following sibling
-            System.out.println("Sibling = " + sibling);
             
             int count = 0;
             sibling = cl.item(3);
             while (sibling != null) {
-                System.out.println(sibling);
                 sibling = sibling.getPreviousSibling();
                 count++;
             }
             assertEquals(count, 4);
-            System.out.println("testSiblingAxis(): PASS");
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());
@@ -185,8 +180,7 @@ public class NodeTest extends XMLTestCase {
             
             NamedNodeMap map = first.getAttributes();
             assertEquals(2, map.getLength());
-            for (int i = 0; i < map.getLength(); i++)
-            	System.out.println(map.item(i).getNodeName());
+
             attr = (Attr) map.getNamedItemNS("http://foo.org", "b");
             assertNotNull(attr);
             assertEquals(attr.getLocalName(), "b");
@@ -206,14 +200,13 @@ public class NodeTest extends XMLTestCase {
         DocumentImpl doc = null;
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
             
-            System.out.println("testVisitor() ...");
-            
             doc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"));
             StoredNode rootNode = (StoredNode) doc.getDocumentElement();
             NodeVisitor visitor = new NodeVisitor() {
                 @Override
                 public boolean visit(IStoredNode node) {
-                    System.out.println(node.getNodeId() + "\t" + node.getNodeName());
+                    node.getNodeId();
+                    node.getNodeName();
                     return true;
                 };
             };
@@ -235,8 +228,6 @@ public class NodeTest extends XMLTestCase {
 
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
             final Txn transaction = transact.beginTransaction()) {
-
-            System.out.println("NodeTest#setUp ...");
             
             root = broker.getOrCreateCollection(transaction, XmldbURI.create(XmldbURI.ROOT_COLLECTION + "/test"));
             assertNotNull(root);
@@ -248,7 +239,6 @@ public class NodeTest extends XMLTestCase {
             root.store(transaction, broker, info, XML, false);
             
             transact.commit(transaction);
-            System.out.println("NodeTest#setUp finished.");
         } catch (Exception e) {
 	        fail(e.getMessage()); 	        
         }
@@ -276,8 +266,6 @@ public class NodeTest extends XMLTestCase {
 
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
             final Txn transaction = transact.beginTransaction()) {
-
-            System.out.println("BasicNodeSetTest#tearDown >>>");
             
             root = broker.getOrCreateCollection(transaction, XmldbURI.create(XmldbURI.ROOT_COLLECTION + "/test"));
             assertNotNull(root);

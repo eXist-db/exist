@@ -1437,7 +1437,6 @@ public class CollectionConfigurationTest {
    private void storeConfiguration(XmldbURI collPath, XmldbURI confName, String confContent) throws XMLDBException {
        Collection testCollection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
        String fullCollPath = ROOT_URI + collPath.toString();
-       System.out.println("Storing configuration '" + confName + "' to '" + collPath + "'" );
        Collection configColl = DatabaseManager.getCollection(fullCollPath, "admin", null);
        if(configColl == null) {
      	   CollectionManagementService cms = (CollectionManagementService)testCollection.getService("CollectionManagementService", "1.0");

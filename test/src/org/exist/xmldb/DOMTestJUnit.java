@@ -58,11 +58,7 @@ public class DOMTestJUnit extends RemoteDBTest {
 	public void testDOMUpdate() {
 		try {
 			XMLResource index = (XMLResource) rootColl.getResource(name);
-			{
-				System.out.println("Retrieving initial content:");
-				String content = (String) index.getContent();
-				System.out.println(content);
-			}
+            String content = (String) index.getContent();
             Document doc=null;
             Element root=null;
             NodeList nl=null;
@@ -79,10 +75,9 @@ public class DOMTestJUnit extends RemoteDBTest {
                 fail("RemoteXMLResource unable to return a Document either an Element");
             }
 
-            System.out.println("Retrieving root comments and PIs");
             nl = doc.getChildNodes();
             for (int i = 0; i < nl.getLength(); i++) {
-                System.out.println(" * "+nl.item(i).getNodeName());
+                nl.item(i).getNodeName();
             }
 
             
@@ -93,11 +88,9 @@ public class DOMTestJUnit extends RemoteDBTest {
 			root.appendChild(schemaNode);
 			index.setContentAsDOM(doc);
 			rootColl.storeResource(index);
-	
-			System.out.println("Retrieving modified content:");
+
 			index = (XMLResource) rootColl.getResource(name);
-			String content = (String) index.getContent();
-			System.out.println(content);
+			content = (String) index.getContent();
 			n = index.getContentAsDOM();
             if (n instanceof Document) { 
                 doc=(Document)n;
@@ -109,7 +102,7 @@ public class DOMTestJUnit extends RemoteDBTest {
             }
 			nl = root.getChildNodes();
 			for (int i = 0; i < nl.getLength(); i++) {
-				System.out.println(nl.item(i).getNodeName());
+                nl.item(i).getNodeName();
 			}
 		} catch(Exception e) {			
 			fail(e.getMessage());

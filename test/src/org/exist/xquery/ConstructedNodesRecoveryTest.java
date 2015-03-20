@@ -92,7 +92,6 @@ public class ConstructedNodesRecoveryTest extends TestCase
 	{
 		//create a transaction
 		try(final Txn transaction = transact.beginTransaction()) {
-            System.out.println("Transaction started ...");
 
             //get the test collection
             Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
@@ -106,7 +105,6 @@ public class ConstructedNodesRecoveryTest extends TestCase
 
             //commit the transaction
             transact.commit(transaction);
-            System.out.println("Transaction commited ...");
         }
 	}
 	
@@ -114,7 +112,6 @@ public class ConstructedNodesRecoveryTest extends TestCase
 	{
 		//create a transaction
 		try(final Txn transaction = transact.beginTransaction()) {
-            System.out.println("Transaction started ...");
 
             //get the test collection
             Collection root = broker.getOrCreateCollection(transaction, XmldbURI.TEMP_COLLECTION_URI.append(childCollectionName));
@@ -123,7 +120,6 @@ public class ConstructedNodesRecoveryTest extends TestCase
 
             //commit the transaction
             transact.commit(transaction);
-            System.out.println("Transaction commited ...");
         }
 	}
 	
@@ -131,7 +127,6 @@ public class ConstructedNodesRecoveryTest extends TestCase
 	{
 		//create a transaction
         try(final Txn transaction = transact.beginTransaction()) {
-            System.out.println("Transaction started ...");
 
             //get the test collection
             Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
@@ -165,7 +160,6 @@ public class ConstructedNodesRecoveryTest extends TestCase
 	{
 		//create a transaction
         try(final Txn transaction = transact.beginTransaction()) {
-            System.out.println("Transaction started ...");
 
             //get the temp child collection
             Collection tempChildCollection = broker.getOrCreateCollection(transaction, XmldbURI.TEMP_COLLECTION_URI.append(childCollectionName));

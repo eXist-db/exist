@@ -29,7 +29,6 @@ public class CopyMoveTest {
         assertEquals(2, testCollection.getResourceCount());
         XMLResource duplicate = (XMLResource) testCollection.getResource("duplicate");
         assertNotNull(duplicate);
-        System.out.println(duplicate.getContent());
     }
 
     @Test

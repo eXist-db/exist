@@ -96,7 +96,6 @@ public class IndexingTest extends TestCase {
 		startTime = System.currentTimeMillis();
 		
 		try {
-			System.out.println("Running test " + testName + " ...");
 
 			// Tell eXist where conf.xml is :
                         // DWES #### use Configuration.getExistHome()
@@ -125,13 +124,11 @@ public class IndexingTest extends TestCase {
 			resource.setContentAsDOM(doc);
 			printTime();
 			coll.storeResource(resource);
-			System.out.println("TEST> stored Resource " + name );
 			printTime();
 			coll.close();
 
 			coll = DatabaseManager.getCollection(baseURI, username, password);
 			resource = (XMLResource) coll.getResource(name);
-			System.out.println("TEST> retrieved Resource " + name );
 			printTime();
 			
 			Node n;
@@ -146,7 +143,6 @@ public class IndexingTest extends TestCase {
 				n = db.parse(bais);
 			}
 
-			System.out.println("getContentAsDOM: " + n.getNodeName());
 			Element documentElement = null;
 			if ( n instanceof Element ) {
 				documentElement = (Element)n;
@@ -157,8 +153,6 @@ public class IndexingTest extends TestCase {
 			assertions(documentElement);
 			
 			coll.removeResource(resource);
-
-			System.out.println("TEST> " + testName + " : PASSED");
 
 		} finally {
 			printTime();
@@ -189,15 +183,9 @@ public class IndexingTest extends TestCase {
 		int computedElementCount = 
 			documentElement.getElementsByTagName("element").getLength();
 
-		System.out.println(" documentElement.getChildNodes().getLength(): " +
-			computedSiblingCount );
-		System.out.println(" documentElement.getElementsByTagName(\"element\").getLength(): " +
-			computedElementCount );
-
 		assertEquals("siblingCount", effectiveSiblingCount, computedSiblingCount );
 		assertEquals("depth", depth*arity + depth, computedDepth );
 
-		System.out.println("TEST> assertions PASSED");
 		printTime();
 		// dumpCatabaseContent(n);
 	}
@@ -209,8 +197,6 @@ public class IndexingTest extends TestCase {
 		// Add a long fat branch at root's first child :
 		deepBranch = doc.getDocumentElement().getFirstChild();
 		effectiveDepth = addFatBranch( doc, deepBranch, depth, null);
-
-		System.out.println("TEST> populate() done.");
 		return childrenCount;
 		}
 	
@@ -244,7 +230,6 @@ public class IndexingTest extends TestCase {
 				current = current.getNextSibling();
 			}
 		}
-		System.out.println("TEST> " + firstLevelWidth + " first Level elements populated.");
 		return childrenCount;
 	}
 

@@ -43,7 +43,6 @@ public class RunTests {
 				xqs.declareVariable("doc", file.getName());
 				ResourceSet result = xqs.execute(query);
 				XMLResource resource = (XMLResource) result.getResource(0);
-                System.out.println(resource.getContent());
 				Element root = (Element) resource.getContentAsDOM();
 				NodeList tests = root.getElementsByTagName("test");
 				for (int i = 0; i < tests.getLength(); i++) {

@@ -76,7 +76,7 @@ public class xUnit {
 				
 				for (Annotation ann : sig.getAnnotations()) {
 					if ("http://exist-db.org/xquery/xUnit".equals( ann.getName().getNamespaceURI())) {
-						System.out.println(ann.getName().getLocalPart());
+//						System.out.println(ann.getName().getLocalPart());
 						
 						FunctionCall call = new FunctionCall(context, func);
 						call.eval(Sequence.EMPTY_SEQUENCE);

@@ -86,23 +86,18 @@ public class CollectionTest {
     public void read() {
         BrokerPool.FORCE_CORRUPTION = false;
         BrokerPool pool = startDB();
-        
-        System.out.println("testRead() ...\n");
-        
+
         DBBroker broker = null;
         try {
             broker = pool.get(pool.getSecurityManager().getSystemSubject());
             BTree btree = ((NativeBroker)broker).getStorage(NativeBroker.COLLECTIONS_DBX_ID);
             Writer writer = new StringWriter();
             btree.dump(writer);
-            System.out.println(writer.toString());
-            
+
             Collection test = broker.getCollection(TEST_COLLECTION_URI.append("test2"));
             assertNotNull(test);
-            System.out.println("Contents of collection " + test.getURI() + ":");
             for (Iterator<DocumentImpl> i = test.iterator(broker); i.hasNext(); ) {
                 DocumentImpl next = i.next();
-                System.out.println("- " + next.getURI());
             }
         } catch (Exception e) {            
             fail(e.getMessage());              

@@ -149,8 +149,7 @@ public class XmlLibraryChecker {
         if( hasValidClassVersion( "Parser", validParsers, message ) ) {
 			logger.info( message.toString() );
         } else {
-			logger.warn( message.toString() );
-            System.err.println( message.toString() );
+			logger.warn(message.toString());
 			invalidVersionFound	= true;
         }
 
@@ -182,20 +181,18 @@ public class XmlLibraryChecker {
          */
         message = new StringBuilder();
         if( hasValidClassVersion( "Resolver", validResolvers, message ) ) {
-            logger.info( message.toString() );
+            logger.info(message.toString());
         } else {
-            logger.warn( message.toString() );
-            System.err.println( message.toString() );
+            logger.warn(message.toString());
 			invalidVersionFound	= true;
         }
 
 		logger.info( "Using parser " + determineActualParserClass() );
 		logger.info( "Using transformer " + determineActualTransformerClass() );
 		
-		if( invalidVersionFound ) {
-			System.err.println( "Using parser " + determineActualParserClass() );
-			System.err.println( "Using transformer " + determineActualTransformerClass() );
-			System.err.println();
+		if(invalidVersionFound) {
+			logger.warn("Using parser " + determineActualParserClass());
+            logger.warn( "Using transformer " + determineActualTransformerClass() );
 		}
     }
 

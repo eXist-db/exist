@@ -91,7 +91,6 @@ public class TextUpdateAction extends Action {
 		mods = service.update(update);
 		
 		Assert.assertEquals(1, mods);
-		System.out.println(mods + " nodes updated.");
 		
 		// query for section
 		XPathQueryService query = (XPathQueryService)
@@ -101,7 +100,7 @@ public class TextUpdateAction extends Action {
 		updateText = result.getResource(0).getContent().toString();
 		result = query.query("/article/section/para[. = '" + updateText + "']");
 		Assert.assertEquals(1, result.getSize());
-		System.out.println(result.getResource(0).getContent().toString());
+		result.getResource(0).getContent();
 		
 		mods = service.update(REMOVE);
 		Assert.assertEquals(1, mods);

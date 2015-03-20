@@ -91,7 +91,6 @@ public class JaxpDtdCatalogTest extends EmbeddedExistTester {
         try {
             results = executeQuery("validation:clear-grammar-cache()");
             String r = (String) results.getResource(0).getContent();
-            System.out.println(r);
 
         } catch (Exception e) {
             LOG.error(e);

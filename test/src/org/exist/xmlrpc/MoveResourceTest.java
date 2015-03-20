@@ -55,8 +55,6 @@ public class MoveResourceTest extends TestCase {
             thread3.join();
         } catch (InterruptedException e) {
         }
-
-        System.out.println("DONE.");
     }
     
     private void createCollection(XmlRpcClient client, XmldbURI collection) throws IOException, XmlRpcException {
@@ -93,14 +91,14 @@ public class MoveResourceTest extends TestCase {
                     XmldbURI sourceResource = sourceColl.append("source.xml");
                     XmldbURI targetResource = targetColl2.append("copied.xml");
 
-                    System.out.println("Creating collections ...");
+                    //Creating collections
                     XmlRpcClient xmlrpc = getClient();
 
                     createCollection(xmlrpc, sourceColl);
                     createCollection(xmlrpc, targetColl1);
                     createCollection(xmlrpc, targetColl2);
 
-                    System.out.println("Storing document ...");
+                    //Storing document
                     Vector<Object> params = new Vector<Object>();
                     params.addElement(readData());
                     params.addElement(sourceResource.toString());
@@ -109,9 +107,7 @@ public class MoveResourceTest extends TestCase {
                     Boolean result = (Boolean)xmlrpc.execute("parse", params);
                     assertTrue(result.booleanValue());
 
-                    System.out.println("Document stored.");
-
-                    System.out.println("Moving resource ...");
+                    //Moving resource
                     params.clear();
                     params.addElement(sourceResource.toString());
                     params.addElement(targetColl2.toString());
@@ -119,7 +115,7 @@ public class MoveResourceTest extends TestCase {
 
                     xmlrpc.execute( "moveResource", params );
 
-                    System.out.println("Retrieving document " + targetResource);
+                    //Retrieving document
                     Hashtable<String, String> options = new Hashtable<String, String>();
                     options.put("indent", "yes");
                     options.put("encoding", "UTF-8");
@@ -132,20 +128,18 @@ public class MoveResourceTest extends TestCase {
 
                     byte[] data = (byte[]) xmlrpc.execute( "getDocument", params );
                     assertTrue(data != null && data.length > 0);
-//                    System.out.println( new String(data, "UTF-8") );
 
                     synchronized (this) {
                         wait(250);
                     }
 
-                    System.out.println("Removing created collections ...");
+                    //Removing created collections
                     params.clear();
                     params.addElement(sourceColl.toString());
                     xmlrpc.execute("removeCollection", params);
 
                     params.setElementAt(targetColl1.toString(), 0);
                     xmlrpc.execute("removeCollection", params);
-                    System.out.println("Collections removed.");
                 } catch (Exception e) {
                     e.printStackTrace();
                     fail(e.getMessage());
@@ -168,7 +162,7 @@ public class MoveResourceTest extends TestCase {
                     int r = connect.getResponseCode();
                     assertEquals("Server returned response code " + r, 200, r);
 
-                    System.out.println(readResponse(connect.getInputStream()));
+                    readResponse(connect.getInputStream());
 
                     synchronized (this) {
                         wait(250);
@@ -221,7 +215,6 @@ public class MoveResourceTest extends TestCase {
 		try {
 			if (server == null) {
 				server = new JettyStart();
-                System.out.println("Starting standalone server...");
                 server.run();
 			}
 	    } catch (Exception e) {

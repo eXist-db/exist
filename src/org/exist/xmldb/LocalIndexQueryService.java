@@ -21,6 +21,8 @@
  */
 package org.exist.xmldb;
 
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.exist.EXistException;
 import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.CollectionConfigurationManager;
@@ -44,6 +46,8 @@ import org.xmldb.api.base.XMLDBException;
 import java.net.URISyntaxException;
 
 public class LocalIndexQueryService implements IndexQueryService {
+
+    private final static Logger LOG = LogManager.getLogger(LocalIndexQueryService.class);
 
 	private LocalCollection parent = null;
 	private BrokerPool pool = null;
@@ -125,7 +129,7 @@ public class LocalIndexQueryService implements IndexQueryService {
             final CollectionConfigurationManager mgr = pool.getConfigurationManager();
             mgr.addConfiguration(txn, broker, parent.getCollection(), configData);
             transact.commit(txn);
-            System.out.println("Configured '" + parent.getCollection().getURI() + "'");
+            LOG.info("Configured '" + parent.getCollection().getURI() + "'");
         } catch (final CollectionConfigurationException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		} catch (final EXistException e) {

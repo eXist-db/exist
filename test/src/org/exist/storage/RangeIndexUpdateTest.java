@@ -164,7 +164,6 @@ public class RangeIndexUpdateTest {
         int found = 0;
         for (int i = 0; i < occurrences.length; i++) {
             ValueOccurrences occurrence = occurrences[i];
-            System.out.println("Found: " + occurrence.getValue());
             if (occurrence.getValue().compareTo(term) == 0)
                 found++;
         }
@@ -183,7 +182,6 @@ public class RangeIndexUpdateTest {
 
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
             final Txn transaction = transact.beginTransaction()) {
-            System.out.println("Transaction started ...");
 
             Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
             assertNotNull(root);
@@ -218,7 +216,6 @@ public class RangeIndexUpdateTest {
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
                 final Txn transaction = transact.beginTransaction()) {
-            System.out.println("Transaction started ...");
 
             Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
             assertNotNull(root);

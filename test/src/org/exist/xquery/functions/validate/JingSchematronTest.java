@@ -101,7 +101,6 @@ public class JingSchematronTest extends EmbeddedExistTester {
             assertEquals(1, results.getSize());
 
             String r = (String) results.getResource(0).getContent();
-            System.out.println(r);
 
             assertEquals("true", r);
 

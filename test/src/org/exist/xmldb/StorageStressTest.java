@@ -62,16 +62,13 @@ public class StorageStressTest extends TestCase {
     public void testStore() {
     	try {
 	        String[] wordList = DBUtils.wordList(collection);
-	        long start = System.currentTimeMillis();
 	        for (int i = 0; i < 30000; i++) {
 	            File f = DBUtils.generateXMLFile(6, 3, wordList, false);
-	            System.out.println("Storing file: " + f.getName() + "; size: " + (f.length() / 1024) + "kB");
 	            Resource res = collection.createResource("test_" + i, "XMLResource");
 	            res.setContent(f);
 	            collection.storeResource(res);
 	            f.delete();
 	        }
-	        System.out.println("Indexing took " + (System.currentTimeMillis() - start));
         } catch (Exception e) {            
             fail(e.getMessage()); 
         }	        
@@ -87,7 +84,6 @@ public class StorageStressTest extends TestCase {
 		try {
 			if (server == null) {
 				server = new JettyStart();
-                System.out.println("Starting standalone server...");
                 server.run();
 			}
         } catch (Exception e) {            

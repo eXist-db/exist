@@ -89,20 +89,16 @@ public class StressTest extends TestCase {
                 "</xupdate:modifications>";
             
             long mods = service.updateResource("test.xml", xupdate);
-            System.out.println("Inserted " + tag + ": " + mods + " ; parent = " + parent);
             assertEquals(mods, 1);
             
             tagsWritten[i] = tag;
             String query = "//" + tagsWritten[rand.nextInt(i + 1)];
             ResourceSet result = xquery.query(query);
             assertEquals(result.getSize(), 1);
-            
-            System.out.println(result.getResource(0).getContent());
         }
         
         XMLResource res = (XMLResource) testCol.getResource("test.xml");
         assertNotNull(res);
-        System.out.println(res.getContent());
     }
     
     private void removeTags() throws Exception {
@@ -116,7 +112,6 @@ public class StressTest extends TestCase {
             
             @SuppressWarnings("unused")
 			long mods = service.updateResource("test.xml", xupdate);
-            System.out.println("Removed: " + tags[i]);
             
             i += rand.nextInt(3);
         }
@@ -130,12 +125,9 @@ public class StressTest extends TestCase {
         for (int i = 0; i < result.getSize(); i++) {
             Resource r = result.getResource(i);
             String tag = r.getContent().toString();
-            System.out.println("Retrieving " + tag);
             
             ResourceSet result2 = xquery.query("//" + tag);
             assertEquals(result2.getSize(), 1);
-            
-            System.out.println(result2.getResource(0).getContent());
         }
     }
     
@@ -151,8 +143,6 @@ public class StressTest extends TestCase {
         
         testCol = DBUtils.addCollection(rootCol, "test");
         assertNotNull(testCol);
-        
-        System.out.println("Generating " + RUNS + " tags ...");
         
         tags = new String[RUNS];
         for (int i = 0; i < RUNS; i++) {

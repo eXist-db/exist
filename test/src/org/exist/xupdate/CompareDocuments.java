@@ -85,7 +85,7 @@ public class CompareDocuments {
                     System.out.print("@");
                 default:
             }
-            System.out.print(node1 + "[" + node1.getChildNodes().getLength() + "] <==> "); 
+            System.out.print(node1 + "[" + node1.getChildNodes().getLength() + "] <==> ");
             switch (node2.getNodeType()) {
                 case Node.ATTRIBUTE_NODE:
                     System.out.print("@");

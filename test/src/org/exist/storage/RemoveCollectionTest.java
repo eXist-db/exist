@@ -93,13 +93,9 @@ public class RemoveCollectionTest {
             final Collection test = storeDocs(broker, transact);
 
             try(final Txn transaction = transact.beginTransaction()) {
-                System.out.println("Transaction started ...");
-
-                System.out.println("Removing collection ...");
                 broker.removeCollection(transaction, test);
 
                 transact.commit(transaction);
-                System.out.println("Transaction interrupted ...");
             }
 	    } catch (Exception e) {  
 	    	e.printStackTrace();
@@ -119,17 +115,13 @@ public class RemoveCollectionTest {
             final Collection test = storeDocs(broker, transact);
 
             try(final Txn transaction = transact.beginTransaction()) {
-                System.out.println("Transaction started ...");
 
-                System.out.println("Removing documents one by one ...");
                 for (Iterator<DocumentImpl> i = test.iterator(broker); i.hasNext(); ) {
                     DocumentImpl doc = i.next();
                     broker.removeXMLResource(transaction, doc);
                 }
                 broker.saveCollection(transaction, test);
                 transact.commit(transaction);
-
-                System.out.println("Transaction committed ...");
             }
 	    } catch (Exception e) {
 	        fail(e.getMessage());
@@ -147,11 +139,8 @@ public class RemoveCollectionTest {
             final Collection test = storeDocs(broker, transact);
 
             try(final Txn transaction = transact.beginTransaction()) {
-                System.out.println("Transaction started ...");
 
-                System.out.println("Replacing resources ...");
                 TestDataGenerator generator = new TestDataGenerator("xdb", COUNT);
-                System.out.println("Generating " + COUNT + " files...");
                 File[] files = generator.generate(broker, test, generateXQ);
 
                 int j = 0;
@@ -165,7 +154,6 @@ public class RemoveCollectionTest {
                 }
                 generator.releaseAll();
                 transact.commit(transaction);
-                System.out.println("Transaction committed ...");
             }
 	    } catch (Exception e) {
             e.printStackTrace();
@@ -180,8 +168,6 @@ public class RemoveCollectionTest {
 
         try(final Txn transaction = transact.beginTransaction()) {
 
-            System.out.println("Transaction started ...");
-
             test = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
             assertNotNull(test);
             broker.saveCollection(transaction, test);
@@ -195,12 +181,10 @@ public class RemoveCollectionTest {
             assertNotNull(info);
             test.store(transaction, broker, info, is, false);
             transact.commit(transaction);
-            System.out.println("Transaction commited ...");
         }
 
         try(final Txn transaction = transact.beginTransaction()) {
             TestDataGenerator generator = new TestDataGenerator("xdb", COUNT);
-            System.out.println("Generating " + COUNT + " files...");
             File[] files = generator.generate(broker, test, generateXQ);
             for (int i = 0; i < files.length; i++) {
                 File file = files[i];
@@ -212,7 +196,6 @@ public class RemoveCollectionTest {
             }
             generator.releaseAll();
             transact.commit(transaction);
-            System.out.println("Transaction commited ...");
         }
         return test;
     }
@@ -224,7 +207,6 @@ public class RemoveCollectionTest {
         assertNotNull(pool);
         DocumentImpl doc = null;
         try {
-        	System.out.println("testRead() ...\n");
         	assertNotNull(pool);
             broker = pool.get(pool.getSecurityManager().getSystemSubject());
             if (checkResource) {

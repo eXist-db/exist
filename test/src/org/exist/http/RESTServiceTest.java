@@ -164,7 +164,6 @@ public class RESTServiceTest {
         //Don't worry about closing the server : the shutdownDB hook will do the job
         if (server == null) {
             server = new JettyStart();
-            System.out.println("Starting standalone server...");
             server.run();
             while (!server.isStarted()) {
                 Thread.sleep(1000);
@@ -174,7 +173,6 @@ public class RESTServiceTest {
 
     @Test
     public void getFailNoSuchDocument() throws IOException {
-        System.out.println("--- try to retrieve missing document, should fail ---");
         String uri = COLLECTION_URI + "/nosuchdocument.xml";
         HttpURLConnection connect = getConnection(uri);
         connect.setRequestMethod("GET");
@@ -187,11 +185,9 @@ public class RESTServiceTest {
     @Test
     public void xqueryGetWithEmptyPath() throws IOException {
         /* store the documents that we need for this test */
-        System.out.println("--- Storing requestwithpath xquery ---");
         doPut(TEST_XQUERY_WITH_PATH_PARAMETER, "requestwithpath.xq", 201);
 
         String path = COLLECTION_URI + "/requestwithpath.xq";
-        System.out.println("--- retrieving "+path+" --- ");
         HttpURLConnection connect = getConnection(path);
         connect.setRequestProperty("Authorization", "Basic " + credentials);
         connect.setRequestMethod("GET");
@@ -199,7 +195,6 @@ public class RESTServiceTest {
         int r = connect.getResponseCode();
         assertEquals("Server returned response code " + r, 200, r);
         String response = readResponse(connect.getInputStream());
-        System.out.println("--- got response:"+response+"\n -- end response");
         String pathInfo = response.substring("pathInfo=".length(), response.indexOf("servletPath=")-2);
         String servletPath = response.substring(response.indexOf("servletPath=") + "servletPath=".length(), response.lastIndexOf("\r\n"));
 
@@ -211,17 +206,14 @@ public class RESTServiceTest {
     @Test
     public void xqueryPOSTWithEmptyPath() throws IOException {
         /* store the documents that we need for this test */
-        System.out.println("--- Storing requestwithpath xquery ---");
         doPut(TEST_XQUERY_WITH_PATH_PARAMETER, "requestwithpath.xq", 201);
 
         String path = COLLECTION_URI + "/requestwithpath.xq";
-        System.out.println("--- posting to "+path+" --- ");
         HttpURLConnection connect = preparePost("boo", path);
         connect.connect();
         int r = connect.getResponseCode();
         assertEquals("Server returned response code " + r, 200, r);
         String response = readResponse(connect.getInputStream());
-        System.out.println("--- got response:"+response+"\n -- end response");
         String pathInfo = response.substring("pathInfo=".length(), response.indexOf("servletPath=")-2);
         String servletPath = response.substring(response.indexOf("servletPath=") + "servletPath=".length(), response.lastIndexOf("\r\n"));
 
@@ -233,11 +225,9 @@ public class RESTServiceTest {
     @Test
     public void xqueryGetWithNonEmptyPath() throws IOException {
         /* store the documents that we need for this test */
-        System.out.println("--- Storing requestwithpath xquery ---");
         doPut(TEST_XQUERY_WITH_PATH_PARAMETER, "requestwithpath.xq", 201);
 
         String path = COLLECTION_URI + "/requestwithpath.xq/some/path";
-        System.out.println("--- retrieving "+path+" --- ");
         HttpURLConnection connect = getConnection(path);
         connect.setRequestProperty("Authorization", "Basic " + credentials);
         connect.setRequestMethod("GET");
@@ -245,7 +235,6 @@ public class RESTServiceTest {
         int r = connect.getResponseCode();
         assertEquals("Server returned response code " + r, 200, r);
         String response = readResponse(connect.getInputStream());
-        System.out.println("--- got response:"+response+"\n -- end response");
         String pathInfo = response.substring("pathInfo=".length(), response.indexOf("servletPath=")-2);
         String servletPath = response.substring(response.indexOf("servletPath=") + "servletPath=".length(), response.lastIndexOf("\r\n"));
 	            
@@ -257,17 +246,14 @@ public class RESTServiceTest {
     @Test
     public void xqueryPOSTWithNonEmptyPath() throws IOException {
         /* store the documents that we need for this test */
-        System.out.println("--- Storing requestwithpath xquery ---");
         doPut(TEST_XQUERY_WITH_PATH_PARAMETER, "requestwithpath.xq", 201);
     		
         String path = COLLECTION_URI + "/requestwithpath.xq/some/path";
-        System.out.println("--- post to "+path+" --- ");
         HttpURLConnection connect = preparePost("boo", path);
         connect.connect();
         int r = connect.getResponseCode();
         assertEquals("Server returned response code " + r, 200, r);
         String response = readResponse(connect.getInputStream());
-        System.out.println("--- got response:"+response+"\n -- end response");
         String pathInfo = response.substring("pathInfo=".length(), response.indexOf("servletPath=")-2);
         String servletPath = response.substring(response.indexOf("servletPath=") + "servletPath=".length(), response.lastIndexOf("\r\n"));
 	            
@@ -290,7 +276,6 @@ public class RESTServiceTest {
         writer.close();
 
         String path = RESOURCE_URI + "/some/path";	// should not be able to get this path
-        System.out.println("--- retrieving "+path+"  should fail --- ");
         HttpURLConnection connect = getConnection(path);
         connect.setRequestMethod("GET");
         connect.connect();
@@ -308,7 +293,6 @@ public class RESTServiceTest {
 
     @Test
     public void putFailAgainstCollection() throws IOException {
-        System.out.println("--- Storing document against collection URI - should fail ---");
         HttpURLConnection connect = getConnection(COLLECTION_URI);
         connect.setRequestProperty("Authorization", "Basic " + credentials);
         connect.setRequestMethod("PUT");
@@ -325,7 +309,6 @@ public class RESTServiceTest {
     
     @Test
     public void putWithCharset() throws IOException {
-        System.out.println("--- Storing document ---");
         HttpURLConnection connect = getConnection(RESOURCE_URI);
         connect.setRequestProperty("Authorization", "Basic " + credentials);
         connect.setRequestMethod("PUT");
@@ -345,7 +328,6 @@ public class RESTServiceTest {
 
     @Test
     public void putFailAndRechallengeAuthorization() throws IOException {
-        System.out.println("--- Authenticate with bad credentials ---");
         HttpURLConnection connect = getConnection(RESOURCE_URI);
         connect.setRequestProperty("Authorization", "Basic " + badCredentials);
         connect.setDoOutput(true);
@@ -354,14 +336,12 @@ public class RESTServiceTest {
         connect.connect();
         int r = connect.getResponseCode();
         assertEquals("Server returned response code " + r, 401, r);
-        System.out.println("--- Get rechallenged for authentication: basic ---");
         String auth = connect.getHeaderField("WWW-Authenticate");         
         assertEquals("WWW-Authenticate = " + auth, "Basic realm=\"exist\"", auth);
     }
 
     @Test
     public void putAgainstXQuery() throws IOException {
-        System.out.println("--- Storing requestwithpath xquery ---");
         doPut(TEST_XQUERY_WITH_PATH_AND_CONTENT, "requestwithcontent.xq", 201);
 
         String path = COLLECTION_URI_REDIRECTED + "/requestwithcontent.xq/a/b/c";
@@ -385,7 +365,6 @@ public class RESTServiceTest {
 
     @Test
     public void deleteAgainstXQuery() throws IOException {
-        System.out.println("--- Storing requestwithpath xquery ---");
         doPut(TEST_XQUERY_WITH_PATH_PARAMETER, "requestwithcontent.xq", 201);
 
         String path = COLLECTION_URI_REDIRECTED + "/requestwithcontent.xq/a/b/c";
@@ -405,7 +384,6 @@ public class RESTServiceTest {
 
     @Test
     public void headAgainstXQuery() throws IOException {
-        System.out.println("--- Storing requestwithpath xquery ---");
         doPut(TEST_XQUERY_WITH_PATH_PARAMETER, "requestwithcontent.xq", 201);
 
         String path = COLLECTION_URI_REDIRECTED + "/requestwithcontent.xq/a/b/c";
@@ -438,7 +416,6 @@ public class RESTServiceTest {
         assertEquals("Server returned response code " + r, 200, r);
 
         String data = readResponse(connect.getInputStream());
-        System.out.println(data);
         int hits = parseResponse(data);
         assertEquals(1, hits);
     }
@@ -449,8 +426,7 @@ public class RESTServiceTest {
         connect.connect();
         int r = connect.getResponseCode();
         assertEquals("Server returned response code " + r, 202, r);
-        System.out.println("--- Get XQuery error code for posted query ---");
-        System.out.println(readResponse(connect.getInputStream()));
+        readResponse(connect.getInputStream());
     }
 
     @Test
@@ -502,7 +478,6 @@ public class RESTServiceTest {
     @Test
     public void requestGetParameterFromModule() throws IOException {
         /* store the documents that we need for this test */
-        System.out.println("--- Storing xquery and module ---");
         doPut(TEST_XQUERY_PARAMETER, "requestparameter.xql", 201);
         doPut(TEST_XQUERY_PARAMETER_MODULE, "requestparametermod.xqm", 201);
 
@@ -510,7 +485,6 @@ public class RESTServiceTest {
         HttpURLConnection connect;
         int iHttpResult;
         for(int i=0; i < 5; i++) {
-            System.out.println("--- Executing stored xquery, iteration=" + i + " ---");
             connect = getConnection(COLLECTION_URI + "/requestparameter.xql?doc=somedoc" + i);
             connect.setRequestProperty("Authorization", "Basic " + credentials);
             connect.setRequestMethod("GET");
@@ -539,7 +513,6 @@ public class RESTServiceTest {
 
     @Test
     public void storedQuery() throws IOException {
-        System.out.println("--- Storing query ---");
         doPut(TEST_MODULE, "module.xq", 201);
         doPut(TEST_XQUERY, "test.xq", 201);
 
@@ -573,7 +546,7 @@ public class RESTServiceTest {
         if(wrap) {
             uri += "&_wrap=yes";
         }
-        System.out.println("--- Calling query: " + uri);
+
         HttpURLConnection connect = getConnection(uri);
         connect.setRequestProperty("Authorization", "Basic " + credentials);
         connect.setRequestMethod("GET");
@@ -582,9 +555,7 @@ public class RESTServiceTest {
         int r = connect.getResponseCode();
         assertEquals("Server returned response code " + r, 200, r);
 
-        dumpHeaders(connect);
         String cached = connect.getHeaderField("X-XQuery-Cached");
-        System.out.println("X-XQuery-Cached: " + cached);
         assertNotNull(cached);
         assertEquals(cacheHeader, Boolean.valueOf(cached).booleanValue());
 
@@ -600,7 +571,6 @@ public class RESTServiceTest {
         }
 
         String response = readResponse(connect.getInputStream());
-        System.out.println('"' + response + '"');
         if (wrap) {
             assertTrue ("Server returned response: " + response, 
                         response.startsWith ("<exist:result "));
@@ -611,7 +581,6 @@ public class RESTServiceTest {
     }
     
     private int uploadData() throws IOException {
-        System.out.println("--- Storing document ---");
         HttpURLConnection connect = getConnection(RESOURCE_URI);
         connect.setRequestProperty("Authorization", "Basic " + credentials);
         connect.setRequestMethod("PUT");
@@ -626,7 +595,6 @@ public class RESTServiceTest {
     }
     
     private void doGet() throws IOException {
-        System.out.println("--- Retrieving document ---");
         HttpURLConnection connect = getConnection(RESOURCE_URI);
         connect.setRequestMethod("GET");
         connect.connect();
@@ -640,7 +608,7 @@ public class RESTServiceTest {
         }
         assertEquals("Server returned content type " + contentType, "application/xml", contentType);
 
-        System.out.println(readResponse(connect.getInputStream()));
+        readResponse(connect.getInputStream());
     }
 
     private HttpURLConnection preparePost(String content, String path) throws IOException {
@@ -688,12 +656,5 @@ public class RESTServiceTest {
     private HttpURLConnection getConnection(String url) throws IOException {
         URL u = new URL(url);
         return (HttpURLConnection) u.openConnection();
-    }
-
-    private void dumpHeaders(HttpURLConnection connect) {
-    	Map<String,List<String>> headers = connect.getHeaderFields();
-    	for (Map.Entry<String,List<String>> entry : headers.entrySet()) {
-    		System.out.println(entry.getKey() + ": " + entry.getValue());
-    	}
     }
 }

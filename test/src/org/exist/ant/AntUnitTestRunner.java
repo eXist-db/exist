@@ -72,7 +72,6 @@ public class AntUnitTestRunner {
         // clear instance variables
         service = null;
         root = null;
-    //System.out.println("tearDown PASSED");
     }
 
     @Test

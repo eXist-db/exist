@@ -53,14 +53,9 @@ public class ResourceSetTest extends TestCase {
 			assertNotNull(testCollection);
 			XPathQueryService service = (XPathQueryService)
 				testCollection.getService("XPathQueryService", "1.0");
-				
-			System.out.println("query1: " + query1);
+
 			ResourceSet result1 = service.query(query1);
-			System.out.println("query1: getSize()=" + result1.getSize());
-			
-			System.out.println("query2: " + query2);
 			ResourceSet result2 = service.query(query2);
-			System.out.println("query2: getSize()=" + result2.getSize());
 			
 			assertEquals( "size of intersection of "+query1+" and "+query2+" yields ",
 			  expected,

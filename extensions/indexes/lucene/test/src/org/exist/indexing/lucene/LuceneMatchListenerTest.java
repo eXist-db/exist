@@ -138,7 +138,6 @@ public class LuceneMatchListenerTest {
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             String result = queryResult2String(broker, seq);
-            System.out.println("RESULT: " + result);
             XMLAssert.assertEquals("<para>some paragraph with <hi>" + MATCH_START + "mixed" +
                     MATCH_END + "</hi> content.</para>", result);
 
@@ -146,7 +145,6 @@ public class LuceneMatchListenerTest {
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             result = queryResult2String(broker, seq);
-            System.out.println("RESULT: " + result);
             XMLAssert.assertEquals("<para>another paragraph with <note><hi>" + MATCH_START + "nested" +
                     MATCH_END + "</hi> " + MATCH_START +
                     "inner" + MATCH_END + "</note> " + MATCH_START + "elements" + MATCH_END + ".</para>", result);
@@ -155,7 +153,6 @@ public class LuceneMatchListenerTest {
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             result = queryResult2String(broker, seq);
-            System.out.println("RESULT: " + result);
             XMLAssert.assertEquals("<para>a third paragraph with <term>" + MATCH_START + "term" + MATCH_END +
                     "</term>.</para>", result);
 
@@ -163,7 +160,6 @@ public class LuceneMatchListenerTest {
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             result = queryResult2String(broker, seq);
-            System.out.println("RESULT: " + result);
             XMLAssert.assertEquals("<para>" + MATCH_START + "double" + MATCH_END + " " +
                     MATCH_START + "match" + MATCH_END + " " + MATCH_START + "double" + MATCH_END + " " +
                     MATCH_START + "match" + MATCH_END + "</para>", result);
@@ -174,7 +170,6 @@ public class LuceneMatchListenerTest {
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             result = queryResult2String(broker, seq);
-            System.out.println("RESULT: " + result);
             XMLAssert.assertEquals("<hit><para>" + MATCH_START + "double" + MATCH_END + " " +
                     MATCH_START + "match" + MATCH_END + " " + MATCH_START + "double" + MATCH_END + " " +
                     MATCH_START + "match" + MATCH_END + "</para></hit>", result);
@@ -200,14 +195,12 @@ public class LuceneMatchListenerTest {
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             String result = queryResult2String(broker, seq);
-            System.out.println("RESULT: " + result);
             XMLAssert.assertXpathEvaluatesTo("1", "count(//exist:match)", result);
 
             seq = xquery.execute("//para[ft:query(., 'nested')]/note", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             result = queryResult2String(broker, seq);
-            System.out.println("RESULT: " + result);
             XMLAssert.assertXpathEvaluatesTo("1", "count(//hi/exist:match)", result);
         } catch (Exception e) {
             e.printStackTrace();
@@ -231,14 +224,12 @@ public class LuceneMatchListenerTest {
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             String result = queryResult2String(broker, seq);
-            System.out.println("RESULT: " + result);
             XMLAssert.assertXpathEvaluatesTo("1", "count(//exist:match)", result);
 
             seq = xquery.execute("//hi[ft:query(., 'nested')]/parent::note", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             result = queryResult2String(broker, seq);
-            System.out.println("RESULT: " + result);
             XMLAssert.assertXpathEvaluatesTo("1", "count(//hi/exist:match)", result);
         } catch (Exception e) {
             e.printStackTrace();
@@ -262,7 +253,6 @@ public class LuceneMatchListenerTest {
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             String result = queryResult2String(broker, seq);
-            System.out.println("RESULT: " + result);
             XMLAssert.assertEquals("<p>Paragraphs with <s>" + MATCH_START + "mix" + MATCH_END +
                     "</s><s>ed</s> content are <s>danger</s>ous.</p>", result);
 
@@ -270,7 +260,6 @@ public class LuceneMatchListenerTest {
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             result = queryResult2String(broker, seq);
-            System.out.println("RESULT: " + result);
             XMLAssert.assertEquals("<p>A simple<note>sic</note> paragraph with <hi>highlighted</hi> text <note>and a note</note> to be " +
                     MATCH_START + "ignored" + MATCH_END + ".</p>", result);
 
@@ -278,7 +267,6 @@ public class LuceneMatchListenerTest {
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             result = queryResult2String(broker, seq);
-            System.out.println("RESULT: " + result);
             XMLAssert.assertEquals("<p>A simple<note>sic</note> paragraph with <hi>" + MATCH_START +
                     "highlighted" + MATCH_END + "</hi> text <note>and a note</note> to be " +
                     "ignored.</p>", result);
@@ -287,14 +275,12 @@ public class LuceneMatchListenerTest {
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             result = queryResult2String(broker, seq);
-            System.out.println("RESULT: " + result);
             XMLAssert.assertEquals("<hi>" + MATCH_START + "highlighted" + MATCH_END + "</hi>", result);
             
             seq = xquery.execute("//head[ft:query(., 'title')]", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             result = queryResult2String(broker, seq);
-            System.out.println("RESULT: " + result);
             XMLAssert.assertEquals("<head>The <b>" + MATCH_START + "title" + MATCH_END + "</b>of it</head>",
                     result);
         } catch (Exception e) {
