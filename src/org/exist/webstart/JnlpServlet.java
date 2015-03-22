@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 The eXist Project
+ *  Copyright (C) 2001-15 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -25,13 +25,11 @@ package org.exist.webstart;
 import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
-
 import java.net.SocketException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -42,7 +40,7 @@ public class JnlpServlet extends HttpServlet {
     
 	private static final long serialVersionUID = 1238966115449192258L;
 
-	private static Logger logger = LogManager.getLogger(JnlpServlet.class);
+	private static final Logger LOGGER = LogManager.getLogger(JnlpServlet.class);
     
     private JnlpJarFiles jf=null;
     private JnlpHelper jh=null;
@@ -50,23 +48,27 @@ public class JnlpServlet extends HttpServlet {
     /**
      * Initialize servlet.
      */
-    public void init() {
-        logger.info("Initializing JNLP servlet");
-        
+    @Override
+    public void init() throws ServletException {
+        LOGGER.info("Initializing JNLP servlet");
+
         final String realPath = getServletContext().getRealPath("/");
-        if(realPath==null){
-            logger.error("getServletContext().getRealPath() did not return a "+
-                    "value. Webstart is not available.");
+        if (realPath == null) {
+            final String txt = "getServletContext().getRealPath() did not return a "
+                    + "value. Webstart is not available.";
+            LOGGER.error(txt);
+            throw new ServletException(txt);
+            
+        } else {
+            final File contextRoot = new File(realPath);
+            jh = new JnlpHelper(contextRoot);
+            jf = new JnlpJarFiles(jh);
         }
-        final File contextRoot=new File( realPath );
- 
-        jh = new JnlpHelper(contextRoot);
-        jf = new JnlpJarFiles(jh);
         
     }
     
     private String stripFilename(String URI){
-        final int lastPos=URI.lastIndexOf("/");
+        final int lastPos=URI.lastIndexOf('/');
         return URI.substring(lastPos+1);
     }
     
@@ -78,6 +80,7 @@ public class JnlpServlet extends HttpServlet {
      * @throws ServletException  Standard servlet exception
      * @throws IOException       Standard IO exception
      */
+    @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response)
                                            throws ServletException, IOException{
 
@@ -86,7 +89,7 @@ public class JnlpServlet extends HttpServlet {
 
             final String requestURI = request.getRequestURI();
             final String filename = stripFilename( request.getPathInfo() );
-            logger.debug("Requested URI="+requestURI);
+            LOGGER.debug("Requested URI="+requestURI);
 
             if(requestURI.endsWith(".jnlp")){
                 jw.writeJnlpXML(jf, request, response);
@@ -98,21 +101,24 @@ public class JnlpServlet extends HttpServlet {
                 jw.sendImage(jh, jf, filename, response);
 
             } else {
-                logger.error("Invalid filename extension.");
+                LOGGER.error("Invalid filename extension.");
                 response.sendError(HttpServletResponse.SC_NOT_FOUND, filename + " not found.");
-                return;
             }
 
-        } catch(final EOFException ex) {
-            logger.debug(ex.getMessage());
-
-        } catch(final SocketException ex) {
-            logger.debug(ex.getMessage());
+        } catch(final EOFException | SocketException ex) {
+            LOGGER.debug(ex.getMessage());
 
         } catch (final Throwable e){
-            logger.error(e);
+            LOGGER.error(e);
             throw new ServletException("An error occurred: " + e.getMessage());
         }
         
     }
+
+    @Override
+    protected long getLastModified(HttpServletRequest req) {     
+        return jf.getLastModified();
+    }
+    
+    
 }
