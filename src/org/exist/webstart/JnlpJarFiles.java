@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 The eXist Project
+ *  Copyright (C) 2001-15 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -24,10 +24,10 @@ package org.exist.webstart;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.start.LatestFileResolver;
@@ -39,13 +39,14 @@ import org.exist.start.LatestFileResolver;
  */
 public class JnlpJarFiles {
     
-    private static Logger logger = LogManager.getLogger(JnlpJarFiles.class);
+    private static final Logger LOGGER = LogManager.getLogger(JnlpJarFiles.class);
     
-    private Map<String, File> allFiles = new HashMap<String, File>();
+    private final Map<String, File> allFiles = new HashMap<>();
+    private final File mainJar;
     
     // Names of core jar files sans ".jar" extension.
     // Use %latest% token in place of a version string.
-    private String allJarNames[] = new String[]{
+    private final String allJarNames[] = new String[]{
         "xmldb",
         "xmlrpc-common-%latest%",
         "xmlrpc-client-%latest%",
@@ -55,14 +56,16 @@ public class JnlpJarFiles {
         "excalibur-cli-%latest%",
         "jEdit-syntax",
         "jline-%latest%",
-        "log4j-%latest%",
+        "log4j-api-%latest%",
+        "log4j-core-%latest%",
+        "log4j-jul-%latest%",
+        "log4j-slf4j-impl-latest%.jar",
         "slf4j-api-%latest%",
-        "slf4j-log4j12-%latest%",
         "sunxacml-%latest%"
     };
     
     // Resolves jar file patterns from jars[].
-    private LatestFileResolver jarFileResolver = new LatestFileResolver();
+    private final LatestFileResolver jarFileResolver = new LatestFileResolver();
     
     /**
      * Get jar file specified by file pattern.
@@ -72,16 +75,15 @@ public class JnlpJarFiles {
      * @return File object of jar file, null if not found.
      */
     private File getJarFromLocation(File folder, String jarFileBaseName){
-        final String fileToFind = folder.getAbsolutePath() + File.separatorChar
-                + jarFileBaseName + ".jar";
+        final String fileToFind = folder.getAbsolutePath() + File.separatorChar + jarFileBaseName + ".jar";
         final String resolvedFile = jarFileResolver.getResolvedFileName( fileToFind );
         final File jar = new File(resolvedFile);
         if (jar.exists()) {
-            logger.debug( "Found match: " + resolvedFile + " for file pattern: " + fileToFind );
+            LOGGER.debug(String.format("Found match: %s for file pattern: %s", resolvedFile, fileToFind));
             return jar;
             
         } else {
-            logger.warn("Could not resolve file pattern: " + fileToFind);
+            LOGGER.warn(String.format("Could not resolve file pattern: %s", fileToFind));
             return null;
         }
     }
@@ -107,9 +109,9 @@ public class JnlpJarFiles {
      * @param jnlpHelper
      */
     public JnlpJarFiles(JnlpHelper jnlpHelper) {
-        logger.info("Initializing jar files Webstart");
+        LOGGER.info("Initializing jar files Webstart");
 
-        logger.debug("Number of webstart jars="+allJarNames.length);
+        LOGGER.debug(String.format("Number of webstart jars=%s", allJarNames.length));
         
         // Setup CORE jars
         for(final String jarname : allJarNames){
@@ -118,7 +120,7 @@ public class JnlpJarFiles {
          }
         
         // Setup exist.jar
-        final File mainJar=new File(jnlpHelper.getExistJarFolder(), "exist.jar");
+        mainJar=new File(jnlpHelper.getExistJarFolder(), "exist.jar");
         addToJars(mainJar);
     }
     
@@ -129,7 +131,7 @@ public class JnlpJarFiles {
      * @return list of jar files.
      */
     public List<File> getAllWebstartJars(){
-        final List<File> corejars = new ArrayList<File>();
+        final List<File> corejars = new ArrayList<>();
 
         for(final File file: allFiles.values()){
             if(file.getName().endsWith(".jar")){
@@ -146,20 +148,28 @@ public class JnlpJarFiles {
      * @param key
      * @return Reference to the jar file, NULL if not existent.
      */
-    public File getJarFile(String key){
+    public File getJarFile(String key) {
         final File retVal = allFiles.get(key);
         return retVal;
     }
 
-    private File getJarPackGz(File jarName){
-        final String path = jarName.getAbsolutePath()+".pack.gz";
+    private File getJarPackGz(File jarName) {
+        final String path = jarName.getAbsolutePath() + ".pack.gz";
         final File pkgz = new File(path);
 
-        if(pkgz.exists()){
+        if (pkgz.exists()) {
             return pkgz;
         }
 
         return null;
     }
     
+    /**
+     *  Get last modified of main JAR file 
+     */
+    public long getLastModified(){
+        return (mainJar==null) ? -1 : mainJar.lastModified();
+    }
+    
 }
+;
