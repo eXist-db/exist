@@ -128,7 +128,7 @@ public class LuceneIndexTest {
             "<a>" +
             "   <b att='att on b1'>AAA on b1</b>" +
             "   <b att='att on b2' attr='attr on b2'>AAA on b2</b>" +
-            "   <b att='att on b3' attr='attr on b3'>AAA on b3</b>" +
+            "   <bb><b att='att on b3' attr='attr on b3'>AAA on b3</b></bb>" +
             "   <c att='att on c1'>AAA on c1</c>" +
             "   <c>AAA on c2</c>" +
             "</a>";
@@ -424,6 +424,7 @@ public class LuceneIndexTest {
         DBBroker broker = null;
         TransactionManager transact = null;
         Txn transaction = null;
+        Sequence seq = null;
         try {
             broker = pool.get(pool.getSecurityManager().getSystemSubject());
             transact = pool.getTransactionManager();
@@ -436,7 +437,7 @@ public class LuceneIndexTest {
             XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
 
-            Sequence seq = xquery.execute("for $a in ft:query((//b|//c), 'AAA') order by ft:score($a) descending return xs:string($a)", null, AccessContext.TEST);
+            seq = xquery.execute("for $a in ft:query((//b|//c), 'AAA') order by ft:score($a) descending return xs:string($a)", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(5, seq.getItemCount());
             assertEquals("AAA on b2", seq.itemAt(0).getStringValue());
@@ -444,6 +445,13 @@ public class LuceneIndexTest {
             assertEquals("AAA on b3", seq.itemAt(2).getStringValue());
             assertEquals("AAA on b1", seq.itemAt(3).getStringValue());
             assertEquals("AAA on c2", seq.itemAt(4).getStringValue());
+
+            // path: /a/b
+            seq = xquery.execute("for $a in ft:query(/a/b, 'AAA') order by ft:score($a) descending return xs:string($a)", null, AccessContext.TEST);
+            assertNotNull(seq);
+            assertEquals(2, seq.getItemCount());
+            assertEquals("AAA on b2", seq.itemAt(0).getStringValue());
+            assertEquals("AAA on b1", seq.itemAt(1).getStringValue());
 
             seq = xquery.execute("for $a in ft:query(//@att, 'att') order by ft:score($a) descending return xs:string($a)", null, AccessContext.TEST);
             assertNotNull(seq);
@@ -460,7 +468,9 @@ public class LuceneIndexTest {
             proc.setBroker(broker);
             proc.setDocumentSet(docs);
 
-            // remove 'att' attribute from c element: c element gets no boost
+            // remove 'att' attribute from first c element: it gets no boost
+	    // also append an 'att' attribute on second c element which will
+	    // make the two switch order in the result sequence.
             String xupdate =
                     XUPDATE_START +
                     "   <xu:remove select=\"//c[1]/@att\"/>" +
