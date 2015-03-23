@@ -46,6 +46,8 @@ import org.exist.dom.memtree.NodeImpl;
 import org.exist.numbering.NodeId;
 import org.exist.protocolhandler.embedded.EmbeddedInputStream;
 import org.exist.protocolhandler.xmldb.XmldbURL;
+import org.exist.scheduler.SystemTaskJob;
+import org.exist.scheduler.impl.SystemTaskJobImpl;
 import org.exist.security.ACLPermission;
 import org.exist.security.AXSchemaType;
 import org.exist.security.Account;
@@ -65,10 +67,7 @@ import org.exist.security.xacml.AccessContext;
 import org.exist.source.DBSource;
 import org.exist.source.Source;
 import org.exist.source.StringSource;
-import org.exist.storage.BrokerPool;
-import org.exist.storage.DBBroker;
-import org.exist.storage.DataBackup;
-import org.exist.storage.XQueryPool;
+import org.exist.storage.*;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.LockedDocumentMap;
 import org.exist.storage.serializers.EXistOutputKeys;
@@ -4588,19 +4587,24 @@ public class RpcConnection implements RpcAPI {
         if (!user.hasDbaRole()) {
             throw new PermissionDeniedException("not allowed to shut down" + "the database");
         }
-        if (delay > 0) {
-            final TimerTask task = new TimerTask() {
-                @Override
-                public void run() {
-                    BrokerPool.stopAll(true);
-                }
-            };
-            final Timer timer = new Timer();
-            timer.schedule(task, delay);
-        } else {
-            BrokerPool.stopAll(true);
-        }
-        return true;
+
+        final SystemTaskJob shutdownJob = new SystemTaskJobImpl("rpc-api.shutdown", new SystemTask() {
+            @Override
+            public void configure(final Configuration config, final Properties properties) throws EXistException {
+            }
+
+            @Override
+            public void execute(final DBBroker broker) throws EXistException {
+                broker.getBrokerPool().shutdown();
+            }
+
+            @Override
+            public boolean afterCheckpoint() {
+                return true;
+            }
+        });
+
+        return factory.getBrokerPool().getScheduler().createPeriodicJob(0, shutdownJob, delay, new Properties(), 0);
     }
 
     public boolean enterServiceMode() throws PermissionDeniedException, EXistException {

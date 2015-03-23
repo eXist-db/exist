@@ -71,7 +71,7 @@ public interface RpcAPI {
      * Shut down the database after the specified delay (in milliseconds).
      *
      * @param delay The delay in milliseconds
-     * @return true if the shutdown succeeded, false otherwise
+     * @return true if the shutdown was scheduled, false otherwise
      * @throws PermissionDeniedException
      * @Deprecated {@see org.exist.xmlrpc.RpcAPI#shutdown(long)
      */
