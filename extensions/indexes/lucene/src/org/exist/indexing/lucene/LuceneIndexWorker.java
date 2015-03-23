@@ -73,10 +73,12 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.ByteConversion;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.Occurrences;
+import org.exist.util.pool.NodePool;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.NodeValue;
+import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -1188,19 +1190,19 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         addPending(pending);
     }
 
-    /*
+    /**
      * Adds the passed character sequence to the lucene index.
-     * This version needs the NodeImpl for node specific attribute match boosting.
+     * This version uses the AttrImpl for node specific attribute match boosting.
      *
-     * @param node
+     * @param attribs
      * @param nodeId
      * @param qname
      * @param path
      * @param config
      * @param content
      */
-    protected void indexText(org.exist.dom.persistent.NodeImpl node, NodeId nodeId, QName qname, NodePath path, LuceneIndexConfig config, CharSequence content) {
-        PendingDoc pending = new PendingDoc(nodeId, qname, path, content, config.getBoost(node), config);
+    protected void indexText(java.util.Collection<AttrImpl> attribs, NodeId nodeId, QName qname, NodePath path, LuceneIndexConfig config, CharSequence content) {
+        PendingDoc pending = new PendingDoc(nodeId, qname, path, content, config.getAttrBoost(attribs), config);
         addPending(pending);
     }
     
@@ -1229,12 +1231,14 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     private class PendingAttr {
-	NodeProxy proxy;
+	AttrImpl attr;
 	LuceneIndexConfig conf;
+	NodePath path;
 
-        public PendingAttr(NodeProxy proxy, LuceneIndexConfig conf) {
-            this.proxy = proxy;
+        public PendingAttr(AttrImpl attr, NodePath path, LuceneIndexConfig conf) {
+            this.attr = attr;
             this.conf = conf;
+            this.path = path;
         }
     }
     
@@ -1365,10 +1369,15 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     private class LuceneStreamListener extends AbstractStreamListener {
         private ArrayList<PendingAttr> pendingAttrs = new ArrayList<PendingAttr>();
+	private ArrayList<AttrImpl> attributes = new ArrayList<AttrImpl>(10);
+        private ElementImpl currentElement;
 
         @Override
         public void startElement(Txn transaction, ElementImpl element, NodePath path) {
-	    indexPendingAttrs();
+            if (currentElement != null) {
+                indexPendingAttrs();
+            }
+            currentElement = element;
 
             if (mode == STORE && config != null) {
                 if (contentStack != null && !contentStack.isEmpty()) {
@@ -1379,7 +1388,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
 		Iterator<LuceneIndexConfig> configIter = config.getConfig(path);
                 if (configIter != null) {
-                    if (contentStack == null) contentStack = new Stack<>();
+                    if (contentStack == null) {
+			contentStack = new Stack<>();
+		    }
                     while (configIter.hasNext()) {
                         LuceneIndexConfig configuration = configIter.next();
                         if (configuration.match(path)) {
@@ -1395,8 +1406,6 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
         @Override
         public void endElement(Txn transaction, ElementImpl element, NodePath path) {
-	    indexPendingAttrs();
-
             if (config != null) {
                 if (mode == STORE && contentStack != null && !contentStack.isEmpty()) {
                     for (TextExtractor extractor : contentStack) {
@@ -1413,19 +1422,51 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                             if (configuration.match(path)) {
                                 TextExtractor extractor = contentStack.pop();
 
-                                indexText(element, element.getNodeId(), element.getQName(),
-					  path, extractor.getIndexConfig(), extractor.getText());
+                                if (configuration.shouldReindexOnAttributeChange()) {
+                                    // if we still have the attributes cached
+				    // i e this element had no child elements,
+				    // use them to save some time
+                                    // otherwise we fetch the attributes again
+                                    boolean wasEmpty = false;
+                                    if (attributes.isEmpty()) {
+                                        wasEmpty = true;
+                                        NamedNodeMap attributes1 = element.getAttributes();
+                                        for (int i = 0; i < attributes1.getLength(); i++) {
+                                            attributes.add((AttrImpl) attributes1.item(i));
+                                        }
+                                    }
+                                    indexText(attributes, element.getNodeId(), element.getQName(), path, extractor.getIndexConfig(), extractor.getText());
+                                    if (wasEmpty) {
+                                        attributes.clear();
+                                    }
+                                } else {
+                                    // no attribute matching, index normally
+                                    indexText(element.getNodeId(), element.getQName(), path, extractor.getIndexConfig(), extractor.getText());
+                                }
                             }
                         }
                     }
                 }
             }
+
+            indexPendingAttrs();
+            currentElement = null;
+
             super.endElement(transaction, element, path);
         }
 
         @Override
         public void attribute(Txn transaction, AttrImpl attrib, NodePath path) {
             path.addComponent(attrib.getQName());
+
+            AttrImpl attribCopy = null;
+            if (mode == STORE && currentElement != null) {
+                attribCopy = (AttrImpl) NodePool.getInstance().borrowNode(Node.ATTRIBUTE_NODE);
+                attribCopy.setValue(attrib.getValue());
+                attribCopy.setNodeId(attrib.getNodeId());
+                attribCopy.setQName(attrib.getQName());
+                attributes.add(attribCopy);
+            }
 
             Iterator<LuceneIndexConfig> configIter = null;
             if (config != null)
@@ -1438,7 +1479,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                         LuceneIndexConfig configuration = configIter.next();
                         if (configuration.match(path)) {
 			    if (configuration.shouldReindexOnAttributeChange()) {
-				appendAttrToBeIndexedLater(attrib, configuration);
+				appendAttrToBeIndexedLater(attribCopy, new NodePath(path), configuration);
 			    } else {
 				indexText(attrib.getNodeId(), attrib.getQName(), path, configuration, attrib.getValue());
 			    }
@@ -1470,8 +1511,12 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         /*
 	 * delay indexing of attributes until we have them all to calculate boost
 	 */
-        private void appendAttrToBeIndexedLater(AttrImpl attr, LuceneIndexConfig conf) {
-            pendingAttrs.add(new PendingAttr(new NodeProxy(currentDoc, attr.getNodeId(), attr.getNodeType(), attr.getInternalAddress()), conf));
+        private void appendAttrToBeIndexedLater(AttrImpl attr, NodePath path, LuceneIndexConfig conf) {
+            if (currentElement == null){
+                LOG.error("currentElement == null");
+            } else {
+                pendingAttrs.add(new PendingAttr(attr, path, conf));
+	    }
         }
 
 	/*
@@ -1479,17 +1524,27 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 	 * and then clear pending attributes
 	 */
 	private void indexPendingAttrs() {
-	    if (mode == STORE && config != null) {
-		try {
-		    for (PendingAttr pending : pendingAttrs) {
-			org.exist.dom.persistent.NodeImpl node = (org.exist.dom.persistent.NodeImpl) pending.proxy.getNode();
-
-			indexText(node, node.getNodeId(), node.getQName(), pending.conf.getNodePath(), pending.conf, node.getNodeValue());
-		    }
-		} finally {
-		    pendingAttrs.clear();
-		}
+            try {
+                if (mode == STORE && config != null) {
+                    for (PendingAttr pending : pendingAttrs) {
+                        AttrImpl attr = pending.attr;
+                        indexText(attributes, attr.getNodeId(), attr.getQName(), pending.path, pending.conf, attr.getValue());
+                    }
+                }
+            } finally {
+                pendingAttrs.clear();
+                releaseAttributes();
             }
+	}
+
+	private void releaseAttributes() {
+	    try {
+		for (Attr attr : attributes) {
+		    NodePool.getInstance().returnNode((AttrImpl) attr);
+		}
+	    } finally {
+		attributes.clear();
+	    }
 	}
     }
 

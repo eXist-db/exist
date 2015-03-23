@@ -21,7 +21,6 @@
 package org.exist.indexing.lucene;
 
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 import org.apache.commons.collections.MultiMap;
@@ -30,19 +29,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
-import org.exist.EXistException;
-import org.exist.dom.INode;
 import org.exist.dom.QName;
 import org.exist.dom.persistent.AttrImpl;
-import org.exist.dom.persistent.ElementImpl;
-import org.exist.dom.persistent.NodeImpl;
-import org.exist.dom.persistent.IStoredNode;
-import org.exist.storage.DBBroker;
 import org.exist.storage.ElementValue;
 import org.exist.storage.NodePath;
 import org.exist.util.DatabaseConfigurationException;
+import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
 public class LuceneIndexConfig {
@@ -215,59 +208,41 @@ public class LuceneIndexConfig {
         return type.getBoost();
     }
 
+    /**
+     * Get boost by matching the config with given attributes
+     * (e.g. sibling or child atributes)
+     * if no match, the value from getBoost() is returned
+     */
+    public float getAttrBoost(Collection<AttrImpl> attributes) {
+        float boost = 0;
+        boolean hasBoost = false;
 
-    public float getBoost(INode node) {
-        if (matchAttrs != null) {
-            ElementImpl element = null;
-            if (node.getNodeType() == Node.ATTRIBUTE_NODE)
-                element = (ElementImpl) node.getParentNode();
-            else if (node.getNodeType() == Node.ELEMENT_NODE) {
-                element = (ElementImpl) node;
-	    }
-            if (element != null && element.getAttributes().getLength() > 0) {
-                float boost = 0;
-                boolean hasBoost = false;
+        for (Attr attr : attributes) {
+            Collection<MatchAttrData> matchAttrData
+                    = (Collection<MatchAttrData>) matchAttrs.get(attr.getName());
 
-                DBBroker broker = null;
-                try {
-                    broker = element.getOwnerDocument().getBrokerPool().get(null);
-                    final Iterator<IStoredNode> iterator = broker.getNodeIterator(element);
-                    iterator.next();
-                    for (int i = 0; i < element.getAttributes().getLength(); i++) {
-                        if (!iterator.hasNext()) {
-                            throw new EXistException("Not all attributes for element " + element + " stored yet, cannot iterate further.");
-			}
-
-                        AttrImpl attr = (AttrImpl) iterator.next();
-                        Collection<MatchAttrData> matchAttrDatas = (Collection<MatchAttrData>) matchAttrs.get(attr.getNodeName());
-
-                        if (matchAttrDatas == null) { continue; }
-
-                        for (MatchAttrData matchAttrData : matchAttrDatas) {
-                            // if matchAttr value is null we dont care about the value
-                            if (matchAttrData.value == null
-                                    || matchAttrData.value.equals(attr.getValue())) {
-                                hasBoost = true;
-                                boost += matchAttrData.boost;
-                                // we matched the attribute already, but since we allow more boost on same attribute, both from "has-attribute" and "match-attribute" there is no break here
-                            }
-                        }
-                    }
-                } catch (EXistException e) {
-                    LOG.warn("Exception while iterating attribute nodes: " + e.getMessage(), e);
-                } finally {
-                    if (broker != null) {
-                        broker.release();
-		    }
+            if (matchAttrData == null) {
+                continue;
+            }
+            for (MatchAttrData matchAttrDatum : matchAttrData) {
+                // if matchAttr value is null we don't care about the value
+                if (matchAttrDatum.value == null
+                        || matchAttrDatum.value.equals(attr.getValue())) {
+                    hasBoost = true;
+                    boost += matchAttrDatum.boost;
+                    // we matched the attribute already, but since we allow
+		    // further boost on the attribute, e g
+		    // both from "has-attribute" and "match-attribute"
+		    // there is no break here
                 }
-
-		if (hasBoost) {
-                    return boost;
-		}
             }
         }
-        // return static boost
-        return getBoost();
+
+        if (hasBoost) {
+            return boost;
+	} else {
+            return getBoost();
+	}
     }
 
     public void setName(String name) {
