@@ -366,7 +366,7 @@ public interface RpcAPI {
     public Map<String, Object> retrieveAllFirstChunk(int resultId, Map<String, Object> parameters)
             throws EXistException, PermissionDeniedException;
 
-    Map<String, Object> compile(byte[] xquery, Map<String, Object> parameters) throws Exception;
+    Map<String, Object> compile(byte[] xquery, Map<String, Object> parameters)  throws EXistException, PermissionDeniedException;
 
     Map<String, Object> queryP(byte[] xpath, Map<String, Object> parameters)
             throws EXistException, PermissionDeniedException;
@@ -897,5 +897,5 @@ public interface RpcAPI {
 
     public Map<String, Object> getSubResourcePermissions(String parentPath, String name) throws EXistException, PermissionDeniedException, URISyntaxException;
 
-    public boolean setTriggersEnabled(String path, String value) throws PermissionDeniedException;
+    public boolean setTriggersEnabled(String path, String value) throws EXistException, PermissionDeniedException;
 }
