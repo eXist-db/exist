@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 The eXist Project
+ *  Copyright (C) 2001-2015 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -16,14 +16,11 @@
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- * $Id$
  */
 
 package org.exist.webstart;
 
 import java.io.File;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -38,19 +35,15 @@ public class JnlpHelper {
     private final static String LIB_EXIST ="..";
     private final static String LIB_WEBINF="WEB-INF/lib/";
     
-    private static Logger logger = LogManager.getLogger(JnlpHelper.class);
+    private static final Logger LOGGER = LogManager.getLogger(JnlpHelper.class);
     
     private File coreJarsFolder=null;
     private File existJarFolder=null;
     private File webappsFolder=null;
     
     
-    private boolean isInWarFile(File existHome){
-            
-        if( new File(existHome, LIB_CORE).isDirectory() ) {
-            return false;
-        }
-        return true;
+    private boolean isInWarFile(File existHome){           
+        return !new File(existHome, LIB_CORE).isDirectory();
     }
     
     /** Creates a new instance of JnlpHelper */
@@ -59,22 +52,22 @@ public class JnlpHelper {
         // Setup path based on installation (in jetty, container)
         if(isInWarFile(contextRoot)){
             // all files mixed in contextRoot/WEB-INF/lib
-            logger.debug("eXist is running in servlet container (.war).");
+            LOGGER.debug("eXist is running in servlet container (.war).");
             coreJarsFolder= new File(contextRoot, LIB_WEBINF);
             existJarFolder= coreJarsFolder;
             webappsFolder=contextRoot;
             
         } else {
             //files located in contextRoot/lib/core and contextRoot
-            logger.debug("eXist is running private jetty server.");
+            LOGGER.debug("eXist is running private jetty server.");
             coreJarsFolder= new File(contextRoot, LIB_CORE);
             existJarFolder= new File(contextRoot, LIB_EXIST);;
             webappsFolder=contextRoot;
         }
         
-        logger.debug("CORE jars location="+coreJarsFolder.getAbsolutePath());
-        logger.debug("EXIST jars location="+existJarFolder.getAbsolutePath());
-        logger.debug("WEBAPP location="+webappsFolder.getAbsolutePath());
+        LOGGER.debug(String.format("CORE jars location=%s", coreJarsFolder.getAbsolutePath()));
+        LOGGER.debug(String.format("EXIST jars location=%s", existJarFolder.getAbsolutePath()));
+        LOGGER.debug(String.format("WEBAPP location=%s", webappsFolder.getAbsolutePath()));
     }
     
     public File getWebappFolder(){
