@@ -19,6 +19,8 @@
  */
 package org.exist.xmlrpc;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.XmlRpcHandler;
 import org.apache.xmlrpc.server.AbstractReflectiveHandlerMapping;
@@ -37,6 +39,7 @@ import java.io.IOException;
 public class RpcServlet extends XmlRpcServlet {
 
 	private static final long serialVersionUID = -1003413291835771186L;
+    private static final Logger LOG = LogManager.getLogger(RpcServlet.class);
     private static boolean useDefaultUser = true;
 
     public static boolean isUseDefaultUser() {
@@ -62,9 +65,17 @@ public class RpcServlet extends XmlRpcServlet {
 
         try {
             super.doPost(request, response);
-        } catch (final Throwable e) {
-            log("Problem during XmlRpc execution", e);
-            throw new ServletException("An unknown error occurred: " + e.getMessage(), e);
+        } catch (final Throwable e){
+            LOG.error("Problem during XmlRpc execution", e);
+            final String exceptionMessage;
+            if (e instanceof XmlRpcException) {
+                final Throwable linkedException = ((XmlRpcException)e).linkedException;
+                LOG.error(linkedException.getMessage(), linkedException);
+                exceptionMessage = "An error occurred: " + e.getMessage() + ": " + linkedException.getMessage();
+            } else {
+                exceptionMessage = "An unknown error occurred: " + e.getMessage();
+            }
+            throw new ServletException(exceptionMessage, e);
         }
     }
 

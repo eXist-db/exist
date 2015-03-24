@@ -37,6 +37,14 @@
             <DefaultRolloverStrategy max="${rollover.max}"/>
             <PatternLayout pattern="${exist.file.pattern}"/>
         </RollingRandomAccessFile>
+
+        <RollingRandomAccessFile name="exist.xmlrpc" filePattern="${logs}/xmlrpc.${rollover.file.pattern}.log.gz" fileName="${logs}/xmlrpc.log">
+            <Policies>
+                <SizeBasedTriggeringPolicy size="${rollover.max.size}"/>
+            </Policies>
+            <DefaultRolloverStrategy max="${rollover.max}"/>
+            <PatternLayout pattern="${exist.file.pattern}"/>
+        </RollingRandomAccessFile>
         
         <RollingRandomAccessFile name="exist.urlrewrite" filePattern="${logs}/urlrewrite.${rollover.file.pattern}.log.gz" fileName="${logs}/urlrewrite.log">
             <Policies>
@@ -149,12 +157,16 @@
             <AppenderRef ref="exist.xacml"/>
         </Logger>
         
-        <Logger name="org.exist.xmldb" additivity="false" level="debug">
+        <Logger name="org.exist.xmldb" additivity="false" level="info">
             <AppenderRef ref="exist.xmldb"/>
         </Logger>
         
-        <Logger name="org.exist.xmlrpc" additivity="false" level="debug">
-            <AppenderRef ref="exist.core"/>
+        <Logger name="org.exist.xmlrpc" additivity="false" level="info">
+            <AppenderRef ref="exist.xmlrpc"/>
+        </Logger>
+
+        <Logger name="org.apache.xmlrpc" additivity="false" level="info">
+            <AppenderRef ref="exist.xmlrpc"/>
         </Logger>
         
         <Logger name="org.exist.http.urlrewrite" additivity="false" level="info">
@@ -164,9 +176,8 @@
         
         <Logger name="org.exist.extensions.exquery.restxq" additivity="false" level="info">
             <AppenderRef ref="exist.restxq"/>
-        </Logger>    
-        
-        <!-- Logging 3rd party libraries -->
+        </Logger>
+
         <Logger name="org.eclipse.jetty" additivity="false" level="info">
             <AppenderRef ref="exist.core"/>
         </Logger>
@@ -175,7 +186,7 @@
             <AppenderRef ref="exist.core"/>
         </Logger>
         
-        <Logger name="net.sf.ehcache" additivity="false" level="debug">
+        <Logger name="net.sf.ehcache" additivity="false" level="info">
             <AppenderRef ref="exist.ehcache"/>
         </Logger>
         
