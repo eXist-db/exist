@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 The eXist Project
+ *  Copyright (C) 2001-2015 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -16,27 +16,25 @@
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- * $Id$
  */
+
 package org.exist.webstart;
 
-import java.io.ByteArrayInputStream;
+import com.bradmcevoy.io.FileUtils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-
+import java.io.OutputStream;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamWriter;
 import org.apache.commons.io.IOUtils;
-
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.commons.io.output.ByteArrayOutputStream;
 
 /**
  * Class for writing JNLP file, jar files and image files.
@@ -51,7 +49,7 @@ public class JnlpWriter {
     public static final String CONTENT_TYPE = "content-type";
     public static final String CONTENT_ENCODING = "content-encoding";
     public static final String PACK200_GZIP_ENCODING = "pack200-gzip";
-    private static Logger logger = LogManager.getLogger(JnlpWriter.class);
+    private static final Logger LOGGER = LogManager.getLogger(JnlpWriter.class);
 
     /**
      * Write JNLP xml file to browser.
@@ -62,7 +60,7 @@ public class JnlpWriter {
     void writeJnlpXML(JnlpJarFiles jnlpFiles, HttpServletRequest request,
             HttpServletResponse response) throws IOException {
 
-        logger.debug("Writing JNLP file");
+        LOGGER.debug("Writing JNLP file");
 
         // Format URL: "http://host:8080/CONTEXT/webstart/exist.jnlp"
         final String currentUrl = request.getRequestURL().toString();
@@ -79,8 +77,7 @@ public class JnlpWriter {
         for (final File jar : jnlpFiles.getAllWebstartJars()) {
             counter++; // debugging
             if (jar == null || !jar.exists()) {
-                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                        "Missing Jar file! (" + counter + ")");
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, String.format("Missing Jar file! (%s)", counter));
                 return;
             }
         }
@@ -95,10 +92,9 @@ public class JnlpWriter {
         try {
             final XMLStreamWriter writer = XMLOutputFactory.newInstance().createXMLStreamWriter(response.getOutputStream());
 
-
             writer.writeStartDocument();
             writer.writeStartElement("jnlp");
-            writer.writeAttribute("spec", "1.0+");
+            writer.writeAttribute("spec", "7.0");
             writer.writeAttribute("codebase", codeBase);
             writer.writeAttribute("href", "exist.jnlp");
 
@@ -171,8 +167,8 @@ public class JnlpWriter {
             writer.writeAttribute("value", "true");
             writer.writeEndElement();
 
-            writer.writeStartElement("j2se");
-            writer.writeAttribute("version", "1.6+");
+            writer.writeStartElement("java");
+            writer.writeAttribute("version", "1.8+");
             writer.writeEndElement();
 
             for (final File jar : jnlpFiles.getAllWebstartJars()) {
@@ -212,7 +208,7 @@ public class JnlpWriter {
             writer.close();
 
         } catch (final Throwable ex) {
-            logger.error(ex);
+            LOGGER.error(ex);
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, ex.getMessage());
         }
 
@@ -228,7 +224,7 @@ public class JnlpWriter {
     void sendJar(JnlpJarFiles jnlpFiles, String filename,
             HttpServletRequest request, HttpServletResponse response) throws IOException {
 
-        logger.debug("Send jar file " + filename);
+        LOGGER.debug("Send jar file " + filename);
 
         final File localFile = jnlpFiles.getJarFile(filename);
         if (localFile == null || !localFile.exists()) {
@@ -237,7 +233,7 @@ public class JnlpWriter {
         }
 
 
-        logger.debug("Actual file " + localFile.getAbsolutePath());
+        LOGGER.debug("Actual file " + localFile.getAbsolutePath());
 
         if (localFile.getName().endsWith(".jar")) {
             //response.setHeader(CONTENT_ENCODING, JAR_MIME_TYPE);
@@ -254,73 +250,80 @@ public class JnlpWriter {
         response.setHeader("Content-Length", Long.toString(localFile.length()));
         response.setDateHeader("Last-Modified", localFile.lastModified());
 
-        final FileInputStream fis = new FileInputStream(localFile);
-        final ServletOutputStream os = response.getOutputStream();
+        final InputStream is = new FileInputStream(localFile);
+        final OutputStream os = response.getOutputStream();
 
         try {
-            // Transfer bytes from in to out
-            final byte[] buf = new byte[4096];
-            int len;
-            while ((len = fis.read(buf)) > 0) {
-                os.write(buf, 0, len);
-            }
+            IOUtils.copy(is, os);
+            os.flush();
 
         } catch (final IllegalStateException ex) {
-            logger.debug(ex.getMessage());
+            LOGGER.debug(ex.getMessage());
+            throw new IOException(ex.getMessage());
 
         } catch (final IOException ex) {
-            logger.debug("Ignore IOException for '" + filename + "'");
+            LOGGER.debug("Ignore IOException for '" + filename + "'");
+            throw ex;
+            
+        } finally {
+            IOUtils.closeQuietly(os);
+            IOUtils.closeQuietly(is);
         }
 
-        os.flush();
-        os.close();
-        fis.close();
+
     }
 
     void sendImage(JnlpHelper jh, JnlpJarFiles jf, String filename, HttpServletResponse response) throws IOException {
-        logger.debug("Send image " + filename);
+        LOGGER.debug("Send image " + filename);
 
-        String type = null;
-        if (filename.endsWith(".gif")) {
-            type = "image/gif";
-        } else if (filename.endsWith(".png")) {
-            type = "image/png";
-        } else {
-            type = "image/jpeg";
-        }
-        
-        final InputStream is = this.getClass().getResourceAsStream("resources/"+filename); 
-        if (is == null) {
-            response.sendError(HttpServletResponse.SC_NOT_FOUND,
-                    "Image file '" + filename + "' not found.");
+        String type = getImageMimeType(filename);
+      
+        final InputStream imageInputStream = this.getClass().getResourceAsStream("resources/"+filename); 
+        if (imageInputStream == null) {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, String.format("Image file '%s' not found.", filename));
             return;
         }
         
         // Copy data
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        IOUtils.copy(is, baos);
-        IOUtils.closeQuietly(is);
+        IOUtils.copy(imageInputStream, baos);
+        IOUtils.closeQuietly(imageInputStream);
         
-        // It is very improbable that a 64 bit jar is needed, but
-        // it is better to be ready
+        // Setup HTTP headers
         response.setContentType(type);
         response.setContentLength(baos.size());
-        //response.setHeader("Content-Length", ""+baos.size());
 
-        final ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
         final ServletOutputStream os = response.getOutputStream();
 
         try {
-            IOUtils.copy(bais, os);
+            IOUtils.write(baos.toByteArray(), os);
+            os.flush();
+            
         } catch (final IllegalStateException ex) {
-            logger.debug(ex.getMessage());
+            LOGGER.debug(ex.getMessage());
+            
         } catch (final IOException ex) {
-            logger.debug("Ignored IOException for '" + filename + "' " + ex.getMessage());
+            LOGGER.debug("Ignored IOException for '" + filename + "' " + ex.getMessage());
+            
+        } finally {
+            IOUtils.closeQuietly(os);
         }
+    }
 
-        // Release resources
-        os.flush();
-        os.close();
-        bais.close();
+    private String getImageMimeType(String filename) {
+        String type = "unknown";
+        switch (FileUtils.getExtension(filename)) {
+            case ".gif":
+                type = "image/gif";
+                break;
+            case ".png":
+                type = "image/png";
+                break;
+            case ".jpg":
+            case ".jpeg":
+                type = "image/jpeg";
+                break;
+        }
+        return type;
     }
 }
