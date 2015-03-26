@@ -29,28 +29,28 @@ import org.exist.util.Configuration;
 
 public class DatabaseStatus {
 
-	private String id;
-	private String confPath;
-	private String dataDir;
-	private int runningBrokers = 0;
-	private int availableBrokers = 0;
-	private int maxBrokers = 0;
-	private Map<String, IndexStats> indexStats = new TreeMap<String, IndexStats>();
+	private final String id;
+    private final String confPath = null;
+	private final String dataDir;
+	private final int runningBrokers;
+	private final int availableBrokers;
+	private final int maxBrokers;
+	private Map<String, IndexStats> indexStats = new TreeMap<>();
 	
 	public DatabaseStatus(BrokerPool pool) {
 		final Configuration conf = pool.getConfiguration();
 		
 		// get id for this instance
-		id = pool.getId();
+		this.id = pool.getId();
 		
 		// paths
-		//confPath = conf.getPath();
-		dataDir = (String)conf.getProperty(BrokerPool.PROPERTY_DATA_DIR);
+		//this.confPath = conf.getPath();
+		this.dataDir = (String)conf.getProperty(BrokerPool.PROPERTY_DATA_DIR);
 		
 		// broker statistics
-		runningBrokers = pool.countActiveBrokers();
-		availableBrokers = pool.available();
-		maxBrokers = pool.getMax();
+		this.runningBrokers = pool.countActiveBrokers();
+		this.availableBrokers = pool.available();
+		this.maxBrokers = pool.getMax();
 		
 		Statistics.generateIndexStatistics(conf, indexStats);
 	}
@@ -114,7 +114,7 @@ public class DatabaseStatus {
 		return runningBrokers;
 	}
 	
-	public IndexStats getIndexStats(String dbName) {
+	public IndexStats getIndexStats(final String dbName) {
 		return indexStats.get(dbName);
 	}
 

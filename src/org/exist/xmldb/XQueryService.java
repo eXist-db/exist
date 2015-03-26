@@ -108,7 +108,7 @@ public interface XQueryService extends org.xmldb.api.modules.XQueryService {
 	*
 	* @param prefix The prefix to retrieve from the namespace map.
 	* @return The URI associated with <code>prefix</code>
-	* @exception XMLDBException with expected error codes.<br />
+	* @throws XMLDBException with expected error codes.<br />
 	*  <code>ErrorCodes.VENDOR_ERROR</code> for any vendor
 	*  specific errors that occur.<br />
 	*/
@@ -124,7 +124,7 @@ public interface XQueryService extends org.xmldb.api.modules.XQueryService {
 	*  <code>prefix</code> is empty or null the
 	*  default namespace will be associated with the provided URI.
 	* @param namespace The URI for the namespace to be associated with prefix.
-	* @exception XMLDBException with expected error codes.<br />
+	* @throws XMLDBException with expected error codes.<br />
 	*  <code>ErrorCodes.VENDOR_ERROR</code> for any vendor
 	*  specific errors that occur.<br />
 	*  TODO: probably need some special error here.
@@ -139,7 +139,7 @@ public interface XQueryService extends org.xmldb.api.modules.XQueryService {
 	* @param ns The prefix to remove from the namespace map. If
 	*  <code>prefix</code> is null or empty the mapping for the default
 	*  namespace will be removed.
-	* @exception XMLDBException with expected error codes.<br />
+	* @throws XMLDBException with expected error codes.<br />
 	*  <code>ErrorCodes.VENDOR_ERROR</code> for any vendor
 	*  specific errors that occur.<br />
 	*/
