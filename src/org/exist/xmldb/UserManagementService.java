@@ -44,7 +44,7 @@ public interface UserManagementService extends Service {
     /**
      *  Get the name of this service
      *
-     *@return    The name
+     * @return    The name
      */
     @Override
     public String getName();
@@ -53,7 +53,7 @@ public interface UserManagementService extends Service {
     /**
      *  Get the version of this service
      *
-     *@return    The version value
+     * @return    The version value
      */
     @Override
     public String getVersion();
@@ -157,18 +157,18 @@ public interface UserManagementService extends Service {
      * The changes are applied to the permissions currently
      * active for this resource.
      * 
-     *@param  resource            Description of the Parameter
-     *@param  modeStr             Description of the Parameter
-     *@exception  XMLDBException  Description of the Exception
+     * @param  resource            Description of the Parameter
+     * @param  modeStr             Description of the Parameter
+     * @throws  XMLDBException  Description of the Exception
      */
     public void chmod( Resource resource, String modeStr ) throws XMLDBException;
 
     /**
      *  Change permissions for the current collection
      *
-     *@param  modeStr             String describing the permissions to
+     * @param  modeStr             String describing the permissions to
      * grant or deny.
-     *@exception  XMLDBException
+     * @throws  XMLDBException
      * 
      */
     public void chmod( String modeStr ) throws XMLDBException;
@@ -220,8 +220,8 @@ public interface UserManagementService extends Service {
     /**
      *  Add a new account to the database
      *
-     *@param  account             The feature to be added to the Account
-     *@exception  XMLDBException  Description of the Exception
+     * @param  account             The feature to be added to the Account
+     * @throws  XMLDBException  Description of the Exception
      */
     public void addAccount( Account account ) throws XMLDBException;
 
@@ -230,7 +230,7 @@ public interface UserManagementService extends Service {
      * Update existing account information
      *
      * @param  account             Description of the Parameter
-     * @exception  XMLDBException  Description of the Exception
+     * @throws  XMLDBException  Description of the Exception
      */
     public void updateAccount( Account account ) throws XMLDBException;
     
@@ -247,9 +247,9 @@ public interface UserManagementService extends Service {
     /**
      *  Get a account record from the database
      *
-     *@param  name                Description of the Parameter
-     *@return                     The user value
-     *@exception  XMLDBException  Description of the Exception
+     * @param  name                Description of the Parameter
+     * @return                     The user value
+     * @throws  XMLDBException  Description of the Exception
      */
     public Account getAccount( String name ) throws XMLDBException;
 
@@ -262,8 +262,8 @@ public interface UserManagementService extends Service {
     /**
      *  Retrieve a list of all existing accounts.
      *
-     *@return                     The accounts value
-     *@exception  XMLDBException  Description of the Exception
+     * @return                     The accounts value
+     * @throws  XMLDBException  Description of the Exception
      */
     public Account[] getAccounts() throws XMLDBException;
 
@@ -285,7 +285,7 @@ public interface UserManagementService extends Service {
      *
      * @param  property            Description of the Parameter
      * @return                     The property value
-     * @exception  XMLDBException  Description of the Exception
+     * @throws  XMLDBException  Description of the Exception
      */
     @Override
     public String getProperty( String property ) throws XMLDBException;
@@ -295,7 +295,7 @@ public interface UserManagementService extends Service {
      *
      * @param  property            The new property value
      * @param  value               The new property value
-     * @exception  XMLDBException  Description of the Exception
+     * @throws  XMLDBException  Description of the Exception
      */
     @Override
     public void setProperty( String property, String value ) throws XMLDBException;
@@ -303,8 +303,8 @@ public interface UserManagementService extends Service {
     /**
      *  Set the current collection for this service
      *
-     *@param  collection          The new collection value
-     *@exception  XMLDBException  Description of the Exception
+     * @param  collection          The new collection value
+     * @throws  XMLDBException  Description of the Exception
      */
     @Override
     public void setCollection( Collection collection ) throws XMLDBException;
@@ -313,9 +313,9 @@ public interface UserManagementService extends Service {
     /**
      *  Get permissions for the specified collections
      *
-     *@param  coll                Description of the Parameter
-     *@return                     The permissions value
-     *@exception  XMLDBException  Description of the Exception
+     * @param  coll                Description of the Parameter
+     * @return                     The permissions value
+     * @throws  XMLDBException  Description of the Exception
      */
     public Permission getPermissions( Collection coll ) throws XMLDBException;
     
@@ -336,9 +336,9 @@ public interface UserManagementService extends Service {
     /**
      *  Get permissions for the specified resource
      *
-     *@param  res                 Description of the Parameter
-     *@return                     The permissions value
-     *@exception  XMLDBException  Description of the Exception
+     * @param  res                 Description of the Parameter
+     * @return                     The permissions value
+     * @throws  XMLDBException  Description of the Exception
      */
     public Permission getPermissions( Resource res ) throws XMLDBException;
 
@@ -366,8 +366,8 @@ public interface UserManagementService extends Service {
     /**
      *  Delete a user from the database
      *
-     *@param  account                User
-     *@exception  XMLDBException
+     * @param  account                User
+     * @throws  XMLDBException
      */
     public void removeAccount( Account account ) throws XMLDBException;
     
@@ -377,8 +377,8 @@ public interface UserManagementService extends Service {
 	 *  Update the specified user without update user's password
 	 *  Method added by {Marco.Tampucci, Massimo.Martinelli} @isti.cnr.it
 	 *
-	 *@param  user                Description of the Parameter
-	 *@exception  XMLDBException  Description of the Exception
+	 * @param  user                Description of the Parameter
+	 * @throws  XMLDBException  Description of the Exception
 	 */
     public void addUserGroup(Account user) throws XMLDBException;
    
