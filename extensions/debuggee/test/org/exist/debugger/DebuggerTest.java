@@ -478,7 +478,7 @@ public class DebuggerTest implements ResponseListener {
 	
     private void store(String name,  String data) throws EXistException {
     	Database pool = BrokerPool.getInstance();
-        final TransactionManager = transact = pool.getTransactionManager();
+        final TransactionManager transact = pool.getTransactionManager();
 
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
             final Txn transaction = transact.beginTransaction()) {
