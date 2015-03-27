@@ -19,40 +19,29 @@
  */
 package org.exist.xmldb;
 
-import java.util.Date;
-
-import org.exist.security.Permission;
-import org.w3c.dom.DocumentType;
-import org.xml.sax.ext.LexicalHandler;
-import org.xmldb.api.base.Resource;
+import org.exist.security.Subject;
+import org.exist.storage.BrokerPool;
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.ErrorCodes;
+import org.xmldb.api.base.Service;
 import org.xmldb.api.base.XMLDBException;
 
 /**
- * Defines additional methods implemented by XML and binary 
- * resources.
- * 
- * @author wolf
+ * Base class for Local XMLDB Services
  *
+ * @author Adam Retter <adam.retter@googlemail.com>
  */
-public interface EXistResource extends Resource {
+public abstract class AbstractLocalService extends AbstractLocal implements Service {
 
-    Date getCreationTime() throws XMLDBException;
+    AbstractLocalService(final Subject user, final BrokerPool brokerPool, final LocalCollection collection) {
+        super(user, brokerPool, collection);
+    }
 
-    Date getLastModificationTime() throws XMLDBException;
-
-    Permission getPermissions() throws XMLDBException;
-
-    long getContentLength() throws XMLDBException;
-
-    void setLexicalHandler(LexicalHandler handler);
-    
-    void setMimeType(String mime);
-
-    String getMimeType() throws XMLDBException;
-    
-    DocumentType getDocType() throws XMLDBException;
-    
-    void setDocType(DocumentType doctype) throws XMLDBException;
-    
-    void freeResources() throws XMLDBException;
+    @Override
+    public void setCollection(final Collection collection) throws XMLDBException {
+        if(!(collection instanceof LocalCollection)) {
+            throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "incompatible collection type: " + collection.getClass().getName());
+        }
+        this.collection = (LocalCollection) collection;
+    }
 }

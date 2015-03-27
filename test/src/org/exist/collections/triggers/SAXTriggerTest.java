@@ -75,20 +75,17 @@ public class SAXTriggerTest {
     private final static String testCollection = "/db/triggers";
 
     @Test
-    public void test() throws EXistException {
+    public void test() throws EXistException, XMLDBException {
 
-        BrokerPool db = BrokerPool.getInstance();
+        final BrokerPool db = BrokerPool.getInstance();
 
         db.registerDocumentTrigger(AnotherTrigger.class);
 
-        DBBroker broker = null;
+        try(final DBBroker broker = db.get(db.getSecurityManager().getSystemSubject())) {
 
-        try {
-            broker = db.get(db.getSecurityManager().getSystemSubject());
+            final Collection root = DatabaseManager.getCollection(BASE_URI + testCollection, "admin", "");
 
-            Collection root = DatabaseManager.getCollection(BASE_URI + testCollection, "admin", "");
-
-            Resource resource = root.createResource("data.xml", "XMLResource");
+            final Resource resource = root.createResource("data.xml", "XMLResource");
             resource.setContent(DOCUMENT1_CONTENT);
             root.storeResource(resource);
 
@@ -97,29 +94,19 @@ public class SAXTriggerTest {
             assertEquals(26, AnotherTrigger.count);
 
             assertEquals(DOCUMENT1_CONTENT, AnotherTrigger.sb.toString());
-
-        } catch (XMLDBException e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } finally {
-            if (broker != null)
-                broker.release();
         }
     }
 
     @Test
-    public void saxEventModifications() throws EXistException {
+    public void saxEventModifications() throws EXistException, XMLDBException {
 
-        BrokerPool db = BrokerPool.getInstance();
+        final BrokerPool db = BrokerPool.getInstance();
 
         db.registerDocumentTrigger(StoreTrigger.class);
 
-        DBBroker broker = null;
+        try(final DBBroker broker = db.get(db.getSecurityManager().getSystemSubject())) {
 
-        try {
-            broker = db.get(db.getSecurityManager().getSystemSubject());
-
-            Collection root = DatabaseManager.getCollection(BASE_URI + testCollection, "admin", "");
+            final Collection root = DatabaseManager.getCollection(BASE_URI + testCollection, "admin", "");
 
             Resource resource = root.createResource("data.xml", "XMLResource");
             resource.setContent(DOCUMENT2_CONTENT);
@@ -129,28 +116,19 @@ public class SAXTriggerTest {
 
             assertEquals(DOCUMENT3_CONTENT, resource.getContent().toString());
 
-        } catch (XMLDBException e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } finally {
-            if (broker != null)
-                broker.release();
         }
     }
 
     @Test
-    public void saxEventModificationsAtXConf() throws EXistException {
+    public void saxEventModificationsAtXConf() throws EXistException, XMLDBException {
 
-        BrokerPool db = BrokerPool.getInstance();
+        final BrokerPool db = BrokerPool.getInstance();
 
-        DBBroker broker = null;
+        try(final DBBroker broker = db.get(db.getSecurityManager().getSystemSubject())) {
 
-        try {
-            broker = db.get(db.getSecurityManager().getSystemSubject());
+            final Collection root = DatabaseManager.getCollection(BASE_URI + testCollection, "admin", "");
 
-            Collection root = DatabaseManager.getCollection(BASE_URI + testCollection, "admin", "");
-
-            IndexQueryService idxConf = (IndexQueryService) root.getService("IndexQueryService", "1.0");
+            final IndexQueryService idxConf = (IndexQueryService) root.getService("IndexQueryService", "1.0");
             idxConf.configureCollection(COLLECTION_CONFIG);
 
             Resource resource = root.createResource("data.xml", "XMLResource");
@@ -161,72 +139,53 @@ public class SAXTriggerTest {
 
             assertEquals(DOCUMENT3_CONTENT, resource.getContent().toString());
 
-        } catch (XMLDBException e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } finally {
-            if (broker != null)
-                broker.release();
         }
     }
 
     @After
-    public void cleanDB() {
-        try {
-            Collection config = DatabaseManager.getCollection(BASE_URI + "/db/system/config" + testCollection, "admin", null);
-            if (config != null) {
-                CollectionManagementService mgmt = (CollectionManagementService) config.getService("CollectionManagementService", "1.0");
-                mgmt.removeCollection(".");
-            }
-            Collection root = DatabaseManager.getCollection(BASE_URI + testCollection, "admin", "");
-            Resource resource = root.getResource("messages.xml");
-            if (resource != null) {
-                root.removeResource(resource);
-            }
-            resource = root.getResource("data.xml");
-            if (resource != null) {
-                root.removeResource(resource);
-            }
-        } catch (XMLDBException e) {
-            e.printStackTrace();
-            fail(e.getMessage());
+    public void cleanDB() throws XMLDBException {
+        final Collection config = DatabaseManager.getCollection(BASE_URI + "/db/system/config" + testCollection, "admin", null);
+        if (config != null) {
+            CollectionManagementService mgmt = (CollectionManagementService) config.getService("CollectionManagementService", "1.0");
+            mgmt.removeCollection(".");
+        }
+        final Collection root = DatabaseManager.getCollection(BASE_URI + testCollection, "admin", "");
+        
+        Resource resource = root.getResource("messages.xml");
+        if (resource != null) {
+            root.removeResource(resource);
+        }
+        
+        resource = root.getResource("data.xml");
+        if (resource != null) {
+            root.removeResource(resource);
         }
     }
 
     @BeforeClass
-    public static void initDB() {
+    public static void initDB() throws ClassNotFoundException, XMLDBException, InstantiationException, IllegalAccessException {
         // initialize XML:DB driver
-        try {
-            Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
-            Database database = (Database) cl.newInstance();
-            database.setProperty("create-database", "true");
-            DatabaseManager.registerDatabase(database);
+        final Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
+        final Database database = (Database) cl.newInstance();
+        database.setProperty("create-database", "true");
+        DatabaseManager.registerDatabase(database);
 
-            Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
-            CollectionManagementService mgmt = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
-            Collection testCol = mgmt.createCollection("triggers");
+        final Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
+        CollectionManagementService mgmt = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
+        Collection testCol = mgmt.createCollection("triggers");
 
-            for (int i = 1; i <= 2; i++) {
-                mgmt = (CollectionManagementService) testCol.getService("CollectionManagementService", "1.0");
-                testCol = mgmt.createCollection("sub" + i);
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
+        for (int i = 1; i <= 2; i++) {
+            mgmt = (CollectionManagementService) testCol.getService("CollectionManagementService", "1.0");
+            testCol = mgmt.createCollection("sub" + i);
         }
     }
 
     @AfterClass
-    public static void closeDB() {
+    public static void closeDB() throws XMLDBException {
         TestUtils.cleanupDB();
-        try {
-            Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
-            DatabaseInstanceManager mgr = (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
-            mgr.shutdown();
-        } catch (XMLDBException e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        }
+        
+        final Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
+        final DatabaseInstanceManager mgr = (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
+        mgr.shutdown();
     }
 }
