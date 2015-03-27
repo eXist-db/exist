@@ -29,15 +29,13 @@ import org.xmldb.api.base.CompiledExpression;
  */
 public class RemoteCompiledExpression implements CompiledExpression {
 
-	private String xquery;
+	private final String xquery;
 	
-	public RemoteCompiledExpression(String xquery) {
+	public RemoteCompiledExpression(final String xquery) {
 		this.xquery = xquery;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.xmldb.CompiledExpression#reset()
-	 */
+	@Override
 	public void reset() {
 	}
 

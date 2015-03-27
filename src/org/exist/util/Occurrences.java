@@ -32,9 +32,14 @@ public class Occurrences implements Comparable<Occurrences> {
 	private int occurrences = 0;
 	private MutableDocumentSet docs = new DefaultDocumentSet();
     
-	public Occurrences(Comparable name) {
-		term = name;
+	public Occurrences(final Comparable name) {
+		this.term = name;
 	}
+
+    public Occurrences(final Comparable name, final int occurrences) {
+        term = name;
+        this.occurrences = occurrences;
+    }
 
 	public Comparable getTerm() {
 		return term;
