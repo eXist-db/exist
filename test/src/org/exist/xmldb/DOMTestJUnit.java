@@ -22,7 +22,7 @@ import org.xmldb.api.modules.XMLResource;
 public class DOMTestJUnit extends RemoteDBTest {
 	
     // jetty.port.standalone
-	private static String baseURI = "xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/xmlrpc" + XmldbURI.ROOT_COLLECTION;
+	private static String baseURI = "xmldb:exist://localhost:" + System.getProperty("jetty.port", "8088") + "/xmlrpc" + XmldbURI.ROOT_COLLECTION;
 	private static String name = "test.xml";
 	private Collection rootColl;
 	private Database database;
