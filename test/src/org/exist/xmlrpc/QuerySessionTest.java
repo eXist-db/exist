@@ -51,7 +51,7 @@ public class QuerySessionTest {
             "declare variable $n external;" +
             "//chapter[@xml:id = $n]";
     // jetty.port.standalone
-    private final static String baseURI = "xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/xmlrpc";
+    private final static String baseURI = "xmldb:exist://localhost:" + System.getProperty("jetty.port", "8088") + "/xmlrpc";
 
     private final static int N_THREADS = 10;
 
