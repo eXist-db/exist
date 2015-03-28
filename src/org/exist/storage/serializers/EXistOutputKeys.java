@@ -83,4 +83,8 @@ public class EXistOutputKeys {
     public final static String ALLOW_DUPLICATE_NAMES = "allow-duplicate-names";
 
     public final static String HTML_VERSION = "html-version";
+
+    public final static String YES = "yes";
+
+    public final static String NO = "no";
 }

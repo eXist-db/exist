@@ -31,6 +31,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
@@ -50,9 +51,18 @@ public class VirtualTempFileInputSource extends EXistInputSource {
 	private Optional<Either<Path, VirtualTempFile>> file = Optional.empty();
 
 	public VirtualTempFileInputSource(final VirtualTempFile vtempFile) throws IOException {
-		this(vtempFile, null);
+		this(vtempFile, (String)null);
 	}
 	
+
+    public VirtualTempFileInputSource(final VirtualTempFile vtempFile, final Charset encoding) throws IOException {
+        this(vtempFile, encoding.name());
+    }
+
+    /**
+     * @deprecated {@link org.exist.util.VirtualTempFileInputSource#VirtualTempFileInputSource(org.exist.util.VirtualTempFile, java.nio.charset.Charset)}
+     */
+    @Deprecated
 	public VirtualTempFileInputSource(final VirtualTempFile vtempFile, final String encoding) throws IOException {
 		// Temp file must be immutable from this point
 		vtempFile.close();
