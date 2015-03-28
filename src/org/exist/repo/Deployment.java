@@ -21,6 +21,7 @@
  */
 package org.exist.repo;
 
+import org.exist.SystemProperties;
 import org.exist.dom.memtree.DocumentBuilderReceiver;
 import org.exist.dom.memtree.InMemoryNodeSet;
 import org.exist.dom.memtree.DocumentImpl;
@@ -83,6 +84,8 @@ public class Deployment {
     public final static String PROPERTY_APP_ROOT = "repo.root-collection";
 
     private final static Logger LOG = LogManager.getLogger(Deployment.class);
+
+    public final static String PROCESSOR_NAME = "http://exist-db.org";
 
     private final static String REPO_NAMESPACE = "http://exist-db.org/xquery/repo";
     private final static String PKG_NAMESPACE = "http://expath.org/ns/pkg";
@@ -181,6 +184,7 @@ public class Deployment {
             for (final SequenceIterator i = deps.iterate(); i.hasNext(); ) {
                 final Element dependency = (Element) i.nextItem();
                 final String pkgName = dependency.getAttribute("package");
+                final String processor = dependency.getAttribute("processor");
                 final String versionStr = dependency.getAttribute("version");
                 final String semVer = dependency.getAttribute("semver");
                 final String semVerMin = dependency.getAttribute("semver-min");
@@ -193,7 +197,10 @@ public class Deployment {
                 } else if (pkgVersion != null) {
                     version = new PackageLoader.Version(versionStr, false);
                 }
-                if (pkgName != null) {
+
+                if (processor != null && processor.equals(PROCESSOR_NAME) && version != null) {
+                    checkProcessorVersion(version);
+                } else if (pkgName != null) {
                     LOG.info("Package " + name + " depends on " + pkgName);
                     boolean isInstalled = false;
                     if (repo.getParentRepo().getPackages(pkgName) != null) {
@@ -256,6 +263,15 @@ public class Deployment {
 
         LOG.info("Deploying package " + pkgName);
         return deploy(pkgName, repo, null);
+    }
+
+    private void checkProcessorVersion(PackageLoader.Version version) throws PackageException {
+        final String procVersion = SystemProperties.getInstance().getSystemProperty("product-semver", "1.0");
+        final DependencyVersion depVersion = version.getDependencyVersion();
+        if (!depVersion.isCompatible(procVersion)) {
+            throw new PackageException("Package requires eXistdb version " + version.toString() + ". " +
+                "Installed version is " + procVersion);
+        }
     }
 
     public String undeploy(String pkgName, ExistRepository repo) throws PackageException {
