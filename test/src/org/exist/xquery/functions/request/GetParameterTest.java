@@ -461,49 +461,28 @@ public class GetParameterTest extends RESTTest {
         return filePart;
     }
 
-    public class NameValues implements Param<String[]> {
-
-        final String name;
-        final String values[];
-
+    public class NameValues extends Param<String[]> {
         public NameValues(final String name, final String values[]) {
-            this.name = name;
-            this.values = values;
-        }
-
-        @Override
-        public String getName() {
-            return name;
-        }
-
-        @Override
-        public String[] getData() {
-            return values;
+            super(name, values);
         }
     }
 
-    public class TextFileUpload implements Param<String> {
-        final String name;
-        final String content;
-
+    public class TextFileUpload extends Param<String> {
         public TextFileUpload(final String name, final String content) {
-            this.name = name;
-            this.content = content;
-        }
-
-        @Override
-        public String getData() {
-            return content;
-        }
-
-        @Override
-        public String getName() {
-            return name;
+            super(name, content);
         }
     }
 
-    public interface Param<T> {
-        String getName();
-        T getData();
+    public abstract class Param<T> extends Tuple2<String, T> {
+        public Param(final String _1, final T _2) {
+            super(_1, _2);
+        }
+        public String getName() {
+            return _1;
+        }
+
+        public T getData() {
+            return _2;
+        }
     }
 }

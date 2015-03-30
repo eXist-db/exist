@@ -421,7 +421,7 @@ public class RESTServiceTest {
 
         //get the response of the query
         String response = readResponse(connect.getInputStream());
-        assertEquals(response.trim(), "test data /a/b/c");
+        assertEquals("test data /a/b/c", response.trim());
     }
 
     @Test
@@ -440,7 +440,7 @@ public class RESTServiceTest {
         //get the response of the query
         String response = readResponse(connect.getInputStream());
         String pathInfo = response.substring("pathInfo=".length(), response.indexOf("servletPath=")-2);
-        assertEquals(pathInfo, "/a/b/c");
+        assertEquals("/a/b/c", pathInfo);
     }
 
     @Test
@@ -486,8 +486,7 @@ public class RESTServiceTest {
         HttpURLConnection connect = preparePost(QUERY_REQUEST_ERROR, getResourceUri());
         connect.connect();
         int r = connect.getResponseCode();
-        assertEquals("Server returned response code " + r, 202, r);
-        readResponse(connect.getInputStream());
+        assertEquals("Server returned response code " + r, 400, r);
     }
 
     @Test
@@ -618,7 +617,7 @@ public class RESTServiceTest {
 
         String cached = connect.getHeaderField("X-XQuery-Cached");
         assertNotNull(cached);
-        assertEquals(cacheHeader, Boolean.valueOf(cached).booleanValue());
+        assertEquals(cacheHeader, Boolean.valueOf(cached));
 
         String contentType = connect.getContentType();
         int semicolon = contentType.indexOf(';');
@@ -710,9 +709,9 @@ public class RESTServiceTest {
         connect.setDoOutput(true);
         connect.setRequestProperty("Content-Type", "application/xml");
 
-        Writer writer = new OutputStreamWriter(connect.getOutputStream(), "UTF-8");
-        writer.write(content);
-        writer.close();
+        try(final Writer writer = new OutputStreamWriter(connect.getOutputStream(), "UTF-8")) {
+            writer.write(content);
+        }
 
         return connect;
     }
