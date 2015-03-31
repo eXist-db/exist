@@ -475,12 +475,12 @@ functionDecl [XQueryAST ann] throws XPathException
 	exception catch [RecognitionException e]
 	{ 
 		if (#lp == null) {
-			throw new XPathException(e.getLine(), e.getColumn(), "Syntax error within user defined function " + 
+			throw new XPathException(e.getLine(), e.getColumn(), ErrorCodes.XPST0003, "Syntax error within user defined function " + 
 				name + ": " + e.getMessage());
 		} else {
 			#lp.setLine(e.getLine());
 			#lp.setColumn(e.getColumn());
-			throw new XPathException(#lp, "Syntax error within user defined function " + 
+			throw new XPathException(#lp, ErrorCodes.XPST0003, "Syntax error within user defined function " + 
 				name + ": " + e.getMessage());
 		}
 	}
@@ -1337,11 +1337,11 @@ inlineFunctionExpr throws XPathException
 	exception catch [RecognitionException e]
 	{ 
 		if (#lp == null) {
-			throw new XPathException(e.getLine(), e.getColumn(), "Syntax error within inline function: " + e.getMessage());
+			throw new XPathException(e.getLine(), e.getColumn(), ErrorCodes.XPST0003, "Syntax error within inline function: " + e.getMessage());
 		} else {
 			#lp.setLine(e.getLine());
 			#lp.setColumn(e.getColumn());
-			throw new XPathException(#lp, "Syntax error within user defined function: " + e.getMessage());
+			throw new XPathException(#lp, ErrorCodes.XPST0003, "Syntax error within user defined function: " + e.getMessage());
 		}
 	}
 	;
