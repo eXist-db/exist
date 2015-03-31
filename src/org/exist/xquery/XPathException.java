@@ -383,10 +383,10 @@ public class XPathException extends Exception {
 
     public static class FunctionStackElement {
 
-        String function;
-        String file;
-        int line;
-        int column;
+        private final String function;
+        private final String file;
+        private final int line;
+        private final int column;
 
         public FunctionStackElement(UserDefinedFunction func, String file, int line, int column) {
             this.function = func.toString();
