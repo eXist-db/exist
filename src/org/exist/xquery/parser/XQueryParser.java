@@ -2465,12 +2465,12 @@ inputState.guessing--;
 			if (inputState.guessing==0) {
 				
 						if (lp_AST == null) {
-							throw new XPathException(e.getLine(), e.getColumn(), "Syntax error within user defined function " + 
+							throw new XPathException(e.getLine(), e.getColumn(), ErrorCodes.XPST0003, "Syntax error within user defined function " + 
 								name + ": " + e.getMessage());
 						} else {
 							lp_AST.setLine(e.getLine());
 							lp_AST.setColumn(e.getColumn());
-							throw new XPathException(lp_AST, "Syntax error within user defined function " + 
+							throw new XPathException(lp_AST, ErrorCodes.XPST0003, "Syntax error within user defined function " + 
 								name + ": " + e.getMessage());
 						}
 					
@@ -10678,11 +10678,11 @@ inputState.guessing--;
 			if (inputState.guessing==0) {
 				
 						if (lp_AST == null) {
-							throw new XPathException(e.getLine(), e.getColumn(), "Syntax error within inline function: " + e.getMessage());
+							throw new XPathException(e.getLine(), e.getColumn(), ErrorCodes.XPST0003, "Syntax error within inline function: " + e.getMessage());
 						} else {
 							lp_AST.setLine(e.getLine());
 							lp_AST.setColumn(e.getColumn());
-							throw new XPathException(lp_AST, "Syntax error within user defined function: " + e.getMessage());
+							throw new XPathException(lp_AST, ErrorCodes.XPST0003, "Syntax error within user defined function: " + e.getMessage());
 						}
 					
 			} else {
