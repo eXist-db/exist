@@ -255,7 +255,7 @@
             <arg value="count=${dmg.size}"/>
         </exec>
         
-        <exec executable="mkfs" os="Linux" failonerror="true">
+        <exec executable="/sbin/mkfs" os="Linux" failonerror="true">
             <arg value="-t"/>
             <arg value="hfsplus"/>
             <arg value="-v"/>
