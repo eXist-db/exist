@@ -244,7 +244,7 @@
                     regexp="([0-9]+).+"
                     select="\1"
                     casesensitive="false"/>
-                <math result="dmg.size" operand1="${du.size}" operation="add" operand2="1" datatype="int"/>
+                <math result="dmg.size" operand1="${du.size}" operation="add" operand2="2" datatype="int"/>
             </then>
         </if>
         
@@ -255,7 +255,7 @@
             <arg value="count=${dmg.size}"/>
         </exec>
         
-        <exec executable="mkfs" os="Linux" failonerror="true">
+        <exec executable="/sbin/mkfs" os="Linux" failonerror="true">
             <arg value="-t"/>
             <arg value="hfsplus"/>
             <arg value="-v"/>
