@@ -42,7 +42,12 @@ import org.apache.commons.io.output.ByteArrayOutputStream;;
  * 
  * @author jmfernandez
  *
+ * @deprecated Using this class should be avoided as it publishes an API that
+ * makes using it correctly without leaking resources very difficult. It is very
+ * likely that most uses of this class do not correctly cleanup the resources
+ * they obtain. It needs to be rewritten...
  */
+@Deprecated
 public class VirtualTempFile
 	extends OutputStream
 {
