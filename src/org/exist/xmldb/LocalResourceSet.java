@@ -53,9 +53,9 @@ import org.xmldb.api.base.XMLDBException;
 
 public class LocalResourceSet extends AbstractLocal implements ResourceSet {
 
-        private final static Logger LOG = LogManager.getLogger(LocalResourceSet.class);
+    private final static Logger LOG = LogManager.getLogger(LocalResourceSet.class);
 
-    private final List resources = new ArrayList();
+    private final List<Object> resources = new ArrayList<>();
     private final Properties outputProperties;
 
     public LocalResourceSet(final Subject user, final BrokerPool pool, final LocalCollection col, final Properties properties, final Sequence val, final String sortExpr) throws XMLDBException {
