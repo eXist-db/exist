@@ -16,6 +16,7 @@ import static org.easymock.classextension.EasyMock.expect;
 import static org.easymock.classextension.EasyMock.verify;
 import static org.easymock.classextension.EasyMock.replay;
 import static org.junit.Assert.assertEquals;
+import org.junit.runners.Parameterized.Parameter;
 
 /**
  * @author Adam Retter <adam@exist-db.org>
@@ -23,20 +24,17 @@ import static org.junit.Assert.assertEquals;
 @RunWith(value = Parameterized.class)
 public class TransfomerFactoryAllocatorTest {
 
-    @Parameters
-    public static Collection data() {
-        Object[][] data = new Object[][] {
+    @Parameters(name = "{0}")
+    public static Collection<Object[]> data() {
+        return Arrays.asList(new Object[][] {
             { "net.sf.saxon.TransformerFactoryImpl" },
             { "org.apache.xalan.processor.TransformerFactoryImpl" },
             { "org.exist.xslt.TransformerFactoryImpl" }
-        };
-        return Arrays.asList(data);
+        });
     }
 
-    private final String transformerFactoryClass;
-    public TransfomerFactoryAllocatorTest(String transformerFactoryClass) {
-        this.transformerFactoryClass = transformerFactoryClass;
-    }
+    @Parameter
+    public String transformerFactoryClass;
 
     @Test
     public void getTransformerFactory() {

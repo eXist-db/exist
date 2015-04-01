@@ -19,6 +19,7 @@
  */
 package org.exist.collections.triggers;
 
+import java.util.Arrays;
 import org.exist.TestUtils;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.IndexQueryService;
@@ -31,12 +32,13 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.*;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XQueryService;
 
-import java.util.LinkedList;
+import org.junit.runners.Parameterized.Parameters;
 
 /**
  * Test proper configuration of triggers in collection.xconf, in particular if there's
@@ -46,14 +48,14 @@ import java.util.LinkedList;
 @RunWith(Parameterized.class)
 public class TriggerConfigTest {
 
-    @Parameterized.Parameters
-	public static LinkedList<String[]> data() {
-		LinkedList<String[]> params = new LinkedList<String[]>();
-		params.add(new String[] { "/db/triggers" });
-		params.add(new String[] { "/db/triggers/sub1" });
-        params.add(new String[] { "/db/triggers/sub1/sub2" });
-        return params;
-	}
+    @Parameters(name = "{0}")
+    public static java.util.Collection<Object[]> data() {
+        return Arrays.asList(new Object[][] {
+            { "/db/triggers" },
+            { "/db/triggers/sub1" },
+            { "/db/triggers/sub1/sub2" }
+        });
+    }
 
     private static final String COLLECTION_CONFIG =
     	"<exist:collection xmlns:exist='http://exist-db.org/collection-config/1.0'>" +
@@ -76,11 +78,8 @@ public class TriggerConfigTest {
 
     private final static String BASE_URI = "xmldb:exist://";
 
-    private String testCollection;
-
-    public TriggerConfigTest(String testCollection) {
-        this.testCollection = testCollection;
-    }
+    @Parameter
+    public String testCollection;
 
     @Test
     public void storeDocument() {
