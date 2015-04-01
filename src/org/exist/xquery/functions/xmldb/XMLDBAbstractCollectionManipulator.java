@@ -21,12 +21,14 @@
  */
 package org.exist.xquery.functions.xmldb;
 
+import java.util.Optional;
 import java.util.StringTokenizer;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.xmldb.LocalCollection;
+import org.exist.xmldb.txn.bridge.InTxnLocalCollection;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
@@ -63,12 +65,46 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
         this.errorIfAbsent = errorIfAbsent;
     }
 
-    protected LocalCollection createLocalCollection(String name) throws XMLDBException {
+    public static LocalCollection getLocalCollection(final XQueryContext context, final String name) throws XMLDBException {
         try {
-            return new LocalCollection(context.getSubject(), context.getBroker().getBrokerPool(), new AnyURIValue(name).toXmldbURI());
+            return new InTxnLocalCollection(context.getSubject(), context.getBroker().getBrokerPool(), null, new AnyURIValue(name).toXmldbURI());
         } catch (final XPathException e) {
             throw new XMLDBException(ErrorCodes.INVALID_URI, e);
         }
+    }
+
+    public static Collection getCollection(final XQueryContext context, final String collectionUri, final Optional<String> username, final Optional<String> password) throws XMLDBException {
+        final Collection collection;
+        if (!collectionUri.startsWith("xmldb:")) {
+            // Must be a LOCAL collection
+            collection = getLocalCollection(context, collectionUri);
+
+        } else if (collectionUri.startsWith("xmldb:exist:///")) {
+            // Must be a LOCAL collection
+            collection = getLocalCollection(context, collectionUri.replaceFirst("xmldb:exist://", ""));
+
+        } else if (collectionUri.startsWith("xmldb:exist://embedded-eXist-server")) {
+            // Must be a LOCAL collection
+            collection = getLocalCollection(context, collectionUri.replaceFirst("xmldb:exist://embedded-eXist-server", ""));
+
+        } else if (collectionUri.startsWith("xmldb:exist://localhost")) {
+            // Must be a LOCAL collection
+            collection = getLocalCollection(context, collectionUri.replaceFirst("xmldb:exist://localhost", ""));
+
+        } else if (collectionUri.startsWith("xmldb:exist://127.0.0.1")) {
+            // Must be a LOCAL collection
+            collection = getLocalCollection(context, collectionUri.replaceFirst("xmldb:exist://127.0.0.1", ""));
+
+        } else {
+            // Right now, the collection is retrieved as GUEST. Need to figure out how to
+            // get user information into the URL?
+            if (username.isPresent() && password.isPresent()) {
+                collection = org.xmldb.api.DatabaseManager.getCollection(collectionUri, username.get(), password.get());
+            } else {
+                collection = org.xmldb.api.DatabaseManager.getCollection(collectionUri);
+            }
+        }
+        return collection;
     }
 
     @Override
@@ -85,18 +121,18 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
         final Item item = args[paramNumber].itemAt(0);
         if (Type.subTypeOf(item.getType(), Type.NODE)) {
             final NodeValue node = (NodeValue) item;
-            if(logger.isDebugEnabled()) {
+            if (logger.isDebugEnabled()) {
                 logger.debug("Found node");
             }
             if (node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
                 final org.exist.collections.Collection internalCol = ((NodeProxy) node).getOwnerDocument().getCollection();
-                if(logger.isDebugEnabled()) {
+                if (logger.isDebugEnabled()) {
                     logger.debug("Found node");
                 }
                 try {
                     //TODO: use xmldbURI
-                    collection = createLocalCollection(internalCol.getURI().toString());
-                    if(logger.isDebugEnabled()) {
+                    collection = getLocalCollection(context, internalCol.getURI().toString());
+                    if (logger.isDebugEnabled()) {
                         logger.debug("Loaded collection " + collection.getName());
                     }
                 } catch (final XMLDBException e) {
@@ -112,26 +148,7 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
             final String collectionURI = args[paramNumber].getStringValue();
             if (collectionURI != null) {
                 try {
-                    if (!collectionURI.startsWith("xmldb:")) {
-                        // Must be a LOCAL collection
-                        collection = createLocalCollection(collectionURI);
-                    } else if (collectionURI.startsWith("xmldb:exist:///")) {
-                        // Must be a LOCAL collection
-                        collection = createLocalCollection(collectionURI.replaceFirst("xmldb:exist://", ""));
-                    } else if (collectionURI.startsWith("xmldb:exist://embedded-eXist-server")) {
-                        // Must be a LOCAL collection
-                        collection = createLocalCollection(collectionURI.replaceFirst("xmldb:exist://embedded-eXist-server", ""));
-                    } else if (collectionURI.startsWith("xmldb:exist://localhost")) {
-                        // Must be a LOCAL collection
-                        collection = createLocalCollection(collectionURI.replaceFirst("xmldb:exist://localhost", ""));
-                    } else if (collectionURI.startsWith("xmldb:exist://127.0.0.1")) {
-                        // Must be a LOCAL collection
-                        collection = createLocalCollection(collectionURI.replaceFirst("xmldb:exist://127.0.0.1", ""));
-                    } else {
-                        // Right now, the collection is retrieved as GUEST. Need to figure out how to
-                        // get user information into the URL?
-                        collection = org.xmldb.api.DatabaseManager.getCollection(collectionURI);
-                    }
+                    collection = getCollection(context, collectionURI, Optional.empty(), Optional.empty());
                 } catch (final XMLDBException xe) {
                     if (errorIfAbsent) {
                         throw new XPathException(this, "Could not locate collection: " + collectionURI, xe);

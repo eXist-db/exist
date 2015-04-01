@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.functions.xmldb;
 
+import java.util.Optional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -137,13 +138,6 @@ public class XMLDBAuthenticate extends UserSwitchingBasicFunction {
 
         final boolean createSession = args.length > 3 && args[3].effectiveBooleanValue();
 
-        final XmldbURI targetColl;
-        if (!uri.startsWith(XmldbURI.XMLDB_SCHEME + ':')) {
-            targetColl = XmldbURI.EMBEDDED_SERVER_URI.resolveCollectionPath(XmldbURI.create(uri));
-        } else {
-            targetColl = XmldbURI.create(uri);
-        }
-
         try {
             final Subject user;
             try {
@@ -154,9 +148,10 @@ public class XMLDBAuthenticate extends UserSwitchingBasicFunction {
                 return BooleanValue.FALSE;
             }
 
-            final Collection root = DatabaseManager.getCollection(targetColl.toString(), userName, password);
+            final Collection root = XMLDBAbstractCollectionManipulator.getCollection(context, uri, Optional.of(userName), Optional.of(password));
+
             if (root == null) {
-                logger.error("Unable to authenticate user: target collection " + targetColl + " does not exist " + getLocation());
+                logger.error("Unable to authenticate user: target collection " + uri + " does not exist " + getLocation());
                 return BooleanValue.FALSE;
             }
 
@@ -183,7 +178,7 @@ public class XMLDBAuthenticate extends UserSwitchingBasicFunction {
      * If there is a HTTP Session, then this will store the user object in the session under the key
      * defined by XQueryContext.HTTP_SESSIONVAR_XMLDB_USER
      *
-     * @param user          The User to cache in the session
+     * @param user The User to cache in the session
      * @param createSession Create session?
      */
     private void cacheUserInHttpSession(final Subject user, final boolean createSession) throws XPathException {

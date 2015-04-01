@@ -195,7 +195,7 @@ public abstract class AbstractLocal {
      * @param <R>         The return type of the operation
      * @throws org.xmldb.api.base.XMLDBException
      */
-    <R> R withDb(final LocalXmldbFunction<R> dbOperation) throws XMLDBException {
+    protected <R> R withDb(final LocalXmldbFunction<R> dbOperation) throws XMLDBException {
         try (final DBBroker broker = brokerPool.get(Optional.ofNullable(user));
              final Txn transaction = brokerPool.getTransactionManager().beginTransaction()) {
             try {

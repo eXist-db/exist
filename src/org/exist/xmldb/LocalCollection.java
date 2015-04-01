@@ -731,7 +731,7 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
      *
      * @return A function to receive a read-only operation to perform against the collection
      */
-    private <R> FunctionE<LocalXmldbCollectionFunction<R>, R, XMLDBException> read() throws XMLDBException {
+    protected <R> FunctionE<LocalXmldbCollectionFunction<R>, R, XMLDBException> read() throws XMLDBException {
         return readOp -> this.<R>read(path).apply((collection, broker, transaction) -> {
             collection.setReader(userReader);
             return readOp.apply(collection, broker, transaction);
