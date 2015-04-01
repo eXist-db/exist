@@ -25,14 +25,19 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Random;
-
-import junit.framework.TestCase;
-import junit.textui.TestRunner;
+import org.exist.TestUtils;
 
 import org.exist.xmldb.XmldbURI;
 import org.exist.xmldb.concurrent.DBUtils;
+import org.junit.After;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ResourceSet;
+import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XPathQueryService;
 import org.xmldb.api.modules.XUpdateQueryService;
@@ -41,11 +46,7 @@ import org.xmldb.api.modules.XUpdateQueryService;
  * @author wolf
  *
  */
-public class RemoveAppendTest extends TestCase {
-    
-    public static void main(String[] args) {
-        TestRunner.run(RemoveAppendTest.class);
-    }
+public class RemoveAppendTest {
     
     private final static String URI = XmldbURI.LOCAL_DB;
     
@@ -65,29 +66,32 @@ public class RemoveAppendTest extends TestCase {
         "</xu:modifications>";
     
     @SuppressWarnings("unused")
-	private static final int ITEM_COUNT = 0;
+    private static final int ITEM_COUNT = 0;
     
     private Collection rootCol;
     private Collection testCol;
-    private Random rand = new Random();
+    private final Random rand = new Random();
     
-//    public void testRemoveAppend() throws Exception {
-//        XUpdateQueryService service = (XUpdateQueryService)
-//            testCol.getService("XUpdateQueryService", "1.0");
-//        XPathQueryService query = (XPathQueryService)
-//            testCol.getService("XPathQueryService", "1.0");
-//        for (int i = 1; i < 1000; i++) {
-//            int which = rand.nextInt(ITEM_COUNT) + 1;
-//            insert(service, which);
-//            remove(service, which);
-//            
-//            ResourceSet result = query.query("/test/item[@id='" + which + "']");
-//            assertEquals(result.getSize(), 1);
-//            result.getResource(0).getContent();
-//        }
-//    }
+    @Ignore
+    @Test
+    public void testRemoveAppend() throws Exception {
+        XUpdateQueryService service = (XUpdateQueryService)
+            testCol.getService("XUpdateQueryService", "1.0");
+        XPathQueryService query = (XPathQueryService)
+            testCol.getService("XPathQueryService", "1.0");
+        for (int i = 1; i < 1000; i++) {
+            int which = rand.nextInt(ITEM_COUNT) + 1;
+            insert(service, which);
+            remove(service, which);
+            
+            ResourceSet result = query.query("/test/item[@id='" + which + "']");
+            assertEquals(result.getSize(), 1);
+            result.getResource(0).getContent();
+        }
+    }
     
-    public void testAppendRemove() throws Exception {
+    @Test
+    public void appendRemove() throws XMLDBException, IOException {
         XUpdateQueryService service = (XUpdateQueryService)
         testCol.getService("XUpdateQueryService", "1.0");
         XPathQueryService query = (XPathQueryService)
@@ -111,18 +115,18 @@ public class RemoveAppendTest extends TestCase {
         }
     }
     
-    protected void append(XUpdateQueryService service, int id) throws Exception {
+    protected void append(final XUpdateQueryService service, final int id) throws IOException, XMLDBException {
         StringWriter out = new StringWriter();
         out.write("<xu:modifications xmlns:xu=\"http://www.xmldb.org/xupdate\" version=\"1.0\">");
         out.write("<xu:append select=\"/test\">");
         createItem(id, out);
         out.write("</xu:append>");
         out.write("</xu:modifications>");
-         long mods = service.update(out.toString());
-         assertEquals(mods, 1);
+        final long mods = service.update(out.toString());
+        assertEquals(mods, 1);
     }
     
-    protected void insert(XUpdateQueryService service, int id) throws Exception {
+    protected void insert(final XUpdateQueryService service, final int id) throws IOException, XMLDBException {
         StringWriter out = new StringWriter();
         out.write("<xu:modifications xmlns:xu=\"http://www.xmldb.org/xupdate\" version=\"1.0\">");
         out.write("<xu:insert-before select=\"/test/item[@id='");
@@ -135,7 +139,7 @@ public class RemoveAppendTest extends TestCase {
          assertEquals(mods, 1);
     }
     
-    protected void remove(XUpdateQueryService service, int id) throws Exception {
+    protected void remove(final XUpdateQueryService service, final int id) throws XMLDBException {
         @SuppressWarnings("unused")
 		String xu = 
             "<xu:modifications xmlns:xu=\"http://www.xmldb.org/xupdate\" version=\"1.0\">" +
@@ -146,10 +150,10 @@ public class RemoveAppendTest extends TestCase {
         assertEquals(mods, 1);
     }
     
-    protected void setUp() throws Exception {
+    @Before
+    public void setUp() throws Exception {
         rootCol = DBUtils.setupDB(URI);
         
-
         testCol = rootCol.getChildCollection(XmldbURI.ROOT_COLLECTION + "/test");
         if(testCol != null) {
             CollectionManagementService mgr = DBUtils.getCollectionManagementService(rootCol);
@@ -162,11 +166,13 @@ public class RemoveAppendTest extends TestCase {
         DBUtils.addXMLResource(testCol, "test.xml", "<test/>");
     }
     
-    protected void tearDown() throws Exception {
+    @After
+    public void tearDown() throws Exception {
+        TestUtils.cleanupDB();
         DBUtils.shutdownDB(URI);
     }
     
-    protected void createItem(int id, Writer out) throws IOException {
+    protected void createItem(final int id, final Writer out) throws IOException {
         out.write("<item ");
         out.write("id=\"");
         out.write(Integer.toString(id));
@@ -191,7 +197,7 @@ public class RemoveAppendTest extends TestCase {
      * @param rand
      * @throws IOException
      */
-    private void addAttributes(Writer out) throws IOException {
+    private void addAttributes(final Writer out) throws IOException {
         for (int j = 0; j < 5; j++) {
             out.write(" attr");
             out.write(Integer.toString(j));
