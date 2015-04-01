@@ -154,6 +154,8 @@
             <test fork="yes" name="org.exist.util.SortTests" todir="${junit.reports.dat}"/>
             <test fork="yes" name="org.exist.xmldb.XmldbLocalTests" todir="${junit.reports.dat}"/>
             <test fork="yes" name="org.exist.xupdate.XUpdateTest" todir="${junit.reports.dat}"/>
+            <test fork="yes" name="org.exist.xupdate.RemoveAppendTest" todir="${junit.reports.dat}"/>
+            <test fork="yes" name="org.exist.xupdate.StressTest" todir="${junit.reports.dat}"/>
             <test fork="yes" name="org.exist.xquery.AllXqueryTests" todir="${junit.reports.dat}"/>
             <test fork="yes" name="org.exist.xquery.OptimizerTest" todir="${junit.reports.dat}"/>
 	    	<test fork="yes" name="org.exist.collections.triggers.AllTriggerTests" todir="${junit.reports.dat}"/>
