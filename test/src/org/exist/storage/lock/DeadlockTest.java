@@ -25,7 +25,7 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.LinkedList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
@@ -53,6 +53,7 @@ import org.junit.Test;
 import org.junit.After;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 import org.xml.sax.InputSource;
 import org.xmldb.api.DatabaseManager;
@@ -86,17 +87,17 @@ public class DeadlockTest {
     private static final int DELAY = 7000;
 
     /** Use 4 test runs, querying different collections */
-	@Parameters 
-	public static LinkedList<Integer[]> data() {
-		LinkedList<Integer[]> params = new LinkedList<Integer[]>();
-		params.add(new Integer[] { TEST_RANDOM_COLLECTION });
-		params.add(new Integer[] { TEST_SINGLE_COLLECTION });
-		params.add(new Integer[] { TEST_ALL_COLLECTIONS });
-		params.add(new Integer[] { TEST_SINGLE_DOC });
-		params.add(new Integer[] { TEST_MIXED });
-        params.add(new Integer[] { TEST_REMOVE });
-        return params;
-	}
+    @Parameters(name = "{0}")
+    public static java.util.Collection<Object[]> data() {
+        return Arrays.asList(new Object[][] {
+            { "testRandomCollection", TEST_RANDOM_COLLECTION },
+            { "testSingleCollection", TEST_SINGLE_COLLECTION },
+            { "testAllCollections", TEST_ALL_COLLECTIONS },
+            { "testSingleDoc", TEST_SINGLE_DOC },
+            { "testMixed", TEST_MIXED },
+            { "testRemoved", TEST_REMOVE }
+        });
+    }
 	
 	private static final int COLL_COUNT = 20;
 
@@ -135,13 +136,13 @@ public class DeadlockTest {
 
 	private static BrokerPool pool;
 
-	private Random random = new Random();
+	private final Random random = new Random();
 
-	private int mode = 0;
-	
-	public DeadlockTest(int mode) {
-		this.mode = mode;
-	}
+        @Parameter
+        public String testName;
+        
+        @Parameter(value = 1)
+	public int mode;
 	
 	@BeforeClass
 	public static void startDB() throws DatabaseConfigurationException, EXistException {

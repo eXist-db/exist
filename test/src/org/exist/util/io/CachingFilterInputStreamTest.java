@@ -1,11 +1,11 @@
 package org.exist.util.io;
 
-import java.io.FileNotFoundException;
-import org.junit.runners.Parameterized.Parameters;
 import java.util.Collection;
 import java.util.Arrays;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,20 +23,20 @@ import static org.junit.Assert.assertArrayEquals;
 @RunWith(value = Parameterized.class)
 public class CachingFilterInputStreamTest {
 
-    @Parameters
-    public static Collection data() throws FileNotFoundException, IOException {
-        Object[][] data = new Object[][] {
-            { MemoryFilterInputStreamCache.class },
-            { MemoryMappedFileFilterInputStreamCache.class },
-            { FileFilterInputStreamCache.class }
-        };
-        return Arrays.asList(data);
+    @Parameters(name = "{0}")
+    public static Collection<Object[]> data() {
+        return Arrays.asList(new Object[][] {
+            { "MemoryFilterInputStreamCache", MemoryFilterInputStreamCache.class },
+            { "MemoryMappedFileFilterInputStreamCache", MemoryMappedFileFilterInputStreamCache.class },
+            { "FileFilterInputStreamCache", FileFilterInputStreamCache.class }
+        });
     }
 
-    private final Class<FilterInputStreamCache> cacheClass;
-    public CachingFilterInputStreamTest(Class<FilterInputStreamCache> cacheClass) {
-        this.cacheClass = cacheClass;
-    }
+    @Parameter
+    public String cacheName;
+    
+    @Parameter(value = 1)
+    public Class<FilterInputStreamCache> cacheClass;
 
     public FilterInputStreamCache getNewCache() throws InstantiationException, IllegalAccessException {
         return cacheClass.newInstance();
