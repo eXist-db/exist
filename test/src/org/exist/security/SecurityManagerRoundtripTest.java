@@ -1,10 +1,10 @@
 package org.exist.security;
 
+import java.util.Arrays;
 import org.exist.xmldb.UserManagementService;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.junit.runners.Parameterized;
-import java.util.LinkedList;
 import org.exist.jetty.JettyStart;
 import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.internal.aider.UserAider;
@@ -15,6 +15,8 @@ import static org.junit.Assert.fail;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertEquals;
 import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 import org.xmldb.api.base.XMLDBException;
 
 /**
@@ -29,20 +31,20 @@ import org.xmldb.api.base.XMLDBException;
 public class SecurityManagerRoundtripTest {
 
     private JettyStart server;
-    private final String baseUri;
 
-    public SecurityManagerRoundtripTest(String baseUri) {
-        this.baseUri = baseUri;
-    }
-
-    @Parameterized.Parameters
-    public static LinkedList<String[]> instances() {
-        LinkedList<String[]> params = new LinkedList<String[]>();
-        params.add(new String[] { "xmldb:exist://" });
-	// jetty.port.standalone
-        params.add(new String[] { "xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/xmlrpc" });
-        return params;
-    }
+    @Parameters(name = "{0}")
+    public static java.util.Collection<Object[]> data() {
+        return Arrays.asList(new Object[][] {
+            { "local", "xmldb:exist://" },
+            { "remote", "xmldb:exist://localhost:" + System.getProperty("jetty.port", "8088") + "/xmlrpc" }
+        });
+    };
+    
+    @Parameter
+    public String apiName;
+    
+    @Parameter(value = 1)
+    public String baseUri;
 
     @Before
     public void startServer() {

@@ -1,6 +1,6 @@
 package org.exist.security;
 
-import java.util.LinkedList;
+import java.util.Arrays;
 import org.exist.jetty.JettyStart;
 import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.internal.aider.UserAider;
@@ -15,6 +15,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
@@ -29,22 +31,21 @@ public class XMLDBSecurityTest {
 
     private static final String DB_DRIVER = "org.exist.xmldb.DatabaseImpl";
 
-    private final String baseUri;
-
+    @Parameters(name = "{0}")
+    public static java.util.Collection<Object[]> data() {
+        return Arrays.asList(new Object[][] {
+            { "local", "xmldb:exist://" },
+            { "remote", "xmldb:exist://localhost:" + System.getProperty("jetty.port", "8088") + "/xmlrpc" }
+        });
+    };
+    
+    @Parameter
+    public String apiName;
+    
+    @Parameter(value = 1)
+    public String baseUri;
+    
     private static JettyStart server;
-
-    public XMLDBSecurityTest(final String baseUri) {
-        this.baseUri = baseUri;
-    }
-
-    @Parameterized.Parameters
-    public static LinkedList<String[]> instances() {
-        final LinkedList<String[]> params = new LinkedList<>();
-        params.add(new String[] { "xmldb:exist://" });
-        params.add(new String[] { "xmldb:exist://localhost:" + System.getProperty("jetty.port", "8088") + "/xmlrpc" });
-        
-        return params;
-    }
 
     @Test(expected=XMLDBException.class) // fails since guest has no write permissions
     public void worldCreateCollection() throws XMLDBException {
