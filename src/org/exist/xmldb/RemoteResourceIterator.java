@@ -35,17 +35,17 @@ import org.xmldb.api.modules.XMLResource;
 public class RemoteResourceIterator implements ResourceIterator {
 
     private final RemoteCollection collection;
-    private final List resources;
+    private final List<Object> resources;
     private final int indentXML;
     private final String encoding;
     private int pos = 0;
 
-    public RemoteResourceIterator(final RemoteCollection collection, final List resources, final int indentXML, final String encoding) {
+    public RemoteResourceIterator(final RemoteCollection collection, final List<Object> resources, final int indentXML, final String encoding) {
         this.collection = collection;
         this.resources = resources;
         this.indentXML = indentXML;
         this.encoding = encoding;
-    }
+	}
 
     public int getLength() {
         return resources.size();
@@ -79,7 +79,7 @@ public class RemoteResourceIterator implements ResourceIterator {
             params.add(indentXML);
             params.add(encoding);
             try {
-                final byte[] data = (byte[]) collection.getClient().execute("retrieve", params);
+                final byte[] data = (byte[])collection.getClient().execute("retrieve", params);
                 final XMLResource res = new RemoteXMLResource(collection, XmldbURI.xmldbUriFor(doc), Optional.of(doc + "_" + s_id));
                 res.setContent(new String(data, encoding));
                 return res;

@@ -1,35 +1,35 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-07 The eXist Project
- *  http://exist-db.org
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2015 The eXist Project
+ * http://exist-db.org
  *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- * $Id: XmlrpcDownload.java 223 2007-04-21 22:13:05Z dizzzz $
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-
 package org.exist.protocolhandler.xmlrpc;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Hashtable;
-import java.util.Vector;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
 
@@ -47,14 +47,13 @@ public class XmlrpcDownload {
     private final static Logger LOG = LogManager.getLogger(XmlrpcDownload.class);
     
     /**
-     *  Write document referred by the URL to the output stream.
-     * 
-     * 
+     * Write document referred by the URL to the output stream.
+     *
      * @param xmldbURL Document location in database.
      * @param os Stream to which the document is written.
-     * @throws ExistIOException
+     * @throws IOException
      */
-    public void stream(XmldbURL xmldbURL, OutputStream os) throws IOException {
+    public void stream(final XmldbURL xmldbURL, final OutputStream os) throws IOException {
         LOG.debug("Begin document download");
         try {
             final XmlRpcClient client = new XmlRpcClient();
@@ -71,18 +70,18 @@ public class XmlrpcDownload {
             client.setConfig(config);
 
             // Setup xml serializer
-            final Hashtable<String, String> options = new Hashtable<String, String>();
+            final Map<String, String> options = new HashMap<>();
             options.put("indent", "no");
             options.put("encoding", "UTF-8");
             
             // Setup client parameters
-            final Vector<Object> params = new Vector<Object>();
-            params.addElement( xmldbURL.getCollectionPath() );
-            params.addElement( options );
+            final List<Object> params = new ArrayList<>();
+            params.add( xmldbURL.getCollectionPath() );
+            params.add( options );
             
             // Shoot first method write data
-            Hashtable ht = (Hashtable) client.execute("getDocumentData", params);
-            int offset = ((Integer)ht.get("offset")).intValue();
+            Map ht = (Map) client.execute("getDocumentData", params);
+            int offset = (int)ht.get("offset");
             byte[]data= (byte[]) ht.get("data");
             final String handle = (String) ht.get("handle");
             os.write(data);
@@ -91,27 +90,24 @@ public class XmlrpcDownload {
             while(offset!=0){
                 // Clean and re-setup client parameters
                 params.clear();
-                params.addElement(handle);
-                params.addElement(Integer.valueOf(offset));
+                params.add(handle);
+                params.add(offset);
                 
                 // Get and write next chunk
-                ht = (Hashtable) client.execute("getNextChunk", params);
+                ht = (Map) client.execute("getNextChunk", params);
                 data= (byte[]) ht.get("data");
-                offset = ((Integer)ht.get("offset")).intValue();
+                offset = (int)ht.get("offset");
                 os.write(data);
             }
             
-        } catch (final IOException ex) {
-            LOG.error(ex);
-            throw ex;
-            
-        } catch (final Exception ex) {
+        } catch (final XmlRpcException ex) {
             LOG.error(ex);
             throw new IOException(ex.getMessage(), ex);
-                       
+        } catch(final IOException ex) {
+            LOG.error(ex);
+            throw ex;     
         } finally {
             LOG.debug("Finished document download"); 
-
         }
     }
     

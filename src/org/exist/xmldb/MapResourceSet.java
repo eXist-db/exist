@@ -38,8 +38,8 @@ import org.xmldb.api.base.XMLDBException;
  *
  * @author Jean-Marc Vanel (2 April 2003)
  */
-public class MapResourceSet implements ResourceSet {
-
+public class MapResourceSet implements ResourceSet 
+{
     private final Map<String, Resource> resources;
     private final List<Resource> resourcesVector = new ArrayList<>();
 
@@ -56,7 +56,7 @@ public class MapResourceSet implements ResourceSet {
         }
     }
 
-    public MapResourceSet(final ResourceSet rs) throws XMLDBException {
+    public MapResourceSet(ResourceSet rs) throws XMLDBException {
         this.resources = new HashMap<>();
         for (int i = 0; i < rs.getSize(); i++) {
             final Resource res = rs.getResource(i);

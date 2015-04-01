@@ -86,6 +86,7 @@ public class RemoteXUpdateQueryService implements XUpdateQueryService {
         }
     }
 
+
     @Override
     public void setCollection(final Collection collection) throws XMLDBException {
         parent = (RemoteCollection) collection;

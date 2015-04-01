@@ -1,23 +1,21 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2010 The eXist Project
- *  http://exist-db.org
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2015 The eXist Project
+ * http://exist-db.org
  *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- *  $Id$
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 package org.exist.xmlrpc;
 
@@ -41,34 +39,31 @@ import org.exist.storage.BrokerPool;
 public class XmldbRequestProcessorFactory implements RequestProcessorFactoryFactory.RequestProcessorFactory {
 
     private final static Logger LOG = LogManager.getLogger(XmldbRequestProcessorFactory.class);
-    
     public final static int CHECK_INTERVAL = 2000;
 
-    protected boolean useDefaultUser = true;
+    private final boolean useDefaultUser;
+    private final BrokerPool brokerPool;
+    protected final QueryResultCache resultSets = new QueryResultCache();
 
-    protected BrokerPool brokerPool;
+    private long lastCheck = System.currentTimeMillis();
 
-    protected int connections = 0;
-
-    protected long lastCheck = System.currentTimeMillis();
-
-    protected QueryResultCache resultSets = new QueryResultCache();
-
-    /** id of the database registred against the BrokerPool */
+    /**
+     * id of the database registered against the BrokerPool
+     */
     protected String databaseId = BrokerPool.DEFAULT_INSTANCE_NAME;
 
     public XmldbRequestProcessorFactory(final String databaseId, final boolean useDefaultUser) throws EXistException {
         this.useDefaultUser = useDefaultUser;
-        if(databaseId != null &&  !databaseId.isEmpty()) {
+        if (databaseId != null && !databaseId.isEmpty()) {
             this.databaseId = databaseId;
         }
-        brokerPool = BrokerPool.getInstance(this.databaseId);
+        this.brokerPool = BrokerPool.getInstance(this.databaseId);
     }
 
     @Override
     public Object getRequestProcessor(final XmlRpcRequest pRequest) throws XmlRpcException {
         checkResultSets();
-        final XmlRpcHttpRequestConfig config = (XmlRpcHttpRequestConfig)pRequest.getConfig();
+        final XmlRpcHttpRequestConfig config = (XmlRpcHttpRequestConfig) pRequest.getConfig();
         final Subject user = authenticate(config.getBasicUserName(), config.getBasicPassword());
         return new RpcConnection(this, user);
     }
@@ -100,7 +95,7 @@ public class XmldbRequestProcessorFactory implements RequestProcessorFactoryFact
     }
 
     protected void checkResultSets() {
-        if(System.currentTimeMillis() - lastCheck > CHECK_INTERVAL) {
+        if (System.currentTimeMillis() - lastCheck > CHECK_INTERVAL) {
             resultSets.checkTimestamps();
             lastCheck = System.currentTimeMillis();
         }

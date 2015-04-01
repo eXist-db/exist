@@ -33,7 +33,7 @@ public class XqueryRemoteTests {
     }
 
     public static Test suite() {
-        XPathQueryTest.setURI("xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/xmlrpc" + XmldbURI.ROOT_COLLECTION);
+        XPathQueryTest.setURI("xmldb:exist://localhost:" + System.getProperty("jetty.port", "8088") + "/xmlrpc" + XmldbURI.ROOT_COLLECTION);
         return new JUnit4TestAdapter(XPathQueryTest.class);
     }
 }
