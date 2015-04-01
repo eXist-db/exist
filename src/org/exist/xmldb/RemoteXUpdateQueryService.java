@@ -1,11 +1,25 @@
 /*
- * RemoteXUpdateQueryService.java - May 2, 2003
- * 
- * @author wolf
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2015 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 package org.exist.xmldb;
 
-import java.util.Vector;
+import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -16,90 +30,73 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XUpdateQueryService;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import java.util.ArrayList;
 
 public class RemoteXUpdateQueryService implements XUpdateQueryService {
 
 	private final static Logger LOG = LogManager.getLogger(RemoteXUpdateQueryService.class);
 
-	private RemoteCollection parent;
+    private RemoteCollection parent;
 
-	/**
-	 * 
-	 */
-	public RemoteXUpdateQueryService(RemoteCollection parent) {
-		this.parent = parent;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.xmldb.api.modules.XUpdateQueryService#update(java.lang.String)
-	 */
-	public long update(String commands) throws XMLDBException {
-		LOG.debug("processing xupdate:\n" + commands);
-		final Vector<Object> params = new Vector<Object>();
-		byte[] xupdateData = commands.getBytes(UTF_8);
-
-		params.addElement(parent.getPath());
-		params.addElement(xupdateData);
-		try {
-			final Integer mods = (Integer) parent.getClient().execute("xupdate", params);
-			LOG.debug("processed " + mods + " modifications");
-			return mods.intValue();
-		} catch (final XmlRpcException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
-		}
+    public RemoteXUpdateQueryService(final RemoteCollection parent) {
+        this.parent = parent;
     }
 
-	/* (non-Javadoc)
-	 * @see org.xmldb.api.modules.XUpdateQueryService#updateResource(java.lang.String, java.lang.String)
-	 */
-	public long updateResource(String id, String commands) throws XMLDBException {
-		LOG.debug("processing xupdate:\n" + commands);
-		final Vector<Object> params = new Vector<Object>();
-		byte[] xupdateData = commands.getBytes(UTF_8);
+    @Override
+    public String getName() throws XMLDBException {
+        return "XUpdateQueryService";
+    }
+
+    @Override
+    public String getVersion() throws XMLDBException {
+        return "1.0";
+    }
+
+    @Override
+    public long update(final String commands) throws XMLDBException {
+        LOG.debug("processing xupdate:\n" + commands);
+        final List<Object> params = new ArrayList<>();
+        final byte[] xupdateData = commands.getBytes(UTF_8);
+
+        params.add(parent.getPath());
+        params.add(xupdateData);
+        try {
+            final int mods = (int) parent.getClient().execute("xupdate", params);
+            LOG.debug("processed " + mods + " modifications");
+            return mods;
+        } catch (final XmlRpcException e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public long updateResource(final String id, final String commands) throws XMLDBException {
+        LOG.debug("processing xupdate:\n" + commands);
+        final List<Object> params = new ArrayList<>();
+        final byte[] xupdateData = commands.getBytes(UTF_8);
         //TODO : use dedicated function in XmldbURI
-		params.addElement(parent.getPath() + "/" + id);
-		params.addElement(xupdateData);
-		try {
-			final Integer mods = (Integer) parent.getClient().execute("xupdateResource", params);
-			LOG.debug("processed " + mods + " modifications");
-			return mods.intValue();
-		} catch (final XmlRpcException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
-		}
+        params.add(parent.getPath() + "/" + id);
+        params.add(xupdateData);
+        try {
+            final int mods = (int) parent.getClient().execute("xupdateResource", params);
+            LOG.debug("processed " + mods + " modifications");
+            return mods;
+        } catch (final XmlRpcException e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+        }
     }
 
-	/* (non-Javadoc)
-	 * @see org.xmldb.api.base.Service#getName()
-	 */
-	public String getName() throws XMLDBException {
-		return "XUpdateQueryService";
-	}
+    @Override
+    public void setCollection(final Collection collection) throws XMLDBException {
+        parent = (RemoteCollection) collection;
+    }
 
-	/* (non-Javadoc)
-	 * @see org.xmldb.api.base.Service#getVersion()
-	 */
-	public String getVersion() throws XMLDBException {
-		return "1.0";
-	}
+    @Override
+    public String getProperty(final String name) throws XMLDBException {
+        return null;
+    }
 
-	/* (non-Javadoc)
-	 * @see org.xmldb.api.base.Service#setCollection(org.xmldb.api.base.Collection)
-	 */
-	public void setCollection(Collection col) throws XMLDBException {
-		parent = (RemoteCollection)col;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.xmldb.api.base.Configurable#getProperty(java.lang.String)
-	 */
-	public String getProperty(String name) throws XMLDBException {
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.xmldb.api.base.Configurable#setProperty(java.lang.String, java.lang.String)
-	 */
-	public void setProperty(String name, String value) throws XMLDBException {
-	}
-
+    @Override
+    public void setProperty(final String name, final String value) throws XMLDBException {
+    }
 }

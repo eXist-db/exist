@@ -1,3 +1,22 @@
+/*
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2015 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ */
 package org.exist.xmldb;
 
 import java.io.BufferedOutputStream;
@@ -5,16 +24,11 @@ import java.io.ByteArrayInputStream;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
 
@@ -33,247 +47,208 @@ import org.xmldb.api.base.XMLDBException;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-public abstract class AbstractRemoteResource
-	implements EXistResource, ExtendedResource, Resource
-{
-	protected XmldbURI path = null ;
-	protected String mimeType=null;
-	protected RemoteCollection parent;
-	protected VirtualTempFile vfile=null;
-	protected VirtualTempFile contentVFile=null;
-	protected InputSource inputSource = null;
-	protected boolean isLocal=false;
-	protected long contentLen = 0L;
-	protected Permission permissions = null;
-	
-	protected Date dateCreated= null;
-	protected Date dateModified= null;
-	
-	public AbstractRemoteResource(RemoteCollection parent,XmldbURI documentName)
-		throws XMLDBException
-	{
-		this.parent = parent;
-		if (documentName.numSegments()>1) {
-			this.path = documentName;
-		} else {
-			this.path = parent.getPathURI().append(documentName);
-		}
-	}
-    
-        @Override
-	protected void finalize()
-		throws Throwable
-	{
-		freeResources();
-		super.finalize();
-	}
-	
-        @Override
-	public void freeResources() {
-		vfile = null;
-		inputSource = null;
-		if(contentVFile!=null) {
-			contentVFile.delete();
-			contentVFile=null;
-		}
-		isLocal=true;
-	}
-	
-	protected Properties getProperties() {
-		return parent.properties;
-	}
+public abstract class AbstractRemoteResource extends AbstractRemote
+        implements EXistResource, ExtendedResource, Resource {
 
-	/* (non-Javadoc)
-	 * @see org.xmldb.api.base.Resource#getContent()
-	 */
-	public Object getContent()
-		throws XMLDBException
-	{
-		final Object res=getExtendedContent();
-		// Backward compatibility
-		if(isLocal)  {return res;}
-		if(res!=null) {
-			if(res instanceof File) {
-				return readFile((File)res);
-			} else if(res instanceof InputSource) {
-				return readFile((InputSource)res);
-			}
-		}
-		
-		return res;
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.xmldb.api.base.Resource#getContent()
-	 */
-	// Backward compatibility
-	protected byte[] getData()
-		throws XMLDBException
-	{
-		final Object res=getExtendedContent();
-		if(res!=null) {
-			if(res instanceof File) {
-				return readFile((File)res);
-			} else if(res instanceof InputSource) {
-				return readFile((InputSource)res);
-			} else if(res instanceof String) {
-                return ((String)res).getBytes(UTF_8);
-			}
-		}
-		
-		return (byte[])res;
-	}
-	
-	public long getContentLength()
-		throws XMLDBException
-	{
-		return contentLen;
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.exist.xmldb.EXistResource#getCreationTime()
-	 */
-	public Date getCreationTime()
-		throws XMLDBException
-	{
-		return dateCreated;
-	}
-	
-	public long getExtendedContentLength()
-		throws XMLDBException
-	{
-		return contentLen;
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.exist.xmldb.EXistResource#getLastModificationTime()
-	 */
-	public Date getLastModificationTime()
-		throws XMLDBException
-	{
-		return dateModified;
-	}
-	
-	/* (non-Javadoc)
-	* @see org.exist.xmldb.EXistResource#getMimeType()
-	*/
-	public String getMimeType() {
-		return mimeType;
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.xmldb.api.base.Resource#getParentCollection()
-	 */
-	public Collection getParentCollection()
-		throws XMLDBException
-	{
-		return parent;
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.exist.xmldb.EXistResource#getPermissions()
-	 */
-	public Permission getPermissions() {
-		return permissions;
-	}
-	
-	protected boolean setContentInternal(Object value)
-		throws XMLDBException
-	{
-		freeResources();
-		boolean wasSet=false;
-		if(value instanceof VirtualTempFile) {
-		    vfile = (VirtualTempFile)value;
-		    // Assuring the virtual file is close state
-		    try {
-		    	vfile.close();
-		    } catch(final IOException ioe) {
-		    	// IgnoreIT(R)
-		    }
-		    setExtendendContentLength(vfile.length());
-		    wasSet=true;
-		} else if(value instanceof File) {
-			vfile = new VirtualTempFile((File) value);
-			setExtendendContentLength(vfile.length());
-			wasSet=true;
-		} else if (value instanceof InputSource) {
-			inputSource = (InputSource) value;
-		    wasSet=true;
-		} else if(value instanceof byte[]) {
-			vfile = new VirtualTempFile((byte[])value);
-			setExtendendContentLength(vfile.length());
-			wasSet=true;
-		} else if(value instanceof String) {
-            vfile = new VirtualTempFile(((String)value).getBytes(UTF_8));
-            setExtendendContentLength(vfile.length());
-            wasSet=true;
-		}
-		
-		return wasSet;
-	}
-	
-	protected void setExtendendContentLength(long len) {
-		this.contentLen = len;
-	}
-	
-	public void setContentLength(int len) {
-		this.contentLen = len;
-	}
-	
-	public void setContentLength(long len) {
-		this.contentLen = len;
-	}
-	
-	/* (non-Javadoc)
-	* @see org.exist.xmldb.EXistResource#setMimeType(java.lang.String)
-	*/
-	public void setMimeType(String mime) {
-		this.mimeType = mime;
-	}
-	
-	public void setPermissions(Permission perms) {
-		permissions = perms;
-	}
-	
-	public void getContentIntoAFile(File localfile)
-		throws XMLDBException
-	{
-		FileOutputStream fos=null;
-		BufferedOutputStream bos=null;
-		try {
-			fos=new FileOutputStream(localfile);
-			bos=new BufferedOutputStream(fos);
-			
-			getContentIntoAStream(bos);
-		} catch (final IOException ioe) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
-		} finally {
-			if(bos!=null) {
-				try {
-					bos.close();
-				} catch(final IOException ioe) {
-					// IgnoreIT(R)
-				}
-			}
-			if(fos!=null) {
-				try {
-					fos.close();
-				} catch(final IOException ioe) {
-					// IgnoreIT(R)
-				}
-			}
-		}
-	}
-	
-    protected void getRemoteContentIntoLocalFile(final OutputStream os, final boolean isRetrieve, final int handle, final int pos) throws XMLDBException {
-        Properties properties = getProperties();
-        if(properties == null) {
-            properties = new Properties();
+    protected final XmldbURI path;
+    private String mimeType;
+
+    protected VirtualTempFile vfile = null;
+    private VirtualTempFile contentVFile = null;
+    protected InputSource inputSource = null;
+    private boolean isLocal = false;
+    private long contentLen = 0L;
+    private Permission permissions = null;
+
+    private Date dateCreated = null;
+    private Date dateModified = null;
+
+    protected AbstractRemoteResource(final RemoteCollection parent, final XmldbURI documentName, final String mimeType)
+            throws XMLDBException {
+        super(parent);
+        if (documentName.numSegments() > 1) {
+            this.path = documentName;
+        } else {
+            this.path = parent.getPathURI().append(documentName);
         }
-        
+        this.mimeType = mimeType;
+    }
+
+    protected Properties getProperties() {
+        return collection.getProperties();
+    }
+
+    @Override
+    public Object getContent()
+            throws XMLDBException {
+        final Object res = getExtendedContent();
+        // Backward compatibility
+        if (isLocal) {
+            return res;
+        } else if (res != null) {
+            if (res instanceof File) {
+                return readFile((File) res);
+            } else if (res instanceof InputSource) {
+                return readFile((InputSource) res);
+            }
+        }
+        return res;
+    }
+
+    @Override
+    protected void finalize()
+            throws Throwable {
+        freeResources();
+        super.finalize();
+    }
+
+    @Override
+    public void freeResources() {
+        vfile = null;
+        inputSource = null;
+        if (contentVFile != null) {
+            contentVFile.delete();
+            contentVFile = null;
+        }
+        isLocal = true;
+    }
+
+    /**
+     * @deprecated Here for backward compatibility, instead use {@see org.xmldb.api.base.Resource#getContent()}
+     */
+    @Deprecated
+    protected byte[] getData()
+            throws XMLDBException {
+        final Object res = getExtendedContent();
+        if (res != null) {
+            if (res instanceof File) {
+                return readFile((File) res);
+            } else if (res instanceof InputSource) {
+                return readFile((InputSource) res);
+            } else if (res instanceof String) {
+                return ((String) res).getBytes(UTF_8);
+            }
+        }
+
+        return (byte[]) res;
+    }
+
+    @Override
+    public long getContentLength()
+            throws XMLDBException {
+        return contentLen;
+    }
+
+    @Override
+    public Date getCreationTime()
+            throws XMLDBException {
+        return dateCreated;
+    }
+
+    void setCreationTime(final Date dateCreated) {
+        this.dateCreated = dateCreated;
+    }
+
+    @Override
+    public Date getLastModificationTime()
+            throws XMLDBException {
+        return dateModified;
+    }
+
+    void setLastModificationTime(final Date dateModified) {
+        this.dateModified = dateModified;
+    }
+
+    public long getExtendedContentLength()
+            throws XMLDBException {
+        return contentLen;
+    }
+
+    @Override
+    public String getMimeType() {
+        return mimeType;
+    }
+
+    @Override
+    public Collection getParentCollection()
+            throws XMLDBException {
+        return collection;
+    }
+
+    @Override
+    public Permission getPermissions() {
+        return permissions;
+    }
+
+    protected boolean setContentInternal(final Object value)
+            throws XMLDBException {
+        freeResources();
+        boolean wasSet = false;
+        if (value instanceof VirtualTempFile) {
+            vfile = (VirtualTempFile) value;
+            // Assuring the virtual file is close state
+            try {
+                vfile.close();
+            } catch (final IOException ioe) {
+                // IgnoreIT(R)
+            }
+            setExtendendContentLength(vfile.length());
+            wasSet = true;
+        } else if (value instanceof File) {
+            vfile = new VirtualTempFile((File) value);
+            setExtendendContentLength(vfile.length());
+            wasSet = true;
+        } else if (value instanceof InputSource) {
+            inputSource = (InputSource) value;
+            wasSet = true;
+        } else if (value instanceof byte[]) {
+            vfile = new VirtualTempFile((byte[]) value);
+            setExtendendContentLength(vfile.length());
+            wasSet = true;
+        } else if (value instanceof String) {
+            vfile = new VirtualTempFile(((String) value).getBytes(UTF_8));
+            setExtendendContentLength(vfile.length());
+            wasSet = true;
+        }
+
+        return wasSet;
+    }
+
+    protected void setExtendendContentLength(final long len) {
+        this.contentLen = len;
+    }
+
+    public void setContentLength(final int len) {
+        this.contentLen = len;
+    }
+
+    public void setContentLength(final long len) {
+        this.contentLen = len;
+    }
+
+    @Override
+    public void setMimeType(final String mimeType) {
+        this.mimeType = mimeType;
+    }
+
+    public void setPermissions(final Permission perms) {
+        permissions = perms;
+    }
+
+    @Override
+    public void getContentIntoAFile(final File localfile)
+            throws XMLDBException {
+        try(final OutputStream os = new BufferedOutputStream(new FileOutputStream(localfile))) {
+            getContentIntoAStream(os);
+        } catch (final IOException ioe) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
+        }
+    }
+
+    protected void getRemoteContentIntoLocalFile(final OutputStream os, final boolean isRetrieve, final int handle, final int pos) throws XMLDBException {
         final String command;
-        final List<Object> params = new ArrayList<Object>();
-        if(isRetrieve) {
+        final List<Object> params = new ArrayList<>();
+        if (isRetrieve) {
             command = "retrieveFirstChunk";
             params.add(Integer.valueOf(handle));
             params.add(Integer.valueOf(pos));
@@ -281,325 +256,285 @@ public abstract class AbstractRemoteResource
             command = "getDocumentData";
             params.add(path.toString());
         }
-        params.add(properties);
-        
+        params.add(getProperties());
+
         try {
             final VirtualTempFile vtmpfile = new VirtualTempFile();
             vtmpfile.setTempPrefix("eXistARR");
-            vtmpfile.setTempPostfix("XMLResource".equals(getResourceType())?".xml":".bin");
+            vtmpfile.setTempPostfix("XMLResource".equals(getResourceType()) ? ".xml" : ".bin");
 
-            Map<?,?> table = (Map<?,?>) parent.getClient().execute(command, params);
-            
+            Map table = (Map) collection.getClient().execute(command, params);
+
             final String method;
             final boolean useLongOffset;
-            if(table.containsKey("supports-long-offset") && (Boolean)(table.get("supports-long-offset"))) {
+            if (table.containsKey("supports-long-offset") && (Boolean)table.get("supports-long-offset")) {
                 useLongOffset = true;
                 method = "getNextExtendedChunk";
             } else {
                 useLongOffset = false;
                 method = "getNextChunk";
             }
-            
-            long offset = ((Integer)table.get("offset")).intValue();
-            byte[] data = (byte[])table.get("data");
-            final boolean isCompressed = "yes".equals(properties.getProperty(EXistOutputKeys.COMPRESS_OUTPUT, "no"));
-                
+
+            long offset = ((Integer) table.get("offset")).intValue();
+            byte[] data = (byte[]) table.get("data");
+            final boolean isCompressed = "yes".equals(getProperties().getProperty(EXistOutputKeys.COMPRESS_OUTPUT, "no"));
+
             // One for the local cached file
             Inflater dec = null;
             byte[] decResult = null;
             int decLength;
-            if(isCompressed) {
+            if (isCompressed) {
                 dec = new Inflater();
                 decResult = new byte[65536];
                 dec.setInput(data);
                 do {
                     decLength = dec.inflate(decResult);
-                    vtmpfile.write(decResult,0,decLength);
+                    vtmpfile.write(decResult, 0, decLength);
                     // And other for the stream where we want to save it!
-                    if(os != null) {
+                    if (os != null) {
                         os.write(decResult, 0, decLength);
                     }
-                } while(decLength == decResult.length || !dec.needsInput());
-                
+                } while (decLength == decResult.length || !dec.needsInput());
+
             } else {
                 vtmpfile.write(data);
                 // And other for the stream where we want to save it!
-                if(os != null) {
+                if (os != null) {
                     os.write(data);
                 }
             }
-                
-            while(offset > 0) {
+
+            while (offset > 0) {
                 params.clear();
                 params.add(table.get("handle"));
-                params.add(useLongOffset?Long.toString(offset):Integer.valueOf((int)offset));
-                table = (Map<?,?>) parent.getClient().execute(method, params);
-                offset = useLongOffset?Long.valueOf((String)table.get("offset")).longValue():((Integer)table.get("offset")).longValue();
-                data = (byte[])table.get("data");
+                params.add(useLongOffset ? Long.toString(offset) : Integer.valueOf((int) offset));
+                table = (Map<?, ?>) collection.getClient().execute(method, params);
+                offset = useLongOffset ? Long.valueOf((String) table.get("offset")).longValue() : ((Integer) table.get("offset")).longValue();
+                data = (byte[]) table.get("data");
 
                 // One for the local cached file
-                if(isCompressed) {
+                if (isCompressed) {
                     dec.setInput(data);
                     do {
                         decLength = dec.inflate(decResult);
-                        vtmpfile.write(decResult,0,decLength);
+                        vtmpfile.write(decResult, 0, decLength);
                         // And other for the stream where we want to save it!
-                        if(os != null) {
+                        if (os != null) {
                             os.write(decResult, 0, decLength);
                         }
-                    } while(decLength == decResult.length || !dec.needsInput());
+                    } while (decLength == decResult.length || !dec.needsInput());
                 } else {
                     vtmpfile.write(data);
                     // And other for the stream where we want to save it!
-                     if(os != null) {
+                    if (os != null) {
                         os.write(data);
                     }
                 }
             }
-            
-            if(dec != null) {
+
+            if (dec != null) {
                 dec.end();
             }
 
             isLocal = false;
             contentVFile = vtmpfile;
-        } catch(final XmlRpcException xre) {
-                throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, xre.getMessage(), xre);
-        } catch(final IOException ioe) {
-                throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
-        } catch(final DataFormatException dfe) {
-                throw new XMLDBException(ErrorCodes.VENDOR_ERROR, dfe.getMessage(), dfe);
+        } catch (final XmlRpcException xre) {
+            throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, xre.getMessage(), xre);
+        } catch (final IOException | DataFormatException e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         } finally {
-            if(contentVFile!=null) {
+            if (contentVFile != null) {
                 try {
                     contentVFile.close();
-                } catch(final IOException ioe) {
+                } catch (final IOException ioe) {
                     //IgnoreIT(R)
                 }
             }
         }
     }
 
-	protected static InputStream getAnyStream(Object obj)
-		throws XMLDBException
-	{
-		if(obj instanceof String) {
-            return new ByteArrayInputStream(((String)obj).getBytes(UTF_8));
-		} else if(obj instanceof byte[]) {
-			return new ByteArrayInputStream((byte[])obj);
-		} else {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR,"don't know how to handle value of type " + obj.getClass().getName());
-		}
-	}
-	
-	protected void getContentIntoAStreamInternal(OutputStream os, Object obj, boolean isRetrieve, int handle, int pos)
-		throws XMLDBException
-	{
-		if(vfile!=null || contentVFile!=null || inputSource!=null || obj!=null) {
-			InputStream bis=null;
-			try {
-				// First, the local content, then the remote one!!!!
-				if(vfile!=null) {
-					bis=vfile.getByteStream();
-				} else if(inputSource!=null) {
-					bis=inputSource.getByteStream();
-				} else if(obj!=null) {
-					bis=getAnyStream(obj);
-				} else {
-					bis=contentVFile.getByteStream();
-				}
-				int readed;
-				final byte buffer[]=new byte[65536];
-				while((readed=bis.read(buffer))!=-1) {
-					os.write(buffer,0,readed);
-				}
-			} catch(final IOException ioe) {
-				throw new XMLDBException(ErrorCodes.VENDOR_ERROR,ioe.getMessage(),ioe);
-			} finally {
-				if(inputSource!=null) {
-					if(bis!=null) {
-						// As it comes from an input source, we cannot blindly close it,
-						// but at least let's reset it! (if it is possible)
-						if(bis.markSupported()) {
-							try {
-								bis.reset();
-							} catch(final IOException ioe) {
-								//IgnoreIT(R)
-							}
-						}
-					}
-				} else {
-					if(bis!=null) {
-						try {
-							bis.close();
-						} catch(final IOException ioe) {
-							//IgnoreIT(R)
-						}
-					}
-				}
-			}
-		} else {
-			// Let's fetch it, and save just in time!!!
-			getRemoteContentIntoLocalFile(os,isRetrieve,handle,pos);
-		}
-	}
+    protected static InputStream getAnyStream(final Object obj)
+            throws XMLDBException {
+        if (obj instanceof String) {
+            return new ByteArrayInputStream(((String) obj).getBytes(UTF_8));
+        } else if (obj instanceof byte[]) {
+            return new ByteArrayInputStream((byte[]) obj);
+        } else {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "don't know how to handle value of type " + obj.getClass().getName());
+        }
+    }
 
-	protected Object getExtendedContentInternal(Object obj, boolean isRetrieve, int handle, int pos)
-		throws XMLDBException
-	{
-		if(obj != null)
-			{return obj;}
-		
-		if(vfile!=null)
-			{return vfile.getContent();}
-		if(inputSource!=null)
-			{return inputSource;}
-		
-		if(contentVFile==null)
-			{getRemoteContentIntoLocalFile(null,isRetrieve,handle,pos);}
-		
-		return contentVFile.getContent();
-	}
-
-	protected InputStream getStreamContentInternal(Object obj, boolean isRetrieve, int handle, int pos)
-		throws XMLDBException
-	{
-		InputStream retval=null;
-		
-		if(vfile!=null) {
-			try {
-				retval=vfile.getByteStream();
-			} catch(final IOException fnfe) {
-				throw new XMLDBException(ErrorCodes.VENDOR_ERROR, fnfe.getMessage(), fnfe);
-			}
-		} else if(inputSource!=null) {
-			retval=inputSource.getByteStream();
-		} else if(obj!=null) {
-			retval=getAnyStream(obj);
-		} else {
-			// At least one value, please!!!
-			if(contentVFile==null)
-				{getRemoteContentIntoLocalFile(null,isRetrieve,handle,pos);}
-			
-			try {
-				retval=contentVFile.getByteStream();
-			} catch(final IOException fnfe) {
-				throw new XMLDBException(ErrorCodes.VENDOR_ERROR, fnfe.getMessage(), fnfe);
-			}
-		}
-		
-		return retval;
-	}
-
-	protected long getStreamLengthInternal(Object obj)
-		throws XMLDBException
-	{
-		long retval=-1;
-		if(vfile!=null) {
-			retval=vfile.length();
-		} else if(inputSource!=null && inputSource instanceof EXistInputSource) {
-			retval=((EXistInputSource)inputSource).getByteStreamLength();
-		} else if(obj!=null) {
-			if(obj instanceof String) {
-                retval=((String)obj).getBytes(UTF_8).length;
-			} else if(obj instanceof byte[]) {
-				retval=((byte[])obj).length;
-			} else {
-				throw new XMLDBException(ErrorCodes.VENDOR_ERROR,"don't know how to handle value of type " + obj.getClass().getName());
-			}
-		} else if(contentVFile!=null) {
-			retval=contentVFile.length();
-		} else {
-			final Properties properties = getProperties();
-			final List<Object> params = new ArrayList<Object>();
-			params.add(path.toString());
-			params.add(properties);
-			try {
-				final Map<?,?> table = (Map<?,?>) parent.getClient().execute("describeResource", params);
-				if(table.containsKey("content-length-64bit")) {
-					final Object o = table.get("content-length-64bit");
-					if(o instanceof Long) {
-						retval = ((Long)o).longValue();
-					} else {
-						retval = Long.parseLong((String)o);
-					}
-				} else {
-					retval=((Integer)table.get("content-length")).intValue();
-				}
-			} catch (final XmlRpcException xre) {
-				throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, xre.getMessage(), xre);
-			}
-		}
-		
-		return retval;
-	}
-
-
-	
-	private static byte[] readFile(File file)
-		throws XMLDBException
-	{
-		final String errmsg="file "+ file.getAbsolutePath();
-                InputStream is = null;
-		try {
-                        is = new FileInputStream(file);
-			
-                        return readFile(is,errmsg);
-
-		} catch (final FileNotFoundException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
-				errmsg + " could not be found", e);
-		}
-                finally
-                {
-                    if(is != null)
-                    {
-                        try
-                        {
-                            is.close();
+    protected void getContentIntoAStreamInternal(final OutputStream os, final Object obj, final boolean isRetrieve, final int handle, final int pos)
+            throws XMLDBException {
+        if (vfile != null || contentVFile != null || inputSource != null || obj != null) {
+            InputStream bis = null;
+            try {
+                // First, the local content, then the remote one!!!!
+                if (vfile != null) {
+                    bis = vfile.getByteStream();
+                } else if (inputSource != null) {
+                    bis = inputSource.getByteStream();
+                } else if (obj != null) {
+                    bis = getAnyStream(obj);
+                } else {
+                    bis = contentVFile.getByteStream();
+                }
+                copy(bis, os);
+            } catch (final IOException ioe) {
+                throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
+            } finally {
+                if (inputSource != null) {
+                    if (bis != null) {
+                        // As it comes from an input source, we cannot blindly close it,
+                        // but at least let's reset it! (if it is possible)
+                        if (bis.markSupported()) {
+                            try {
+                                bis.reset();
+                            } catch (final IOException ioe) {
+                                //IgnoreIT(R)
+                            }
                         }
-                        catch(final IOException ioe)
-                        {
-                            //ignore(ioe);
+                    }
+                } else {
+                    if (bis != null) {
+                        try {
+                            bis.close();
+                        } catch (final IOException ioe) {
+                            //IgnoreIT(R)
                         }
                     }
                 }
-	}
+            }
+        } else {
+            // Let's fetch it, and save just in time!!!
+            getRemoteContentIntoLocalFile(os, isRetrieve, handle, pos);
+        }
+    }
 
-	private static byte[] readFile(InputSource is)
-		throws XMLDBException
-	{
-		String retval="<streamunknown>";
-		if(is instanceof EXistInputSource) {
-			retval=((EXistInputSource)is).getSymbolicPath();
-		} 
-		return readFile(is.getByteStream(),"input source "+retval);
-	}
+    protected Object getExtendedContentInternal(final Object obj, final boolean isRetrieve, final int handle, final int pos)
+            throws XMLDBException {
+        if (obj != null) {
+            return obj;
+        } else if (vfile != null) {
+            return vfile.getContent();
+        } else if (inputSource != null) {
+            return inputSource;
+        } else {
+            if (contentVFile == null) {
+                getRemoteContentIntoLocalFile(null, isRetrieve, handle, pos);
+            }
+            return contentVFile.getContent();
+        }
+    }
 
-	private static byte[] readFile(InputStream is,String errmsg)
-		throws XMLDBException
-	{
-		if(errmsg==null)
-			{errmsg="stream";}
-		try {
-			final ByteArrayOutputStream bos = new ByteArrayOutputStream(2048);
-			final byte[] temp = new byte[1024];
-			int count = 0;
-			while((count = is.read(temp)) > -1) {
-				bos.write(temp, 0, count);
-			}
-			return bos.toByteArray();
-		} catch (final IOException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
-				"IO exception while reading " + errmsg, e);
-		}
-	}
-	
-	protected void setDateCreated(Date dateCreated) {
-		this.dateCreated = dateCreated;
-	}
-	
-	protected void setDateModified(Date dateModified) {
-		this.dateModified = dateModified;
-	}
+    protected InputStream getStreamContentInternal(final Object obj, final boolean isRetrieve, final int handle, final int pos)
+            throws XMLDBException {
+        final InputStream retval;
+        try {
+            if (vfile != null) {
+                retval = vfile.getByteStream();
+            } else if (inputSource != null) {
+                retval = inputSource.getByteStream();
+            } else if (obj != null) {
+                retval = getAnyStream(obj);
+            } else {
+                // At least one value, please!!!
+                if (contentVFile == null) {
+                    getRemoteContentIntoLocalFile(null, isRetrieve, handle, pos);
+                }
+                retval = contentVFile.getByteStream();
+            }
+        } catch (final IOException e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+        }
+
+        return retval;
+    }
+
+    protected long getStreamLengthInternal(final Object obj)
+            throws XMLDBException {
+
+        final long retval;
+        if (vfile != null) {
+            retval = vfile.length();
+        } else if (inputSource != null && inputSource instanceof EXistInputSource) {
+            retval = ((EXistInputSource) inputSource).getByteStreamLength();
+        } else if (obj != null) {
+            if (obj instanceof String) {
+                retval = ((String) obj).getBytes(UTF_8).length;
+            } else if (obj instanceof byte[]) {
+                retval = ((byte[]) obj).length;
+            } else {
+                throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "don't know how to handle value of type " + obj.getClass().getName());
+            }
+        } else if (contentVFile != null) {
+            retval = contentVFile.length();
+        } else {
+            final List<Object> params = new ArrayList<>();
+            params.add(path.toString());
+            params.add(getProperties());
+            try {
+                final Map table = (Map) collection.getClient().execute("describeResource", params);
+                if (table.containsKey("content-length-64bit")) {
+                    final Object o = table.get("content-length-64bit");
+                    if (o instanceof Long) {
+                        retval = ((Long) o);
+                    } else {
+                        retval = Long.parseLong((String) o);
+                    }
+                } else {
+                    retval = ((Integer) table.get("content-length"));
+                }
+            } catch (final XmlRpcException xre) {
+                throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, xre.getMessage(), xre);
+            }
+        }
+
+        return retval;
+    }
+
+
+    protected byte[] readFile(final File file)
+            throws XMLDBException {
+        try(final InputStream is = new FileInputStream(file)) {
+            return readFile(is);
+        } catch (final IOException e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+        }
+    }
+
+    protected byte[] readFile(final InputSource in) throws XMLDBException {
+        final InputStream bis = in.getByteStream();
+        try {
+            return readFile(bis);
+        } finally {
+            // As it comes from an input source, we cannot blindly close it,
+            // but at least let's reset it! (if it is possible)
+            if (bis.markSupported()) {
+                try {
+                    bis.reset();
+                } catch (final IOException ioe) {
+                    //IgnoreIT(R)
+                }
+            }
+        }
+    }
+
+    private byte[] readFile(final InputStream is)
+            throws XMLDBException {
+        try(final ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+            copy(is, bos);
+            return bos.toByteArray();
+        } catch (final IOException e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+        }
+    }
+
+    private void copy(final InputStream is, final OutputStream os) throws IOException {
+        int read;
+        final byte buffer[] = new byte[65536]; //64KB
+        while ((read = is.read(buffer)) > -1) {
+            os.write(buffer, 0, read);
+        }
+    }
 }
