@@ -187,14 +187,13 @@ public class RealmImpl extends AbstractRealm {
                 remove_account.setRemoved(true);
                 remove_account.setCollection(broker, collectionRemovedAccounts, XmldbURI.create(UUIDGenerator.getUUID()+".xml"));
 
-                final TransactionManager transaction = getDatabase().getTransactionManager();
-                try(final Txn txn = transaction.beginTransaction()) {
-                    collectionAccounts.removeXMLResource(txn, broker, XmldbURI.create( remove_account.getName() + ".xml"));
+                    try(final Txn txn = broker.continueOrBeginTransaction()) {
+                        collectionAccounts.removeXMLResource(txn, broker, XmldbURI.create( remove_account.getName() + ".xml"));
 
-                    transaction.commit(txn);
-                } catch(final Exception e) {
-                    LOG.warn(e.getMessage(), e);
-                }
+                        txn.commit();
+                    } catch(final Exception e) {
+                        LOG.warn(e.getMessage(), e);
+                    }
 
                 getSecurityManager().registerAccount(remove_account);
                 principalDb.remove(remove_account.getName());
@@ -221,13 +220,11 @@ public class RealmImpl extends AbstractRealm {
 
             remove_group.setRemoved(true);
             remove_group.setCollection(broker, collectionRemovedGroups, XmldbURI.create(UUIDGenerator.getUUID() + ".xml"));
-
-            final TransactionManager transaction = getDatabase().getTransactionManager();
-            try(final Txn txn = transaction.beginTransaction()) {
+            try(final Txn txn = broker.continueOrBeginTransaction()) {
 
                 collectionGroups.removeXMLResource(txn, broker, XmldbURI.create(remove_group.getName() + ".xml" ));
 
-                transaction.commit(txn);
+                txn.commit();
             } catch (final Exception e) {
                 LOG.warn(e.getMessage(), e);
             }
