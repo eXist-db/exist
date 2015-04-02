@@ -21,9 +21,6 @@
  */
 package org.exist.security.realm.openid;
 
-import java.util.Collection;
-import java.util.List;
-
 import org.exist.EXistException;
 import org.exist.config.Configuration;
 import org.exist.config.ConfigurationException;
