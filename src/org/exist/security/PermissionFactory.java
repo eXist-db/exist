@@ -37,8 +37,6 @@ import org.exist.security.internal.aider.ACEAider;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock.LockMode;
-import org.exist.storage.txn.TransactionException;
-import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import com.evolvedbinary.j8fu.function.ConsumerE;
 import org.exist.util.LockException;
@@ -123,16 +121,14 @@ public class PermissionFactory {
         return permission;
     }
 
-    private static void updatePermissions(final DBBroker broker, final XmldbURI pathUri, final ConsumerE<Permission, PermissionDeniedException> permissionModifier) throws PermissionDeniedException {
+    private static void updatePermissions(final DBBroker broker, final Txn transaction, final XmldbURI pathUri, final ConsumerE<Permission, PermissionDeniedException> permissionModifier) throws PermissionDeniedException {
         final BrokerPool brokerPool = broker.getBrokerPool();
-        final TransactionManager transact = brokerPool.getTransactionManager();
-        try(final Txn transaction = transact.beginTransaction()) {
+        try {
             try(final Collection collection = broker.openCollection(pathUri, LockMode.WRITE_LOCK)) {
                 if (collection == null) {
                     try(final LockedDocument lockedDoc = broker.getXMLResource(pathUri, LockMode.WRITE_LOCK)) {
 
                         if (lockedDoc == null) {
-                            transact.abort(transaction);
                             throw new XPathException("Resource or collection '" + pathUri.toString() + "' does not exist.");
                         }
 
@@ -156,11 +152,9 @@ public class PermissionFactory {
 
                     broker.saveCollection(transaction, collection);
                 }
-
-                transact.commit(transaction);
                 broker.flush();
             }
-        } catch(final XPathException | PermissionDeniedException | IOException | TransactionException | LockException e) {
+        } catch(final XPathException | PermissionDeniedException | IOException | LockException e) {
             throw new PermissionDeniedException("Permission to modify permissions is denied for user '" + broker.getCurrentSubject().getName() + "' on '" + pathUri.toString() + "': " + e.getMessage(), e);
         }
     }
@@ -170,14 +164,15 @@ public class PermissionFactory {
      * inline with the rules of POSIX.1-2017 (Issue 7, 2018 edition).
      *
      * @param broker the database broker.
+     * @param transaction the database transaction;
      * @param pathUri the URI to a resource in the database.
      * @param owner the new owner for the resource.
      * @param group thr new group for the resource.
      *
      * @throws PermissionDeniedException if the calling process has insufficient permissions.
      */
-    public static void chown(final DBBroker broker, final XmldbURI pathUri, final Optional<String> owner, final Optional<String> group) throws PermissionDeniedException {
-        updatePermissions(broker, pathUri, permission -> chown(broker, permission, owner, group));
+    public static void chown(final DBBroker broker, final Txn transaction, final XmldbURI pathUri, final Optional<String> owner, final Optional<String> group) throws PermissionDeniedException {
+        updatePermissions(broker, transaction, pathUri, permission -> chown(broker, permission, owner, group));
     }
 
     /**
@@ -236,7 +231,7 @@ public class PermissionFactory {
                 if (!permission.isCurrentSubjectOwner()) {
                     throw new PermissionDeniedException("You cannot change the group ID of a file you do not own when posix-chown-restricted is in effect.");
                 }
-                // and, group equals either the effective group ID of the process or one of the process’s supplementary group IDs.
+                // and, group equals either the effective group ID of the process or one of the processâs supplementary group IDs.
                 final int desiredGroupId = broker.getBrokerPool().getSecurityManager().getGroup(group.get()).getId();
                 if (!permission.isCurrentSubjectInGroup(desiredGroupId)) {
                     throw new PermissionDeniedException("You cannot change the group ID of a file to a group of which you are not a member when posix-chown-restricted is in effect.");
@@ -289,14 +284,15 @@ public class PermissionFactory {
      * inline with the rules of POSIX.1-2017 (Issue 7, 2018 edition).
      *
      * @param broker the database broker.
+     * @param transaction the database transaction.
      * @param pathUri the URI to a resource in the database.
      * @param modeStr the new mode for the resource.
      * @param acl the new ACL for the resource.
      *
      * @throws PermissionDeniedException if the calling process has insufficient permissions.
      */
-    public static void chmod_str(final DBBroker broker, final XmldbURI pathUri, final Optional<String> modeStr, final Optional<List<ACEAider>> acl) throws PermissionDeniedException {
-        updatePermissions(broker, pathUri, permission -> chmod_impl(broker, permission, modeStr.map(Either::Left), acl));
+    public static void chmod_str(final DBBroker broker, final Txn transaction, final XmldbURI pathUri, final Optional<String> modeStr, final Optional<List<ACEAider>> acl) throws PermissionDeniedException {
+        updatePermissions(broker, transaction, pathUri, permission -> chmod_impl(broker, permission, modeStr.map(Either::Left), acl));
     }
 
     /**
@@ -334,14 +330,15 @@ public class PermissionFactory {
      * inline with the rules of POSIX.1-2017 (Issue 7, 2018 edition).
      *
      * @param broker the database broker.
+     * @param transaction the database transaction.
      * @param pathUri the URI to a resource in the database.
      * @param mode the new mode for the resource.
      * @param acl the new ACL for the resource.
      *
      * @throws PermissionDeniedException if the calling process has insufficient permissions.
      */
-    public static void chmod(final DBBroker broker, final XmldbURI pathUri, final Optional<Integer> mode, final Optional<List<ACEAider>> acl) throws PermissionDeniedException {
-        updatePermissions(broker, pathUri, permission -> chmod_impl(broker, permission, mode.map(Either::Right), acl));
+    public static void chmod(final DBBroker broker, final Txn transaction, final XmldbURI pathUri, final Optional<Integer> mode, final Optional<List<ACEAider>> acl) throws PermissionDeniedException {
+        updatePermissions(broker, transaction, pathUri, permission -> chmod_impl(broker, permission, mode.map(Either::Right), acl));
     }
 
     /**
@@ -447,9 +444,9 @@ public class PermissionFactory {
                 } else {
                 /*
                     If the group ID of the file does not equal either the effective group ID of the process or one of
-                    the process’s supplementary group IDs and if the process does not have superuser privileges,
+                    the processâs supplementary group IDs and if the process does not have superuser privileges,
                     then the set-group-ID bit is automatically turned off.
-                    This prevents a user from creating a set-group-ID file owned by a group that the user doesn’t
+                    This prevents a user from creating a set-group-ID file owned by a group that the user doesnât
                     belong to.
                 */
                     if (mode.get().isLeft()) {
@@ -495,13 +492,14 @@ public class PermissionFactory {
      * inline with the rules for chmod of POSIX.1-2017 (Issue 7, 2018 edition).
      *
      * @param broker the database broker.
+     * @param transaction the database transaction.
      * @param pathUri the URI to a resource in the database.
      * @param permissionModifier a function which will modify the ACL.
      *
      * @throws PermissionDeniedException if the calling process has insufficient permissions.
      */
-    public static void chacl(final DBBroker broker, final XmldbURI pathUri, final ConsumerE<ACLPermission, PermissionDeniedException> permissionModifier) throws PermissionDeniedException {
-        updatePermissions(broker, pathUri, permission -> {
+    public static void chacl(final DBBroker broker, final Txn transaction, final XmldbURI pathUri, final ConsumerE<ACLPermission, PermissionDeniedException> permissionModifier) throws PermissionDeniedException {
+        updatePermissions(broker, transaction, pathUri, permission -> {
             if(permission instanceof SimpleACLPermission) {
                 chacl((SimpleACLPermission)permission, permissionModifier);
             } else {
@@ -600,8 +598,8 @@ public class PermissionFactory {
 
                         return
                                 USER_CHAR + requestedAllOpSymbol + requestedAllMode + "," +
-                                (noSetGidGroupMode.isEmpty() ? "" : (GROUP_CHAR + requestedAllOpSymbol + noSetGidGroupMode + ",")) +
-                                OTHER_CHAR + requestedAllMode + requestedAllMode;
+                                        (noSetGidGroupMode.isEmpty() ? "" : (GROUP_CHAR + requestedAllOpSymbol + noSetGidGroupMode + ",")) +
+                                        OTHER_CHAR + requestedAllMode + requestedAllMode;
                     }
                 }
             }

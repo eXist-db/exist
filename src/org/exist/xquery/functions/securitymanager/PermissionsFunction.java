@@ -31,6 +31,9 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.PermissionFactory;
 import org.exist.security.SimpleACLPermission;
 import org.exist.security.Subject;
+import org.exist.storage.DBBroker;
+import org.exist.storage.txn.TransactionException;
+import org.exist.storage.txn.Txn;
 import org.exist.util.SyntaxException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
@@ -245,7 +248,7 @@ public class PermissionsFunction extends BasicFunction {
             //all functions below take a path as the first arg
             final XmldbURI pathUri = ((AnyURIValue)args[0].itemAt(0)).toXmldbURI();
 
-            try {
+            try(final Txn transaction = context.getBroker().continueOrBeginTransaction()) {
                 if(isCalledAs(qnGetPermissions.getLocalPart())) {
                     result = functionGetPermissions(pathUri);
                 } else if(isCalledAs(qnAddUserACE.getLocalPart()) || isCalledAs(qnAddGroupACE.getLocalPart())) {
@@ -253,41 +256,44 @@ public class PermissionsFunction extends BasicFunction {
                     final String name = args[1].getStringValue();
                     final ACE_ACCESS_TYPE access_type = args[2].effectiveBooleanValue() ? ACE_ACCESS_TYPE.ALLOWED : ACE_ACCESS_TYPE.DENIED;
                     final String mode = args[3].itemAt(0).getStringValue();
-                    result = functionAddACE(pathUri, target, name, access_type, mode);
+                    result = functionAddACE(context.getBroker(), transaction, pathUri, target, name, access_type, mode);
                 } else if(isCalledAs(qnInsertUserACE.getLocalPart()) || isCalledAs(qnInsertGroupACE.getLocalPart())) {
                     final ACE_TARGET target = isCalledAs(qnInsertUserACE.getLocalPart()) ? ACE_TARGET.USER : ACE_TARGET.GROUP;
                     final int index = args[1].itemAt(0).toJavaObject(Integer.class);
                     final String name = args[2].getStringValue();
                     final ACE_ACCESS_TYPE access_type = args[3].effectiveBooleanValue() ? ACE_ACCESS_TYPE.ALLOWED : ACE_ACCESS_TYPE.DENIED;
                     final String mode = args[4].itemAt(0).getStringValue();
-                    result = functionInsertACE(pathUri, index, target, name, access_type, mode);
+                    result = functionInsertACE(context.getBroker(), transaction, pathUri, index, target, name, access_type, mode);
                 } else if(isCalledAs(qnModifyACE.getLocalPart())) {
                     final int index = args[1].itemAt(0).toJavaObject(Integer.class);
                     final ACE_ACCESS_TYPE access_type = args[2].effectiveBooleanValue() ? ACE_ACCESS_TYPE.ALLOWED : ACE_ACCESS_TYPE.DENIED;
                     final String mode = args[3].itemAt(0).getStringValue();
-                    result = functionModifyACE(pathUri, index, access_type, mode);
+                    result = functionModifyACE(context.getBroker(), transaction, pathUri, index, access_type, mode);
                 } else if(isCalledAs(qnRemoveACE.getLocalPart())) {
                     final int index = args[1].itemAt(0).toJavaObject(Integer.class);
-                    result = functionRemoveACE(pathUri, index);
+                    result = functionRemoveACE(context.getBroker(), transaction, pathUri, index);
                 } else if(isCalledAs(qnClearACL.getLocalPart())) {
-                    result = functionClearACL(pathUri);
+                    result = functionClearACL(context.getBroker(), transaction, pathUri);
                 } else if(isCalledAs(qnChMod.getLocalPart())) {
                     final String mode = args[1].itemAt(0).getStringValue();
-                    result = functionChMod(pathUri, mode);
+                    result = functionChMod(context.getBroker(), transaction, pathUri, mode);
                 } else if(isCalledAs(qnChOwn.getLocalPart())) {
                     final String owner = args[1].itemAt(0).getStringValue();
-                    result = functionChOwn(pathUri, owner);
+                    result = functionChOwn(context.getBroker(), transaction, pathUri, owner);
                 }  else if(isCalledAs(qnChGrp.getLocalPart())) {
                     final String groupname = args[1].itemAt(0).getStringValue();
-                    result = functionChGrp(pathUri, groupname);
+                    result = functionChGrp(context.getBroker(), transaction, pathUri, groupname);
                 } else if(isCalledAs(qnHasAccess.getLocalPart())) {
                     final String mode = args[1].itemAt(0).getStringValue();
                     result = functionHasAccess(pathUri, mode);
                 } else {
                     result = Sequence.EMPTY_SEQUENCE;
                 }
-            } catch(final PermissionDeniedException pde) {
-              throw new XPathException(this, pde);
+                
+                transaction.commit();
+                
+            } catch(final TransactionException | PermissionDeniedException e) {
+              throw new XPathException(this, e);
             }
         }
 
@@ -303,48 +309,47 @@ public class PermissionsFunction extends BasicFunction {
     }
 
     // TODO(AR) need to do something in PermissionFactory for modifying ACL's
-
-    private Sequence functionAddACE(final XmldbURI pathUri, final ACE_TARGET target, final String name, final ACE_ACCESS_TYPE access_type, final String mode) throws PermissionDeniedException {
-        PermissionFactory.chacl(context.getBroker(), pathUri,
+    private Sequence functionAddACE(final DBBroker broker, final Txn transaction, final XmldbURI pathUri, final ACE_TARGET target, final String name, final ACE_ACCESS_TYPE access_type, final String mode) throws PermissionDeniedException {
+        PermissionFactory.chacl(broker, transaction, pathUri,
                 aclPermission -> aclPermission.addACE(access_type, target, name, mode)
         );
         return Sequence.EMPTY_SEQUENCE;
     }
 
-    private Sequence functionInsertACE(final XmldbURI pathUri, final int index, final ACE_TARGET target, final String name, final ACE_ACCESS_TYPE access_type, final String mode) throws PermissionDeniedException {
-        PermissionFactory.chacl(context.getBroker(), pathUri,
+    private Sequence functionInsertACE(final DBBroker broker, final Txn transaction, final XmldbURI pathUri, final int index, final ACE_TARGET target, final String name, final ACE_ACCESS_TYPE access_type, final String mode) throws PermissionDeniedException {
+        PermissionFactory.chacl(broker, transaction, pathUri,
                 aclPermission -> aclPermission.insertACE(index, access_type, target, name, mode)
         );
         return Sequence.EMPTY_SEQUENCE;
     }
 
-    private Sequence functionModifyACE(final XmldbURI pathUri, final int index, final ACE_ACCESS_TYPE access_type, final String mode) throws PermissionDeniedException {
-        PermissionFactory.chacl(context.getBroker(), pathUri,
+    private Sequence functionModifyACE(final DBBroker broker, final Txn transaction, final XmldbURI pathUri, final int index, final ACE_ACCESS_TYPE access_type, final String mode) throws PermissionDeniedException {
+        PermissionFactory.chacl(broker, transaction, pathUri,
                 aclPermission -> aclPermission.modifyACE(index, access_type, mode)
         );
         return Sequence.EMPTY_SEQUENCE;
     }
 
-    private Sequence functionRemoveACE(final XmldbURI pathUri, final int index) throws PermissionDeniedException {
-        PermissionFactory.chacl(context.getBroker(), pathUri,
+    private Sequence functionRemoveACE(final DBBroker broker, final Txn transaction, final XmldbURI pathUri, final int index) throws PermissionDeniedException {
+        PermissionFactory.chacl(broker, transaction, pathUri,
                 aclPermission -> aclPermission.removeACE(index)
         );
         return Sequence.EMPTY_SEQUENCE;
     }
 
-    private Sequence functionClearACL(final XmldbURI pathUri) throws PermissionDeniedException {
-        PermissionFactory.chacl(context.getBroker(), pathUri,
+    private Sequence functionClearACL(final DBBroker broker, final Txn transaction, final XmldbURI pathUri) throws PermissionDeniedException {
+        PermissionFactory.chacl(broker, transaction, pathUri,
                 aclPermission -> aclPermission.clear()
         );
         return Sequence.EMPTY_SEQUENCE;
     }
 
-    private Sequence functionChMod(final XmldbURI pathUri, final String modeStr) throws PermissionDeniedException {
-        PermissionFactory.chmod_str(context.getBroker(), pathUri, Optional.ofNullable(modeStr), Optional.empty());
+    private Sequence functionChMod(final DBBroker broker, final Txn transaction, final XmldbURI pathUri, final String modeStr) throws PermissionDeniedException {
+        PermissionFactory.chmod_str(broker, transaction, pathUri, Optional.ofNullable(modeStr), Optional.empty());
         return Sequence.EMPTY_SEQUENCE;
     }
 
-    private Sequence functionChOwn(final XmldbURI pathUri, final String owner) throws PermissionDeniedException {
+    private Sequence functionChOwn(final DBBroker broker, final Txn transaction, final XmldbURI pathUri, final String owner) throws PermissionDeniedException {
         final Optional<String> newOwner;
         final Optional<String> newGroup;
         if (owner.indexOf(OWNER_GROUP_SEPARATOR) > -1) {
@@ -355,13 +360,13 @@ public class PermissionsFunction extends BasicFunction {
             newGroup = Optional.empty();
         }
 
-        PermissionFactory.chown(context.getBroker(), pathUri, newOwner, newGroup);
+        PermissionFactory.chown(broker, transaction, pathUri, newOwner, newGroup);
         return Sequence.EMPTY_SEQUENCE;
     }
 
-    private Sequence functionChGrp(final XmldbURI pathUri, final String groupname) throws PermissionDeniedException {
+    private Sequence functionChGrp(final DBBroker broker, final Txn transaction, final XmldbURI pathUri, final String groupname) throws PermissionDeniedException {
         final Optional<String> newGroup = Optional.ofNullable(groupname).filter(s -> !s.isEmpty());
-        PermissionFactory.chown(context.getBroker(), pathUri, Optional.empty(), newGroup);
+        PermissionFactory.chown(broker, transaction, pathUri, Optional.empty(), newGroup);
         return Sequence.EMPTY_SEQUENCE;
     }
     

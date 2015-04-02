@@ -258,7 +258,7 @@ public class CopyCollectionTest {
         try (final DBBroker broker = pool.get(Optional.of(sm.getSystemSubject()));
                 final Txn transaction = pool.getTransactionManager().beginTransaction()) {
             final Collection collection = broker.getOrCreateCollection(transaction, TEST_COLLECTION_URI);
-            chmod(broker, collection.getURI(), 511);
+            chmod(broker, transaction, collection.getURI(), 511);
             broker.saveCollection(transaction, collection);
 
             createUser(broker, sm, USER1_NAME, USER1_PWD);
@@ -279,10 +279,10 @@ public class CopyCollectionTest {
                 final Collection collection = broker.openCollection(TEST_COLLECTION_URI, LockMode.WRITE_LOCK)) {
 
             final Collection u1c1 = broker.getOrCreateCollection(transaction, TEST_COLLECTION_URI.append(USER1_COL1));
-            chmod(broker, TEST_COLLECTION_URI.append(USER1_COL1), USER1_COL1_MODE);
+            chmod(broker, transaction, TEST_COLLECTION_URI.append(USER1_COL1), USER1_COL1_MODE);
 
             final Collection u1c2 = broker.getOrCreateCollection(transaction, TEST_COLLECTION_URI.append(USER1_COL2));
-            chmod(broker, TEST_COLLECTION_URI.append(USER1_COL2), USER1_COL2_MODE);
+            chmod(broker, transaction, TEST_COLLECTION_URI.append(USER1_COL2), USER1_COL2_MODE);
 
             broker.saveCollection(transaction, collection);
 
@@ -296,7 +296,7 @@ public class CopyCollectionTest {
                 final Collection collection = broker.openCollection(TEST_COLLECTION_URI, LockMode.WRITE_LOCK)) {
 
             final Collection u2c2 = broker.getOrCreateCollection(transaction, TEST_COLLECTION_URI.append(USER2_COL2));
-            chmod(broker, TEST_COLLECTION_URI.append(USER2_COL2), USER2_COL2_MODE);
+            chmod(broker, transaction, TEST_COLLECTION_URI.append(USER2_COL2), USER2_COL2_MODE);
 
             broker.saveCollection(transaction, collection);
 
@@ -350,8 +350,8 @@ public class CopyCollectionTest {
         sm.updateGroup(userGroup);
     }
 
-    private static void chmod(final DBBroker broker, final XmldbURI pathUri, final int mode) throws PermissionDeniedException {
-        PermissionFactory.chmod(broker, pathUri, Optional.of(mode), Optional.empty());
+    private static void chmod(final DBBroker broker, final Txn transaction, final XmldbURI pathUri, final int mode) throws PermissionDeniedException {
+        PermissionFactory.chmod(broker, transaction, pathUri, Optional.of(mode), Optional.empty());
     }
 
     private static void removeUser(final SecurityManager sm, final String username) throws PermissionDeniedException, EXistException {
