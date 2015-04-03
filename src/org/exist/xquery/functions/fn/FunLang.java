@@ -98,7 +98,7 @@ public class FunLang extends Function {
 	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
 		super.analyze(contextInfo);
 		try {
-			query = context.getBroker().getXQueryService().compile(context, queryString);
+			query = context.getBroker().getXQueryService().compile(context.getBroker(), context, queryString);
 		} catch (final PermissionDeniedException e) {
 			throw new XPathException(this, e);
 		}		

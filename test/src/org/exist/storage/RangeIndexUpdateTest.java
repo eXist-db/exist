@@ -103,7 +103,7 @@ public class RangeIndexUpdateTest {
 
             final XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
-            final Sequence seq = xquery.execute("//item[. = 'Chair']", null, AccessContext.TEST);
+            final Sequence seq = xquery.execute(broker, "//item[. = 'Chair']", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
 

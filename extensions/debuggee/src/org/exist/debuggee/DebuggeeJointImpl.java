@@ -470,9 +470,9 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 			context.undeclareGlobalVariable(Debuggee.IDEKEY);
 			
 			XQuery service = broker.getXQueryService();
-			CompiledXQuery compiled = service.compile(context, script);
+			CompiledXQuery compiled = service.compile(broker, context, script);
 			
-			Sequence resultSequence = service.execute(compiled, null);
+			Sequence resultSequence = service.execute(broker, compiled, null);
 	
 	        SAXSerializer sax = null;
 	        Serializer serializer = broker.getSerializer();

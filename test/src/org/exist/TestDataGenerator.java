@@ -55,21 +55,21 @@ public class TestDataGenerator {
         try {
             DocumentSet docs = collection.allDocs(broker, new DefaultDocumentSet(), true);
             XQuery service = broker.getXQueryService();
-            XQueryContext context = service.newContext(AccessContext.TEST);
+            XQueryContext context = new XQueryContext(broker.getBrokerPool(), AccessContext.TEST);
             context.declareVariable("filename", "");
             context.declareVariable("count", "0");
             context.setStaticallyKnownDocuments(docs);
 
             String query = IMPORT + xqueryContent;
 
-            CompiledXQuery compiled = service.compile(context, query);
+            CompiledXQuery compiled = service.compile(broker, context, query);
 
             for (int i = 0; i < count; i++) {
                 generatedFiles[i] = File.createTempFile(prefix, ".xml");
 
                 context.declareVariable("filename", generatedFiles[i].getName());
                 context.declareVariable("count", new Integer(i));
-                Sequence results = service.execute(compiled, Sequence.EMPTY_SEQUENCE);
+                Sequence results = service.execute(broker, compiled, Sequence.EMPTY_SEQUENCE);
 
                 Serializer serializer = broker.getSerializer();
                 serializer.reset();

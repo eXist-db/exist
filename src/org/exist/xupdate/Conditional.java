@@ -71,12 +71,12 @@ public class Conditional extends Modification {
 			EXistException, XPathException, TriggerException {
 		LOG.debug("Processing xupdate:if ...");
 		final XQuery xquery = broker.getXQueryService();
-		final XQueryPool pool = xquery.getXQueryPool();
+		final XQueryPool pool = broker.getBrokerPool().getXQueryPool();
 		final Source source = new StringSource(selectStmt);
 		CompiledXQuery compiled = pool.borrowCompiledXQuery(broker, source);
 		XQueryContext context;
 		if(compiled == null)
-		    {context = xquery.newContext(getAccessContext());}
+		    {context = new XQueryContext(broker.getBrokerPool(), getAccessContext());}
 		else
 		    {context = compiled.getContext();}
 
@@ -86,14 +86,14 @@ public class Conditional extends Modification {
 		declareVariables(context);
 		if(compiled == null)
 			try {
-				compiled = xquery.compile(context, source);
+				compiled = xquery.compile(broker, context, source);
 			} catch (final IOException e) {
 				throw new EXistException("An exception occurred while compiling the query: " + e.getMessage());
 			}
 		
 		Sequence seq = null;
 		try {
-			seq = xquery.execute(compiled, null);
+			seq = xquery.execute(broker, compiled, null);
 		} finally {
 			pool.returnCompiledXQuery(source, compiled);
 		}

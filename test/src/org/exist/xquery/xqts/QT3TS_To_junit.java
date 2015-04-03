@@ -227,7 +227,7 @@ public class QT3TS_To_junit {
 
         XQuery xqs = broker.getXQueryService();
         
-        Sequence results = xqs.execute(tsQuery, null, AccessContext.TEST);
+        Sequence results = xqs.execute(broker, tsQuery, null, AccessContext.TEST);
         
         for (NodeProxy p : results.toNodeSet()) {
         	NamedNodeMap attrs = p.getNode().getAttributes();
@@ -245,7 +245,7 @@ public class QT3TS_To_junit {
     		"return $catalog//qt:test-case";
 
         XQuery xqs = broker.getXQueryService();
-        Sequence results = xqs.execute(tsQuery, null, AccessContext.TEST);
+        Sequence results = xqs.execute(broker, tsQuery, null, AccessContext.TEST);
         
         testCases(src, file, name, results);
 	}

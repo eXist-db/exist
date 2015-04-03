@@ -265,14 +265,14 @@ public class XQueryStartupTrigger implements StartupTrigger {
             } else {
                 // Setup xquery service
                 XQuery service = broker.getXQueryService();
-                context = service.newContext(AccessContext.TRIGGER);
+                context = new XQueryContext(broker.getBrokerPool(), AccessContext.TRIGGER);
 
                 // Allow use of modules with relative paths
                 String moduleLoadPath = StringUtils.substringBeforeLast(path, "/");
                 context.setModuleLoadPath(moduleLoadPath);
 
                 // Compile query
-                CompiledXQuery compiledQuery = service.compile(context, source);
+                CompiledXQuery compiledQuery = service.compile(broker, context, source);
 
                 LOG.info(String.format("Starting Xquery at '%s'", path));
 
@@ -280,7 +280,7 @@ public class XQueryStartupTrigger implements StartupTrigger {
                 context.prepareForExecution();
 
                 // Execute
-                Sequence result = service.execute(compiledQuery, null);
+                Sequence result = service.execute(broker, compiledQuery, null);
 
                 // Log results
                 LOG.info(String.format("Result xquery: '%s'", result.getStringValue()));

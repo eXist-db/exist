@@ -303,7 +303,7 @@ public class QueryService implements Cloneable {
 			if (overrideDocs != null) docs = overrideDocs;
 			final org.exist.source.Source source = buildQuerySource(query, params, "execute");
 			final XQuery xquery = broker.getXQueryService();
-			final XQueryPool pool = xquery.getXQueryPool();
+			final XQueryPool pool = broker.getBrokerPool().getXQueryPool();
 			CompiledXQuery compiledQuery = pool.borrowCompiledXQuery(broker, source);
 			MutableDocumentSet docsToLock = new DefaultDocumentSet();
 			if (docs != null) docsToLock.addAll(docs);
@@ -311,7 +311,7 @@ public class QueryService implements Cloneable {
 			try {
 				XQueryContext context;
 				if (compiledQuery == null) {
-					context = xquery.newContext(AccessContext.INTERNAL_PREFIX_LOOKUP);
+					context = new XQueryContext(broker.getBrokerPool(), AccessContext.INTERNAL_PREFIX_LOOKUP);
 					buildXQueryStaticContext(context, true);
 				} else {
 					context = compiledQuery.getContext();
@@ -320,12 +320,12 @@ public class QueryService implements Cloneable {
 				buildXQueryDynamicContext(context, params, docsToLock, true);
 				t2 = System.currentTimeMillis();
 				if (compiledQuery == null) {
-					compiledQuery = xquery.compile(context, source);
+					compiledQuery = xquery.compile(broker, context, source);
 					t3 = System.currentTimeMillis();
 				}
 				docsToLock.lock(broker, false, false);
 				try {
-					return new ItemList(xquery.execute(wrap(compiledQuery, wrapperFactory, context), base), namespaceBindings.extend(), db);
+					return new ItemList(xquery.execute(broker, wrap(compiledQuery, wrapperFactory, context), base), namespaceBindings.extend(), db);
 				} finally {
 					docsToLock.unlock(false);
 					t4 = System.currentTimeMillis();
@@ -536,7 +536,7 @@ public class QueryService implements Cloneable {
 			prepareContext(broker);
 			final org.exist.source.Source source = buildQuerySource(query, params, "analyze");
 			final XQuery xquery = broker.getXQueryService();
-			final XQueryPool pool = xquery.getXQueryPool();
+			final XQueryPool pool = broker.getBrokerPool().getXQueryPool();
 			CompiledXQuery compiledQuery = pool.borrowCompiledXQuery(broker, source);
 			try {
 				AnalysisXQueryContext context;
@@ -545,7 +545,7 @@ public class QueryService implements Cloneable {
 					buildXQueryStaticContext(context, false);
 					buildXQueryDynamicContext(context, params, null, false);
 					t2 = System.currentTimeMillis();
-					compiledQuery = xquery.compile(context, source);
+					compiledQuery = xquery.compile(broker, context, source);
 					t3 = System.currentTimeMillis();
 				} else {
 					context = (AnalysisXQueryContext) compiledQuery.getContext();

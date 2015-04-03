@@ -434,7 +434,7 @@ public class Launcher extends Observable implements Observer {
             pool = BrokerPool.getInstance();
             broker = pool.get(pool.getSecurityManager().getSystemSubject());
             final XQuery xquery = broker.getXQueryService();
-            final Sequence pkgs = xquery.execute("repo:list()", null, AccessContext.INITIALIZE);
+            final Sequence pkgs = xquery.execute(broker, "repo:list()", null, AccessContext.INITIALIZE);
             for (final SequenceIterator i = pkgs.iterate(); i.hasNext(); ) {
                 final ExistRepository.Notification notification = new ExistRepository.Notification(ExistRepository.Action.INSTALL, i.nextItem().getStringValue());
                 update(pool.getExpathRepo(), notification);

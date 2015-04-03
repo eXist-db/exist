@@ -415,13 +415,13 @@ public class XIncludeFilter implements Receiver {
                     source = new StringSource(xpointer);
                 }
                 final XQuery xquery = serializer.broker.getXQueryService();
-                final XQueryPool pool = xquery.getXQueryPool();
+                final XQueryPool pool = serializer.broker.getBrokerPool().getXQueryPool();
                 XQueryContext context;
                 CompiledXQuery compiled = pool.borrowCompiledXQuery(serializer.broker, source);
                 if (compiled != null)
                     {context = compiled.getContext();}
                 else
-                    {context = xquery.newContext(AccessContext.XINCLUDE);}
+                    {context = new XQueryContext(serializer.broker.getBrokerPool(), AccessContext.XINCLUDE);}
                 context.declareNamespaces(namespaces);
                 context.declareNamespace("xinclude", XINCLUDE_NS);
                 
@@ -460,7 +460,7 @@ public class XIncludeFilter implements Receiver {
 
                 if(compiled == null) {
                     try {
-                        compiled = xquery.compile(context, source, xpointer != null);
+                        compiled = xquery.compile(serializer.broker, context, source, xpointer != null);
                     } catch (final IOException e) {
                         throw new SAXException("I/O error while reading query for xinclude: " + e.getMessage(), e);
                     }
@@ -469,7 +469,7 @@ public class XIncludeFilter implements Receiver {
                 Sequence contextSeq = null;
                 if (memtreeDoc != null)
                     {contextSeq = memtreeDoc;}
-                final Sequence seq = xquery.execute(compiled, contextSeq);
+                final Sequence seq = xquery.execute(serializer.broker, compiled, contextSeq);
 
                 if(Type.subTypeOf(seq.getItemType(), Type.NODE)) {
                     if (LOG.isDebugEnabled())

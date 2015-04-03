@@ -133,18 +133,18 @@ public class AuditTrailSessionListener implements HttpSessionListener {
                     return;
                 }
 
-                final XQueryPool xqpool = xquery.getXQueryPool();
+                final XQueryPool xqpool = pool.getXQueryPool();
                 CompiledXQuery compiled = xqpool.borrowCompiledXQuery(broker, source);
                 XQueryContext context;
                 if (compiled == null)
-                    {context = xquery.newContext(AccessContext.REST);}
+                    {context = new XQueryContext(broker.getBrokerPool(), AccessContext.REST);}
                 else
                     {context = compiled.getContext();}
                 context.setStaticallyKnownDocuments(new XmldbURI[] { pathUri });
                 context.setBaseURI(new AnyURIValue(pathUri.toString()));
 
                 if (compiled == null)
-                    {compiled = xquery.compile(context, source);}
+                    {compiled = xquery.compile(broker, context, source);}
                 else {
                     compiled.getContext().updateContext(context);
                     context.getWatchDog().reset();
@@ -155,7 +155,7 @@ public class AuditTrailSessionListener implements HttpSessionListener {
 
                 try {
                     final long startTime = System.currentTimeMillis();
-                    result = xquery.execute(compiled, null, outputProperties);
+                    result = xquery.execute(broker, compiled, null, outputProperties);
                     final long queryTime = System.currentTimeMillis() - startTime;
                     LOG.info("XQuery execution results: " + result.toString()  + " in " + queryTime + "ms.");
                 } finally {

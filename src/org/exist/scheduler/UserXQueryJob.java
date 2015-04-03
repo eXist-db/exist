@@ -167,13 +167,13 @@ public class UserXQueryJob extends UserJob {
 
                 //execute the xquery
                 final XQuery xquery = broker.getXQueryService();
-                xqPool = xquery.getXQueryPool();
+                xqPool = pool.getXQueryPool();
 
                 //try and get a pre-compiled query from the pool
                 compiled = xqPool.borrowCompiledXQuery(broker, source);
 
                 if(compiled == null) {
-                    context = xquery.newContext(AccessContext.REST); //TODO should probably have its own AccessContext.SCHEDULER
+                    context = new XQueryContext(pool, AccessContext.REST); //TODO should probably have its own AccessContext.SCHEDULER
                 } else {
                     context = compiled.getContext();
                 }
@@ -189,7 +189,7 @@ public class UserXQueryJob extends UserJob {
                 if(compiled == null) {
 
                     try {
-                        compiled = xquery.compile(context, source);
+                        compiled = xquery.compile(broker, context, source);
                     }
                     catch(final IOException e) {
                         abort("Failed to read query from " + xqueryresource);
@@ -212,7 +212,7 @@ public class UserXQueryJob extends UserJob {
                     }
                 }
 
-                xquery.execute(compiled, null);
+                xquery.execute(broker, compiled, null);
 
             } else {
                 LOG.warn("XQuery User Job not found: " + xqueryresource + ", job not scheduled");

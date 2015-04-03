@@ -203,7 +203,7 @@ public class XQTS_To_junit {
 
         XQuery xqs = broker.getXQueryService();
         
-        Sequence results = xqs.execute(query, null, AccessContext.TEST);
+        Sequence results = xqs.execute(broker, query, null, AccessContext.TEST);
 
         if (! results.isEmpty()) {
             String catalog = (String) results.itemAt(0).getStringValue();
@@ -255,7 +255,7 @@ public class XQTS_To_junit {
         query += "\treturn xs:string($testGroup/@name)";
 
         XQuery xqs = broker.getXQueryService();
-        Sequence results = xqs.execute(query, null, AccessContext.TEST);
+        Sequence results = xqs.execute(broker, query, null, AccessContext.TEST);
 
         if (!results.isEmpty()) {
             File subfolder;
@@ -334,7 +334,7 @@ public class XQTS_To_junit {
             "\treturn xs:string($testGroup/@name)";
 
         XQuery xqs = broker.getXQueryService();
-        Sequence results = xqs.execute(query, null, AccessContext.TEST);
+        Sequence results = xqs.execute(broker, query, null, AccessContext.TEST);
 
         if (!results.isEmpty()) {
             folder.mkdirs();

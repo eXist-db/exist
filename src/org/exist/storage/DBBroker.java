@@ -121,7 +121,7 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
         if (temp != null)
             {caseSensitive = temp.booleanValue();}
         this.pool = pool;
-        xqueryService = new XQuery(this);
+        xqueryService = new XQuery();
         initIndexModules();
     }
 

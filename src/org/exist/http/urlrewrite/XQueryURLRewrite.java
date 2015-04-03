@@ -674,7 +674,7 @@ public class XQueryURLRewrite extends HttpServlet {
         final String basePath = staticRewrite == null ? "." : staticRewrite.getTarget();
         
         final XQuery xquery = broker.getXQueryService();
-        final XQueryPool xqyPool = xquery.getXQueryPool();
+        final XQueryPool xqyPool = broker.getBrokerPool().getXQueryPool();
 		
         CompiledXQuery compiled = null;
         if (compiledCache) {
@@ -682,7 +682,7 @@ public class XQueryURLRewrite extends HttpServlet {
         }
         XQueryContext queryContext;
         if (compiled == null) {
-			queryContext = xquery.newContext(AccessContext.REST);
+			queryContext = new XQueryContext(broker.getBrokerPool(), AccessContext.REST);
 		} else {
 			queryContext = compiled.getContext();
 		}
@@ -691,7 +691,7 @@ public class XQueryURLRewrite extends HttpServlet {
         declareVariables(queryContext, sourceInfo, staticRewrite, basePath, request, response);
         if (compiled == null) {
 			try {
-				compiled = xquery.compile(queryContext, sourceInfo.source);
+				compiled = xquery.compile(broker, queryContext, sourceInfo.source);
 			} catch (final IOException e) {
 				throw new ServletException("Failed to read query from " + query, e);
 			}
@@ -706,7 +706,7 @@ public class XQueryURLRewrite extends HttpServlet {
 //      outputProperties.put("base-uri", collectionURI.toString());
 
         try {
-			return xquery.execute(compiled, null, outputProperties);
+			return xquery.execute(broker, compiled, null, outputProperties);
 		} finally {
             queryContext.runCleanupTasks();
 			xqyPool.returnCompiledXQuery(sourceInfo.source, compiled);

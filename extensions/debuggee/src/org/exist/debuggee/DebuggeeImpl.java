@@ -133,14 +133,14 @@ public class DebuggeeImpl implements Debuggee {
 	
 	        XQuery xquery = broker.getXQueryService();
 			
-	        XQueryContext queryContext = xquery.newContext(AccessContext.REST);
+	        XQueryContext queryContext = new XQueryContext(broker.getBrokerPool(), AccessContext.REST);
 	
 			// Find correct script load path
 			queryContext.setModuleLoadPath(XmldbURI.create(uri).removeLastSegment().toString());
 	
 			CompiledXQuery compiled;
 			try {
-				compiled = xquery.compile(queryContext, source);
+				compiled = xquery.compile(broker, queryContext, source);
 			} catch (IOException e) {
 				e.printStackTrace();
 				return null;

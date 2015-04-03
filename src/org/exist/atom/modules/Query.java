@@ -198,7 +198,7 @@ public class Query extends AtomModuleBase implements Atom {
 
 			final XQuery xquery = broker.getXQueryService();
 
-			final XQueryContext context = xquery.newContext(AccessContext.REST);
+			final XQueryContext context = new XQueryContext(broker.getBrokerPool(), AccessContext.REST);
 			context.setModuleLoadPath(getContext().getModuleLoadPath());
 
 			String contentType = request.getHeader("Content-Type");
@@ -237,7 +237,7 @@ public class Query extends AtomModuleBase implements Atom {
 					count += len;
 					builder.append(buffer, 0, len);
 				}
-				compiledQuery = xquery.compile(context, new StringSource(builder.toString()));
+				compiledQuery = xquery.compile(broker, context, new StringSource(builder.toString()));
 			
 			} catch (final XPathException ex) {
 				throw new EXistException("Cannot compile xquery.", ex);
@@ -253,7 +253,7 @@ public class Query extends AtomModuleBase implements Atom {
 			);
 
 			try {
-				final Sequence resultSequence = xquery.execute(compiledQuery, null);
+				final Sequence resultSequence = xquery.execute(broker, compiledQuery, null);
 				if (resultSequence.isEmpty()) {
 					throw new BadRequestException("No topic was found.");
 				}
@@ -323,14 +323,14 @@ public class Query extends AtomModuleBase implements Atom {
 			{throw new BadRequestException("Collection " + request.getPath() + " does not exist.");}
 
 		final XQuery xquery = broker.getXQueryService();
-		CompiledXQuery feedQuery = xquery.getXQueryPool().borrowCompiledXQuery(broker, config.querySource);
+		CompiledXQuery feedQuery = broker.getBrokerPool().getXQueryPool().borrowCompiledXQuery(broker, config.querySource);
 
 		XQueryContext context;
 		if (feedQuery == null) {
-			context = xquery.newContext(AccessContext.REST);
+			context = new XQueryContext(broker.getBrokerPool(), AccessContext.REST);
 			context.setModuleLoadPath(getContext().getModuleLoadPath());
 			try {
-				feedQuery = xquery.compile(context, config.querySource);
+				feedQuery = xquery.compile(broker, context, config.querySource);
 			} catch (final XPathException ex) {
 				throw new EXistException("Cannot compile xquery "
 						+ config.querySource.getURL(), ex);
@@ -350,7 +350,7 @@ public class Query extends AtomModuleBase implements Atom {
 		try {
 			declareVariables(context, request.getRequest(), response.getResponse());
 
-			final Sequence resultSequence = xquery.execute(feedQuery, null);
+			final Sequence resultSequence = xquery.execute(broker, feedQuery, null);
 			if (resultSequence.isEmpty())
 				{throw new BadRequestException("No topic was found.");}
 
@@ -387,7 +387,7 @@ public class Query extends AtomModuleBase implements Atom {
 			throw new EXistException("Cannot execute xquery "
 					+ config.querySource.getURL(), ex);
 		} finally {
-			xquery.getXQueryPool().returnCompiledXQuery(config.querySource,
+			broker.getBrokerPool().getXQueryPool().returnCompiledXQuery(config.querySource,
 					feedQuery);
 		}
 	}

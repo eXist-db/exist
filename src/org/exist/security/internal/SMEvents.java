@@ -110,9 +110,9 @@ public class SMEvents implements Configurable {
             if(source == null) {return;}
 
             final XQuery xquery = broker.getXQueryService();
-            final XQueryContext context = xquery.newContext(AccessContext.XMLDB);
+            final XQueryContext context = new XQueryContext(broker.getBrokerPool(), AccessContext.XMLDB);
 
-            final CompiledXQuery compiled = xquery.compile(context, source);
+            final CompiledXQuery compiled = xquery.compile(broker, context, source);
 
 //            Sequence result = xquery.execute(compiled, subject.getName());
 

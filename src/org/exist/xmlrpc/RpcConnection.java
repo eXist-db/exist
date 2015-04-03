@@ -246,7 +246,7 @@ public class RpcConnection implements RpcAPI {
                 compiled.getContext().setProtectedDocs(lockedDocuments);
             }
             final Properties outputProperties = new Properties();
-            final Sequence result = xquery.execute(compiled, contextSet, outputProperties);
+            final Sequence result = xquery.execute(broker, compiled, contextSet, outputProperties);
             // pass last modified date to the HTTP response
             HTTPUtils.addLastModifiedHeader(result, compiled.getContext());
             LOG.info("query took " + (System.currentTimeMillis() - start) + "ms.");
@@ -287,11 +287,11 @@ public class RpcConnection implements RpcAPI {
     @Deprecated
     private CompiledXQuery compile(final DBBroker broker, final Source source, final Map<String, Object> parameters) throws XPathException, IOException, PermissionDeniedException {
         final XQuery xquery = broker.getXQueryService();
-        final XQueryPool pool = xquery.getXQueryPool();
+        final XQueryPool pool = broker.getBrokerPool().getXQueryPool();
         CompiledXQuery compiled = pool.borrowCompiledXQuery(broker, source);
         XQueryContext context;
         if (compiled == null) {
-            context = xquery.newContext(AccessContext.XMLRPC);
+            context = new XQueryContext(broker.getBrokerPool(), AccessContext.XMLRPC);
         } else {
             context = compiled.getContext();
         }
@@ -333,7 +333,7 @@ public class RpcConnection implements RpcAPI {
             context.setStaticallyKnownDocuments(new XmldbURI[]{context.getBaseURI().toXmldbURI()});
         }
         if (compiled == null) {
-            compiled = xquery.compile(context, source);
+            compiled = xquery.compile(broker, context, source);
         }
         return compiled;
     }
@@ -3491,7 +3491,7 @@ public class RpcConnection implements RpcAPI {
      */
     private <R> Function3E<XmlRpcCompiledXQueryFunction<R>, R, EXistException, PermissionDeniedException, XPathException> compileQuery(final DBBroker broker, final Txn transaction, final Source source, final Map<String, Object> parameters) throws EXistException, PermissionDeniedException {
         return compiledOp -> {
-            final XQueryPool pool = broker.getXQueryService().getXQueryPool();
+            final XQueryPool pool = broker.getBrokerPool().getXQueryPool();
             CompiledXQuery compiled = null;
             try {
                 compiled = compile(broker, source, parameters);

@@ -118,7 +118,7 @@ public class CustomIndexTest {
 
             XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
-            Sequence seq = xquery.execute("//item[ngram:contains(., 'cha')]", null, AccessContext.TEST);
+            Sequence seq = xquery.execute(broker, "//item[ngram:contains(., 'cha')]", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
 
@@ -198,7 +198,7 @@ public class CustomIndexTest {
 
             XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
-            Sequence seq = xquery.execute("//item[ngram:contains(., 'cha')]", null, AccessContext.TEST);
+            Sequence seq = xquery.execute(broker, "//item[ngram:contains(., 'cha')]", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
 
@@ -314,7 +314,7 @@ public class CustomIndexTest {
 
             XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
-            Sequence seq = xquery.execute("//item[ngram:contains(., 'cha')]", null, AccessContext.TEST);
+            Sequence seq = xquery.execute(broker, "//item[ngram:contains(., 'cha')]", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
 
@@ -374,7 +374,7 @@ public class CustomIndexTest {
 
             XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
-            Sequence seq = xquery.execute("//item[ngram:contains(., 'cha')]", null, AccessContext.TEST);
+            Sequence seq = xquery.execute(broker, "//item[ngram:contains(., 'cha')]", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
 
@@ -426,7 +426,7 @@ public class CustomIndexTest {
 
             XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
-            Sequence seq = xquery.execute("//item[ngram:contains(., 'cha')]", null, AccessContext.TEST);
+            Sequence seq = xquery.execute(broker, "//item[ngram:contains(., 'cha')]", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
 
@@ -463,15 +463,15 @@ public class CustomIndexTest {
 
             XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
-            Sequence seq = xquery.execute("//item[ngram:contains(., 'cha')]", null, AccessContext.TEST);
+            Sequence seq = xquery.execute(broker, "//item[ngram:contains(., 'cha')]", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
 
-            seq = xquery.execute("//section[ngram:contains(para, '123')]", null, AccessContext.TEST);
+            seq = xquery.execute(broker, "//section[ngram:contains(para, '123')]", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
 
-            seq = xquery.execute("//section[ngram:contains(para, '123')]", null, AccessContext.TEST);
+            seq = xquery.execute(broker, "//section[ngram:contains(para, '123')]", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
 
@@ -487,7 +487,7 @@ public class CustomIndexTest {
 
             XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
-            Sequence seq = xquery.execute("//item[ngram:contains(., 'cha')]", null, AccessContext.TEST);
+            Sequence seq = xquery.execute(broker, "//item[ngram:contains(., 'cha')]", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
 
@@ -501,7 +501,7 @@ public class CustomIndexTest {
 
             checkIndex(broker, docs, "cha", 0);
 
-            seq = xquery.execute("//item[ngram:contains(., 'cha')]", null, AccessContext.TEST);
+            seq = xquery.execute(broker, "//item[ngram:contains(., 'cha')]", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(0, seq.getItemCount());
 
@@ -515,19 +515,19 @@ public class CustomIndexTest {
 
             XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
-            Sequence seq = xquery.execute("//item[ngram:contains(., 'cha')]", null, AccessContext.TEST);
+            Sequence seq = xquery.execute(broker, "//item[ngram:contains(., 'cha')]", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
 
-            seq = xquery.execute("//section[ngram:contains(*, '123')]", null, AccessContext.TEST);
+            seq = xquery.execute(broker, "//section[ngram:contains(*, '123')]", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
 
-            seq = xquery.execute("//section[ngram:contains(para, '123')]", null, AccessContext.TEST);
+            seq = xquery.execute(broker, "//section[ngram:contains(para, '123')]", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
 
-            seq = xquery.execute("//*[ngram:contains(., '567')]", null, AccessContext.TEST);
+            seq = xquery.execute(broker, "//*[ngram:contains(., '567')]", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
 
@@ -541,22 +541,22 @@ public class CustomIndexTest {
             XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
             
-            Sequence seq = xquery.execute("util:index-key-occurrences(/test/item, 'cha', 'ngram-index')", null, AccessContext.TEST);
+            Sequence seq = xquery.execute(broker, "util:index-key-occurrences(/test/item, 'cha', 'ngram-index')", null, AccessContext.TEST);
             //Sequence seq = xquery.execute("util:index-key-occurrences(/test/item, 'cha', 'org.exist.indexing.impl.NGramIndex')", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
 
-            seq = xquery.execute("util:index-key-occurrences(/test/item, 'le8', 'ngram-index')", null, AccessContext.TEST);
+            seq = xquery.execute(broker, "util:index-key-occurrences(/test/item, 'le8', 'ngram-index')", null, AccessContext.TEST);
             //seq = xquery.execute("util:index-key-occurrences(/test/item, 'le8', 'org.exist.indexing.impl.NGramIndex')", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
 
-            seq = xquery.execute("util:index-key-documents(/test/item, 'le8', 'ngram-index')", null, AccessContext.TEST);
+            seq = xquery.execute(broker, "util:index-key-documents(/test/item, 'le8', 'ngram-index')", null, AccessContext.TEST);
             //seq = xquery.execute("util:index-key-documents(/test/item, 'le8', 'org.exist.indexing.impl.NGramIndex')", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             
-            seq = xquery.execute("util:index-key-documents(/test/item, 'le8', 'ngram-index')", null, AccessContext.TEST);
+            seq = xquery.execute(broker, "util:index-key-documents(/test/item, 'le8', 'ngram-index')", null, AccessContext.TEST);
             //seq = xquery.execute("util:index-key-doucments(/test/item, 'le8', 'org.exist.indexing.impl.NGramIndex')", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
@@ -573,7 +573,7 @@ public class CustomIndexTest {
             
             String query = queryBody + "util:index-keys(/test/item, \'\', util:function(xs:QName(\'local:callback\'), 2), 1000, 'ngram-index')";
             //String query = queryBody + "util:index-keys(/test/item, \'\', util:function(xs:QName(\'local:callback\'), 2), 1000, 'org.exist.indexing.impl.NGramIndex')";
-            seq = xquery.execute(query, null, AccessContext.TEST);
+            seq = xquery.execute(broker, query, null, AccessContext.TEST);
             assertNotNull(seq);
             //TODO : check cardinality
             StringWriter out = new StringWriter();

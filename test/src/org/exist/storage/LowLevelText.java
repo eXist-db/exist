@@ -52,7 +52,7 @@ public class LowLevelText {
 
 		XQuery xquery = broker.getXQueryService();
 		XQueryContext context = new XQueryContext(broker.getBrokerPool(), AccessContext.TEST);
-		preCompiledXQuery = xquery.compile(context, stringSource);
+		preCompiledXQuery = xquery.compile(broker, context, stringSource);
 	}
 
 	@After

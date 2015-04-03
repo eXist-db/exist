@@ -63,12 +63,12 @@ public class xUnit {
         	
         	XQuery xquery = broker.getXQueryService();
         	
-        	XQueryContext context = xquery.newContext(AccessContext.TEST);
+        	XQueryContext context = new XQueryContext(broker.getBrokerPool(), AccessContext.TEST);
         	//context.setModuleLoadPath();
         	
             Source query = new ClassLoaderSource(source);
             
-            CompiledXQuery compiledQuery = xquery.compile(context, query);
+            CompiledXQuery compiledQuery = xquery.compile(broker, context, query);
             
 			for(Iterator<UserDefinedFunction> i = context.localFunctions(); i.hasNext(); ) {
 				UserDefinedFunction func = i.next();

@@ -124,13 +124,13 @@ public class OpenIDUtility {
                 return false;
             }
 
-            XQueryContext context = xquery.newContext(AccessContext.REST);
+            XQueryContext context = new XQueryContext(broker.getBrokerPool(), AccessContext.REST);
 
-            CompiledXQuery compiled = xquery.compile(context, source);
+            CompiledXQuery compiled = xquery.compile(broker, context, source);
 
             Properties outputProperties = new Properties();
 
-            Sequence result = xquery.execute(compiled, null, outputProperties);
+            Sequence result = xquery.execute(broker, compiled, null, outputProperties);
             LOG.info("XQuery execution results: " + result.toString());
 
         } catch (Exception e) {

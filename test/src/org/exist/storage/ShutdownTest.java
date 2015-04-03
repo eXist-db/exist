@@ -93,7 +93,7 @@ public class ShutdownTest {
 
                 final XQuery xquery = broker.getXQueryService();
                 assertNotNull(xquery);
-                final Sequence result = xquery.execute("//SPEECH[ft:query(LINE, 'love')]", Sequence.EMPTY_SEQUENCE, AccessContext.TEST);
+                final Sequence result = xquery.execute(broker, "//SPEECH[ft:query(LINE, 'love')]", Sequence.EMPTY_SEQUENCE, AccessContext.TEST);
                 assertNotNull(result);
                 assertEquals(result.getItemCount(), 160);
 

@@ -205,10 +205,10 @@ public class ConstructedNodesRecoveryTest {
 	        XQuery service = broker.getXQueryService();
 	        assertNotNull(service);
 	        
-	        CompiledXQuery compiled = service.compile(service.newContext(AccessContext.TEST), new StringSource(xquery));
+	        CompiledXQuery compiled = service.compile(broker, new XQueryContext(pool, AccessContext.TEST), new StringSource(xquery));
 	        assertNotNull(compiled);
 	        
-	        Sequence result = service.execute(compiled, null);
+	        Sequence result = service.execute(broker, compiled, null);
 	        assertNotNull(result);
 	       
 	        assertEquals(expectedResults.length, result.getItemCount());

@@ -58,43 +58,25 @@ import org.exist.xquery.value.Sequence;
 /**
  * @author wolf
  */
-//TODO: it possible to have one per database
 public class XQuery {
 
     private final static Logger LOG = LogManager.getLogger(XQuery.class);
     
-    private final DBBroker broker;
-     
-    /**
-     * @param broker DBBroker to use for compilation and execution
-     */
-    public XQuery(final DBBroker broker) {
-        this.broker = broker;
-    }
-
-    public XQueryContext newContext(final AccessContext accessCtx) {
-        return new XQueryContext(broker.getBrokerPool(), accessCtx);
-    }
-    
-    public XQueryPool getXQueryPool() {
-        return broker.getBrokerPool().getXQueryPool();
-    }
-    
-    public CompiledXQuery compile(final XQueryContext context, final String expression) throws XPathException, PermissionDeniedException {
+    public CompiledXQuery compile(final DBBroker broker, final XQueryContext context, final String expression) throws XPathException, PermissionDeniedException {
     	final Source source = new StringSource(expression);
     	try {
-            return compile(context, source);
+            return compile(broker, context, source);
         } catch(final IOException ioe) {
             //should not happen because expression is a String
             throw new XPathException(ioe.getMessage());
         }
     }
     
-    public CompiledXQuery compile(final XQueryContext context, final Source source) throws XPathException, IOException, PermissionDeniedException {
-        return compile(context, source, false);
+    public CompiledXQuery compile(final DBBroker broker, final XQueryContext context, final Source source) throws XPathException, IOException, PermissionDeniedException {
+        return compile(broker, context, source, false);
     }
     
-    public CompiledXQuery compile(final XQueryContext context, final Source source, final boolean xpointer) throws XPathException, IOException, PermissionDeniedException {
+    public CompiledXQuery compile(final DBBroker broker, final XQueryContext context, final Source source, final boolean xpointer) throws XPathException, IOException, PermissionDeniedException {
 
         context.setSource(source);
         context.setXacmlSource(XACMLSource.getInstance(source));
@@ -107,7 +89,7 @@ public class XQuery {
         }
         
         try {
-            return compile(context, reader, xpointer);
+            return compile(broker, context, reader, xpointer);
         } finally {
             if(reader != null) {
                 reader.close();
@@ -115,7 +97,7 @@ public class XQuery {
         }
     }
     
-    private CompiledXQuery compile(final XQueryContext context, final Reader reader, final boolean xpointer) throws XPathException, PermissionDeniedException {
+    private CompiledXQuery compile(final DBBroker broker, final XQueryContext context, final Reader reader, final boolean xpointer) throws XPathException, PermissionDeniedException {
         
         //check read permission
         context.getSource().validate(broker.getSubject(), Permission.READ);
@@ -209,13 +191,13 @@ public class XQuery {
     }
     
     
-    public Sequence execute(final CompiledXQuery expression, final Sequence contextSequence) throws XPathException, PermissionDeniedException {
-    	return execute(expression, contextSequence, null);
+    public Sequence execute(final DBBroker broker, final CompiledXQuery expression, final Sequence contextSequence) throws XPathException, PermissionDeniedException {
+    	return execute(broker, expression, contextSequence, null);
     }
     
-    public Sequence execute(final CompiledXQuery expression, final Sequence contextSequence, final Properties outputProperties) throws XPathException, PermissionDeniedException {
+    public Sequence execute(final DBBroker broker, final CompiledXQuery expression, final Sequence contextSequence, final Properties outputProperties) throws XPathException, PermissionDeniedException {
     	final XQueryContext context = expression.getContext();
-        final Sequence result = execute(expression, contextSequence,  outputProperties, true);
+        final Sequence result = execute(broker, expression, contextSequence,  outputProperties, true);
         
         //TODO : move this elsewhere !
         HTTPUtils.addLastModifiedHeader(result, context);
@@ -223,11 +205,11 @@ public class XQuery {
         return result;
     }
     
-    public Sequence execute(final CompiledXQuery expression, final Sequence contextSequence, final boolean resetContext) throws XPathException, PermissionDeniedException {
-    	return execute(expression, contextSequence, null, resetContext);
+    public Sequence execute(final DBBroker broker, final CompiledXQuery expression, final Sequence contextSequence, final boolean resetContext) throws XPathException, PermissionDeniedException {
+    	return execute(broker, expression, contextSequence, null, resetContext);
     }
     
-    public Sequence execute(final CompiledXQuery expression, final Sequence contextSequence, final Properties outputProperties, final boolean resetContext) throws XPathException, PermissionDeniedException {
+    public Sequence execute(final DBBroker broker, final CompiledXQuery expression, final Sequence contextSequence, final Properties outputProperties, final boolean resetContext) throws XPathException, PermissionDeniedException {
     	
         //check execute permissions
         expression.getContext().getSource().validate(broker.getSubject(), Permission.EXECUTE);
@@ -323,15 +305,15 @@ public class XQuery {
         }
     }
 
-    public Sequence execute(final String expression, final Sequence contextSequence, final AccessContext accessCtx) throws XPathException, PermissionDeniedException {
+    public Sequence execute(final DBBroker broker, final String expression, final Sequence contextSequence, final AccessContext accessCtx) throws XPathException, PermissionDeniedException {
         final XQueryContext context = new XQueryContext(broker.getBrokerPool(), accessCtx);
-        final CompiledXQuery compiled = compile(context, expression);
-        return execute(compiled, contextSequence);
+        final CompiledXQuery compiled = compile(broker, context, expression);
+        return execute(broker, compiled, contextSequence);
     }
 	
-    public Sequence execute(File file, Sequence contextSequence, AccessContext accessCtx) throws XPathException, IOException, PermissionDeniedException {
+    public Sequence execute(final DBBroker broker, File file, Sequence contextSequence, AccessContext accessCtx) throws XPathException, IOException, PermissionDeniedException {
         final XQueryContext context = new XQueryContext(broker.getBrokerPool(), accessCtx);
-        final CompiledXQuery compiled = compile(context, new FileSource(file, "UTF-8", true));
-        return execute(compiled, contextSequence);
+        final CompiledXQuery compiled = compile(broker, context, new FileSource(file, "UTF-8", true));
+        return execute(broker, compiled, contextSequence);
     }
 }
