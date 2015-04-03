@@ -140,7 +140,7 @@ public class XQTS_case extends TestCase {
             broker = db.get(db.getSecurityManager().getSystemSubject());
             broker.getConfiguration().setProperty( XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, true);
 
-            xquery = broker.getXQueryService();
+            xquery = db.getXQueryService();
 
             prepare(broker, xquery);
 

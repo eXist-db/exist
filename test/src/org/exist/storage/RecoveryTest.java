@@ -206,7 +206,7 @@ public class RecoveryTest {
             doc = broker.getXMLResource(TestConstants.TEST_COLLECTION_URI2.append(files[files.length - 1].getName()), Lock.READ_LOCK);
             assertNull("Document '" + XmldbURI.ROOT_COLLECTION + "/test/test2/'" + files[files.length - 1].getName() + " should not exist anymore", doc);
             
-            final XQuery xquery = broker.getXQueryService();
+            final XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
             final Sequence seq = xquery.execute(broker, "//SPEECH[ft:query(LINE, 'king')]", null, AccessContext.TEST);
             assertNotNull(seq);

@@ -46,7 +46,7 @@ public class XQueryUpdateTest {
     public void append() throws EXistException, PermissionDeniedException, XPathException, SAXException {
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
 
-            XQuery xquery = broker.getXQueryService();
+            XQuery xquery = pool.getXQueryService();
             String query =
             	"   declare variable $i external;\n" +
             	"	update insert\n" +
@@ -84,7 +84,7 @@ public class XQueryUpdateTest {
 
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
 
-            XQuery xquery = broker.getXQueryService();
+            XQuery xquery = pool.getXQueryService();
             String query =
             	"   declare variable $i external;\n" +
             	"	update insert\n" +
@@ -134,7 +134,7 @@ public class XQueryUpdateTest {
                             "       </product>\n" +
                             "   into /products";
 
-            XQuery xquery = broker.getXQueryService();
+            XQuery xquery = pool.getXQueryService();
             xquery.execute(broker, query, null, AccessContext.TEST);
 
             query =
@@ -180,7 +180,7 @@ public class XQueryUpdateTest {
                             "       </product>\n" +
                             "   into /products";
 
-            XQuery xquery = broker.getXQueryService();
+            XQuery xquery = pool.getXQueryService();
             xquery.execute(broker, query, null, AccessContext.TEST);
 
             query =
@@ -220,7 +220,7 @@ public class XQueryUpdateTest {
 
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
 
-            XQuery xquery = broker.getXQueryService();
+            XQuery xquery = pool.getXQueryService();
 
             String query =
             	"declare option exist:output-size-limit '-1';\n" +
@@ -295,7 +295,7 @@ public class XQueryUpdateTest {
         append();
 
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
-            XQuery xquery = broker.getXQueryService();
+            XQuery xquery = pool.getXQueryService();
 
         	String query =
         		"for $prod in //product return\n" +
@@ -315,7 +315,7 @@ public class XQueryUpdateTest {
 
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
 
-            XQuery xquery = broker.getXQueryService();
+            XQuery xquery = pool.getXQueryService();
 
             String query =
             	"for $prod in //product return\n" +
@@ -343,7 +343,7 @@ public class XQueryUpdateTest {
 
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
 
-            XQuery xquery = broker.getXQueryService();
+            XQuery xquery = pool.getXQueryService();
 
             String query =
             	"for $prod in //product return\n" +
@@ -378,13 +378,13 @@ public class XQueryUpdateTest {
 
             String query =
                     "let $progress := /progress\n" +
-                            "for $i in 1 to 100\n" +
-                            "let $done := $progress/@done\n" +
-                            "return (\n" +
-                            "   update value $done with xs:int($done + 1),\n" +
-                            "   xs:int(/progress/@done)\n" +
-                            ")";
-            XQuery xquery = broker.getXQueryService();
+                    "for $i in 1 to 100\n" +
+                    "let $done := $progress/@done\n" +
+                    "return (\n" +
+                    "   update value $done with xs:int($done + 1),\n" +
+                    "   xs:int(/progress/@done)\n" +
+                    ")";
+            XQuery xquery = pool.getXQueryService();
             @SuppressWarnings("unused")
 			Sequence result = xquery.execute(broker, query, null, AccessContext.TEST);
         }
@@ -394,7 +394,7 @@ public class XQueryUpdateTest {
     public void appendCDATA() throws EXistException, PermissionDeniedException, XPathException, SAXException {
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
 
-            XQuery xquery = broker.getXQueryService();
+            XQuery xquery = pool.getXQueryService();
             String query =
             	"   declare variable $i external;\n" +
             	"	update insert\n" +
@@ -424,13 +424,13 @@ public class XQueryUpdateTest {
     public void insertAttribDoc_1730726() throws EXistException, PermissionDeniedException, XPathException {
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
             String query =
-                    "declare namespace xmldb = \"http://exist-db.org/xquery/xmldb\"; " +
-                            "let $uri := xmldb:store(\"/db\", \"insertAttribDoc.xml\", <C/>) " +
-                            "let $node := doc($uri)/element() " +
-                            "let $attrib := <Value f=\"ATTRIB VALUE\"/>/@* " +
-                            "return update insert $attrib into $node";
+                "declare namespace xmldb = \"http://exist-db.org/xquery/xmldb\"; "+
+                "let $uri := xmldb:store(\"/db\", \"insertAttribDoc.xml\", <C/>) "+
+                "let $node := doc($uri)/element() "+
+                "let $attrib := <Value f=\"ATTRIB VALUE\"/>/@* "+
+                "return update insert $attrib into $node";
 
-            XQuery xquery = broker.getXQueryService();
+            XQuery xquery = pool.getXQueryService();
             @SuppressWarnings("unused")
 			Sequence result = xquery.execute(broker, query, null, AccessContext.TEST);
         }

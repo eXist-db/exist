@@ -235,7 +235,7 @@ public class RpcConnection implements RpcAPI {
 
     protected QueryResult doQuery(final DBBroker broker, final CompiledXQuery compiled,
             final NodeSet contextSet, final Map<String, Object> parameters) throws XPathException, EXistException, PermissionDeniedException {
-        final XQuery xquery = broker.getXQueryService();
+        final XQuery xquery = broker.getBrokerPool().getXQueryService();
 
         checkPragmas(compiled.getContext(), parameters);
         LockedDocumentMap lockedDocuments = null;
@@ -286,7 +286,7 @@ public class RpcConnection implements RpcAPI {
      */
     @Deprecated
     private CompiledXQuery compile(final DBBroker broker, final Source source, final Map<String, Object> parameters) throws XPathException, IOException, PermissionDeniedException {
-        final XQuery xquery = broker.getXQueryService();
+        final XQuery xquery = broker.getBrokerPool().getXQueryService();
         final XQueryPool pool = broker.getBrokerPool().getXQueryPool();
         CompiledXQuery compiled = pool.borrowCompiledXQuery(broker, source);
         XQueryContext context;

@@ -196,7 +196,7 @@ public class Query extends AtomModuleBase implements Atom {
 			if (collection == null)
 				{throw new BadRequestException("Collection " + request.getPath() + " does not exist.");}
 
-			final XQuery xquery = broker.getXQueryService();
+			final XQuery xquery = broker.getBrokerPool().getXQueryService();
 
 			final XQueryContext context = new XQueryContext(broker.getBrokerPool(), AccessContext.REST);
 			context.setModuleLoadPath(getContext().getModuleLoadPath());
@@ -322,7 +322,7 @@ public class Query extends AtomModuleBase implements Atom {
 		if (collection == null)
 			{throw new BadRequestException("Collection " + request.getPath() + " does not exist.");}
 
-		final XQuery xquery = broker.getXQueryService();
+		final XQuery xquery = broker.getBrokerPool().getXQueryService();
 		CompiledXQuery feedQuery = broker.getBrokerPool().getXQueryPool().borrowCompiledXQuery(broker, config.querySource);
 
 		XQueryContext context;

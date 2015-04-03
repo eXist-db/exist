@@ -264,7 +264,7 @@ public class XQueryStartupTrigger implements StartupTrigger {
 
             } else {
                 // Setup xquery service
-                XQuery service = broker.getXQueryService();
+                XQuery service = broker.getBrokerPool().getXQueryService();
                 context = new XQueryContext(broker.getBrokerPool(), AccessContext.TRIGGER);
 
                 // Allow use of modules with relative paths

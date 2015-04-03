@@ -414,7 +414,7 @@ public class XIncludeFilter implements Receiver {
                     xpointer = checkNamespaces(xpointer);
                     source = new StringSource(xpointer);
                 }
-                final XQuery xquery = serializer.broker.getXQueryService();
+                final XQuery xquery = serializer.broker.getBrokerPool().getXQueryService();
                 final XQueryPool pool = serializer.broker.getBrokerPool().getXQueryPool();
                 XQueryContext context;
                 CompiledXQuery compiled = pool.borrowCompiledXQuery(serializer.broker, source);

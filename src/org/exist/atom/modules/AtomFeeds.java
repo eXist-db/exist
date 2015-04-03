@@ -218,7 +218,7 @@ public class AtomFeeds extends AtomModuleBase implements Atom {
 	public void getEntryById(DBBroker broker, String path, String id,
 			OutgoingMessage response) throws EXistException,
 			BadRequestException, PermissionDeniedException {
-		final XQuery xquery = broker.getXQueryService();
+		final XQuery xquery = broker.getBrokerPool().getXQueryService();
 		final XQueryPool xqueryPool = broker.getBrokerPool().getXQueryPool();
 		CompiledXQuery feedQuery = xqueryPool.borrowCompiledXQuery(
 				broker, entryByIdSource);
@@ -291,7 +291,7 @@ public class AtomFeeds extends AtomModuleBase implements Atom {
 			throws EXistException, BadRequestException,
 			PermissionDeniedException {
 		
-		final XQuery xquery = broker.getXQueryService();
+		final XQuery xquery = broker.getBrokerPool().getXQueryService();
 		final XQueryPool xqueryPool = broker.getBrokerPool().getXQueryPool();
 		CompiledXQuery feedQuery = xqueryPool.borrowCompiledXQuery(
 				broker, getFeedSource);

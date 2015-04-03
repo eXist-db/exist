@@ -131,7 +131,7 @@ public class DebuggeeImpl implements Debuggee {
 	
 	        if (source == null) return null;
 	
-	        XQuery xquery = broker.getXQueryService();
+	        XQuery xquery = broker.getBrokerPool().getXQueryService();
 			
 	        XQueryContext queryContext = new XQueryContext(broker.getBrokerPool(), AccessContext.REST);
 	

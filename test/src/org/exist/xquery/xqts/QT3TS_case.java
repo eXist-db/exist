@@ -81,7 +81,7 @@ public class QT3TS_case extends TestCase {
 
         try {
             broker = db.get(db.getSecurityManager().getSystemSubject());
-            xquery = broker.getXQueryService();
+            xquery = broker.getBrokerPool().getXQueryService();
 
             broker.getConfiguration().setProperty(XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, true);
 
@@ -100,7 +100,7 @@ public class QT3TS_case extends TestCase {
         DBBroker broker = null;
         try {
             broker = db.get(db.getSecurityManager().getSystemSubject());
-            XQuery xquery = broker.getXQueryService();
+            XQuery xquery = broker.getBrokerPool().getXQueryService();
 
             broker.getConfiguration().setProperty(XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, true);
 
@@ -149,7 +149,7 @@ public class QT3TS_case extends TestCase {
         DBBroker broker = null;
         try {
             broker = db.get(db.getSecurityManager().getSystemSubject());
-            XQuery xquery = broker.getXQueryService();
+            XQuery xquery = broker.getBrokerPool().getXQueryService();
 
             broker.getConfiguration().setProperty(XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, true);
 
@@ -205,7 +205,7 @@ public class QT3TS_case extends TestCase {
         Set<String> extectedError = new HashSet<String>();
         try {
             broker = db.get(db.getSecurityManager().getSystemSubject());
-            xquery = broker.getXQueryService();
+            xquery = broker.getBrokerPool().getXQueryService();
 
             final XQueryContext context = new XQueryContext(db, AccessContext.TEST);
 
@@ -214,7 +214,7 @@ public class QT3TS_case extends TestCase {
             String query = "declare namespace qt='" + QT_NS + "';\n" + "let $testCases := xmldb:document('/db/QT3/" + file + "')\n"
                     + "let $tc := $testCases//qt:test-case[@name eq \"" + tcName + "\"]\n" + "return $tc";
 
-            XQuery xqs = broker.getXQueryService();
+            XQuery xqs = broker.getBrokerPool().getXQueryService();
 
             Sequence results = xqs.execute(broker, query, null, AccessContext.TEST);
 

@@ -161,7 +161,7 @@ public class Scan extends BasicFunction {
     }
 
     private Sequence normalize(NodeValue input) throws IOException, XPathException {
-        XQuery xquery = context.getBroker().getXQueryService();
+        XQuery xquery = context.getBroker().getBrokerPool().getXQueryService();
         if (normalizeXQuery == null) {
             Source source = new ClassLoaderSource(NORMALIZE_XQUERY);
             XQueryContext xc = new XQueryContext(context.getBroker().getBrokerPool(), AccessContext.INITIALIZE);

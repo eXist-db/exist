@@ -673,7 +673,7 @@ public class XQueryURLRewrite extends HttpServlet {
         }
         final String basePath = staticRewrite == null ? "." : staticRewrite.getTarget();
         
-        final XQuery xquery = broker.getXQueryService();
+        final XQuery xquery = broker.getBrokerPool().getXQueryService();
         final XQueryPool xqyPool = broker.getBrokerPool().getXQueryPool();
 		
         CompiledXQuery compiled = null;

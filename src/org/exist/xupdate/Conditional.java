@@ -70,7 +70,7 @@ public class Conditional extends Modification {
 	public long process(Txn transaction) throws PermissionDeniedException, LockException,
 			EXistException, XPathException, TriggerException {
 		LOG.debug("Processing xupdate:if ...");
-		final XQuery xquery = broker.getXQueryService();
+		final XQuery xquery = broker.getBrokerPool().getXQueryService();
 		final XQueryPool pool = broker.getBrokerPool().getXQueryPool();
 		final Source source = new StringSource(selectStmt);
 		CompiledXQuery compiled = pool.borrowCompiledXQuery(broker, source);

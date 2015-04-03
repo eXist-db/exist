@@ -116,7 +116,7 @@ public class CustomIndexTest {
             checkIndex(broker, docs, "cha", 1);
             checkIndex(broker, docs, "le8", 1);
 
-            XQuery xquery = broker.getXQueryService();
+            XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
             Sequence seq = xquery.execute(broker, "//item[ngram:contains(., 'cha')]", null, AccessContext.TEST);
             assertNotNull(seq);
@@ -196,7 +196,7 @@ public class CustomIndexTest {
             checkIndex(broker, docs, "cha", 1);
             checkIndex(broker, docs, "le8", 1);
 
-            XQuery xquery = broker.getXQueryService();
+            XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
             Sequence seq = xquery.execute(broker, "//item[ngram:contains(., 'cha')]", null, AccessContext.TEST);
             assertNotNull(seq);
@@ -312,7 +312,7 @@ public class CustomIndexTest {
             checkIndex(broker, docs, "cha", 1);
             checkIndex(broker, docs, "le8", 1);
 
-            XQuery xquery = broker.getXQueryService();
+            XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
             Sequence seq = xquery.execute(broker, "//item[ngram:contains(., 'cha')]", null, AccessContext.TEST);
             assertNotNull(seq);
@@ -372,7 +372,7 @@ public class CustomIndexTest {
             checkIndex(broker, docs, "cha", 1);
             checkIndex(broker, docs, "le8", 1);
 
-            XQuery xquery = broker.getXQueryService();
+            XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
             Sequence seq = xquery.execute(broker, "//item[ngram:contains(., 'cha')]", null, AccessContext.TEST);
             assertNotNull(seq);
@@ -424,7 +424,7 @@ public class CustomIndexTest {
             checkIndex(broker, docs, "cha", 1);
             checkIndex(broker, docs, "le8", 1);
 
-            XQuery xquery = broker.getXQueryService();
+            XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
             Sequence seq = xquery.execute(broker, "//item[ngram:contains(., 'cha')]", null, AccessContext.TEST);
             assertNotNull(seq);
@@ -461,7 +461,7 @@ public class CustomIndexTest {
             checkIndex(broker, docs, "cha", 1);
             checkIndex(broker, docs, "le8", 1);
 
-            XQuery xquery = broker.getXQueryService();
+            XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
             Sequence seq = xquery.execute(broker, "//item[ngram:contains(., 'cha')]", null, AccessContext.TEST);
             assertNotNull(seq);
@@ -485,7 +485,7 @@ public class CustomIndexTest {
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
             final Txn transaction = transact.beginTransaction()) {
 
-            XQuery xquery = broker.getXQueryService();
+            XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
             Sequence seq = xquery.execute(broker, "//item[ngram:contains(., 'cha')]", null, AccessContext.TEST);
             assertNotNull(seq);
@@ -512,8 +512,7 @@ public class CustomIndexTest {
     @Test
     public void query() throws PermissionDeniedException, XPathException, EXistException {
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
-
-            XQuery xquery = broker.getXQueryService();
+            XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
             Sequence seq = xquery.execute(broker, "//item[ngram:contains(., 'cha')]", null, AccessContext.TEST);
             assertNotNull(seq);
@@ -537,8 +536,7 @@ public class CustomIndexTest {
     @Test
     public void indexKeys() throws SAXException, PermissionDeniedException, XPathException, EXistException {
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
-
-            XQuery xquery = broker.getXQueryService();
+            XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
             
             Sequence seq = xquery.execute(broker, "util:index-key-occurrences(/test/item, 'cha', 'ngram-index')", null, AccessContext.TEST);

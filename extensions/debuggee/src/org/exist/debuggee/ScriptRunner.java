@@ -76,7 +76,7 @@ public class ScriptRunner implements Runnable, Observer {
 			
 			broker = db.get(null);
 
-	        XQuery xquery = broker.getXQueryService();
+	        XQuery xquery = broker.getBrokerPool().getXQueryService();
 
 	        xquery.execute(broker, expression, null);
 

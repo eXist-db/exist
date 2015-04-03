@@ -562,7 +562,7 @@ public class Deployment {
             LOG.warn("The XQuery resource specified in the <setup> element was not found");
             return Sequence.EMPTY_SEQUENCE;
         }
-        final XQuery xqs = broker.getXQueryService();
+        final XQuery xqs = broker.getBrokerPool().getXQueryService();
         final XQueryContext ctx = new XQueryContext(broker.getBrokerPool(), AccessContext.REST);
         ctx.declareVariable("dir", tempDir.getAbsolutePath());
         final File home = broker.getConfiguration().getExistHome();

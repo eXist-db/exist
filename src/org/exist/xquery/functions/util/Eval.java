@@ -326,7 +326,7 @@ public class Eval extends BasicFunction {
 
         // fixme! - hook for debugger here /ljo
 
-        final XQuery xqueryService = evalContext.getBroker().getXQueryService();
+        final XQuery xqueryService = evalContext.getBroker().getBrokerPool().getXQueryService();
         final XQueryContext innerContext;
         if (contextInit != null) {
             // eval-with-context: initialize a new context

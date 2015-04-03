@@ -139,7 +139,7 @@ public class DatabaseResources {
         try {
             broker = brokerPool.get(user);
             
-            final XQuery xquery = broker.getXQueryService();
+            final XQuery xquery = brokerPool.getXQueryService();
             final XQueryContext context = new XQueryContext(brokerPool, AccessContext.INTERNAL_PREFIX_LOOKUP);
             
             if(collection!=null){

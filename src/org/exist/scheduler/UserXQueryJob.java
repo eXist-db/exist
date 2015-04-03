@@ -166,7 +166,7 @@ public class UserXQueryJob extends UserJob {
             if(source != null) {
 
                 //execute the xquery
-                final XQuery xquery = broker.getXQueryService();
+                final XQuery xquery = pool.getXQueryService();
                 xqPool = pool.getXQueryPool();
 
                 //try and get a pre-compiled query from the pool

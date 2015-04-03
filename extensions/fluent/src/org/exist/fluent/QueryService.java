@@ -302,7 +302,7 @@ public class QueryService implements Cloneable {
 			prepareContext(broker);
 			if (overrideDocs != null) docs = overrideDocs;
 			final org.exist.source.Source source = buildQuerySource(query, params, "execute");
-			final XQuery xquery = broker.getXQueryService();
+			final XQuery xquery = broker.getBrokerPool().getXQueryService();
 			final XQueryPool pool = broker.getBrokerPool().getXQueryPool();
 			CompiledXQuery compiledQuery = pool.borrowCompiledXQuery(broker, source);
 			MutableDocumentSet docsToLock = new DefaultDocumentSet();
@@ -535,7 +535,7 @@ public class QueryService implements Cloneable {
 			broker = db.acquireBroker();
 			prepareContext(broker);
 			final org.exist.source.Source source = buildQuerySource(query, params, "analyze");
-			final XQuery xquery = broker.getXQueryService();
+			final XQuery xquery = broker.getBrokerPool().getXQueryService();
 			final XQueryPool pool = broker.getBrokerPool().getXQueryPool();
 			CompiledXQuery compiledQuery = pool.borrowCompiledXQuery(broker, source);
 			try {

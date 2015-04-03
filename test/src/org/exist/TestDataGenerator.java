@@ -54,7 +54,7 @@ public class TestDataGenerator {
     public File[] generate(DBBroker broker, Collection collection, String xqueryContent) throws SAXException {
         try {
             DocumentSet docs = collection.allDocs(broker, new DefaultDocumentSet(), true);
-            XQuery service = broker.getXQueryService();
+            XQuery service = broker.getBrokerPool().getXQueryService();
             XQueryContext context = new XQueryContext(broker.getBrokerPool(), AccessContext.TEST);
             context.declareVariable("filename", "");
             context.declareVariable("count", "0");

@@ -61,7 +61,7 @@ public class xUnit {
         	db = BrokerPool.getInstance();
         	broker = db.get(db.getSecurityManager().getGuestSubject());
         	
-        	XQuery xquery = broker.getXQueryService();
+        	XQuery xquery = broker.getBrokerPool().getXQueryService();
         	
         	XQueryContext context = new XQueryContext(broker.getBrokerPool(), AccessContext.TEST);
         	//context.setModuleLoadPath();

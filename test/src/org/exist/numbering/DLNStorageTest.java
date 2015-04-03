@@ -39,9 +39,8 @@ public class DLNStorageTest {
     @Test
     public void nodeStorage() throws Exception {
         BrokerPool pool = BrokerPool.getInstance();
-
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
-            XQuery xquery = broker.getXQueryService();
+            XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
             // test element ids
             Sequence seq = xquery.execute(broker, "doc('/db/test/test_string.xml')/test/para",

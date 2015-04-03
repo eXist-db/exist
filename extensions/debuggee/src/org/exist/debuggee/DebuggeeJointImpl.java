@@ -469,7 +469,7 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 			context.undeclareGlobalVariable(Debuggee.SESSION);
 			context.undeclareGlobalVariable(Debuggee.IDEKEY);
 			
-			XQuery service = broker.getXQueryService();
+			XQuery service = broker.getBrokerPool().getXQueryService();
 			CompiledXQuery compiled = service.compile(broker, context, script);
 			
 			Sequence resultSequence = service.execute(broker, compiled, null);

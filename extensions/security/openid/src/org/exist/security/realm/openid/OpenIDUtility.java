@@ -117,7 +117,7 @@ public class OpenIDUtility {
             }
 
 
-            XQuery xquery = broker.getXQueryService();
+            XQuery xquery = pool.getXQueryService();
 
             if (xquery == null) {
                 LOG.error("broker unable to retrieve XQueryService");

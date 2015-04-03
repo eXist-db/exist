@@ -79,7 +79,7 @@ public abstract class AbstractUpdateTest {
                 }
             }
             
-            final XQuery xquery = broker.getXQueryService();
+            final XQuery xquery = pool.getXQueryService();
             final Sequence seq = xquery.execute(broker, "/products/product[last()]", null, AccessContext.TEST);
             for (final SequenceIterator i = seq.iterate(); i.hasNext(); ) {
                 Item next = i.nextItem();

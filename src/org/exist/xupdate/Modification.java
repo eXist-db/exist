@@ -151,7 +151,7 @@ public abstract class Modification {
 	 */
 	protected NodeList select(DocumentSet docs)
 		throws PermissionDeniedException, EXistException, XPathException {
-		final XQuery xquery = broker.getXQueryService();
+		final XQuery xquery = broker.getBrokerPool().getXQueryService();
 		final XQueryPool pool = broker.getBrokerPool().getXQueryPool();
 		final Source source = new StringSource(selectStmt);
 		CompiledXQuery compiled = pool.borrowCompiledXQuery(broker, source);

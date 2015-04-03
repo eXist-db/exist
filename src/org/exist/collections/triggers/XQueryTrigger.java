@@ -224,7 +224,7 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
  			//old
  			if(urlQuery != null || strQuery != null)
  			{
-				service = broker.getXQueryService();
+				service = broker.getBrokerPool().getXQueryService();
 				
 				return;
  			}

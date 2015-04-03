@@ -201,7 +201,7 @@ public class XQTS_To_junit {
             "let $XQTSCatalog := xmldb:document('/db/XQTS/XQTSCatalog.xml') "+
             "return xs:string($XQTSCatalog/catalog:test-suite/@version)";
 
-        XQuery xqs = broker.getXQueryService();
+        XQuery xqs = db.getXQueryService();
         
         Sequence results = xqs.execute(broker, query, null, AccessContext.TEST);
 
@@ -254,7 +254,7 @@ public class XQTS_To_junit {
 
         query += "\treturn xs:string($testGroup/@name)";
 
-        XQuery xqs = broker.getXQueryService();
+        XQuery xqs = db.getXQueryService();
         Sequence results = xqs.execute(broker, query, null, AccessContext.TEST);
 
         if (!results.isEmpty()) {
@@ -333,7 +333,7 @@ public class XQTS_To_junit {
             "for $testGroup in $XQTSCatalog//catalog:test-group[@name = '"+testGroup+"']/catalog:test-case"+
             "\treturn xs:string($testGroup/@name)";
 
-        XQuery xqs = broker.getXQueryService();
+        XQuery xqs = db.getXQueryService();
         Sequence results = xqs.execute(broker, query, null, AccessContext.TEST);
 
         if (!results.isEmpty()) {

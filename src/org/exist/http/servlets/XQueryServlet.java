@@ -436,7 +436,7 @@ public class XQueryServlet extends AbstractExistHttpServlet {
         DBBroker broker = null;
         try {
         	broker = getPool().get(user);
-            final XQuery xquery = broker.getXQueryService();
+            final XQuery xquery = broker.getBrokerPool().getXQueryService();
             CompiledXQuery query = getPool().getXQueryPool().borrowCompiledXQuery(broker, source);
 
             XQueryContext context;

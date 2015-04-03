@@ -102,8 +102,6 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
 
     private Subject subject = null;
 
-    protected XQuery xqueryService;
-
     private int referenceCount = 0;
 
     protected String id;
@@ -121,7 +119,6 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
         if (temp != null)
             {caseSensitive = temp.booleanValue();}
         this.pool = pool;
-        xqueryService = new XQuery();
         initIndexModules();
     }
 
@@ -181,13 +178,6 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
 
     public IndexController getIndexController() {
         return indexController;
-    }
-
-    /**
-     * @return A reference to the global {@link XQuery} service.
-     */
-    public XQuery getXQueryService() {
-        return xqueryService;
     }
 
     public abstract ElementIndex getElementIndex();

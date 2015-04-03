@@ -1272,7 +1272,7 @@ public class RESTServer {
         final XmldbURI pathUri = XmldbURI.create(path);
         try {
             final Source source = new StringSource(query);
-            final XQuery xquery = broker.getXQueryService();
+            final XQuery xquery = broker.getBrokerPool().getXQueryService();
             final XQueryPool pool = broker.getBrokerPool().getXQueryPool();
             CompiledXQuery compiled = pool.borrowCompiledXQuery(broker, source);
 
@@ -1453,7 +1453,7 @@ public class RESTServer {
             throws XPathException, BadRequestException, PermissionDeniedException {
 
         final Source source = new DBSource(broker, (BinaryDocument) resource, true);
-        final XQuery xquery = broker.getXQueryService();
+        final XQuery xquery = broker.getBrokerPool().getXQueryService();
         final XQueryPool pool = broker.getBrokerPool().getXQueryPool();
         XQueryContext context;
 
@@ -1515,7 +1515,7 @@ public class RESTServer {
             throws XPathException, BadRequestException, PermissionDeniedException {
 
         final URLSource source = new URLSource(this.getClass().getResource("run-xproc.xq"));
-        final XQuery xquery = broker.getXQueryService();
+        final XQuery xquery = broker.getBrokerPool().getXQueryService();
         final XQueryPool pool = broker.getBrokerPool().getXQueryPool();
         XQueryContext context;
         CompiledXQuery compiled = pool.borrowCompiledXQuery(broker, source);

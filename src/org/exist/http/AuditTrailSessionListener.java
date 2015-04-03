@@ -126,7 +126,7 @@ public class AuditTrailSessionListener implements HttpSessionListener {
                 }
 
 
-                final XQuery xquery = broker.getXQueryService();
+                final XQuery xquery = pool.getXQueryService();
 
                 if (xquery == null) {
                     LOG.error("broker unable to retrieve XQueryService");

@@ -127,7 +127,7 @@ public class MatchListenerTest {
         configureAndStore(CONF1, XML);
 
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());) {
-            final XQuery xquery = broker.getXQueryService();
+            final XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
             Sequence seq = xquery.execute(broker, "//para[ngram:contains(., 'mixed')]", null, AccessContext.TEST);
             assertNotNull(seq);
@@ -164,7 +164,8 @@ public class MatchListenerTest {
         configureAndStore(CONF1, XML);
 
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());) {
-            final XQuery xquery = broker.getXQueryService();
+
+            final XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
             final Sequence seq = xquery.execute(broker, "//para[ngram:contains(., 'mixed')]/hi", null, AccessContext.TEST);
             assertNotNull(seq);
@@ -179,7 +180,8 @@ public class MatchListenerTest {
         configureAndStore(CONF1, XML);
 
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());) {
-            final XQuery xquery = broker.getXQueryService();
+
+            final XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
             Sequence seq = xquery.execute(broker, "//para[ngram:contains(., 'nested')]/note", null, AccessContext.TEST);
             assertNotNull(seq);
@@ -201,7 +203,7 @@ public class MatchListenerTest {
 
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());) {
 
-            final XQuery xquery = broker.getXQueryService();
+            final XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
             Sequence seq = xquery.execute(broker, "//para[ngram:contains(term, 'term')]", null, AccessContext.TEST);
             assertNotNull(seq);
@@ -229,7 +231,7 @@ public class MatchListenerTest {
 
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());) {
 
-            final XQuery xquery = broker.getXQueryService();
+            final XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
             Sequence seq = xquery.execute(broker, "//para[ngram:contains(., 'mixed content')]", null, AccessContext.TEST);
             assertNotNull(seq);
@@ -268,7 +270,7 @@ public class MatchListenerTest {
         configureAndStore(CONF2, XML);
 
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());) {
-            final XQuery xquery = broker.getXQueryService();
+            final XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
             Sequence seq = xquery.execute(broker, "//para[ngram:contains(note, 'nested inner')]", null, AccessContext.TEST);
             assertNotNull(seq);
@@ -291,7 +293,7 @@ public class MatchListenerTest {
         configureAndStore(CONF1, XML);
 
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());) {
-            final XQuery xquery = broker.getXQueryService();
+            final XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
 
             Sequence seq = xquery.execute(broker, "//para[ngram:contains(., 'double match')]", null, AccessContext.TEST);
@@ -321,8 +323,7 @@ public class MatchListenerTest {
         configureAndStore(CONF1, XML);
 
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());) {
-
-            final XQuery xquery = broker.getXQueryService();
+            final XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
 
             Sequence seq = xquery.execute(broker, "//para[ngram:wildcard-contains(., 'double.*match')]", null,
@@ -472,8 +473,7 @@ public class MatchListenerTest {
         configureAndStore(CONF3, XML2);
 
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());) {
-
-            final XQuery xquery = broker.getXQueryService();
+            final XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
 
             final String[] strings = new String[] { "龍", "龍護", "曰龍護", "名曰龍護" };
@@ -497,7 +497,7 @@ public class MatchListenerTest {
         configureAndStore(CONF3, XML2);
 
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());) {
-            final XQuery xquery = broker.getXQueryService();
+            final XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
 
             final String[] strings = new String[] { "龍", "龍護", "曰龍護", "名曰龍護" };
