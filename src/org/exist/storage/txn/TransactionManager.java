@@ -182,6 +182,8 @@ public class TransactionManager {
      * @throws TransactionException
      */
     public void commit(final Txn txn) throws TransactionException {
+
+        //we can only commit something which is in the STARTED state
         if (!enabled || txn.getState() != Txn.State.STARTED) {
             return;
         }
@@ -208,6 +210,8 @@ public class TransactionManager {
     }
 	
     public void abort(final Txn txn) {
+
+        //we can only abort something which is in the STARTED state
         if (!enabled || txn == null || txn.getState() != Txn.State.STARTED) {
             return;
         }
@@ -236,14 +240,22 @@ public class TransactionManager {
      * @param txn
      */
     public void close(final Txn txn) {
-        if (!enabled || txn == null) {
+
+        //if the transaction is already closed, do nothing
+        if (!enabled || txn == null || txn.getState() == Txn.State.CLOSED) {
             return;
         }
-        if (txn.getState() == Txn.State.STARTED) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Transaction was not committed or aborted, auto aborting!");
+
+        try {
+            //if the transaction is started, then we should auto-abort the uncommitted transaction
+            if (txn.getState() == Txn.State.STARTED) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Transaction was not committed or aborted, auto aborting!");
+                }
+                abort(txn);
             }
-            abort(txn);
+        } finally {
+            txn.setState(Txn.State.CLOSED); //transaction is now closed!
         }
     }
 
