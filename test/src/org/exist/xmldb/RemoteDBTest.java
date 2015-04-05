@@ -50,9 +50,7 @@ public abstract class RemoteDBTest extends TestCase {
 		try {
 			if (server == null) {
 				server = new JettyStart();
-				if (!server.isStarted()) {
-                    server.run();
-                }
+                server.run();
 			}
         } catch (Exception e) {
         	e.printStackTrace();
