@@ -168,9 +168,6 @@ public class RestApiSecurityTest extends AbstractApiSecurityTest {
         if (server == null) {
             server = new JettyStart();
             server.run();
-            while (!server.isStarted()) {
-                Thread.sleep(1000);
-            }
         }
     }
 
