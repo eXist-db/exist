@@ -22,6 +22,9 @@ package org.exist.xquery.modules.ngram.utils;
 import org.exist.dom.persistent.Match;
 import org.exist.dom.persistent.NodeProxy;
 
+import java.util.function.Function;
+import java.util.function.Predicate;
+
 public final class NodeProxies {
 
     private NodeProxies() {
@@ -36,12 +39,13 @@ public final class NodeProxies {
      *            the predicate based on which the full-text matches are filtered: If the predicate returns true the
      *            match stays, if not the match is removed.
      */
-    public static void filterMatches(final NodeProxy node, final F<Match, Boolean> predicate) {
+    public static void filterMatches(final NodeProxy node, final Predicate<Match> predicate) {
         Match m = node.getMatches();
         node.setMatches(null);
         while (m != null) {
-            if (predicate.f(m).booleanValue())
+            if (predicate.test(m)) {
                 node.addMatch(m);
+            }
             m = m.getNextMatch();
         }
     }
@@ -53,14 +57,14 @@ public final class NodeProxies {
      *
      * @param node
      *            the NodeProxy to modify
-     * @param f
+     * @param transform
      *            the function to apply to all matches with the supplied expression id
      * @param ownExpressionId
      *            the expression id of the matches to be transformed
      * @return the modified node if at least one match with the supplied expression id was not transformed to null or
      *         null otherwise
      */
-    public static NodeProxy fmapOwnMatches(final NodeProxy node, final F<Match, Match> f, int ownExpressionId) {
+    public static NodeProxy transformOwnMatches(final NodeProxy node, final Function<Match, Match> transform, int ownExpressionId) {
         Match m = node.getMatches();
         node.setMatches(null);
         boolean ownMatch = false;
@@ -69,7 +73,7 @@ public final class NodeProxies {
             if (m.getContextId() != ownExpressionId) {
                 node.addMatch(m);
             } else {
-                Match nm = f.f(m);
+                final Match nm = transform.apply(m);
                 if (nm != null) {
                     node.addMatch(nm);
                     ownMatch = true;
@@ -78,10 +82,6 @@ public final class NodeProxies {
             m = m.getNextMatch();
         }
 
-        if (ownMatch)
-            return node;
-        else
-            return null;
+        return ownMatch ? node : null;
     }
-
 }

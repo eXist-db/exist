@@ -20,11 +20,12 @@
 package org.exist.xquery.modules.ngram.utils;
 
 import org.exist.dom.persistent.ExtArrayNodeSet;
-import org.exist.dom.persistent.Match;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.persistent.NodeSetIterator;
 import org.exist.xquery.XPathException;
+
+import java.util.function.Function;
 
 public final class NodeSets {
 
@@ -37,53 +38,41 @@ public final class NodeSets {
      * 
      * @param nodes
      *            the NodeSet containig the NodeProys to be transformed
-     * @param f
+     * @param transform
      *            the function to be applied to all NodeProxys in nodes
      * @return a new NodeSet containing the non-null results of f applied to the NodeProxys in nodes
      * @throws XPathException
      */
-    public static NodeSet fmapNodes(final NodeSet nodes, final F<NodeProxy, NodeProxy> f) throws XPathException {
-        NodeSet result = new ExtArrayNodeSet();
-        for (NodeSetIterator iterator = nodes.iterator(); iterator.hasNext();) {
-            NodeProxy node = f.f(iterator.next());
-            if (node != null)
+    public static NodeSet transformNodes(final NodeSet nodes, final Function<NodeProxy, NodeProxy> transform) throws XPathException {
+        final NodeSet result = new ExtArrayNodeSet();
+        for(final NodeSetIterator iterator = nodes.iterator(); iterator.hasNext();) {
+            final NodeProxy node = transform.apply(iterator.next());
+            if (node != null) {
                 result.add(node);
+            }
         }
         result.iterate(); // ensure result is ready to use
         return result;
     }
 
     public static NodeSet getNodesMatchingAtStart(final NodeSet nodes, final int expressionId) throws XPathException {
-        return fmapNodes(nodes, new F<NodeProxy, NodeProxy>() {
-
-            @Override
-            public NodeProxy f(NodeProxy a) {
-                return NodeProxies.fmapOwnMatches(a, new F<Match, Match>() {
-
-                    @Override
-                    public Match f(Match a) {
-                        return a.filterOffsetsStartingAt(0);
-                    }
-                }, expressionId);
-            }
-        });
+        return transformNodes(nodes, proxy ->
+                NodeProxies.transformOwnMatches(
+                        proxy,
+                        match -> match.filterOffsetsStartingAt(0),
+                        expressionId
+                )
+        );
     }
 
     public static NodeSet getNodesMatchingAtEnd(final NodeSet nodes, final int expressionId) throws XPathException {
-        return fmapNodes(nodes, new F<NodeProxy, NodeProxy>() {
-
-            @Override
-            public NodeProxy f(NodeProxy a) {
-                final int len = a.getNodeValue().length();
-                return NodeProxies.fmapOwnMatches(a, new F<Match, Match>() {
-
-                    @Override
-                    public Match f(Match a) {
-                        return a.filterOffsetsEndingAt(len);
-                    }
-                }, expressionId);
-            }
-        });
+        return transformNodes(nodes, proxy ->
+                NodeProxies.transformOwnMatches(
+                        proxy,
+                        match -> match.filterOffsetsEndingAt(proxy.getNodeValue().length()),
+                        expressionId
+                )
+        );
     }
 
 }
