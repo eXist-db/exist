@@ -26,13 +26,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.EmptyNodeSet;
-import org.exist.dom.persistent.Match;
-import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.QName;
 import org.exist.indexing.ngram.NGramIndexWorker;
 import org.exist.xquery.XPathException;
-import org.exist.xquery.modules.ngram.utils.F;
 import org.exist.xquery.modules.ngram.utils.NodeProxies;
 import org.exist.xquery.modules.ngram.utils.NodeSets;
 
@@ -46,7 +43,7 @@ public class WildcardedExpressionSequence implements EvaluatableExpression {
 
     public WildcardedExpressionSequence(final List<WildcardedExpression> expressions) {
 
-        this.expressions = new ArrayList<WildcardedExpression>(expressions.size());
+        this.expressions = new ArrayList<>(expressions.size());
 
         WildcardedExpression currentExpression = expressions.remove(0);
 
@@ -119,43 +116,25 @@ public class WildcardedExpressionSequence implements EvaluatableExpression {
         return result;
     }
 
-    private NodeSet expandMatchesForward(final Wildcard trailingWildcard, final NodeSet nodes, final int expressionId)
-        throws XPathException {
-        return NodeSets.fmapNodes(nodes, new F<NodeProxy, NodeProxy>() {
-
-            @Override
-            public NodeProxy f(NodeProxy node) {
-                final int nodeLength = node.getNodeValue().length();
-                return NodeProxies.fmapOwnMatches(node, new F<Match, Match>() {
-
-                    @Override
-                    public Match f(Match a) {
-                        return a.expandForward(trailingWildcard.minimumLength, trailingWildcard.maximumLength,
-                            nodeLength);
-                    }
-                }, expressionId);
-            }
-        });
+    private NodeSet expandMatchesForward(final Wildcard trailingWildcard, final NodeSet nodes, final int expressionId) throws XPathException {
+        return NodeSets.transformNodes(nodes, proxy ->
+                NodeProxies.transformOwnMatches(
+                        proxy,
+                        match -> match.expandForward(trailingWildcard.minimumLength, trailingWildcard.maximumLength, proxy.getNodeValue().length()),
+                        expressionId
+                )
+        );
     }
 
-    private NodeSet expandMatchesBackward(final Wildcard leadingWildcard, final NodeSet nodes, final int expressionId)
-        throws XPathException {
-        return NodeSets.fmapNodes(nodes, new F<NodeProxy, NodeProxy>() {
-
-            @Override
-            public NodeProxy f(NodeProxy node) {
-                return NodeProxies.fmapOwnMatches(node, new F<Match, Match>() {
-
-                    @Override
-                    public Match f(Match a) {
-                        return a.expandBackward(leadingWildcard.minimumLength, leadingWildcard.maximumLength);
-                    }
-                }, expressionId);
-            }
-        });
+    private NodeSet expandMatchesBackward(final Wildcard leadingWildcard, final NodeSet nodes, final int expressionId) throws XPathException {
+        return NodeSets.transformNodes(nodes, proxy ->
+                NodeProxies.transformOwnMatches(
+                        proxy,
+                        match -> match.expandBackward(leadingWildcard.minimumLength, leadingWildcard.maximumLength),
+                        expressionId
+                )
+        );
     }
-
-
 
     /**
      *

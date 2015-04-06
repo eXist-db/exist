@@ -20,6 +20,7 @@
 package org.exist.xquery.modules.ngram.query;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -30,7 +31,6 @@ import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.QName;
 import org.exist.indexing.ngram.NGramIndexWorker;
 import org.exist.xquery.XPathException;
-import org.exist.xquery.modules.ngram.utils.F;
 import org.exist.xquery.modules.ngram.utils.NodeProxies;
 import org.exist.xquery.modules.ngram.utils.NodeSets;
 
@@ -68,18 +68,10 @@ public class WildcardedExpressionTriple implements EvaluatableExpression {
             return tailNodes;
         }
 
-        NodeSet result = NodeSets.fmapNodes(headNodes, new F<NodeProxy, NodeProxy>() {
-
-            @Override
-            public NodeProxy f(NodeProxy headNode) {
-                NodeProxy tailNode = tailNodes.get(headNode);
-                if (tailNode != null) {
-                    return getMatchingNode(headNode, tailNode, expressionId);
-                } else {
-                    return null;
-                }
-            }
-        });
+        final NodeSet result = NodeSets.transformNodes(headNodes, headNode ->
+                Optional.ofNullable(tailNodes.get(headNode))
+                        .map(tailNode -> getMatchingNode(headNode, tailNode, expressionId))
+                        .orElse(null));
 
         return result;
     }
@@ -106,13 +98,7 @@ public class WildcardedExpressionTriple implements EvaluatableExpression {
 
         if (found) {
             // Remove own (partial) matches and add new complete match
-            NodeProxies.filterMatches(tailNode, new F<Match, Boolean>() {
-
-                @Override
-                public Boolean f(Match a) {
-                    return a.getContextId() != expressionId;
-                }
-            });
+            NodeProxies.filterMatches(tailNode, a -> a.getContextId() != expressionId);
 
             tailNode.addMatch(match);
             result = tailNode;
