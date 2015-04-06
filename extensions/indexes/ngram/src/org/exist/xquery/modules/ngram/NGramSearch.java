@@ -19,10 +19,7 @@
  */
 package org.exist.xquery.modules.ngram;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -47,7 +44,6 @@ import org.exist.xquery.modules.ngram.query.StartAnchor;
 import org.exist.xquery.modules.ngram.query.Wildcard;
 import org.exist.xquery.modules.ngram.query.WildcardedExpression;
 import org.exist.xquery.modules.ngram.query.WildcardedExpressionSequence;
-import org.exist.xquery.modules.ngram.utils.F;
 import org.exist.xquery.modules.ngram.utils.NodeProxies;
 import org.exist.xquery.modules.ngram.utils.NodeSets;
 import org.exist.xquery.util.Error;
@@ -299,19 +295,13 @@ public class NGramSearch extends Function implements Optimizable {
         else if (getLocalName().startsWith("ends-with"))
             result = NodeSets.getNodesMatchingAtEnd(result, getExpressionId());
 
-        result = NodeSets.fmapNodes(result, new F<NodeProxy, NodeProxy>() {
-
-            @Override
-            public NodeProxy f(NodeProxy a) {
-                return NodeProxies.fmapOwnMatches(a, new F<Match, Match>() {
-
-                    @Override
-                    public Match f(Match a) {
-                        return a.filterOutOverlappingOffsets();
-                    }
-                }, getExpressionId());
-            }
-        });
+        result = NodeSets.transformNodes(result, proxy ->
+                NodeProxies.transformOwnMatches(
+                        proxy,
+                        Match::filterOutOverlappingOffsets,
+                        getExpressionId()
+                )
+        );
 
         return result;
     }
@@ -524,18 +514,10 @@ public class NGramSearch extends Function implements Optimizable {
 
             final NodeSet nodesContainingFirstINgrams = result;
 
-            result = NodeSets.fmapNodes(nodes, new F<NodeProxy, NodeProxy>() {
-
-                @Override
-                public NodeProxy f(NodeProxy a) {
-                    NodeProxy before = nodesContainingFirstINgrams.get(a);
-                    if (before != null) {
-                        return getContinuousMatches(before, a);
-                    } else {
-                        return null;
-                    }
-                }
-            });
+            result = NodeSets.transformNodes(nodes, proxy ->
+                    Optional.ofNullable(nodesContainingFirstINgrams.get(proxy))
+                            .map(before -> getContinuousMatches(before, proxy))
+                            .orElse(null));
         }
         return result;
 	}
@@ -563,13 +545,7 @@ public class NGramSearch extends Function implements Optimizable {
             headMatch = headMatch.getNextMatch();
             }
         if (continuousMatch != null) {
-            NodeProxies.filterMatches(tail, new F<Match, Boolean>() {
-
-                @Override
-                public Boolean f(Match a) {
-                    return (a.getContextId() != getExpressionId());
-        }
-            });
+            NodeProxies.filterMatches(tail, match -> match.getContextId() != getExpressionId());
 
             tail.addMatch(continuousMatch);
             return tail;

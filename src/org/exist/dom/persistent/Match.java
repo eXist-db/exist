@@ -24,9 +24,9 @@ package org.exist.dom.persistent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Predicate;
 
 import org.exist.numbering.NodeId;
 
@@ -266,14 +266,10 @@ public abstract class Match implements Comparable<Match> {
         return result;
     }
 
-    private interface F<A, B> {
-        public B f(A a);
-    }
-
-    private Match filterOffsets(final F<Offset, Boolean> predicate) {
+    private Match filterOffsets(final Predicate<Offset> predicate) {
         final Match result = createInstance(context, nodeId, matchTerm);
         for(final Offset o : getOffsets()) {
-            if(predicate.f(o).booleanValue()) {
+            if(predicate.test(o)) {
                 result.addOffset(o);
             }
         }
@@ -292,12 +288,7 @@ public abstract class Match implements Comparable<Match> {
      * or null if no such offset exists.
      */
     public Match filterOffsetsStartingAt(final int pos) {
-        return filterOffsets(new F<Offset, Boolean>() {
-            @Override
-            public Boolean f(Offset a) {
-                return (a.offset == pos);
-            }
-        });
+        return filterOffsets(offset -> offset.offset == pos);
     }
 
     /**
@@ -308,12 +299,7 @@ public abstract class Match implements Comparable<Match> {
      * or null if no such offset exists.
      */
     public Match filterOffsetsEndingAt(final int pos) {
-        return filterOffsets(new F<Offset, Boolean>() {
-            @Override
-            public Boolean f(Offset a) {
-                return (a.offset + a.length == pos);
-            }
-        });
+        return filterOffsets(offset -> offset.offset + offset.length == pos);
     }
 
     /**
@@ -327,16 +313,12 @@ public abstract class Match implements Comparable<Match> {
             return newCopy();
         }
         final List<Offset> newMatchOffsets = getOffsets();
-        Collections.sort(newMatchOffsets, new Comparator<Offset>() {
-            // Sort by descending length to get greedier matches first, then position for left to right matching
-            @Override
-            public int compare(Offset o1, Offset o2) {
-                final int lengthDiff = o2.length - o1.length;
-                if(lengthDiff != 0) {
-                    return lengthDiff;
-                } else {
-                    return o1.offset - o2.offset;
-                }
+        Collections.sort(newMatchOffsets, (o1, o2) -> {
+            final int lengthDiff = o2.length - o1.length;
+            if(lengthDiff != 0) {
+                return lengthDiff;
+            } else {
+                return o1.offset - o2.offset;
             }
         });
         final List<Offset> nonOverlappingMatchOffsets = new LinkedList<>();
