@@ -230,10 +230,10 @@ public class RangeIndexUpdateTest {
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());
-        }
-
-        BrokerPool.stopAll(false);
-        pool = null;
-        docs = null;
+        } finally {
+            BrokerPool.stopAll(false);
+            pool = null;
+            docs = null;
+	}
     }
 }
