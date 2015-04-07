@@ -43,6 +43,7 @@ import org.exist.security.internal.SecurityManagerImpl;
 import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.internal.aider.UserAider;
 import org.exist.storage.DBBroker;
+import org.exist.util.function.Function2E;
 import org.scribe.exceptions.OAuthException;
 
 /**
@@ -87,16 +88,10 @@ public class OAuthRealm extends AbstractRealm {
 			primaryGroup = getGroup(OAUTH);
 			if (primaryGroup == null)
 				try {
-					primaryGroup = executeAsSystemUser(new Unit<Group>() {
-						@Override
-						public Group execute(DBBroker broker) throws EXistException, PermissionDeniedException {
-							return addGroup(new GroupAider(ID, OAUTH));
-						}
-					});
-		            
-					if (primaryGroup == null)
+					primaryGroup = this.<Group, PermissionDeniedException>withDbAsSystem(broker -> addGroup(new GroupAider(ID, OAUTH)));
+					if (primaryGroup == null) {
 						throw new ConfigurationException("OAuth realm can not create primary group 'OAuth'.");
-					
+                                        }
 				} catch (PermissionDeniedException e) {
 					throw e;
 				} catch (ConfigurationException e) {
@@ -128,22 +123,18 @@ public class OAuthRealm extends AbstractRealm {
     protected Account createAccountInDatabase(final String username, final Map<SchemaType, String> metadata) throws AuthenticationException {
 
         try {
-            return executeAsSystemUser(new Unit<Account>(){
-                @Override
-                public Account execute(DBBroker broker) throws EXistException, PermissionDeniedException {
+            return this.<Account, PermissionDeniedException>withDbAsSystem(broker -> {
                     //create the user account
                     UserAider userAider = new UserAider(ID, username, getPrimaryGroup());
 
                     //store any requested metadata
-                    for(Entry<SchemaType, String> entry : metadata.entrySet())
+                    for(final Entry<SchemaType, String> entry : metadata.entrySet()) {
                         userAider.setMetadataValue(entry.getKey(), entry.getValue());
+                    }
 
-                    Account account = getSecurityManager().addAccount(userAider);
-
-                    return account;
-                }
+                    return getSecurityManager().addAccount(userAider);
             });
-        } catch(Exception e) {
+        } catch(final EXistException | PermissionDeniedException e) {
             throw new AuthenticationException(AuthenticationException.UNNOWN_EXCEPTION, e.getMessage(), e);
         }
     }
@@ -158,4 +149,9 @@ public class OAuthRealm extends AbstractRealm {
 		throw new OAuthException("Service no found by name '"+name+"'.");
 	}
 
+        private <R, E extends Throwable> R withDbAsSystem(final Function2E<DBBroker, R, E, EXistException> op) throws EXistException, E {
+            try(final DBBroker broker = getDatabase().get(getSecurityManager().getSystemSubject())) {
+                return op.apply(broker);
+            }
+        }
 }

@@ -23,8 +23,9 @@ package org.exist.security.internal;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
+import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
@@ -99,7 +100,7 @@ public class RealmImpl extends AbstractRealm {
         //DBA group
         GROUP_DBA = new GroupImpl(this, DBA_GROUP_ID, SecurityManager.DBA_GROUP);
         GROUP_DBA.setManagers(new ArrayList<Reference<SecurityManager, Account>>(){
-            { add(new ReferenceImpl<SecurityManager, Account>(sm, "getAccount", SecurityManager.DBA_USER)); }
+            { add(new ReferenceImpl<>(sm, "getAccount", SecurityManager.DBA_USER)); }
         });
         GROUP_DBA.setMetadataValue(EXistSchemaType.DESCRIPTION, "Database Administrators");
     	sm.addGroup(GROUP_DBA.getId(), GROUP_DBA);
@@ -119,7 +120,7 @@ public class RealmImpl extends AbstractRealm {
         //guest group
         GROUP_GUEST = new GroupImpl(this, GUEST_GROUP_ID, SecurityManager.GUEST_GROUP);
         GROUP_GUEST.setManagers(new ArrayList<Reference<SecurityManager, Account>>(){
-            { add(new ReferenceImpl<SecurityManager, Account>(sm, "getAccount", SecurityManager.DBA_USER)); }
+            { add(new ReferenceImpl<>(sm, "getAccount", SecurityManager.DBA_USER)); }
         });
         GROUP_GUEST.setMetadataValue(EXistSchemaType.DESCRIPTION, "Anonymous Users");
         sm.addGroup(GROUP_GUEST.getId(), GROUP_GUEST);
@@ -184,41 +185,37 @@ public class RealmImpl extends AbstractRealm {
             return false;
         }
         
-        usersByName.modify2E(new PrincipalDbModify2E<Account, PermissionDeniedException, EXistException>(){
-            @Override
-            public void execute(Map<String, Account> principalDb) throws PermissionDeniedException, EXistException {
-                final AbstractAccount remove_account = (AbstractAccount)principalDb.get(account.getName());
-                if(remove_account == null){
-                    throw new IllegalArgumentException("No such account exists!");
+        usersByName.<PermissionDeniedException, EXistException>modify2E(principalDb -> {
+            final AbstractAccount remove_account = (AbstractAccount)principalDb.get(account.getName());
+            if(remove_account == null){
+                throw new IllegalArgumentException("No such account exists!");
+            }
+
+            DBBroker broker = null;
+            try {
+                broker = getDatabase().get(null);
+                final Account user = broker.getSubject();
+
+                if(!(account.getName().equals(user.getName()) || user.hasDbaRole()) ) {
+                    throw new PermissionDeniedException("You are not allowed to delete '" +account.getName() + "' user");
                 }
 
-                DBBroker broker = null;
-                try {
-                    broker = getDatabase().get(null);
-                    final Account user = broker.getSubject();
+                remove_account.setRemoved(true);
+                remove_account.setCollection(broker, collectionRemovedAccounts, XmldbURI.create(UUIDGenerator.getUUID()+".xml"));
 
-                    if(!(account.getName().equals(user.getName()) || user.hasDbaRole()) ) {
-                        throw new PermissionDeniedException("You are not allowed to delete '" +account.getName() + "' user");
-                    }
+                final TransactionManager transaction = getDatabase().getTransactionManager();
+                try(final Txn txn = transaction.beginTransaction()) {
+                    collectionAccounts.removeXMLResource(txn, broker, XmldbURI.create( remove_account.getName() + ".xml"));
 
-                    remove_account.setRemoved(true);
-                    remove_account.setCollection(broker, collectionRemovedAccounts, XmldbURI.create(UUIDGenerator.getUUID()+".xml"));
-
-                    final TransactionManager transaction = getDatabase().getTransactionManager();
-                    try(final Txn txn = transaction.beginTransaction()) {
-                        collectionAccounts.removeXMLResource(txn, broker, XmldbURI.create( remove_account.getName() + ".xml"));
-
-                        transaction.commit(txn);
-                    } catch(final Exception e) {
-                        e.printStackTrace();
-                        LOG.debug("loading configuration failed: " + e.getMessage());
-                    }
-
-                    getSecurityManager().addUser(remove_account.getId(), remove_account);
-                    principalDb.remove(remove_account.getName());
-                } finally {
-                    getDatabase().release(broker);
+                    transaction.commit(txn);
+                } catch(final Exception e) {
+                    LOG.warn(e.getMessage(), e);
                 }
+
+                getSecurityManager().addUser(remove_account.getId(), remove_account);
+                principalDb.remove(remove_account.getName());
+            } finally {
+                getDatabase().release(broker);
             }
         });
         
@@ -230,35 +227,31 @@ public class RealmImpl extends AbstractRealm {
         if(group == null)
             {return false;}
         
-        groupsByName.modify2E(new PrincipalDbModify2E<Group, PermissionDeniedException, EXistException>(){
-            @Override
-            public void execute(Map<String, Group> principalDb) throws PermissionDeniedException, EXistException {
-        
-            	final AbstractPrincipal remove_group = (AbstractPrincipal)principalDb.get(group.getName());
-            	if(remove_group == null)
-                    {throw new IllegalArgumentException("Group does '"+group.getName()+"' not exist!");}
-		
-            	final DBBroker broker = getDatabase().getActiveBroker();
-                final Subject subject = broker.getSubject();
-                
-                ((Group)remove_group).assertCanModifyGroup(subject);
-		
-                remove_group.setRemoved(true);
-                remove_group.setCollection(broker, collectionRemovedGroups, XmldbURI.create(UUIDGenerator.getUUID() + ".xml"));
-		
-                final TransactionManager transaction = getDatabase().getTransactionManager();
-                try(final Txn txn = transaction.beginTransaction()) {
+        groupsByName.<PermissionDeniedException, EXistException>modify2E(principalDb -> {
+            final AbstractPrincipal remove_group = (AbstractPrincipal)principalDb.get(group.getName());
+            if(remove_group == null)
+                {throw new IllegalArgumentException("Group does '"+group.getName()+"' not exist!");}
 
-                    collectionGroups.removeXMLResource(txn, broker, XmldbURI.create(remove_group.getName() + ".xml" ));
+            final DBBroker broker = getDatabase().getActiveBroker();
+            final Subject subject = broker.getSubject();
 
-                    transaction.commit(txn);
-                } catch (final Exception e) {
-                    LOG.debug(e);
-                }
+            ((Group)remove_group).assertCanModifyGroup(subject);
 
-                getSecurityManager().addGroup(remove_group.getId(), (Group)remove_group);
-                principalDb.remove(remove_group.getName());
+            remove_group.setRemoved(true);
+            remove_group.setCollection(broker, collectionRemovedGroups, XmldbURI.create(UUIDGenerator.getUUID() + ".xml"));
+
+            final TransactionManager transaction = getDatabase().getTransactionManager();
+            try(final Txn txn = transaction.beginTransaction()) {
+
+                collectionGroups.removeXMLResource(txn, broker, XmldbURI.create(remove_group.getName() + ".xml" ));
+
+                transaction.commit(txn);
+            } catch (final Exception e) {
+                LOG.warn(e.getMessage(), e);
             }
+
+            getSecurityManager().addGroup(remove_group.getId(), (Group)remove_group);
+            principalDb.remove(remove_group.getName());
         });
         
         return true;
@@ -289,98 +282,63 @@ public class RealmImpl extends AbstractRealm {
     }
 
     @Override
-    public List<String> findUsernamesWhereUsernameStarts(final String startsWith) {
-
-        return usersByName.read(new PrincipalDbRead<Account, List<String>>(){
-            @Override
-            public List<String> execute(Map<String, Account> principalDb) {
-                final List<String> userNames = new ArrayList<String>();
-                for(final String userName : principalDb.keySet()) {
-                    if(userName.startsWith(startsWith)) {
-                        userNames.add(userName);
-                    }
-                }
-                return userNames;
-            }
-        });
+    public List<String> findUsernamesWhereUsernameStarts(final String prefix) {
+        return usersByName.read(principalDb ->
+                principalDb.keySet()
+                        .stream()
+                        .filter(userName -> userName.startsWith(prefix))
+                        .collect(Collectors.toList())
+        );
     }
     
     @Override
-    public List<String> findGroupnamesWhereGroupnameStarts(final String startsWith) {
-
-        return groupsByName.read(new PrincipalDbRead<Group, List<String>>(){
-            @Override
-            public List<String> execute(Map<String, Group> principalDb) {
-                final List<String> groupNames = new ArrayList<String>();
-                for(final String groupName : principalDb.keySet()) {
-                    if(groupName.startsWith(startsWith)) {
-                        groupNames.add(groupName);
-                    }
-                }
-                return groupNames;
-            }
-        });
+    public List<String> findGroupnamesWhereGroupnameStarts(final String prefix) {
+        return groupsByName.read(principalDb -> 
+                principalDb.keySet()
+                .stream()
+                .filter(groupName -> groupName.startsWith(prefix))
+                .collect(Collectors.toList())
+        );
     }
     
     @Override
     public Collection<? extends String> findGroupnamesWhereGroupnameContains(final String fragment) {
-        return groupsByName.read(new PrincipalDbRead<Group, List<String>>(){
-            @Override
-            public List<String> execute(Map<String, Group> principalDb) {
-                final List<String> groupNames = new ArrayList<String>();
-                for(final String groupName : principalDb.keySet()) {
-                    if(groupName.indexOf(fragment) > -1) {
-                        groupNames.add(groupName);
-                    }
-                }
-                return groupNames;
-            }
-        });
+        return groupsByName.read(principalDb -> 
+                principalDb.keySet()
+                .stream()
+                .filter(groupName -> groupName.contains(fragment))
+                .collect(Collectors.toList())
+        );
     }
 
     @Override
     public List<String> findAllGroupNames() {
-        return groupsByName.read(new PrincipalDbRead<Group, List<String>>(){
-            @Override
-            public List<String> execute(Map<String, Group> principalDb) {
-                return new ArrayList<String>(principalDb.keySet());
-            }
-        });
+        return groupsByName.read(principalDb -> new ArrayList<>(principalDb.keySet()));
     }
     
     @Override
     public List<String> findAllUserNames() {
-        return usersByName.read(new PrincipalDbRead<Account, List<String>>(){
-            @Override
-            public List<String> execute(Map<String, Account> principalDb) {
-                return new ArrayList<String>(principalDb.keySet());
-            }
-        });
+        return usersByName.read(principalDb -> new ArrayList<>(principalDb.keySet()));
     }
 
     @Override
     public List<String> findAllGroupMembers(final String groupName) {
-        return usersByName.read(new PrincipalDbRead<Account, List<String>>(){
-            @Override
-            public List<String> execute(Map<String, Account> principalDb) {
-                final List<String> groupMembers = new ArrayList<String>();
-                for(final Account account : principalDb.values()) {
-                    if(account.hasGroup(groupName)) {
-                        groupMembers.add(account.getName());
-                    }
-                }
-                return groupMembers;
-            }
-        });
+        return usersByName.read(principalDb ->
+                principalDb.values()
+                .stream()
+                .filter(account -> account.hasGroup(groupName))
+                .map(account -> account.getName())
+                .collect(Collectors.toList())
+        );
     }
 
     @Override
-    public List<String> findUsernamesWhereNameStarts(String startsWith) {
-        return new ArrayList<String>();    //TODO at present exist users cannot have personal name details
+    public List<String> findUsernamesWhereNameStarts(final String startsWith) {
+        return Collections.EMPTY_LIST;    //TODO at present exist users cannot have personal name details
     }
 
     @Override
-    public List<String> findUsernamesWhereNamePartStarts(String startsWith) {
-        return new ArrayList<String>();    //TODO at present exist users cannot have personal name details
+    public List<String> findUsernamesWhereNamePartStarts(final String startsWith) {
+        return Collections.EMPTY_LIST;    //TODO at present exist users cannot have personal name details
     }
 }
