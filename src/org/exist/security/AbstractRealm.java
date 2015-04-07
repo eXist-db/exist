@@ -22,7 +22,7 @@
 package org.exist.security;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -31,6 +31,8 @@ import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import org.exist.Database;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
@@ -49,6 +51,8 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
+import org.exist.util.function.Consumer2E;
+import org.exist.util.function.ConsumerE;
 import org.exist.xmldb.XmldbURI;
 
 /**
@@ -57,8 +61,8 @@ import org.exist.xmldb.XmldbURI;
  */
 public abstract class AbstractRealm implements Realm, Configurable {
 
-    protected final PrincipalDbByName<Account> usersByName = new PrincipalDbByName<Account>();
-    protected final PrincipalDbByName<Group> groupsByName = new PrincipalDbByName<Group>();
+    protected final PrincipalDbByName<Account> usersByName = new PrincipalDbByName<>();
+    protected final PrincipalDbByName<Group> groupsByName = new PrincipalDbByName<>();
     
 
     private SecurityManager sm;
@@ -116,23 +120,18 @@ public abstract class AbstractRealm implements Realm, Configurable {
                 final Configuration conf = Configurator.parse(broker.getBrokerPool(), i.next());
                 final String name = conf.getProperty("name");
                 
-                groupsByName.modifyE(new PrincipalDbModifyE<Group, ConfigurationException>() {
+                groupsByName.<ConfigurationException>modifyE(principalDb -> {
+                    if(name != null && !principalDb.containsKey(name)) {
 
-                    @Override
-                    public void execute(final Map<String, Group> principalDb) throws ConfigurationException {
-                        
-                        if(name != null && !principalDb.containsKey(name)) {
+                        //Group group = instantiateGroup(this, conf);
+                        final GroupImpl group = new GroupImpl(r, conf);
 
-                            //Group group = instantiateGroup(this, conf);
-                            final GroupImpl group = new GroupImpl(r, conf);
+                        getSecurityManager().addGroup(group.getId(), group);
+                        principalDb.put(group.getName(), group);
 
-                            getSecurityManager().addGroup(group.getId(), group);
-                            principalDb.put(group.getName(), group);
-
-                            //set collection
-                            if(group.getId() > 0) {
-                                ((AbstractPrincipal)group).setCollection(broker, collectionGroups);
-                            }
+                        //set collection
+                        if(group.getId() > 0) {
+                            ((AbstractPrincipal)group).setCollection(broker, collectionGroups);
                         }
                     }
                 });
@@ -170,26 +169,23 @@ public abstract class AbstractRealm implements Realm, Configurable {
                 final Configuration conf = Configurator.parse(broker.getBrokerPool(), doc);
                 final String name = conf.getProperty("name");
                 
-                usersByName.modifyE(new PrincipalDbModifyE<Account, ConfigurationException>(){
-                    @Override
-                    public void execute(final Map<String, Account> principalDb) throws ConfigurationException {
-                        if(name != null && !principalDb.containsKey(name)) {
-                            //A account = instantiateAccount(this, conf);
-                            final Account account;
-                            try {
-                                account = new AccountImpl(r, conf);
-                            } catch (Throwable e) {
-                                SecurityManagerImpl.LOG.error("Account object can't build up from '"+doc.getFileURI()+"'", e);
-                                return;
-                            }
+                usersByName.<ConfigurationException>modifyE(principalDb -> {
+                    if(name != null && !principalDb.containsKey(name)) {
+                        //A account = instantiateAccount(this, conf);
+                        final Account account;
+                        try {
+                            account = new AccountImpl(r, conf);
+                        } catch (Throwable e) {
+                            SecurityManagerImpl.LOG.error("Account object can't build up from '"+doc.getFileURI()+"'", e);
+                            return;
+                        }
 
-                            getSecurityManager().addUser(account.getId(), account);
-                            principalDb.put(account.getName(), account);
+                        getSecurityManager().addUser(account.getId(), account);
+                        principalDb.put(account.getName(), account);
 
-                            //set collection
-                            if(account.getId() > 0) {
-                                ((AbstractPrincipal)account).setCollection(broker, collectionAccounts);
-                            }
+                        //set collection
+                        if(account.getId() > 0) {
+                            ((AbstractPrincipal)account).setCollection(broker, collectionAccounts);
                         }
                     }
                 });
@@ -228,10 +224,8 @@ public abstract class AbstractRealm implements Realm, Configurable {
            
             loadAccountsFromRealmStorage(broker);
             loadRemovedAccountsFromRealmStorage(broker);
-        } catch(final PermissionDeniedException pde) {
+        } catch(final PermissionDeniedException | LockException pde) {
             throw new EXistException(pde);
-        } catch(final LockException le) {
-            throw new EXistException(le);
         }
     }
     
@@ -250,30 +244,24 @@ public abstract class AbstractRealm implements Realm, Configurable {
 
     //Accounts management methods
     public final Account registerAccount(final Account account) {
-        usersByName.modify(new PrincipalDbModify<Account>(){
-            @Override
-            public void execute(final Map<String, Account> principalDb) {
-                if(principalDb.containsKey(account.getName())) {
-                    throw new IllegalArgumentException("Account " + account.getName() + " exist.");
-                }
-
-                principalDb.put(account.getName(), account);
+        usersByName.modify(principalDb -> {
+            if(principalDb.containsKey(account.getName())) {
+                throw new IllegalArgumentException("Account " + account.getName() + " exist.");
             }
+
+            principalDb.put(account.getName(), account);
         });
 
         return account;
     }
     
     public final Group registerGroup(final Group group) {
-        groupsByName.modify(new PrincipalDbModify<Group>(){
-            @Override
-            public void execute(final Map<String, Group> principalDb) {
-                if(principalDb.containsKey(group.getName())) {
-                    throw new IllegalArgumentException("Group " + group.getName() + " already exists.");
-                }
-
-                principalDb.put(group.getName(), group);
+        groupsByName.modify(principalDb -> {
+            if(principalDb.containsKey(group.getName())) {
+                throw new IllegalArgumentException("Group " + group.getName() + " already exists.");
             }
+
+            principalDb.put(group.getName(), group);
         });
         
         return group;   
@@ -281,22 +269,12 @@ public abstract class AbstractRealm implements Realm, Configurable {
 
     @Override
     public Account getAccount(final String name) {
-        return usersByName.read(new PrincipalDbRead<Account, Account>(){
-            @Override
-            public Account execute(final Map<String, Account> principalDb) {
-                return principalDb.get(name);
-            }
-        });
+        return usersByName.read(principalDb -> principalDb.get(name));
     }
 
     @Override
     public final boolean hasAccount(final String accountName) {
-        return usersByName.read(new PrincipalDbRead<Account, Boolean>(){
-            @Override
-            public Boolean execute(final Map<String, Account> principalDb) {
-                return principalDb.containsKey(accountName);
-            }
-        });
+        return usersByName.read(principalDb -> principalDb.containsKey(accountName));
     }
 
     @Override
@@ -306,23 +284,13 @@ public abstract class AbstractRealm implements Realm, Configurable {
 
     @Override
     public final java.util.Collection<Account> getAccounts() {
-        return usersByName.read(new PrincipalDbRead<Account, java.util.Collection<Account>>(){
-            @Override
-            public java.util.Collection<Account> execute(final Map<String, Account> principalDb) {
-                return principalDb.values();
-            }
-        });
+        return usersByName.read(principalDb -> principalDb.values());
     }
 
     //Groups management methods
     @Override
     public final boolean hasGroup(final String groupName) {
-        return groupsByName.read(new PrincipalDbRead<Group, Boolean>(){
-            @Override
-            public Boolean execute(final Map<String, Group> principalDb) {
-                return principalDb.containsKey(groupName);
-            }
-        });
+        return groupsByName.read(principalDb -> principalDb.containsKey(groupName));
     }
 
     @Override
@@ -332,12 +300,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
 
     @Override
     public Group getGroup(final String name) {
-        return groupsByName.read(new PrincipalDbRead<Group, Group>(){
-            @Override
-            public Group execute(final Map<String, Group> principalDb) {
-                return principalDb.get(name);
-            }
-        });
+        return groupsByName.read(principalDb -> principalDb.get(name));
     }
 
     @Override
@@ -347,12 +310,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
 
     @Override
     public final java.util.Collection<Group> getGroups() {
-        return groupsByName.read(new PrincipalDbRead<Group, java.util.Collection<Group>>(){
-            @Override
-            public java.util.Collection<Group> execute(final Map<String, Group> principalDb) {
-                return principalDb.values();
-            }
-        });
+        return groupsByName.read(principalDb -> principalDb.values());
     }
 
     //collections related methods
@@ -483,26 +441,6 @@ public abstract class AbstractRealm implements Realm, Configurable {
         return getSecurityManager().getGroup(name);
     }
 
-    protected interface Unit<R> {
-        public R execute(DBBroker broker) throws EXistException, PermissionDeniedException;
-    }
-
-    protected <R> R executeAsSystemUser(Unit<R> unit) throws EXistException, PermissionDeniedException {
-        DBBroker broker = null;
-        final Subject currentSubject = getDatabase().getSubject();
-        try {
-            //elevate to system privs
-            broker = getDatabase().get(getSecurityManager().getSystemSubject());
-                    
-            return unit.execute(broker);
-        } finally {
-            if(broker != null) {
-                broker.setSubject(currentSubject);
-                getDatabase().release(broker);
-            }
-        }
-    }
-
     //configuration methods
     @Override
     public boolean isConfigured() {
@@ -514,103 +452,86 @@ public abstract class AbstractRealm implements Realm, Configurable {
         return configuration;
     }
 
-    protected class PrincipalDbByName<V extends Principal> {
+    @Override
+    public List<String> findUsernamesWhereNameStarts(final String startsWith) {
+        return Collections.EMPTY_LIST;
+    }
 
-        private final Map<String, V> db = new HashMap<String, V>(65);
+    @Override
+    public List<String> findUsernamesWhereUsernameStarts(final String startsWith) {
+        return Collections.EMPTY_LIST;
+    }
+
+    @Override
+    public List<String> findAllGroupNames() {
+        return Collections.EMPTY_LIST;
+    }
+
+    @Override
+    public List<String> findAllUserNames() {
+        return Collections.EMPTY_LIST;
+    }
+    
+    @Override
+    public List<String> findAllGroupMembers(final String groupName) {
+        return Collections.EMPTY_LIST;
+    }
+
+    @Override
+    public List<String> findUsernamesWhereNamePartStarts(final String startsWith) {
+        return Collections.EMPTY_LIST;
+    }
+
+    @Override
+    public java.util.Collection<? extends String> findGroupnamesWhereGroupnameStarts(final String startsWith) {
+        return Collections.EMPTY_LIST;
+    }
+
+    @Override
+    public java.util.Collection<? extends String> findGroupnamesWhereGroupnameContains(final String fragment) {
+        return Collections.EMPTY_LIST;
+    }
+    
+    protected static class PrincipalDbByName<V extends Principal> {
+        private final Map<String, V> db = new HashMap<>(65);
         private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
         private final ReadLock readLock = lock.readLock();
         private final WriteLock writeLock = lock.writeLock();
 
-        public <R> R read(final PrincipalDbRead<V, R> readOp) {
+        public <R> R read(final Function<Map<String, V>, R> readOp) {
             readLock.lock();
             try {
-                return readOp.execute(db);
+                return readOp.apply(db);
             } finally {
                 readLock.unlock();
             }
         }
 
-        public final void modify(final PrincipalDbModify<V> writeOp) {
+        public final void modify(final Consumer<Map<String, V>> writeOp) {
             writeLock.lock();
             try {
-                writeOp.execute(db);
+                writeOp.accept(db);
             } finally {
                 writeLock.unlock();
             }
         }
 
-        public final <E extends Exception> void modifyE(final PrincipalDbModifyE<V, E> writeOp) throws E {
+        public final <E extends Throwable> void modifyE(final ConsumerE<Map<String, V>, E> writeOp) throws E {
             writeLock.lock();
             try {
-                writeOp.execute(db);
+                writeOp.accept(db);
             } finally {
                 writeLock.unlock();
             }
         }
 
-        public final <E extends Exception, E2 extends Exception> void modify2E(final PrincipalDbModify2E<V, E, E2> writeOp) throws E, E2 {
+        public final <E1 extends Exception, E2 extends Exception> void modify2E(final Consumer2E<Map<String, V>, E1, E2> writeOp) throws E1, E2 {
             writeLock.lock();
             try {
-                writeOp.execute(db);
+                writeOp.accept(db);
             } finally {
                 writeLock.unlock();
             }
         }
-    }
-
-    protected interface PrincipalDbRead<V extends Principal, R> {
-       public R execute(final Map<String, V> principalDb);
-    }
-
-    protected interface PrincipalDbModify<V extends Principal> {
-        public void execute(final Map<String, V> principalDb);
-    }
-
-    protected interface PrincipalDbModifyE<V extends Principal, E extends Exception> {
-        public void execute(final Map<String, V> principalDb) throws E;
-    }
-
-    protected interface PrincipalDbModify2E<V extends Principal, E extends Exception, E2 extends Exception> {
-        public void execute(final Map<String, V> principalDb) throws E, E2;
-    }
-
-    @Override
-    public List<String> findUsernamesWhereNameStarts(final String startsWith) {
-        return new ArrayList<String>();
-    }
-
-    @Override
-    public List<String> findUsernamesWhereUsernameStarts(final String startsWith) {
-        return new ArrayList<String>();
-    }
-
-    @Override
-    public List<String> findAllGroupNames() {
-        return new ArrayList<String>();
-    }
-
-    @Override
-    public List<String> findAllUserNames() {
-        return new ArrayList<String>();
-    }
-    
-    @Override
-    public List<String> findAllGroupMembers(final String groupName) {
-        return new ArrayList<String>();
-    }
-
-    @Override
-    public List<String> findUsernamesWhereNamePartStarts(final String startsWith) {
-        return new ArrayList<String>();
-    }
-
-    @Override
-    public java.util.Collection<? extends String> findGroupnamesWhereGroupnameStarts(final String startsWith) {
-        return new ArrayList<String>();
-    }
-
-    @Override
-    public java.util.Collection<? extends String> findGroupnamesWhereGroupnameContains(final String fragment) {
-        return new ArrayList<String>();
     }
 }
