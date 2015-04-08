@@ -197,7 +197,7 @@ public class LuceneUtil {
     }
 
     private static Query rewrite(MultiTermQuery query, IndexReader reader) throws IOException {
-        query.setRewriteMethod(MultiTermQuery.CONSTANT_SCORE_AUTO_REWRITE_DEFAULT);
+        query.setRewriteMethod(new MultiTermQuery.ConstantScoreAutoRewrite());
         return query.rewrite(reader);
     }
 }
