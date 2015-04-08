@@ -21,15 +21,7 @@
 package org.exist.indexing.lucene;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.Stack;
-import java.util.TreeMap;
-import java.util.TreeSet;
+import java.util.*;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -674,7 +666,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             cachedNodesSize = 0;
         }
     }
-    
+
     /**
      *  SOLR
      * @param context
@@ -682,7 +674,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      * @param queryText
      * @return search report
      */
-    public NodeImpl search(final XQueryContext context, final List<String> toBeMatchedURIs, String queryText) throws XPathException {
+    public NodeImpl search(final XQueryContext context, final List<String> toBeMatchedURIs, String queryText, String[] fieldsToGet) throws XPathException {
         
         NodeImpl report = null;
         
@@ -699,7 +691,12 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             final Query query = parser.parse(queryText);
                        
             // extract all used fields from query
-            final String[] fields = LuceneUtil.extractFields(query, searcher.getIndexReader());
+            final String[] fields;
+            if (fieldsToGet == null) {
+                fields = LuceneUtil.extractFields(query, searcher.getIndexReader());
+            } else {
+                fields = fieldsToGet;
+            }
 
             final PlainTextHighlighter highlighter = new PlainTextHighlighter(query, searcher.getIndexReader());
 
@@ -754,11 +751,13 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                                 attribs.addAttribute("", "name", "name", "CDATA", field);
                                 for (String content : fieldContent) {
                                     List<Offset> offsets = highlighter.getOffsets(content, searchAnalyzer);
+                                    builder.startElement("", "field", "field", attribs);
                                     if (offsets != null) {
-                                        builder.startElement("", "field", "field", attribs);
                                         highlighter.highlight(content, offsets, builder);
-                                        builder.endElement();
+                                    } else {
+                                        builder.characters(content);
                                     }
+                                    builder.endElement();
                                 }
                             }
                             builder.endElement();
@@ -792,7 +791,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             //System.out.println(builder.getDocument().toString());
             
             // TODO check
-            report = ((org.exist.dom.memtree.DocumentImpl) builder.getDocument()).getNode(nodeNr);
+            report = builder.getDocument().getNode(nodeNr);
 
 
         } catch (Exception ex){
@@ -809,6 +808,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
     
     public String getFieldContent(int docId, String field) throws IOException {
+        Set<String> fields = new HashSet<>();
+        fields.add(field);
         BytesRef bytes = new BytesRef(NumericUtils.BUF_SIZE_INT);
         NumericUtils.intToPrefixCoded(docId, 0, bytes);
         Term dt = new Term(FIELD_DOC_ID, bytes);
@@ -819,10 +820,14 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
             List<AtomicReaderContext> leaves = reader.leaves();
             for (AtomicReaderContext context : leaves) {
-                DocsEnum docs = context.reader().termDocsEnum(dt);
+                AtomicReader atomicReader = context.reader();
+                DocsEnum docs = atomicReader.termDocsEnum(dt);
                 if (docs != null && docs.nextDoc() != DocsEnum.NO_MORE_DOCS) {
-                    Document doc = reader.document(docs.docID());
-                    return doc.get(field);
+                    Document doc = atomicReader.document(docs.docID());
+                    String value = doc.get(field);
+                    if (value != null) {
+                        return value;
+                    }
                 }
             }
         } finally {
@@ -830,7 +835,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         }
         return null;
     }
-    
+
     public boolean hasIndex(int docId) throws IOException {
         BytesRef bytes = new BytesRef(NumericUtils.BUF_SIZE_INT);
         NumericUtils.intToPrefixCoded(docId, 0, bytes);

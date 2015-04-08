@@ -32,22 +32,22 @@
         <code><![CDATA[
         ft:index( "/db/binary/data1.txt", 
         <doc>
-            <field name="title">text</field>
+            <field name="title" store="yes">text</field>
             <field name="para">some text</field>
         </doc> ), 
         ft:index( "/db/binary/data2.txt", 
         <doc>
-            <field name="title">more text</field>
+            <field name="title" store="yes">more text</field>
             <field name="para">even more text</field>
         </doc> ),
         ft:index( "/db/binary/data3.txt", 
         <doc>
-            <field name="title">foobar title</field>
+            <field name="title" store="yes">foobar title</field>
             <field name="para">even more foobar</field>
         </doc> ),
         ft:index( "/db/binary/data4.txt", 
         <doc>
-            <field name="title">another foobar title</field>
+            <field name="title" store="yes">another foobar title</field>
             <field name="para">foobaar even more foobar</field>
         </doc> )
         ]]>
@@ -134,5 +134,19 @@
         data( ft:search(("/db/binary/","/db/binary/data4.txt"), "para:foobaar")//@uri )
         ]]></code>
         <expected>/db/binary/data4.txt</expected>
+    </test>
+    <test output="xml"> 
+        <task>Test Index 5 - retrieving values</task>
+        <code><![CDATA[ 
+        ft:search("/db/binary/", 'title:"another foobar"', "title")//field
+        ]]></code>
+        <expected><field name="title"><exist:match xmlns:exist="http://exist.sourceforge.net/NS/exist">another foobar</exist:match> title</field></expected>
+    </test>
+    <test output="text"> 
+        <task>Test Index 6 - get-field</task>
+        <code><![CDATA[ 
+        ft:get-field("/db/binary/data4.txt", "title")
+        ]]></code>
+        <expected>another foobar title</expected>
     </test>
 </TestSet>
