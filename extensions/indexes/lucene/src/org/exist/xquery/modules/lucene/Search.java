@@ -60,6 +60,19 @@ public class Search extends BasicFunction {
      */
     public final static FunctionSignature signatures[] = {
         new FunctionSignature(
+                new QName("search", LuceneModule.NAMESPACE_URI, LuceneModule.PREFIX),
+                "Search for (non-XML) data with lucene",
+                new SequenceType[]{
+                        new FunctionParameterSequenceType("path", Type.STRING, Cardinality.ZERO_OR_MORE,
+                                "URI paths of documents or collections in database. Collection URIs should end on a '/'."),
+                        new FunctionParameterSequenceType("query", Type.STRING, Cardinality.EXACTLY_ONE,
+                                "query string"),
+                        new FunctionParameterSequenceType("fields", Type.STRING, Cardinality.ZERO_OR_MORE,
+                                "Fields to return in search results")
+                },
+                new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE,
+                        "All documents that are match by the query")),
+        new FunctionSignature(
             new QName("search", LuceneModule.NAMESPACE_URI, LuceneModule.PREFIX),
             "Search for (non-XML) data with lucene",
             new SequenceType[]{
@@ -96,7 +109,7 @@ public class Search extends BasicFunction {
             // Only match documents that match these URLs 
             List<String> toBeMatchedURIs = new ArrayList<>();
 
-            Sequence pathSeq = getArgumentCount() == 2 ? args[0] : contextSequence;
+            Sequence pathSeq = getArgumentCount() > 1 ? args[0] : contextSequence;
             if (pathSeq == null)
             	return Sequence.EMPTY_SEQUENCE;
             
@@ -123,12 +136,21 @@ public class Search extends BasicFunction {
             else
             	query = args[1].itemAt(0).getStringValue();
 
+            String[] fields = null;
+            if (getArgumentCount() == 3) {
+                fields = new String[args[2].getItemCount()];
+                int j = 0;
+                for (SequenceIterator i = args[2].iterate(); i.hasNext(); ) {
+                    fields[j++] = i.nextItem().getStringValue();
+                }
+            }
+
             // Get the lucene worker
             LuceneIndexWorker index = (LuceneIndexWorker) context.getBroker()
                     .getIndexController().getWorkerByIndexId(LuceneIndex.ID);
 
             // Perform search
-            report = index.search(context, toBeMatchedURIs, query);
+            report = index.search(context, toBeMatchedURIs, query, fields);
 
 
         } catch (XPathException ex) {
