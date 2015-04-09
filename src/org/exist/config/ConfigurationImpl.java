@@ -22,13 +22,9 @@
 package org.exist.config;
 
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
+import jdk.nashorn.internal.runtime.regexp.joni.Config;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
@@ -461,33 +457,24 @@ public class ConfigurationImpl implements Configuration {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj instanceof ConfigurationImpl) {
-            final ConfigurationImpl conf = (ConfigurationImpl)obj;
-            if (!(getName().equals(conf.getName())))
-                {return false;}
-            final String id = getProperty(Configuration.ID);
-            if (id == null) {
-                return false;
-            }
-            if (id.equals(conf.getProperty(Configuration.ID)))
-                {return true;}
-        }
-        return false;
+    public boolean equals(final Object obj) {
+        return equals(obj, Optional.empty());
     }
 
-    public boolean equals(Object obj, String uniqField) {
+    @Override
+    public boolean equals(final Object obj, final Optional<String> property) {
         if (obj instanceof ConfigurationImpl) {
             final ConfigurationImpl conf = (ConfigurationImpl)obj;
-            if (!(getName().equals(conf.getName())))
-                {return false;}
-            final String uniq = getProperty( uniqField);
-            if (uniq == null) {
+            if (!(getName().equals(conf.getName()))) {
                 return false;
             }
-            if (uniq.equals(conf.getProperty(uniqField)))
-                {return true;}
+
+            final String name = property.orElse(Configuration.ID);
+            final Optional<String> value = Optional.ofNullable(getProperty(name));
+
+            return value.map(v -> v.equals(conf.getProperty(name))).orElse(false);
         }
+
         return false;
     }
 }
