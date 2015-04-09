@@ -92,7 +92,7 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
         return addGroup(group);
     }
 
-    //this method used by Configurator
+    //this method is used by Configurator
     protected final Group addGroup(final Configuration conf) throws PermissionDeniedException {
         if (conf == null) {
             return null;

@@ -23,6 +23,7 @@ package org.exist.config;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.exist.security.PermissionDeniedException;
@@ -166,7 +167,14 @@ public interface Configuration {
      */
     public void save(DBBroker broker) throws PermissionDeniedException, ConfigurationException;
 
-    public boolean equals(Object obj, String uniqField);
+    /**
+     * Determines equality based on a property value of the configuration
+     *
+     * @param obj The Configured instance
+     * @param property The name of the property to use for comparison, or
+     *                 if empty, the {@link ConfigurationImpl#ID} is used.
+     */
+    public boolean equals(Object obj, Optional<String> property);
     
     /**
      * Free up memory allocated for cache.

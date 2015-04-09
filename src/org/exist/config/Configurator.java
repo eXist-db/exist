@@ -36,19 +36,17 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.NoSuchElementException;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Database;
@@ -71,6 +69,7 @@ import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.MimeType;
+import org.exist.util.function.ConsumerE;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.xmldb.FullXmldbURI;
 import org.exist.xmldb.XmldbURI;
@@ -94,7 +93,6 @@ public class Configurator {
     private final static String EOL = System.getProperty("line.separator", "\n");
     protected static ConcurrentMap<FullXmldbURI, Configuration> hotConfigs = new ConcurrentHashMap<FullXmldbURI, Configuration>();
 
-    //TODO should be replaced with a naturally ordered List, we need to maintain the order of XML elements based on the order of class members!!!
     protected static AFields getConfigurationAnnotatedFields(Class<?> clazz) {
         final AFields fields = new AFields();
         for (final Field field : clazz.getDeclaredFields()) {
@@ -195,6 +193,26 @@ public class Configurator {
             LOG.error(ncdfe.getMessage(), ncdfe);
         }
         
+        return null;
+    }
+
+    public static Method searchForInsertMethod(final Class<?> clazz, final String property) {
+        try {
+            final String methodName = ("insert" + property).toLowerCase();
+            for (final Method method : clazz.getMethods()) {
+                if (method.getName().toLowerCase().equals(methodName)
+                        && method.getParameterTypes().length == 2
+                        && int.class.getName().equals(method.getParameterTypes()[0].getName())
+                        && String.class.getName().equals(method.getParameterTypes()[1].getName())) {
+                    return method;
+                }
+            }
+        } catch (final SecurityException se) {
+            LOG.error(se.getMessage(), se);
+        } catch (final NoClassDefFoundError ncdfe) {
+            LOG.error(ncdfe.getMessage(), ncdfe);
+        }
+
         return null;
     }
 
@@ -387,21 +405,21 @@ public class Configurator {
                 
                 field = element.getField();
                 final Class<?> fieldType = field.getType();
-                
+
                 if (List.class == fieldType) {
                     //List
                     final String confName = element.getAnnotation().value();
                     field.setAccessible(true);
                     List list = (List) field.get(instance);
-                    String referenceBy;
-                    
-                    final List<Configuration> confs;
+
+                    final Optional<String> referenceBy;
+                    List<Configuration> confs;
                     if (field.isAnnotationPresent(ConfigurationReferenceBy.class)) {
                         confs = configuration.getConfigurations(confName);
-                        referenceBy = field.getAnnotation(ConfigurationReferenceBy.class).value();
+                        referenceBy = Optional.ofNullable(field.getAnnotation(ConfigurationReferenceBy.class).value());
                     } else {
                         confs = configuration.getConfigurations(confName);
-                        referenceBy = null;
+                        referenceBy = Optional.empty();
                     }
                     
                     if (list == null) {
@@ -411,42 +429,46 @@ public class Configurator {
                     
                     if (confs != null) {
                         //remove & update
-                        for (final Iterator<?> iterator = list.iterator(); iterator.hasNext();) {
-                            final Object obj = iterator.next();
+
+                        final Map<String, Integer> removed = new HashMap<>(); //referencedBy -> index
+
+                        for (int i = 0; i < list.size(); i++) {
+                            final Object obj = list.get(i);
                             Configuration current_conf = null;
                             
                             if (!(obj instanceof Configurable)) {
-                                iterator.remove();
+                                list.remove(i); //TODO Surely we should log a problem here or throw an exception?
                                 continue;
 
                             } else if (obj instanceof Reference) {
 
-                                if (referenceBy == null) {
+                                if (!referenceBy.isPresent()) {
                                     LOG.error("illegal design '"+configuration.getName()+"' ["+field+"]");
-                                    iterator.remove();
+                                    list.remove(i);
                                     continue;
-                                }
+                                } else {
 
-                                final String name = ((Reference)obj).getName();
+                                    final String name = ((Reference) obj).getName();
 
-                                //Lookup for new configuration, update if found
-                                boolean found = false;
-                                for (final Iterator<Configuration> i = confs.iterator(); i.hasNext();) {
-                                    final Configuration conf = i.next();
+                                    //Lookup for new configuration, update if found
+                                    final List<Configuration> applicableConfs = filter(confs, conf ->
+                                            Optional.ofNullable(conf.getPropertyBoolean(referenceBy.get()))
+                                                    .map(value -> !value.equals(name))
+                                                    .orElse(true));
 
-                                    final String uniq = conf.getProperty( referenceBy );
-
-                                    if (uniq != null && uniq.equals(name)) {
-                                        i.remove();
-                                        found = true;
-                                        break;
+                                    if(applicableConfs.size() == confs.size()) {
+                                        LOG.debug("Configuration was removed, will attempt to replace object [" + obj + "].");
+                                        final Field referee = getFieldRecursive(Optional.of(list.get(i).getClass()), referenceBy.get());
+                                        if(referee != null) {
+                                            referee.setAccessible(true);
+                                            removed.put((String) referee.get(list.remove(i)), i);
+                                        } else {
+                                            LOG.error("Could not lookup referenced field: " + referenceBy.get() + " against: " + list.get(i).getClass().getName());
+                                            list.remove(i);
+                                        }
+                                    } else {
+                                        confs = applicableConfs;
                                     }
-                                }
-
-                                if (!found) {
-                                    LOG.debug("Configuration was removed, removing the object [" + obj + "].");
-                                    //XXX: remove by method call
-                                    iterator.remove();
                                 }
                                 
                             } else {
@@ -459,73 +481,66 @@ public class Configurator {
                                     continue;
                                 }
                                 
-                                LOG.debug("Unconfigured instance [" + obj + "], removing the object.");
-                                //XXX: remove by method call
-                                iterator.remove();
+                                LOG.debug("Unconfigured instance [" + obj + "], will attempt to replace object...");
+
+                                final Field referee = getFieldRecursive(Optional.of(list.get(i).getClass()), referenceBy.get());
+                                if(referee != null) {
+                                    referee.setAccessible(true);
+                                    removed.put((String) referee.get(list.remove(i)), i);
+                                } else {
+                                    LOG.error("Could not lookup referenced field: " + referenceBy.get() + " against: " + list.get(i).getClass().getName());
+                                    list.remove(i);
+                                }
                                 continue;
                             }
-                            
+
                             //Lookup for new configuration, update if found
-                            boolean found = false;
-                            for (final Iterator<Configuration> i = confs.iterator(); i.hasNext();) {
-                                final Configuration conf = i.next();
-                                if (referenceBy != null && current_conf.equals(conf, referenceBy)) {
-                                    i.remove();
-                                    found = true;
-                                    break;
-                                    
-                                } else if (referenceBy == null && current_conf.equals(conf)) {
-                                    current_conf.checkForUpdates(conf.getElement());
-                                    i.remove();
-                                    found = true;
-                                    break;
-                                }
-                            }
-                            
-                            if (!found) {
-                                LOG.debug("Configuration was removed, removing the object [" + obj + "].");
-                                //XXX: remove by method call
-                                iterator.remove();
+                            final Configuration final_current_conf = current_conf;
+                            final List<Configuration> applicableConfs = filter(confs, conf -> !final_current_conf.equals(conf, referenceBy));
+
+                            if(applicableConfs.size() == confs.size()) {
+                                LOG.debug("Configuration was removed, will attempt to replace [" + obj + "].");
+                                removed.put(((Configurable)list.remove(i)).getConfiguration().getProperty(referenceBy.get()), i);
+                            } else {
+                                confs = applicableConfs;
                             }
                         }
                         
                         //create
                         for (final Configuration conf : confs) {
-                            
-                            if (referenceBy != null) {
-                                final String value = conf.getProperty(referenceBy);
-                                if (value != null) {
-                                    Method method = searchForAddMethod(instance.getClass(), confName);
-                                    if (method != null) {
+                            if (referenceBy.isPresent()) {
+                                final String value = conf.getProperty(referenceBy.get());
+                                if(value != null) {
+                                    final Optional<ConsumerE<String, ReflectiveOperationException>> updateFn = updateListFn(instance, confName, removed, value);
+
+                                    if(!updateFn.isPresent()) {
+                                        LOG.error("Could not insert configured object");
+                                    } else {
                                         try {
-                                            method.invoke(instance, value);
+                                            updateFn.get().accept(value);
                                             continue;
-                                            
-                                        } catch (final Exception e) {
-                                            LOG.warn("Could not execute method on class " + instance.getClass().getName() + " for configuration '" + conf.getName() + "' referenceBy '" + referenceBy + "' for value '" + value + "'", e);
-                                            method = null;
+                                        } catch(final ReflectiveOperationException e) {
+                                            LOG.warn("Could not update " + instance.getClass().getName() + " for configuration '" + conf.getName() + "' referenceBy '" + referenceBy.get() + "' for value '" + value + "'", e);
                                         }
                                     }
                                 }
-                                
                             } else {
                                 final Type genericType = field.getGenericType();
                                 if (genericType != null) {
-                                    
                                     if ("java.util.List<java.lang.String>".equals(genericType.toString())) {
-                                        
                                         final String value = conf.getValue();
                                         
                                         if (value != null) {
-                                            Method method = searchForAddMethod(instance.getClass(), confName);
-                                            if (method != null) {
+                                            final Optional<ConsumerE<String, ReflectiveOperationException>> updateFn = updateListFn(instance, confName, removed, value);
+
+                                            if(!updateFn.isPresent()) {
+                                                LOG.error("Could not insert configured object");
+                                            } else {
                                                 try {
-                                                    method.invoke(instance, value);
+                                                    updateFn.get().accept(value);
                                                     continue;
-                                                    
-                                                } catch (final Exception e) {
-                                                    LOG.debug("Found method " + method.getName() + " on " + instance.getClass().getName() + ", however invoke failed with: " + e.getMessage(), e);
-                                                    method = null;
+                                                } catch (final ReflectiveOperationException e) {
+                                                    LOG.warn("Could not update " + instance.getClass().getName() + " for configuration '" + conf.getName() + "' for value '" + value + "'", e);
                                                 }
                                             }
                                         }
@@ -597,6 +612,33 @@ public class Configurator {
         }
 
         return configuration;
+    }
+
+    /**
+     * If the value was previously removed, we can attempt
+     * to reinsert it at the same index so as to keep the
+     * ordering consistent. Otherwise... we just add it.
+     */
+    private static Optional<ConsumerE<String, ReflectiveOperationException>> updateListFn(final Configurable instance, final String confName, final Map<String, Integer> removed, final String value) {
+        return Optional.ofNullable(removed.get(value)).<Optional<ConsumerE<String, ReflectiveOperationException>>>map(removedIdx -> Optional.ofNullable(
+            searchForInsertMethod(instance.getClass(), confName))
+                .map(insertMethod -> v -> insertMethod.invoke(instance, removedIdx, v))
+        ).orElse(Optional.ofNullable(
+            searchForAddMethod(instance.getClass(), confName))
+                .map(addMethod -> v -> addMethod.invoke(instance, v)));
+    }
+
+    private static Field getFieldRecursive(final Optional<Class> maybeClazz, final String name) {
+        return maybeClazz.map(clazz ->
+                Stream.of(clazz.getDeclaredFields())
+                        .filter(field -> field.getName().equals(name))
+                        .findFirst()
+                        .orElse(getFieldRecursive(Optional.ofNullable(clazz.getSuperclass()), name)))
+                .orElse(null);
+    }
+
+    private static List<Configuration> filter(final List<Configuration> configurations, Predicate<Configuration> predicate) {
+        return configurations.stream().filter(predicate).collect(Collectors.toList());
     }
 
     /**
