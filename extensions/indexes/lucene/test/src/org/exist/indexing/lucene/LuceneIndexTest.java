@@ -142,6 +142,15 @@ public class LuceneIndexTest {
             "   <c>AAA on c2</c>" +
             "</a>";
 
+        private static final String XML9 =
+	    "<TEI xmlns=\"http://www.tei-c.org/ns/1.0\">" +
+	    "   <body>" +
+            "      <p>erste aus haus maus zaus yaus raus qaus leisten</p>" +
+            "      <p>ausser aus</p>" +
+            "      <p>auf boden</p>" +
+	    "   </body>" +
+            "</TEI>";
+
     private static final String COLLECTION_CONFIG1 =
         "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
     	"	<index>" +
@@ -252,6 +261,18 @@ public class LuceneIndexTest {
             "               <match-sibling-attribute qname='attr' value='attr on b2' boost='2'/>" +
             "               <has-sibling-attribute qname='attr' boost='2'/>" +
             "           </text>" +
+            "       </lucene>" +
+            "   </index>" +
+            "</collection>";
+
+        private static final String COLLECTION_CONFIG8 =
+            "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
+            "   <index xmlns:tei=\"http://www.tei-c.org/ns/1.0\">" +
+            "       <fulltext default=\"none\" attributes=\"no\">" +
+            "       </fulltext>" +
+            "       <lucene>" +
+	    "          <analyzer class=\"org.apache.lucene.analysis.standard.StandardAnalyzer\"/>" +
+            "           <text qname=\"tei:p\"/>" +
             "       </lucene>" +
             "   </index>" +
             "</collection>";
@@ -637,6 +658,33 @@ public class LuceneIndexTest {
             seq = xquery.execute("/section[ft:query(head, 'title')]", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(0, seq.getItemCount());
+        }
+    }
+
+        @Test
+    public void MultiTermQueryRewriteMethod() throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, TriggerException, LockException, IOException, XPathException {
+        configureAndStore(COLLECTION_CONFIG8, XML9, "test.xml");
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+            final XQuery xquery = broker.getXQueryService();
+            assertNotNull(xquery);
+            Sequence seq = xquery.execute("declare namespace tei=\"http://www.tei-c.org/ns/1.0\";" +
+            " for $expr in (\"au*\", \"ha*\", \"ma*\", \"za*\", \"ya*\", \"ra*\", \"qa*\")" +
+            " let $query := <query><wildcard>{$expr}</wildcard></query>" +
+            " return for $hit in //tei:p[ft:query(., $query)]" +
+            " return util:expand($hit)//exist:match", null, AccessContext.TEST);
+            assertNotNull(seq);
+            assertEquals(10, seq.getItemCount());
+            assertEquals("aus", seq.itemAt(0).getStringValue());
+
+	    seq = xquery.execute("declare namespace tei=\"http://www.tei-c.org/ns/1.0\";" +
+            " for $expr in (\"ha*\", \"ma*\")" +
+            " let $query := <query><wildcard>{$expr}</wildcard></query>" +
+            " return for $hit in //tei:p[ft:query(., $query)]" +
+            " return util:expand($hit)//exist:match", null, AccessContext.TEST);
+	    assertNotNull(seq);
+            assertEquals(2 , seq.getItemCount());
+            assertEquals("haus", seq.itemAt(0).getStringValue());
+
         }
     }
 
