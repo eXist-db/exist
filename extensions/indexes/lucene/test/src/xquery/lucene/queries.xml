@@ -15,9 +15,10 @@
 					<!-- Lucene index is configured below -->
 					<lucene>
 						<analyzer class="org.apache.lucene.analysis.standard.StandardAnalyzer"/>
-						<analyzer id="stop" class="org.apache.lucene.analysis.StopAnalyzer"/>
-						<analyzer id="keyword" class="org.apache.lucene.analysis.KeywordAnalyzer"/>
+						<analyzer id="stop" class="org.apache.lucene.analysis.core.StopAnalyzer"/>
+						<analyzer id="keyword" class="org.apache.lucene.analysis.core.KeywordAnalyzer"/>
 						<text qname="p"/>
+						<text qname="tei:p"/>
 						<text qname="id" field="id" analyzer="keyword"/>
 						<text qname="para" analyzer="stop"/>
 						<text qname="b"/>
@@ -48,6 +49,7 @@
 					<y>Nested <z>nodes</z></y>
 				</x>
 				<id>A11</id>
+				<p xmlns="http://www.tei-c.org/ns/1.0">erste aus haus maus zaus yaus raus qaus leisten</p>
 			</test>
 		</store>
 		<store collection="/db/lucene" name="text2.xml">
@@ -462,6 +464,25 @@
 				<exist:match xmlns:exist="http://exist.sourceforge.net/NS/exist">neun</exist:match>
 			</b>
 		</expected>
+	</test>
+		<test output="xml">
+		<task>Match highlighting: wildcard query TEI NS MultiTermQueryRewriteMetod no silent fail due to limits/cutoffs but return all results</task>
+		<code><![CDATA[
+            declare namespace tei="http://www.tei-c.org/ns/1.0";
+            declare namespace exist="http://exist.sourceforge.net/NS/exist";
+            for $expr in
+	     ("aus",  "haus",  "maus",  "zaus",  "yaus",  "raus",  "qaus",
+              "a*",   "h*",    "m*",    "z*",    "y*",    "r*",    "q*",
+              "au*",  "ha*",   "ma*",   "za*",   "ya*",   "ra*",   "qa*",
+              "aus*", "hau*",  "mau*",  "zau*",  "yau*",  "rau*",  "qau*",
+              "a*s",  "h*s",   "m*s",   "z*s",   "y*s",   "r*s",   "q*s",
+              "au*s", "ha*s",  "ma*s",  "za*s",  "ya*s",  "ra*s",  "qa*s")
+	    let $query := <query><wildcard>{$expr}</wildcard></query>
+            return for $hit in doc("/db/lucene/text1.xml")//tei:p[ft:query(., $query)]
+            return
+                util:expand($hit)//exist:match
+	]]></code>
+		<xpath>count($output) eq 42</xpath>
 	</test>
 	<test output="xml">
 		<task>Match highlighting: regex query</task>
