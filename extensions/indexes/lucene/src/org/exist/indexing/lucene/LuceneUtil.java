@@ -25,11 +25,18 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import org.apache.lucene.index.AtomicReaderContext;
 import org.apache.lucene.index.BinaryDocValues;
+import org.apache.lucene.index.Fields;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.IndexReaderContext;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.index.Terms;
+import org.apache.lucene.index.TermsEnum;
 import org.apache.lucene.search.*;
+import org.apache.lucene.util.AttributeSource;
 import org.apache.lucene.util.BytesRef;
+
 import org.exist.dom.QName;
 import org.exist.dom.persistent.SymbolTable;
 import org.exist.numbering.NodeId;
@@ -170,19 +177,19 @@ public class LuceneUtil {
     }
 
     private static void extractTermsFromWildcard(WildcardQuery query, Map<Object, Query> terms, IndexReader reader, boolean includeFields) throws IOException {
-        extractTerms(rewrite(query, reader), terms, reader, includeFields);
+        extractTermsFromMultiTerm(query, terms, reader, includeFields);
     }
 
     private static void extractTermsFromRegex(RegexpQuery query, Map<Object, Query> terms, IndexReader reader, boolean includeFields) throws IOException {
-        extractTerms(rewrite(query, reader), terms, reader, includeFields);
+        extractTermsFromMultiTerm(query, terms, reader, includeFields);
     }
 
     private static void extractTermsFromFuzzy(FuzzyQuery query, Map<Object, Query> terms, IndexReader reader, boolean includeFields) throws IOException {
-        extractTerms(query.rewrite(reader), terms, reader, includeFields);
+        extractTermsFromMultiTerm(query, terms, reader, includeFields);
     }
 
     private static void extractTermsFromPrefix(PrefixQuery query, Map<Object, Query> terms, IndexReader reader, boolean includeFields) throws IOException {
-    	extractTerms(rewrite(query, reader), terms, reader, includeFields);
+        extractTerms(query.rewrite(reader), terms, reader, includeFields);
     }
 
     private static void extractTermsFromPhrase(PhraseQuery query, Map<Object, Query> terms, boolean includeFields) {
@@ -200,4 +207,58 @@ public class LuceneUtil {
         query.setRewriteMethod(MultiTermQuery.CONSTANT_SCORE_AUTO_REWRITE_DEFAULT);
         return query.rewrite(reader);
     }
+
+    private static void extractTermsFromMultiTerm(MultiTermQuery query, Map<Object, Query> termsMap, IndexReader reader, boolean includeFields) throws IOException {
+        TERM_EXTRACTOR.extractTerms(query, termsMap, reader, includeFields);
+    }
+
+    private static final MultiTermExtractor TERM_EXTRACTOR = new MultiTermExtractor();
+
+    /*
+     * A class for extracting MultiTerms (all of them).
+     * Subclassing MultiTermQuery.RewriteMethod
+     * to gain access to its protected method getTermsEnum
+     */
+    private static class MultiTermExtractor extends MultiTermQuery.RewriteMethod {
+
+        public void extractTerms(MultiTermQuery query, Map<Object, Query> termsMap, IndexReader reader, boolean includeFields) throws IOException {
+            IndexReaderContext topReaderContext = reader.getContext();
+            for (AtomicReaderContext context : topReaderContext.leaves()) {
+                final Fields fields = context.reader().fields();
+                if (fields == null) {
+                    // reader has no fields
+                    continue;
+                }
+
+                final Terms terms = fields.terms(query.getField());
+                if (terms == null) {
+                    // field does not exist
+                    continue;
+                }
+
+                TermsEnum termsEnum = getTermsEnum(query, terms, new AttributeSource());
+                assert termsEnum != null;
+
+                if (termsEnum == TermsEnum.EMPTY) {
+                    continue;
+		}
+
+                BytesRef bytes;
+                while ((bytes = termsEnum.next()) != null) {
+                    Term term = new Term(query.getField(), BytesRef.deepCopyOf(bytes));
+                    if (includeFields) {
+                        termsMap.put(term, query);
+                    } else {
+                        termsMap.put(term.text(), query);
+		    }
+                }
+            }
+        }
+
+        @Override
+        public Query rewrite(IndexReader reader, MultiTermQuery query) throws IOException {
+            throw new UnsupportedOperationException();
+        }
+    };
+
 }
