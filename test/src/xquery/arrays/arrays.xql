@@ -18,7 +18,6 @@ declare variable $arr:SERIALIZE_JSON :=
 declare variable $arr:COLLECTION_CONF := 
     <collection xmlns="http://exist-db.org/collection-config/1.0">
         <index xmlns:xs="http://www.w3.org/2001/XMLSchema">
-            <fulltext default="none" attributes="false"/>
             <create qname="a" type="xs:int"/>
             <range>
                 <create qname="b" type="xs:int"/>

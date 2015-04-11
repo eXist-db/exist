@@ -19,8 +19,6 @@
                     overwrite="yes">
                 <collection xmlns="http://exist-db.org/collection-config/1.0">
                     <index>
-                        <fulltext default="none" attributes="false">
-                        </fulltext>
 						<lucene>
 							<text qname="p"/>
 							<text qname="l"/>
@@ -107,8 +105,6 @@
                 <collection xmlns="http://exist-db.org/collection-config/1.0"
                     xmlns:mods="http://www.loc.gov/mods/v3">
                     <index>
-                        <fulltext default="none" attributes="false">
-                        </fulltext>
                         <lucene>
                             <text qname="mods:mods"/>
                             
@@ -210,96 +206,6 @@
             </sequence>
         </thread>
     </group>
-    <!--<group name="large-documents">
-        <setup connection="con">
-            <create-collection parent="/db/system/config" name="db"/>
-            <create-collection parent="/db/system/config/db" name="library"/>
-            <store collection="/db/system/config/db/library" name="collection.xconf"
-                    overwrite="yes">
-                <collection xmlns="http://exist-db.org/collection-config/1.0">
-                    <index>
-                        <fulltext default="none" attributes="false">
-                            <create qname="title"/>
-                        </fulltext>
-
-                        <create qname="title" type="xs:string"/>
-                        <create qname="author" type="xs:string"/>
-                        <create qname="year" type="xs:integer"/>
-
-                        <ngram qname="title"/>
-                        <ngram qname="author"/>
-
-						<lucene>
-							<text qname="title"/>
-							<text match="/dblp//author"/>
-						</lucene>
-                    </index>
-                </collection>
-            </store>
-        </setup>
-        <thread connection="con" name="main">
-            <create-collection parent="/db" name="library"/>
-            <store-files dir="test/benchmark/data/dblp" includes="*.xml" collection="/db/library"
-                description="storing DBLP library data" overwrite="no"/>
-            <sequence repeat="15" description="Fulltext queries" optimize="yes">
-                <xquery collection="/db/library" query="//inproceedings[title &amp;= 'xml']"/>
-                <xquery collection="/db/library" query="//inproceedings[title &amp;= 'xml xquery']"/>
-                <xquery collection="/db/library" query="//inproceedings[title &amp;= 'xslt']"/>
-                <xquery collection="/db/library" query="//*[title &amp;= 'xslt']"/>
-            </sequence>
-            <sequence repeat="15" description="General comparisons/regular expressions" optimize="yes">
-                <xquery collection="/db/library" query="//inproceedings[author = 'Bjarne Stroustrup'] "/>
-                <xquery collection="/db/library" query="//article[author = 'Linus Torvalds']"/>
-                <xquery collection="/db/library" query="//inproceedings[starts-with(author, 'Bjarne')]"/>
-                <xquery collection="/db/library" query="//article[starts-with(author, 'Erich')]"/>
-                <xquery collection="/db/library" query="//inproceedings[ends-with(author, 'strup')]"/>
-
-                <xquery collection="/db/library" query="//inproceedings[matches(author, '^Bjarne.*')]"/>
-                <!-\-xquery collection="/db/library" query="//inproceedings[matches(title, 'xml', 'i')]"/-\->
-                <!-\-xquery collection="/db/library" query="//*[matches(title, 'xml', 'i')]"/-\->
-                <xquery collection="/db/library" query="//*[matches(title, '^XML')]"/>
-
-                <xquery collection="/db/library" query="//inproceedings[year = 2002] "/>
-                <xquery collection="/db/library" query="//inproceedings[year > 2005] "/>
-                <xquery collection="/db/library" query="//inproceedings[year &lt; 2000] "/>
-
-				<xquery collection="/db/library" query="//inproceedings[title &amp;= 'xslt'][year = 2006]"/>
-				<xquery collection="/db/library" query="//inproceedings[title &amp;= 'xml'][year = 2005]"/>
-				<xquery collection="/db/library" query="//*[title &amp;= 'xml'][year = 2005]"/>
-				<xquery collection="/db/library" query="//*[ft:query(author, 'brian kernighan')][ft:query(title, 'C')]"/>
-            </sequence>
-            <sequence repeat="15" description="NGram index" optimize="yes">
-                <xquery collection="/db/library" query="//*[ngram:contains(author, 'Bjarne')]"/>
-                <xquery collection="/db/library" query="//inproceedings[ngram:contains(author, 'bjarne')]"/>
-                <xquery collection="/db/library" query="//inproceedings[ngram:starts-with(author, 'bjarne')]"/>
-                <xquery collection="/db/library" query="//*[ngram:contains(author, 'erich')]"/>
-                <xquery collection="/db/library" query="//book[ngram:contains(author, 'erich')]"/>
-                <xquery collection="/db/library" query="//book[ngram:contains(author, 'kernighan')]"/>
-                <xquery collection="/db/library" query="//book[ngram:contains(author, 'brian w. kernighan')]"/>
-                <xquery collection="/db/library" query="//*[ngram:contains(author, 'brian w. kernighan')]"/>
-                <xquery collection="/db/library" query="//inproceedings[ngram:contains(title, 'xml')]"/>
-                <xquery collection="/db/library" query="//*[ngram:contains(title, 'xml')]"/>
-                <xquery collection="/db/library" query="//inproceedings[ngram:contains(title, 'xquery')]"/>
-                <xquery collection="/db/library" query="//*[ngram:contains(title, 'xquery')]"/>
-                <xquery collection="/db/library" query="//*[ngram:contains(title, 'xml')][year = 2005]"/>
-                <xquery collection="/db/library" query="//inproceedings[ngram:starts-with(author, 'bjarne')]"/>
-            </sequence>
-            <sequence repeat="15" description="Lucene index" optimize="yes">
-                <xquery collection="/db/library" query="//*[ft:query(author, 'Bjarne')]"/>
-                <xquery collection="/db/library" query="//inproceedings[ft:query(author, 'bjarne')]"/>
-                <xquery collection="/db/library" query="//*[ft:query(author, 'erich')]"/>
-                <xquery collection="/db/library" query="//book[ft:query(author, 'erich')]"/>
-                <xquery collection="/db/library" query="//book[ft:query(author, 'kernighan')]"/>
-                <xquery collection="/db/library" query="//book[ft:query(author, '&quot;brian w. kernighan&quot;')]"/>
-                <xquery collection="/db/library" query="//*[ft:query(author, '&quot;brian w. kernighan&quot;')]"/>
-                <xquery collection="/db/library" query="//inproceedings[ft:query(title, 'xml')]"/>
-                <xquery collection="/db/library" query="//*[ft:query(title, 'xml')]"/>
-                <xquery collection="/db/library" query="//inproceedings[ft:query(title, 'xquery')]"/>
-                <xquery collection="/db/library" query="//*[ft:query(title, 'xquery')]"/>
-                <xquery collection="/db/library" query="//*[ft:query(title, 'xml')][year = 2005]"/>
-            </sequence>
-        </thread>
-    </group>-->
     <group name="updates">
         <setup connection="con">
             <create-collection parent="/db/system/config" name="db"/>
@@ -307,8 +213,6 @@
             <store collection="/db/system/config/db/updates" name="collection.xconf">
                 <collection xmlns="http://exist-db.org/collection-config/1.0">
                     <index>
-                        <fulltext default="all" attributes="false">
-                        </fulltext>
                         <create path="//product/@num" type="xs:integer"/>
                     </index>
                 </collection>
@@ -392,9 +296,6 @@
             <store collection="/db/system/config/db" name="collection.xconf">
                 <collection xmlns="http://exist-db.org/collection-config/1.0">
                     <index>
-                        <fulltext default="none" attributes="false">
-                        </fulltext>
-                        
                         <create path="//book/@id" type="xs:string"/>
                         <create path="//book/@n" type="xs:integer"/>
                         <create path="//section/@id" type="xs:string"/>

@@ -19,8 +19,6 @@
         <store collection="/db/system/config/db/coll" name="collection.xconf">
             <collection xmlns="http://exist-db.org/collection-config/1.0">
                 <index>
-                    <fulltext default="none" attributes="no">                        
-                    </fulltext>
                     <create qname="p" type="xs:string"/>
                     <create qname="p1" type="xs:string"/>
                     <create qname="@att1" type="xs:string"/>

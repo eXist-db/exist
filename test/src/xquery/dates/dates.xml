@@ -10,9 +10,7 @@
         <store collection="/db/system/config/db" name="collection.xconf"><![CDATA[
             <collection xmlns="http://exist-db.org/collection-config/1.0">
               <index>
-                <fulltext default="none" attributes="false">
-                </fulltext>
-            	<create qname="date" type="xs:dateTime"/>
+                <create qname="date" type="xs:dateTime"/>
               </index>
             </collection>
         ]]></store>
