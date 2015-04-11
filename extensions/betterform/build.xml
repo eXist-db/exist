@@ -4,7 +4,7 @@
   ~ Author betterFORM team ( info AT betterform.de )
   -->
 
-<project name="betterFORM extension for eXist" default="install" basedir=".">
+<project name="betterFORM extension for eXist" default="install" basedir="." xmlns:ivy="antlib:org.apache.ivy.ant">
     <property name="exist.rootdir" value="${basedir}/../.."/>
     <property name="exist.web.xml" value="${exist.rootdir}/webapp/WEB-INF/web.xml"/>
 
@@ -49,8 +49,13 @@
         <pathelement path="${exist.rootdir}/exist.jar"/>
         <pathelement path="${exist.rootdir}/exist-optional.jar"/>
     </path>
+    
+    <target name="resolve" description="Use ivy to resolve betterform.jar">
+        <ivy:resolve/>
+        <ivy:retrieve pattern="main/lib/[artifact]-[revision].[ext]"/>
+    </target>
 
-    <target name="install" description="install betterFORM into an existing eXist XML DB installation"
+    <target name="install" depends="resolve" description="install betterFORM into an existing eXist XML DB installation"
             if="include.feature.betterform.config">
         <echo>
             Add betterFORM config parameters to eXist to ${exist.web.xml}
