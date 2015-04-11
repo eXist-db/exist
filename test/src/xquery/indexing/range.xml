@@ -12,8 +12,6 @@
             <collection xmlns="http://exist-db.org/collection-config/1.0">
                 <index>
                     <!-- Disable the standard full text index -->
-                    <fulltext default="none" attributes="false">
-                    </fulltext>
                     <create qname="a" type="xs:string"/>
                     <create qname="b" type="xs:integer"/>
                     <create qname="c" type="xs:double"/>

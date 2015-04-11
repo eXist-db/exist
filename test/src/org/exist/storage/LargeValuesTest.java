@@ -33,8 +33,6 @@ public class LargeValuesTest {
     private String CONFIG_QNAME =
     	"<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
     	"	<index xmlns:x=\"http://www.foo.com\" xmlns:xx=\"http://test.com\">" +
-    	"		<fulltext default=\"none\">" +
-    	"		</fulltext>" +
         "       <create qname=\"@id\" type=\"xs:string\"/>" +
         "	</index>" +
     	"</collection>";
