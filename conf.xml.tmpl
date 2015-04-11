@@ -428,15 +428,7 @@
             -->
             <module id="range-index"    class="org.exist.indexing.range.RangeIndex"/>
 
-            <!-- 
-                The full text index is always required and should
-                not be disabled. We still have some dependencies on
-                this index in the database core. These will be removed
-                once the redesign has been completed. 
-            -->
-            <!--module id="ft-legacy-index" class="org.exist.fulltext.FTIndex"/-->
-
-            <!-- 
+            <!--
                  The following module is not really an index (though it sits 
                  in the index pipeline). It gathers relevant statistics on the
                  distribution of elements in the database, which can be used 
