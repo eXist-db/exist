@@ -4299,7 +4299,7 @@ inputState.guessing--;
 						
 				}
 			}
-			else if ((LA(1)=='(') && (LA(2)==':') && ((LA(3) >= '\u0003' && LA(3) <= '\ufffe')) && ((LA(4) >= '\u0003' && LA(4) <= '\ufffe'))) {
+			else if (((LA(1)=='(') && (LA(2)==':') && ((LA(3) >= '\u0003' && LA(3) <= '\ufffe')) && ((LA(4) >= '\u0003' && LA(4) <= '\ufffe')))&&( !(inAttributeContent || inElementContent) )) {
 				mEXPR_COMMENT(false);
 				if ( inputState.guessing==0 ) {
 					
