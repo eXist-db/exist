@@ -57,7 +57,7 @@ public class JnlpJarFiles {
         "log4j-api-%latest%",
         "log4j-core-%latest%",
         "log4j-jul-%latest%",
-        "log4j-slf4j-impl-latest%.jar",
+        "log4j-slf4j-impl-%latest%",
         "slf4j-api-%latest%",
         "sunxacml-%latest%"
     };
