@@ -7267,8 +7267,15 @@ public XQueryTreeParser() {
 			case DECIMAL_LITERAL:
 			case XML_CDATA:
 			{
-				step=expr(_t,pathExpr);
+				expr(_t,pathExpr);
 				_t = _retTree;
+				
+								if (pathExpr.getSubExpressionCount() == 1) {
+									step = pathExpr.getSubExpression(0);
+								} else {
+									step = pathExpr;
+								}
+							
 				break;
 			}
 			case 3:
