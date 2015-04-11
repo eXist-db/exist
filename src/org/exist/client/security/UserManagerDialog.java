@@ -397,10 +397,6 @@ public class UserManagerDialog extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(this, "Could not edit user '" + selectedUsername + "': " + xmldbe.getMessage(), "User Manager Error", JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_miEditUserActionPerformed
-
-    protected interface Reconnecter {
-        public UserManagementService reconnect(final String password) throws XMLDBException;
-    }
     
     private UserManagementService reconnectClientAndUserManager(final String password) throws XMLDBException {
         //get client to reconnect with edited users new password
@@ -421,19 +417,16 @@ public class UserManagerDialog extends javax.swing.JFrame {
             public void complete(final String response) {
                 //get client to reconnect with edited users new password
                 try {
+                    System.out.println("Detected logged-in user password change, reconnecting to server...");
                     that.userManagementService = reconnectClientAndUserManager(response);
+                    System.out.println("Reconnected.");
                 } catch(final XMLDBException xmldbe) {
                     JOptionPane.showMessageDialog(that, "Could not edit user '" + getSelectedUsername() + "': " + xmldbe.getMessage(), "User Manager Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
         };
-        
-        final EditUserDialog userDialog = new EditUserDialog(userManagementService, account, new Reconnecter() {
-            @Override
-            public UserManagementService reconnect(final String password) throws XMLDBException {
-                return reconnectClientAndUserManager(password);
-            }
-        });
+
+        final EditUserDialog userDialog = new EditUserDialog(userManagementService, account);
         if(getSelectedUsername().equals(currentUser)) {
             //register for password update event, if we are changing the password
             //of the current user
