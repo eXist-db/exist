@@ -46,7 +46,6 @@
         </xs:annotation>
         <xs:choice>
             <xs:sequence>
-                <xs:element ref="fulltext"/>
                 <xs:element ref="lucene" minOccurs="0"/>
                 <xs:element ref="range" minOccurs="0"/>
                 <xs:element name="create" type="rangeIndexType" minOccurs="0" maxOccurs="unbounded"/>
@@ -80,44 +79,6 @@
             </xs:sequence>
         </xs:choice>
 
-    </xs:complexType>
-
-    <xs:element name="fulltext" type="fulltextType"/>
-
-    <xs:complexType name="fulltextType">
-        <xs:annotation>
-            <xs:documentation>Full Text Indexes</xs:documentation>
-        </xs:annotation>
-        <xs:sequence minOccurs="0">
-            <xs:group ref="fulltextDirectives"/>
-        </xs:sequence>
-        <xs:attribute name="default" default="all">
-            <xs:simpleType>
-                <xs:restriction base="xs:string">
-                    <xs:enumeration value="all"/>
-                    <xs:enumeration value="none"/>
-                </xs:restriction>
-            </xs:simpleType>
-        </xs:attribute>
-        <xs:attribute name="attributes" type="xs:boolean" default="true"/>
-        <xs:attribute name="alphanum" type="xs:boolean" default="true"/>
-    </xs:complexType>
-
-    <xs:group name="fulltextDirectives">
-        <xs:sequence>
-            <xs:element name="create" minOccurs="0" maxOccurs="unbounded" type="fulltextCreateType"/>
-            <xs:element name="include" minOccurs="0" maxOccurs="unbounded" type="pathType"/>
-            <xs:element name="exclude" minOccurs="0" maxOccurs="unbounded" type="pathType"/>
-        </xs:sequence>
-    </xs:group>
-
-    <xs:complexType name="pathType">
-        <xs:attributeGroup ref="pathReq"/>
-    </xs:complexType>
-
-    <xs:complexType name="fulltextCreateType">
-        <xs:attributeGroup ref="qnameReq"/>
-        <xs:attribute name="content" use="optional" type="xs:string" fixed="mixed"/>
     </xs:complexType>
 
     <xs:complexType name="rangeIndexType">

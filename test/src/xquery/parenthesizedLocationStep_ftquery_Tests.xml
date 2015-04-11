@@ -24,7 +24,6 @@
         <store collection="/db/system/config/db/test" name="collection.xconf">
             <collection xmlns="http://exist-db.org/collection-config/1.0">
                 <index>
-                    <fulltext default="none" attributes="no"/>
                     <lucene>
                         <text qname="@att1"/>
                         <text qname="@att2"/>

@@ -452,9 +452,7 @@
             collection-specific configuration for a collection.
         -->
         <index>
-            <fulltext attributes="false" default="none">
-                <exclude path="/auth"/>
-            </fulltext>
+            <!-- settings go here -->
         </index>
     </indexer>
 
@@ -748,7 +746,6 @@
             <module uri="http://exist-db.org/xquery/securitymanager" class="org.exist.xquery.functions.securitymanager.SecurityManagerModule"/>
             <module uri="http://exist-db.org/xquery/session"    class="org.exist.xquery.functions.session.SessionModule" />
             <module uri="http://exist-db.org/xquery/system"     class="org.exist.xquery.functions.system.SystemModule" />
-            <module uri="http://exist-db.org/xquery/text"       class="org.exist.xquery.functions.text.TextModule" />
             <module uri="http://exist-db.org/xquery/transform"  class="org.exist.xquery.functions.transform.TransformModule" />
             
             <module uri="http://exist-db.org/xquery/util"       class="org.exist.xquery.functions.util.UtilModule">
