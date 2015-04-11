@@ -7270,10 +7270,17 @@ public XQueryTreeParser() {
 				expr(_t,pathExpr);
 				_t = _retTree;
 				
-								if (pathExpr.getSubExpressionCount() == 1) {
-									step = pathExpr.getSubExpression(0);
-								} else {
-									step = pathExpr;
+								// simplify the expression
+								switch (pathExpr.getSubExpressionCount()) {
+									case 0:
+										step = new EmptySequenceExpr(context);
+										break;
+									case 1:
+										step = pathExpr.getSubExpression(0);
+										break;
+									default:
+										step = pathExpr;
+										break;
 								}
 							
 				break;

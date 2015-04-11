@@ -8,9 +8,9 @@ import org.exist.xquery.value.Type;
 /**
  * Represents an empty sequence constructor: ()
  */
-public class EmptySequence extends AbstractExpression {
+public class EmptySequenceExpr extends AbstractExpression {
 
-    public EmptySequence(XQueryContext context) {
+    public EmptySequenceExpr(XQueryContext context) {
         super(context);
     }
 

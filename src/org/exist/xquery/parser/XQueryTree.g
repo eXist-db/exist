@@ -1934,7 +1934,7 @@ throws PermissionDeniedException, EXistException, XPathException
 				// simplify the expression
 				switch (pathExpr.getSubExpressionCount()) {
 					case 0:
-						step = new EmptySequence(context);
+						step = new EmptySequenceExpr(context);
 						break;
 					case 1:
 						step = pathExpr.getSubExpression(0);
