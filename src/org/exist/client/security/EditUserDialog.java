@@ -21,15 +21,10 @@
  */
 package org.exist.client.security;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import javax.swing.JOptionPane;
 import org.exist.client.DialogCompleteWithResponse;
 import org.exist.client.DialogWithResponse;
-import org.exist.client.security.UserManagerDialog.Reconnecter;
 import org.exist.security.AXSchemaType;
 import org.exist.security.Account;
 import org.exist.security.EXistSchemaType;
@@ -49,13 +44,11 @@ public class EditUserDialog extends UserDialog implements DialogWithResponse<Str
     private final static String HIDDEN_PASSWORD_CONST = "password";
     
     private final Account account;
-    private final Reconnecter reconnecter;
     private final List<DialogCompleteWithResponse<String>> dialogCompleteWithResponseCallbacks = new ArrayList<DialogCompleteWithResponse<String>>();
     
-    public EditUserDialog(final UserManagementService userManagementService, final Account account, final Reconnecter reconnecter) {
+    public EditUserDialog(final UserManagementService userManagementService, final Account account) {
         super(userManagementService);
         this.account = account;
-        this.reconnecter = reconnecter;
         setFormPropertiesFromAccount();
     }
     
@@ -115,19 +108,34 @@ public class EditUserDialog extends UserDialog implements DialogWithResponse<Str
     
     private void updateUser() {
         try {
-            setAccountFromFormProperties();
+            final Optional<String> newPassword = setAccountFromFormProperties();
+
+            /**
+             * We update the account in three stages:
+             *
+             * 1) General account properties
+             * 2) Group memebrship
+             * 3) Optionally set changed password.
+             *
+             * The password is always changed last if needed,
+             * as it means the admin client must reconnect
+             * if we are changing the logged in users password.
+             *
+             * The reconnection is performed by the registered
+             * DialogCompleteWithResponse handler
+             */
+
+            //1) Update general account properties
             getUserManagementService().updateAccount(getAccount());
-            
-            //we must cause the client to reconnect now if we have modified the users password
-            if(isPasswordChanged()) {
-                try {
-                    setUserManagementService(this.reconnecter.reconnect(txtPassword.getText()));
-                    
-                    //group membership has to be modified seperately
-                    modifyAccountGroupMembership();
-                } catch(final XMLDBException xmldbe) {
-                    JOptionPane.showMessageDialog(this, "Could not edit user '" + txtUsername.getText() + "': " + xmldbe.getMessage(), "Edit User Error", JOptionPane.ERROR_MESSAGE);
-                }
+
+            //2) Update group membership (has to be modified separately from (1))
+            modifyAccountGroupMembership();
+
+            //3) Finally, optionally change the password
+            if(newPassword.isPresent()) {
+                final Account acct = getUserManagementService().getAccount(getAccount().getName());
+                acct.setPassword(newPassword.get());
+                getUserManagementService().updateAccount(acct);
             }
         } catch(final PermissionDeniedException pde) {
             JOptionPane.showMessageDialog(this, "Could not update user '" + txtUsername.getText() + "': " + pde.getMessage(), "Edit User Error", JOptionPane.ERROR_MESSAGE);
@@ -168,19 +176,28 @@ public class EditUserDialog extends UserDialog implements DialogWithResponse<Str
         //set the primary group
         ((EXistUserManagementService)getUserManagementService()).setUserPrimaryGroup(getAccount().getName(), getPrimaryGroup());
     }
-    
-    private void setAccountFromFormProperties() throws PermissionDeniedException {
+
+    /**
+     * Updates the account with all of the fields from the form
+     * except the password.
+     *
+     * If the password on the form has been changed then it is returned
+     * as the result of this function
+     */
+    private Optional<String> setAccountFromFormProperties() throws PermissionDeniedException {
         getAccount().setMetadataValue(AXSchemaType.FULLNAME, txtFullName.getText());
         getAccount().setMetadataValue(EXistSchemaType.DESCRIPTION, txtDescription.getText());
-        
-        if(isPasswordChanged()) {
-            final String password = new String(txtPassword.getPassword());
-            getAccount().setPassword(password);
-        }
         
         getAccount().setEnabled(!cbDisabled.isSelected());
         
         getAccount().setUserMask(UmaskSpinnerModel.octalUmaskToInt((String)spnUmask.getValue()));
+
+        if(isPasswordChanged()) {
+            final String password = new String(txtPassword.getPassword());
+            return Optional.of(password);
+        } else {
+            return Optional.empty();
+        }
     }
     
     protected Account getAccount() {
