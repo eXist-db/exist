@@ -124,7 +124,8 @@ public class LocationStep extends Step {
 
 		// self axis has an obvious dependency on the context item
 		// likewise we depend on the context item if this is a single path step (outside a predicate)
-		if (!this.inPredicate && (this.axis == Constants.SELF_AXIS || (parent != null && parent.getSubExpression(0) == this)))
+		if (!this.inPredicate && (this.axis == Constants.SELF_AXIS ||
+				(parent != null && parent.getSubExpressionCount() > 0 && parent.getSubExpression(0) == this)))
 			{deps = deps | Dependency.CONTEXT_ITEM;}
 
 		// TODO : normally, we should call this one...
@@ -510,7 +511,7 @@ public class LocationStep extends Step {
 			final MemoryNodeSet nodes = contextSequence.toMemNodeSet();
 			return nodes.getSelf(test);
 		}
-		if (hasPreloadedData()) {
+		if (hasPreloadedData() && !test.isWildcardTest()) {
 			NodeSet ns = null;
 			if (contextSequence instanceof NodeSet) {
 				ns = (NodeSet)contextSequence;
