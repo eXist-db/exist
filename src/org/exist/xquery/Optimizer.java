@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-07 The eXist Project
+ *  Copyright (C) 2001-2015 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -13,18 +13,15 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
- * 
- *  $Id$
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.xquery;
 
 import org.exist.xquery.pragmas.Optimize;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.exist.xquery.functions.fn.ExtFulltext;
 import org.exist.xquery.util.ExpressionDumper;
 
 import java.util.ArrayList;
@@ -346,10 +343,6 @@ public class Optimizer extends DefaultExpressionVisitor {
                 final Expression next = expression.getExpression(i);
                 next.accept(this);
             }
-        }
-
-        public void visitFtExpression(ExtFulltext fulltext) {
-            optimizables.add(fulltext);
         }
 
         public void visitGeneralComparison(GeneralComparison comparison) {

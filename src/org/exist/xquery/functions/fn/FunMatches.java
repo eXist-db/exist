@@ -1,24 +1,21 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-09 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist.sourceforge.net
- *  
+ *  Copyright (C) 2001-2015 The eXist Project
+ *  http://exist-db.org
+ *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
  *  as published by the Free Software Foundation; either version 2
  *  of the License, or (at your option) any later version.
- *  
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *  
- *  $Id$
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.xquery.functions.fn;
 
@@ -44,7 +41,6 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
-import org.exist.xquery.functions.text.TextModule;
 
 import java.util.List;
 import java.util.regex.Matcher;
@@ -112,25 +108,7 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
 			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if the pattern is a match, false otherwise")
 		)
 	};
-		
-	// The following alternative functions are located in the text namespace! If the indexes of the signatures change then change TextModule as well!
-		
-	public final static FunctionSignature text_signatures[] = {
-		new FunctionSignature(
-			new QName("matches-regex", TextModule.NAMESPACE_URI, TextModule.PREFIX),
-			FUNCTION_DESCRIPTION_1_PARAM + FUNCTION_DESCRIPTION_REGEX,
-			new SequenceType[] { INPUT_ARG, PATTERN_ARG },
-			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if the pattern is a match, false otherwise")
-		),
-		new FunctionSignature(
-			new QName("matches-regex", TextModule.NAMESPACE_URI, TextModule.PREFIX),
-			FUNCTION_DESCRIPTION_2_PARAM + FUNCTION_DESCRIPTION_REGEX +
-            FUNCTION_DESCRIPTION_2_PARAM_2,
-			new SequenceType[] { INPUT_ARG, PATTERN_ARG, FLAGS_ARG },
-			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if the pattern is a match, false otherwise")
-		)
-	};
-	
+
 	protected Matcher matcher = null;
 	protected Pattern pat = null;
 	
