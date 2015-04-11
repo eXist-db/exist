@@ -423,6 +423,7 @@
         <!--  this module must be built after the ldap extension -->
         <ant antfile="build.xml" dir="extensions/security/activedirectory" inheritall="false"/>
         
+        <antcall target="fix-scripts"/>
         <antcall target="sign"/>
     </target>
 
@@ -762,4 +763,8 @@
     </target>
 
 
+    <target name="fix-scripts">
+        <fixcrlf srcdir="${basedir}/bin" includes="**/*.sh" eol="lf" eof="remove"/>
+        <fixcrlf srcdir="${basedir}/bin" includes="**/*.bat" eol="crlf"/>
+    </target>
 </project>
