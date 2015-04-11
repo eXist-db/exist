@@ -1,23 +1,21 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2014,  Wolfgang M. Meier (wolfgang@exist-db.org)
- *  and others (see http://exist-db.org)
- * 
- *  This library is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Library General Public License
+ *  Copyright (C) 2001-2015 The eXist Project
+ *  http://exist-db.org
+ *
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
  *  as published by the Free Software Foundation; either version 2
  *  of the License, or (at your option) any later version.
  *
- *  This library is distributed in the hope that it will be useful,
+ *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ *  GNU Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Library General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- * 
- *  $Id$
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.dom.persistent;
 
@@ -33,8 +31,7 @@ import org.exist.numbering.NodeId;
 /**
  * Used to track fulltext matches throughout the query.
  * <p/>
- * {@link org.exist.storage.TextSearchEngine} will add a
- * match object to every {@link org.exist.dom.persistent.NodeProxy}
+ * Index may add a match object to every {@link org.exist.dom.persistent.NodeProxy}
  * that triggered a fulltext match for every term matched. The
  * Match object contains the nodeId of the text node that triggered the
  * match, the string value of the matching term and a frequency count,

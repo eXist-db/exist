@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2012 The eXist Project
+ *  Copyright (C) 2001-2015 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -16,8 +16,6 @@
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- *  $Id$
  */
 package org.exist.client;
 
@@ -66,7 +64,6 @@ import javax.xml.transform.OutputKeys;
 
 import org.exist.security.Account;
 import org.exist.storage.ElementIndex;
-import org.exist.storage.TextSearchEngine;
 import org.exist.util.ProgressIndicator;
 import org.exist.xmldb.UserManagementService;
 import org.exist.xmldb.XmldbURI;
@@ -487,15 +484,16 @@ class DocumentView extends JFrame {
 	}
 	
 	class ProgressObserver implements Observer {
-		int mode = 0;
 		public void update(Observable o, Object arg) {
 			progress.setIndeterminate(false);
 			final ProgressIndicator ind = (ProgressIndicator) arg;
 			progress.setValue(ind.getPercentage());
-			if (o instanceof TextSearchEngine)
-				{progress.setString("Storing words");} //$NON-NLS-1$
-			else if (o instanceof ElementIndex)
-				{progress.setString("Storing elements");} //$NON-NLS-1$
+
+			if( o instanceof ElementIndex ) {
+				progress.setString( "Storing elements" ); //$NON-NLS-1$
+			} else {
+				progress.setString( "Storing nodes" ); //$NON-NLS-1$
+			}
 		}
 	}
 }
