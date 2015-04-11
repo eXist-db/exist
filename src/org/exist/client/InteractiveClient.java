@@ -303,6 +303,8 @@ public class InteractiveClient {
      * @exception Exception   Description of the Exception
      */
     protected void connect() throws Exception {
+        System.out.println("Connecting to database...");
+
         final String uri = properties.getProperty(InteractiveClient.URI);
         if (startGUI && frame != null) {
             frame.setStatus("connecting to " + uri);
@@ -330,6 +332,8 @@ public class InteractiveClient {
         if (startGUI && frame != null) {
             frame.setStatus("connected to " + uri + " as user " + properties.getProperty("user"));
         }
+
+        System.out.println("Connected :-)");
     }
     
     /**
