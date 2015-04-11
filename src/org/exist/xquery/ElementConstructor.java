@@ -107,11 +107,15 @@ public class ElementConstructor extends NodeConstructor {
 	public void addNamespaceDecl(String name, String uri) throws XPathException {
         final QName qn = new QName(name, uri, "xmlns");
 
-        if (name.equalsIgnoreCase("xml") || name.equalsIgnoreCase("xmlns"))
-            {throw new XPathException(this, ErrorCodes.XQST0070, "can not redefine '" + qn + "'");}
+        if ( ("xml".equals(name) && !Namespaces.XML_NS.equals(uri)) || ("xmlns".equals(name) && ! "".equals(uri))) {
+            throw new XPathException(this, ErrorCodes.XQST0070, "can not redefine '" + qn + "'");
+        }
         
-        if (uri.equalsIgnoreCase(Namespaces.XML_NS))
+        if (Namespaces.XML_NS.equals(uri) && !"xml".equals(name))
             {throw new XPathException(this, ErrorCodes.XQST0070, "'"+Namespaces.XML_NS+"' can bind only to 'xml' prefix");}
+        
+        if (Namespaces.XMLNS_NS.equals(uri) && !"xmlns".equals(name))
+            {throw new XPathException(this, ErrorCodes.XQST0070, "'"+Namespaces.XMLNS_NS+"' can bind only to 'xmlns' prefix");}
         	
         if (name.length()!=0 && uri.trim().length()==0) {
            throw new XPathException(this, ErrorCodes.XQST0085, "cannot undeclare a prefix "+name+".");
