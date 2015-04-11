@@ -1,0 +1,9 @@
+<ivysettings>
+    <settings defaultResolver="chain"/>
+    <resolvers>
+        <chain name="chain">
+            <ibiblio name="central" m2compatible="true"/>
+            <ibiblio name="exist" m2compatible="true" root="https://raw.github.com/zwobit/betterform-mvn-repo/master/"/>
+        </chain>
+    </resolvers>
+</ivysettings>
