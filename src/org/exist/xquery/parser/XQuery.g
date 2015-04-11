@@ -2390,6 +2390,7 @@ options {
 		$setType(Token.SKIP);
 	}
 	|
+	{ !(inAttributeContent || inElementContent) }?
 	EXPR_COMMENT
 	{ 
 		String comment = $getText;
