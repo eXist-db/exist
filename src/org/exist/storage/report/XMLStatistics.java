@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-08 The eXist Project
+ *  Copyright (C) 2001-2015 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -16,8 +16,6 @@
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- *  $Id$
  */
 package org.exist.storage.report;
 
@@ -25,7 +23,6 @@ import java.util.Iterator;
 
 import org.exist.storage.BrokerPool;
 import org.exist.storage.BufferStats;
-import org.exist.storage.NativeTextEngine;
 import org.exist.storage.NativeValueIndex;
 import org.exist.storage.dom.DOMFile;
 import org.exist.storage.index.BFile;
@@ -34,7 +31,6 @@ import org.exist.util.Configuration;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
-
 
 /** generate statistics about the XML storage - 
  * used by org.apache.cocoon.generation.StatusGenerator
@@ -97,9 +93,6 @@ public class XMLStatistics {
         db = (BFile) conf.getProperty(NativeValueIndex.FILE_KEY_IN_CONFIG);
         if (db != null)
             {genBufferDetails(db.getIndexBufferStats(), db.getDataBufferStats(), "Values index ("+ db.getFile().getName() + ")");}
-        db = (BFile) conf.getProperty(NativeTextEngine.FILE_KEY_IN_CONFIG);
-        if (db != null)
-            {genBufferDetails(db.getIndexBufferStats(), db.getDataBufferStats(), "Fulltext index ("+ db.getFile().getName() + ")");}		
         this.contentHandler.endElement(NAMESPACE, "buffers", PREFIX + ":buffers");
     }
 
