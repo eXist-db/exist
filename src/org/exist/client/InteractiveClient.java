@@ -865,7 +865,7 @@ public class InteractiveClient {
                         if (p1.equals(p2)) {
                             break;
                         }
-                        System.out.println(EOL + "entered passwords differ. Try again...");
+                        messageln("Entered passwords differ. Try again...");
                         
                     }
                     final UserAider user = new UserAider(args[1]);
@@ -878,19 +878,24 @@ public class InteractiveClient {
                             user.addGroup(group);
                         }
                     }
+
+                    if(user.getGroups().length == 0) {
+                        messageln("No groups specified, will be a member of the '" + SecurityManager.GUEST_GROUP +"' group!");
+                        user.addGroup(SecurityManager.GUEST_GROUP);
+                    }
                     
                     mgtService.addAccount(user);
-                    System.out.println("user " + user + " created.");
+                    messageln("User '" + user.getName() + "' created.");
                 } catch (final Exception e) {
-                    System.out.println("ERROR: " + e.getMessage());
+                    errorln("ERROR: " + e.getMessage());
                     e.printStackTrace();
                 }
             } else if (args[0].equalsIgnoreCase("users")) {
                 final UserManagementService mgtService = (UserManagementService) current
                         .getService("UserManagementService", "1.0");
                 final Account users[] = mgtService.getAccounts();
-                System.out.println("User\t\tGroups");
-                System.out.println("-----------------------------------------");
+                messageln("User\t\tGroups");
+                messageln("-----------------------------------------");
                 for (int i = 0; i < users.length; i++) {
                     System.out.print(users[i].getName() + "\t\t");
                     final String[] groups = users[i].getGroups();
@@ -908,7 +913,7 @@ public class InteractiveClient {
                     return true;
                 }
                 if (args.length < 2) {
-                    System.out.println("Usage: passwd username");
+                    messageln("Usage: passwd username");
                     return true;
                 }
                 try {
@@ -916,7 +921,7 @@ public class InteractiveClient {
                             .getService("UserManagementService", "1.0");
                     final Account user = mgtService.getAccount(args[1]);
                     if (user == null) {
-                        System.out.println("no such user.");
+                        messageln("no such user.");
                         return true;
                     }
                     String p1;
@@ -933,7 +938,8 @@ public class InteractiveClient {
                     mgtService.updateAccount(user);
                     properties.setProperty("password", p1);
                 } catch (final Exception e) {
-                    System.err.println("ERROR: " + e.getMessage());
+                    errorln("ERROR: " + e.getMessage());
+                    e.printStackTrace();
                 }
             } else if (args[0].equalsIgnoreCase("chmod")) {
                 if (args.length < 2) {
