@@ -1,24 +1,21 @@
 /*
- * Exist Open Source Native XML Database
- * Copyright (C) 2000-2011 The eXist Project
- * http://exist-db.org
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2001-2015 The eXist Project
+ *  http://exist-db.org
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *  
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program; if not, write to the Free Software Foundation
- * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *  
- * base sur 4568, modif boris GB 
- *  $Id$
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 header {
 	package org.exist.xquery.parser;
@@ -38,7 +35,6 @@ header {
 	import javax.xml.XMLConstants;
 	import org.exist.storage.BrokerPool;
 	import org.exist.storage.DBBroker;
-	import org.exist.storage.analysis.Tokenizer;
 	import org.exist.EXistException;
 	import org.exist.Namespaces;
 	import org.exist.dom.persistent.DocumentSet;
@@ -1890,8 +1886,6 @@ throws PermissionDeniedException, EXistException, XPathException
 	|
 	step=nodeComp [path]
 	|
-	step=fulltextComp [path]
-	|
 	step=primaryExpr [path]
 	|
 	step=pathExpr [path]
@@ -2581,32 +2575,6 @@ throws PermissionDeniedException, EXistException
 	"ancestor" { axis= Constants.ANCESTOR_AXIS; }
 	|
 	"ancestor-or-self" { axis= Constants.ANCESTOR_SELF_AXIS; }
-	;
-
-fulltextComp [PathExpr path]
-returns [Expression step]
-throws PermissionDeniedException, EXistException, XPathException
-{
-	step= null;
-	PathExpr nodes= new PathExpr(context);
-	PathExpr query= new PathExpr(context);
-}
-:
-	#( ANDEQ step=expr [nodes] step=expr [query] )
-	{
-		ExtFulltext exprCont= new ExtFulltext(context, Constants.FULLTEXT_AND);
-		exprCont.setPath(nodes);
-		exprCont.addTerm(query);
-		path.addPath(exprCont);
-	}
-	|
-	#( OREQ step=expr [nodes] step=expr [query] )
-	{
-		ExtFulltext exprCont= new ExtFulltext(context, Constants.FULLTEXT_OR);
-		exprCont.setPath(nodes);
-		exprCont.addTerm(query);
-		path.addPath(exprCont);
-	}
 	;
 
 valueComp [PathExpr path]

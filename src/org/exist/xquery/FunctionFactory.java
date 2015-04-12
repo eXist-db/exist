@@ -1,24 +1,21 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2010 The eXist-db project
- *  info@exist-db.org
- *  http://www.exist-db.org
- *  
+ *  Copyright (C) 2001-2015 The eXist Project
+ *  http://exist-db.org
+ *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
  *  as published by the Free Software Foundation; either version 2
  *  of the License, or (at your option) any later version.
- *  
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *  
- *  $Id$
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.xquery;
 
@@ -27,8 +24,6 @@ import java.util.List;
 
 import org.exist.Namespaces;
 import org.exist.dom.QName;
-import org.exist.xquery.functions.fn.ExtNear;
-import org.exist.xquery.functions.fn.ExtPhrase;
 import org.exist.xquery.parser.XQueryAST;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
@@ -71,12 +66,7 @@ public class FunctionFactory {
         final String uri = qname.getNamespaceURI();
         Expression step = null;
         if (optimizeStrFuncs && (Namespaces.XPATH_FUNCTIONS_NS.equals(uri) || Namespaces.XSL_NS.equals(uri))) {
-            //TODO : move to text:near()
-            if ("near".equals(local)) {
-                step = near(context, ast, params);
-            } else if("phrase".equals(local)) {
-                step = phrase(context, ast, params);
-            } else if("starts-with".equals(local)) {
+            if("starts-with".equals(local)) {
                 step = startsWith(context, ast, parent, params);
             } else if("ends-with".equals(local)) {
                 step = endsWith(context, ast, parent, params);
@@ -101,66 +91,6 @@ public class FunctionFactory {
             step = functionCall(context, ast, params, qname);
         }
         return step;
-    }
-
-    /**
-     * near(node-set, string)
-     */
-    private static ExtNear near(XQueryContext context, XQueryAST ast,
-            List<Expression> params) throws XPathException {
-        if (params.size() < 2) {
-            throw new XPathException(ast.getLine(), ast.getColumn(),
-        		ErrorCodes.XPST0017, "Function near() requires two arguments");
-        }
-        PathExpr p1 = (PathExpr) params.get(1);
-        if (p1.getLength() == 0) {
-            throw new XPathException(ast.getLine(), ast.getColumn(),
-                "Second argument of near() is empty");
-        }
-        final Expression e1 = p1.getExpression(0);
-        final ExtNear near = new ExtNear(context);
-        near.setLocation(ast.getLine(), ast.getColumn());
-        near.addTerm(e1);
-        near.setPath((PathExpr) params.get(0));
-        if (params.size() > 2) {
-            p1 = (PathExpr) params.get(2);
-            if (p1.getLength() == 0) {
-                throw new XPathException(ast.getLine(), ast.getColumn(),
-                    "Max distance argument of near() is empty");
-            }
-            near.setMaxDistance(p1);
-            if (params.size() == 4) {
-                p1 = (PathExpr) params.get(3);
-                if(p1.getLength() == 0) {
-                    throw new XPathException(ast.getLine(), ast.getColumn(),
-                        "Min distance argument of near() is empty");
-                }
-                near.setMinDistance(p1);
-            }
-        }
-        return near;
-    }
-
-    /**
-     * phrase(node-set, string)
-     */
-    private static ExtPhrase phrase(XQueryContext context, XQueryAST ast,
-            List<Expression> params) throws XPathException {
-        if (params.size() < 2) {
-            throw new XPathException(ast.getLine(), ast.getColumn(),
-        		ErrorCodes.XPST0017, "Function phrase() requires two arguments");
-        }
-        final PathExpr p1 = (PathExpr) params.get(1);
-        if (p1.getLength() == 0) {
-            throw new XPathException(ast.getLine(), ast.getColumn(),
-                "Second argument of phrase() is empty");
-        }
-        final Expression e1 = p1.getExpression(0);
-        final ExtPhrase phrase = new ExtPhrase(context);
-        phrase.setLocation(ast.getLine(), ast.getColumn());
-        phrase.addTerm(e1);
-        phrase.setPath((PathExpr) params.get(0));
-        return phrase;
     }
 
     /**

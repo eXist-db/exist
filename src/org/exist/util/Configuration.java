@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2009-2010 The eXist Project
+ *  Copyright (C) 2001-2015 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -16,8 +16,6 @@
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- *  $Id$
  */
 package org.exist.util;
 
@@ -53,7 +51,6 @@ import org.exist.storage.DefaultCacheManager;
 import org.exist.storage.IndexSpec;
 import org.exist.storage.NativeBroker;
 import org.exist.storage.NativeValueIndex;
-import org.exist.storage.TextSearchEngine;
 import org.exist.storage.XQueryPool;
 import org.exist.storage.journal.Journal;
 import org.exist.storage.serializers.CustomMatchListenerFactory;
@@ -1334,52 +1331,11 @@ public class Configuration implements ErrorHandler
 
     private void configureIndexer( String dbHome, Document doc, Element indexer ) throws DatabaseConfigurationException, MalformedURLException
     {
-        final String parseNum = getConfigAttributeValue( indexer, TextSearchEngine.INDEX_NUMBERS_ATTRIBUTE );
-
-        if( parseNum != null ) {
-            config.put( TextSearchEngine.PROPERTY_INDEX_NUMBERS, parseBoolean( parseNum, false ) );
-            LOG.debug( TextSearchEngine.PROPERTY_INDEX_NUMBERS + ": " + config.get( TextSearchEngine.PROPERTY_INDEX_NUMBERS ) );
-        }
-
-        final String stemming = getConfigAttributeValue( indexer, TextSearchEngine.STEM_ATTRIBUTE );
-
-        if( stemming != null ) {
-            config.put( TextSearchEngine.PROPERTY_STEM, parseBoolean( stemming, false ) );
-            LOG.debug( TextSearchEngine.PROPERTY_STEM + ": " + config.get( TextSearchEngine.PROPERTY_STEM ) );
-        }
-
-        final String termFreq = getConfigAttributeValue( indexer, TextSearchEngine.STORE_TERM_FREQUENCY_ATTRIBUTE );
-
-        if( termFreq != null ) {
-            config.put( TextSearchEngine.PROPERTY_STORE_TERM_FREQUENCY, parseBoolean( termFreq, false ) );
-            LOG.debug( TextSearchEngine.PROPERTY_STORE_TERM_FREQUENCY + ": " + config.get( TextSearchEngine.PROPERTY_STORE_TERM_FREQUENCY ) );
-        }
-
-        final String tokenizer = getConfigAttributeValue( indexer, TextSearchEngine.TOKENIZER_ATTRIBUTE );
-
-        if( tokenizer != null ) {
-            config.put( TextSearchEngine.PROPERTY_TOKENIZER, tokenizer );
-            LOG.debug( TextSearchEngine.PROPERTY_TOKENIZER + ": " + config.get( TextSearchEngine.PROPERTY_TOKENIZER ) );
-        }
-
         final String caseSensitive = getConfigAttributeValue( indexer, NativeValueIndex.INDEX_CASE_SENSITIVE_ATTRIBUTE );
 
         if( caseSensitive != null ) {
             config.put( NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE, parseBoolean( caseSensitive, false ) );
             LOG.debug( NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE + ": " + config.get( NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE ) );
-        }
-
-        // stopwords
-        final NodeList stopwords = indexer.getElementsByTagName( TextSearchEngine.CONFIGURATION_STOPWORDS_ELEMENT_NAME );
-
-        if( stopwords.getLength() > 0 ) {
-            final String stopwordFile = ( (Element)stopwords.item( 0 ) ).getAttribute( TextSearchEngine.STOPWORD_FILE_ATTRIBUTE );
-            final File   sf           = ConfigurationHelper.lookup( stopwordFile, dbHome );
-
-            if( sf.canRead() ) {
-                config.put( TextSearchEngine.PROPERTY_STOPWORD_FILE, stopwordFile );
-                LOG.debug( TextSearchEngine.PROPERTY_STOPWORD_FILE + ": " + config.get( TextSearchEngine.PROPERTY_STOPWORD_FILE ) );
-            }
         }
 
         int    depth      = 3;

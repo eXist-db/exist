@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2012 The eXist Project
+ *  Copyright (C) 2001-2015 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -16,8 +16,6 @@
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- *  $Id$
  */
 package org.exist.client;
 
@@ -56,16 +54,12 @@ public class CollectionXConf
     public final static String TYPE_QNAME = "qname";
     public final static String TYPE_PATH = "path";
 
-    public final static String ACTION_INCLUDE = "include";
-    public final static String ACTION_EXCLUDE = "exclude";
-
     private InteractiveClient client = null;	//the client
 	private String path = null;				//path of the collection.xconf file
 	Collection collection = null;				//the configuration collection
 	Resource resConfig = null;					//the collection.xconf resource
 	
 	private LinkedHashMap<String, String> customNamespaces = null;		//custom namespaces
-	private FullTextIndex fulltextIndex = null;		//fulltext index model
 	private RangeIndex[] rangeIndexes = null;			//range indexes model
 	private Trigger[] triggers = null;					//triggers model
 	
@@ -110,216 +104,22 @@ public class CollectionXConf
 			final DocumentBuilder builder = factory.newDocumentBuilder();
 			docConfig = builder.parse( new java.io.ByteArrayInputStream(resConfig.getContent().toString().getBytes()) );
 		}
-		catch(final ParserConfigurationException pce)
+		catch(final ParserConfigurationException | SAXException | IOException pce)
 		{
-			//TODO: do something here, throw xmldbexception?
-		} 
-		catch(final SAXException se)
-		{
-			//TODO: do something here, throw xmldbexception?
+			//TODO: do something here, throw exception?
 		}
-		catch(final IOException ioe)
-		{
-			//TODO: do something here, throw xmldbexception?
-		}
-		
+
 		//Get the root of the collection.xconf
 		final Element xconf = docConfig.getDocumentElement();
 		
 		//Read any custom namespaces from xconf
 		customNamespaces = getCustomNamespaces(xconf);
 		
-		//Read FullText Index from xconf
-		fulltextIndex = getFullTextIndex(xconf);
-		
 		//Read Range Indexes from xconf
 		rangeIndexes = getRangeIndexes(xconf);
 		
 		//read Triggers from xconf
 		triggers = getTriggers(xconf);
-	}
-	
-	/**
-	 * Indicates whether the fulltext index defaults to indexing all nodes
-	 *
-	 * @return true indicates all nodes are indexed, false indicates no nodes are indexed by default
-	 */
-	public boolean getFullTextIndexDefaultAll()
-	{
-		return fulltextIndex != null ? fulltextIndex.getDefaultAll() : false;
-	}
-	
-	/**
-	 * Set whether all nodes should be indexed into the fulltext index
-	 * 
-	 * @param defaultAll	true indicates all nodes should be indexed, false indicates no nodes should be indexed by default
-	 */
-	public void setFullTextIndexDefaultAll(boolean defaultAll)
-	{
-		hasChanged = true;
-		if(fulltextIndex == null)
-		{
-			fulltextIndex = new FullTextIndex(true, false, false, null);
-		}
-		else
-		{
-			fulltextIndex.setDefaultAll(defaultAll);
-		}
-	}
-	
-	/**
-	 * Indicates whether the fulltext index indexes attributes
-	 *
-	 * @return true indicates attributes are indexed, false indicates attributes are not indexed
-	 */
-	public boolean getFullTextIndexAttributes()
-	{
-		return fulltextIndex != null ? fulltextIndex.getAttributes() : false;
-	}
-	
-	/**
-	 * Set whether attributes should be indexed into the fulltext index
-	 * 
-	 * @param attributes	true indicates attributes should be indexed, false indicates attributes should not be indexed
-	 */
-	public void setFullTextIndexAttributes(boolean attributes)
-	{
-		hasChanged = true;
-		
-		if(fulltextIndex == null)
-		{
-			fulltextIndex = new FullTextIndex(false, true, false, null);
-		}
-		else
-		{
-			fulltextIndex.setAttributes(attributes);
-		}
-	}
-	
-	/**
-	 * Indicates whether the fulltext index indexes alphanumeric values
-	 *
-	 * @return true indicates alphanumeric values are indexed, false indicates alphanumeric values are not indexed
-	 */
-	public boolean getFullTextIndexAlphanum()
-	{
-		return fulltextIndex != null ? fulltextIndex.getAlphanum() : false;
-	}
-	
-	/**
-	 * Set whether alphanumeric values should be indexed into the fulltext index
-	 * 
-	 * @param alphanum	true indicates alphanumeric values should be indexed, false indicates alphanumeric values should not be indexed
-	 */
-	public void setFullTextIndexAlphanum(boolean alphanum)
-	{
-		hasChanged = true;
-		
-		if(fulltextIndex == null)
-		{
-			fulltextIndex = new FullTextIndex(false, false, true, null);
-		}
-		else
-		{
-			fulltextIndex.setAlphanum(alphanum);
-		}
-	}
-	
-	/**
-	 * Returns a full text index path
-	 * 
-	 * @param index	The numeric index of the fulltext index path to retreive
-	 * 
-	 * @return The XPath
-	 */
-	public String getFullTextIndexPath(int index)
-	{
-		return fulltextIndex.getPath(index);
-	}
-
-    public String getFullTextIndexType(int index) {
-        return fulltextIndex.getType(index);
-    }
-
-    /**
-	 * Returns a full text index path action
-	 * 
-	 * @param index	The numeric index of the fulltext index path action to retreive
-	 * 
-	 * @return The Action, either "include" or "exclude"
-	 */
-	public String getFullTextIndexPathAction(int index)
-	{
-		return fulltextIndex.getAction(index);
-	}
-	
-	/**
-	 * Returns the number of full text index paths defined
-	 *  
-	 * @return The number of paths
-	 */
-	public int getFullTextPathCount()
-	{
-		if(fulltextIndex != null)
-		{
-			return fulltextIndex.getLength();
-		}
-		else
-		{
-			return 0;
-		}
-	}
-	
-	/**
-	 * Add a path to the full text index
-	 *
-	 * @param XPath		The XPath to index
-	 * @param action	The action to take on the path, either "include" or "exclude"
-	 */
-	public void addFullTextIndex(String type, String XPath, String action)
-	{
-		hasChanged = true;
-		
-		
-		if(fulltextIndex == null)
-		{
-			fulltextIndex = new FullTextIndex(false, false, false, null);
-		}
-		
-		fulltextIndex.addIndex(type, XPath, action);
-	}
-	
-	/**
-	 * Update the details of a full text index path
-	 *
-	 * @param index		The numeric index of the path to update
-	 * @param XPath		The new XPath, or null to just set the action
-	 * @param action	The new action, either "include" or "exclude", or null to just set the XPath
-	 */
-	public void updateFullTextIndex(int index, String type, String XPath, String action)
-	{
-		hasChanged = true;
-
-        if (type != null)
-            {fulltextIndex.setType(index, type);}
-
-        if(XPath != null)
-			{fulltextIndex.setPath(index, XPath);}
-		
-		if(action != null)
-			{fulltextIndex.setAction(index, action);}
-	}
-
-	/**
-	 * Delete a path from the full text index
-	 * 
-	 * @param index	The numeric index of the path to delete
-	 */
-	public void deleteFullTextIndex(int index)
-	{
-		hasChanged = true;
-		
-		fulltextIndex.deleteIndex(index);
 	}
 	
 	/**
@@ -585,62 +385,7 @@ public class CollectionXConf
 		
 		return null;
 	}
-	
-	//given the root element of collection.xconf it will return the fulltext index
-	private FullTextIndex getFullTextIndex(Element xconf)
-	{
-		final NodeList nlFullTextIndex = xconf.getElementsByTagName("fulltext");
-		if(nlFullTextIndex.getLength() > 0)
-		{
-			boolean defaultAll = true;
-			boolean attributes = false;
-			boolean alphanum = false;
-			FullTextIndexPath[] paths = null;
 
-            final Element elemFullTextIndex = (Element)nlFullTextIndex.item(0);
-			defaultAll = "all".equals(elemFullTextIndex.getAttribute("default"));
-			attributes = "true".equals(elemFullTextIndex.getAttribute("attributes"));
-			alphanum = "true".equals(elemFullTextIndex.getAttribute("alphanum"));
-			
-			final NodeList nlInclude = elemFullTextIndex.getElementsByTagName("include");
-			final NodeList nlExclude = elemFullTextIndex.getElementsByTagName("exclude");
-			final NodeList nlQName = elemFullTextIndex.getElementsByTagName("create");
-
-            final int iPaths = nlInclude.getLength() + nlExclude.getLength() + nlQName.getLength();
-			int pos = 0;
-			if(iPaths > 0 )
-			{
-				paths = new FullTextIndexPath[iPaths];
-			
-				if(nlInclude.getLength() > 0)
-				{
-					for(int i = 0; i < nlInclude.getLength(); i++)
-					{
-						paths[pos++] = new FullTextIndexPath(TYPE_PATH, ((Element)nlInclude.item(i)).getAttribute("path"), ACTION_INCLUDE);
-					}
-				}
-				
-				if(nlExclude.getLength() > 0)
-				{	
-					for(int i = 0; i < nlExclude.getLength(); i++)
-					{
-						paths[pos++] = new FullTextIndexPath(TYPE_PATH, ((Element)nlExclude.item(i)).getAttribute("path"), ACTION_EXCLUDE);
-					}
-				}
-
-                if (nlQName.getLength() > 0) {
-                    for (int i = 0; i < nlQName.getLength(); i++) {
-                        paths[pos++] = new FullTextIndexPath(TYPE_QNAME, ((Element)nlQName.item(i)).getAttribute("qname"), ACTION_EXCLUDE);
-                    }
-                }
-            }
-            return new FullTextIndex(defaultAll, attributes, alphanum, paths);
-			
-		}
-		return null;
-		
-	}
-	
 	//given the root element of collection.xconf it will return an array of range indexes
 	private RangeIndex[] getRangeIndexes(Element xconf)
 	{
@@ -728,20 +473,12 @@ public class CollectionXConf
 		xconf.append(System.getProperty("line.separator"));
 		
 		//index
-		if(fulltextIndex != null || rangeIndexes != null)
+		if(rangeIndexes != null)
 		{
 			xconf.append('\t');
 			xconf.append("<index>");
 			xconf.append(System.getProperty("line.separator"));
 		
-			//fulltext indexes
-			if(fulltextIndex != null)
-			{
-				xconf.append("\t\t");
-				xconf.append(fulltextIndex.toXMLString());
-				xconf.append(System.getProperty("line.separator"));
-			}
-			
 			//range indexes
 			if(rangeIndexes != null)
 			{
@@ -818,224 +555,6 @@ public class CollectionXConf
 		}
 		
 		return true;
-	}
-	
-	//represents a path in the fulltext index in the collection.xconf
-	protected class FullTextIndexPath
-	{
-        private String type = TYPE_QNAME;
-
-        private String path = null;
-        private String action = ACTION_INCLUDE;
-		
-		FullTextIndexPath(String type, String path, String action)
-		{
-            this.type = type;
-            this.path = path;
-			this.action = action;
-		}
-		
-		public String getXPath()
-		{
-			return path;
-		}
-		
-		public String getAction()
-		{
-			return action;
-		}
-
-        public String getType() {
-            return type;
-        }
-
-        public void setPath(String xpath)
-		{
-			this.path = xpath;
-		}
-
-        public void setType(String type) {
-            this.type = type;
-        }
-
-        public void setAction(String action)
-		{
-			this.action = action;
-		}	
-	}
-	
-	/**
-	 * Represents the Full Text Index in the collection.xconf
-	 */
-	protected class FullTextIndex
-	{	
-		boolean defaultAll = true;
-		boolean attributes = false;
-		boolean alphanum = false;
-		FullTextIndexPath[] xpaths = null;
-        
-        /**
-		 * Constructor
-		 * 
-		 * @param defaultAll	Should the fulltext index default to indexing all nodes
-		 * @param attributes	Should attributes be indexed into the fulltext index 
-		 * @param alphanum		Should alphanumeric values be indexed into the fulltext index
-		 * @param xpaths		Explicit fulltext index paths to include or exclude, null if there are no explicit paths		
-		 */
-		FullTextIndex(boolean defaultAll, boolean attributes, boolean alphanum, FullTextIndexPath[] xpaths)
-		{
-			this.defaultAll = defaultAll;
-			this.attributes = attributes;
-			this.alphanum = alphanum;
-			
-			this.xpaths = xpaths;
-        }
-		
-		public boolean getDefaultAll()
-		{
-			return defaultAll;
-		}
-		
-		public void setDefaultAll(boolean defaultAll)
-		{
-			this.defaultAll = defaultAll;
-		}
-		
-		public boolean getAttributes()
-		{
-			return attributes;
-		}
-		
-		public void setAttributes(boolean attributes)
-		{
-			this.attributes = attributes;
-		}
-		
-		public boolean getAlphanum()
-		{
-			return alphanum;
-		}
-		
-		public void setAlphanum(boolean alphanum)
-		{
-			this.alphanum = alphanum;
-		}
-		
-		public String getPath(int index)
-		{
-			return xpaths[index].getXPath();
-		}
-		
-		public String getAction(int index)
-		{
-			return xpaths[index].getAction();
-		}
-
-        public int getLength()
-		{
-			return xpaths != null ? xpaths.length : 0;
-		}
-
-        public void setType(int index, String type) {
-            xpaths[index].setType(type);
-        }
-
-        public String getType(int index) {
-            return xpaths[index].getType();
-        }
-        
-        public void setPath(int index, String XPath)
-		{
-            xpaths[index].setPath(XPath);
-        }
-        
-        public void setAction(int index, String action)
-		{
-			xpaths[index].setAction(action);
-		}
-		
-		public void addIndex(String type, String XPath, String action)
-		{
-            if(xpaths == null)
-            {
-                xpaths = new FullTextIndexPath[1];
-                xpaths[0] = new FullTextIndexPath(type, XPath, action);
-            }
-            else
-            {
-                FullTextIndexPath newxpaths[] = new FullTextIndexPath[xpaths.length + 1];
-                System.arraycopy(xpaths, 0, newxpaths, 0, xpaths.length);
-                newxpaths[xpaths.length] = new FullTextIndexPath(type, XPath, action);
-                xpaths = newxpaths;
-            }
-        }
-		
-		public void deleteIndex(int index)
-		{
-			//can only remove an index which is in the array
-			if(index < xpaths.length)
-			{
-				//if its the last item in the array just null the array 
-				if(xpaths.length == 1)
-				{
-					xpaths = null;
-				}
-				else
-				{
-					//else remove the item at index from the array
-					FullTextIndexPath newxpaths[] = new FullTextIndexPath[xpaths.length - 1];
-					int x = 0;
-					for(int i = 0; i < xpaths.length; i++)
-					{
-						if(i != index)
-						{
-							newxpaths[x] = xpaths[i];
-							x++;
-						}
-					}	
-					xpaths = newxpaths;
-				}
-			}
-		}
-		
-		//produces a collection.xconf suitable string of XML describing the fulltext index
-		protected String toXMLString()
-		{
-			final StringBuilder fulltext = new StringBuilder();
-			
-			fulltext.append("<fulltext default=\"");
-			fulltext.append(defaultAll ? "all" : "none");
-			fulltext.append("\" attributes=\"");
-			fulltext.append(attributes);
-			fulltext.append("\" alphanum=\"");
-			fulltext.append(alphanum);
-			fulltext.append("\">");
-			
-			fulltext.append(System.getProperty("line.separator"));
-			
-            // Patch 1694080 prevents NPE
-            if (xpaths != null ) {
-                for(int i = 0; i < xpaths.length; i++) {
-                    fulltext.append('\t');
-                    
-                    fulltext.append("<");
-                    if (TYPE_PATH.equals(xpaths[i].getType())) {
-                        fulltext.append(xpaths[i].getAction());
-                        fulltext.append(" path=\"");
-                        fulltext.append(xpaths[i].getXPath());
-                    } else {
-                        fulltext.append("create qname=\"");
-                        fulltext.append(xpaths[i].getXPath());
-                    }
-                    fulltext.append("\"/>");
-                    
-                    fulltext.append(System.getProperty("line.separator"));
-                }
-            }
-			
-			fulltext.append("</fulltext>");
-			return fulltext.toString();
-		}
 	}
 	
 	/**

@@ -39,9 +39,7 @@ public class ConcurrentXUpdateTest extends ConcurrentTestBase {
 	private final static String CONFIG =
     	"<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" + 
     	"	<index>" + 
-    	"		<fulltext default=\"none\">" +  
-    	"		</fulltext>" + 
-    	"		<create path=\"//ELEMENT-1/@attribute-3\" type=\"xs:string\"/>" + 
+    	"		<create path=\"//ELEMENT-1/@attribute-3\" type=\"xs:string\"/>" +
     	"		<create path=\"//ELEMENT-1/@attribute-1\" type=\"xs:string\"/>" +
     	"	</index>" + 
     	"</collection>";

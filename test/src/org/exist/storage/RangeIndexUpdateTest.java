@@ -57,8 +57,6 @@ public class RangeIndexUpdateTest {
     private static String COLLECTION_CONFIG =
         "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
     	"	<index>" +
-    	"		<fulltext default=\"none\">" +
-    	"		</fulltext>" +
     	"		<create qname=\"item\" type=\"xs:string\"/>" +
         "		<create path=\"//item/@attr\" type=\"xs:string\"/>" +
         "        <create path=\"/section/para\" type=\"xs:string\"/>" +

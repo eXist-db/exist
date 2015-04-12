@@ -25,7 +25,7 @@
     </db-connection>
 
     
-    <indexer caseSensitive="yes" index-depth="5" preserve-whitespace-mixed-content="no" stemming="no" suppress-whitespace="both" tokenizer="org.exist.storage.analysis.SimpleTokenizer" track-term-freq="yes">
+    <indexer caseSensitive="yes" index-depth="5" preserve-whitespace-mixed-content="no" suppress-whitespace="both">
 
         <modules>
             
@@ -33,13 +33,7 @@
         </modules>
 
         
-        <stopwords file="stopword"/>
-
-        
         <index>
-            <fulltext attributes="true" default="all">
-                <exclude path="/auth"/>
-            </fulltext>
         </index>
     </indexer>
 

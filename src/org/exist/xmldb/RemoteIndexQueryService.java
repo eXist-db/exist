@@ -1,21 +1,21 @@
 /*
- * eXist Open Source Native XML Database
- * Copyright (C) 2001-2015 The eXist Project
- * http://exist-db.org
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2001-2015 The eXist Project
+ *  http://exist-db.org
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program; if not, write to the Free Software Foundation
- * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.xmldb;
 
@@ -93,41 +93,6 @@ public class RemoteIndexQueryService extends AbstractRemote implements IndexQuer
             final Stream<Occurrences> occurrences = Arrays.stream(result)
                     .map(o -> (Object[]) o)
                     .map(row -> new Occurrences(new QName(row[0].toString(), row[1].toString(), row[2].toString()), (Integer) row[3]));
-            return occurrences.toArray(size -> new Occurrences[size]);
-        } catch (final XmlRpcException e) {
-            throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, "xmlrpc error while retrieving indexed elements", e);
-        }
-    }
-
-    @Override
-    public Occurrences[] scanIndexTerms(final String start, final String end, final boolean inclusive) throws XMLDBException {
-        try {
-            final List<Object> params = new ArrayList<>();
-            params.add(collection.getPath());
-            params.add(start);
-            params.add(end);
-            params.add(Boolean.valueOf(inclusive));
-            final Object[] result = (Object[]) client.execute("scanIndexTerms", params);
-            final Stream<Occurrences> occurrences = Arrays.stream(result)
-                    .map(o -> (Object[]) o)
-                    .map(row -> new Occurrences(row[0].toString(), (Integer) row[1]));
-            return occurrences.toArray(size -> new Occurrences[size]);
-        } catch (final XmlRpcException e) {
-            throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, "xmlrpc error while retrieving indexed elements", e);
-        }
-    }
-
-    @Override
-    public Occurrences[] scanIndexTerms(final String xpath, final String start, final String end) throws XMLDBException {
-        try {
-            final List<Object> params = new ArrayList<>();
-            params.add(xpath);
-            params.add(start);
-            params.add(end);
-            final Object[] result = (Object[]) client.execute("scanIndexTerms", params);
-            final Stream<Occurrences> occurrences = Arrays.stream(result)
-                    .map(o -> (Object[]) o)
-                    .map(row -> new Occurrences(row[0].toString(), (Integer) row[1]));
             return occurrences.toArray(size -> new Occurrences[size]);
         } catch (final XmlRpcException e) {
             throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, "xmlrpc error while retrieving indexed elements", e);

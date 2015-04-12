@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2012 The eXist Project
+ *  Copyright (C) 2001-2015 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -16,8 +16,6 @@
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- *  $Id$
  */
 package org.exist.client;
 
@@ -56,11 +54,6 @@ class IndexDialog extends JFrame {
         "path"
     };
     
-    private static final String[] FULLTEXT_INDEX_ACTIONS = {
-		"include",
-		"exclude"
-	};
-	
 	private static final String[] INDEX_TYPES = {
 		"xs:boolean",
 		"xs:integer",
@@ -72,15 +65,6 @@ class IndexDialog extends JFrame {
 	
 	private JComboBox cmbCollections;
 	
-	private JCheckBox chkDefaultAll;
-	private JCheckBox chkAlphanum;
-	private JCheckBox chkAttributes;
-	
-	
-	private JTextField txtXPath;
-	private JComboBox cmbxsType;
-	private JTable tblFullTextIndexes;
-	private FullTextIndexTableModel fulltextIndexModel;
 	private JTable tblRangeIndexes;
 	private RangeIndexTableModel rangeIndexModel;
 	
@@ -143,7 +127,7 @@ class IndexDialog extends JFrame {
             for(int i = 0; i < alAllCollections.size(); i++)
             {
             	//TODO : use XmldbURIs !
-            	if(alAllCollections.get(i).toString().indexOf(CollectionConfigurationManager.CONFIG_COLLECTION)  == -1)
+            	if(alAllCollections.get(i).toString().contains(CollectionConfigurationManager.CONFIG_COLLECTION))
             	{
             		alCollections.add(alAllCollections.get(i));
             	}
@@ -157,15 +141,12 @@ class IndexDialog extends JFrame {
         
         //Create a combobox listing the collections
         cmbCollections = new JComboBox(alCollections.toArray());
-        cmbCollections.addActionListener(new ActionListener(){
-        	public void actionPerformed(ActionEvent e)
-        	{
-        		
-        		saveChanges(true);
-        		
-        		final JComboBox cb = (JComboBox)e.getSource();
-   				actionGetIndexes(cb.getSelectedItem().toString());
-    		}
+        cmbCollections.addActionListener(e -> {
+
+            saveChanges(true);
+
+            final JComboBox cb = (JComboBox)e.getSource();
+               actionGetIndexes(cb.getSelectedItem().toString());
         });
         c.gridx = 1;
 		c.gridy = 0;
@@ -177,133 +158,6 @@ class IndexDialog extends JFrame {
         grid.setConstraints(cmbCollections, c);
         getContentPane().add(cmbCollections);
 
-        //Panel to hold controls relating to the FullText Index
-		final JPanel panelFullTextIndex = new JPanel();
-		panelFullTextIndex.setBorder(new TitledBorder("Full Text Index"));
-		final GridBagLayout panelFullTextIndexGrid = new GridBagLayout();
-		panelFullTextIndex.setLayout(panelFullTextIndexGrid);
-		
-		
-		//fulltext default all checkbox
-		chkDefaultAll = new JCheckBox("Default All");
-		chkDefaultAll.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e)
-			{
-				cx.setFullTextIndexDefaultAll(chkDefaultAll.isSelected());
-			}
-		});
-		c.gridx = 0;
-		c.gridy = 0;
-		c.gridwidth = 1;
-		c.anchor = GridBagConstraints.WEST;
-		c.fill = GridBagConstraints.NONE;
-		c.weightx = 0;
-		c.weighty = 0;
-		panelFullTextIndexGrid.setConstraints(chkDefaultAll, c);
-		panelFullTextIndex.add(chkDefaultAll);
-        
-		//fulltext alphanumeric checkbox
-		chkAlphanum = new JCheckBox("Alphanumeric");
-		chkAlphanum.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e)
-			{
-				cx.setFullTextIndexAlphanum(chkAlphanum.isSelected());
-			}
-		});
-		c.gridx = 0;
-		c.gridy = 1;
-		c.gridwidth = 1;
-		c.anchor = GridBagConstraints.WEST;
-		c.fill = GridBagConstraints.NONE;
-		c.weightx = 0;
-		c.weighty = 0;
-		panelFullTextIndexGrid.setConstraints(chkAlphanum, c);
-		panelFullTextIndex.add(chkAlphanum);
-
-		//fulltext attributes checkbox
-		chkAttributes = new JCheckBox("Attributes");
-		chkAttributes.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e)
-			{
-				cx.setFullTextIndexAttributes(chkAttributes.isSelected());
-			}
-		});
-		c.gridx = 0;
-		c.gridy = 2;
-		c.gridwidth = 1;
-		c.anchor = GridBagConstraints.WEST;
-		c.fill = GridBagConstraints.NONE;
-		c.weightx = 0;
-		c.weighty = 0;
-		panelFullTextIndexGrid.setConstraints(chkAttributes, c);
-		panelFullTextIndex.add(chkAttributes);
-		
-        //Table to hold the FullText Indexes with Sroll bar
-		fulltextIndexModel = new FullTextIndexTableModel();
-        tblFullTextIndexes = new JTable(fulltextIndexModel);
-        tblFullTextIndexes.setAutoResizeMode(JTable.AUTO_RESIZE_NEXT_COLUMN);
-        tblFullTextIndexes.setRowHeight(20);
-        tblFullTextIndexes.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        TableColumn colAction = tblFullTextIndexes.getColumnModel().getColumn(2);
-        colAction.setCellEditor(new ComboBoxCellEditor(FULLTEXT_INDEX_ACTIONS));
-        colAction.setCellRenderer(new ComboBoxCellRenderer(FULLTEXT_INDEX_ACTIONS));
-        colAction = tblFullTextIndexes.getColumnModel().getColumn(0);
-        colAction.setCellEditor(new ComboBoxCellEditor(CONFIG_TYPE));
-        colAction.setCellRenderer(new ComboBoxCellRenderer(CONFIG_TYPE));
-        final JScrollPane scrollFullTextIndexes = new JScrollPane(tblFullTextIndexes);
-		scrollFullTextIndexes.setPreferredSize(new Dimension(250, 150));
-		c.gridx = 0;
-		c.gridy = 3;
-		c.gridwidth = 2;
-		c.anchor = GridBagConstraints.WEST;
-		c.fill = GridBagConstraints.BOTH;
-		c.weightx = 1;
-		c.weighty = 1;
-		panelFullTextIndexGrid.setConstraints(scrollFullTextIndexes, c);
-		panelFullTextIndex.add(scrollFullTextIndexes);
-		
-		//Toolbar with add/delete buttons for FullText Index
-		final Box fulltextIndexToolbarBox = Box.createHorizontalBox();
-		//add button
-		final JButton btnAddFullTextIndex = new JButton("Add");
-		btnAddFullTextIndex.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e)
-			{
-				actionAddFullTextIndex();
-			}
-		});
-		fulltextIndexToolbarBox.add(btnAddFullTextIndex);
-		//delete button
-		final JButton btnDeleteFullTextIndex = new JButton("Delete");
-		btnDeleteFullTextIndex.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e)
-			{
-				actionDeleteFullTextIndex();
-			}
-		});
-		fulltextIndexToolbarBox.add(btnDeleteFullTextIndex);
-		c.gridx = 0;
-		c.gridy = 4;
-		c.gridwidth = 2;
-		c.anchor = GridBagConstraints.CENTER;
-		c.fill = GridBagConstraints.BOTH;
-		c.weightx = 1;
-		c.weighty = 0;
-		panelFullTextIndexGrid.setConstraints(fulltextIndexToolbarBox, c);
-		panelFullTextIndex.add(fulltextIndexToolbarBox);
-		
-		//add fulltext panel to content frame
-		c.gridx = 0;
-		c.gridy = 1;
-		c.gridwidth = 2;
-		c.anchor = GridBagConstraints.WEST;
-	    c.fill = GridBagConstraints.BOTH;
-		c.weightx = 1;
-		c.weighty = 1F / 3F;
-	    grid.setConstraints(panelFullTextIndex, c);
-		getContentPane().add(panelFullTextIndex);
-		
-		
         //Panel to hold controls relating to the Range Indexes
 		final JPanel panelRangeIndexes = new JPanel();
 		panelRangeIndexes.setBorder(new TitledBorder("Range Indexes"));
@@ -338,21 +192,11 @@ class IndexDialog extends JFrame {
 		final Box rangeIndexToolbarBox = Box.createHorizontalBox();
 		//add button
 		final JButton btnAddRangeIndex = new JButton("Add");
-		btnAddRangeIndex.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e)
-			{
-				actionAddRangeIndex();
-			}
-		});
+		btnAddRangeIndex.addActionListener(e -> actionAddRangeIndex());
 		rangeIndexToolbarBox.add(btnAddRangeIndex);
 		//delete button
 		final JButton btnDeleteRangeIndex = new JButton("Delete");
-		btnDeleteRangeIndex.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e)
-			{
-				actionDeleteRangeIndex();
-			}
-		});
+		btnDeleteRangeIndex.addActionListener(e -> actionDeleteRangeIndex());
 		rangeIndexToolbarBox.add(btnDeleteRangeIndex);
 		c.gridx = 0;
 		c.gridy = 1;
@@ -377,19 +221,15 @@ class IndexDialog extends JFrame {
 
         final Box mainBtnBox = Box.createHorizontalBox();
         final JButton cancelBtn = new JButton("Cancel");
-        cancelBtn.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                IndexDialog.this.setVisible(false);
-				IndexDialog.this.dispose();
-            }
+        cancelBtn.addActionListener(e -> {
+            IndexDialog.this.setVisible(false);
+            IndexDialog.this.dispose();
         });
         final JButton saveBtn = new JButton("Save");
-        saveBtn.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                saveChanges(false);
-                IndexDialog.this.setVisible(false);
-				IndexDialog.this.dispose();
-            }
+        saveBtn.addActionListener(e -> {
+            saveChanges(false);
+            IndexDialog.this.setVisible(false);
+            IndexDialog.this.dispose();
         });
         mainBtnBox.add(saveBtn);
         mainBtnBox.add(cancelBtn);
@@ -431,31 +271,27 @@ class IndexDialog extends JFrame {
 					if(result == JOptionPane.YES_OPTION)
 					{
 						//reindex collection
-						final Runnable reindexThread = new Runnable()
-						{
-							public void run()
-							{
-								try
-				                {
-									IndexQueryService service = (IndexQueryService)client.current.getService("IndexQueryService", "1.0");
-									
-									ArrayList subCollections = getCollections(client.getCollection((String)cmbCollections.getSelectedItem()), new ArrayList());
-									
-				                    for(int i = 0; i < subCollections.size(); i++)
-				                    {
-				                    	service.reindexCollection(((ResourceDescriptor)subCollections.get(i)).getName());
-				                    }
-				                    
-				                    //reindex done
-				                    JOptionPane.showMessageDialog(getContentPane(), "Reindex Complete");
-				                }
-								catch(XMLDBException e)
-								{
-									//reindex failed
-									JOptionPane.showMessageDialog(getContentPane(), "Reindex failed!");
-								}
-				            }
-				        };
+						final Runnable reindexThread = () -> {
+                            try
+                            {
+                                IndexQueryService service = (IndexQueryService)client.current.getService("IndexQueryService", "1.0");
+
+                                ArrayList subCollections = getCollections(client.getCollection((String)cmbCollections.getSelectedItem()), new ArrayList());
+
+                                for(int i = 0; i < subCollections.size(); i++)
+                                {
+                                    service.reindexCollection(((ResourceDescriptor)subCollections.get(i)).getName());
+                                }
+
+                                //reindex done
+                                JOptionPane.showMessageDialog(getContentPane(), "Reindex Complete");
+                            }
+                            catch(XMLDBException e)
+                            {
+                                //reindex failed
+                                JOptionPane.showMessageDialog(getContentPane(), "Reindex failed!");
+                            }
+                        };
 					}
 				}
 				else
@@ -475,28 +311,13 @@ class IndexDialog extends JFrame {
         collectionsList.add(new PrettyXmldbURI(XmldbURI.create(root.getName())));
         final String[] childCollections= root.listChildCollections();
         Collection child;
-        for(int i = 0; i < childCollections.length; i++)
-        {
-            child = root.getChildCollection(childCollections[i]);
-            getCollections(child, collectionsList);
-        }
+		for (String childCollection : childCollections) {
+			child = root.getChildCollection(childCollection);
+			getCollections(child, collectionsList);
+		}
         return collectionsList;
     }
 
-	private void actionAddFullTextIndex()
-	{
-		fulltextIndexModel.addRow();
-	}
-	
-	private void actionDeleteFullTextIndex()
-	{
-		final int iSelectedRow = tblFullTextIndexes.getSelectedRow();
-		if(iSelectedRow > -1 )
-		{
-			fulltextIndexModel.removeRow(iSelectedRow);
-		}
-	}
-	
 	private void actionAddRangeIndex()
 	{
 		rangeIndexModel.addRow();
@@ -518,10 +339,6 @@ class IndexDialog extends JFrame {
 		{
 			cx = new CollectionXConf(collectionName, client);
 			
-			chkDefaultAll.setSelected(cx.getFullTextIndexDefaultAll());
-			chkAlphanum.setSelected(cx.getFullTextIndexAlphanum());
-			chkAttributes.setSelected(cx.getFullTextIndexAttributes());
-			fulltextIndexModel.fireTableDataChanged();
 			rangeIndexModel.fireTableDataChanged();
 		}
 		catch(final XMLDBException xe)
@@ -569,106 +386,7 @@ class IndexDialog extends JFrame {
             super(new JComboBox(items));
         }
     }
-	
-    class FullTextIndexTableModel extends AbstractTableModel
-	{	
-		private static final long serialVersionUID = 1L;
 
-		private final String[] columnNames = new String[] { "Type", "QName/Path", "Action" };
-
-		public FullTextIndexTableModel()
-		{
-			super();
-			fireTableDataChanged();
-        }
-		
-		/* (non-Javadoc)
-		* @see javax.swing.table.TableModel#isCellEditable()
-		*/
-		public void setValueAt(Object aValue, int rowIndex, int columnIndex)
-		{
-            System.out.println(columnIndex + "->" + aValue);
-            switch (columnIndex)
-			{
-                case 0:
-                    cx.updateFullTextIndex(rowIndex, aValue.toString(), null, null);
-                    break;
-                case 1:		/* XPath */
-					cx.updateFullTextIndex(rowIndex, null, aValue.toString(), null);
-					break;
-				case 2 :	/* action */
-					cx.updateFullTextIndex(rowIndex, null, null, aValue.toString());
-					break;
-				default :
-					break;
-			}
-			
-			fireTableCellUpdated(rowIndex, columnIndex);
-		}
-		
-		public void removeRow(int rowIndex)
-		{
-			cx.deleteFullTextIndex(rowIndex);
-			fireTableRowsDeleted(rowIndex, rowIndex);
-		}
-		
-		public void addRow()
-		{	
-			cx.addFullTextIndex(CollectionXConf.TYPE_QNAME, "", CollectionXConf.ACTION_INCLUDE);
-			fireTableRowsInserted(getRowCount(), getRowCount() + 1);
-		}
-		
-		/* (non-Javadoc)
-		* @see javax.swing.table.TableModel#isCellEditable()
-		*/
-		public boolean isCellEditable(int rowIndex, int columnIndex)
-		{
-            return true;
-		}
-		
-		/* (non-Javadoc)
-		* @see javax.swing.table.TableModel#getColumnCount()
-		*/
-		public int getColumnCount()
-		{
-			return columnNames.length;
-		}
-
-		/* (non-Javadoc)
-		 * @see javax.swing.table.TableModel#getColumnName(int)
-		 */
-		public String getColumnName(int column)
-		{
-			return columnNames[column];
-		}
-
-		/* (non-Javadoc)
-		 * @see javax.swing.table.TableModel#getRowCount()
-		 */
-		public int getRowCount()
-		{
-				return cx != null ? cx.getFullTextPathCount() : 0;
-		}
-
-        /* (non-Javadoc)
-		 * @see javax.swing.table.TableModel#getValueAt(int, int)
-		 */
-		public Object getValueAt(int rowIndex, int columnIndex)
-		{
-			switch (columnIndex)
-			{
-                case 0 :
-                    return cx.getFullTextIndexType(rowIndex);
-                case 1 :	/* XPath */
-					return cx.getFullTextIndexPath(rowIndex);
-				case 2 :	/* action */
-					return cx.getFullTextIndexPathAction(rowIndex);
-				default :
-					return null;
-			}
-		}
-	}
-    
 	class RangeIndexTableModel extends AbstractTableModel
 	{	
 		private static final long serialVersionUID = 1L;

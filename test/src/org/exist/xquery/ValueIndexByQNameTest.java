@@ -12,11 +12,7 @@ public class ValueIndexByQNameTest extends ValueIndexTest {
     private String config =
     	"<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" + 
     	"	<index xmlns:x=\"http://www.foo.com\" xmlns:xx=\"http://test.com\">" + 
-    	"		<fulltext default=\"none\">" + 
-    	"			<include path=\"//item/name\"/>" + 
-    	"			<include path=\"//item/mixed\"/>" + 
-    	"		</fulltext>" + 
-    	"		<create qname=\"itemno\" type=\"xs:integer\"/>" + 
+    	"		<create qname=\"itemno\" type=\"xs:integer\"/>" +
 
 //    	"		<create-by-qname qname=\"//item/name\" type=\"xs:string\"/>" + 
     	"		<create qname=\"name\" type=\"xs:string\"/>" + 

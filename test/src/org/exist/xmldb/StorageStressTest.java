@@ -51,8 +51,6 @@ public class StorageStressTest extends TestCase {
 	private final static String CONFIG =
         "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" + 
         "   <index xmlns:x=\"http://www.foo.com\" xmlns:xx=\"http://test.com\">" + 
-        "       <fulltext default=\"all\" attributes=\"true\">" +  
-        "       </fulltext>" + 
         "       <create path=\"//ELEMENT-1/@attribute-1\" type=\"xs:string\"/>" +
         "   </index>" + 
         "</collection>";

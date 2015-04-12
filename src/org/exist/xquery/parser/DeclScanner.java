@@ -333,8 +333,6 @@ public DeclScanner(ParserSharedInputState state) {
 		"<=",
 		"\"is\"",
 		"\"isnot\"",
-		"fulltext operator '&='",
-		"fulltext operator '|='",
 		"||",
 		"\"to\"",
 		"-",
