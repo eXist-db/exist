@@ -1922,7 +1922,23 @@ throws PermissionDeniedException, EXistException, XPathException
 	#(
 		PARENTHESIZED
 		{ PathExpr pathExpr= new PathExpr(context); }
-		( step=expr [pathExpr] )?
+		(
+			expr [pathExpr]
+			{
+				// simplify the expression
+				switch (pathExpr.getSubExpressionCount()) {
+					case 0:
+						step = new EmptySequenceExpr(context);
+						break;
+					case 1:
+						step = pathExpr.getSubExpression(0);
+						break;
+					default:
+						step = pathExpr;
+						break;
+				}
+			}
+		)?
 	)
 	step=postfixExpr [pathExpr]
 	{ path.add(step); }
