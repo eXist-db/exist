@@ -1,21 +1,21 @@
 /*
- * eXist Open Source Native XML Database
- * Copyright (C) 2001-2015 The eXist Project
- * http://exist-db.org
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2001-2015 The eXist Project
+ *  http://exist-db.org
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program; if not, write to the Free Software Foundation
- * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.xmldb;
 
@@ -99,23 +99,5 @@ public class LocalIndexQueryService extends AbstractLocalService implements Inde
 
     @Override
     public void setProperty(final String name, final String value) throws XMLDBException {
-    }
-
-    @Override
-    public Occurrences[] scanIndexTerms(final String start, final String end, final boolean inclusive) throws XMLDBException {
-        return this.<Occurrences[]>read(collection.getPathURI()).apply((collection, broker, transaction) -> {
-            final MutableDocumentSet docs = new DefaultDocumentSet();
-            collection.allDocs(broker, docs, inclusive);
-            return broker.getTextEngine().scanIndexTerms(docs, docs.docsToNodeSet(),  start, end);
-        });
-    }
-
-    @Override
-    public Occurrences[] scanIndexTerms(final String xpath, final String start, final String end) throws XMLDBException {
-    	return this.<Occurrences[]>withDb((broker, transaction) -> {
-            final XQuery xquery = broker.getXQueryService();
-            final Sequence nodes = xquery.execute(xpath, null, collection.getAccessContext());
-            return broker.getTextEngine().scanIndexTerms(nodes.getDocumentSet(), nodes.toNodeSet(),  start, end);
-        });
     }
 }

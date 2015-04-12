@@ -15,7 +15,6 @@ declare namespace stats="http://exist-db.org/xquery/profiling";
 declare variable $ot:COLLECTION_CONFIG := 
     <collection xmlns="http://exist-db.org/collection-config/1.0">
         <index xmlns:xs="http://www.w3.org/2001/XMLSchema">
-            <fulltext default="none" attributes="false"/>
             <create qname="name" type="xs:string"/>
         </index>
     </collection>;

@@ -35,7 +35,6 @@ public class ValueIndexUpdateTest extends ConcurrentTestBase {
     private final static String XCONF =
         "<exist:collection xmlns:exist=\"http://exist-db.org/collection-config/1.0\">" +
 	        "<exist:index doctype=\"items\" xmlns:x=\"http://www.foo.com\">" +
-		        "<exist:fulltext default=\"none\"/>" +
 		        "<exist:create path=\"//item/@id\" type=\"xs:integer\"/>" +
 		        "<exist:create path=\"//item/name\" type=\"xs:string\"/>" +
 		        "<exist:create path=\"//item/value\" type=\"xs:double\"/>" +

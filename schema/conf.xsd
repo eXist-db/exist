@@ -170,11 +170,6 @@
                                     </xs:sequence>
                                 </xs:complexType>
                             </xs:element>
-                            <xs:element name="stopwords">
-                                <xs:complexType>
-                                    <xs:attribute name="file" type="xs:string" default="stopword"/>
-                                </xs:complexType>
-                            </xs:element>
                             <xs:element name="index">
                                 <xs:complexType>
                                     <xs:sequence>
@@ -226,7 +221,6 @@
                         <xs:attribute name="index-depth" type="xs:integer" default="5"/>
                         <xs:attribute name="preserve-whitespace-mixed-content" type="yes_no"
                             default="no"/>
-                        <xs:attribute name="stemming" type="yes_no" default="no"/>
                         <xs:attribute name="suppress-whitespace" default="both">
                             <xs:simpleType>
                                 <xs:restriction base="xs:string">
@@ -237,9 +231,6 @@
                                 </xs:restriction>
                             </xs:simpleType>
                         </xs:attribute>
-                        <xs:attribute name="tokenizer" type="xs:string"
-                            default="org.exist.storage.analysis.SimpleTokenizer"/>
-                        <xs:attribute name="track-term-freq" type="yes_no" default="yes"/>
                     </xs:complexType>
                 </xs:element>
                 <xs:element name="scheduler">

@@ -1,21 +1,21 @@
 /*
- * eXist Open Source Native XML Database
- * Copyright (C) 2001-2015 The eXist Project
- * http://exist-db.org
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2001-2015 The eXist Project
+ *  http://exist-db.org
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program; if not, write to the Free Software Foundation
- * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.xmlrpc;
 
@@ -404,7 +404,7 @@ public class RpcConnection implements RpcAPI {
                 }
                 result.queryTime = System.currentTimeMillis() - startTime;
                 return factory.resultSets.add(result);
-            } catch(final XPathException e) {
+            } catch (final XPathException e) {
                 throw new EXistException(e);
             }
         });
@@ -768,7 +768,7 @@ public class RpcConnection implements RpcAPI {
                 throw new EXistException("Document " + name + " is not a binary resource");
             }
 
-            if(!document.getPermissions().validate(user, requiredPermissions)) {
+            if (!document.getPermissions().validate(user, requiredPermissions)) {
                 throw new PermissionDeniedException("Insufficient privileges to access resource");
             }
 
@@ -807,7 +807,7 @@ public class RpcConnection implements RpcAPI {
                     broker.flush();
                 }
                 return (int) mods;
-            } catch(final XPathException | ParserConfigurationException e) {
+            } catch (final XPathException | ParserConfigurationException e) {
                 throw new EXistException(e);
             }
         });
@@ -837,7 +837,7 @@ public class RpcConnection implements RpcAPI {
                     broker.flush();
                 }
                 return (int) mods;
-            } catch(final XPathException | ParserConfigurationException e) {
+            } catch (final XPathException | ParserConfigurationException e) {
                 throw new EXistException(e);
             }
         });
@@ -1298,7 +1298,7 @@ public class RpcConnection implements RpcAPI {
                 }
             }
 
-            try(final InputStream is = new ByteArrayInputStream(xml)) {
+            try (final InputStream is = new ByteArrayInputStream(xml)) {
 
                 final InputSource source = new InputSource(is);
 
@@ -1448,7 +1448,7 @@ public class RpcConnection implements RpcAPI {
 
                 return true;
             } finally {
-                if(source != null) {
+                if (source != null) {
                     // DWES there are situations the file is not cleaned up
                     source.free();
                 }
@@ -1596,7 +1596,7 @@ public class RpcConnection implements RpcAPI {
                 compileQuery(broker, transaction, source, parameters).apply(compiledQuery -> null);
             } catch (final XPathException e) {
                 ret.put(RpcAPI.ERROR, e.getMessage());
-                if(e.getLine() != 0) {
+                if (e.getLine() != 0) {
                     ret.put(RpcAPI.LINE, e.getLine());
                     ret.put(RpcAPI.COLUMN, e.getColumn());
                 }
@@ -2045,7 +2045,7 @@ public class RpcConnection implements RpcAPI {
             } else {
                 try {
                     return item.getStringValue();
-                } catch(final XPathException e) {
+                } catch (final XPathException e) {
                     throw new EXistException(e);
                 }
             }
@@ -2935,55 +2935,6 @@ public class RpcConnection implements RpcAPI {
             }
             return result;
         });
-    }
-
-    @Override
-    public List<List> scanIndexTerms(final String collectionName,
-            final String start, final String end, final boolean inclusive)
-            throws PermissionDeniedException, EXistException, URISyntaxException {
-        return scanIndexTerms(XmldbURI.xmldbUriFor(collectionName), start, end, inclusive);
-    }
-
-    private List<List> scanIndexTerms(final XmldbURI collUri,
-            final String start, final String end, final boolean inclusive)
-            throws PermissionDeniedException, EXistException {
-        return this.<List<List>>readCollection(collUri).apply((collection, broker, transaction) -> {
-            final MutableDocumentSet docs = new DefaultDocumentSet();
-            collection.allDocs(broker, docs, inclusive);
-            final NodeSet nodes = docs.docsToNodeSet();
-            final List<List> result = scanIndexTerms(start, end, broker, docs, nodes);
-            return result;
-        });
-    }
-
-    @Override
-    public List<List> scanIndexTerms(final String xpath,
-            final String start, final String end)
-            throws PermissionDeniedException, EXistException, XPathException {
-        return this.<List<List>>withDb((broker, transaction) -> {
-            final XQuery xquery = broker.getXQueryService();
-            try {
-                final Sequence nodes = xquery.execute(xpath, null, AccessContext.XMLRPC);
-                final List<List> result = scanIndexTerms(start, end, broker, nodes.getDocumentSet(), nodes.toNodeSet());
-                return result;
-            } catch(final XPathException e) {
-                throw new EXistException(e);
-            }
-        });
-    }
-
-    private List<List> scanIndexTerms(final String start, final String end, final DBBroker broker, final DocumentSet docs, final NodeSet nodes)
-            throws PermissionDeniedException {
-        final Occurrences occurrences[]
-                = broker.getTextEngine().scanIndexTerms(docs, nodes, start, end);
-        final List<List> result = new ArrayList<>(occurrences.length);
-        for (final Occurrences occurrence : occurrences) {
-            final List temp = new ArrayList(2);
-            temp.add(occurrence.getTerm().toString());
-            temp.add(occurrence.getOccurrences());
-            result.add(temp);
-        }
-        return result;
     }
 
     public void synchronize() {
