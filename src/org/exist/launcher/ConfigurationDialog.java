@@ -44,6 +44,11 @@ public class ConfigurationDialog extends JDialog {
         this.launcher = launcher;
         
         final Properties vmProperties = LauncherWrapper.getVMProperties();
+        final String maxMemProp = vmProperties.getProperty("memory.max", "1024");
+        maxMemory.setValue(new Integer(maxMemProp));
+        final String minMemProp = vmProperties.getProperty("memory.min", "64");
+        minMemory.setValue(new Integer(minMemProp));
+        
         try {
             Configuration existConfig = new Configuration();
             final int cacheSizeProp = existConfig.getInteger(DefaultCacheManager.PROPERTY_CACHE_SIZE);
@@ -56,12 +61,7 @@ public class ConfigurationDialog extends JDialog {
             dataDir.setText(dir);
         } catch (DatabaseConfigurationException ex) {
             Logger.getLogger(ConfigurationDialog.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
-        final String maxMemProp = vmProperties.getProperty("memory.max", "1024");
-        maxMemory.setValue(new Integer(maxMemProp));
-        final String minMemProp = vmProperties.getProperty("memory.min", "64");
-        minMemory.setValue(new Integer(minMemProp));
+        }      
         
         checkCacheBoundaries();
 
