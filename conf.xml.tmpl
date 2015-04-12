@@ -443,10 +443,7 @@
             <module id="range-index"    class="org.exist.indexing.range.RangeIndex"/>
 
             <!-- 
-                The full text index is always required and should
-                not be disabled. We still have some dependencies on
-                this index in the database core. These will be removed
-                once the redesign has been completed. 
+                The legacy full text index. Replaced by the Lucene index.
             -->
             <!--module id="ft-legacy-index" class="org.exist.fulltext.FTIndex"/-->
 
