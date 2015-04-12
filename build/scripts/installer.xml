@@ -213,6 +213,8 @@
                 <exclude name="run.bat"/>
             </fileset>
         </copy>
+        
+        <antcall target="fix-scripts"/>
     </target>
     
     <target name="extract-apps">
@@ -225,5 +227,10 @@
                 <include name="expath-pkg.xml"/>
             </patternset>
         </unzip>
+    </target>
+    
+    <target name="fix-scripts">
+        <fixcrlf srcdir="installer/scripts" includes="**/*.sh" eol="lf" eof="remove"/>
+        <fixcrlf srcdir="installer/scripts" includes="**/*.bat" eol="crlf"/>
     </target>
 </project>
