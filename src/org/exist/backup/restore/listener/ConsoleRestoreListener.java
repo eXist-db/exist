@@ -26,10 +26,23 @@ package org.exist.backup.restore.listener;
  * @author Adam Retter <adam@exist-db.org>
  */
 public class ConsoleRestoreListener extends AbstractRestoreListener {
-     
+    
+    private boolean quiet = false;
+    
+    public ConsoleRestoreListener() {
+        this(false);
+    }
+    
+    public ConsoleRestoreListener(boolean quiet) {
+        super();
+        this.quiet = quiet;
+    }
+    
     @Override
     public void info(String message) {
-        System.err.println(message);
+        if(!this.quiet) {
+            System.err.println(message);
+        }
     }
 
     @Override
