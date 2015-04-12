@@ -303,7 +303,7 @@ public class Main
                     if(guiMode) {
                         restoreWithGui(username, optionPass, optionDbaPass, f, uri);
                     } else {
-                        restoreWithoutGui(username, optionPass, optionDbaPass, f, uri, rebuildRepo);
+                        restoreWithoutGui(username, optionPass, optionDbaPass, f, uri, rebuildRepo, quiet);
                     }
                 }
                 catch( final Exception e ) {
@@ -328,9 +328,9 @@ public class Main
     }
 
     private static void restoreWithoutGui(final String username, final String password, final String dbaPassword, final File f,
-                                          final String uri, final boolean rebuildRepo) {
+                                          final String uri, final boolean rebuildRepo, boolean quiet) {
         
-        final RestoreListener listener = new ConsoleRestoreListener();
+        final RestoreListener listener = new ConsoleRestoreListener(quiet);
         final Restore restore = new Restore();
 
         try {
