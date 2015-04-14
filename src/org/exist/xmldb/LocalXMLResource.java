@@ -19,6 +19,9 @@
  */
 package org.exist.xmldb;
 
+import net.sf.cglib.proxy.Enhancer;
+import net.sf.cglib.proxy.MethodInterceptor;
+import net.sf.cglib.proxy.MethodProxy;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.XMLUtil;
 import org.exist.dom.memtree.AttrImpl;
@@ -39,6 +42,7 @@ import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.*;
 import org.xml.sax.ext.LexicalHandler;
 import org.xmldb.api.base.ErrorCodes;
@@ -49,7 +53,10 @@ import javax.xml.transform.TransformerException;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.lang.reflect.Method;
+import java.util.Optional;
 import java.util.Properties;
+import java.util.stream.Stream;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -138,7 +145,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
                 throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "error while reading resource contents", e);
             }
 
-        // Case 5: content is a document or internal node
+        // Case 5: content is a document or internal node, we MUST serialize it
         } else {
             content = withDb((broker, transaction) -> {
                 final Serializer serializer = broker.getSerializer();
@@ -170,6 +177,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 
     @Override
     public Node getContentAsDOM() throws XMLDBException {
+        final Node result;
         if (root != null) {
             if(root instanceof NodeImpl) {
                 withDb((broker, transaction) -> {
@@ -177,11 +185,11 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
                     return null;
                 });
             }
-            return root;
+            result = root;
         } else if (value != null) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "cannot return an atomic value as DOM node");
         } else {
-            return read((document, broker, transaction) -> {
+            result = read((document, broker, transaction) -> {
                 if (proxy != null) {
                     return document.getNode(proxy);
                 } else {
@@ -190,6 +198,65 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
                 }
             });
         }
+
+        return exportInternalNode(result);
+    }
+
+    /**
+     * Provides a safe export of an internal persistent DOM
+     * node from eXist via the Local XML:DB API.
+     *
+     * This is done by providing a proxy object that only implements
+     * the appropriate W3C DOM interface. This helps prevent the
+     * XML:DB Local API from leaking implementation through
+     * its abstractions.
+     */
+    private Node exportInternalNode(final Node node) {
+        final Optional<Class<? extends Node>> domClazz = getW3cNodeInterface(node.getClass());
+        if(!domClazz.isPresent()) {
+            throw new IllegalArgumentException("Provided node does not implement org.w3c.dom");
+        }
+
+        final Enhancer enhancer = new Enhancer();
+        enhancer.setSuperclass(domClazz.get());
+        enhancer.setCallback(new MethodInterceptor() {
+            @Override
+            public Object intercept(final Object obj, final Method method, final Object[] args, final MethodProxy proxy) throws Throwable {
+
+                final Object domResult = method.invoke(node, args);
+
+                if(domResult != null && Node.class.isAssignableFrom(method.getReturnType())) {
+                    return exportInternalNode((Node) domResult); //recursively wrap node result
+
+                } else if(domResult != null && method.getReturnType().equals(NodeList.class)) {
+                    final NodeList underlying = (NodeList)domResult; //recursively wrap nodes in nodelist result
+                    return new NodeList() {
+                        @Override
+                        public Node item(final int index) {
+                            return Optional.ofNullable(underlying.item(index))
+                                    .map(n -> exportInternalNode(n))
+                                    .orElse(null);
+                        }
+
+                        @Override
+                        public int getLength() {
+                            return underlying.getLength();
+                        }
+                    };
+                } else {
+                    return domResult;
+                }
+            }
+        });
+
+        return (Node)enhancer.create();
+    }
+
+    private Optional<Class<? extends Node>> getW3cNodeInterface(final Class<? extends Node> nodeClazz) {
+        return Stream.of(nodeClazz.getInterfaces())
+                .filter(iface -> iface.getPackage().getName().equals("org.w3c.dom"))
+                .findFirst()
+                .map(c -> (Class<? extends Node>)c);
     }
 
     @Override
