@@ -131,10 +131,12 @@ public class NativeSerializer extends Serializer {
     
     protected void serializeToReceiver(IStoredNode node, INodeIterator iter,
             DocumentImpl doc, boolean first, Match match, Set<String> namespaces) throws SAXException {
-        if (node == null) 
-        	{node = iter.next();}
-        if (node == null) 
-        	{return;}
+        if (node == null && iter.hasNext()) {
+            node = iter.next();
+        }
+        if (node == null) {
+            return;
+        }
         // char ch[];
         String cdata;
         switch (node.getNodeType()) {
@@ -201,7 +203,7 @@ public class NativeSerializer extends Serializer {
             // int childLen;
             IStoredNode child = null;
             while (count < children) {
-                child = iter.next();
+                child = iter.hasNext() ? iter.next() : null;
                 if (child!=null && child.getNodeType() == Node.ATTRIBUTE_NODE) {
                     if ((getHighlightingMode() & TAG_ATTRIBUTE_MATCHES) > 0)
                         {cdata = processAttribute(((AttrImpl) child).getValue(), node.getNodeId(), match);}
@@ -218,7 +220,7 @@ public class NativeSerializer extends Serializer {
             while (count < children) {
                 serializeToReceiver(child, iter, doc, false, match, namespaces);
                 if (++count < children) {
-                    child = iter.next();
+                    child = iter.hasNext() ? iter.next() : null;
                 } else
                     {break;}
             }
