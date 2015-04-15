@@ -29,6 +29,7 @@ import org.exist.storage.txn.Txn;
 import com.evolvedbinary.j8fu.function.FunctionE;
 import org.exist.xmldb.function.LocalXmldbCollectionFunction;
 import org.exist.xmldb.function.LocalXmldbFunction;
+import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 
@@ -56,6 +57,17 @@ public abstract class AbstractLocal {
         } else {
             return name;
         }
+    }
+
+
+    protected XmldbURI getCollectionUri(final DBBroker broker, final Txn transaction, final Collection collection) throws XMLDBException {
+        final String name;
+        if(collection instanceof LocalCollection) {
+            name = ((LocalCollection)collection).getName(broker, transaction);
+        } else {
+            name = collection.getName();
+        }
+        return XmldbURI.create(name);
     }
 
     /**

@@ -27,6 +27,8 @@ import org.exist.security.SecurityManager;
 import org.exist.security.internal.aider.ACEAider;
 import org.exist.security.internal.aider.UserAider;
 import org.exist.storage.BrokerPool;
+import org.exist.storage.DBBroker;
+import org.exist.storage.txn.Txn;
 import com.evolvedbinary.j8fu.function.FunctionE;
 import org.exist.storage.lock.ManagedDocumentLock;
 import org.exist.xmldb.function.LocalXmldbCollectionFunction;
@@ -113,20 +115,27 @@ public class LocalUserManagementService extends AbstractLocalService implements 
 
     @Override
     public void setPermissions(final Collection child, final Permission perm) throws XMLDBException {
-        final XmldbURI childUri = XmldbURI.create(child.getName());
-        updateCollection(childUri).apply((collection, broker, transaction) -> {
-            PermissionFactory.chown(broker, collection, Optional.of(perm.getOwner().getName()), Optional.of(perm.getGroup().getName()));
-            PermissionFactory.chmod(broker, collection, Optional.of(perm.getMode()), getAces(perm));
+        withDb((broker, transaction) -> {
+            final XmldbURI childUri = getCollectionUri(broker, transaction, child);
+            updateCollection(broker, transaction, childUri).apply((collection, broker1, transaction1) -> {
+                PermissionFactory.chown(broker, collection, Optional.of(perm.getOwner().getName()), Optional.of(perm.getGroup().getName()));
+                PermissionFactory.chmod(broker, collection, Optional.of(perm.getMode()), getAces(perm));
+                return null;
+            });
             return null;
         });
     }
     
     @Override
     public void setPermissions(final Collection child, final String owner, final String group, final int mode, final List<ACEAider> aces) throws XMLDBException {
-        final XmldbURI childUri = XmldbURI.create(child.getName());
-        updateCollection(childUri).apply((collection, broker, transaction) -> {
-            PermissionFactory.chown(broker, collection, Optional.ofNullable(owner), Optional.ofNullable(group));
-            PermissionFactory.chmod(broker, collection, Optional.of(mode), Optional.ofNullable(aces));
+        withDb((broker, transaction) -> {
+            final XmldbURI childUri = getCollectionUri(broker, transaction, child);
+            updateCollection(broker, transaction, childUri).apply((collection, broker1, transaction1) -> {
+                final Permission permission = collection.getPermissionsNoLock();
+                PermissionFactory.chown(broker, collection, Optional.ofNullable(owner), Optional.ofNullable(group));
+                PermissionFactory.chmod(broker, collection, Optional.of(mode), Optional.ofNullable(aces));
+                return null;
+            });
             return null;
         });
     }
@@ -342,14 +351,14 @@ public class LocalUserManagementService extends AbstractLocalService implements 
     public Permission[] listResourcePermissions() throws XMLDBException {
         final XmldbURI collectionUri = collection.getPathURI();
         return this.<Permission[]>read(collectionUri).apply((collection, broker, transaction) -> {
-            if(!collection.getPermissionsNoLock().validate(user, Permission.READ)) {
+            if (!collection.getPermissionsNoLock().validate(user, Permission.READ)) {
                 return new Permission[0];
             }
 
             final Permission perms[] = new Permission[collection.getDocumentCount(broker)];
             final Iterator<DocumentImpl> itDocument = collection.iterator(broker);
             int i = 0;
-            while(itDocument.hasNext()) {
+            while (itDocument.hasNext()) {
                 final DocumentImpl document = itDocument.next();
                 try(final ManagedDocumentLock documentLock = broker.getBrokerPool().getLockManager().acquireDocumentReadLock(document.getURI())) {
                     perms[i++] = document.getPermissions();
@@ -591,6 +600,21 @@ public class LocalUserManagementService extends AbstractLocalService implements 
      */
     private <R> FunctionE<LocalXmldbCollectionFunction<R>, R, XMLDBException> updateCollection(final XmldbURI collectionUri) throws XMLDBException {
         return updateOp -> this.<R>modify(collectionUri).apply((collection, broker1, transaction1) -> {
+            final R result = updateOp.apply(collection, broker1, transaction1);
+            broker1.saveCollection(transaction1, collection);
+            return result;
+        });
+    }
+
+    /**
+     * Higher-order-function for updating a collection and its metadata
+     *
+     * @param broker
+     * @param transaction
+     * @param collectionUri The collection to perform read/write operations on
+     */
+    private <R> FunctionE<LocalXmldbCollectionFunction<R>, R, XMLDBException> updateCollection(final DBBroker broker, final Txn transaction, final XmldbURI collectionUri) throws XMLDBException {
+        return updateOp -> this.<R>modify(broker, transaction, collectionUri).apply((collection, broker1, transaction1) -> {
             final R result = updateOp.apply(collection, broker1, transaction1);
             broker1.saveCollection(transaction1, collection);
             return result;
