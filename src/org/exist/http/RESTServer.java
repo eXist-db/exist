@@ -32,7 +32,6 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -388,7 +387,13 @@ public class RESTServer {
         }
         // Process the request
         DocumentImpl resource = null;
-        final XmldbURI pathUri = XmldbURI.create(URLDecoder.decode(path, "UTF-8"));
+        String pathStr = path; // path comes straight from jetty via EXistServlet
+        // eat trailing slash(es), else collection resources might not be found
+        while(pathStr.endsWith("/")) { pathStr = pathStr.substring(0, pathStr.length()-1); }
+        // collapse preceding slashes, else resources might not be found
+        while(pathStr.startsWith("//")) { pathStr = pathStr.substring(1); }
+        // path is understood to be already in its encoded form
+        final XmldbURI pathUri = XmldbURI.createInternal(pathStr);
         try {
             // check if path leads to an XQuery resource
             final String xquery_mime_type = MimeType.XQUERY_TYPE.getName();
