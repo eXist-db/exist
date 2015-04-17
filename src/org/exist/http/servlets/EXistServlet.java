@@ -169,11 +169,6 @@ public class EXistServlet extends AbstractExistHttpServlet {
             path = "";
         }
 
-        final int p = path.lastIndexOf(';');
-        if (p != Constants.STRING_NOT_FOUND) {
-            path = path.substring(0, p);
-        }
-
         return path;
     }
 
