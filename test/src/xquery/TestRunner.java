@@ -78,17 +78,22 @@ public abstract class TestRunner {
         final List<TestSuite> all = new ArrayList<>();
         final XQueryService xqs = (XQueryService) rootCollection.getService("XQueryService", "1.0");
         final Source query = new FileSource(new File("test/src/xquery/runTests.xql"), "UTF-8", false);
-        for(final File file : files) {
-            final Document doc = parse(file);
+        for (final File file : files) {
+            try {
+                final Document doc = parse(file);
 
-            xqs.declareVariable("doc", doc);
-            xqs.declareVariable("id", Sequence.EMPTY_SEQUENCE);
-            final ResourceSet result = xqs.execute(query);
-            final XMLResource resource = (XMLResource) result.getResource(0);
+                xqs.declareVariable("doc", doc);
+                xqs.declareVariable("id", Sequence.EMPTY_SEQUENCE);
+                final ResourceSet result = xqs.execute(query);
+                final XMLResource resource = (XMLResource) result.getResource(0);
 
-            final List<TestSuite> tsResults = parseXmlResults((Element) resource.getContentAsDOM());
-            all.addAll(tsResults);
-            tsResults.forEach(this::printResults);
+                final List<TestSuite> tsResults = parseXmlResults((Element) resource.getContentAsDOM());
+                all.addAll(tsResults);
+                tsResults.forEach(this::printResults);
+            } catch(final Throwable t) {
+                System.err.println(t.getClass().getSimpleName() + " while running: " + file);
+                throw t;
+            }
         }
 
         assertSuccess(all);
@@ -162,7 +167,7 @@ public abstract class TestRunner {
         final NodeList nlTests = testset.getElementsByTagName("test");
         for(int i = 0; i < nlTests.getLength(); i++) {
             final Element test = (Element)nlTests.item(i);
-            final String name = test.getAttribute("n");
+            final String name = test.getAttribute("n") + Optional.ofNullable(test.getAttribute("id")).map(id -> " (" + id + ")").orElse("");
             final boolean pass = Boolean.parseBoolean(test.getAttribute("pass"));
 
             final TestCase tc;
