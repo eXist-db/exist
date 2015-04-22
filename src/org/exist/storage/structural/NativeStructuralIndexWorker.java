@@ -102,25 +102,9 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
         final Lock lock = index.btree.getLock();
         final NewArrayNodeSet result = new NewArrayNodeSet();
         final FindElementsCallback callback = new FindElementsCallback(type, result, docs, selector, parent);
-        // scan the document set to find document id ranges to query
-        final List<Range> ranges = new ArrayList<Range>();
-        Range next = null;
-        for (final Iterator<DocumentImpl> i = docs.getDocumentIterator(); i.hasNext(); ) {
-            final DocumentImpl doc = i.next();
-            if (next == null)
-                {next = new Range(doc.getDocId());}
-            else if (next.end + 1 == doc.getDocId())
-                {next.end++;}
-            else {
-                ranges.add(next);
-                next = new Range(doc.getDocId());
-            }
-        }
-        if (next != null)
-            {ranges.add(next);}
 
         // for each document id range, scan the index to find matches
-        for (final Range range : ranges) {
+        for (final Range range : getDocIdRanges(docs)) {
             final byte[] fromKey = computeKey(type, qname, range.start);
             final byte[] toKey = computeKey(type, qname, range.end + 1);
             final IndexQuery query = new IndexQuery(IndexQuery.RANGE, new Value(fromKey), new Value(toKey));
@@ -141,10 +125,37 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
     }
 
     /**
+     * Scan the document set to find document id ranges to query
+     *
+     * @param docs
+     * @return List of contiguous document id ranges
+     */
+    List<Range> getDocIdRanges(final DocumentSet docs) {
+        final List<Range> ranges = new ArrayList<>();
+        Range next = null;
+        for (final Iterator<DocumentImpl> i = docs.getDocumentIterator(); i.hasNext(); ) {
+            final DocumentImpl doc = i.next();
+            if (next == null) {
+                next = new Range(doc.getDocId());
+            } else if (next.end + 1 == doc.getDocId()) {
+                next.end++;
+            } else {
+                ranges.add(next);
+                next = new Range(doc.getDocId());
+            }
+        }
+        if (next != null) {
+            ranges.add(next);
+        }
+
+        return ranges;
+    }
+
+    /**
      * Internal helper class used by
      * {@link NativeStructuralIndexWorker#findElementsByTagName(byte, org.exist.dom.persistent.DocumentSet, org.exist.dom.QName, org.exist.xquery.NodeSelector)}.
      */
-    private static class Range {
+    static class Range {
         int start = -1;
         int end = -1;
 
