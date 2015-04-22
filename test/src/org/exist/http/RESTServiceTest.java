@@ -124,9 +124,11 @@ public class RESTServiceTest {
 
      ** Beware, some chars valid in a path-segment must not be in a filename (mostly NTFS)
      */
-    // Below String contains the PCHAR set; the colon fails though, so its omitted…
+    // Below String mostly contains the PCHAR set literally; the colon fails though, so its omitted…
+    // Also in the mix: some (mandatory except %27) escapes, some multibyte UTF-8 characters
+    // and a superficial directory traversal
     private final static String RESOURCE_URI_PLUS = SERVER_URI + XmldbURI.ROOT_COLLECTION +
-            "/test/A-Za-z0-9_~!$&'()*+,;=@.xml";
+            "/test/../test/A-Za-z0-9_~!$&'()*+,;=@%20%23%25%27%2F%3F%5B%5Däöü.xml";
 
     private final static String XML_DATA = "<test>"
             + "<para>\u00E4\u00E4\u00FC\u00FC\u00F6\u00F6\u00C4\u00C4\u00D6\u00D6\u00DC\u00DC</para>"
