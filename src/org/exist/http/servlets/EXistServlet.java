@@ -43,6 +43,9 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.EOFException;
 import java.io.IOException;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+
 /**
  * Implements the REST-style interface if eXist is running within a Servlet
  * engine. The real work is done by class {@link org.exist.http.RESTServer}.
@@ -151,12 +154,29 @@ public class EXistServlet extends AbstractExistHttpServlet {
     /**
      * @param request
      */
-    private String adjustPath(HttpServletRequest request) {
+    private String adjustPath(HttpServletRequest request) throws ServletException {
         String path = request.getPathInfo();
 
         if (path == null) {
             path = "";
         }
+
+LOG.info(" In: " + path);
+        // path contains both required and superficial escapes,
+        // as different user agents use different conventions;
+        // for the sake of interoperability, remove any unnecessary escapes
+        try {
+            // URI.create undoes _all_ escaping, so protect slashes first
+            URI u = URI.create("file://" + path.replaceAll("%2F", "%252F"));
+            // URI four-argument constructor recreates all the necessary ones
+            URI v = new URI("http", "host", u.getPath(), null).normalize();
+            // unprotect slashes in now normalized path
+            path = v.getRawPath().replaceAll("%252F", "%2F");
+        } catch (final URISyntaxException e) {
+            throw new ServletException(e.getMessage(), e);
+        }
+        // path now is in proper canonical encoded form
+LOG.info("Out: " + path);
 
         return path;
     }
