@@ -66,4 +66,9 @@ public class ConcatExpr extends PathExpr {
 	public int getCardinality() {
 		return Cardinality.EXACTLY_ONE;
 	}
+
+	@Override
+	public Expression simplify() {
+		return this;
+	}
 }
