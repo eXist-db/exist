@@ -118,7 +118,7 @@ public class EXistServlet extends AbstractExistHttpServlet {
         }
 
         try(final DBBroker broker = getPool().get(user)) {
-            final XmldbURI dbpath = XmldbURI.create(path);
+            final XmldbURI dbpath = XmldbURI.createInternal(path);
             final Collection collection = broker.getCollection(dbpath);
             if (collection != null) {
                 response.sendError(400, "A PUT request is not allowed against a plain collection path.");
@@ -158,7 +158,7 @@ public class EXistServlet extends AbstractExistHttpServlet {
         String path = request.getPathInfo();
 
         if (path == null) {
-            path = "";
+            return "";
         }
 
 LOG.info(" In: " + path);
@@ -174,6 +174,10 @@ LOG.info(" In: " + path);
             path = v.getRawPath().replaceAll("%252F", "%2F");
         } catch (final URISyntaxException e) {
             throw new ServletException(e.getMessage(), e);
+        }
+        // eat trailing slashes, else collections might not be found
+        while(path.endsWith("/")) {
+            path = path.substring(0, path.length() - 1);
         }
         // path now is in proper canonical encoded form
 LOG.info("Out: " + path);
