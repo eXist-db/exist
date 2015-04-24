@@ -124,7 +124,7 @@ public class EXistServlet extends AbstractExistHttpServlet {
 
         DBBroker broker = null;
         try {
-            final XmldbURI dbpath = XmldbURI.create(path);
+            final XmldbURI dbpath = XmldbURI.createInternal(path);
             broker = getPool().get(user);
             final Collection collection = broker.getCollection(dbpath);
             if (collection != null) {
@@ -169,7 +169,7 @@ public class EXistServlet extends AbstractExistHttpServlet {
         String path = request.getPathInfo();
 
         if (path == null) {
-            path = "";
+            return "";
         }
 
 LOG.info(" In: " + path);
@@ -185,6 +185,10 @@ LOG.info(" In: " + path);
             path = v.getRawPath().replaceAll("%252F", "%2F");
         } catch (final URISyntaxException e) {
             throw new ServletException(e.getMessage(), e);
+        }
+        // eat trailing slashes, else collections might not be found
+        while(path.endsWith("/")) {
+            path = path.substring(0, path.length() - 1);
         }
         // path now is in proper canonical encoded form
 LOG.info("Out: " + path);
