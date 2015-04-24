@@ -49,10 +49,7 @@ public class FilteredExpression extends AbstractExpression {
      */
     public FilteredExpression(XQueryContext context, Expression expr) {
         super(context);
-        if (expr.getSubExpressionCount() == 1) {
-            expr = expr.getSubExpression(0);
-        }
-        this.expression = expr;
+        this.expression = expr.simplify();
     }
 
     public void addPredicate(Predicate pred) {
