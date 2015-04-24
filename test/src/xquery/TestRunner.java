@@ -78,21 +78,24 @@ public abstract class TestRunner {
         final List<TestSuite> all = new ArrayList<>();
         final XQueryService xqs = (XQueryService) rootCollection.getService("XQueryService", "1.0");
         final Source query = new FileSource(new File("test/src/xquery/runTests.xql"), "UTF-8", false);
-        for (final File file : files) {
-            try {
-                final Document doc = parse(file);
 
-                xqs.declareVariable("doc", doc);
-                xqs.declareVariable("id", Sequence.EMPTY_SEQUENCE);
-                final ResourceSet result = xqs.execute(query);
-                final XMLResource resource = (XMLResource) result.getResource(0);
+        if(files != null) {
+            for (final File file : files) {
+                try {
+                    final Document doc = parse(file);
 
-                final List<TestSuite> tsResults = parseXmlResults((Element) resource.getContentAsDOM());
-                all.addAll(tsResults);
-                tsResults.forEach(this::printResults);
-            } catch(final Throwable t) {
-                System.err.println(t.getClass().getSimpleName() + " while running: " + file);
-                throw t;
+                    xqs.declareVariable("doc", doc);
+                    xqs.declareVariable("id", Sequence.EMPTY_SEQUENCE);
+                    final ResourceSet result = xqs.execute(query);
+                    final XMLResource resource = (XMLResource) result.getResource(0);
+
+                    final List<TestSuite> tsResults = parseXmlResults((Element) resource.getContentAsDOM());
+                    all.addAll(tsResults);
+                    tsResults.forEach(this::printResults);
+                } catch (final Throwable t) {
+                    System.err.println(t.getClass().getSimpleName() + " while running: " + file);
+                    throw t;
+                }
             }
         }
 
@@ -106,17 +109,19 @@ public abstract class TestRunner {
 
         final List<TestSuite> all = new ArrayList<>();
 
-        for (final File suite: suites) {
-            final XQueryService xqs = (XQueryService) rootCollection.getService("XQueryService", "1.0");
-            xqs.setModuleLoadPath(getDirectory());
-            final Source query = new FileSource(suite, "UTF-8", false);
+        if(suites != null) {
+            for (final File suite : suites) {
+                final XQueryService xqs = (XQueryService) rootCollection.getService("XQueryService", "1.0");
+                xqs.setModuleLoadPath(getDirectory());
+                final Source query = new FileSource(suite, "UTF-8", false);
 
-            final ResourceSet result = xqs.execute(query);
-            final XMLResource resource = (XMLResource) result.getResource(0);
+                final ResourceSet result = xqs.execute(query);
+                final XMLResource resource = (XMLResource) result.getResource(0);
 
-            final List<TestSuite> tsResults = parseXQueryResults((Element) resource.getContentAsDOM());
-            all.addAll(tsResults);
-            tsResults.forEach(this::printResults);
+                final List<TestSuite> tsResults = parseXQueryResults((Element) resource.getContentAsDOM());
+                all.addAll(tsResults);
+                tsResults.forEach(this::printResults);
+            }
         }
 
         assertSuccess(all);
