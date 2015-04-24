@@ -407,3 +407,14 @@ declare
 function ot:optimize-grouped-context2($name as xs:string) {
     collection($ot:COLLECTION)//(name|foo)[ft:query(., $name)]
 };
+
+declare %private function ot:collection-helper($path as xs:string) {
+    collection($path)//address
+};
+
+declare
+    %test:args("Rudi Rüssel")
+    %test:assertEquals("Rüsselsheim")
+function ot:do-not-simplify($name as xs:string) {
+    ot:collection-helper($ot:COLLECTION)[ft:query(name, $name)]/city/string()
+};
