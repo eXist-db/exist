@@ -250,10 +250,7 @@ public class JnlpWriter {
         response.setHeader("Content-Length", Long.toString(localFile.length()));
         response.setDateHeader("Last-Modified", localFile.lastModified());
 
-        final InputStream is = new FileInputStream(localFile);
-        final OutputStream os = response.getOutputStream();
-
-        try {
+        try (InputStream is = new FileInputStream(localFile); OutputStream os = response.getOutputStream()) {
             IOUtils.copy(is, os);
             os.flush();
 
@@ -264,10 +261,7 @@ public class JnlpWriter {
         } catch (final IOException ex) {
             LOGGER.debug("Ignore IOException for '" + filename + "'");
             throw ex;
-            
-        } finally {
-            IOUtils.closeQuietly(os);
-            IOUtils.closeQuietly(is);
+
         }
 
 
@@ -311,7 +305,7 @@ public class JnlpWriter {
     }
 
     private String getImageMimeType(String filename) {
-        String type = "unknown";
+        String type;
         switch (FileUtils.getExtension(filename)) {
             case ".gif":
                 type = "image/gif";
@@ -323,6 +317,8 @@ public class JnlpWriter {
             case ".jpeg":
                 type = "image/jpeg";
                 break;
+            default:
+                type = "unknown";
         }
         return type;
     }
