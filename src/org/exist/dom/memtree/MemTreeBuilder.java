@@ -118,10 +118,12 @@ public class MemTreeBuilder {
     public int startElement(final String namespaceURI, final String localName, final String qname, final Attributes attributes) {
         final int prefixIdx = qname.indexOf(':');
 
-        final String prefix;
+        String prefix = null;
         if(context != null && !getDefaultNamespace().equals(namespaceURI == null ? XMLConstants.NULL_NS_URI : namespaceURI)) {
             prefix = context.getPrefixForURI(namespaceURI);
-        } else {
+        }
+
+        if (prefix == null) {
             prefix = (prefixIdx != Constants.STRING_NOT_FOUND) ? qname.substring(0, prefixIdx) : null;
         }
 
