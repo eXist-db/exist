@@ -65,4 +65,74 @@ public class DocumentBuilderReceiverTest {
         Node idNode = entryNode.getFirstChild();
         assertEquals(id_name, idNode.getNodeName());
     }
+
+    @Test
+    public void use_given_namespace_prefix() throws SAXException {
+        // if an explicit namespace prefix is present, it should be used
+        // unless a different mapping was defined in context
+        final String title = "title";
+        final String titleQName = "atom:title";
+
+        XQueryContext mockContext = EasyMock.createMock(XQueryContext.class);
+
+        expect(mockContext.getDatabase()).andReturn(null);
+        expect(mockContext.getSharedNamePool()).andReturn(new NamePool());
+        // no namespace mapping in context
+        expect(mockContext.getPrefixForURI(ATOM_NS)).andReturn(null);
+
+        replay(mockContext);
+
+        MemTreeBuilder builder = new MemTreeBuilder(mockContext);
+
+        DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder, true);
+
+        builder.startDocument();
+
+        receiver.startElement(ATOM_NS, title, titleQName, null);
+        receiver.endElement(ATOM_NS, title, titleQName);
+
+        builder.endDocument();
+
+        verify(mockContext);
+
+        Document doc = builder.getDocument();
+        Node entryNode = doc.getFirstChild();
+
+        assertEquals("Explicit namespace prefix should be preserved", titleQName, entryNode.getNodeName());
+    }
+
+    @Test
+    public void use_namespace_prefix_from_context() throws SAXException {
+        // if a namespace is mapped in the current context, use its prefix and overwrite
+        // local prefix
+        final String title = "title";
+        final String titleQName = "atom:title";
+
+        XQueryContext mockContext = EasyMock.createMock(XQueryContext.class);
+
+        expect(mockContext.getDatabase()).andReturn(null);
+        expect(mockContext.getSharedNamePool()).andReturn(new NamePool());
+        // namespace mapping in context
+        expect(mockContext.getPrefixForURI(ATOM_NS)).andReturn("a");
+
+        replay(mockContext);
+
+        MemTreeBuilder builder = new MemTreeBuilder(mockContext);
+
+        DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder, true);
+
+        builder.startDocument();
+
+        receiver.startElement(ATOM_NS, title, titleQName, null);
+        receiver.endElement(ATOM_NS, title, titleQName);
+
+        builder.endDocument();
+
+        verify(mockContext);
+
+        Document doc = builder.getDocument();
+        Node entryNode = doc.getFirstChild();
+
+        assertEquals("Explicit namespace prefix should be preserved", "a:title", entryNode.getNodeName());
+    }
 }
