@@ -22,7 +22,6 @@ package org.exist.webstart;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,7 +51,7 @@ public class JnlpJarFiles {
         "commons-pool-%latest%",
         "commons-io-%latest%",
         "excalibur-cli-%latest%",
-        "jEdit-syntax",
+        "rsyntaxtextarea-%latest%",
         "jline-%latest%",
         "log4j-api-%latest%",
         "log4j-core-%latest%",
