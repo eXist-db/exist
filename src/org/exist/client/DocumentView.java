@@ -68,6 +68,9 @@ import org.exist.util.ProgressIndicator;
 import org.exist.xmldb.UserManagementService;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.util.URIUtils;
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
+import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
+import org.fife.ui.rtextarea.RTextScrollPane;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
@@ -82,7 +85,8 @@ class DocumentView extends JFrame {
 	protected Resource resource;
 	protected Collection collection;
 	protected boolean readOnly = false;
-	protected ClientTextArea text;
+	protected RSyntaxTextArea text;
+	protected RTextScrollPane textScrollPane;
 	protected JButton saveButton;
 	protected JButton saveAsButton;
 	protected JTextField statusMessage;
@@ -296,10 +300,10 @@ class DocumentView extends JFrame {
 		button = new JButton(new ImageIcon(url));
 		button.setToolTipText(Messages.getString("DocumentView.26")); //$NON-NLS-1$
 		button.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				text.copy();
-			}
-		});
+            public void actionPerformed(ActionEvent e) {
+                text.copy();
+            }
+        });
 		toolbar.add(button);
 		
 		//Cut button
@@ -307,10 +311,10 @@ class DocumentView extends JFrame {
 		button = new JButton(new ImageIcon(url));
 		button.setToolTipText(Messages.getString("DocumentView.28")); //$NON-NLS-1$
 		button.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				text.cut();
-			}
-		});
+            public void actionPerformed(ActionEvent e) {
+                text.cut();
+            }
+        });
 		toolbar.add(button);
 		
 		//Paste button
@@ -318,10 +322,10 @@ class DocumentView extends JFrame {
 		button = new JButton(new ImageIcon(url));
 		button.setToolTipText(Messages.getString("DocumentView.30")); //$NON-NLS-1$
 		button.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				text.paste();
-			}
-		});
+            public void actionPerformed(ActionEvent e) {
+                text.paste();
+            }
+        });
 		toolbar.add(button);
 		
 		toolbar.addSeparator();
@@ -331,19 +335,23 @@ class DocumentView extends JFrame {
 		button = new JButton(new ImageIcon(url));
 		button.setToolTipText(Messages.getString("DocumentView.32")); //$NON-NLS-1$
 		button.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e)  {
-    			try {
-    				refresh() ;
-    			} catch (final XMLDBException u) {
-    				u.printStackTrace();
-    			}
-			}
-		});
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    refresh();
+                } catch (final XMLDBException u) {
+                    u.printStackTrace();
+                }
+            }
+        });
 		toolbar.add(button);
 		
 		getContentPane().add(toolbar, BorderLayout.NORTH);
-		text = new ClientTextArea(true, Messages.getString("DocumentView.33")); //$NON-NLS-1$
-		getContentPane().add(text, BorderLayout.CENTER);
+		text = new RSyntaxTextArea(14, 80);
+        text.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_XML);
+        text.setCodeFoldingEnabled(true);
+        textScrollPane =  new RTextScrollPane(text);
+
+		getContentPane().add(textScrollPane, BorderLayout.CENTER);
 		final Box statusbar = Box.createHorizontalBox();
 		statusbar.setBorder(BorderFactory
 				.createBevelBorder(BevelBorder.LOWERED));
@@ -360,7 +368,10 @@ class DocumentView extends JFrame {
 		positionDisplay.setEditable(false);
 		positionDisplay.setFocusable(true);
         statusbar.add(positionDisplay);
-        text.setPositionOutputTextArea(positionDisplay);
+        text.addCaretListener(e -> {
+            final RSyntaxTextArea txt = (RSyntaxTextArea) e.getSource();
+            positionDisplay.setText("Line: " + (txt.getCaretLineNumber() + 1) + " Column:" + (txt.getCaretOffsetFromLineStart() + 1));
+        });
 		getContentPane().add(statusbar, BorderLayout.SOUTH);
 	}
 	
@@ -476,10 +487,8 @@ class DocumentView extends JFrame {
 	}
 	
 	public void setText(String content) throws XMLDBException	{
-		text.setText(""); //$NON-NLS-1$
 		text.setText(content);
 		text.setCaretPosition(0);
-		text.scrollToCaret();
 		statusMessage.setText(Messages.getString("DocumentView.52") + XmldbURI.create(client.getCollection().getName()).append(resourceName) +Messages.getString("DocumentView.53")+properties.getProperty("uri")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 	}
 	
