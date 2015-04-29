@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2014 The eXist-db Project
+ *  Copyright (C) 2001-2015 The eXist-db Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -23,7 +23,6 @@ package org.exist.client;
 import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -62,13 +61,15 @@ import javax.swing.border.BevelBorder;
 import javax.xml.transform.OutputKeys;
 import org.exist.security.PermissionDeniedException;
 import org.exist.xmldb.LocalCollection;
-import org.exist.xmldb.LocalXPathQueryService;
 import org.exist.xmldb.UserManagementService;
 import org.exist.xmldb.XQueryService;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XQueryWatchDog;
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
+import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
+import org.fife.ui.rtextarea.RTextScrollPane;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.CompiledExpression;
 import org.xmldb.api.base.Resource;
@@ -84,14 +85,16 @@ public class QueryDialog extends JFrame {
 	private InteractiveClient client;
 	private Collection collection;
 	private Properties properties;
-	private ClientTextArea query;
+	private RSyntaxTextArea query;
+    private RTextScrollPane queryScrollPane;
 	private JTabbedPane resultTabs;
-	private ClientTextArea resultDisplay;
-	private ClientTextArea exprDisplay;
+	private RSyntaxTextArea resultDisplay;
+    private RTextScrollPane resultDisplayScrollPane;
+	private RSyntaxTextArea exprDisplay;
+    private RTextScrollPane exprDisplayScrollPane;
 	private JComboBox collections= null;
 	private SpinnerNumberModel count;
 	private DefaultComboBoxModel history= new DefaultComboBoxModel();
-        private Font display = new Font("Monospaced", Font.BOLD, 12);
 	private JTextField statusMessage;
 	private JTextField queryPositionDisplay;
 	private JProgressBar progress;
@@ -155,10 +158,10 @@ public class QueryDialog extends JFrame {
 		JButton button= new JButton(new ImageIcon(url));
 		button.setToolTipText(Messages.getString("QueryDialog.opentooltip"));
 		button.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				open();
-			}
-		});
+            public void actionPerformed(ActionEvent e) {
+                open();
+            }
+        });
 		toolbar.add(button);
 		
                 if(loadedFromDb) {
@@ -178,20 +181,20 @@ public class QueryDialog extends JFrame {
 		button= new JButton(new ImageIcon(url));
 		button.setToolTipText(Messages.getString("QueryDialog.saveastooltip"));
 		button.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				save(query.getText(), "query");
-			}
-		});
+            public void actionPerformed(ActionEvent e) {
+                save(query.getText(), "query");
+            }
+        });
 		toolbar.add(button);
 
 		url= getClass().getResource("icons/SaveAs25.gif");
 		button= new JButton(new ImageIcon(url));
 		button.setToolTipText(Messages.getString("QueryDialog.saveresultstooltip"));
 		button.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				save(resultDisplay.getText(), "result");
-			}
-		});
+            public void actionPerformed(ActionEvent e) {
+                save(resultDisplay.getText(), "result");
+            }
+        });
 		toolbar.add(button);
 		
 		toolbar.addSeparator();
@@ -199,28 +202,28 @@ public class QueryDialog extends JFrame {
 		button = new JButton(new ImageIcon(url));
 		button.setToolTipText(Messages.getString("QueryDialog.copytooltip"));
 		button.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				query.copy();
-			}
-		});
+            public void actionPerformed(ActionEvent e) {
+                query.copy();
+            }
+        });
 		toolbar.add(button);
 		url = getClass().getResource("icons/Cut24.gif");
 		button = new JButton(new ImageIcon(url));
 		button.setToolTipText(Messages.getString("QueryDialog.cuttooltip"));
 		button.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				query.cut();
-			}
-		});
+            public void actionPerformed(ActionEvent e) {
+                query.cut();
+            }
+        });
 		toolbar.add(button);
 		url = getClass().getResource("icons/Paste24.gif");
 		button = new JButton(new ImageIcon(url));
 		button.setToolTipText(Messages.getString("QueryDialog.pastetooltip"));
 		button.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-			   query.paste();
-			}
-		});
+            public void actionPerformed(ActionEvent e) {
+                query.paste();
+            }
+        });
 		toolbar.add(button);
 		
 		toolbar.addSeparator();
@@ -229,10 +232,10 @@ public class QueryDialog extends JFrame {
 		button= new JButton(new ImageIcon(url));
 		button.setToolTipText(Messages.getString("QueryDialog.compiletooltip"));
 		button.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-			   compileQuery();
-			}
-		});
+            public void actionPerformed(ActionEvent e) {
+                compileQuery();
+            }
+        });
 		toolbar.add(button);
 		
 		toolbar.addSeparator();
@@ -241,13 +244,14 @@ public class QueryDialog extends JFrame {
 		submitButton.setToolTipText(Messages.getString("QueryDialog.submittooltip"));
 		toolbar.add(submitButton);
 		submitButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				submitButton.setEnabled(false);
-				if(collection instanceof LocalCollection)
-					{killButton.setEnabled(true);}
-				q=doQuery();
-			}
-		});
+            public void actionPerformed(ActionEvent e) {
+                submitButton.setEnabled(false);
+                if (collection instanceof LocalCollection) {
+                    killButton.setEnabled(true);
+                }
+                q = doQuery();
+            }
+        });
 		
 		toolbar.addSeparator();
 		url= getClass().getResource("icons/Delete24.gif");
@@ -256,15 +260,15 @@ public class QueryDialog extends JFrame {
 		toolbar.add(killButton);
 		killButton.setEnabled(false);
 		killButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				if(q!=null) {
-					q.killQuery();
-					killButton.setEnabled(false);
+            public void actionPerformed(ActionEvent e) {
+                if (q != null) {
+                    q.killQuery();
+                    killButton.setEnabled(false);
 
-					q = null;
-				}
-			}
-		});
+                    q = null;
+                }
+            }
+        });
 		
 		final JSplitPane split = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 		split.setResizeWeight(0.6);
@@ -279,18 +283,25 @@ public class QueryDialog extends JFrame {
         vbox.add(label, BorderLayout.NORTH);
         
 		resultTabs = new JTabbedPane();
-        
-		resultDisplay= new ClientTextArea(false, "XML");
-		resultDisplay.setText("");
-		resultDisplay.setPreferredSize(new Dimension(400, 250));
-		resultDisplay.setMinimumSize(new Dimension(400, 100));
-		resultTabs.add(Messages.getString("QueryDialog.XMLtab"), resultDisplay);
+
+		resultDisplay = new RSyntaxTextArea(14, 80);
+        resultDisplay.setEditable(false);
+        resultDisplay.getPopupMenu().remove(0); //remove undo
+        resultDisplay.getPopupMenu().remove(0); //remove redo
+        resultDisplay.getPopupMenu().remove(0); //remove undo/redo splitter
+        resultDisplay.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_XML);
+        resultDisplay.setCodeFoldingEnabled(true);
+        resultDisplayScrollPane =  new RTextScrollPane(resultDisplay);
+
+        resultTabs.add(Messages.getString("QueryDialog.XMLtab"), resultDisplayScrollPane);
 		
-		exprDisplay = new ClientTextArea(false, "Dump");
-		exprDisplay.setText("");
-		exprDisplay.setPreferredSize(new Dimension(400, 200));
-		exprDisplay.setMinimumSize(new Dimension(400, 100));
-		resultTabs.add(Messages.getString("QueryDialog.tracetab"), exprDisplay);
+		exprDisplay = new RSyntaxTextArea(14, 80);
+		exprDisplay.setEditable(false);
+        exprDisplay.getPopupMenu().remove(0); //remove undo
+        exprDisplay.getPopupMenu().remove(0); //remove redo
+        exprDisplay.getPopupMenu().remove(0); //remove undo/redo splitter
+        exprDisplayScrollPane =  new RTextScrollPane(exprDisplay);
+		resultTabs.add(Messages.getString("QueryDialog.tracetab"), exprDisplayScrollPane);
 		
         vbox.add(resultTabs, BorderLayout.CENTER);
         
@@ -304,7 +315,10 @@ public class QueryDialog extends JFrame {
         queryPositionDisplay.setEditable(false);
         queryPositionDisplay.setFocusable(true);
         statusbar.add(queryPositionDisplay);
-        query.setPositionOutputTextArea(queryPositionDisplay);
+        query.addCaretListener(e -> {
+            final RSyntaxTextArea txt = (RSyntaxTextArea)e.getSource();
+            queryPositionDisplay.setText("Line: " + (txt.getCaretLineNumber() + 1)  + " Column:" + (txt.getCaretOffsetFromLineStart() + 1));
+        });
         
         progress = new JProgressBar();
         progress.setPreferredSize(new Dimension(200, statusbar.getHeight()));
@@ -332,22 +346,21 @@ public class QueryDialog extends JFrame {
 		final JComboBox historyList= new JComboBox(history);
 		for(final String query : client.queryHistory) {
 			addQuery(query);
-		}
-		historyList.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				final String item = (String)client.queryHistory.get(historyList.getSelectedIndex());
-				query.setText(item);
-			}
-		});
+        }
+        historyList.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                final String item = (String) client.queryHistory.get(historyList.getSelectedIndex());
+                query.setText(item);
+            }
+        });
 		historyBox.add(historyList);
-		inputVBox.add(historyBox, BorderLayout.NORTH);
+        inputVBox.add(historyBox, BorderLayout.NORTH);
         
-        query = new ClientTextArea(true, "XQUERY");
-        query.setElectricScroll(1);
-		query.setEditable(true);
-		query.setPreferredSize(new Dimension(400, 250));
-		query.setMinimumSize(new Dimension(400, 100));
-        inputVBox.add(query, BorderLayout.CENTER);
+        query = new RSyntaxTextArea(14, 80);
+		query.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_XML);
+		query.setCodeFoldingEnabled(true);
+		queryScrollPane =  new RTextScrollPane(query);
+        inputVBox.add(queryScrollPane, BorderLayout.CENTER);
         
 		final Box optionsPanel = Box.createHorizontalBox();
         
@@ -532,7 +545,7 @@ public class QueryDialog extends JFrame {
 				final StringWriter writer = new StringWriter();
 				service.dump(compiled, writer);
 				exprDisplay.setText(writer.toString());
-				resultTabs.setSelectedComponent(exprDisplay);
+				resultTabs.setSelectedComponent(exprDisplayScrollPane);
 				
 				statusMessage.setText(Messages.getString("QueryDialog.Compilation")+": " + tCompiled + "ms");
 				
@@ -637,13 +650,13 @@ public class QueryDialog extends JFrame {
 						select = ClientFrame.showErrorMessageQuery(
 								Messages.getString("QueryDialog.retrievalerrormessage")+": "
 								+ InteractiveClient.getExceptionMessage(e), e);
-						if (select == 3) {break;}
-					}
-				}
-				resultTabs.setSelectedComponent(resultDisplay);
+						if (select == 3) {break;
+                        }
+                    }
+                }
+                resultTabs.setSelectedComponent(resultDisplayScrollPane);
 				resultDisplay.setText(contents.toString());
 				resultDisplay.setCaretPosition(0);
-				resultDisplay.scrollToCaret();
 				statusMessage.setText(Messages.getString("QueryDialog.Found")+" " + result.getSize() + " "+Messages.getString("QueryDialog.items")+"." + 
 					" "+Messages.getString("QueryDialog.Compilation")+": " + tCompiled + "ms, "+Messages.getString("QueryDialog.Execution")+": " + tResult+"ms");
 			} catch (final Throwable e) {
