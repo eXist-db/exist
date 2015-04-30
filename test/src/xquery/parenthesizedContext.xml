@@ -28,7 +28,7 @@
                 <index>
                     <lucene>
                         <analyzer class="org.apache.lucene.analysis.standard.StandardAnalyzer"/>
-                        <analyzer id="ws" class="org.apache.lucene.analysis.WhitespaceAnalyzer"/>
+                        <analyzer id="ws" class="org.apache.lucene.analysis.core.WhitespaceAnalyzer"/>
                         <text qname="qname"/>
                         <text qname="@att.qname"/>
                         <text match="//path"/>

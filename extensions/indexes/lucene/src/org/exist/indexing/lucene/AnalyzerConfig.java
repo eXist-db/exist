@@ -58,7 +58,7 @@ public class AnalyzerConfig {
 
      <analyzer class="org.apache.lucene.analysis.standard.StandardAnalyzer"/>
 
-     <analyzer id="ws" class="org.apache.lucene.analysis.WhitespaceAnalyzer"/>
+     <analyzer id="ws" class="org.apache.lucene.analysis.core.WhitespaceAnalyzer"/>
 
      <analyzer id="stdstops" class="org.apache.lucene.analysis.standard.StandardAnalyzer">
      ..<param name="stopwords" type="java.io.File" value="/tmp/stop.txt"/>
