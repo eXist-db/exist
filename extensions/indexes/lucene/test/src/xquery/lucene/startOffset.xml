@@ -17,7 +17,7 @@
                     </fulltext>
                     <lucene>
                         <analyzer class="org.apache.lucene.analysis.standard.StandardAnalyzer"/>
-                        <analyzer id="ws" class="org.apache.lucene.analysis.WhitespaceAnalyzer"/>
+                        <analyzer id="ws" class="org.apache.lucene.analysis.core.WhitespaceAnalyzer"/>
                         <text qname="el"/>
                     </lucene>
                 </index>
