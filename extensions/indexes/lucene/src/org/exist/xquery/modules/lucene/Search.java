@@ -19,6 +19,7 @@
  */
 package org.exist.xquery.modules.lucene;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
@@ -111,20 +112,20 @@ public class Search extends BasicFunction {
 
             Sequence pathSeq = getArgumentCount() > 1 ? args[0] : contextSequence;
             if (pathSeq == null)
-            	return Sequence.EMPTY_SEQUENCE;
-            
+                return Sequence.EMPTY_SEQUENCE;
+
             // Get first agument, these are the documents / collections to search in
-            for (SequenceIterator i = pathSeq.iterate(); i.hasNext();) {
-            	String path;
+            for (SequenceIterator i = pathSeq.iterate(); i.hasNext(); ) {
+                String path;
                 Item item = i.nextItem();
                 if (Type.subTypeOf(item.getType(), Type.NODE)) {
-                	if (((NodeValue)item).isPersistentSet()) {
-                		path = ((NodeProxy)item).getOwnerDocument().getURI().toString();
-                	} else {
-                		path = item.getStringValue();
-                	}
+                    if (((NodeValue) item).isPersistentSet()) {
+                        path = ((NodeProxy) item).getOwnerDocument().getURI().toString();
+                    } else {
+                        path = item.getStringValue();
+                    }
                 } else {
-                	path = item.getStringValue();
+                    path = item.getStringValue();
                 }
                 toBeMatchedURIs.add(path);
             }
@@ -132,9 +133,9 @@ public class Search extends BasicFunction {
             // Get second argument, this is the query
             String query;
             if (getArgumentCount() == 1)
-            	query = args[0].itemAt(0).getStringValue();
+                query = args[0].itemAt(0).getStringValue();
             else
-            	query = args[1].itemAt(0).getStringValue();
+                query = args[1].itemAt(0).getStringValue();
 
             String[] fields = null;
             if (getArgumentCount() == 3) {
@@ -151,7 +152,8 @@ public class Search extends BasicFunction {
 
             // Perform search
             report = index.search(context, toBeMatchedURIs, query, fields);
-
+        } catch (IOException e) {
+            throw new XPathException(this, e.getMessage(), e);
 
         } catch (XPathException ex) {
             // Log and rethrow
