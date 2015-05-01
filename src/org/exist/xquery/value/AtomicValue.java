@@ -1,22 +1,21 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2015 The eXist Project
+ * http://exist-db.org
  *
- *  This library is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Library General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *
- *  This library is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Library General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- * 
- *  $Id$
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 package org.exist.xquery.value;
 
@@ -29,8 +28,8 @@ import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.memtree.DocumentBuilderReceiver;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
-import org.exist.storage.Indexable;
-import org.exist.storage.ValueIndexFactory;
+import org.exist.util.ByteConversion;
+import org.exist.util.UTF8;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Constants.Comparison;
@@ -40,6 +39,9 @@ import org.exist.xquery.util.ExpressionDumper;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
+import javax.xml.datatype.DatatypeConstants;
+import javax.xml.datatype.XMLGregorianCalendar;
+import java.math.BigDecimal;
 import java.text.Collator;
 import java.util.Iterator;
 import java.util.Properties;
@@ -50,7 +52,7 @@ import java.util.Properties;
  * 
  * @author wolf
  */
-public abstract class AtomicValue implements Item, Sequence, Indexable {
+public abstract class AtomicValue implements Item, Sequence, Comparable {
 
     /** An empty atomic value */
 	public final static AtomicValue EMPTY_VALUE = new EmptyValue();
@@ -342,41 +344,106 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
 	 */
 	public void setSelfAsContext(int contextId) throws XPathException {
 	}
-	
-        /* (non-Javadoc)
-         * @see org.exist.xquery.value.Sequence#isPersistentSet()
-         */
-        public boolean isPersistentSet() {
-            return false;
-        }
 
-        @Override
-        public void nodeMoved(NodeId oldNodeId, NodeHandle newNode) {
-        }
-	
-        /*
-	public byte[] serialize(short collectionId)	throws EXistException {	
-		//TODO : pass the factory as an argument
-		return ValueIndexFactory.serialize(this, collectionId);
+	public boolean isPersistentSet() {
+		return false;
 	}
-	*/	
 
-
-	/* (non-Javadoc)
-	 * @deprecated
-	 * @see org.exist.storage.Indexable#serialize(short, boolean)
-	 */
-	/*
-	public byte[] serialize(short collectionId, boolean caseSensitive)	throws EXistException {	
-		//TODO : pass the factory as an argument
-		return ValueIndexFactory.serialize(this, collectionId, caseSensitive);
-	}	
-	*/
-	
-	public byte[] serializeValue(int offset) throws EXistException {		
-		//TODO : pass the factory as an argument
-		return ValueIndexFactory.serialize(this, offset);
+	@Override
+	public void nodeMoved(NodeId oldNodeId, NodeHandle newNode) {
 	}
+
+	public byte[] serializeValue(final int offset) throws EXistException {
+		return serialize(this, offset, true);
+	}
+
+
+	public final static byte[] serialize(final AtomicValue value, final int offset, final boolean caseSensitive) throws EXistException {
+
+		final int LENGTH_VALUE_TYPE = 1; // sizeof byte
+
+        /* xs:string */
+			if (Type.subTypeOf(value.getType(), Type.STRING)) {
+				final String val = caseSensitive ?
+						((StringValue) value).getStringValue() :
+						((StringValue) value).getStringValue().toLowerCase();
+				final byte[] data = new byte[offset + LENGTH_VALUE_TYPE + UTF8.encoded(val)];
+				data[offset] = (byte) value.getType(); // TODO: cast to byte is not safe
+				UTF8.encode(val, data, offset + LENGTH_VALUE_TYPE);
+				return data;
+			}
+        /* xs:dateTime */
+			else if (Type.subTypeOf(value.getType(), Type.DATE_TIME)) {
+				final XMLGregorianCalendar utccal = ((AbstractDateTimeValue) value).calendar.normalize();
+				final byte[] data = new byte[offset + 12]; // allocate an appropriately sized
+				data[offset] = (byte) Type.DATE_TIME; // put the type in the byte array
+				ByteConversion.intToByteH(utccal.getYear(), data, offset + 1);
+				data[offset + 5] = (byte) utccal.getMonth();
+				data[offset + 6] = (byte) utccal.getDay();
+				data[offset + 7] = (byte) utccal.getHour();
+				data[offset + 8] = (byte) utccal.getMinute();
+				data[offset + 9] = (byte) utccal.getSecond();
+				final int ms = utccal.getMillisecond();
+				ByteConversion.shortToByteH((short) (ms == DatatypeConstants.FIELD_UNDEFINED ? 0 : ms),
+						data, offset + 10);
+				return (data); // return the byte array
+			}
+        /* xs:date */
+			else if (Type.subTypeOf(value.getType(), Type.DATE)) {
+				final XMLGregorianCalendar utccal = ((AbstractDateTimeValue) value).calendar.normalize();
+				final byte[] data = new byte[offset + 7]; // allocate an appropriately sized
+				data[offset] = (byte) Type.DATE;
+				ByteConversion.intToByteH(utccal.getYear(), data, offset + 1);
+				data[offset + 5] = (byte) utccal.getMonth();
+				data[offset + 6] = (byte) utccal.getDay();
+				return data;
+			}
+        /* xs:integer */
+			else if (Type.subTypeOf(value.getType(), Type.INTEGER)) {
+				final byte[] data = new byte[offset + LENGTH_VALUE_TYPE + 8];
+				data[offset] = (byte) Type.INTEGER;
+				final long l = ((IntegerValue) value).getValue() - Long.MIN_VALUE;
+				ByteConversion.longToByte(l, data, offset + LENGTH_VALUE_TYPE);
+				return data;
+			}
+        /* xs:double */
+			else if (value.getType() == Type.DOUBLE) {
+				final byte[] data = new byte[offset + LENGTH_VALUE_TYPE + 8];
+				data[offset] = (byte) Type.DOUBLE;
+				final long bits = Double.doubleToLongBits(((DoubleValue) value).getValue()) ^ 0x8000000000000000L;
+				ByteConversion.longToByte(bits, data, offset + LENGTH_VALUE_TYPE);
+				return data;
+			}
+        /* xs:float */
+			else if (value.getType() == Type.FLOAT) {
+				final byte[] data = new byte[offset + LENGTH_VALUE_TYPE + 4];
+				data[offset] = (byte) Type.FLOAT;
+				final int bits = (int) (Float.floatToIntBits(((FloatValue) value).getValue()) ^ 0x80000000);
+				ByteConversion.intToByteH(bits, data, offset + LENGTH_VALUE_TYPE);
+				return data;
+			}
+        /* xs:boolean */
+			else if (value.getType() == Type.BOOLEAN) {
+				final byte[] data = new byte[offset + LENGTH_VALUE_TYPE + 1];
+				data[offset] = Type.BOOLEAN;
+				data[offset + LENGTH_VALUE_TYPE] = (byte) (((BooleanValue) value).getValue() ? 1 : 0);
+				return data;
+			}
+        /* xs:decimal */
+			else if(value.getType() == Type.DECIMAL) {
+				//actually stored as string data due to variable length
+				final BigDecimal dec = ((DecimalValue)value).getValue();
+				final String val = dec.toString();
+				final byte[] data = new byte[offset + LENGTH_VALUE_TYPE + UTF8.encoded(val)];
+				data[offset] = (byte) value.getType(); // TODO: cast to byte is not safe
+				UTF8.encode(val, data, offset + LENGTH_VALUE_TYPE);
+				return data;
+			}
+        /* unknown! */
+			else {
+				throw new EXistException("Unknown data type for serialization: " + Type.getTypeName(value.getType()));
+			}
+    }
 	
 	/* (non-Javadoc)
 	 * @deprecated

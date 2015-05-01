@@ -42,10 +42,9 @@ public interface ContentLoadingObserver extends AutoCloseable {
 	 *
 	 * @param attr         The attribute
 	 * @param currentPath  The path of the attribute within the document
-	 * @param spec         The index specification
 	 * @param remove       whether the attribute should be removed
 	 */
-	void storeAttribute(AttrImpl attr, NodePath currentPath, RangeIndexSpec spec, boolean remove);
+	void storeAttribute(AttrImpl attr, NodePath currentPath, boolean remove);
 
 	/** store and index given text node */ 
 	void storeText(TextImpl node, NodePath currentPath);
@@ -53,7 +52,7 @@ public interface ContentLoadingObserver extends AutoCloseable {
 	/**
 	 * The given node is being removed from the database. 
 	 */
-	void removeNode(NodeHandle node, NodePath currentPath, String content );
+	void removeNode(NodeHandle node, NodePath currentPath);
 
 	/** set the current document; generally called before calling an operation */
 	void setDocument(DocumentImpl document);

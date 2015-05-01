@@ -190,12 +190,6 @@ return util:eval('testmodule:test()')
 ")
 </code>
         <expected>1</expected>
-    </test>    
-
-    <test output="text">
-        <task>util:index-type</task>
-        <code>util:index-type(collection('/db/util-test')//para)</code>
-        <expected>item()</expected>
     </test>
 
     <test output="text">

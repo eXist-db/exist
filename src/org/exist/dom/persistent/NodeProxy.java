@@ -26,7 +26,6 @@ import org.exist.dom.memtree.DocumentBuilderReceiver;
 import org.exist.numbering.NodeId;
 import org.exist.stax.IEmbeddedXMLStreamReader;
 import org.exist.storage.DBBroker;
-import org.exist.storage.RangeIndexSpec;
 import org.exist.storage.StorageAddress;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
@@ -370,18 +369,6 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
     @Override
     public void setInternalAddress(final long internalAddress) {
         this.internalAddress = internalAddress;
-    }
-
-    public void setIndexType(int type) {
-        this.internalAddress = StorageAddress.setIndexType(internalAddress, (short) type);
-    }
-
-    @Override
-    public int getIndexType() {
-        if(internalAddress == -1) {
-            return Type.ITEM;
-        }
-        return RangeIndexSpec.indexTypeToXPath(StorageAddress.indexTypeFromPointer(internalAddress));
     }
 
     @Override

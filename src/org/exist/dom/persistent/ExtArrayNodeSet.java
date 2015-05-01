@@ -35,7 +35,6 @@ import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.Type;
 import org.w3c.dom.Node;
 
 import java.util.Arrays;
@@ -337,17 +336,6 @@ public class ExtArrayNodeSet extends AbstractArrayNodeSet implements DocumentSet
             buf.append(' ');
         }
         return buf.toString();
-    }
-
-    @Override
-    public int getIndexType() {
-        //Is the index type initialized ?
-        if(indexType == Type.ANY_TYPE) {
-            for(int i = 0; i < partCount; i++) {
-                parts[i].determineIndexType();
-            }
-        }
-        return indexType;
     }
 
     @Override
@@ -934,32 +922,6 @@ public class ExtArrayNodeSet extends AbstractArrayNodeSet implements DocumentSet
             }
             length = ++j;
             return length;
-        }
-
-        void determineIndexType() {
-            //Is the index type initialized ?
-            if(indexType == Type.ANY_TYPE) {
-                for(int i = 0; i < length; i++) {
-                    final NodeProxy node = array[i];
-                    if(node.getOwnerDocument().getCollection().isTempCollection()) {
-                        //Temporary nodes return default values
-                        indexType = Type.ITEM;
-                        break;
-                    }
-                    int nodeIndexType = node.getIndexType();
-                    //Refine type
-                    //TODO : use common subtype
-                    if(indexType == Type.ANY_TYPE) {
-                        indexType = nodeIndexType;
-                    } else {
-                        //Broaden type
-                        //TODO : use common supertype
-                        if(indexType != nodeIndexType) {
-                            indexType = Type.ITEM;
-                        }
-                    }
-                }
-            }
         }
 
         void setSelfAsContext(final int contextId) {

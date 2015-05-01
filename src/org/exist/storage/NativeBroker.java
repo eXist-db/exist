@@ -134,7 +134,6 @@ public class NativeBroker extends DBBroker {
     public static final byte PREPEND_DB_AS_NEEDED = 2;
 
     public static final byte COLLECTIONS_DBX_ID = 0;
-    public static final byte VALUES_DBX_ID = 2;
     public static final byte DOM_DBX_ID = 3;
     //Note : no ID for symbols ? Too bad...
 
@@ -143,7 +142,7 @@ public class NativeBroker extends DBBroker {
 
     public static final String PROPERTY_INDEX_DEPTH = "indexer.index-depth";
     private static final byte[] ALL_STORAGE_FILES = {
-        COLLECTIONS_DBX_ID, VALUES_DBX_ID, DOM_DBX_ID
+        COLLECTIONS_DBX_ID, DOM_DBX_ID
     };
 
     private static final String EXCEPTION_DURING_REINDEX = "exception during reindex";
@@ -165,9 +164,6 @@ public class NativeBroker extends DBBroker {
     /** the database files */
     private final CollectionStore collectionsDb;
     private final DOMFile domDb;
-
-    /** the index processors */
-    private NativeValueIndex valueIndex;
 
     private final IndexSpec indexConfiguration;
 
@@ -281,7 +277,6 @@ public class NativeBroker extends DBBroker {
                 pool.setReadOnly();
             }
 
-            this.valueIndex = new NativeValueIndex(this, VALUES_DBX_ID, dataDir, config);
             if(isReadOnly()) {
                 LOG.warn(DATABASE_IS_READ_ONLY);
             }
@@ -327,9 +322,9 @@ public class NativeBroker extends DBBroker {
 
     // ============ dispatch the various events to indexing classes ==========
 
-    private void notifyRemoveNode(final NodeHandle node, final NodePath currentPath, final String content) {
+    private void notifyRemoveNode(final NodeHandle node, final NodePath currentPath) {
         for(final ContentLoadingObserver observer : contentLoadingObservers) {
-            observer.removeNode(node, currentPath, content);
+            observer.removeNode(node, currentPath);
         }
     }
 
@@ -401,55 +396,6 @@ public class NativeBroker extends DBBroker {
         clearContentLoadingObservers();
     }
 
-    /**
-     * Update indexes for the given element node. This method is called when the indexer
-     * encounters a closing element tag. It updates any range indexes defined on the
-     * element value and adds the element id to the structural index.
-     *
-     * @param node        the current element node
-     * @param currentPath node path leading to the element
-     * @param content     contains the string value of the element. Needed if a range index
-     *                    is defined on it.
-     */
-    @Override
-    public <T extends IStoredNode> void endElement(final IStoredNode<T> node, final NodePath currentPath, String content, final boolean remove) {
-        final int indexType = ((ElementImpl) node).getIndexType();
-        //TODO : do not care about the current code redundancy : this will move in the (near) future
-        // TODO : move to NativeValueIndex
-        if(RangeIndexSpec.hasRangeIndex(indexType)) {
-            node.setQName(new QName(node.getQName(), ElementValue.ELEMENT));
-            if(content == null) {
-                //NodeProxy p = new NodeProxy(node);
-                //if (node.getOldInternalAddress() != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
-                //    p.setInternalAddress(node.getOldInternalAddress());
-                content = getNodeValue(node, false);
-                //Curious... I assume getNodeValue() needs the old address
-                //p.setInternalAddress(node.getInternalAddress());
-            }
-            valueIndex.setDocument(node.getOwnerDocument());
-            valueIndex.storeElement((ElementImpl) node, content, RangeIndexSpec.indexTypeToXPath(indexType),
-                NativeValueIndex.IndexType.GENERIC, remove);
-        }
-
-        // TODO : move to NativeValueIndexByQName 
-        if(RangeIndexSpec.hasQNameIndex(indexType)) {
-            node.setQName(new QName(node.getQName(), ElementValue.ELEMENT));
-            if(content == null) {
-                //NodeProxy p = new NodeProxy(node);
-                //if (node.getOldInternalAddress() != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
-                //    p.setInternalAddress(node.getOldInternalAddress());
-                content = getNodeValue(node, false);
-                //Curious... I assume getNodeValue() needs the old address
-                //p.setInternalAddress(node.getInternalAddress());
-            }
-            valueIndex.setDocument(node.getOwnerDocument());
-            valueIndex.storeElement((ElementImpl) node, content, RangeIndexSpec.indexTypeToXPath(indexType),
-                NativeValueIndex.IndexType.QNAME, remove);
-            //qnameValueIndex.setDocument((DocumentImpl) node.getOwnerDocument());
-            //qnameValueIndex.endElement((ElementImpl) node, currentPath, content);
-        }
-    }
-
     /*
       private String getOldNodeContent(StoredNode node, long oldAddress) {
           NodeProxy p = new NodeProxy(node);
@@ -464,7 +410,7 @@ public class NativeBroker extends DBBroker {
 
     /**
      * Takes care of actually removing entries from the indices;
-     * must be called after one or more call to {@link #removeNode(Txn, IStoredNode, NodePath, String)}.
+     * must be called after one or more call to {@link #removeNode(Txn, IStoredNode, NodePath)}.
      */
     @Override
     public void endRemove(final Txn transaction) {
@@ -487,8 +433,6 @@ public class NativeBroker extends DBBroker {
                 return domDb;
             case COLLECTIONS_DBX_ID:
                 return collectionsDb;
-            case VALUES_DBX_ID:
-                return valueIndex.dbValues;
             default:
                 return null;
         }
@@ -546,11 +490,6 @@ public class NativeBroker extends DBBroker {
     @Override
     public StructuralIndex getStructuralIndex() {
         return (StructuralIndex) getIndexController().getWorkerByIndexName(StructuralIndex.STRUCTURAL_INDEX_ID);
-    }
-
-    @Override
-    public NativeValueIndex getValueIndex() {
-        return valueIndex;
     }
 
     @Override
@@ -3170,7 +3109,6 @@ public class NativeBroker extends DBBroker {
             //save old value, whatever it is
             final long address = node.getInternalAddress();
             node.setInternalAddress(oldAddress);
-            endElement(node, currentPath, null);
             //restore old value, whatever it was
             node.setInternalAddress(address);
             node.setDirty(false);
@@ -3230,8 +3168,7 @@ public class NativeBroker extends DBBroker {
      * for later removal.
      */
     @Override
-    public <T extends IStoredNode> void removeNode(final Txn transaction, final IStoredNode<T> node, final NodePath currentPath,
-                           final String content) {
+    public <T extends IStoredNode> void removeNode(final Txn transaction, final IStoredNode<T> node, final NodePath currentPath) {
         final DocumentImpl doc = node.getOwnerDocument();
         new DOMTransaction(this, domDb, Lock.WRITE_LOCK, doc) {
             @Override
@@ -3245,62 +3182,19 @@ public class NativeBroker extends DBBroker {
                 return null;
             }
         }.run();
-        notifyRemoveNode(node, currentPath, content);
+        notifyRemoveNode(node, currentPath);
+
+        //TODO(AR) may no longer be required now we have removed the Native Value Index!
         final QName qname;
         switch(node.getNodeType()) {
             case Node.ELEMENT_NODE:
                 qname = new QName(node.getQName(), ElementValue.ELEMENT);
                 node.setQName(qname);
-                final GeneralRangeIndexSpec spec1 = doc.getCollection().getIndexByPathConfiguration(this, currentPath);
-                if(spec1 != null) {
-                    valueIndex.setDocument(doc);
-                    valueIndex.storeElement((ElementImpl) node, content, spec1.getType(), NativeValueIndex.IndexType.GENERIC, false);
-                }
-                QNameRangeIndexSpec qnSpec = doc.getCollection().getIndexByQNameConfiguration(this, qname);
-                if(qnSpec != null) {
-                    valueIndex.setDocument(doc);
-                    valueIndex.storeElement((ElementImpl) node, content, qnSpec.getType(),
-                        NativeValueIndex.IndexType.QNAME, false);
-                }
                 break;
 
             case Node.ATTRIBUTE_NODE:
                 qname = new QName(node.getQName(), ElementValue.ATTRIBUTE);
                 node.setQName(qname);
-                currentPath.addComponent(qname);
-                //Strange : does it mean that the node is added 2 times under 2 different identities ?
-                AttrImpl attr;
-                attr = (AttrImpl) node;
-                switch(attr.getType()) {
-                    case AttrImpl.ID:
-                        valueIndex.setDocument(doc);
-                        valueIndex.storeAttribute(attr, attr.getValue(), Type.ID, NativeValueIndex.IndexType.GENERIC, false);
-                        break;
-                    case AttrImpl.IDREF:
-                        valueIndex.setDocument(doc);
-                        valueIndex.storeAttribute(attr, attr.getValue(), Type.IDREF, NativeValueIndex.IndexType.GENERIC, false);
-                        break;
-                    case AttrImpl.IDREFS:
-                        valueIndex.setDocument(doc);
-                        final StringTokenizer tokenizer = new StringTokenizer(attr.getValue(), " ");
-                        while(tokenizer.hasMoreTokens()) {
-                            valueIndex.storeAttribute(attr, tokenizer.nextToken(),Type.IDREF, NativeValueIndex.IndexType.GENERIC, false);
-                        }
-                        break;
-                    default:
-                        // do nothing special
-                }
-                final RangeIndexSpec spec2 = doc.getCollection().getIndexByPathConfiguration(this, currentPath);
-                if(spec2 != null) {
-                    valueIndex.setDocument(doc);
-                    valueIndex.storeAttribute(attr, null, spec2, false);
-                }
-                qnSpec = doc.getCollection().getIndexByQNameConfiguration(this, qname);
-                if(qnSpec != null) {
-                    valueIndex.setDocument(doc);
-                    valueIndex.storeAttribute(attr, null, qnSpec, false);
-                }
-                currentPath.removeLastComponent();
                 break;
 
             case Node.TEXT_NODE:
@@ -3319,7 +3213,7 @@ public class NativeBroker extends DBBroker {
             collectNodesForRemoval(transaction, stack, iterator, listener, node, currentPath);
             while(!stack.isEmpty()) {
                 final RemovedNode next = stack.pop();
-                removeNode(transaction, next.node, next.path, next.content);
+                removeNode(transaction, next.node, next.path);
             }
         } catch(final IOException ioe) {
             LOG.warn("Unable to close node iterator", ioe);
@@ -3332,17 +3226,7 @@ public class NativeBroker extends DBBroker {
         switch(node.getNodeType()) {
             case Node.ELEMENT_NODE:
                 final DocumentImpl doc = node.getOwnerDocument();
-                String content = null;
-                final GeneralRangeIndexSpec spec = doc.getCollection().getIndexByPathConfiguration(this, currentPath);
-                if(spec != null) {
-                    content = getNodeValue(node, false);
-                } else {
-                    final QNameRangeIndexSpec qnIdx = doc.getCollection().getIndexByQNameConfiguration(this, node.getQName());
-                    if(qnIdx != null) {
-                        content = getNodeValue(node, false);
-                    }
-                }
-                removed = new RemovedNode(node, new NodePath(currentPath), content);
+                removed = new RemovedNode(node, new NodePath(currentPath));
                 stack.push(removed);
                 if(listener != null) {
                     listener.startElement(transaction, (ElementImpl) node, currentPath);
@@ -3376,7 +3260,7 @@ public class NativeBroker extends DBBroker {
                 break;
         }
         if(node.getNodeType() != Node.ELEMENT_NODE) {
-            removed = new RemovedNode(node, new NodePath(currentPath), null);
+            removed = new RemovedNode(node, new NodePath(currentPath));
             stack.push(removed);
         }
     }
@@ -3487,7 +3371,6 @@ public class NativeBroker extends DBBroker {
             }
         }
         if(node.getNodeType() == Node.ELEMENT_NODE) {
-            endElement(node, currentPath, null, mode == IndexMode.REMOVE);
             if(listener != null) {
                 listener.endElement(transaction, (ElementImpl) node, currentPath);
             }
@@ -3583,13 +3466,6 @@ public class NativeBroker extends DBBroker {
             pool.getIndexManager().removeIndexes();
         } catch(final DBException e) {
             LOG.warn("Failed to remove index files during repair: " + e.getMessage(), e);
-        }
-
-        LOG.info("Recreating index files ...");
-        try {
-            this.valueIndex = new NativeValueIndex(this, VALUES_DBX_ID, dataDir, config);
-        } catch(final DBException e) {
-            LOG.warn("Exception during repair: " + e.getMessage(), e);
         }
 
         try {
@@ -3759,13 +3635,11 @@ public class NativeBroker extends DBBroker {
 
     private final static class RemovedNode {
         final IStoredNode node;
-        final String content;
         final NodePath path;
 
-        RemovedNode(final IStoredNode node, final NodePath path, final String content) {
+        RemovedNode(final IStoredNode node, final NodePath path) {
             this.node = node;
             this.path = path;
-            this.content = content;
         }
     }
 
@@ -3821,88 +3695,6 @@ public class NativeBroker extends DBBroker {
             //final boolean isTemp = XmldbURI.TEMP_COLLECTION_URI.equalsInternal(((DocumentImpl) node.getOwnerDocument()).getCollection().getURI());
             int indexType;
             switch(node.getNodeType()) {
-                case Node.ELEMENT_NODE:
-                    //Compute index type
-                    //TODO : let indexers OR it themselves
-                    //we'd need to notify the ElementIndexer at the very end then...
-                    indexType = RangeIndexSpec.NO_INDEX;
-                    if(idxSpec != null && idxSpec.getIndexByPath(currentPath) != null) {
-                        indexType |= idxSpec.getIndexByPath(currentPath).getIndexType();
-                    }
-                    if(idxSpec != null) {
-                        final QNameRangeIndexSpec qnIdx = idxSpec.getIndexByQName(node.getQName());
-                        if(qnIdx != null) {
-                            indexType |= RangeIndexSpec.QNAME_INDEX;
-                            if(!RangeIndexSpec.hasRangeIndex(indexType)) {
-                                indexType |= qnIdx.getIndexType();
-                            }
-                        }
-                    }
-                    ((ElementImpl) node).setIndexType(indexType);
-                    break;
-
-                case Node.ATTRIBUTE_NODE:
-                    final QName qname = new QName(node.getQName());
-                    if(currentPath != null) {
-                        currentPath.addComponent(qname);
-                    }
-                    //Compute index type
-                    //TODO : let indexers OR it themselves
-                    //we'd need to notify the ElementIndexer at the very end then...
-                    indexType = RangeIndexSpec.NO_INDEX;
-                    if(idxSpec != null) {
-                        final RangeIndexSpec rangeSpec = idxSpec.getIndexByPath(currentPath);
-                        if(rangeSpec != null) {
-                            indexType |= rangeSpec.getIndexType();
-                        }
-                        if(rangeSpec != null) {
-                            valueIndex.setDocument(node.getOwnerDocument());
-                            //Oh dear : is it the right semantics then ?
-                            valueIndex.storeAttribute((AttrImpl) node, currentPath,
-                                rangeSpec, indexMode == IndexMode.REMOVE);
-                        }
-                        final QNameRangeIndexSpec qnIdx = idxSpec.getIndexByQName(node.getQName());
-                        if(qnIdx != null) {
-                            indexType |= RangeIndexSpec.QNAME_INDEX;
-                            if(!RangeIndexSpec.hasRangeIndex(indexType)) {
-                                indexType |= qnIdx.getIndexType();
-                            }
-                            valueIndex.setDocument(node.getOwnerDocument());
-                            //Oh dear : is it the right semantics then ?
-                            valueIndex.storeAttribute((AttrImpl) node, currentPath,
-                                qnIdx, indexMode == IndexMode.REMOVE);
-                        }
-                    }
-                    node.setQName(new QName(qname, ElementValue.ATTRIBUTE));
-                    final AttrImpl attr = (AttrImpl) node;
-                    attr.setIndexType(indexType);
-                    switch(attr.getType()) {
-                        case AttrImpl.ID:
-                            valueIndex.setDocument(doc);
-                            valueIndex.storeAttribute(attr, attr.getValue(), Type.ID, NativeValueIndex.IndexType.GENERIC, indexMode == IndexMode.REMOVE);
-                            break;
-
-                        case AttrImpl.IDREF:
-                            valueIndex.setDocument(doc);
-                            valueIndex.storeAttribute(attr, attr.getValue(), Type.IDREF, NativeValueIndex.IndexType.GENERIC, indexMode == IndexMode.REMOVE);
-                            break;
-
-                        case AttrImpl.IDREFS:
-                            valueIndex.setDocument(doc);
-                            final StringTokenizer tokenizer = new StringTokenizer(attr.getValue(), " ");
-                            while(tokenizer.hasMoreTokens()) {
-                                valueIndex.storeAttribute(attr, tokenizer.nextToken(), Type.IDREF, NativeValueIndex.IndexType.GENERIC, indexMode == IndexMode.REMOVE);
-                            }
-                            break;
-
-                        default:
-                            // do nothing special
-                    }
-                    if(currentPath != null) {
-                        currentPath.removeLastComponent();
-                    }
-                    break;
-
                 case Node.TEXT_NODE:
                     notifyStoreText((TextImpl) node, currentPath);
                     break;

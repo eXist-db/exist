@@ -1,30 +1,25 @@
 /*
- *  eXist Open Source Native XML Database
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2015 The eXist Project
+ * http://exist-db.org
  *
- *  Copyright (C) 2000-03, Wolfgang M. Meier (meier@ifs. tu- darmstadt. de)
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *
- *  This library is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Library General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
  *
- *  This library is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- *
- * $Id$
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 package org.exist.xquery;
 
-import org.exist.EXistException;
-import org.exist.collections.Collection;
 import org.exist.dom.persistent.ContextItem;
-import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.NewArrayNodeSet;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.NodeSet;
@@ -32,12 +27,8 @@ import org.exist.dom.QName;
 import org.exist.dom.persistent.VirtualNodeSet;
 import org.exist.storage.DBBroker;
 import org.exist.storage.ElementValue;
-import org.exist.storage.IndexSpec;
-import org.exist.storage.Indexable;
-import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.Constants.StringTruncationOperator;
-import org.exist.xquery.pragmas.Optimize;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.BooleanValue;
@@ -48,8 +39,6 @@ import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
 import java.text.Collator;
-
-import java.util.Iterator;
 import java.util.List;
 
 
@@ -99,8 +88,6 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
     private int            axis             = Constants.UNKNOWN_AXIS;
     private NodeSet        preselectResult  = null;
 
-    private IndexFlags     idxflags         = new IndexFlags();
-
     public GeneralComparison( XQueryContext context, Comparison relation )
     {
         this( context, relation, StringTruncationOperator.NONE );
@@ -122,7 +109,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 
     public GeneralComparison( XQueryContext context, Expression left, Expression right, Comparison relation, final StringTruncationOperator truncation )
     {
-        super( context );
+        super(context);
         boolean didLeftSimplification  = false;
         boolean didRightSimplification = false;
         this.relation   = relation;
@@ -132,13 +119,13 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
             left                  = ( ( PathExpr )left ).getExpression( 0 );
             didLeftSimplification = true;
         }
-        add( left );
+        add(left);
 
         if( ( right instanceof PathExpr ) && ( ( ( PathExpr )right ).getLength() == 1 ) ) {
             right                  = ( ( PathExpr )right ).getExpression( 0 );
             didRightSimplification = true;
         }
-        add( right );
+        add(right);
 
         //TODO : should we also use simplify() here ? -pb
         if( didLeftSimplification ) {
@@ -150,9 +137,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.BinaryOp#analyze(org.exist.xquery.AnalyzeContextInfo)
-     */
+    @Override
     public void analyze( AnalyzeContextInfo contextInfo ) throws XPathException
     {
         contextInfo.addFlag( NEED_INDEX_INFO );
@@ -243,37 +228,31 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
         }
     }
 
-
-    public boolean canOptimize( Sequence contextSequence )
-    {
-        if( contextQName == null ) {
-            return( false );
-        }
-        return( Optimize.getQNameIndexType( context, contextSequence, contextQName ) != Type.ITEM );
+    @Override
+    public boolean canOptimize(final Sequence contextSequence) {
+        return false;
     }
 
-
+    @Override
     public boolean optimizeOnSelf()
     {
         return( optimizeSelf );
     }
 
-
+    @Override
     public boolean optimizeOnChild()
     {
         return( optimizeChild );
     }
 
-
+    @Override
     public int getOptimizeAxis()
     {
         return( axis );
     }
 
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.BinaryOp#returnsType()
-     */
+    @Override
     public int returnsType()
     {
         if( inPredicate && ( !Dependency.dependsOn( this, Dependency.CONTEXT_ITEM ) ) ) {
@@ -285,9 +264,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
     }
 
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.AbstractExpression#getDependencies()
-     */
+    @Override
     public int getDependencies()
     {
         final Expression left = getLeft();
@@ -315,113 +292,30 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
         return truncation;
     }
 
-    public NodeSet preSelect( Sequence contextSequence, boolean useContext ) throws XPathException
+    @Override
+    public NodeSet preSelect( final Sequence contextSequence, final boolean useContext ) throws XPathException
     {
         // the expression can be called multiple times, so we need to clear the previous preselectResult
         preselectResult = null;
         final long start     = System.currentTimeMillis();
-        final int  indexType = Optimize.getQNameIndexType( context, contextSequence, contextQName );
-
-        if( LOG.isTraceEnabled() ) {
-            LOG.trace( "Using QName index on type " + Type.getTypeName( indexType ) );
-        }
 
         final Sequence rightSeq = getRight().eval( contextSequence );
         
         // if the right hand sequence has more than one item, we need to merge them
         // into preselectResult
-        if (rightSeq.getItemCount() > 1)
-        	{preselectResult = new NewArrayNodeSet();}
-        
-        // Iterate through each item in the right-hand sequence
-        for( final SequenceIterator itRightSeq = Atomize.atomize(rightSeq).iterate(); itRightSeq.hasNext(); ) {
-
-            //Get the index key
-            Item key = itRightSeq.nextItem();
-
-            //if key has truncation, convert it to string
-            if( truncation != StringTruncationOperator.NONE ) {
-
-                if( !Type.subTypeOf( key.getType(), Type.STRING ) ) {
-                    LOG.info( "Truncated key. Converted from " + Type.getTypeName( key.getType() ) + " to xs:string" );
-
-                    //truncation is only possible on strings
-                    key = key.convertTo( Type.STRING );
-                }
-            }
-            //else if key is not the same type as the index
-            //TODO : use Type.isSubType() ??? -pb
-            else if( key.getType() != indexType ) {
-
-                //try to convert the key to the index type
-                try {
-                    key = key.convertTo( indexType );
-                }
-                catch( final XPathException xpe ) {
-
-                    if( LOG.isTraceEnabled() ) {
-                        LOG.trace( "Cannot convert key: " + Type.getTypeName( key.getType() ) + " to required index type: " + Type.getTypeName( indexType ) );
-                    }
-
-                    throw( new XPathException( this, "Cannot convert key to required index type" ) );
-                }
-            }
-
-            // If key implements org.exist.storage.Indexable, we can use the index
-            if( key instanceof Indexable ) {
-
-                if( LOG.isTraceEnabled() ) {
-                    LOG.trace( "Using QName range index for key: " + key.getStringValue() );
-                }
-
-                NodeSet  temp;
-                final NodeSet  contextSet = useContext ? contextSequence.toNodeSet() : null;
-                final Collator collator   = ( ( collationArg != null ) ? getCollator( contextSequence ) : null );
-
-                if( truncation == StringTruncationOperator.NONE ) {
-                    temp         = context.getBroker().getValueIndex().find(context.getWatchDog(), relation, contextSequence.getDocumentSet(), contextSet, NodeSet.DESCENDANT, contextQName, ( Indexable )key);
-                    hasUsedIndex = true;
-                } else {
-
-                    try {
-                        final String matchString = key.getStringValue();
-                        final int    matchType   = getMatchType( truncation );
-
-                        temp         = context.getBroker().getValueIndex().match(context.getWatchDog(), contextSequence.getDocumentSet(), contextSet, NodeSet.DESCENDANT, matchString, contextQName, matchType, collator, truncation );
-
-                        hasUsedIndex = true;
-                    }
-                    catch( final EXistException e ) {
-                        throw( new XPathException( this, "Error during index lookup: " + e.getMessage(), e ) );
-                    }
-                }
-
-                // if the right-hand sequence has more than one item,
-                // merge the result of the iteration into preselectResult,
-                // else replace it.
-                if( preselectResult == null ) {
-                    preselectResult = temp;
-                } else {
-                	preselectResult.addAll(temp);
-                }
-            }
-        }
-
-        if( context.getProfiler().traceFunctions() ) {
-            context.getProfiler().traceIndexUsage( context, PerformanceStats.RANGE_IDX_TYPE, this, PerformanceStats.OPTIMIZED_INDEX, System.currentTimeMillis() - start );
+        if (rightSeq.getItemCount() > 1) {
+            preselectResult = new NewArrayNodeSet();
         }
 
         return( ( preselectResult == null ) ? NodeSet.EMPTY_SET : preselectResult );
     }
 
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.Expression#eval(org.exist.xquery.StaticContext, org.exist.dom.persistent.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
-     */
-    public Sequence eval( Sequence contextSequence, Item contextItem ) throws XPathException
+    @Override
+    public Sequence eval( Sequence contextSequence, final Item contextItem ) throws XPathException
     {
         if( context.getProfiler().isEnabled() ) {
-            context.getProfiler().start( this );
+            context.getProfiler().start(this);
             context.getProfiler().message( this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName( this.getDependencies() ) );
 
             if( contextSequence != null ) {
@@ -515,7 +409,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
     protected Sequence genericCompare( Sequence contextSequence, Item contextItem ) throws XPathException
     {
         if( context.getProfiler().isEnabled() ) {
-            context.getProfiler().message( this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION CHOICE", "genericCompare" );
+            context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION CHOICE", "genericCompare");
         }
         final Sequence ls = getLeft().eval( contextSequence, contextItem );
         return( genericCompare( ls, contextSequence, contextItem ) );
@@ -525,7 +419,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
     protected Sequence genericCompare( Sequence ls, Sequence contextSequence, Item contextItem ) throws XPathException
     {
         final long           start    = System.currentTimeMillis();
-        final Sequence rs       = getRight().eval( contextSequence, contextItem );
+        final Sequence rs       = getRight().eval(contextSequence, contextItem);
         final Collator collator = getCollator( contextSequence );
         Sequence       result   = BooleanValue.FALSE;
 
@@ -584,10 +478,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
             }
         }
 
-        if( context.getProfiler().traceFunctions() ) {
-            context.getProfiler().traceIndexUsage( context, PerformanceStats.RANGE_IDX_TYPE, this, PerformanceStats.NO_INDEX, System.currentTimeMillis() - start );
-        }
-        return( result );
+        return result;
     }
 
 
@@ -602,7 +493,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
      *
      * @throws  XPathException  DOCUMENT ME!
      */
-    protected Sequence nodeSetCompare( NodeSet nodes, Sequence contextSequence ) throws XPathException
+    protected Sequence nodeSetCompare( final NodeSet nodes, final Sequence contextSequence ) throws XPathException
     {
         if( context.getProfiler().isEnabled() ) {
             context.getProfiler().message( this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION CHOICE", "nodeSetCompare" );
@@ -613,7 +504,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
         }
         final long           start    = System.currentTimeMillis();
         final NodeSet        result   = new NewArrayNodeSet();
-        final Collator collator = getCollator( contextSequence );
+        final Collator collator = getCollator(contextSequence);
 
         if( ( contextSequence != null ) && !contextSequence.isEmpty() && !contextSequence.getDocumentSet().contains( nodes.getDocumentSet() ) ) {
 
@@ -653,25 +544,19 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
             }
         }
 
-        if( context.getProfiler().traceFunctions() ) {
-            context.getProfiler().traceIndexUsage( context, PerformanceStats.RANGE_IDX_TYPE, this, PerformanceStats.NO_INDEX, System.currentTimeMillis() - start );
-        }
-        return( result );
+        return result;
     }
 
 
     /**
-     * Optimized implementation: first checks if a range index is defined on the nodes in the left argument.
-     * Otherwise, fall back to {@link #nodeSetCompare(NodeSet, Sequence)}.
+     * Optimized implementation - shorter path if there is no work to do on left or right,
+     * otherwise, fall back to {@link #nodeSetCompare(NodeSet, Sequence)}.
      *
-     * @param   contextSequence  DOCUMENT ME!
+     * @param contextSequence
      *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  XPathException  DOCUMENT ME!
+     * @throws XPathException
      */
-    protected Sequence quickNodeSetCompare( Sequence contextSequence ) throws XPathException
-    {
+    protected Sequence quickNodeSetCompare(final Sequence contextSequence) throws XPathException {
         /* TODO think about optimising fallback to NodeSetCompare() in the for loop!!!
          * At the moment when we fallback to NodeSetCompare() we are in effect throwing away any nodes
          * we have already processed in quickNodeSetCompare() and reprocessing all the nodes in NodeSetCompare().
@@ -713,275 +598,11 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
             return( Sequence.EMPTY_SEQUENCE );
         }
 
-        //get the type of a possible index
-        final int indexType = nodes.getIndexType();
-
-        //See if we have a range index defined on the nodes in this sequence
-        //remember that Type.ITEM means... no index ;-)
-        if( indexType != Type.ITEM ) {
-
-            if( LOG.isTraceEnabled() ) {
-                LOG.trace( "found an index of type: " + Type.getTypeName( indexType ) );
-            }
-
-            boolean indexScan = false;
-            boolean indexMixed = false;
-            QName myContextQName = contextQName;
-            if( contextSequence != null ) {
-                final IndexFlags iflags     = checkForQNameIndex( idxflags, context, contextSequence, myContextQName );
-                boolean    indexFound = false;
-
-                if( !iflags.indexOnQName ) {
-                    // if myContextQName != null and no index is defined on
-                    // myContextQName, we don't need to scan other QName indexes
-                    // and can just use the generic range index
-                    indexFound   = myContextQName != null;
-
-                    if (iflags.partialIndexOnQName) {
-                        indexMixed = true;
-                    } else {
-                        // set myContextQName to null so the index lookup below is not
-                        // restricted to that QName
-                        myContextQName = null;
-                    }
-                }
-
-                if( !indexFound && ( myContextQName == null ) ) {
-
-                    // if there are some indexes defined on a qname,
-                    // we need to check them all
-                    if( iflags.hasIndexOnQNames ) {
-                        indexScan = true;
-                    }
-                    // else use range index defined on path by default
-                }
-            } else {
-                return( nodeSetCompare( nodes, contextSequence ) );
-            }
-
-            //Get the documents from the node set
-            final DocumentSet docs   = nodes.getDocumentSet();
-
-            //Holds the result
-            NodeSet           result = null;
-
-            //Iterate through the right hand sequence
-            for( final SequenceIterator itRightSeq = Atomize.atomize(rightSeq).iterate(); itRightSeq.hasNext(); ) {
-
-                //Get the index key
-                Item key = itRightSeq.nextItem();
-
-                //if key has truncation, convert it to string
-                if( truncation != StringTruncationOperator.NONE ) {
-
-                    if( !Type.subTypeOf( key.getType(), Type.STRING ) ) {
-                        LOG.info( "Truncated key. Converted from " + Type.getTypeName( key.getType() ) + " to xs:string" );
-
-                        //truncation is only possible on strings
-                        key = key.convertTo( Type.STRING );
-                    }
-                }
-                //else if key is not the same type as the index
-                //TODO : use Type.isSubType() ??? -pb
-                else if( key.getType() != indexType ) {
-
-                    //try to convert the key to the index type
-                    try {
-                        key = key.convertTo( indexType );
-                    }
-                    catch( final XPathException xpe ) {
-                        //TODO : rethrow the exception ? -pb
-
-                        //Could not convert the key to a suitable type for the index, fallback to nodeSetCompare()
-                        if( context.getProfiler().isEnabled() ) {
-                            context.getProfiler().message( this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION FALLBACK", "Falling back to nodeSetCompare (" + xpe.getMessage() + ")" );
-                        }
-
-                        if( LOG.isTraceEnabled() ) {
-                            LOG.trace( "Cannot convert key: " + Type.getTypeName( key.getType() ) + " to required index type: " + Type.getTypeName( indexType ) );
-                        }
-
-                        return( nodeSetCompare( nodes, contextSequence ) );
-                    }
-                }
-
-                // If key implements org.exist.storage.Indexable, we can use the index
-                if( key instanceof Indexable ) {
-
-                    if( LOG.isTraceEnabled() ) {
-                        LOG.trace( "Checking if range index can be used for key: " + key.getStringValue() );
-                    }
-
-                    final Collator collator = ( ( collationArg != null ) ? getCollator( contextSequence ) : null );
-
-                    if( Type.subTypeOf( key.getType(), indexType ) ) {
-
-                        if( truncation == StringTruncationOperator.NONE ) {
-
-                            if( LOG.isTraceEnabled() ) {
-                                LOG.trace( "Using range index for key: " + key.getStringValue() );
-                            }
-
-                            //key without truncation, find key
-                            context.getProfiler().message( this, Profiler.OPTIMIZATIONS, "OPTIMIZATION", "Using value index '" + context.getBroker().getValueIndex().toString() + "' to find key '" + Type.getTypeName( key.getType() ) + "(" + key.getStringValue() + ")'" );
-
-                            NodeSet ns;
-
-                            if( indexScan ) {
-                                ns = context.getBroker().getValueIndex().findAll( context.getWatchDog(), relation, docs, nodes, NodeSet.ANCESTOR, ( Indexable )key);
-                            } else {
-                                ns = context.getBroker().getValueIndex().find( context.getWatchDog(), relation, docs, nodes, NodeSet.ANCESTOR, myContextQName,
-                                        ( Indexable )key, indexMixed );
-                            }
-                            hasUsedIndex = true;
-
-                            if( result == null ) {
-                                result = ns;
-                            } else {
-                                result = result.union( ns );
-                            }
-
-                        } else {
-
-                            //key with truncation, match key
-                            if( LOG.isTraceEnabled() ) {
-                                context.getProfiler().message( this, Profiler.OPTIMIZATIONS, "OPTIMIZATION", "Using value index '" + context.getBroker().getValueIndex().toString() + "' to match key '" + Type.getTypeName( key.getType() ) + "(" + key.getStringValue() + ")'" );
-                            }
-
-                            if( LOG.isTraceEnabled() ) {
-                                LOG.trace( "Using range index for key: " + key.getStringValue() );
-                            }
-
-                            try {
-                                NodeSet ns;
-
-                                final String  matchString = key.getStringValue();
-                                final int     matchType   = getMatchType( truncation );
-
-                                if( indexScan ) {
-                                    ns = context.getBroker().getValueIndex().matchAll( context.getWatchDog(), docs, nodes, NodeSet.ANCESTOR, matchString, matchType, 0, true, collator, truncation );
-                                } else {
-                                    ns = context.getBroker().getValueIndex().match( context.getWatchDog(), docs, nodes, NodeSet.ANCESTOR, matchString, myContextQName, matchType, collator, truncation );
-                                }
-
-                                hasUsedIndex = true;
-
-                                if( result == null ) {
-                                    result = ns;
-                                } else {
-                                    result = result.union( ns );
-                                }
-
-                            }
-                            catch( final EXistException e ) {
-                                throw( new XPathException( this, e ) );
-                            }
-                        }
-                    } else {
-
-                        //our key does is not of the correct type
-                        if( context.getProfiler().isEnabled() ) {
-                            context.getProfiler().message( this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION FALLBACK", "Falling back to nodeSetCompare (key is of type: " + Type.getTypeName( key.getType() ) + ") whereas index is of type '" + Type.getTypeName( indexType ) + "'" );
-                        }
-
-                        if( LOG.isTraceEnabled() ) {
-                            LOG.trace( "Cannot use range index: key is of type: " + Type.getTypeName( key.getType() ) + ") whereas index is of type '" + Type.getTypeName( indexType ) );
-                        }
-
-                        return( nodeSetCompare( nodes, contextSequence ) );
-                    }
-                } else {
-
-                    //our key does not implement org.exist.storage.Indexable
-                    if( context.getProfiler().isEnabled() ) {
-                        context.getProfiler().message( this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION FALLBACK", "Falling back to nodeSetCompare (key is not an indexable type: " + key.getClass().getName() );
-                    }
-
-                    if( LOG.isTraceEnabled() ) {
-                        LOG.trace( "Cannot use key which is of type '" + key.getClass().getName() );
-                    }
-
-                    return( nodeSetCompare( nodes, contextSequence ) );
-
-                }
-            }
-
-            if( context.getProfiler().traceFunctions() ) {
-                context.getProfiler().traceIndexUsage( context, PerformanceStats.RANGE_IDX_TYPE, this, PerformanceStats.BASIC_INDEX, System.currentTimeMillis() - start );
-            }
-            return( result );
-        } else {
-
-            if( LOG.isTraceEnabled() ) {
-                LOG.trace( "No suitable index found for key: " + rightSeq.getStringValue() );
-            }
-
-            //no range index defined on the nodes in this sequence, so fallback to nodeSetCompare
-            if( context.getProfiler().isEnabled() ) {
-                context.getProfiler().message( this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION FALLBACK", "falling back to nodeSetCompare (no index available)" );
-            }
-
-            return( nodeSetCompare( nodes, contextSequence ) );
-        }
-    }
-
-
-    private int getMatchType( StringTruncationOperator truncation ) throws XPathException
-    {
-        int matchType;
-
-        // Figure out what type of matching we need to do.
-
-        switch( truncation ) {
-
-            case RIGHT: {
-                matchType = DBBroker.MATCH_STARTSWITH;
-                break;
-            }
-
-            case LEFT: {
-                matchType = DBBroker.MATCH_ENDSWITH;
-                break;
-            }
-
-            case BOTH: {
-                matchType = DBBroker.MATCH_CONTAINS;
-                break;
-            }
-
-            case EQUALS: {
-                matchType = DBBroker.MATCH_EXACT;
-                break;
-            }
-
-            default: {
-
-                // We should never get here!
-                LOG.error( "Invalid truncation type: " + truncation );
-                throw( new XPathException( this, "Invalid truncation type: " + truncation ) );
-            }
+        if( context.getProfiler().isEnabled() ) {
+            context.getProfiler().message( this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION FALLBACK", "falling back to nodeSetCompare (no index available)" );
         }
 
-        return( matchType );
-    }
-
-
-    private CharSequence getRegexp( String expr )
-    {
-        switch( truncation ) {
-
-            case LEFT: {
-                return( new StringBuilder().append( expr ).append( '$' ) );
-            }
-
-            case RIGHT: {
-                return( new StringBuilder().append( '^' ).append( expr ) );
-            }
-
-            default: {
-                return( expr );
-            }
-        }
+        return( nodeSetCompare( nodes, contextSequence ) );
     }
 
 
@@ -1101,38 +722,14 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
         }
     }
 
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   lv
-     *
-     * @return  Whether or not <code>lv</code> is an empty string
-     *
-     * @throws  XPathException
-     */
-    @SuppressWarnings( "unused" )
-    private static boolean isEmptyString( AtomicValue lv ) throws XPathException
-    {
-        if( Type.subTypeOf( lv.getType(), Type.STRING ) || ( lv.getType() == Type.ATOMIC ) ) {
-
-            if( lv.getStringValue().length() == 0 ) {
-                return( true );
-            }
-        }
-        return( false );
-    }
-
-
+    @Override
     public boolean hasUsedIndex()
     {
         return( hasUsedIndex );
     }
 
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.PathExpr#dump(org.exist.xquery.util.ExpressionDumper)
-     */
+    @Override
     public void dump( ExpressionDumper dumper )
     {
         if( truncation == StringTruncationOperator.BOTH ) {
@@ -1148,7 +745,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
         }
     }
 
-
+    @Override
     public String toString()
     {
         final StringBuilder result = new StringBuilder();
@@ -1197,23 +794,6 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
         setLeft(right);
     }
 
-
-    /**
-     * Possibly switch operands to simplify execution.
-     */
-    protected void simplifyOperands()
-    {
-        //Prefer nodes at the left hand
-        if( ( !Type.subTypeOf( getLeft().returnsType(), Type.NODE ) ) && Type.subTypeOf( getRight().returnsType(), Type.NODE ) ) {
-            switchOperands();
-        }
-        //Prefer fewer items at the left hand
-        else if( ( Cardinality.checkCardinality( Cardinality.MANY, getLeft().getCardinality() ) ) && !( Cardinality.checkCardinality( Cardinality.MANY, getRight().getCardinality() ) ) ) {
-            switchOperands();
-        }
-    }
-
-
     protected Collator getCollator( Sequence contextSequence ) throws XPathException
     {
         if( collationArg == null ) {
@@ -1239,42 +819,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
         this.collationArg = collationArg;
     }
 
-
-    public final static IndexFlags checkForQNameIndex( IndexFlags idxflags, XQueryContext context, Sequence contextSequence, QName contextQName )
-    {
-        idxflags.reset( contextQName != null );
-
-        for( final Iterator<Collection> i = contextSequence.getCollectionIterator(); i.hasNext(); ) {
-            final Collection collection = i.next();
-
-            if( collection.getURI().equalsInternal( XmldbURI.SYSTEM_COLLECTION_URI ) ) {
-                continue;
-            }
-            final IndexSpec idxcfg = collection.getIndexConfiguration( context.getBroker() );
-
-            if( idxflags.indexOnQName && ( idxcfg.getIndexByQName( contextQName ) == null ) ) {
-                idxflags.indexOnQName = false;
-
-                if( LOG.isTraceEnabled() ) {
-                    LOG.trace( "cannot use index on QName: " + contextQName + ". Collection " + collection.getURI() + " does not define an index" );
-                }
-            }
-
-            if( !idxflags.hasIndexOnQNames && idxcfg.hasIndexesByQName() ) {
-                idxflags.hasIndexOnQNames = true;
-            }
-
-            if( !idxflags.hasIndexOnPaths && idxcfg.hasIndexesByPath() ) {
-                idxflags.hasIndexOnPaths = true;
-            }
-        }
-        return( idxflags );
-    }
-
-
-    /* (non-Javadoc)
-     * @see org.exist.xquery.PathExpr#resetState()
-     */
+    @Override
     public void resetState( boolean postOptimization )
     {
         super.resetState( postOptimization );
@@ -1288,43 +833,9 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
         }
     }
 
-
+    @Override
     public void accept( ExpressionVisitor visitor )
     {
         visitor.visitGeneralComparison( this );
-    }
-
-    public final static class IndexFlags
-    {
-        public boolean indexOnQName     = true;
-        public boolean partialIndexOnQName = false;
-        public boolean hasIndexOnPaths  = false;
-        public boolean hasIndexOnQNames = false;
-
-        public boolean indexOnQName()
-        {
-            return( indexOnQName );
-        }
-
-
-        public boolean hasIndexOnPaths()
-        {
-            return( hasIndexOnPaths );
-        }
-
-
-        public boolean hasIndexOnQNames()
-        {
-            return( hasIndexOnQNames );
-        }
-
-
-        public void reset( boolean indexOnQName )
-        {
-            this.indexOnQName     = indexOnQName;
-            this.partialIndexOnQName = false;
-            this.hasIndexOnPaths  = false;
-            this.hasIndexOnQNames = false;
-        }
     }
 }

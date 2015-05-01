@@ -27,7 +27,6 @@ import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.QName;
 import org.exist.storage.DBBroker;
 import org.exist.storage.ElementValue;
-import org.exist.storage.NativeValueIndex;
 import org.exist.xquery.pragmas.Optimize;
 import org.exist.xquery.regex.JDK15RegexTranslator;
 import org.exist.xquery.regex.RegexSyntaxException;

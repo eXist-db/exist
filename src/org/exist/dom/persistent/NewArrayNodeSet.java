@@ -894,34 +894,6 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
     }
 
     @Override
-    public int getIndexType() {
-        //Is the index type initialized ?
-        if(indexType == Type.ANY_TYPE) {
-            for(int i = 0; i < size; i++) {
-                final NodeProxy node = nodes[i];
-                if(node.getOwnerDocument().getCollection().isTempCollection()) {
-                    //Temporary nodes return default values
-                    indexType = Type.ITEM;
-                    break;
-                }
-                int nodeIndexType = node.getIndexType();
-                //Refine type
-                //TODO : use common subtype
-                if(indexType == Type.ANY_TYPE) {
-                    indexType = nodeIndexType;
-                } else {
-                    //Broaden type
-                    //TODO : use common supertype
-                    if(indexType != nodeIndexType) {
-                        indexType = Type.ITEM;
-                    }
-                }
-            }
-        }
-        return indexType;
-    }
-
-    @Override
     public boolean equalDocs(final DocumentSet other) {
         if(this == other) {
             return true;

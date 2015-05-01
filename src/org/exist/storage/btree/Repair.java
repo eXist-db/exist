@@ -35,8 +35,6 @@ public class Repair {
                 btree = ((NativeBroker)broker).getStorage(NativeBroker.COLLECTIONS_DBX_ID);
             } else if ("dom".equals(id)) {
                 btree = ((NativeBroker)broker).getStorage(NativeBroker.DOM_DBX_ID);
-            } else if ("range".equals(id)) {
-                btree = ((NativeBroker)broker).getStorage(NativeBroker.VALUES_DBX_ID);
             } else if ("structure".equals(id)) {
                 NativeStructuralIndexWorker index = (NativeStructuralIndexWorker)
                         broker.getIndexController().getWorkerByIndexName(StructuralIndex.STRUCTURAL_INDEX_ID);

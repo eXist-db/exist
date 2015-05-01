@@ -46,27 +46,13 @@
         </xs:annotation>
         <xs:choice>
             <xs:sequence>
-                <xs:element ref="lucene" minOccurs="0"/>
-                <xs:element ref="range" minOccurs="0"/>
-                <xs:element name="create" type="rangeIndexType" minOccurs="0" maxOccurs="unbounded"/>
-                <xs:element ref="ngram" minOccurs="0" maxOccurs="unbounded"/>
-                <xs:element ref="gml" minOccurs="0"/>
-            </xs:sequence>
-            <xs:sequence>
                 <xs:element ref="lucene"/>
                 <xs:element ref="range" minOccurs="0"/>
-                <xs:element name="create" type="rangeIndexType" minOccurs="0" maxOccurs="unbounded"/>
                 <xs:element ref="ngram" minOccurs="0" maxOccurs="unbounded"/>
                 <xs:element ref="gml" minOccurs="0"/>
             </xs:sequence>
             <xs:sequence>
                 <xs:element ref="range"/>
-                <xs:element name="create" type="rangeIndexType" minOccurs="0" maxOccurs="unbounded"/>
-                <xs:element ref="ngram" minOccurs="0" maxOccurs="unbounded"/>
-                <xs:element ref="gml" minOccurs="0"/>
-            </xs:sequence>
-            <xs:sequence>
-                <xs:element name="create" type="rangeIndexType" maxOccurs="unbounded"/>
                 <xs:element ref="ngram" minOccurs="0" maxOccurs="unbounded"/>
                 <xs:element ref="gml" minOccurs="0"/>
             </xs:sequence>
@@ -79,15 +65,6 @@
             </xs:sequence>
         </xs:choice>
 
-    </xs:complexType>
-
-    <xs:complexType name="rangeIndexType">
-        <xs:annotation>
-            <xs:documentation>Either @qname or @path must be specified. Not both!</xs:documentation>
-        </xs:annotation>
-        <xs:attributeGroup ref="pathOpt"/>
-        <xs:attributeGroup ref="qnameOpt"/>
-        <xs:attribute name="type" use="required" type="xs:QName"/>
     </xs:complexType>
 
     <xs:element name="range" type="newRangeIndexType"/>

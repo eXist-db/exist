@@ -25,7 +25,6 @@ import java.util.Optional;
 
 import org.exist.storage.BrokerPool;
 import org.exist.storage.BufferStats;
-import org.exist.storage.NativeValueIndex;
 import org.exist.storage.dom.DOMFile;
 import org.exist.storage.index.BFile;
 import org.exist.storage.index.CollectionStore;
@@ -96,9 +95,6 @@ public class XMLStatistics {
         genBufferDetails(db.getIndexBufferStats(), db.getDataBufferStats(), "Collections storage ("+ FileUtils.fileName(db.getFile()) + ")");
         final DOMFile dom = (DOMFile) conf.getProperty(DOMFile.CONFIG_KEY_FOR_FILE);
         genBufferDetails(dom.getIndexBufferStats(), dom.getDataBufferStats(), "Resource storage ("+ FileUtils.fileName(dom.getFile()) + ")");
-        db = (BFile) conf.getProperty(NativeValueIndex.FILE_KEY_IN_CONFIG);
-        if (db != null)
-            {genBufferDetails(db.getIndexBufferStats(), db.getDataBufferStats(), "Values index ("+ FileUtils.fileName(db.getFile()) + ")");}
         this.contentHandler.endElement(NAMESPACE, "buffers", PREFIX + ":buffers");
     }
 

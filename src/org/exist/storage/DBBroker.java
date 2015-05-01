@@ -91,8 +91,6 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
 
     protected final static Logger LOG = LogManager.getLogger(DBBroker.class);
 
-    protected boolean caseSensitive = true;
-
     protected Configuration config;
 
     protected BrokerPool pool;
@@ -117,10 +115,6 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
 
     public DBBroker(final BrokerPool pool, final Configuration config) {
         this.config = config;
-        final Boolean temp = (Boolean) config.getProperty(NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE);
-        if (temp != null) {
-            caseSensitive = temp.booleanValue();
-        }
         this.pool = pool;
         initIndexModules();
     }
@@ -429,8 +423,6 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
      */
     public abstract Serializer getSerializer();
 
-    public abstract NativeValueIndex getValueIndex();
-
     public abstract Serializer newSerializer();
 
     public abstract Serializer newSerializer(List<String> chainOfReceivers);
@@ -550,12 +542,6 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
      *            to itself if it is an element.
      */
     public abstract <T extends IStoredNode> void storeNode(Txn transaction, IStoredNode<T> node, NodePath currentPath,IndexSpec indexSpec);
-
-    public <T extends IStoredNode> void endElement(final IStoredNode<T> node, NodePath currentPath, String content) {
-        endElement(node, currentPath, content, false);
-    }
-
-    public abstract <T extends IStoredNode> void endElement(final IStoredNode<T> node, NodePath currentPath, String content, boolean remove);
 
     /**
      * Store a document (descriptor) into the database.
@@ -763,8 +749,7 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
 		indexNode(transaction, node, null);
 	}
 
-	public abstract <T extends IStoredNode> void removeNode(Txn transaction, IStoredNode<T> node,
-			NodePath currentPath, String content);
+	public abstract <T extends IStoredNode> void removeNode(Txn transaction, IStoredNode<T> node, NodePath currentPath);
 
 	public abstract void removeAllNodes(Txn transaction, IStoredNode node,
 			NodePath currentPath, StreamListener listener);

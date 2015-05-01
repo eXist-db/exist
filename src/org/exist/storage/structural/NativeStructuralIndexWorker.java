@@ -815,11 +815,7 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
         public void startElement(Txn transaction, ElementImpl element, NodePath path) {
             super.startElement(transaction, element, path);
             if (mode == ReindexMode.STORE || mode == ReindexMode.REMOVE_SOME_NODES) {
-                short indexType = RangeIndexSpec.NO_INDEX;
-                if (element.getIndexType() != RangeIndexSpec.NO_INDEX)
-                    {indexType = (short) element.getIndexType();}
                 final NodeProxy proxy = new NodeProxy(document, element.getNodeId(), Node.ELEMENT_NODE, element.getInternalAddress());
-                proxy.setIndexType(indexType);
                 addNode(element.getQName(), proxy);
             }
         }
@@ -832,12 +828,7 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
         @Override
         public void attribute(Txn transaction, AttrImpl attrib, NodePath path) {
             if (mode == ReindexMode.STORE || mode == ReindexMode.REMOVE_SOME_NODES) {
-                short indexType = RangeIndexSpec.NO_INDEX;
-                if (attrib.getIndexType() != RangeIndexSpec.NO_INDEX)
-                    {indexType = (short) attrib.getIndexType();}
-                final NodeProxy proxy = new NodeProxy(document, attrib.getNodeId(), Node.ATTRIBUTE_NODE,
-                    attrib.getInternalAddress());
-                proxy.setIndexType(indexType);
+                final NodeProxy proxy = new NodeProxy(document, attrib.getNodeId(), Node.ATTRIBUTE_NODE, attrib.getInternalAddress());
                 addNode(attrib.getQName(), proxy);
             }
             super.attribute(transaction, attrib, path);
