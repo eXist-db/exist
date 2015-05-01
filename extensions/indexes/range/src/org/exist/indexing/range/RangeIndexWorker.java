@@ -495,17 +495,15 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     public NodeSet query(int contextId, DocumentSet docs, NodeSet contextSet, List<QName> qnames, AtomicValue[] keys, RangeIndex.Operator operator, int axis) throws IOException, XPathException {
-        qnames = getDefinedIndexes(qnames);
-        NodeSet resultSet = NodeSet.EMPTY_SET;
-        IndexSearcher searcher = null;
-        try {
-            searcher = index.getSearcher();
-            for (QName qname : qnames) {
+        return index.withSearcher(searcher -> {
+            List<QName> definedIndexes = getDefinedIndexes(qnames);
+            NodeSet resultSet = NodeSet.EMPTY_SET;
+            for (QName qname : definedIndexes) {
                 Query query;
                 String field = LuceneUtil.encodeQName(qname, index.getBrokerPool().getSymbols());
                 if (keys.length > 1) {
                     BooleanQuery bool = new BooleanQuery();
-                    for (AtomicValue key: keys) {
+                    for (AtomicValue key : keys) {
                         bool.add(toQuery(field, qname, key, operator, docs), BooleanClause.Occur.SHOULD);
                     }
                     query = bool;
@@ -522,17 +520,12 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     resultSet = doQuery(contextId, docs, contextSet, axis, searcher, null, query, null);
                 }
             }
-        } finally {
-            index.releaseSearcher(searcher);
-        }
-        return resultSet;
+            return resultSet;
+        });
     }
 
     public NodeSet queryField(int contextId, DocumentSet docs, NodeSet contextSet, Sequence fields, Sequence[] keys, RangeIndex.Operator[] operators, int axis) throws IOException, XPathException {
-        NodeSet resultSet = NodeSet.EMPTY_SET;
-        IndexSearcher searcher = null;
-        try {
-            searcher = index.getSearcher();
+        return index.withSearcher(searcher -> {
             BooleanQuery query = new BooleanQuery();
             int j = 0;
             for (SequenceIterator i = fields.iterate(); i.hasNext(); j++) {
@@ -556,6 +549,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             if (clauses.length == 1) {
                 qu = clauses[0].getQuery();
             }
+            NodeSet resultSet = NodeSet.EMPTY_SET;
             if (contextSet != null && contextSet.hasOne() && contextSet.getItemType() != Type.DOCUMENT) {
                 NodesFilter filter = new NodesFilter(contextSet);
                 filter.init(searcher.getIndexReader());
@@ -564,10 +558,8 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             } else {
                 resultSet = doQuery(contextId, docs, contextSet, axis, searcher, null, qu, null);
             }
-        } finally {
-            index.releaseSearcher(searcher);
-        }
-        return resultSet;
+            return resultSet;
+        });
     }
 
 //    private OpenBitSet getDocs(DocumentSet docs, IndexSearcher searcher) throws IOException {
@@ -696,7 +688,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      *
      * @return List of QName objects on which indexes are defined
      */
-    private List<QName> getDefinedIndexes(List<QName> qnames) {
+    private List<QName> getDefinedIndexes(List<QName> qnames) throws IOException {
         List<QName> indexes = new ArrayList<QName>(20);
         if (qnames != null && !qnames.isEmpty()) {
             for (QName qname : qnames) {
@@ -710,10 +702,8 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         return getDefinedIndexesFor(null, indexes);
     }
 
-    private List<QName> getDefinedIndexesFor(QName qname, List<QName> indexes) {
-        IndexReader reader = null;
-        try {
-            reader = index.getReader();
+    private List<QName> getDefinedIndexesFor(QName qname, final List<QName> indexes) throws IOException {
+        return index.withReader(reader -> {
             for (FieldInfo info: MultiFields.getMergedFieldInfos(reader)) {
                 if (!FIELD_DOC_ID.equals(info.name)) {
                     QName name = LuceneUtil.decodeQName(info.name, index.getBrokerPool().getSymbols());
@@ -721,12 +711,8 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                         indexes.add(name);
                 }
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            index.releaseReader(reader);
-        }
-        return indexes;
+            return indexes;
+        });
     }
 
     protected BytesRef analyzeContent(String field, QName qname, String data, DocumentSet docs) throws XPathException {
@@ -935,53 +921,52 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     @Override
     public Occurrences[] scanIndex(XQueryContext context, DocumentSet docs, NodeSet nodes, Map hints) {
-        List<QName> qnames = hints == null ? null : (List<QName>)hints.get(QNAMES_KEY);
-        qnames = getDefinedIndexes(qnames);
-        //Expects a StringValue
-        String start = null, end = null;
-        long max = Long.MAX_VALUE;
-        if (hints != null) {
-            Object vstart = hints.get(START_VALUE);
-            Object vend = hints.get(END_VALUE);
-            start = vstart == null ? null : vstart.toString();
-            end = vend == null ? null : vend.toString();
-            IntegerValue vmax = (IntegerValue) hints.get(VALUE_COUNT);
-            max = vmax == null ? Long.MAX_VALUE : vmax.getValue();
+        try {
+            List<QName> qnames = hints == null ? null : (List<QName>)hints.get(QNAMES_KEY);
+            qnames = getDefinedIndexes(qnames);
+            //Expects a StringValue
+            String start = null, end = null;
+            long max = Long.MAX_VALUE;
+            if (hints != null) {
+                Object vstart = hints.get(START_VALUE);
+                Object vend = hints.get(END_VALUE);
+                start = vstart == null ? null : vstart.toString();
+                end = vend == null ? null : vend.toString();
+                IntegerValue vmax = (IntegerValue) hints.get(VALUE_COUNT);
+                max = vmax == null ? Long.MAX_VALUE : vmax.getValue();
+            }
+            return scanIndexByQName(qnames, docs, nodes, start, end, max);
+        } catch (IOException e) {
+            LOG.warn("Failed to scan index: " + e.getMessage(), e);
+            return new Occurrences[0];
         }
-        return scanIndexByQName(qnames, docs, nodes, start, end, max);
     }
 
     public Occurrences[] scanIndexByField(String field, DocumentSet docs, String start, long max) {
-        TreeMap<String, Occurrences> map = new TreeMap<String, Occurrences>();
-        IndexReader reader = null;
         try {
-            reader = index.getReader();
-            scan(docs, null, start, null, max, map, reader, field);
+            return index.withReader(reader -> {
+                TreeMap<String, Occurrences> map = new TreeMap<String, Occurrences>();
+                scan(docs, null, start, null, max, map, reader, field);
+
+                Occurrences[] occur = new Occurrences[map.size()];
+                return map.values().toArray(occur);
+            });
         } catch (IOException e) {
-            LOG.warn("Error while scanning lucene index entries: " + e.getMessage(), e);
-        } finally {
-            index.releaseReader(reader);
+            LOG.warn("Failed to scan index: " + e.getMessage(), e);
+            return new Occurrences[0];
         }
-        Occurrences[] occur = new Occurrences[map.size()];
-        return map.values().toArray(occur);
     }
 
-    private Occurrences[] scanIndexByQName(List<QName> qnames, DocumentSet docs, NodeSet nodes, String start, String end, long max) {
-        TreeMap<String, Occurrences> map = new TreeMap<String, Occurrences>();
-        IndexReader reader = null;
-        try {
-            reader = index.getReader();
+    private Occurrences[] scanIndexByQName(List<QName> qnames, DocumentSet docs, NodeSet nodes, String start, String end, long max) throws IOException {
+        return index.withReader(reader -> {
+            TreeMap<String, Occurrences> map = new TreeMap<String, Occurrences>();
             for (QName qname : qnames) {
                 String field = LuceneUtil.encodeQName(qname, index.getBrokerPool().getSymbols());
                 scan(docs, nodes, start, end, max, map, reader, field);
             }
-        } catch (IOException e) {
-            LOG.warn("Error while scanning lucene index entries: " + e.getMessage(), e);
-        } finally {
-            index.releaseReader(reader);
-        }
-        Occurrences[] occur = new Occurrences[map.size()];
-        return map.values().toArray(occur);
+            Occurrences[] occur = new Occurrences[map.size()];
+            return map.values().toArray(occur);
+        });
     }
 
     private void scan(DocumentSet docs, NodeSet nodes, String start, String end, long max, TreeMap<String, Occurrences> map, IndexReader reader, String field) throws IOException {
