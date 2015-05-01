@@ -46,6 +46,7 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.ElementValue;
 import org.exist.util.ByteConversion;
 import org.exist.xquery.TerminatedException;
+import org.exist.xquery.XPathException;
 import org.w3c.dom.Node;
 
 /**
@@ -56,16 +57,14 @@ public class QueryNodes {
 
     public static List<FacetResult> query(LuceneIndexWorker worker, QName qname, int contextId, DocumentSet docs,
             Query query, FacetSearchParams searchParams,
-            SearchCallback<NodeProxy> callback) 
-                    throws IOException, ParseException, TerminatedException {
+            SearchCallback<NodeProxy> callback)
+            throws IOException, ParseException, XPathException {
 
         final LuceneIndex index = worker.index;
 
         final Database db = index.getBrokerPool();
 
-        IndexSearcher searcher = null;
-        try {
-            searcher = index.getSearcher();
+        return index.withSearcher(searcher -> {
             final TaxonomyReader taxonomyReader = index.getTaxonomyReader();
 
             DocumentHitCollector collector = new DocumentHitCollector(db, worker, query, qname, contextId, docs, callback, searchParams, taxonomyReader);
@@ -73,17 +72,13 @@ public class QueryNodes {
             searcher.search(query, collector);
             
             return collector.getFacetResults();
-        } finally {
-            index.releaseSearcher(searcher);
-        }
+        });
     }
 
     public static List<FacetResult> query(LuceneIndexWorker worker, DocumentSet docs,
             List<QName> qnames, int contextId, String queryStr, FacetSearchParams searchParams, Properties options,
             SearchCallback<NodeProxy> callback) throws IOException, ParseException,
-            TerminatedException {
-
-        qnames = worker.getDefinedIndexes(qnames);
+            XPathException {
 
         final LuceneIndex index = worker.index;
 
@@ -91,14 +86,12 @@ public class QueryNodes {
         
         DBBroker broker = db.getActiveBroker();
         
-        IndexSearcher searcher = null;
-        try {
-            searcher = index.getSearcher();
+        return index.withSearcher(searcher -> {
             final TaxonomyReader taxonomyReader = index.getTaxonomyReader();
 
             DocumentHitCollector collector = new DocumentHitCollector(db, worker, null, null, contextId, docs, callback, searchParams, taxonomyReader);
-
-            for (QName qname : qnames) {
+            final List <QName> definedIndexes = worker.getDefinedIndexes(qnames);
+            for (QName qname : definedIndexes) {
 
                 String field = LuceneUtil.encodeQName(qname, db.getSymbols());
 
@@ -106,20 +99,22 @@ public class QueryNodes {
 
                 QueryParser parser = new QueryParser(LuceneIndex.LUCENE_VERSION_IN_USE, field, analyzer);
 
-                worker.setOptions(options, parser);
+                try {
+                    worker.setOptions(options, parser);
 
-                Query query = parser.parse(queryStr);
-                
-                collector.qname = qname;
-                collector.query = query;
+                    Query query = parser.parse(queryStr);
 
-                searcher.search(query, collector);
+                    collector.qname = qname;
+                    collector.query = query;
+
+                    searcher.search(query, collector);
+                } catch (ParseException e) {
+                    throw new XPathException("Syntax error in lucene query: " + e.getMessage(), e);
+                }
             }
             
             return collector.getFacetResults();
-        } finally {
-            index.releaseSearcher(searcher);
-        }
+        });
     }
     
     private static class DocumentHitCollector extends QueryFacetCollector {

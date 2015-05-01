@@ -315,26 +315,25 @@ public class LuceneMatchListener extends AbstractMatchListener {
      * Get all query terms from the original queries.
      */
     private void getTerms() {
-        Set<Query> queries = new HashSet<>();
-        termMap = new TreeMap<>();
-        Match nextMatch = this.match;
-        while (nextMatch != null) {
-            if (nextMatch.getIndexId() == LuceneIndex.ID) {
-                Query query = ((LuceneIndexWorker.LuceneMatch) nextMatch).getQuery();
-                if (!queries.contains(query)) {
-                    queries.add(query);
-                    IndexReader reader = null;
-                    try {
-                        reader = index.getReader();
-                        LuceneUtil.extractTerms(query, termMap, reader, false);
-                    } catch (IOException | UnsupportedOperationException e) {
-                        LOG.warn("Error while highlighting lucene query matches: " + e.getMessage(), e);
-                    } finally {
-                        index.releaseReader(reader);
+        try {
+            index.withReader(reader -> {
+                Set<Query> queries = new HashSet<>();
+                termMap = new TreeMap<>();
+                Match nextMatch = this.match;
+                while (nextMatch != null) {
+                    if (nextMatch.getIndexId() == LuceneIndex.ID) {
+                        Query query = ((LuceneIndexWorker.LuceneMatch) nextMatch).getQuery();
+                        if (!queries.contains(query)) {
+                            queries.add(query);
+                            LuceneUtil.extractTerms(query, termMap, reader, false);
+                        }
                     }
+                    nextMatch = nextMatch.getNextMatch();
                 }
-            }
-            nextMatch = nextMatch.getNextMatch();
+                return null;
+            });
+        } catch (IOException e) {
+            LOG.warn("Match listener caught IO exception while reading query tersm: " + e.getMessage(), e);
         }
     }
 
