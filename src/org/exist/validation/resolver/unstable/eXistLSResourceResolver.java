@@ -27,7 +27,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import org.exist.protocolhandler.embedded.EmbeddedInputStream;
 import org.exist.protocolhandler.xmldb.XmldbURL;
 import org.exist.protocolhandler.xmlrpc.XmlrpcInputStream;
@@ -74,13 +73,13 @@ public class eXistLSResourceResolver implements LSResourceResolver {
         }
 
         InputStream is = null;
-        if(resourcePath.startsWith("xmldb:")){
+        if (resourcePath.startsWith("xmldb:")) {
             final XmldbURL xmldbURL = new XmldbURL(resourcePath);
-            if(xmldbURL.isEmbedded()){
-                is = new EmbeddedInputStream( xmldbURL );
+            if (xmldbURL.isEmbedded()) {
+                is = new EmbeddedInputStream(xmldbURL);
 
             } else {
-                is = new XmlrpcInputStream( xmldbURL );
+                is = new XmlrpcInputStream(xmldbURL);
             }
 
         } else {
