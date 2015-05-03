@@ -675,7 +675,7 @@ public class ElementImpl extends NamedNode implements Element {
                     if(name == null) {
                         name = attr.getName();
                     }
-                    final QName attrName = new QName(name, ns, prefix);
+                    final QName attrName = new QName(name, ns, prefix, ElementValue.ATTRIBUTE);
                     final AttrImpl attrib = new AttrImpl(attrName, attr.getValue(), broker.getBrokerPool().getSymbols());
                     attrib.setNodeId(newNodeId);
                     attrib.setOwnerDocument(owner);
@@ -683,8 +683,6 @@ public class ElementImpl extends NamedNode implements Element {
                         // an xml:id attribute. Normalize the attribute and set its type to ID
                         attrib.setValue(StringValue.trimWhitespace(StringValue.collapseWhitespace(attrib.getValue())));
                         attrib.setType(AttrImpl.ID);
-                    } else {
-                        attrib.setQName(new QName(attrib.getQName(), ElementValue.ATTRIBUTE));
                     }
                     broker.insertNodeAfter(transaction, last.getNode(), attrib);
                     broker.indexNode(transaction, attrib, lastPath);

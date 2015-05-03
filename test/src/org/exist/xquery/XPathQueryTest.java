@@ -174,7 +174,17 @@ public class XPathQueryTest {
         "    <elem3>val2</elem3>\n" +
         " </elem2>\n" +
         "</elem1>";
-    
+
+    private final static String COLLECTION_CONF = "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
+            "    <index>\n" +
+            "        <!-- Range index for fn:id and fn:idref -->" +
+            "        <range>" +
+            "            <create qname=\"@xml:id\" type=\"xs:string\"/>" +
+            "            <create qname=\"@xml:idref\" type=\"xs:string\"/>" +
+            "        </range>" +
+            "    </index>" +
+            "</collection>";
+
     // Added by Geoff Shuetrim (geoff@galexy.net) to highlight problems with XPath queries of elements called 'xpointer'.
     private final static String xpointerElementName =
             "<test><xpointer/></test>";
@@ -198,6 +208,12 @@ public class XPathQueryTest {
                 (CollectionManagementService) root.getService(
                 "CollectionManagementService",
                 "1.0");
+
+        final Collection testCollection_confCollection = service.createCollection("system/config/db/test");
+        final Resource conf = testCollection_confCollection.createResource("collection.xconf", "XMLResource");
+        conf.setContent(COLLECTION_CONF);
+        testCollection_confCollection.storeResource(conf);
+
         testCollection = service.createCollection("test");
         assertNotNull(testCollection);
     }

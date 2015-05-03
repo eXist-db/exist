@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2013 The eXist Project
+ *  Copyright (C) 2001-2015 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -21,11 +21,8 @@
  */
 package org.exist.xquery.modules.range;
 
-import org.exist.indexing.range.RangeIndex;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
-
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -61,21 +58,6 @@ public class RangeIndexModule extends AbstractInternalModule {
         new FunctionDef(IndexKeys.signatures[0], IndexKeys.class),
         new FunctionDef(IndexKeys.signatures[1], IndexKeys.class)
     };
-
-    public final static Map<String, RangeIndex.Operator> OPERATOR_MAP = new HashMap<String, RangeIndex.Operator>();
-    static {
-        OPERATOR_MAP.put("eq", RangeIndex.Operator.EQ);
-        OPERATOR_MAP.put("lt", RangeIndex.Operator.LT);
-        OPERATOR_MAP.put("gt", RangeIndex.Operator.GT);
-        OPERATOR_MAP.put("ge", RangeIndex.Operator.GE);
-        OPERATOR_MAP.put("le", RangeIndex.Operator.LE);
-        OPERATOR_MAP.put("ne", RangeIndex.Operator.NE);
-        OPERATOR_MAP.put("starts-with", RangeIndex.Operator.STARTS_WITH);
-        OPERATOR_MAP.put("ends-with", RangeIndex.Operator.ENDS_WITH);
-        OPERATOR_MAP.put("contains", RangeIndex.Operator.CONTAINS);
-        OPERATOR_MAP.put("matches", RangeIndex.Operator.MATCH);
-
-    }
 
     public RangeIndexModule(Map<String, List<? extends Object>> parameters) {
         super(functions, parameters, false);

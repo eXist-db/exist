@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2013 The eXist Project
+ *  Copyright (C) 2001-2015 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -39,33 +39,6 @@ public class RangeIndex extends LuceneIndex {
     protected static final Logger LOG = LogManager.getLogger(RangeIndex.class);
 
     public final static String ID = RangeIndex.class.getName();
-
-    /**
-     * Enumeration of supported operators and optimized functions.
-     */
-    public enum Operator {
-        GT ("gt"),
-        LT ("lt"),
-        EQ ("eq"),
-        GE ("ge"),
-        LE ("le"),
-        NE ("ne"),
-        ENDS_WITH ("ends-with"),
-        STARTS_WITH ("starts-with"),
-        CONTAINS ("contains"),
-        MATCH ("matches");
-
-        private final String name;
-
-        Operator(String name) {
-            this.name = name;
-        }
-
-        @Override
-        public String toString() {
-            return name;
-        }
-    };
 
     private static final String DIR_NAME = "range";
 

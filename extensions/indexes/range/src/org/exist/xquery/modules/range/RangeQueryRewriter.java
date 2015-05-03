@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2013 The eXist Project
+ *  Copyright (C) 2001-2015 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -21,9 +21,10 @@
  */
 package org.exist.xquery.modules.range;
 
-import org.exist.indexing.range.*;
+import org.exist.indexing.QueryableRangeIndex;
 import org.exist.storage.NodePath;
 import org.exist.xquery.*;
+import org.exist.xquery.functions.fn.FunMatches;
 import org.exist.xquery.Constants.Comparison;
 
 import java.util.ArrayList;
@@ -35,14 +36,14 @@ import java.util.List;
  */
 public class RangeQueryRewriter extends QueryRewriter {
 
-    public RangeQueryRewriter(XQueryContext context) {
+    public RangeQueryRewriter(final XQueryContext context) {
         super(context);
     }
 
     @Override
-    public Pragma rewriteLocationStep(LocationStep locationStep) throws XPathException {
+    public Pragma rewriteLocationStep(final LocationStep locationStep) throws XPathException {
         if (locationStep.hasPredicates()) {
-            Expression parentExpr = locationStep.getParentExpression();
+            final Expression parentExpr = locationStep.getParentExpression();
             if ((parentExpr instanceof RewritableExpression)) {
                 // Step 1: replace all optimizable expressions within predicates with
                 // calls to the range functions. If those functions are used or not will
@@ -53,16 +54,16 @@ public class RangeQueryRewriter extends QueryRewriter {
                 // will become true if optimizable expression is found
                 boolean canOptimize = false;
                 // get path of path expression before the predicates
-                NodePath contextPath = toNodePath(getPrecedingSteps(locationStep));
+                final NodePath contextPath = toNodePath(getPrecedingSteps(locationStep));
                 // process the remaining predicates
-                for (Predicate pred : preds) {
+                for (final Predicate pred : preds) {
                     if (pred.getLength() != 1) {
                         // can only optimize predicates with one expression
                         break;
                     }
 
-                    Expression innerExpr = pred.getExpression(0);
-                    List<LocationStep> steps = getStepsToOptimize(innerExpr);
+                    final Expression innerExpr = pred.getExpression(0);
+                    final List<LocationStep> steps = getStepsToOptimize(innerExpr);
                     if (steps == null || steps.size() == 0) {
                         // no optimizable steps found
                         continue;
@@ -71,7 +72,7 @@ public class RangeQueryRewriter extends QueryRewriter {
                     // check if inner steps are on an axis we can optimize
                     final int axis;
                     if (innerExpr instanceof InternalFunctionCall) {
-                        InternalFunctionCall fcall = (InternalFunctionCall) innerExpr;
+                        final InternalFunctionCall fcall = (InternalFunctionCall) innerExpr;
                         axis = ((Optimizable) fcall.getFunction()).getOptimizeAxis();
                     } else {
                         axis = ((Optimizable) innerExpr).getOptimizeAxis();
@@ -84,11 +85,11 @@ public class RangeQueryRewriter extends QueryRewriter {
                     }
 
                     // compute left hand path
-                    NodePath innerPath = toNodePath(steps);
+                    final NodePath innerPath = toNodePath(steps);
                     if (innerPath == null) {
                         continue;
                     }
-                    NodePath path;
+                    final NodePath path;
                     if (contextPath == null) {
                         path = innerPath;
                     } else {
@@ -99,7 +100,7 @@ public class RangeQueryRewriter extends QueryRewriter {
                     if (path.length() > 0) {
                         // replace with call to lookup function
                         // collect arguments
-                        Lookup func = rewrite(innerExpr, path);
+                        final Lookup func = rewrite(innerExpr, path);
                         // preserve original comparison: may need it for in-memory lookups
                         func.setFallback(innerExpr, axis);
                         func.setLocation(innerExpr.getLine(), innerExpr.getColumn());
@@ -120,23 +121,33 @@ public class RangeQueryRewriter extends QueryRewriter {
         return null;
     }
 
-    protected static Lookup rewrite(Expression expression, NodePath path) throws XPathException {
-        ArrayList<Expression> eqArgs = new ArrayList<Expression>(2);
+    protected static Lookup rewrite(final Expression expression, final NodePath path) throws XPathException {
+        final List<Expression> eqArgs = new ArrayList<>(2);
         if (expression instanceof GeneralComparison) {
-            GeneralComparison comparison = (GeneralComparison) expression;
+            final GeneralComparison comparison = (GeneralComparison) expression;
             eqArgs.add(comparison.getLeft());
             eqArgs.add(comparison.getRight());
-            Lookup func = Lookup.create(comparison.getContext(), getOperator(expression), path);
+            final Lookup func = Lookup.create(comparison.getContext(), getOperator(expression), path);
             func.setArguments(eqArgs);
             return func;
         } else if (expression instanceof InternalFunctionCall) {
-            InternalFunctionCall fcall = (InternalFunctionCall) expression;
-            Function function = fcall.getFunction();
-            if (function instanceof Lookup) {
+            final InternalFunctionCall fcall = (InternalFunctionCall) expression;
+            final Function function = fcall.getFunction();
+            if (function instanceof Lookup || function instanceof FunMatches) {
                 if (function.isCalledAs("matches")) {
                     eqArgs.add(function.getArgument(0));
                     eqArgs.add(function.getArgument(1));
-                    Lookup func = Lookup.create(function.getContext(), RangeIndex.Operator.MATCH, path);
+
+                    final QueryableRangeIndex.Operator op;
+                    if(fcall.getArgumentCount() == 3) {
+                        final Expression flagsArg = function.getArgument(2);
+                        eqArgs.add(flagsArg);
+                        op = QueryableRangeIndex.OperatorFactory.match(flagsArg.eval(expression.getContext().getContextSequence()).itemAt(0).getStringValue());
+                    } else {
+                        op = QueryableRangeIndex.OperatorFactory.MATCHES_EXCLUDING_FLAGS;
+                    }
+
+                    final Lookup func = Lookup.create(function.getContext(), op, path);
                     func.setArguments(eqArgs);
                     return func;
                 }
@@ -145,18 +156,18 @@ public class RangeQueryRewriter extends QueryRewriter {
         return null;
     }
 
-    protected static List<LocationStep> getStepsToOptimize(Expression expr) {
+    protected static List<LocationStep> getStepsToOptimize(final Expression expr) {
         if (expr instanceof GeneralComparison) {
-            GeneralComparison comparison = (GeneralComparison) expr;
+            final GeneralComparison comparison = (GeneralComparison) expr;
             return BasicExpressionVisitor.findLocationSteps(comparison.getLeft());
         } else if (expr instanceof InternalFunctionCall) {
-            InternalFunctionCall fcall = (InternalFunctionCall) expr;
-            Function function = fcall.getFunction();
-            if (function instanceof Lookup) {
+            final InternalFunctionCall fcall = (InternalFunctionCall) expr;
+            final Function function = fcall.getFunction();
+            if (function instanceof Lookup || function instanceof FunMatches) {
                 if (function.isCalledAs("matches")) {
                     return BasicExpressionVisitor.findLocationSteps(function.getArgument(0));
                 } else {
-                    Expression original = ((Lookup)function).getFallback();
+                    final Expression original = ((Lookup)function).getFallback();
                     return getStepsToOptimize(original);
                 }
             }
@@ -164,71 +175,80 @@ public class RangeQueryRewriter extends QueryRewriter {
         return null;
     }
 
-    protected static RangeIndex.Operator getOperator(Expression expr) {
+    protected static QueryableRangeIndex.Operator getOperator(Expression expr) {
         if (expr instanceof InternalFunctionCall) {
-            InternalFunctionCall fcall = (InternalFunctionCall) expr;
-            Function function = fcall.getFunction();
+            final InternalFunctionCall fcall = (InternalFunctionCall) expr;
+            final Function function = fcall.getFunction();
             if (function instanceof Lookup) {
                 expr = ((Lookup)function).getFallback();
             }
         }
-        RangeIndex.Operator operator = RangeIndex.Operator.EQ;
+        QueryableRangeIndex.Operator operator = QueryableRangeIndex.OperatorFactory.EQ;
         if (expr instanceof GeneralComparison) {
-            GeneralComparison comparison = (GeneralComparison) expr;
+            final GeneralComparison comparison = (GeneralComparison) expr;
             final Comparison relation = comparison.getRelation();
             switch(relation) {
                 case LT:
-                    operator = RangeIndex.Operator.LT;
+                    operator = QueryableRangeIndex.OperatorFactory.LT;
                     break;
                 case GT:
-                    operator = RangeIndex.Operator.GT;
+                    operator = QueryableRangeIndex.OperatorFactory.GT;
                     break;
                 case LTEQ:
-                    operator = RangeIndex.Operator.LE;
+                    operator = QueryableRangeIndex.OperatorFactory.LE;
                     break;
                 case GTEQ:
-                    operator = RangeIndex.Operator.GE;
+                    operator = QueryableRangeIndex.OperatorFactory.GE;
                     break;
                 case EQ:
                     switch (comparison.getTruncation()) {
                         case BOTH:
-                            operator = RangeIndex.Operator.CONTAINS;
+                            operator = QueryableRangeIndex.OperatorFactory.CONTAINS;
                             break;
                         case LEFT:
-                            operator = RangeIndex.Operator.ENDS_WITH;
+                            operator = QueryableRangeIndex.OperatorFactory.ENDS_WITH;
                             break;
                         case RIGHT:
-                            operator = RangeIndex.Operator.STARTS_WITH;
+                            operator = QueryableRangeIndex.OperatorFactory.STARTS_WITH;
                             break;
                         default:
-                            operator = RangeIndex.Operator.EQ;
+                            operator = QueryableRangeIndex.OperatorFactory.EQ;
                             break;
                     }
                     break;
                 case NEQ:
-                    operator = RangeIndex.Operator.NE;
+                    operator = QueryableRangeIndex.OperatorFactory.NE;
                     break;
-
             }
         } else if (expr instanceof InternalFunctionCall) {
-            InternalFunctionCall fcall = (InternalFunctionCall) expr;
-            Function function = fcall.getFunction();
-            if (function instanceof Lookup && function.isCalledAs("matches")) {
-                operator = RangeIndex.Operator.MATCH;
+            final InternalFunctionCall fcall = (InternalFunctionCall) expr;
+            final Function function = fcall.getFunction();
+            if ((function instanceof Lookup || function instanceof FunMatches) && function.isCalledAs("matches")) {
+                if(function.getArgumentCount() == 3) {
+                    final String flags = function.getArgument(2).eval(expr.getContext().getContextSequence()).itemAt(0).getStringValue();
+                    operator = QueryableRangeIndex.OperatorFactory.match(flags);
+                } else {
+                    operator = QueryableRangeIndex.OperatorFactory.MATCHES_EXCLUDING_FLAGS;
+                }
             }
-        } else if (expr instanceof Lookup && ((Function)expr).isCalledAs("matches")) {
-            operator = RangeIndex.Operator.MATCH;
+        } else if ((expr instanceof Lookup || expr instanceof FunMatches) && ((Function)expr).isCalledAs("matches")) {
+            if(((Function)expr).getArgumentCount() == 3) {
+                final String flags = ((Function)expr).getArgument(2).eval(expr.getContext().getContextSequence()).itemAt(0).getStringValue();
+                operator = QueryableRangeIndex.OperatorFactory.match(flags);
+            } else {
+                operator = QueryableRangeIndex.OperatorFactory.MATCHES_EXCLUDING_FLAGS;
+            }
         }
         return operator;
     }
 
-    protected static NodePath toNodePath(List<LocationStep> steps) {
-        NodePath path = new NodePath();
-        for (LocationStep step: steps) {
+    protected static NodePath toNodePath(final List<LocationStep> steps) {
+        final NodePath path = new NodePath();
+        for (final LocationStep step: steps) {
             if (step == null) {
                 return null;
             }
-            NodeTest test = step.getTest();
+            final NodeTest test = step.getTest();
             if (test.isWildcardTest() && step.getAxis() == Constants.SELF_AXIS) {
                 //return path;
                 continue;
@@ -246,14 +266,14 @@ public class RangeQueryRewriter extends QueryRewriter {
         return path;
     }
 
-    protected static List<LocationStep> getPrecedingSteps(LocationStep current) {
-        Expression parentExpr = current.getParentExpression();
+    protected static List<LocationStep> getPrecedingSteps(final LocationStep current) {
+        final Expression parentExpr = current.getParentExpression();
         if (!(parentExpr instanceof RewritableExpression)) {
             return null;
         }
-        final List<LocationStep> prevSteps = new ArrayList<LocationStep>();
+        final List<LocationStep> prevSteps = new ArrayList<>();
         prevSteps.add(current);
-        RewritableExpression parent = (RewritableExpression) parentExpr;
+        final RewritableExpression parent = (RewritableExpression) parentExpr;
         Expression previous = parent.getPrevious(current);
         if (previous != null) {
             while (previous != null && previous != parent.getFirst() && previous instanceof LocationStep) {

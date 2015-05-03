@@ -26,6 +26,7 @@ import org.custommonkey.xmlunit.Diff;
 import org.exist.Namespaces;
 import org.exist.test.ExistWebServer;
 import org.exist.xmldb.XmldbURI;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -53,6 +54,7 @@ public class XIncludeSerializerTest {
 
     private final static XmldbURI XINCLUDE_COLLECTION = XmldbURI.ROOT_COLLECTION_URI.append("xinclude_test");
     private final static XmldbURI XINCLUDE_NESTED_COLLECTION = XmldbURI.ROOT_COLLECTION_URI.append("xinclude_test/data");
+    private final static XmldbURI XINCLUDE_NESTED_COLLECTION_CONFIG_COLLECTION =  XmldbURI.CONFIG_COLLECTION_URI.append(XmldbURI.ROOT_COLLECTION_URI.append("xinclude_test/data"));
 
     private final static String getXmlRpcApi() {
         return "http://127.0.0.1:" + existWebServer.getPort() + "/xmlrpc";
@@ -61,6 +63,16 @@ public class XIncludeSerializerTest {
     private final static String getRestUri()  {
         return "http://admin:admin@127.0.0.1:" + existWebServer.getPort() + "/db/xinclude_test";
     }
+
+    private final static String COLLECTION_XCONF ="<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
+            "    <index>" +
+            "        <!-- Range index for fn:id (needed by XPointer) -->" +
+            "        <range>" +
+            "            <create qname=\"@xml:id\" type=\"xs:string\"/>" +
+            "        </range>" +
+            "    </index>" +
+            "</collection>";
+
 
     private final static String XML_DATA1
             = "<test xmlns:xi='" + Namespaces.XINCLUDE_NS + "'>"
@@ -358,6 +370,16 @@ public class XIncludeSerializerTest {
         xmlrpc.execute("createCollection", params);
 
         params.clear();
+        params.add(XINCLUDE_NESTED_COLLECTION_CONFIG_COLLECTION.toString());
+        xmlrpc.execute("createCollection", params);
+
+        params.clear();
+        params.add(COLLECTION_XCONF);
+        params.add("/db/system/config/db/xinclude_test/data/collection.xconf");
+        params.add(1);
+        xmlrpc.execute("parse", params);
+
+        params.clear();
         params.add(XML_DATA1);
         params.add("/db/xinclude_test/test_simple.xml");
         params.add(1);
@@ -410,6 +432,19 @@ public class XIncludeSerializerTest {
         params.add("/db/xinclude_test/test_fallback2.xml");
         params.add(1);
         xmlrpc.execute("parse", params);
+    }
+
+    @AfterClass
+    public static void stopDB() throws XmlRpcException, MalformedURLException {
+        final XmlRpcClient xmlrpc = getClient();
+        final List<Object> params = new ArrayList<>();
+
+        params.add(XINCLUDE_COLLECTION.toString());
+        xmlrpc.execute("removeCollection", params);
+
+        params.clear();
+        params.add(XINCLUDE_NESTED_COLLECTION_CONFIG_COLLECTION.toString());
+        xmlrpc.execute("removeCollection", params);
     }
 
     public static void main(String[] args) {

@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2013 The eXist Project
+ *  Copyright (C) 2001-2015 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -26,6 +26,7 @@ import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.QName;
 import org.exist.dom.persistent.VirtualNodeSet;
+import org.exist.indexing.QueryableRangeIndex;
 import org.exist.indexing.range.RangeIndex;
 import org.exist.indexing.range.RangeIndexConfig;
 import org.exist.indexing.range.RangeIndexConfigElement;
@@ -134,7 +135,7 @@ public class Lookup extends Function implements Optimizable {
         )
     };
 
-    public static Lookup create(XQueryContext context, RangeIndex.Operator operator, NodePath contextPath) {
+    public static Lookup create(XQueryContext context, QueryableRangeIndex.Operator operator, NodePath contextPath) {
         for (FunctionSignature sig: signatures) {
             if (sig.getName().getLocalPart().equals(operator.toString())) {
                 return new Lookup(context, sig, contextPath);
@@ -267,7 +268,7 @@ public class Lookup extends Function implements Optimizable {
             qnames.add(contextQName);
         }
 
-        final RangeIndex.Operator operator = getOperator();
+        final QueryableRangeIndex.Operator operator = getOperator();
 
         try {
             preselectResult = index.query(getExpressionId(), docs, contextSequence.toNodeSet(), qnames, keys, operator, NodeSet.DESCENDANT);
@@ -285,9 +286,9 @@ public class Lookup extends Function implements Optimizable {
         return preselectResult;
     }
 
-    private RangeIndex.Operator getOperator() {
+    private QueryableRangeIndex.Operator getOperator() {
         final String calledAs = getSignature().getName().getLocalPart();
-        return RangeIndexModule.OPERATOR_MAP.get(calledAs);
+        return QueryableRangeIndex.Operator.fromName(calledAs);
     }
 
     private AtomicValue[] getKeys(Sequence contextSequence) throws XPathException {
@@ -338,7 +339,7 @@ public class Lookup extends Function implements Optimizable {
                     qnames = new ArrayList<QName>(1);
                     qnames.add(contextQName);
                 }
-                final RangeIndex.Operator operator = getOperator();
+                final QueryableRangeIndex.Operator operator = getOperator();
 
                 try {
                     NodeSet inNodes = input.toNodeSet();
