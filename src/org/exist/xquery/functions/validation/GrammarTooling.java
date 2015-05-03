@@ -255,13 +255,13 @@ public class GrammarTooling extends BasicFunction  {
         final int nodeNr = builder.startElement("", "report", "report",null);
         
         final Grammar xsds[] = grammarpool.retrieveInitialGrammarSet(TYPE_XSD);
-        for(int i=0; i<xsds.length; i++){
-            writeGrammar(xsds[i], builder);
+        for (Grammar xsd : xsds) {
+            writeGrammar(xsd, builder);
         }
         
         final Grammar dtds[] = grammarpool.retrieveInitialGrammarSet(TYPE_DTD);
-        for(int i=0; i<dtds.length; i++){
-            writeGrammar(dtds[i], builder);
+        for (Grammar dtd : dtds) {
+            writeGrammar(dtd, builder);
         }
 
         builder.endElement();

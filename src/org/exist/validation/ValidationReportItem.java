@@ -83,17 +83,25 @@ public class ValidationReportItem {
         return this.systemId;
     }
     
-    public String getTypeText(){
-        
-        String reportType="UNKNOWN";
-        
+    public String getTypeText() {
+
+        String reportType;
+
         switch (type) {
-            case WARNING:  reportType="Warning"; break;
-            case ERROR:    reportType="Error"; break;
-            case FATAL:    reportType="Fatal"; break;
-            default:       reportType="Unknown Error type"; break;
+            case WARNING:
+                reportType = "Warning";
+                break;
+            case ERROR:
+                reportType = "Error";
+                break;
+            case FATAL:
+                reportType = "Fatal";
+                break;
+            default:
+                reportType = "Unknown Error type";
+                break;
         }
-        
+
         return reportType;
     }
     

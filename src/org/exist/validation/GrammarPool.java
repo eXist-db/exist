@@ -44,7 +44,7 @@ public class GrammarPool implements XMLGrammarPool {
     
     private final static Logger logger = LogManager.getLogger(GrammarPool.class);
     
-    private XMLGrammarPool pool;
+    private final XMLGrammarPool pool;
     
     /**
      * Constructs a grammar pool with a default number of buckets. 
@@ -129,23 +129,26 @@ public class GrammarPool implements XMLGrammarPool {
      *               if no such Grammar is known.
      */
     public Grammar retrieveGrammar(XMLGrammarDescription xgd) {
-        
-        if(xgd==null){
-            if (logger.isDebugEnabled())
-                {logger.debug("XMLGrammarDescription is null");}
+
+        if (xgd == null) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("XMLGrammarDescription is null");
+            }
             return null;
         }
-        
-        if(xgd.getNamespace()!=null){
-            if (logger.isDebugEnabled())
-                {logger.debug("Retrieve grammar for namespace '"+xgd.getNamespace()+"'.");}
+
+        if (xgd.getNamespace() != null) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("Retrieve grammar for namespace '" + xgd.getNamespace() + "'.");
+            }
         }
-        
-        if(xgd.getPublicId()!=null){
-            if (logger.isDebugEnabled())
-                {logger.debug("Retrieve grammar for publicId '"+xgd.getPublicId()+"'.");}
+
+        if (xgd.getPublicId() != null) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("Retrieve grammar for publicId '" + xgd.getPublicId() + "'.");
+            }
         }
-               
+
         return pool.retrieveGrammar(xgd);
     }
     
@@ -182,12 +185,14 @@ public class GrammarPool implements XMLGrammarPool {
         //    logger.debug("Removing DTD's from grammarpool.");
 
         final Grammar dtds[] = retrieveInitialGrammarSet(Namespaces.DTD_NS);
-        if(dtds.length>0){
-            if (logger.isDebugEnabled())
-                {logger.debug("Removing "+dtds.length+" DTDs.");}
+        if (dtds.length > 0) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("Removing " + dtds.length + " DTDs.");
+            }
             final Grammar schemas[] = retrieveInitialGrammarSet(Namespaces.SCHEMA_NS);
             clear();
             cacheGrammars(Namespaces.SCHEMA_NS, schemas);
+            
         } else {
             //if (logger.isDebugEnabled())
             //    logger.debug("No DTDs to be removed.");

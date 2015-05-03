@@ -26,7 +26,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.xerces.util.XMLCatalogResolver;
@@ -224,13 +223,7 @@ public class eXistXMLCatalogResolver extends XMLCatalogResolver {
     }
     
     private String getXriDetails(XMLResourceIdentifier xrid){
-        final StringBuilder sb = new StringBuilder();
-        sb.append("PublicId='").append(xrid.getPublicId()).append("' ");
-        sb.append("BaseSystemId='").append(xrid.getBaseSystemId()).append("' ");
-        sb.append("ExpandedSystemId='").append(xrid.getExpandedSystemId()).append("' ");
-        sb.append("LiteralSystemId='").append(xrid.getLiteralSystemId()).append("' ");
-        sb.append("Namespace='").append(xrid.getNamespace()).append("' ");
-        return sb.toString();
+        return "PublicId='" + xrid.getPublicId() + "' " + "BaseSystemId='" + xrid.getBaseSystemId() + "' " + "ExpandedSystemId='" + xrid.getExpandedSystemId() + "' " + "LiteralSystemId='" + xrid.getLiteralSystemId() + "' " + "Namespace='" + xrid.getNamespace() + "' ";
     }
 
 }
