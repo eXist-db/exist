@@ -12,8 +12,7 @@
                 <index>
                     <!-- Range index for fn:id (needed by XPointer) -->
                     <range>
-                        <create qname="@xml:id" type="xs:string"/>
-                        <create qname="@xml:idref" type="xs:string"/>
+                        <ID/>
                     </range>
                 </index>
             </collection>

@@ -27,7 +27,7 @@ import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.QName;
 import org.exist.indexing.QueryableRangeIndex;
 import org.exist.indexing.range.RangeIndex;
-import org.exist.indexing.range.RangeIndexConfig;
+import org.exist.indexing.range.config.RangeIndexConfig;
 import org.exist.indexing.range.RangeIndexWorker;
 import org.exist.storage.IndexSpec;
 import org.exist.xmldb.XmldbURI;

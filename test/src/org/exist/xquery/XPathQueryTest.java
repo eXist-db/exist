@@ -179,8 +179,8 @@ public class XPathQueryTest {
             "    <index>\n" +
             "        <!-- Range index for fn:id and fn:idref -->" +
             "        <range>" +
-            "            <create qname=\"@xml:id\" type=\"xs:string\"/>" +
-            "            <create qname=\"@xml:idref\" type=\"xs:string\"/>" +
+            "            <ID/>" +
+            "            <IDREF/>" +
             "        </range>" +
             "    </index>" +
             "</collection>";

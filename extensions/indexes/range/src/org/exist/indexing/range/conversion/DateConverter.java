@@ -25,7 +25,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.LongField;
-import org.exist.indexing.range.RangeIndexConfigElement;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.DateValue;
 import org.exist.xquery.value.TimeUtils;
@@ -68,7 +67,7 @@ public class DateConverter implements TypeConverter {
                 }
                 dv = new DateValue(content);
             }
-            final long dl = RangeIndexConfigElement.dateToLong(dv);
+            final long dl = TypeConversion.dateToLong(dv);
             return new LongField(fieldName, dl, LongField.TYPE_NOT_STORED);
         } catch (XPathException e) {
             // wrong type: ignore

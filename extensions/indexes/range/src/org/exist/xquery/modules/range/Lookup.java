@@ -27,10 +27,10 @@ import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.QName;
 import org.exist.dom.persistent.VirtualNodeSet;
 import org.exist.indexing.QueryableRangeIndex;
-import org.exist.indexing.range.RangeIndex;
-import org.exist.indexing.range.RangeIndexConfig;
-import org.exist.indexing.range.RangeIndexConfigElement;
-import org.exist.indexing.range.RangeIndexWorker;
+import org.exist.indexing.range.*;
+import org.exist.indexing.range.config.ComplexGeneralRangeIndexConfigElement;
+import org.exist.indexing.range.config.RangeIndexConfig;
+import org.exist.indexing.range.config.RangeIndexConfigElement;
 import org.exist.storage.ElementValue;
 import org.exist.storage.IndexSpec;
 import org.exist.storage.NodePath;
@@ -409,7 +409,7 @@ public class Lookup extends Function implements Optimizable {
                 RangeIndexConfig config = (RangeIndexConfig) idxConf.getCustomIndexSpec(RangeIndex.ID);
                 if (config != null) {
                     RangeIndexConfigElement rice = config.find(path);
-                    if (rice != null && !rice.isComplex()) {
+                    if (rice != null && !(rice instanceof ComplexGeneralRangeIndexConfigElement)) {
                         return rice;
                     }
                 }

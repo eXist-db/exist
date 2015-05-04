@@ -68,7 +68,7 @@ public class XIncludeSerializerTest {
             "    <index>" +
             "        <!-- Range index for fn:id (needed by XPointer) -->" +
             "        <range>" +
-            "            <create qname=\"@xml:id\" type=\"xs:string\"/>" +
+            "            <ID/>" +
             "        </range>" +
             "    </index>" +
             "</collection>";

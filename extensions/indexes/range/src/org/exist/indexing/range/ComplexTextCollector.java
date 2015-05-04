@@ -3,6 +3,8 @@ package org.exist.indexing.range;
 import org.exist.dom.persistent.AttrImpl;
 import org.exist.dom.persistent.AbstractCharacterData;
 import org.exist.dom.QName;
+import org.exist.indexing.range.config.ComplexGeneralRangeIndexConfigElement;
+import org.exist.indexing.range.config.RangeIndexConfigField;
 import org.exist.storage.NodePath;
 
 import java.util.*;
@@ -10,12 +12,12 @@ import java.util.*;
 public class ComplexTextCollector implements TextCollector {
 
     private NodePath parentPath;
-    private ComplexRangeIndexConfigElement config;
+    private ComplexGeneralRangeIndexConfigElement config;
     private List<Field> fields = new LinkedList<Field>();
     private RangeIndexConfigField currentField = null;
     private int length = 0;
 
-    public ComplexTextCollector(ComplexRangeIndexConfigElement configuration, NodePath parentPath) {
+    public ComplexTextCollector(ComplexGeneralRangeIndexConfigElement configuration, NodePath parentPath) {
         this.config = configuration;
         this.parentPath = new NodePath(parentPath, false);
     }
@@ -73,7 +75,7 @@ public class ComplexTextCollector implements TextCollector {
         return fields;
     }
 
-    public ComplexRangeIndexConfigElement getConfig() {
+    public ComplexGeneralRangeIndexConfigElement getConfig() {
         return config;
     }
 }

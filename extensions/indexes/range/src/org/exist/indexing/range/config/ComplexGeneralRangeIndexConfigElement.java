@@ -19,12 +19,14 @@
  *
  *  $Id$
  */
-package org.exist.indexing.range;
+package org.exist.indexing.range.config;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.exist.dom.QName;
+import org.exist.indexing.range.ComplexTextCollector;
+import org.exist.indexing.range.TextCollector;
 import org.exist.storage.NodePath;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.xquery.value.Type;
@@ -34,15 +36,15 @@ import org.w3c.dom.NodeList;
 
 import java.util.*;
 
-public class ComplexRangeIndexConfigElement extends RangeIndexConfigElement {
+public class ComplexGeneralRangeIndexConfigElement extends GeneralRangeIndexConfigElement {
 
     public final static String FIELD_ELEMENT = "field";
 
-    private static final Logger LOG = LogManager.getLogger(ComplexRangeIndexConfigElement.class);
+    private static final Logger LOG = LogManager.getLogger(ComplexGeneralRangeIndexConfigElement.class);
 
     private Map<String, RangeIndexConfigField> fields = new HashMap<String, RangeIndexConfigField>();
 
-    public ComplexRangeIndexConfigElement(Element node, NodeList children, Map<String, String> namespaces)
+    public ComplexGeneralRangeIndexConfigElement(Element node, NodeList children, Map<String, String> namespaces)
             throws DatabaseConfigurationException {
         super(node, namespaces);
 
@@ -57,11 +59,6 @@ public class ComplexRangeIndexConfigElement extends RangeIndexConfigElement {
                 }
             }
         }
-    }
-
-    @Override
-    public boolean isComplex() {
-        return true;
     }
 
     @Override

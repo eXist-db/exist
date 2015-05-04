@@ -71,9 +71,24 @@
     
     <xs:complexType name="newRangeIndexType">
         <xs:sequence>
+            <xs:element ref="ID" minOccurs="0"/>
+            <xs:element ref="IDREF" minOccurs="0"/>
             <xs:element ref="create" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
     </xs:complexType>
+    
+    <xs:element name="ID" type="rangeIndexIdType"/>
+    
+    <xs:complexType name="rangeIndexIdType">
+        <xs:attributeGroup ref="rangeIndexCommonAttrs"/>
+    </xs:complexType>
+    
+    <xs:attributeGroup name="rangeIndexCommonAttrs">
+        <xs:attribute name="collation" type="xs:anyURI"/>
+        <xs:attribute name="converter" type="xs:string"/>
+    </xs:attributeGroup>
+    
+    <xs:element name="IDREF" type="rangeIndexIdType"/>
     
     <xs:element name="create" type="rangeIndexCreateType"/>
     
@@ -84,7 +99,7 @@
         <xs:attributeGroup ref="qnameOpt"/>
         <xs:attributeGroup ref="nestedOpt"/>
         <xs:attributeGroup ref="whitespaceOpt"/>
-        <xs:attribute name="collation" use="optional" type="xs:string"/>
+        <xs:attributeGroup ref="rangeIndexCommonAttrs"/>
     </xs:complexType>
     
     <xs:group name="fieldDefinitions">

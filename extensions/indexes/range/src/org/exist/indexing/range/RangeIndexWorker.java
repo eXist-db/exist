@@ -52,6 +52,8 @@ import org.exist.indexing.StreamListener.ReindexMode;
 import org.exist.indexing.lucene.BinaryTokenStream;
 import org.exist.indexing.lucene.LuceneIndexWorker;
 import org.exist.indexing.lucene.LuceneUtil;
+import org.exist.indexing.range.config.*;
+import org.exist.indexing.range.conversion.TypeConversion;
 import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
@@ -155,7 +157,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex, Qu
             }
         }
         if (operator == Operator.EQ) {
-            return new TermQuery(new Term(field, RangeIndexConfigElement.convertToBytes(content)));
+            return new TermQuery(new Term(field, TypeConversion.convertToBytes(content)));
         }
         if (operator == Operator.NE) {
             final BooleanQuery nq = new BooleanQuery();
@@ -197,14 +199,14 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex, Qu
                     return NumericRangeQuery.newFloatRange(field, (float) ((NumericValue) content).getDouble(), null, includeLower, includeUpper);
                 }
             case Type.DATE:
-                long dl = RangeIndexConfigElement.dateToLong((DateValue) content);
+                long dl = TypeConversion.dateToLong((DateValue) content);
                 if (operator == Operator.LT || operator == Operator.LE) {
                     return NumericRangeQuery.newLongRange(field, null, dl, includeLower, includeUpper);
                 } else {
                     return NumericRangeQuery.newLongRange(field, dl, null, includeLower, includeUpper);
                 }
             case Type.TIME:
-                long tl = RangeIndexConfigElement.timeToLong((TimeValue) content);
+                long tl = TypeConversion.timeToLong((TimeValue) content);
                 if (operator == Operator.LT || operator == Operator.LE) {
                     return NumericRangeQuery.newLongRange(field, null, tl, includeLower, includeUpper);
                 } else {
@@ -213,9 +215,9 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex, Qu
             case Type.DATE_TIME:
             default:
                 if (operator == Operator.LT || operator == Operator.LE) {
-                    return new TermRangeQuery(field, null, RangeIndexConfigElement.convertToBytes(content), includeLower, includeUpper);
+                    return new TermRangeQuery(field, null, TypeConversion.convertToBytes(content), includeLower, includeUpper);
                 } else {
-                    return new TermRangeQuery(field, RangeIndexConfigElement.convertToBytes(content), null, includeLower, includeUpper);
+                    return new TermRangeQuery(field, TypeConversion.convertToBytes(content), null, includeLower, includeUpper);
                 }
         }
     }
@@ -430,7 +432,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex, Qu
 
     @Override
     public boolean checkIndex(DBBroker broker) {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        return false;
     }
 
     protected void indexText(NodeHandle nodeHandle, QName qname, NodePath path, RangeIndexConfigElement config, TextCollector collector) {
@@ -484,10 +486,11 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex, Qu
 
                 for (TextCollector.Field field : pending.getCollector().getFields()) {
                     String contentField;
-                    if (field.isNamed())
+                    if (field.isNamed()) {
                         contentField = field.getName();
-                    else
+                    } else {
                         contentField = LuceneUtil.encodeQName(pending.getQName(), index.getBrokerPool().getSymbols());
+                    }
                     Field fld = pending.getConfig().convertToField(contentField, field.getContent().toString());
                     if (fld != null) {
                         doc.add(fld);
@@ -841,7 +844,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex, Qu
                 }
                 Iterator<RangeIndexConfigElement> configIter = config.getConfig(path);
                 if (configIter != null) {
-                    if (contentStack == null) contentStack = new Stack<TextCollector>();
+                    if (contentStack == null) contentStack = new Stack<>();
                     while (configIter.hasNext()) {
                         RangeIndexConfigElement configuration = configIter.next();
                         if (configuration.match(path)) {
@@ -856,25 +859,37 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex, Qu
         }
 
         @Override
-        public void attribute(Txn transaction, AttrImpl attrib, NodePath path) {
+        public void attribute(final Txn transaction, final AttrImpl attrib, final NodePath path) {
             path.addComponent(attrib.getQName());
             if (contentStack != null && !contentStack.isEmpty()) {
                 for (TextCollector collector : contentStack) {
                     collector.attribute(attrib, path);
                 }
             }
+
             Iterator<RangeIndexConfigElement> configIter = null;
-            if (config != null)
-                configIter = config.getConfig(path);
+            if (config != null) {
+                configIter = config.getConfig(path, attrib);
+            }
             if (mode != ReindexMode.REMOVE_ALL_NODES && configIter != null) {
                 if (mode == ReindexMode.REMOVE_SOME_NODES) {
                     nodesToRemove.add(attrib.getNodeId());
                 } else {
                     while (configIter.hasNext()) {
-                        RangeIndexConfigElement configuration = configIter.next();
-                        if (configuration.match(path)) {
-                            SimpleTextCollector collector = new SimpleTextCollector(attrib.getValue());
-                            indexText(attrib, attrib.getQName(), path, configuration, collector);
+                        final RangeIndexConfigElement configuration = configIter.next();
+                        if (configuration.match(path, attrib)) {
+                            final SimpleTextCollector collector = new SimpleTextCollector(attrib.getValue());
+
+                            final QName qn;
+                            if(configuration instanceof IdIndexConfigElement) {
+                                qn = IdIndexConfigElement.ID_QN;
+                            } else if(configuration instanceof IdRefIndexConfigElement) {
+                                qn = IdRefIndexConfigElement.IDREF_QN;
+                            } else {
+                                qn = attrib.getQName();
+                            }
+
+                            indexText(attrib, qn, path, configuration, collector);
                         }
                     }
                 }
@@ -1078,9 +1093,9 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex, Qu
 
             final boolean isConfigured = Optional.ofNullable(collection.getIndexConfiguration(broker))
                     .flatMap(idxConf ->
-                            Optional.ofNullable((RangeIndexConfig)idxConf.getCustomIndexSpec(RangeIndex.ID))
-                            .map(config -> config.find(path))
-                            .filter(rice -> !rice.isComplex())
+                                    Optional.ofNullable((RangeIndexConfig) idxConf.getCustomIndexSpec(RangeIndex.ID))
+                                            .map(config -> config.find(path))
+                                            .filter(rice -> !(rice instanceof ComplexGeneralRangeIndexConfigElement))
                     )
                     .isPresent();
 
