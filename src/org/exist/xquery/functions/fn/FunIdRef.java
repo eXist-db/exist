@@ -195,7 +195,7 @@ public class FunIdRef extends Function {
             } else {
                 try {
                     //final NodeSet attribs = context.getBroker().getValueIndex().find(context.getWatchDog(), Constants.EQ, docs, null, -1, null, new StringValue(id, Type.ID));
-                    final NodeSet attribs = rangeIndexWorker.query(getExpressionId(), docs, null, Arrays.asList(XML_IDREF), new AtomicValue[]{new StringValue(id)}, QueryableRangeIndex.Operator.EQ, NodeSet.ANCESTOR);
+                    final NodeSet attribs = rangeIndexWorker.query(getExpressionId(), docs, null, Arrays.asList(XML_IDREF), new AtomicValue[]{new StringValue(id)}, QueryableRangeIndex.OperatorFactory.EQ, NodeSet.ANCESTOR);
                     for (final NodeProxy n : attribs) {
                         n.setNodeType(Node.ATTRIBUTE_NODE);
                         result.add(n);

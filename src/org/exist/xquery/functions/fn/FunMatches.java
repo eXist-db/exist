@@ -19,14 +19,11 @@
  */
 package org.exist.xquery.functions.fn;
 
-import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.ExtArrayNodeSet;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.QName;
-import org.exist.indexing.QueryableRangeIndex;
 import org.exist.storage.ElementValue;
-import org.exist.storage.NodePath;
 import org.exist.xquery.regex.JDK15RegexTranslator;
 import org.exist.xquery.regex.RegexSyntaxException;
 import org.exist.xquery.*;
@@ -40,10 +37,7 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
-import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -173,12 +167,7 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
 
     @Override
     public boolean canOptimize(Sequence contextSequence) {
-        return Optional.ofNullable(contextQName)
-                .flatMap(qn -> Optional
-                                .ofNullable((QueryableRangeIndex) context.getBroker().getIndexController().getWorkerByIndexId("org.exist.indexing.range.RangeIndex"))
-                                .filter(rangeIdx -> rangeIdx.isConfiguredFor(context.getBroker(), contextSequence, new NodePath(qn)))
-                )
-                .isPresent();
+       return false;
     }
 
     @Override
@@ -198,32 +187,7 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
 
     @Override
     public NodeSet preSelect(final Sequence contextSequence, final boolean useContext) throws XPathException {
-        final long start = System.currentTimeMillis();
-        // the expression can be called multiple times, so we need to clear the previous preselectResult
-        preselectResult = null;
-		
-        final String pattern = translateRegexp(getArgument(1).eval(contextSequence).getStringValue());
-		
-        boolean caseSensitive = true;
-        int flags = 0;
-        if(getSignature().getArgumentCount() == 3) {
-            final String flagsArg = getArgument(2).eval(contextSequence).getStringValue();
-            caseSensitive = (flagsArg.indexOf('i') == Constants.STRING_NOT_FOUND);
-            flags = parseFlags(flagsArg);
-        }
-        try {
-            final QueryableRangeIndex rangeIndexWorker = (QueryableRangeIndex)context.getBroker().getIndexController().getWorkerByIndexId("org.exist.indexing.range.RangeIndex");
-            if(rangeIndexWorker == null) {
-                throw new XPathException("Using fn:matches/preSelect requires Range Indexes to be enabled");
-            } else {
-                preselectResult = rangeIndexWorker.match(getExpressionId(), contextSequence.getDocumentSet(), useContext ? contextSequence.toNodeSet() : null, Arrays.asList(contextQName), pattern, flags, NodeSet.DESCENDANT);
-            }
-            hasUsedIndex = true;
-        } catch (final IOException e) {
-            throw new XPathException(this, "Error during index lookup: " + e.getMessage(), e);
-        }
-
-        return preselectResult;
+        return null;
     }
 
     @Override
@@ -349,41 +313,7 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
 		
         final NodeSet nodes = input.toNodeSet();
 
-//TODO(AR) what about fn:matches on a range path, as opposed to a range qname?
-        final Optional<QueryableRangeIndex> maybeRangeIndex = Optional
-                .ofNullable((QueryableRangeIndex) context.getBroker().getIndexController().getWorkerByIndexId("org.exist.indexing.range.RangeIndex"))
-                .filter(rangeIdx -> rangeIdx.isConfiguredFor(context.getBroker(), contextSequence, new NodePath(contextQName)));
-
-        if(maybeRangeIndex.isPresent()) {
-            final DocumentSet docs = nodes.getDocumentSet();
-            try {
-                hasUsedIndex = true;
-                //TODO : check index' case compatibility with flags' one ? -pb
-                if (context.isProfilingEnabled()) {
-                    context.getProfiler().message(this, Profiler.OPTIMIZATIONS, "Using range index", "Regex: " + pattern);
-                }
-
-                if (LOG.isTraceEnabled()) {
-                    LOG.trace("Using range index for fn:matches expression: " + pattern);
-                }
-//TODO(AR) fn:matches on range path!
-//                if (indexScan) {
-//                    result = index.matchAll(context.getWatchDog(), docs, nodes, NodeSet.ANCESTOR, pattern, DBBroker.MATCH_REGEXP, flags, caseSensitive);
-//                } else {
-//                    result = index.match(context.getWatchDog(), docs, nodes, NodeSet.ANCESTOR, pattern, contextQName, DBBroker.MATCH_REGEXP, flags, caseSensitive);
-//                }
-
-                result = maybeRangeIndex.get().match(getExpressionId(), docs, nodes, Arrays.asList(contextQName), pattern, flags, NodeSet.ANCESTOR);
-
-            } catch (final IOException e) {
-                throw new XPathException(this, e);
-            }
-        } else {
-            if (LOG.isTraceEnabled()) {
-                LOG.trace("fn:matches: can't use range index.");
-            }
-            result = evalFallback(nodes, pattern, flags);
-		}
+        result = evalFallback(nodes, pattern, flags);
         
         if (context.getProfiler().isEnabled()) 
             {context.getProfiler().end(this, "", result);} 

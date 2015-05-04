@@ -505,3 +505,27 @@ declare
 function ot:optimize-field-self($type as xs:string, $subtype as xs:string, $name as xs:string) {
     //tei:placeName[@type = $type][@subtype = $subtype][. = $name]/text()
 };
+
+declare
+    %test:stats
+    %test:args("[rR]udi .*")
+    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+function ot:optimize-fn-matches-string($name as xs:string) {
+    collection($ot:COLLECTION)//address[fn:matches(name, $name)]
+};
+
+declare
+    %test:stats
+    %test:args("[rR]üssel.*")
+    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+function ot:optimize-fn-matches-field($city as xs:string) {
+    collection($ot:COLLECTION)//address[fn:matches(city, $city)]
+};
+
+declare
+    %test:stats
+    %test:args("175.")
+    %test:assertXPath("empty($result//stats:index[@type = 'new-range'][@optimization gt 0])")
+function ot:no-optimize-fn-matches-string-without-index($date as xs:string) {
+    collection($ot:COLLECTION)/tei:place/tei:placeName[fn:matches(tei:note/tei:date, $date)]
+};

@@ -221,7 +221,7 @@ public class FunId extends Function {
                 throw new XPathException(this, "Using fn:id requires a Range Index qname definition on @xml:id");
             } else {
                 try {
-                    final NodeSet attribs = rangeIndexWorker.query(getExpressionId(), docs, null, Arrays.asList(XML_ID), new AtomicValue[]{new StringValue(id)}, QueryableRangeIndex.Operator.EQ, NodeSet.ANCESTOR);
+                    final NodeSet attribs = rangeIndexWorker.query(getExpressionId(), docs, null, Arrays.asList(XML_ID), new AtomicValue[]{new StringValue(id)}, QueryableRangeIndex.OperatorFactory.EQ, NodeSet.ANCESTOR);
                     for (final NodeProxy n : attribs) {
                         final NodeProxy p = new NodeProxy(n.getOwnerDocument(), n.getNodeId().getParentId(), Node.ELEMENT_NODE);
                         result.add(p);

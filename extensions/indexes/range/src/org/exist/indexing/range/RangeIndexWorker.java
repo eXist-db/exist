@@ -68,6 +68,8 @@ import org.exist.util.Occurrences;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
 import org.exist.xquery.modules.range.RangeQueryRewriter;
+import org.exist.xquery.regex.JDK15RegexTranslator;
+import org.exist.xquery.regex.RegexSyntaxException;
 import org.exist.xquery.value.*;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -75,6 +77,9 @@ import org.w3c.dom.NodeList;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.*;
+import java.util.regex.Pattern;
+
+import static org.exist.indexing.QueryableRangeIndex.OperatorType.*;
 
 /**
  * The main worker class for the range index.
@@ -115,63 +120,72 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex, Qu
         this.broker = broker;
     }
 
-    public Query toQuery(String field, QName qname, AtomicValue content, Operator operator, DocumentSet docs) throws XPathException {
+    public Query toQuery(final String field, final QName qname, final AtomicValue content, final Operator operator, final DocumentSet docs) throws XPathException {
         final int type = content.getType();
-        BytesRef bytes;
+        final OperatorType operatorType = operator.getType();
+
         if (Type.subTypeOf(type, Type.STRING)) {
-            BytesRef key = null;
-            if (operator != Operator.MATCH) {
-                key = analyzeContent(field, qname, content.getStringValue(), docs);
-            }
-            WildcardQuery query;
-            switch (operator) {
+            final BytesRef key = operatorType != OperatorType.MATCH ? analyzeContent(field, qname, content.getStringValue(), docs) : null;
+
+            switch (operatorType) {
                 case EQ:
                     return new TermQuery(new Term(field, key));
                 case NE:
                     final BooleanQuery qnot = new BooleanQuery();
-                    bytes = new BytesRef("*");
-                    query = new WildcardQuery(new Term(field, bytes));
+                    final BytesRef bytes = new BytesRef("*");
+                    final WildcardQuery query = new WildcardQuery(new Term(field, bytes));
                     query.setRewriteMethod(MultiTermQuery.CONSTANT_SCORE_FILTER_REWRITE);
                     qnot.add(query, BooleanClause.Occur.MUST);
                     qnot.add(new TermQuery(new Term(field, key)), BooleanClause.Occur.MUST_NOT);
                     return qnot;
                 case STARTS_WITH:
                     return new PrefixQuery(new Term(field, key));
+
                 case ENDS_WITH:
-                    bytes = new BytesRef("*");
-                    bytes.append(key);
-                    query = new WildcardQuery(new Term(field, bytes));
-                    query.setRewriteMethod(MultiTermQuery.CONSTANT_SCORE_FILTER_REWRITE);
-                    return query;
+                    final BytesRef endsWithBytes = new BytesRef("*");
+                    endsWithBytes.append(key);
+                    final WildcardQuery wildcardEndsWithQuery = new WildcardQuery(new Term(field, endsWithBytes));
+                    wildcardEndsWithQuery.setRewriteMethod(MultiTermQuery.CONSTANT_SCORE_FILTER_REWRITE);
+                    return wildcardEndsWithQuery;
+
                 case CONTAINS:
-                    bytes = new BytesRef("*");
-                    bytes.append(key);
-                    bytes.append(new BytesRef("*"));
-                    query = new WildcardQuery(new Term(field, bytes));
-                    query.setRewriteMethod(MultiTermQuery.CONSTANT_SCORE_FILTER_REWRITE);
-                    return query;
+                    final BytesRef containsBytes = new BytesRef("*");
+                    containsBytes.append(key);
+                    containsBytes.append(new BytesRef("*"));
+                    final WildcardQuery wildcardContatinsQuery = new WildcardQuery(new Term(field, containsBytes));
+                    wildcardContatinsQuery.setRewriteMethod(MultiTermQuery.CONSTANT_SCORE_FILTER_REWRITE);
+                    return wildcardContatinsQuery;
+
                 case MATCH:
-                    RegexpQuery regexpQuery = new RegexpQuery(new Term(field, content.getStringValue()));
-                    regexpQuery.setRewriteMethod(MultiTermQuery.CONSTANT_SCORE_FILTER_REWRITE);
-                    return regexpQuery;
+                    final RegexQuery regexQuery = new RegexQuery(new Term(field, translateRegexp(content.getStringValue())));
+                    final int flags;
+                    if(((MatchOperator)operator).getRegexFlags().isPresent()) {
+                        flags = parseRegexFlags(((MatchOperator)operator).getRegexFlags().get());
+                    } else {
+                        flags = 0;
+                    }
+                    regexQuery.setRegexImplementation(new JavaUtilRegexCapabilities(flags));
+                    regexQuery.setRewriteMethod(MultiTermQuery.CONSTANT_SCORE_FILTER_REWRITE);
+                    return regexQuery;
             }
         }
-        if (operator == Operator.EQ) {
+
+        if (operatorType == EQ) {
             return new TermQuery(new Term(field, TypeConversion.convertToBytes(content)));
         }
-        if (operator == Operator.NE) {
+        if (operatorType == NE) {
             final BooleanQuery nq = new BooleanQuery();
             nq.add(new MatchAllDocsQuery(), BooleanClause.Occur.MUST);
-            nq.add(new TermQuery(new Term(field, RangeIndexConfigElement.convertToBytes(content))), BooleanClause.Occur.MUST_NOT);
+            nq.add(new TermQuery(new Term(field, TypeConversion.convertToBytes(content))), BooleanClause.Occur.MUST_NOT);
             return nq;
         }
-        final boolean includeUpper = operator == Operator.LE;
-        final boolean includeLower = operator == Operator.GE;
+        final boolean includeUpper = operatorType == LE;
+        final boolean includeLower = operatorType == GE;
         switch (type) {
             case Type.INTEGER:
             case Type.LONG:
             case Type.UNSIGNED_LONG:
-                if (operator == Operator.LT || operator == Operator.LE) {
+                if (operatorType == LT || operatorType == LE) {
                     return NumericRangeQuery.newLongRange(field, null, ((NumericValue)content).getLong(), includeLower, includeUpper);
                 } else {
                     return NumericRangeQuery.newLongRange(field, ((NumericValue)content).getLong(), null, includeLower, includeUpper);
@@ -180,46 +194,89 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex, Qu
             case Type.UNSIGNED_INT:
             case Type.SHORT:
             case Type.UNSIGNED_SHORT:
-                if (operator == Operator.LT || operator == Operator.LE) {
+                if (operatorType == LT || operatorType == LE) {
                     return NumericRangeQuery.newIntRange(field, null, ((NumericValue) content).getInt(), includeLower, includeUpper);
                 } else {
                     return NumericRangeQuery.newIntRange(field, ((NumericValue) content).getInt(), null, includeLower, includeUpper);
                 }
             case Type.DECIMAL:
             case Type.DOUBLE:
-                if (operator == Operator.LT || operator == Operator.LE) {
+                if (operatorType == LT || operatorType == LE) {
                     return NumericRangeQuery.newDoubleRange(field, null, ((NumericValue) content).getDouble(), includeLower, includeUpper);
                 } else {
                     return NumericRangeQuery.newDoubleRange(field, ((NumericValue) content).getDouble(), null, includeLower, includeUpper);
                 }
             case Type.FLOAT:
-                if (operator == Operator.LT || operator == Operator.LE) {
+                if (operatorType == LT || operatorType == LE) {
                     return NumericRangeQuery.newFloatRange(field, null, (float) ((NumericValue) content).getDouble(), includeLower, includeUpper);
                 } else {
                     return NumericRangeQuery.newFloatRange(field, (float) ((NumericValue) content).getDouble(), null, includeLower, includeUpper);
                 }
             case Type.DATE:
                 long dl = TypeConversion.dateToLong((DateValue) content);
-                if (operator == Operator.LT || operator == Operator.LE) {
+                if (operatorType == LT || operatorType == LE) {
                     return NumericRangeQuery.newLongRange(field, null, dl, includeLower, includeUpper);
                 } else {
                     return NumericRangeQuery.newLongRange(field, dl, null, includeLower, includeUpper);
                 }
             case Type.TIME:
                 long tl = TypeConversion.timeToLong((TimeValue) content);
-                if (operator == Operator.LT || operator == Operator.LE) {
+                if (operatorType == LT || operatorType == LE) {
                     return NumericRangeQuery.newLongRange(field, null, tl, includeLower, includeUpper);
                 } else {
                     return NumericRangeQuery.newLongRange(field, tl, null, includeLower, includeUpper);
                 }
             case Type.DATE_TIME:
             default:
-                if (operator == Operator.LT || operator == Operator.LE) {
+                if (operatorType == LT || operatorType == LE) {
                     return new TermRangeQuery(field, null, TypeConversion.convertToBytes(content), includeLower, includeUpper);
                 } else {
                     return new TermRangeQuery(field, TypeConversion.convertToBytes(content), null, includeLower, includeUpper);
                 }
         }
+    }
+
+    /**
+     * Translates fn:matches style regex into
+     * regex suitable for {@link java.util.regex.Pattern}
+     */
+    private String translateRegexp(final String pattern) throws XPathException {
+        try {
+            final int xmlVersion = 11;
+            final boolean ignoreWhitespace = false;
+            final boolean caseBlind = false;
+            return JDK15RegexTranslator.translate(pattern, xmlVersion, true, ignoreWhitespace, caseBlind);
+        } catch (final RegexSyntaxException e) {
+            throw new XPathException("Conversion from XPath2 to Java regular expression syntax failed: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Parses XPath fn:matches style regex flags
+     * into flags suitable for {@link java.util.regex.Pattern}
+     */
+    private int parseRegexFlags(final String s) throws XPathException {
+        int flags = 0;
+        for(int i = 0; i < s.length(); i++) {
+            final char ch = s.charAt(i);
+            switch(ch) {
+                case 'm':
+                    flags |= Pattern.MULTILINE;
+                    break;
+                case 'i':
+                    flags = flags | Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
+                    break;
+                case 'x':
+                    flags |= Pattern.COMMENTS;
+                    break;
+                case 's':
+                    flags |= Pattern.DOTALL;
+                    break;
+                default:
+                    throw new XPathException("err:FORX0001: Invalid regular expression flag: " + ch);
+            }
+        }
+        return flags;
     }
 
     @Override
@@ -515,39 +572,16 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex, Qu
     }
 
     @Override
-    public NodeSet match(final int contextId, final DocumentSet docs, final NodeSet contextSet, List<QName> qnames, final String regex, final int flags, final int axis) throws IOException, XPathException {
+    public NodeSet query(final int contextId, final DocumentSet docs, final NodeSet contextSet, final List<QName> qnames, final AtomicValue[] keys, final Operator operator, final int axis) throws IOException, XPathException {
         return index.withSearcher(searcher -> {
-            List<QName> definedIndexes = getDefinedIndexes(qnames);
+            final List<QName> definedIndexes = getDefinedIndexes(qnames);
         	final NodeSet resultSet = new NewArrayNodeSet();
             for (final QName qname : definedIndexes) {
-                String field = LuceneUtil.encodeQName(qname, index.getBrokerPool().getSymbols());
-                final RegexQuery query = new RegexQuery(new Term(field, regex));
-                query.setRegexImplementation(new JavaUtilRegexCapabilities(flags));
-
-                if (contextSet != null && contextSet.hasOne() && contextSet.getItemType() != Type.DOCUMENT) {
-                    NodesFilter filter = new NodesFilter(contextSet);
-                    filter.init(searcher.getIndexReader());
-                    FilteredQuery filtered = new FilteredQuery(query, filter, FilteredQuery.LEAP_FROG_FILTER_FIRST_STRATEGY);
-                    resultSet.addAll(doQuery(contextId, docs, contextSet, axis, searcher, null, filtered, null));
-                } else {
-                    resultSet.addAll(doQuery(contextId, docs, contextSet, axis, searcher, null, query, null));
-                }
-            }
-        	return resultSet;
-        });
-    }
-
-    @Override
-    public NodeSet query(int contextId, DocumentSet docs, NodeSet contextSet, List<QName> qnames, AtomicValue[] keys, Operator operator, int axis) throws IOException, XPathException {
-        return index.withSearcher(searcher -> {
-            List<QName> definedIndexes = getDefinedIndexes(qnames);
-            final NodeSet resultSet = new NewArrayNodeSet();
-            for (QName qname : definedIndexes) {
-                Query query;
-                String field = LuceneUtil.encodeQName(qname, index.getBrokerPool().getSymbols());
+                final Query query;
+                final String field = LuceneUtil.encodeQName(qname, index.getBrokerPool().getSymbols());
                 if (keys.length > 1) {
                     BooleanQuery bool = new BooleanQuery();
-                    for (AtomicValue key : keys) {
+                    for (final AtomicValue key : keys) {
                         bool.add(toQuery(field, qname, key, operator, docs), BooleanClause.Occur.SHOULD);
                     }
                     query = bool;
@@ -556,9 +590,9 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex, Qu
                 }
 
                 if (contextSet != null && contextSet.hasOne() && contextSet.getItemType() != Type.DOCUMENT) {
-                    NodesFilter filter = new NodesFilter(contextSet);
+                    final NodesFilter filter = new NodesFilter(contextSet);
                     filter.init(searcher.getIndexReader());
-                    FilteredQuery filtered = new FilteredQuery(query, filter, FilteredQuery.LEAP_FROG_FILTER_FIRST_STRATEGY);
+                    final FilteredQuery filtered = new FilteredQuery(query, filter, FilteredQuery.LEAP_FROG_FILTER_FIRST_STRATEGY);
                     resultSet.addAll(doQuery(contextId, docs, contextSet, axis, searcher, null, filtered, null));
                 } else {
                     resultSet.addAll(doQuery(contextId, docs, contextSet, axis, searcher, null, query, null));
@@ -568,7 +602,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex, Qu
         });
     }
 
-    public NodeSet queryField(int contextId, DocumentSet docs, NodeSet contextSet, Sequence fields, Sequence[] keys, Operator[] operators, int axis) throws IOException, XPathException {
+    public NodeSet queryField(final int contextId, final DocumentSet docs, final NodeSet contextSet, final Sequence fields, final Sequence[] keys, final Operator[] operators, final int axis) throws IOException, XPathException {
         return index.withSearcher(searcher -> {
             BooleanQuery query = new BooleanQuery();
             int j = 0;

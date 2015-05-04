@@ -207,7 +207,7 @@ public class FieldLookup extends Function implements Optimizable {
             operators = new QueryableRangeIndex.Operator[operatorSeq.getItemCount()];
             int i = 0;
             for (SequenceIterator si = operatorSeq.iterate(); si.hasNext(); i++) {
-                operators[i] = QueryableRangeIndex.Operator.fromName(si.nextItem().getStringValue());
+                operators[i] = QueryableRangeIndex.OperatorFactory.fromName(si.nextItem().getStringValue());
             }
             j++;
         } else {
@@ -273,7 +273,7 @@ public class FieldLookup extends Function implements Optimizable {
                 operators = new QueryableRangeIndex.Operator[operatorSeq.getItemCount()];
                 int i = 0;
                 for (SequenceIterator si = operatorSeq.iterate(); si.hasNext(); i++) {
-                    operators[i] = QueryableRangeIndex.Operator.fromName(si.nextItem().getStringValue());
+                    operators[i] = QueryableRangeIndex.OperatorFactory.fromName(si.nextItem().getStringValue());
                 }
                 j++;
             } else {
@@ -338,7 +338,7 @@ public class FieldLookup extends Function implements Optimizable {
 
     private QueryableRangeIndex.Operator getOperator() {
         final String calledAs = getSignature().getName().getLocalPart();
-        return QueryableRangeIndex.Operator.fromName(calledAs.substring("field-".length()));
+        return QueryableRangeIndex.OperatorFactory.fromName(calledAs.substring("field-".length()));
     }
 
     public int getType(Sequence contextSequence, String field) {

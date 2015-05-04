@@ -175,7 +175,7 @@ public class RangeQueryRewriter extends QueryRewriter {
         return null;
     }
 
-    protected static QueryableRangeIndex.Operator getOperator(Expression expr) {
+    protected static QueryableRangeIndex.Operator getOperator(Expression expr) throws XPathException {
         if (expr instanceof InternalFunctionCall) {
             final InternalFunctionCall fcall = (InternalFunctionCall) expr;
             final Function function = fcall.getFunction();
