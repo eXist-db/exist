@@ -21,18 +21,18 @@
  */
 package org.exist.validation;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ServiceLoader;
-
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactory;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import org.exist.util.ExistSAXParserFactory;
-
+import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
 /**
@@ -74,7 +74,7 @@ public class XmlLibraryChecker {
     private static String getClassName(String classid) {
         String className;
 
-        final int lastChar = classid.lastIndexOf("@");
+        final int lastChar = classid.lastIndexOf('@');
         if (lastChar == -1) {
             className = classid;
         } else {
@@ -97,7 +97,7 @@ public class XmlLibraryChecker {
             final String classId = xmlReader.toString();
             parserClass = getClassName(classId);
             
-        } catch (final Exception ex) {
+        } catch (final ParserConfigurationException | SAXException ex) {
             logger.error(ex.getMessage());
         }
         return parserClass;
@@ -117,7 +117,7 @@ public class XmlLibraryChecker {
             final String classId = transformer.toString();
             transformerClass = getClassName(classId);
 
-        } catch (final Exception ex) {
+        } catch (final TransformerConfigurationException ex) {
             logger.error(ex.getMessage());
         }
         return transformerClass;    
@@ -133,7 +133,6 @@ public class XmlLibraryChecker {
         /*
          * Parser
          */
-        message = new StringBuilder();
         final ServiceLoader<SAXParserFactory> allSax = ServiceLoader.load(SAXParserFactory.class);
         for(final SAXParserFactory sax : allSax){
             message.append(getClassName(sax.toString()));
@@ -292,9 +291,9 @@ public class XmlLibraryChecker {
      */
     public static class ClassVersion {
 
-        private String simpleName;
-        private String requiredVersion;
-        private String versionFunction;
+        private final String simpleName;
+        private final String requiredVersion;
+        private final String versionFunction;
 
         /**
          * Default Constructor
@@ -348,14 +347,12 @@ public class XmlLibraryChecker {
                 final Class<?> versionClass = Class.forName(versionClassName);
 
                 //get the method
-                final Method getVersionMethod = versionClass
-                        .getMethod(versionFunctionName, (Class[]) null);
+                final Method getVersionMethod = versionClass.getMethod(versionFunctionName, (Class[]) null);
 
                 //invoke the method on the class
-                actualVersion = (String) getVersionMethod
-                        .invoke(versionClass, (Object[]) null);
+                actualVersion = (String) getVersionMethod.invoke(versionClass, (Object[]) null);
                 
-            } catch (final Exception ex) {
+            } catch (final ClassNotFoundException | NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
                 logger.debug(ex.getMessage());
             }
 

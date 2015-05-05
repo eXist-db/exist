@@ -23,10 +23,8 @@ package org.exist.validation.resolver.unstable;
 
 import java.io.InputStream;
 import java.io.Reader;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import org.w3c.dom.ls.LSInput;
 
 /**
