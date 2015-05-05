@@ -679,11 +679,11 @@ declare %private function test:cast-to-type($value as item(), $result as item())
 
 (: Helper functions to be used by test modules :)
 
-declare function test:mkcol($root as xs:string, $path as xs:string) as empty() {
+declare function test:mkcol($root as xs:string, $path as xs:string) as empty-sequence() {
     test:mkcol-recursive($root, tokenize($path, "/"))
 };
 
-declare %private function test:mkcol-recursive($collection, $components) as empty() {
+declare %private function test:mkcol-recursive($collection, $components) as empty-sequence() {
     if (exists($components)) then
         let $newColl := concat($collection, "/", $components[1])
         return (
