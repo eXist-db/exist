@@ -22,8 +22,15 @@
 
 package org.exist.validation.internal;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exist.EXistException;
+import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.security.xacml.AccessContext;
 import org.exist.source.ClassLoaderSource;
@@ -35,11 +42,6 @@ import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  *  Helper class for accessing grammars.
@@ -76,7 +78,7 @@ public class DatabaseResources {
      * @return  List containing String objects.
      */
     public List<String> getAllResults(Sequence sequence){
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         
         try {
             final SequenceIterator i = sequence.iterate();         
@@ -129,8 +131,7 @@ public class DatabaseResources {
         final String collection = params.get(COLLECTION);
         
         if(logger.isDebugEnabled()) {
-            logger.debug("collection=" + collection + " namespace=" + namespace
-                + " publicId="+publicId + " catalogPath="+catalogPath);
+            logger.debug(String.format("collection=%s namespace=%s publicId=%s catalogPath=%s", collection, namespace, publicId, catalogPath));
         }
         
         DBBroker broker = null;
@@ -138,7 +139,6 @@ public class DatabaseResources {
         try {
             broker = brokerPool.get(user);
             
-            CompiledXQuery compiled =null;
             final XQuery xquery = broker.getXQueryService();
             final XQueryContext context = xquery.newContext(AccessContext.INTERNAL_PREFIX_LOOKUP);
             
@@ -158,11 +158,11 @@ public class DatabaseResources {
                 context.declareVariable(CATALOG, catalogPath);
             }
             
-            compiled = xquery.compile(context, new ClassLoaderSource(queryPath) );
+            CompiledXQuery compiled = xquery.compile(context, new ClassLoaderSource(queryPath) );
             
             result = xquery.execute(compiled, null);
             
-        } catch (final Exception ex) {
+        } catch (final EXistException | XPathException | IOException | PermissionDeniedException ex) {
             logger.error("Problem executing xquery", ex);
             result= null;
             
@@ -195,7 +195,7 @@ public class DatabaseResources {
             logger.debug("Find schema with namespace '"+targetNamespace+"' in '"+collection+"'.");
         }
         
-        final Map<String,String> params = new HashMap<String,String>();
+        final Map<String,String> params = new HashMap<>();
         params.put(COLLECTION, collection);
         params.put(TARGETNAMESPACE, targetNamespace);
         
@@ -210,7 +210,7 @@ public class DatabaseResources {
             logger.debug("Find DTD with public '"+publicId+"' in '"+collection+"'.");
         }
         
-        final Map<String,String> params = new HashMap<String,String>();
+        final Map<String,String> params = new HashMap<>();
         params.put(COLLECTION, collection);
         params.put(PUBLICID, publicId);
         

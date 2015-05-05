@@ -26,16 +26,14 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.Properties;
-
 import javax.xml.transform.OutputKeys;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
 import org.exist.xquery.value.NodeValue;
+import org.xml.sax.SAXException;
 
 /**
  * @author Dannes Wessels (dizzzz@exist-db.org)
@@ -51,26 +49,26 @@ public class NodeSerializer {
         final SAXSerializer sax = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
         try {
             final String encoding = outputProperties.getProperty(OutputKeys.ENCODING, "UTF-8");
-            final Writer writer = new OutputStreamWriter(os, encoding);
-            sax.setOutput(writer, outputProperties);
-
-            serializer.reset();
-            serializer.setProperties(outputProperties);
-            serializer.setSAXHandlers(sax, sax);
-
-            
-            sax.startDocument();
-            serializer.toSAX(node);
-            
+            try (Writer writer = new OutputStreamWriter(os, encoding)) {
+                sax.setOutput(writer, outputProperties);
+                
+                serializer.reset();
+                serializer.setProperties(outputProperties);
+                serializer.setSAXHandlers(sax, sax);
+                
+                
+                sax.startDocument();
+                serializer.toSAX(node);
+                
 //            while(node.hasNext()) {
 //                NodeValue next = (NodeValue)node.nextItem();
 //                serializer.toSAX(next);
 //            }
+                
+                sax.endDocument();
+            }
             
-            sax.endDocument();
-            writer.close();
-            
-        } catch(final Exception e) {
+        } catch(final IOException | SAXException e) {
             final String txt = "A problem occurred while serializing the node set";
             LOG.debug(txt+".", e);
             throw new IOException(txt+": " + e.getMessage(), e);

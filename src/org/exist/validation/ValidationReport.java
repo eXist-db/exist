@@ -22,13 +22,13 @@
 package org.exist.validation;
 
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
-
-import java.util.ArrayList;
-import java.util.List;
-import org.apache.commons.io.output.ByteArrayOutputStream;
 
 /**
  * Report containing all validation info (errors, warnings).
@@ -39,14 +39,13 @@ import org.apache.commons.io.output.ByteArrayOutputStream;
  */
 public class ValidationReport implements ErrorHandler {
     
-    private List<ValidationReportItem> validationReport = new ArrayList<ValidationReportItem>();
+    private final List<ValidationReportItem> validationReport = new ArrayList<>();
     
     private ValidationReportItem lastItem;
     
     private long duration = -1L;
     private long start = -1L;
-    private long stop = -1L;
-    
+
     private Throwable throwed = null;
     private String namespaceUri = null;
         
@@ -127,7 +126,7 @@ public class ValidationReport implements ErrorHandler {
      * @return FALSE if no errors and warnings occurred.
      */
     public boolean isValid(){
-        return( (validationReport.size()==0) && (throwed==null) );
+        return (validationReport.isEmpty() && (throwed == null));
     }
     
     public List<ValidationReportItem> getValidationReportItemList(){
@@ -136,7 +135,7 @@ public class ValidationReport implements ErrorHandler {
     
     public List<String> getTextValidationReport(){
         
-        final List<String> textReport = new ArrayList<String>();
+        final List<String> textReport = new ArrayList<>();
         
         if( isValid() ){
             textReport.add("Document is valid.");
@@ -147,10 +146,8 @@ public class ValidationReport implements ErrorHandler {
         if(throwed!=null){
             textReport.add( "Exception: " + throwed.getMessage() );
         }
-        
-        for(final ValidationReportItem item : validationReport ) {
-            textReport.add( item.toString() );
-        }
+
+        textReport.addAll(validationReport.stream().map(ValidationReportItem::toString).collect(Collectors.toList()));
 
         textReport.add("Validated in "+duration+" millisec.");
         return textReport;
@@ -191,8 +188,8 @@ public class ValidationReport implements ErrorHandler {
 
     public void stop() {
         if(getValidationDuration() == -1L){ // not already stopped
-            stop=System.currentTimeMillis();
-            setValidationDuration(stop-start);
+            long stop = System.currentTimeMillis();
+            setValidationDuration(stop -start);
         }
     }
 

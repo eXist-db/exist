@@ -25,15 +25,12 @@ package org.exist.validation.resolver;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLInputSource;
-
 import org.exist.protocolhandler.embedded.EmbeddedInputStream;
 import org.exist.protocolhandler.xmldb.XmldbURL;
 import org.exist.protocolhandler.xmlrpc.XmlrpcInputStream;
@@ -49,7 +46,7 @@ public class AnyUriResolver implements XMLEntityResolver {
     private final static Logger LOG = LogManager.getLogger(AnyUriResolver.class);
     
     private String docPath;
-    private String parentURI;
+    private final String parentURI;
     
     private boolean firstTime=true;
     
@@ -73,81 +70,70 @@ public class AnyUriResolver implements XMLEntityResolver {
     @Override
     public XMLInputSource resolveEntity(XMLResourceIdentifier xri) throws XNIException, IOException {
         
-        if(xri.getExpandedSystemId()==null && xri.getLiteralSystemId()==null && 
-           xri.getNamespace()==null && xri.getPublicId()==null){
-            
+        if (xri.getExpandedSystemId() == null && xri.getLiteralSystemId() == null
+                && xri.getNamespace() == null && xri.getPublicId() == null) {
+
             // quick fail
             return null;
         }
-        
-        if(LOG.isDebugEnabled()) {
-            LOG.debug("Resolving XMLResourceIdentifier: "+getXriDetails(xri));
+
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Resolving XMLResourceIdentifier: " + getXriDetails(xri));
         }
-        
-        String resourcePath=null;
-        String baseSystemId=null;
-        
-        if(firstTime){
+
+        String resourcePath = null;
+        String baseSystemId = null;
+
+        if (firstTime) {
             // First time use constructor supplied path
             resourcePath = docPath;
             baseSystemId = parentURI;
-            xri.setExpandedSystemId(docPath);      
-            firstTime=false;
-            
+            xri.setExpandedSystemId(docPath);
+            firstTime = false;
+
         } else {
-            resourcePath=xri.getExpandedSystemId();
+            resourcePath = xri.getExpandedSystemId();
         }
         xri.setBaseSystemId(docPath);
-        
-        LOG.debug("resourcePath='"+resourcePath+"'");
+
+        LOG.debug("resourcePath='" + resourcePath + "'");
 
         // prevent NPE
-        if(resourcePath==null){
+        if (resourcePath == null) {
             return null;
         }
-        
+
         InputStream is = null;
-        if(resourcePath.startsWith("xmldb:")){
+        if (resourcePath.startsWith("xmldb:")) {
             final XmldbURL xmldbURL = new XmldbURL(resourcePath);
-            if(xmldbURL.isEmbedded()){
-                is = new EmbeddedInputStream( xmldbURL );
-                
+            if (xmldbURL.isEmbedded()) {
+                is = new EmbeddedInputStream(xmldbURL);
+
             } else {
-                is = new XmlrpcInputStream( xmldbURL );
-            } 
+                is = new XmlrpcInputStream(xmldbURL);
+            }
 
         } else {
             is = new URL(resourcePath).openStream();
         }
-        
+
         final XMLInputSource xis = new XMLInputSource(xri.getPublicId(), resourcePath,
-            baseSystemId, is, "UTF-8");
-        
-        if(LOG.isDebugEnabled()) {
-            LOG.debug( "XMLInputSource: "+getXisDetails(xis) );
+                baseSystemId, is, "UTF-8");
+
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("XMLInputSource: " + getXisDetails(xis));
         }
-        
+
         return xis;
-        
+
     }
     
     private String getXriDetails(XMLResourceIdentifier xrid){
-        final StringBuilder sb = new StringBuilder();
-        sb.append("PublicId='").append(xrid.getPublicId()).append("' ");
-        sb.append("BaseSystemId='").append(xrid.getBaseSystemId()).append("' ");
-        sb.append("ExpandedSystemId='").append(xrid.getExpandedSystemId()).append("' ");
-        sb.append("LiteralSystemId='").append(xrid.getLiteralSystemId()).append("' ");
-        sb.append("Namespace='").append(xrid.getNamespace()).append("' ");
-        return sb.toString();
+        return "PublicId='" + xrid.getPublicId() + "' " + "BaseSystemId='" + xrid.getBaseSystemId() + "' " + "ExpandedSystemId='" + xrid.getExpandedSystemId() + "' " + "LiteralSystemId='" + xrid.getLiteralSystemId() + "' " + "Namespace='" + xrid.getNamespace() + "' ";
     }
 
     private String getXisDetails(XMLInputSource xis){
-        final StringBuilder sb = new StringBuilder();
-        sb.append("PublicId='").append(xis.getPublicId()).append("' ");
-        sb.append("SystemId='").append(xis.getSystemId()).append("' ");
-        sb.append("BaseSystemId='").append(xis.getBaseSystemId()).append("' ");
-        sb.append("Encoding='").append(xis.getEncoding()).append("' ");
-        return sb.toString();
+        return "PublicId='" + xis.getPublicId() + "' " + "SystemId='" + xis.getSystemId() + "' " + "BaseSystemId='" + xis.getBaseSystemId() + "' " + "Encoding='" + xis.getEncoding() + "' ";
     }
     
 }
