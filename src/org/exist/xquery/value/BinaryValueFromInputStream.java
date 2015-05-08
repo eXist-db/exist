@@ -3,6 +3,7 @@ package org.exist.xquery.value;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.logging.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.util.io.CachingFilterInputStream;
@@ -25,22 +26,21 @@ public class BinaryValueFromInputStream extends BinaryValue {
     private final CachingFilterInputStream is;
     private FilterInputStreamCache cache;
 
-
     protected BinaryValueFromInputStream(final BinaryValueManager manager, final BinaryValueType binaryValueType, final InputStream is) throws XPathException {
         super(manager, binaryValueType);
 
         try {
-            
-            this.cache = FilterInputStreamCacheFactory.getCacheInstance(new FilterInputStreamCacheConfiguration(){
+
+            this.cache = FilterInputStreamCacheFactory.getCacheInstance(new FilterInputStreamCacheConfiguration() {
 
                 @Override
                 public String getCacheClass() {
                     return manager.getCacheClass();
                 }
-            });
-            this.is = new CachingFilterInputStream(cache, is);
+            }, is);
+            this.is = new CachingFilterInputStream(cache);
 
-        } catch(final IOException ioe) {
+        } catch (final IOException ioe) {
             throw new XPathException(ioe);
         }
 
@@ -56,9 +56,14 @@ public class BinaryValueFromInputStream extends BinaryValue {
 
     @Override
     public BinaryValue convertTo(final BinaryValueType binaryValueType) throws XPathException {
-        final BinaryValueFromInputStream binaryInputStream = new BinaryValueFromInputStream(getManager(), binaryValueType, new CachingFilterInputStream(is));
-        getManager().registerBinaryValueInstance(binaryInputStream);
-        return binaryInputStream;
+        try {
+            final BinaryValueFromInputStream binaryInputStream = new BinaryValueFromInputStream(getManager(), binaryValueType, new CachingFilterInputStream(is));
+            getManager().registerBinaryValueInstance(binaryInputStream);
+            return binaryInputStream;
+        } catch (InstantiationException ex) {
+            LOG.error(ex.getMessage(), ex);
+        }
+        return null;
     }
 
     @Override
@@ -66,14 +71,14 @@ public class BinaryValueFromInputStream extends BinaryValue {
         try {
             int read = -1;
             final byte data[] = new byte[READ_BUFFER_SIZE];
-            while((read = is.read(data)) > -1) {
+            while ((read = is.read(data)) > -1) {
                 os.write(data, 0, read);
             }
         } finally {
             //reset the buf
             try {
                 is.reset();
-            } catch(final IOException ioe) {
+            } catch (final IOException ioe) {
                 LOG.error("Unable to reset stream: " + ioe.getMessage(), ioe);
             }
         }
@@ -81,13 +86,18 @@ public class BinaryValueFromInputStream extends BinaryValue {
 
     @Override
     public InputStream getInputStream() {
-        return new CachingFilterInputStream(is);
+        try {
+            return new CachingFilterInputStream(is);
+        } catch (InstantiationException ex) {
+            LOG.error(ex.getMessage(), ex);
+        }
+        return null;
     }
 
     @Override
     public void close() throws IOException {
         try {
-            if(cache != null) {
+            if (cache != null) {
                 cache.invalidate();
             }
         } finally {
@@ -98,9 +108,10 @@ public class BinaryValueFromInputStream extends BinaryValue {
     @Override
     public void destroy(XQueryContext context, final Sequence contextSequence) {
         // do not close if this object is part of the contextSequence
-        if (contextSequence == this ||
-            (contextSequence instanceof ValueSequence && ((ValueSequence)contextSequence).containsValue(this)))
-            {return;}
+        if (contextSequence == this
+                || (contextSequence instanceof ValueSequence && ((ValueSequence) contextSequence).containsValue(this))) {
+            return;
+        }
         LOG.debug("Closing input stream");
         try {
             this.close();
