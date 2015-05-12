@@ -436,7 +436,7 @@ public class Configuration implements ErrorHandler
         try {
             mClass = Class.forName( clazz );
 
-            if( !( Module.class.isAssignableFrom( mClass ) ) ) {
+            if( !Module.class.isAssignableFrom( mClass ) && ! xpdl.extension.Module.class.isAssignableFrom(mClass)) {
                 throw( new DatabaseConfigurationException( "Failed to load module: " + uri
                         + ". Class " + clazz + " is not an instance of org.exist.xquery.Module." ) );
             }
