@@ -776,6 +776,9 @@
             raise-error-on-failed-retrieval="no">
         
         <builtin-modules>
+
+	<module uri="http://expath.org/ns/file" class="example.xpdl.expath.file.FileModule"/>
+
             <!-- 
                 Modularized Indexes 
             -->
@@ -869,7 +872,7 @@
             -->
             
             <!-- Safe to use, function to be used by DBA only  -->
-            <module uri="http://exist-db.org/xquery/file" class="org.exist.xquery.modules.file.FileModule" />
+            <!-- module uri="http://exist-db.org/xquery/file" class="org.exist.xquery.modules.file.FileModule" / -->
             
             <!-- Compression module-->
             <module uri="http://exist-db.org/xquery/compression" class="org.exist.xquery.modules.compression.CompressionModule" />
