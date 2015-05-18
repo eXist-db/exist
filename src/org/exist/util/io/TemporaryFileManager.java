@@ -38,34 +38,33 @@ import org.exist.util.FileUtils;
 
 /**
  * Temporary File Manager
- * 
- * Attempts to create and delete temporary files
- * working around the issues of some JDK platforms
- * (e.g. Windows). Where deleting files is impossible,
- * used but finished with temporary files will be re-used
- * where possible if they cannot be deleted.
+ *
+ * Attempts to create and delete temporary files working around the issues of
+ * some JDK platforms (e.g. Windows). Where deleting files is impossible, used
+ * but finished with temporary files will be re-used where possible if they
+ * cannot be deleted.
  *
  * @version 1.0
  *
  * @author Adam Retter <adam.retter@googlemail.com>
  */
 public class TemporaryFileManager {
-    
+
     private final static Log LOG = LogFactory.getLog(TemporaryFileManager.class);
-    
+
     private final static String FOLDER_PREFIX = "_mmtfm_";
     private final Stack<Path> available = new Stack<>();
     private final Path tmpFolder;
 
     private final static TemporaryFileManager instance = new TemporaryFileManager();
-    
+
     public static TemporaryFileManager getInstance() {
         return instance;
     }
-    
+
     private TemporaryFileManager() {
         cleanupOldTempFolders();
-        
+
         try {
             this.tmpFolder = Files.createTempDirectory(FOLDER_PREFIX + UUID.randomUUID().toString());
         } catch(final IOException ioe) {
@@ -79,49 +78,59 @@ public class TemporaryFileManager {
         
         LOG.info("Temporary folder is: " + tmpFolder.toAbsolutePath().toString());
     }
-    
+
     public final Path getTemporaryFile() throws IOException {
-        
+
         Path tempFile = null;
-        
+
         synchronized(available) {
             if(!available.empty()) {
                 tempFile = available.pop();
             }
         }
-        
+
         if(tempFile == null) {
             tempFile = Files.createTempFile(tmpFolder, "mmtf_" + System.currentTimeMillis(), ".tmp");
+
             //add hook to JVM to delete the file on exit
             //unfortunately this does not always work on all (e.g. Windows) platforms
             tempFile.toFile().deleteOnExit();
         }
-        
+
         return tempFile;
     }
-    
+
     public void returnTemporaryFile(final Path tempFile) {
-        
-        //attempt to delete the temporary file
-        boolean deleted = false;
-        try {
-            deleted = Files.deleteIfExists(tempFile);
-        } catch(final IOException e) {
-            LOG.error("Unable to delete temporary file: " + tempFile.toAbsolutePath().toString(), e);
-        }
-        
-        if(deleted) {
-            LOG.debug("Deleted temporary file: " + tempFile.toAbsolutePath().toString());
-        } else {
-            LOG.debug("Could not delete temporary file: " + tempFile.toAbsolutePath().toString() + ". Returning to stack for re-use.");
-            
-            //if we couldn't delete it, add it to the stack of available files
-            //for reuse in the future.
-            //Typically there are problems deleting these files on Windows
-            //platforms which is why this facility was added
-            synchronized(available) {
-                available.push(tempFile);
+        //Check if tempFile is still present ..
+        if (Files.exists(tempFile)) {
+
+
+            boolean deleted = false;
+            try {
+                deleted = Files.deleteIfExists(tempFile);
+            } catch(final IOException e) {
+                LOG.error("Unable to delete temporary file: " + tempFile.toAbsolutePath().toString(), e);
             }
+            if(deleted) {
+                LOG.debug("Deleted temporary file: " + tempFile.toAbsolutePath().toString());
+            } else {
+                LOG.debug("Could not delete temporary file: " + tempFile.toAbsolutePath().toString() + ". Returning to stack for re-use.");
+
+                //if we couldnt delete it, add it to the stack of available files
+                //for reuse in the future.
+                //Typically there are problems deleting these files on Windows
+                //platforms which is why this facility was added
+                synchronized(available) {
+                    //Check if tempFile is not allready present in stack ...
+                    if (available.contains(tempFile)) {
+                        LOG.debug("Temporary file: " + tempFile.toAbsolutePath().toString() + " already in stack. Skipping.");
+                    } else {
+                        available.push(tempFile);
+                    }
+                }
+            }
+        } else {
+            LOG.debug("Trying to delete non existing file: " + tempFile.toAbsolutePath().toString());
         }
     }
 
@@ -144,10 +153,10 @@ public class TemporaryFileManager {
     @Override
     protected void finalize() throws Throwable {
         super.finalize();
-        
+
         //remove references to available files
         available.clear();
-        
+
         //try and remove our temporary folder
         FileUtils.deleteQuietly(tmpFolder);
     }
