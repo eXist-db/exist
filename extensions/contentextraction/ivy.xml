@@ -2,38 +2,43 @@
 <ivy-module version="2.0">
 	<info organisation="org.exist" module="tika" />
 	<dependencies>
-		<dependency org="org.apache.tika" name="tika-parsers" rev="1.5" conf="*->*,!sources,!javadoc">
-			<exclude module="jdom" />
-			<exclude module="slf4j-api" />
-			<exclude module="commons-codec" />
-			<exclude module="commons-compress" />
-			<exclude module="commons-logging" />
-			<exclude module="commons-httpclient" />
-			<exclude module="poi" />
-			<exclude module="poi-scratchpad" />
-			<exclude module="poi-ooxml" />
-			<exclude module="xml-apis" />
-			<exclude module="xercesImpl" />
-			<exclude module="aspectjrt" />
-			<exclude module="geronimo-stax-api_1.0_spec" />
-			<exclude module="asm-debug-all" />
-			<exclude module="asm-all" />
+		<dependency org="org.apache.tika" name="tika-parsers" rev="1.8" conf="*->*,!sources,!javadoc">
+            <!-- <exclude module="poi" />
+            <exclude module="poi-scratchpad" />
+            <exclude module="poi-ooxml" />     -->		
 		</dependency>
-		<dependency org="org.apache.poi" name="poi" rev="3.10-FINAL" conf="*->*,!sources,!javadoc">
-			<exclude module="commons-io" />
-			<exclude module="commons-logging" />
-			<exclude module="servlet-api" />
-			<exclude module="log4j" />
-			<exclude module="commons-codec" />
-		</dependency>
-		<dependency org="org.apache.poi" name="poi-scratchpad" rev="3.10-FINAL" conf="*->*,!sources,!javadoc" />
-		<dependency org="org.apache.poi" name="poi-ooxml" rev="3.10-FINAL" conf="*->*,!sources,!javadoc">
-			<exclude module="xml-apis" />
-			<exclude module="stax" />
-			<exclude module="stax-api" />
-			<exclude module="log4j" />
-			<exclude module="jdom" />
-		</dependency>
-		<dependency org="org.tukaani" name="xz" rev="1.5" conf="*->*,!sources,!javadoc" />
+        
+        <!-- <dependency org="org.apache.poi" name="poi" rev="3.10-FINAL" conf="*->*,!sources,!javadoc"/>
+        <dependency org="org.apache.poi" name="poi-scratchpad" rev="3.10-FINAL" conf="*->*,!sources,!javadoc" />
+        <dependency org="org.apache.poi" name="poi-ooxml" rev="3.10-FINAL" conf="*->*,!sources,!javadoc"/>
+        <dependency org="org.tukaani" name="xz" rev="1.5" conf="*->*,!sources,!javadoc" /> -->
+        
+		<exclude module="asm-all" />
+		<exclude module="asm-debug-all" />
+		<exclude module="aspectjrt" />
+		<exclude module="commons-codec" />
+		<exclude module="commons-compress" />
+		<exclude module="commons-httpclient" />
+		<exclude module="commons-io" />
+		<exclude module="commons-logging" />
+		<exclude module="geronimo-stax-api_1.0_spec" />
+		<exclude module="jdom" />
+		<exclude module="log4j" />
+		<exclude module="servlet-api" />
+		<exclude module="slf4j-api" />
+		<exclude module="stax" />
+		<exclude module="stax-api" />
+		<exclude module="xercesImpl" />
+		<exclude module="xml-apis" />
+        
+        <exclude org="org.apache.httpcomponents" />
+        <exclude module="ehcache-core" />
+        <exclude module="quartz" />
+        <exclude module="sqlite-jdbc" />
+        <exclude module="commons-logging-api" />
+        
+        
+        
+
 	</dependencies>
 </ivy-module>
