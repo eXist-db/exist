@@ -72,6 +72,11 @@ public class EXistOutputKeys {
     public final static String JSON_NODE_OUTPUT_METHOD = "json-node-output-method";
 
     /**
+     * Defines the output for JSON serializing to array even if only one item.
+     */
+    public final static String JSON_ARRAY_OUTPUT = "json-array-output";
+
+    /**
      * Determines whether the presence of multiple keys in a map item with the same string value
      * will or will not raise serialization error err:SERE0022.
      */
