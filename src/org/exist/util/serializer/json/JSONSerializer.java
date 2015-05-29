@@ -61,7 +61,7 @@ public class JSONSerializer {
     private void serializeSequence(Sequence sequence, JsonGenerator generator) throws IOException, XPathException, SAXException {
         if (sequence.isEmpty()) {
             generator.writeNull();
-        } else if (sequence.hasOne()) {
+        } else if (sequence.hasOne() && "no".equals(outputProperties.getProperty(EXistOutputKeys.JSON_ARRAY_OUTPUT, "no"))) {
             serializeItem(sequence.itemAt(0), generator);
         } else {
             generator.writeStartArray();
