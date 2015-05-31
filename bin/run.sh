@@ -59,7 +59,7 @@ set_java_options;
 # save LANG
 set_locale_lang;
 
-JAVA_ENDORSED_DIRS="$EXIST_HOME"/lib/endorsed
+JAVA_ENDORSED_DIRS="$EXIST_HOME"/lib/endorsed:"$EXIST_HOME"/lib/test
 
 PROFILER_OPTS=-agentlib:yjpagent
 

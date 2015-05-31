@@ -44,6 +44,9 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.EOFException;
 import java.io.IOException;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+
 /**
  * Implements the REST-style interface if eXist is running within a Servlet
  * engine. The real work is done by class {@link org.exist.http.RESTServer}.
@@ -121,7 +124,7 @@ public class EXistServlet extends AbstractExistHttpServlet {
 
         DBBroker broker = null;
         try {
-            final XmldbURI dbpath = XmldbURI.create(path);
+            final XmldbURI dbpath = XmldbURI.createInternal(path);
             broker = getPool().get(user);
             final Collection collection = broker.getCollection(dbpath);
             if (collection != null) {
@@ -162,17 +165,33 @@ public class EXistServlet extends AbstractExistHttpServlet {
     /**
      * @param request
      */
-    private String adjustPath(HttpServletRequest request) {
+    private String adjustPath(HttpServletRequest request) throws ServletException {
         String path = request.getPathInfo();
 
         if (path == null) {
-            path = "";
+            return "";
         }
 
-        final int p = path.lastIndexOf(';');
-        if (p != Constants.STRING_NOT_FOUND) {
-            path = path.substring(0, p);
+LOG.info(" In: " + path);
+        // path contains both required and superficial escapes,
+        // as different user agents use different conventions;
+        // for the sake of interoperability, remove any unnecessary escapes
+        try {
+            // URI.create undoes _all_ escaping, so protect slashes first
+            URI u = URI.create("file://" + path.replaceAll("%2F", "%252F"));
+            // URI four-argument constructor recreates all the necessary ones
+            URI v = new URI("http", "host", u.getPath(), null).normalize();
+            // unprotect slashes in now normalized path
+            path = v.getRawPath().replaceAll("%252F", "%2F");
+        } catch (final URISyntaxException e) {
+            throw new ServletException(e.getMessage(), e);
         }
+        // eat trailing slashes, else collections might not be found
+        while(path.endsWith("/")) {
+            path = path.substring(0, path.length() - 1);
+        }
+        // path now is in proper canonical encoded form
+LOG.info("Out: " + path);
 
         return path;
     }
