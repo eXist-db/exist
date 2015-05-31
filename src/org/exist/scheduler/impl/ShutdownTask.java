@@ -1,0 +1,76 @@
+/*
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2015 The eXist team
+ *  http://exist-db.org
+ *
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program; if not, write to the Free Software Foundation
+ *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ *  $Id$
+ */
+package org.exist.scheduler.impl;
+
+import org.exist.EXistException;
+import org.exist.storage.BrokerPool;
+import org.exist.storage.DBBroker;
+import org.exist.storage.SystemTask;
+import org.exist.util.Configuration;
+
+import java.util.Properties;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
+
+/**
+ * Schedulable Task for shutting down the database
+ *
+ * @author Adam Retter <adam.retter@googlemail.com>
+ */
+public class ShutdownTask implements SystemTask {
+
+    private final ThreadGroup threadGroup;
+
+    public ShutdownTask() {
+        this.threadGroup = Thread.currentThread().getThreadGroup();
+    }
+
+    @Override
+    public void configure(final Configuration config, final Properties properties) throws EXistException {
+    }
+
+    @Override
+    public void execute(final DBBroker broker) throws EXistException {
+
+        //NOTE - shutdown must be executed asynchronously from the scheduler, to avoid a deadlock with shutting down the scheduler
+        final Callable shutdownCallable = new AsyncShutdown(broker.getBrokerPool());
+        Executors.newSingleThreadExecutor(r -> new Thread(threadGroup, r, "Async Scheduled eXist Shutdown")).submit(shutdownCallable);
+    }
+
+    @Override
+    public boolean afterCheckpoint() {
+        return true;
+    }
+
+    private static class AsyncShutdown implements Callable<Void> {
+        private final BrokerPool brokerPool;
+        public AsyncShutdown(final BrokerPool brokerPool) {
+            this.brokerPool = brokerPool;
+        }
+
+        @Override
+        public Void call() {
+            brokerPool.shutdown();
+            return null;
+        }
+    }
+}
