@@ -220,20 +220,6 @@
     -->
 
     <!--
-        Axis provides SOAP access eXist's web-services.
-    -->
-    <servlet>
-        <servlet-name>AxisServlet</servlet-name>
-        <servlet-class>org.apache.axis.transport.http.AxisServlet</servlet-class>
-    </servlet>
-
-    <servlet>
-        <servlet-name>AdminServlet</servlet-name>
-        <servlet-class>org.apache.axis.transport.http.AdminServlet</servlet-class>
-        <load-on-startup>100</load-on-startup>
-    </servlet>
-
-    <!--
         Atom Publishing Protocol.
     -->
     <servlet>
@@ -302,29 +288,6 @@
     <servlet-mapping>
         <servlet-name>XQueryServlet</servlet-name>
         <url-pattern>*.xql</url-pattern>
-    </servlet-mapping>
-    -->
-
-    <!-- SOAP (Apache Axis) -->
-    <!--
-    <servlet-mapping>
-        <servlet-name>AxisServlet</servlet-name>
-        <url-pattern>/axis-servlet/AxisServlet</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>AxisServlet</servlet-name>
-        <url-pattern>*.jws</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>AxisServlet</servlet-name>
-        <url-pattern>/services/*</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>AdminServlet</servlet-name>
-        <url-pattern>/axis-servlet/AdminServlet</url-pattern>
     </servlet-mapping>
     -->
 
