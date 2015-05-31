@@ -32,24 +32,20 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.scheduler.*;
+import org.exist.scheduler.Scheduler;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.SystemTask;
 import org.exist.util.Configuration;
 import static org.quartz.CronScheduleBuilder.cronSchedule;
-import org.quartz.Job;
+
+import org.quartz.*;
+
 import static org.quartz.JobBuilder.newJob;
-import org.quartz.JobDataMap;
-import org.quartz.JobDetail;
-import org.quartz.JobExecutionContext;
-import org.quartz.JobKey;
-import org.quartz.SchedulerException;
-import org.quartz.SchedulerFactory;
 import static org.quartz.SimpleScheduleBuilder.simpleSchedule;
-import org.quartz.SimpleTrigger;
-import org.quartz.Trigger;
 import static org.quartz.TriggerBuilder.newTrigger;
-import org.quartz.TriggerKey;
+
+import org.quartz.Job;
 import org.quartz.impl.StdSchedulerFactory;
 import org.quartz.impl.matchers.GroupMatcher;
 
@@ -246,27 +242,27 @@ public class QuartzSchedulerImpl implements Scheduler {
         //Setup the job's data map
         final JobDataMap jobDataMap = jobDetail.getJobDataMap();
         setupJobDataMap(job, jobDataMap, params, unschedule);
-        
+
+        //setup a trigger for the job, millisecond based
+        final TriggerBuilder triggerBuilder = newTrigger()
+                .withIdentity(job.getName() + " Trigger", job.getGroup())
+                .withSchedule(simpleSchedule()
+                                .withIntervalInMilliseconds(period)
+                                .withRepeatCount(repeatCount)
+                );
+
         //when should the trigger start
-        final Date triggerStart;
+        final Trigger trigger;
         if(delay <= 0) {
             //start now
-            triggerStart = new Date();
+            trigger = triggerBuilder.startNow().build();
         } else {
             //start after period
             final Calendar start = Calendar.getInstance();
             start.add(Calendar.MILLISECOND, (int)delay);
-            triggerStart = start.getTime();
+            final Date triggerStart = start.getTime();
+            trigger = triggerBuilder.startAt(triggerStart).build();
         }
-        
-        //setup a trigger for the job, millisecond based
-        final Trigger trigger = newTrigger()
-        .withIdentity(job.getName() + " Trigger", job.getGroup())
-        .startAt(triggerStart)
-        .withSchedule(simpleSchedule()
-            .withIntervalInMilliseconds(period)
-            .withRepeatCount(repeatCount)
-        ).build();
         
         //schedule the job
         try {
