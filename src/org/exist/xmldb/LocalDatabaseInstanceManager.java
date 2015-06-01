@@ -53,7 +53,7 @@ public class LocalDatabaseInstanceManager extends AbstractLocalService implement
 	
     @Override
     public void shutdown() throws XMLDBException {
-        shutdown(0);
+        brokerPool.shutdown();
     }
 
     @Override

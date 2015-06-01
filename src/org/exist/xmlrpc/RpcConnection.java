@@ -3420,7 +3420,8 @@ public class RpcConnection implements RpcAPI {
 
     @Override
     public boolean shutdown() throws PermissionDeniedException {
-        return shutdown(0);
+        factory.getBrokerPool().shutdown();
+        return true;
     }
 
     @Override
