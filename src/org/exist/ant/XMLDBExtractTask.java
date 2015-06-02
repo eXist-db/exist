@@ -89,7 +89,6 @@ public class XMLDBExtractTask extends AbstractXMLDBTask
                 if( ( resource != null ) && ( destDir == null ) ) {
 
                     // extraction of a single resource
-                    log( "Extracting resource: " + resource + " to " + destFile.getAbsolutePath(), Project.MSG_INFO );
                     final Resource res = base.getResource( resource );
 
                     if( res == null ) {
@@ -163,7 +162,6 @@ public class XMLDBExtractTask extends AbstractXMLDBTask
 
             for( final String resource : resources ) {
                 res = base.getResource( resource );
-                log( "Extracting resource: " + res.getId(), Project.MSG_DEBUG );
 
                 if( !dir.exists() && createdirectories ) {
                     dir.mkdirs();
@@ -235,11 +233,36 @@ public class XMLDBExtractTask extends AbstractXMLDBTask
      */
     private void writeResource( Resource res, File dest ) throws XMLDBException, IOException
     {
-        if( res instanceof XMLResource ) {
-            writeXMLResource( (XMLResource)res, dest );
+        if( createdirectories == true ) {
+            final File parentDir = new File( dest.getParent() );
 
-        } else if( res instanceof ExtendedResource ) {
-            writeBinaryResource( res, dest );
+            if( !parentDir.exists() ) {
+                parentDir.mkdirs();
+            }
+        }
+
+        if( dest.isDirectory() ) {
+            String fname = res.getId();
+
+            dest = new File( dest, fname );
+        }
+
+        if( !dest.exists() || ( overwrite == true ) ) {
+            log( "Extracting resource: " + res.getId() + " to " + destFile.getAbsolutePath(), Project.MSG_INFO );
+
+            if( res instanceof XMLResource ) {
+                writeXMLResource( (XMLResource)res, dest );
+            } else if( res instanceof ExtendedResource ) {
+                writeBinaryResource( (ExtendedResource)res, dest );
+            }
+        } else {
+            final String msg = "Destination file " + dest.getAbsolutePath() + " exists. Use overwrite property to overwrite this file.";
+
+            if( failonerror ) {
+                throw( new BuildException( msg ) );
+            } else {
+                log( msg, Project.MSG_ERR );
+            }
         }
     }
 
@@ -250,57 +273,23 @@ public class XMLDBExtractTask extends AbstractXMLDBTask
      * @param   res   DOCUMENT ME!
      * @param   dest  DOCUMENT ME!
      *
-     * @throws  IOException     DOCUMENT ME!
-     * @throws  XMLDBException  DOCUMENT ME!
+     * @throws  XMLDBException                DOCUMENT ME!
+     * @throws  IOException                   DOCUMENT ME!
      */
     private void writeXMLResource( XMLResource res, File dest ) throws IOException, XMLDBException
     {
-        if( createdirectories == true ) {
-            final File parentDir = new File( dest.getParent() );
+        final Properties outputProperties = new Properties();
+        outputProperties.setProperty( OutputKeys.INDENT, "yes" );
+        final SAXSerializer serializer = (SAXSerializer)SerializerPool.getInstance().borrowObject( SAXSerializer.class );
 
-            if( !parentDir.exists() ) {
-                parentDir.mkdirs();
-            }
-        }
+        Writer writer = new OutputStreamWriter( new FileOutputStream( dest ), encoding );
 
-        if( ( dest != null ) || ( overwrite == true ) ) {
-            final Properties outputProperties = new Properties();
-            outputProperties.setProperty( OutputKeys.INDENT, "yes" );
-            final SAXSerializer serializer = (SAXSerializer)SerializerPool.getInstance().borrowObject( SAXSerializer.class );
-
-            Writer        writer     = null;
-
-            if( dest.isDirectory() ) {
-                String fname = res.getId();
-
-//                if( !fname.endsWith( "." + type ) ) {
-//                    fname += "." + type;
-//                }
-                final File file = new File( dest, fname );
-                writer = new OutputStreamWriter( new FileOutputStream( file ), encoding );
-
-            } else {
-
-                writer = new OutputStreamWriter( new FileOutputStream( dest ), encoding );
-            }
-
-            log( "Writing resource " + res.getId() + " to destination " + dest.getAbsolutePath(), Project.MSG_DEBUG );
-            serializer.setOutput( writer, outputProperties );
-            res.getContentAsSAX( serializer );
-            SerializerPool.getInstance().returnObject( serializer );
-            writer.close();
-
-        } else {
-            final String msg = "Destination xml file " + ( ( dest != null ) ? ( dest.getAbsolutePath() + " " ) : "" ) + "exists. Use " + "overwrite property to overwrite this file.";
-
-            if( failonerror ) {
-                throw( new BuildException( msg ) );
-            } else {
-                log( msg, Project.MSG_ERR );
-            }
-        }
+        log( "Writing resource " + res.getId() + " to destination " + dest.getAbsolutePath(), Project.MSG_DEBUG );
+        serializer.setOutput( writer, outputProperties );
+        res.getContentAsSAX( serializer );
+        SerializerPool.getInstance().returnObject( serializer );
+        writer.close();
     }
-
 
     /**
      * Extract single binary resource.
@@ -311,44 +300,12 @@ public class XMLDBExtractTask extends AbstractXMLDBTask
      * @throws  XMLDBException                DOCUMENT ME!
      * @throws  IOException                   DOCUMENT ME!
      */
-    private void writeBinaryResource( Resource res, File dest ) throws XMLDBException, IOException
+    private void writeBinaryResource( ExtendedResource res, File dest ) throws XMLDBException, IOException
     {
-        if( createdirectories == true ) {
-            final File parentDir = new File( dest.getParent() );
+        FileOutputStream os;
+        os = new FileOutputStream(dest);
 
-            if( !parentDir.exists() ) {
-                parentDir.mkdirs();
-            }
-        }
-
-        //dest != null && ( !dest.exists() ||
-        if( ( dest != null ) || ( overwrite == true ) ) {
-
-            if( dest.isDirectory() ) {
-
-                String fname = res.getId();
-
-//                if( !fname.endsWith( "." + type ) ) {
-//                    fname += "";
-//                }
-                dest = new File( dest, fname );
-
-            }
-            FileOutputStream os;
-            os = new FileOutputStream( dest );
-
-            ( (ExtendedResource)res ).getContentIntoAStream( os );
-
-
-        } else {
-            final String msg = "Dest binary file " + ( ( dest != null ) ? ( dest.getAbsolutePath() + " " ) : "" ) + "exists. Use " + "overwrite property to overwrite file.";
-
-            if( failonerror ) {
-                throw( new BuildException( msg ) );
-            } else {
-                log( msg, Project.MSG_ERR );
-            }
-        }
+        res.getContentIntoAStream( os );
     }
 
 
