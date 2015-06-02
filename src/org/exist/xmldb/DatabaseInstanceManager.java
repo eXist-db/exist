@@ -13,9 +13,13 @@ public interface DatabaseInstanceManager extends Service {
 	
 	/**
 	 * Immediately shutdown the current database instance.
-	 * This current user should be a member of the "dba" group
+         * 
+	 * The current user must be a member of the "dba" group
 	 * or an exception will be thrown.
 	 * 
+         * This operation is synchronous and will not return
+         * until the database is shutdown
+         * 
 	 * @throws XMLDBException
 	 */
 	public void shutdown() throws XMLDBException;
@@ -23,8 +27,12 @@ public interface DatabaseInstanceManager extends Service {
 	/**
 	 * Shutdown the current database instance after the specified
 	 * delay (in milliseconds).
-	 * This current user should be a member of the "dba" group
+         * 
+	 * The current user must be a member of the "dba" group
 	 * or an exception will be thrown.
+         * 
+         * This operation is asynchronous and the delay is scheduled
+         * with the database scheduler.
 	 * 
 	 * @throws XMLDBException
 	 */

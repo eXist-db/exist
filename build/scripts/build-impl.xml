@@ -94,18 +94,6 @@
         </fileset>
     </path>
 
-    <taskdef name="java2wsdl" classname="org.apache.axis.tools.ant.wsdl.Java2WsdlAntTask">
-        <classpath refid="classpath.core"/>
-    </taskdef>
-
-    <taskdef name="wsdl2java" classname="org.apache.axis.tools.ant.wsdl.Wsdl2javaAntTask">
-        <classpath refid="classpath.core"/>
-    </taskdef>
-
-    <taskdef name="axis-admin" classname="org.apache.axis.tools.ant.axis.AdminClientTask">
-        <classpath refid="classpath.core"/>
-    </taskdef>
-
     <taskdef classpath="${tools.aspectj}/lib/aspectjtools-1.8.4.jar" resource="org/aspectj/tools/ant/taskdefs/aspectjTaskdefs.properties"/>
     <path id="classpath.aspectj">
         <fileset dir="${tools.aspectj}/lib">
@@ -485,7 +473,6 @@
             <link href="http://nekohtml.sourceforge.net/javadoc/"/>
             <link href="http://www.quartz-scheduler.org/api/1.8.5/"/>
             <link href="http://sunxacml.sourceforge.net/javadoc/"/>  
-            <link href="http://ws.apache.org/axis/java/apiDocs/"/>
             <link href="http://ws.apache.org/xmlrpc/apidocs/"/>
             <link href="http://www.antlr2.org/javadoc/"/>          
             <link href="http://xerces.apache.org/xerces2-j/javadocs/api/"/>
@@ -557,7 +544,6 @@
             <link href="http://nekohtml.sourceforge.net/javadoc/"/>
             <link href="http://www.quartz-scheduler.org/docs/api/"/>
             <link href="http://sunxacml.sourceforge.net/javadoc/"/>  
-            <link href="http://ws.apache.org/axis/java/apiDocs/"/>
             <link href="http://ws.apache.org/xmlrpc/apidocs/"/>
             <link href="http://www.antlr2.org/javadoc/"/>
             <link href="http://www.jgroups.org/javagroupsnew/docs/javadoc/"/>          
