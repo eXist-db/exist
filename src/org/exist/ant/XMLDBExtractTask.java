@@ -33,6 +33,7 @@ import org.xmldb.api.modules.XMLResource;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
 import org.exist.xmldb.ExtendedResource;
+import org.exist.xmldb.EXistResource;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -40,6 +41,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 
+import java.util.Date;
 import java.util.Properties;
 
 import javax.xml.transform.OutputKeys;
@@ -247,21 +249,13 @@ public class XMLDBExtractTask extends AbstractXMLDBTask
             dest = new File( dest, fname );
         }
 
-        if( !dest.exists() || ( overwrite == true ) ) {
+        if( !dest.exists() || ( overwrite == true ) || ((EXistResource) res).getLastModificationTime().after( new Date( dest.lastModified() ) ) ) {
             log( "Extracting resource: " + res.getId() + " to " + destFile.getAbsolutePath(), Project.MSG_INFO );
 
             if( res instanceof XMLResource ) {
                 writeXMLResource( (XMLResource)res, dest );
             } else if( res instanceof ExtendedResource ) {
                 writeBinaryResource( (ExtendedResource)res, dest );
-            }
-        } else {
-            final String msg = "Destination file " + dest.getAbsolutePath() + " exists. Use overwrite property to overwrite this file.";
-
-            if( failonerror ) {
-                throw( new BuildException( msg ) );
-            } else {
-                log( msg, Project.MSG_ERR );
             }
         }
     }

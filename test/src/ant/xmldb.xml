@@ -103,6 +103,23 @@
 
 
      </target>
+     
+    <target name="test_modificationtime_XMLDBExtract" description="check that it extracts only if resource newer than dest file">
+        <!-- setup -->
+        <xdb:extract uri="${test.coll}/antunit" resource="logo.jpg" destfile="antunit/newdir/logo1.jpg" overwrite="true" user="${exist.user}" password="${exist.password}"/>
+        <xdb:extract uri="${test.coll}/antunit" resource="logo.jpg" destfile="antunit/newdir/logo2.jpg" overwrite="true" user="${exist.user}" password="${exist.password}"/>
+
+        <!-- check extract if dest files older than resource -->
+        <touch file="antunit/newdir/logo2.jpg" millis="0"/>
+        <xdb:extract uri="${test.coll}/antunit" resource="logo.jpg" destfile="antunit/newdir/logo2.jpg" user="${exist.user}" password="${exist.password}"/>
+        <uptodate property="updated" srcfile="antunit/newdir/logo1.jpg" targetfile="antunit/newdir/logo2.jpg"/>
+        <au:assertEquals expected="true" actual="${updated}" message="resource not extracted while dest file older than resource"/>
+
+        <!-- check no extract if dest file newer than resource -->
+        <xdb:extract uri="${test.coll}/antunit" resource="logo.jpg" destfile="antunit/newdir/logo1.jpg" user="${exist.user}" password="${exist.password}"/>
+        <uptodate property="updated" srcfile="antunit/newdir/logo1.jpg" targetfile="antunit/newdir/logo2.jpg"/>
+        <au:assertEquals expected="true" actual="${updated}" message="resource extracted while dest file newer than resource"/>
+     </target>
 
      <target name="problem_overwritedirs_XMLDBExtract" description="repeat extract dir/file test to test overwritedirs property">
 
