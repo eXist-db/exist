@@ -46,6 +46,7 @@ import org.exist.numbering.NodeId;
 import org.exist.protocolhandler.embedded.EmbeddedInputStream;
 import org.exist.protocolhandler.xmldb.XmldbURL;
 import org.exist.scheduler.SystemTaskJob;
+import org.exist.scheduler.impl.ShutdownTask;
 import org.exist.scheduler.impl.SystemTaskJobImpl;
 import org.exist.security.ACLPermission;
 import org.exist.security.AXSchemaType;
@@ -73,7 +74,6 @@ import org.exist.storage.serializers.Serializer;
 import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Compressor;
-import org.exist.util.Configuration;
 import org.exist.util.LockException;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
@@ -3420,7 +3420,8 @@ public class RpcConnection implements RpcAPI {
 
     @Override
     public boolean shutdown() throws PermissionDeniedException {
-        return shutdown(0);
+        factory.getBrokerPool().shutdown();
+        return true;
     }
 
     @Override
@@ -3434,22 +3435,7 @@ public class RpcConnection implements RpcAPI {
             throw new PermissionDeniedException("not allowed to shut down" + "the database");
         }
 
-        final SystemTaskJob shutdownJob = new SystemTaskJobImpl("rpc-api.shutdown", new SystemTask() {
-            @Override
-            public void configure(final Configuration config, final Properties properties) throws EXistException {
-            }
-
-            @Override
-            public void execute(final DBBroker broker) throws EXistException {
-                broker.getBrokerPool().shutdown();
-            }
-
-            @Override
-            public boolean afterCheckpoint() {
-                return true;
-            }
-        });
-
+        final SystemTaskJob shutdownJob = new SystemTaskJobImpl("rpc-api.shutdown", new ShutdownTask());
         return factory.getBrokerPool().getScheduler().createPeriodicJob(0, shutdownJob, delay, new Properties(), 0);
     }
 

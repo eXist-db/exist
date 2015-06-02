@@ -57,7 +57,11 @@ public class RemoteDatabaseInstanceManager implements DatabaseInstanceManager {
 
     @Override
     public void shutdown() throws XMLDBException {
-        shutdown(0);
+        try {
+            client.execute("shutdown", Collections.EMPTY_LIST);
+        } catch (final XmlRpcException e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "shutdown failed", e);
+        }
     }
 
     @Override

@@ -35,12 +35,6 @@
   <forward pattern="/oauth" servlet="OAuthServlet"/>
   -->
   
-  <!-- Apache SOAP interface -->
-  <forward pattern="/axis-servlet/AxisServlet" servlet="AxisServlet"/>
-  <forward pattern=".*\.jws" servlet="AxisServlet"/>
-  <forward pattern="/services" servlet="AxisServlet"/>
-  <forward pattern="/axis-servlet/AdminServlet" servlet="AdminServlet"/>
-  
   <!-- scale images on the fly and cache the output. -->
   <!-- 
   <forward pattern="/images" servlet="ScaleImageJAI"/>
