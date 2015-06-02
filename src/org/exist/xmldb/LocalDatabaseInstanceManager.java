@@ -19,9 +19,13 @@
  */
 package org.exist.xmldb;
 
+import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import org.exist.scheduler.SystemTaskJob;
+import org.exist.scheduler.impl.ShutdownTask;
+import org.exist.scheduler.impl.SystemTaskJobImpl;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
@@ -49,28 +53,17 @@ public class LocalDatabaseInstanceManager extends AbstractLocalService implement
 	
     @Override
     public void shutdown() throws XMLDBException {
-        shutdown(0);
+        brokerPool.shutdown();
     }
 
     @Override
-    public void shutdown(long delay) throws XMLDBException {
+    public void shutdown(final long delay) throws XMLDBException {
         if(!user.hasDbaRole()) {
             throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, "only users in group dba may shut down the database");
         }
-        
-        if(delay > 0) {
-            final TimerTask task = new TimerTask() {
-                @Override
-                public void run() {
-                    brokerPool.shutdown();
-                }
-            };
-            
-            final Timer timer = new Timer();
-            timer.schedule(task, delay);
-        } else {
-            brokerPool.shutdown();
-        }
+
+        final SystemTaskJob shutdownJob = new SystemTaskJobImpl("xmldb:local-api.shutdown", new ShutdownTask());
+        brokerPool.getScheduler().createPeriodicJob(0, shutdownJob, delay, new Properties(), 0);
     }
 
 
