@@ -163,5 +163,10 @@ public abstract class AbstractFilterInputStreamCache extends FilterInputStream i
     public void reset() throws IOException {
         throw new IOException("reset() not supported.");
     }
+    
+    @Override
+    public boolean srcIsFilterInputStreamCache() {
+        return src instanceof CachingFilterInputStream;
+    }
 ;
 }

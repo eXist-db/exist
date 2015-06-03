@@ -51,6 +51,7 @@ public class CachingFilterInputStream extends FilterInputStream {
 
     private int srcOffset = 0;
     private int mark = 0;
+    private boolean srcClosed = false;
 
     /**
      * Constructor which uses an existing Cache from a CachingFilterInputStream,
@@ -103,7 +104,7 @@ public class CachingFilterInputStream extends FilterInputStream {
     @Override
     public int read() throws IOException {
 
-        if (getCache().isSrcClosed()) {
+        if (srcClosed) {
             throw new IOException(FilterInputStreamCache.INPUTSTREAM_CLOSED);
         }
 
@@ -126,7 +127,7 @@ public class CachingFilterInputStream extends FilterInputStream {
     @Override
     public int read(final byte[] b, final int off, final int len) throws IOException {
 
-        if (getCache().isSrcClosed()) {
+        if (srcClosed) {
             throw new IOException(FilterInputStreamCache.INPUTSTREAM_CLOSED);
         }
 
@@ -174,9 +175,14 @@ public class CachingFilterInputStream extends FilterInputStream {
      */
     @Override
     public void close() throws IOException {
-        getCache().close();
+        if (!srcClosed) {
+            if(!getCache().srcIsFilterInputStreamCache() && !getCache().isSrcClosed()) {
+                getCache().close();
+            }
+            this.srcClosed = true;
+        }        
     }
-
+    
     /**
      * We cant actually skip as we need to read so that we can cache the data,
      * however apart from the potentially increased I/O and Memory, the end
@@ -185,7 +191,7 @@ public class CachingFilterInputStream extends FilterInputStream {
     @Override
     public long skip(final long len) throws IOException {
 
-        if (getCache().isSrcClosed()) {
+        if (srcClosed) {
             throw new IOException(FilterInputStreamCache.INPUTSTREAM_CLOSED);
         } else if (len < 1) {
             return 0;
