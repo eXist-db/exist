@@ -162,5 +162,6 @@ public interface FilterInputStreamCache {
     public int getSrcOffset();
 
     public boolean isSrcClosed();
-
+    
+    public boolean srcIsFilterInputStreamCache();
 }
