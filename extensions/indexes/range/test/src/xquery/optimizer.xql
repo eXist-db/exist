@@ -127,6 +127,30 @@ function ot:optimize-eq-string($name as xs:string) {
 
 declare
     %test:stats
+    %test:args("Rudi Rüssel")
+    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+function ot:optimize-ne-string($name as xs:string) {
+    collection($ot:COLLECTION)//address[name != $name]
+};
+
+declare
+    %test:stats
+    %test:args("Rudi Rüssel")
+    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+function ot:optimize-ne-string2($name as xs:string) {
+    collection($ot:COLLECTION)//address[name ne $name]
+};
+
+declare
+    %test:stats
+    %test:args("Rudi Rüssel")
+    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+function ot:optimize-ne-string-self($name as xs:string) {
+    collection($ot:COLLECTION)//address/name[. ne $name]
+};
+
+declare
+    %test:stats
     %test:args("Rudi")
     %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
 function ot:optimize-starts-with-string($name as xs:string) {
@@ -179,6 +203,20 @@ declare
     %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
 function ot:optimize-lt-string($name as xs:string) {
     collection($ot:COLLECTION)//address[name < $name]
+};
+
+declare
+    %test:args("Rudi Rüssel")
+    %test:assertEquals(3)
+function ot:ne-string($name as xs:string) {
+    count(collection($ot:COLLECTION)//address[name != $name])
+};
+
+declare
+    %test:args("Rudi Rüssel")
+    %test:assertEquals(3)
+function ot:ne-string-self($name as xs:string) {
+    count(collection($ot:COLLECTION)//address/name[. != $name])
 };
 
 declare
@@ -246,6 +284,21 @@ declare
     %test:assertEquals(1)
 function ot:eq-field($city as xs:string) {
     count(collection($ot:COLLECTION)//address[city = $city])
+};
+
+declare
+    %test:stats
+    %test:args("Rüsselsheim")
+    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+function ot:optimize-ne-field($city as xs:string) {
+    collection($ot:COLLECTION)//address[city != $city]
+};
+
+declare
+    %test:args("Rüsselsheim")
+    %test:assertEquals(3)
+function ot:ne-field($city as xs:string) {
+    count(collection($ot:COLLECTION)//address[city != $city])
 };
 
 declare

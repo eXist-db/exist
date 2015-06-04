@@ -45,6 +45,7 @@ public class RangeIndexModule extends AbstractInternalModule {
         new FunctionDef(Lookup.signatures[6], Lookup.class),
         new FunctionDef(Lookup.signatures[7], Lookup.class),
         new FunctionDef(Lookup.signatures[8], Lookup.class),
+        new FunctionDef(Lookup.signatures[9], Lookup.class),
         new FunctionDef(FieldLookup.signatures[0], FieldLookup.class),
         new FunctionDef(FieldLookup.signatures[1], FieldLookup.class),
         new FunctionDef(FieldLookup.signatures[2], FieldLookup.class),
@@ -55,6 +56,7 @@ public class RangeIndexModule extends AbstractInternalModule {
         new FunctionDef(FieldLookup.signatures[7], FieldLookup.class),
         new FunctionDef(FieldLookup.signatures[8], FieldLookup.class),
         new FunctionDef(FieldLookup.signatures[9], FieldLookup.class),
+        new FunctionDef(FieldLookup.signatures[10], FieldLookup.class),
         new FunctionDef(Optimize.signature, Optimize.class),
         new FunctionDef(IndexKeys.signatures[0], IndexKeys.class),
         new FunctionDef(IndexKeys.signatures[1], IndexKeys.class)
@@ -67,6 +69,7 @@ public class RangeIndexModule extends AbstractInternalModule {
         OPERATOR_MAP.put("gt", RangeIndex.Operator.GT);
         OPERATOR_MAP.put("ge", RangeIndex.Operator.GE);
         OPERATOR_MAP.put("le", RangeIndex.Operator.LE);
+        OPERATOR_MAP.put("ne", RangeIndex.Operator.NE);
         OPERATOR_MAP.put("starts-with", RangeIndex.Operator.STARTS_WITH);
         OPERATOR_MAP.put("ends-with", RangeIndex.Operator.ENDS_WITH);
         OPERATOR_MAP.put("contains", RangeIndex.Operator.CONTAINS);
