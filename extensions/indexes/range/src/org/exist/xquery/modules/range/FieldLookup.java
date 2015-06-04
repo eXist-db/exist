@@ -73,6 +73,14 @@ public class FieldLookup extends Function implements Optimizable {
             true
         ),
         new FunctionSignature(
+            new QName("field-ne", RangeIndexModule.NAMESPACE_URI, RangeIndexModule.PREFIX),
+            "General field lookup function based on non-equality comparison. Normally this will be used by the query optimizer.",
+            PARAMETER_TYPE,
+            new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
+                    "all nodes from the field set whose node value is not equal to the key."),
+            true
+        ),
+        new FunctionSignature(
             new QName("field-gt", RangeIndexModule.NAMESPACE_URI, RangeIndexModule.PREFIX),
                 "General field lookup function based on greater-than comparison. Normally this will be used by the query optimizer.",
             PARAMETER_TYPE,
