@@ -49,6 +49,7 @@ public class RangeIndex extends LuceneIndex {
         EQ ("eq"),
         GE ("ge"),
         LE ("le"),
+        NE ("ne"),
         ENDS_WITH ("ends-with"),
         STARTS_WITH ("starts-with"),
         CONTAINS ("contains"),
