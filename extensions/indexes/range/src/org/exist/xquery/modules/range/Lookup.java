@@ -39,6 +39,7 @@ import org.exist.xquery.value.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -89,6 +90,13 @@ public class Lookup extends Function implements Optimizable {
             PARAMETER_TYPE,
             new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
                     "all nodes from the input node set whose node value is equal to the key.")
+        ),
+        new FunctionSignature(
+            new QName("ne", RangeIndexModule.NAMESPACE_URI, RangeIndexModule.PREFIX),
+            DESCRIPTION,
+            PARAMETER_TYPE,
+            new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
+                    "all nodes from the input node set whose node value is not equal to the key.")
         ),
         new FunctionSignature(
             new QName("starts-with", RangeIndexModule.NAMESPACE_URI, RangeIndexModule.PREFIX),

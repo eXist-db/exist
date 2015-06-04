@@ -204,6 +204,10 @@ public class RangeQueryRewriter extends QueryRewriter {
                             break;
                     }
                     break;
+                case Constants.NEQ:
+                    operator = RangeIndex.Operator.NE;
+                    break;
+
             }
         } else if (expr instanceof InternalFunctionCall) {
             InternalFunctionCall fcall = (InternalFunctionCall) expr;
