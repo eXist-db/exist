@@ -1,9 +1,11 @@
 <xsl:stylesheet version="2.0"
-                xmlns:webxml="http://java.sun.com/xml/ns/j2ee"
-                xmlns="http://java.sun.com/xml/ns/j2ee"
-                xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-                exclude-result-prefixes="webxml">
+    xmlns:webxml="http://java.sun.com/xml/ns/javaee"
+    xmlns="http://java.sun.com/xml/ns/javaee"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    exclude-result-prefixes="webxml">
+
     <xsl:output method="xml" indent="yes"/>
+
     <xsl:param name="webxml.path" select="''"/>
     <xsl:template match="/">
         <xsl:copy>

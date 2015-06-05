@@ -21,6 +21,7 @@
  */
 package org.exist.indexing.range;
 
+import org.apache.lucene.util.FixedBitSet;
 import org.exist.dom.persistent.ElementImpl;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.persistent.NewArrayNodeSet;
@@ -122,6 +123,14 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             switch (operator) {
                 case EQ:
                     return new TermQuery(new Term(field, key));
+                case NE:
+                    final BooleanQuery qnot = new BooleanQuery();
+                    bytes = new BytesRef("*");
+                    query = new WildcardQuery(new Term(field, bytes));
+                    query.setRewriteMethod(MultiTermQuery.CONSTANT_SCORE_FILTER_REWRITE);
+                    qnot.add(query, BooleanClause.Occur.MUST);
+                    qnot.add(new TermQuery(new Term(field, key)), BooleanClause.Occur.MUST_NOT);
+                    return qnot;
                 case STARTS_WITH:
                     return new PrefixQuery(new Term(field, key));
                 case ENDS_WITH:
@@ -145,6 +154,12 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         }
         if (operator == RangeIndex.Operator.EQ) {
             return new TermQuery(new Term(field, RangeIndexConfigElement.convertToBytes(content)));
+        }
+        if (operator == RangeIndex.Operator.NE) {
+            final BooleanQuery nq = new BooleanQuery();
+            nq.add(new MatchAllDocsQuery(), BooleanClause.Occur.MUST);
+            nq.add(new TermQuery(new Term(field, RangeIndexConfigElement.convertToBytes(content))), BooleanClause.Occur.MUST_NOT);
+            return nq;
         }
         final boolean includeUpper = operator == RangeIndex.Operator.LE;
         final boolean includeLower = operator == RangeIndex.Operator.GE;
