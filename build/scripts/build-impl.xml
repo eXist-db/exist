@@ -271,6 +271,7 @@
         description="Create eXist-db unsigned jar files">
         <filter token="version" value="${project.version}"/>
 	<filter token="semver" value="${project.version.numeric}"/>
+	<filter token="source" value="${project.source}"/>
         <filter token="build" value="${DSTAMP}"/>
         <filter token="git.commit" value="${git.commit}"/>
 
