@@ -3,7 +3,6 @@ package org.exist.xquery.value;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.logging.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.util.io.CachingFilterInputStream;
@@ -96,13 +95,7 @@ public class BinaryValueFromInputStream extends BinaryValue {
 
     @Override
     public void close() throws IOException {
-        try {
-            if (cache != null) {
-                cache.invalidate();
-            }
-        } finally {
-            is.close();
-        }
+        is.close();
     }
 
     @Override

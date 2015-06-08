@@ -51,7 +51,6 @@ public class CachingFilterInputStream extends FilterInputStream {
 
     private int srcOffset = 0;
     private int mark = 0;
-    private boolean srcClosed = false;
 
     /**
      * Constructor which uses an existing Cache from a CachingFilterInputStream,
@@ -104,7 +103,7 @@ public class CachingFilterInputStream extends FilterInputStream {
     @Override
     public int read() throws IOException {
 
-        if (srcClosed) {
+        if (getCache().isSrcClosed()) {
             throw new IOException(FilterInputStreamCache.INPUTSTREAM_CLOSED);
         }
 
@@ -127,7 +126,7 @@ public class CachingFilterInputStream extends FilterInputStream {
     @Override
     public int read(final byte[] b, final int off, final int len) throws IOException {
 
-        if (srcClosed) {
+        if (getCache().isSrcClosed()) {
             throw new IOException(FilterInputStreamCache.INPUTSTREAM_CLOSED);
         }
 
@@ -175,12 +174,9 @@ public class CachingFilterInputStream extends FilterInputStream {
      */
     @Override
     public void close() throws IOException {
-        if (!srcClosed) {
-            if(!getCache().srcIsFilterInputStreamCache() && !getCache().isSrcClosed()) {
-                getCache().close();
-            }
-            this.srcClosed = true;
-        }        
+        if(!getCache().isSrcClosed()) {
+            getCache().close();
+        }    
     }
     
     /**
@@ -191,7 +187,7 @@ public class CachingFilterInputStream extends FilterInputStream {
     @Override
     public long skip(final long len) throws IOException {
 
-        if (srcClosed) {
+        if (getCache().isSrcClosed()) {
             throw new IOException(FilterInputStreamCache.INPUTSTREAM_CLOSED);
         } else if (len < 1) {
             return 0;
@@ -234,5 +230,13 @@ public class CachingFilterInputStream extends FilterInputStream {
     private boolean useCache() {
         //If cache hasRead and srcOffset is still in cache useCache
         return getCache().getSrcOffset() > 0 && getCache().getLength() > srcOffset;
+    }
+    
+    public void register(InputStream inputStream) {
+        getCache().register(inputStream);
+    }
+    
+    public void deregister(InputStream inputStream) {
+        getCache().deregister(inputStream);
     }
 }

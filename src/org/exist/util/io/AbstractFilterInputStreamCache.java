@@ -22,13 +22,15 @@ package org.exist.util.io;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Vector;
 
 /**
  *
  * @author zwobit
  */
 public abstract class AbstractFilterInputStreamCache extends FilterInputStream implements FilterInputStreamCache {
-
+    protected Vector<InputStream> consumers = new Vector<InputStream>();
+    
     private int srcOffset = 0;
 
     private final InputStream src;
@@ -37,8 +39,11 @@ public abstract class AbstractFilterInputStreamCache extends FilterInputStream i
     public AbstractFilterInputStreamCache(InputStream src) {
         super(src);
         this.src = src;
+        if(src instanceof CachingFilterInputStream) {
+           ((CachingFilterInputStream) src).register(src);
+        } 
     }
-
+        
     public int getSrcOffset() {
         return this.srcOffset;
     }
@@ -61,14 +66,23 @@ public abstract class AbstractFilterInputStreamCache extends FilterInputStream i
      * Closes the src InputStream and empties the cache
      */
     public void close() throws IOException {
-        if (!srcClosed) {
-            try {
-                src.close();
-            } finally {
-                srcClosed = true;
+        if(consumers.contains(src)) {
+            deregister(src);
+            if(consumers.size() <= 0) {
+                if (!srcClosed) {
+                    try {
+                        if(src instanceof CachingFilterInputStream) {
+                            ((CachingFilterInputStream) src).deregister(this);
+                        } else {
+                            src.close();
+                        }
+                    } finally {
+                        srcClosed = true;
+                    }  
+                }
+                this.invalidate(); //empty the cache
             }
         }
-        this.invalidate(); //empty the cache
     }
 
     @Override
@@ -151,13 +165,11 @@ public abstract class AbstractFilterInputStreamCache extends FilterInputStream i
         return false;
     }
 
-    ;
-
     @Override
     public void mark(int readlimit) {
     }
 
-    ;
+    
 
     @Override
     public void reset() throws IOException {
@@ -168,5 +180,16 @@ public abstract class AbstractFilterInputStreamCache extends FilterInputStream i
     public boolean srcIsFilterInputStreamCache() {
         return src instanceof CachingFilterInputStream;
     }
-;
+
+    @Override
+    public void register(InputStream inputStream) {
+        consumers.add(inputStream);
+    }
+
+    @Override
+    public void deregister(InputStream inputStream) {
+        consumers.remove(inputStream);
+    }
+
+    
 }
