@@ -1,4 +1,4 @@
-main/lib/betterform-exist-5.1-SNAPSHOT.jar
+main/lib/betterform-exist-*.jar
 main/lib/infinispan-commons-6.0.0.Final.jar
 main/lib/infinispan-core-6.0.0.Final.jar
 main/lib/jboss-logging-3.1.2.GA.jar
