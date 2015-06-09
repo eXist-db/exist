@@ -39,9 +39,12 @@ public abstract class AbstractFilterInputStreamCache extends FilterInputStream i
     public AbstractFilterInputStreamCache(InputStream src) {
         super(src);
         this.src = src;
+        //register src
+        this.register(src);
+        //if src is CachingFilterInputStream also register there so it can keep track of stream which rely on cache
         if(src instanceof CachingFilterInputStream) {
            ((CachingFilterInputStream) src).register(src);
-        } 
+        }
     }
         
     public int getSrcOffset() {

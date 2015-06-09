@@ -143,7 +143,7 @@ public class CachingFilterInputStream extends FilterInputStream {
 
                 //have we reached the end of the stream?
                 if (srcLen == FilterInputStreamCache.END_OF_STREAM) {
-                    return srcLen;
+                    return actualLen;
                 }
 
                 //increase srcOffset due to the read opertaion above
