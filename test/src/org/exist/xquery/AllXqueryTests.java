@@ -52,7 +52,9 @@ import org.junit.runners.Suite;
         TransformTest.class,
         DeferredFunctionCallTest.class,
         UnionTest.class,
-        TestXPathOpOrSpecialCase.class
+        TestXPathOpOrSpecialCase.class,
+        MemtreeDescendantOrSelfNodeKindTest.class,
+        PersistentDescendantOrSelfNodeKindTest.class
 })
 public class AllXqueryTests {
 }
