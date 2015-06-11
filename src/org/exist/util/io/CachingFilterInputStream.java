@@ -113,6 +113,11 @@ public class CachingFilterInputStream extends FilterInputStream {
             return data;
         } else {
             final int data = getCache().read();
+            
+            if(data == FileFilterInputStreamCache.END_OF_STREAM) {
+                return FilterInputStreamCache.END_OF_STREAM;
+            }
+            
             srcOffset++;
             return data;
         }

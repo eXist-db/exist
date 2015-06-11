@@ -28,7 +28,6 @@ package org.exist.util.io;
 
 import java.io.IOException;
 import java.io.InputStream;
-import org.apache.commons.io.output.ByteArrayOutputStream;
 
 /**
  * Cache implementation for CachingFilterInputStream Backed by an in-memory byte
