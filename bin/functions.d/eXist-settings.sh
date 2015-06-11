@@ -11,7 +11,7 @@ get_exist_home() {
 			p="$PWD/$1"
 		;;
 	esac
-		(cd $(/usr/bin/dirname "$p") ; /bin/pwd)
+		(cd "$(/usr/bin/dirname "$p")" ; /bin/pwd)
 }
 
 check_exist_home() {
@@ -20,6 +20,10 @@ check_exist_home() {
 	EXIST_HOME="$EXIST_HOME_1/..";
     fi
 
+    if [[ "$EXIST_HOME" =~ ' ' ]] ; then
+	echo "Path to eXist-db MUST NOT contain spaces! Exiting now…" > /dev/stderr;
+	exit 1;
+    fi
     if [ ! -f "${EXIST_HOME}/start.jar" ]; then
 	echo "Unable to find start.jar. Please set EXIST_HOME to point to your installation directory." > /dev/stderr;
 	exit 1;
