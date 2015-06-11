@@ -95,6 +95,10 @@ public abstract class AbstractFilterInputStreamCache extends FilterInputStream i
         }
 
         final int data = src.read();
+        if( data == FilterInputStreamCache.END_OF_STREAM) {
+            return FilterInputStreamCache.END_OF_STREAM;
+        }
+        
         this.write(data);
         this.srcOffset++;
         return data;
