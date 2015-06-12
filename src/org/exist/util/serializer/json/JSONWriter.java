@@ -62,7 +62,7 @@ public class JSONWriter extends XMLWriter {
 	
     protected JSONNode root;
 	
-    protected final Stack<JSONObject> stack = new Stack<JSONObject>();
+    protected final Stack<JSONObject> stack = new Stack<>();
 
     protected boolean useNSPrefix = false;
     
@@ -185,7 +185,7 @@ public class JSONWriter extends XMLWriter {
         if(qname.equals(JSON_ARRAY)) {
             parent.setSerializationType(JSONNode.SerializationType.AS_ARRAY);
         } else if(qname.equals(JSON_LITERAL)) {
-            parent.setSerializationType(JSONNode.SerializationType.AS_LITERAL);
+            parent.setSerializationDataType(JSONNode.SerializationDataType.AS_LITERAL);
         } else if(qname.equals(JSON_NAME)) {
             parent.setName(value);
         } else {
@@ -205,6 +205,7 @@ public class JSONWriter extends XMLWriter {
         final JSONObject parent = stack.peek();
         final JSONNode value = new JSONValue(chars.toString());
         value.setSerializationType(parent.getSerializationType());
+        value.setSerializationDataType(parent.getSerializationDataType());
         parent.addObject(value);
     }
 

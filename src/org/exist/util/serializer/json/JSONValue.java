@@ -76,13 +76,13 @@ public class JSONValue extends JSONNode {
 
     @Override
     public void serializeContent(final Writer writer) throws IOException {
-        if(getSerializationType() != SerializationType.AS_LITERAL) {
+        if(getSerializationDataType() != SerializationDataType.AS_LITERAL) {
             writer.write('"');
         }
         
         writer.write(content);
         
-        if(getSerializationType() != SerializationType.AS_LITERAL) {
+        if(getSerializationDataType() != SerializationDataType.AS_LITERAL) {
             writer.write('"');
         }
     }
