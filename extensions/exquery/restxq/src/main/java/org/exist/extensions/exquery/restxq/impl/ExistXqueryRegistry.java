@@ -290,7 +290,7 @@ public class ExistXqueryRegistry {
                     final List<RestXqService> services = findServices(broker, dependantModule);
                     registerServices(broker, services);
                 } else {
-                    LOG.info("Dependant '" + compiledModuleUri + "' has been resolved. Dependency on: " + dependant + "was removed");
+                    LOG.info("Dependant '" + compiledModuleUri + "' has been resolved. Dependency on: " + dependant + " was removed");
                     
                     //we need to remove dependant from the dependenciesTree of dependant
                     removeDependency(dependant, compiledModuleUri);
