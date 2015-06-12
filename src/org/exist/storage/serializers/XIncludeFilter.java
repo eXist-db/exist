@@ -35,6 +35,7 @@ import org.exist.source.DBSource;
 import org.exist.source.Source;
 import org.exist.source.StringSource;
 import org.exist.storage.XQueryPool;
+import org.exist.util.function.Either;
 import org.exist.util.serializer.AttrList;
 import org.exist.util.serializer.Receiver;
 import org.exist.xmldb.XmldbURI;
@@ -70,6 +71,7 @@ import java.net.URLConnection;
 import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.StringTokenizer;
 
 /**
@@ -92,16 +94,18 @@ public class XIncludeFilter implements Receiver {
 
     private static final String XI_FALLBACK = "fallback";
 
-    private static class ResourceError extends Exception {
+    private static class ResourceError {
+        private final String message;
+        private final Optional<Exception> cause;
 
-		private static final long serialVersionUID = 6371228263379093678L;
-
-		private ResourceError(String message, Throwable cause) {
-            super(message, cause);
+		private ResourceError(final String message, final Exception cause) {
+            this.message = message;
+            this.cause = Optional.ofNullable(cause);
         }
 
-        private ResourceError(String message) {
-            super(message);
+        private ResourceError(final String message) {
+            this.message = message;
+            this.cause = Optional.empty();
         }
     }
 
@@ -178,9 +182,9 @@ public class XIncludeFilter implements Receiver {
             } else if (XI_INCLUDE.equals(qname.getLocalPart()) && error != null) {
                 // found an error, but there was no fallback element.
                 // throw the exception now
-                final Exception e = error;
+                final SAXException e = error.cause.map(cause -> new SAXException(error.message, cause)).orElse(new SAXException(error.message));
                 error = null;
-                throw new SAXException(e.getMessage(), e);
+                throw e;
             }
         } else if (!inFallback || error != null)
             {receiver.endElement(qname);}
@@ -228,15 +232,19 @@ public class XIncludeFilter implements Receiver {
 	public void startElement(QName qname, AttrList attribs) throws SAXException {
 		if (qname.getNamespaceURI() != null && qname.getNamespaceURI().equals(XINCLUDE_NS)) {
 			if (qname.getLocalPart().equals(XI_INCLUDE)) {
-                if (LOG.isDebugEnabled())
-                    {LOG.debug("processing include ...");}
-                try {
-                    processXInclude(attribs.getValue(HREF_ATTRIB), attribs.getValue(XPOINTER_ATTRIB));
-                } catch (ResourceError resourceError) {
-                    if (LOG.isDebugEnabled())
-                        {LOG.debug(resourceError.getMessage(), resourceError);}
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("processing include ...");
+                }
+
+                final Optional<ResourceError> maybeResourceError = processXInclude(attribs.getValue(HREF_ATTRIB), attribs.getValue(XPOINTER_ATTRIB));
+
+                if(maybeResourceError.isPresent()) {
+                    final ResourceError resourceError = maybeResourceError.get();
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug(resourceError.message, resourceError);
+                    }
                     error = resourceError;
-				}
+                }
             } else if (qname.getLocalPart().equals(XI_FALLBACK)) {
                 inFallback = true;
             }
@@ -255,7 +263,18 @@ public class XIncludeFilter implements Receiver {
         // not supported with this receiver
     }
 
-    protected void processXInclude(String href, String xpointer) throws SAXException, ResourceError {
+    /**
+     *
+     * @param href The resource to be xincluded
+     * @param xpointer
+     *
+     * @return Optionally a ResourceError if it was not possible to retrieve the resource
+     *  to be xincluded
+     *
+     * @throws SAXException If a SAX processing error occurs
+     * @throws PermissionDeniedException When the user does not have permission to read the xincluded resource
+     */
+    protected Optional<ResourceError> processXInclude(String href, String xpointer) throws SAXException {
         if(href == null)
             {throw new SAXException("No href attribute found in XInclude include element");}
         // save some settings
@@ -288,9 +307,9 @@ public class XIncludeFilter implements Receiver {
         
         if (docUri != null) {
             final String fragment = docUri.getFragment();
-            if (!(fragment == null || fragment.length() == 0))
-                {throw new SAXException("Fragment identifiers must not be used in an xinclude href attribute. To specify an " +
-                        "xpointer, use the xpointer attribute.");}
+            if (!(fragment == null || fragment.length() == 0)) {
+                throw new SAXException("Fragment identifiers must not be used in an xinclude href attribute. To specify an xpointer, use the xpointer attribute.");
+            }
 
             // extract possible parameters in the URI
             params = null;
@@ -318,13 +337,10 @@ public class XIncludeFilter implements Receiver {
             // Patch 1520454 end
 
             // retrieve the document
-            doc = null;
             try {
                 doc = serializer.broker.getResource(docUri, Permission.READ);
-
-            } catch (final PermissionDeniedException e) {
-                LOG.warn("permission denied", e);
-                throw new ResourceError("Permission denied to read xincluded resource", e);
+            } catch(final PermissionDeniedException e) {
+                return Optional.of(new ResourceError("Permission denied to read XInclude'd resource", e));
             }
 
             /* Check if the document is a stored XQuery */
@@ -348,13 +364,9 @@ public class XIncludeFilter implements Receiver {
                         if (moduleLoadPath.startsWith(XmldbURI.XMLDB_URI_PREFIX)) {
                             final XmldbURI parentUri = XmldbURI.create(moduleLoadPath);
                             docUri = parentUri.append(path);
-                            try {
-                                doc = (DocumentImpl) serializer.broker.getXMLResource(docUri);
-                                if(doc != null && !doc.getPermissions().validate(serializer.broker.getSubject(), Permission.READ))
-                                    {throw new ResourceError("Permission denied to read xincluded resource");}
-                            } catch (final PermissionDeniedException e) {
-                                LOG.warn("permission denied", e);
-                                throw new ResourceError("Permission denied to read xincluded resource", e);
+                            doc = (DocumentImpl) serializer.broker.getXMLResource(docUri);
+                            if (doc != null && !doc.getPermissions().validate(serializer.broker.getSubject(), Permission.READ)) {
+                                throw new PermissionDeniedException("Permission denied to read XInclude'd resource");
                             }
                         } else {
                             f = new File(moduleLoadPath, path);
@@ -362,20 +374,18 @@ public class XIncludeFilter implements Receiver {
                         }
                     }
                 }
-                if (doc == null)
-                    {memtreeDoc = parseExternal(externalUri);}
-            } catch (final IOException e) {
-                throw new ResourceError("XInclude: failed to read document at URI: " + href +
-                    ": " + e.getMessage(), e);
+                if (doc == null) {
+                    final Either<ResourceError, org.exist.dom.memtree.DocumentImpl> external = parseExternal(externalUri);
+                    if (external.isLeft()) {
+                        return Optional.of(external.left().get());
+                    } else {
+                        memtreeDoc = external.right().get();
+                    }
+                }
             } catch (final PermissionDeniedException e) {
-                throw new ResourceError("XInclude: failed to read document at URI: " + href +
-                    ": " + e.getMessage(), e);
-            } catch (final ParserConfigurationException e) {
-                throw new ResourceError("XInclude: failed to read document at URI: " + href +
-                    ": " + e.getMessage(), e);
-            } catch (final URISyntaxException e) {
-                throw new ResourceError("XInclude: failed to read document at URI: " + href +
-                    ": " + e.getMessage(), e);
+                return Optional.of(new ResourceError("Permission denied on XInclude'd resource", e));
+            } catch (final IOException | ParserConfigurationException | URISyntaxException e) {
+                throw new SAXException("XInclude: failed to read document at URI: " + href + ": " + e.getMessage(), e);
             }
         }
 
@@ -384,8 +394,9 @@ public class XIncludeFilter implements Receiver {
                * we retry below and interpret docName as
                * a collection.
                */
-        if (doc == null && memtreeDoc == null && xpointer == null)
-            {throw new ResourceError("document " + docUri + " not found");}
+        if (doc == null && memtreeDoc == null && xpointer == null) {
+            return Optional.of(new ResourceError("document " + docUri + " not found"));
+        }
 
         if (xpointer == null && !xqueryDoc) {
             // no xpointer found - just serialize the doc
@@ -488,9 +499,11 @@ public class XIncludeFilter implements Receiver {
         // restore settings
         document = prevDoc;
         serializer.createContainerElements = createContainerElements;
+
+        return Optional.empty();
     }
 
-    private org.exist.dom.memtree.DocumentImpl parseExternal(URI externalUri) throws IOException, ResourceError, PermissionDeniedException, ParserConfigurationException, SAXException {
+    private Either<ResourceError, org.exist.dom.memtree.DocumentImpl> parseExternal(final URI externalUri) throws IOException, PermissionDeniedException, ParserConfigurationException, SAXException {
         final URLConnection con = externalUri.toURL().openConnection();
         if(con instanceof HttpURLConnection)
         {
@@ -498,7 +511,7 @@ public class XIncludeFilter implements Receiver {
             if(httpConnection.getResponseCode() == HttpURLConnection.HTTP_NOT_FOUND)
             {
                 // Special case: '404'
-                throw new ResourceError("XInclude: no document found at URI: " + externalUri.toString());
+                return new Either.Left(new ResourceError("XInclude: no document found at URI: " + externalUri.toString()));
             }
             else if(httpConnection.getResponseCode() != HttpURLConnection.HTTP_OK)
             {
@@ -516,10 +529,9 @@ public class XIncludeFilter implements Receiver {
         final SAXAdapter adapter = new SAXAdapter();
         reader.setContentHandler(adapter);
         reader.parse(src);
-        final org.exist.dom.memtree.DocumentImpl doc =
-                (org.exist.dom.memtree.DocumentImpl)adapter.getDocument();
+        final org.exist.dom.memtree.DocumentImpl doc = adapter.getDocument();
         doc.setDocumentURI(externalUri.toString());
-        return doc;
+        return new Either.Right(doc);
     }
 
     /**
