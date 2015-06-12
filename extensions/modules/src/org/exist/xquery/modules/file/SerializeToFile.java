@@ -22,7 +22,6 @@
 package org.exist.xquery.modules.file;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -37,8 +36,6 @@ import org.apache.logging.log4j.Logger;
 
 import org.exist.dom.QName;
 import org.exist.storage.serializers.Serializer;
-import org.exist.util.serializer.SAXSerializer;
-import org.exist.util.serializer.SerializerPool;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -49,8 +46,7 @@ import org.exist.xquery.util.SerializerUtils;
 import org.exist.xquery.value.*;
 import org.xml.sax.SAXException;
 
-public class SerializeToFile extends BasicFunction 
-{
+public class SerializeToFile extends BasicFunction {
 	private final static Logger logger = LogManager.getLogger(SerializeToFile.class);
 
 	private final static String FN_SERIALIZE_LN = "serialize";
@@ -135,9 +131,8 @@ public class SerializeToFile extends BasicFunction
             super(context, signature);
 	}
 	
-        @Override
-	public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException
-	{
+    @Override
+	public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
 	
             if(args[0].isEmpty()) {
                 return Sequence.EMPTY_SEQUENCE;
@@ -225,26 +220,11 @@ public class SerializeToFile extends BasicFunction
         }
 	}
 
-    private void serializeBinary(final BinaryValue binary, final File file, final boolean doAppend) throws XPathException
-    {
-        OutputStream os = null;
-        try {
-            os = new FileOutputStream(file, doAppend);
-
+    private void serializeBinary(final BinaryValue binary, final File file, final boolean doAppend) throws XPathException {
+        try(final OutputStream os = new FileOutputStream(file, doAppend)) {
             binary.streamBinaryTo(os);
-
-        } catch(final FileNotFoundException fnfe) {
-            throw new XPathException(this, "Cannot serialize file. A problem occurred while serializing the binary data: " + fnfe.getMessage(), fnfe);
         } catch(final IOException ioe) {
             throw new XPathException(this, "Cannot serialize file. A problem occurred while serializing the binary data: " + ioe.getMessage(), ioe);
-        } finally {
-            if(os != null) {
-                try {
-                    os.close();
-                } catch(final IOException ioe) {
-                    logger.warn("Cannot serialize file '" + file.getAbsolutePath() + " ': " + ioe.getMessage(), ioe);
-                }
-            }
         }
     }
 }
