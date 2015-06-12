@@ -60,8 +60,8 @@ public abstract class AbstractRemoteResource extends AbstractRemote
     private long contentLen = 0L;
     private Permission permissions = null;
 
-    private Date dateCreated = null;
-    private Date dateModified = null;
+    Date dateCreated = null;
+    Date dateModified = null;
 
     protected AbstractRemoteResource(final RemoteCollection parent, final XmldbURI documentName, final String mimeType)
             throws XMLDBException {
@@ -145,18 +145,31 @@ public abstract class AbstractRemoteResource extends AbstractRemote
         return dateCreated;
     }
 
-    void setCreationTime(final Date dateCreated) {
-        this.dateCreated = dateCreated;
-    }
-
     @Override
     public Date getLastModificationTime()
             throws XMLDBException {
         return dateModified;
     }
 
-    void setLastModificationTime(final Date dateModified) {
-        this.dateModified = dateModified;
+    @Override
+    public void setLastModificationTime(final Date dateModified) throws XMLDBException {
+        if (dateModified != null) {
+            if(dateModified.before(getCreationTime())) {
+                throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, "Modification time must be after creation time.");
+            }
+
+            final List params = new ArrayList(2);
+            params.add(path.toString());
+            params.add(dateModified.getTime());
+
+            try {
+                collection.getClient().execute("setLastModified", params);
+            } catch (final XmlRpcException e) {
+                throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
+            }
+
+            this.dateModified = dateModified;
+        }
     }
 
     public long getExtendedContentLength()

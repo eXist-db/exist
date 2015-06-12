@@ -89,6 +89,22 @@ public abstract class AbstractEXistResource extends AbstractLocal implements EXi
     }
 
     @Override
+    public void setLastModificationTime(final Date lastModificationTime) throws XMLDBException {
+        if(lastModificationTime.before(getCreationTime())) {
+            throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, "Modification time must be after creation time.");
+        }
+
+        modify((document, broker, transaction) -> {
+            if (document == null) {
+                throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "Resource " + docId + " not found");
+            }
+
+            document.getMetadata().setLastModified(lastModificationTime.getTime());
+            return null;
+        });
+    }
+
+    @Override
     public long getContentLength() throws XMLDBException {
         return read((document, broker, transaction) -> document.getContentLength());
     }
