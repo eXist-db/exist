@@ -21,17 +21,21 @@
  */
 package org.exist.xquery.functions.validate;
 
+import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.junit.*;
 import static org.junit.Assert.*;
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.io.IOException;
 
 import org.exist.test.EmbeddedExistTester;
 
+import org.xml.sax.SAXException;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ResourceSet;
+import org.xmldb.api.base.XMLDBException;
 
 /**
  * Tests for the validation:jaxp() function with Catalog (resolvers).
@@ -46,7 +50,7 @@ public class JaxpXsdCatalogTest extends EmbeddedExistTester {
             "</collection>";
 
     @BeforeClass
-    public static void prepareResources() throws Exception {
+    public static void prepareResources() throws XMLDBException, IOException {
 
         // Switch off validation
         Collection conf = createCollection(rootCollection, "system/config/db/parse");
@@ -64,7 +68,6 @@ public class JaxpXsdCatalogTest extends EmbeddedExistTester {
         File schemas = new File("samples/validation/parse/schemas");
 
         for (File file : schemas.listFiles(filter)) {
-            LOG.info("Storing " + file.getAbsolutePath());
             byte[] data = readFile(schemas, file.getName());
             storeResource(schemasCollection, file.getName(), data);
         }
@@ -85,18 +88,9 @@ public class JaxpXsdCatalogTest extends EmbeddedExistTester {
     }
 
     @Before
-    public void clearGrammarCache() {
-        LOG.info("Clearing grammar cache");
-        ResourceSet results = null;
-        try {
-            results = executeQuery("validation:clear-grammar-cache()");
-            String r = (String) results.getResource(0).getContent();
-
-        } catch (Exception e) {
-            LOG.error(e);
-            e.printStackTrace();
-            fail(e.getMessage());
-        }
+    public void clearGrammarCache() throws XMLDBException {
+        ResourceSet results = executeQuery("validation:clear-grammar-cache()");
+        String r = (String) results.getResource(0).getContent();
     }
 
     /*
@@ -104,7 +98,7 @@ public class JaxpXsdCatalogTest extends EmbeddedExistTester {
      */
     
     @Test
-    public void xsd_stored_catalog_valid() {
+    public void xsd_stored_catalog_valid() throws XMLDBException, SAXException, XpathException, IOException {
         String query = "validation:jaxp-report( " +
                 "doc('/db/parse/instance/valid.xml'), false()," +
                 "doc('/db/parse/catalog.xml') )";
@@ -113,7 +107,7 @@ public class JaxpXsdCatalogTest extends EmbeddedExistTester {
     }
 
     @Test
-    public void xsd_stored_catalog_invalid() {
+    public void xsd_stored_catalog_invalid() throws XMLDBException, SAXException, XpathException, IOException {
         String query = "validation:jaxp-report( " +
                 "doc('/db/parse/instance/invalid.xml'), false()," +
                 "doc('/db/parse/catalog.xml') )";
@@ -125,7 +119,7 @@ public class JaxpXsdCatalogTest extends EmbeddedExistTester {
      * ***********************************************************************************
      */
     @Test
-    public void xsd_anyURI_catalog_valid() {
+    public void xsd_anyURI_catalog_valid() throws XMLDBException, SAXException, XpathException, IOException {
         String query = "validation:jaxp-report( " +
                 "xs:anyURI('/db/parse/instance/valid.xml'), false()," +
                 "xs:anyURI('/db/parse/catalog.xml') )";
@@ -134,7 +128,7 @@ public class JaxpXsdCatalogTest extends EmbeddedExistTester {
     }
 
     @Test
-    public void xsd_anyURI_catalog_invalid() {
+    public void xsd_anyURI_catalog_invalid() throws XMLDBException, SAXException, XpathException, IOException {
         String query = "validation:jaxp-report( " +
                 "xs:anyURI('/db/parse/instance/invalid.xml'), false()," +
                 "xs:anyURI('/db/parse/catalog.xml') )";
@@ -147,7 +141,7 @@ public class JaxpXsdCatalogTest extends EmbeddedExistTester {
      */
     
     @Test
-    public void xsd_searched_valid() {
+    public void xsd_searched_valid() throws XMLDBException, SAXException, XpathException, IOException {
         String query = "validation:jaxp-report( " +
                 "doc('/db/parse/instance/valid.xml'), false()," +
                 "xs:anyURI('/db/parse/') )";
@@ -156,7 +150,7 @@ public class JaxpXsdCatalogTest extends EmbeddedExistTester {
     }
 
     @Test
-    public void xsd_searched_invalid() {
+    public void xsd_searched_invalid() throws XMLDBException, SAXException, XpathException, IOException {
         String query = "validation:jaxp-report( " +
                 "doc('/db/parse/instance/invalid.xml'), false()," +
                 "xs:anyURI('/db/parse/') )";
@@ -166,7 +160,7 @@ public class JaxpXsdCatalogTest extends EmbeddedExistTester {
     
     // test boolean function
     @Test
-    public void xsd_searched_valid_boolean() {
+    public void xsd_searched_valid_boolean() throws XMLDBException {
         String query = "validation:jaxp( " +
                 "doc('/db/parse/instance/valid.xml'), false()," +
                 "xs:anyURI('/db/parse/') )";
@@ -176,7 +170,7 @@ public class JaxpXsdCatalogTest extends EmbeddedExistTester {
     
     // test boolean function
     @Test
-    public void xsd_searched_invalid_boolean() {
+    public void xsd_searched_invalid_boolean() throws XMLDBException {
         String query = "validation:jaxp( " +
                 "doc('/db/parse/instance/invalid.xml'), false()," +
                 "xs:anyURI('/db/parse/') )";
@@ -186,55 +180,32 @@ public class JaxpXsdCatalogTest extends EmbeddedExistTester {
     
     // test parse function
     @Test
-    public void xsd_searched_parse_valid() {
+    public void xsd_searched_parse_valid() throws SAXException, IOException, XpathException, XMLDBException {
         String query = "validation:jaxp-parse( " +
                 "doc('/db/parse/instance/valid.xml'), false()," +
                 "xs:anyURI('/db/parse/') )";
 
-        try {
-            String r = executeOneValue(query);
-            LOG.info(r);
-            assertXpathEvaluatesTo("2006-05-04T18:13:51.0Z", "//Y", r);
-        } catch (Exception ex) {
-            LOG.error(ex);
-            fail(ex.getMessage());
-        }
+        String r = executeOneValue(query);
+        assertXpathEvaluatesTo("2006-05-04T18:13:51.0Z", "//Y", r);
     }
     
     // test parse function
     @Test
-    public void xsd_searched_parse_invalid() {
+    public void xsd_searched_parse_invalid() throws SAXException, IOException, XpathException, XMLDBException {
         String query = "validation:jaxp-parse( " +
                 "doc('/db/parse/instance/invalid.xml'), false()," +
                 "xs:anyURI('/db/parse/') )";
 
-        try {
-            String r = executeOneValue(query);
-            LOG.info(r);
-            assertXpathEvaluatesTo("2006-05-04T18:13:51.0Z", "//Y", r);
-        } catch (Exception ex) {
-            LOG.error(ex);
-            fail(ex.getMessage());
-        }
+        String r = executeOneValue(query);
+        assertXpathEvaluatesTo("2006-05-04T18:13:51.0Z", "//Y", r);
     }
 
-    private void executeAndEvaluate(String query, String expectedValue){
+    private void executeAndEvaluate(String query, String expectedValue) throws XMLDBException, SAXException, IOException, XpathException {
+        ResourceSet results = executeQuery(query);
+        assertEquals(1, results.getSize());
 
-        LOG.info("Query="+query);
-        LOG.info("ExpectedValue="+query);
+        String r = (String) results.getResource(0).getContent();
 
-        try {
-            ResourceSet results = executeQuery(query);
-            assertEquals(1, results.getSize());
-
-            String r = (String) results.getResource(0).getContent();
-            LOG.info(r);
-
-            assertXpathEvaluatesTo(expectedValue, "//status/text()", r);
-
-        } catch (Exception ex) {
-            LOG.error(ex);
-            fail(ex.getMessage());
-        }
+        assertXpathEvaluatesTo(expectedValue, "//status/text()", r);
     }
 }

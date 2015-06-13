@@ -62,7 +62,6 @@ import org.xmldb.api.modules.XQueryService;
  */
 public class EmbeddedExistTester {
 
-    protected final static Logger LOG = LogManager.getLogger(EmbeddedExistTester.class);
     protected final static String URI = XmldbURI.LOCAL_DB;
     protected final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
     
@@ -74,43 +73,27 @@ public class EmbeddedExistTester {
     protected static XQueryService xqService = null;
 
     @BeforeClass
-    public static void before() {
-        try {
-            LOG.info("Starting test..");
+    public static void before() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
+        Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
+        database = (Database) cl.newInstance();
+        database.setProperty("create-database", "true");
+        DatabaseManager.registerDatabase(database);
 
-            Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
-            database = (Database) cl.newInstance();
-            database.setProperty("create-database", "true");
-            DatabaseManager.registerDatabase(database);
-
-            rootCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
-            xpxqService = (XPathQueryService) rootCollection.getService("XPathQueryService", "1.0");
-            cmService = (CollectionManagementService) rootCollection.getService("CollectionManagementService", "1.0");
-            xqService = (XQueryService) rootCollection.getService("XQueryService", "1.0");
-
-        } catch (Throwable ex) {
-            LOG.error(ex);
-            fail(ex.getMessage());
-        }
+        rootCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
+        xpxqService = (XPathQueryService) rootCollection.getService("XPathQueryService", "1.0");
+        cmService = (CollectionManagementService) rootCollection.getService("CollectionManagementService", "1.0");
+        xqService = (XQueryService) rootCollection.getService("XQueryService", "1.0");
     }
 
     @AfterClass
-    public static void after() {
-        try {
-            LOG.info("Stopping test..");
-            DatabaseManager.deregisterDatabase(database);
-            DatabaseInstanceManager dim = (DatabaseInstanceManager) rootCollection.getService("DatabaseInstanceManager", "1.0");
-            dim.shutdown();
-            database = null;
-
-        } catch (Exception ex) {
-            LOG.error(ex);
-            fail(ex.getMessage());
-        }
+    public static void after() throws XMLDBException {
+        DatabaseManager.deregisterDatabase(database);
+        DatabaseInstanceManager dim = (DatabaseInstanceManager) rootCollection.getService("DatabaseInstanceManager", "1.0");
+        dim.shutdown();
+        database = null;
     }
 
     protected static Collection createCollection(Collection collection, String collectionName) throws XMLDBException {
-        LOG.info("Create collection " + collectionName);
         Collection newCollection = collection.getChildCollection(collectionName);
         if (newCollection == null) {
             cmService.createCollection(collectionName);
@@ -122,8 +105,6 @@ public class EmbeddedExistTester {
     }
 
     protected static void storeResource(Collection collection, String documentName, byte[] content) throws XMLDBException {
-
-        LOG.info("Store " + documentName);
         MimeType mime = MimeTable.getInstance().getContentTypeFor(documentName);
 
         String type = mime.isXMLType() ? "XMLResource" : "BinaryResource";
@@ -134,24 +115,15 @@ public class EmbeddedExistTester {
     }
 
     protected static ResourceSet executeQuery(String query) throws XMLDBException {
-        LOG.info("Executing " + query);
         CompiledExpression compiledQuery = xqService.compile(query);
         ResourceSet result = xqService.execute(compiledQuery);
         return result;
     }
     
-    protected static String executeOneValue(String query){
-        String r = null;
-        try {
-            ResourceSet results = executeQuery(query);
-            assertEquals(1, results.getSize());
-            r = (String) results.getResource(0).getContent();
-            
-        } catch (Exception ex) {
-            LOG.error(ex);
-            fail(ex.getMessage());
-        }
-        return r;
+    protected static String executeOneValue(String query) throws XMLDBException {
+        ResourceSet results = executeQuery(query);
+        assertEquals(1, results.getSize());
+        return (String) results.getResource(0).getContent();
     }
     
 
@@ -160,19 +132,16 @@ public class EmbeddedExistTester {
 
         File src = new File(directory, filename);
 
-        LOG.info("Reading file: " + src.getAbsolutePath());
-
         assertTrue(src.canRead());
 
-        InputStream in = new FileInputStream(src);
-
-        // Transfer bytes from in to out
-        byte[] buf = new byte[4096];
-        int len;
-        while ((len = in.read(buf)) > 0) {
-            out.write(buf, 0, len);
+        try(final InputStream in = new FileInputStream(src)) {
+            // Transfer bytes from in to out
+            byte[] buf = new byte[4096];
+            int len;
+            while ((len = in.read(buf)) > 0) {
+                out.write(buf, 0, len);
+            }
         }
-        in.close();
 
         return out.toByteArray();
     }

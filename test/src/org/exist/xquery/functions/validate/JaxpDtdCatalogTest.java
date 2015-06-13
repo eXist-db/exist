@@ -21,17 +21,21 @@
  */
 package org.exist.xquery.functions.validate;
 
+import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.junit.*;
 import static org.junit.Assert.*;
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.io.IOException;
 
 import org.exist.test.EmbeddedExistTester;
 
+import org.xml.sax.SAXException;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ResourceSet;
+import org.xmldb.api.base.XMLDBException;
 
 /**
  * Tests for the validation:jaxp() function with Catalog (resolvers).
@@ -64,7 +68,6 @@ public class JaxpDtdCatalogTest extends EmbeddedExistTester {
         File schemas = new File("samples/validation/parse/dtds");
 
         for (File file : schemas.listFiles(filter)) {
-            LOG.info("Storing " + file.getAbsolutePath());
             byte[] data = readFile(schemas, file.getName());
             storeResource(dtdsCollection, file.getName(), data);
         }
@@ -85,25 +88,16 @@ public class JaxpDtdCatalogTest extends EmbeddedExistTester {
     }
 
     @Before
-    public void clearGrammarCache() {
-        LOG.info("Clearing grammar cache");
-        ResourceSet results = null;
-        try {
-            results = executeQuery("validation:clear-grammar-cache()");
-            String r = (String) results.getResource(0).getContent();
-
-        } catch (Exception e) {
-            LOG.error(e);
-            e.printStackTrace();
-            fail(e.getMessage());
-        }
+    public void clearGrammarCache() throws XMLDBException {
+        ResourceSet results = executeQuery("validation:clear-grammar-cache()");
+        String r = (String) results.getResource(0).getContent();
     }
 
     /*
      * ***********************************************************************************
      */
     @Test
-    public void dtd_stored_catalog_valid() {
+    public void dtd_stored_catalog_valid() throws XMLDBException, SAXException, XpathException, IOException {
         String query = "validation:jaxp-report( " +
                 "xs:anyURI('/db/parse/instance/valid-dtd.xml'), false()," +
                 "doc('/db/parse/catalog.xml') )";
@@ -112,7 +106,7 @@ public class JaxpDtdCatalogTest extends EmbeddedExistTester {
     }
 
     @Test
-    public void dtd_stored_catalog_invalid() {
+    public void dtd_stored_catalog_invalid() throws XMLDBException, SAXException, XpathException, IOException {
         String query = "validation:jaxp-report( " +
                 "xs:anyURI('/db/parse/instance/invalid-dtd.xml'), false()," +
                 "doc('/db/parse/catalog.xml') )";
@@ -124,7 +118,7 @@ public class JaxpDtdCatalogTest extends EmbeddedExistTester {
      * ***********************************************************************************
      */
     @Test
-    public void dtd_anyURI_catalog_valid() {
+    public void dtd_anyURI_catalog_valid() throws XMLDBException, SAXException, XpathException, IOException {
         String query = "validation:jaxp-report( " +
                 "xs:anyURI('/db/parse/instance/valid-dtd.xml'), false()," +
                 "xs:anyURI('/db/parse/catalog.xml') )";
@@ -133,7 +127,7 @@ public class JaxpDtdCatalogTest extends EmbeddedExistTester {
     }
 
     @Test
-    public void dtd_anyURI_catalog_invalid() {
+    public void dtd_anyURI_catalog_invalid() throws XMLDBException, SAXException, XpathException, IOException {
         String query = "validation:jaxp-report( " +
                 "xs:anyURI('/db/parse/instance/invalid-dtd.xml'), false()," +
                 "xs:anyURI('/db/parse/catalog.xml') )";
@@ -148,7 +142,7 @@ public class JaxpDtdCatalogTest extends EmbeddedExistTester {
      *
      */
     @Test
-    public void dtd_searched_valid() {
+    public void dtd_searched_valid() throws XMLDBException, SAXException, XpathException, IOException {
         String query = "validation:jaxp-report( " +
                 "xs:anyURI('/db/parse/instance/valid-dtd.xml'), false()," +
                 "xs:anyURI('/db/parse/') )";
@@ -157,7 +151,7 @@ public class JaxpDtdCatalogTest extends EmbeddedExistTester {
     }
 
     @Test
-    public void dtd_searched_invalid() {
+    public void dtd_searched_invalid() throws XMLDBException, SAXException, XpathException, IOException {
         String query = "validation:jaxp-report( " +
                 "xs:anyURI('/db/parse/instance/invalid-dtd.xml'), false()," +
                 "xs:anyURI('/db/parse/') )";
@@ -165,23 +159,12 @@ public class JaxpDtdCatalogTest extends EmbeddedExistTester {
         executeAndEvaluate(query,"invalid");
     }
 
-    private void executeAndEvaluate(String query, String expectedValue){
+    private void executeAndEvaluate(String query, String expectedValue) throws XMLDBException, SAXException, IOException, XpathException {
+        ResourceSet results = executeQuery(query);
+        assertEquals(1, results.getSize());
 
-        LOG.info("Query="+query);
-        LOG.info("ExpectedValue="+query);
+        String r = (String) results.getResource(0).getContent();
 
-        try {
-            ResourceSet results = executeQuery(query);
-            assertEquals(1, results.getSize());
-
-            String r = (String) results.getResource(0).getContent();
-            LOG.info(r);
-
-            assertXpathEvaluatesTo(expectedValue, "//status/text()", r);
-
-        } catch (Exception ex) {
-            LOG.error(ex);
-            fail(ex.getMessage());
-        }
+        assertXpathEvaluatesTo(expectedValue, "//status/text()", r);
     }
 }
