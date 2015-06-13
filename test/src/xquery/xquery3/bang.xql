@@ -147,3 +147,9 @@ declare
 function bang:constructor() {
     $bang:works/employee[pnum = "P4"] ! <name>{@name/string()}</name>
 };
+
+declare
+    %test:assertTrue
+function bang:implicit-context() {
+    count(//* ! local-name(.))
+};
