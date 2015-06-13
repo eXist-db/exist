@@ -111,7 +111,7 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
             add(item);
         }
     }
-    
+
     public void keepUnOrdered(boolean flag) {
     	keepUnOrdered = flag;
     }
@@ -361,6 +361,7 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
 
     @Override
     public void destroy(XQueryContext context, Sequence contextSequence) {
+        holderVar = null;
         for (int i = 0; i <= size; i++) {
             values[i].destroy(context, contextSequence);
         }
