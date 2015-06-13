@@ -32,22 +32,15 @@ public class StoreBinaryTest {
         final File home = ConfigurationHelper.getExistHome();
         final File data = new File(home, "webapp/WEB-INF/data");
 
-        final File dataFiles[] = data.listFiles(new FilenameFilter(){
+        final File[] dataFiles = data.listFiles(new FilenameFilter() {
             @Override
-            public boolean accept(File file, String name) {
-                return name.endsWith(".dbx") || name.endsWith(".journal") || name.endsWith(".log");
+            public boolean accept(final File dir, final String name) {
+                return !(name.equals("RECOVERY") || name.equals("README") || name.equals(".DO_NOT_DELETE"));
             }
         });
 
-        for(final File dataFile : dataFiles){
-            dataFile.delete();
-        }
-
-        for(final String subFolderName : new String[]{"journal", "fs", "sanity", "lucene"} ) {
-            final File subFolder = new File(data, subFolderName);
-            if(subFolder.exists()) {
-                FileUtils.deleteDirectory(subFolder);
-            }
+        for(final File dataFile : dataFiles) {
+            FileUtils.deleteQuietly(dataFile);
         }
     }
 
