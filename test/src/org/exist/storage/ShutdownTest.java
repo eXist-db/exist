@@ -6,6 +6,8 @@ import java.io.IOException;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
+import org.exist.collections.CollectionConfigurationException;
+import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.security.PermissionDeniedException;
@@ -29,6 +31,15 @@ import org.xml.sax.SAXException;
 
 public class ShutdownTest {
 
+    private static String COLLECTION_CONFIG =
+        "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
+            "	<index>" +
+            "       <lucene>" +
+            "           <text match=\"/*\"/>" +
+            "       </lucene>" +
+            "	</index>" +
+            "</collection>";
+
 	private static String directory = "samples/shakespeare";
     
     private static File dir = null;
@@ -39,13 +50,13 @@ public class ShutdownTest {
     }
 
     @Test
-	public void shutdown() throws EXistException, DatabaseConfigurationException, LockException, TriggerException, PermissionDeniedException, XPathException, IOException {
+	public void shutdown() throws EXistException, DatabaseConfigurationException, LockException, TriggerException, PermissionDeniedException, XPathException, IOException, CollectionConfigurationException {
 		for (int i = 0; i < 2; i++) {
 			storeAndShutdown();
 		}
 	}
 	
-	public void storeAndShutdown() throws EXistException, DatabaseConfigurationException, PermissionDeniedException, IOException, TriggerException, LockException, XPathException {
+	public void storeAndShutdown() throws EXistException, DatabaseConfigurationException, PermissionDeniedException, IOException, TriggerException, LockException, XPathException, CollectionConfigurationException {
 		final BrokerPool pool = startDB();
         final TransactionManager transact = pool.getTransactionManager();
 
@@ -58,12 +69,16 @@ public class ShutdownTest {
                 assertNotNull(test);
                 broker.saveCollection(transaction, test);
 
-                final File files[] = dir.listFiles(new FilenameFilter() {
-                    public boolean accept(File dir, String name) {
-                        return name.endsWith(".xml");
-                    }
-                });
-                assertNotNull(files);
+	            final CollectionConfigurationManager mgr = broker.getBrokerPool().getConfigurationManager();
+	            mgr.addConfiguration(transaction, broker, test, COLLECTION_CONFIG);
+
+	            final File files[] = dir.listFiles(new FilenameFilter() {
+		        	public boolean accept(final File dir, final String name) {
+		        		return name.endsWith(".xml");
+		        	}
+		        });
+	            assertNotNull(files);
+
 
                 // store some documents.
 	            for(final File f : files) {
