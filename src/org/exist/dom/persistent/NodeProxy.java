@@ -1254,9 +1254,9 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
             return NodeSet.EMPTY_SET;
         }
         final NewArrayNodeSet result = new NewArrayNodeSet();
-        IStoredNode child;
+        IStoredNode<?> child;
         for(int i = 0; i < children.getLength(); i++) {
-            child = (IStoredNode) children.item(i);
+            child = (IStoredNode<?>) children.item(i);
             if(child.getQName().equals(qname)) {
                 final NodeProxy p = new NodeProxy(doc, child.getNodeId(), Node.ELEMENT_NODE, child.getInternalAddress());
                 if(Expression.NO_CONTEXT_ID != contextId) {

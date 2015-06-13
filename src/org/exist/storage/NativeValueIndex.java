@@ -324,12 +324,12 @@ public class NativeValueIndex implements ContentLoadingObserver {
     }
 
 
-    public <T extends IStoredNode> IStoredNode getReindexRoot(IStoredNode<T> node, NodePath nodePath )
+    public <T extends IStoredNode<?>> IStoredNode<?> getReindexRoot(IStoredNode<T> node, NodePath nodePath )
     {
         doc = node.getOwnerDocument();
         final NodePath   path        = new NodePath( nodePath );
-        IStoredNode root        = null;
-        IStoredNode currentNode = ( ( ( node.getNodeType() == Node.ELEMENT_NODE ) || ( node.getNodeType() == Node.ATTRIBUTE_NODE ) ) ? node : node.getParentStoredNode() );
+        IStoredNode<?> root        = null;
+        IStoredNode<?> currentNode = ( ( ( node.getNodeType() == Node.ELEMENT_NODE ) || ( node.getNodeType() == Node.ATTRIBUTE_NODE ) ) ? node : node.getParentStoredNode() );
 
         while( currentNode != null ) {
             final GeneralRangeIndexSpec rSpec = doc.getCollection().getIndexByPathConfiguration( broker, path );
@@ -349,7 +349,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
     }
 
 
-    public void reindex(IStoredNode node )
+    public void reindex(IStoredNode<?> node )
     {
         if( node == null ) {
             return;

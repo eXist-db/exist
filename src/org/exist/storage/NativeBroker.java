@@ -3157,7 +3157,7 @@ public class NativeBroker extends DBBroker {
             final int count = node.getChildCount();
             NodeId nodeId = node.getNodeId();
             for(int i = 0; i < count; i++) {
-                final IStoredNode child = iterator.next();
+                final IStoredNode<?> child = iterator.next();
                 oldNodeId = child.getNodeId();
                 if(defragment) {
                     if(i == 0) {
@@ -3354,7 +3354,7 @@ public class NativeBroker extends DBBroker {
         nodeProcessor.index();
     }
 
-    private boolean checkNodeTree(final INodeIterator iterator, final IStoredNode node, final StringBuilder buf) {
+    private boolean checkNodeTree(final INodeIterator iterator, final IStoredNode<?> node, final StringBuilder buf) {
         if(buf != null) {
             if(buf.length() > 0) {
                 buf.append(", ");
@@ -3367,9 +3367,9 @@ public class NativeBroker extends DBBroker {
             if(buf != null) {
                 buf.append('[').append(count).append(']');
             }
-            IStoredNode previous = null;
+            IStoredNode<?> previous = null;
             for(int i = 0; i < count; i++) {
-                IStoredNode child = iterator.next();
+                IStoredNode<?> child = iterator.next();
                 if(i > 0 && !(child.getNodeId().isSiblingOf(previous.getNodeId()) &&
                     child.getNodeId().compareTo(previous.getNodeId()) > 0)) {
                     LOG.fatal("node " + child.getNodeId() + " cannot be a sibling of " + previous.getNodeId() +

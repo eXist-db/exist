@@ -25,6 +25,7 @@ import java.io.OutputStream;
 
 import org.exist.dom.INodeHandle;
 import org.exist.dom.QName;
+import org.exist.dom.persistent.IStoredNode;
 import org.w3c.dom.Document;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
@@ -147,9 +148,12 @@ public class EXISerializer implements ContentHandler, Receiver {
 	@Override
 	public void setCurrentNode(INodeHandle node) {
 		// TODO Auto-generated method stub
-		
 	}
-
+	@Override
+	public void setCurrentNode(IStoredNode node) {
+		// ignored
+	}
+	
 	@Override
 	public Document getDocument() {
 		// TODO Auto-generated method stub

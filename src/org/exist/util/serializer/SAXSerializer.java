@@ -23,12 +23,15 @@ import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+
 import javax.xml.XMLConstants;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerException;
+
 import org.exist.Namespaces;
 import org.exist.dom.INodeHandle;
 import org.exist.dom.QName;
+import org.exist.dom.persistent.IStoredNode;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.XMLString;
 import org.w3c.dom.Document;
@@ -524,6 +527,10 @@ public class SAXSerializer extends AbstractSerializer implements ContentHandler,
     public void setCurrentNode(final INodeHandle node) {
         // just ignore.
     }
+	@Override
+	public void setCurrentNode(IStoredNode node) {
+		// ignored
+	}
 
     @Override
     public Document getDocument() {
