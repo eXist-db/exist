@@ -173,14 +173,14 @@ MINUS("-")=173
 LITERAL_div="div"=174
 LITERAL_idiv="idiv"=175
 LITERAL_mod="mod"=176
-PRAGMA_START=177
-PRAGMA_END("pragma expression")=178
-LITERAL_union="union"=179
-LITERAL_intersect="intersect"=180
-LITERAL_except="except"=181
-SLASH("single slash '/'")=182
-DSLASH("double slash '//'")=183
-BANG=184
+BANG=177
+PRAGMA_START=178
+PRAGMA_END("pragma expression")=179
+LITERAL_union="union"=180
+LITERAL_intersect="intersect"=181
+LITERAL_except="except"=182
+SLASH("single slash '/'")=183
+DSLASH("double slash '//'")=184
 LITERAL_text="text"=185
 LITERAL_node="node"=186
 LITERAL_attribute="attribute"=187
