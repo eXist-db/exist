@@ -29,11 +29,11 @@ import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.XmldbURI;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.xml.sax.SAXException;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.base.Resource;
-import org.xmldb.api.base.ResourceIterator;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
@@ -165,12 +165,15 @@ public class XQueryTest extends XMLTestCase {
      */
     public void tearDown() throws Exception {
         // testCollection.removeResource( testCollection .getResource(file_name));
-        TestUtils.cleanupDB();
-        DatabaseInstanceManager dim =
-                (DatabaseInstanceManager) DatabaseManager.getCollection("xmldb:exist:///db", "admin", null).getService("DatabaseInstanceManager", "1.0");
-        dim.shutdown();
-        DatabaseManager.deregisterDatabase(database);
-        database = null;
+        try {
+            TestUtils.cleanupDB();
+        } finally {
+            DatabaseInstanceManager dim =
+                    (DatabaseInstanceManager) DatabaseManager.getCollection("xmldb:exist:///db", "admin", null).getService("DatabaseInstanceManager", "1.0");
+            dim.shutdown();
+            DatabaseManager.deregisterDatabase(database);
+            database = null;
+        }
     }
 
     private Collection getTestCollection() throws XMLDBException {
@@ -1239,57 +1242,51 @@ public class XQueryTest extends XMLTestCase {
         }
     }
 
-    public void testFunctionDoc() {
+    public void testFunctionDoc() throws XMLDBException, IOException, SAXException {
         ResourceSet result;
         String query;
         @SuppressWarnings("unused")
 		boolean exceptionThrown;
         @SuppressWarnings("unused")
 		String message;
-        try {
-            XPathQueryService service =
-                    storeXMLStringAndGetQueryService(NUMBERS_XML, numbers);
-            query = "doc('" + XmldbURI.ROOT_COLLECTION + "/test/" + NUMBERS_XML + "')";
-            result = service.query(query);
-            assertEquals("XQuery: " + query, 1, result.getSize());
-            try {
-                Node n = ((XMLResource) result.getResource(0)).getContentAsDOM();
-                DetailedDiff d = new DetailedDiff(compareXML(numbers, n.toString()));
-                assertEquals(0, d.getAllDifferences().size());
-            //ignore eXist namespace's attributes				
-            //assertEquals(1, d.getAllDifferences().size());
-            } catch (Exception e) {
-                fail(e.getMessage());
-            }
-            query = "let $v := ()\n" + "return doc($v)";
-            result = service.query(query);
-            assertEquals("XQuery: " + query, 0, result.getSize());
-            query = "doc('" + XmldbURI.ROOT_COLLECTION + "/test/dummy" + NUMBERS_XML + "')";
-            try {
-                exceptionThrown = false;
-                result = service.query(query);
-            } catch (XMLDBException e) {
-                exceptionThrown = true;
-                message = e.getMessage();
-            }
-            //TODO : to be decided !
-            //assertTrue(exceptionThrown);
-            assertEquals(0, result.getSize());
-            query = "doc-available('" + XmldbURI.ROOT_COLLECTION + "/test/" + NUMBERS_XML + "')";
-            result = service.query(query);
-            assertEquals("XQuery: " + query, 1, result.getSize());
-            assertEquals("XQuery: " + query, "true", result.getResource(0).getContent());
-            query = "let $v := ()\n" + "return doc-available($v)";
-            result = service.query(query);
-            assertEquals("XQuery: " + query, 1, result.getSize());
-            assertEquals("XQuery: " + query, "false", result.getResource(0).getContent());
-            query = "doc-available('" + XmldbURI.ROOT_COLLECTION + "/test/dummy" + NUMBERS_XML + "')";
-            assertEquals("XQuery: " + query, 1, result.getSize());
-            assertEquals("XQuery: " + query, "false", result.getResource(0).getContent());
 
+        XPathQueryService service =
+                storeXMLStringAndGetQueryService(NUMBERS_XML, numbers);
+        query = "doc('" + XmldbURI.ROOT_COLLECTION + "/test/" + NUMBERS_XML + "')";
+        result = service.query(query);
+        assertEquals("XQuery: " + query, 1, result.getSize());
+
+        Node n = ((XMLResource) result.getResource(0)).getContentAsDOM();
+        DetailedDiff d = new DetailedDiff(compareXML(numbers, n.toString()));
+        assertEquals(0, d.getAllDifferences().size());
+        //ignore eXist namespace's attributes
+        //assertEquals(1, d.getAllDifferences().size());
+
+        query = "let $v := ()\n" + "return doc($v)";
+        result = service.query(query);
+        assertEquals("XQuery: " + query, 0, result.getSize());
+        query = "doc('" + XmldbURI.ROOT_COLLECTION + "/test/dummy" + NUMBERS_XML + "')";
+        try {
+            exceptionThrown = false;
+            result = service.query(query);
         } catch (XMLDBException e) {
-            fail(e.getMessage());
+            exceptionThrown = true;
+            message = e.getMessage();
         }
+        //TODO : to be decided !
+        //assertTrue(exceptionThrown);
+        assertEquals(0, result.getSize());
+        query = "doc-available('" + XmldbURI.ROOT_COLLECTION + "/test/" + NUMBERS_XML + "')";
+        result = service.query(query);
+        assertEquals("XQuery: " + query, 1, result.getSize());
+        assertEquals("XQuery: " + query, "true", result.getResource(0).getContent());
+        query = "let $v := ()\n" + "return doc-available($v)";
+        result = service.query(query);
+        assertEquals("XQuery: " + query, 1, result.getSize());
+        assertEquals("XQuery: " + query, "false", result.getResource(0).getContent());
+        query = "doc-available('" + XmldbURI.ROOT_COLLECTION + "/test/dummy" + NUMBERS_XML + "')";
+        assertEquals("XQuery: " + query, 1, result.getSize());
+        assertEquals("XQuery: " + query, "false", result.getResource(0).getContent());
     }
 
     //This test only works if there is an Internet access

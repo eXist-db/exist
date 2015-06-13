@@ -2,6 +2,7 @@
 $Id$ */
 package org.exist.xquery;
 
+import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XPathQueryService;
 
 /**
@@ -26,7 +27,8 @@ public class ValueIndexByQNameTest extends ValueIndexTest {
     	"	</index>" + 
     	"</collection>";
 
-	public void testStrings() throws Exception {
+	@Override
+	public void testStrings() throws XMLDBException {
         configureCollection(config);
         XPathQueryService service = storeXMLFileAndGetQueryService("items.xml", "test/src/org/exist/xquery/items.xml");
 
