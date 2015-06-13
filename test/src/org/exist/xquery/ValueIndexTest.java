@@ -119,14 +119,17 @@ public class ValueIndexTest extends TestCase {
      * @see TestCase#tearDown()
      */
     protected void tearDown() throws Exception {
-        Collection root = DatabaseManager.getCollection(URI, "admin", null);
-        CollectionManagementService service = (CollectionManagementService) root
+        try {
+            Collection root = DatabaseManager.getCollection(URI, "admin", null);
+            CollectionManagementService service = (CollectionManagementService) root
                     .getService("CollectionManagementService", "1.0");
-        service.removeCollection("test");
-        DatabaseInstanceManager dim =
-            (DatabaseInstanceManager) testCollection.getService("DatabaseInstanceManager", "1.0");
-        dim.shutdown();
-        testCollection = null;
+            service.removeCollection("test");
+        } finally {
+            DatabaseInstanceManager dim =
+                    (DatabaseInstanceManager) testCollection.getService("DatabaseInstanceManager", "1.0");
+            dim.shutdown();
+            testCollection = null;
+        }
     }
     
 	/**
@@ -138,8 +141,7 @@ public class ValueIndexTest extends TestCase {
 		idxConf.configureCollection(config);
 	}
 
-    public void testStrings() throws Exception {
-        try {
+    public void testStrings() throws XMLDBException {
             configureCollection(CONFIG);
             XPathQueryService service = storeXMLFileAndGetQueryService("items.xml", "test/src/org/exist/xquery/items.xml");
             queryResource(service, "items.xml", "//item[@id = 'i2']", 1);
@@ -163,10 +165,6 @@ public class ValueIndexTest extends TestCase {
             queryResource(service, "items.xml", "//item[price/@specialprice = false()]", 2);
             queryResource(service, "items.xml", "//item[price/@specialprice = true()]", 1);
             queryResource(service, "items.xml", "//item[price/@specialprice eq true()]", 1);
-        } catch (XMLDBException e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        }
     }
 
     public void testStrFunctions() {
