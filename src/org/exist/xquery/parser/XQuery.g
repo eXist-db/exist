@@ -990,7 +990,7 @@ unaryExpr throws XPathException
 
 valueExpr throws XPathException
 :
-	pathExpr
+	pathExpr (BANG^ pathExpr)*
 	|
 	extensionExpr
 	;
@@ -1054,7 +1054,7 @@ pathExpr throws XPathException
 
 relativePathExpr throws XPathException
 :
-	stepExpr ( ( SLASH^ | DSLASH^ | BANG^ ) stepExpr )*
+	stepExpr ( ( SLASH^ | DSLASH^ ) stepExpr )*
 	;
 
 stepExpr throws XPathException
