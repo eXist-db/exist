@@ -88,6 +88,8 @@ public class XMLDBModule extends AbstractInternalModule {
         new FunctionDef(XMLDBDefragment.signatures[1], XMLDBDefragment.class),
         new FunctionDef(FindLastModifiedSince.signature, FindLastModifiedSince.class),
         new FunctionDef(XMLDBMatchCollection.signature, XMLDBMatchCollection.class),
+        new FunctionDef(XMLDBTouch.FNS_TOUCH_DOCUMENT_NOW, XMLDBTouch.class),
+        new FunctionDef(XMLDBTouch.FNS_TOUCH_DOCUMENT, XMLDBTouch.class),
 
         /* TODO these functions for login/logout etc need to be re-engineered and added to the SecurityManagerModule (deprecating these) */
         new FunctionDef(XMLDBAuthenticate.authenticateSignature, XMLDBAuthenticate.class),
