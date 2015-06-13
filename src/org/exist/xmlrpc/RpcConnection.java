@@ -1157,6 +1157,20 @@ public class RpcConnection implements RpcAPI {
     }
 
     @Override
+    public boolean setLastModified(final String documentPath, final long lastModified) throws EXistException, PermissionDeniedException {
+        return this.<Boolean>writeDocument(XmldbURI.create(documentPath)).apply((document, broker, transaction) -> {
+            //TODO : register the lock within the transaction ?
+            if (!document.getPermissions().validate(user, Permission.WRITE)) {
+                throw new PermissionDeniedException("User is not allowed to lock resource " + documentPath);
+            }
+
+            document.getMetadata().setLastModified(lastModified);
+            broker.storeXMLResource(transaction, document);
+            return true;
+        });
+    }
+
+    @Override
     public Map<String, Object> getAccount(final String name) throws EXistException, PermissionDeniedException {
         return withDb((broker, transaction) -> {
             final Account u = factory.getBrokerPool().getSecurityManager().getAccount(name);
