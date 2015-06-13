@@ -26,12 +26,15 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.io.IOException;
 
 import org.custommonkey.xmlunit.XMLAssert;
 import org.exist.test.EmbeddedExistTester;
 
+import org.xml.sax.SAXException;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ResourceSet;
+import org.xmldb.api.base.XMLDBException;
 
 /**
  * Tests for the validation:jaxp() function with Catalog (resolvers).
@@ -64,7 +67,6 @@ public class JaxpParseTest extends EmbeddedExistTester {
         File schemas = new File("samples/validation/parse_validate");
 
         for (File file : schemas.listFiles(filter)) {
-            LOG.info("Storing " + file.getAbsolutePath());
             byte[] data = readFile(schemas, file.getName());
             storeResource(schemasCollection, file.getName(), data);
         }
@@ -72,25 +74,16 @@ public class JaxpParseTest extends EmbeddedExistTester {
     }
 
     @Before
-    public void clearGrammarCache() {
-        LOG.info("Clearing grammar cache");
-        ResourceSet results = null;
-        try {
-            results = executeQuery("validation:clear-grammar-cache()");
-            String r = (String) results.getResource(0).getContent();
-
-        } catch (Exception e) {
-            LOG.error(e);
-            e.printStackTrace();
-            fail(e.getMessage());
-        }
+    public void clearGrammarCache() throws XMLDBException {
+        ResourceSet results = executeQuery("validation:clear-grammar-cache()");
+        String r = (String) results.getResource(0).getContent();
     }
 
     /*
      * ***********************************************************************************
      */
     @Test
-    public void parse_and_fill_defaults() {
+    public void parse_and_fill_defaults() throws XMLDBException, IOException, SAXException {
         String query = "validation:pre-parse-grammar(xs:anyURI('/db/parse_validate/defaultValue.xsd'))";
         String result = execute(query);
         assertEquals(result, "defaultTest");
@@ -104,33 +97,13 @@ public class JaxpParseTest extends EmbeddedExistTester {
                 "    <shoesize country=\"nl\">43</shoesize>\n" +
                 "</ns1:root>";
 
-        try {
-            XMLAssert.assertXMLEqual(expected, result);
-
-        } catch (Exception ex) {
-            fail(ex.getMessage());
-            ex.printStackTrace();
-        }
+        XMLAssert.assertXMLEqual(expected, result);
     }
 
-    private String execute(String query) {
+    private String execute(String query) throws XMLDBException {
+        ResourceSet results = executeQuery(query);
+        assertEquals(1, results.getSize());
 
-        LOG.info("Query=" + query);
-
-        String retVal = null;
-
-        try {
-            ResourceSet results = executeQuery(query);
-            assertEquals(1, results.getSize());
-
-            retVal = (String) results.getResource(0).getContent();
-            LOG.info(retVal);
-
-        } catch (Exception ex) {
-            LOG.error(ex);
-            fail(ex.getMessage());
-        }
-
-        return retVal;
+        return (String) results.getResource(0).getContent();
     }
 }
