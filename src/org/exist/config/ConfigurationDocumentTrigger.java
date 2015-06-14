@@ -86,20 +86,20 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
         Configuration conf;
         switch (event) {
         case REMOVE_DOCUMENT_EVENT:
-            conf = Configurator.getConfigurtion(broker.getBrokerPool(), documentPath);
+            conf = Configurator.getConfigurtion(broker.database(), documentPath);
             if (conf != null) {
                 Configurator.unregister(conf);
                 //XXX: inform object that configuration was deleted
             }
             break;
         default:
-            conf = Configurator.getConfigurtion(broker.getBrokerPool(), documentPath);
+            conf = Configurator.getConfigurtion(broker.database(), documentPath);
             if (conf != null) {
                 conf.checkForUpdates(document.getDocumentElement());
             }
             if (documentPath.toString().equals(ConverterFrom1_0.LEGACY_USERS_DOCUMENT_PATH)) {
                 try {
-                	final SecurityManager sm = broker.getBrokerPool().getSecurityManager();
+                	final SecurityManager sm = broker.database().securityManager();
                     ConverterFrom1_0.convert(sm, document);
                 } catch (final PermissionDeniedException | EXistException e) {
                     LOG.error(e.getMessage(), e);
@@ -111,7 +111,7 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
     }
 
     private void checkForUpdates(final DBBroker broker, final XmldbURI uri, final DocumentImpl document) {
-        final Configuration conf = Configurator.getConfigurtion(broker.getBrokerPool(), uri);
+        final Configuration conf = Configurator.getConfigurtion(broker.database(), uri);
         if (conf != null) {
             conf.checkForUpdates(document.getDocumentElement());
         }
@@ -119,7 +119,7 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
         //TODO : use XmldbURI methos ! not String.equals()
         if (uri.toString().equals(ConverterFrom1_0.LEGACY_USERS_DOCUMENT_PATH)) {
             try {
-            	final SecurityManager sm = broker.getBrokerPool().getSecurityManager();
+            	final SecurityManager sm = broker.database().securityManager();
                 ConverterFrom1_0.convert(sm, document);
             } catch (final PermissionDeniedException | EXistException e) {
                 LOG.error(e.getMessage(), e);
@@ -137,15 +137,15 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
     @Override
     public void afterCreateDocument(final DBBroker broker, final Txn txn, final DocumentImpl document) throws TriggerException {
         //check saving list
-        if (Configurator.saving.contains(Configurator.getFullURI(broker.getBrokerPool(), document.getURI()) ))
-            {return;}
+        if (Configurator.saving.contains(Configurator.getFullURI(broker.database(), document.getURI()) ))
+            return;
 
         checkForUpdates(broker, document.getURI(), document);
 
         final XmldbURI uri = document.getCollection().getURI();
         if (uri.startsWith(SecurityManager.SECURITY_COLLECTION_URI)) {
             try {
-                broker.getBrokerPool().getSecurityManager().processPramatter(broker, document);
+                broker.database().securityManager().processPramatter(broker, document);
             } catch (final ConfigurationException e) {
                 LOG.error("Configuration can't be processed [" + document.getURI() + "]", e);
                 //TODO : raise exception ? -pb
@@ -162,15 +162,14 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
         this.broker = broker;
 
         //check saving list
-        if (Configurator.saving.contains(Configurator.getFullURI(broker.getBrokerPool(), document.getURI()))) {
+        if (Configurator.saving.contains(Configurator.getFullURI(broker.database(), document.getURI()))) {
             return;
         }
 
         final XmldbURI uri = document.getCollection().getURI();
         if (uri.startsWith(SecurityManager.SECURITY_COLLECTION_URI)) {
             try {
-                broker.getBrokerPool().getSecurityManager()
-                .processPramatterBeforeSave(broker, document);
+                broker.database().securityManager().processPramatterBeforeSave(broker, document);
             } catch (final ConfigurationException e) {
                 LOG.error("Configuration can't be processed [" + document.getURI() + "]", e);
                 //TODO : raise exception ? -pb
@@ -181,16 +180,15 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
     @Override
     public void afterUpdateDocument(final DBBroker broker, final Txn txn, final DocumentImpl document) throws TriggerException {
         //check saving list
-        if (Configurator.saving.contains(Configurator.getFullURI(broker.getBrokerPool(), document.getURI()))) {
+        if (Configurator.saving.contains(Configurator.getFullURI(broker.database(), document.getURI())))
             return;
-        }
 
-    	checkForUpdates(broker, document.getURI(), document);
+        checkForUpdates(broker, document.getURI(), document);
 
         final XmldbURI uri = document.getCollection().getURI();
         if (uri.startsWith(SecurityManager.SECURITY_COLLECTION_URI)) {
             try {
-                broker.getBrokerPool().getSecurityManager().processPramatter(broker, document);
+                broker.database().getSecurityManager().processPramatter(broker, document);
             } catch (final ConfigurationException e) {
                 LOG.error("Configuration can't be processed [" + document.getURI() + "]", e);
                 //TODO : raise exception ? -pb
@@ -223,7 +221,7 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
 
     @Override
     public void beforeDeleteDocument(final DBBroker broker, final Txn txn, final DocumentImpl document) throws TriggerException {
-        final Configuration conf = Configurator.getConfigurtion(broker.getBrokerPool(), document.getURI());
+        final Configuration conf = Configurator.getConfigurtion(broker.database(), document.getURI());
         if (conf != null) {
             Configurator.unregister(conf);
             //XXX: inform object that configuration was deleted
@@ -306,7 +304,7 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
         final AttributesImpl attrs = new AttributesImpl(migrateIdAttribute(start.attributes, principalType));
 
         //check if there is a name collision, i.e. another principal with the same name
-        final SecurityManager sm = broker.getBrokerPool().getSecurityManager();
+        final SecurityManager sm = broker.database().securityManager();
         final String principalName = findName();
         // first check if the account or group exists before trying to retrieve it
         // otherwise the LDAP realm will create a new user, leading to an endless loop
