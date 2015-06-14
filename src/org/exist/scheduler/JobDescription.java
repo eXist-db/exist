@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2006 The eXist team
+ *  Copyright (C) 2001-2015 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -13,11 +13,9 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software Foundation
- *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- *  $Id$
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.scheduler;
 
@@ -28,24 +26,33 @@ package org.exist.scheduler;
  */
 public interface JobDescription {
 
+    String EXIST_INTERNAL_GROUP = "eXist.internal";
+
+    String DATABASE = "database";
+    String SYSTEM_TASK = "systemtask";
+    String XQUERY_SOURCE = "xqueryresource";
+    String ACCOUNT = "account";
+    String PARAMS = "params";
+    String UNSCHEDULE = "unschedule";
+
     /**
      * Get the name of the job.
      *
      * @return  The job's name
      */
-    public String getName();
+    String getName();
 
     /**
      * Set the name of the job.
      *
      * @param  name  The job's new name
      */
-    public void setName(final String name );
+    void setName(final String name );
 
     /**
      * Get the name group for the job.
      *
      * @return  The job's group name
      */
-    public String getGroup();
+    String getGroup();
 }

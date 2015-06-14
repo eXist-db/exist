@@ -752,6 +752,10 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
 		return db;
 	}
 
+    public Database database() {
+        return db;
+    }
+
 	public abstract void insertNodeAfter(Txn transaction,
 			final NodeHandle previous, final IStoredNode node);
     

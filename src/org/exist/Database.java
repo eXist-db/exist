@@ -54,16 +54,34 @@ public interface Database {
     String getId();
 
     /**
-     * 
-     * @return SecurityManager
+     * Returns the database instance's security manager
+     *
+     * @return The security manager
      */
     SecurityManager getSecurityManager();
 
     /**
-     * 
-     * @return IndexManager
+     * Returns the database instance's security manager
+     *
+     * @return The security manager
+     */
+    SecurityManager securityManager();
+
+    /**
+     * Returns the index manager which handles all additional indexes not
+     * being part of the database core.
+     *
+     * @return The IndexManager
      */
     IndexManager getIndexManager();
+
+    /**
+     * Returns the index manager which handles all additional indexes not
+     * being part of the database core.
+     *
+     * @return The IndexManager
+     */
+    IndexManager indexManager();
 
     /**
      * 
@@ -71,21 +89,34 @@ public interface Database {
      */
     TransactionManager getTransactionManager();
 
+    TransactionManager transactionManager();
+
     /**
-     * 
-     * @return CacheManager
+     * Returns a cache in which the database instance's may store items.
+     *
+     * @return The cache
      */
     CacheManager getCacheManager();
 
     /**
-     * 
-     * @return Scheduler
+     * Returns a cache in which the database instance's may store items.
+     *
+     * @return The cache
+     */
+    CacheManager cacheManager();
+
+    /**
+     * Returns the Scheduler
+     *
+     * @return The scheduler
      */
     Scheduler getScheduler();
 
+    Scheduler scheduler();
+
     /**
-	 * 
-	 */
+     * Shuts downs the database instance
+     */
     void shutdown();
 
     /**
@@ -98,6 +129,7 @@ public interface Database {
      * 
      * @param subject
      */
+    @Deprecated //use getActiveBroker().getSubject()
     boolean setSubject(Subject subject);
 
     // TODO: remove 'throws EXistException'?
@@ -202,4 +234,32 @@ public interface Database {
     void initCollectionConfigurationManager(DBBroker broker);
 
     CollectionCache getCollectionsCache();
+
+    /**
+     * Schedules a system maintenance task for the database instance. If the database is idle,
+     * the task will be run immediately. Otherwise, the task will be deferred
+     * until all running threads have returned.
+     *
+     * @param task The task
+     */
+    void triggerSystemTask(SystemTask task);
+
+    long getLastMajorSync();
+
+    long getMajorSyncPeriod();
+
+    /**
+     * Executes a waiting cache synchronization for the database instance.
+     *
+     * @param broker    A broker responsible for executing the job
+     * @param syncEvent One of {@link org.exist.storage.sync.Sync#MINOR_SYNC} or {@link org.exist.storage.sync.Sync#MINOR_SYNC}
+     */
+    //TODO : rename as runSync ? executeSync ?
+    //TOUNDERSTAND (pb) : *not* synchronized, so... "executes" or, rather, "schedules" ? "executes" (WM)
+    //TOUNDERSTAND (pb) : why do we need a broker here ? Why not get and release one when we're done ?
+    // WM: the method will always be under control of the BrokerPool. It is guaranteed that no
+    // other brokers are active when it is called. That's why we don't need to synchronize here.
+    //TODO : make it protected ?
+    //it's called from SyncTask ... now is that safe?
+    void sync(final DBBroker broker, final int syncEvent);
 }

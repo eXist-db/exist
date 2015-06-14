@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2011 The eXist-db team
+ *  Copyright (C) 2001-2015 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -13,11 +13,9 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software Foundation
- *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- *  $Id$
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.scheduler.impl;
 
@@ -28,22 +26,26 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
+import java.util.stream.Collectors;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exist.Database;
 import org.exist.EXistException;
 import org.exist.scheduler.*;
 import org.exist.scheduler.Scheduler;
 import org.exist.security.Subject;
-import org.exist.storage.BrokerPool;
 import org.exist.storage.SystemTask;
 import org.exist.util.Configuration;
-import static org.quartz.CronScheduleBuilder.cronSchedule;
 
 import org.quartz.*;
 
+import static org.quartz.CronScheduleBuilder.cronSchedule;
 import static org.quartz.JobBuilder.newJob;
 import static org.quartz.SimpleScheduleBuilder.simpleSchedule;
 import static org.quartz.TriggerBuilder.newTrigger;
+
+import static org.exist.scheduler.JobDescription.*;
 
 import org.quartz.Job;
 import org.quartz.impl.StdSchedulerFactory;
@@ -57,24 +59,24 @@ import org.quartz.impl.matchers.GroupMatcher;
  */
 public class QuartzSchedulerImpl implements Scheduler {
 
-    private final static Logger LOG = LogManager.getLogger(QuartzSchedulerImpl.class); //Logger
+    private final static Logger LOG = LogManager.getLogger(QuartzSchedulerImpl.class);
 
     //the scheduler
     private final org.quartz.Scheduler scheduler;
 
-    private final BrokerPool brokerPool;
+    private final Database db;
     private final Configuration config;
 
     /**
      * Create and Start a new Scheduler.
      *
-     * @param   brokerpool  The broker pool for which this scheduler is intended
+     * @param   db  The database for which this scheduler is intended
      * @param   config      DOCUMENT ME!
      *
      * @throws  EXistException  DOCUMENT ME!
      */
-    public QuartzSchedulerImpl(final BrokerPool brokerpool, final Configuration config) throws EXistException {
-        this.brokerPool = brokerpool;
+    public QuartzSchedulerImpl(final Database db, final Configuration config) throws EXistException {
+        this.db = db;
         this.config = config;
         try {
             final SchedulerFactory schedulerFactory = new StdSchedulerFactory(getQuartzProperties());
@@ -102,34 +104,24 @@ public class QuartzSchedulerImpl implements Scheduler {
 
     private Properties getQuartzProperties() {
         //try and load the properties for quartz
-        InputStream is = null;
         final Properties properties = new Properties();
-        try {
-            is = this.getClass().getResourceAsStream("quartz.properties");
+        try (InputStream is = this.getClass().getResourceAsStream("quartz.properties")) {
             if(is != null) {
                 properties.load(is);
-                LOG.info("Succesfully loaded quartz.properties");
+                LOG.info("Successfully loaded quartz.properties");
             } else {
                 LOG.warn("Could not load quartz.properties, will use defaults.");
             }
         } catch(final IOException ioe) {
             LOG.warn("Could not load quartz.properties, will defaults. " + ioe.getMessage(), ioe);
-        } finally {
-            if(is != null) {
-                try {
-                    is.close();
-                } catch(final IOException ioe) {
-                    //Nothing to do
-                }
-            }
         }
-        if (properties == null || properties.size() == 0) {
+        if (properties.size() == 0) {
             LOG.warn("Using default properties for Quartz scheduler");
             properties.putAll(defaultQuartzProperties);
         }
         if (!properties.containsKey(StdSchedulerFactory.PROP_SCHED_INSTANCE_NAME)) {
             properties.setProperty(StdSchedulerFactory.PROP_SCHED_INSTANCE_NAME,
-                brokerPool.getId() + "_QuartzScheduler");
+                db.getId() + "_QuartzScheduler");
         }
         return properties;
     }
@@ -167,13 +159,12 @@ public class QuartzSchedulerImpl implements Scheduler {
 
     @Override
     public boolean isShutdown() {
-        boolean isShutdown = false;
         try {
-            isShutdown = getScheduler().isShutdown();
+            return getScheduler().isShutdown();
         } catch(final SchedulerException se) {
-            LOG.warn("Unable to determine the status of the Scheuler: " + se.getMessage(), se);
+            LOG.warn("Unable to determine the status of the Scheduler: " + se.getMessage(), se);
         }
-        return isShutdown;
+        return false;
     }
 
     /**
@@ -245,11 +236,12 @@ public class QuartzSchedulerImpl implements Scheduler {
 
         //setup a trigger for the job, millisecond based
         final TriggerBuilder triggerBuilder = newTrigger()
-                .withIdentity(job.getName() + " Trigger", job.getGroup())
-                .withSchedule(simpleSchedule()
-                                .withIntervalInMilliseconds(period)
-                                .withRepeatCount(repeatCount)
-                );
+            .withIdentity(job.getName() + " Trigger", job.getGroup())
+            .withSchedule(
+                simpleSchedule()
+                    .withIntervalInMilliseconds(period)
+                    .withRepeatCount(repeatCount)
+            );
 
         //when should the trigger start
         final Trigger trigger;
@@ -326,8 +318,8 @@ public class QuartzSchedulerImpl implements Scheduler {
         try {
             //setup a trigger for the job, Cron based
             final Trigger trigger = newTrigger()
-            .withIdentity(job.getName() + " Trigger", job.getGroup())
-            .withSchedule(cronSchedule(cronExpression)).build();
+                .withIdentity(job.getName() + " Trigger", job.getGroup())
+                .withSchedule(cronSchedule(cronExpression)).build();
             
             //schedule the job
             getScheduler().scheduleJob(jobDetail, trigger);
@@ -369,14 +361,13 @@ public class QuartzSchedulerImpl implements Scheduler {
      */
     @Override
     public boolean pauseJob(final String jobName, final String jobGroup) {
-        boolean pausedJob = false;
         try {
             getScheduler().pauseJob(new JobKey(jobName, jobGroup));
-            pausedJob = true;
+            return true;
         } catch(final SchedulerException se) {
             LOG.error( "Failed to pause job '" + jobName + "': " + se.getMessage(), se);
         }
-        return pausedJob;
+        return false;
     }
 
     /**
@@ -389,14 +380,13 @@ public class QuartzSchedulerImpl implements Scheduler {
      */
     @Override
     public boolean resumeJob(final String jobName, final String jobGroup) {
-        boolean resumedJob = false;
         try {
             getScheduler().resumeJob(new JobKey(jobName, jobGroup));
-            resumedJob = true;
+            return true;
         } catch(final SchedulerException se) {
             LOG.error("Failed to resume job '" + jobName + "': " + se.getMessage(), se);
         }
-        return resumedJob;
+        return false;
     }
 
     /**
@@ -406,7 +396,7 @@ public class QuartzSchedulerImpl implements Scheduler {
      */
     @Override
     public List<String> getJobGroupNames() {
-        final List<String> jobNames = new ArrayList<String>();
+        final List<String> jobNames = new ArrayList<>();
         try {
             jobNames.addAll(getScheduler().getJobGroupNames());
         } catch(final SchedulerException se) {
@@ -422,7 +412,7 @@ public class QuartzSchedulerImpl implements Scheduler {
      */
     @Override
     public List<ScheduledJobInfo> getScheduledJobs() {
-        final List<ScheduledJobInfo> scheduledJobs = new ArrayList<ScheduledJobInfo>();
+        final List<ScheduledJobInfo> scheduledJobs = new ArrayList<>();
         try {
             //get the trigger groups
             for(final String triggerGroupName : getScheduler().getTriggerGroupNames()) {
@@ -447,10 +437,12 @@ public class QuartzSchedulerImpl implements Scheduler {
     public ScheduledJobInfo[] getExecutingJobs() {
         ScheduledJobInfo result[] = null;
         try {
-            final List<ScheduledJobInfo> jobs = new ArrayList<ScheduledJobInfo>();
-            for(final JobExecutionContext jobExecutionCtx : (List<JobExecutionContext>)getScheduler().getCurrentlyExecutingJobs()) {
-                jobs.add(new ScheduledJobInfo(getScheduler(), jobExecutionCtx.getTrigger()));
-            }
+            List<ScheduledJobInfo> jobs = getScheduler()
+                .getCurrentlyExecutingJobs()
+                .stream()
+                .map(jobExecutionCtx -> new ScheduledJobInfo(getScheduler(), jobExecutionCtx.getTrigger()))
+                .collect(Collectors.toList());
+
             result = new ScheduledJobInfo[jobs.size()];
             jobs.toArray(result);
         } catch(final SchedulerException se) {
@@ -466,10 +458,8 @@ public class QuartzSchedulerImpl implements Scheduler {
     public void setupConfiguredJobs() {
         final JobConfig[] jobList = (JobConfig[])config.getProperty(JobConfig.PROPERTY_SCHEDULER_JOBS);
         
-        if(jobList == null) {
-            return;
-        }
-        
+        if (jobList == null) return;
+
         for(final JobConfig jobConfig : jobList) {
             JobDescription job = null;
             if(jobConfig.getResourceName().startsWith("/db/") || jobConfig.getResourceName().indexOf(':') > 0) {
@@ -477,13 +467,13 @@ public class QuartzSchedulerImpl implements Scheduler {
                     LOG.error("System jobs may only be written in Java");
                 } else {
                     //create an XQuery job
-                    final Subject guestUser = brokerPool.getSecurityManager().getGuestSubject();
+                    final Subject guestUser = db.getSecurityManager().getGuestSubject();
                     job = new UserXQueryJob(jobConfig.getJobName(), jobConfig.getResourceName(), guestUser);
                     try {
                         // check if a job with the same name is already registered
                         if(getScheduler().getJobDetail(new JobKey(job.getName(), UserJob.JOB_GROUP)) != null) {
                             // yes, try to make the job's name unique
-                            ((UserXQueryJob)job).setName(job.getName() + job.hashCode());
+                            job.setName(job.getName() + job.hashCode());
                         }
                         
                     } catch(final SchedulerException e) {
@@ -547,21 +537,21 @@ public class QuartzSchedulerImpl implements Scheduler {
      */
     private void setupJobDataMap(final JobDescription job, final JobDataMap jobDataMap, final Properties params, final boolean unschedule) {
         //if this is a system job, store the BrokerPool in the job's data map
-        jobDataMap.put("brokerpool", brokerPool);
+        jobDataMap.put(DATABASE, db);
         //if this is a system task job, store the SystemTask in the job's data map
         if(job instanceof SystemTaskJobImpl) {
-            jobDataMap.put("systemtask", ((SystemTaskJobImpl)job).getSystemTask());
+            jobDataMap.put(SYSTEM_TASK, ((SystemTaskJobImpl)job).getSystemTask());
         }
         //if this is a users XQuery job, store the XQuery resource and user in the job's data map
         if(job instanceof UserXQueryJob) {
-            jobDataMap.put("xqueryresource", ((UserXQueryJob)job).getXQueryResource());
-            jobDataMap.put("user", ((UserXQueryJob)job).getUser());
+            jobDataMap.put(XQUERY_SOURCE, ((UserXQueryJob)job).getXQueryResource());
+            jobDataMap.put(ACCOUNT, ((UserXQueryJob)job).getUser());
         }
         //copy any parameters into the job's data map
         if(params != null) {
-            jobDataMap.put("params", params);
+            jobDataMap.put(PARAMS, params);
         }
         //Store the value of the unschedule setting
-        jobDataMap.put("unschedule", Boolean.valueOf(unschedule));
+        jobDataMap.put(UNSCHEDULE, Boolean.valueOf(unschedule));
     }
 }

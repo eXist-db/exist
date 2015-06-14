@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2006 The eXist team
+ *  Copyright (C) 2001-2015 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -13,14 +13,13 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software Foundation
- *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- *  $Id$
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.scheduler.impl;
 
+import org.exist.Database;
 import org.exist.scheduler.SystemTaskJob;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.SystemTask;
@@ -99,19 +98,19 @@ public class SystemTaskJobImpl implements SystemTaskJob, StatefulJob {
     @Override
     public final void execute(final JobExecutionContext jec) throws JobExecutionException {
         final JobDataMap jobDataMap = jec.getJobDetail().getJobDataMap();
-        final BrokerPool pool = (BrokerPool)jobDataMap.get("brokerpool");
-        final SystemTask task = ( SystemTask )jobDataMap.get("systemtask");
+        final Database db = (Database)jobDataMap.get(DATABASE);
+        final SystemTask task = ( SystemTask )jobDataMap.get(SYSTEM_TASK);
 
         //if invalid arguments then abort
-        if((pool == null) || (task == null)) {
+        if((db == null) || (task == null)) {
 
             //abort all triggers for this job
-            final JobExecutionException jaa = new JobExecutionException("SystemTaskJob Failed: BrokerPool or SystemTask was null! Unscheduling SystemTask", false);
+            final JobExecutionException jaa = new JobExecutionException("SystemTaskJob Failed: Database or SystemTask was null! Unscheduled SystemTask", false);
             jaa.setUnscheduleAllTriggers( true );
             throw jaa;
         }
 
         //trigger the system task
-        pool.triggerSystemTask(task);
+        db.triggerSystemTask(task);
     }
 }

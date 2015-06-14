@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2006 The eXist team
+ *  Copyright (C) 2001-2015 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -13,20 +13,18 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software Foundation
- *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- *  $Id$
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.scheduler;
 
 import java.util.Map;
-import org.exist.storage.BrokerPool;
+
+import org.exist.Database;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-
 
 /**
  * Class to represent a User's Java Job.
@@ -47,30 +45,29 @@ public abstract class UserJavaJob extends UserJob {
     public final void execute(final JobExecutionContext jec) throws JobExecutionException {
         final JobDataMap jobDataMap = jec.getJobDetail().getJobDataMap();
 
-        //get the brokerpool from the data map
-        final BrokerPool pool = (BrokerPool)jobDataMap.get("brokerpool");
+        //get the Database from the data map
+        final Database db = (Database)jobDataMap.get(DATABASE);
 
         //get any parameters from the data map
-        final Map params = (Map)jobDataMap.get("params");
+        final Map params = (Map)jobDataMap.get(PARAMS);
 
         try {
             //execute the job
-            execute(pool, params);
+            execute(db, params);
         } catch(final JobException je ) {
             //cleanup the job
             je.cleanupJob();
         }
     }
 
-
     /**
      * Function that is executed by the Scheduler.
      *
-     * @param   brokerpool  The BrokerPool for the Scheduler of this job
+     * @param   db          The database for the Scheduler of this job
      * @param   params      Any parameters passed to the job or null otherwise
      *
      * @throws  JobException  if there is a problem with the job. cleanupJob() should then be called, which will adjust the jobs scheduling
      *                        appropriately
      */
-    public abstract void execute(BrokerPool brokerpool, Map<String, ?> params) throws JobException;
+    public abstract void execute(Database db, Map<String, ?> params) throws JobException;
 }
