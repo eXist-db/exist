@@ -24,6 +24,7 @@ package org.exist.xquery;
 import org.custommonkey.xmlunit.DetailedDiff;
 import org.custommonkey.xmlunit.XMLTestCase;
 import org.exist.TestUtils;
+import org.exist.storage.BrokerPool;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.XmldbURI;
@@ -166,15 +167,17 @@ public class XQueryTest extends XMLTestCase {
     public void tearDown() throws Exception {
         // testCollection.removeResource( testCollection .getResource(file_name));
         TestUtils.cleanupDB();
-        DatabaseInstanceManager dim =
-                (DatabaseInstanceManager) DatabaseManager.getCollection("xmldb:exist:///db", "admin", null).getService("DatabaseInstanceManager", "1.0");
-        dim.shutdown();
+        try {
+            BrokerPool.stopAll(false);
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
         DatabaseManager.deregisterDatabase(database);
         database = null;
     }
 
     private Collection getTestCollection() throws XMLDBException {
-        return DatabaseManager.getCollection("xmldb:exist:///db/test", "admin", null);
+        return DatabaseManager.getCollection("xmldb:exist:///db/test", "admin", "");
     }
 
     public void testLet() {

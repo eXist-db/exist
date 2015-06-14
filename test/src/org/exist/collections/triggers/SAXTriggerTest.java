@@ -144,7 +144,7 @@ public class SAXTriggerTest {
 
     @After
     public void cleanDB() throws XMLDBException {
-        final Collection config = DatabaseManager.getCollection(BASE_URI + "/db/system/config" + testCollection, "admin", null);
+        final Collection config = DatabaseManager.getCollection(BASE_URI + "/db/system/config" + testCollection, "admin", "");
         if (config != null) {
             CollectionManagementService mgmt = (CollectionManagementService) config.getService("CollectionManagementService", "1.0");
             mgmt.removeCollection(".");

@@ -101,15 +101,13 @@ public class ValueIndexTest extends TestCase {
             database.setProperty("create-database", "true");
             DatabaseManager.registerDatabase(database);
 
-            Collection root = DatabaseManager.getCollection(URI, "admin", null);
+            Collection root = DatabaseManager.getCollection(URI, "admin", "");
             CollectionManagementService service = (CollectionManagementService) root
                     .getService("CollectionManagementService", "1.0");
             testCollection = service.createCollection("test");
             assertNotNull(testCollection);
             
-        } catch (ClassNotFoundException e) {
-        } catch (InstantiationException e) {
-        } catch (IllegalAccessException e) {
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
         } catch (XMLDBException e) {
             e.printStackTrace();
         }
@@ -119,7 +117,7 @@ public class ValueIndexTest extends TestCase {
      * @see TestCase#tearDown()
      */
     protected void tearDown() throws Exception {
-        Collection root = DatabaseManager.getCollection(URI, "admin", null);
+        Collection root = DatabaseManager.getCollection(URI, "admin", "");
         CollectionManagementService service = (CollectionManagementService) root
                     .getService("CollectionManagementService", "1.0");
         service.removeCollection("test");

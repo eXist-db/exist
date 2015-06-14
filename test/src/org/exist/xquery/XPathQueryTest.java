@@ -1401,7 +1401,7 @@ public class XPathQueryTest {
     
     @Test
     public void idsOnEmptyCollection() throws XMLDBException {
-        final Collection root = DatabaseManager.getCollection(uri, "admin", null);
+        final Collection root = DatabaseManager.getCollection(uri, "admin", "");
         final CollectionManagementService service = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
 		final Collection emptyCollection = service.createCollection("empty");
         final XQueryService queryService = (XQueryService) emptyCollection.getService("XPathQueryService", "1.0");

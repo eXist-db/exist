@@ -150,7 +150,7 @@ public class MultiDBTest extends TestCase {
         long free = rt.freeMemory() / 1024;
         long total = rt.totalMemory() / 1024;
         for (int i = 0; i < INSTANCE_COUNT; i++) {
-            Collection root = DatabaseManager.getCollection("xmldb:test" + i + "://" + XmldbURI.ROOT_COLLECTION, "admin", null);
+            Collection root = DatabaseManager.getCollection("xmldb:test" + i + "://" + XmldbURI.ROOT_COLLECTION, "admin", "");
             CollectionManagementService service = (CollectionManagementService)
                 root.getService("CollectionManagementService", "1.0");
             service.removeCollection("test");

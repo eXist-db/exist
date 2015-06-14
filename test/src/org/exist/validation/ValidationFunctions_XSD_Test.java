@@ -305,7 +305,7 @@ public class ValidationFunctions_XSD_Test {
 //
 //        logger.info("stop");
 //
-//        root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", null);
+//        root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", "");
 //
 //        DatabaseManager.deregisterDatabase(database);
 //        DatabaseInstanceManager dim =

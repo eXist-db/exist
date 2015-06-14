@@ -135,7 +135,7 @@ public class DuplicateAttributesTest {
             database.setProperty("create-database", "true");
             DatabaseManager.registerDatabase(database);
 
-            Collection root = DatabaseManager.getCollection("xmldb:exist:///db", "admin", null);
+            Collection root = DatabaseManager.getCollection("xmldb:exist:///db", "admin", "");
             CollectionManagementService service = (CollectionManagementService)
                     root.getService("CollectionManagementService", "1.0");
             testCollection = service.createCollection("test");
@@ -160,7 +160,7 @@ public class DuplicateAttributesTest {
     @AfterClass
     public static void stopDB() {
         try {
-            Collection root = DatabaseManager.getCollection("xmldb:exist:///db", "admin", null);
+            Collection root = DatabaseManager.getCollection("xmldb:exist:///db", "admin", "");
             CollectionManagementService service = (CollectionManagementService)
                 root.getService("CollectionManagementService", "1.0");
             service.removeCollection("test");

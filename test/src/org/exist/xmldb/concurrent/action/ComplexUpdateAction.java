@@ -76,7 +76,7 @@ public class ComplexUpdateAction extends Action {
 	 * @see org.exist.xmldb.test.concurrent.Action#execute()
 	 */
 	public boolean execute() throws Exception {
-		Collection col = DatabaseManager.getCollection(collectionPath, "admin", null);
+		Collection col = DatabaseManager.getCollection(collectionPath, "admin", "");
 		for(int i = 0; i < repeat; i++) {
 			query(col, i); 
 			col.close();

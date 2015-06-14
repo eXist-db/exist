@@ -76,7 +76,7 @@ public class ConcurrencyTest {
 
         public void run() {
             try {
-                Collection collection = DatabaseManager.getCollection("xmldb:exist:///db/test", "admin", null);
+                Collection collection = DatabaseManager.getCollection("xmldb:exist:///db/test", "admin", "");
                 XPathQueryServiceImpl service = (XPathQueryServiceImpl) collection.getService("XQueryService", "1.0");
                 service.beginProtected();
                 try {

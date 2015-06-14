@@ -204,7 +204,7 @@ public class DeadlockTest {
     @After
     public void clearDB() {
         try {
-			org.xmldb.api.base.Collection root = DatabaseManager.getCollection("xmldb:exist:///db/test", "admin", null);
+			org.xmldb.api.base.Collection root = DatabaseManager.getCollection("xmldb:exist:///db/test", "admin", "");
 			CollectionManagementService service = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
 			service.removeCollection(".");
         } catch (XMLDBException e) {
@@ -379,7 +379,7 @@ public class DeadlockTest {
                 int docId = random.nextInt(documentCount) * collectionId;
                 String document = "test" + docId + ".xml";
                 try {
-                    org.xmldb.api.base.Collection testCollection = DatabaseManager.getCollection("xmldb:exist://" + collection, "admin", null);
+                    org.xmldb.api.base.Collection testCollection = DatabaseManager.getCollection("xmldb:exist://" + collection, "admin", "");
                     Resource resource = testCollection.getResource(document);
                     if (resource != null) {
                         testCollection.removeResource(resource);
