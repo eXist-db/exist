@@ -1469,7 +1469,7 @@ public class XPathQueryTest {
         try {
             service.execute(expr);
         } catch (XMLDBException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
             message = e.getMessage();
         }
         assertTrue(message.indexOf("XPTY0004") > -1);
@@ -1487,7 +1487,7 @@ public class XPathQueryTest {
         try {
             service.execute(expr);
         } catch (XMLDBException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
             message = e.getMessage();
         }
         assertTrue(message.indexOf("XPTY0004") > -1);
@@ -1589,6 +1589,7 @@ public class XPathQueryTest {
         assertEquals(2, result.getSize());
 
         String item = result.getResource(0).getContent().toString();
+        System.out.println(item);
         assertXMLEqual("<text> </text>", item);
         item = result.getResource(1).getContent().toString();
         assertXMLEqual("<text xml:space=\"default\"/>", item);

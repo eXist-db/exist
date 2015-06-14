@@ -880,7 +880,7 @@ public class XQueryTest extends XMLTestCase {
                 message = "";
                 result = service.query(query);
             } catch (XMLDBException e) {
-                e.printStackTrace();
+                //e.printStackTrace();
                 message = e.getMessage();
             }
             assertTrue(message.indexOf("does not match namespace URI") > -1);
