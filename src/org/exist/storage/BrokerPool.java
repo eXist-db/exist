@@ -1166,7 +1166,7 @@ public class BrokerPool implements Database {
     }
 
     public long getReservedMem() {
-        return reservedMem - cacheManager.getSizeInBytes();
+        return reservedMem - cacheManager.getCurrentSize();
     }
 
     public int getPageSize() {
