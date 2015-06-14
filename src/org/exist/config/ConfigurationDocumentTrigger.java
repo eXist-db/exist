@@ -99,8 +99,7 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
             }
             if (documentPath.toString().equals(ConverterFrom1_0.LEGACY_USERS_DOCUMENT_PATH)) {
                 try {
-                	final SecurityManager sm = broker.database().securityManager();
-                    ConverterFrom1_0.convert(sm, document);
+                    ConverterFrom1_0.convert(broker.database().securityManager(), document);
                 } catch (final PermissionDeniedException | EXistException e) {
                     LOG.error(e.getMessage(), e);
                     //TODO : raise exception ? -pb
@@ -119,8 +118,7 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
         //TODO : use XmldbURI methos ! not String.equals()
         if (uri.toString().equals(ConverterFrom1_0.LEGACY_USERS_DOCUMENT_PATH)) {
             try {
-            	final SecurityManager sm = broker.database().securityManager();
-                ConverterFrom1_0.convert(sm, document);
+                ConverterFrom1_0.convert(broker.database().securityManager(), document);
             } catch (final PermissionDeniedException | EXistException e) {
                 LOG.error(e.getMessage(), e);
                 //TODO : raise exception ? -pb
@@ -233,19 +231,17 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
         //Nothing to do
     }
 
-	@Override
+    @Override
     public void beforeUpdateDocumentMetadata(final DBBroker broker, final Txn txn, final DocumentImpl document) {
-	}
+    }
 
-	@Override
-	public void afterUpdateDocumentMetadata(DBBroker broker, Txn txn, DocumentImpl document) {
-	}
+    @Override
+    public void afterUpdateDocumentMetadata(DBBroker broker, Txn txn, DocumentImpl document) {
+    }
 
-	@Override
-	public void configure(final DBBroker broker, final Collection parent,
-			final Map<String, List<? extends Object>> parameters)
-			throws TriggerException {
-	}
+    @Override
+    public void configure(DBBroker broker, Collection parent, Map<String, List<?>> parameters) throws TriggerException {
+    }
 
     @Override
     public void startElement(final String namespaceURI, final String localName, final String qname, final Attributes attributes) throws SAXException {
@@ -394,17 +390,16 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
     private String findName() {
         boolean inName = false;
         final StringBuilder name = new StringBuilder();
-        for(final Iterator<SAXEvent> iterator = deferred.iterator(); iterator.hasNext(); ) {
-            final SAXEvent event = iterator.next();
-            if(event instanceof Element) {
-                final Element element = (Element)event;
-                if(element.namespaceURI != null && element.namespaceURI.equals(Configuration.NS) && element.localName.equals("name")) {
+        for (final SAXEvent event : deferred) {
+            if (event instanceof Element) {
+                final Element element = (Element) event;
+                if (element.namespaceURI != null && element.namespaceURI.equals(Configuration.NS) && element.localName.equals("name")) {
                     inName = !inName;
                 }
             }
 
-            if(inName && event instanceof Characters) {
-                name.append(((Characters)event).ch);
+            if (inName && event instanceof Characters) {
+                name.append(((Characters) event).ch);
             }
         }
 
@@ -492,9 +487,9 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
         /**
          * Check if a user or group already exists (by name)
          *
-         * @param sm
-         * @param name
-         * @return
+         * @param sm security manager
+         * @param name principal name
+         * @return true when exist
          */
         public boolean hasPrincipal(final SecurityManager sm, final String name) {
             switch (this) {
@@ -528,9 +523,9 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
         /**
          * Check if a user or group already exists (by id)
          *
-         * @param sm
-         * @param id
-         * @return
+         * @param sm security manager
+         * @param id principal id
+         * @return true when exist
          */
         public boolean hasPrincipal(final SecurityManager sm, final int id) {
             switch(this) {
