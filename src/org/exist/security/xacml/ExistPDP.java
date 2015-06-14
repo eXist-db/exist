@@ -30,6 +30,7 @@ import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import org.exist.Database;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.apache.commons.io.output.ByteArrayOutputStream;
@@ -82,7 +83,7 @@ public class ExistPDP
 	private XACMLUtil util;
 	//the PDP object that actually evaluates requests
 	private PDP pdp;
-	private BrokerPool pool;
+	private Database db;
 	
 	/**
 	 * Assists client in creating <code>RequestCtx</code>s.
@@ -92,14 +93,13 @@ public class ExistPDP
 	@SuppressWarnings("unused")
 	private ExistPDP() {}
 	/**
-	* @param pool A <code>BrokerPool</code> used to obtain an instance
+	* @param db A <code>Database</code> used to obtain an instance
 	* of a DBBroker in order to read policies from the database.
 	*/
-	public ExistPDP(BrokerPool pool)
+	public ExistPDP(Database db)
 	{
-		if(pool == null)
-			{throw new NullPointerException("BrokerPool cannot be null");}
-		this.pool = pool;
+		if(db == null) throw new NullPointerException("BrokerPool cannot be null");
+		this.db = db;
 		
 		util = new XACMLUtil(this);
 		
@@ -131,7 +131,7 @@ public class ExistPDP
 	 */
 	public BrokerPool getBrokerPool()
 	{
-		return pool;
+		return (BrokerPool)db;
 	}
 	
 	/**
