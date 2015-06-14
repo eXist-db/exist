@@ -344,7 +344,9 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
         if (charBuf != null && charBuf.length() > 0) {
             XMLString normalized = null;
             if (charBuf.isWhitespaceOnly()) {
-                if (suppressWSmixed) {
+                if (last.preserveSpace()) {
+                    normalized = charBuf;
+                } else if (suppressWSmixed) {
                     if (!(last.getChildCount() == 0 && (normalize & XMLString.SUPPRESS_LEADING_WS) != 0)) {
                         normalized = charBuf;
                     }
