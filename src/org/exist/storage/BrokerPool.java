@@ -942,7 +942,7 @@ public class BrokerPool implements Database {
                             pluginManager.start(broker);
 
                             //wake-up the security manager
-                            securityManager.attach(this, broker);
+                            securityManager.attach(broker);
 
                             //have to do this after initializing = false
                             // so that the policies collection is saved
