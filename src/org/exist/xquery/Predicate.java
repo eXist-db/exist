@@ -409,7 +409,7 @@ public class Predicate extends PathExpr {
             } else {
                 final Set<NumericValue> positions = new TreeSet<NumericValue>();
                 for (final SequenceIterator i = contextSequence.iterate(); i.hasNext(); p++) {
-                    context.setContextSequencePosition(p, contextSequence);
+                    context.setContextSequencePosition((reverseAxis ? contextSequence.getItemCount() - p - 1: p), contextSequence);
                     final Item item = i.nextItem();
                     final Sequence innerSeq = inner.eval(contextSequence, item);
                     if (innerSeq.hasOne()
