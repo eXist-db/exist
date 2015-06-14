@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2014 The eXist Project
+ *  Copyright (C) 2001-2015 The eXist Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -22,6 +22,7 @@ package org.exist;
 import java.io.File;
 import java.util.Collection;
 
+import org.exist.collections.CollectionCache;
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.triggers.CollectionTrigger;
 import org.exist.collections.triggers.DocumentTrigger;
@@ -35,11 +36,7 @@ import org.exist.scheduler.Scheduler;
 import org.exist.security.AuthenticationException;
 import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
-import org.exist.storage.CacheManager;
-import org.exist.storage.DBBroker;
-import org.exist.storage.MetaStorage;
-import org.exist.storage.NotificationService;
-import org.exist.storage.ProcessMonitor;
+import org.exist.storage.*;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.util.Configuration;
 import org.exist.xquery.PerformanceStats;
@@ -54,59 +51,59 @@ public interface Database {
 
     // TODO: javadocs
 
-    public String getId();
+    String getId();
 
     /**
      * 
      * @return SecurityManager
      */
-    public SecurityManager getSecurityManager();
+    SecurityManager getSecurityManager();
 
     /**
      * 
      * @return IndexManager
      */
-    public IndexManager getIndexManager();
+    IndexManager getIndexManager();
 
     /**
      * 
      * @return TransactionManager
      */
-    public TransactionManager getTransactionManager();
+    TransactionManager getTransactionManager();
 
     /**
      * 
      * @return CacheManager
      */
-    public CacheManager getCacheManager();
+    CacheManager getCacheManager();
 
     /**
      * 
      * @return Scheduler
      */
-    public Scheduler getScheduler();
+    Scheduler getScheduler();
 
     /**
 	 * 
 	 */
-    public void shutdown();
+    void shutdown();
 
     /**
      * 
      * @return Subject
      */
-    public Subject getSubject();
+    Subject getSubject();
 
     /**
      * 
      * @param subject
      */
-    public boolean setSubject(Subject subject);
+    boolean setSubject(Subject subject);
 
     // TODO: remove 'throws EXistException'?
-    public DBBroker getBroker() throws EXistException; 
+    DBBroker getBroker() throws EXistException;
 
-    public DBBroker authenticate(String username, Object credentials) throws AuthenticationException;
+    DBBroker authenticate(String username, Object credentials) throws AuthenticationException;
 
     /*
      * @Deprecated ? 
@@ -123,11 +120,11 @@ public interface Database {
      *     database.release(broker);
      * }
      */
-    public DBBroker get(Subject subject) throws EXistException;
+    DBBroker get(Subject subject) throws EXistException;
 
-    public DBBroker getActiveBroker(); // throws EXistException;
+    DBBroker getActiveBroker(); // throws EXistException;
 
-    public void release(DBBroker broker);
+    void release(DBBroker broker);
 
     /**
      * Returns the number of brokers currently serving requests for the database
@@ -135,52 +132,74 @@ public interface Database {
      * 
      * @return The brokers count
      */
-    public int countActiveBrokers();
+    int countActiveBrokers();
 
     /**
      * 
      * @return Debuggee
      */
-    public Debuggee getDebuggee();
+    Debuggee getDebuggee();
 
-    public PerformanceStats getPerformanceStats();
+    PerformanceStats getPerformanceStats();
 
     // old configuration
-    public Configuration getConfiguration();
+    Configuration getConfiguration();
 
-    public NodeIdFactory getNodeFactory();
+    NodeIdFactory getNodeFactory();
 
-    public File getStoragePlace();
+    File getStoragePlace();
 
-    public CollectionConfigurationManager getConfigurationManager();
+    CollectionConfigurationManager getConfigurationManager();
 
     /**
      * Master document triggers.
      */
-    public Collection<TriggerProxy<? extends DocumentTrigger>> getDocumentTriggers();
+    Collection<TriggerProxy<? extends DocumentTrigger>> getDocumentTriggers();
 
     // public DocumentTrigger getDocumentTrigger();
 
     /**
      * Master Collection triggers.
      */
-    public Collection<TriggerProxy<? extends CollectionTrigger>> getCollectionTriggers();
+    Collection<TriggerProxy<? extends CollectionTrigger>> getCollectionTriggers();
 
-    // public CollectionTrigger getCollectionTrigger();
+    //CollectionTrigger getCollectionTrigger();
 
-    public void registerDocumentTrigger(Class<? extends DocumentTrigger> clazz);
+    void registerDocumentTrigger(Class<? extends DocumentTrigger> clazz);
 
-    public void registerCollectionTrigger(Class<? extends CollectionTrigger> clazz);
+    void registerCollectionTrigger(Class<? extends CollectionTrigger> clazz);
 
-    public ProcessMonitor getProcessMonitor();
+    ProcessMonitor getProcessMonitor();
 
-    public boolean isReadOnly();
+    /**
+     * Whether or not the database instance is being initialized.
+     *
+     * @return <code>true</code> is the database instance is being initialized
+     */
+    boolean isInitializing();
 
-    public NotificationService getNotificationService();
+    boolean isReadOnly();
 
-    public PluginsManager getPluginsManager();
+    /**
+     * Switch db to read only mode.
+     */
+    void setReadOnly();
 
-    public SymbolTable getSymbols();
+    NotificationService getNotificationService();
 
-    public MetaStorage getMetaStorage();
+    PluginsManager getPluginsManager();
+
+    SymbolTable getSymbols();
+
+    MetaStorage getMetaStorage();
+
+    int getPageSize();
+
+    boolean isTransactional();
+
+    long getReservedMem();
+
+    void initCollectionConfigurationManager(DBBroker broker);
+
+    CollectionCache getCollectionsCache();
 }

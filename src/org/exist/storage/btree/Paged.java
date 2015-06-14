@@ -73,7 +73,7 @@ package org.exist.storage.btree;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.exist.storage.BrokerPool;
+import org.exist.Database;
 import org.exist.storage.journal.Lsn;
 import org.exist.util.ByteConversion;
 import org.exist.xquery.Constants;
@@ -101,7 +101,7 @@ public abstract class Paged {
     public static int LENGTH_TOTAL_COUNT = 8; //sizeof long
     public static int LENGTH_FIRST_FREE_PAGE = 8; //sizeof long
     public static int LENGTH_LAST_FREE_PAGE = 8; //sizeof long
-    public static int LENGTH_PAGE_HEADER_SIZE = 1; //sizeof byte	
+    public static int LENGTH_PAGE_HEADER_SIZE = 1; //sizeof byte
     public static int LENGTH_MAX_KEY_SIZE = 2;  //sizeof short
     public static int LENGTH_RECORD_COUNT = 8; //sizeof long
 
@@ -133,9 +133,9 @@ public abstract class Paged {
 
     private byte[] tempPageData = null;
     private byte[] tempHeaderData = null;
-	
-    public Paged(BrokerPool pool) {
-        fileHeader = createFileHeader(pool.getPageSize());
+
+    public Paged(Database db) {
+        fileHeader = createFileHeader(db.getPageSize());
         tempPageData = new byte[fileHeader.pageSize];
         tempHeaderData = new byte[fileHeader.pageHeaderSize];
     }
