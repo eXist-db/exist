@@ -21,40 +21,50 @@
  */
 package org.exist.storage;
 
+import org.exist.EXistException;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.persistent.DefaultDocumentSet;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.MutableDocumentSet;
+import org.exist.security.PermissionDeniedException;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.test.TestConstants;
+import org.exist.util.DatabaseConfigurationException;
+import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.XPathException;
 import org.exist.xupdate.Modification;
 import org.exist.xupdate.XUpdateProcessor;
 import org.xml.sax.InputSource;
 import org.junit.Test;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.ParserConfigurationException;
+
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
+import java.io.IOException;
 import java.io.StringReader;
 
 public class RemoveTest extends AbstractUpdateTest {
     
     @Test
-    public void update() {
+    public void update() throws EXistException, DatabaseConfigurationException, LockException, SAXException, PermissionDeniedException, IOException, ParserConfigurationException, XPathException {
         BrokerPool.FORCE_CORRUPTION = true;
         final BrokerPool pool = startDB();
         final TransactionManager mgr = pool.getTransactionManager();
 
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
-            IndexInfo info = init(broker, mgr);
+            final IndexInfo info = init(broker, mgr);
             assertNotNull(info);
-            MutableDocumentSet docs = new DefaultDocumentSet();
+            final MutableDocumentSet docs = new DefaultDocumentSet();
             docs.add(info.getDocument());
-            XUpdateProcessor proc = new XUpdateProcessor(broker, docs, AccessContext.TEST);
+            final XUpdateProcessor proc = new XUpdateProcessor(broker, docs, AccessContext.TEST);
             assertNotNull(proc);
             
             try(final Txn transaction = mgr.beginTransaction()) {
@@ -83,13 +93,19 @@ public class RemoveTest extends AbstractUpdateTest {
                 mgr.commit(transaction);
             }
             
-            Serializer serializer = broker.getSerializer();
+            final Serializer serializer = broker.getSerializer();
             serializer.reset();
             
-            DocumentImpl doc = broker.getXMLResource(TestConstants.TEST_COLLECTION_URI2.append(TestConstants.TEST_XML_URI), Lock.READ_LOCK);
-            assertNotNull("Document '" + XmldbURI.ROOT_COLLECTION + "/test/test2/test.xml' should not be null", doc);
-            String data = serializer.serialize(doc);
-            doc.getUpdateLock().release(Lock.READ_LOCK);
+            DocumentImpl doc = null;
+            try {
+                doc = broker.getXMLResource(TestConstants.TEST_COLLECTION_URI2.append(TestConstants.TEST_XML_URI), Lock.READ_LOCK);
+                assertNotNull("Document '" + XmldbURI.ROOT_COLLECTION + "/test/test2/test.xml' should not be null", doc);
+                final String data = serializer.serialize(doc);
+            } finally {
+                if(doc != null) {
+                    doc.getUpdateLock().release(Lock.READ_LOCK);
+                }
+            }
             
             // the following transaction will not be committed and thus undone during recovery
             final Txn transaction = mgr.beginTransaction();
@@ -108,10 +124,8 @@ public class RemoveTest extends AbstractUpdateTest {
                 proc.reset();
             }
             
-//          Don't commit...            
+//DO NOT COMMIT TRANSACTION
             pool.getTransactionManager().getJournal().flushToLog(true);
-	    } catch (Exception e) {
-	        fail(e.getMessage());  
 	    }
     }
 }
