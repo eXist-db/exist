@@ -2116,7 +2116,7 @@ public class RESTServer {
                     JSONValue json;
                     if ("json".equals(outputProperties.getProperty("method", "xml"))) {
                         json = new JSONValue(serializer.serialize(value), false);
-                        json.setSerializationType(JSONNode.SerializationType.AS_LITERAL);
+                        json.setSerializationDataType(JSONNode.SerializationDataType.AS_LITERAL);
                     } else {
                         json = new JSONValue(serializer.serialize(value));
                         json.setSerializationType(JSONNode.SerializationType.AS_ARRAY);

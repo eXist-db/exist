@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2013 The eXist Project
+ * Copyright (C) 2015 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -28,13 +28,15 @@ public abstract class JSONNode {
 
     protected final static String ANONYMOUS_OBJECT = "#anonymous";
 
-    public static enum SerializationType { AS_STRING, AS_ARRAY, AS_LITERAL };
+    public enum SerializationType { AS_OBJECT, AS_ARRAY}
+    public enum SerializationDataType { AS_STRING, AS_LITERAL}
 
-    public static enum Type { OBJECT_TYPE, VALUE_TYPE, SIMPLE_PROPERTY_TYPE };
+    public enum Type { OBJECT_TYPE, VALUE_TYPE, SIMPLE_PROPERTY_TYPE }
 
     private Type type;
     private String name;
-    private SerializationType writeAs = SerializationType.AS_STRING;
+    private SerializationType serializationType = SerializationType.AS_OBJECT;
+    private SerializationDataType serializationDataType = SerializationDataType.AS_STRING;
 
     private JSONNode next = null;
     private JSONNode nextOfSame = null;
@@ -61,11 +63,19 @@ public abstract class JSONNode {
     }
 
     public SerializationType getSerializationType() {
-        return writeAs;
+        return serializationType;
     }
 
-    public void setSerializationType(SerializationType type) {
-        writeAs = type;
+    public void setSerializationType(final SerializationType serializationType) {
+        this.serializationType = serializationType;
+    }
+
+    public SerializationDataType getSerializationDataType() {
+        return serializationDataType;
+    }
+
+    public void setSerializationDataType(final SerializationDataType serializationDataType) {
+        this.serializationDataType = serializationDataType;
     }
 
     public JSONNode getNextOfSame() {
