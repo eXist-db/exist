@@ -12,18 +12,18 @@ import static org.junit.Assert.assertEquals;
 
 public class OpNumericTest {
 
-    private DBBroker broker;
-	private XQueryContext context;
-	private DayTimeDurationValue dtDuration;
-	private YearMonthDurationValue ymDuration;
-	private DateTimeValue dateTime;
-	private DateValue date;
-	private TimeValue time;
-	private IntegerValue integer;
-	private DecimalValue decimal;
+    private static DBBroker broker;
+	private static XQueryContext context;
+	private static DayTimeDurationValue dtDuration;
+	private static YearMonthDurationValue ymDuration;
+	private static DateTimeValue dateTime;
+	private static DateValue date;
+	private static TimeValue time;
+	private static IntegerValue integer;
+	private static DecimalValue decimal;
 
-	@Before
-	public void setUp() throws DatabaseConfigurationException, EXistException, XPathException {
+	@BeforeClass
+	public static void setUp() throws DatabaseConfigurationException, EXistException, XPathException {
 		Configuration config = new Configuration();
 		BrokerPool.configure(1, 5, config);
 
@@ -41,8 +41,8 @@ public class OpNumericTest {
 		decimal = new DecimalValue("1.5");
 	}
 
-    @After
-    public void tearDown() throws EXistException {
+    @AfterClass
+    public static void tearDown() throws EXistException {
         BrokerPool.getInstance().release(broker);
         BrokerPool.stopAll(false);
         broker = null;

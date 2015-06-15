@@ -16,8 +16,8 @@ public class DeepEqualTest {
     private final static String URI = XmldbURI.LOCAL_DB;
     private final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
 
-    private XPathQueryService query;
-    private Collection c;
+    private static XPathQueryService query;
+    private static Collection c;
 
     @Test
     public void atomic1() throws XMLDBException {
@@ -515,8 +515,8 @@ public class DeepEqualTest {
         return cc;
     }
 
-    @Before
-    public void setUp() throws ClassNotFoundException, XMLDBException, IllegalAccessException, InstantiationException {
+    @BeforeClass
+    public static void setUp() throws ClassNotFoundException, XMLDBException, IllegalAccessException, InstantiationException {
         // initialize driver
         Database database = (Database) Class.forName(DRIVER).newInstance();
         database.setProperty("create-database", "true");
@@ -525,8 +525,8 @@ public class DeepEqualTest {
         query = (XPathQueryService) c.getService("XPathQueryService", "1.0");
     }
 
-    @After
-    public void tearDown() throws XMLDBException {
+    @AfterClass
+    public static void tearDown() throws XMLDBException {
         if (c != null) {
             DatabaseInstanceManager dim = (DatabaseInstanceManager) c.getService("DatabaseInstanceManager", "1.0");
             c.close();

@@ -142,16 +142,19 @@ public class XQueryTest {
     private static int nbElem = 1;
     private String file_name = "detail_xml.xml";
     private String xml;
-    private Database database;
+    private static Database database;
 
-    @Before
-    public void setup() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
+    @BeforeClass
+    public static void setUpOnce() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
         // initialize driver
         Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
         database = (Database) cl.newInstance();
         database.setProperty("create-database", "true");
         DatabaseManager.registerDatabase(database);
+    }
 
+    @Before
+    public void setup() throws XMLDBException {
         Collection root =
                 DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
         CollectionManagementService service =
@@ -161,9 +164,12 @@ public class XQueryTest {
     }
 
     @After
-    public void tearDown() throws XMLDBException {
+    public void tearDown() {
         TestUtils.cleanupDB();
+    }
 
+    @AfterClass
+    public static void tearDownOnce() throws XMLDBException {
         DatabaseInstanceManager dim =
                 (DatabaseInstanceManager) DatabaseManager.getCollection("xmldb:exist:///db", "admin", null).getService("DatabaseInstanceManager", "1.0");
         dim.shutdown();
