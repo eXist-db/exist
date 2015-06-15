@@ -26,8 +26,8 @@ public class SeqOpTest {
 	private final static String URI = XmldbURI.LOCAL_DB;
 	private final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
 
-	private XPathQueryService query;
-	private Collection c;
+	private static XPathQueryService query;
+	private static Collection c;
 
 	@Test
 	public void testReverseEmpty() throws XMLDBException {
@@ -257,8 +257,8 @@ public class SeqOpTest {
 		return c;
 	}
 
-    @Before
-	public void setUp() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
+    @BeforeClass
+	public static void setUp() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
         // initialize driver
         Database database = (Database) Class.forName(DRIVER).newInstance();
         database.setProperty("create-database", "true");
@@ -268,8 +268,8 @@ public class SeqOpTest {
         query = (XPathQueryService) c.getService("XPathQueryService", "1.0");
 	}
 
-    @After
-	public void tearDown() throws XMLDBException {
+    @AfterClass
+	public static void tearDown() throws XMLDBException {
         if (c != null) {
             DatabaseInstanceManager manager =
                     (DatabaseInstanceManager) c.getService("DatabaseInstanceManager", "1.0");

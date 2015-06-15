@@ -60,9 +60,9 @@ import static org.junit.Assert.assertTrue;
  */
 public class XQueryFunctionsTest {
 
-    private XPathQueryService service;
-    private Collection root = null;
-    private Database database = null;
+    private static XPathQueryService service;
+    private static Collection root = null;
+    private static Database database = null;
     private final static String ROOT_COLLECTION_URI = "xmldb:exist:///db";
 
     @Test
@@ -867,8 +867,8 @@ public class XQueryFunctionsTest {
     }
 
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeClass
+    public static void setUp() throws Exception {
         // initialize driver
         Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
         database = (Database) cl.newInstance();
@@ -878,8 +878,8 @@ public class XQueryFunctionsTest {
         service = (XPathQueryService) root.getService("XQueryService", "1.0");
     }
 
-    @After
-    public void tearDown() throws Exception {
+    @AfterClass
+    public static void tearDown() throws Exception {
         DatabaseManager.deregisterDatabase(database);
         DatabaseInstanceManager dim =
                 (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
