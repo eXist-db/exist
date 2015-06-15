@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2009 The eXist Project
+ *  Copyright (C) 2015 The eXist Project
  *  http://exist.sourceforge.net
  *  
  *  This program is free software; you can redistribute it and/or
@@ -17,14 +17,12 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-
 package org.exist.util;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-
-import org.exist.util.sorters.SortMethodChecker;
-import org.exist.util.sorters.SortingAlgorithmTester;
+import org.exist.util.sorters.SortComparatorTest;
+import org.exist.util.sorters.SortTest;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
 
 /**
  * Perform comprehensive testing of the eXist sort algorithms.
@@ -40,34 +38,10 @@ import org.exist.util.sorters.SortingAlgorithmTester;
  * 
  */
 
-public class SortTests extends TestSuite {
-
-	public static Test suite() {
-		return new SortTests("Test suite for org.exist.util sorting algorithms");
-	}
-
-	public static Test suite(String name) {
-		return new SortTests(name);
-	}
-
-	private void init() {
-		for (SortingAlgorithmTester s : SortingAlgorithmTester.allSorters()) {
-			for (SortMethodChecker c : SortMethodChecker.allCheckers(s)) {
-				addTest(c.suite());
-			}
-		}
-	}
-
-	public SortTests() {
-		init();
-	}
-
-	public SortTests(String name) {
-		super(name);
-		init();
-	}
-	
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
+@RunWith(Suite.class)
+@Suite.SuiteClasses({
+		SortTest.class,
+		SortComparatorTest.class,
+})
+public class SortTests {
 }

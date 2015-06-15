@@ -9,6 +9,7 @@ package org.exist.xquery;
 
 import org.exist.xmldb.XQueryService;
 import org.exist.xmldb.XmldbURI;
+import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
@@ -26,10 +27,9 @@ import java.io.StringReader;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.FactoryConfigurationError;
 import javax.xml.parsers.ParserConfigurationException;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.fail;
 
 /**
  * Class to test eXist's capability to handle XML Nodes as XQuery parameter.
@@ -38,14 +38,10 @@ import junit.framework.TestCase;
  * @version 1.0
  */
 
-public class XMLNodeAsXQueryParameterTest extends TestCase {
+public class XMLNodeAsXQueryParameterTest {
 
 	/** eXist database url */
 	static final String eXistUrl ="xmldb:exist://";
-
-	public static void main(String[] args) {
-		junit.textui.TestRunner.run(XMLNodeAsXQueryParameterTest.class);
-	}
 
 	/**
 	 * This test passes a W3C dom node as an xquery parameter to eXist and tries
@@ -57,79 +53,46 @@ public class XMLNodeAsXQueryParameterTest extends TestCase {
 	 * <li>Check for the document content</li>
 	 * </ul>
 	 */
-	public final void testXMLNodeAsXQueryParameter() {
+	@Test
+	public final void xmlNodeAsXQueryParameter() throws XMLDBException, ParserConfigurationException, IOException, SAXException, IllegalAccessException, InstantiationException, ClassNotFoundException {
 		Database eXist = null;
 		String document = "test.xml";
 
-		try {
-			eXist = registerDatabase();
-		} catch (XMLDBException e) {
-			fail("Unable to register database: "  + e.getMessage());
-		}
+		eXist = registerDatabase();
 
 		// Obtain XQuery service
-		XQueryService service = null;
-		try {
-			service = getXQueryService(eXist);
-			if (service == null) {
-				fail("Failed to obtain xquery service instance!");
-			}
-		} catch (Exception e) {
-			fail("Failed to obtain xquery service instance: "  + e.getMessage());
-		}
+		XQueryService service = getXQueryService();
+        if (service == null) {
+          fail("Failed to obtain xquery service instance!");
+        }
 
 		// create document
 		StringBuffer xmlDocument = new StringBuffer();
 		xmlDocument.append("<XmlNodeTest/>");
 
 		// write document to the database
-		try {
-			store(xmlDocument.toString(), service, document);
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail("Failed to write document to database: " + e.getMessage());
-		}
+        store(xmlDocument.toString(), service, document);
+
 
 		// add content using XUpdate
-		StringBuffer xmlData = new StringBuffer();
+		StringBuilder xmlData = new StringBuilder();
 		xmlData.append("<content/>");
-		try {
-			InputSource is = new InputSource(new StringReader(xmlData.toString()));
-			DocumentBuilder docBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-			Document doc = docBuilder.parse(is);
-			xupdate(service, doc.getFirstChild());
-		} catch (SAXException e) {
-			fail("Error building dom tree: " + e.getMessage());
-		} catch (IOException e) {
-			fail("Error reading xml: " + e.getMessage());
-		} catch (ParserConfigurationException e) {
-			fail("Error parsing xml: " + e.getMessage());
-		} catch (FactoryConfigurationError e) {
-			fail("Error receiving dom factory: " + e.getMessage());
-		} catch (Exception e) {
-			fail("Failed to update document in database: " + e.getMessage());
-		}
+        InputSource is = new InputSource(new StringReader(xmlData.toString()));
+        DocumentBuilder docBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+        Document doc = docBuilder.parse(is);
+        xupdate(service, doc.getFirstChild());
 
 		// read document back from database
-		Node root = null;
-		try {
-			root = load(service, document);
-			if (root == null) {
-				fail("Document " + document + " was not found in the database!");
-			}
-		} catch (Exception e) {
-			fail("Failed to write document to database: " + e.getMessage());
-		}
+		Node root = load(service, document);
+        if (root == null) {
+            fail("Document " + document + " was not found in the database!");
+        }
 
 		// issue xpath query
-		try {
-			Node node = root.getFirstChild();
-			if (node == null) {
-				fail("XUpdate:append using w3c dom node failed! Content node was not returned.");
-			}
-		} catch (Exception e) {
-			fail("Failed to issue xpath on root node: " + e.getMessage());
-		}
+        Node node = root.getFirstChild();
+        if (node == null) {
+            fail("XUpdate:append using w3c dom node failed! Content node was not returned.");
+        }
 	}
 
 	/**
@@ -141,7 +104,7 @@ public class XMLNodeAsXQueryParameterTest extends TestCase {
 	 * @throws XMLDBException on database error
 	 */
 	private final void store(String xml, XQueryService service, String document) throws XMLDBException {
-		StringBuffer query = new StringBuffer();
+		StringBuilder query = new StringBuilder();
 		query.append("xquery version \"1.0\";");
 		query.append("declare namespace xdb=\"http://exist-db.org/xquery/xmldb\";");
 		query.append("let $loggedIn := xdb:login(\"" + XmldbURI.ROOT_COLLECTION + "\", \"admin\", \"\"),");
@@ -165,7 +128,8 @@ public class XMLNodeAsXQueryParameterTest extends TestCase {
 		if (data == null) {
 			fail("Cannot update because data is 'null'");
 		}
-		StringBuffer query = new StringBuffer();
+
+		StringBuilder query = new StringBuilder();
 		query.append("xquery version \"1.0\";");
 		query.append("declare namespace xdb=\"http://exist-db.org/xquery/xmldb\";");
 		query.append("declare variable $xupdate {");
@@ -192,9 +156,9 @@ public class XMLNodeAsXQueryParameterTest extends TestCase {
 	 * @throws XMLDBException on database error
 	 */
 	private final Node load(XQueryService service, String document) throws XMLDBException {
-		StringBuffer query = new StringBuffer();
+		StringBuilder query = new StringBuilder();
 		query.append("xquery version \"1.0\";");
-		query.append("let $survey := xmldb:document(concat('" + XmldbURI.ROOT_COLLECTION + "', '/', $document))");
+		query.append("let $survey := xmldb:document(string-join(('" + XmldbURI.ROOT_COLLECTION + "', $document), '/'))");
 		query.append("return ($survey)");
 
 		service.declareVariable("document", document);
@@ -211,36 +175,24 @@ public class XMLNodeAsXQueryParameterTest extends TestCase {
 	 *
 	 * @throws XMLDBException
 	 */
-	private final Database registerDatabase() throws XMLDBException {
+	private final Database registerDatabase() throws XMLDBException, ClassNotFoundException, IllegalAccessException, InstantiationException {
 		Class<?> driver = null;
 		String driverName = "org.exist.xmldb.DatabaseImpl";
-		try {
-			driver = Class.forName(driverName);
-			Database database = (Database)driver.newInstance();
-			database.setProperty("create-database", "true");
-			DatabaseManager.registerDatabase(database);
-			return database;
-		} catch (ClassNotFoundException e) {
-			System.err.println("Driver class " + driverName + " was not found!");
-			throw new XMLDBException();
-		} catch (InstantiationException e) {
-			System.err.println("Driver class " + driverName + " could not be instantiated!");
-			throw new XMLDBException();
-		} catch (IllegalAccessException e) {
-			System.err.println("Access violation when trying to instantiate XMLDB Driver " + driverName + "!");
-			throw new XMLDBException();
-		}
+        driver = Class.forName(driverName);
+        Database database = (Database)driver.newInstance();
+        database.setProperty("create-database", "true");
+        DatabaseManager.registerDatabase(database);
+        return database;
 	}
 
 	/**
 	 * Retrieves the base collection and thereof returns a reference to the collection's
 	 * xquery service.
 	 *
-	 * @param db the database
 	 * @return the xquery service
 	 * @throws XMLDBException on database error
 	 */
-	private final XQueryService getXQueryService(Database db) throws XMLDBException {
+	private final XQueryService getXQueryService() throws XMLDBException {
 		Collection collection = DatabaseManager.getCollection(eXistUrl + XmldbURI.ROOT_COLLECTION, "admin", "");
 		if (collection != null) {
 			XQueryService service = (XQueryService)collection.getService("XQueryService", "1.0");

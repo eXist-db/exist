@@ -21,17 +21,20 @@
  */
 package org.exist.xmldb.concurrent;
 
-import junit.framework.TestCase;
-import junit.textui.TestRunner;
-
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.XmldbURI;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
+import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
 
-public class DeadlockTest extends TestCase {
+import static org.junit.Assert.assertNotNull;
+
+public class DeadlockTest {
 
     public static final String DOCUMENT_CONTENT = "<document>\n"
             + "  <element1>value1</element1>\n"
@@ -41,53 +44,41 @@ public class DeadlockTest extends TestCase {
 
     private String rootCollection = XmldbURI.LOCAL_DB;
     private Collection root;
-    
-    public void testDeadlock() {
+
+    @Test
+    public void deadlock() throws Exception {
         int threads = 20;
         int resources = 200;
-        try {
-	        Thread[] writerThreads = new Thread[threads];
-	        for (int i = 0; i < threads; i++) {
-	            writerThreads[i] = new WriterThread(rootCollection, resources);
-                writerThreads[i].setName("T" + i);
-	            writerThreads[i].start();
-	        }
-	        for (int i = 0; i < threads; i++) {
-	            writerThreads[i].join();
-	        }
-        } catch (Exception e) {            
-            fail(e.getMessage()); 
-        }		        
+
+        Thread[] writerThreads = new Thread[threads];
+        for (int i = 0; i < threads; i++) {
+            writerThreads[i] = new WriterThread(rootCollection, resources);
+            writerThreads[i].setName("T" + i);
+            writerThreads[i].start();
+        }
+        for (int i = 0; i < threads; i++) {
+            writerThreads[i].join();
+        }
     }
-    
-    protected void setUp() {
-    	try {
-	        String driver = "org.exist.xmldb.DatabaseImpl";
-	        Class<?> cl = Class.forName(driver);
-	        Database database = (Database) cl.newInstance();
-	        assertNotNull(database);
-	        database.setProperty("create-database", "true");
-	        DatabaseManager.registerDatabase(database);
-	        root = DatabaseManager.getCollection(rootCollection, "admin", "");
-	        assertNotNull(root);
-    	} catch (Exception e) {            
-            fail(e.getMessage()); 
-        }		        
+
+    @Before
+    public void setUp() throws ClassNotFoundException, XMLDBException, IllegalAccessException, InstantiationException {
+        String driver = "org.exist.xmldb.DatabaseImpl";
+        Class<?> cl = Class.forName(driver);
+        Database database = (Database) cl.newInstance();
+        assertNotNull(database);
+        database.setProperty("create-database", "true");
+        DatabaseManager.registerDatabase(database);
+        root = DatabaseManager.getCollection(rootCollection, "admin", "");
+        assertNotNull(root);
     }
-    
-    protected void tearDown() {
-    	try {
-    		DatabaseInstanceManager manager = 
-    			(DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
-    		assertNotNull(manager);
-    		manager.shutdown();
-    	} catch (Exception e) {            
-            fail(e.getMessage()); 
-        }	    		
-    }
-    
-    public static void main(String args[]) {
-        TestRunner.run(DeadlockTest.class);
+
+    @After
+    public void tearDown() throws XMLDBException {
+        DatabaseInstanceManager manager =
+            (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
+        assertNotNull(manager);
+        manager.shutdown();
     }
 
     public static class WriterThread extends Thread {
@@ -100,6 +91,7 @@ public class DeadlockTest extends TestCase {
             this.resources = resources;
         }
 
+        @Override
         public void run() {
             try {
                 for (int i = 0; i < resources; i++) {

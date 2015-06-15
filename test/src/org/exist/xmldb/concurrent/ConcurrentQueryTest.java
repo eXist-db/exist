@@ -25,6 +25,9 @@ import java.io.File;
 
 import org.exist.xmldb.XmldbURI;
 import org.exist.xmldb.concurrent.action.XQueryAction;
+import org.junit.After;
+import org.junit.Before;
+import org.xmldb.api.base.XMLDBException;
 
 /**
  * @author wolf
@@ -33,52 +36,45 @@ public class ConcurrentQueryTest extends ConcurrentTestBase {
 
 	private final static String URI = XmldbURI.LOCAL_DB;
 	
-	public static void main(String[] args) {
-		junit.textui.TestRunner.run(ConcurrentQueryTest.class);
-	}
-	
 	private File tempFile;
 	
 	private XQueryAction action0, action1, action2;
-	
-	/**
-     * 
-     * 
-     * @param name 
-     */
-	public ConcurrentQueryTest(String name) {
-		super(name, URI, "C1");
+
+	public ConcurrentQueryTest() {
+		super(URI, "C1");
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.xmldb.test.concurrent.ConcurrentTestBase#setUp()
-	 */
-	protected void setUp() {
-		try {
-			super.setUp();		
-			String[] wordList = DBUtils.wordList(rootCol);
-			tempFile = DBUtils.generateXMLFile(500, 7, wordList);
-			DBUtils.addXMLResource(getTestCollection(), "R1.xml", tempFile);
-			
-			String query0 = "/ROOT-ELEMENT/ELEMENT/ELEMENT-1/ELEMENT-2[@attribute-3]";
-			String query1 = "distinct-values(//ELEMENT/@attribute-2)";
-			String query2 = "/ROOT-ELEMENT//ELEMENT-1[@attribute-3]";
-			
-			action0 = new XQueryAction(URI + "/C1", "R1.xml", query0);
-			action1 = new XQueryAction(URI + "/C1", "R1.xml", query1);
-			action2 = new XQueryAction(URI + "/C1", "R1.xml", query2);
+	@Before
+	@Override
+	public void setUp() throws Exception {
+        super.setUp();
+
+        String[] wordList = DBUtils.wordList(rootCol);
+        tempFile = DBUtils.generateXMLFile(500, 7, wordList);
+        DBUtils.addXMLResource(getTestCollection(), "R1.xml", tempFile);
+
+        String query0 = "/ROOT-ELEMENT/ELEMENT/ELEMENT-1/ELEMENT-2[@attribute-3]";
+        String query1 = "distinct-values(//ELEMENT/@attribute-2)";
+        String query2 = "/ROOT-ELEMENT//ELEMENT-1[@attribute-3]";
+
+        action0 = new XQueryAction(URI + "/C1", "R1.xml", query0);
+        action1 = new XQueryAction(URI + "/C1", "R1.xml", query1);
+        action2 = new XQueryAction(URI + "/C1", "R1.xml", query2);
 	//		action3 = new XQueryAction(URI + "/C1", "R1.xml", query0);
 	//		action4 = new XQueryAction(URI + "/C1", "R1.xml", query0);
 	//		action5 = new XQueryAction(URI + "/C1", "R1.xml", query0);
 			
-			addAction(action0, 50, 500, 0);
-			addAction(action1, 50, 250, 0);
-			addAction(action2, 50, 0, 0);
+        addAction(action0, 50, 500, 0);
+        addAction(action1, 50, 250, 0);
+        addAction(action2, 50, 0, 0);
 	//		addAction(action3, 50, 0, 0);
 	//		addAction(action4, 50, 0, 0);
 	//		addAction(action5, 50, 0, 0);
-		} catch (Exception e) {            
-            fail(e.getMessage()); 
-        }				
 	}
+
+    @After
+    @Override
+    public void tearDown() throws XMLDBException {
+        super.tearDown();
+    }
 }

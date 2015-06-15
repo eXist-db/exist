@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2009 The eXist Project
+ *  Copyright (C) 2015 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -16,16 +16,22 @@
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- * $Id$
  */
-
 package org.exist.util.sorters;
 
 import org.exist.util.sorters.ComparatorChecker.SortOrder;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 /**
- * TestCase - given a sort() method and an algorithm via a checker, do a variety
+ * Test case - given a sort() method and an algorithm via a checker, do a variety
  * of tests that rely on the comparator methods.
  * <p>
  * This work was undertaken as part of the development of the taxonomic
@@ -38,15 +44,30 @@ import org.exist.util.sorters.ComparatorChecker.SortOrder;
  * @author http://www.users.bigpond.com/pmurray
  * 
  */
-public class SortTestComparator<CH extends ComparatorChecker>
-	extends SortTestCase<CH>
-{
-	SortTestComparator(CH checker, String method, String testSuite) {
-		super(checker, method, testSuite);
-	}
+@RunWith(Parameterized.class)
+public class SortComparatorTest {
 
-	public void testComparatorAscending() throws Exception {
-		System.out.print("\n"+testSuite+" "+getName()+" ");
+    @Parameters(name = "{0}")
+    public static java.util.Collection<Object[]> data() {
+        final List<Object[]> parameters = new ArrayList<>();
+        for (final SortingAlgorithmTester s : SortingAlgorithmTester.allSorters()) {
+            final String name = s.getClass().getSimpleName() + ": " + PlainArrayChecker.class.getSimpleName();
+            parameters.add(new Object[]{name, new PlainArrayChecker(s)});
+        }
+
+        return parameters;
+    }
+
+    private final Random rnd = new Random();
+
+    @Parameter
+    public String sortTestName;
+
+    @Parameter(value = 1)
+    public ComparatorChecker checker;
+
+	@Test
+	public void comparatorAscending() throws Exception {
 		for (int i = 0; i < 10; i++) {
 			checker.init(getRandomIntArray(100));
 			checker.sort(SortOrder.ASCENDING);
@@ -54,8 +75,8 @@ public class SortTestComparator<CH extends ComparatorChecker>
 		}
 	}
 
-	public void testComparatorDescending() throws Exception {
-		System.out.print("\n"+testSuite+" "+getName()+" ");
+	@Test
+	public void comparatorDescending() throws Exception {
 		for (int i = 0; i < 10; i++) {
 			checker.init(getRandomIntArray(100));
 			checker.sort(SortOrder.DESCENDING);
@@ -63,22 +84,22 @@ public class SortTestComparator<CH extends ComparatorChecker>
 		}
 	}
 
-	public void testBadComparatorUnstable() throws Exception {
-		System.out.print("\n"+testSuite+" "+getName()+" ");
+	@Test
+	public void badComparatorUnstable() throws Exception {
 		for (int i = 0; i < 10; i++) {
 			checker.init(getRandomIntArray(100));
 			checker.sort(SortOrder.UNSTABLE);
 		}
 	}
 
-	public void testBadComparatorRandom() throws Exception {
-		System.out.print("\n"+testSuite+" "+getName()+" ");
+	@Test
+	public void badComparatorRandom() throws Exception {
 		checker.init(getRandomIntArray(100));
 		checker.sort(SortOrder.RANDOM);
 	}
 
-	public void testSortSubsection1asc() throws Exception {
-		System.out.print("\n"+testSuite+" "+getName()+" ");
+	@Test
+	public void sortSubsection1asc() throws Exception {
 		for (int i = 0; i < 1000; i += 100) {
 			int[] a = new int[1000];
 
@@ -101,8 +122,8 @@ public class SortTestComparator<CH extends ComparatorChecker>
 		}
 	}
 
-	public void testSortSubsection2asc() throws Exception {
-		System.out.print("\n"+testSuite+" "+getName()+" ");
+	@Test
+	public void sortSubsection2asc() throws Exception {
 		for (int i = 0; i < 1000; i += 100) {
 			int[] a = new int[1000];
 
@@ -124,9 +145,8 @@ public class SortTestComparator<CH extends ComparatorChecker>
 		}
 	}
 
-	public void testSortSubsection1desc() throws Exception {
-		System.out.print("\n"+testSuite+" "+getName()+" ");
-
+	@Test
+	public void sortSubsection1desc() throws Exception {
 		for (int i = 0; i < 1000; i += 100) {
 			int[] a = new int[1000];
 
@@ -150,8 +170,8 @@ public class SortTestComparator<CH extends ComparatorChecker>
 		}
 	}
 
-	public void testSortSubsection2desc() throws Exception {
-		System.out.print("\n"+testSuite+" "+getName()+" ");
+	@Test
+	public void sortSubsection2desc() throws Exception {
 		for (int i = 0; i < 1000; i += 100) {
 			int[] a = new int[1000];
 
@@ -173,5 +193,13 @@ public class SortTestComparator<CH extends ComparatorChecker>
 
 		}
 	}
+
+    protected int[] getRandomIntArray(int sz) {
+        int[] a = new int[sz];
+        for (int i = 0; i < sz; i++) {
+            a[i] = rnd.nextInt(1000);
+        }
+        return a;
+    }
 
 }

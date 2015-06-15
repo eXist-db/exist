@@ -24,17 +24,16 @@ package org.exist.xmldb;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
 import org.exist.util.SingleInstanceConfiguration;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import org.xmldb.api.DatabaseManager;
-import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.Database;
-import org.xmldb.api.base.ResourceIterator;
-import org.xmldb.api.base.ResourceSet;
+import org.xmldb.api.base.*;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import junit.framework.TestCase;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -42,7 +41,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * @author wolf
  *
  */
-public class MultiDBTest extends TestCase {
+public class MultiDBTest {
 
 //    public static void main(String[] args) {
 //        TestRunner.run(MultiDBTest.class);
@@ -56,8 +55,9 @@ public class MultiDBTest extends TestCase {
         "       <pool min=\"1\" max=\"5\" sync-period=\"120000\"/>" +
         "   </db-connection>" +
         "</exist>";
-    
-    public void testStore()
+
+    @Test
+    public void store()
        throws Exception
     {
         for (int i = 0; i < INSTANCE_COUNT; i++) {
@@ -84,35 +84,27 @@ public class MultiDBTest extends TestCase {
         }
     }
     
-    protected static void loadFile(Collection collection, String path) {
-    	try {
-	        // create new XMLResource; an id will be assigned to the new resource
-	        XMLResource document = (XMLResource) 
-	            collection.createResource(path.substring(path.lastIndexOf(File.separatorChar)), 
-	                "XMLResource");
-	        document.setContent(new File(path));
-	        collection.storeResource(document);
-        } catch (Exception e) {            
-            fail(e.getMessage()); 
-        }
+    protected static void loadFile(Collection collection, String path) throws XMLDBException {
+        // create new XMLResource; an id will be assigned to the new resource
+        XMLResource document = (XMLResource)
+            collection.createResource(path.substring(path.lastIndexOf(File.separatorChar)),
+                "XMLResource");
+        document.setContent(new File(path));
+        collection.storeResource(document);
     }
     
-    private static void doQuery(Collection collection, String query) {
-    	try {
-	        XQueryService service = (XQueryService)
-	            collection.getService("XQueryService", "1.0");
-	        ResourceSet result = service.query(query);
-	        for(ResourceIterator i = result.getIterator(); i.hasMoreResources(); ) {
-	            @SuppressWarnings("unused")
-				String content = i.nextResource().getContent().toString();
-	        }
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage()); 
+    private static void doQuery(Collection collection, String query) throws XMLDBException {
+        XQueryService service = (XQueryService)
+            collection.getService("XQueryService", "1.0");
+        ResourceSet result = service.query(query);
+        for(ResourceIterator i = result.getIterator(); i.hasMoreResources(); ) {
+            @SuppressWarnings("unused")
+            String content = i.nextResource().getContent().toString();
         }
     }
-    
-    protected void setUp() 
+
+    @Before
+    public void setUp()
        throws Exception
     {
        String homeDir = SingleInstanceConfiguration.getPath();
@@ -142,8 +134,9 @@ public class MultiDBTest extends TestCase {
           DatabaseManager.registerDatabase(database);
        }
     }
-    
-    protected void tearDown() 
+
+    @After
+    public void tearDown()
        throws Exception
     {
         Runtime rt = Runtime.getRuntime();
