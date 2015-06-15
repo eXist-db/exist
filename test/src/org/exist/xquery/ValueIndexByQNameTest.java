@@ -2,6 +2,7 @@
 $Id$ */
 package org.exist.xquery;
 
+import org.junit.Test;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XPathQueryService;
 
@@ -27,8 +28,9 @@ public class ValueIndexByQNameTest extends ValueIndexTest {
     	"	</index>" + 
     	"</collection>";
 
+	@Test
 	@Override
-	public void testStrings() throws XMLDBException {
+	public void strings() throws XMLDBException {
         configureCollection(config);
         XPathQueryService service = storeXMLFileAndGetQueryService("items.xml", "test/src/org/exist/xquery/items.xml");
 
@@ -52,8 +54,4 @@ public class ValueIndexByQNameTest extends ValueIndexTest {
 	protected String getCollectionConfig() {
 		return config;
 	}
-    
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(ValueIndexByQNameTest.class);
-    }
 }

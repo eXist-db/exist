@@ -26,18 +26,21 @@ import java.util.List;
 
 import org.exist.xmldb.concurrent.action.Action;
 import org.exist.xmldb.IndexQueryService;
+import org.junit.Test;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
+import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Abstract base class for concurrent tests.
  * 
  * @author wolf
  */
-public abstract class ConcurrentTestBase extends TestCase {
+public abstract class ConcurrentTestBase {
 
     private static String COLLECTION_CONFIG =
         "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
@@ -47,7 +50,7 @@ public abstract class ConcurrentTestBase extends TestCase {
         "       </lucene>" +
         "	</index>" +
     	"</collection>";
-    
+
     protected String rootColURI;
 
     protected Collection rootCol;
@@ -56,17 +59,15 @@ public abstract class ConcurrentTestBase extends TestCase {
 
     protected Collection testCol;
 
-    protected List<Runner> actions = new ArrayList<Runner>(5);
+    protected List<Runner> actions = new ArrayList<>(5);
 
     protected volatile boolean failed = false;
 
     /**
-     * @param name the name of the test.
      * @param uri the XMLDB URI of the root collection.
      * @param testCollection the name of the collection that will be created for the test.
      */
-    public ConcurrentTestBase(String name, String uri, String testCollection) {
-        super(name);
+    public ConcurrentTestBase(String uri, String testCollection) {
         this.rootColURI = uri;
         this.testColName = testCollection;
     }
@@ -86,7 +87,8 @@ public abstract class ConcurrentTestBase extends TestCase {
         return testCol;
     }
 
-    public void testConcurrent() {
+    @Test
+    public void concurrent() {
         // start all threads
         for (Thread t : actions) {
             t.start();
@@ -105,47 +107,33 @@ public abstract class ConcurrentTestBase extends TestCase {
         assertFalse(failed);
     }
 
-    /*
-     * @see TestCase#setUp()
-     */
-    protected void setUp() {
-        try {
-            rootCol = DBUtils.setupDB(rootColURI);
-            assertNotNull(rootCol);
-            IndexQueryService idxConf = (IndexQueryService) rootCol.getService("IndexQueryService", "1.0");
-            idxConf.configureCollection(COLLECTION_CONFIG);
-            testCol = rootCol.getChildCollection(testColName);
-            if (testCol != null) {
-                CollectionManagementService mgr = DBUtils.getCollectionManagementService(rootCol);
-                mgr.removeCollection(testColName);
-            }
-            testCol = DBUtils.addCollection(rootCol, testColName);
-            assertNotNull(testCol);
-
-            String existHome = System.getProperty("exist.home");
-            File existDir = existHome==null ? new File(".") : new File(existHome);
-            DBUtils.addXMLResource(rootCol, "biblio.rdf", new File(existDir,"samples/biblio.rdf"));
-        } catch (Exception e) {
-            fail(e.getMessage());
+    public void setUp() throws Exception {
+        rootCol = DBUtils.setupDB(rootColURI);
+        assertNotNull(rootCol);
+        IndexQueryService idxConf = (IndexQueryService) rootCol.getService("IndexQueryService", "1.0");
+        idxConf.configureCollection(COLLECTION_CONFIG);
+        testCol = rootCol.getChildCollection(testColName);
+        if (testCol != null) {
+            CollectionManagementService mgr = DBUtils.getCollectionManagementService(rootCol);
+            mgr.removeCollection(testColName);
         }
+        testCol = DBUtils.addCollection(rootCol, testColName);
+        assertNotNull(testCol);
+
+        String existHome = System.getProperty("exist.home");
+        File existDir = existHome==null ? new File(".") : new File(existHome);
+        DBUtils.addXMLResource(rootCol, "biblio.rdf", new File(existDir,"samples/biblio.rdf"));
     }
 
-    /*
-     * @see TestCase#tearDown()
-     */
-    protected void tearDown() {
-        try {
-            Resource res = rootCol.getResource("biblio.rdf");
-            assertNotNull(res);
-            rootCol.removeResource(res);
-            DBUtils.removeCollection(rootCol, testColName);
-            DBUtils.shutdownDB(rootColURI);
+    public void tearDown() throws XMLDBException {
+        Resource res = rootCol.getResource("biblio.rdf");
+        assertNotNull(res);
+        rootCol.removeResource(res);
+        DBUtils.removeCollection(rootCol, testColName);
+        DBUtils.shutdownDB(rootColURI);
 
-            rootCol = null;
-            testCol = null;
-        } catch (Exception e) {
-            fail(e.getMessage());
-        }
+        rootCol = null;
+        testCol = null;
     }
 
     /**
@@ -171,9 +159,7 @@ public abstract class ConcurrentTestBase extends TestCase {
             this.delayBeforeStart = delayBeforeStart;
         }
 
-        /* (non-Javadoc)
-         * @see java.lang.Thread#run()
-         */
+        @Override
         public void run() {
             if (delayBeforeStart > 0) {
                 synchronized (this) {

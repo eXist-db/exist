@@ -2,16 +2,12 @@ package org.exist.dom.persistent;
 
 import org.exist.EXistException;
 import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.persistent.DocumentImpl;
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.util.Properties;
 
 import javax.xml.transform.OutputKeys;
 
-import org.custommonkey.xmlunit.XMLTestCase;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.security.PermissionDeniedException;
@@ -24,15 +20,16 @@ import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.*;
 import org.exist.xmldb.XmldbURI;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
-import org.w3c.dom.Attr;
 import org.w3c.dom.DocumentType;
-import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests basic DOM methods like getChildNodes(), getAttribute() ...
@@ -40,11 +37,7 @@ import org.xml.sax.SAXException;
  * @author wolf
  *
  */
-public class DocTypeTest extends XMLTestCase {
-
-	public static void main(String[] args) {
-		junit.textui.TestRunner.run(DocTypeTest.class);
-	}
+public class DocTypeTest {
 
 	public final static Properties OUTPUT_PROPERTIES = new Properties();
     static {
@@ -69,7 +62,7 @@ public class DocTypeTest extends XMLTestCase {
 	private Collection root = null;
 
     @Test
-	public void testDocType_usingInputSource() throws Exception{
+	public void docType_usingInputSource() throws Exception{
 		DocumentImpl doc = null;
 		final TransactionManager transact = pool.getTransactionManager();
 
@@ -112,7 +105,7 @@ public class DocTypeTest extends XMLTestCase {
 	}
 
     @Test
-	public void testDocType_usingString() throws Exception{
+	public void docType_usingString() throws Exception{
 		DocumentImpl doc = null;
 		try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
 
@@ -141,8 +134,8 @@ public class DocTypeTest extends XMLTestCase {
 	}
     
     
-	@Override
-    protected void setUp() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException, DatabaseConfigurationException {
+	@Before
+    public void setUp() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException, DatabaseConfigurationException {
         pool = startDB();
         final TransactionManager transact = pool.getTransactionManager();
 
@@ -175,8 +168,8 @@ public class DocTypeTest extends XMLTestCase {
 
     }
 
-    @Override
-    protected void tearDown() throws PermissionDeniedException, IOException, TriggerException, EXistException {
+    @After
+    public void tearDown() throws PermissionDeniedException, IOException, TriggerException, EXistException {
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
             final Txn transaction = transact.beginTransaction()) {

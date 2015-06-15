@@ -21,19 +21,23 @@
  */
 package org.exist.storage;
 
+import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 
-import junit.framework.TestCase;
-import junit.textui.TestRunner;
-
+import org.exist.EXistException;
+import org.exist.storage.btree.BTreeException;
 import org.exist.storage.btree.Value;
 import org.exist.storage.index.BFile;
 import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
+import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.FixedByteArray;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -41,15 +45,12 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * @author wolf
  *
  */
-public class BFileRecoverTest extends TestCase {
+public class BFileRecoverTest {
 
-    public static void main(String[] args) {
-        TestRunner.run(BFileRecoverTest.class);
-    }
-    
     private BrokerPool pool;
-    
-    public void testAdd() {
+
+    @Test
+    public void add() throws EXistException, IOException, BTreeException {
         TransactionManager mgr = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
             broker.flush();
@@ -77,16 +78,13 @@ public class BFileRecoverTest extends TestCase {
             
             Writer writer = new StringWriter();
             collectionsDb.dump(writer);
-        } catch (Exception e) {
-            fail(e.getMessage());            
         }
     }
-    
-    public void testRead() {
+
+    @Test
+    public void read() throws EXistException, IOException, BTreeException {
         BrokerPool.FORCE_CORRUPTION = false;
-        DBBroker broker = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
             BFile collectionsDb = (BFile)((NativeBroker)broker).getStorage(NativeBroker.COLLECTIONS_DBX_ID);
             Writer writer = new StringWriter();
             collectionsDb.dump(writer);
@@ -96,24 +94,18 @@ public class BFileRecoverTest extends TestCase {
                 byte[] data = key.getBytes(UTF_8);
                 Value value = collectionsDb.get(new Value(data));
             }
-        } catch (Exception e) {            
-            fail(e.getMessage());            
-        } finally {
-            pool.release(broker);
-        }
-    }
-    
-    protected void setUp() {
-        try {
-            Configuration config = new Configuration();
-            BrokerPool.configure(1, 5, config);
-            pool = BrokerPool.getInstance();
-        } catch (Exception e) {            
-            fail(e.getMessage());
         }
     }
 
-    protected void tearDown() {
+    @Before
+    public void setUp() throws DatabaseConfigurationException, EXistException {
+        Configuration config = new Configuration();
+        BrokerPool.configure(1, 5, config);
+        pool = BrokerPool.getInstance();
+    }
+
+    @After
+    public void tearDown() {
         BrokerPool.stopAll(false);
     }
 
