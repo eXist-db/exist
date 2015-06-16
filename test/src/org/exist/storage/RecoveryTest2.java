@@ -22,15 +22,16 @@
 package org.exist.storage;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 
-import junit.framework.TestCase;
-import junit.textui.TestRunner;
-
+import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.persistent.DocumentImpl;
+import org.exist.security.PermissionDeniedException;
+import org.exist.storage.btree.BTreeException;
 import org.exist.storage.dom.DOMFile;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
@@ -38,8 +39,15 @@ import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.test.TestConstants;
 import org.exist.util.Configuration;
+import org.exist.util.DatabaseConfigurationException;
+import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
+import org.junit.After;
+import org.junit.Test;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Test recovery after a forced database corruption.
@@ -47,11 +55,7 @@ import org.xml.sax.InputSource;
  * @author wolf
  *
  */
-public class RecoveryTest2 extends TestCase {
-    
-    public static void main(String[] args) {
-        TestRunner.run(RecoveryTest2.class);
-    }
+public class RecoveryTest2 {
     
     private static String xmlDir = "/home/wolf/xml/Saami";
     
@@ -62,8 +66,9 @@ public class RecoveryTest2 extends TestCase {
         "  <title>Hello</title>" +
         "  <para>Hello World!</para>" +
         "</test>";
-    
-    public void testStore() {
+
+    @Test
+    public void store() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, SAXException, BTreeException, LockException {
         BrokerPool.FORCE_CORRUPTION = true;
         final BrokerPool pool = startDB();
         final TransactionManager transact = pool.getTransactionManager();
@@ -72,49 +77,44 @@ public class RecoveryTest2 extends TestCase {
                 final Txn transaction = transact.beginTransaction();) {
 
             Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
-            assertNotNull(root); 
+            assertNotNull(root);
             broker.saveCollection(transaction, root);
-            
+
             Collection test2 = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI2);
-            assertNotNull(test2); 
+            assertNotNull(test2);
             broker.saveCollection(transaction, test2);
 
-            DOMFile domDb = ((NativeBroker)broker).getDOMFile();
-            assertNotNull(domDb); 
+            DOMFile domDb = ((NativeBroker) broker).getDOMFile();
+            assertNotNull(domDb);
             Writer writer = new StringWriter();
             domDb.dump(writer);
 
             File f;
             IndexInfo info;
-            
+
             // store some documents. Will be replaced below
             File dir = new File(xmlDir);
-            assertNotNull(dir); 
+            assertNotNull(dir);
             File[] docs = dir.listFiles();
-            assertNotNull(docs); 
+            assertNotNull(docs);
             for (int i = 0; i < docs.length; i++) {
                 f = docs[i];
-                assertNotNull(f); 
+                assertNotNull(f);
                 info = test2.validateXMLResource(transaction, broker, XmldbURI.create(f.getName()), new InputSource(f.toURI().toASCIIString()));
-                assertNotNull(info); 
+                assertNotNull(info);
                 test2.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
             }
-            
-            transact.commit(transaction);
 
-	    } catch (Exception e) {            
-	        fail(e.getMessage());          
+            transact.commit(transaction);
         }
     }
-    
-    public void testRead() {
+
+    @Test
+    public void read() throws EXistException, DatabaseConfigurationException, PermissionDeniedException, SAXException {
         BrokerPool.FORCE_CORRUPTION = false;
-        BrokerPool pool = null;
-        DBBroker broker = null;
-        try {
-        	pool = startDB();
-        	assertNotNull(pool);
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        BrokerPool pool = startDB();
+
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
             assertNotNull(broker);
             Serializer serializer = broker.getSerializer();
             serializer.reset();
@@ -124,25 +124,17 @@ public class RecoveryTest2 extends TestCase {
             String data = serializer.serialize(doc);
             assertNotNull(data);
             doc.getUpdateLock().release(Lock.READ_LOCK);
-	    } catch (Exception e) {            
-	        fail(e.getMessage()); 
-	    } finally {
-	    	if (pool != null) pool.release(broker);
-        }    
+        }
     }
     
-    protected BrokerPool startDB() {
-        try {
-            Configuration config = new Configuration();
-            BrokerPool.configure(1, 5, config);
-            return BrokerPool.getInstance();
-        } catch (Exception e) {            
-            fail(e.getMessage());
-        }
-        return null;
+    protected BrokerPool startDB() throws EXistException, DatabaseConfigurationException {
+        Configuration config = new Configuration();
+        BrokerPool.configure(1, 5, config);
+        return BrokerPool.getInstance();
     }
 
-    protected void tearDown() {
+    @After
+    public void tearDown() {
         BrokerPool.stopAll(false);
     }
 }

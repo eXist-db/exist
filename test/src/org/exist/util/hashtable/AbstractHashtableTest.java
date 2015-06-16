@@ -1,6 +1,10 @@
 package org.exist.util.hashtable;
 
+import org.junit.Test;
+
 import java.util.Iterator;
+
+import static org.junit.Assert.*;
 
 public abstract class AbstractHashtableTest<T, K, V> extends
 		AbstractHashSetTest<T, K> {
@@ -29,22 +33,26 @@ public abstract class AbstractHashtableTest<T, K, V> extends
 				valEquiv(simpleGet(k)));
 	}
 
-	public void testZeroValues() throws Exception {
+	@Test
+	public void zeroValues() throws Exception {
 		assertFalse("empty collection should have no values",
 				simpleValueIterator().hasNext());
 	}
 
-	public void testGetNothing() throws Exception {
+    @Test
+	public void getNothing() throws Exception {
 		assertNull("empty collection should have no values",
 				simpleGet(keyEquiv(12345)));
 	}
 
-	public void testValuePut() throws Exception {
+    @Test
+	public void valuePut() throws Exception {
 		simplePut(keyEquiv(12345), valEquiv(54321));
 		assertEquals(simpleGet(keyEquiv(12345)), valEquiv(54321));
 	}
 
-	public void testValueMultiplePut() {
+    @Test
+	public void valueMultiplePut() {
 		for (int i = 0; i < 10; i++) {
 			for (int j = 0; j < 10; j++) {
 				simplePut(keyEquiv(i + j), valEquiv(j));

@@ -1,11 +1,17 @@
 package org.exist.util.hashtable;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
 import java.util.Iterator;
 import java.util.Random;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
-public abstract class AbstractHashSetTest<T, K> extends TestCase {
+public abstract class AbstractHashSetTest<T, K> {
 
 	protected T map;
 	protected Random rnd = new Random();
@@ -40,27 +46,32 @@ public abstract class AbstractHashSetTest<T, K> extends TestCase {
 		return false;
 	}
 
-	protected final void setUp() {
+    @Before
+	public final void setUp() {
 		map = newT();
 
 	}
 
-	protected final void tearDown() {
+    @After
+	public final void tearDown() {
 		clearT();
 		map = null;
 	}
 
-	public void testZeroKeys() throws Exception {
+	@Test
+	public void zeroKeys() throws Exception {
 		assertFalse("empty collection should have no keys", simpleKeyIterator()
 				.hasNext());
 	}
 
-	public void testSetPut() throws Exception {
+    @Test
+	public void setPut() throws Exception {
 		simpleAdd(keyEquiv(12345));
 		assertTrue(simpleContainsKey(keyEquiv(12345)));
 	}
 
-	public void testPutAndRemove() throws Exception {
+    @Test
+	public void putAndRemove() throws Exception {
 		for (int i = 0; i < 10; i++) {
 			simpleAdd(keyEquiv(i));
 		}
@@ -79,10 +90,10 @@ public abstract class AbstractHashSetTest<T, K> extends TestCase {
 		for (int i = 0; i < 10; i++) {
 			assertEquals(test[i], i >=5 || (i%2)==1);
 		}
-		
 	}
 
-	public void testPutDuplicates() {
+    @Test
+	public void putDuplicates() {
 		for (int i = 0; i < 10; i++)
 			for (int j = 0; j < 10; j++) {
 				simpleAdd(keyEquiv_newObject(j));
@@ -100,5 +111,4 @@ public abstract class AbstractHashSetTest<T, K> extends TestCase {
 			assertTrue("key " + i + " appeared once", test[i]);
 		}
 	}
-
 }

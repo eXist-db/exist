@@ -33,7 +33,7 @@ public class ReindexTest {
     }
 
     @Test
-    public void runTests() {
+    public void reindexTests() {
         storeDocuments();
         closeDB();
 

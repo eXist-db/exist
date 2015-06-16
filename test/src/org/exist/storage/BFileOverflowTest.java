@@ -21,16 +21,20 @@
  */
 package org.exist.storage;
 
-import junit.framework.TestCase;
-import junit.textui.TestRunner;
-
+import org.exist.EXistException;
 import org.exist.storage.btree.Value;
 import org.exist.storage.index.BFile;
 import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
+import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.FixedByteArray;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.io.IOException;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -38,15 +42,12 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * @author wolf
  *
  */
-public class BFileOverflowTest extends TestCase {
+public class BFileOverflowTest {
 
-    public static void main(String[] args) {
-        TestRunner.run(BFileOverflowTest.class);
-    }
-    
     private BrokerPool pool;
-    
-    public void testAdd() {
+
+    @Test
+    public void add() throws EXistException, IOException {
         TransactionManager mgr = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
 
@@ -85,38 +86,29 @@ public class BFileOverflowTest extends TestCase {
             
             mgr.getJournal().flushToLog(true);
 
-        } catch (Exception e) {
-            fail(e.getMessage());            
         }
     }
-    
-    public void testRead() {
+
+    @Test
+    public void read() throws EXistException {
         BrokerPool.FORCE_CORRUPTION = false;
-        DBBroker broker = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
             BFile collectionsDb = (BFile)((NativeBroker)broker).getStorage(NativeBroker.COLLECTIONS_DBX_ID);
             
             Value key = new Value("test".getBytes());
             Value val = collectionsDb.get(key);
-        } catch (Exception e) {
-            fail(e.getMessage());
-        } finally {
-            pool.release(broker);
-        }
-    }
-    
-    protected void setUp() {
-        try {
-            Configuration config = new Configuration();
-            BrokerPool.configure(1, 5, config);
-            pool = BrokerPool.getInstance();
-        } catch (Exception e) {
-            fail(e.getMessage());
         }
     }
 
-    protected void tearDown() {
+    @Before
+    public void setUp() throws DatabaseConfigurationException, EXistException {
+        Configuration config = new Configuration();
+        BrokerPool.configure(1, 5, config);
+        pool = BrokerPool.getInstance();
+    }
+
+    @After
+    public void tearDown() {
         BrokerPool.stopAll(false);
     }
 

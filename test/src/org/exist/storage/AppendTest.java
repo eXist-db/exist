@@ -21,37 +21,46 @@
  */
 package org.exist.storage;
 
+import org.exist.EXistException;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.persistent.DefaultDocumentSet;
 import org.exist.dom.persistent.MutableDocumentSet;
+import org.exist.security.PermissionDeniedException;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.util.DatabaseConfigurationException;
+import org.exist.util.LockException;
+import org.exist.xquery.XPathException;
 import org.exist.xupdate.Modification;
 import org.exist.xupdate.XUpdateProcessor;
 import org.xml.sax.InputSource;
 import org.junit.Test;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.ParserConfigurationException;
+
 import static org.junit.Assert.fail;
 
+import java.io.IOException;
 import java.io.StringReader;
 
 public class AppendTest extends AbstractUpdateTest {
 
     @Test
-    public void update() {
+    public void update() throws EXistException, DatabaseConfigurationException, LockException, SAXException, PermissionDeniedException, IOException, ParserConfigurationException, XPathException {
         BrokerPool.FORCE_CORRUPTION = true;
-
         final BrokerPool pool = startDB();
-        final TransactionManager mgr = pool.getTransactionManager();
-        
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        final TransactionManager transact = pool.getTransactionManager();
 
-            final IndexInfo info = init(broker, mgr);
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+            final IndexInfo info = init(broker, transact);
             final MutableDocumentSet docs = new DefaultDocumentSet();
             docs.add(info.getDocument());
+
             final XUpdateProcessor proc = new XUpdateProcessor(broker, docs, AccessContext.TEST);
 
-            try(final Txn transaction = mgr.beginTransaction()) {
+			try(final Txn transaction = transact.beginTransaction()) {
 
                 // append some new element to records
                 for (int i = 1; i <= 50; i++) {
@@ -73,12 +82,11 @@ public class AppendTest extends AbstractUpdateTest {
                     proc.reset();
                 }
 
-                mgr.commit(transaction);
+                transact.commit(transaction);
             }
-
-
+            
             // the following transaction will not be committed and thus undone during recovery
-            final Txn transaction = mgr.beginTransaction();
+            final Txn transaction = transact.beginTransaction();
             
             // append new element
             for (int i = 1; i <= 50; i++) {
@@ -94,9 +102,8 @@ public class AppendTest extends AbstractUpdateTest {
                 modifications[0].process(transaction);
                 proc.reset();
             }
+            //DO NOT COMMIT TRANSACTION
             pool.getTransactionManager().getJournal().flushToLog(true);
-        } catch (Exception e) {            
-            fail(e.getMessage());            
         }
     }
 

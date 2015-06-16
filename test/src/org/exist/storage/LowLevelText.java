@@ -1,29 +1,35 @@
 package org.exist.storage;
 
-import junit.framework.TestCase;
-
+import org.exist.EXistException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.xacml.AccessContext;
 import org.exist.source.StringSource;
 import org.exist.util.Configuration;
+import org.exist.util.DatabaseConfigurationException;
 import org.exist.xquery.CompiledXQuery;
+import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
-/** Currently, tests for the {@link org.exist.storage.XQueryPool}
+import java.io.IOException;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
+/**
+ * Currently, tests for the {@link org.exist.storage.XQueryPool}
  * with the {@link StringSource}. 
- * 
- * $Id$ */
-public class LowLevelText extends TestCase {
+ */
+public class LowLevelText {
 
 	private static final String TEST_XQUERY_SOURCE = "/test";
 
-	private static final String MY_TEST_INSTANCE = "my test instance";
+	private static final String MY_TEST_INSTANCE = "exist";
 
-	public static void main(String[] args) {
-		junit.textui.TestRunner.run(LowLevelText.class);
-	}
-
+    private BrokerPool brokerPool;
 	private DBBroker broker;
 
 	private XQueryPool pool;
@@ -32,11 +38,12 @@ public class LowLevelText extends TestCase {
 
 	private CompiledXQuery preCompiledXQuery;
 
-	protected void setUp() throws Exception {
+	@Before
+	public void setUp() throws DatabaseConfigurationException, EXistException, XPathException, PermissionDeniedException, IOException {
 
 		Configuration configuration = new Configuration();
 		BrokerPool.configure(MY_TEST_INSTANCE, 1, 1, configuration);
-		BrokerPool brokerPool = BrokerPool.getInstance(MY_TEST_INSTANCE);
+		brokerPool = BrokerPool.getInstance(MY_TEST_INSTANCE);
 
 		//BUG: need to be released!
 		broker = brokerPool.get(brokerPool.getSecurityManager().getSystemSubject());
@@ -48,31 +55,29 @@ public class LowLevelText extends TestCase {
 		preCompiledXQuery = xquery.compile(context, stringSource);
 	}
 
-//	protected void tearDown() {
-//		try {
-//			BrokerPool.stopAll(false);
-//		} catch (Exception e) {
-//			fail(e.getMessage());
-//		}
-//	}
+	@After
+	public void tearDown() {
+        brokerPool.release(broker);
+		BrokerPool.stopAll(false);
+	}
 
-	/**
-	 * Test method for 'org.exist.storage.XQueryPool.borrowCompiledXQuery(DBBroker, Source)'
-	 */
-	public void testBorrowCompiledXQuery1() {
+	@Test
+	public void borrowCompiledXQuery1() throws PermissionDeniedException {
 		// put the preCompiledXQuery in cache - NOTE: returnCompiledXQuery() is not a good name
 		pool.returnCompiledXQuery(stringSource, preCompiledXQuery);
 		callAndTestBorrowCompiledXQuery(stringSource);
 	}
 
-	public void testBorrowCompiledXQuery2() {
+	@Test
+	public void borrowCompiledXQuery2() throws PermissionDeniedException {
 		pool.returnCompiledXQuery(stringSource, preCompiledXQuery);
 
 		callAndTestBorrowCompiledXQuery(stringSource);
 		callAndTestBorrowCompiledXQuery(stringSource);
 	}
 
-	public void testBorrowCompiledXQuery3() {
+	@Test
+	public void borrowCompiledXQuery3() throws PermissionDeniedException {
 		pool.returnCompiledXQuery(stringSource, preCompiledXQuery);
 
 		callAndTestBorrowCompiledXQuery(stringSource);
@@ -80,54 +85,37 @@ public class LowLevelText extends TestCase {
 		callAndTestBorrowCompiledXQuery(stringSource);
 	}
 
-	/** test with a new StringSource object having same content */
-	public void testBorrowCompiledXQueryNewStringSource() {
-		pool.returnCompiledXQuery(stringSource, preCompiledXQuery);
-		StringSource localStringSource = new StringSource(TEST_XQUERY_SOURCE);
-
-		callAndTestBorrowCompiledXQuery(localStringSource);
-	}
-
-	/** test with a new StringSource object having same content */
-	public void testBorrowCompiledXQueryNewStringSource2() {
+	/**
+	 * test with a new StringSource object having same content
+	 */
+	@Test
+	public void borrowCompiledXQueryNewStringSource() throws PermissionDeniedException {
 		pool.returnCompiledXQuery(stringSource, preCompiledXQuery);
 		StringSource localStringSource = new StringSource(TEST_XQUERY_SOURCE);
 
 		callAndTestBorrowCompiledXQuery(localStringSource);
+	}
+
+	/**
+	 * test with a new StringSource object having same content
+	 */
+	@Test
+	public void borrowCompiledXQueryNewStringSource2() throws PermissionDeniedException {
+		pool.returnCompiledXQuery(stringSource, preCompiledXQuery);
+		StringSource localStringSource = new StringSource(TEST_XQUERY_SOURCE);
+
+		callAndTestBorrowCompiledXQuery(localStringSource);
 		callAndTestBorrowCompiledXQuery(localStringSource);
 	}
-	
-	private void callAndTestBorrowCompiledXQuery(StringSource stringSourceArg) {
-		CompiledXQuery compiledXQuery = null;
-		try {
-			compiledXQuery = pool.borrowCompiledXQuery(broker, stringSourceArg);
-		} catch (PermissionDeniedException e) {
-			e.printStackTrace();
-		}
+
+	private void callAndTestBorrowCompiledXQuery(StringSource stringSourceArg) throws PermissionDeniedException {
+		final CompiledXQuery compiledXQuery = pool.borrowCompiledXQuery(broker, stringSourceArg);
 		assertNotNull(
 				"borrowCompiledXQuery should retrieve something for this stringSource",
 				compiledXQuery);
 		assertEquals(
 				"borrowCompiledXQuery should retrieve the preCompiled XQuery for this stringSource",
 				compiledXQuery, preCompiledXQuery);
+        pool.returnCompiledXQuery(stringSourceArg, compiledXQuery);
 	}
-
 }
-/*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de) and the team.
- *
- *  This library is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Library General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *
- *  This library is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
- *
- *  You should have received a copy of the GNU Library General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA. 
- */

@@ -19,8 +19,6 @@
  */
 package org.exist.xmlrpc;
 
-import junit.framework.TestCase;
-import junit.textui.TestRunner;
 import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
@@ -46,6 +44,10 @@ import java.util.concurrent.Executors;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 /**
  * Test for deadlocks when moving resources from one collection to another. Uses
  * two threads: one stores a document, then moves it to another collection.
@@ -54,22 +56,14 @@ import org.junit.Test;
  * Due to the complex move task, threads will deadlock almost immediately if
  * something's wrong with collection locking.
  */
-public class MoveResourceTest extends TestCase {
-
-    public static void main(String[] args) {
-        TestRunner.run(MoveResourceTest.class);
-    }
+public class MoveResourceTest {
 
     private JettyStart server;
 
     // jetty.port.standalone
-    private final static String URI = "http://localhost:" + System.getProperty("jetty.port") + "/xmlrpc";
+    private final static String URI = "http://localhost:" + System.getProperty("jetty.port", "8088") + "/xmlrpc";
 
-    private final static String REST_URI = "http://localhost:" + System.getProperty("jetty.port");
-
-    public MoveResourceTest(String string) {
-        super(string);
-    }
+    private final static String REST_URI = "http://localhost:" + System.getProperty("jetty.port", "8088");
 
     @Test
     public void testMove() throws InterruptedException, ExecutionException {
@@ -105,12 +99,13 @@ public class MoveResourceTest extends TestCase {
         File f = new File(existDir, "samples/shakespeare/r_and_j.xml");
         assertNotNull(f);
 
-        Reader reader = new BufferedReader(new InputStreamReader(new FileInputStream(f), "UTF-8"));
-        StringBuilder buf = new StringBuilder();
-        char[] ch = new char[1024];
-        int len;
-        while ((len = reader.read(ch)) > 0) {
-            buf.append(ch, 0, len);
+        final StringBuilder buf = new StringBuilder();
+        try(final Reader reader = new BufferedReader(new InputStreamReader(new FileInputStream(f), "UTF-8"))) {
+            char[] ch = new char[1024];
+            int len;
+            while ((len = reader.read(ch)) > 0) {
+                buf.append(ch, 0, len);
+            }
         }
         return buf.toString();
     }
@@ -201,20 +196,20 @@ public class MoveResourceTest extends TestCase {
         }
 
         private String readResponse(final InputStream is) throws IOException {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
-            String line;
-            StringBuilder out = new StringBuilder();
-            while ((line = reader.readLine()) != null) {
-                out.append(line);
-                out.append("\r\n");
+            final StringBuilder out = new StringBuilder();
+            try(final BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    out.append(line);
+                    out.append("\r\n");
+                }
             }
             return out.toString();
         }
     }
 
     @Before
-    @Override
-    protected void setUp() {
+    public void setUp() {
         //Don't worry about closing the server : the shutdownDB hook will do the job
         if (server == null) {
             server = new JettyStart();

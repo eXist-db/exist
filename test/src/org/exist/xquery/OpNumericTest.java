@@ -1,56 +1,52 @@
 package org.exist.xquery;
 
+import org.exist.EXistException;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.*;
 import org.exist.util.Configuration;
+import org.exist.util.DatabaseConfigurationException;
 import org.exist.xquery.value.*;
+import org.junit.*;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
 
-public class OpNumericTest extends TestCase {
-	
-	private XQueryContext context;
-	private DayTimeDurationValue dtDuration;
-	private YearMonthDurationValue ymDuration;
-	private DateTimeValue dateTime;
-	private DateValue date;
-	private TimeValue time;
-	private IntegerValue integer;
-	private DecimalValue decimal;
-	private DBBroker broker;
-    
-	protected void setUp() {
-		try {
-			super.setUp();
-	        Configuration config = new Configuration();
-	        BrokerPool.configure(1, 5, config);
-	        
-	        BrokerPool pool = BrokerPool.getInstance();
-	
-	        broker = pool.get(pool.getSecurityManager().getSystemSubject());
-			context = new XQueryContext(broker.getBrokerPool(), AccessContext.TEST);
-			
-			dtDuration = new DayTimeDurationValue("P1D");
-			ymDuration = new YearMonthDurationValue("P1Y");
-			dateTime = new DateTimeValue("2005-06-02T16:28:00Z");
-			date = new DateValue("2005-06-02");
-			time = new TimeValue("16:28:00Z");
-			integer = new IntegerValue(2);
-			decimal = new DecimalValue("1.5");
-		} catch (Exception e) {
-			fail(e.getMessage());
-		}			
+public class OpNumericTest {
+
+    private static DBBroker broker;
+	private static XQueryContext context;
+	private static DayTimeDurationValue dtDuration;
+	private static YearMonthDurationValue ymDuration;
+	private static DateTimeValue dateTime;
+	private static DateValue date;
+	private static TimeValue time;
+	private static IntegerValue integer;
+	private static DecimalValue decimal;
+
+	@BeforeClass
+	public static void setUp() throws DatabaseConfigurationException, EXistException, XPathException {
+		Configuration config = new Configuration();
+		BrokerPool.configure(1, 5, config);
+
+		BrokerPool pool = BrokerPool.getInstance();
+
+		broker = pool.get(pool.getSecurityManager().getSystemSubject());
+		context = new XQueryContext(broker.getBrokerPool(), AccessContext.TEST);
+
+		dtDuration = new DayTimeDurationValue("P1D");
+		ymDuration = new YearMonthDurationValue("P1Y");
+		dateTime = new DateTimeValue("2005-06-02T16:28:00Z");
+		date = new DateValue("2005-06-02");
+		time = new TimeValue("16:28:00Z");
+		integer = new IntegerValue(2);
+		decimal = new DecimalValue("1.5");
 	}
-	
-    protected void tearDown() {
-    	try {
-	        BrokerPool.getInstance().release(broker);
-	        BrokerPool.stopAll(false);
-            broker = null;
-            context = null;
-		} catch (Exception e) {
-			fail(e.getMessage());
-		}	        
+
+    @AfterClass
+    public static void tearDown() throws EXistException {
+        BrokerPool.getInstance().release(broker);
+        BrokerPool.stopAll(false);
+        broker = null;
+        context = null;
     }
     
 	private OpNumeric buildOp(int op, AtomicValue a, AtomicValue b) {
@@ -61,135 +57,203 @@ public class OpNumericTest extends TestCase {
 				op);
 	}
 	
-	private void assertOp(String result, int op, AtomicValue a, AtomicValue b) {
-		try {
-			Sequence r = buildOp(op, a, b).eval(Sequence.EMPTY_SEQUENCE);
-			assertEquals(result, r.itemAt(0).getStringValue());
-		} catch (Exception e) {
-			fail(e.getMessage());
-		}			
+	private void assertOp(String result, int op, AtomicValue a, AtomicValue b) throws XPathException {
+        Sequence r = buildOp(op, a, b).eval(Sequence.EMPTY_SEQUENCE);
+        assertEquals(result, r.itemAt(0).getStringValue());
 	}
 
-	public void test_idiv1() {
-		try {
-			assertOp("2", Constants.IDIV, new IntegerValue(3), new DecimalValue("1.5"));
-		} catch (Exception e) {
-			fail(e.getMessage());
-		}
+    @Test
+	public void idiv1() throws XPathException {
+        assertOp("2", Constants.IDIV, new IntegerValue(3), new DecimalValue("1.5"));
 	}
-	
-	public void test_idiv2() {
+
+    @Test
+	public void idiv2() throws XPathException {
 		assertOp("2", Constants.IDIV, new IntegerValue(4), new IntegerValue(2));
 	}
-	public void test_idiv3() {
+
+    @Test
+	public void idiv3() throws XPathException {
 		assertOp("2", Constants.IDIV, new IntegerValue(5), new IntegerValue(2));
 	}
-	public void test_idivReturnType1() {
+
+    @Test
+	public void idivReturnType1() {
 		assertEquals(Type.INTEGER, buildOp(Constants.IDIV, integer, integer).returnsType());
 	}
-	public void test_idivReturnType2() {
+
+    @Test
+	public void idivReturnType2() {
 		assertEquals(Type.INTEGER, buildOp(Constants.IDIV, integer, decimal).returnsType());
 	}
-	public void test_idivReturnType3() {
+
+    @Test
+	public void idivReturnType3() {
 		assertEquals(Type.INTEGER, buildOp(Constants.IDIV, decimal, integer).returnsType());
 	}
-	public void test_divReturnType1() {
+
+    @Test
+	public void divReturnType1() {
 		assertEquals(Type.DECIMAL, buildOp(Constants.DIV, integer, integer).returnsType());
 	}
-	public void test_divReturnType2() {
+
+    @Test
+	public void divReturnType2() {
 		assertEquals(Type.DECIMAL, buildOp(Constants.DIV, integer, decimal).returnsType());
 	}
-	public void test_divReturnType3() {
+
+    @Test
+	public void divReturnType3() {
 		assertEquals(Type.DECIMAL, buildOp(Constants.DIV, decimal, integer).returnsType());
 	}
-	public void test_divReturnType4() {
+
+    @Test
+	public void divReturnType4() {
 		assertEquals(Type.DAY_TIME_DURATION, buildOp(Constants.DIV, dtDuration, integer).returnsType());
 	}
-	public void test_divReturnType5() {
+
+    @Test
+	public void divReturnType5() {
 		assertEquals(Type.YEAR_MONTH_DURATION, buildOp(Constants.DIV, ymDuration, integer).returnsType());
 	}
-	public void test_divReturnType6() {
+
+    @Test
+	public void divReturnType6() {
 		assertEquals(Type.DECIMAL, buildOp(Constants.DIV, dtDuration, dtDuration).returnsType());
 	}
-	public void test_divReturnType7() {
+
+    @Test
+	public void divReturnType7() {
 		assertEquals(Type.DECIMAL, buildOp(Constants.DIV, ymDuration, ymDuration).returnsType());
 	}
-	public void test_multReturnType1() {
+
+    @Test
+	public void multReturnType1() {
 		assertEquals(Type.DAY_TIME_DURATION, buildOp(Constants.MULT, dtDuration, integer).returnsType());
 	}
-	public void test_multReturnType2() {
+
+    @Test
+	public void multReturnType2() {
 		assertEquals(Type.DAY_TIME_DURATION, buildOp(Constants.MULT, integer, dtDuration).returnsType());
 	}
-	public void test_multReturnType3() {
+
+    @Test
+	public void multReturnType3() {
 		assertEquals(Type.YEAR_MONTH_DURATION, buildOp(Constants.MULT, ymDuration, integer).returnsType());
 	}
-	public void test_multReturnType4() {
-		assertEquals(Type.YEAR_MONTH_DURATION, buildOp(Constants.MULT, integer, ymDuration).returnsType());
-	}
-	public void test_plusReturnType1() {
+
+    @Test
+	public void multReturnType4() {
+        assertEquals(Type.YEAR_MONTH_DURATION, buildOp(Constants.MULT, integer, ymDuration).returnsType());
+    }
+
+    @Test
+	public void plusReturnType1() {
 		assertEquals(Type.DAY_TIME_DURATION, buildOp(Constants.PLUS, dtDuration, dtDuration).returnsType());
 	}
-	public void test_plusReturnType2() {
+
+    @Test
+	public void plusReturnType2() {
 		assertEquals(Type.YEAR_MONTH_DURATION, buildOp(Constants.PLUS, ymDuration, ymDuration).returnsType());
 	}
-	public void test_plusReturnType3() {
+
+    @Test
+	public void plusReturnType3() {
 		assertEquals(Type.DATE, buildOp(Constants.PLUS, date, dtDuration).returnsType());
 	}
-	public void test_plusReturnType4() {
+
+    @Test
+	public void plusReturnType4() {
 		assertEquals(Type.DATE_TIME, buildOp(Constants.PLUS, dateTime, dtDuration).returnsType());
 	}
-	public void test_plusReturnType5() {
+
+    @Test
+	public void plusReturnType5() {
 		assertEquals(Type.TIME, buildOp(Constants.PLUS, time, dtDuration).returnsType());
 	}
-	public void test_plusReturnType6() {
+
+    @Test
+	public void plusReturnType6() {
 		assertEquals(Type.DATE, buildOp(Constants.PLUS, dtDuration, date).returnsType());
 	}
-	public void test_plusReturnType7() {
+
+    @Test
+	public void plusReturnType7() {
 		assertEquals(Type.DATE_TIME, buildOp(Constants.PLUS, dtDuration, dateTime).returnsType());
 	}
-	public void test_plusReturnType8() {
+
+    @Test
+	public void plusReturnType8() {
 		assertEquals(Type.TIME, buildOp(Constants.PLUS, dtDuration, time).returnsType());
 	}
-	public void test_plusReturnType9() {
+
+    @Test
+	public void plusReturnType9() {
 		assertEquals(Type.DATE, buildOp(Constants.PLUS, date, ymDuration).returnsType());
 	}
-	public void test_plusReturnType10() {
+
+    @Test
+	public void plusReturnType10() {
 		assertEquals(Type.DATE_TIME, buildOp(Constants.PLUS, dateTime, ymDuration).returnsType());
 	}
-	public void test_plusReturnType11() {
+
+    @Test
+	public void plusReturnType11() {
 		assertEquals(Type.DATE, buildOp(Constants.PLUS, ymDuration, date).returnsType());
 	}
-	public void test_plusReturnType12() {
+
+    @Test
+	public void plusReturnType12() {
 		assertEquals(Type.DATE_TIME, buildOp(Constants.PLUS, ymDuration, dateTime).returnsType());
 	}
-	public void test_minusReturnType1() {
+
+    @Test
+	public void minusReturnType1() {
 		assertEquals(Type.DAY_TIME_DURATION, buildOp(Constants.MINUS, dtDuration, dtDuration).returnsType());
 	}
-	public void test_minusReturnType2() {
+
+    @Test
+	public void minusReturnType2() {
 		assertEquals(Type.YEAR_MONTH_DURATION, buildOp(Constants.MINUS, ymDuration, ymDuration).returnsType());
 	}
-	public void test_minusReturnType3() {
+
+    @Test
+	public void minusReturnType3() {
 		assertEquals(Type.DAY_TIME_DURATION, buildOp(Constants.MINUS, dateTime, dateTime).returnsType());
 	}
-	public void test_minusReturnType4() {
+
+    @Test
+	public void minusReturnType4() {
 		assertEquals(Type.DAY_TIME_DURATION, buildOp(Constants.MINUS, date, date).returnsType());
 	}
-	public void test_minusReturnType5() {
+
+    @Test
+	public void minusReturnType5() {
 		assertEquals(Type.DAY_TIME_DURATION, buildOp(Constants.MINUS, time, time).returnsType());
 	}
-	public void test_minusReturnType6() {
+
+    @Test
+	public void minusReturnType6() {
 		assertEquals(Type.DATE_TIME, buildOp(Constants.MINUS, dateTime, ymDuration).returnsType());
 	}
-	public void test_minusReturnType7() {
+
+    @Test
+	public void minusReturnType7() {
 		assertEquals(Type.DATE_TIME, buildOp(Constants.MINUS, dateTime, dtDuration).returnsType());
 	}
-	public void test_minusReturnType8() {
+
+    @Test
+	public void minusReturnType8() {
 		assertEquals(Type.DATE, buildOp(Constants.MINUS, date, ymDuration).returnsType());
 	}
-	public void test_minusReturnType9() {
+
+    @Test
+	public void minusReturnType9() {
 		assertEquals(Type.DATE, buildOp(Constants.MINUS, date, dtDuration).returnsType());
 	}
-	public void test_minusReturnType10() {
+
+    @Test
+	public void minusReturnType10() {
 		assertEquals(Type.TIME, buildOp(Constants.MINUS, time, dtDuration).returnsType());
 	}
 }
