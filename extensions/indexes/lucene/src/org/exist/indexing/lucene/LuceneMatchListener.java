@@ -212,9 +212,7 @@ public class LuceneMatchListener extends AbstractMatchListener {
         LOG.debug("Analyzer: " + analyzer + " for path: " + path);
         String str = extractor.getText().toString();
         //Token token;
-        try {
-
-            TokenStream tokenStream = analyzer.tokenStream(null, new StringReader(str));
+        try (TokenStream tokenStream = analyzer.tokenStream(null, new StringReader(str))) {
             tokenStream.reset();
             MarkableTokenFilter stream = new MarkableTokenFilter(tokenStream);
             while (stream.incrementToken()) {
