@@ -189,7 +189,7 @@ public class LuceneUtil {
     }
 
     private static void extractTermsFromPrefix(PrefixQuery query, Map<Object, Query> terms, IndexReader reader, boolean includeFields) throws IOException {
-        extractTerms(query.rewrite(reader), terms, reader, includeFields);
+        extractTermsFromMultiTerm(query, terms, reader, includeFields);
     }
 
     private static void extractTermsFromPhrase(PhraseQuery query, Map<Object, Query> terms, boolean includeFields) {
