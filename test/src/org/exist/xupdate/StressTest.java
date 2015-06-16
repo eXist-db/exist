@@ -23,8 +23,6 @@ package org.exist.xupdate;
 
 import java.util.Random;
 
-import junit.framework.TestCase;
-import junit.textui.TestRunner;
 import org.exist.TestUtils;
 
 import org.exist.xmldb.XmldbURI;

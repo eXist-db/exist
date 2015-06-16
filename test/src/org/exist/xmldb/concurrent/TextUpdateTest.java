@@ -24,6 +24,9 @@ package org.exist.xmldb.concurrent;
 
 import org.exist.xmldb.XmldbURI;
 import org.exist.xmldb.concurrent.action.TextUpdateAction;
+import org.junit.After;
+import org.junit.Before;
+import org.xmldb.api.base.XMLDBException;
 
 /**
  * @author wolf
@@ -35,22 +38,21 @@ public class TextUpdateTest extends ConcurrentTestBase {
 	private final static String XML =
 		"<article/>";
 	
-	public static void main(String[] args) {
-		junit.textui.TestRunner.run(TextUpdateTest.class);
+	public TextUpdateTest() {
+		super(URI, "C1");
 	}
-	
-	public TextUpdateTest(String name) {
-		super(name, URI, "C1");
+
+	@Before
+	@Override
+	public void setUp() throws Exception {
+        super.setUp();
+        DBUtils.addXMLResource(getTestCollection(), "R1.xml", XML);
+        addAction(new TextUpdateAction(URI + "/C1", "R1.xml"), 1000, 0, 0);
 	}
-	
-	protected void setUp() {
-		try {
-			super.setUp();			
-			DBUtils.addXMLResource(getTestCollection(), "R1.xml", XML);	        
-			addAction(new TextUpdateAction(URI + "/C1", "R1.xml"), 1000, 0, 0);
-		} catch (Exception e) {            
-            fail(e.getMessage()); 
-        }				
-	}
-		
+
+    @After
+    @Override
+    public void tearDown() throws XMLDBException {
+        super.tearDown();
+    }
 }

@@ -21,36 +21,42 @@
  */
 package org.exist.storage;
 
-import junit.textui.TestRunner;
+import org.exist.EXistException;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.persistent.DefaultDocumentSet;
 import org.exist.dom.persistent.MutableDocumentSet;
+import org.exist.security.PermissionDeniedException;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.util.DatabaseConfigurationException;
+import org.exist.util.LockException;
+import org.exist.xquery.XPathException;
 import org.exist.xupdate.Modification;
 import org.exist.xupdate.XUpdateProcessor;
 import org.junit.Test;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
 import java.io.StringReader;
 
 public class UpdateAttributeTest extends AbstractUpdateTest {
     
     @Test
-    public void update() {
+    public void update() throws EXistException, DatabaseConfigurationException, LockException, SAXException, PermissionDeniedException, IOException, ParserConfigurationException, XPathException {
         BrokerPool.FORCE_CORRUPTION = true;
         final BrokerPool pool = startDB();
         final TransactionManager mgr = pool.getTransactionManager();
 
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
-            IndexInfo info = init(broker, mgr);
+            final IndexInfo info = init(broker, mgr);
             assertNotNull(info);
-            MutableDocumentSet docs = new DefaultDocumentSet();
+            final MutableDocumentSet docs = new DefaultDocumentSet();
             docs.add(info.getDocument());
-            XUpdateProcessor proc = new XUpdateProcessor(broker, docs, AccessContext.TEST);
+            final XUpdateProcessor proc = new XUpdateProcessor(broker, docs, AccessContext.TEST);
             assertNotNull(proc);
             
             try(final Txn transaction = mgr.beginTransaction()) {
@@ -97,10 +103,8 @@ public class UpdateAttributeTest extends AbstractUpdateTest {
                 proc.reset();
             }
            
-            //Don't commit
+//DO NOT COMMIT TRANSACTION
             pool.getTransactionManager().getJournal().flushToLog(true);
-        } catch (Exception e) {
-            fail(e.getMessage());             
         }
     }
 }

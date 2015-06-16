@@ -118,7 +118,7 @@ public class TestRunnerMain {
 				} else {
 					xqs.declareVariable("id", Sequence.EMPTY_SEQUENCE);
 				}
-				
+
 				ResourceSet result = xqs.execute(query);
 				XMLResource resource = (XMLResource) result.getResource(0);
                 results.append(resource.getContent()).append('\n');

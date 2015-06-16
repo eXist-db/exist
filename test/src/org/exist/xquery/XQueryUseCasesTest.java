@@ -22,27 +22,18 @@
  */
 package org.exist.xquery;
 
-import junit.framework.TestCase;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
-public class XQueryUseCasesTest extends TestCase {
-
-	public static void main(String[] args) {
-		junit.textui.TestRunner.run(XQueryUseCasesTest.class);
-	}
+public class XQueryUseCasesTest {
 
 	protected XQueryUseCase useCase = new XQueryUseCase();
 
-	public XQueryUseCasesTest(String name) {
-		super(name);
-	}
-	
-	/*
-	 * @see TestCase#setUp()
-	 */
-	protected void setUp() throws Exception {
+	@Before
+	public void setUp() throws Exception {
 		useCase.setUp();
 	}
 
@@ -50,34 +41,41 @@ public class XQueryUseCasesTest extends TestCase {
 //	public void testXMP() throws Exception {
 //		useCase.doTest("xmp");
 //	}
-	
-	public void testSGML() throws Exception {
+
+	@Test
+	public void sgml() throws Exception {
 		useCase.doTest("sgml");
 	}
-	
-	public void testTREE() throws Exception {
+
+	@Test
+	public void tree() throws Exception {
 		useCase.doTest("tree");
 	}
-	
-	public void testParts() throws Exception {
+
+	@Test
+	public void parts() throws Exception {
 		useCase.doTest("parts");
 	}
-	
-	public void testString() throws Exception {
+
+	@Test
+	public void string() throws Exception {
 		useCase.doTest("string");
 	}
-	
-	public void testNS() throws Exception {
+
+	@Test
+	public void ns() throws Exception {
 		useCase.doTest("ns");
 	}
-	
-	public void testSeq() throws Exception {
+
+	@Test
+	public void seq() throws Exception {
 		useCase.doTest("seq");
 	}
 
 	// jmv: to activate when implemented
 	// org.xmldb.api.base.XMLDBException: Cannot query constructed nodes.
-//	public void testR() throws Exception {
+//	@Test
+//	public void r() throws Exception {
 //		useCase.doTest("r");
 //	}
 }

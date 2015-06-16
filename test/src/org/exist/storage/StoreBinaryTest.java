@@ -1,10 +1,12 @@
 package org.exist.storage;
 
-
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import org.apache.commons.io.FileUtils;
+import org.exist.collections.triggers.TriggerException;
+import org.exist.security.PermissionDeniedException;
+import org.exist.util.LockException;
 import org.junit.BeforeClass;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.EXistException;
@@ -27,29 +29,23 @@ public class StoreBinaryTest {
 
     @BeforeClass
     public static void ensureCleanDatabase() throws IOException {
-        File home = ConfigurationHelper.getExistHome();
-        File data = new File(home, "webapp/WEB-INF/data");
+        final File home = ConfigurationHelper.getExistHome();
+        final File data = new File(home, "webapp/WEB-INF/data");
 
-        File dataFiles[] = data.listFiles(new FilenameFilter(){
+        final File[] dataFiles = data.listFiles(new FilenameFilter() {
             @Override
-            public boolean accept(File file, String name) {
-                return name.endsWith(".dbx") || name.endsWith(".journal") || name.endsWith(".log");
+            public boolean accept(final File dir, final String name) {
+                return !(name.equals("RECOVERY") || name.equals("README") || name.equals(".DO_NOT_DELETE"));
             }
         });
-        for(File dataFile : dataFiles){
-            dataFile.delete();
-        }
 
-        for(String subFolderName : new String[]{"journal", "fs", "sanity", "lucene"} ) {
-            File subFolder = new File(data, subFolderName);
-            if(subFolder.exists()) {
-                FileUtils.deleteDirectory(subFolder);
-            }
+        for(final File dataFile : dataFiles) {
+            FileUtils.deleteQuietly(dataFile);
         }
     }
 
     @Test
-    public void check_MimeType_is_preserved() throws EXistException, InterruptedException {
+    public void check_MimeType_is_preserved() throws EXistException, InterruptedException, PermissionDeniedException, LockException, IOException, TriggerException {
 
         final String xqueryMimeType = "application/xquery";
         final String xqueryFilename = "script.xql";
@@ -88,7 +84,7 @@ public class StoreBinaryTest {
         return database;
     }
 
-    private void stopDatabase(Main database) {
+    private void stopDatabase(final Main database) {
         try {
             database.shutdown();
         } catch (Exception e) {
@@ -97,32 +93,24 @@ public class StoreBinaryTest {
         }
     }
 
-    private BinaryDocument getBinary(XmldbURI uri) throws EXistException {
+    private BinaryDocument getBinary(final XmldbURI uri) throws EXistException, PermissionDeniedException {
         BinaryDocument binaryDoc = null;
-        Database pool = BrokerPool.getInstance();;
+        final Database pool = BrokerPool.getInstance();
 
-        DBBroker broker = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());) {
             assertNotNull(broker);
 
-            Collection root = broker.getCollection(TestConstants.TEST_COLLECTION_URI);
+            final Collection root = broker.getCollection(TestConstants.TEST_COLLECTION_URI);
             assertNotNull(root);
 
             binaryDoc = (BinaryDocument)root.getDocument(broker, uri);
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } finally {
-            pool.release(broker);
         }
 
         return binaryDoc;
     }
 
-    private BinaryDocument storeBinary(String name,  String data, String mimeType) throws EXistException {
-
+    private BinaryDocument storeBinary(String name,  String data, String mimeType) throws EXistException, PermissionDeniedException, IOException, TriggerException, LockException {
         final Database pool = BrokerPool.getInstance();;
         final TransactionManager transact = pool.getTransactionManager();
 
@@ -130,16 +118,13 @@ public class StoreBinaryTest {
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
                 final Txn transaction = transact.beginTransaction()) {
 
-            Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
+            final Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
     		broker.saveCollection(transaction, root);
             assertNotNull(root);
 
             binaryDoc = root.addBinaryResource(transaction, broker, XmldbURI.create(name), data.getBytes(), mimeType);
 
             transact.commit(transaction);
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
         }
 
         return binaryDoc;

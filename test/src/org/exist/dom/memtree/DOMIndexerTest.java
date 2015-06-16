@@ -140,19 +140,13 @@ public class DOMIndexerTest {
             pool.release(broker);
         }
     }
-    
-    /* (non-Javadoc)
-     * @see junit.framework.TestCase#setUp()
-     */
+
     @Before
     public void setUp() throws DatabaseConfigurationException, EXistException {
         Configuration config = new Configuration();
         BrokerPool.configure(1, 5, config);
     }  
-    
-    /* (non-Javadoc)
-     * @see junit.framework.TestCase#tearDown()
-     */
+
     @After
     public void tearDown() {
         BrokerPool.stopAll(false);

@@ -21,30 +21,25 @@
  */
 package org.exist.util.hashtable;
 
+import org.junit.Test;
+
 import java.util.Iterator;
 import java.util.Random;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.*;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
-public class HashtableTest extends TestCase {
+public class HashtableTest {
 
     private int tabSize = 100000;
 	private String values[] = new String[tabSize];
 
-	public static void main(String[] args) {
-		junit.textui.TestRunner.run(HashtableTest.class);
-	}
-
-	public HashtableTest(String testname) {
-		super(testname);
-	}
-	
-	public void testPut() {
+	@Test
+	public void put() {
 		int keys[] = new int[tabSize];
-		Int2ObjectHashMap<String> table = new Int2ObjectHashMap<String>(tabSize);
+		Int2ObjectHashMap<String> table = new Int2ObjectHashMap<>(tabSize);
 		Random rand = new Random(System.currentTimeMillis());
 		for(int i = 0; i < tabSize; i++) {
 			do {
@@ -82,10 +77,11 @@ public class HashtableTest extends TestCase {
 		assertEquals(table.size(), c);
 	}
 
-    public void testObjectHashMap() {
+	@Test
+    public void objectHashMap() {
         String keys[] = new String[tabSize];
         long values[] = new long[tabSize];
-        Object2LongHashMap<String> table = new Object2LongHashMap<String>(tabSize / 4);
+        Object2LongHashMap<String> table = new Object2LongHashMap<>(tabSize / 4);
 		Random rand = new Random(System.currentTimeMillis());
 		for(int i = 0; i < tabSize; i++) {
 			do {
@@ -115,9 +111,10 @@ public class HashtableTest extends TestCase {
 		}
     }
 
-    public void testSequencedMap() {
+	@Test
+    public void sequencedMap() {
 		long keys[] = new long[tabSize];
-		SequencedLongHashMap<String> table = new SequencedLongHashMap<String>(tabSize);
+		SequencedLongHashMap<String> table = new SequencedLongHashMap<>(tabSize);
 		Random rand = new Random(System.currentTimeMillis());
 
 		for(int i = 0; i < tabSize; i++) {
@@ -216,11 +213,12 @@ public class HashtableTest extends TestCase {
 		assertFalse("Hashtable should be empty", iter.hasNext());
 		assertTrue(table.size() == 0);
 	}
-    
-    public void testSequencedMap2() {
+
+	@Test
+    public void sequencedMap2() {
         long[] l = { 10, 100, 50, 250, 100, 15, 35, 250, 100, 65, 45, 50, 65, 80, 90, 70, 250, 100 };
         long[] expected = { 15, 35, 45, 50, 65, 80, 90, 70, 250, 100 };
-        SequencedLongHashMap<String> table = new SequencedLongHashMap<String>(tabSize);
+        SequencedLongHashMap<String> table = new SequencedLongHashMap<>(tabSize);
         for (int i = 0; i < l.length; i++) {
             table.put(l[i], "k" + l[i]);
         }
