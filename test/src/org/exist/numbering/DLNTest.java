@@ -21,16 +21,14 @@
  */
 package org.exist.numbering;
 
-import junit.framework.TestCase;
+import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.Random;
 
-public class DLNTest extends TestCase {
+import static org.junit.Assert.*;
 
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(DLNTest.class);
-    }
+public class DLNTest {
 
     private class TestItem implements Comparable<TestItem> {
         int id;
@@ -55,8 +53,9 @@ public class DLNTest extends TestCase {
     }
     
     private final static int ITEMS_TO_TEST = 10000;
-    
-    public void testSingleId() {
+
+    @Test
+    public void singleId() {
         Random rand = new Random();
         TestItem items[] = new TestItem[ITEMS_TO_TEST];
         for (int i = 0; i < ITEMS_TO_TEST; i++) {
@@ -76,8 +75,9 @@ public class DLNTest extends TestCase {
                 assertTrue(items[i].id >= items[i - 1].id);
         }
     }
-    
-    public void testSort() {
+
+    @Test
+    public void sort() {
         Random rand = new Random();
         DLN items[] = new DLN[ITEMS_TO_TEST];
         for (int i = 0; i < ITEMS_TO_TEST; i++) {
@@ -88,16 +88,18 @@ public class DLNTest extends TestCase {
         }
         Arrays.sort(items);
     }
-    
-    public void testCreate() {
+
+    @Test
+    public void create() {
         DLN dln = new DLN();
         for (int i = 1; i < 500000; i++) {
             dln.incrementLevelId();
         }
         assertEquals(500000, dln.getLevelId(0));
     }
-    
-    public void testLevelIds() {
+
+    @Test
+    public void levelIds() {
         DLN dln = new DLN("1.33.56.2.98.1.27");;
         assertEquals("1.33.56.2.98.1.27", dln.toString());
         
@@ -152,8 +154,9 @@ public class DLNTest extends TestCase {
         assertEquals("1.33.56.2.98.1.27", dln.toString());
         assertEquals(7, dln.getLevelCount(0));
     }
-    
-    public void testRelations() {
+
+    @Test
+    public void relations() {
     	DLN root = new DLN("1.3");
     	DLN descendant = new DLN("1.3.1");
 
@@ -240,8 +243,9 @@ public class DLNTest extends TestCase {
         assertTrue(id3.isSiblingOf(id0));
         assertTrue(id0.isSiblingOf(id3));
     }
-    
-    public void testInsertion() {
+
+    @Test
+    public void insertion() {
         DLN left = new DLN("1.1"); 
         DLN right = (DLN) left.insertNode(null);
         assertEquals("1.2", right.toString());

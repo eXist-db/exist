@@ -4,10 +4,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import junit.framework.TestCase;
-import junit.textui.TestRunner;
-
+import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.XmldbURI;
+import org.junit.*;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
@@ -17,179 +16,211 @@ import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XPathQueryService;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
-public class SeqOpTest extends TestCase {
+
+public class SeqOpTest {
 
 	private final static String URI = XmldbURI.LOCAL_DB;
 	private final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
 
-	private XPathQueryService query;
-	private Collection c;
-	
-	public static void main(String[] args) {
-		TestRunner.run(SeqOpTest.class);
-	}
-	
-	public SeqOpTest(String name) {
-		super(name);
-	}
-	
+	private static XPathQueryService query;
+	private static Collection c;
+
+	@Test
 	public void testReverseEmpty() throws XMLDBException {
 		assertSeq(new String[0], "reverse(())");
 	}
-	
+
+    @Test
 	public void testReverseAtomic1() throws XMLDBException {
 		assertSeq(new String[]{"a"}, "reverse(('a'))");
 	}
-	
+
+    @Test
 	public void testReverseAtomic2() throws XMLDBException {
 		assertSeq(new String[]{"b", "a"}, "reverse(('a', 'b'))");
 	}
-	
+
+    @Test
 	public void testReverseNodes1() throws XMLDBException {
 		createDocument("foo", "<top><a/><b/></top>");
 		assertSeq(new String[]{"<a/>"}, "reverse(//a)");
 	}
-	
+
+    @Test
 	public void testReverseNodes2() throws XMLDBException {
 		createDocument("foo", "<top><a/><b/></top>");
 		assertSeq(new String[]{"<b/>", "<a/>"}, "reverse(/top/*)");
 	}
-	
+
+    @Test
 	public void testReverseMixed() throws XMLDBException {
 		createDocument("foo", "<top><a/><b/></top>");
 		assertSeq(new String[]{"c", "<b/>", "<a/>"}, "reverse((/top/*, 'c'))");
 	}
-	
+
+    @Test
 	public void testRemoveEmpty1() throws XMLDBException {
 		assertSeq(new String[0], "remove((), 1)");
 	}
-	
+
+    @Test
 	public void testRemoveEmpty2() throws XMLDBException {
 		assertSeq(new String[0], "remove((), 0)");
 	}
-	
+
+    @Test
 	public void testRemoveEmpty3() throws XMLDBException {
 		assertSeq(new String[0], "remove((), 42)");
 	}
-	
+
+    @Test
 	public void testRemoveOutOfBounds1() throws XMLDBException {
 		assertSeq(new String[]{"a", "b"}, "remove(('a', 'b'), 0)");
 	}
-	
+
+    @Test
 	public void testRemoveOutOfBounds2() throws XMLDBException {
 		assertSeq(new String[]{"a", "b"}, "remove(('a', 'b'), 3)");
 	}
-	
+
+    @Test
 	public void testRemoveOutOfBounds3() throws XMLDBException {
 		assertSeq(new String[]{"a", "b"}, "remove(('a', 'b'), -1)");
 	}
-	
+
+    @Test
 	public void testRemoveAtomic1() throws XMLDBException {
 		assertSeq(new String[]{"b", "c"}, "remove(('a', 'b', 'c'), 1)");
 	}
-	
+
+    @Test
 	public void testRemoveAtomic2() throws XMLDBException {
 		assertSeq(new String[]{"a", "c"}, "remove(('a', 'b', 'c'), 2)");
 	}
-	
+
+    @Test
 	public void testRemoveAtomic3() throws XMLDBException {
 		assertSeq(new String[]{"a", "b"}, "remove(('a', 'b', 'c'), 3)");
 	}
 
+    @Test
 	public void testRemoveMixed1() throws XMLDBException {
 		createDocument("foo", "<top><a/><b/></top>");
 		assertSeq(new String[]{"<b/>", "a", "b", "c"}, "remove((/top/*, 'a', 'b', 'c'), 1)");
 	}
-	
+
+    @Test
 	public void testRemoveMixed2() throws XMLDBException {
 		createDocument("foo", "<top><a/><b/></top>");
 		assertSeq(new String[]{"<a/>", "a", "b", "c"}, "remove((/top/*, 'a', 'b', 'c'), 2)");
 	}
-	
+
+    @Test
 	public void testRemoveMixed3() throws XMLDBException {
 		createDocument("foo", "<top><a/><b/></top>");
 		assertSeq(new String[]{"<a/>", "<b/>", "b", "c"}, "remove((/top/*, 'a', 'b', 'c'), 3)");
 	}
-	
+
+    @Test
 	public void testRemoveNodes1() throws XMLDBException {
 		createDocument("foo", "<top><a/><b/><c/></top>");
 		assertSeq(new String[]{"<b/>", "<c/>"}, "remove(/top/*, 1)");
 	}
-	
+
+    @Test
 	public void testRemoveNodes2() throws XMLDBException {
 		createDocument("foo", "<top><a/><b/><c/></top>");
 		assertSeq(new String[]{"<a/>", "<c/>"}, "remove(/top/*, 2)");
 	}
-	
+
+    @Test
 	public void testRemoveNodes3() throws XMLDBException {
 		createDocument("foo", "<top><a/><b/><c/></top>");
 		assertSeq(new String[]{"<a/>", "<b/>"}, "remove(/top/*, 3)");
 	}
-	
+
+    @Test
 	public void testInsertEmpty1() throws XMLDBException {
 		assertSeq(new String[0], "insert-before((), 1, ())");
 	}
-	
+
+    @Test
 	public void testInsertEmpty2() throws XMLDBException {
 		assertSeq(new String[]{"a"}, "insert-before((), 1, ('a'))");
 	}
-	
+
+    @Test
 	public void testInsertEmpty3() throws XMLDBException {
 		assertSeq(new String[]{"a"}, "insert-before(('a'), 1, ())");
 	}
-	
+
+    @Test
 	public void testInsertOutOfBounds1() throws XMLDBException {
 		assertSeq(new String[]{"c", "d", "a", "b"}, "insert-before(('a', 'b'), 0, ('c', 'd'))");
 	}
-	
+
+    @Test
 	public void testInsertOutOfBounds2() throws XMLDBException {
 		assertSeq(new String[]{"a", "b", "c", "d"}, "insert-before(('a', 'b'), 3, ('c', 'd'))");
 	}
-	
+
+    @Test
 	public void testInsertOutOfBounds3() throws XMLDBException {
 		assertSeq(new String[]{"a", "b", "c", "d"}, "insert-before(('a', 'b'), 4, ('c', 'd'))");
 	}
-	
+
+    @Test
 	public void testInsertAtomic1() throws XMLDBException {
 		assertSeq(new String[]{"a", "c", "d", "b"}, "insert-before(('a', 'b'), 2, ('c', 'd'))");
 	}
-	
+
+    @Test
 	public void testInsertAtomic2() throws XMLDBException {
 		assertSeq(new String[]{"c", "d", "a", "b"}, "insert-before(('a', 'b'), 1, ('c', 'd'))");
 	}
-	
+
+    @Test
 	public void testInsertAtomic3() throws XMLDBException {
 		assertSeq(new String[]{"a", "a", "b", "b"}, "insert-before(('a', 'b'), 2, ('a', 'b'))");
 	}
-	
+
+    @Test
 	public void testInsertNodes1() throws XMLDBException {
 		createDocument("foo", "<top><x><a/><b/></x><y><c/><d/></y></top>");
 		assertSeq(new String[]{"<a/>", "<c/>", "<d/>", "<b/>"}, "insert-before(/top/x/*, 2, /top/y/*)");
 	}
-	
+
+    @Test
 	public void testInsertNodes2() throws XMLDBException {
 		createDocument("foo", "<top><x><a/><b/></x><y><c/><d/></y></top>");
 		assertSeq(new String[]{"<c/>", "<d/>", "<a/>", "<b/>"}, "insert-before(/top/x/*, 1, /top/y/*)");
 	}
 
+    @Test
 	public void testInsertNodes3() throws XMLDBException {
 		createDocument("foo", "<top><x><a/><b/></x><y><c/><d/></y></top>");
 		assertSeq(new String[]{"<a/>", "<b/>", "<c/>", "<d/>"}, "insert-before(/top/x/*, 3, /top/y/*)");
 	}
 
 	// TODO: currently fails because duplicate nodes are removed
+    @Test
 	public void testInsertNodes4() throws XMLDBException {
 		createDocument("foo", "<top><x><a/><b/></x><y><c/><d/></y></top>");
 		assertSeq(new String[]{"<a/>", "<a/>", "<b/>", "<b/>"}, "insert-before(/top/x/*, 2, /top/x/*)");
 	}
 
+    @Test
 	public void testInsertMixed1() throws XMLDBException {
 		createDocument("foo", "<top><x><a/><b/></x><y><c/><d/></y></top>");
 		assertSeq(new String[]{"<a/>", "c", "<b/>"}, "insert-before(/top/x/*, 2, ('c'))");
 	}
 
 	// TODO: currently fails because duplicate nodes are removed
+    @Test
 	public void testInsertMixed2() throws XMLDBException {
 		createDocument("foo", "<top><x><a/><b/></x><y><c/><d/></y></top>");
 		assertSeq(new String[]{"<a/>", "<a/>", "<b/>", "<b/>", "c"}, "insert-before((/top/x/*, 'c'), 2, /top/x/*)");
@@ -199,9 +230,13 @@ public class SeqOpTest extends TestCase {
 		ResourceSet rs = query.query(q);
 		assertEquals(expected.length, rs.getSize());
 		List<String> a = Arrays.asList(expected);
-		List<Object> r = new ArrayList<Object>((int) rs.getSize());
-		for (int i = 0; i < rs.getSize(); i++) r.add(rs.getResource(i).getContent());
-		if (!a.equals(r)) fail("expected " + a + ", got " + r);
+		List<Object> r = new ArrayList<>((int) rs.getSize());
+		for (int i = 0; i < rs.getSize(); i++) {
+            r.add(rs.getResource(i).getContent());
+        }
+		if (!a.equals(r)) {
+            fail("expected " + a + ", got " + r);
+        }
 	}
 	
 	private XMLResource createDocument(String name, String content) throws XMLDBException {
@@ -211,7 +246,7 @@ public class SeqOpTest extends TestCase {
 		return res;
 	}
 
-	private Collection setupTestCollection() throws XMLDBException {
+	private static Collection setupTestCollection() throws XMLDBException {
 		Collection root = DatabaseManager.getCollection(URI, "admin", "");
 		CollectionManagementService rootcms = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
 		Collection c = root.getChildCollection("test");
@@ -222,30 +257,28 @@ public class SeqOpTest extends TestCase {
 		return c;
 	}
 
-	protected void setUp() {
-		try {
-			// initialize driver
-			Database database = (Database) Class.forName(DRIVER).newInstance();
-			database.setProperty("create-database", "true");
-			DatabaseManager.registerDatabase(database);
-			
-			c = setupTestCollection();
-			query = (XPathQueryService) c.getService("XPathQueryService", "1.0");
+    @BeforeClass
+	public static void setUp() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
+        // initialize driver
+        Database database = (Database) Class.forName(DRIVER).newInstance();
+        database.setProperty("create-database", "true");
+        DatabaseManager.registerDatabase(database);
 
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new RuntimeException("failed setup", e);
-		}
+        c = setupTestCollection();
+        query = (XPathQueryService) c.getService("XPathQueryService", "1.0");
 	}
-	
-	protected void tearDown() {
-		try {
-			if (c != null) c.close();
-            c = null;
-            query = null;
-		} catch (XMLDBException e) {
-			throw new RuntimeException("failed teardown", e);
-		}
+
+    @AfterClass
+	public static void tearDown() throws XMLDBException {
+        if (c != null) {
+            DatabaseInstanceManager manager =
+                    (DatabaseInstanceManager) c.getService("DatabaseInstanceManager", "1.0");
+            c.close();
+            manager.shutdown();
+
+        }
+        c = null;
+        query = null;
 	}
 	
 }

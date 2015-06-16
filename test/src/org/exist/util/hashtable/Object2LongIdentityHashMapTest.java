@@ -1,10 +1,14 @@
 package org.exist.util.hashtable;
 
+import org.junit.Test;
+
 import java.util.Iterator;
 
+import static org.junit.Assert.assertEquals;
+
 public class Object2LongIdentityHashMapTest extends AbstractHashtableTest<Object2LongIdentityHashMap, Object, Long> {
-	
-	java.util.HashMap<Integer, Integer> canonicalObject = new java.util.HashMap<Integer, Integer>();
+
+	java.util.HashMap<Integer, Integer> canonicalObject = new java.util.HashMap<>();
 	
 	protected Object2LongIdentityHashMap newT() {
 		return new Object2LongIdentityHashMap();
@@ -64,7 +68,8 @@ public class Object2LongIdentityHashMapTest extends AbstractHashtableTest<Object
 	 * We override this, because the identity hash map specifically behaves differently
 	 * with respect to equality.
 	 */
-	public void testPutDuplicates() {
+	@Test
+	public void putDuplicates() {
 		for (int i = 0; i < 10; i++)
 			for (int j = 0; j < 10; j++) {
 				simpleAdd(keyEquiv_newObject(j));

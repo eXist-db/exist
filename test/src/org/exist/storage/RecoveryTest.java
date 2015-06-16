@@ -21,15 +21,17 @@
  */
 package org.exist.storage;
 
-import java.io.InputStream;
-import java.io.File;
-import java.io.StringWriter;
-import java.io.Writer;
+import java.io.*;
+
+import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
+import org.exist.security.PermissionDeniedException;
 import org.exist.security.xacml.AccessContext;
+import org.exist.storage.btree.BTreeException;
 import org.exist.storage.dom.DOMFile;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
@@ -37,7 +39,10 @@ import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.test.TestConstants;
 import org.exist.util.Configuration;
+import org.exist.util.DatabaseConfigurationException;
+import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
@@ -63,9 +68,9 @@ public class RecoveryTest {
     
     private static File dir = null;
     static {
-      String existHome = System.getProperty("exist.home");
-      File existDir = existHome==null ? new File(".") : new File(existHome);
-      dir = new File(existDir,directory);
+      final String existHome = System.getProperty("exist.home");
+      final File existDir = existHome == null ? new File(".") : new File(existHome);
+      dir = new File(existDir, directory);
     }
     
     private static String TEST_XML =
@@ -76,13 +81,13 @@ public class RecoveryTest {
         "</test>";
 
     @Test
-    public void storeAndRead() {
+    public void storeAndRead() throws PermissionDeniedException, DatabaseConfigurationException, IOException, LockException, SAXException, EXistException, BTreeException, XPathException {
         store();
         tearDown();
         read();
     }
 
-    private void store() {
+    private void store() throws EXistException, DatabaseConfigurationException, PermissionDeniedException, IOException, SAXException, LockException {
         BrokerPool.FORCE_CORRUPTION = true;
         final BrokerPool pool = startDB();
         final TransactionManager transact = pool.getTransactionManager();
@@ -106,39 +111,34 @@ public class RecoveryTest {
                 files = dir.listFiles();
                 assertNotNull(files);
 
-                File f;
-                IndexInfo info;
-
                 doc = test2.addBinaryResource(transaction, broker, TestConstants.TEST_BINARY_URI, "Some text data".getBytes(), null);
                 assertNotNull(doc);
 
                 // store some documents. Will be replaced below
-                for (int i = 0; i < files.length; i++) {
-                    f = files[i];
+	            for(final File f : files) {
                     try {
-                        info = test2.validateXMLResource(transaction, broker, XmldbURI.create(f.getName()), new InputSource(f.toURI().toASCIIString()));
+                        final IndexInfo info = test2.validateXMLResource(transaction, broker, XmldbURI.create(f.getName()), new InputSource(f.toURI().toASCIIString()));
                         assertNotNull(info);
                         test2.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
                     } catch (SAXException e) {
-//                	TODO : why pass invalid couments ?
+//                	    TODO : why pass invalid couments ?
                         System.err.println("Error found while parsing document: " + f.getName() + ": " + e.getMessage());
                     }
                 }
 
                 // replace some documents
-                for (int i = 0; i < files.length; i++) {
-                    f = files[i];
+            for(final File f : files) {
                     try {
-                        info = test2.validateXMLResource(transaction, broker, XmldbURI.create(f.getName()), new InputSource(f.toURI().toASCIIString()));
+                        final IndexInfo info = test2.validateXMLResource(transaction, broker, XmldbURI.create(f.getName()), new InputSource(f.toURI().toASCIIString()));
                         assertNotNull(info);
                         test2.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
                     } catch (SAXException e) {
-//                	TODO : why pass invalid couments ?
+//                	    TODO : why pass invalid documents ?
                         System.err.println("Error found while parsing document: " + f.getName() + ": " + e.getMessage());
                     }
                 }
 
-                info = test2.validateXMLResource(transaction, broker, XmldbURI.create("test_string.xml"), TEST_XML);
+                final IndexInfo info = test2.validateXMLResource(transaction, broker, XmldbURI.create("test_string.xml"), TEST_XML);
                 assertNotNull(info);
                 //TODO : unlock the collection here ?
 
@@ -155,7 +155,7 @@ public class RecoveryTest {
             test2.removeXMLResource(transaction, broker, XmldbURI.create(files[0].getName()));            
             test2.removeBinaryResource(transaction, broker, doc);
             
-//          Don't commit...            
+//DO NOT COMMIT TRANSACTION
             transact.getJournal().flushToLog(true);
 
             //DOMFile domDb = ((NativeBroker)broker).getDOMFile();
@@ -163,13 +163,10 @@ public class RecoveryTest {
             //Writer writer = new StringWriter();
             //domDb.dump(writer);
             //System.out.println(writer.toString());
-	    } catch (Exception e) {            
-	        fail(e.getMessage());
-	        e.printStackTrace();
-        }
+	    }
     }
 
-    private void read() {
+    private void read() throws EXistException, DatabaseConfigurationException, PermissionDeniedException, SAXException, XPathException, IOException, BTreeException {
 
         BrokerPool.FORCE_CORRUPTION = false;
         final BrokerPool pool = startDB();
@@ -179,72 +176,77 @@ public class RecoveryTest {
             final Serializer serializer = broker.getSerializer();
             serializer.reset();
             
-            DocumentImpl doc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("test/test2/hamlet.xml"), Lock.READ_LOCK);
-            assertNotNull("Document '" + XmldbURI.ROOT_COLLECTION + "/test/test2/hamlet.xml' should not be null", doc);
-            String data = serializer.serialize(doc);
-            assertNotNull(data);
-            doc.getUpdateLock().release(Lock.READ_LOCK);
+            DocumentImpl doc = null;
+            try {
+                doc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("test/test2/hamlet.xml"), Lock.READ_LOCK);
+                assertNotNull("Document '" + XmldbURI.ROOT_COLLECTION + "/test/test2/hamlet.xml' should not be null", doc);
+                final String data = serializer.serialize(doc);
+                assertNotNull(data);
+            } finally {
+                if(doc != null) {
+                    doc.getUpdateLock().release(Lock.READ_LOCK);
+                    doc = null;
+                }
+            }
+
+            try {
+                doc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("test/test2/test_string.xml"), Lock.READ_LOCK);
+                assertNotNull("Document '" + XmldbURI.ROOT_COLLECTION + "/test/test2/test_string.xml' should not be null", doc);
+                final String data = serializer.serialize(doc);
+                assertNotNull(data);
+            } finally {
+                if(doc != null) {
+                    doc.getUpdateLock().release(Lock.READ_LOCK);
+                }
+            }
             
-            doc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("test/test2/test_string.xml"), Lock.READ_LOCK);
-            assertNotNull("Document '" + XmldbURI.ROOT_COLLECTION + "/test/test2/test_string.xml' should not be null", doc);
-            data = serializer.serialize(doc);
-            assertNotNull(data);
-            doc.getUpdateLock().release(Lock.READ_LOCK);
-            
-            File files[] = dir.listFiles();
+            final File files[] = dir.listFiles();
             assertNotNull(files);
             
             doc = broker.getXMLResource(TestConstants.TEST_COLLECTION_URI2.append(files[files.length - 1].getName()), Lock.READ_LOCK);
             assertNull("Document '" + XmldbURI.ROOT_COLLECTION + "/test/test2/'" + files[files.length - 1].getName() + " should not exist anymore", doc);
             
-            XQuery xquery = broker.getXQueryService();
+            final XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
-            Sequence seq = xquery.execute("//SPEECH[ft:query(LINE, 'king')]", null, AccessContext.TEST);
+            final Sequence seq = xquery.execute("//SPEECH[ft:query(LINE, 'king')]", null, AccessContext.TEST);
             assertNotNull(seq);
-            for (SequenceIterator i = seq.iterate(); i.hasNext(); ) {
-                Item next = i.nextItem();
-                String value = serializer.serialize((NodeValue) next);
+            for (final SequenceIterator i = seq.iterate(); i.hasNext(); ) {
+                final Item next = i.nextItem();
+                final String value = serializer.serialize((NodeValue) next);
             }
             
-            BinaryDocument binDoc = (BinaryDocument) broker.getXMLResource(TestConstants.TEST_COLLECTION_URI2.append(TestConstants.TEST_BINARY_URI), Lock.READ_LOCK);
+            final BinaryDocument binDoc = (BinaryDocument) broker.getXMLResource(TestConstants.TEST_COLLECTION_URI2.append(TestConstants.TEST_BINARY_URI), Lock.READ_LOCK);
             assertNotNull("Binary document is null", binDoc);
             try(final InputStream is = broker.getBinaryResource(binDoc)) {
-                byte[] bdata = new byte[(int) broker.getBinaryResourceSize(binDoc)];
+                final byte[] bdata = new byte[(int) broker.getBinaryResourceSize(binDoc)];
                 is.read(bdata);
-                data = new String(bdata);
+                final String data = new String(bdata);
                 assertNotNull(data);
             }
             
-            DOMFile domDb = ((NativeBroker)broker).getDOMFile();
+            final DOMFile domDb = ((NativeBroker)broker).getDOMFile();
             assertNotNull(domDb);
-            Writer writer = new StringWriter();
-            domDb.dump(writer);
+            try(final Writer writer = new StringWriter()) {
+                domDb.dump(writer);
+            }
             
             final TransactionManager transact = pool.getTransactionManager();
             try(final Txn transaction = transact.beginTransaction()) {
 
-                Collection root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, Lock.WRITE_LOCK);
+                final Collection root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, Lock.WRITE_LOCK);
                 assertNotNull(root);
                 transaction.registerLock(root.getLock(), Lock.WRITE_LOCK);
                 broker.removeCollection(transaction, root);
 
                 transact.commit(transaction);
             }
-	    } catch (Exception e) {
-	        fail(e.getMessage());
-	        e.printStackTrace();
-        }
+	    }
     }
     
-    protected BrokerPool startDB() {
-        try {
-            Configuration config = new Configuration();
-            BrokerPool.configure(1, 5, config);
-            return BrokerPool.getInstance();
-        } catch (Exception e) {            
-            fail(e.getMessage());
-        }
-        return null;
+    protected BrokerPool startDB() throws DatabaseConfigurationException, EXistException {
+        Configuration config = new Configuration();
+        BrokerPool.configure(1, 5, config);
+        return BrokerPool.getInstance();
     }
 
     @After

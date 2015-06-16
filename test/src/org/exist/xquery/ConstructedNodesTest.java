@@ -25,6 +25,10 @@ import javax.xml.transform.OutputKeys;
 
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.XmldbURI;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
@@ -32,15 +36,14 @@ import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XPathQueryService;
 
-import junit.framework.TestCase;
-import junit.textui.TestRunner;
+import static org.junit.Assert.assertEquals;
 
-/** Tests for various constructed node operations (in-memory nodes)
+/**
+ * Tests for various constructed node operations (in-memory nodes)
  * @author Adam Retter <adam.retter@devon.gov.uk>
  * @author ljo
  */
-public class ConstructedNodesTest extends TestCase
-{
+public class ConstructedNodesTest {
 	private final static String TEST_DB_USER = "admin";
 	private final static String TEST_DB_PWD = "";
 	
@@ -48,26 +51,11 @@ public class ConstructedNodesTest extends TestCase
 	private Collection root = null;
 	private Database database = null;
 	
-	
-	public static void main(String[] args) throws XPathException
-	{
-		TestRunner.run(ConstructedNodesTest.class);
-	}
-	
-	/**
-	 * Constructor for ConstructedNodesTest.
-	 * @param arg0
-	 */
-	public ConstructedNodesTest(String arg0)
-	{
-		super(arg0);
-	}
-	
 	/**
 	 * Iteratively constructs some nodes
 	 */
-	public void testIterateConstructNodes() throws XPathException
-	{
+    @Test
+	public void iterateConstructNodes() throws XPathException, XMLDBException {
 		String xquery =
 				"declare variable $categories := \n" +
 				"	<categories>\n" +
@@ -93,30 +81,21 @@ public class ConstructedNodesTest extends TestCase
 			"<option value=\"4\">Dairy</option>"
 		};
 		
-		ResourceSet result = null;
-		
-		try
-		{
-			result = service.query(xquery);
+		ResourceSet result = service.query(xquery);
 			
-			assertEquals(expectedResults.length, result.getSize());
-			
-			for(int i = 0; i < result.getSize(); i++)
-			{
-				assertEquals(expectedResults[i], (String)result.getResource(i).getContent());
-			}
-		}
-		catch (XMLDBException e)
-		{
-			fail(e.getMessage());
-		}
+        assertEquals(expectedResults.length, result.getSize());
+
+        for(int i = 0; i < result.getSize(); i++)
+        {
+            assertEquals(expectedResults[i], result.getResource(i).getContent());
+        }
 	}
 	
 	/***
 	 * Test sorting of constructed nodes
 	 */
-	public void testConstructedNodesSort()
-	{
+    @Test
+	public void constructedNodesSort() throws XMLDBException {
 		String xquery =
 			"declare variable $categories := \n" +
 			"	<categories>\n" +
@@ -136,30 +115,22 @@ public class ConstructedNodesTest extends TestCase
 				"<category uid=\"1\">Fruit</category>"
 		};
 		
-		ResourceSet result = null;
-		
-		try
-		{
-			result = service.query(xquery);
+		ResourceSet result = service.query(xquery);
 			
-			assertEquals(expectedResults.length, result.getSize());
-			
-			for(int i = 0; i < result.getSize(); i++)
-			{
-				assertEquals(expectedResults[i], (String)result.getResource(i).getContent());
-			}
-		}
-		catch (XMLDBException e)
-		{
-			fail(e.getMessage());
-		}
+        assertEquals(expectedResults.length, result.getSize());
+
+        for(int i = 0; i < result.getSize(); i++)
+        {
+            assertEquals(expectedResults[i], result.getResource(i).getContent());
+        }
 	}
 	
 	/**
 	 * Test retrieving sorted nodes by position
 	 */
-	public void bugtestConstructedNodesPosition()
-	{
+    @Ignore
+    @Test
+	public void constructedNodesPosition() throws XMLDBException {
 		String xquery =
 			"declare variable $categories := \n" +
 			"	<categories>\n" +
@@ -178,23 +149,14 @@ public class ConstructedNodesTest extends TestCase
 				"<option value=\"1\">Fruit</option>"
 				};
 		
-		ResourceSet result = null;
-		
-		try
-		{
-			result = service.query(xquery);
+		ResourceSet result = service.query(xquery);
 			
-			assertEquals(expectedResults.length, result.getSize());
-			
-			for(int i = 0; i < result.getSize(); i++)
-			{
-				assertEquals(expectedResults[i], (String)result.getResource(i).getContent());
-			}
-		}
-		catch (XMLDBException e)
-		{
-			fail(e.getMessage());
-		}
+        assertEquals(expectedResults.length, result.getSize());
+
+        for(int i = 0; i < result.getSize(); i++)
+        {
+            assertEquals(expectedResults[i], result.getResource(i).getContent());
+        }
 	}
 	
 	/**
@@ -202,7 +164,8 @@ public class ConstructedNodesTest extends TestCase
 	 * Tests absence of bug #2646744 which gave err:XPTY0018 for $hello-text-first
 	 * cf org.exist.xquery.XQueryTest.testXPTY0018_mixedsequences_2429093()
 	 */
-	public void testConstructedTextNodes() {
+    @Test
+	public void constructedTextNodes() throws XMLDBException {
 		String xquery =
 			"declare variable $hello-text-first := <a>{ \"hello\" }<b>world</b></a>;\n" +
 			"declare variable $hello-text-last := <a><b>world</b>{ \"hello\" }</a>;\n" +
@@ -212,34 +175,25 @@ public class ConstructedNodesTest extends TestCase
 				"<a>hello<b>world</b></a>",
 				"<a><b>world</b>hello</a>"
 				};
-		
-		ResourceSet result = null;
-		try {
-			String oki = service.getProperty(OutputKeys.INDENT);
-			service.setProperty(OutputKeys.INDENT, "no");
-	
-			result = service.query(xquery);
-						
-			assertEquals(expectedResults.length, result.getSize());
-			
-			for(int i = 0; i < result.getSize(); i++)
-			{
-				assertEquals(expectedResults[i], (String)result.getResource(i).getContent());
-			}
-			
-			// Restore indent property to ensure test atomicity
-			service.setProperty(OutputKeys.INDENT, oki);
-			
-		} catch (XMLDBException e) {
-			fail(e.getMessage());
-		}
+
+        String oki = service.getProperty(OutputKeys.INDENT);
+        service.setProperty(OutputKeys.INDENT, "no");
+
+        ResourceSet result = service.query(xquery);
+
+        assertEquals(expectedResults.length, result.getSize());
+
+        for(int i = 0; i < result.getSize(); i++)
+        {
+            assertEquals(expectedResults[i], result.getResource(i).getContent());
+        }
+
+        // Restore indent property to ensure test atomicity
+        service.setProperty(OutputKeys.INDENT, oki);
 	}
-	
-	/*
-	 * @see TestCase#setUp()
-	 */
-	protected void setUp() throws Exception
-	{
+
+    @Before
+	public void setUp() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
 		// initialize driver
 		Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
 		database = (Database) cl.newInstance();
@@ -249,11 +203,8 @@ public class ConstructedNodesTest extends TestCase
 		service = (XPathQueryService) root.getService( "XQueryService", "1.0" );
 	}
 
-	/*
-	 * @see TestCase#tearDown()
-	 */
-	protected void tearDown() throws Exception
-	{
+    @After
+	public void tearDown() throws XMLDBException {
 		DatabaseManager.deregisterDatabase(database);
 		DatabaseInstanceManager dim =
 			(DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");

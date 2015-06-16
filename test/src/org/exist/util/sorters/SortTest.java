@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2009 The eXist Project
+ *  Copyright (C) 2015 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -16,19 +16,22 @@
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- * $Id$
  */
-
 package org.exist.util.sorters;
 
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
-import junit.framework.TestCase;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 
 /**
- * TestCase - given a sort() method and an algorithm via a checker, do a variety
+ * Test case - given a sort() method and an algorithm via a checker, do a variety
  * of tests.
  * <p>
  * This work was undertaken as part of the development of the taxonomic
@@ -41,56 +44,38 @@ import junit.framework.TestCase;
  * @author http://www.users.bigpond.com/pmurray
  * 
  */
-public class SortTestCase<CH extends SortMethodChecker> extends TestCase {
+@RunWith(Parameterized.class)
+public class SortTest {
 
-	protected final Random rnd = new Random();
-	protected final CH checker;
-	protected final String testSuite;
+    @Parameters(name = "{0}")
+    public static java.util.Collection<Object[]> data() {
+        final List<Object[]> parameters = new ArrayList<>();
+        for (final SortingAlgorithmTester s : SortingAlgorithmTester.allSorters()) {
+            for (final SortMethodChecker c : SortMethodChecker.allCheckers(s)) {
+                final String name = s.getClass().getSimpleName() + ": " + c.getClass().getSimpleName();
+                parameters.add(new Object[]{name, c});
+            }
+        }
 
-	SortTestCase(CH checker, String method, String testSuite) {
-		super(method);
-		this.checker = checker;
-		this.testSuite = testSuite;
-	}
+        return parameters;
+    }
 
-	protected int[] getRandomIntArray(int sz) {
-		int[] a = new int[sz];
-		for (int i = 0; i < sz; i++) {
-			a[i] = rnd.nextInt(1000);
-		}
-		return a;
-	}
+	private final Random rnd = new Random();
 
-	protected int[] getConstantIntArray(int sz) {
-		int[] a = new int[sz];
-		for (int i = 0; i < sz; i++) {
-			a[i] = 0;
-		}
-		return a;
-	}
+    @Parameter
+    public String sortTestName;
 
-	protected int[] getAscendingIntArray(int sz) {
-		int[] a = new int[sz];
-		for (int i = 0; i < sz; i++) {
-			a[i] = i;
-		}
-		return a;
-	}
+    @Parameter(value = 1)
+    public SortMethodChecker checker;
 
-	protected int[] getDescendingIntArray(int sz) {
-		int[] a = new int[sz];
-		for (int i = 0; i < sz; i++) {
-			a[i] = sz - i - 1;
-		}
-		return a;
-	}
-
-	public void testSingleElement() throws Exception {
+	@Test
+	public void singleElement() throws Exception {
 		checker.init(getConstantIntArray(1));
 		checker.sort();
 	}
 
-	public void testRandom() throws Exception {
+	@Test
+	public void random() throws Exception {
 		for (int i = 0; i < 10; i++) {
 			checker.init(getRandomIntArray(100));
 			checker.sort();
@@ -98,25 +83,29 @@ public class SortTestCase<CH extends SortMethodChecker> extends TestCase {
 		}
 	}
 
-	public void testConstant() throws Exception {
+	@Test
+	public void constant() throws Exception {
 		checker.init(getConstantIntArray(100));
 		checker.sort();
 		checker.check();
 	}
 
-	public void testAscending() throws Exception {
+	@Test
+	public void ascending() throws Exception {
 		checker.init(getAscendingIntArray(100));
 		checker.sort();
 		checker.check();
 	}
 
-	public void testDecending() throws Exception {
+	@Test
+	public void descending() throws Exception {
 		checker.init(getDescendingIntArray(100));
 		checker.sort();
 		checker.check();
 	}
 
-	public void testSortSubsection1() throws Exception {
+	@Test
+	public void sortSubsection1() throws Exception {
 
 		for (int i = 0; i < 1000; i += 100) {
 			int[] a = new int[1000];
@@ -141,7 +130,8 @@ public class SortTestCase<CH extends SortMethodChecker> extends TestCase {
 		}
 	}
 
-	public void testSortSubsection2() throws Exception {
+    @Test
+	public void sortSubsection2() throws Exception {
 		for (int i = 0; i < 1000; i += 100) {
 			int[] a = new int[1000];
 
@@ -164,7 +154,8 @@ public class SortTestCase<CH extends SortMethodChecker> extends TestCase {
 		}
 	}
 
-	public void testSortSubsection3() throws Exception {
+    @Test
+	public void sortSubsection3() throws Exception {
 
 		for (int i = 0; i < 1000; i += 100) {
 			int[] a = new int[1000];
@@ -188,4 +179,36 @@ public class SortTestCase<CH extends SortMethodChecker> extends TestCase {
 
 		}
 	}
+
+    protected int[] getRandomIntArray(int sz) {
+        int[] a = new int[sz];
+        for (int i = 0; i < sz; i++) {
+            a[i] = rnd.nextInt(1000);
+        }
+        return a;
+    }
+
+    protected int[] getConstantIntArray(int sz) {
+        int[] a = new int[sz];
+        for (int i = 0; i < sz; i++) {
+            a[i] = 0;
+        }
+        return a;
+    }
+
+    protected int[] getAscendingIntArray(int sz) {
+        int[] a = new int[sz];
+        for (int i = 0; i < sz; i++) {
+            a[i] = i;
+        }
+        return a;
+    }
+
+    protected int[] getDescendingIntArray(int sz) {
+        int[] a = new int[sz];
+        for (int i = 0; i < sz; i++) {
+            a[i] = sz - i - 1;
+        }
+        return a;
+    }
 }

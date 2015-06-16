@@ -33,6 +33,7 @@ import java.io.InputStream;
 import org.exist.xmldb.XQueryService;
 import org.exist.xmldb.XmldbURI;
 
+import org.junit.Before;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
@@ -49,9 +50,7 @@ public class XQueryUseCase {
 
 	private Collection root = null;
 
-	/*
-	 * @see TestCase#setUp()
-	 */
+	@Before
 	protected void setUp() throws Exception {
 		// initialize driver
 		Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");

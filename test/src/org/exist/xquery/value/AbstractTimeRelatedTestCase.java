@@ -2,18 +2,20 @@ package org.exist.xquery.value;
 
 import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
+import org.junit.After;
+import org.junit.Before;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.fail;
 
-public abstract class AbstractTimeRelatedTestCase extends TestCase {
-	
-	protected void setUp() throws Exception {
-		super.setUp();
+public abstract class AbstractTimeRelatedTestCase {
+
+	@Before
+	public void setUp() throws Exception {
 		TimeUtils.getInstance().overrideLocalTimezoneOffset(-5 * 60 * 60 * 1000);
 	}
-	
-	protected void tearDown() throws Exception {
-		super.tearDown();
+
+	@After
+	public void tearDown() throws Exception {
 		TimeUtils.getInstance().resetLocalTimezoneOffset();
 	}
 

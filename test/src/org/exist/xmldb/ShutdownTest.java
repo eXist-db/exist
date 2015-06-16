@@ -25,12 +25,15 @@ package org.exist.xmldb;
 import java.io.File;
 
 import org.exist.xmldb.concurrent.DBUtils;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceSet;
 
-import junit.framework.Assert;
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Check if database shutdownDB/restart works properly. The test opens
@@ -39,7 +42,7 @@ import junit.framework.TestCase;
  *  
  * @author wolf
  */
-public class ShutdownTest extends TestCase {
+public class ShutdownTest {
 
 	private final static String URI = XmldbURI.LOCAL_DB;
 	
@@ -65,95 +68,71 @@ public class ShutdownTest extends TestCase {
 	private final static String TEST_QUERY4 = "/ROOT-ELEMENT/ELEMENT/ELEMENT-1";
 	
 	private String[] wordList;
-	
-	public ShutdownTest(String name) {
-		super(name);
-	}
-	
-	public void testShutdown() {
-		try {
-			for (int i = 0; i < 50; i++) {
-				Collection rootCol = DBUtils.setupDB(URI);
-				
-				// after restarting the db, we first try a bunch of queries
-				Collection testCol = rootCol.getChildCollection("C1");
-				
-				ResourceSet result = DBUtils.query(testCol, TEST_QUERY1);
-				Assert.assertEquals(1, result.getSize());
-				Assert.assertEquals("+49 69 888478", result.getResource(0).getContent());
-				
-				result = DBUtils.query(testCol, TEST_QUERY2);
-				Assert.assertEquals(1, result.getSize());
-				
-				result = DBUtils.query(testCol, TEST_QUERY3);
-				Assert.assertEquals(1, result.getSize());
-				
-				result = DBUtils.query(testCol, TEST_QUERY4);
-				Assert.assertEquals(5000, result.getSize());
-				
-				// now replace the data files
-				String xml =
-					"<data now=\"" + System.currentTimeMillis() + "\" count=\"" +
-					i + "\">" + XML + "</data>";
-				DBUtils.addXMLResource(testCol, "R1.xml", xml);
 
-				File tempFile = DBUtils.generateXMLFile(5000, 7, wordList);
-				DBUtils.addXMLResource(testCol, "R2.xml", tempFile);
-
-				DBUtils.shutdownDB(URI);
-			}
-        } catch (Exception e) {            
-            fail(e.getMessage()); 
-        }			
-	}
-	
-	/* (non-Javadoc)
-	 * @see junit.framework.TestCase#setUp()
-	 */
-	protected void setUp() {
-		try {
+	@Test
+	public void shutdown() throws Exception {
+		for (int i = 0; i < 50; i++) {
 			Collection rootCol = DBUtils.setupDB(URI);
+
+			// after restarting the db, we first try a bunch of queries
 			Collection testCol = rootCol.getChildCollection("C1");
-			if(testCol == null) {
-				testCol = DBUtils.addCollection(rootCol, "C1");
-				assertNotNull(testCol);
-			}
-                        String existHome = System.getProperty("exist.home");
-                        File existDir = existHome==null ? new File(".") : new File(existHome);
-			DBUtils.addXMLResource(rootCol, "biblio.rdf", new File(existDir,"samples/biblio.rdf"));
-			wordList = DBUtils.wordList(rootCol);
-			
-			// store the data files
+
+			ResourceSet result = DBUtils.query(testCol, TEST_QUERY1);
+			assertEquals(1, result.getSize());
+			assertEquals("+49 69 888478", result.getResource(0).getContent());
+
+			result = DBUtils.query(testCol, TEST_QUERY2);
+			assertEquals(1, result.getSize());
+
+			result = DBUtils.query(testCol, TEST_QUERY3);
+			assertEquals(1, result.getSize());
+
+			result = DBUtils.query(testCol, TEST_QUERY4);
+			assertEquals(5000, result.getSize());
+
+			// now replace the data files
 			String xml =
-				"<data now=\"" + System.currentTimeMillis() + "\" count=\"1\">" + XML + "</data>";
+				"<data now=\"" + System.currentTimeMillis() + "\" count=\"" +
+				i + "\">" + XML + "</data>";
 			DBUtils.addXMLResource(testCol, "R1.xml", xml);
-			
+
 			File tempFile = DBUtils.generateXMLFile(5000, 7, wordList);
 			DBUtils.addXMLResource(testCol, "R2.xml", tempFile);
-			
+
 			DBUtils.shutdownDB(URI);
-        } catch (Exception e) {            
-            fail(e.getMessage()); 
-        }			
-	}
-	
-	/* (non-Javadoc)
-	 * @see junit.framework.TestCase#tearDown()
-	 */
-	protected void tearDown() {
-		try {
-			Collection rootCol = DBUtils.setupDB(URI);
-			DBUtils.removeCollection(rootCol, "C1");
-			Resource res = rootCol.getResource("biblio.rdf");
-			rootCol.removeResource(res);
-			DBUtils.shutdownDB(URI);
-        } catch (Exception e) {            
-            fail(e.getMessage()); 
-        }			
-	}
-	
-	public static void main(String[] args) {
-		junit.textui.TestRunner.run(ShutdownTest.class);
+		}
 	}
 
+    @Before
+	public void setUp() throws Exception {
+        Collection rootCol = DBUtils.setupDB(URI);
+        Collection testCol = rootCol.getChildCollection("C1");
+        if(testCol == null) {
+            testCol = DBUtils.addCollection(rootCol, "C1");
+            assertNotNull(testCol);
+        }
+                    String existHome = System.getProperty("exist.home");
+                    File existDir = existHome==null ? new File(".") : new File(existHome);
+        DBUtils.addXMLResource(rootCol, "biblio.rdf", new File(existDir,"samples/biblio.rdf"));
+        wordList = DBUtils.wordList(rootCol);
+
+        // store the data files
+        String xml =
+            "<data now=\"" + System.currentTimeMillis() + "\" count=\"1\">" + XML + "</data>";
+        DBUtils.addXMLResource(testCol, "R1.xml", xml);
+
+        File tempFile = DBUtils.generateXMLFile(5000, 7, wordList);
+        DBUtils.addXMLResource(testCol, "R2.xml", tempFile);
+
+        DBUtils.shutdownDB(URI);
+	}
+	
+	@After
+	public void tearDown() throws Exception {
+        Collection rootCol = DBUtils.setupDB(URI);
+        DBUtils.removeCollection(rootCol, "C1");
+        Resource res = rootCol.getResource("biblio.rdf");
+        rootCol.removeResource(res);
+        DBUtils.shutdownDB(URI);
+	}
 }

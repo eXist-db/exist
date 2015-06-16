@@ -1884,7 +1884,7 @@ public class XPathQueryTest {
     public void substring() throws XMLDBException {
         final XQueryService service = getQueryService();
         
-        // Testcases by MIKA
+        // Test cases by MIKA
         final String validQuery = "substring(\"MK-1234\", 4,1)";
         ResourceSet result = queryAndAssert( service, validQuery, 1, validQuery);
         assertEquals("1", result.getResource(0).getContent().toString());
@@ -1893,7 +1893,7 @@ public class XPathQueryTest {
         result = queryAndAssert( service, invalidQuery, 1, invalidQuery);
         assertEquals("1234", result.getResource(0).getContent().toString());
 
-        // Testcase by Toar
+        // Test case by Toar
         final String toarQuery="let $num := \"2003.123\" \n return substring($num, 1, 7)";
         result = queryAndAssert( service, toarQuery, 1, toarQuery);
         assertEquals("2003.12", result.getResource(0).getContent().toString());
