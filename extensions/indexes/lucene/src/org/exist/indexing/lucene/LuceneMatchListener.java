@@ -209,7 +209,8 @@ public class LuceneMatchListener extends AbstractMatchListener {
             // to tokenize the text and find matching query terms.
             analyzer = index.getDefaultAnalyzer();
         }
-        LOG.debug("Analyzer: " + analyzer + " for path: " + path);
+        if (LOG.isDebugEnabled())
+            LOG.debug("Analyzer: " + analyzer + " for path: " + path);
         String str = extractor.getText().toString();
         //Token token;
         try (TokenStream tokenStream = analyzer.tokenStream(null, new StringReader(str))) {
