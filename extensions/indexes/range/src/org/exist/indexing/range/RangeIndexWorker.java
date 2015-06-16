@@ -291,7 +291,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         boolean reindexRequired = false;
         if (node.getNodeType() == Node.ELEMENT_NODE && !includeSelf)
             p.removeLastComponent();
-        for (int i = 0; i < p.length(); i++) {
+        while (p.length() > 0) {
             if (config.matches(p)) {
                 reindexRequired = true;
                 break;
