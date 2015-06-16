@@ -360,7 +360,6 @@ public class CollectionXConf
 		}
 	}
 	
-	//given the root element of collection.xconf it will return the fulltext index
 	private LinkedHashMap<String, String> getCustomNamespaces(Element xconf)
 	{
 		final NamedNodeMap attrs = xconf.getAttributes();
@@ -368,7 +367,7 @@ public class CollectionXConf
 		//there will always be one attribute - the default namespace
 		if(attrs.getLength() > 1)
 		{
-			final LinkedHashMap<String, String> namespaces = new LinkedHashMap<String, String>();
+			final LinkedHashMap<String, String> namespaces = new LinkedHashMap<>();
 			
 			for(int i = 0; i < attrs.getLength(); i++)
 			{

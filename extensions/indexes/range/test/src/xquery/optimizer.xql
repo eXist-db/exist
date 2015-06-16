@@ -19,7 +19,6 @@ declare variable $ot:COLLECTION_CONFIG :=
     <collection xmlns="http://exist-db.org/collection-config/1.0">
         <index xmlns:xs="http://www.w3.org/2001/XMLSchema"
             xmlns:tei="http://www.tei-c.org/ns/1.0">
-            <fulltext default="none" attributes="false"/>
             <lucene>
                 <text field="lucene-name" qname="name"/>
             </lucene>

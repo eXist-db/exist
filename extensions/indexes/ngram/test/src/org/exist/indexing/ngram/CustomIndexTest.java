@@ -85,14 +85,12 @@ public class CustomIndexTest {
     
     private static String COLLECTION_CONFIG =
         "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
-    	"	<index>" +
-    	"		<fulltext default=\"all\">" +
-    	"		</fulltext>" +
-    	"		<ngram qname=\"item\"/>" +
-        "		<ngram qname=\"@attr\"/>" +
-        "        <ngram qname=\"para\"/>" +
-        "	</index>" +
-    	"</collection>";
+        "   <index>" +
+        "       <ngram qname=\"item\"/>" +
+        "       <ngram qname=\"@attr\"/>" +
+        "       <ngram qname=\"para\"/>" +
+        "   </index>" +
+        "</collection>";
 
     private static String XUPDATE_START =
         "<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">";

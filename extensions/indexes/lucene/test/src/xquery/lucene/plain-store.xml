@@ -14,7 +14,6 @@
             <collection xmlns="http://exist-db.org/collection-config/1.0">
                 <index>
                     <!-- Disable the standard full text index -->
-                    <fulltext default="none" attributes="false"></fulltext>
                     <analyzer class="org.apache.lucene.analysis.standard.StandardAnalyzer"/>
                     <analyzer id="nl" class="org.apache.lucene.analysis.nl.DutchAnalyzer"/>
                     

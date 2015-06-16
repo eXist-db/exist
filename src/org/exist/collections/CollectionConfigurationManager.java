@@ -453,9 +453,6 @@ public class CollectionConfigurationManager {
         final String configuration = 
           "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">"
         + "    <index>"
-        + "        <fulltext attributes=\"true\" default=\"all\">"
-        + "            <exclude path=\"/auth\" />"
-        + "        </fulltext>"
         + "    </index>"
         + "</collection>";
 
