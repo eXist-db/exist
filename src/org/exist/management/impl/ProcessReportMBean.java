@@ -25,13 +25,55 @@ import javax.management.openmbean.TabularData;
 
 public interface ProcessReportMBean {
 
-    public TabularData getScheduledJobs();
+    TabularData getScheduledJobs();
 
-    public TabularData getRunningJobs();
+    TabularData getRunningJobs();
 
-    public TabularData getRunningQueries();
+    TabularData getRunningQueries();
 
-    public TabularData getRecentQueryHistory();
+    TabularData getRecentQueryHistory();
 
-    public void killQuery(int id);
+    void killQuery(int id);
+
+    /**
+     * Configures the recent query history.
+     *
+     * @param minTimeRecorded minimum execution time of queries recorded in the recent query history
+     * @param historyTimespan time span (in milliseconds) for which the stats for an executed query should
+     * be kept in the recent query history
+     * @param trackURI Enable request tracking: for every executed query, try to figure out which HTTP
+     * URL triggered it (if applicable)
+     */
+    void configure(long minTimeRecorded, long historyTimespan, boolean trackURI);
+
+    /**
+     * Sets the time span (in milliseconds) for which the stats for an executed query should
+     * be kept in the recent query history.
+     *
+     * @param time
+     */
+    void setHistoryTimespan(long time);
+
+    long getHistoryTimespan();
+
+    /**
+     * Sets the minimum execution time of queries recorded in the recent query history.
+     * Queries faster than this are not recorded.
+     *
+     * @param time
+     */
+    void setMinTime(long time);
+
+    long getMinTime();
+
+    /**
+     * Enable request tracking: for every executed query, try to figure out which HTTP
+     * URL triggered it (if applicable). For performance reasons this is disabled by default,
+     * though the overhead should be small.
+     *
+     * @param track
+     */
+    void setTrackRequestURI(boolean track);
+
+    boolean getTrackRequestURI();
 }
