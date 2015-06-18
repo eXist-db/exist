@@ -180,20 +180,32 @@ public class Optimizer extends DefaultExpressionVisitor {
 
     public void visitFilteredExpr(FilteredExpression filtered) {
         super.visitFilteredExpr(filtered);
-        boolean optimize = false;
-        final List<Predicate> preds = filtered.getPredicates();
-        // walk through the predicates attached to the current location step.
-        // try to find a predicate containing an expression which is an instance
-        // of Optimizable.
-        for (final Predicate pred : preds) {
-            final FindOptimizable find = new FindOptimizable();
-            pred.accept(find);
-            final List<Optimizable> list = find.getOptimizables();
-            if (list.size() > 0 && canOptimize(list)) {
-                optimize = true;
-                break;
+
+        // check if filtered expression can be simplified:
+        // handles expressions like //foo/(baz)[...]
+        if (filtered.getExpression() instanceof LocationStep) {
+            // single location step: simplify by directly attaching it to the parent path expression
+            final LocationStep step = (LocationStep) filtered.getExpression();
+            final Expression parent = filtered.getParent();
+            if (parent instanceof RewritableExpression) {
+                final List<Predicate> preds = filtered.getPredicates();
+                final boolean optimizable = hasOptimizable(preds);
+                if (optimizable) {
+                    // copy predicates
+                    for (Predicate pred : preds) {
+                        step.addPredicate(pred);
+                    }
+                    ((RewritableExpression) parent).replace(filtered, step);
+                    step.setParent(parent);
+                    visitLocationStep(step);
+                    return;
+                }
             }
         }
+
+        // check if there are any predicates which could be optimized
+        final List<Predicate> preds = filtered.getPredicates();
+        final boolean optimize = hasOptimizable(preds);
         if (optimize) {
             // we found at least one Optimizable. Rewrite the whole expression and
             // enclose it in an (#exist:optimize#) pragma.
@@ -218,6 +230,21 @@ public class Optimizer extends DefaultExpressionVisitor {
                 LOG.warn("Failed to optimize expression: " + filtered + ": " + e.getMessage(), e);
             }
         }
+    }
+
+    private boolean hasOptimizable(List<Predicate> preds) {
+        // walk through the predicates attached to the current location step.
+        // try to find a predicate containing an expression which is an instance
+        // of Optimizable.
+        for (final Predicate pred : preds) {
+            final FindOptimizable find = new FindOptimizable();
+            pred.accept(find);
+            final List<Optimizable> list = find.getOptimizables();
+            if (list.size() > 0 && canOptimize(list)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void visitAndExpr(OpAnd and) {

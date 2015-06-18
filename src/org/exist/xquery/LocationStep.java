@@ -1378,6 +1378,10 @@ public class LocationStep extends Step {
 		visitor.visitLocationStep(this);
 	}
 
+	public void setParent(Expression parent) {
+		this.parent = parent;
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 
