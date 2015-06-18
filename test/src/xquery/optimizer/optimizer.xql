@@ -85,6 +85,14 @@ declare
     %test:stats
     %test:args("Rudi Rüssel")
     %test:assertXPath("$result//stats:index[@type = 'range'][@optimization = 2]")
+function ot:optimize-filter-context-step($name as xs:string) {
+    collection($ot:COLLECTION)//(address)[name = $name]/city/text()
+};
+
+declare
+    %test:stats
+    %test:args("Rudi Rüssel")
+    %test:assertXPath("$result//stats:index[@type = 'range'][@optimization = 2]")
 function ot:optimize-sequence($name as xs:string) {
     (collection($ot:COLLECTION)//address[name = $name]/city/text(), "xxx")
 };
