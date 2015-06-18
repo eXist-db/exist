@@ -308,11 +308,12 @@ public class XQuery {
                 return result;
             } finally {
                 context.getProfiler().traceQueryEnd(context);
+                // track query stats before context is reset
+                broker.getBrokerPool().getProcessMonitor().queryCompleted(context.getWatchDog());
                 expression.reset();
                 if(resetContext) {
                     context.reset();
                 }
-                broker.getBrokerPool().getProcessMonitor().queryCompleted(context.getWatchDog());
             }
             
         } finally {
