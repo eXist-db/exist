@@ -22,6 +22,7 @@
  */
 package org.exist.xquery.value;
 
+import org.exist.dom.QName;
 import org.exist.numbering.NodeId;
 import org.exist.xquery.XPathException;
 import org.w3c.dom.Document;
@@ -77,7 +78,8 @@ public interface NodeValue extends Item, Sequence {
 	
     public void addContextNode(int contextId, NodeValue node);
     
-    
+    public QName getQName();
+
 	/** Retrieve the actual node. This operation is <strong>expensive</strong>.
 	 * @return The actual node.
 	 */
