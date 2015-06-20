@@ -40,15 +40,7 @@ import org.exist.xquery.Expression;
 import org.exist.xquery.NodeTest;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.AtomicValue;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.MemoryNodeSet;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.UntypedAtomicValue;
+import org.exist.xquery.value.*;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -117,6 +109,8 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
     private Match match = null;
 
     private ContextItem context = null;
+
+    private QName qname = null;
 
     /**
      * Creates a new <code>NodeProxy</code> instance.
@@ -204,6 +198,18 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
     @Override
     public NodeId getNodeId() {
         return nodeId;
+    }
+
+    @Override
+    public QName getQName() {
+        if (qname == null) {
+            getNode();
+        }
+        return qname;
+    }
+
+    public void setQName(QName qname) {
+        this.qname = qname;
     }
 
     @Override
@@ -338,6 +344,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
             final NodeImpl realNode = (NodeImpl) doc.getNode(this);
             if(realNode != null) {
                 this.nodeType = realNode.getNodeType();
+                this.qname = realNode.getQName();
             }
             return realNode;
         }
