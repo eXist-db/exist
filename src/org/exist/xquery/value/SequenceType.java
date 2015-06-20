@@ -124,14 +124,13 @@ public class SequenceType {
 			{return false;}
 		if(nodeName != null) {
 			//TODO : how to improve performance ?
-            if (realNode == null)
-                {realNode = ((NodeValue)item).getNode();}
+            final QName realName = ((NodeValue)item).getQName();
 			if (nodeName.getNamespaceURI() != null) {
-				if (!nodeName.getNamespaceURI().equals(realNode.getNamespaceURI()))
+				if (!nodeName.getNamespaceURI().equals(realName.getNamespaceURI()))
 					{return false;}
 			}
 			if (nodeName.getLocalPart() != null) {
-				return nodeName.getLocalPart().equals(realNode.getLocalName());
+				return nodeName.getLocalPart().equals(realName.getLocalPart());
 			}
 		}
 		return true;
