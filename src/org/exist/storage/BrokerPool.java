@@ -937,7 +937,7 @@ public class BrokerPool implements Database {
                             pluginManager.start(broker);
 
                             //wake-up the security manager
-                            securityManager.attach(this, broker);
+                            securityManager.attach(broker);
 
                             //have to do this after initializing = false
                             // so that the policies collection is saved
@@ -1161,7 +1161,7 @@ public class BrokerPool implements Database {
     }
 
     public long getReservedMem() {
-        return reservedMem - cacheManager.getSizeInBytes();
+        return reservedMem - cacheManager.getCurrentSize();
     }
 
     public int getPageSize() {
@@ -1287,6 +1287,9 @@ public class BrokerPool implements Database {
         return securityManager;
     }
 
+    public SecurityManager securityManager() {
+        return securityManager;
+    }
 
     /**
      * Returns the Scheduler
@@ -1294,6 +1297,10 @@ public class BrokerPool implements Database {
      * @return The scheduler
      */
     public Scheduler getScheduler() {
+        return scheduler;
+    }
+
+    public Scheduler scheduler() {
         return scheduler;
     }
 
@@ -1336,7 +1343,11 @@ public class BrokerPool implements Database {
     }
 
     public TransactionManager getTransactionManager() {
-        return this.transactionManager;
+        return transactionManager;
+    }
+
+    public TransactionManager transactionManager() {
+        return transactionManager;
     }
 
     /**
@@ -1379,6 +1390,11 @@ public class BrokerPool implements Database {
         return cacheManager;
     }
 
+    @Override
+    public DefaultCacheManager cacheManager() {
+        return cacheManager;
+    }
+
     public CollectionCacheManager getCollectionCacheMgr() {
         return collectionCacheMgr;
     }
@@ -1389,7 +1405,13 @@ public class BrokerPool implements Database {
      *
      * @return The IndexManager
      */
+    @Override
     public IndexManager getIndexManager() {
+        return indexManager;
+    }
+
+    @Override
+    public IndexManager indexManager() {
         return indexManager;
     }
 

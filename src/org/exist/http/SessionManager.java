@@ -23,16 +23,20 @@ package org.exist.http;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exist.Database;
 import org.exist.scheduler.JobException;
 import org.exist.scheduler.JobException.JobExceptionAction;
+import org.exist.scheduler.ScheduledJobInfo;
+import org.exist.scheduler.Scheduler;
 import org.exist.scheduler.UserJavaJob;
-import org.exist.storage.BrokerPool;
 import org.exist.xquery.value.Sequence;
 
 import java.util.Map;
 import java.util.Properties;
 
 public class SessionManager {
+
+    public static final String SESSION_MANAGER = "session-manager";
 
     public final static long TIMEOUT = 120000;
 
@@ -72,8 +76,8 @@ public class SessionManager {
         public void setName(String name) {
         }
 
-        public void execute(final BrokerPool brokerpool, final Map<String, ?> params) throws JobException {
-            final SessionManager manager = (SessionManager)params.get("session-manager");
+        public void execute(final Database db, final Map<String, ?> params) throws JobException {
+            final SessionManager manager = (SessionManager)params.get(SESSION_MANAGER);
             if (manager == null) {
                 throw new JobException(JobExceptionAction.JOB_ABORT, "parameter 'session-manager' is not set");
             }
@@ -83,10 +87,18 @@ public class SessionManager {
 
     private QueryResult[] slots = new QueryResult[32];
 
-    public SessionManager(BrokerPool pool) {
+    public SessionManager(Database db) {
+        TimeoutCheck task = new TimeoutCheck();
+
+        Scheduler scheduler = db.getScheduler();
+
+        for (ScheduledJobInfo job : scheduler.getScheduledJobs()) {
+            if (task.getName().equals( job.getName() )) return;
+        }
+
         final Properties props = new Properties();
-        props.put("session-manager", this);
-        pool.getScheduler().createPeriodicJob(TIMEOUT_CHECK_PERIOD, new TimeoutCheck(), 2000, props);
+        props.put(SESSION_MANAGER, this);
+        scheduler.createPeriodicJob(TIMEOUT_CHECK_PERIOD, task, 2000, props);
     }
 
     public int add(String query, Sequence sequence) {
@@ -106,20 +118,18 @@ public class SessionManager {
     }
 
     public Sequence get(String query, int sessionId) {
-        if (sessionId < 0 || sessionId >= slots.length)
-            {return null;} // out of scope
+        if (sessionId < 0 || sessionId >= slots.length) return null; // out of scope
         final QueryResult cached = slots[sessionId];
-        if (cached == null)
-            {return null;}
-        if (cached.queryString.equals(query))
-            {return cached.sequence();}
+
+        if (cached == null) return null;
+        if (cached.queryString.equals(query)) return cached.sequence();
+
         // wrong query
         return null;
     }
 
     public void release(int sessionId) {
-        if (sessionId < 0 || sessionId >= slots.length)
-            {return;} // out of scope
+        if (sessionId < 0 || sessionId >= slots.length) return; // out of scope
         slots[sessionId] = null;
     }
 
@@ -127,7 +137,7 @@ public class SessionManager {
         final long now = System.currentTimeMillis();
         for (int i = 0; i < slots.length; i++) {
             if (slots[i] != null && now - slots[i].lastAccess > TIMEOUT) {
-                LOG.debug("Removing cached query result for session " + i);
+                if (LOG.isDebugEnabled()) LOG.debug("Removing cached query result for session " + i);
                 slots[i] = null;
             }
         }

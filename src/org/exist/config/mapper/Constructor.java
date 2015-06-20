@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2011-2013 The eXist Project
+ *  Copyright (C) 2001-2015 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -16,8 +16,6 @@
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- *  $Id$
  */
 package org.exist.config.mapper;
 
@@ -37,105 +35,108 @@ import org.exist.config.annotation.NewClass;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
- *
  */
 public class Constructor {
-	
-	private static Map<Object, Configuration> configurations = new HashMap<Object, Configuration>();
-	
-	public static Configuration getConfiguration(Object obj) {
-		return configurations.get(obj);
-	}
 
-	/**
-	 * Create new java object by mapping instructions.
-	 */
+    private static Map<Object, Configuration> configurations = new HashMap<Object, Configuration>();
+
+    public static Configuration getConfiguration(Object obj) {
+        return configurations.get(obj);
+    }
+
+    /**
+     * Create new java object by mapping instructions.
+     */
     public static Object load(NewClass newClazz, Configurable instance, Configuration conf) {
-    	
-    	final String url = newClazz.mapper();
-    	if (url == null) {
-    		Configurator.LOG.error("Filed must have 'ConfigurationFieldClassMask' annotation or " +
-    				"registered mapping instruction for class '"+newClazz.name()+"' ["+conf.getName()+"], " +
-    				"skip instance creation.");
-    		return null;
-    	}
-    	
-    	final InputStream is = instance.getClass().getClassLoader().getResourceAsStream(url);
-    	if (is == null) {
-    		Configurator.LOG.error("Registered mapping instruction for class '"+newClazz.name()+"' missing resource '"+url+"', " +
-					"skip instance creation.");
-    		return null;
-    	}
-    	
+
+        final String url = newClazz.mapper();
+        if (url == null) {
+            Configurator.LOG.error("Filed must have 'ConfigurationFieldClassMask' annotation or " +
+                "registered mapping instruction for class '" + newClazz.name() + "' [" + conf.getName() + "], " +
+                "skip instance creation.");
+            return null;
+        }
+
+        final InputStream is = instance.getClass().getClassLoader().getResourceAsStream(url);
+        if (is == null) {
+            Configurator.LOG.error("Registered mapping instruction for class '" + newClazz.name() + "' " +
+                "missing resource '" + url + "', skip instance creation.");
+            return null;
+        }
+
         final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
         try {
-			final XMLStreamReader reader = inputFactory.createXMLStreamReader(is);
-			
-			Object obj = null;
-			final Stack<Object> objs = new Stack<Object>();
-			final Stack<CallMathod> instructions = new Stack<CallMathod>();
-			
-			int eventType;
-			while (reader.hasNext()) {
-				eventType = reader.next();
-				
-				switch (eventType) {
-					case XMLEvent.START_ELEMENT:
-						String localName = reader.getLocalName();
-			            
-			            if ("class".equals(localName)) {
-				            if (!"name".equals(reader.getAttributeLocalName(0))) {
-				            	Configurator.LOG.error("class element first attribute must be 'name', skip instance creation.");
-			            		return null;
-				            }
-				            
-				            final String clazzName = reader.getAttributeValue(0);
-				    	    final Class<?> clazz = Class.forName(clazzName);
-				    	    final java.lang.reflect.Constructor<?> constructor = clazz.getConstructor();
-				    	    
-				    	    Object newInstance = constructor.newInstance();
-				    	    if (obj == null) {obj = newInstance;}
-				    	    objs.add(newInstance);
-				    	    
-				    	    if (!instructions.empty())
-				    	    	{instructions.peek().setValue(newInstance);}
-				    	    
-			            } else if ("callMethod".equals(localName)) {
-			            	
-			            	Configuration _conf_ = conf;
-			            	if (!instructions.empty())
-			            		{_conf_ = instructions.peek().getConfiguration();}
+            final XMLStreamReader reader = inputFactory.createXMLStreamReader(is);
 
-			            	final CallMathod call = new CallMathod(objs.peek(), _conf_);
-			            	
-				            for (int i = 0; i < reader.getAttributeCount(); i++) {
-				            	call.set(reader.getAttributeLocalName(i), reader.getAttributeValue(i));
-				            }
-				            
-				            instructions.add(call);
-			            }
-			            break;
-			        case XMLEvent.END_ELEMENT:
-						localName = reader.getLocalName();
-						//System.out.println("END_ELEMENT "+localName);
-						
-						if ("class".equals(localName)) {
-							objs.pop();
-						} else if ("callMethod".equals(localName)) {
-							final CallMathod call = instructions.pop();
-							call.eval();
-						}
-						
-			            break;
-				}
-			}
-			
-			configurations.put(obj, conf);
-			return obj;
+            Object obj = null;
+            final Stack<Object> objs = new Stack<>();
+            final Stack<CallMethod> instructions = new Stack<>();
+
+            int eventType;
+            while (reader.hasNext()) {
+                eventType = reader.next();
+
+                switch (eventType) {
+                    case XMLEvent.START_ELEMENT:
+                        String localName = reader.getLocalName();
+
+                        if ("class".equals(localName)) {
+                            if (!"name".equals(reader.getAttributeLocalName(0))) {
+                                Configurator.LOG.error("class element first attribute must be 'name', skip instance creation.");
+                                return null;
+                            }
+
+                            final String clazzName = reader.getAttributeValue(0);
+                            final Class<?> clazz = Class.forName(clazzName);
+                            final java.lang.reflect.Constructor<?> constructor = clazz.getConstructor();
+
+                            Object newInstance = constructor.newInstance();
+                            if (obj == null) {
+                                obj = newInstance;
+                            }
+                            objs.add(newInstance);
+
+                            if (!instructions.empty()) {
+                                instructions.peek().setValue(newInstance);
+                            }
+
+                        } else if ("callMethod".equals(localName)) {
+
+                            Configuration _conf_ = conf;
+                            if (!instructions.empty()) {
+                                _conf_ = instructions.peek().getConfiguration();
+                            }
+
+                            final CallMethod call = new CallMethod(objs.peek(), _conf_);
+
+                            for (int i = 0; i < reader.getAttributeCount(); i++) {
+                                call.set(reader.getAttributeLocalName(i), reader.getAttributeValue(i));
+                            }
+
+                            instructions.add(call);
+                        }
+                        break;
+                    case XMLEvent.END_ELEMENT:
+                        localName = reader.getLocalName();
+                        //System.out.println("END_ELEMENT "+localName);
+
+                        if ("class".equals(localName)) {
+                            objs.pop();
+                        } else if ("callMethod".equals(localName)) {
+                            final CallMethod call = instructions.pop();
+                            call.eval();
+                        }
+
+                        break;
+                }
+            }
+
+            configurations.put(obj, conf);
+            return obj;
 
         } catch (final Exception e) {
-			Configurator.LOG.error(e);
-		}
+            Configurator.LOG.error(e);
+        }
         return null;
-	}
+    }
 }

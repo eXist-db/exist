@@ -5,6 +5,7 @@
  */
 package org.exist.storage.index;
 
+import org.exist.Database;
 import org.exist.collections.Collection;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.storage.BrokerPool;
@@ -43,15 +44,15 @@ public class CollectionStore extends BFile {
     private Stack<Integer> freeCollectionIds = new Stack<>();
 
     /**
-     * @param pool
+     * @param db
      * @param id
      * @param dataDir
      * @param config
      * @throws DBException
      */
-    public CollectionStore(BrokerPool pool, byte id, String dataDir, Configuration config) throws DBException {
-        super(pool, id, true, new File(dataDir + File.separatorChar + getFileName()), 
-                pool.getCacheManager(), 1.25, 0.01, 0.03);
+    public CollectionStore(Database db, byte id, String dataDir, Configuration config) throws DBException {
+        super(db, id, true, new File(dataDir + File.separatorChar + getFileName()),
+                db.getCacheManager(), 1.25, 0.01, 0.03);
         config.setProperty(getConfigKeyForFile(), this);
     }
 

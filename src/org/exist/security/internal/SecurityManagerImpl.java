@@ -1,23 +1,21 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2011 The eXist Project
+ *  Copyright (C) 2001-2015 The eXist Project
  *  http://exist-db.org
- *  
+ *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
  *  as published by the Free Software Foundation; either version 2
  *  of the License, or (at your option) any later version.
- *  
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- * 
- *  $Id$
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.security.internal;
 
@@ -33,6 +31,8 @@ import java.util.Properties;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
+import java.util.stream.Collectors;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Database;
@@ -87,18 +87,15 @@ public class SecurityManagerImpl implements SecurityManager {
     public final static int MAX_USER_ID = 1048571;  //1 less than RealmImpl.UNKNOWN_ACCOUNT_ID
     public final static int MAX_GROUP_ID = 1048572; //1 less than RealmImpl.UNKNOWN_GROUP_ID
 
-    public static final String PROPERTY_PERMISSIONS_COLLECTIONS = "indexer.permissions.collection";
-    public static final String PROPERTY_PERMISSIONS_RESOURCES = "indexer.permissions.resource";	
-
     public final static Logger LOG = LogManager.getLogger(SecurityManager.class);
 
-    private Database pool;
+    private Database db;
 
-    protected PrincipalDbById<Group> groupsById = new PrincipalDbById<Group>();
-    protected PrincipalDbById<Account> usersById = new PrincipalDbById<Account>();
+    protected PrincipalDbById<Group> groupsById = new PrincipalDbById<>();
+    protected PrincipalDbById<Account> usersById = new PrincipalDbById<>();
 
-    private final PrincipalLocks<Account> accountLocks = new PrincipalLocks<Account>();
-    private final PrincipalLocks<Group> groupLocks = new PrincipalLocks<Group>();
+    private final PrincipalLocks<Account> accountLocks = new PrincipalLocks<>();
+    private final PrincipalLocks<Group> groupLocks = new PrincipalLocks<>();
 
     //TODO: validate & remove if session timeout
     private SessionDb sessions = new SessionDb();
@@ -124,7 +121,7 @@ public class SecurityManagerImpl implements SecurityManager {
     
     @ConfigurationFieldAsElement("realm")
     @ConfigurationFieldClassMask("org.exist.security.realm.%1$s.%2$sRealm")
-    private List<Realm> realms = new ArrayList<Realm>();
+    private List<Realm> realms = new ArrayList<>();
     
     @ConfigurationFieldAsElement("events")
     //@ConfigurationFieldClassMask("org.exist.security.internal.SMEvents")
@@ -135,16 +132,16 @@ public class SecurityManagerImpl implements SecurityManager {
     private Configuration configuration = null;
     
     public SecurityManagerImpl(Database db) throws ConfigurationException {
-    	this.pool = db;
-    	
-    	defaultRealm = new RealmImpl(this, null); //TODO: in-memory configuration???
-    	realms.add(defaultRealm);
+        this.db = db;
 
-    	PermissionFactory.sm = this;
-    	
+        defaultRealm = new RealmImpl(this, null); //TODO: in-memory configuration???
+        realms.add(defaultRealm);
+
+        PermissionFactory.sm = this;
+
         final Properties params = new Properties();
         params.put(getClass().getName(), this);
-    	pool.getScheduler().createPeriodicJob(TIMEOUT_CHECK_PERIOD, new SessionsCheck(), TIMEOUT_CHECK_PERIOD, params, SimpleTrigger.REPEAT_INDEFINITELY, false);
+        db.scheduler().createPeriodicJob(TIMEOUT_CHECK_PERIOD, new SessionsCheck(), TIMEOUT_CHECK_PERIOD, params, SimpleTrigger.REPEAT_INDEFINITELY, false);
     }
 
     /**
@@ -153,25 +150,24 @@ public class SecurityManagerImpl implements SecurityManager {
      * Checks if the file users.xml exists in the system collection of the database.
      * If not, it is created with two default users: admin and guest.
      *  
-     * @param pool
      * @param broker
      */
     @Override
-    public void attach(BrokerPool pool, DBBroker broker) throws EXistException {
-//    	groups = new Int2ObjectHashMap<Group>(65);
-//    	users = new Int2ObjectHashMap<User>(65);
+    public void attach(DBBroker broker) throws EXistException {
+        //groups = new Int2ObjectHashMap<Group>(65);
+        //users = new Int2ObjectHashMap<User>(65);
 
-    	this.pool = pool;
-    	
-        final TransactionManager transaction = pool.getTransactionManager();
-		
+        db = broker.database(); //TODO: check that db is same?
+
+        final TransactionManager transaction = db.getTransactionManager();
+
         Collection systemCollection = null;
         try(final Txn txn = transaction.beginTransaction()) {
-	        systemCollection = broker.getCollection(XmldbURI.SYSTEM_COLLECTION_URI);
+            systemCollection = broker.getCollection(XmldbURI.SYSTEM_COLLECTION_URI);
             if(systemCollection == null) {
                 systemCollection = broker.getOrCreateCollection(txn, XmldbURI.SYSTEM_COLLECTION_URI);
-                if (systemCollection == null)
-                        {return;}
+                if (systemCollection == null) return;
+
                 systemCollection.setPermissions(Permission.DEFAULT_SYSTEM_COLLECTION_PERM);
                 broker.saveCollection(txn, systemCollection);
 
@@ -186,9 +182,8 @@ public class SecurityManagerImpl implements SecurityManager {
             collection = broker.getCollection(SECURITY_COLLECTION_URI);
             if (collection == null) {
                 collection = broker.getOrCreateCollection(txn, SECURITY_COLLECTION_URI);
-                if (collection == null){
-                    return;
-                }
+                if (collection == null) return;
+
                 //if db corrupted it can lead to unrunnable issue
                 //throw new ConfigurationException("Collection '/db/system/security' can't be created.");
 
@@ -201,7 +196,7 @@ public class SecurityManagerImpl implements SecurityManager {
             e.printStackTrace();
             LOG.debug("loading configuration failed: " + e.getMessage());
         }
-			
+
         final Configuration _config_ = Configurator.parse(this, broker, collection, CONFIG_FILE_URI);
         configuration = Configurator.configure(this, _config_);
 
@@ -209,10 +204,10 @@ public class SecurityManagerImpl implements SecurityManager {
         for (final Realm realm : realms) {
             realm.start(broker);
         }
-		   
+
         enableXACML = (Boolean)broker.getConfiguration().getProperty("xacml.enable");
         if(enableXACML != null && enableXACML.booleanValue()) {
-            pdp = new ExistPDP(pool);
+            pdp = new ExistPDP(db);
             LOG.debug("XACML enabled");
         }
     }
@@ -226,16 +221,12 @@ public class SecurityManagerImpl implements SecurityManager {
     public ExistPDP getPDP() {
         return pdp;
     }
-	
+
     @Override
     public boolean updateAccount(Account account) throws PermissionDeniedException, EXistException {
-        if (account == null) {
-            return false;
-        }
+        if (account == null) return false;
 
-        if (account.getRealmId() == null) {
-            throw new ConfigurationException("Account must have realm id.");
-        }
+        if (account.getRealmId() == null) throw new ConfigurationException("Account must have realm id.");
         
         accountLocks.getWriteLock(account).lock();
         try {
@@ -247,13 +238,9 @@ public class SecurityManagerImpl implements SecurityManager {
 
     @Override
     public boolean updateGroup(Group group) throws PermissionDeniedException, EXistException {
-        if (group == null) {
-            return false;
-        }
+        if (group == null) return false;
 
-        if (group.getRealmId() == null) {
-            throw new ConfigurationException("Group must have realm id.");
-        }
+        if (group.getRealmId() == null) throw new ConfigurationException("Group must have realm id.");
 
         groupLocks.getWriteLock(group).lock();
         try {
@@ -261,22 +248,16 @@ public class SecurityManagerImpl implements SecurityManager {
         } finally {
             groupLocks.getWriteLock(group).unlock();
         }
-        
     }
-
 
     @Override
     public boolean deleteGroup(String name) throws PermissionDeniedException, EXistException {
 
         final Group group = getGroup(name);
-        if (group == null) {
-            return false;
-        }
+        if (group == null) return false;
 
-        if (group.getRealmId() == null) {
-            throw new ConfigurationException("Group must have realm id.");
-        }
-        
+        if (group.getRealmId() == null) throw new ConfigurationException("Group must have realm id.");
+
         groupLocks.getWriteLock(group).lock();
         try {
             return findRealmForRealmId(group.getRealmId()).deleteGroup(group);
@@ -289,16 +270,13 @@ public class SecurityManagerImpl implements SecurityManager {
     public boolean deleteAccount(String name) throws PermissionDeniedException, EXistException {
         return deleteAccount(getAccount(name));
     }
-	
+
     @Override
     public boolean deleteAccount(Account account) throws PermissionDeniedException, EXistException {
 
-        if (account == null)
-            {return false;}
+        if (account == null) return false;
 
-        if (account.getRealmId() == null) {
-            throw new ConfigurationException("Account must have realm id.");
-        }
+        if (account.getRealmId() == null) throw new ConfigurationException("Account must have realm id.");
         
         accountLocks.getWriteLock(account).lock();
         try {
@@ -310,9 +288,8 @@ public class SecurityManagerImpl implements SecurityManager {
 
     @Override
     public Account getAccount(String name) {
-//    	if (SYSTEM.equals(name))
-//    		return defaultRealm.ACCOUNT_SYSTEM;
-    	
+//        if (SYSTEM.equals(name)) return defaultRealm.ACCOUNT_SYSTEM;
+
         for(final Realm realm : realms) {
             final Account account = realm.getAccount(name);
             if (account != null) {
@@ -326,23 +303,15 @@ public class SecurityManagerImpl implements SecurityManager {
 
     @Override
     public final Account getAccount(final int id) {
-
-        return usersById.read(new PrincipalDbRead<Account, Account>(){
-            @Override
-            public Account execute(final Int2ObjectHashMap<Account> principalDb) {
-                return principalDb.get(id);
-            }
-        });
+        return usersById.read(principalDb -> principalDb.get(id));
     }
 
     @Override
     public boolean hasGroup(String name) {
-    	for (final Realm realm : realms) {
-            if(realm.hasGroup(name)) {
-                return true;
-            }
-    	}
-    	return false;
+        for (final Realm realm : realms) {
+            if(realm.hasGroup(name)) return true;
+        }
+        return false;
     }
 
     @Override
@@ -352,25 +321,18 @@ public class SecurityManagerImpl implements SecurityManager {
 
     @Override
     public Group getGroup(String name) {
-    	for(final Realm realm : realms) {
+        for(final Realm realm : realms) {
             final Group group = realm.getGroup(name);
-            if(group != null){
-                return group;
-            }
-    	}
+            if(group != null) return group;
+        }
         return null;
     }
 
     @Override
     public final Group getGroup(final int id) {
-        return groupsById.read(new PrincipalDbRead<Group, Group>(){
-            @Override
-            public Group execute(final Int2ObjectHashMap<Group> principalDb) {
-                return principalDb.get(id);
-            }
-        });
+        return groupsById.read(principalDb -> principalDb.get(id));
     }
-	
+
     @Override
     public boolean hasAdminPrivileges(Account user) {
         
@@ -384,12 +346,10 @@ public class SecurityManagerImpl implements SecurityManager {
 
     @Override
     public boolean hasAccount(String name) {
-    	for(final Realm realm : realms) {
-            if(realm.hasAccount(name)) {
-                return true;
-            }
-    	}
-    	return false;
+        for(final Realm realm : realms) {
+            if(realm.hasAccount(name)) return true;
+        }
+        return false;
     }
 
     @Override
@@ -398,36 +358,34 @@ public class SecurityManagerImpl implements SecurityManager {
             {LOG.debug("Authentication try for '"+username+"'.");}
 
         if (username == null)
-        	{throw new AuthenticationException(
-        			AuthenticationException.ACCOUNT_NOT_FOUND, "Account NULL not found");}
+            throw new AuthenticationException(
+                AuthenticationException.ACCOUNT_NOT_FOUND,
+                "Account NULL not found"
+            );
 
         if("jsessionid".equals(username)) {
-    		
-    		if (getSystemSubject().getSessionId().equals(credentials))
-    			{return getSystemSubject();}
 
-    		if (getGuestSubject().getSessionId().equals(credentials))
-    			{return getGuestSubject();}
+            if (getSystemSubject().getSessionId().equals(credentials)) return getSystemSubject();
 
-            final Subject subject = sessions.read(new SessionDbRead<Subject>(){
-                @Override
-                public Subject execute(final Map<String, Session> db) {
-                	
-                	Session session = db.get((String)credentials);
-                	if (session == null) return null;
-                	
-                	if (session.isValid())
-                		return session.getSubject();
-                	
-                	return null; 
-                }
+            if (getGuestSubject().getSessionId().equals(credentials)) return getGuestSubject();
+
+            final Subject subject = sessions.read(db1 -> {
+
+                Session session = db1.get(credentials);
+                if (session == null) return null;
+
+                if (session.isValid()) return session.getSubject();
+
+                return null;
             });
 
             if(subject == null)
-                {throw new AuthenticationException(AuthenticationException.SESSION_NOT_FOUND, "Session [" + credentials + "] not found");}
+                throw new AuthenticationException(
+                    AuthenticationException.SESSION_NOT_FOUND,
+                    "Session [" + credentials + "] not found"
+                );
 
-            if (events != null)
-            	{events.authenticated(subject);}
+            if (events != null) events.authenticated(subject);
             
             //TODO: validate session
             return subject;
@@ -435,20 +393,18 @@ public class SecurityManagerImpl implements SecurityManager {
 
         for(final Realm realm : realms) {
             try {
-            	final Subject subject = realm.authenticate(username, credentials);
-            	
+                final Subject subject = realm.authenticate(username, credentials);
+
                 if (LOG.isDebugEnabled())
-                	{LOG.debug("Authenticated by '"+realm.getId()+"' as '"+subject+"'.");}
+                    LOG.debug("Authenticated by '"+realm.getId()+"' as '"+subject+"'.");
                 
-                if (events != null)
-                	{events.authenticated(subject);}
+                if (events != null) events.authenticated(subject);
 
                 return subject;
             } catch(final AuthenticationException e) {
                 if(e.getType() != AuthenticationException.ACCOUNT_NOT_FOUND) {
-                    if (LOG.isDebugEnabled()) {
+                    if (LOG.isDebugEnabled())
                         LOG.debug("Realm '"+realm.getId()+"' threw exception for account '"+username+"'. ["+e.getMessage()+"]");
-                    }
 
                     throw e;
                 }
@@ -460,27 +416,36 @@ public class SecurityManagerImpl implements SecurityManager {
         }
 
         throw new AuthenticationException(
-    		AuthenticationException.ACCOUNT_NOT_FOUND, 
-    		"Account [" + username + "] not found");
+            AuthenticationException.ACCOUNT_NOT_FOUND,
+            "Account [" + username + "] not found"
+        );
     }
     
     protected Subject systemSubject = null;
     protected Subject guestSubject = null;
-	
+
     @Override
     public Subject getSystemSubject() {
-    	if (systemSubject == null)
-    		{systemSubject = new SubjectAccreditedImpl((AccountImpl) defaultRealm.ACCOUNT_SYSTEM, this);}
-    	
+        if (systemSubject == null) {
+            synchronized (this) {
+                if (systemSubject == null) {
+                    systemSubject = new SubjectAccreditedImpl(defaultRealm.ACCOUNT_SYSTEM, this);
+                }
+            }
+        }
         return systemSubject; 
     }
 
     @Override
     public Subject getGuestSubject() {
-    	if (guestSubject == null)
-    		{guestSubject = new SubjectAccreditedImpl((AccountImpl)defaultRealm.getAccount(SecurityManager.GUEST_USER), this);}
-    	
-    	return guestSubject;
+        if (guestSubject == null) {
+            synchronized (this) {
+                if (guestSubject == null) {
+                    guestSubject = new SubjectAccreditedImpl((AccountImpl) defaultRealm.getAccount(SecurityManager.GUEST_USER), this);
+                }
+            }
+        }
+        return guestSubject;
     }
 
     @Override
@@ -490,7 +455,12 @@ public class SecurityManagerImpl implements SecurityManager {
 
     @Override
     public Database getDatabase() {
-        return pool;
+        return db;
+    }
+
+    @Override
+    public Database database() {
+        return db;
     }
 
     private synchronized int getNextGroupId() {
@@ -510,22 +480,21 @@ public class SecurityManagerImpl implements SecurityManager {
     @Override
     public List<Account> getGroupMembers(String groupName) {
 
-        final List<Account> groupMembers = new ArrayList<Account>();
+        final List<Account> groupMembers = new ArrayList<>();
 
         for(final Realm realm : realms) {
-            for(final Account account : realm.getAccounts()) {
-                if(account.hasGroup(groupName)) {
-                    groupMembers.add(account);
-                }
-            }
+            groupMembers.addAll(
+                realm.getAccounts().stream()
+                    .filter(account -> account.hasGroup(groupName))
+                    .collect(Collectors.toList())
+            );
         }
-
         return groupMembers;
     }
 
     @Override
     public List<String> findAllGroupMembers(String groupName) {
-        final List<String> userNames = new ArrayList<String>();
+        final List<String> userNames = new ArrayList<>();
         for(final Realm realm : realms) {
             userNames.addAll(realm.findAllGroupMembers(groupName));
         }
@@ -579,12 +548,7 @@ public class SecurityManagerImpl implements SecurityManager {
         
         groupLocks.getWriteLock(newGroup).lock();
         try {
-            groupsById.modify(new PrincipalDbModify<Group>(){
-                @Override
-                public void execute(final Int2ObjectHashMap<Group> principalDb) {
-                    principalDb.put(id, newGroup);
-                }
-            });
+            groupsById.modify(principalDb -> principalDb.put(id, newGroup));
             
             registeredRealm.registerGroup(newGroup);
 
@@ -600,15 +564,15 @@ public class SecurityManagerImpl implements SecurityManager {
     @Override
     public final Account addAccount(Account account) throws  PermissionDeniedException, EXistException{
         if(account.getRealmId() == null) {
-        	LOG.debug("Account must have realm id.");
+            LOG.debug("Account must have realm id.");
             throw new ConfigurationException("Account must have realm id.");
         }
-		
+
         if(account.getName() == null || account.getName().isEmpty()) {
-        	LOG.debug("Account must have name.");
+            LOG.debug("Account must have name.");
             throw new ConfigurationException("Account must have name.");
         }
-		
+
         final int id;
         if(account.getId() != Account.UNDEFINED_ID) {
             id = account.getId();
@@ -616,17 +580,12 @@ public class SecurityManagerImpl implements SecurityManager {
             id = getNextAccountId();
         }
 
-		final AbstractRealm registeredRealm = (AbstractRealm) findRealmForRealmId(account.getRealmId());
-		final AccountImpl newAccount = new AccountImpl(registeredRealm, id, account);
-	
+        final AbstractRealm registeredRealm = (AbstractRealm) findRealmForRealmId(account.getRealmId());
+        final AccountImpl newAccount = new AccountImpl(registeredRealm, id, account);
+
         accountLocks.getWriteLock(newAccount).lock();
         try {
-            usersById.modify(new PrincipalDbModify<Account>(){
-                @Override
-                public void execute(final Int2ObjectHashMap<Account> principalDb) {
-                    principalDb.put(id, newAccount);
-                }
-            });
+            usersById.modify(principalDb -> principalDb.put(id, newAccount));
             
             registeredRealm.registerAccount(newAccount);
 
@@ -645,11 +604,11 @@ public class SecurityManagerImpl implements SecurityManager {
         if(account.getRealmId() == null) {
             throw new ConfigurationException("Account must have realm id.");
         }
-		
+
         if(account.getName() == null || account.getName().isEmpty()) {
             throw new ConfigurationException("Account must have name.");
         }
-		
+
         final int id;
         if(account.getId() != Account.UNDEFINED_ID) {
             id = account.getId();
@@ -662,12 +621,7 @@ public class SecurityManagerImpl implements SecurityManager {
 
         accountLocks.getWriteLock(newAccount).lock();
         try {
-            usersById.modify(new PrincipalDbModify<Account>(){
-                @Override
-                public void execute(final Int2ObjectHashMap<Account> principalDb) {
-                    principalDb.put(id, newAccount);
-                }
-            });
+            usersById.modify(principalDb -> principalDb.put(id, newAccount));
             
             registeredRealm.registerAccount(newAccount);
 
@@ -680,7 +634,7 @@ public class SecurityManagerImpl implements SecurityManager {
             accountLocks.getWriteLock(newAccount).unlock();
         }
     }
-	
+
     private void save() throws PermissionDeniedException, EXistException {
         if (configuration != null) {
             configuration.save();
@@ -703,22 +657,21 @@ public class SecurityManagerImpl implements SecurityManager {
 		return configuration;
     }
     
-    //Session management part	
+    //Session management part
     
     public final static long TIMEOUT_CHECK_PERIOD = 20000; //20 sec
 
     public static class SessionsCheck implements JobDescription, org.quartz.Job {
-    	
-    	boolean firstRun = true;
-    	
-    	public SessionsCheck() {
-		}
+
+        boolean firstRun = true;
+
+        public SessionsCheck() {}
 
         public String getGroup() {
         	return "eXist.Security";
         }
 
-    	@Override
+        @Override
         public String getName() {
             return "Sessions.Check";
         }
@@ -731,47 +684,38 @@ public class SecurityManagerImpl implements SecurityManager {
         public final void execute( JobExecutionContext jec ) throws JobExecutionException {
             final JobDataMap jobDataMap = jec.getJobDetail().getJobDataMap();
 
-            final Properties params = (Properties) jobDataMap.get("params");
+            final Properties params = (Properties) jobDataMap.get(PARAMS);
             if (params == null) {
                 return;
             }
             final SecurityManagerImpl sm = ( SecurityManagerImpl )params.get( SecurityManagerImpl.class.getName() );
 
-            if (sm == null)
-            	{return;}
+            if (sm == null) return;
             
-            sm.sessions.modify(new SessionDbModify(){
-	            @Override
-	            public void execute(final Map<String, Session> db) {
-	            	final Iterator<Map.Entry<String, Session>> iter = db.entrySet().iterator();
-	            	while (iter.hasNext()) {
-	            		final Map.Entry<String, Session> entry = iter.next();
-	            		if (entry == null || !entry.getValue().isValid()) {
-	            			iter.remove();
-	            		}
-	            	}
-	            }
-	        });
-    	}
+            sm.sessions.modify(db -> {
+                final Iterator<Map.Entry<String, Session>> it = db.entrySet().iterator();
+                while (it.hasNext()) {
+                    final Map.Entry<String, Session> entry = it.next();
+                    if (entry == null || !entry.getValue().isValid()) {
+                        it.remove();
+                    }
+                }
+            });
+        }
     }
 
     @Override
-    public void registerSession(final Session session) {
-        sessions.modify(new SessionDbModify(){
-            @Override
-            public void execute(final Map<String, Session> db) {
-                db.put(session.getId(), session);
-            }
-        });
+    public void registerSession(Session session) {
+        sessions.modify(db -> db.put(session.getId(), session));
     }
 
     @Override
-    public Subject getSubjectBySessionId(final String sessionId) {
-        return sessions.read(new SessionDbRead<Subject>(){
-            @Override
-            public Subject execute(final Map<String, Session> db) {
-                return db.get(sessionId).getSubject();
-            }
+    public Subject getSubjectBySessionId(String sessionId) {
+        return sessions.read(db -> {
+            Session session = db.get(sessionId);
+            if (session != null) return session.getSubject();
+
+            return null;
         });
     }
         
@@ -786,47 +730,27 @@ public class SecurityManagerImpl implements SecurityManager {
     
     @Override
     public void addGroup(final int id, final Group group) {
-        groupsById.modify(new PrincipalDbModify<Group>(){
-            @Override
-            public void execute(final Int2ObjectHashMap<Group> principalDb) {
-               principalDb.put(id, group);
-            }
-        });
+        groupsById.modify(principalDb -> principalDb.put(id, group));
     }
 
     @Override
     public void addUser(final int id, final Account account) {
-        usersById.modify(new PrincipalDbModify<Account>(){
-            @Override
-            public void execute(final Int2ObjectHashMap<Account> principalDb) {
-               principalDb.put(id, account);
-            }
-        });
+        usersById.modify(principalDb -> principalDb.put(id, account));
     }
 
     @Override
     public boolean hasGroup(final int id) {
-        return groupsById.read(new PrincipalDbRead<Group, Boolean>(){
-            @Override
-            public Boolean execute(Int2ObjectHashMap<Group> principalDb) {
-                return principalDb.containsKey(id);
-            }
-        });
+        return groupsById.read(principalDb -> principalDb.containsKey(id));
     }
 
     @Override
     public boolean hasUser(final int id) {
-        return usersById.read(new PrincipalDbRead<Account, Boolean>(){
-            @Override
-            public Boolean execute(Int2ObjectHashMap<Account> principalDb) {
-                return principalDb.containsKey(id);
-            }
-        });
+        return usersById.read(principalDb -> principalDb.containsKey(id));
     }
 
     @Override
     public List<String> findUsernamesWhereNameStarts(String startsWith) {
-        final List<String> userNames = new ArrayList<String>();
+        final List<String> userNames = new ArrayList<>();
         for(final Realm realm : realms) {
             userNames.addAll(realm.findUsernamesWhereNameStarts(startsWith));
         }
@@ -835,7 +759,7 @@ public class SecurityManagerImpl implements SecurityManager {
 
     @Override
     public List<String> findUsernamesWhereUsernameStarts(String startsWith) {
-        final List<String> userNames = new ArrayList<String>();
+        final List<String> userNames = new ArrayList<>();
         for(final Realm realm : realms) {
             userNames.addAll(realm.findUsernamesWhereUsernameStarts(startsWith));
         }
@@ -844,7 +768,7 @@ public class SecurityManagerImpl implements SecurityManager {
     
     @Override
     public List<String> findUsernamesWhereNamePartStarts(String startsWith) {
-        final List<String> userNames = new ArrayList<String>();
+        final List<String> userNames = new ArrayList<>();
         for(final Realm realm : realms) {
             userNames.addAll(realm.findUsernamesWhereNamePartStarts(startsWith));
         }
@@ -853,7 +777,7 @@ public class SecurityManagerImpl implements SecurityManager {
 
     @Override
     public List<String> findGroupnamesWhereGroupnameContains(String fragment) {
-        final List<String> groupNames = new ArrayList<String>();
+        final List<String> groupNames = new ArrayList<>();
         for(final Realm realm : realms) {
             groupNames.addAll(realm.findGroupnamesWhereGroupnameContains(fragment));
         }
@@ -862,7 +786,7 @@ public class SecurityManagerImpl implements SecurityManager {
     
     @Override
     public List<String> findGroupnamesWhereGroupnameStarts(String startsWith) {
-        final List<String> groupNames = new ArrayList<String>();
+        final List<String> groupNames = new ArrayList<>();
         for(final Realm realm : realms) {
             groupNames.addAll(realm.findGroupnamesWhereGroupnameStarts(startsWith));
         }
@@ -871,7 +795,7 @@ public class SecurityManagerImpl implements SecurityManager {
 
     @Override
     public List<String> findAllGroupNames() {
-        final List<String> groupNames = new ArrayList<String>();
+        final List<String> groupNames = new ArrayList<>();
         for(final Realm realm : realms) {
             groupNames.addAll(realm.findAllGroupNames());
         }
@@ -880,14 +804,14 @@ public class SecurityManagerImpl implements SecurityManager {
     
     @Override
     public List<String> findAllUserNames() {
-        final List<String> userNames = new ArrayList<String>();
+        final List<String> userNames = new ArrayList<>();
         for(final Realm realm : realms) {
             userNames.addAll(realm.findAllUserNames());
         }
         return userNames;
     }
     
-    private Map<XmldbURI, Integer> saving = new HashMap<XmldbURI, Integer>();
+    private Map<XmldbURI, Integer> saving = new HashMap<>();
     
     @Override
     public void processPramatterBeforeSave(DBBroker broker, DocumentImpl document) throws ConfigurationException {
@@ -897,17 +821,17 @@ public class SecurityManagerImpl implements SecurityManager {
         if(isRemoved) {
             uri = uri.removeLastSegment();
         }
-		
+
         final boolean isAccount = uri.endsWith(SecurityManager.ACCOUNTS_COLLECTION_URI);
         final boolean isGroup = uri.endsWith(SecurityManager.GROUPS_COLLECTION_URI);
-		
+
         if(isAccount || isGroup) {
             //uri = uri.removeLastSegment();
             //String realmId = uri.lastSegment().toString();
             //AbstractRealm realm = (AbstractRealm)findRealmForRealmId(realmId);
-            final Configuration conf = Configurator.parse(broker.getBrokerPool(), document);
+            final Configuration conf = Configurator.parse(broker.getDatabase(), document);
 
-        	saving.put(document.getURI(), conf.getPropertyInteger("id"));
+            saving.put(document.getURI(), conf.getPropertyInteger("id"));
         }
     }
 
@@ -958,13 +882,10 @@ public class SecurityManagerImpl implements SecurityManager {
                     		final Account current = realm.getAccount(name);
 	            	        accountLocks.getWriteLock(current).lock();
 	            	        try {
-	            	            usersById.modify(new PrincipalDbModify<Account>(){
-	            	                @Override
-	            	                public void execute(final Int2ObjectHashMap<Account> principalDb) {
-	            	                    principalDb.remove(oldId);
-	            	                    principalDb.put(newId, current);
-	            	                }
-	            	            });
+	            	            usersById.modify(principalDb -> {
+                                    principalDb.remove(oldId);
+                                    principalDb.put(newId, current);
+                                });
 	            	        } finally {
 	            	            accountLocks.getWriteLock(current).unlock();
 	            	        }
@@ -1024,7 +945,7 @@ public class SecurityManagerImpl implements SecurityManager {
     }
    
     protected class SessionDb {
-        private final Map<String, Session> db = new HashMap<String, Session>();
+        private final Map<String, Session> db = new HashMap<>();
         private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
         private final ReadLock readLock = lock.readLock();
         private final WriteLock writeLock = lock.writeLock();
@@ -1049,16 +970,16 @@ public class SecurityManagerImpl implements SecurityManager {
     }
     
     protected interface SessionDbRead<R> {
-       public R execute(final Map<String, Session> db);
+       R execute(final Map<String, Session> db);
     }
 
     protected interface SessionDbModify {
-        public void execute(final Map<String, Session> db);
+        void execute(final Map<String, Session> db);
     }
    
     protected class PrincipalDbById<V extends Principal> {
     
-        private final Int2ObjectHashMap<V> db = new Int2ObjectHashMap<V>(65);
+        private final Int2ObjectHashMap<V> db = new Int2ObjectHashMap<>(65);
         private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
         private final ReadLock readLock = lock.readLock();
         private final WriteLock writeLock = lock.writeLock();
@@ -1101,25 +1022,25 @@ public class SecurityManagerImpl implements SecurityManager {
     }
     
     protected interface PrincipalDbRead<V extends Principal, R> {
-       public R execute(final Int2ObjectHashMap<V> principalDb);
+        R execute(final Int2ObjectHashMap<V> principalDb);
     }
 
     protected interface PrincipalDbModify<V extends Principal> {
-        public void execute(final Int2ObjectHashMap<V> principalDb);
+        void execute(final Int2ObjectHashMap<V> principalDb);
     }
 
     protected interface PrincipalDbModifyE<V extends Principal, E extends Exception> {
-        public void execute(final Int2ObjectHashMap<V> principalDb) throws E;
+        void execute(final Int2ObjectHashMap<V> principalDb) throws E;
     }
 
     protected interface PrincipalDbModify2E<V extends Principal, E extends Exception, E2 extends Exception> {
-        public void execute(final Int2ObjectHashMap<V> principalDb) throws E, E2;
+        void execute(final Int2ObjectHashMap<V> principalDb) throws E, E2;
     }
 
-	@Override
-	public Subject getCurrentSubject() {
-		return pool.getSubject();
-	}
+    @Override
+    public Subject getCurrentSubject() {
+        return db.getSubject();
+    }
 
     @Override
     public final synchronized void preAllocateAccountId(final PrincipalIdReceiver receiver) throws PermissionDeniedException, EXistException {

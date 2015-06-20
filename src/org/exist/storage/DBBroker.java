@@ -98,7 +98,7 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
 
     protected Configuration config;
 
-    protected BrokerPool pool;
+    protected Database db;
 
     private Subject subject = null;
 
@@ -115,12 +115,12 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
         //Nothing todo
     }
 
-    public DBBroker(BrokerPool pool, Configuration config) {
+    public DBBroker(Database db, Configuration config) {
         this.config = config;
         final Boolean temp = (Boolean) config.getProperty(NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE);
         if (temp != null)
             {caseSensitive = temp.booleanValue();}
-        this.pool = pool;
+        this.db = db;
         xqueryService = new XQuery(this);
         initIndexModules();
     }
@@ -743,13 +743,18 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
 		return false;
 	}
 
+    @Deprecated //use getDatabase
 	public BrokerPool getBrokerPool() {
-		return pool;
+		return (BrokerPool)db;
 	}
 
 	public Database getDatabase() {
-		return pool;
+		return db;
 	}
+
+    public Database database() {
+        return db;
+    }
 
 	public abstract void insertNodeAfter(Txn transaction,
 			final NodeHandle previous, final IStoredNode node);
@@ -837,12 +842,12 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
 
     @Override
     public void close() {
-        pool.release(this);
+        db.release(this);
     }
     
     @Deprecated //use close() method instead
     public void release() {
-        pool.release(this);
+        db.release(this);
     }
     
     public Txn beginTx() {

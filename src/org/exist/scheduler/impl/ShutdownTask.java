@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2015 The eXist team
+ *  Copyright (C) 2001-2015 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -13,16 +13,14 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software Foundation
- *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- *  $Id$
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.scheduler.impl;
 
+import org.exist.Database;
 import org.exist.EXistException;
-import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.SystemTask;
 import org.exist.util.Configuration;
@@ -52,7 +50,7 @@ public class ShutdownTask implements SystemTask {
     public void execute(final DBBroker broker) throws EXistException {
 
         //NOTE - shutdown must be executed asynchronously from the scheduler, to avoid a deadlock with shutting down the scheduler
-        final Callable shutdownCallable = new AsyncShutdown(broker.getBrokerPool());
+        final Callable shutdownCallable = new AsyncShutdown(broker.getDatabase());
         Executors.newSingleThreadExecutor(r -> new Thread(threadGroup, r, "Async Scheduled eXist Shutdown")).submit(shutdownCallable);
     }
 
@@ -62,14 +60,14 @@ public class ShutdownTask implements SystemTask {
     }
 
     private static class AsyncShutdown implements Callable<Void> {
-        private final BrokerPool brokerPool;
-        public AsyncShutdown(final BrokerPool brokerPool) {
-            this.brokerPool = brokerPool;
+        private final Database db;
+        public AsyncShutdown(final Database db) {
+            this.db = db;
         }
 
         @Override
         public Void call() {
-            brokerPool.shutdown();
+            db.shutdown();
             return null;
         }
     }

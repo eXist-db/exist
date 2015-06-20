@@ -34,6 +34,7 @@ import javax.xml.stream.XMLStreamReader;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exist.Database;
 import org.exist.dom.persistent.AttrImpl;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.ElementImpl;
@@ -190,8 +191,8 @@ public class DOMFile extends BTree implements Lockable {
 
     private final AddValueLoggable addValueLog = new AddValueLoggable();
 
-    public DOMFile(BrokerPool pool, byte id, String dataDir, Configuration config) throws DBException {
-        super(pool, id, true, pool.getCacheManager(), 0.01);
+    public DOMFile(Database db, byte id, String dataDir, Configuration config) throws DBException {
+        super(db, id, true, db.getCacheManager(), 0.01);
         lock = new ReentrantReadWriteLock(getFileName());
         fileHeader = (BTreeFileHeader)getFileHeader();
         fileHeader.setPageCount(0);

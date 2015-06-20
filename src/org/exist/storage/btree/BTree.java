@@ -1,23 +1,21 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-05 The eXist Project
+ *  Copyright (C) 2001-2015 The eXist Project
  *  http://exist-db.org
- *  
+ *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
  *  as published by the Free Software Foundation; either version 2
  *  of the License, or (at your option) any later version.
- *  
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *  
- *  $Id$
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *  
  *  This file is in part based on code from the dbXML Group. The original license
  *  statement is included below:
@@ -74,10 +72,9 @@ package org.exist.storage.btree;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import org.exist.storage.BrokerPool;
+import org.exist.Database;
 import org.exist.storage.BufferStats;
 import org.exist.storage.CacheManager;
-import org.exist.storage.DefaultCacheManager;
 import org.exist.storage.NativeBroker;
 import org.exist.storage.cache.*;
 import org.exist.storage.journal.Journal;
@@ -146,7 +143,7 @@ public class BTree extends Paged implements Lockable {
         LogEntryTypes.addEntryType(LOG_SET_LINK, SetPageLinkLoggable.class);
     }
 
-    protected DefaultCacheManager cacheManager;
+    protected CacheManager cacheManager;
 
     /** Cache of BTreeNode(s) */
     protected Cache cache;
@@ -166,14 +163,14 @@ public class BTree extends Paged implements Lockable {
 
     protected boolean isTransactional;
 
-    protected BrokerPool pool;
+    protected Database db;
 
     private double splitFactor = -1;
 
-    protected BTree(BrokerPool pool, byte fileId, boolean transactional,
-            DefaultCacheManager cacheManager, double growthThreshold) throws DBException {
-        super(pool);
-        this.pool = pool;
+    protected BTree(Database db, byte fileId, boolean transactional,
+            CacheManager cacheManager, double growthThreshold) throws DBException {
+        super(db);
+        this.db = db;
         this.cacheManager = cacheManager;
         this.buffers = cacheManager.getDefaultInitialSize();
         this.growthThreshold = growthThreshold;
@@ -181,15 +178,15 @@ public class BTree extends Paged implements Lockable {
         fileHeader = (BTreeFileHeader) getFileHeader();
         fileHeader.setPageCount(0);
         fileHeader.setTotalCount(0);
-        isTransactional = transactional && pool.isTransactional();
+        isTransactional = transactional && db.isTransactional();
         if (isTransactional)
-            {logManager = pool.getTransactionManager().getJournal();}
+            {logManager = db.getTransactionManager().getJournal();}
     }
 
-    public BTree(BrokerPool pool, byte fileId, boolean transactional,
-            DefaultCacheManager cacheManager, File file, double growthThreshold)
+    public BTree(Database db, byte fileId, boolean transactional,
+            CacheManager cacheManager, File file, double growthThreshold)
             throws DBException {
-        this(pool, fileId, transactional, cacheManager, growthThreshold);
+        this(db, fileId, transactional, cacheManager, growthThreshold);
         setFile(file);
     }
 

@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2014 The eXist Project
+ *  Copyright (C) 2001-2015 The eXist Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -22,6 +22,7 @@ package org.exist;
 import java.io.File;
 import java.util.Collection;
 
+import org.exist.collections.CollectionCache;
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.triggers.CollectionTrigger;
 import org.exist.collections.triggers.DocumentTrigger;
@@ -35,11 +36,7 @@ import org.exist.scheduler.Scheduler;
 import org.exist.security.AuthenticationException;
 import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
-import org.exist.storage.CacheManager;
-import org.exist.storage.DBBroker;
-import org.exist.storage.MetaStorage;
-import org.exist.storage.NotificationService;
-import org.exist.storage.ProcessMonitor;
+import org.exist.storage.*;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.util.Configuration;
 import org.exist.xquery.PerformanceStats;
@@ -54,59 +51,91 @@ public interface Database {
 
     // TODO: javadocs
 
-    public String getId();
+    String getId();
 
     /**
-     * 
-     * @return SecurityManager
+     * Returns the database instance's security manager
+     *
+     * @return The security manager
      */
-    public SecurityManager getSecurityManager();
+    SecurityManager getSecurityManager();
 
     /**
-     * 
-     * @return IndexManager
+     * Returns the database instance's security manager
+     *
+     * @return The security manager
      */
-    public IndexManager getIndexManager();
+    SecurityManager securityManager();
+
+    /**
+     * Returns the index manager which handles all additional indexes not
+     * being part of the database core.
+     *
+     * @return The IndexManager
+     */
+    IndexManager getIndexManager();
+
+    /**
+     * Returns the index manager which handles all additional indexes not
+     * being part of the database core.
+     *
+     * @return The IndexManager
+     */
+    IndexManager indexManager();
 
     /**
      * 
      * @return TransactionManager
      */
-    public TransactionManager getTransactionManager();
+    TransactionManager getTransactionManager();
+
+    TransactionManager transactionManager();
 
     /**
-     * 
-     * @return CacheManager
+     * Returns a cache in which the database instance's may store items.
+     *
+     * @return The cache
      */
-    public CacheManager getCacheManager();
+    CacheManager getCacheManager();
 
     /**
-     * 
-     * @return Scheduler
+     * Returns a cache in which the database instance's may store items.
+     *
+     * @return The cache
      */
-    public Scheduler getScheduler();
+    CacheManager cacheManager();
 
     /**
-	 * 
-	 */
-    public void shutdown();
+     * Returns the Scheduler
+     *
+     * @return The scheduler
+     */
+    Scheduler getScheduler();
+
+    Scheduler scheduler();
+
+    /**
+     * Shuts downs the database instance
+     */
+    void shutdown();
 
     /**
      * 
      * @return Subject
      */
-    public Subject getSubject();
+    Subject getSubject();
 
     /**
      * 
      * @param subject
      */
-    public boolean setSubject(Subject subject);
+    @Deprecated //use getActiveBroker().getSubject()
+    boolean setSubject(Subject subject);
 
     // TODO: remove 'throws EXistException'?
-    public DBBroker getBroker() throws EXistException; 
+    DBBroker getBroker() throws EXistException;
 
-    public DBBroker authenticate(String username, Object credentials) throws AuthenticationException;
+    DBBroker authenticate(String username, Object credentials) throws AuthenticationException;
 
     /*
      * @Deprecated ? 
@@ -123,11 +152,11 @@ public interface Database {
      *     database.release(broker);
      * }
      */
-    public DBBroker get(Subject subject) throws EXistException;
+    DBBroker get(Subject subject) throws EXistException;
 
-    public DBBroker getActiveBroker(); // throws EXistException;
+    DBBroker getActiveBroker(); // throws EXistException;
 
-    public void release(DBBroker broker);
+    void release(DBBroker broker);
 
     /**
      * Returns the number of brokers currently serving requests for the database
@@ -135,52 +164,102 @@ public interface Database {
      * 
      * @return The brokers count
      */
-    public int countActiveBrokers();
+    int countActiveBrokers();
 
     /**
      * 
      * @return Debuggee
      */
-    public Debuggee getDebuggee();
+    Debuggee getDebuggee();
 
-    public PerformanceStats getPerformanceStats();
+    PerformanceStats getPerformanceStats();
 
     // old configuration
-    public Configuration getConfiguration();
+    Configuration getConfiguration();
 
-    public NodeIdFactory getNodeFactory();
+    NodeIdFactory getNodeFactory();
 
-    public File getStoragePlace();
+    File getStoragePlace();
 
-    public CollectionConfigurationManager getConfigurationManager();
+    CollectionConfigurationManager getConfigurationManager();
 
     /**
      * Master document triggers.
      */
-    public Collection<TriggerProxy<? extends DocumentTrigger>> getDocumentTriggers();
+    Collection<TriggerProxy<? extends DocumentTrigger>> getDocumentTriggers();
 
     // public DocumentTrigger getDocumentTrigger();
 
     /**
      * Master Collection triggers.
      */
-    public Collection<TriggerProxy<? extends CollectionTrigger>> getCollectionTriggers();
+    Collection<TriggerProxy<? extends CollectionTrigger>> getCollectionTriggers();
 
-    // public CollectionTrigger getCollectionTrigger();
+    //CollectionTrigger getCollectionTrigger();
 
-    public void registerDocumentTrigger(Class<? extends DocumentTrigger> clazz);
+    void registerDocumentTrigger(Class<? extends DocumentTrigger> clazz);
 
-    public void registerCollectionTrigger(Class<? extends CollectionTrigger> clazz);
+    void registerCollectionTrigger(Class<? extends CollectionTrigger> clazz);
 
-    public ProcessMonitor getProcessMonitor();
+    ProcessMonitor getProcessMonitor();
 
-    public boolean isReadOnly();
+    /**
+     * Whether or not the database instance is being initialized.
+     *
+     * @return <code>true</code> is the database instance is being initialized
+     */
+    boolean isInitializing();
 
-    public NotificationService getNotificationService();
+    boolean isReadOnly();
 
-    public PluginsManager getPluginsManager();
+    /**
+     * Switch db to read only mode.
+     */
+    void setReadOnly();
 
-    public SymbolTable getSymbols();
+    NotificationService getNotificationService();
 
-    public MetaStorage getMetaStorage();
+    PluginsManager getPluginsManager();
+
+    SymbolTable getSymbols();
+
+    MetaStorage getMetaStorage();
+
+    int getPageSize();
+
+    boolean isTransactional();
+
+    long getReservedMem();
+
+    void initCollectionConfigurationManager(DBBroker broker);
+
+    CollectionCache getCollectionsCache();
+
+    /**
+     * Schedules a system maintenance task for the database instance. If the database is idle,
+     * the task will be run immediately. Otherwise, the task will be deferred
+     * until all running threads have returned.
+     *
+     * @param task The task
+     */
+    void triggerSystemTask(SystemTask task);
+
+    long getLastMajorSync();
+
+    long getMajorSyncPeriod();
+
+    /**
+     * Executes a waiting cache synchronization for the database instance.
+     *
+     * @param broker    A broker responsible for executing the job
+     * @param syncEvent One of {@link org.exist.storage.sync.Sync#MINOR_SYNC} or {@link org.exist.storage.sync.Sync#MINOR_SYNC}
+     */
+    //TODO : rename as runSync ? executeSync ?
+    //TOUNDERSTAND (pb) : *not* synchronized, so... "executes" or, rather, "schedules" ? "executes" (WM)
+    //TOUNDERSTAND (pb) : why do we need a broker here ? Why not get and release one when we're done ?
+    // WM: the method will always be under control of the BrokerPool. It is guaranteed that no
+    // other brokers are active when it is called. That's why we don't need to synchronize here.
+    //TODO : make it protected ?
+    //it's called from SyncTask ... now is that safe?
+    void sync(final DBBroker broker, final int syncEvent);
 }

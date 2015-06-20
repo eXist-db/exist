@@ -22,8 +22,8 @@
  */
 package org.exist.dom.persistent;
 
+import org.exist.Database;
 import org.exist.collections.Collection;
-import org.exist.storage.BrokerPool;
 import org.exist.storage.btree.Paged.Page;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
@@ -44,12 +44,12 @@ public class BinaryDocument extends DocumentImpl {
     private long pageNr = Page.NO_PAGE;
     private long realSize = 0L;
 
-    public BinaryDocument(final BrokerPool pool) {
-        super(pool);
+    public BinaryDocument(final Database db) {
+        super(db);
     }
 
-    public BinaryDocument(final BrokerPool pool, final Collection collection, final XmldbURI fileURI) {
-        super(pool, collection, fileURI);
+    public BinaryDocument(final Database db, final Collection collection, final XmldbURI fileURI) {
+        super(db, collection, fileURI);
     }
 
     @Override
@@ -83,7 +83,7 @@ public class BinaryDocument extends DocumentImpl {
         getPermissions().write(ostream);
 
         ostream.writeLong(realSize);
-        getMetadata().write(getBrokerPool(), ostream);
+        getMetadata().write(db.getSymbols(), ostream);
     }
 
     @Override
@@ -96,7 +96,7 @@ public class BinaryDocument extends DocumentImpl {
 
         this.realSize = istream.readLong();
         final DocumentMetadata metadata = new DocumentMetadata();
-        metadata.read(getBrokerPool(), istream);
+        metadata.read(db.getSymbols(), istream);
         setMetadata(metadata);
     }
 }
