@@ -9,13 +9,13 @@ declare namespace test="http://exist-db.org/xquery/xqsuite";
 declare namespace output="http://www.w3.org/2010/xslt-xquery-serialization";
 declare namespace json="http://www.json.org";
 
-declare variable $arr:SERIALIZE_JSON := 
+declare variable $arr:SERIALIZE_JSON :=
     <output:serialization-parameters>
         <output:method>json</output:method>
         <output:indent>false</output:indent>
     </output:serialization-parameters>;
 
-declare variable $arr:COLLECTION_CONF := 
+declare variable $arr:COLLECTION_CONF :=
     <collection xmlns="http://exist-db.org/collection-config/1.0">
         <index xmlns:xs="http://www.w3.org/2001/XMLSchema">
             <create qname="a" type="xs:int"/>
@@ -28,7 +28,7 @@ declare variable $arr:COLLECTION_CONF :=
         </triggers>
     </collection>;
 
-declare variable $arr:XML_STORED := 
+declare variable $arr:XML_STORED :=
     <test>
         <a>1</a>
         <b>2</b>
@@ -54,7 +54,7 @@ declare variable $arr:RESTXQ_TEST :=
          }
      };';
 
-declare 
+declare
     %test:setUp
 function arr:setup() {
     let $json := '[{"key1": "value1", "key2": "value2", "key1": "value3"}]'
@@ -76,7 +76,7 @@ function arr:cleanup() {
     xmldb:remove("/db/system/config/db/array-test")
 };
 
-declare 
+declare
     %test:args(1)
     %test:assertEquals(13)
     %test:args(3)
@@ -85,7 +85,7 @@ function arr:function-item($pos as xs:int) {
     [13, 10, 14]($pos)
 };
 
-declare 
+declare
     %test:args(1)
     %test:assertEquals(13)
     %test:args(3)
@@ -316,7 +316,7 @@ function arr:subarray2($start as xs:int, $length as xs:int) {
         $a?*
 };
 
-declare 
+declare
     %test:args(1)
     %test:assertEquals("b", "c", "d")
     %test:args(2)
@@ -331,139 +331,139 @@ function arr:remove1($pos as xs:int) {
     array:remove(["a", "b", "c", "d"], $pos)?*
 };
 
-declare 
+declare
     %test:assertEmpty
 function arr:remove2() {
     array:remove(["a"], 1)?*
 };
 
-declare 
+declare
     %test:assertEquals("d", "c", "b", "a")
 function arr:reverse1() {
     array:reverse(["a", "b", "c", "d"])?*
 };
 
-declare 
+declare
     %test:assertEquals("c", "d", "a", "b")
 function arr:reverse2() {
     array:reverse([("a", "b"), ("c", "d")])?*
 };
 
-declare 
+declare
     %test:assertEquals("1", "2", "3", "4", "5")
 function arr:reverse3() {
     array:reverse([(1 to 5)])?*
 };
 
-declare 
+declare
     %test:assertEmpty
 function arr:reverse4() {
     array:reverse([])?*
 };
 
-declare 
+declare
     %test:assertEmpty
 function arr:join1() {
     array:join(())?*
 };
 
-declare 
+declare
     %test:assertEquals("a", "b", "c", "d")
 function arr:join2() {
     array:join((["a", "b"], ["c", "d"], []))?*
 };
 
-declare 
+declare
     %test:assertEquals(5)
 function arr:join3() {
     array:size(array:join((["a", "b"], ["c", "d"], [["e", "f"]])))
 };
 
-declare 
+declare
     %test:assertEquals("A", "B", "C", "D")
 function arr:for-each1() {
     array:for-each(["a", "b", "c", "d"], upper-case#1)?*
 };
 
-declare 
+declare
     %test:assertEquals("false", "false", "true", "true")
 function arr:for-each2() {
     array:for-each(["a", "b", 1, 2], function($z) { $z instance of xs:integer })?*
 };
 
-declare 
+declare
     %test:assertEquals("1", "2")
 function arr:filter1() {
     array:filter(["a", "b", 1, 2], function($z) { $z instance of xs:integer })?*
 };
 
-declare 
+declare
     %test:assertEquals("a", "b", 1)
 function arr:filter2() {
     array:filter(["a", "b", "", 0, 1], boolean#1)?*
 };
 
-declare 
+declare
     %test:assertEquals("the cat", "on the mat")
 function arr:filter3() {
     array:filter(["the cat", "sat", "on the mat"], function($s) { count(tokenize($s, " ")) gt 1 })?*
 };
 
-declare 
+declare
     %test:assertFalse
 function arr:fold-left1() {
     array:fold-left([true(), true(), false()], true(), function($x, $y) { $x and $y })
 };
 
-declare 
+declare
     %test:assertTrue
 function arr:fold-left2() {
     array:fold-left([true(), true(), false()], false(), function($x, $y) { $x or $y })
 };
 
-declare 
+declare
     %test:assertEquals(1)
 function arr:fold-left3() {
     array:fold-left([], 1, function($x, $y) { $x + $y })
 };
 
-declare 
+declare
     %test:assertEquals(8)
 function arr:fold-left4() {
     array:fold-left(["abc", "def", "gh"], 0, function($x, $y) { $x + string-length($y) })
 };
 
-declare 
+declare
     %test:assertEquals("abcdefgh")
 function arr:fold-left5() {
     array:fold-left(["abc", "def", "gh"], "", function($x, $y) { $x || $y })
 };
 
-declare 
+declare
     %test:assertEquals(1)
 function arr:fold-left6() {
     array:fold-left([1, 2], (), function($x, $y) { [$x, $y] })?1?2
 };
 
-declare 
+declare
     %test:assertFalse
 function arr:fold-right1() {
     array:fold-right([true(), true(), false()], true(), function($x, $y) { $x and $y })
 };
 
-declare 
+declare
     %test:assertTrue
 function arr:fold-right2() {
     array:fold-right([true(), true(), false()], false(), function($x, $y) { $x or $y })
 };
 
-declare 
+declare
     %test:assertEquals(2)
 function arr:fold-right3() {
     array:fold-right([1, 2, 3], (), function($x, $y) { [$x, $y] })?2?1
 };
 
-declare 
+declare
     %test:assertEquals(5, 4, 3, 2, 1)
 function arr:fold-right4() {
     array:fold-right(
@@ -481,7 +481,7 @@ function arr:for-each-pair1() {
         array:for-each-pair($a, array:tail($a), concat#2)?*
 };
 
-declare 
+declare
     %test:assertEquals(5, 7, 9)
 function arr:for-each-pair2() {
     array:for-each-pair(
@@ -491,7 +491,7 @@ function arr:for-each-pair2() {
     )?*
 };
 
-declare 
+declare
     %test:assertEmpty
 function arr:for-each-pair3() {
     array:for-each-pair(
@@ -501,49 +501,49 @@ function arr:for-each-pair3() {
     )?*
 };
 
-declare 
+declare
     %test:assertEquals(1, 4, 6, 5, 3)
 function arr:flatten1() {
     array:flatten([1, 4, 6, 5, 3])
 };
 
-declare 
+declare
     %test:assertEquals(1, 2, 5, 10, 11, 12, 13)
 function arr:flatten2() {
     array:flatten(([1, 2, 5], [[10, 11], 12], [], 13))
 };
 
-declare 
+declare
     %test:assertEquals(1, 1, 0, 1, 1)
 function arr:flatten3() {
     array:flatten((1, [(1, 0), (1, 1)]))
 };
 
-declare 
+declare
     %test:assertEmpty
 function arr:flatten4() {
     array:flatten(())
 };
 
-declare 
+declare
     %test:assertEquals("a", "b", "x", "c", "d")
 function arr:insert-before1() {
     array:insert-before(["a", "b", "c", "d"], 3, "x")?*
 };
 
-declare 
+declare
     %test:assertEquals("x", "y")
 function arr:insert-before2() {
     array:insert-before(["a", "b", "c", "d"], 3, ("x", "y"))?3
 };
 
-declare 
+declare
     %test:assertEquals("a", "b", "c", "d", "x")
 function arr:insert-before3() {
     array:insert-before(["a", "b", "c", "d"], 5, "x")?*
 };
 
-declare 
+declare
     %test:assertEquals("array")
 function arr:array-type1() {
     let $a := [1, 2]
@@ -555,7 +555,7 @@ function arr:array-type1() {
                 "no array"
 };
 
-declare 
+declare
     %test:assertEquals("<t>test</t>")
 function arr:apply-inline() {
     let $fn := function($a as xs:string, $b as xs:int, $c as element()) {
@@ -571,7 +571,7 @@ function arr:apply-internal() {
     apply(concat#3, ["a", "b", "c"])
 };
 
-declare 
+declare
     %test:assertEquals("a", 1)
 function arr:apply-param-array() {
     let $fn := function($a as array(*)) {
@@ -581,7 +581,7 @@ function arr:apply-param-array() {
         apply($fn, [["a", 1]])
 };
 
-declare 
+declare
     %test:assertEquals("key")
 function arr:apply-param-map() {
     let $fn := function($m as map(*)) {
@@ -591,7 +591,7 @@ function arr:apply-param-map() {
         apply($fn, [map { "key": 1 }])
 };
 
-declare 
+declare
     %test:assertEquals(3)
 function arr:apply-param-seq() {
     let $fn := function($s as item()*) {
@@ -601,7 +601,7 @@ function arr:apply-param-seq() {
         apply($fn, [(1, 2, 3)])
 };
 
-declare 
+declare
     %test:assertEquals("HELLO WORLD")
 function arr:apply-closure() {
     let $s := "Hello world"
@@ -612,7 +612,7 @@ function arr:apply-closure() {
         apply($fn, [])
 };
 
-declare 
+declare
     %test:args('"a"')
     %test:assertEquals("a")
     %test:args("2")
@@ -649,7 +649,7 @@ function arr:parse-json($json as xs:string) {
     parse-json($json)
 };
 
-declare 
+declare
     %test:args('{key: "value"}')
     %test:assertXPath("$result?key = 'value'")
     %test:args("{'key': 'value'}")
@@ -658,7 +658,7 @@ function arr:parse-json-liberal($json as xs:string) {
     parse-json($json, map { "liberal": true() })
 };
 
-declare 
+declare
     %test:args('{"k1": "v1", "k1": "v2"}', "reject")
     %test:assertError("FOJS0003")
     %test:args('{"k1": "v1", "k1": "v2"}', "use-first")
@@ -669,7 +669,7 @@ function arr:parse-json-duplicates($json as xs:string, $duplicates as xs:string)
     parse-json($json, map { "duplicates": $duplicates })
 };
 
-declare 
+declare
     %test:assertXPath("$result?1?key2 = 'value2'")
 function arr:json-doc-db() {
     json-doc("/db/array-test/test.json")
@@ -682,20 +682,20 @@ function arr:json-doc-options() {
 };
 
 (: Requires running server :)
-declare 
+declare
     %test:assertXPath("$result?1?key2 = 'value2'")
     %test:pending
 function arr:json-doc-http() {
     json-doc("http://localhost:8080/exist/rest/db/array-test/test.json")
 };
 
-declare 
+declare
     %test:assertError("FOUT1170")
 function arr:json-doc-invalid() {
     json-doc("notfound.json")
 };
 
-declare 
+declare
     %test:assertEquals('{"a1":22,"a2":["z","b","c"]}')
 function arr:serialize() {
     let $json :=
@@ -709,7 +709,7 @@ function arr:serialize() {
         $serialized
 };
 
-declare 
+declare
     %test:assertTrue
 function arr:serialize-roundtrip() {
     let $json :=
@@ -725,7 +725,7 @@ function arr:serialize-roundtrip() {
         deep-equal($json, $parsed)
 };
 
-declare 
+declare
     %test:assertEquals('{"xml":"<div><p>Test</p></div>"}')
 function arr:serialize-node() {
     let $json :=
@@ -736,7 +736,7 @@ function arr:serialize-node() {
         serialize($json, $arr:SERIALIZE_JSON)
 };
 
-declare 
+declare
     %test:assertEquals('{ "status" : true }')
 function arr:serialize-old-json-compat() {
     let $xmlJson := <result><status json:literal="true">true</status></result>
@@ -744,7 +744,7 @@ function arr:serialize-old-json-compat() {
         serialize($xmlJson, $arr:SERIALIZE_JSON)
 };
 
-declare 
+declare
     %test:args(2)
     %test:assertTrue
     %test:args(3)
@@ -773,13 +773,13 @@ function arr:general-comparison3() {
         $xml/a[. = [3, 4]]
 };
 
-declare 
+declare
     %test:assertEquals("<a>1</a>")
 function arr:general-comparison-range() {
     collection("/db/array-test")//a[. = [1, 2]]
 };
 
-declare 
+declare
     %test:assertEquals("<b>2</b>")
 function arr:general-comparison-range-new() {
     collection("/db/array-test")//b[. = [1, 2]]
@@ -817,13 +817,13 @@ function arr:castable-as-invalid() {
     array { 1 to 3 } castable as xs:double
 };
 
-declare 
+declare
     %test:assertEquals("<test><p>Hello <b>world</b>!</p></test>")
 function arr:enclosed-expr-element() {
     <test><p>Hello {[<b>world</b>, "!"]}</p></test>
 };
 
-declare 
+declare
     %test:assertEquals("<p>Hello world !</p>")
 function arr:element-computed() {
     element p {
@@ -831,13 +831,13 @@ function arr:element-computed() {
     }
 };
 
-declare 
+declare
     %test:assertEquals('<test attr="1 2"/>')
 function arr:enclosed-expr-attribute() {
     <test attr="{[1, 2]}"/>
 };
 
-declare 
+declare
     %test:assertEquals('<p attr="1 2"/>')
 function arr:attribute-computed() {
     element p {
@@ -845,7 +845,7 @@ function arr:attribute-computed() {
     }
 };
 
-declare 
+declare
     %test:assertEquals('<p>Hello world</p>')
 function arr:text-computed() {
     element p {
@@ -853,7 +853,7 @@ function arr:text-computed() {
     }
 };
 
-declare 
+declare
     %test:assertEquals('<p><!--Hello world--></p>')
 function arr:comment-computed() {
     element p {
@@ -861,10 +861,20 @@ function arr:comment-computed() {
     }
 };
 
-declare 
+declare
     %test:assertEquals(1, 2, 3, 4)
 function arr:fn-data() {
     data([1, 2, [3, 4]])
+};
+
+declare
+    %test:assertEquals("a", "b")
+function arr:nested-for-each() {
+    array:for-each([["a","b"]],function($v){
+        array:for-each($v,function($_){
+            $_
+        })
+    })?*?*
 };
 
 (: Requires running server :)
