@@ -22,6 +22,8 @@
 package org.exist.xquery;
 
 import com.sun.xacml.ctx.RequestCtx;
+
+import java.util.Arrays;
 import java.util.List;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.QName;
@@ -398,7 +400,12 @@ public class FunctionCall extends Function {
             super(signature);
             this.contextSequence = contextSequence;
             this.contextItem = contextItem;
-            this.seq = seq;
+            if (seq != null) {
+                // copy the sequence of arguments to make sure it is not overwritten by caller
+                this.seq = Arrays.copyOf(seq, seq.length);
+            } else {
+                this.seq = null;
+            }
             this.contextDocs = contextDocs;
         }
         
