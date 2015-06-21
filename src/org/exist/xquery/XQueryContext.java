@@ -2079,9 +2079,9 @@ public class XQueryContext implements BinaryValueManager, Context
      * @throws XPathException
      */
     public void restoreStack(List<Variable> stack) throws XPathException {
-    	for (final Variable var : stack) {
-    		declareVariableBinding((LocalVariable) var);
-    	}
+        for (int i = stack.size() - 1; i > -1; i--) {
+            declareVariableBinding((LocalVariable)stack.get(i));
+        }
     }
     
     /**
@@ -2584,7 +2584,7 @@ public class XQueryContext implements BinaryValueManager, Context
             // clear all variables registered after var. they should be out of scope.
             LocalVariable outOfScope = var.after;
             while (outOfScope != null) {
-                if (!outOfScope.isClosureVar()) {
+                if (outOfScope != var && !outOfScope.isClosureVar()) {
                     outOfScope.destroy(this, resultSeq);
                 }
                 outOfScope = outOfScope.after;
