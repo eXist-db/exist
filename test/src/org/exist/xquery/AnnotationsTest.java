@@ -58,9 +58,6 @@ public class AnnotationsTest {
         assertNotNull(testCollection);
     }
 
-    /*
-     * @see TestCase#tearDown()
-     */
     @AfterClass
     public static void tearDown() throws Exception {
         // testCollection.removeResource( testCollection .getResource(file_name));

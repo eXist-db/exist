@@ -21,22 +21,28 @@
  */
 package org.exist.storage;
 
+import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 
-import junit.framework.TestCase;
-import junit.textui.TestRunner;
-
+import org.exist.EXistException;
 import org.exist.numbering.NodeId;
 import org.exist.numbering.NodeIdFactory;
 import org.exist.storage.btree.BTreeCallback;
+import org.exist.storage.btree.BTreeException;
 import org.exist.storage.btree.IndexQuery;
 import org.exist.storage.btree.Value;
 import org.exist.storage.dom.DOMFile;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
+import org.exist.util.DatabaseConfigurationException;
 import org.exist.xquery.TerminatedException;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * Tests transaction management and basic recovery for the BTree base class.
@@ -44,16 +50,13 @@ import org.exist.xquery.TerminatedException;
  * @author wolf
  *
  */
-public class BTreeRecoverTest extends TestCase {
-
-    public static void main(String[] args) {
-        TestRunner.run(BTreeRecoverTest.class);
-    }
+public class BTreeRecoverTest {
 
     private BrokerPool pool;
     private int count = 0;
-    
-    public void testAdd() {
+
+    @Test
+    public void add() throws EXistException, IOException, BTreeException, TerminatedException {
         //Add some random data and force db corruption
         
         TransactionManager mgr = pool.getTransactionManager();
@@ -97,21 +100,16 @@ public class BTreeRecoverTest extends TestCase {
             
             Writer writer = new StringWriter();
             domDb.dump(writer);
-        } catch (Exception e) {
-        	e.printStackTrace();
-            fail(e.getMessage());
         }
     }
-    
-    public void testGet() {
+
+    @Test
+    public void get() throws EXistException, TerminatedException, IOException, BTreeException {
         //Recover and read the data
         @SuppressWarnings("unused")
 		TransactionManager mgr = pool.getTransactionManager();
         NodeIdFactory idFact = pool.getNodeFactory();
-        DBBroker broker = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
             DOMFile domDb = ((NativeBroker) broker).getDOMFile();
             domDb.setOwnerObject(this);
             
@@ -121,34 +119,24 @@ public class BTreeRecoverTest extends TestCase {
             
             Writer writer = new StringWriter();
             domDb.dump(writer);
-        } catch (Exception e) {
-        	e.printStackTrace();
-            fail(e.getMessage());
-        } finally {
-            pool.release(broker);
-        }
-    }
-    
-    protected void setUp() {
-        try {
-            Configuration config = new Configuration();
-            BrokerPool.configure(1, 5, config);
-            pool = BrokerPool.getInstance();
-        } catch (Exception e) {            
-            fail(e.getMessage());
         }
     }
 
+    @Before
+    public void setUp() throws DatabaseConfigurationException, EXistException {
+        Configuration config = new Configuration();
+        BrokerPool.configure(1, 5, config);
+        pool = BrokerPool.getInstance();
+    }
+
+    @After
     protected void tearDown() {
-    	try {
-	        BrokerPool.stopAll(false);
-	    } catch (Exception e) {            
-	        fail(e.getMessage());  
-	    }
+        BrokerPool.stopAll(false);
     }
     
     private final class IndexCallback implements BTreeCallback {
-    	
+
+        @Override
         public boolean indexInfo(Value value, long pointer)
                 throws TerminatedException {
         	@SuppressWarnings("unused")

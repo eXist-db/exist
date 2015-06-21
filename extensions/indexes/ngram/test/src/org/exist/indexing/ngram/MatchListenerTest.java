@@ -25,6 +25,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Properties;
 
@@ -35,10 +36,14 @@ import org.custommonkey.xmlunit.SimpleNamespaceContext;
 import org.custommonkey.xmlunit.XMLAssert;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.custommonkey.xmlunit.XpathEngine;
+import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
+import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.IndexInfo;
+import org.exist.collections.triggers.TriggerException;
+import org.exist.security.PermissionDeniedException;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -50,6 +55,7 @@ import org.exist.test.TestConstants;
 import org.exist.util.Configuration;
 import org.exist.util.ConfigurationHelper;
 import org.exist.util.DatabaseConfigurationException;
+import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
@@ -117,14 +123,11 @@ public class MatchListenerTest {
     private static BrokerPool pool;
 
     @Test
-    public void nestedContent() {
-        DBBroker broker = null;
-        try {
-            configureAndStore(CONF1, XML);
+    public void nestedContent() throws PermissionDeniedException, IOException, LockException, CollectionConfigurationException, SAXException, EXistException, XPathException {
+        configureAndStore(CONF1, XML);
 
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-
-            XQuery xquery = broker.getXQueryService();
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());) {
+            final XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
             Sequence seq = xquery.execute("//para[ngram:contains(., 'mixed')]", null, AccessContext.TEST);
             assertNotNull(seq);
@@ -153,47 +156,31 @@ public class MatchListenerTest {
             result = queryResult2String(broker, seq, 0);
             XMLAssert.assertEquals("<para>some paragraph with <hi>" + MATCH_START + "mixed" + MATCH_END +
                     "</hi> " + MATCH_START + "content" + MATCH_END + ".</para>", result);
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } finally {
-            pool.release(broker);
         }
     }
 
     @Test
-    public void matchInParent() {
-        DBBroker broker = null;
-        try {
-            configureAndStore(CONF1, XML);
+    public void matchInParent() throws PermissionDeniedException, IOException, LockException, CollectionConfigurationException, SAXException, EXistException, XPathException {
+        configureAndStore(CONF1, XML);
 
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-
-            XQuery xquery = broker.getXQueryService();
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());) {
+            final XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
-            Sequence seq = xquery.execute("//para[ngram:contains(., 'mixed')]/hi", null, AccessContext.TEST);
+
+            final Sequence seq = xquery.execute("//para[ngram:contains(., 'mixed')]/hi", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
-            String result = queryResult2String(broker, seq, 0);
+            final String result = queryResult2String(broker, seq, 0);
             XMLAssert.assertEquals("<hi>" + MATCH_START + "mixed" + MATCH_END + "</hi>", result);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } finally {
-            pool.release(broker);
         }
     }
 
     @Test
-    public void matchInAncestor() {
-        DBBroker broker = null;
-        try {
-            configureAndStore(CONF1, XML);
+    public void matchInAncestor() throws PermissionDeniedException, IOException, LockException, CollectionConfigurationException, SAXException, EXistException, XPathException {
+        configureAndStore(CONF1, XML);
 
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-
-            XQuery xquery = broker.getXQueryService();
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());) {
+            final XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
             Sequence seq = xquery.execute("//para[ngram:contains(., 'nested')]/note", null, AccessContext.TEST);
             assertNotNull(seq);
@@ -206,23 +193,16 @@ public class MatchListenerTest {
             assertEquals(1, seq.getItemCount());
             result = queryResult2String(broker, seq, 0);
             XMLAssert.assertEquals("<hi>" + MATCH_START + "nested" + MATCH_END + "</hi>", result);
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } finally {
-            pool.release(broker);
         }
     }
 
     @Test
-    public void nestedIndex() {
-        DBBroker broker = null;
-        try {
-            configureAndStore(CONF1, XML);
+    public void nestedIndex() throws PermissionDeniedException, IOException, LockException, CollectionConfigurationException, SAXException, EXistException, XPathException {
+        configureAndStore(CONF1, XML);
 
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());) {
 
-            XQuery xquery = broker.getXQueryService();
+            final XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
             Sequence seq = xquery.execute("//para[ngram:contains(term, 'term')]", null, AccessContext.TEST);
             assertNotNull(seq);
@@ -241,36 +221,30 @@ public class MatchListenerTest {
             assertEquals(1, seq.getItemCount());
             result = queryResult2String(broker, seq, 0);
             XMLAssert.assertEquals("<para>a third paragraph with <term>" + MATCH_START + "term" + MATCH_END + "</term>.</para>", result);
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } finally {
-            pool.release(broker);
         }
     }
 
     @Test
-    public void mixedContentQueries() {
-        DBBroker broker = null;
-        try {
-            configureAndStore(CONF1, XML);
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+    public void mixedContentQueries() throws PermissionDeniedException, XPathException, SAXException, EXistException, CollectionConfigurationException, LockException, IOException {
+        configureAndStore(CONF1, XML);
 
-            XQuery xquery = broker.getXQueryService();
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());) {
+
+            final XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
             Sequence seq = xquery.execute("//para[ngram:contains(., 'mixed content')]", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             String result = queryResult2String(broker, seq, 0);
             XMLAssert.assertEquals("<para>some paragraph with <hi>" + MATCH_START + "mixed" +
-                    MATCH_END + "</hi>" + MATCH_START + " content" + MATCH_END + ".</para>", result);
+                MATCH_END + "</hi>" + MATCH_START + " content" + MATCH_END + ".</para>", result);
 
             seq = xquery.execute("//para[ngram:contains(., 'with mixed content')]", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             result = queryResult2String(broker, seq, 0);
             XMLAssert.assertEquals("<para>some paragraph " + MATCH_START + "with " + MATCH_END + "<hi>" +
-                    MATCH_START + "mixed" + MATCH_END + "</hi>" + MATCH_START + " content" + MATCH_END +
+                MATCH_START + "mixed" + MATCH_END + "</hi>" + MATCH_START + " content" + MATCH_END +
                 ".</para>", result);
 
             seq = xquery.execute("//para[ngram:contains(., 'with nested')]", null, AccessContext.TEST);
@@ -287,22 +261,15 @@ public class MatchListenerTest {
             XMLAssert.assertEquals("<para>another paragraph " + MATCH_START + "with " + MATCH_END +
                 "<note><hi>" + MATCH_START + "nested" + MATCH_END + "</hi>" + MATCH_START + " inner" + MATCH_END +
                 "</note>" + MATCH_START + " elements" + MATCH_END + ".</para>", result);
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } finally {
-            pool.release(broker);
         }
     }
 
     @Test
-    public void indexOnInnerElement() {
-        DBBroker broker = null;
-        try {
-            configureAndStore(CONF2, XML);
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+    public void indexOnInnerElement() throws PermissionDeniedException, IOException, LockException, CollectionConfigurationException, SAXException, EXistException, XPathException {
+        configureAndStore(CONF2, XML);
 
-            XQuery xquery = broker.getXQueryService();
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());) {
+            final XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
             Sequence seq = xquery.execute("//para[ngram:contains(note, 'nested inner')]", null, AccessContext.TEST);
             assertNotNull(seq);
@@ -317,22 +284,15 @@ public class MatchListenerTest {
             result = queryResult2String(broker, seq, 0);
             XMLAssert.assertEquals("<para>another paragraph with <note><hi>" + MATCH_START + "nested" + MATCH_END +
                 "</hi>" + MATCH_START + " inner" + MATCH_END + "</note> elements.</para>", result);
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } finally {
-            pool.release(broker);
         }
     }
 
     @Test
-    public void doubleMatch() {
-        DBBroker broker = null;
-        try {
-            configureAndStore(CONF1, XML);
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+    public void doubleMatch() throws PermissionDeniedException, XPathException, SAXException, EXistException, CollectionConfigurationException, LockException, IOException {
+        configureAndStore(CONF1, XML);
 
-            XQuery xquery = broker.getXQueryService();
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());) {
+            final XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
 
             Sequence seq = xquery.execute("//para[ngram:contains(., 'double match')]", null, AccessContext.TEST);
@@ -354,23 +314,16 @@ public class MatchListenerTest {
             assertEquals(1, seq.getItemCount());
             result = queryResult2String(broker, seq, 0);
             XMLAssert.assertEquals("<para>aaa " + MATCH_START + "aaa aaa" + MATCH_END + "</para>", result);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } finally {
-            pool.release(broker);
         }
     }
 
     @Test
-    public void wildcardMatch() {
-        DBBroker broker = null;
-        try {
-            configureAndStore(CONF1, XML);
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+    public void wildcardMatch() throws PermissionDeniedException, IOException, LockException, CollectionConfigurationException, SAXException, EXistException, XPathException, XpathException {
+        configureAndStore(CONF1, XML);
 
-            XQuery xquery = broker.getXQueryService();
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());) {
+
+            final XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
 
             Sequence seq = xquery.execute("//para[ngram:wildcard-contains(., 'double.*match')]", null,
@@ -391,8 +344,7 @@ public class MatchListenerTest {
                 + "</para>", result);
 
             String wildcardQuery = "...with.*[tn].*ele.ent[sc].*";
-            seq = xquery
-.execute("//para[ngram:wildcard-contains(., '" + wildcardQuery + "')]", null,
+            seq = xquery.execute("//para[ngram:wildcard-contains(., '" + wildcardQuery + "')]", null,
                 AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
@@ -401,11 +353,12 @@ public class MatchListenerTest {
                 + MATCH_START + "nested" + MATCH_END + "</hi>" + MATCH_START + " inner" + MATCH_END + "</note>"
                 + MATCH_START + " elements." + MATCH_END + "</para>", result);
 
-            XpathEngine xpe = XMLUnit.newXpathEngine();
-            NodeList matches = xpe.getMatchingNodes("//exist:match", XMLUnit.buildControlDocument(result));
-            StringBuilder m = new StringBuilder();
-            for (int i = 0; i < matches.getLength(); i++)
+            final XpathEngine xpe = XMLUnit.newXpathEngine();
+            final NodeList matches = xpe.getMatchingNodes("//exist:match", XMLUnit.buildControlDocument(result));
+            final StringBuilder m = new StringBuilder();
+            for (int i = 0; i < matches.getLength(); i++) {
                 m.append(matches.item(i).getTextContent());
+            }
             String match = m.toString();
 
             assertMatches(wildcardQuery, match);
@@ -508,12 +461,6 @@ public class MatchListenerTest {
                 match = xpe.evaluate("//exist:match", XMLUnit.buildControlDocument(result));
                 assertMatches(wildcardQuery, match);
             }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } finally {
-            pool.release(broker);
         }
     }
 
@@ -522,49 +469,41 @@ public class MatchListenerTest {
     }
 
     @Test
-    public void smallStrings() {
-        DBBroker broker = null;
-        try {
-            configureAndStore(CONF3, XML2);
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+    public void smallStrings() throws PermissionDeniedException, IOException, LockException, CollectionConfigurationException, SAXException, EXistException, XPathException, XpathException {
+        configureAndStore(CONF3, XML2);
 
-            XQuery xquery = broker.getXQueryService();
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());) {
+
+            final XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
 
-            String[] strings = new String[] { "龍", "龍護", "曰龍護", "名曰龍護" };
+            final String[] strings = new String[] { "龍", "龍護", "曰龍護", "名曰龍護" };
             for (int i = 0; i < strings.length; i++) {
-                Sequence seq = xquery.execute(
+                final Sequence seq = xquery.execute(
                         "declare namespace tei=\"http://www.tei-c.org/ns/1.0\";\n" +
                         "//tei:p[ngram:contains(., '" + strings[i] + "')]",
                         null, AccessContext.TEST);
                 assertNotNull(seq);
                 assertEquals(1, seq.getItemCount());
-                String result = queryResult2String(broker, seq, 0);
+                final String result = queryResult2String(broker, seq, 0);
+
                 XMLAssert.assertXpathEvaluatesTo(i < 2 ? "2" : "1", "count(//exist:match)", result);
                 XMLAssert.assertXpathExists("//exist:match[text() = '" + strings[i] + "']", result);
             }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } finally {
-            pool.release(broker);
         }
     }
 
     @Test
-    public void constructedNodes() {
-        DBBroker broker = null;
-        try {
-            configureAndStore(CONF3, XML2);
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+    public void constructedNodes() throws PermissionDeniedException, XPathException, SAXException, IOException, XpathException, CollectionConfigurationException, LockException, EXistException {
+        configureAndStore(CONF3, XML2);
 
-            XQuery xquery = broker.getXQueryService();
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());) {
+            final XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
 
-            String[] strings = new String[] { "龍", "龍護", "曰龍護", "名曰龍護" };
+            final String[] strings = new String[] { "龍", "龍護", "曰龍護", "名曰龍護" };
             for (int i = 0; i < strings.length; i++) {
-                Sequence seq = xquery.execute(
+                final Sequence seq = xquery.execute(
                         "declare namespace tei=\"http://www.tei-c.org/ns/1.0\";\n" +
                         "for $para in //tei:p[ngram:contains(., '" + strings[i] + "')]\n" +
                         "return\n" +
@@ -572,21 +511,16 @@ public class MatchListenerTest {
                         null, AccessContext.TEST);
                 assertNotNull(seq);
                 assertEquals(1, seq.getItemCount());
-                String result = queryResult2String(broker, seq, 0);
+                final String result = queryResult2String(broker, seq, 0);
+
                 XMLAssert.assertXpathEvaluatesTo(i < 2 ? "2" : "1", "count(//exist:match)", result);
                 XMLAssert.assertXpathExists("//exist:match[text() = '" + strings[i] + "']", result);
             }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } finally {
-            pool.release(broker);
         }
     }
 
     @BeforeClass
-    public static void startDB() throws DatabaseConfigurationException, EXistException {
+    public static void startDB() throws EXistException, DatabaseConfigurationException, PermissionDeniedException, IOException, TriggerException {
         final File confFile = ConfigurationHelper.lookup("conf.xml");
         final Configuration config = new Configuration(confFile.getAbsolutePath());
         BrokerPool.configure(1, 5, config);
@@ -596,66 +530,57 @@ public class MatchListenerTest {
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
                 final Txn transaction = transact.beginTransaction()) {
 
-            Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
+            final Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
             assertNotNull(root);
             broker.saveCollection(transaction, root);
 
             transact.commit(transaction);
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
         }
 
-        HashMap<String, String> m = new HashMap<String, String>();
+        final HashMap<String, String> m = new HashMap<String, String>();
         m.put("tei", "http://www.tei-c.org/ns/1.0");
         m.put("exist", "http://exist.sourceforge.net/NS/exist");
-        NamespaceContext ctx = new SimpleNamespaceContext(m);
+        final NamespaceContext ctx = new SimpleNamespaceContext(m);
         XMLUnit.setXpathNamespaceContext(ctx);
     }
 
     @AfterClass
-    public static void closeDB() throws EXistException {
+    public static void closeDB() throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final BrokerPool pool = BrokerPool.getInstance();
 
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
                 final Txn transaction = transact.beginTransaction()) {
 
-            Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
+            final Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
             assertNotNull(root);
             broker.removeCollection(transaction, root);
 
-            Collection config = broker.getOrCreateCollection(transaction,
+            final Collection config = broker.getOrCreateCollection(transaction,
                 XmldbURI.create(CollectionConfigurationManager.CONFIG_COLLECTION + "/db"));
             assertNotNull(config);
             broker.removeCollection(transaction, config);
 
             transact.commit(transaction);
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
         }
         BrokerPool.stopAll(false);
     }
 
-    private void configureAndStore(String config, String xml) {
+    private void configureAndStore(String config, String xml) throws PermissionDeniedException, IOException, SAXException, EXistException, LockException, CollectionConfigurationException {
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
             final Txn transaction = transact.beginTransaction()) {
 
-            Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
+            final Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
             assertNotNull(root);
-            CollectionConfigurationManager mgr = pool.getConfigurationManager();
+            final CollectionConfigurationManager mgr = pool.getConfigurationManager();
             mgr.addConfiguration(transaction, broker, root, config);
 
-            IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("test_matches.xml"), xml);
+            final IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("test_matches.xml"), xml);
             assertNotNull(info);
             root.store(transaction, broker, info, xml, false);
             
             transact.commit(transaction);
-        } catch (Exception e) {
-        	e.printStackTrace();
-        	fail(e.getMessage());
         }
     }
 

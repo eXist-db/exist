@@ -1,38 +1,50 @@
 package org.exist.xquery;
 
+import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.DocumentImpl;
+import org.exist.security.PermissionDeniedException;
 import org.exist.security.xacml.AccessContext;
 import org.exist.source.StringSource;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
+import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.test.TestConstants;
+import org.exist.util.DatabaseConfigurationException;
+import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.value.Sequence;
 import org.exist.util.Configuration;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
 
+import org.junit.After;
+import org.junit.Test;
 import org.xml.sax.InputSource;
 
+import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.Properties;
 import javax.xml.transform.OutputKeys;
 
-import junit.framework.TestCase;
-import junit.textui.TestRunner;
+import org.xml.sax.SAXException;
 
-/** Tests for recovery of database corruption after constructed node operations (in-memory nodes)
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
+/**
+ * Tests for recovery of database corruption after constructed node operations (in-memory nodes)
  * @author Adam Retter <adam.retter@devon.gov.uk>
  */
-public class ConstructedNodesRecoveryTest extends TestCase
-{	
+public class ConstructedNodesRecoveryTest {
+
 	private final static String xquery =
 		"declare variable $categories := \n" +
 		"	<categories>\n" +
@@ -66,30 +78,24 @@ public class ConstructedNodesRecoveryTest extends TestCase
 			"<dragonfruit colour=\"pink\"/>" +
 			"<grapefruit colour=\"yellow\"/>" +
 		"</fruit>";
-	
-	public static void main(String[] args)
-	{
-        TestRunner.run(ConstructedNodesRecoveryTest.class);
-    }
 
 	/**
 	 * Issues a query against constructed nodes and then corrupts the database (intentionally)
 	 */
-	public void testConstructedNodesCorrupt()
-	{
+    @Test
+	public void constructedNodesCorrupt() throws PermissionDeniedException, DatabaseConfigurationException, LockException, IOException, SAXException, XPathException, EXistException {
 		constructedNodeQuery(true);
     }
     
 	/**
 	 * Recovers from corruption (intentional) and then issues a query against constructed nodes
 	 */
-	public void testConstructedNodesRecover()
-	{
+    @Test
+	public void constructedNodesRecover() throws PermissionDeniedException, DatabaseConfigurationException, LockException, IOException, SAXException, XPathException, EXistException {
 		constructedNodeQuery(false);
 	}
 	
-	private void storeTestDocument(DBBroker broker, TransactionManager transact, String documentName) throws Exception
-	{
+	private void storeTestDocument(DBBroker broker, TransactionManager transact, String documentName) throws PermissionDeniedException, IOException, SAXException, LockException, EXistException {
 		//create a transaction
 		try(final Txn transaction = transact.beginTransaction()) {
 
@@ -108,8 +114,7 @@ public class ConstructedNodesRecoveryTest extends TestCase
         }
 	}
 	
-	private void createTempChildCollection(DBBroker broker, TransactionManager transact, String childCollectionName) throws Exception
-	{
+	private void createTempChildCollection(DBBroker broker, TransactionManager transact, String childCollectionName) throws PermissionDeniedException, IOException, TriggerException, TransactionException {
 		//create a transaction
 		try(final Txn transaction = transact.beginTransaction()) {
 
@@ -123,8 +128,7 @@ public class ConstructedNodesRecoveryTest extends TestCase
         }
 	}
 	
-	private void testDocumentIsValid(DBBroker broker, TransactionManager transact, String documentName) throws Exception
-	{
+	private void testDocumentIsValid(DBBroker broker, TransactionManager transact, String documentName) throws PermissionDeniedException, IOException, SAXException, LockException, TransactionException {
 		//create a transaction
         try(final Txn transaction = transact.beginTransaction()) {
 
@@ -156,8 +160,7 @@ public class ConstructedNodesRecoveryTest extends TestCase
         }
 	}
 	
-	private void testTempChildCollectionExists(DBBroker broker, TransactionManager transact, String childCollectionName) throws Exception
-	{
+	private void testTempChildCollectionExists(DBBroker broker, TransactionManager transact, String childCollectionName) throws PermissionDeniedException, IOException, TriggerException, TransactionException {
 		//create a transaction
         try(final Txn transaction = transact.beginTransaction()) {
 
@@ -175,18 +178,12 @@ public class ConstructedNodesRecoveryTest extends TestCase
 	 * 
 	 * @param forceCorruption	Should the database be forcefully corrupted
 	 */
-	private void constructedNodeQuery(boolean forceCorruption)
-	{
+	private void constructedNodeQuery(boolean forceCorruption) throws EXistException, DatabaseConfigurationException, LockException, SAXException, PermissionDeniedException, IOException, XPathException {
 		BrokerPool.FORCE_CORRUPTION = forceCorruption;
-	    BrokerPool pool = null;        
-	    DBBroker broker = null;
+	    BrokerPool pool = startDB();
 	    
-	    try
-	    {
-	    	pool = startDB();
-	    	assertNotNull(pool);
-	        broker = pool.get(pool.getSecurityManager().getSystemSubject());
-	        
+	    try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+
 	        TransactionManager transact = pool.getTransactionManager();
             assertNotNull(transact);
             
@@ -233,29 +230,16 @@ public class ConstructedNodesRecoveryTest extends TestCase
 	        
 	        transact.getJournal().flushToLog(true);
 	    }
-	    catch(Exception e)
-	    {            
-	        fail(e.getMessage());
-	        e.printStackTrace();
-	    }
-	    finally
-	    {
-	    	if (pool != null) pool.release(broker);
-	    }
 	}
 	
-	protected BrokerPool startDB() {
-        try {
-            Configuration config = new Configuration();
-            BrokerPool.configure(1, 5, config);
-            return BrokerPool.getInstance();
-        } catch (Exception e) {            
-            fail(e.getMessage());
-        }
-        return null;
+	protected BrokerPool startDB() throws DatabaseConfigurationException, EXistException {
+        Configuration config = new Configuration();
+        BrokerPool.configure(1, 5, config);
+        return BrokerPool.getInstance();
     }
 
-    protected void tearDown() {
+    @After
+    public void tearDown() {
         BrokerPool.stopAll(false);
     }
 }

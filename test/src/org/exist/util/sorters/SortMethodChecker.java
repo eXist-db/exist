@@ -72,23 +72,6 @@ public abstract class SortMethodChecker {
 		check(0, getLength() - 1);
 	}
 
-	public Test suite() {
-		TestSuite s = new TestSuite();
-		s.setName(sorter.getClass().getSimpleName() + " "
-				+ getClass().getSimpleName());
-		String testSuiteName = s.getName();
-		for (Method m : SortTestCase.class.getMethods()) {
-			if (m.getName().startsWith("test")) {
-				s.addTest(new SortTestCase<SortMethodChecker>(
-					this,
-					m.getName(),
-					testSuiteName
-				));
-			}
-		}
-		return s;
-	}
-
 	public static SortMethodChecker[] allCheckers(SortingAlgorithmTester s) {
 		return new SortMethodChecker[] {
 			new PlainArrayChecker(s),

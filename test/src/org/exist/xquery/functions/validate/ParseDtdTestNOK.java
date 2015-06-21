@@ -21,17 +21,21 @@
  */
 package org.exist.xquery.functions.validate;
 
+import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.junit.*;
 import static org.junit.Assert.*;
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.io.IOException;
 
 import org.exist.test.EmbeddedExistTester;
 
+import org.xml.sax.SAXException;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ResourceSet;
+import org.xmldb.api.base.XMLDBException;
 
 /**
  * Tests for the validation:jaxp() function with DTDss.
@@ -65,7 +69,6 @@ public class ParseDtdTestNOK extends EmbeddedExistTester {
         File sources = new File("samples/validation/dtd");
 
         for (File file : sources.listFiles(filter)) {
-            LOG.info("Storing " + file.getAbsolutePath());
             byte[] data = readFile(sources, file.getName());
             storeResource(collection, file.getName(), data);
         }
@@ -78,86 +81,57 @@ public class ParseDtdTestNOK extends EmbeddedExistTester {
     }
 
     @Test
-    public void xsd_stored_valid() {
+    public void xsd_stored_valid() throws XMLDBException, SAXException, IOException, XpathException {
         String query = "validation:jaxp-report( " +
                 "doc('/db/hamlet/hamlet_valid.xml'), " +
                 "xs:anyURI('/db/hamlet/dtd/hamlet.dtd'), () )";
 
-        try {
-            ResourceSet results = executeQuery(query);
-            assertEquals(1, results.getSize());
+        ResourceSet results = executeQuery(query);
+        assertEquals(1, results.getSize());
 
-            String r = (String) results.getResource(0).getContent();
+        String r = (String) results.getResource(0).getContent();
 
-            assertXpathEvaluatesTo("valid", "//status/text()", r);
-
-        } catch (Exception ex) {
-            LOG.error(ex);
-            ex.printStackTrace();
-            fail(ex.getMessage());
-        }
+        assertXpathEvaluatesTo("valid", "//status/text()", r);
     }
 
     @Test
-    public void xsd_stored_invalid() {
+    public void xsd_stored_invalid() throws XMLDBException, SAXException, IOException, XpathException {
         String query = "validation:jaxp-report(doc('/db/hamlet/hamlet_invalid.xml'), " +
                 "xs:anyURI('/db/hamlet/dtd/hamlet.dtd'), () )";
 
-        try {
-            ResourceSet results = executeQuery(query);
-            assertEquals(1, results.getSize());
+        ResourceSet results = executeQuery(query);
+        assertEquals(1, results.getSize());
 
-            String r = (String) results.getResource(0).getContent();
+        String r = (String) results.getResource(0).getContent();
 
-            assertXpathEvaluatesTo("invalid", "//status/text()", r);
-
-        } catch (Exception ex) {
-            LOG.error(ex);
-            ex.printStackTrace();
-            fail(ex.getMessage());
-        }
+        assertXpathEvaluatesTo("invalid", "//status/text()", r);
     }
 
     @Test
-    public void xsd_anyuri_valid() {
+    public void xsd_anyuri_valid() throws XMLDBException, SAXException, IOException, XpathException {
         String query = "validation:jaxp-report( " +
                 "xs:anyURI('/db/hamlet/hamlet_valid.xml'), " +
                 "xs:anyURI('/db/hamlet/dtd/hamlet.dtd'), () )";
 
+        ResourceSet results = executeQuery(query);
+        assertEquals(1, results.getSize());
 
-        try {
-            ResourceSet results = executeQuery(query);
-            assertEquals(1, results.getSize());
+        String r = (String) results.getResource(0).getContent();
 
-            String r = (String) results.getResource(0).getContent();
-
-            assertXpathEvaluatesTo("valid", "//status/text()", r);
-
-        } catch (Exception ex) {
-            LOG.error(ex);
-            ex.printStackTrace();
-            fail(ex.getMessage());
-        }
+        assertXpathEvaluatesTo("valid", "//status/text()", r);
     }
 
     @Test
-    public void xsd_anyuri_invalid() {
+    public void xsd_anyuri_invalid() throws XMLDBException, SAXException, IOException, XpathException {
         String query = "validation:jaxp-report( " +
                 "xs:anyURI('/db/hamlet/hamlet_invalid.xml'), " +
                 "xs:anyURI('/db/hamlet/dtd/hamlet.dtd'), () )";
 
-        try {
-            ResourceSet results = executeQuery(query);
-            assertEquals(1, results.getSize());
+        ResourceSet results = executeQuery(query);
+        assertEquals(1, results.getSize());
 
-            String r = (String) results.getResource(0).getContent();
+        String r = (String) results.getResource(0).getContent();
 
-            assertXpathEvaluatesTo("invalid", "//status/text()", r);
-
-        } catch (Exception ex) {
-            LOG.error(ex);
-            ex.printStackTrace();
-            fail(ex.getMessage());
-        }
+        assertXpathEvaluatesTo("invalid", "//status/text()", r);
     }
 }

@@ -38,7 +38,7 @@ public class XMLDBSecurityTest {
             { "local", "xmldb:exist://" },
             { "remote", "xmldb:exist://localhost:" + System.getProperty("jetty.port", "8088") + "/xmlrpc" }
         });
-    };
+    }
     
     @Parameter
     public String apiName;

@@ -29,7 +29,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.PhraseQuery;
@@ -166,7 +165,7 @@ public class LuceneMatchListener extends AbstractMatchListener {
 
     private void scanMatches(NodeProxy p) {
         // Collect the text content of all descendants of p. 
-	// Remember the start offsets of the text nodes for later use.
+        // Remember the start offsets of the text nodes for later use.
         NodePath path = getPath(p);
         LuceneIndexConfig idxConf = config.getConfig(path).next();
         
@@ -203,19 +202,18 @@ public class LuceneMatchListener extends AbstractMatchListener {
         }
         
         // Retrieve the Analyzer for the NodeProxy that was used for
-	// indexing and querying.
+        // indexing and querying.
         Analyzer analyzer = idxConf.getAnalyzer();
         if (analyzer == null) {
-	    // Otherwise use system default Lucene analyzer (from conf.xml)
-	    // to tokenize the text and find matching query terms.
-	    analyzer = index.getDefaultAnalyzer();
+            // Otherwise use system default Lucene analyzer (from conf.xml)
+            // to tokenize the text and find matching query terms.
+            analyzer = index.getDefaultAnalyzer();
         }
-        LOG.debug("Analyzer: " + analyzer + " for path: " + path);
+        if (LOG.isDebugEnabled())
+            LOG.debug("Analyzer: " + analyzer + " for path: " + path);
         String str = extractor.getText().toString();
         //Token token;
-        try {
-
-            TokenStream tokenStream = analyzer.tokenStream(null, new StringReader(str));
+        try (TokenStream tokenStream = analyzer.tokenStream(null, new StringReader(str))) {
             tokenStream.reset();
             MarkableTokenFilter stream = new MarkableTokenFilter(tokenStream);
             while (stream.incrementToken()) {
@@ -224,13 +222,13 @@ public class LuceneMatchListener extends AbstractMatchListener {
                 if (query != null) {
                     // Phrase queries need to be handled differently to filter
                     // out wrong matches: only the phrase should be marked, not
-		    // single words which may also occur elsewhere in the document
+                    // single words which may also occur elsewhere in the document
                     if (query instanceof PhraseQuery) {
                         PhraseQuery phraseQuery = (PhraseQuery) query;
                         Term[] terms = phraseQuery.getTerms();
                         if (text.equals(terms[0].text())) {
                             // Scan the following text and collect tokens to see
-			    // if they are part of the phrase.
+                            // if they are part of the phrase.
                             stream.mark();
                             int t = 1;
                             List<State> stateList = new ArrayList<>(terms.length);
@@ -244,8 +242,8 @@ public class LuceneMatchListener extends AbstractMatchListener {
                                         break;
                                     }
                                 } else {
-				    // Don't reset the token stream since we will 
-				    // miss matches. /ljo
+                                    // Don't reset the token stream since we will
+                                    // miss matches. /ljo
                                     //stream.reset();
                                     break;
                                 }
@@ -267,10 +265,10 @@ public class LuceneMatchListener extends AbstractMatchListener {
                                             offset.setEndOffset(offsetAttr.endOffset() - offsets.offsets[idx]);
                                         else
                                             offset.add(offsetAttr.startOffset() - offsets.offsets[idx],
-						       offsetAttr.endOffset() - offsets.offsets[idx]);
+                                            offsetAttr.endOffset() - offsets.offsets[idx]);
                                     else
                                         nodesWithMatch.put(nodeId, new Offset(offsetAttr.startOffset() - offsets.offsets[idx],
-									      offsetAttr.endOffset() - offsets.offsets[idx]));
+                                        offsetAttr.endOffset() - offsets.offsets[idx]));
                                     lastIdx = idx;
                                 }
                             }
@@ -283,10 +281,10 @@ public class LuceneMatchListener extends AbstractMatchListener {
                         Offset offset = nodesWithMatch.get(nodeId);
                         if (offset != null)
                             offset.add(offsetAttr.startOffset() - offsets.offsets[idx],
-				       offsetAttr.endOffset() - offsets.offsets[idx]);
+                            offsetAttr.endOffset() - offsets.offsets[idx]);
                         else {
                             nodesWithMatch.put(nodeId, new Offset(offsetAttr.startOffset() - offsets.offsets[idx],
-								  offsetAttr.endOffset() - offsets.offsets[idx]));
+                                offsetAttr.endOffset() - offsets.offsets[idx]));
                         }
                     }
                 }

@@ -22,27 +22,30 @@
 package org.exist.storage;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Iterator;
 
-import junit.framework.TestCase;
-import junit.textui.TestRunner;
-
+import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.DocumentImpl;
+import org.exist.security.PermissionDeniedException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
+import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.XMLFilenameFilter;
 import org.exist.xmldb.XmldbURI;
+import org.junit.After;
+import org.junit.Test;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-public class ConcurrentStoreTest extends TestCase {
-	
-    public static void main(String[] args) {
-        TestRunner.run(ConcurrentStoreTest.class);
-    }
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+
+public class ConcurrentStoreTest {
     
     //TODO : revisit !
     private static String directory = "/home/wolf/xml/shakespeare";
@@ -52,35 +55,32 @@ public class ConcurrentStoreTest extends TestCase {
     
     private BrokerPool pool;
     private Collection test, test2;
-    
-    public synchronized void testStore() {
-    	try {
-	        BrokerPool.FORCE_CORRUPTION = true;
-	        pool = startDB();
-	        setupCollections();
-	        
-	        Thread t1 = new StoreThread1();
-	        t1.start();
-	        
-	        wait(8000);
-	        
-	        Thread t2 = new StoreThread2();
-	        t2.start();
-	        
-	        t1.join();
-	        t2.join();
-	    } catch (Exception e) {            
-	        fail(e.getMessage());  
-	    }
+
+    @Test
+    public synchronized void store() throws InterruptedException, EXistException, DatabaseConfigurationException, PermissionDeniedException, IOException, TriggerException {
+        BrokerPool.FORCE_CORRUPTION = true;
+        pool = startDB();
+        setupCollections();
+
+        Thread t1 = new StoreThread1();
+        t1.start();
+
+        wait(8000);
+
+        Thread t2 = new StoreThread2();
+        t2.start();
+
+        t1.join();
+        t2.join();
     }
-    
-    public void testRead() {
+
+    @Test
+    public void read() throws EXistException, PermissionDeniedException, DatabaseConfigurationException {
         BrokerPool.FORCE_CORRUPTION = false;
         pool = startDB();
-        
-        DBBroker broker = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+
             test = broker.getCollection(TEST_COLLECTION_URI.append("test1"));
             assertNotNull(test);
             test2 = broker.getCollection(TEST_COLLECTION_URI.append("test2"));
@@ -88,50 +88,40 @@ public class ConcurrentStoreTest extends TestCase {
             for (Iterator<DocumentImpl> i = test.iterator(broker); i.hasNext(); ) {
                 DocumentImpl next = i.next();
             }
-	    } catch (Exception e) {            
-	        fail(e.getMessage());              
-        } finally {
-            pool.release(broker);
         }
     }
     
-    protected void setupCollections() {
+    protected void setupCollections() throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
                 final Txn transaction = transact.beginTransaction();) {
-            
+
             Collection root = broker.getOrCreateCollection(transaction, TEST_COLLECTION_URI);
             broker.saveCollection(transaction, root);
-            
+
             test = broker.getOrCreateCollection(transaction, TEST_COLLECTION_URI.append("test1"));
             broker.saveCollection(transaction, test);
-            
+
             test2 = broker.getOrCreateCollection(transaction, TEST_COLLECTION_URI.append("test2"));
             broker.saveCollection(transaction, test2);
-            
+
             transact.commit(transaction);
-        } catch (Exception e) {
-            fail(e.getMessage());
         }
     }
     
-    protected BrokerPool startDB() {
-        try {
-            final Configuration config = new Configuration();
-            BrokerPool.configure(1, 5, config);
-            return BrokerPool.getInstance();
-        } catch (Exception e) {            
-            fail(e.getMessage());
-        }
-        return null;
+    protected BrokerPool startDB() throws DatabaseConfigurationException, EXistException {
+        final Configuration config = new Configuration();
+        BrokerPool.configure(1, 5, config);
+        return BrokerPool.getInstance();
     }
 
+    @After
     protected void tearDown() {
         BrokerPool.stopAll(false);
     }
     
     class StoreThread1 extends Thread {
-        
+        @Override
         public void run() {
             final TransactionManager transact = pool.getTransactionManager();
             try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
@@ -161,12 +151,14 @@ public class ConcurrentStoreTest extends TestCase {
 //              Don't commit...
                 transact.getJournal().flushToLog(true);
     	    } catch (Exception e) {
+                e.printStackTrace();
     	        fail(e.getMessage()); 
             }
         }
     }
     
     class StoreThread2 extends Thread {
+        @Override
         public void run() {
             final TransactionManager transact = pool.getTransactionManager();
             try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());

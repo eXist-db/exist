@@ -57,7 +57,9 @@ public class XQueryWatchDog {
     private long startTime;
     
     private boolean terminate = false;
-    
+
+    private String runningThread = null;
+
     /**
      * 
      */
@@ -66,7 +68,26 @@ public class XQueryWatchDog {
         configureDefaults();
         reset();
     }
-    
+
+    /**
+     * Track the name of the thread currently running this query.
+     * Used for JMX stats.
+     *
+     * @param name
+     */
+    public void setRunningThread(String name) {
+        this.runningThread = name;
+    }
+
+    /**
+     * Get the name of last thread which has been running this query.
+     *
+     * @return
+     */
+    public String getRunningThread() {
+        return runningThread;
+    }
+
     private void configureDefaults() {
     	final DBBroker broker = context.getBroker();
         final Configuration conf = broker.getBrokerPool().getConfiguration();

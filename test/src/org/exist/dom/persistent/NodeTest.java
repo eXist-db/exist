@@ -1,6 +1,5 @@
 package org.exist.dom.persistent;
 
-import org.custommonkey.xmlunit.XMLTestCase;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
@@ -9,11 +8,15 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
-import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
+import org.exist.util.DatabaseConfigurationException;
+import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -22,17 +25,16 @@ import org.w3c.dom.NodeList;
 
 import java.io.IOException;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 /**
  * Tests basic DOM methods like getChildNodes(), getAttribute() ...
  * 
  * @author wolf
  *
  */
-public class NodeTest extends XMLTestCase {
-
-	public static void main(String[] args) {
-		junit.textui.TestRunner.run(NodeTest.class);
-	}
+public class NodeTest {
 
 	private static final String XML =
 		"<!-- doc starts here -->" +
@@ -45,8 +47,9 @@ public class NodeTest extends XMLTestCase {
 	
 	private BrokerPool pool = null;
 	private Collection root = null;
-	
-    public void testDocument() {
+
+    @Test
+    public void document() throws EXistException, LockException, PermissionDeniedException {
         DocumentImpl doc = null;
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
             doc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"),Lock.READ_LOCK);
@@ -56,17 +59,15 @@ public class NodeTest extends XMLTestCase {
                 node.getNodeId();
                 node.getNodeName();
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
         } finally {
             if (doc != null) {
                 doc.getUpdateLock().release(Lock.READ_LOCK);
             }
         }
     }
-    
-	public void testChildAxis() {
+
+    @Test
+	public void childAxis() throws EXistException, LockException, PermissionDeniedException {
 		DocumentImpl doc = null;
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
             doc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"),Lock.READ_LOCK);
@@ -99,17 +100,15 @@ public class NodeTest extends XMLTestCase {
         	parent = parent.getParentNode();
         	assertNotNull(parent);
         	assertEquals(parent.getNodeName(), "test");
-        } catch (Exception e) {
-        	e.printStackTrace();
-	        fail(e.getMessage());
         } finally {
         	if (doc != null) {
                 doc.getUpdateLock().release(Lock.READ_LOCK);
             }
         }
 	}
-	
-    public void testSiblingAxis() {
+
+    @Test
+    public void siblingAxis() throws EXistException, LockException, PermissionDeniedException {
         DocumentImpl doc = null;
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
             
@@ -137,17 +136,15 @@ public class NodeTest extends XMLTestCase {
                 count++;
             }
             assertEquals(count, 4);
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
         } finally {
             if (doc != null) {
                 doc.getUpdateLock().release(Lock.READ_LOCK);
             }
         }
     }
-    
-	public void testAttributeAxis() {
+
+    @Test
+	public void attributeAxis() throws EXistException, LockException, PermissionDeniedException {
 		DocumentImpl doc = null;
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
             doc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"),Lock.READ_LOCK);
@@ -186,16 +183,14 @@ public class NodeTest extends XMLTestCase {
             assertEquals(attr.getLocalName(), "b");
             assertEquals(attr.getNamespaceURI(), "http://foo.org");
             assertEquals(attr.getValue(), "m");
-        } catch (Exception e) {
-        	e.printStackTrace();
-	        fail(e.getMessage());
         } finally {
         	if (doc != null) doc.getUpdateLock().release(Lock.READ_LOCK);
         }
 	}
-	
-	@Deprecated
-    public void testVisitor() {
+
+    @Deprecated
+	@Test
+    public void visitor() throws EXistException, LockException, PermissionDeniedException {
 
         DocumentImpl doc = null;
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
@@ -211,9 +206,6 @@ public class NodeTest extends XMLTestCase {
                 };
             };
             rootNode.accept(visitor);
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
         } finally {
             if (doc != null) {
                 doc.getUpdateLock().release(Lock.READ_LOCK);
@@ -221,8 +213,8 @@ public class NodeTest extends XMLTestCase {
         }
     }
     
-	@Override
-    protected void setUp() throws Exception {
+	@Before
+    public void setUp() throws Exception {
         pool = startDB();
         final TransactionManager transact = pool.getTransactionManager();
 
@@ -239,28 +231,22 @@ public class NodeTest extends XMLTestCase {
             root.store(transaction, broker, info, XML, false);
             
             transact.commit(transaction);
-        } catch (Exception e) {
-	        fail(e.getMessage()); 	        
         }
 	}
 	
-	protected BrokerPool startDB() {
+	protected BrokerPool startDB() throws DatabaseConfigurationException, EXistException {
         String home, file = "conf.xml";
         home = System.getProperty("exist.home");
-        if (home == null)
+        if (home == null) {
             home = System.getProperty("user.dir");
-        try {
-            Configuration config = new Configuration(file, home);
-            BrokerPool.configure(1, 5, config);
-            return BrokerPool.getInstance();
-        } catch (Exception e) {            
-            fail(e.getMessage());
         }
-        return null;
+        Configuration config = new Configuration(file, home);
+        BrokerPool.configure(1, 5, config);
+        return BrokerPool.getInstance();
     }
 
-    @Override
-    protected void tearDown() throws EXistException, PermissionDeniedException, IOException, TriggerException {
+    @After
+    public void tearDown() throws EXistException, PermissionDeniedException, IOException, TriggerException {
 
         final TransactionManager transact = pool.getTransactionManager();
 

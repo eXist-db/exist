@@ -34,10 +34,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.test.TestConstants;
-import org.exist.util.Configuration;
-import org.exist.util.ConfigurationHelper;
-import org.exist.util.LockException;
-import org.exist.util.MimeType;
+import org.exist.util.*;
 import org.exist.xmldb.XmldbURI;
 import org.junit.After;
 import org.junit.Test;
@@ -51,7 +48,7 @@ public class RecoverBinaryTest2 {
     //private static File dir = new File(directory);
 
     @Test
-    public void storeAndRead() {
+    public void storeAndRead() throws TriggerException, PermissionDeniedException, DatabaseConfigurationException, IOException, LockException, EXistException {
         store();
         tearDown();
         read();
@@ -60,7 +57,7 @@ public class RecoverBinaryTest2 {
     }
 
     //@Test
-    public void store() {
+    public void store() throws EXistException, DatabaseConfigurationException, PermissionDeniedException, IOException, TriggerException, LockException {
         BrokerPool.FORCE_CORRUPTION = true;
         final BrokerPool pool = startDB();
         final TransactionManager transact = pool.getTransactionManager();
@@ -68,31 +65,28 @@ public class RecoverBinaryTest2 {
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
                 final Txn transaction = transact.beginTransaction()) {
 
-            Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
+            final Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
             assertNotNull(root);
             broker.saveCollection(transaction, root);
             
-            Collection test2 = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI2);
+            final Collection test2 = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI2);
             assertNotNull(test2);
             broker.saveCollection(transaction, test2);            
             
             storeFiles(broker, transaction, test2);
             transact.commit(transaction);
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());             
         }
     }
 
     //@Test
-    public void read() {
+    public void read() throws EXistException, DatabaseConfigurationException, PermissionDeniedException, LockException, IOException, TriggerException {
 
         BrokerPool.FORCE_CORRUPTION = false;
         final BrokerPool pool = startDB();
 
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
-            Collection test2 = broker.getCollection(TestConstants.TEST_COLLECTION_URI2);
-            for (Iterator<DocumentImpl> i = test2.iterator(broker); i.hasNext(); ) {
+            final Collection test2 = broker.getCollection(TestConstants.TEST_COLLECTION_URI2);
+            for (final Iterator<DocumentImpl> i = test2.iterator(broker); i.hasNext(); ) {
                 DocumentImpl doc = i.next();
             }
             
@@ -105,79 +99,60 @@ public class RecoverBinaryTest2 {
                 storeFiles(broker, transaction, test2);
                 transact.commit(transaction);
             }
-            
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());              
         }
     }
 
     //@Test
-    public void read2() {
+    public void read2() throws EXistException, DatabaseConfigurationException, PermissionDeniedException, IOException, TriggerException {
 
         BrokerPool.FORCE_CORRUPTION = false;
         final BrokerPool pool = startDB();
 
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
 
-            Collection test2 = broker.getCollection(TestConstants.TEST_COLLECTION_URI2);
-            for (Iterator<DocumentImpl> i = test2.iterator(broker); i.hasNext(); ) {
-                DocumentImpl doc = i.next();
+            final Collection test2 = broker.getCollection(TestConstants.TEST_COLLECTION_URI2);
+            for (final Iterator<DocumentImpl> i = test2.iterator(broker); i.hasNext(); ) {
+                final DocumentImpl doc = i.next();
             }
             
             final TransactionManager transact = pool.getTransactionManager();
             assertNotNull(transact);
             try(final Txn transaction = transact.beginTransaction()) {
                 assertNotNull(transaction);
-                Collection test1 = broker.getCollection(TestConstants.TEST_COLLECTION_URI);
+                final Collection test1 = broker.getCollection(TestConstants.TEST_COLLECTION_URI);
                 broker.removeCollection(transaction, test1);
                 transact.commit(transaction);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());              
         }
     }
     
-    private void storeFiles(DBBroker broker, Txn transaction, Collection test2) throws IOException, EXistException, PermissionDeniedException, LockException, TriggerException {
-        
-        // Get absolute path
-        File dir = new File(ConfigurationHelper.getExistHome(), directory);
-        
+    private void storeFiles(final DBBroker broker, final Txn transaction, final Collection test2) throws IOException, EXistException, PermissionDeniedException, LockException, TriggerException {
         // Get files in directory
-        File files[] = dir.listFiles();
+        final File dir = new File(ConfigurationHelper.getExistHome(), directory);
+        final File files[] = dir.listFiles();
         assertNotNull("Check directory '"+dir.getAbsolutePath()+"'.",files);
-        
-        File f;
         
         // store some documents.
         for (int j = 0; j < 10; j++) {
-            for (int i = 0; i < files.length; i++) {
-                f = files[i];
+            for (final File f : files) {
                 assertNotNull(f);
                 if (f.isFile()) {
-                    XmldbURI uri = test2.getURI().append(j + "_" + f.getName());
-                    InputStream is = new FileInputStream(f);
-                    BinaryDocument doc = 
-                        test2.addBinaryResource(transaction, broker, uri, is, MimeType.BINARY_TYPE.getName(), 
+                    final XmldbURI uri = test2.getURI().append(j + "_" + f.getName());
+                    try(final InputStream is = new FileInputStream(f)) {
+                        final BinaryDocument doc =
+                            test2.addBinaryResource(transaction, broker, uri, is, MimeType.BINARY_TYPE.getName(),
                                 f.length(), new Date(), new Date());
-                    assertNotNull(doc);
-                    is.close();
+                        assertNotNull(doc);
+                    }
                 }
             }
         }
     }
     
-    protected BrokerPool startDB() {
-        try {
-            Configuration config = new Configuration();
-            BrokerPool.configure(1, 5, config);
-            return BrokerPool.getInstance();
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        }
-        return null;
+    protected BrokerPool startDB() throws DatabaseConfigurationException, EXistException {
+        final Configuration config = new Configuration();
+        BrokerPool.configure(1, 5, config);
+        return BrokerPool.getInstance();
     }
 
     @After

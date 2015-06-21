@@ -1,6 +1,11 @@
 package org.exist.util.hashtable;
 
+import org.junit.Test;
+
 import java.util.Iterator;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 public class SequencedLongHashMapTest extends AbstractHashtableTest<SequencedLongHashMap, Long, Object> {
 	
@@ -56,7 +61,8 @@ public class SequencedLongHashMapTest extends AbstractHashtableTest<SequencedLon
 	}
 	
 	@SuppressWarnings("unchecked")
-	public void testSequenceProperty() throws Exception {
+	@Test
+	public void sequenceProperty() throws Exception {
 		map.put(1, 2);
 		map.put(3, 4);
 		map.put(11, 12);

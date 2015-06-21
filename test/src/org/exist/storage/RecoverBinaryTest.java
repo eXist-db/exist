@@ -24,16 +24,22 @@ package org.exist.storage;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.FileInputStream;
 
+import org.exist.EXistException;
 import org.exist.collections.Collection;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.BinaryDocument;
+import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.test.TestConstants;
 import org.exist.util.Configuration;
+import org.exist.util.DatabaseConfigurationException;
+import org.exist.util.LockException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -49,82 +55,73 @@ public class RecoverBinaryTest {
     private BrokerPool pool;
 
     @Test
-    public void storeAndLoad() {
+    public void storeAndLoad() throws LockException, TriggerException, PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException {
         store();
         tearDown();
         setUp();
         load();
     }
 
-    private void store() {
+    private void store() throws EXistException, PermissionDeniedException, IOException, TriggerException, LockException {
+
     	BrokerPool.FORCE_CORRUPTION = true;
 
         final TransactionManager transact = pool.getTransactionManager();
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
-                final Txn transaction = transact.beginTransaction()) {
-
-            Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
-            assertNotNull(root);
-            broker.saveCollection(transaction, root);
-    
-            String existHome = System.getProperty("exist.home");
-            File existDir = existHome==null ? new File(".") : new File(existHome);
-            FileInputStream is = new FileInputStream(new File(existDir,"LICENSE"));
-            assertNotNull(is);
-            ByteArrayOutputStream os = new ByteArrayOutputStream();
-            byte[] buf = new byte[512];
-            int count = 0;
-            while ((count = is.read(buf)) > -1) {
-                os.write(buf, 0, count);
-            }
-            BinaryDocument doc = 
-				root.addBinaryResource(transaction, broker, TestConstants.TEST_BINARY_URI, os.toByteArray(),	"text/text");
-            assertNotNull(doc);
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+            try(final Txn transaction = transact.beginTransaction()) {
             
-            transact.commit(transaction);
+    	        final Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
+        	    assertNotNull(root);
+            	broker.saveCollection(transaction, root);
+    
+	            final String existHome = System.getProperty("exist.home");
+    	        final File existDir = existHome==null ? new File(".") : new File(existHome);
+        	    try(final InputStream is = new FileInputStream(new File(existDir,"LICENSE")); final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            	    byte[] buf = new byte[512];
+	                int count = 0;
+    	            while((count = is.read(buf)) > -1) {
+        	            os.write(buf, 0, count);
+            	    }
+                	BinaryDocument doc =
+                    	root.addBinaryResource(transaction, broker, TestConstants.TEST_BINARY_URI, os.toByteArray(), "text/text");
+	                assertNotNull(doc);
+    	        }
+
+				transact.commit(transaction);
+			}
+            
             // the following transaction will not be committed. It will thus be rolled back by recovery
-//            transaction = transact.beginTransaction();
-//            root.removeBinaryResource(transaction, broker, doc);
+//          final Txn transaction = transact.beginTransaction();
+//          root.removeBinaryResource(transaction, broker, doc);
             
             //TODO : remove ?
             transact.getJournal().flushToLog(true);
-		} catch (Exception e) {            
-	        fail(e.getMessage());             
-        }
+		}
     }
     
-    private void load() {
+    private void load() throws EXistException, PermissionDeniedException, IOException {
+
         BrokerPool.FORCE_CORRUPTION = false;
-        DBBroker broker = null;
-        try {
-        	assertNotNull(pool);
-        	broker = pool.get(pool.getSecurityManager().getSystemSubject());
-        	assertNotNull(broker);
-            BinaryDocument binDoc = (BinaryDocument) broker.getXMLResource(TestConstants.TEST_COLLECTION_URI.append(TestConstants.TEST_BINARY_URI), Lock.READ_LOCK);
+
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());) {
+            final BinaryDocument binDoc = (BinaryDocument) broker.getXMLResource(TestConstants.TEST_COLLECTION_URI.append(TestConstants.TEST_BINARY_URI), Lock.READ_LOCK);
             assertNotNull("Binary document is null", binDoc);
-            InputStream is = broker.getBinaryResource(binDoc);
-            byte [] bdata = new byte[(int)broker.getBinaryResourceSize(binDoc)];
-            is.read(bdata);
-            is.close();
-            String data = new String(bdata);
-            assertNotNull(data);
-		} catch (Exception e) {            
-	        fail(e.getMessage());
-	    } finally {
-            if (pool != null) pool.release(broker);
-        }
+
+            try(final InputStream is = broker.getBinaryResource(binDoc)) {
+                final byte[] bdata = new byte[(int) broker.getBinaryResourceSize(binDoc)];
+                is.read(bdata);
+                final String data = new String(bdata);
+                assertNotNull(data);
+            }
+	    }
     }
 
     @Before
-    public void setUp() {
-        try {
-            Configuration config = new Configuration();
-            BrokerPool.configure(1, 5, config);
-            pool = BrokerPool.getInstance();
-        } catch (Exception e) {            
-            fail(e.getMessage());
-        }
+    public void setUp() throws DatabaseConfigurationException, EXistException {
+        final Configuration config = new Configuration();
+        BrokerPool.configure(1, 5, config);
+        pool = BrokerPool.getInstance();
     }
 
     @After

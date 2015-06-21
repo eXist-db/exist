@@ -1,17 +1,22 @@
 package org.exist.xquery;
 
-import org.custommonkey.xmlunit.XMLTestCase;
 import org.exist.jetty.JettyStart;
 import org.exist.xmldb.CollectionImpl;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.XmldbURI;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.*;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XQueryService;
 
-public class EntitiesTest extends XMLTestCase {
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
+public class EntitiesTest {
     
     private static String uri = XmldbURI.LOCAL_DB;
     
@@ -24,60 +29,48 @@ public class EntitiesTest extends XMLTestCase {
     private Collection testCollection;
     @SuppressWarnings("unused")
 	private String query;
-    
-    protected void setUp() {
-        if (uri.startsWith("xmldb:exist://localhost"))
+
+    @Before
+    public void setUp() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
+        if (uri.startsWith("xmldb:exist://localhost")) {
             initServer();
-        try {
-            // initialize driver
-            Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
-            Database database = (Database) cl.newInstance();
-            database.setProperty("create-database", "true");
-            DatabaseManager.registerDatabase(database);
-            
-            Collection root =
-                    DatabaseManager.getCollection(
-                    uri,
-                    "admin",
-                    null);
-            CollectionManagementService service =
-                    (CollectionManagementService) root.getService(
-                    "CollectionManagementService",
-                    "1.0");
-            testCollection = service.createCollection("test");
-            assertNotNull(testCollection);
-        } catch (ClassNotFoundException e) {
-        } catch (InstantiationException e) {
-        } catch (IllegalAccessException e) {
-        } catch (XMLDBException e) {
-            e.printStackTrace();
         }
+
+        // initialize driver
+        Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
+        Database database = (Database) cl.newInstance();
+        database.setProperty("create-database", "true");
+        DatabaseManager.registerDatabase(database);
+
+        Collection root =
+                DatabaseManager.getCollection(
+                uri,
+                "admin",
+                null);
+        CollectionManagementService service =
+                (CollectionManagementService) root.getService(
+                "CollectionManagementService",
+                "1.0");
+        testCollection = service.createCollection("test");
+        assertNotNull(testCollection);
     }
     
 	private void initServer() {
-        try {
-            if (server == null) {
-                server = new JettyStart();
-                server.run();
-            }
-        } catch(Exception e) {
-            fail(e.getMessage());
+        if (server == null) {
+            server = new JettyStart();
+            server.run();
         }
     }
-    
-    protected void tearDown() throws Exception {
-        try {
-            if (!((CollectionImpl) testCollection).isRemoteCollection()) {
-                DatabaseInstanceManager dim =
-                        (DatabaseInstanceManager) testCollection.getService(
-                        "DatabaseInstanceManager", "1.0");
-                dim.shutdown();
-            }
-            testCollection = null;
-        } catch (XMLDBException e) {
-            e.printStackTrace();
-            fail(e.getMessage());
+
+    @After
+    public void tearDown() throws Exception {
+        if (!((CollectionImpl) testCollection).isRemoteCollection()) {
+            DatabaseInstanceManager dim =
+                    (DatabaseInstanceManager) testCollection.getService(
+                    "DatabaseInstanceManager", "1.0");
+            dim.shutdown();
         }
+        testCollection = null;
     }
     
     /** Helper that performs an XQuery and does JUnit assertion on result size.
@@ -101,10 +94,11 @@ public class EntitiesTest extends XMLTestCase {
     private ResourceSet queryResource(XQueryService service, String resource,
             String query, int expected, String message) throws XMLDBException {
         ResourceSet result = service.queryResource(resource, query);
-        if(message == null)
+        if(message == null) {
             assertEquals(query, expected, result.getSize());
-        else
+        } else {
             assertEquals(message, expected, result.getSize());
+        }
         return result;
     }
     
@@ -112,10 +106,11 @@ public class EntitiesTest extends XMLTestCase {
     private ResourceSet queryAndAssert(XQueryService service, String query,
             int expected, String message) throws XMLDBException {
         ResourceSet result = service.query(query);
-        if(message == null)
+        if(message == null) {
             assertEquals(expected, result.getSize());
-        else
+        } else {
             assertEquals(message, expected, result.getSize());
+        }
         return result;
     }
     
@@ -146,66 +141,50 @@ public class EntitiesTest extends XMLTestCase {
                 "1.0");
         return service;
     }
-    
-    public void testAttributeConstructor() {
-        try {
-            XQueryService service = getQueryService();
-            @SuppressWarnings("unused")
-			ResourceSet result;
-            
-            result = queryAndAssert( service,
-                    "<foo "+
-                    " ampEntity=\"{('&amp;')}\"" +
-                    " string=\"{(string('&amp;'))}\"" +
-                    " ltEntity=\"{('&lt;')}\"" +
-                    " gtEntity=\"{('&gt;')}\"" +
-                    " aposEntity=\"{('&apos;')}\"" +
-                    " quotEntity=\"{('&quot;')}\"" +
-                    "/>",
-                    1,  null );
-            // TODO: could check result
-            
-        } catch (XMLDBException e) {
-            fail(e.getMessage());
-        }
-    }
-    
-    public void testStringConstructor() {
-        try {
-            XQueryService service = getQueryService();
-            @SuppressWarnings("unused")
-			ResourceSet result;
-            
-            result = queryAndAssert( service, "'&amp;'",1,null);
-            result = queryAndAssert( service, "'&lt;'",1,null);
-            result = queryAndAssert( service, "'&gt;'",1,null);
-            result = queryAndAssert( service, "'&apos;'",1,null);
-            result = queryAndAssert( service, "'&quot;'",1,null);
-            // TODO: could check result
-            
-        } catch (XMLDBException e) {
-            fail(e.getMessage());
-        }
-    }
-    
-    public void testURIConstructor() {
-    	try {
-            XQueryService service = getQueryService();
-            ResourceSet result;
-            
-            result = queryAndAssert(service, "xs:anyURI(\"index.xql?a=1&amp;b=2\")", 1, null);
-            // TODO: could check result
-            
-            result = queryAndAssert(service, "xs:anyURI('a') le xs:anyURI('b')", 1, null);
-            assertEquals("true",result.getResource(0).getContent());
 
-            
-        } catch (XMLDBException e) {
-            fail(e.getMessage());
-        }
+    @Test
+    public void attributeConstructor() throws XMLDBException {
+        XQueryService service = getQueryService();
+        @SuppressWarnings("unused")
+        ResourceSet result;
+
+        result = queryAndAssert( service,
+                "<foo "+
+                " ampEntity=\"{('&amp;')}\"" +
+                " string=\"{(string('&amp;'))}\"" +
+                " ltEntity=\"{('&lt;')}\"" +
+                " gtEntity=\"{('&gt;')}\"" +
+                " aposEntity=\"{('&apos;')}\"" +
+                " quotEntity=\"{('&quot;')}\"" +
+                "/>",
+                1,  null );
+        // TODO: could check result
+
     }
-    
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(EntitiesTest.class);
+
+    @Test
+    public void stringConstructor() throws XMLDBException {
+        XQueryService service = getQueryService();
+        @SuppressWarnings("unused")
+        ResourceSet result;
+
+        result = queryAndAssert( service, "'&amp;'",1,null);
+        result = queryAndAssert( service, "'&lt;'",1,null);
+        result = queryAndAssert( service, "'&gt;'",1,null);
+        result = queryAndAssert( service, "'&apos;'",1,null);
+        result = queryAndAssert( service, "'&quot;'",1,null);
+        // TODO: could check result
+    }
+
+    @Test
+    public void uriConstructor() throws XMLDBException {
+        XQueryService service = getQueryService();
+        ResourceSet result;
+
+        result = queryAndAssert(service, "xs:anyURI(\"index.xql?a=1&amp;b=2\")", 1, null);
+        // TODO: could check result
+
+        result = queryAndAssert(service, "xs:anyURI('a') le xs:anyURI('b')", 1, null);
+        assertEquals("true",result.getResource(0).getContent());
     }
 }
