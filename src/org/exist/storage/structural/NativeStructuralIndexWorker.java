@@ -309,7 +309,7 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
             this.docs = docs;
             this.selector = selector;
             this.parent = parent;
-            if (qname.getNameType() != type) {
+            if (qname != null && qname.getNameType() != type) {
                 this.qname = new QName(qname.getLocalPart(), qname.getNamespaceURI(), qname.getPrefix(), type);
             } else {
                 this.qname = qname;
@@ -369,7 +369,7 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
             this.result = result;
             this.selfAsContext = selfAsContext;
             this.parent = parent;
-            if (qname.getNameType() != type) {
+            if (qname != null && qname.getNameType() != type) {
                 this.qname = new QName(qname.getLocalPart(), qname.getNamespaceURI(), qname.getPrefix(), type);
             } else {
                 this.qname = qname;
