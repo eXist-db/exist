@@ -41,27 +41,16 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
+import java.text.Normalizer;
 
 /**
  * Implements fn:normalize-unicode()
- * Uses icu4j by introspection
  *
  * @author perig
  *
  */
 public class FunNormalizeUnicode extends Function {
     protected static final Logger logger = LogManager.getLogger(FunNormalizeUnicode.class);
-
-	private String normalizationForm = null;
-	private Class<?> clazz = null;	
-	private Field  modeField = null;
-	private Object modeObject = null;
-	private static final Integer DUMMY_INTEGER = Integer.valueOf(0);
-	private Constructor<?> constructor = null;
-	private Method method = null;
 	
 	protected static final String FUNCTION_DESCRIPTION_0_PARAM = 
         "Returns the value of the context item normalized according to the " +
@@ -143,46 +132,20 @@ public class FunNormalizeUnicode extends Function {
 			if ("".equals(newNormalizationForm))
 				{result =  new StringValue(s1.getStringValue());}
 			else {
-				Object returnedObject = null;
-				try {
-	        		if (clazz == null)
-	        			{clazz = Class.forName("com.ibm.icu.text.Normalizer");}
-	        		if (modeField == null || !normalizationForm.equals(newNormalizationForm)) {
-	        			try {
-	        				modeField = clazz.getField(newNormalizationForm);
-	        			} catch (final NoSuchFieldException e) {
-                            logger.error("err:FOCH0003: unknown normalization form");
-	        				throw new XPathException(this, ErrorCodes.FOCH0003, "unknown normalization form");
-	        			}
-	    	        	//com.ibm.icu.text.Normalizer.Mode
-	            		modeObject = modeField.get(null);
-	        			normalizationForm = newNormalizationForm;
-	        		}
-	        		if (constructor == null)
-	        			//Second argument shouldn't be a problem : modeField always has the same type
-	            		{constructor = clazz.getConstructor(
-	            				new Class[] { String.class, modeField.getType(), Integer.TYPE}
-	    	        		);}
-		        	final Object[] args = new Object[] { s1.getStringValue(), modeObject, DUMMY_INTEGER };
-		        	if (method == null)
-		        		{method = clazz.getMethod( "getText", (Class[])null );}
-	
-		        	//Normalizer n = new Normalizer(s1.getStringValue(), Normalizer.NFC, 0);
-		        	final Object instance = constructor.newInstance(args);
-		        	//result = new StringValue(n.getText());
-		        	returnedObject = method.invoke( instance, (Object[])null );
-        		} catch (final Exception e) {
-                    logger.error("Can not find the ICU4J library in the classpath " + e.getMessage());
-        			throw new XPathException(this, "Can not find the ICU4J library in the classpath " + e.getMessage());
-        		}
-        		result = new StringValue((String)returnedObject);
+                try {
+                    Normalizer.Form form = Normalizer.Form.valueOf(newNormalizationForm);
+                    result = new StringValue(Normalizer.normalize(s1.getStringValue(), form));
+                } catch (IllegalArgumentException e) {
+                    throw new XPathException(this, ErrorCodes.FOCH0003, "Unknown normalization form: " +
+                            newNormalizationForm);
+                }
 			}
         }
         
         if (context.getProfiler().isEnabled()) 
             {context.getProfiler().end(this, "", result);} 
         
-        return result;        
+        return result;
     }
 
 }
