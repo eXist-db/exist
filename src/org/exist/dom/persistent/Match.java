@@ -29,10 +29,10 @@ import java.util.function.Predicate;
 import org.exist.numbering.NodeId;
 
 /**
- * Used to track fulltext matches throughout the query.
+ * Used to track matches throughout the query.
  * <p/>
  * Index may add a match object to every {@link org.exist.dom.persistent.NodeProxy}
- * that triggered a fulltext match for every term matched. The
+ * that triggered a match for every term matched. The
  * Match object contains the nodeId of the text node that triggered the
  * match, the string value of the matching term and a frequency count,
  * indicating the frequency of the matching term string within the corresponding
@@ -40,9 +40,9 @@ import org.exist.numbering.NodeId;
  * <p/>
  * All path operations copy existing match objects, i.e. the match objects
  * are copied to the selected descendant or child nodes. This means that
- * every NodeProxy being the direct or indirect result of a fulltext
+ * every NodeProxy being the direct or indirect result of a
  * selection will have one or more match objects, indicating which text nodes
- * among its descendant nodes contained a fulltext match.
+ * among its descendant nodes contained a match.
  *
  * @author wolf
  */

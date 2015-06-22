@@ -193,7 +193,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 try {
                     previous = occurences.getNode(m).write(previous, os);
                 } catch (IOException e) {
-                    LOG.error("IOException while writing fulltext index: " + e.getMessage(), e);
+                    LOG.error("IOException while writing nGram index: " + e.getMessage(), e);
                 }
                 int freq = occurences.getOccurrences(m);
                 os.writeInt(freq);

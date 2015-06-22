@@ -91,31 +91,25 @@ public class MatchListenerTest {
     
     private static String CONF1 =
         "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
-    	"	<index>" +
-    	"		<fulltext default=\"none\">" +
-    	"		</fulltext>" +
-    	"		<ngram qname=\"para\"/>" +
-        "		<ngram qname=\"term\"/>" +
-        "	</index>" +
-    	"</collection>";
+        "   <index>" +
+        "       <ngram qname=\"para\"/>" +
+        "       <ngram qname=\"term\"/>" +
+        "   </index>" +
+        "</collection>";
 
     private static String CONF2 =
         "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
-    	"	<index>" +
-    	"		<fulltext default=\"none\">" +
-    	"		</fulltext>" +
-    	"		<ngram qname=\"note\"/>" +
-        "	</index>" +
-    	"</collection>";
+        "   <index>" +
+        "       <ngram qname=\"note\"/>" +
+        "   </index>" +
+        "</collection>";
 
     private static String CONF3 =
         "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
-    	"	<index xmlns:tei=\"http://www.tei-c.org/ns/1.0\">" +
-    	"		<fulltext default=\"none\">" +
-    	"		</fulltext>" +
-    	"		<ngram qname=\"tei:p\"/>" +
-        "	</index>" +
-    	"</collection>";
+        "   <index xmlns:tei=\"http://www.tei-c.org/ns/1.0\">" +
+        "       <ngram qname=\"tei:p\"/>" +
+        "   </index>" +
+        "</collection>";
 
     private static String MATCH_START = "<exist:match xmlns:exist=\"http://exist.sourceforge.net/NS/exist\">";
     private static String MATCH_END = "</exist:match>";

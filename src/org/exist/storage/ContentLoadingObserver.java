@@ -34,9 +34,7 @@ import org.exist.util.ReadOnlyException;
  * 
  * startElement() and endElement() bear the same names as the corresponding SAX events.  
  * However storeXXX() have no corresponding method in SAX.
- * 
- * Note: when we will have more than one runtime switch , we will refactor 
- * fullTextIndexSwitch into an object */
+ */
 public interface ContentLoadingObserver {
 
 	/** store and index given attribute */

@@ -659,8 +659,8 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 
 
     /**
-     * Optimized implementation: first checks if a range index is defined on the nodes in the left argument. If that fails, check if we can use the
-     * fulltext index to speed up the search. Otherwise, fall back to {@link #nodeSetCompare(NodeSet, Sequence)}.
+     * Optimized implementation: first checks if a range index is defined on the nodes in the left argument.
+     * Otherwise, fall back to {@link #nodeSetCompare(NodeSet, Sequence)}.
      *
      * @param   contextSequence  DOCUMENT ME!
      *

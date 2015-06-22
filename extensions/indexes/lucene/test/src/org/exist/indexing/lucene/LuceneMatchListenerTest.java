@@ -73,47 +73,39 @@ public class LuceneMatchListenerTest {
             "</article>";
 
     private static String CONF1 =
-            "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
-            "	<index>" +
-            "		<fulltext default=\"none\">" +
-            "		</fulltext>" +
-            "   <text qname=\"para\"/>" +
-            "	</index>" +
-            "</collection>";
+        "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
+        "   <index>" +
+        "       <text qname=\"para\"/>" +
+        "   </index>" +
+        "</collection>";
 
     private static String CONF2 =
         "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
-        "	<index>" +
-        "		<fulltext default=\"none\">" +
-        "		</fulltext>" +
+        "   <index>" +
         "       <text qname=\"para\"/>" +
         "       <text qname=\"term\"/>" +
-        "	</index>" +
+        "   </index>" +
         "</collection>";
 
     private static String CONF3 =
-            "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
-            "	<index>" +
-            "		<fulltext default=\"none\">" +
-            "		</fulltext>" +
-            "   <text qname=\"hi\"/>" +
-            "	</index>" +
-            "</collection>";
+        "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
+        "   <index>" +
+        "       <text qname=\"hi\"/>" +
+        "   </index>" +
+        "</collection>";
 
     private static String CONF4 =
-            "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
-            "   <index xmlns:tei=\"http://www.tei-c.org/ns/1.0\">" +
-            "       <fulltext default=\"none\" attributes=\"no\">" +
-            "       </fulltext>" +
-            "       <lucene>" +
-            "           <text qname=\"p\">" +
-            "               <ignore qname=\"note\"/>" +
-            "           </text>" +
-            "           <text qname=\"head\"/>" +
-            "           <inline qname=\"s\"/>" +
-            "       </lucene>" +
-            "   </index>" +
-            "</collection>";
+        "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
+        "   <index xmlns:tei=\"http://www.tei-c.org/ns/1.0\">" +
+        "       <lucene>" +
+        "           <text qname=\"p\">" +
+        "               <ignore qname=\"note\"/>" +
+        "           </text>" +
+        "           <text qname=\"head\"/>" +
+        "           <inline qname=\"s\"/>" +
+        "       </lucene>" +
+        "   </index>" +
+        "</collection>";
 
     private static String MATCH_START = "<exist:match xmlns:exist=\"http://exist.sourceforge.net/NS/exist\">";
     private static String MATCH_END = "</exist:match>";

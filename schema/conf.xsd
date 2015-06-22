@@ -173,36 +173,6 @@
                             <xs:element name="index">
                                 <xs:complexType>
                                     <xs:sequence>
-                                        <xs:element name="fulltext">
-                                            <xs:complexType>
-                                                <xs:sequence>
-                                                  <xs:element name="include" minOccurs="0"
-                                                  maxOccurs="unbounded">
-                                                  <xs:complexType>
-                                                  <xs:attribute name="path" type="xs:string"/>
-                                                  </xs:complexType>
-                                                  </xs:element>
-                                                  <xs:element name="exclude" minOccurs="0"
-                                                  maxOccurs="unbounded">
-                                                  <xs:complexType>
-                                                  <xs:attribute name="path" type="xs:string"/>
-                                                  </xs:complexType>
-                                                  </xs:element>
-                                                </xs:sequence>
-                                                <xs:attribute name="default" default="all">
-                                                  <xs:simpleType>
-                                                  <xs:restriction base="xs:string">
-                                                  <xs:enumeration value="all"/>
-                                                  <xs:enumeration value="none"/>
-                                                  </xs:restriction>
-                                                  </xs:simpleType>
-                                                </xs:attribute>
-                                                <xs:attribute name="attributes" type="xs:boolean"
-                                                  default="true"/>
-                                                <xs:attribute name="alphanum" type="xs:boolean"
-                                                  default="true"/>
-                                            </xs:complexType>
-                                        </xs:element>
                                         <xs:element name="create" minOccurs="0"
                                             maxOccurs="unbounded">
                                             <xs:complexType>

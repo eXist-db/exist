@@ -524,15 +524,9 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
      *            the node to be stored
      * @param currentPath
      *            path expression which points to this node's element-parent or
-     *            to itself if it is an element (currently used by the Broker to
-     *            determine if a node's content should be fulltext-indexed).
+     *            to itself if it is an element.
      */
-    public abstract <T extends IStoredNode> void storeNode(Txn transaction, IStoredNode<T> node,
-        NodePath currentPath, IndexSpec indexSpec, boolean index);
-
-    public <T extends IStoredNode> void storeNode(Txn transaction, IStoredNode<T> node, NodePath currentPath, IndexSpec indexSpec) {
-        storeNode(transaction, node, currentPath, indexSpec, true);
-    }
+    public abstract <T extends IStoredNode> void storeNode(Txn transaction, IStoredNode<T> node, NodePath currentPath,IndexSpec indexSpec);
 
     public <T extends IStoredNode> void endElement(final IStoredNode<T> node, NodePath currentPath, String content) {
         endElement(node, currentPath, content, false);
@@ -576,19 +570,6 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
         BinaryDocument blob, InputStream is) throws IOException;
 
     public abstract void getCollectionResources(Collection.InternalAccess collectionInternalAccess);
-
-    /* *
-     * Retrieve the binary data stored under the resource descriptor
-     * BinaryDocument.
-     * 
-     * @param blob
-     *            the binary document descriptor
-     * @return the document binary data
-     */
-    /*
-    public abstract byte[] getBinaryResource(BinaryDocument blob)
-           throws IOException;
-     */
 
     public abstract void readBinaryResource(final BinaryDocument blob,
         final OutputStream os) throws IOException;

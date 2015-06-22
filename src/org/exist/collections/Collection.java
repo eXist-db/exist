@@ -2229,36 +2229,4 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         final IndexSpec idxSpec = getIndexConfiguration(broker);
         return (idxSpec == null) ? null : idxSpec.getIndexByQName(qname);
     }
-
-    public FulltextIndexSpec getFulltextIndexConfiguration(final DBBroker broker) {
-        final IndexSpec idxSpec = getIndexConfiguration(broker);
-        return (idxSpec == null) ? null : idxSpec.getFulltextIndexSpec();
-    }
-
-    /*
-    public DocumentTrigger getDocumentTrigger(DBBroker broker) {
-        if (triggersEnabled) {
-            CollectionConfiguration config = getConfiguration(broker);
-            if (config != null)
-                try {
-                    return config.newDocumentTrigger(broker, this);
-                } catch (CollectionConfigurationException e) {
-                    LOG.debug("An error occurred while initializing a trigger for collection " + getURI() + ": " + e.getMessage(), e);
-                }
-        }
-        return null;
-    }
-
-    public CollectionTrigger getCollectionTrigger(DBBroker broker) {
-        if (triggersEnabled) {
-            CollectionConfiguration config = getConfiguration(broker);
-            if (config != null)
-                try {
-                    return config.newCollectionTrigger(broker, this);
-                } catch (CollectionConfigurationException e) {
-                    LOG.debug("An error occurred while initializing a trigger for collection " + getURI() + ": " + e.getMessage(), e);
-                }
-        }
-        return null;
-    }*/
 }
