@@ -87,7 +87,7 @@ public class Jaxv extends BasicFunction  {
                     new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
                         instanceText),
                     new FunctionParameterSequenceType("grammars", Type.ITEM, Cardinality.ONE_OR_MORE,
-                        languageText)
+                        grammarText)
                 },
                 new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE,
                     Shared.simplereportText)
