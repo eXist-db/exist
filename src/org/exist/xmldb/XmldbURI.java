@@ -470,7 +470,7 @@ public class XmldbURI implements Comparable<Object>, Serializable {
             encodedCollectionPath = "".equals(collectionPath) ? null : collectionPath;
 
             //include root slash if we have a context
-            if ((encodedCollectionPath != null) && ((getContext() != null) & (encodedCollectionPath.charAt(0) != '/'))) {
+            if ((encodedCollectionPath != null) && ((getContext() != null) && (encodedCollectionPath.charAt(0) != '/'))) {
                 encodedCollectionPath = "/" + encodedCollectionPath;
             }
             recomputeURI();
