@@ -1847,7 +1847,7 @@ throws PermissionDeniedException, EXistException, XPathException
 				if (step instanceof LocationStep) {
 					LocationStep s= (LocationStep) step;
 					if (s.getAxis() == Constants.ATTRIBUTE_AXIS ||
-						s.getTest().getType() == Type.ATTRIBUTE)
+						(s.getTest().getType() == Type.ATTRIBUTE && s.getAxis() == Constants.CHILD_AXIS))
 						// combines descendant-or-self::node()/attribute:*
 						s.setAxis(Constants.DESCENDANT_ATTRIBUTE_AXIS);
 					else {
@@ -1978,9 +1978,10 @@ throws PermissionDeniedException, EXistException, XPathException
 	Expression rightStep= null;
 	step= null;
 	int axis= Constants.CHILD_AXIS;
+	boolean axisGiven = false;
 }
 :
-	( axis=forwardAxis )?
+	( axis=forwardAxis { axisGiven = true; })?
 	{ 
 		NodeTest test = null; 
 		XQueryAST ast = null;
@@ -2087,6 +2088,10 @@ throws PermissionDeniedException, EXistException, XPathException
 			{ 
 				test= new TypeTest(Type.ATTRIBUTE);
 				ast = att;
+
+                if (!axisGiven) {
+				    axis= Constants.ATTRIBUTE_AXIS;
+                }
 			}
 			(
 				eq3:EQNAME
@@ -2094,7 +2099,6 @@ throws PermissionDeniedException, EXistException, XPathException
 					QName qname = QName.parse(staticContext, eq3.getText());
 					qname = new QName(qname, ElementValue.ATTRIBUTE);
 					test= new NameTest(Type.ATTRIBUTE, qname);
-					axis= Constants.ATTRIBUTE_AXIS;
 				}
 				|
 				WILDCARD
@@ -2266,7 +2270,7 @@ throws PermissionDeniedException, EXistException, XPathException
 				if (rightStep instanceof LocationStep) {
 					LocationStep rs= (LocationStep) rightStep;
 					if (rs.getAxis() == Constants.ATTRIBUTE_AXIS || 
-						rs.getTest().getType() == Type.ATTRIBUTE) {
+						(rs.getTest().getType() == Type.ATTRIBUTE && rs.getAxis() == Constants.CHILD_AXIS)) {
 						rs.setAxis(Constants.DESCENDANT_ATTRIBUTE_AXIS);
 					} else if (rs.getAxis() == Constants.CHILD_AXIS && rs.getTest().isWildcardTest()) {
 						rs.setAxis(Constants.DESCENDANT_AXIS);
