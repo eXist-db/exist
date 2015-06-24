@@ -905,7 +905,7 @@ public class Configurator {
                         final int radix = Integer.valueOf(settingKey.extractValueFromSettings(settings));
                         return Integer.toString((Integer) field.get(instance), radix);
                     } catch (final Exception e) {
-                        //UNDERSTAND: ignore, set back to default or throw error?
+                        //TODO UNDERSTAND: ignore, set back to default or throw error?
                     }
                     
                 } else if (settingKey == SettingKey.OCTAL_STRING) {

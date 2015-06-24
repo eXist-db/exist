@@ -173,7 +173,7 @@ public abstract class AbstractXMLDBTask extends Task
 
         }
         catch( final Exception e ) {
-            throw( new BuildException( "failed to initialize XMLDB database driver" ) );
+            throw new BuildException("failed to initialize XMLDB database driver", e);
         }
     }
 
