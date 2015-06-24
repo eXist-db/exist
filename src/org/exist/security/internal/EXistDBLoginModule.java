@@ -258,7 +258,6 @@ public class EXistDBLoginModule implements javax.security.auth.spi.LoginModule {
 	public boolean logout() throws LoginException {
 
 		subject.getPrincipals().remove(userPrincipal);
-		succeeded = false;
 		succeeded = commitSucceeded;
 		userPrincipal = null;
 		return true;
