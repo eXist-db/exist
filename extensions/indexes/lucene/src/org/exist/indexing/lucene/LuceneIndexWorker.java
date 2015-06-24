@@ -780,8 +780,6 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
     
     public String getFieldContent(int docId, String field) throws IOException {
-        Set<String> fields = new HashSet<>();
-        fields.add(field);
         BytesRef bytes = new BytesRef(NumericUtils.BUF_SIZE_INT);
         NumericUtils.intToPrefixCoded(docId, 0, bytes);
         Term dt = new Term(FIELD_DOC_ID, bytes);

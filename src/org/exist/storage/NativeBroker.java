@@ -3851,8 +3851,6 @@ public class NativeBroker extends DBBroker {
                                 qnIdx, mode == MODE_REMOVE);
                         }
                     }
-                    final NodeProxy tempProxy = new NodeProxy(doc, node.getNodeId(), address);
-                    tempProxy.setIndexType(indexType);
                     node.setQName(new QName(qname, ElementValue.ATTRIBUTE));
                     final AttrImpl attr = (AttrImpl) node;
                     attr.setIndexType(indexType);
