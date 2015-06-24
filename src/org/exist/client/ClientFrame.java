@@ -1535,18 +1535,15 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
                 }
                 
                 //this is a local instance, we cannot use disconnected local instance in the ResourcePropertyDialog
-                if(perm instanceof org.exist.security.Permission) {
-                    permAider = PermissionAiderFactory.getPermission(perm.getOwner().getName(), perm.getGroup().getName(), perm.getMode());
-                    //copy acl
-                    if(perm instanceof ACLPermission && permAider instanceof ACLPermission) {
-                        final ACLPermission aclPermission = (ACLPermission)perm;
-                        for(int i = 0; i < aclPermission.getACECount(); i++) {
-                            ((ACLPermission)permAider).addACE(aclPermission.getACEAccessType(i), aclPermission.getACETarget(i), aclPermission.getACEWho(i), aclPermission.getACEMode(i));
-                        }
+                permAider = PermissionAiderFactory.getPermission(perm.getOwner().getName(), perm.getGroup().getName(), perm.getMode());
+                //copy acl
+                if(perm instanceof ACLPermission && permAider instanceof ACLPermission) {
+                    final ACLPermission aclPermission = (ACLPermission)perm;
+                    for(int i = 0; i < aclPermission.getACECount(); i++) {
+                        ((ACLPermission)permAider).addACE(aclPermission.getACEAccessType(i), aclPermission.getACETarget(i), aclPermission.getACEWho(i), aclPermission.getACEMode(i));
                     }
                 }
-                
-                
+
             } else {
                 name = XmldbURI.create(".."); //$NON-NLS-1$
                 final Account account = service.getAccount(properties.getProperty(InteractiveClient.USER));

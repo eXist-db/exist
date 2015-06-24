@@ -1345,11 +1345,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
             return( null );
         }
 
-        if( !( atomic instanceof Indexable ) ) {
-            LOG.warn( "Node value '" + Type.getTypeName( xpathType ) + "(" + value + ")'" + " cannot be used as index key. It does not implement " + Indexable.class.getName() );
-            return( null );
-        }
-        return( atomic );
+        return atomic;
     }
 
 
