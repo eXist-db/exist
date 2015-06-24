@@ -2259,7 +2259,7 @@ public class DOMFile extends BTree implements Lockable {
                 "tid " + ItemId.getId(loggable.tid) +
                 " not found on page " + page.getPageNum() +
                 "; contents: " + debugPageContents(page));
-            ByteConversion.byteToShort(rec.getPage().data, rec.offset);
+//            ByteConversion.byteToShort(rec.getPage().data, rec.offset);
             rec.offset += LENGTH_DATA_LENGTH;
             if (ItemId.isRelocated(rec.getTupleID()))
                 {rec.offset += LENGTH_ORIGINAL_LOCATION;}
