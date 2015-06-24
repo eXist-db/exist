@@ -403,10 +403,12 @@ public class ConfigurationImpl implements Configuration {
 
     @Override
     public void checkForUpdates(Element element) {
-        if (!saving && configuredObjectReference != null && configuredObjectReference.get() != null) {
-            clearCache();
-            this.element = element;
-            Configurator.configure(configuredObjectReference.get(), this);
+        synchronized (this) {
+            if (!saving && configuredObjectReference != null && configuredObjectReference.get() != null) {
+                clearCache();
+                this.element = element;
+                Configurator.configure(configuredObjectReference.get(), this);
+            }
         }
     }
 
