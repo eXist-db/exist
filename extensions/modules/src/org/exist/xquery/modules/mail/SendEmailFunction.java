@@ -377,6 +377,12 @@ public class SendEmailFunction extends BasicFunction
 
             //get "HELLO" response, should be "250 blah blah"
             smtpResult = smtpIn.readLine();
+            if(smtpResult == null)
+            {
+                String errMsg = "Error - Unexpected null response to SMTP HELO";
+                LOG.error(errMsg);
+                throw new SMTPException(errMsg);
+            }
             if(!smtpResult.substring(0, 3).equals("250"))
             {
                 String errMsg = "Error - SMTP HELO Failed: '" + smtpResult + "'";
@@ -442,6 +448,11 @@ public class SendEmailFunction extends BasicFunction
 
             //Get "MAIL FROM:" response
             smtpResult = smtpIn.readLine();
+            if(smtpResult == null)
+            {
+                LOG.error("Error - Unexpected null response to SMTP MAIL FROM");
+                return false;
+            }
             if(!smtpResult.substring(0, 3).equals("250"))
             {
                 LOG.error("Error - SMTP MAIL FROM failed: " + smtpResult);
