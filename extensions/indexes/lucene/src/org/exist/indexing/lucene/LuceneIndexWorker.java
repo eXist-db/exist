@@ -592,9 +592,6 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         PlainTextIndexConfig solrconfParser = new PlainTextIndexConfig();
         solrconfParser.parse(descriptor);
         
-        // Get <doc> information
-        PlainTextDoc solrDoc = solrconfParser.getDoc();
-        
         if (pendingDoc == null) {
 	    // create Lucene document
 	    pendingDoc = new Document();
@@ -1295,17 +1292,17 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     facetFields.addFields(doc, paths);
                 }
 
-                byte[] docNodeId = LuceneUtil.createId(currentDoc.getDocId(), pending.nodeId);
-                Field fDocNodeId = new StoredField("docNodeId", docNodeId);
+                final byte[] docNodeId = LuceneUtil.createId(currentDoc.getDocId(), pending.nodeId);
+                final Field fDocNodeId = new StoredField("docNodeId", docNodeId);
                 doc.add(fDocNodeId);
-                Term delTerm = new Term("docNodeId", new BytesRef(docNodeId));
+
                 if (pending.idxConf.getAnalyzer() == null) {
                     writer.addDocument(doc);
                 } else {
                     writer.addDocument(doc, pending.idxConf.getAnalyzer());
-		}
-	    }
-        } catch (IOException e) {
+		        }
+	        }
+        } catch (final IOException e) {
             LOG.warn("An exception was caught while indexing document: " + e.getMessage(), e);
         } finally {
             index.releaseWriter(writer);

@@ -491,7 +491,7 @@ public class XQueryURLRewrite extends HttpServlet {
 			model.getSourceInfo().source.validate(broker.getSubject(), Permission.EXECUTE);
 			
 			if (model.getSourceInfo().source.isValid(broker) != Source.VALID) {
-                ModelAndView removed = urlCache.remove(url);
+                urlCache.remove(url);
 				return null;
 			}
 			

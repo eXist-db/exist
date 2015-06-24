@@ -155,18 +155,12 @@ public class ConverterFrom1_0 {
 		final String name = node.getAttribute(NAME);
 		if (name == null ) //|| name.length() == 0
 			{throw new ConfigurationException("account needs a name");}
-		
-		Attr attr;
-		if (majorVersion == 0) {
-			attr = node.getAttributeNode(PASS);
-			digestPassword = attr == null ? null : attr.getValue();
-		} else {
-			attr = node.getAttributeNode(PASS);
-			password = attr == null ? null : attr.getValue();
 
-			attr = node.getAttributeNode(DIGEST_PASS);
-			digestPassword = attr == null ? null : attr.getValue();
+		if (majorVersion != 0) {
+			final Attr attr = node.getAttributeNode(PASS);
+			password = attr == null ? null : attr.getValue();
 		}
+
 		final Attr userId = node.getAttributeNode(USER_ID);
 		if (userId == null)
 			{throw new ConfigurationException("attribute id is missing");}
@@ -175,8 +169,6 @@ public class ConverterFrom1_0 {
 		} catch (final NumberFormatException e) {
 			throw new ConfigurationException("illegal user id: " + userId + " for account " + name);
 		}
-		final Attr homeAttr = node.getAttributeNode(HOME);
-		home = homeAttr == null ? null : XmldbURI.create(homeAttr.getValue());
 		
 		//TODO: workaround for 'null' admin's password. It should be removed after 6 months (@ 10 July 2010)
 		if (id == 1 && password == null) {password = "";}

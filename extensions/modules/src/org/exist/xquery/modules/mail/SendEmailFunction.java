@@ -1162,7 +1162,7 @@ public class SendEmailFunction extends BasicFunction
         dateString += tHour + ":" + tMinute + ":" + tSecond + " ";
 
         //TimeZone Correction
-        String tzSign = new String();
+        final String tzSign;
         String tzHours = new String();
         String tzMinutes = new String();
 
