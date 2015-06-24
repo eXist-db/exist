@@ -316,11 +316,7 @@ public class TryCatchExpression extends AbstractExpression {
             }
         } else {
             // fill data from throwable object
-            try {
-                errorValue = new StringValue(getStackTrace(t));
-            } catch(final IOException ioe) {
-                throw new XPathException(ioe);
-            }
+            errorValue = null;
         }
         err_value.setValue(errorValue);
 

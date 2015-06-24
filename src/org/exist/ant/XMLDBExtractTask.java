@@ -263,7 +263,7 @@ public class XMLDBExtractTask extends AbstractXMLDBTask
             }
         }
 
-        if( ( dest != null ) || ( overwrite == true ) ) {
+        if( dest != null || overwrite == true ) {
             final Properties outputProperties = new Properties();
             outputProperties.setProperty( OutputKeys.INDENT, "yes" );
             final SAXSerializer serializer = (SAXSerializer)SerializerPool.getInstance().borrowObject( SAXSerializer.class );
@@ -322,7 +322,7 @@ public class XMLDBExtractTask extends AbstractXMLDBTask
         }
 
         //dest != null && ( !dest.exists() ||
-        if( ( dest != null ) || ( overwrite == true ) ) {
+        if( dest != null || overwrite == true ) {
 
             if( dest.isDirectory() ) {
 
