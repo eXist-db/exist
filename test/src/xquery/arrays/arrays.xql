@@ -265,7 +265,7 @@ function arr:tail1() {
 declare
     %test:assertEquals(2)
 function arr:tail2() {
-    array:tail([1, [2, 3]])(1)
+    array:tail([1, [2, 3]])(1)(1)
 };
 
 declare
@@ -278,6 +278,12 @@ declare
     %test:assertError("FOAY0001")
 function arr:tail-empty() {
     array:tail([])
+};
+
+declare 
+    %test:assertEquals(2, 3)
+function arr:tail-on-array() {
+    array:tail([1,[2,3]])?*?*
 };
 
 declare
