@@ -1859,6 +1859,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         final XmldbURI docUri = blob.getFileURI();
         //TODO : move later, i.e. after the collection lock is acquired ?
         final DocumentImpl oldDoc = getDocument(broker, docUri);
+        final DocumentTriggers trigger = new DocumentTriggers(broker, null, this, isTriggersEnabled() ? getConfiguration(broker) : null);
         try {
             db.getProcessMonitor().startJob(ProcessMonitor.ACTION_STORE_BINARY, docUri);
             getLock().acquire(Lock.WRITE_LOCK);
@@ -1874,8 +1875,6 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
                 metadata.setLastModified(modified.getTime());
             }
             blob.setContentLength(size);
-            
-            final DocumentTriggers trigger = new DocumentTriggers(broker, null, this, isTriggersEnabled() ? getConfiguration(broker) : null);
             
             if (oldDoc == null) {
                 trigger.beforeCreateDocument(broker, transaction, blob.getURI());
@@ -1894,18 +1893,22 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             broker.storeBinaryResource(transaction, blob, is);
             addDocument(transaction, broker, blob, oldDoc);
             broker.storeXMLResource(transaction, blob);
-            
+
+            blob.getUpdateLock().acquire(Lock.READ_LOCK);
+        } finally {
+            broker.getBrokerPool().getProcessMonitor().endJob();
+            getLock().release(Lock.WRITE_LOCK);
+        }
+        try {
             if (oldDoc == null) {
                 trigger.afterCreateDocument(broker, transaction, blob);
             } else {
                 trigger.afterUpdateDocument(broker, transaction, blob);
             }
-
-            return blob;
         } finally {
-            broker.getBrokerPool().getProcessMonitor().endJob();
-            getLock().release(Lock.WRITE_LOCK);
+            blob.getUpdateLock().release(Lock.READ_LOCK);
         }
+        return blob;
     }
 
     public void setId(int id) {
