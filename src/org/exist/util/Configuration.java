@@ -1184,7 +1184,7 @@ public class Configuration implements ErrorHandler
         }
     }
     
-    public class StartupTriggerConfig {
+    public static class StartupTriggerConfig {
         private final String clazz;
         private final Map<String, List<? extends Object>> params;
 

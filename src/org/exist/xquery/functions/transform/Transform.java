@@ -619,7 +619,7 @@ public class Transform extends BasicFunction {
 		}
 	}
 	
-	private class ExternalResolver implements URIResolver {
+	private static class ExternalResolver implements URIResolver {
 		
 		private String baseURI;
 		

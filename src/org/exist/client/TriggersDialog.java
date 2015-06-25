@@ -288,7 +288,7 @@ class TriggersDialog extends JFrame {
 
     }
 	
-    public class CheckBoxCellRenderer extends JCheckBox implements TableCellRenderer {
+    public static class CheckBoxCellRenderer extends JCheckBox implements TableCellRenderer {
         private static final long serialVersionUID = 1L;
 
         public CheckBoxCellRenderer() {
@@ -313,7 +313,7 @@ class TriggersDialog extends JFrame {
     }
     
 	
-    public class CheckBoxCellEditor extends DefaultCellEditor {
+    public static class CheckBoxCellEditor extends DefaultCellEditor {
         private static final long serialVersionUID = 1L;
 
         public CheckBoxCellEditor() {

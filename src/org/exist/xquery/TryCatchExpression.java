@@ -553,7 +553,7 @@ public class TryCatchExpression extends AbstractExpression {
     /**
      * Data container
      */
-    public class CatchClause {
+    public static class CatchClause {
 
         private List<String> catchErrorList = null;
         private List<QName> catchVars = null;

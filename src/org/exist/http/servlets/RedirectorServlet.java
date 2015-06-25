@@ -268,7 +268,7 @@ public class RedirectorServlet extends HttpServlet {
         }
     }
 
-    private class RequestWrapper extends javax.servlet.http.HttpServletRequestWrapper {
+    private static class RequestWrapper extends javax.servlet.http.HttpServletRequestWrapper {
 
         Map<String, String[]> addedParams = new HashMap<>();
 

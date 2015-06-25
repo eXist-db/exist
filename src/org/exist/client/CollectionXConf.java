@@ -628,7 +628,7 @@ public class CollectionXConf
 	/**
 	 * Represents a Trigger in the collection.xconf
 	 */
-	protected class Trigger
+	protected static class Trigger
 	{
 		private String triggerClass = null;
 		private Properties parameters = null;

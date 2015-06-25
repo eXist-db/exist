@@ -1760,7 +1760,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         
     }
     
-    class ResourceTableModel extends AbstractTableModel {
+    static class ResourceTableModel extends AbstractTableModel {
         
         private static final long serialVersionUID = 1L;
         
@@ -2032,7 +2032,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         }
     }
     
-    class BinaryFileFilter extends FileFilter {
+    static class BinaryFileFilter extends FileFilter {
         
         /* (non-Javadoc)
          * @see javax.swing.filechooser.FileFilter#getDescription()
@@ -2054,7 +2054,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         }
     }
     
-    class XMLFileFilter extends FileFilter {
+    static class XMLFileFilter extends FileFilter {
         
         /* (non-Javadoc)
          * @see javax.swing.filechooser.FileFilter#getDescription()

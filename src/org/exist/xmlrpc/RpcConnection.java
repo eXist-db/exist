@@ -2960,7 +2960,7 @@ public class RpcConnection implements RpcAPI {
         return properties;
     }
 
-    class CachedQuery {
+    static class CachedQuery {
 
         final PathExpr expression;
         final String queryString;
@@ -2973,7 +2973,7 @@ public class RpcConnection implements RpcAPI {
         }
     }
 
-    class DoctypeCount {
+    static class DoctypeCount {
 
         int count = 1;
         final DocumentType doctype;
@@ -2987,7 +2987,7 @@ public class RpcConnection implements RpcAPI {
         }
     }
 
-    class NodeCount {
+    static class NodeCount {
 
         int count = 1;
         final DocumentImpl doc;

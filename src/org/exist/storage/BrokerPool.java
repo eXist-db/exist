@@ -2120,7 +2120,7 @@ public class BrokerPool implements Database {
         System.err.println(s);
     }
 
-    private class StatusReporter extends Observable implements Runnable {
+    private static class StatusReporter extends Observable implements Runnable {
 
         private String status;
         private volatile boolean terminate = false;

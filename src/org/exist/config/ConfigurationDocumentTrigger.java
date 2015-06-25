@@ -574,7 +574,7 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
         }
     }
 
-    private class PreAllocatedIdReceiver implements SecurityManager.PrincipalIdReceiver {
+    private static class PreAllocatedIdReceiver implements SecurityManager.PrincipalIdReceiver {
         Integer id = null;
 
         @Override

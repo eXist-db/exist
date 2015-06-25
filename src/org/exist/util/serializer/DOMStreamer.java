@@ -287,7 +287,7 @@ public class DOMStreamer {
         }
     }
 
-    private class ElementInfo {
+    private static class ElementInfo {
         Node element;
         String[] prefixes = null;
 

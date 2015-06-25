@@ -1173,7 +1173,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 	}
     }
 
-    private class PendingDoc {
+    private static class PendingDoc {
         NodeId nodeId;
         CharSequence text;
         QName qname;
@@ -1189,7 +1189,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         }
     }
 
-    private class PendingAttr {
+    private static class PendingAttr {
 	AttrImpl attr;
 	LuceneIndexConfig conf;
 	NodePath path;

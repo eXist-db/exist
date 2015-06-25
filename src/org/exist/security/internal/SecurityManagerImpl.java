@@ -1003,7 +1003,7 @@ public class SecurityManagerImpl implements SecurityManager {
             return authenticationEntryPoint;
     }
 
-    private class PrincipalLocks<T extends Principal> {
+    private static class PrincipalLocks<T extends Principal> {
         private final Map<Integer, ReentrantReadWriteLock> locks = new HashMap<Integer, ReentrantReadWriteLock>();
         private synchronized ReentrantReadWriteLock getLock(T principal) {
             ReentrantReadWriteLock lock = locks.get(principal.getId());
@@ -1023,7 +1023,7 @@ public class SecurityManagerImpl implements SecurityManager {
         }
     }
    
-    protected class SessionDb {
+    protected static class SessionDb {
         private final Map<String, Session> db = new HashMap<String, Session>();
         private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
         private final ReadLock readLock = lock.readLock();
@@ -1056,7 +1056,7 @@ public class SecurityManagerImpl implements SecurityManager {
         public void execute(final Map<String, Session> db);
     }
    
-    protected class PrincipalDbById<V extends Principal> {
+    protected static class PrincipalDbById<V extends Principal> {
     
         private final Int2ObjectHashMap<V> db = new Int2ObjectHashMap<V>(65);
         private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();

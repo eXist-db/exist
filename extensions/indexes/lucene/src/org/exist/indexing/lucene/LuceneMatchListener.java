@@ -335,7 +335,7 @@ public class LuceneMatchListener extends AbstractMatchListener {
         }
     }
 
-    private class OffsetList {
+    private static class OffsetList {
 
         int[] offsets = new int[16];
         NodeId[] ids = new NodeId[16];

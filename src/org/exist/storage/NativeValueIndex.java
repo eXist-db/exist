@@ -1382,7 +1382,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
     //*
     //***************************************************************************/
 
-    private class ExactMatcher implements TermMatcher
+    private static class ExactMatcher implements TermMatcher
     {
         private String expr;
 
@@ -1398,7 +1398,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
     }
 
 
-    private class ContainsMatcher implements TermMatcher
+    private static class ContainsMatcher implements TermMatcher
     {
         private String expr;
 
@@ -1414,7 +1414,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
     }
 
 
-    private class StartsWithMatcher implements TermMatcher
+    private static class StartsWithMatcher implements TermMatcher
     {
         private String expr;
 
@@ -1430,7 +1430,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
     }
 
 
-    private class EndsWithMatcher implements TermMatcher
+    private static class EndsWithMatcher implements TermMatcher
     {
         private String expr;
 
@@ -1446,7 +1446,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
     }
 
 
-    private class CollatorMatcher implements TermMatcher
+    private static class CollatorMatcher implements TermMatcher
     {
         private String   expr;
         private int      truncation;

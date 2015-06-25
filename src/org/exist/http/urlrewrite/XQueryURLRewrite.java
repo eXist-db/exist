@@ -977,7 +977,7 @@ public class XQueryURLRewrite extends HttpServlet {
         }
 	}
 
-    private class ModelAndView {
+    private static class ModelAndView {
 
         URLRewrite rewrite = null;
         List<URLRewrite> views = new LinkedList<URLRewrite>();
@@ -1437,7 +1437,7 @@ public class XQueryURLRewrite extends HttpServlet {
         }
     }
 
-    private class CachingServletOutputStream extends ServletOutputStream {
+    private static class CachingServletOutputStream extends ServletOutputStream {
 
         protected ByteArrayOutputStream ostream = new ByteArrayOutputStream(512);
 

@@ -107,7 +107,7 @@ public class DataBackup implements SystemTask {
 		}
 	}
 
-    private class Callback implements RawDataBackup {
+    private static class Callback implements RawDataBackup {
 
         private ZipOutputStream zout;
 

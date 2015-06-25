@@ -64,7 +64,7 @@ import org.exist.util.VirtualTempFile;
 public class HttpServletRequestWrapper implements HttpServletRequest
 {
 	/** Simple Enumeration implementation for String's, needed for getParameterNames() */
-	private class StringEnumeration implements Enumeration
+	private static class StringEnumeration implements Enumeration
 	{
 		private String[] strings = null;	//Strings in the Enumeration
 		int aryPos = -1;					//Current Position in Enumeration
@@ -132,7 +132,7 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 	}
 	
 	/** Simple class to hold the value and type of a request parameter */
-	private class RequestParamater
+	private static class RequestParamater
 	{
 		public final static int PARAM_TYPE_URL = 1;		//parameter from the URL of the request
 		public final static int PARAM_TYPE_CONTENT = 2;	//parameter from the Content of the request
