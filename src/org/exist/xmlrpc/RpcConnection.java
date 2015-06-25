@@ -728,7 +728,7 @@ public class RpcConnection implements RpcAPI {
             sr.touch();
             final VirtualTempFile vfile = sr.result;
 
-            final long longOffset = Long.valueOf(offset);
+            final long longOffset = Long.parseLong(offset);
             if (longOffset < 0 || longOffset > vfile.length()) {
                 factory.resultSets.remove(resultId);
                 throw new EXistException("No more data available");

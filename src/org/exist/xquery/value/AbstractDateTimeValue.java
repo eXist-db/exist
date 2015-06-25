@@ -176,7 +176,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
 		
 		final Matcher m = negativeDateStart.matcher(r);
 		if (m.matches()) {
-			final int year = Integer.valueOf(m.group(1)).intValue();
+			final int year = Integer.parseInt(m.group(1));
 			final DecimalFormat df = new DecimalFormat("0000");
 			r = "-" + df.format(year) + "-" + m.group(2);
 		}

@@ -285,20 +285,23 @@ public class ConfigurationImpl implements Configuration {
     }
 
     @Override
-    public Boolean getPropertyBoolean(String name) {
+    public Boolean getPropertyBoolean(final String name) {
         final String value = getProperty(name);
-        if(value == null)
-            {return null;}
-        if ("yes".equalsIgnoreCase(value))
-            {return true;}
-        else if ("no".equalsIgnoreCase(value))
-            {return false;}
-        else if ("true".equalsIgnoreCase(value))
-            {return true;}
-        else if ("false".equalsIgnoreCase(value))
-            {return false;}
-        //???
-        return null;
+        if(value == null) {
+            return null;
+        }
+        switch(value.toLowerCase()) {
+            case "yes":
+            case "true":
+                return true;
+
+            case "no":
+            case "false":
+                return false;
+
+            default:
+                return null;
+        }
     }
 
     public Boolean getPropertyBoolean(String name, boolean defaultValue) {
@@ -309,38 +312,44 @@ public class ConfigurationImpl implements Configuration {
     }
 
     @Override
-    public Integer getPropertyInteger(String name) {
+    public Integer getPropertyInteger(final String name) {
         final String value = getProperty(name);
-        if (value == null)
-            {return null;}
+        if (value == null) {
+            return null;
+        }
         return Integer.valueOf(value);
     }
 
-    public Integer getPropertyInteger(String name, Integer defaultValue, boolean positive) {
+    public Integer getPropertyInteger(final String name, final Integer defaultValue, final boolean positive) {
         final String value = getProperty(name);
-        if (value == null)
-            {return defaultValue;}
-        final Integer result = Integer.valueOf(value);
-        if ((positive) && (result < 0))
-            {return defaultValue.intValue();}
+        if (value == null) {
+            return defaultValue;
+        }
+        final int result = Integer.parseInt(value);
+        if ((positive) && (result < 0)) {
+            return defaultValue;
+        }
         return result;
     }
 
     @Override
-    public Long getPropertyLong(String name) {
+    public Long getPropertyLong(final String name) {
         final String value = getProperty(name);
-        if (value == null)
-            {return null;}
+        if (value == null) {
+            return null;
+        }
         return Long.valueOf(value);
     }
 
-    public Long getPropertyLong(String name, Long defaultValue, boolean positive) {
+    public Long getPropertyLong(final String name, final Long defaultValue, final boolean positive) {
         final String value = getProperty(name);
-        if (value == null)
-            {return defaultValue;}
-        final long result = Long.valueOf(value);
-        if ((positive) && (result < 0))
-            {return defaultValue.longValue();}
+        if (value == null) {
+            return defaultValue;
+        }
+        final long result = Long.parseLong(value);
+        if ((positive) && (result < 0)) {
+            return defaultValue.longValue();
+        }
         return result;
     }
 

@@ -96,7 +96,7 @@ public class BackupSystemTask implements SystemTask {
         if (null != filesMaxStr)
             try
             {
-                zipFilesMax = Integer.valueOf(filesMaxStr).intValue();
+                zipFilesMax = Integer.parseInt(filesMaxStr);
             }
             catch (final NumberFormatException e) {LOG.debug("zip-files-max property error", e);}
     }

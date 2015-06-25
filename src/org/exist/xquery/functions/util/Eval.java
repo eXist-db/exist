@@ -570,7 +570,7 @@ public class Eval extends BasicFunction {
 			} else if (child.getNodeType() == Node.ELEMENT_NODE &&	"output-size-limit".equals(child.getLocalName())) {
 				final Element elem = (Element) child;
 				//TODO : error check
-				innerContext.getWatchDog().setMaxNodes(Integer.valueOf(elem.getAttribute("value")).intValue());
+				innerContext.getWatchDog().setMaxNodes(Integer.parseInt(elem.getAttribute("value")));
 			} else if (child.getNodeType() == Node.ELEMENT_NODE &&	"current-dateTime".equals(child.getLocalName())) {
 				final Element elem = (Element) child;
 				//TODO : error check
