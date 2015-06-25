@@ -349,7 +349,7 @@ public class ConfigurationImpl implements Configuration {
         if (cacheMem != null) {
             if (cacheMem.endsWith("M") || cacheMem.endsWith("m"))
                 {cacheMem = cacheMem.substring(0, cacheMem.length() - 1);}
-            final Integer result = new Integer(cacheMem);
+            final Integer result = Integer.valueOf(cacheMem);
             if (result < 0)
                 {return defaultValue;}
             return result;

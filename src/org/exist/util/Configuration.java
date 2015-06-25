@@ -1061,7 +1061,7 @@ public class Configuration implements ErrorHandler
             }
 
             try {
-                final Integer size = new Integer( option );
+                final Integer size = Integer.valueOf( option );
                 setProperty( Journal.PROPERTY_RECOVERY_SIZE_LIMIT, size );
                 LOG.debug( Journal.PROPERTY_RECOVERY_SIZE_LIMIT + ": " + config.get( Journal.PROPERTY_RECOVERY_SIZE_LIMIT ) + "m" );
             }
@@ -1076,7 +1076,7 @@ public class Configuration implements ErrorHandler
         if( option != null ) {
             value = "yes".equals(option);
         }
-        setProperty( TransactionManager.PROPERTY_RECOVERY_FORCE_RESTART, new Boolean( value ) );
+        setProperty( TransactionManager.PROPERTY_RECOVERY_FORCE_RESTART, Boolean.valueOf( value ) );
         LOG.debug( TransactionManager.PROPERTY_RECOVERY_FORCE_RESTART + ": " + config.get( TransactionManager.PROPERTY_RECOVERY_FORCE_RESTART ) );
 
         option = getConfigAttributeValue( recovery, BrokerPool.RECOVERY_POST_RECOVERY_CHECK );
@@ -1085,7 +1085,7 @@ public class Configuration implements ErrorHandler
         if( option != null ) {
             value = "yes".equals(option);
         }
-        setProperty( BrokerPool.PROPERTY_RECOVERY_CHECK, new Boolean( value ) );
+        setProperty( BrokerPool.PROPERTY_RECOVERY_CHECK, Boolean.valueOf( value ) );
         LOG.debug( BrokerPool.PROPERTY_RECOVERY_CHECK + ": " + config.get( BrokerPool.PROPERTY_RECOVERY_CHECK ) );
     }
 
