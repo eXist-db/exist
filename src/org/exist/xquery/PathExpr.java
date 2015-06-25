@@ -104,8 +104,10 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
      * @param pred
      */
     public void addPredicate(Predicate pred) {
-        final Expression e = (Expression) steps.get(steps.size() - 1);
-        if (e instanceof Step) {((Step) e).addPredicate(pred);}
+        if( !steps.isEmpty()) {
+            final Expression e = (Expression) steps.get(steps.size() - 1);
+            if (e instanceof Step) {((Step) e).addPredicate(pred);}
+        }
     }
 
     /* RewritableExpression API */
@@ -135,7 +137,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
 
     @Override
     public Expression getFirst() {
-        return steps.get(0);
+        return steps.isEmpty() ?  null : steps.get(0);
     }
 
     @Override
@@ -299,19 +301,17 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
 
     //TODO: @Deprecated //use getSubExpression
     public Expression getExpression(int pos) {
-        return steps.get(pos);
+         return steps.isEmpty() ?  null : steps.get(pos);
     }
 
     public Expression getSubExpression(int pos) {
-        return steps.get(pos);
+        return steps.isEmpty() ?  null : steps.get(pos);
     }
 
     public Expression getLastExpression() {
-        if (steps.size() == 0) 
-            {return null;}
-        return steps.get(steps.size() - 1);
+        return steps.isEmpty() ?  null : steps.get(steps.size() - 1);
     }
-
+    
     //TODO: @Deprecated //use getSubExpressionCount
     public int getLength() {
         return steps.size();
