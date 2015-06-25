@@ -408,6 +408,9 @@ public class VirtualNodeSet extends AbstractNodeSet {
     /**
      * Realize the node set by scanning the structural index.
      * This is usually cheaper than calling {@link #getNodes()}.
+     *
+     * Not used right now because the method seems to dramatically slow down
+     * some expressions instead of improving performance. To be checked.
      */
     private NodeSet getNodesFromIndex() {
         final StructuralIndex index = broker.getStructuralIndex();
@@ -538,14 +541,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
         if(realSet != null && realSetIsComplete) {
             return;
         }
-        // check if we can use the structural index or need to do a scan over the nodes
-        if(test.getType() == Type.ELEMENT &&
-            (axis == Constants.CHILD_AXIS || axis == Constants.DESCENDANT_AXIS ||
-                axis == Constants.DESCENDANT_SELF_AXIS)) {
-            realSet = getNodesFromIndex();
-        } else {
-            realSet = getNodes();
-        }
+        realSet = getNodes();
         knownIsEmptyCardinality = true;
         knownHasOneCardinality = true;
         knownHasManyCardinality = true;
@@ -553,31 +549,6 @@ public class VirtualNodeSet extends AbstractNodeSet {
         hasOne = realSet.hasOne();
         hasMany = realSet.hasMany();
         realSetIsComplete = true;
-    }
-
-    public boolean preferTreeTraversal() {
-        if(realSet != null && realSetIsComplete) {
-            return true;
-        }
-        if(axis != Constants.CHILD_AXIS) {
-            return false;
-        }
-        final int contextLen = context.getLength();
-        final int docs = context.getDocumentSet().getDocumentCount();
-        if(contextLen > docs * MAX_CHILD_COUNT_FOR_OPTIMIZE) {
-            return false;
-        } // more than 5 nodes per document
-        for(final Iterator<NodeProxy> i = context.iterator(); i.hasNext(); ) {
-            final NodeProxy p = i.next();
-            if(p.getNodeId() == NodeId.DOCUMENT_NODE) {
-                return false;
-            }
-            final NodeImpl n = (NodeImpl) p.getNode();
-            if(n.getNodeType() == Node.ELEMENT_NODE && n.getChildCount() > MAX_CHILD_COUNT_FOR_OPTIMIZE) {
-                return false;
-            }
-        }
-        return true;
     }
 
     public void setSelfIsContext() {
