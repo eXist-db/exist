@@ -2347,7 +2347,7 @@ public class InteractiveClient {
         final Class<?> cl = Class.forName(properties.getProperty(DRIVER));
         final Field CONF_XML = cl.getDeclaredField("CONF_XML");
         if (CONF_XML != null && home != null) {
-            final File configuration = ConfigurationHelper.lookup((String)CONF_XML.get(new String()));
+            final File configuration = ConfigurationHelper.lookup((String)CONF_XML.get(""));
             properties.setProperty(CONFIGURATION, configuration.getAbsolutePath());
         }
 

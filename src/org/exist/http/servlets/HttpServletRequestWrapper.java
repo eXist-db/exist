@@ -320,14 +320,14 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 			{
 				//key exists in hash map, add value and type to vector
 				final Vector<RequestParamater> vecValues = params.get(thePair[0]);
-				vecValues.add(new RequestParamater((thePair.length == 2 ? thePair[1] : new String()), type));
+				vecValues.add(new RequestParamater((thePair.length == 2 ? thePair[1] : ""), type));
 				params.put(thePair[0], vecValues);
 			}
 			else
 			{
 				//not in hash map so add a vector with the initial value
 				final Vector<RequestParamater> vecValues = new Vector<RequestParamater>();
-				vecValues.add(new RequestParamater((thePair.length == 2 ? thePair[1] : new String()), type));
+				vecValues.add(new RequestParamater((thePair.length == 2 ? thePair[1] : ""), type));
 				params.put(thePair[0], vecValues);
 			}
 		}
