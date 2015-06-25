@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
@@ -237,11 +238,12 @@ public class SecurityManagerImpl implements SecurityManager {
             throw new ConfigurationException("Account must have realm id.");
         }
         
-        accountLocks.getWriteLock(account).lock();
+        final Lock lock = accountLocks.getWriteLock(account);
+        lock.lock();
         try {
             return findRealmForRealmId(account.getRealmId()).updateAccount(account);
         } finally {
-            accountLocks.getWriteLock(account).unlock();
+            lock.unlock();
         }
     }
 
@@ -255,11 +257,12 @@ public class SecurityManagerImpl implements SecurityManager {
             throw new ConfigurationException("Group must have realm id.");
         }
 
-        groupLocks.getWriteLock(group).lock();
+        final Lock lock = groupLocks.getWriteLock(group);
+        lock.lock();
         try {
             return findRealmForRealmId(group.getRealmId()).updateGroup(group);
         } finally {
-            groupLocks.getWriteLock(group).unlock();
+            lock.unlock();
         }
         
     }
@@ -277,11 +280,12 @@ public class SecurityManagerImpl implements SecurityManager {
             throw new ConfigurationException("Group must have realm id.");
         }
         
-        groupLocks.getWriteLock(group).lock();
+        final Lock lock = groupLocks.getWriteLock(group);
+        lock.lock();
         try {
             return findRealmForRealmId(group.getRealmId()).deleteGroup(group);
         } finally {
-            groupLocks.getWriteLock(group).unlock();
+            lock.unlock();
         }
     }
 
@@ -300,11 +304,12 @@ public class SecurityManagerImpl implements SecurityManager {
             throw new ConfigurationException("Account must have realm id.");
         }
         
-        accountLocks.getWriteLock(account).lock();
+        final Lock lock = accountLocks.getWriteLock(account);
+        lock.lock();
         try {
             return findRealmForRealmId(account.getRealmId()).deleteAccount(account);
         } finally {
-            accountLocks.getWriteLock(account).unlock();
+            lock.unlock();
         }
     }
 
@@ -374,11 +379,12 @@ public class SecurityManagerImpl implements SecurityManager {
     @Override
     public boolean hasAdminPrivileges(Account user) {
         
-        accountLocks.getReadLock(user).lock();
+        final Lock lock = accountLocks.getReadLock(user);
+        lock.lock();
         try {
             return user.hasDbaRole();
         } finally {
-            accountLocks.getReadLock(user).unlock();
+            lock.unlock();
         }
     }
 
