@@ -1850,7 +1850,29 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         return new BinaryDocument(broker.getBrokerPool(), this, docUri);
     }
 
-    // Streaming
+    /**
+     * Store a binary resource by reading the given InputStream.
+     *
+     * Locks the collection while the resource is being saved. Triggers will be called after the collection
+     * has been unlocked while keeping a lock on the resource to prevent modification.
+     *
+     * Callers should not lock the collection before calling this method as this may lead to deadlocks.
+     *
+     * @param transaction the transaction to use
+     * @param broker current broker
+     * @param blob the binary resource to store the data into
+     * @param is the input stream to read data from
+     * @param mimeType mime-type for the data
+     * @param size size hint to be stored with metadata
+     * @param created creation timestamp
+     * @param modified last modified timestamp
+     * @return the updated binary document
+     * @throws EXistException
+     * @throws PermissionDeniedException
+     * @throws LockException
+     * @throws TriggerException
+     * @throws IOException
+     */
     public BinaryDocument addBinaryResource(final Txn transaction, final DBBroker broker, final BinaryDocument blob, final InputStream is, final String mimeType, final long size, final Date created, final Date modified) throws EXistException, PermissionDeniedException, LockException, TriggerException, IOException {
         final Database db = broker.getBrokerPool();
         if (db.isReadOnly()) {
