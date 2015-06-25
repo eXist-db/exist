@@ -87,7 +87,7 @@ public class ArrayType extends FunctionReference implements Lookup.LookupSupport
     public Sequence tail() throws XPathException {
         if (vector.length() == 2) {
             final Sequence tail = vector.nth(1);
-            return tail.getItemType() == Type.ARRAY ? tail : new ArrayType(context, tail);
+            return new ArrayType(context, tail);
         }
         return new ArrayType(context, RT.subvec(vector, 1, vector.length()));
     }
