@@ -217,7 +217,7 @@ public class ApplyTemplates extends SimpleConstructor {
     }
 
 	public static void searchAndProcess(SequenceIterator sequenceIterator, XSLContext context) {
-//		
+//
 //		if (sequenceIterator.hasNext()) {
 //		}
 	}    

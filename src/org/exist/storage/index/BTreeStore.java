@@ -15,8 +15,8 @@ public class BTreeStore extends BTree {
 
     protected Lock lock = null;
 
-    public BTreeStore(BrokerPool pool, byte fileId, boolean transactional, File file, DefaultCacheManager cacheManager, double growthThreshold) throws DBException {
-        super(pool, fileId, transactional, cacheManager, file, growthThreshold);
+    public BTreeStore(BrokerPool pool, byte fileId, boolean transactional, File file, DefaultCacheManager cacheManager) throws DBException {
+        super(pool, fileId, transactional, cacheManager, file);
         lock = new ReentrantReadWriteLock(file.getName());
 
         if(exists()) {

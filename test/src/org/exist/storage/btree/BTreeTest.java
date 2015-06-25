@@ -38,7 +38,7 @@ public class BTreeTest {
     public void simpleUpdates() {
         BTree btree = null;
         try {
-            btree = new BTree(pool, (byte) 0, false, pool.getCacheManager(), file, 0.1);
+            btree = new BTree(pool, (byte) 0, false, pool.getCacheManager(), file);
             btree.create((short) -1);
 
             String prefixStr = "K";
@@ -90,7 +90,7 @@ public class BTreeTest {
     public void strings() {
         BTree btree = null;
         try {
-            btree = new BTree(pool, (byte) 0, false, pool.getCacheManager(), file, 0.1);
+            btree = new BTree(pool, (byte) 0, false, pool.getCacheManager(), file);
             btree.create((short) -1);
 
             String prefixStr = "C";
@@ -101,8 +101,9 @@ public class BTreeTest {
 
             btree.flush();
 
-            StringWriter writer = new StringWriter();
-            btree.dump(writer);
+            try(final StringWriter writer = new StringWriter()) {
+                btree.dump(writer);
+            }
 
             for (int i = 1; i <= COUNT; i++) {
                 long p = btree.findValue(new Value(prefixStr + Integer.toString(i)));
@@ -163,11 +164,11 @@ public class BTreeTest {
 
         BTree btree = null;
         try {
-            btree = new BTree(pool, (byte) 0, false, pool.getCacheManager(), file, 0.1);
+            btree = new BTree(pool, (byte) 0, false, pool.getCacheManager(), file);
             btree.setSplitFactor(0.7);
             btree.create((short) -1);
 
-            Map<String, Integer> keys = new TreeMap<String, Integer>();
+            Map<String, Integer> keys = new TreeMap<>();
             String prefixStr = "C";
             for (int i = 1; i <= COUNT; i++) {
                 StringBuilder buf = new StringBuilder();
@@ -211,7 +212,7 @@ public class BTreeTest {
     public void stringsTruncated() {
         BTree btree = null;
         try {
-            btree = new BTree(pool, (byte) 0, false, pool.getCacheManager(), file, 0.1);
+            btree = new BTree(pool, (byte) 0, false, pool.getCacheManager(), file);
             btree.create((short) -1);
 
             char prefix = 'A';
@@ -255,7 +256,7 @@ public class BTreeTest {
     public void removeStrings() {
         BTree btree = null;
         try {
-            btree = new BTree(pool, (byte) 0, false, pool.getCacheManager(), file, 0.1);
+            btree = new BTree(pool, (byte) 0, false, pool.getCacheManager(), file);
             btree.create((short) -1);
 
             char prefix = 'A';
@@ -307,7 +308,7 @@ public class BTreeTest {
     @Test
     public void numbers() throws TerminatedException {
         try {
-            BTree btree = new BTree(pool, (byte) 0, false, pool.getCacheManager(), file, 0.1);
+            BTree btree = new BTree(pool, (byte) 0, false, pool.getCacheManager(), file);
             btree.create((short) -1);
 
             for (int i = 1; i <= COUNT; i++) {
@@ -357,7 +358,7 @@ public class BTreeTest {
     @Test
     public void numbersWithPrefix() {
         try {
-            BTree btree = new BTree(pool, (byte) 0, false, pool.getCacheManager(), file, 0.1);
+            BTree btree = new BTree(pool, (byte) 0, false, pool.getCacheManager(), file);
             btree.create((short) -1);
 
             for (int i = 1; i <= COUNT; i++) {

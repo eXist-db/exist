@@ -43,7 +43,7 @@ public class BTreeTest {
         file.delete();
         BTree btree = null;
         try {
-            btree = new BTree(pool, (byte) 0, false, pool.getCacheManager(), file, 0.1);
+            btree = new BTree(pool, (byte) 0, false, pool.getCacheManager(), file);
             btree.create((short) -1);
 
             String prefixStr = "KEY";
@@ -53,9 +53,10 @@ public class BTreeTest {
             }
             btree.flush();
 
-            OutputStreamWriter writer = new OutputStreamWriter(System.out);
-            btree.dump(writer);
-            writer.flush();
+            try(final OutputStreamWriter writer = new OutputStreamWriter(System.out)) {
+                btree.dump(writer);
+                writer.flush();
+            }
         } finally {
             if (btree != null) {
                 btree.close();
@@ -67,15 +68,16 @@ public class BTreeTest {
         BTree btree = null;
         try {
             System.out.println("Loading btree ...");
-            btree = new BTree(pool, (byte) 0, false, pool.getCacheManager(), file, 0.1);
+            btree = new BTree(pool, (byte) 0, false, pool.getCacheManager(), file);
             btree.open((short)-1);
 
             System.out.println("Rebuilding ...");
             btree.rebuild();
 
-            OutputStreamWriter writer = new OutputStreamWriter(System.out);
-            btree.dump(writer);
-            writer.flush();
+            try(final OutputStreamWriter writer = new OutputStreamWriter(System.out)) {
+                btree.dump(writer);
+                writer.flush();
+            }
         } finally {
             if (btree != null) {
                 btree.close();
@@ -87,7 +89,7 @@ public class BTreeTest {
         BTree btree = null;
         try {
             System.out.println("Loading btree ...");
-            btree = new BTree(pool, (byte) 0, false, pool.getCacheManager(), file, 0.1);
+            btree = new BTree(pool, (byte) 0, false, pool.getCacheManager(), file);
             btree.open((short)-1);
 
             String prefixStr = "KEY";

@@ -51,7 +51,7 @@ public class CollectionStore extends BFile {
      */
     public CollectionStore(BrokerPool pool, byte id, String dataDir, Configuration config) throws DBException {
         super(pool, id, true, new File(dataDir + File.separatorChar + getFileName()), 
-                pool.getCacheManager(), 1.25, 0.01, 0.03);
+                pool.getCacheManager(), 1.25, 0.03);
         config.setProperty(getConfigKeyForFile(), this);
     }
 

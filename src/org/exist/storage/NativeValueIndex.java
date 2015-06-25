@@ -173,7 +173,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
             LOG.debug("Creating '" + file.getName() + "'...");
             nativeFile = new BFile(broker.getBrokerPool(), id, false, file,
                 broker.getBrokerPool().getCacheManager(), cacheGrowth,
-                cacheKeyThresdhold, cacheValueThresHold);
+                cacheValueThresHold);
             config.setProperty(getConfigKeyForFile(), nativeFile);
         }
         dbValues = nativeFile;

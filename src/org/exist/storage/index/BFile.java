@@ -153,8 +153,8 @@ public class BFile extends BTree {
     protected int maxValueSize;
 
     public BFile(BrokerPool pool, byte fileId, boolean transactional, File file, DefaultCacheManager cacheManager,
-            double cacheGrowth, double thresholdBTree, double thresholdData) throws DBException {
-        super(pool, fileId, transactional, cacheManager, file, thresholdBTree);
+            double cacheGrowth, double thresholdData) throws DBException {
+        super(pool, fileId, transactional, cacheManager, file);
         fileHeader = (BFileHeader) getFileHeader();
         dataCache = new LRUCache(64, cacheGrowth, thresholdData, CacheManager.DATA_CACHE);
         dataCache.setFileName(file.getName());

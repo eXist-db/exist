@@ -191,7 +191,7 @@ public class DOMFile extends BTree implements Lockable {
     private final AddValueLoggable addValueLog = new AddValueLoggable();
 
     public DOMFile(BrokerPool pool, byte id, String dataDir, Configuration config) throws DBException {
-        super(pool, id, true, pool.getCacheManager(), 0.01);
+        super(pool, id, true, pool.getCacheManager());
         lock = new ReentrantReadWriteLock(getFileName());
         fileHeader = (BTreeFileHeader)getFileHeader();
         fileHeader.setPageCount(0);

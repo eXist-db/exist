@@ -1324,8 +1324,6 @@ public class XQueryURLRewrite extends HttpServlet {
 
     private class CachingResponseWrapper extends HttpServletResponseWrapper {
 
-        @SuppressWarnings("unused")
-		protected HttpServletResponse origResponse;
         protected CachingServletOutputStream sos = null;
         protected PrintWriter writer = null;
         protected int status = HttpServletResponse.SC_OK;
@@ -1335,7 +1333,6 @@ public class XQueryURLRewrite extends HttpServlet {
         public CachingResponseWrapper(HttpServletResponse servletResponse, boolean cache) {
             super(servletResponse);
             this.cache = cache;
-            this.origResponse = servletResponse;
         }
 
         @Override

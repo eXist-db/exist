@@ -136,7 +136,7 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
 	public final static QName beforeDeleteDocument = new QName("before-delete-document", NAMESPACE); 
 	public final static QName afterDeleteDocument = new QName("after-delete-document", NAMESPACE); 
 
-	private SAXAdapter adapter;
+//	private SAXAdapter adapter;
 	private Set<TriggerEvents.EVENTS> events;
 	private Collection collection = null;
 	private String strQuery = null;
@@ -153,7 +153,7 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
 	
 	public XQueryTrigger()
 	{
-		adapter = new SAXAdapter();
+//		adapter = new SAXAdapter();
 	}
 	
 	/**
