@@ -91,7 +91,7 @@ public class Configurator {
 
     public final static Logger LOG = LogManager.getLogger(Configurator.class);
     private final static String EOL = System.getProperty("line.separator", "\n");
-    protected static ConcurrentMap<FullXmldbURI, Configuration> hotConfigs = new ConcurrentHashMap<FullXmldbURI, Configuration>();
+    protected static final ConcurrentMap<FullXmldbURI, Configuration> hotConfigs = new ConcurrentHashMap<>();
 
     protected static AFields getConfigurationAnnotatedFields(Class<?> clazz) {
         final AFields fields = new AFields();
@@ -1291,7 +1291,7 @@ public class Configurator {
         }
     }
     
-    protected static Set<FullXmldbURI> saving = new HashSet<FullXmldbURI>();
+    protected static final Set<FullXmldbURI> saving = new HashSet<>();
 
     public static DocumentImpl save(final Configurable instance, final DBBroker broker, final Collection collection, final XmldbURI uri) throws IOException, ConfigurationException {
         

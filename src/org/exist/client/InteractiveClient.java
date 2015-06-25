@@ -181,7 +181,7 @@ public class InteractiveClient {
     
     protected static final int colSizes[] = new int[]{10, 10, 10, -1};
     
-    protected static String driver = "org.exist.xmldb.DatabaseImpl";
+    protected static final String driver = "org.exist.xmldb.DatabaseImpl";
     protected static String configuration = null;
     
     protected final TreeSet<String> completitions = new TreeSet<String>();

@@ -40,8 +40,8 @@ public class PerformanceStats {
     public final static String XML_NAMESPACE = "http://exist-db.org/xquery/profiling";
     public final static String XML_PREFIX = "stats";
 
-    public static String CONFIG_PROPERTY_TRACE = "xquery.profiling.trace";
-    public static String CONFIG_ATTR_TRACE = "trace";
+    public static final String CONFIG_PROPERTY_TRACE = "xquery.profiling.trace";
+    public static final String CONFIG_ATTR_TRACE = "trace";
 
     public final static int NO_INDEX = 0;
     public final static int BASIC_INDEX = 1;

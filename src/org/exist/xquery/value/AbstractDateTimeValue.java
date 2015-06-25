@@ -56,7 +56,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
 	public final XMLGregorianCalendar calendar;
 	private XMLGregorianCalendar implicitCalendar, canonicalCalendar, trimmedCalendar;
 	
-	protected static Pattern negativeDateStart = Pattern.compile("^\\d\\d?-(\\d+)-(.*)"); 
+	protected static final Pattern negativeDateStart = Pattern.compile("^\\d\\d?-(\\d+)-(.*)");
 
 	public final static int YEAR = 0;
 	public final static int MONTH = 1;

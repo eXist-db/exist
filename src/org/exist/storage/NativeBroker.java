@@ -155,8 +155,8 @@ public class NativeBroker extends DBBroker {
     /** check available memory after storing DEFAULT_NODES_BEFORE_MEMORY_CHECK nodes */
     public static final int DEFAULT_NODES_BEFORE_MEMORY_CHECK = 500;
 
-    public static int OFFSET_COLLECTION_ID = 0;
-    public static int OFFSET_VALUE = OFFSET_COLLECTION_ID + Collection.LENGTH_COLLECTION_ID; //2
+    public static final int OFFSET_COLLECTION_ID = 0;
+    public static final int OFFSET_VALUE = OFFSET_COLLECTION_ID + Collection.LENGTH_COLLECTION_ID; //2
 
     public final static String INIT_COLLECTION_CONFIG = "collection.xconf.init";
 
@@ -3697,8 +3697,8 @@ public class NativeBroker extends DBBroker {
 
     public final static class NodeRef extends Value {
 
-        public static int OFFSET_DOCUMENT_ID = 0;
-        public static int OFFSET_NODE_ID = OFFSET_DOCUMENT_ID + DocumentImpl.LENGTH_DOCUMENT_ID;
+        public static final int OFFSET_DOCUMENT_ID = 0;
+        public static final int OFFSET_NODE_ID = OFFSET_DOCUMENT_ID + DocumentImpl.LENGTH_DOCUMENT_ID;
 
         public NodeRef(final int docId) {
             len = DocumentImpl.LENGTH_DOCUMENT_ID;

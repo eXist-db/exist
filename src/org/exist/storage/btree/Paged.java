@@ -94,28 +94,28 @@ import java.util.Arrays;
 
 public abstract class Paged {
 
-    public static int LENGTH_VERSION_ID = 2;  //sizeof short
-    public static int LENGTH_HEADER_SIZE = 2;  //sizeof short
-    public static int LENGTH_PAGE_COUNT = 8; //sizeof long
-    public static int LENGTH_PAGE_SIZE = 4; //sizeof int
-    public static int LENGTH_TOTAL_COUNT = 8; //sizeof long
-    public static int LENGTH_FIRST_FREE_PAGE = 8; //sizeof long
-    public static int LENGTH_LAST_FREE_PAGE = 8; //sizeof long
-    public static int LENGTH_PAGE_HEADER_SIZE = 1; //sizeof byte	
-    public static int LENGTH_MAX_KEY_SIZE = 2;  //sizeof short
-    public static int LENGTH_RECORD_COUNT = 8; //sizeof long
+    public static final int LENGTH_VERSION_ID = 2;  //sizeof short
+    public static final int LENGTH_HEADER_SIZE = 2;  //sizeof short
+    public static final int LENGTH_PAGE_COUNT = 8; //sizeof long
+    public static final int LENGTH_PAGE_SIZE = 4; //sizeof int
+    public static final int LENGTH_TOTAL_COUNT = 8; //sizeof long
+    public static final int LENGTH_FIRST_FREE_PAGE = 8; //sizeof long
+    public static final int LENGTH_LAST_FREE_PAGE = 8; //sizeof long
+    public static final int LENGTH_PAGE_HEADER_SIZE = 1; //sizeof byte
+    public static final int LENGTH_MAX_KEY_SIZE = 2;  //sizeof short
+    public static final int LENGTH_RECORD_COUNT = 8; //sizeof long
 
-    public static int OFFSET_VERSION_ID = 0;
-    public static int OFFSET_HEADER_SIZE = OFFSET_VERSION_ID + LENGTH_VERSION_ID; //2
-    public static int OFFSET_PAGE_SIZE = OFFSET_HEADER_SIZE + LENGTH_HEADER_SIZE; //4
-    public static int OFFSET_PAGE_COUNT = OFFSET_PAGE_SIZE + LENGTH_PAGE_SIZE; //8
-    public static int OFFSET_TOTAL_COUNT = OFFSET_PAGE_COUNT + LENGTH_PAGE_COUNT; //16
-    public static int OFFSET_FIRST_FREE_PAGE = OFFSET_TOTAL_COUNT + LENGTH_TOTAL_COUNT; //24
-    public static int OFFSET_LAST_FREE_PAGE = OFFSET_FIRST_FREE_PAGE + LENGTH_FIRST_FREE_PAGE; //32
-    public static int OFFSET_PAGE_HEADER_SIZE = OFFSET_LAST_FREE_PAGE + LENGTH_LAST_FREE_PAGE; //40
-    public static int OFFSET_MAX_KEY_SIZE = OFFSET_PAGE_HEADER_SIZE + LENGTH_PAGE_HEADER_SIZE; //41
-    public static int OFFSET_RECORD_COUNT = OFFSET_MAX_KEY_SIZE + LENGTH_MAX_KEY_SIZE; //43
-    public static int OFFSET_REMAINDER = OFFSET_RECORD_COUNT + LENGTH_RECORD_COUNT; //51
+    public static final int OFFSET_VERSION_ID = 0;
+    public static final int OFFSET_HEADER_SIZE = OFFSET_VERSION_ID + LENGTH_VERSION_ID; //2
+    public static final int OFFSET_PAGE_SIZE = OFFSET_HEADER_SIZE + LENGTH_HEADER_SIZE; //4
+    public static final int OFFSET_PAGE_COUNT = OFFSET_PAGE_SIZE + LENGTH_PAGE_SIZE; //8
+    public static final int OFFSET_TOTAL_COUNT = OFFSET_PAGE_COUNT + LENGTH_PAGE_COUNT; //16
+    public static final int OFFSET_FIRST_FREE_PAGE = OFFSET_TOTAL_COUNT + LENGTH_TOTAL_COUNT; //24
+    public static final int OFFSET_LAST_FREE_PAGE = OFFSET_FIRST_FREE_PAGE + LENGTH_FIRST_FREE_PAGE; //32
+    public static final int OFFSET_PAGE_HEADER_SIZE = OFFSET_LAST_FREE_PAGE + LENGTH_LAST_FREE_PAGE; //40
+    public static final int OFFSET_MAX_KEY_SIZE = OFFSET_PAGE_HEADER_SIZE + LENGTH_PAGE_HEADER_SIZE; //41
+    public static final int OFFSET_RECORD_COUNT = OFFSET_MAX_KEY_SIZE + LENGTH_MAX_KEY_SIZE; //43
+    public static final int OFFSET_REMAINDER = OFFSET_RECORD_COUNT + LENGTH_RECORD_COUNT; //51
 
     protected final static Logger LOG = LogManager.getLogger(Paged.class);
 
@@ -995,10 +995,10 @@ public abstract class Paged {
 
     public static abstract class PageHeader {
 
-        public static int LENGTH_PAGE_STATUS = 1; //sizeof byte	
-        public static int LENGTH_PAGE_DATA_LENGTH = 4; //sizeof int
-        public static int LENGTH_PAGE_NEXT_PAGE = 8; //sizeof long
-        public static int LENGTH_PAGE_LSN = 8; //sizeof long
+        public static final int LENGTH_PAGE_STATUS = 1; //sizeof byte
+        public static final int LENGTH_PAGE_DATA_LENGTH = 4; //sizeof int
+        public static final int LENGTH_PAGE_NEXT_PAGE = 8; //sizeof long
+        public static final int LENGTH_PAGE_LSN = 8; //sizeof long
 
         private int dataLen = 0;
         private boolean dirty = false;

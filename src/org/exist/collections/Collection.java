@@ -82,7 +82,7 @@ import org.xml.sax.XMLReader;
  */
 public class Collection extends Observable implements Comparable<Collection>, Cacheable {
 
-    public static int LENGTH_COLLECTION_ID = 4; //sizeof int
+    public static final int LENGTH_COLLECTION_ID = 4; //sizeof int
 
     public static final int POOL_PARSER_THRESHOLD = 500;
 
