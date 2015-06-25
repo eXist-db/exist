@@ -605,16 +605,7 @@ public class Deployment {
             LOG.warn(e);
         }
 
-        try {
-            // lock the collection while we store the files
-            // TODO: could be released after each operation
-            collection.getLock().acquire(Lock.WRITE_LOCK);
-            storeFiles(directory, collection, inRootDir);
-        } catch (final LockException e) {
-            e.printStackTrace();
-        } finally {
-            collection.getLock().release(Lock.WRITE_LOCK);
-        }
+        storeFiles(directory, collection, inRootDir);
 
         // scan sub directories
         final File[] files = directory.listFiles();
