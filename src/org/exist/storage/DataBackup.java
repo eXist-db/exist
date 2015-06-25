@@ -44,8 +44,9 @@ import java.util.zip.ZipOutputStream;
 public class DataBackup implements SystemTask {
 
     private final static Logger LOG = LogManager.getLogger(DataBackup.class);
-    
-    public final static SimpleDateFormat creationDateFormat = new SimpleDateFormat("yyyyMMddHHmmssS");
+
+    public static final String DATE_FORMAT_PICTURE = "yyyyMMddHHmmssS";
+    private final SimpleDateFormat creationDateFormat = new SimpleDateFormat(DATE_FORMAT_PICTURE);
     
 	private String dest;
 	
