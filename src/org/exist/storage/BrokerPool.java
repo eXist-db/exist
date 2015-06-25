@@ -1688,11 +1688,11 @@ public class BrokerPool implements Database {
             if(activeBrokers.remove(Thread.currentThread()) == null) {
                 LOG.error("release() has been called from the wrong thread for broker " + broker.getId());
                 // Cleanup the state of activeBrokers
-                for(final Thread t : activeBrokers.keySet()) {
-                    if(activeBrokers.get(t) == broker) {
+                for(final Entry<Thread, DBBroker> activeBroker : activeBrokers.entrySet()) {
+                    if(activeBroker.getValue() == broker) {
                         final EXistException ex = new EXistException();
                         LOG.error("release() has been called from '" + Thread.currentThread() + "', but occupied at '" + t + "'.", ex);
-                        activeBrokers.remove(t);
+                        activeBrokers.remove(activeBroker.getKey());
                         break;
                     }
                 }

@@ -2,7 +2,7 @@ package org.exist.xquery.modules.counter;
 
 import java.io.*;
 import java.util.Hashtable;
-import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.logging.log4j.LogManager;
@@ -10,12 +10,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.exist.EXistException;
 import org.exist.backup.RawDataBackup;
-import org.exist.indexing.AbstractIndex;
-import org.exist.indexing.IndexWorker;
 import org.exist.indexing.RawBackupSupport;
-import org.exist.storage.DBBroker;
-import org.exist.storage.btree.DBException;
-import org.exist.util.DatabaseConfigurationException;
 
 /**
  * @author Jasper Linthorst (jasper.linthorst@gmail.com)
@@ -31,7 +26,7 @@ public class Counters implements RawBackupSupport {
     public final static String DELIMITER = ";";
 
     private File store = null;
-    private Hashtable<String, Long> counters = new Hashtable<String, Long>();
+    private Map<String, Long> counters = new Hashtable<>();
 
     private Counters(String dataDir) throws EXistException {
 
@@ -193,20 +188,11 @@ public class Counters implements RawBackupSupport {
      * @throws FileNotFoundException
      */
     private synchronized void serializeTable() throws FileNotFoundException {
-
-        PrintWriter p = new PrintWriter(store);
-        Iterator<String> i = counters.keySet().iterator();
-
-        String k = "";
-        long v = 0;
-
-        while (i.hasNext()) {
-            k = (String) i.next();
-            v = counters.get(k);
-            p.println(k + DELIMITER + v);
+        try(PrintWriter p = new PrintWriter(store)) {
+            for(final Map.Entry<String, Long> counter : counters.entrySet()) {
+                p.println(counter.getKey() + DELIMITER + counter.getValue().toString());
+            }
         }
-
-        p.close();
     }
 
     @Override

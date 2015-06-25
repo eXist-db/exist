@@ -2437,11 +2437,11 @@ public class RpcConnection implements RpcAPI {
         }
 
         if (metadata != null) {
-            for (final String key : metadata.keySet()) {
-                if (AXSchemaType.valueOfNamespace(key) != null) {
-                    u.setMetadataValue(AXSchemaType.valueOfNamespace(key), metadata.get(key));
-                } else if (EXistSchemaType.valueOfNamespace(key) != null) {
-                    u.setMetadataValue(EXistSchemaType.valueOfNamespace(key), metadata.get(key));
+            for (final Map.Entry<String, String> m : metadata.entrySet()) {
+                if (AXSchemaType.valueOfNamespace(m.getKey()) != null) {
+                    u.setMetadataValue(AXSchemaType.valueOfNamespace(m.getKey()), m.getValue());
+                } else if (EXistSchemaType.valueOfNamespace(m.getKey()) != null) {
+                    u.setMetadataValue(EXistSchemaType.valueOfNamespace(m.getKey()), m.getValue());
                 }
             }
         }
@@ -2479,11 +2479,11 @@ public class RpcConnection implements RpcAPI {
         }
 
         if (metadata != null) {
-            for (final String key : metadata.keySet()) {
-                if (AXSchemaType.valueOfNamespace(key) != null) {
-                    account.setMetadataValue(AXSchemaType.valueOfNamespace(key), metadata.get(key));
-                } else if (EXistSchemaType.valueOfNamespace(key) != null) {
-                    account.setMetadataValue(EXistSchemaType.valueOfNamespace(key), metadata.get(key));
+            for (final Map.Entry<String, String> m : metadata.entrySet()) {
+                if (AXSchemaType.valueOfNamespace(m.getKey()) != null) {
+                    account.setMetadataValue(AXSchemaType.valueOfNamespace(m.getKey()), m.getValue());
+                } else if (EXistSchemaType.valueOfNamespace(m.getKey()) != null) {
+                    account.setMetadataValue(EXistSchemaType.valueOfNamespace(m.getKey()), m.getValue());
                 }
             }
         }
@@ -2506,11 +2506,11 @@ public class RpcConnection implements RpcAPI {
 
             final Group role = new GroupAider(name);
 
-            for (final String key : metadata.keySet()) {
-                if (AXSchemaType.valueOfNamespace(key) != null) {
-                    role.setMetadataValue(AXSchemaType.valueOfNamespace(key), metadata.get(key));
-                } else if (EXistSchemaType.valueOfNamespace(key) != null) {
-                    role.setMetadataValue(EXistSchemaType.valueOfNamespace(key), metadata.get(key));
+            for (final Map.Entry<String, String> m : metadata.entrySet()) {
+                if (AXSchemaType.valueOfNamespace(m.getKey()) != null) {
+                    role.setMetadataValue(AXSchemaType.valueOfNamespace(m.getKey()), m.getValue());
+                } else if (EXistSchemaType.valueOfNamespace(m.getKey()) != null) {
+                    role.setMetadataValue(EXistSchemaType.valueOfNamespace(m.getKey()), m.getValue());
                 }
             }
 
@@ -2558,11 +2558,11 @@ public class RpcConnection implements RpcAPI {
             }
 
             if (metadata != null) {
-                for (final String key : metadata.keySet()) {
-                    if (AXSchemaType.valueOfNamespace(key) != null) {
-                        group.setMetadataValue(AXSchemaType.valueOfNamespace(key), metadata.get(key));
-                    } else if (EXistSchemaType.valueOfNamespace(key) != null) {
-                        group.setMetadataValue(EXistSchemaType.valueOfNamespace(key), metadata.get(key));
+                for (final Map.Entry<String, String> m : metadata.entrySet()) {
+                    if (AXSchemaType.valueOfNamespace(m.getKey()) != null) {
+                        group.setMetadataValue(AXSchemaType.valueOfNamespace(m.getKey()), m.getValue());
+                    } else if (EXistSchemaType.valueOfNamespace(m.getKey()) != null) {
+                        group.setMetadataValue(EXistSchemaType.valueOfNamespace(m.getKey()), m.getValue());
                     }
                 }
             }
