@@ -63,7 +63,6 @@ import java.util.TreeSet;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import javax.swing.ImageIcon;
-import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.xml.XMLConstants;
@@ -1051,14 +1050,14 @@ public class InteractiveClient {
                     messageln("command not supported in GUI mode.");
                     return true;
                 }
-                String lastLine, command = "";
+                final StringBuilder command = new StringBuilder();
                 try {
                     while (true) {
-                        lastLine = console.readLine("| ");
+                        final String lastLine = console.readLine("| ");
                         if (lastLine == null || lastLine.length() == 0) {
                             break;
                         }
-                        command += lastLine;
+                        command.append(lastLine);
                     }
                 } catch (final EOFException e) {
                     //TODO report error?
@@ -1067,7 +1066,7 @@ public class InteractiveClient {
                 }
                 final String xupdate = "<xu:modifications version=\"1.0\" "
                         + "xmlns:xu=\"http://www.xmldb.org/xupdate\">"
-                        + command + "</xu:modifications>";
+                        + command.toString() + "</xu:modifications>";
                 final XUpdateQueryService service = (XUpdateQueryService) current
                         .getService("XUpdateQueryService", "1.0");
                 final long mods = service.update(xupdate);
@@ -1143,7 +1142,7 @@ public class InteractiveClient {
     }
     
     /**
-     * @param args
+     * @param name
      */
     private void editResource(final XmldbURI name) {
         try {
@@ -1627,9 +1626,11 @@ public class InteractiveClient {
                 final ZipEntry ze=e.nextElement();
                 final String zeName = ze.getName().replace('\\','/');
                 final String[] pathSteps = zeName.split("/");
-                String currStr = pathSteps[0];
+                final StringBuilder currStr = new StringBuilder(pathSteps[0]);
                 for(int i=1;i<pathSteps.length-1;i++) {
-                    currStr += "/"+pathSteps[i];
+                    currStr
+                            .append("/")
+                            .append(pathSteps[i]);
                 }
                 if(!baseStr.equals(currStr)) {
                     base=current;
@@ -1645,7 +1646,7 @@ public class InteractiveClient {
                         final ProgressObserver observer = new ProgressObserver();
                         ((Observable) base).addObserver(observer);
                     }
-                    baseStr=currStr;
+                    baseStr=currStr.toString();
                     messageln("entering directory " + baseStr);
                 }
                 if (!ze.isDirectory()) {

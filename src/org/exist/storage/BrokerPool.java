@@ -1691,7 +1691,7 @@ public class BrokerPool implements Database {
                 for(final Entry<Thread, DBBroker> activeBroker : activeBrokers.entrySet()) {
                     if(activeBroker.getValue() == broker) {
                         final EXistException ex = new EXistException();
-                        LOG.error("release() has been called from '" + Thread.currentThread() + "', but occupied at '" + t + "'.", ex);
+                        LOG.error("release() has been called from '" + Thread.currentThread() + "', but occupied at '" + activeBroker.getKey() + "'.", ex);
                         activeBrokers.remove(activeBroker.getKey());
                         break;
                     }
