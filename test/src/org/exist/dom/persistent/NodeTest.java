@@ -55,7 +55,7 @@ public class NodeTest {
             doc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"),Lock.READ_LOCK);
             NodeList children = doc.getChildNodes();
             for (int i = 0; i < children.getLength(); i++) {
-                IStoredNode node = (IStoredNode) children.item(i);
+                IStoredNode<?> node = (IStoredNode<?>) children.item(i);
                 node.getNodeId();
                 node.getNodeName();
             }
@@ -81,11 +81,11 @@ public class NodeTest {
         	assertEquals(cl.item(1).getNodeName(), "b");
         	
         	//Testing getFirstChild()
-        	StoredNode node = (StoredNode) cl.item(1).getFirstChild();
+        	StoredNode<?> node = (StoredNode<?>) cl.item(1).getFirstChild();
             assertEquals(node.getNodeValue(), "def");
             
             //Testing getChildNodes()
-            node = (StoredNode) cl.item(0);
+            node = (StoredNode<?>) cl.item(0);
             assertEquals(3, node.getChildCount());
             assertEquals(2, node.getAttributes().getLength());
         	cl = node.getChildNodes();
@@ -196,10 +196,10 @@ public class NodeTest {
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
             
             doc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"));
-            StoredNode rootNode = (StoredNode) doc.getDocumentElement();
+            StoredNode<?> rootNode = (StoredNode<?>) doc.getDocumentElement();
             NodeVisitor visitor = new NodeVisitor() {
                 @Override
-                public boolean visit(IStoredNode node) {
+                public boolean visit(IStoredNode<?> node) {
                     node.getNodeId();
                     node.getNodeName();
                     return true;

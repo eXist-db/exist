@@ -24,6 +24,7 @@ package org.exist.dom.memtree;
 
 import org.exist.dom.INodeHandle;
 import org.exist.dom.QName;
+import org.exist.dom.persistent.IStoredNode;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.util.serializer.AttrList;
 import org.exist.util.serializer.Receiver;
@@ -37,6 +38,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
 
 import javax.xml.XMLConstants;
+
 import java.util.Map;
 import java.util.HashMap;
 
@@ -243,7 +245,10 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
     public void setCurrentNode(final INodeHandle node) {
         // ignored
     }
-
+	@Override
+	public void setCurrentNode(IStoredNode node) {
+		// ignored
+	}
     private QName checkNS(boolean isElement, final QName qname) {
         if(checkNS) {
             final XQueryContext context = builder.getContext();

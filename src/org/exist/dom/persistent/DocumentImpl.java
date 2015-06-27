@@ -626,11 +626,11 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
      * @see org.exist.dom.persistent.NodeImpl#updateChild(org.w3c.dom.Node, org.w3c.dom.Node)
      */
     @Override
-    public IStoredNode updateChild(final Txn transaction, final Node oldChild, final Node newChild) throws DOMException {
+    public IStoredNode<?> updateChild(final Txn transaction, final Node oldChild, final Node newChild) throws DOMException {
         if(!(oldChild instanceof StoredNode)) {
             throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "Node does not belong to this document");
         }
-        final IStoredNode oldNode = (IStoredNode) oldChild;
+        final IStoredNode<?> oldNode = (IStoredNode<?>) oldChild;
         final IStoredNode newNode = (IStoredNode) newChild;
         final IStoredNode previousNode = (IStoredNode) oldNode.getPreviousSibling();
         if(previousNode == null) {

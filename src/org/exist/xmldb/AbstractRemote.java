@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
 import org.exist.security.ACLPermission;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
@@ -32,10 +33,11 @@ public abstract class AbstractRemote {
     }
     
     protected Stream<ACEAider> extractAces(final Object aclParameter) {
-        return Optional.ofNullable((Object[])aclParameter)
+    	Stream<?> s = Optional.ofNullable((Object[])aclParameter)
                 .map(Arrays::stream)
                 .map(stream -> stream.map(o -> (ACEAider)o))
                 .orElse(Stream.empty());
+    	return (Stream<ACEAider>) s;
     }
     
     protected Permission getPermission(final String owner, final String group, final int mode, final Stream<ACEAider> aces) throws PermissionDeniedException {
