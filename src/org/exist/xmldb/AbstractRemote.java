@@ -33,11 +33,11 @@ public abstract class AbstractRemote {
     }
     
     protected Stream<ACEAider> extractAces(final Object aclParameter) {
-    	Stream<ACEAider> s = Optional.ofNullable((Object[])aclParameter)
+    	Stream<?> s = Optional.ofNullable((Object[])aclParameter)
                 .map(Arrays::stream)
                 .map(stream -> stream.map(o -> (ACEAider)o))
                 .orElse(Stream.empty());
-    	return s;
+    	return (Stream<ACEAider>) s;
     }
     
     protected Permission getPermission(final String owner, final String group, final int mode, final Stream<ACEAider> aces) throws PermissionDeniedException {
