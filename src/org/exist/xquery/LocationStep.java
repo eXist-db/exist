@@ -406,12 +406,12 @@ public class LocationStep extends Step {
 				// VirtualNodeSets may have modified the axis ; checking the
 				// type
 				// TODO : further checks ?
-				if (this.test.getType() == Type.ATTRIBUTE) {
-					this.axis = Constants.ATTRIBUTE_AXIS;
-					result = getAttributes(context, contextSequence);
-				} else {
+//				if (this.test.getType() == Type.ATTRIBUTE) {
+//					this.axis = Constants.ATTRIBUTE_AXIS;
+//					result = getAttributes(context, contextSequence);
+//				} else {
 					result = getChildren(context, contextSequence);
-				}
+//				}
 				break;
 			case Constants.ANCESTOR_SELF_AXIS:
 			case Constants.ANCESTOR_AXIS:

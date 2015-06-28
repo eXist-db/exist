@@ -605,13 +605,13 @@ public class XIncludeFilter implements Receiver {
         //ignored
     }
     
-	@Override
-	public void setCurrentNode(IStoredNode node) {
-		//ignored
-	}
-	
     public Document getDocument() {
     	//ignored
     	return null;
     }
+
+	@Override
+	public void setCurrentNode(IStoredNode node) {
+		// TODO Auto-generated method stub
+	}
 }

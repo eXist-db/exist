@@ -82,9 +82,53 @@
             <b>B2</b>
         </test>
     </variable>
+    <variable name="input3">
+        <doc xml:id="x">
+            <a>
+                <b x="1" n="7">text1<e>text2</e>text3</b>
+                <b>text0</b>
+            </a>
+        </doc>
+    </variable>
     <tearDown>
         <!--remove-collection collection="/db/axes-test"/-->
     </tearDown>
+    <!-- Attribute axis tests -->
+    <test output="xml">
+        <task>Attribute axis test 1</task>
+        <code><![CDATA[<a-1>{$input3//b[contains(., 'text1')]/attribute()}</a-1>]]></code>
+        <expected><a-1 x="1" n="7"/></expected>
+    </test>
+    <test output="xml">
+        <task>Attribute axis test 2</task>
+        <code><![CDATA[<a-1>{$input3//b[contains(., 'text1')]/child::attribute()}</a-1>]]></code>
+        <expected><a-1/></expected>
+    </test>
+    <test output="xml">
+        <task>Attribute axis test 3</task>
+        <code><![CDATA[<a-1>{$input3//b[contains(., 'text1')]/descendant-or-self::attribute()}</a-1>]]></code>
+        <expected><a-1/></expected>
+    </test>
+    <test output="xml">
+        <task>Attribute axis test 4</task>
+        <code><![CDATA[<a-1>{$input3//b[contains(., 'text1')]//descendant-or-self::attribute()}</a-1>]]></code>
+        <expected><a-1/></expected>
+    </test>
+    <test output="xml">
+        <task>Attribute axis test 5</task>
+        <code><![CDATA[<a-1>{$input3//b[contains(., 'text1')]//attribute()}</a-1>]]></code>
+        <expected><a-1 x="1" n="7"/></expected>
+    </test>
+    <test output="xml">
+        <task>Attribute axis test 5</task>
+        <code><![CDATA[<a-1>{$input3//b[contains(., 'text1')]/@*}</a-1>]]></code>
+        <expected><a-1 x="1" n="7"/></expected>
+    </test>
+    <test output="xml">
+        <task>Attribute axis test 6</task>
+        <code><![CDATA[<a-1>{$input3//b[contains(., 'text1')]//@*}</a-1>]]></code>
+        <expected><a-1 x="1" n="7"/></expected>
+    </test>
 	<!-- Following axis tests -->
     <test output="text">
         <task>Simple following axis test</task>

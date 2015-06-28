@@ -73,5 +73,4 @@ public interface Receiver<T extends INodeHandle> {
 	public void setCurrentNode(IStoredNode<?> node);
     
     public Document getDocument();
-
 }

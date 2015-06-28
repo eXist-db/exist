@@ -631,8 +631,8 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
             throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "Node does not belong to this document");
         }
         final IStoredNode<?> oldNode = (IStoredNode<?>) oldChild;
-        final IStoredNode newNode = (IStoredNode) newChild;
-        final IStoredNode previousNode = (IStoredNode) oldNode.getPreviousSibling();
+        final IStoredNode<?> newNode = (IStoredNode<?>) newChild;
+        final IStoredNode<?> previousNode = (IStoredNode<?>) oldNode.getPreviousSibling();
         if(previousNode == null) {
             throw new DOMException(DOMException.NOT_FOUND_ERR, "No previous sibling for the old child");
         }

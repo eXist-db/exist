@@ -1264,7 +1264,6 @@ public class ElementImpl extends NamedNode implements Element {
             } else {
                 listener = null;
             }
-
             final IStoredNode<?> following = (IStoredNode) refChild;
             final IStoredNode<?> previous = (IStoredNode) following.getPreviousSibling();
             if(previous == null) {

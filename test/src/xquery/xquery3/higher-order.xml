@@ -736,4 +736,14 @@ return
     $f()]]></code>
         <expected>1 2 3 4 5 6 7 8 9 10</expected>
     </test>
+    <test output="text">
+        <task>Closure test: redefined variable</task>
+        <code><![CDATA[xquery version "3.0";
+
+let $a := ()
+let $a := if ($a) then $a else "b"
+return
+    function() { $a }()]]></code>
+        <expected>b</expected>
+    </test>
 </TestSet>

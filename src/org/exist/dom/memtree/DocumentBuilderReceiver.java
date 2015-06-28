@@ -245,10 +245,7 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
     public void setCurrentNode(final INodeHandle node) {
         // ignored
     }
-	@Override
-	public void setCurrentNode(IStoredNode node) {
-		// ignored
-	}
+
     private QName checkNS(boolean isElement, final QName qname) {
         if(checkNS) {
             final XQueryContext context = builder.getContext();
@@ -294,4 +291,10 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
         }
         return prefix;
     }
+
+	@Override
+	public void setCurrentNode(IStoredNode node) {
+		// TODO Auto-generated method stub
+		
+	}
 }

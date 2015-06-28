@@ -764,7 +764,6 @@ public abstract class Serializer implements XMLReader {
 
             // save handlers
             Receiver<?> oldReceiver = receiver;
-
             // compile stylesheet
             factory.setErrorListener(new ErrorListener());
             final TemplatesHandler handler = factory.newTemplatesHandler();

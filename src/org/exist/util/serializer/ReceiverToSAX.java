@@ -188,12 +188,15 @@ public class ReceiverToSAX implements Receiver {
     public void setCurrentNode(INodeHandle node) {
         // just ignore
     }
-	@Override
-	public void setCurrentNode(IStoredNode node) {
-		//ignored
-	}    
+
     public Document getDocument() {
     	//just ignore
     	return null;
-    }    
+    }
+
+	@Override
+	public void setCurrentNode(IStoredNode node) {
+		// TODO Auto-generated method stub
+		
+	}    
 }

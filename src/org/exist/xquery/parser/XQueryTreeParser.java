@@ -3599,7 +3599,7 @@ public XQueryTreeParser() {
 								if (step instanceof LocationStep) {
 									LocationStep s= (LocationStep) step;
 									if (s.getAxis() == Constants.ATTRIBUTE_AXIS ||
-										s.getTest().getType() == Type.ATTRIBUTE)
+										(s.getTest().getType() == Type.ATTRIBUTE && s.getAxis() == Constants.CHILD_AXIS))
 										// combines descendant-or-self::node()/attribute:*
 										s.setAxis(Constants.DESCENDANT_ATTRIBUTE_AXIS);
 									else {
@@ -7287,6 +7287,7 @@ public XQueryTreeParser() {
 			Expression rightStep= null;
 			step= null;
 			int axis= Constants.CHILD_AXIS;
+			boolean axisGiven = false;
 		
 		
 		if (_t==null) _t=ASTNULL;
@@ -7333,6 +7334,7 @@ public XQueryTreeParser() {
 			{
 				axis=forwardAxis(_t);
 				_t = _retTree;
+				axisGiven = true;
 				break;
 			}
 			case EQNAME:
@@ -7557,6 +7559,10 @@ public XQueryTreeParser() {
 				
 								test= new TypeTest(Type.ATTRIBUTE);
 								ast = att;
+				
+				if (!axisGiven) {
+								    axis= Constants.ATTRIBUTE_AXIS;
+				}
 							
 				{
 				if (_t==null) _t=ASTNULL;
@@ -7570,7 +7576,6 @@ public XQueryTreeParser() {
 										QName qname = QName.parse(staticContext, eq3.getText());
 										qname = new QName(qname, ElementValue.ATTRIBUTE);
 										test= new NameTest(Type.ATTRIBUTE, qname);
-										axis= Constants.ATTRIBUTE_AXIS;
 									
 					break;
 				}
@@ -8241,7 +8246,7 @@ public XQueryTreeParser() {
 								if (rightStep instanceof LocationStep) {
 									LocationStep rs= (LocationStep) rightStep;
 									if (rs.getAxis() == Constants.ATTRIBUTE_AXIS || 
-										rs.getTest().getType() == Type.ATTRIBUTE) {
+										(rs.getTest().getType() == Type.ATTRIBUTE && rs.getAxis() == Constants.CHILD_AXIS)) {
 										rs.setAxis(Constants.DESCENDANT_ATTRIBUTE_AXIS);
 									} else if (rs.getAxis() == Constants.CHILD_AXIS && rs.getTest().isWildcardTest()) {
 										rs.setAxis(Constants.DESCENDANT_AXIS);
