@@ -1850,7 +1850,29 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         return new BinaryDocument(broker.getBrokerPool(), this, docUri);
     }
 
-    // Streaming
+    /**
+     * Store a binary resource by reading the given InputStream.
+     *
+     * Locks the collection while the resource is being saved. Triggers will be called after the collection
+     * has been unlocked while keeping a lock on the resource to prevent modification.
+     *
+     * Callers should not lock the collection before calling this method as this may lead to deadlocks.
+     *
+     * @param transaction the transaction to use
+     * @param broker current broker
+     * @param blob the binary resource to store the data into
+     * @param is the input stream to read data from
+     * @param mimeType mime-type for the data
+     * @param size size hint to be stored with metadata
+     * @param created creation timestamp
+     * @param modified last modified timestamp
+     * @return the updated binary document
+     * @throws EXistException
+     * @throws PermissionDeniedException
+     * @throws LockException
+     * @throws TriggerException
+     * @throws IOException
+     */
     public BinaryDocument addBinaryResource(final Txn transaction, final DBBroker broker, final BinaryDocument blob, final InputStream is, final String mimeType, final long size, final Date created, final Date modified) throws EXistException, PermissionDeniedException, LockException, TriggerException, IOException {
         final Database db = broker.getBrokerPool();
         if (db.isReadOnly()) {
@@ -1859,6 +1881,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         final XmldbURI docUri = blob.getFileURI();
         //TODO : move later, i.e. after the collection lock is acquired ?
         final DocumentImpl oldDoc = getDocument(broker, docUri);
+        final DocumentTriggers trigger = new DocumentTriggers(broker, null, this, isTriggersEnabled() ? getConfiguration(broker) : null);
         try {
             db.getProcessMonitor().startJob(ProcessMonitor.ACTION_STORE_BINARY, docUri);
             getLock().acquire(Lock.WRITE_LOCK);
@@ -1874,8 +1897,6 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
                 metadata.setLastModified(modified.getTime());
             }
             blob.setContentLength(size);
-            
-            final DocumentTriggers trigger = new DocumentTriggers(broker, null, this, isTriggersEnabled() ? getConfiguration(broker) : null);
             
             if (oldDoc == null) {
                 trigger.beforeCreateDocument(broker, transaction, blob.getURI());
@@ -1894,18 +1915,22 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             broker.storeBinaryResource(transaction, blob, is);
             addDocument(transaction, broker, blob, oldDoc);
             broker.storeXMLResource(transaction, blob);
-            
+
+            blob.getUpdateLock().acquire(Lock.READ_LOCK);
+        } finally {
+            broker.getBrokerPool().getProcessMonitor().endJob();
+            getLock().release(Lock.WRITE_LOCK);
+        }
+        try {
             if (oldDoc == null) {
                 trigger.afterCreateDocument(broker, transaction, blob);
             } else {
                 trigger.afterUpdateDocument(broker, transaction, blob);
             }
-
-            return blob;
         } finally {
-            broker.getBrokerPool().getProcessMonitor().endJob();
-            getLock().release(Lock.WRITE_LOCK);
+            blob.getUpdateLock().release(Lock.READ_LOCK);
         }
+        return blob;
     }
 
     public void setId(int id) {
