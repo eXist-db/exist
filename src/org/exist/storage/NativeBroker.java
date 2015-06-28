@@ -3631,9 +3631,9 @@ public class NativeBroker extends DBBroker {
     	            LOG_STATS.info("Memory: " + nf.format(run.totalMemory() / 1024) + "K total; " +
         	                nf.format(run.maxMemory() / 1024) + "K max; " +
             	            nf.format(run.freeMemory() / 1024) + "K free");
-               		domDb.printStatistics();
-                	collectionsDb.printStatistics();
-                	notifyPrintStatistics();
+//               		domDb.printStatistics();
+//                	collectionsDb.printStatistics();
+//                	notifyPrintStatistics();
 
                     nextReportTS = System.currentTimeMillis() + (10 * 60 * 1000); // occurs after 10 minutes from now
                 }
