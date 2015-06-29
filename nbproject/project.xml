@@ -22,7 +22,6 @@
                 <root id="src.src.dir" name="Extensions Modules"/>
                 <root id="src.src10.dir" name="Extensions Security - ActiveDirectory"/>
                 <root id="src.src11.dir" name="Extensions Security - LDAP"/>
-                <root id="src.src5.dir" name="Extensions Versioning"/>
                 <root id="src.src7.dir" name="Extensions WebDAV"/>
                 <root id="src.src8.dir" name="Extensions XQDoc"/>
                 <root id="src.src12.dir" name="Extensions XSLT"/>
