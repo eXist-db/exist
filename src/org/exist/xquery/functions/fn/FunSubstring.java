@@ -125,8 +125,7 @@ public class FunSubstring extends Function {
 				//are there 2 or 3 arguments to this function?
 				if(getArgumentCount() > 2) {
 					argLength = getArgument(2);
-                    NumericValue length = new IntegerValue(sourceString.length());
-                    length = ((NumericValue)(argLength.eval(contextSequence).itemAt(0).convertTo(Type.NUMBER))).round();
+                    final NumericValue length = ((NumericValue)(argLength.eval(contextSequence).itemAt(0).convertTo(Type.NUMBER))).round();
 
                     // Relocate length to position according to spec:
                     // fn:round($startingLoc) <=

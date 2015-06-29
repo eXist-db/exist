@@ -166,12 +166,8 @@ public class GroupedValueSequence extends AbstractSequence {
             for (int i = 0; i < this.count; i++) { 
                 NodeValue v = null; 
                 final Entry temp = items[i]; 
-                v = (NodeValue)temp.item; 
-                    if(v.getImplementationType() != NodeValue.PERSISTENT_NODE) { 
-                    set.add((NodeProxy)v); 
-                } else { 
-                    set.add((NodeProxy)v); 
-                } 
+                v = (NodeValue)temp.item;
+                set.add((NodeProxy)v);
             } 
             return set; 
         } else 

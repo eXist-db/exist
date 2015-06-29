@@ -257,7 +257,7 @@ public class ConsistencyCheckTask implements SystemTask {
             }
             if ((current % 1000 == 0) || (current == count)) {
                 log.write("  DOCUMENT: ");
-                log.write(Integer.valueOf(current).toString());
+                log.write(Integer.toString(current));
                 log.write(" of ");
                 log.write(Integer.valueOf(count).toString());
                 log.write('\n');

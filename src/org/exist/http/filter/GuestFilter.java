@@ -47,7 +47,6 @@ public class GuestFilter implements Filter {
 
         String username = httpServletRequest.getRemoteUser();
         final String requestURI = httpServletRequest.getRequestURI().trim();
-        final String sessionID = httpServletRequest.getRequestedSessionId();
 
         final HttpSession session = httpServletRequest.getSession(false);
         if (session != null) {

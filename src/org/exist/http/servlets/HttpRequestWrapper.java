@@ -220,18 +220,12 @@ public class HttpRequestWrapper implements RequestWrapper {
      * Parses the url-encoded parameters
      */
     private void parseParameters() {
-        final Map map = servletRequest.getParameterMap();
-        for (final Object one : map.keySet()) {
-
-            // Get key and corresponding values
-            final String key = (String) one;
-
-            // Get values belonging to the key
-            final String[] values = (String[]) map.get(one);
+        final Map<String, String[]> map = servletRequest.getParameterMap();
+        for (final Map.Entry<String, String[]> param : map.entrySet()) {
 
             // Write keys and values
-            for (final String value : values) {
-                addParameter(params, key, decode(value));
+            for (final String value : param.getValue()) {
+                addParameter(params, param.getKey(), decode(value));
             }
         }
     }

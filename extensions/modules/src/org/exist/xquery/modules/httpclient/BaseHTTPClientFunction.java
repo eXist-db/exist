@@ -457,7 +457,7 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
         return returnMimeType;
     }
 
-    protected class FeaturesAndProperties {
+    protected static class FeaturesAndProperties {
         private final Map<String,Boolean> features;
         private final Map<String,String> properties;
 

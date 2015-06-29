@@ -38,7 +38,7 @@ public class Checkpoint extends AbstractLoggable {
 	private long timestamp;
 	private long storedLsn;
 	
-	private final static DateFormat df = 
+	private final DateFormat df =
 		DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM);
 	
     public Checkpoint(long transactionId) {

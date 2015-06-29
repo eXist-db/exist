@@ -548,8 +548,11 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
             switch(this) {
                 case ACCOUNT:
                     sm.preAllocateAccountId(receiver);
+                    break;
+
                 case GROUP:
                     sm.preAllocateGroupId(receiver);
+                    break;
             }
         }
 
@@ -571,7 +574,7 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
         }
     }
 
-    private class PreAllocatedIdReceiver implements SecurityManager.PrincipalIdReceiver {
+    private static class PreAllocatedIdReceiver implements SecurityManager.PrincipalIdReceiver {
         Integer id = null;
 
         @Override

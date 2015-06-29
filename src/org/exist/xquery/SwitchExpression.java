@@ -43,7 +43,7 @@ public class SwitchExpression extends AbstractExpression {
     /**
      * Internal class used to hold a single case clause.
      */
-    private class Case {
+    private static class Case {
         List<Expression> operands;
         Expression returnClause;
        

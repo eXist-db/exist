@@ -17,9 +17,9 @@ public class BrokerWatchdog {
 
 	private final static Logger LOG = LogManager.getLogger(BrokerWatchdog.class);
 	
-	private final static DateFormat df = DateFormat.getDateTimeInstance();
+	private static DateFormat df = DateFormat.getDateTimeInstance();
 	
-	private class WatchedBroker {
+	private static class WatchedBroker {
 		
 		DBBroker broker;
 		StringBuilder trace;

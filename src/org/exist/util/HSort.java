@@ -549,7 +549,7 @@ public final class HSort {
 	}
 
 	public static void main(String[] args) throws Exception {
-		final List<String> l = new ArrayList<String>();
+		final List<String> l = new ArrayList<>();
 		
 		if(args.length==0) {
 			final String[] a=new String[] {
@@ -566,16 +566,12 @@ public final class HSort {
 				l.add(a[i]);
 		} else {
 			System.err.println("Ordering file "+args[0]+"\n");
-			try {
-				final java.io.BufferedReader is=new java.io.BufferedReader(new java.io.FileReader(args[0]));
+			try(final java.io.BufferedReader is=new java.io.BufferedReader(new java.io.FileReader(args[0]))) {
 				String rr;
 				
 				while((rr=is.readLine())!=null) {
 					l.add(rr);
 				}
-				
-				is.close();
-			} catch(final Exception e) {
 			}
 		}
 		long a;

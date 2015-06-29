@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
@@ -237,11 +238,12 @@ public class SecurityManagerImpl implements SecurityManager {
             throw new ConfigurationException("Account must have realm id.");
         }
         
-        accountLocks.getWriteLock(account).lock();
+        final Lock lock = accountLocks.getWriteLock(account);
+        lock.lock();
         try {
             return findRealmForRealmId(account.getRealmId()).updateAccount(account);
         } finally {
-            accountLocks.getWriteLock(account).unlock();
+            lock.unlock();
         }
     }
 
@@ -255,11 +257,12 @@ public class SecurityManagerImpl implements SecurityManager {
             throw new ConfigurationException("Group must have realm id.");
         }
 
-        groupLocks.getWriteLock(group).lock();
+        final Lock lock = groupLocks.getWriteLock(group);
+        lock.lock();
         try {
             return findRealmForRealmId(group.getRealmId()).updateGroup(group);
         } finally {
-            groupLocks.getWriteLock(group).unlock();
+            lock.unlock();
         }
         
     }
@@ -277,11 +280,12 @@ public class SecurityManagerImpl implements SecurityManager {
             throw new ConfigurationException("Group must have realm id.");
         }
         
-        groupLocks.getWriteLock(group).lock();
+        final Lock lock = groupLocks.getWriteLock(group);
+        lock.lock();
         try {
             return findRealmForRealmId(group.getRealmId()).deleteGroup(group);
         } finally {
-            groupLocks.getWriteLock(group).unlock();
+            lock.unlock();
         }
     }
 
@@ -300,11 +304,12 @@ public class SecurityManagerImpl implements SecurityManager {
             throw new ConfigurationException("Account must have realm id.");
         }
         
-        accountLocks.getWriteLock(account).lock();
+        final Lock lock = accountLocks.getWriteLock(account);
+        lock.lock();
         try {
             return findRealmForRealmId(account.getRealmId()).deleteAccount(account);
         } finally {
-            accountLocks.getWriteLock(account).unlock();
+            lock.unlock();
         }
     }
 
@@ -374,11 +379,12 @@ public class SecurityManagerImpl implements SecurityManager {
     @Override
     public boolean hasAdminPrivileges(Account user) {
         
-        accountLocks.getReadLock(user).lock();
+        final Lock lock = accountLocks.getReadLock(user);
+        lock.lock();
         try {
             return user.hasDbaRole();
         } finally {
-            accountLocks.getReadLock(user).unlock();
+            lock.unlock();
         }
     }
 
@@ -1003,7 +1009,7 @@ public class SecurityManagerImpl implements SecurityManager {
             return authenticationEntryPoint;
     }
 
-    private class PrincipalLocks<T extends Principal> {
+    private static class PrincipalLocks<T extends Principal> {
         private final Map<Integer, ReentrantReadWriteLock> locks = new HashMap<Integer, ReentrantReadWriteLock>();
         private synchronized ReentrantReadWriteLock getLock(T principal) {
             ReentrantReadWriteLock lock = locks.get(principal.getId());
@@ -1023,7 +1029,7 @@ public class SecurityManagerImpl implements SecurityManager {
         }
     }
    
-    protected class SessionDb {
+    protected static class SessionDb {
         private final Map<String, Session> db = new HashMap<String, Session>();
         private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
         private final ReadLock readLock = lock.readLock();
@@ -1056,7 +1062,7 @@ public class SecurityManagerImpl implements SecurityManager {
         public void execute(final Map<String, Session> db);
     }
    
-    protected class PrincipalDbById<V extends Principal> {
+    protected static class PrincipalDbById<V extends Principal> {
     
         private final Int2ObjectHashMap<V> db = new Int2ObjectHashMap<V>(65);
         private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();

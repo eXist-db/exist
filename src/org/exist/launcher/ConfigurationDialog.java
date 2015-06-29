@@ -45,17 +45,17 @@ public class ConfigurationDialog extends JDialog {
         
         final Properties vmProperties = LauncherWrapper.getVMProperties();
         final String maxMemProp = vmProperties.getProperty("memory.max", "1024");
-        maxMemory.setValue(new Integer(maxMemProp));
+        maxMemory.setValue(Integer.valueOf(maxMemProp));
         final String minMemProp = vmProperties.getProperty("memory.min", "64");
-        minMemory.setValue(new Integer(minMemProp));
+        minMemory.setValue(Integer.valueOf(minMemProp));
         
         try {
             Configuration existConfig = new Configuration();
             final int cacheSizeProp = existConfig.getInteger(DefaultCacheManager.PROPERTY_CACHE_SIZE);
-            cacheSize.setValue(new Integer(cacheSizeProp));
+            cacheSize.setValue(Integer.valueOf(cacheSizeProp));
             
             final int collectionCacheProp = existConfig.getInteger(CollectionCacheManager.PROPERTY_CACHE_SIZE);
-            collectionCache.setValue(new Integer(collectionCacheProp));
+            collectionCache.setValue(Integer.valueOf(collectionCacheProp));
 
             final String dir = existConfig.getProperty(BrokerPool.PROPERTY_DATA_DIR).toString();
             dataDir.setText(dir);

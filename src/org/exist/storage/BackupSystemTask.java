@@ -11,6 +11,7 @@ import org.xmldb.api.base.XMLDBException;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Iterator;
 import java.util.Map;
@@ -60,6 +61,7 @@ public class BackupSystemTask implements SystemTask {
 
     private static final Logger LOG = LogManager.getLogger(BackupSystemTask.class);
 
+    private final SimpleDateFormat creationDateFormat = new SimpleDateFormat(DataBackup.DATE_FORMAT_PICTURE);
     private String user;
     private String password;
     private File directory;
@@ -96,14 +98,14 @@ public class BackupSystemTask implements SystemTask {
         if (null != filesMaxStr)
             try
             {
-                zipFilesMax = new Integer(filesMaxStr).intValue();
+                zipFilesMax = Integer.parseInt(filesMaxStr);
             }
             catch (final NumberFormatException e) {LOG.debug("zip-files-max property error", e);}
     }
 
 
     public void execute(DBBroker broker) throws EXistException {
-        final String dateTime = DataBackup.creationDateFormat.format(Calendar.getInstance().getTime());
+        final String dateTime = creationDateFormat.format(Calendar.getInstance().getTime());
         final String dest = directory.getAbsolutePath() + File.separatorChar + prefix + dateTime + suffix;
 
         final Backup backup = new Backup(user, password, dest, collection);

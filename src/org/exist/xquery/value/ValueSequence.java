@@ -779,13 +779,13 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
     */
     public String getHashKey(){
     	try{
-    		String hashKey = "";
+    		final StringBuilder hashKey = new StringBuilder();
     		for(final SequenceIterator i = iterate();i.hasNext();){
      			final Item current = i.nextItem();     			
-    			hashKey+=current.getStringValue();
-    			hashKey+="&&";  //bv : sentinel value to separate grouping keys values
+    			hashKey.append(current.getStringValue());
+    			hashKey.append("&&");  //bv : sentinel value to separate grouping keys values
      		}
-      		return hashKey;
+      		return hashKey.toString();
     	} catch (final XPathException e) {
       		return "ValueSequence.getHashKey() failed: " + e.getMessage();
       	}

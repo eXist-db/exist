@@ -103,7 +103,7 @@ public class Main implements WrapperListener, Observer {
 		}
         
         // An error occurred
-		return new Integer(1);
+		return Integer.valueOf(1);
 	}
 
 	/* (non-Javadoc)

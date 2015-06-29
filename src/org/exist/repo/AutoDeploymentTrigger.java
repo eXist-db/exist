@@ -35,8 +35,7 @@ public class AutoDeploymentTrigger implements StartupTrigger {
         final File autodeployDir = new File(homeDir, AUTODEPLOY_DIRECTORY);
         if (!autodeployDir.canRead() && autodeployDir.isDirectory())
             {return;}
-        final ExistRepository repo = broker.getBrokerPool().getExpathRepo();
-        final UserInteractionStrategy interact = new BatchUserInteraction();
+
         final File[] xars = autodeployDir.listFiles(new FileFilter() {
             @Override
             public boolean accept(File file) {

@@ -222,7 +222,7 @@ public class ProcessMonitor {
         return trackRequests;
     }
 
-    public class QueryHistory implements Delayed {
+    public static class QueryHistory implements Delayed {
 
         private final String source;
         private String requestURI = null;

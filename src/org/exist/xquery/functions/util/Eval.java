@@ -217,7 +217,8 @@ public class Eval extends BasicFunction {
 
             final String uuid = UUIDGenerator.getUUID();
             final CallableEval asyncEval = new CallableEval(context, contextSequence, args);
-            final Future<Sequence> f = asyncExecutorService.submit(asyncEval);
+//            final Future<Sequence> f =
+            asyncExecutorService.submit(asyncEval);
             //context.addAsyncQueryReference(f); //TODO keep a reference, so threads can be interogated/cancelled - perhaps a WeakReference?
             return new StringValue(uuid);
         } else {
@@ -569,7 +570,7 @@ public class Eval extends BasicFunction {
 			} else if (child.getNodeType() == Node.ELEMENT_NODE &&	"output-size-limit".equals(child.getLocalName())) {
 				final Element elem = (Element) child;
 				//TODO : error check
-				innerContext.getWatchDog().setMaxNodes(Integer.valueOf(elem.getAttribute("value")).intValue());
+				innerContext.getWatchDog().setMaxNodes(Integer.parseInt(elem.getAttribute("value")));
 			} else if (child.getNodeType() == Node.ELEMENT_NODE &&	"current-dateTime".equals(child.getLocalName())) {
 				final Element elem = (Element) child;
 				//TODO : error check

@@ -93,8 +93,9 @@ public class Expand extends BasicFunction {
             final String[] contents = Option.tokenize(serOpts);
             for (int i = 0; i < contents.length; i++) {
                 final String[] pair = Option.parseKeyValuePair(contents[i]);
-                if (pair == null)
-                    {throw new XPathException(this, "Found invalid serialization option: " + pair);}
+                if (pair == null) {
+                    throw new XPathException(this, "Found invalid serialization option: " + contents[i]);
+                }
                 logger.debug("Setting serialization property: " + pair[0] + " = " + pair[1]);
                 serializeOptions.setProperty(pair[0], pair[1]);
             }

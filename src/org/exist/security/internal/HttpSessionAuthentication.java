@@ -35,7 +35,7 @@ import org.eclipse.jetty.util.security.Constraint;
  */
 public class HttpSessionAuthentication extends UserAuthentication implements HttpSessionAttributeListener {
 
-	public static String __J_AUTHENTICATED = "org.eclipse.jetty.security.UserIdentity";
+	public static final String __J_AUTHENTICATED = "org.eclipse.jetty.security.UserIdentity";
     
 	HttpSession _session;
     

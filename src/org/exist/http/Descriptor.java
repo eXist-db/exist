@@ -331,7 +331,7 @@ public class Descriptor implements ErrorHandler
     	for(int i = 0; i < mapList.length; i++)
     	{
     		//does the path or the path/ match the map path
-    		if(mapList[i][0].equals(path) || new String(mapList[i][0] + "/").equals(path))
+    		if(mapList[i][0].equals(path) || (mapList[i][0] + "/").equals(path))
     		{
     			//return the view
     			return(mapList[i][1]);

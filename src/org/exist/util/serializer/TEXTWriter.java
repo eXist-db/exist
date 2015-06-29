@@ -43,27 +43,20 @@ public class TEXTWriter extends XMLWriter {
     
     protected final static Properties defaultProperties = new Properties();
     
-    protected Writer writer = null;
-    
-    protected CharacterSet charSet = null;
-    
-    protected Properties outputProperties;
-    
     private char[] charref = new char[10];
     
     public TEXTWriter() {
         // empty
+        super();
     }
     
     public TEXTWriter(final Writer writer) {
-        super();
-        this.writer = writer;
+        super(writer);
     }
     
     @Override
     protected void reset() {
         super.reset();
-        writer = null;
     }
     
     /**
@@ -81,16 +74,10 @@ public class TEXTWriter extends XMLWriter {
         final String encoding = outputProperties.getProperty(OutputKeys.ENCODING, "UTF-8");
         charSet = CharacterSet.getCharacterSet(encoding);
     }
-    
-    /**
-     * Set a new writer. Calling this method will reset the state of the object.
-     *
-     * @param writer
-     */
+
     @Override
     public void setWriter(final Writer writer) {
         this.writer = writer;
-        
     }
     
     @Override

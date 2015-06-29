@@ -962,7 +962,7 @@ public class RESTServer {
         }
     }
 
-    public class Namespace {
+    public static class Namespace {
 
         private final String prefix;
         private final String uri;

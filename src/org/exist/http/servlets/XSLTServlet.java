@@ -537,7 +537,7 @@ public class XSLTServlet extends HttpServlet {
     /*
      * TODO: create generic resolver for whole database
      */
-    private class ExternalResolver implements URIResolver {
+    private static class ExternalResolver implements URIResolver {
 
         private String baseURI;
 
@@ -570,7 +570,7 @@ public class XSLTServlet extends HttpServlet {
     /*
      * TODO: create generic resolver for whole database
      */
-    private class DatabaseResolver implements URIResolver {
+    private static class DatabaseResolver implements URIResolver {
 
         DocumentImpl doc;
         DBBroker broker;

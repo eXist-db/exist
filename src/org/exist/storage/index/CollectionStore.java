@@ -51,7 +51,7 @@ public class CollectionStore extends BFile {
      */
     public CollectionStore(BrokerPool pool, byte id, String dataDir, Configuration config) throws DBException {
         super(pool, id, true, new File(dataDir + File.separatorChar + getFileName()), 
-                pool.getCacheManager(), 1.25, 0.01, 0.03);
+                pool.getCacheManager(), 1.25, 0.03);
         config.setProperty(getConfigKeyForFile(), this);
     }
 
@@ -167,13 +167,13 @@ public class CollectionStore extends BFile {
 
     public static class DocumentKey extends Value {
         
-        public static int OFFSET_TYPE = 0;
-        public static int LENGTH_TYPE = 1; //sizeof byte
-        public static int OFFSET_COLLECTION_ID = OFFSET_TYPE + LENGTH_TYPE; //1
-        public static int LENGTH_TYPE_DOCUMENT = 2; //sizeof short
-        public static int OFFSET_DOCUMENT_TYPE = OFFSET_COLLECTION_ID + Collection.LENGTH_COLLECTION_ID; //3
-        public static int LENGTH_DOCUMENT_TYPE = 1; //sizeof byte
-        public static int OFFSET_DOCUMENT_ID = OFFSET_DOCUMENT_TYPE + LENGTH_DOCUMENT_TYPE; //4
+        public static final int OFFSET_TYPE = 0;
+        public static final int LENGTH_TYPE = 1; //sizeof byte
+        public static final int OFFSET_COLLECTION_ID = OFFSET_TYPE + LENGTH_TYPE; //1
+        public static final int LENGTH_TYPE_DOCUMENT = 2; //sizeof short
+        public static final int OFFSET_DOCUMENT_TYPE = OFFSET_COLLECTION_ID + Collection.LENGTH_COLLECTION_ID; //3
+        public static final int LENGTH_DOCUMENT_TYPE = 1; //sizeof byte
+        public static final int OFFSET_DOCUMENT_ID = OFFSET_DOCUMENT_TYPE + LENGTH_DOCUMENT_TYPE; //4
 
         public DocumentKey() {
             data = new byte[LENGTH_TYPE];
@@ -212,9 +212,9 @@ public class CollectionStore extends BFile {
 
     public static class CollectionKey extends Value {
         
-        public static int OFFSET_TYPE = 0;
-        public static int LENGTH_TYPE = 1; //sizeof byte
-        public static int OFFSET_VALUE = OFFSET_TYPE + LENGTH_TYPE; //1
+        public static final int OFFSET_TYPE = 0;
+        public static final int LENGTH_TYPE = 1; //sizeof byte
+        public static final int OFFSET_VALUE = OFFSET_TYPE + LENGTH_TYPE; //1
 
         public CollectionKey() {
             data = new byte[LENGTH_TYPE];

@@ -75,7 +75,7 @@ public class NGramSearch extends Function implements Optimizable {
         + "'?', '*', '+' and character sequences matching the regular expression {[0-9]+,[0-9]+} not immediately preceeded by an unescaped period, '.', stand for themselves."
         + "'^' and '$' not at the very beginning or end of the search string, respectively, stand for themselves.";
 
-    protected static Logger LOG = LogManager.getLogger(NGramSearch.class);
+    protected static final Logger LOG = LogManager.getLogger(NGramSearch.class);
 
     public final static FunctionSignature signatures[] = {
         new FunctionSignature(new QName("contains", NGramModule.NAMESPACE_URI, NGramModule.PREFIX),
