@@ -35,7 +35,7 @@ public abstract class AbstractRemote {
         return Optional.ofNullable((Object[])aclParameter)
                 .map(Arrays::stream)
                 .map(stream -> stream.map(o -> (ACEAider)o))
-                .orElse(Stream.empty());
+                .orElse(Stream.<ACEAider>empty());
     }
     
     protected Permission getPermission(final String owner, final String group, final int mode, final Stream<ACEAider> aces) throws PermissionDeniedException {

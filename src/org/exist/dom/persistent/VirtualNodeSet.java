@@ -314,7 +314,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
                 } else {
                     final NodeList cl = proxy.getOwnerDocument().getChildNodes();
                     for(int j = 0; j < cl.getLength(); j++) {
-                        final IStoredNode node = (IStoredNode) cl.item(j);
+                        final IStoredNode<?> node = (IStoredNode<?>) cl.item(j);
                         final NodeProxy p = new NodeProxy(node);
                         if(test.matches(p)) {
                             // fixme! check for unwanted
@@ -372,23 +372,23 @@ public class VirtualNodeSet extends AbstractNodeSet {
                 test.getType() == Type.CDATA_SECTION) {
                 final DocumentImpl doc = proxy.getOwnerDocument();
                 if(axis == Constants.PRECEDING_AXIS) {
-                    IStoredNode ps = (IStoredNode) doc.getFirstChild();
-                    final IStoredNode pe = (IStoredNode) doc.getDocumentElement();
+                    IStoredNode<?> ps = (IStoredNode<?>) doc.getFirstChild();
+                    final IStoredNode<?> pe = (IStoredNode<?>) doc.getDocumentElement();
                     while(ps != null && !ps.equals(pe)) {
                         if(test.matches(ps)) {
                             result.add(new NodeProxy(ps));
                         }
-                        ps = (IStoredNode) doc.getFollowingSibling(ps);
+                        ps = (IStoredNode<?>) doc.getFollowingSibling(ps);
                     }
                 }
                 if(axis == Constants.FOLLOWING_AXIS) {
-                    final IStoredNode pe = (IStoredNode) doc.getDocumentElement();
-                    IStoredNode pf = (IStoredNode) doc.getFollowingSibling(pe);
+                    final IStoredNode<?> pe = (IStoredNode<?>) doc.getDocumentElement();
+                    IStoredNode<?> pf = (IStoredNode<?>) doc.getFollowingSibling(pe);
                     while(pf != null) {
                         if(test.matches(pf)) {
                             result.add(new NodeProxy(pf));
                         }
-                        pf = (IStoredNode) doc.getFollowingSibling(pf);
+                        pf = (IStoredNode<?>) doc.getFollowingSibling(pf);
                     }
                 }
                 if(axis == Constants.SELF_AXIS ||
