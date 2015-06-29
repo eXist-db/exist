@@ -1798,7 +1798,7 @@ public class DOMFile extends BTree implements Lockable {
         buf.append("Pages used by ").append(doc.getURI());
         buf.append("; (docId: ").append(doc.getDocId()).append("): ");
         long pageNum = StorageAddress.pageFromPointer((
-            (IStoredNode) doc.getFirstChild()).getInternalAddress());
+            (IStoredNode<?>) doc.getFirstChild()).getInternalAddress());
         while (pageNum != Page.NO_PAGE) {
             final DOMPage page = getDOMPage(pageNum);
             final DOMFilePageHeader pageHeader = page.getPageHeader();

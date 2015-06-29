@@ -236,7 +236,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             }
             NamedNodeMap attributes = parentStoredNode.getAttributes();
             for (int i = 0; i < attributes.getLength(); ++i) {
-                IStoredNode attr = (IStoredNode) attributes.item(i);
+                IStoredNode<?> attr = (IStoredNode<?>) attributes.item(i);
                 configIt = config.getConfig(attr.getPath());
                 while (configIt.hasNext()) {
                     LuceneIndexConfig idxConfig = configIt.next();
