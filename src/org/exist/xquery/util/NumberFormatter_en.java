@@ -7,9 +7,9 @@ package org.exist.xquery.util;
  */
 public class NumberFormatter_en extends NumberFormatter {
 
-    public static String[] DAYS = { "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" };
+    private static final String[] DAYS = { "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" };
 
-    public static String[] MONTHS = { "January", "February", "March", "April", "May", "June", "July", "August",
+    private static final String[] MONTHS = { "January", "February", "March", "April", "May", "June", "July", "August",
         "September", "October", "November", "December" };
 
     @Override

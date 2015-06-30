@@ -20,8 +20,8 @@ import org.xmldb.api.modules.XMLResource;
 
 public class NestedExample {
  
-	protected static String URI = "xmldb:exist://localhost:8080/exist/xmlrpc";
-	protected static String driver = "org.exist.xmldb.DatabaseImpl";
+	protected static final String URI = "xmldb:exist://localhost:8080/exist/xmlrpc";
+	protected static final String driver = "org.exist.xmldb.DatabaseImpl";
 
 	protected static String data =
 		"<book><chapter><title>Title</title><para>Paragraph 1</para>" +

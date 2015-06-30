@@ -71,6 +71,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.transform.OutputKeys;
 import java.io.*;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 
@@ -92,11 +93,13 @@ public class SystemExport
 {
     public final static Logger     LOG                     = LogManager.getLogger( SystemExport.class );
 
-    private static final XmldbURI   TEMP_COLLECTION         = XmldbURI.createInternal( XmldbURI.TEMP_COLLECTION );
+    private static final XmldbURI   TEMP_COLLECTION         = XmldbURI.createInternal(XmldbURI.TEMP_COLLECTION);
     private static final XmldbURI   CONTENTS_URI            = XmldbURI.createInternal( "__contents__.xml" );
     private static final XmldbURI   LOST_URI                = XmldbURI.createInternal( "__lost_and_found__" );
 
     private static final int        currVersion             = 1;
+
+    private final SimpleDateFormat creationDateFormat = new SimpleDateFormat(DataBackup.DATE_FORMAT_PICTURE);
 
     private int                     collectionCount         = -1;
 
@@ -689,10 +692,10 @@ public class SystemExport
         }
     }
 
-
     public static File getUniqueFile( String base, String extension, String dir )
     {
-        final String filename = base + '-' + DataBackup.creationDateFormat.format( Calendar.getInstance().getTime() );
+        final SimpleDateFormat creationDateFormat = new SimpleDateFormat(DataBackup.DATE_FORMAT_PICTURE);
+        final String filename = base + '-' + creationDateFormat.format( Calendar.getInstance().getTime() );
         File   file     = new File( dir, filename + extension );
         int    version  = 0;
 

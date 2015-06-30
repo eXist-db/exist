@@ -23,8 +23,10 @@ package org.exist.backup;
 
 import java.io.File;
 
+import java.text.DateFormat;
 import java.text.ParseException;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 
@@ -33,12 +35,14 @@ public class BackupFile
     private File file;
     private Date date;
 
+    private final DateFormat dateFormat = new SimpleDateFormat( BackupDirectory.DATE_FORMAT_PICTURE );
+
     public BackupFile( File file, String dateTime )
     {
         this.file = file;
 
         try {
-            date = BackupDirectory.DATE_FORMAT.parse( dateTime );
+            date = dateFormat.parse( dateTime );
         }
         catch( final ParseException e ) {
         }

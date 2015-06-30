@@ -455,7 +455,6 @@ public class JMXtoXML {
      * @param args
      */
     public static void main(String[] args) {
-        final File home = ConfigurationHelper.getExistHome();
 
         final JMXtoXML client = new JMXtoXML();
         try {

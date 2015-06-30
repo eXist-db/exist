@@ -46,12 +46,6 @@ public class NativeStructuralIndex extends AbstractIndex implements RawBackupSup
     public final static String ID = NativeStructuralIndex.class.getName();
     public static final String FILE_NAME = "structure.dbx";
 
-    public static final String  FILE_KEY_IN_CONFIG = "db-connection.elements";
-    public static final double DEFAULT_STRUCTURAL_CACHE_GROWTH = 1.25;
-    public static final double DEFAULT_STRUCTURAL_KEY_THRESHOLD = 0.1;
-
-    public static final double DEFAULT_STRUCTURAL_VALUE_THRESHOLD = 0.1;
-
     public static final byte STRUCTURAL_INDEX_ID = 1;
 
     /** The datastore for this node index */
@@ -75,7 +69,7 @@ public class NativeStructuralIndex extends AbstractIndex implements RawBackupSup
         LOG.debug("Creating '" + file.getName() + "'...");
         try {
             btree = new BTreeStore(pool, STRUCTURAL_INDEX_ID, false,
-                    file, pool.getCacheManager(), DEFAULT_STRUCTURAL_KEY_THRESHOLD);
+                    file, pool.getCacheManager());
         } catch (final DBException e) {
             LOG.error("Failed to initialize structural index: " + e.getMessage(), e);
             throw new DatabaseConfigurationException(e.getMessage(), e);

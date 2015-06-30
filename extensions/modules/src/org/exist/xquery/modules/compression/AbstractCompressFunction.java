@@ -218,40 +218,38 @@ public abstract class AbstractCompressFunction extends BasicFunction
 
             // create an entry in the Tar for the document
             Object entry = null;
-            byte[] value = new byte[0];
             CRC32 chksum = new CRC32();
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            try(final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
 
-            if(name != null)
-            {
-                entry = newEntry(name);
-            }
-            else if (useHierarchy) {
-                entry = newEntry(removeLeadingOffset(file.getPath(), stripOffset));
-            } else {
-                entry = newEntry(file.getName());
-            }
+                if (name != null) {
+                    entry = newEntry(name);
+                } else if (useHierarchy) {
+                    entry = newEntry(removeLeadingOffset(file.getPath(), stripOffset));
+                } else {
+                    entry = newEntry(file.getName());
+                }
 
-            InputStream is = new FileInputStream(file);
-            byte[] data = new byte[16384];
-            int len = 0;
-            while ((len=is.read(data,0,data.length))>0) {
-                baos.write(data,0,len);
-            }
-            is.close();
-            value = baos.toByteArray();
-            // close the entry
-            if (entry instanceof ZipEntry &&
-                    "store".equals(method)) {
-                ((ZipEntry) entry).setMethod(ZipOutputStream.STORED);
-                chksum.update(value);
-                ((ZipEntry) entry).setCrc(chksum.getValue());
-                ((ZipEntry) entry).setSize(value.length);
-            }
+                try (final InputStream is = new FileInputStream(file)) {
+                    byte[] data = new byte[16384];
+                    int len = -1;
+                    while ((len = is.read(data, 0, data.length)) > 0) {
+                        baos.write(data, 0, len);
+                    }
+                }
+                final byte[] value = baos.toByteArray();
+                // close the entry
+                if (entry instanceof ZipEntry &&
+                        "store".equals(method)) {
+                    ((ZipEntry) entry).setMethod(ZipOutputStream.STORED);
+                    chksum.update(value);
+                    ((ZipEntry) entry).setCrc(chksum.getValue());
+                    ((ZipEntry) entry).setSize(value.length);
+                }
 
-            putEntry(os, entry);
-            os.write(value);
-            closeEntry(os);
+                putEntry(os, entry);
+                os.write(value);
+                closeEntry(os);
+            }
 
         } else {
 

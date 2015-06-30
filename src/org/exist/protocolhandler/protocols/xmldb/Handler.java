@@ -80,8 +80,7 @@ public class Handler extends URLStreamHandler {
         } else if(spec.matches(PATTERN)) {
             LOG.debug("Parsing URL with custom exist instance");
             final String splits[] = spec.split(":",3);
-            final @SuppressWarnings("unused")
-			String instance = splits[1]; // TODO pass to URL as param
+			final String instance = splits[1]; // TODO pass to URL as param
 
             final int seperator = spec.indexOf("//");
             super.parseURL(url, spec, seperator, limit);

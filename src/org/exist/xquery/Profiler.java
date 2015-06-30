@@ -42,23 +42,23 @@ import org.exist.xquery.value.Sequence;
 public class Profiler {
 
     /** value for Verbosity property: basic profiling : just elapsed time */
-    public static int TIME = 1;
+    public static final int TIME = 1;
     /** value for Verbosity property: For optimizations */
-    public static int OPTIMIZATIONS = 2;
+    public static final int OPTIMIZATIONS = 2;
     /** For computations that will trigger further optimizations */
-    public static int OPTIMIZATION_FLAGS = 3;
+    public static final int OPTIMIZATION_FLAGS = 3;
     /** Indicates the dependencies of the expression */
-    public static int DEPENDENCIES = 4;
+    public static final int DEPENDENCIES = 4;
     /** An abstract level for viewing the expression's context sequence/item */
-    public static int START_SEQUENCES = 4;
+    public static final int START_SEQUENCES = 4;
     /** Just returns the number of items in the sequence */
-    public static int ITEM_COUNT = 5;
+    public static final int ITEM_COUNT = 5;
     /** For a truncated string representation of the context sequence (TODO) */
-    public static int SEQUENCE_PREVIEW = 6;
+    public static final int SEQUENCE_PREVIEW = 6;
     /** For a full representation of the context sequence (TODO) */
-    public static int SEQUENCE_DUMP = 8;
+    public static final int SEQUENCE_DUMP = 8;
 
-    public static String CONFIG_PROPERTY_TRACELOG = "xquery.profiling.tracelog";
+    public static final String CONFIG_PROPERTY_TRACELOG = "xquery.profiling.tracelog";
 
     /**
      * The logger where all output goes.

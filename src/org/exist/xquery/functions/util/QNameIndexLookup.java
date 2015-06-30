@@ -135,20 +135,11 @@ public class QNameIndexLookup extends Function {
         final QName qname = qval.getQName();
         
         final AtomicValue comparisonCriterium = args[1].itemAt(0).atomize();
-        
-        Sequence result = Sequence.EMPTY_SEQUENCE;
 
-        if (comparisonCriterium instanceof Indexable) {
-            final NativeValueIndex valueIndex = context.getBroker().getValueIndex();
-            result =
-                valueIndex.find(context.getWatchDog(), Constants.EQ, contextSequence.getDocumentSet(), null, NodeSet.ANCESTOR,
-            qname, comparisonCriterium);
-        } else {
-            final String message = "The comparison criterium must be an Indexable: " +
-            	"boolean, numeric, string; instead your criterium has type " +
-            	Type.getTypeName(comparisonCriterium.getType());
-        	throw new XPathException(this, message);
-        }
+        final NativeValueIndex valueIndex = context.getBroker().getValueIndex();
+        final Sequence result =
+            valueIndex.find(context.getWatchDog(), Constants.EQ, contextSequence.getDocumentSet(), null, NodeSet.ANCESTOR,
+        qname, comparisonCriterium);
 
         return result;
     }

@@ -28,8 +28,6 @@ import org.apache.logging.log4j.Logger;
  * @author aretter
  */
 public class CollectionTriggersVisitor extends AbstractTriggersVisitor<CollectionTrigger> {
-
-    protected Logger LOG = LogManager.getLogger(getClass());
     
     public CollectionTriggersVisitor(List<CollectionTrigger> triggers) {
         super(triggers);

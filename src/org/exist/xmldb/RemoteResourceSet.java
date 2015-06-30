@@ -127,7 +127,7 @@ public class RemoteResourceSet implements ResourceSet {
                     params.add(table.get("handle"));
                     params.add(Long.toString(offset));
                     table = (Map<?, ?>) collection.getClient().execute("getNextExtendedChunk", params);
-                    offset = Long.valueOf((String) table.get("offset"));
+                    offset = Long.parseLong((String) table.get("offset"));
                     data = (byte[]) table.get("data");
                     // One for the local cached file
                     if (isCompressed) {
@@ -228,7 +228,7 @@ public class RemoteResourceSet implements ResourceSet {
 
     @Override
     public void removeResource(final long pos) throws XMLDBException {
-        resources.get((int) pos);
+        resources.get((int) pos); //TODO this is broken!
     }
 
     @Override

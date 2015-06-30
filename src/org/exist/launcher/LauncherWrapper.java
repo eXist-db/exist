@@ -46,8 +46,6 @@ public class LauncherWrapper {
     private final static String OS = System.getProperty("os.name").toLowerCase();
 
     public final static void main(String[] args) {
-        final boolean spawn = SystemTray.isSupported();
-
         final LauncherWrapper wrapper = new LauncherWrapper(LAUNCHER);
         wrapper.launch();
     }

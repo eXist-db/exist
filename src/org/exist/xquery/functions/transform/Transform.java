@@ -442,7 +442,7 @@ public class Transform extends BasicFunction {
             for (int i = 0; i < contents.length; i++) {
                 final String[] pair = Option.parseKeyValuePair(contents[i]);
                 if (pair == null) {
-                    throw new XPathException(this, "Found invalid serialization option: " + pair);
+                    throw new XPathException(this, "Found invalid serialization option: " + contents[i]);
                 }
                 logger.info("Setting serialization property: " + pair[0] + " = " + pair[1]);
                 serializationProps.setProperty(pair[0], pair[1]);
@@ -619,7 +619,7 @@ public class Transform extends BasicFunction {
 		}
 	}
 	
-	private class ExternalResolver implements URIResolver {
+	private static class ExternalResolver implements URIResolver {
 		
 		private String baseURI;
 		

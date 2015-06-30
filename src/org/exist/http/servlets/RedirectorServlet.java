@@ -120,6 +120,7 @@ public class RedirectorServlet extends HttpServlet {
     private XmldbURI collectionURI = null;
     private String query = null;
 
+    @Override
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
 
@@ -155,6 +156,7 @@ public class RedirectorServlet extends HttpServlet {
         }
     }
 
+    @Override
     protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         if (request.getCharacterEncoding() == null)
             try {
@@ -266,9 +268,9 @@ public class RedirectorServlet extends HttpServlet {
         }
     }
 
-    private class RequestWrapper extends javax.servlet.http.HttpServletRequestWrapper {
+    private static class RequestWrapper extends javax.servlet.http.HttpServletRequestWrapper {
 
-        Map<String, String[]> addedParams = new HashMap<String, String[]>();
+        Map<String, String[]> addedParams = new HashMap<>();
 
         private RequestWrapper(HttpServletRequest request) {
             super(request);
@@ -285,10 +287,12 @@ public class RedirectorServlet extends HttpServlet {
         }
 
         //XXX: something wrong here, the value can be String[], see line 278
-        public String getParameter(String name) {
+        @Override
+        public String getParameter(final String name) {
             final String[] value = addedParams.get(name);
-            if (value != null && value.length > 0)
-                {return value[0];}
+            if (value != null && value.length > 0) {
+                return value[0];
+            }
             return null;
         }
 
@@ -297,23 +301,19 @@ public class RedirectorServlet extends HttpServlet {
             return addedParams;
         }
 
+        @Override
         public Enumeration getParameterNames() {
-            final Vector<String> v = new Vector<String>();
+            final Vector<String> v = new Vector<>();
             for (final String key : addedParams.keySet()) {
                 v.addElement(key);
             }
             return v.elements();
         }
 
-        public String[] getParameterValues(String s) {
-            final Object value = addedParams.get(s);
-            if (value != null) {
-                if (value instanceof String[])
-                    {return (String[]) value;}
-                else
-                    {return new String[] { value.toString() };}
-            }
-            return null;
+        @Override
+        public String[] getParameterValues(final String s) {
+            final String[] value = addedParams.get(s);
+            return value;
         }
     }
 }

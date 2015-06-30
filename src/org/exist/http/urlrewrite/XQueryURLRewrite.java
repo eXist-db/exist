@@ -491,7 +491,7 @@ public class XQueryURLRewrite extends HttpServlet {
 			model.getSourceInfo().source.validate(broker.getSubject(), Permission.EXECUTE);
 			
 			if (model.getSourceInfo().source.isValid(broker) != Source.VALID) {
-                ModelAndView removed = urlCache.remove(url);
+                urlCache.remove(url);
 				return null;
 			}
 			
@@ -977,7 +977,7 @@ public class XQueryURLRewrite extends HttpServlet {
         }
 	}
 
-    private class ModelAndView {
+    private static class ModelAndView {
 
         URLRewrite rewrite = null;
         List<URLRewrite> views = new LinkedList<URLRewrite>();
@@ -1324,8 +1324,6 @@ public class XQueryURLRewrite extends HttpServlet {
 
     private class CachingResponseWrapper extends HttpServletResponseWrapper {
 
-        @SuppressWarnings("unused")
-		protected HttpServletResponse origResponse;
         protected CachingServletOutputStream sos = null;
         protected PrintWriter writer = null;
         protected int status = HttpServletResponse.SC_OK;
@@ -1335,7 +1333,6 @@ public class XQueryURLRewrite extends HttpServlet {
         public CachingResponseWrapper(HttpServletResponse servletResponse, boolean cache) {
             super(servletResponse);
             this.cache = cache;
-            this.origResponse = servletResponse;
         }
 
         @Override
@@ -1440,7 +1437,7 @@ public class XQueryURLRewrite extends HttpServlet {
         }
     }
 
-    private class CachingServletOutputStream extends ServletOutputStream {
+    private static class CachingServletOutputStream extends ServletOutputStream {
 
         protected ByteArrayOutputStream ostream = new ByteArrayOutputStream(512);
 

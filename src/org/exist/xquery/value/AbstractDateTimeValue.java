@@ -56,7 +56,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
 	public final XMLGregorianCalendar calendar;
 	private XMLGregorianCalendar implicitCalendar, canonicalCalendar, trimmedCalendar;
 	
-	protected static Pattern negativeDateStart = Pattern.compile("^\\d\\d?-(\\d+)-(.*)"); 
+	protected static final Pattern negativeDateStart = Pattern.compile("^\\d\\d?-(\\d+)-(.*)");
 
 	public final static int YEAR = 0;
 	public final static int MONTH = 1;
@@ -176,7 +176,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
 		
 		final Matcher m = negativeDateStart.matcher(r);
 		if (m.matches()) {
-			final int year = Integer.valueOf(m.group(1)).intValue();
+			final int year = Integer.parseInt(m.group(1));
 			final DecimalFormat df = new DecimalFormat("0000");
 			r = "-" + df.format(year) + "-" + m.group(2);
 		}

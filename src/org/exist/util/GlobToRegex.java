@@ -212,8 +212,7 @@ public class GlobToRegex {
         final String str = "This is generated text";
         final Pattern pattern = Pattern.compile(re);
         final Matcher matcher = pattern.matcher(str);
-        final @SuppressWarnings("unused")
-		boolean match = matcher.find();
+		matcher.find();
         System.out.println(str.substring(matcher.start(), matcher.end()));
     }
 

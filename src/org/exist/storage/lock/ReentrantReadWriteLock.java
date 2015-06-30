@@ -52,7 +52,7 @@ public class ReentrantReadWriteLock implements Lock {
 
     private static final int WAIT_CHECK_PERIOD = 200;
 
-    private class SuspendedWaiter {
+    private static class SuspendedWaiter {
         Thread thread;
         int lockMode;
         int lockCount;

@@ -78,7 +78,7 @@ public class Query extends AtomModuleBase implements Atom {
 	protected final static Logger LOG = LogManager.getLogger(Query.class);
 	MimeType xqueryMimeType;
 
-	public class MethodConfiguration {
+	public static class MethodConfiguration {
 		String contentType;
 		URLSource querySource;
 

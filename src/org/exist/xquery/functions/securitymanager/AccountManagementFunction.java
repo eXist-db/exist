@@ -159,7 +159,7 @@ public class AccountManagementFunction extends BasicFunction {
 
                 final String password = args[1].getStringValue();
 
-                if(isCalledAs(qnPasswd.getLocalPart()) | isCalledAs(qnPasswdHash.getLocalPart())) {
+                if(isCalledAs(qnPasswd.getLocalPart()) || isCalledAs(qnPasswdHash.getLocalPart())) {
                     /* change password */
 
                     if(!(currentUser.getName().equals(username) || currentUser.hasDbaRole())) {

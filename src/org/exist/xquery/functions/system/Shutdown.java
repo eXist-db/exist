@@ -117,7 +117,7 @@ public class Shutdown extends BasicFunction
 		return Sequence.EMPTY_SEQUENCE;
 	}
 	
-	private class DelayedShutdownTask extends TimerTask
+	private static class DelayedShutdownTask extends TimerTask
 	{
 		private BrokerPool pool = null;
 		

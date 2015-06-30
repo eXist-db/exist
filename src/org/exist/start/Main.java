@@ -299,11 +299,11 @@ public class Main {
 
         // Print message if any files from start.config were added
         // to the classpath but they could not be found.
-        if (invalidJars.size() > 0) {
-            final StringBuilder nonexistentJars = new StringBuilder();
-            for (final String invalidJar : invalidJars) {
-                nonexistentJars.append("    " + invalidJar + "\n");
-            }
+//        if (invalidJars.size() > 0) {
+//            final StringBuilder nonexistentJars = new StringBuilder();
+//            for (final String invalidJar : invalidJars) {
+//                nonexistentJars.append("    " + invalidJar + "\n");
+//            }
             /*
             System.err.println(
             "\nWARN: The following JAR file entries from '"
@@ -312,7 +312,7 @@ public class Main {
             + nonexistentJars
             );
              */
-        }
+//        }
     }
 
     public void run(String[] args) {

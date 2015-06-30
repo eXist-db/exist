@@ -120,7 +120,7 @@ public abstract class NumberFormatter {
         return count;
     }
 
-    public static NumberFormatter DEFAULT_FORMATTER = new NumberFormatter_en();
+    public static final NumberFormatter DEFAULT_FORMATTER = new NumberFormatter_en();
 
     public static NumberFormatter getInstance(String language) {
         final String className = NumberFormatter.class.getName() + "_" + language;

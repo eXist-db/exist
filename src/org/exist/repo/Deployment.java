@@ -753,10 +753,10 @@ public class Deployment {
      * Update repo.xml while copying it. For security reasons, make sure
      * any default password is removed before uploading.
      */
-    private class UpdatingDocumentReceiver extends DocumentBuilderReceiver {
+    private static class UpdatingDocumentReceiver extends DocumentBuilderReceiver {
 
         private String time;
-        private Stack<String> stack = new Stack<String>();
+        private Stack<String> stack = new Stack<>();
 
         public UpdatingDocumentReceiver( MemTreeBuilder builder, String time )
         {

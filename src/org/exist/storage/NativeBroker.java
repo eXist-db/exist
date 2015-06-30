@@ -155,8 +155,8 @@ public class NativeBroker extends DBBroker {
     /** check available memory after storing DEFAULT_NODES_BEFORE_MEMORY_CHECK nodes */
     public static final int DEFAULT_NODES_BEFORE_MEMORY_CHECK = 500;
 
-    public static int OFFSET_COLLECTION_ID = 0;
-    public static int OFFSET_VALUE = OFFSET_COLLECTION_ID + Collection.LENGTH_COLLECTION_ID; //2
+    public static final int OFFSET_COLLECTION_ID = 0;
+    public static final int OFFSET_VALUE = OFFSET_COLLECTION_ID + Collection.LENGTH_COLLECTION_ID; //2
 
     public final static String INIT_COLLECTION_CONFIG = "collection.xconf.init";
 
@@ -2500,7 +2500,7 @@ public class NativeBroker extends DBBroker {
         final StreamListener listener = indexController.getStreamListener();
         final NodeList nodes = oldDoc.getChildNodes();
         for(int i = 0; i < nodes.getLength(); i++) {
-            final IStoredNode node = (IStoredNode) nodes.item(i);
+            final IStoredNode<?> node = (IStoredNode<?>) nodes.item(i);
             try(final INodeIterator iterator = getNodeIterator(node)) {
                 iterator.next();
                 copyNodes(transaction, iterator, node, new NodePath(), newDoc, false, true, listener);
@@ -2720,7 +2720,7 @@ public class NativeBroker extends DBBroker {
         final StreamListener listener = indexController.getStreamListener();
         final NodeList nodes = document.getChildNodes();
         for(int i = 0; i < nodes.getLength(); i++) {
-            final IStoredNode node = (IStoredNode) nodes.item(i);
+            final IStoredNode<?> node = (IStoredNode<?>) nodes.item(i);
             try(final INodeIterator iterator = getNodeIterator(node)) {
                 iterator.next();
                 scanNodes(transaction, iterator, node, new NodePath(), NodeProcessor.MODE_REMOVE, listener);
@@ -2851,7 +2851,7 @@ public class NativeBroker extends DBBroker {
         final StreamListener listener = indexController.getStreamListener();
         final NodeList nodes = doc.getChildNodes();
         for(int i = 0; i < nodes.getLength(); i++) {
-            final IStoredNode node = (IStoredNode) nodes.item(i);
+            final IStoredNode<?> node = (IStoredNode<?>) nodes.item(i);
             try(final INodeIterator iterator = getNodeIterator(node)) {
                 iterator.next();
                 scanNodes(transaction, iterator, node, new NodePath(), mode, listener);
@@ -2901,7 +2901,7 @@ public class NativeBroker extends DBBroker {
             // copy the nodes
             final NodeList nodes = doc.getChildNodes();
             for(int i = 0; i < nodes.getLength(); i++) {
-                final IStoredNode node = (IStoredNode) nodes.item(i);
+                final IStoredNode<?> node = (IStoredNode<?>) nodes.item(i);
                 try(final INodeIterator iterator = getNodeIterator(node)) {
                     iterator.next();
                     copyNodes(transaction, iterator, node, new NodePath(), tempDoc, true, true, listener);
@@ -3463,7 +3463,7 @@ public class NativeBroker extends DBBroker {
 
     @Override
     public IStoredNode objectWith(final Document doc, final NodeId nodeId) {
-        return (IStoredNode) new DOMTransaction(this, domDb, Lock.READ_LOCK) {
+        return (IStoredNode<?>) new DOMTransaction(this, domDb, Lock.READ_LOCK) {
             @Override
             public Object start() {
                 final Value val = domDb.get(NativeBroker.this, new NodeProxy((DocumentImpl) doc, nodeId));
@@ -3486,7 +3486,7 @@ public class NativeBroker extends DBBroker {
         if(!StorageAddress.hasAddress(p.getInternalAddress())) {
             return objectWith(p.getOwnerDocument(), p.getNodeId());
         }
-        return (IStoredNode) new DOMTransaction(this, domDb, Lock.READ_LOCK) {
+        return (IStoredNode<?>) new DOMTransaction(this, domDb, Lock.READ_LOCK) {
             @Override
             public Object start() {
                 // DocumentImpl sets the nodeId to DOCUMENT_NODE when it's trying to find its top-level
@@ -3697,8 +3697,8 @@ public class NativeBroker extends DBBroker {
 
     public final static class NodeRef extends Value {
 
-        public static int OFFSET_DOCUMENT_ID = 0;
-        public static int OFFSET_NODE_ID = OFFSET_DOCUMENT_ID + DocumentImpl.LENGTH_DOCUMENT_ID;
+        public static final int OFFSET_DOCUMENT_ID = 0;
+        public static final int OFFSET_NODE_ID = OFFSET_DOCUMENT_ID + DocumentImpl.LENGTH_DOCUMENT_ID;
 
         public NodeRef(final int docId) {
             len = DocumentImpl.LENGTH_DOCUMENT_ID;
@@ -3851,8 +3851,6 @@ public class NativeBroker extends DBBroker {
                                 qnIdx, mode == MODE_REMOVE);
                         }
                     }
-                    final NodeProxy tempProxy = new NodeProxy(doc, node.getNodeId(), address);
-                    tempProxy.setIndexType(indexType);
                     node.setQName(new QName(qname, ElementValue.ATTRIBUTE));
                     final AttrImpl attr = (AttrImpl) node;
                     attr.setIndexType(indexType);

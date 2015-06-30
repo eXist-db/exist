@@ -297,16 +297,12 @@ public final class HeapSort {
 				l.add(a[i]);
 		} else {
 			System.err.println("Ordering file "+args[0]+"\n");
-			try {
-				final java.io.BufferedReader is=new java.io.BufferedReader(new java.io.FileReader(args[0]));
+			try(final java.io.BufferedReader is=new java.io.BufferedReader(new java.io.FileReader(args[0]))) {
 				String rr;
 
 				while((rr=is.readLine())!=null) {
 					l.add(rr);
 				}
-
-				is.close();
-			} catch(final Exception e) {
 			}
 		}
 		long a;

@@ -491,8 +491,6 @@ public class ConsistencyCheck
         public boolean indexInfo( Value key, long pointer ) throws TerminatedException
         {
             final CollectionStore store        = (CollectionStore)( (NativeBroker)broker ).getStorage( NativeBroker.COLLECTIONS_DBX_ID );
-            final @SuppressWarnings( "unused" )
-            int             collectionId = CollectionStore.DocumentKey.getCollectionId( key );
             final int             docId        = CollectionStore.DocumentKey.getDocumentId( key );
 
             try {
