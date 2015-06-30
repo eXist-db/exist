@@ -95,8 +95,8 @@ public class DirtyShutdownTest {
             }
 
             try(final Txn transaction = transact.beginTransaction()) {
-                XQuery xquery = broker.getXQueryService();
-                xquery.execute(query, null, AccessContext.TEST);
+                XQuery xquery = pool.getXQueryService();
+                xquery.execute(broker, query, null, AccessContext.TEST);
                 transact.commit(transaction);
             }
         } catch (Exception e) {

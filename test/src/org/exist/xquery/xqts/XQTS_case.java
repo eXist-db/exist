@@ -93,7 +93,7 @@ public class XQTS_case extends TestCase {
             "let $XQTSCatalog := xmldb:document('/db/XQTS/XQTSCatalog.xml') "+
             "return $XQTSCatalog//catalog:sources//catalog:source";
 
-            Sequence results = xquery.execute(query, null, AccessContext.TEST);
+            Sequence results = xquery.execute(broker, query, null, AccessContext.TEST);
 
             for (NodeProxy node : results.toNodeSet()) {
                 ElementImpl source = (ElementImpl) node.getNode();
@@ -107,7 +107,7 @@ public class XQTS_case extends TestCase {
                 "let $XQTSCatalog := xmldb:document('/db/XQTS/XQTSCatalog.xml') "+
                 "return $XQTSCatalog//catalog:sources//catalog:module";
 
-            Sequence results = xquery.execute(query, null, AccessContext.TEST);
+            Sequence results = xquery.execute(broker, query, null, AccessContext.TEST);
 
             for (NodeProxy node : results.toNodeSet()) {
                 ElementImpl source = (ElementImpl) node.getNode();
@@ -140,7 +140,7 @@ public class XQTS_case extends TestCase {
             broker = db.get(db.getSecurityManager().getSystemSubject());
             broker.getConfiguration().setProperty( XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, true);
 
-            xquery = broker.getXQueryService();
+            xquery = db.getXQueryService();
 
             prepare(broker, xquery);
 
@@ -149,7 +149,7 @@ public class XQTS_case extends TestCase {
             "let $tc := $XQTSCatalog/catalog:test-suite//catalog:test-group[@name eq \""+testGroup+"\"]/catalog:test-case[@name eq \""+testCase+"\"]\n"+
             "return $tc";
 
-            Sequence results = xquery.execute(query, null, AccessContext.TEST);
+            Sequence results = xquery.execute(broker, query, null, AccessContext.TEST);
             
             Assert.assertFalse("", !results.hasOne());
 
@@ -209,7 +209,7 @@ public class XQTS_case extends TestCase {
             try {
                 XQueryContext context;
 
-                context = xquery.newContext(AccessContext.TEST);
+                context = new XQueryContext(broker.getBrokerPool(), AccessContext.TEST);
 
                 //map modules' namespaces to location 
                 Map<String, String> moduleMap = (Map<String, String>)broker.getConfiguration().getProperty(XQueryContext.PROPERTY_STATIC_MODULE_MAP);
@@ -251,10 +251,10 @@ public class XQTS_case extends TestCase {
                 if ("runtime-error".equals(scenario)) {
                 	try {
                         //compile
-                        CompiledXQuery compiled = xquery.compile(context, new FileSource(caseScript, "UTF8", true));
+                        CompiledXQuery compiled = xquery.compile(broker, context, new FileSource(caseScript, "UTF8", true));
 
                         //execute
-                        result = xquery.execute(compiled, contextSequence);
+                        result = xquery.execute(broker, compiled, contextSequence);
                         
                         if (outputFiles.getLength() != 0) {
                             //can be answered
@@ -285,10 +285,10 @@ public class XQTS_case extends TestCase {
                     }
                 } else {
                     //compile
-                    CompiledXQuery compiled = xquery.compile(context, new FileSource(caseScript, "UTF8", true));
+                    CompiledXQuery compiled = xquery.compile(broker, context, new FileSource(caseScript, "UTF8", true));
 
                     //execute
-                    result = xquery.execute(compiled, contextSequence);
+                    result = xquery.execute(broker, compiled, contextSequence);
 
                     //check answer
 	                for (int i = 0; i < outputFiles.getLength(); i++) {

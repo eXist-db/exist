@@ -81,13 +81,13 @@ public class QT3TS_case extends TestCase {
 
         try {
             broker = db.get(db.getSecurityManager().getSystemSubject());
-            xquery = broker.getXQueryService();
+            xquery = broker.getBrokerPool().getXQueryService();
 
             broker.getConfiguration().setProperty(XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, true);
 
             String query = "xmldb:document('" + file + "')";
 
-            return xquery.execute(query, null, AccessContext.TEST);
+            return xquery.execute(broker, query, null, AccessContext.TEST);
 
         } finally {
             db.release(broker);
@@ -100,14 +100,14 @@ public class QT3TS_case extends TestCase {
         DBBroker broker = null;
         try {
             broker = db.get(db.getSecurityManager().getSystemSubject());
-            XQuery xquery = broker.getXQueryService();
+            XQuery xquery = broker.getBrokerPool().getXQueryService();
 
             broker.getConfiguration().setProperty(XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, true);
 
             String query = "declare namespace qt='" + QT_NS + "';\n" + "let $testCases := xmldb:document('/db/QT3/" + file + "')\n"
                     + "let $tc := $testCases//qt:environment\n" + "return $tc";
 
-            Sequence result = xquery.execute(query, null, AccessContext.TEST);
+            Sequence result = xquery.execute(broker, query, null, AccessContext.TEST);
 
             String col = XmldbURI.create("/db/QT3/" + file).removeLastSegment().toString();
 
@@ -149,7 +149,7 @@ public class QT3TS_case extends TestCase {
         DBBroker broker = null;
         try {
             broker = db.get(db.getSecurityManager().getSystemSubject());
-            XQuery xquery = broker.getXQueryService();
+            XQuery xquery = broker.getBrokerPool().getXQueryService();
 
             broker.getConfiguration().setProperty(XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, true);
 
@@ -157,7 +157,7 @@ public class QT3TS_case extends TestCase {
                     + "let $tc := $testCases//qt:environment[@name eq '" + name + "']\n" + "let $catalog := xmldb:document('/db/QT3/catalog.xml')\n"
                     + "let $cat := $catalog//qt:environment[@name eq '" + name + "']\n" + "return ($tc, $cat)";
 
-            Sequence result = xquery.execute(query, null, AccessContext.TEST);
+            Sequence result = xquery.execute(broker, query, null, AccessContext.TEST);
 
             String col = XmldbURI.create("/db/QT3/" + file).removeLastSegment().toString();
 
@@ -205,7 +205,7 @@ public class QT3TS_case extends TestCase {
         Set<String> extectedError = new HashSet<String>();
         try {
             broker = db.get(db.getSecurityManager().getSystemSubject());
-            xquery = broker.getXQueryService();
+            xquery = broker.getBrokerPool().getXQueryService();
 
             final XQueryContext context = new XQueryContext(db, AccessContext.TEST);
 
@@ -214,9 +214,9 @@ public class QT3TS_case extends TestCase {
             String query = "declare namespace qt='" + QT_NS + "';\n" + "let $testCases := xmldb:document('/db/QT3/" + file + "')\n"
                     + "let $tc := $testCases//qt:test-case[@name eq \"" + tcName + "\"]\n" + "return $tc";
 
-            XQuery xqs = broker.getXQueryService();
+            XQuery xqs = broker.getBrokerPool().getXQueryService();
 
-            Sequence results = xqs.execute(query, null, AccessContext.TEST);
+            Sequence results = xqs.execute(broker, query, null, AccessContext.TEST);
 
             Assert.assertFalse("", results.isEmpty());
 
@@ -269,19 +269,19 @@ public class QT3TS_case extends TestCase {
                                         if ("xs:date".equals(type)) {
                                             var.setStaticType(Type.DATE);
 
-                                            Sequence res = xquery.execute(el.getAttribute("select"), null, AccessContext.TEST);
+                                            Sequence res = xquery.execute(broker, el.getAttribute("select"), null, AccessContext.TEST);
                                             Assert.assertEquals(1, res.getItemCount());
                                             var.setValue(res);
                                         } else if ("xs:dateTime".equals(type)) {
                                             var.setStaticType(Type.DATE_TIME);
 
-                                            Sequence res = xquery.execute(el.getAttribute("select"), null, AccessContext.TEST);
+                                            Sequence res = xquery.execute(broker, el.getAttribute("select"), null, AccessContext.TEST);
                                             Assert.assertEquals(1, res.getItemCount());
                                             var.setValue(res);
                                         } else if ("xs:string".equals(type)) {
                                             var.setStaticType(Type.STRING);
 
-                                            Sequence res = xquery.execute(el.getAttribute("select"), null, AccessContext.TEST);
+                                            Sequence res = xquery.execute(broker, el.getAttribute("select"), null, AccessContext.TEST);
                                             Assert.assertEquals(1, res.getItemCount());
                                             var.setValue(res);
                                         } else {
@@ -320,8 +320,8 @@ public class QT3TS_case extends TestCase {
                 }
                 context.setStaticallyKnownDocuments(contextDocs);
             }
-            final CompiledXQuery compiled = xquery.compile(context, xquery3declaration + caseScript);
-            result = xquery.execute(compiled, contextSequence);
+            final CompiledXQuery compiled = xquery.compile(broker, context, xquery3declaration + caseScript);
+            result = xquery.execute(broker, compiled, contextSequence);
 
             for (int i = 0; i < expected.getLength(); i++) {
                 Node node = expected.item(i);

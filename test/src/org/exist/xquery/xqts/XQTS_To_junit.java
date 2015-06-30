@@ -201,9 +201,9 @@ public class XQTS_To_junit {
             "let $XQTSCatalog := xmldb:document('/db/XQTS/XQTSCatalog.xml') "+
             "return xs:string($XQTSCatalog/catalog:test-suite/@version)";
 
-        XQuery xqs = broker.getXQueryService();
+        XQuery xqs = db.getXQueryService();
         
-        Sequence results = xqs.execute(query, null, AccessContext.TEST);
+        Sequence results = xqs.execute(broker, query, null, AccessContext.TEST);
 
         if (! results.isEmpty()) {
             String catalog = (String) results.itemAt(0).getStringValue();
@@ -254,8 +254,8 @@ public class XQTS_To_junit {
 
         query += "\treturn xs:string($testGroup/@name)";
 
-        XQuery xqs = broker.getXQueryService();
-        Sequence results = xqs.execute(query, null, AccessContext.TEST);
+        XQuery xqs = db.getXQueryService();
+        Sequence results = xqs.execute(broker, query, null, AccessContext.TEST);
 
         if (!results.isEmpty()) {
             File subfolder;
@@ -333,8 +333,8 @@ public class XQTS_To_junit {
             "for $testGroup in $XQTSCatalog//catalog:test-group[@name = '"+testGroup+"']/catalog:test-case"+
             "\treturn xs:string($testGroup/@name)";
 
-        XQuery xqs = broker.getXQueryService();
-        Sequence results = xqs.execute(query, null, AccessContext.TEST);
+        XQuery xqs = db.getXQueryService();
+        Sequence results = xqs.execute(broker, query, null, AccessContext.TEST);
 
         if (!results.isEmpty()) {
             folder.mkdirs();

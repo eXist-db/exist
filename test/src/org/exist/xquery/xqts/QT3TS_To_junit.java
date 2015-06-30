@@ -225,9 +225,9 @@ public class QT3TS_To_junit {
             throw new IOException("QT3 junit tests folder unreadable.");
         }
 
-        XQuery xqs = broker.getXQueryService();
+        XQuery xqs = db.getXQueryService();
         
-        Sequence results = xqs.execute(tsQuery, null, AccessContext.TEST);
+        Sequence results = xqs.execute(broker, tsQuery, null, AccessContext.TEST);
         
         for (NodeProxy p : results.toNodeSet()) {
         	NamedNodeMap attrs = p.getNode().getAttributes();
@@ -244,8 +244,8 @@ public class QT3TS_To_junit {
     		"let $catalog := xmldb:document('/db/QT3/"+file+"') " +
     		"return $catalog//qt:test-case";
 
-        XQuery xqs = broker.getXQueryService();
-        Sequence results = xqs.execute(tsQuery, null, AccessContext.TEST);
+        XQuery xqs = db.getXQueryService();
+        Sequence results = xqs.execute(broker, tsQuery, null, AccessContext.TEST);
         
         testCases(src, file, name, results);
 	}

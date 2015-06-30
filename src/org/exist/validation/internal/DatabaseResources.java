@@ -139,8 +139,8 @@ public class DatabaseResources {
         try {
             broker = brokerPool.get(user);
             
-            final XQuery xquery = broker.getXQueryService();
-            final XQueryContext context = xquery.newContext(AccessContext.INTERNAL_PREFIX_LOOKUP);
+            final XQuery xquery = brokerPool.getXQueryService();
+            final XQueryContext context = new XQueryContext(brokerPool, AccessContext.INTERNAL_PREFIX_LOOKUP);
             
             if(collection!=null){
                 context.declareVariable(COLLECTION, collection);
@@ -158,9 +158,9 @@ public class DatabaseResources {
                 context.declareVariable(CATALOG, catalogPath);
             }
             
-            CompiledXQuery compiled = xquery.compile(context, new ClassLoaderSource(queryPath) );
+            CompiledXQuery compiled = xquery.compile(broker, context, new ClassLoaderSource(queryPath) );
             
-            result = xquery.execute(compiled, null);
+            result = xquery.execute(broker, compiled, null);
             
         } catch (final EXistException | XPathException | IOException | PermissionDeniedException ex) {
             logger.error("Problem executing xquery", ex);

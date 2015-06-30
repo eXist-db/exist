@@ -403,8 +403,8 @@ public class BasicNodeSetTest {
     }
     
     private static Sequence executeQuery(DBBroker broker, String query, int expected, String expectedResult) throws XPathException, SAXException, PermissionDeniedException {
-        XQuery xquery = broker.getXQueryService();
-        Sequence seq = xquery.execute(query, null, AccessContext.TEST);
+        XQuery xquery = broker.getBrokerPool().getXQueryService();
+        Sequence seq = xquery.execute(broker, query, null, AccessContext.TEST);
         assertEquals(expected, seq.getItemCount());
         
         if (expectedResult != null) {

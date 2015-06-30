@@ -66,6 +66,7 @@ import org.exist.util.Configuration.StartupTriggerConfig;
 import org.exist.xmldb.ShutdownListener;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.PerformanceStats;
+import org.exist.xquery.XQuery;
 import org.expath.pkg.repo.PackageException;
 
 import java.io.File;
@@ -176,6 +177,10 @@ public class BrokerPool implements Database {
 
     private static Observer statusObserver = null;
     private StatusReporter statusReporter = null;
+
+    private final XQuery xqueryService = new XQuery();
+
+
 
     /**
      * Whether of not the JVM should run the shutdown thread.
@@ -1400,6 +1405,15 @@ public class BrokerPool implements Database {
      */
     public XQueryPool getXQueryPool() {
         return xQueryPool;
+    }
+
+    /**
+     * Retuns the XQuery Service
+     *
+     * @return The XQuery service
+     */
+    public XQuery getXQueryService() {
+        return xqueryService;
     }
 
     /**
