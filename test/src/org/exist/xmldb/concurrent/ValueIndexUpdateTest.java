@@ -24,6 +24,9 @@ package org.exist.xmldb.concurrent;
 import org.exist.collections.CollectionConfiguration;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xmldb.concurrent.action.ValueAppendAction;
+import org.junit.After;
+import org.junit.Before;
+import org.xmldb.api.base.XMLDBException;
 
 /**
  * @author wolf
@@ -41,22 +44,22 @@ public class ValueIndexUpdateTest extends ConcurrentTestBase {
 	        "</exist:index>" +
         "</exist:collection>";
 	
-	public static void main(String[] args) {
-		junit.textui.TestRunner.run(ValueIndexUpdateTest.class);
-	}
-	
-    public ValueIndexUpdateTest(String name) {
-        super(name, URI, "C1");
+    public ValueIndexUpdateTest() {
+        super(URI, "C1");
     }
-    
-    protected void setUp() {
-    	try {
-			super.setUp();			
-			DBUtils.addXMLResource(getTestCollection(), CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE, XCONF);
-			DBUtils.addXMLResource(getTestCollection(), "R1.xml", "<items/>");			
-			addAction(new ValueAppendAction(URI + "/C1", "R1.xml"), 50, 0, 500);
-    	} catch (Exception e) {            
-            fail(e.getMessage()); 
-        }				
+
+	@Before
+	@Override
+    public void setUp() throws Exception {
+		super.setUp();
+		DBUtils.addXMLResource(getTestCollection(), CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE, XCONF);
+		DBUtils.addXMLResource(getTestCollection(), "R1.xml", "<items/>");
+		addAction(new ValueAppendAction(URI + "/C1", "R1.xml"), 50, 0, 500);
+	}
+
+	@After
+	@Override
+	public void tearDown() throws XMLDBException {
+		super.tearDown();
 	}
 }

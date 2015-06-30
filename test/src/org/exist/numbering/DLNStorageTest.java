@@ -1,7 +1,5 @@
 package org.exist.numbering;
 
-import junit.framework.TestCase;
-
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.persistent.NodeHandle;
@@ -16,10 +14,16 @@ import org.exist.util.Configuration;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Sequence;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Text;
 
-public class DLNStorageTest extends TestCase {
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
+public class DLNStorageTest {
 
     private static XmldbURI TEST_COLLECTION = XmldbURI.create(XmldbURI.ROOT_COLLECTION + "/test");
 
@@ -32,11 +36,11 @@ public class DLNStorageTest extends TestCase {
                     "    <para>Another <b>paragraph</b>.</para>\n" +
                     "</test>";
 
-    public void testNodeStorage() throws Exception {
+    @Test
+    public void nodeStorage() throws Exception {
         BrokerPool pool = BrokerPool.getInstance();
-        DBBroker broker = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
             XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
             // test element ids
@@ -85,25 +89,19 @@ public class DLNStorageTest extends TestCase {
             Text node = (Text) text.getNode();
             assertEquals(node.getNodeValue(), "paragraph");
             assertEquals(node.getData(), "paragraph");
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } finally {
-            pool.release(broker);
         }
     }
 
-    protected void setUp() throws Exception {
+    @Before
+    public void setUp() throws Exception {
         String home, file = "conf.xml";
         home = System.getProperty("exist.home");
-        if (home == null)
+        if (home == null) {
             home = System.getProperty("user.dir");
-        try {
-            Configuration config = new Configuration(file, home);
-            BrokerPool.configure(1, 5, config);
-        } catch (Exception e) {
-            fail(e.getMessage());
         }
+
+        Configuration config = new Configuration(file, home);
+        BrokerPool.configure(1, 5, config);
 
         BrokerPool pool = BrokerPool.getInstance();
         final TransactionManager transact = pool.getTransactionManager();
@@ -113,24 +111,19 @@ public class DLNStorageTest extends TestCase {
             Collection test = broker.getOrCreateCollection(transaction, TEST_COLLECTION);
             broker.saveCollection(transaction, test);
 
-            IndexInfo info = test.validateXMLResource(transaction, broker, XmldbURI.create("test_string.xml"), 
-            		TEST_XML);
+            IndexInfo info = test.validateXMLResource(transaction, broker, XmldbURI.create("test_string.xml"),
+                    TEST_XML);
             //TODO : unlock the collection here ?
             assertNotNull(info);
 
             test.store(transaction, broker, info, TEST_XML, false);
 
             transact.commit(transaction);
-        } catch (Exception e) {
-            fail(e.getMessage());
         }
     }
 
+    @After
     protected void tearDown() {
         BrokerPool.stopAll(false);
-    }
-    
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(DLNStorageTest.class);
     }
 }

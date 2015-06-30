@@ -22,53 +22,46 @@
 package org.exist.util;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.StringWriter;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
 
 import org.exist.util.serializer.DOMSerializer;
+import org.junit.Test;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * @author wolf
  *
  */
-public class DOMSerializerTest extends TestCase {
-    
+public class DOMSerializerTest {
+
     static File existDir;
     static {
         String existHome = System.getProperty("exist.home");
         existDir = existHome==null ? new File(".") : new File(existHome);
     }
     private final static String file = (new File(existDir,"samples/biblio.rdf")).getAbsolutePath();
-	public static void main(String[] args) {
-		junit.textui.TestRunner.run(DOMSerializerTest.class);
-	}
 
-	public DOMSerializerTest(String name) {
-		super(name);
+	@Test
+	public void serialize() throws ParserConfigurationException, IOException, SAXException, TransformerException {
+		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		assertNotNull(factory);
+		factory.setNamespaceAware(true);
+		DocumentBuilder builder = factory.newDocumentBuilder();
+		assertNotNull(builder);
+		Document doc = builder.parse(new InputSource(file));
+		assertNotNull(doc);
+		StringWriter writer = new StringWriter();
+		DOMSerializer serializer = new DOMSerializer(writer, null);
+		serializer.serialize(doc.getDocumentElement());
 	}
-	
-	public void testSerialize() {
-		try {
-			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-			assertNotNull(factory);
-            factory.setNamespaceAware(true);
-            DocumentBuilder builder = factory.newDocumentBuilder();
-			assertNotNull(builder);
-			Document doc = builder.parse(new InputSource(file));
-			assertNotNull(doc);
-			StringWriter writer = new StringWriter();
-			DOMSerializer serializer = new DOMSerializer(writer, null);
-			serializer.serialize(doc.getDocumentElement());
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        }
-	}
-
 }

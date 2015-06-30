@@ -22,23 +22,30 @@
 package org.exist.storage;
 
 import java.io.File;
+import java.io.IOException;
 
-import junit.framework.TestCase;
-import junit.textui.TestRunner;
-
+import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
+import org.exist.collections.triggers.TriggerException;
+import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.test.TestConstants;
 import org.exist.util.Configuration;
+import org.exist.util.DatabaseConfigurationException;
+import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
+import org.junit.After;
+import org.junit.Test;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import static org.junit.Assert.assertNotNull;
+
 /**
- * TestCase: add a larger number of documents into a collection,
+ * Add a larger number of documents into a collection,
  * crash the database, restart, remove the collection and add some
  * more documents.
  * 
@@ -48,19 +55,16 @@ import org.xml.sax.SAXException;
  * @author wolf
  *
  */
-public class RecoveryTest3 extends TestCase {
-
-    public static void main(String[] args) {
-        TestRunner.run(RecoveryTest3.class);
-    }
+public class RecoveryTest3 {
     
     private final static int RESOURCE_COUNT = 5000;
     
     private static String directory = "/media/Shared/XML/movies";
     
     private static File dir = new File(directory);
-    
-    public void testStore() {
+
+    @Test
+    public void store() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, TriggerException, LockException {
         BrokerPool.FORCE_CORRUPTION = true;
         final BrokerPool pool = startDB();
         final TransactionManager transact = pool.getTransactionManager();
@@ -97,13 +101,11 @@ public class RecoveryTest3 extends TestCase {
             }
 
             transact.commit(transaction);
-	    } catch (Exception e) {
-            e.printStackTrace();
-	        fail(e.getMessage());             
         }
     }
-    
-    public void testRead() {
+
+    @Test
+    public void read() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, TriggerException, LockException {
 
     	BrokerPool.FORCE_CORRUPTION = false;
         final BrokerPool pool = startDB();
@@ -114,7 +116,7 @@ public class RecoveryTest3 extends TestCase {
             BrokerPool.FORCE_CORRUPTION = true;
             Collection root;
 
-            try(final Txn transaction = transact.beginTransaction()) {
+            try (final Txn transaction = transact.beginTransaction()) {
 
                 root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, Lock.WRITE_LOCK);
                 assertNotNull(root);
@@ -123,8 +125,8 @@ public class RecoveryTest3 extends TestCase {
 
                 transact.commit(transaction);
             }
-            
-            try(final Txn transaction = transact.beginTransaction()) {
+
+            try (final Txn transaction = transact.beginTransaction()) {
 
                 root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
                 assertNotNull(root);
@@ -155,46 +157,30 @@ public class RecoveryTest3 extends TestCase {
 
                 transact.commit(transaction);
             }
-	    } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
         }
     }
-    
-    public void testRead2() {
+
+    @Test
+    public void read2() throws DatabaseConfigurationException, EXistException {
         BrokerPool.FORCE_CORRUPTION = false;
-        BrokerPool pool = null;
-        DBBroker broker = null;
-        try {
-        	pool = startDB();
-        	assertNotNull(pool);        
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        BrokerPool pool = startDB();
+
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+
             assertNotNull(broker);
 
             //TODO : do something ?
-            
-	    } catch (Exception e) {
-            e.printStackTrace();
-	        fail(e.getMessage());              
-        } finally {
-            if (pool != null)
-                pool.release(broker);
-        }
+	    }
     }
     
-    protected BrokerPool startDB() {
-        try {
-            Configuration config = new Configuration();
-            BrokerPool.configure(1, 5, config);
-            return BrokerPool.getInstance();
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        }
-        return null;
+    protected BrokerPool startDB() throws DatabaseConfigurationException, EXistException {
+        Configuration config = new Configuration();
+        BrokerPool.configure(1, 5, config);
+        return BrokerPool.getInstance();
     }
 
-    protected void tearDown() {
+    @After
+    public void tearDown() {
         BrokerPool.stopAll(false);
     }
 

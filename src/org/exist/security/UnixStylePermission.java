@@ -489,7 +489,7 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
         }
         return false;
     }
-    
+
     public UnixStylePermission copy() {
         return new UnixStylePermission(sm, vector);
     }

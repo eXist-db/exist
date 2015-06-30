@@ -1,23 +1,21 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2014 The eXist Project
+ *  Copyright (C) 2001-2015 The eXist Project
  *  http://exist-db.org
- *  
+ *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
  *  as published by the Free Software Foundation; either version 2
  *  of the License, or (at your option) any later version.
- *  
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *  
- *  $Id$
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.config;
 
@@ -103,11 +101,8 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
                 try {
                 	final SecurityManager sm = broker.getBrokerPool().getSecurityManager();
                     ConverterFrom1_0.convert(sm, document);
-                } catch (final PermissionDeniedException pde) {
-                    LOG.error(pde.getMessage(), pde);
-                    //TODO : raise exception ? -pb
-                } catch (final EXistException ee) {
-                    LOG.error(ee.getMessage(), ee);
+                } catch (final PermissionDeniedException | EXistException e) {
+                    LOG.error(e.getMessage(), e);
                     //TODO : raise exception ? -pb
                 }
             }
@@ -126,11 +121,8 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
             try {
             	final SecurityManager sm = broker.getBrokerPool().getSecurityManager();
                 ConverterFrom1_0.convert(sm, document);
-            } catch (final PermissionDeniedException pde) {
-                LOG.error(pde.getMessage(), pde);
-                //TODO : raise exception ? -pb
-            } catch (final EXistException ee) {
-                LOG.error(ee.getMessage(), ee);
+            } catch (final PermissionDeniedException | EXistException e) {
+                LOG.error(e.getMessage(), e);
                 //TODO : raise exception ? -pb
             }
         }
@@ -231,16 +223,16 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
 
     @Override
     public void beforeDeleteDocument(final DBBroker broker, final Txn txn, final DocumentImpl document) throws TriggerException {
-        //Nothing to do
-    }
-
-    @Override
-    public void afterDeleteDocument(final DBBroker broker, final Txn txn, final XmldbURI uri) throws TriggerException {
-        final Configuration conf = Configurator.getConfigurtion(broker.getBrokerPool(), uri);
+        final Configuration conf = Configurator.getConfigurtion(broker.getBrokerPool(), document.getURI());
         if (conf != null) {
             Configurator.unregister(conf);
             //XXX: inform object that configuration was deleted
         }
+    }
+
+    @Override
+    public void afterDeleteDocument(final DBBroker broker, final Txn txn, final XmldbURI uri) throws TriggerException {
+        //Nothing to do
     }
 
 	@Override
@@ -299,7 +291,7 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
      * 2) If the principal uses a name or id which already exists in
      * the database then we must avoid conflicts
      */
-    private final void processPrincipal(final PrincipalType principalType) throws SAXException {
+    private void processPrincipal(final PrincipalType principalType) throws SAXException {
         final SAXEvent firstEvent = deferred.peek();
         if(!(firstEvent instanceof StartElement)) {
             throw new SAXException("Unbalanced SAX Events");

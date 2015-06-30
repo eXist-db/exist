@@ -6,14 +6,18 @@ package org.exist.xmldb;
 
 import java.util.ArrayList;
 
-import junit.textui.TestRunner;
-
 import org.exist.xquery.util.URIUtils;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.Service;
 import org.xmldb.api.base.XMLDBException;
+
+import static org.junit.Assert.*;
 
 /** A test case for accessing collections remotely
  * @author jmv
@@ -23,163 +27,123 @@ public class RemoteCollectionTest extends RemoteDBTest {
 
 	private final static String XML_CONTENT = "<xml/>";
 	private final static String BINARY_CONTENT = "TEXT";
-	
-	public RemoteCollectionTest(String name) {
-		super(name);
-	}
-	
-	protected void setUp() {
-		try {
-			//Don't worry about closing the server : the shutdownDB hook will do the job
-			initServer();
-			setUpRemoteDatabase();
-        } catch (Exception e) {            
-            fail(e.getMessage()); 
-        }
+
+	@Before
+	public void setUp() throws ClassNotFoundException, InstantiationException, XMLDBException, IllegalAccessException {
+		//Don't worry about closing the server : the shutdownDB hook will do the job
+		initServer();
+		setUpRemoteDatabase();
 	}
 
-  	protected void tearDown() {
-  		try {
-  			removeCollection();
-        } catch (Exception e) {            
-            fail(e.getMessage()); 
-        }
+    @After
+  	public void tearDown() {
+        removeCollection();
 	}
-  	
-    public void testIndexQueryService() {
+
+    @Ignore
+    @Test
+    public void indexQueryService() {
 		// TODO .............
 	}
 
-	public void testGetServices() {
-		try {
-		    Service[] services = getCollection().getServices();
-		    assertEquals(6, services.length);
-		    assertEquals(RemoteXPathQueryService.class, services[0].getClass());
-		    assertEquals(RemoteCollectionManagementService.class, services[1].getClass());
-		    assertEquals(RemoteUserManagementService.class, services[2].getClass());
-		    assertEquals(RemoteDatabaseInstanceManager.class, services[3].getClass());
-		    assertEquals(RemoteIndexQueryService.class, services[4].getClass());
-		    assertEquals(RemoteXUpdateQueryService.class, services[5].getClass());
+    @Test
+	public void getServices() throws XMLDBException {
+        Service[] services = getCollection().getServices();
+        assertEquals(6, services.length);
+        assertEquals(RemoteXPathQueryService.class, services[0].getClass());
+        assertEquals(RemoteCollectionManagementService.class, services[1].getClass());
+        assertEquals(RemoteUserManagementService.class, services[2].getClass());
+        assertEquals(RemoteDatabaseInstanceManager.class, services[3].getClass());
+        assertEquals(RemoteIndexQueryService.class, services[4].getClass());
+        assertEquals(RemoteXUpdateQueryService.class, services[5].getClass());
+	}
 
-        } catch (Exception e) {            
-            fail(e.getMessage()); 
+    @Test
+	public void isRemoteCollection() throws XMLDBException {
+        assertTrue(getCollection().isRemoteCollection());
+	}
+
+    @Test
+	public void getPath() throws XMLDBException {
+        assertEquals(XmldbURI.ROOT_COLLECTION + "/" + getTestCollectionName(), URIUtils.urlDecodeUtf8(getCollection().getPath()));
+	}
+
+    @Test
+	public void createResource() throws XMLDBException {
+        Collection collection = getCollection();
+        { // XML resource:
+            Resource resource = collection.createResource("testresource", "XMLResource");
+            assertNotNull(resource);
+            assertEquals(collection, resource.getParentCollection());
+            resource.setContent("<?xml version='1.0'?><xml/>");
+            collection.storeResource(resource);
+        }
+        { // binary resource:
+            Resource resource = collection.createResource("testresource", "BinaryResource");
+            assertNotNull(resource);
+            assertEquals(collection, resource.getParentCollection());
+            resource.setContent("some random binary data here :-)");
+            collection.storeResource(resource);
         }
 	}
-	
-	public void testIsRemoteCollection() {
-		try {
-			assertTrue(getCollection().isRemoteCollection());
-        } catch (Exception e) {            
-            fail(e.getMessage()); 
-        }
+
+    @Test
+	public void getNonExistentResource() throws XMLDBException {
+        Collection collection = getCollection();
+        Resource resource = collection.getResource("unknown.xml");
+        assertNull(resource);
 	}
-	
-	public void testGetPath() {
-		try {
-			assertEquals(XmldbURI.ROOT_COLLECTION + "/" + getTestCollectionName(), URIUtils.urlDecodeUtf8(getCollection().getPath()));
-        } catch (Exception e) {            
-            fail(e.getMessage()); 
+
+    @Test
+	public void listResources() throws XMLDBException {
+        ArrayList<String> xmlNames = new ArrayList<>();
+        xmlNames.add("xml1");
+        xmlNames.add("xml2");
+        xmlNames.add("xml3");
+        createResources(xmlNames, "XMLResource");
+
+        ArrayList<String> binaryNames = new ArrayList<>();
+        binaryNames.add("b1");
+        binaryNames.add("b2");
+        createResources(binaryNames, "BinaryResource");
+
+        String[] actualContents = getCollection().listResources();
+        for (int i = 0; i < actualContents.length; i++) {
+            xmlNames.remove(actualContents[i]);
+            binaryNames.remove(actualContents[i]);
         }
-	}
-	
-	public void testCreateResource() {
-		try {
-		    Collection collection = getCollection();
-		    { // XML resource:
-		        Resource resource = collection.createResource("testresource", "XMLResource");
-			    assertNotNull(resource);
-			    assertEquals(collection, resource.getParentCollection());
-			    resource.setContent("<?xml version='1.0'?><xml/>");
-			    collection.storeResource(resource);
-		    }
-		    { // binary resource:
-		        Resource resource = collection.createResource("testresource", "BinaryResource");
-			    assertNotNull(resource);
-			    assertEquals(collection, resource.getParentCollection());
-			    resource.setContent("some random binary data here :-)");
-			    collection.storeResource(resource);
-		    }
-        } catch (Exception e) {            
-            fail(e.getMessage()); 
-        }
-	}
-	
-	public void testGetNonExistentResource() {
-		try {
-			Collection collection = getCollection();
-			Resource resource = collection.getResource("unknown.xml");
-			assertNull(resource);
-        } catch (Exception e) {            
-            fail(e.getMessage()); 
-        }
-	}
-	
-	public void testListResources() {
-		try {
-		    ArrayList<String> xmlNames = new ArrayList<>();
-		    xmlNames.add("xml1");
-		    xmlNames.add("xml2");
-		    xmlNames.add("xml3");
-		    createResources(xmlNames, "XMLResource");
-		    
-		    ArrayList<String> binaryNames = new ArrayList<>();
-		    binaryNames.add("b1");
-		    binaryNames.add("b2");
-		    createResources(binaryNames, "BinaryResource");
-	
-		    String[] actualContents = getCollection().listResources();
-		    for (int i = 0; i < actualContents.length; i++) {
-		        xmlNames.remove(actualContents[i]);
-		        binaryNames.remove(actualContents[i]);
-		    }
-		    assertEquals(0, xmlNames.size());
-		    assertEquals(0, binaryNames.size());
-        } catch (Exception e) {            
-            fail(e.getMessage()); 
-        }	        
+        assertEquals(0, xmlNames.size());
+        assertEquals(0, binaryNames.size());
 	}
 	
 	/**
 	 * Trying to access a collection where the parent collection does
 	 * not exist caused NullPointerException on DatabaseManager.getCollection() method.
-	 */ 
-	public void testParent() {
-		try {
-			Collection c = DatabaseManager.getCollection(URI + XmldbURI.ROOT_COLLECTION, "admin", "");
-			assertNull(c.getChildCollection("b"));
+	 */
+    @Test
+	public void parent() throws XMLDBException {
+        Collection c = DatabaseManager.getCollection(URI + XmldbURI.ROOT_COLLECTION, "admin", "");
+        assertNull(c.getChildCollection("b"));
 
-			String parentName = c.getName() + "/" + System.currentTimeMillis();
-			String colName = parentName + "/a";
-			c = DatabaseManager.getCollection(URI + parentName, "admin", null);
-			assertNull(c);
-			
-			// following fails for XmlDb 20051203
-			c = DatabaseManager.getCollection(URI + colName, "admin", null);
-			assertNull(c);
-		} catch (XMLDBException xe) {
-			System.err.println("Unexpected Exception occured: " + xe.getMessage());
-			xe.printStackTrace();
-		}
+        String parentName = c.getName() + "/" + System.currentTimeMillis();
+        String colName = parentName + "/a";
+        c = DatabaseManager.getCollection(URI + parentName, "admin", null);
+        assertNull(c);
+
+        // following fails for XmlDb 20051203
+        c = DatabaseManager.getCollection(URI + colName, "admin", null);
+        assertNull(c);
 	}
 	
-    private void createResources(ArrayList<String> names, String type) {
-    	try {
-	        for (String name : names) {
-	            Resource res = getCollection().createResource(name, type);
-	            if(type.equals("XMLResource"))
-	            	res.setContent(XML_CONTENT);
-	            else
-	            	res.setContent(BINARY_CONTENT);
-	            getCollection().storeResource(res);
-	        }
-        } catch (Exception e) {            
-            fail(e.getMessage()); 
+    private void createResources(ArrayList<String> names, String type) throws XMLDBException {
+        for (String name : names) {
+            Resource res = getCollection().createResource(name, type);
+            if(type.equals("XMLResource")) {
+                res.setContent(XML_CONTENT);
+            } else {
+                res.setContent(BINARY_CONTENT);
+            }
+            getCollection().storeResource(res);
         }
     }
-
-    public static void main(String[] args) {
-		TestRunner.run(RemoteCollectionTest.class);
-		//Explicit shutdownDB for the shutdownDB hook
-		System.exit(0);
-	}
 }

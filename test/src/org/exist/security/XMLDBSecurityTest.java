@@ -7,6 +7,7 @@ import org.exist.security.internal.aider.UserAider;
 import org.exist.xmldb.CollectionManagementServiceImpl;
 import org.exist.xmldb.UserManagementService;
 import org.exist.xmldb.XPathQueryServiceImpl;
+import org.exist.xmldb.XmldbURI;
 import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.*;
@@ -37,7 +38,7 @@ public class XMLDBSecurityTest {
             { "local", "xmldb:exist://" },
             { "remote", "xmldb:exist://localhost:" + System.getProperty("jetty.port", "8088") + "/xmlrpc" }
         });
-    };
+    }
     
     @Parameter
     public String apiName;
@@ -1198,6 +1199,42 @@ public class XMLDBSecurityTest {
         assertEquals("users", permissions.getGroup().getName());
     }
 
+    @Test
+    public void copyCollection_doesPreservePermissionsOfSubDocuments() throws XMLDBException {
+        final Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
+        CollectionManagementServiceImpl cms = (CollectionManagementServiceImpl) test.getService("CollectionManagementService", "1.0");
+
+        cms.copy(XmldbURI.create("/db/securityTest1"), XmldbURI.create("/db/securityTest3"), XmldbURI.create("copy-of-securityTest1"));
+
+        final Collection testCopy = DatabaseManager.getCollection(baseUri + "/db/securityTest3/copy-of-securityTest1", "test1", "test1");
+
+        final UserManagementService ums = (UserManagementService) testCopy.getService("UserManagementService", "1.0");
+        final Resource resource = testCopy.getResource("test.xml");
+        final Permission permissions = ums.getPermissions(resource);
+
+        assertEquals("test1", permissions.getOwner().getName());
+        assertEquals("users", permissions.getGroup().getName());
+        assertEquals(0770, permissions.getMode());
+    }
+    
+    @Test
+    public void copyCollection_doesPreservePermissionsOfSubCollections() throws XMLDBException {
+        final Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
+        CollectionManagementServiceImpl cms = (CollectionManagementServiceImpl) test.getService("CollectionManagementService", "1.0");
+
+        cms.copy(XmldbURI.create("/db/securityTest1"), XmldbURI.create("/db/securityTest3"), XmldbURI.create("copy-of-securityTest1"));
+
+        final Collection testCopy = DatabaseManager.getCollection(baseUri + "/db/securityTest3/copy-of-securityTest1", "test1", "test1");
+
+        final Collection sub1 = testCopy.getChildCollection("sub1");
+        final UserManagementService ums = (UserManagementService) sub1.getService("UserManagementService", "1.0");
+        final Permission permissions = ums.getPermissions(sub1);
+
+        assertEquals("test1", permissions.getOwner().getName());
+        assertEquals("users", permissions.getGroup().getName());
+        assertEquals(0777, permissions.getMode());
+    }
+    
     /**
      * As the 'test1' user, creates the collection and resource:
      *
@@ -1871,6 +1908,15 @@ public class XMLDBSecurityTest {
         //change ownership to test3
         final Account test3 = ums.getAccount("test3");
         ums.chown(test3, "users");
+        // full permissions for all
+        ums.chmod(0777);
+
+        // create a collection /db/securityTest1 as user "sub1"
+        cms = (CollectionManagementService)test.getService("CollectionManagementService", "1.0");
+        Collection sub1 = cms.createCollection("sub1");
+        ums = (UserManagementService) sub1.getService("UserManagementService", "1.0");
+        //change ownership to test1
+        ums.chown(test1, "users");
         // full permissions for all
         ums.chmod(0777);
     }

@@ -19,6 +19,9 @@
  */
 package org.exist.indexing.lucene;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
@@ -1193,6 +1196,7 @@ public class LuceneIndexTest {
             docs.add(info.getDocument());
             transact.commit(transaction);
         }
+        
         return docs;
     }
 
@@ -1225,6 +1229,7 @@ public class LuceneIndexTest {
             }
             transact.commit(transaction);
         }
+        
         return docs;
     }
 
@@ -1265,7 +1270,6 @@ public class LuceneIndexTest {
 
     @After
     public void cleanup() throws EXistException, PermissionDeniedException, IOException, TriggerException {
-        final BrokerPool pool = BrokerPool.getInstance();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
                 final Txn transaction = transact.beginTransaction()) {

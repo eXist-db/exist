@@ -840,6 +840,9 @@ public interface RpcAPI {
     List<Date> getTimestamps(String documentName)
             throws PermissionDeniedException, EXistException, URISyntaxException;
 
+    boolean setLastModified(final String documentPath, final long lastModified)
+            throws EXistException, PermissionDeniedException;
+
     boolean copyCollection(String name, String namedest)
             throws PermissionDeniedException, EXistException;
 

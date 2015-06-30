@@ -22,18 +22,24 @@
  */
 package org.exist.storage;
 
-import java.util.Map.Entry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exist.http.servlets.RequestWrapper;
+import org.exist.http.urlrewrite.XQueryURLRewrite;
+import org.exist.xquery.Variable;
+import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryWatchDog;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
+import org.exist.xquery.functions.request.RequestModule;
 import org.exist.xquery.util.ExpressionDumper;
+import org.exist.xquery.value.JavaObjectValue;
+import org.exist.xquery.value.Type;
+
+import java.util.*;
+import java.util.concurrent.DelayQueue;
+import java.util.concurrent.Delayed;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.StreamSupport;
 
 /**
  * Class to keep track of all running queries in a database instance. The main
@@ -61,14 +67,21 @@ public class ProcessMonitor {
 
     private final static Logger LOG = LogManager.getLogger(ProcessMonitor.class);
 
-    private final static int MAX_QUERY_HISTORY = 16; //The maximum number of queries to record history for
+    public final static long QUERY_HISTORY_TIMEOUT = 2 * 60 * 1000; // 2 minutes
+    public final static long MIN_TIME = 100;
 
     private final Set<XQueryWatchDog> runningQueries = new HashSet<XQueryWatchDog>();
-    private final Map<String, QueryHistory> queryHistories = new FixedSizeLinkedHashMap<String, QueryHistory>(MAX_QUERY_HISTORY);
+    private final DelayQueue<QueryHistory> history = new DelayQueue<>();
 
     private Map<Thread, JobInfo> processes = new HashMap<Thread, JobInfo>();
 
     private long maxShutdownWait;
+
+    private long historyTimespan = QUERY_HISTORY_TIMEOUT;
+
+    private long minTime = MIN_TIME;
+
+    private boolean trackRequests = false;
 
 	public ProcessMonitor(long maxShutdownWait) {
 		this.maxShutdownWait = maxShutdownWait;
@@ -132,61 +145,95 @@ public class ProcessMonitor {
 
     public void queryStarted(XQueryWatchDog watchdog) {
         synchronized (runningQueries) {
+            watchdog.setRunningThread(Thread.currentThread().getName());
             runningQueries.add(watchdog);
         }
     }
 	
     public void queryCompleted(XQueryWatchDog watchdog) {
+        boolean found;
         synchronized (runningQueries) {
-            runningQueries.remove(watchdog);
+            found = runningQueries.remove(watchdog);
         }
 
-        final String sourceKey = watchdog.getContext().getXacmlSource().getKey();
-        synchronized(queryHistories) {
-            QueryHistory qh = queryHistories.get(sourceKey);
-            if(qh == null) {
-                qh = new QueryHistory(sourceKey);
+        // add to query history if elapsed time > minTime
+        final long elapsed = System.currentTimeMillis() - watchdog.getStartTime();
+        if (found && elapsed > minTime) {
+            synchronized (history) {
+                final String sourceKey = watchdog.getContext().getXacmlSource().getKey();
+                QueryHistory qh = new QueryHistory(sourceKey, historyTimespan);
+                qh.setMostRecentExecutionTime(watchdog.getStartTime());
+                qh.setMostRecentExecutionDuration(elapsed);
+                qh.incrementInvocationCount();
+                if (trackRequests) {
+                    qh.setRequestURI(getRequestURI(watchdog));
+                }
+                history.add(qh);
+                cleanHistory();
             }
-
-            qh.setMostRecentExecutionTime(watchdog.getStartTime());
-            qh.setMostRecentExecutionDuration(System.currentTimeMillis() - watchdog.getStartTime());
-            qh.incrementInvocationCount();
-
-            queryHistories.put(sourceKey, qh);
         }
     }
 
+    private void cleanHistory() {
+        // remove timed out entries
+        while (history.poll() != null);
+    }
+
     /**
-     * Linked HashMap that has a fixed size
+     * The max duration (in milliseconds) for which queries are tracked in the query history. Older queries
+     * will be removed (default is {@link #QUERY_HISTORY_TIMEOUT}).
      *
-     * Oldest items are removed when new items are added
-     * if the max size is exceeded
+     * @param time max duration in ms
      */
-    public class FixedSizeLinkedHashMap<K,V> extends LinkedHashMap<K,V> {
+    public void setHistoryTimespan(long time) {
+        historyTimespan = time;
+    }
 
-        private final int maxSize;
+    public long getHistoryTimespan() {
+        return historyTimespan;
+    }
 
-        public FixedSizeLinkedHashMap(int maxSize) {
-            super(maxSize);
-            this.maxSize = maxSize;
-        }
+    /**
+     * The minimum duration of a query (in milliseconds) to be added to the query history. Use this to filter out
+     * very short-running queries (default is {@link #MIN_TIME}).
+     *
+     * @param time min duration in ms
+     */
+    public void setMinTime(long time) {
+        this.minTime = time;
+    }
 
-        @Override
-        protected boolean removeEldestEntry(Entry<K, V> entry) {
-            return size() >= maxSize;
-        }
-     }
+    public long getMinTime() {
+        return minTime;
+    }
 
+    /**
+     * Set to true if the class should attempt to determine the HTTP URI through which the query was triggered.
+     * This is an important piece of information for diagnosis, but gathering it might be expensive, so request
+     * URI tracking is disabled by default.
+     *
+     * @param track attempt to track URIs if true
+     */
+    public void setTrackRequestURI(boolean track) {
+        trackRequests = track;
+    }
 
-    public class QueryHistory {
+    public boolean getTrackRequestURI() {
+        return trackRequests;
+    }
+
+    public class QueryHistory implements Delayed {
 
         private final String source;
+        private String requestURI = null;
         private long mostRecentExecutionTime;
         private long mostRecentExecutionDuration;
         private int invocationCount = 0;
+        private long expires;
 
-        public QueryHistory(String source) {
+        public QueryHistory(String source, long delay) {
             this.source = source;
+            this.expires = System.currentTimeMillis() + delay;
         }
 
         public String getSource() {
@@ -216,11 +263,40 @@ public class ProcessMonitor {
         public void setMostRecentExecutionDuration(long mostRecentExecutionDuration) {
             this.mostRecentExecutionDuration = mostRecentExecutionDuration;
         }
+
+        public String getRequestURI() {
+            return requestURI;
+        }
+
+        public void setRequestURI(String uri) {
+            requestURI = uri;
+        }
+
+        @Override
+        public long getDelay(TimeUnit unit) {
+            return unit.convert(expires - System.currentTimeMillis(), TimeUnit.MILLISECONDS);
+        }
+
+        @Override
+        public int compareTo(Delayed o) {
+            if (expires < ((QueryHistory) o).expires) {
+                return -1;
+            }
+            if (expires > ((QueryHistory) o).expires) {
+                return 1;
+            }
+            return 0;
+        }
     }
 
     public QueryHistory[] getRecentQueryHistory() {
-        final QueryHistory result[] = new QueryHistory[queryHistories.size()];
-        return (QueryHistory[])queryHistories.values().toArray(result);
+        synchronized (history) {
+            cleanHistory();
+            return
+                history.stream()
+                    .sorted((o1, o2) -> o1.expires > o2.expires ? -1 : (o1.expires < o2.expires ? 1 : 0))
+                    .toArray(QueryHistory[]::new);
+        }
     }
 
 	
@@ -236,12 +312,7 @@ public class ProcessMonitor {
 	public XQueryWatchDog[] getRunningXQueries()
 	{
         synchronized (runningQueries) {
-            final XQueryWatchDog watchdogs[] = new XQueryWatchDog[runningQueries.size()];
-            int j = 0;
-            for (final Iterator<XQueryWatchDog> i = runningQueries.iterator(); i.hasNext(); j++) {
-                watchdogs[j] = i.next();
-            }
-            return watchdogs;
+            return runningQueries.stream().toArray(XQueryWatchDog[]::new);
         }
 	}
 
@@ -300,4 +371,49 @@ public class ProcessMonitor {
             }
         }
 	}
+
+    /**
+     * Try to figure out the HTTP request URI by which a query was called.
+     * Request tracking is not enabled unless {@link #setTrackRequestURI(boolean)}
+     * is called.
+     *
+     * @param watchdog
+     * @return
+     */
+    public static String getRequestURI(XQueryWatchDog watchdog) {
+        final RequestModule reqModule = (RequestModule)watchdog.getContext().getModule(RequestModule.NAMESPACE_URI);
+        if (reqModule == null) {
+            return null;
+        }
+        try {
+            final Variable var = reqModule.resolveVariable(RequestModule.REQUEST_VAR);
+            if(var == null || var.getValue() == null) {
+                return null;
+            }
+
+            if (var.getValue().getItemType() != Type.JAVA_OBJECT) {
+                return null;
+            }
+
+            final JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
+            if (value.getObject() instanceof RequestWrapper) {
+                final RequestWrapper wrapper = (RequestWrapper) value.getObject();
+                final Object attr = wrapper.getAttribute(XQueryURLRewrite.RQ_ATTR_REQUEST_URI);
+                String uri;
+                if (attr == null) {
+                    uri = wrapper.getRequestURI();
+                } else {
+                    uri = attr.toString();
+                }
+                String queryString = wrapper.getQueryString();
+                if (queryString != null) {
+                    uri += "?" + queryString;
+                }
+                return uri;
+            }
+        } catch (XPathException e) {
+            // ignore and return null
+        }
+        return null;
+    }
 }

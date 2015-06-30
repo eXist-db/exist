@@ -1,5 +1,6 @@
 package org.exist.xslt;
 
+import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collection;
 import org.junit.runners.Parameterized.Parameters;
@@ -15,6 +16,7 @@ import org.junit.Test;
 import static org.easymock.classextension.EasyMock.expect;
 import static org.easymock.classextension.EasyMock.verify;
 import static org.easymock.classextension.EasyMock.replay;
+import org.junit.After;
 import static org.junit.Assert.assertEquals;
 import org.junit.runners.Parameterized.Parameter;
 
@@ -55,5 +57,12 @@ public class TransfomerFactoryAllocatorTest {
         assertEquals(transformerFactoryClass, transformerFactory.getClass().getName());
 
         verify(mockBrokerPool, mockConfiguration);
+    }
+
+    @After
+    public void resetTransformerFactoryAllocatorSingleton() throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+        Field field = TransformerFactoryAllocator.class.getDeclaredField("saxTransformerFactory");
+        field.setAccessible(true);
+        field.set(null, null);
     }
 }

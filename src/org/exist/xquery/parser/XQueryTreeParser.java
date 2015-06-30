@@ -538,11 +538,11 @@ public XQueryTreeParser() {
 					case LITERAL_div:
 					case LITERAL_idiv:
 					case LITERAL_mod:
+					case BANG:
 					case LITERAL_intersect:
 					case LITERAL_except:
 					case SLASH:
 					case DSLASH:
-					case BANG:
 					case LITERAL_text:
 					case LITERAL_node:
 					case LITERAL_attribute:
@@ -727,11 +727,11 @@ public XQueryTreeParser() {
 					case LITERAL_div:
 					case LITERAL_idiv:
 					case LITERAL_mod:
+					case BANG:
 					case LITERAL_intersect:
 					case LITERAL_except:
 					case SLASH:
 					case DSLASH:
-					case BANG:
 					case LITERAL_text:
 					case LITERAL_node:
 					case LITERAL_attribute:
@@ -954,11 +954,11 @@ public XQueryTreeParser() {
 							case LITERAL_div:
 							case LITERAL_idiv:
 							case LITERAL_mod:
+							case BANG:
 							case LITERAL_intersect:
 							case LITERAL_except:
 							case SLASH:
 							case DSLASH:
-							case BANG:
 							case LITERAL_text:
 							case LITERAL_node:
 							case LITERAL_attribute:
@@ -1068,11 +1068,11 @@ public XQueryTreeParser() {
 						case LITERAL_div:
 						case LITERAL_idiv:
 						case LITERAL_mod:
+						case BANG:
 						case LITERAL_intersect:
 						case LITERAL_except:
 						case SLASH:
 						case DSLASH:
-						case BANG:
 						case LITERAL_text:
 						case LITERAL_node:
 						case LITERAL_attribute:
@@ -1182,11 +1182,11 @@ public XQueryTreeParser() {
 					case LITERAL_div:
 					case LITERAL_idiv:
 					case LITERAL_mod:
+					case BANG:
 					case LITERAL_intersect:
 					case LITERAL_except:
 					case SLASH:
 					case DSLASH:
-					case BANG:
 					case LITERAL_text:
 					case LITERAL_node:
 					case LITERAL_attribute:
@@ -1374,11 +1374,11 @@ public XQueryTreeParser() {
 							case LITERAL_div:
 							case LITERAL_idiv:
 							case LITERAL_mod:
+							case BANG:
 							case LITERAL_intersect:
 							case LITERAL_except:
 							case SLASH:
 							case DSLASH:
-							case BANG:
 							case LITERAL_text:
 							case LITERAL_node:
 							case LITERAL_attribute:
@@ -1497,11 +1497,11 @@ public XQueryTreeParser() {
 							case LITERAL_div:
 							case LITERAL_idiv:
 							case LITERAL_mod:
+							case BANG:
 							case LITERAL_intersect:
 							case LITERAL_except:
 							case SLASH:
 							case DSLASH:
-							case BANG:
 							case LITERAL_text:
 							case LITERAL_node:
 							case LITERAL_attribute:
@@ -1668,11 +1668,11 @@ public XQueryTreeParser() {
 							case LITERAL_div:
 							case LITERAL_idiv:
 							case LITERAL_mod:
+							case BANG:
 							case LITERAL_intersect:
 							case LITERAL_except:
 							case SLASH:
 							case DSLASH:
-							case BANG:
 							case LITERAL_text:
 							case LITERAL_node:
 							case LITERAL_attribute:
@@ -1827,11 +1827,11 @@ public XQueryTreeParser() {
 			case LITERAL_div:
 			case LITERAL_idiv:
 			case LITERAL_mod:
+			case BANG:
 			case LITERAL_intersect:
 			case LITERAL_except:
 			case SLASH:
 			case DSLASH:
-			case BANG:
 			case LITERAL_text:
 			case LITERAL_node:
 			case LITERAL_attribute:
@@ -1976,11 +1976,11 @@ public XQueryTreeParser() {
 						case LITERAL_div:
 						case LITERAL_idiv:
 						case LITERAL_mod:
+						case BANG:
 						case LITERAL_intersect:
 						case LITERAL_except:
 						case SLASH:
 						case DSLASH:
-						case BANG:
 						case LITERAL_text:
 						case LITERAL_node:
 						case LITERAL_attribute:
@@ -2161,11 +2161,11 @@ public XQueryTreeParser() {
 			case LITERAL_div:
 			case LITERAL_idiv:
 			case LITERAL_mod:
+			case BANG:
 			case LITERAL_intersect:
 			case LITERAL_except:
 			case SLASH:
 			case DSLASH:
-			case BANG:
 			case LITERAL_text:
 			case LITERAL_node:
 			case LITERAL_attribute:
@@ -2342,11 +2342,11 @@ public XQueryTreeParser() {
 						case LITERAL_div:
 						case LITERAL_idiv:
 						case LITERAL_mod:
+						case BANG:
 						case LITERAL_intersect:
 						case LITERAL_except:
 						case SLASH:
 						case DSLASH:
-						case BANG:
 						case LITERAL_text:
 						case LITERAL_node:
 						case LITERAL_attribute:
@@ -2500,11 +2500,11 @@ public XQueryTreeParser() {
 						case LITERAL_div:
 						case LITERAL_idiv:
 						case LITERAL_mod:
+						case BANG:
 						case LITERAL_intersect:
 						case LITERAL_except:
 						case SLASH:
 						case DSLASH:
-						case BANG:
 						case LITERAL_text:
 						case LITERAL_node:
 						case LITERAL_attribute:
@@ -2629,11 +2629,11 @@ public XQueryTreeParser() {
 						case LITERAL_div:
 						case LITERAL_idiv:
 						case LITERAL_mod:
+						case BANG:
 						case LITERAL_intersect:
 						case LITERAL_except:
 						case SLASH:
 						case DSLASH:
-						case BANG:
 						case LITERAL_text:
 						case LITERAL_node:
 						case LITERAL_attribute:
@@ -2753,11 +2753,11 @@ public XQueryTreeParser() {
 			case LITERAL_div:
 			case LITERAL_idiv:
 			case LITERAL_mod:
+			case BANG:
 			case LITERAL_intersect:
 			case LITERAL_except:
 			case SLASH:
 			case DSLASH:
-			case BANG:
 			case LITERAL_text:
 			case LITERAL_node:
 			case LITERAL_attribute:
@@ -3174,11 +3174,11 @@ public XQueryTreeParser() {
 			case LITERAL_div:
 			case LITERAL_idiv:
 			case LITERAL_mod:
+			case BANG:
 			case LITERAL_intersect:
 			case LITERAL_except:
 			case SLASH:
 			case DSLASH:
-			case BANG:
 			case LITERAL_text:
 			case LITERAL_node:
 			case LITERAL_attribute:
@@ -3427,11 +3427,11 @@ public XQueryTreeParser() {
 			case LITERAL_div:
 			case LITERAL_idiv:
 			case LITERAL_mod:
+			case BANG:
 			case LITERAL_intersect:
 			case LITERAL_except:
 			case SLASH:
 			case DSLASH:
-			case BANG:
 			case LITERAL_text:
 			case LITERAL_node:
 			case LITERAL_attribute:
@@ -3562,11 +3562,11 @@ public XQueryTreeParser() {
 			case LITERAL_div:
 			case LITERAL_idiv:
 			case LITERAL_mod:
+			case BANG:
 			case LITERAL_intersect:
 			case LITERAL_except:
 			case SLASH:
 			case DSLASH:
-			case BANG:
 			case LITERAL_text:
 			case LITERAL_node:
 			case LITERAL_attribute:
@@ -3599,7 +3599,7 @@ public XQueryTreeParser() {
 								if (step instanceof LocationStep) {
 									LocationStep s= (LocationStep) step;
 									if (s.getAxis() == Constants.ATTRIBUTE_AXIS ||
-										s.getTest().getType() == Type.ATTRIBUTE)
+										(s.getTest().getType() == Type.ATTRIBUTE && s.getAxis() == Constants.CHILD_AXIS))
 										// combines descendant-or-self::node()/attribute:*
 										s.setAxis(Constants.DESCENDANT_ATTRIBUTE_AXIS);
 									else {
@@ -3721,9 +3721,9 @@ public XQueryTreeParser() {
 		case LITERAL_element:
 		case LITERAL_preceding:
 		case LITERAL_following:
+		case BANG:
 		case SLASH:
 		case DSLASH:
-		case BANG:
 		case LITERAL_text:
 		case LITERAL_node:
 		case LITERAL_attribute:
@@ -3961,11 +3961,11 @@ public XQueryTreeParser() {
 		case LITERAL_div:
 		case LITERAL_idiv:
 		case LITERAL_mod:
+		case BANG:
 		case LITERAL_intersect:
 		case LITERAL_except:
 		case SLASH:
 		case DSLASH:
-		case BANG:
 		case LITERAL_text:
 		case LITERAL_node:
 		case LITERAL_attribute:
@@ -4097,11 +4097,11 @@ public XQueryTreeParser() {
 		case LITERAL_div:
 		case LITERAL_idiv:
 		case LITERAL_mod:
+		case BANG:
 		case LITERAL_intersect:
 		case LITERAL_except:
 		case SLASH:
 		case DSLASH:
-		case BANG:
 		case LITERAL_text:
 		case LITERAL_node:
 		case LITERAL_attribute:
@@ -4691,11 +4691,11 @@ public XQueryTreeParser() {
 				case LITERAL_div:
 				case LITERAL_idiv:
 				case LITERAL_mod:
+				case BANG:
 				case LITERAL_intersect:
 				case LITERAL_except:
 				case SLASH:
 				case DSLASH:
-				case BANG:
 				case LITERAL_text:
 				case LITERAL_node:
 				case LITERAL_attribute:
@@ -4806,11 +4806,11 @@ public XQueryTreeParser() {
 				case LITERAL_div:
 				case LITERAL_idiv:
 				case LITERAL_mod:
+				case BANG:
 				case LITERAL_intersect:
 				case LITERAL_except:
 				case SLASH:
 				case DSLASH:
-				case BANG:
 				case LITERAL_text:
 				case LITERAL_node:
 				case LITERAL_attribute:
@@ -7119,11 +7119,11 @@ public XQueryTreeParser() {
 			case LITERAL_div:
 			case LITERAL_idiv:
 			case LITERAL_mod:
+			case BANG:
 			case LITERAL_intersect:
 			case LITERAL_except:
 			case SLASH:
 			case DSLASH:
-			case BANG:
 			case LITERAL_text:
 			case LITERAL_node:
 			case LITERAL_attribute:
@@ -7287,6 +7287,7 @@ public XQueryTreeParser() {
 			Expression rightStep= null;
 			step= null;
 			int axis= Constants.CHILD_AXIS;
+			boolean axisGiven = false;
 		
 		
 		if (_t==null) _t=ASTNULL;
@@ -7333,6 +7334,7 @@ public XQueryTreeParser() {
 			{
 				axis=forwardAxis(_t);
 				_t = _retTree;
+				axisGiven = true;
 				break;
 			}
 			case EQNAME:
@@ -7557,6 +7559,10 @@ public XQueryTreeParser() {
 				
 								test= new TypeTest(Type.ATTRIBUTE);
 								ast = att;
+				
+				if (!axisGiven) {
+								    axis= Constants.ATTRIBUTE_AXIS;
+				}
 							
 				{
 				if (_t==null) _t=ASTNULL;
@@ -7570,7 +7576,6 @@ public XQueryTreeParser() {
 										QName qname = QName.parse(staticContext, eq3.getText());
 										qname = new QName(qname, ElementValue.ATTRIBUTE);
 										test= new NameTest(Type.ATTRIBUTE, qname);
-										axis= Constants.ATTRIBUTE_AXIS;
 									
 					break;
 				}
@@ -8054,11 +8059,11 @@ public XQueryTreeParser() {
 			case LITERAL_div:
 			case LITERAL_idiv:
 			case LITERAL_mod:
+			case BANG:
 			case LITERAL_intersect:
 			case LITERAL_except:
 			case SLASH:
 			case DSLASH:
-			case BANG:
 			case LITERAL_text:
 			case LITERAL_node:
 			case LITERAL_attribute:
@@ -8204,11 +8209,11 @@ public XQueryTreeParser() {
 			case LITERAL_div:
 			case LITERAL_idiv:
 			case LITERAL_mod:
+			case BANG:
 			case LITERAL_intersect:
 			case LITERAL_except:
 			case SLASH:
 			case DSLASH:
-			case BANG:
 			case LITERAL_text:
 			case LITERAL_node:
 			case LITERAL_attribute:
@@ -8241,7 +8246,7 @@ public XQueryTreeParser() {
 								if (rightStep instanceof LocationStep) {
 									LocationStep rs= (LocationStep) rightStep;
 									if (rs.getAxis() == Constants.ATTRIBUTE_AXIS || 
-										rs.getTest().getType() == Type.ATTRIBUTE) {
+										(rs.getTest().getType() == Type.ATTRIBUTE && rs.getAxis() == Constants.CHILD_AXIS)) {
 										rs.setAxis(Constants.DESCENDANT_ATTRIBUTE_AXIS);
 									} else if (rs.getAxis() == Constants.CHILD_AXIS && rs.getTest().isWildcardTest()) {
 										rs.setAxis(Constants.DESCENDANT_AXIS);
@@ -8734,11 +8739,11 @@ public XQueryTreeParser() {
 		case LITERAL_div:
 		case LITERAL_idiv:
 		case LITERAL_mod:
+		case BANG:
 		case LITERAL_intersect:
 		case LITERAL_except:
 		case SLASH:
 		case DSLASH:
-		case BANG:
 		case LITERAL_text:
 		case LITERAL_node:
 		case LITERAL_attribute:
@@ -8965,11 +8970,11 @@ public XQueryTreeParser() {
 			case LITERAL_div:
 			case LITERAL_idiv:
 			case LITERAL_mod:
+			case BANG:
 			case LITERAL_intersect:
 			case LITERAL_except:
 			case SLASH:
 			case DSLASH:
-			case BANG:
 			case LITERAL_text:
 			case LITERAL_node:
 			case LITERAL_attribute:
@@ -9118,11 +9123,11 @@ public XQueryTreeParser() {
 			case LITERAL_div:
 			case LITERAL_idiv:
 			case LITERAL_mod:
+			case BANG:
 			case LITERAL_intersect:
 			case LITERAL_except:
 			case SLASH:
 			case DSLASH:
-			case BANG:
 			case LITERAL_text:
 			case LITERAL_node:
 			case LITERAL_attribute:
@@ -9266,11 +9271,11 @@ public XQueryTreeParser() {
 			case LITERAL_div:
 			case LITERAL_idiv:
 			case LITERAL_mod:
+			case BANG:
 			case LITERAL_intersect:
 			case LITERAL_except:
 			case SLASH:
 			case DSLASH:
-			case BANG:
 			case LITERAL_text:
 			case LITERAL_node:
 			case LITERAL_attribute:
@@ -9710,11 +9715,11 @@ public XQueryTreeParser() {
 						case LITERAL_div:
 						case LITERAL_idiv:
 						case LITERAL_mod:
+						case BANG:
 						case LITERAL_intersect:
 						case LITERAL_except:
 						case SLASH:
 						case DSLASH:
-						case BANG:
 						case LITERAL_text:
 						case LITERAL_node:
 						case LITERAL_attribute:
@@ -9991,11 +9996,11 @@ public XQueryTreeParser() {
 				case LITERAL_div:
 				case LITERAL_idiv:
 				case LITERAL_mod:
+				case BANG:
 				case LITERAL_intersect:
 				case LITERAL_except:
 				case SLASH:
 				case DSLASH:
-				case BANG:
 				case LITERAL_text:
 				case LITERAL_node:
 				case LITERAL_attribute:
@@ -10192,11 +10197,11 @@ public XQueryTreeParser() {
 		case LITERAL_div:
 		case LITERAL_idiv:
 		case LITERAL_mod:
+		case BANG:
 		case LITERAL_intersect:
 		case LITERAL_except:
 		case SLASH:
 		case DSLASH:
-		case BANG:
 		case LITERAL_text:
 		case LITERAL_node:
 		case LITERAL_attribute:
@@ -10586,6 +10591,7 @@ public XQueryTreeParser() {
 		"\"div\"",
 		"\"idiv\"",
 		"\"mod\"",
+		"BANG",
 		"PRAGMA_START",
 		"pragma expression",
 		"\"union\"",
@@ -10593,7 +10599,6 @@ public XQueryTreeParser() {
 		"\"except\"",
 		"single slash '/'",
 		"double slash '//'",
-		"BANG",
 		"\"text\"",
 		"\"node\"",
 		"\"attribute\"",
@@ -10663,7 +10668,7 @@ public XQueryTreeParser() {
 		long[] data = new long[8];
 		data[0]=-9006778328432862L;
 		data[1]=9157507459273721352L;
-		data[2]=9219431387143080640L;
+		data[2]=9215490737469131456L;
 		data[3]=2148532175L;
 		return data;
 	}
@@ -10677,7 +10682,7 @@ public XQueryTreeParser() {
 		long[] data = new long[8];
 		data[0]=-9006777254691038L;
 		data[1]=9157547041692321288L;
-		data[2]=9219431387143080640L;
+		data[2]=9215490737469131456L;
 		data[3]=2148532175L;
 		return data;
 	}
@@ -10686,7 +10691,7 @@ public XQueryTreeParser() {
 		long[] data = new long[8];
 		data[0]=-9006778328432862L;
 		data[1]=9157547041692321288L;
-		data[2]=9219431387143080640L;
+		data[2]=9215490737469131456L;
 		data[3]=2148532175L;
 		return data;
 	}
@@ -10717,7 +10722,7 @@ public XQueryTreeParser() {
 		long[] data = new long[8];
 		data[0]=-8948950888759446L;
 		data[1]=9160181471703467528L;
-		data[2]=9219431387143703520L;
+		data[2]=9215490737469754336L;
 		data[3]=2148532175L;
 		return data;
 	}
@@ -10726,7 +10731,7 @@ public XQueryTreeParser() {
 		long[] data = new long[8];
 		data[0]=-9006778328432854L;
 		data[1]=9157507459273721352L;
-		data[2]=9219431387143080640L;
+		data[2]=9215490737469131456L;
 		data[3]=2148532175L;
 		return data;
 	}
@@ -10743,7 +10748,7 @@ public XQueryTreeParser() {
 		long[] data = new long[8];
 		data[0]=-9006778328432862L;
 		data[1]=9157788934250432008L;
-		data[2]=9219431387143080640L;
+		data[2]=9215490737469131456L;
 		data[3]=2148532175L;
 		return data;
 	}

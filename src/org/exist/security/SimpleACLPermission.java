@@ -22,6 +22,7 @@
 package org.exist.security;
 
 import java.io.IOException;
+import java.util.Arrays;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import static org.exist.security.PermissionRequired.IS_DBA;
@@ -370,6 +371,7 @@ public class SimpleACLPermission extends UnixStylePermission implements ACLPermi
         return validate(getCurrentSubject(), WRITE);
     }
     
+    @Override
     public SimpleACLPermission copy() {
         SimpleACLPermission prm = new SimpleACLPermission(sm, vector);
         
@@ -377,5 +379,10 @@ public class SimpleACLPermission extends UnixStylePermission implements ACLPermi
         System.arraycopy(acl, 0, prm.acl, 0, acl.length);
         
         return prm;
+    }
+
+    @PermissionRequired(user = IS_DBA | IS_OWNER, mode = ACL_WRITE)
+    public void copyAclOf(final SimpleACLPermission simpleACLPermission) {
+        this.acl = Arrays.copyOf(simpleACLPermission.acl, simpleACLPermission.acl.length);
     }
 }

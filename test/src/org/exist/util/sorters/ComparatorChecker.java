@@ -62,22 +62,4 @@ public abstract class ComparatorChecker extends SortMethodChecker {
 	void check(SortOrder sortOrder) throws Exception {
 		check(sortOrder, 0, getLength() - 1);
 	}
-
-	public Test suite() {
-		TestSuite s = new TestSuite();
-		s.setName(sorter.getClass().getSimpleName() + " "
-				+ getClass().getSimpleName());
-		String testSuiteName=s.getName();
-		for (Method m : SortTestComparator.class.getMethods()) {
-			if (m.getName().startsWith("test")) {
-				s.addTest(new SortTestComparator<ComparatorChecker>(
-					this,
-					m.getName(),
-					testSuiteName
-				));
-			}
-		}
-
-		return s;
-	}
 }

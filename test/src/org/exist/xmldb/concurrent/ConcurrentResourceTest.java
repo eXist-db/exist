@@ -24,55 +24,45 @@ package org.exist.xmldb.concurrent;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xmldb.concurrent.action.ReplaceResourceAction;
 import org.exist.xmldb.concurrent.action.RetrieveResourceAction;
+import org.junit.After;
+import org.junit.Before;
 import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.XMLDBException;
+
+import static org.junit.Assert.assertNotNull;
 
 /**
- * Test concurrent acess to resources.
+ * Test concurrent access to resources.
  * 
  * @author wolf
  */
 public class ConcurrentResourceTest extends ConcurrentTestBase {
 
 	private final static String URI = XmldbURI.LOCAL_DB;
-	
-	public static void main(String[] args) {
-		junit.textui.TestRunner.run(ConcurrentResourceTest.class);
-	}
-	
-	/**
-     * 
-     * 
-     * @param name 
-     */
-	public ConcurrentResourceTest(String name) {
-		super(name, URI, "C1");
+
+	public ConcurrentResourceTest() {
+		super(URI, "C1");
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.xmldb.test.concurrent.ConcurrentTestBase#setUp()
-	 */
-	protected void setUp() {
-		try {
-			super.setUp();		
-			Collection c1 = DBUtils.addCollection(getTestCollection(), "C1-C2");
-			assertNotNull(c1);
-			DBUtils.addXMLResource(c1, "R1.xml", ReplaceResourceAction.XML);		
-	        //String query0 = "//user[email = 'sam@email.com']";
-	        //String query1 = "distinct-values(//user/@id)";	        
-			addAction(new ReplaceResourceAction(URI + "/C1/C1-C2", "R1.xml"), 100, 0, 100);
-	        addAction(new ReplaceResourceAction(URI + "/C1/C1-C2", "R2.xml"), 100, 0, 100);
-			addAction(new RetrieveResourceAction(URI + "/C1/C1-C2", "R1.xml"), 150, 500, 100);
-			//addAction(new XQueryAction(URI + "/C1", "R1.xml", query0), 100, 1000, 100);
-			//addAction(new XQueryAction(URI + "/C1", "R1.xml", query1), 100, 1000, 100);
-		} catch (Exception e) {            
-            fail(e.getMessage()); 
-        }				
+	@Before
+	@Override
+	public void setUp() throws Exception {
+		super.setUp();
+		Collection c1 = DBUtils.addCollection(getTestCollection(), "C1-C2");
+		assertNotNull(c1);
+		DBUtils.addXMLResource(c1, "R1.xml", ReplaceResourceAction.XML);
+		//String query0 = "//user[email = 'sam@email.com']";
+		//String query1 = "distinct-values(//user/@id)";
+		addAction(new ReplaceResourceAction(URI + "/C1/C1-C2", "R1.xml"), 100, 0, 100);
+		addAction(new ReplaceResourceAction(URI + "/C1/C1-C2", "R2.xml"), 100, 0, 100);
+		addAction(new RetrieveResourceAction(URI + "/C1/C1-C2", "R1.xml"), 150, 500, 100);
+		//addAction(new XQueryAction(URI + "/C1", "R1.xml", query0), 100, 1000, 100);
+		//addAction(new XQueryAction(URI + "/C1", "R1.xml", query1), 100, 1000, 100);
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.exist.xmldb.test.concurrent.ConcurrentTestBase#tearDown()
-	 */
-	protected void tearDown() {
+
+	@After
+	@Override
+	public void tearDown() throws XMLDBException {
 		super.tearDown();
 	}
 }

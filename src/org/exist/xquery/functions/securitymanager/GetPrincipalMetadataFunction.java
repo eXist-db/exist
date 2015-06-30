@@ -28,6 +28,7 @@ import org.exist.security.SchemaType;
 import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
 import org.exist.storage.DBBroker;
+import org.exist.util.SelectorUtils;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -150,14 +151,18 @@ public class GetPrincipalMetadataFunction extends BasicFunction {
             } else {
                 throw new XPathException("Unknown function");
             }
-            
-            if(isCalledAs(qnGetAccountMetadataKeys.getLocalPart()) || isCalledAs(qnGetGroupMetadataKeys.getLocalPart())) {
-                result = getPrincipalMetadataKeys(principal);
-            } else if(isCalledAs(qnGetAccountMetadata.getLocalPart()) || isCalledAs(qnGetGroupMetadata.getLocalPart())) {
-                final String metadataAttributeNamespace = args[1].getStringValue();
-                result = getPrincipalMetadata(principal, metadataAttributeNamespace);
+
+            if(principal == null) {
+                result = Sequence.EMPTY_SEQUENCE;
             } else {
-                throw new XPathException("Unknown function");
+                if (isCalledAs(qnGetAccountMetadataKeys.getLocalPart()) || isCalledAs(qnGetGroupMetadataKeys.getLocalPart())) {
+                    result = getPrincipalMetadataKeys(principal);
+                } else if (isCalledAs(qnGetAccountMetadata.getLocalPart()) || isCalledAs(qnGetGroupMetadata.getLocalPart())) {
+                    final String metadataAttributeNamespace = args[1].getStringValue();
+                    result = getPrincipalMetadata(principal, metadataAttributeNamespace);
+                } else {
+                    throw new XPathException("Unknown function");
+                }
             }
         }
         

@@ -20,9 +20,11 @@
  */
 package org.exist.xmldb;
 
-import junit.textui.TestRunner;
-
 import org.exist.security.Permission;
+import org.exist.security.PermissionDeniedException;
+import org.exist.util.SyntaxException;
+import org.junit.Before;
+import org.junit.Test;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
@@ -30,66 +32,51 @@ import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 
+import static org.junit.Assert.fail;
+
 /** A test case for accessing user management service remotely ? 
  * @author Sebastian Bossung, Technische Universitaet Hamburg-Harburg
  * @author Pierrick Brihaye <pierrick.brihaye@free.fr>
  */
 public class RemoteDatabaseImplTest extends RemoteDBTest {
 
-	protected final static String ADMIN_PASSWORD = "somepwd";
     protected final static String ADMIN_COLLECTION_NAME = "admin-collection";
 
-    public RemoteDatabaseImplTest(String name) {
-        super(name);
-    }
-    
-	protected void setUp() {
-		try {
-			//Don't worry about closing the server : the shutdownDB hook will do the job
-			initServer();
-			setUpRemoteDatabase();
-        } catch (Exception e) {            
-            fail(e.getMessage()); 
-        }
+    @Before
+	public void setUp() throws ClassNotFoundException, InstantiationException, XMLDBException, IllegalAccessException {
+        //Don't worry about closing the server : the shutdownDB hook will do the job
+        initServer();
+        setUpRemoteDatabase();
 	}    
-	
-    public void testGetCollection() {
-    	try {
-            Class<?> cl = Class.forName(DB_DRIVER);
-            Database database = (Database) cl.newInstance();
-            DatabaseManager.registerDatabase(database);
 
-            Collection rootCollection = DatabaseManager.getCollection(URI + XmldbURI.ROOT_COLLECTION, "admin", "");
-	
-            CollectionManagementService cms = (CollectionManagementService) rootCollection.getService("CollectionManagementService", "1.0");
-            Collection adminCollection = cms.createCollection(ADMIN_COLLECTION_NAME);
-            UserManagementService ums = (UserManagementService) rootCollection.getService("UserManagementService", "1.0");
-            if (ums != null) {
-                Permission p = ums.getPermissions(adminCollection);
-                p.setMode(Permission.USER_STRING + "=+read,+write," + Permission.GROUP_STRING + "=-read,-write," + Permission.OTHER_STRING + "=-read,-write");
-                ums.setPermissions(adminCollection, p);
+    @Test
+    public void testGetCollection() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException, SyntaxException, PermissionDeniedException {
+        Class<?> cl = Class.forName(DB_DRIVER);
+        Database database = (Database) cl.newInstance();
+        DatabaseManager.registerDatabase(database);
 
-                Collection guestCollection = DatabaseManager.getCollection(URI + XmldbURI.ROOT_COLLECTION + "/" + ADMIN_COLLECTION_NAME, "guest", "guest");
+        Collection rootCollection = DatabaseManager.getCollection(URI + XmldbURI.ROOT_COLLECTION, "admin", "");
 
-                Resource resource = guestCollection.createResource("testguest", "BinaryResource");
-                resource.setContent("123".getBytes());
-                try {
-                    guestCollection.storeResource(resource);
-                    fail();
-                } catch (XMLDBException e) {
+        CollectionManagementService cms = (CollectionManagementService) rootCollection.getService("CollectionManagementService", "1.0");
+        Collection adminCollection = cms.createCollection(ADMIN_COLLECTION_NAME);
+        UserManagementService ums = (UserManagementService) rootCollection.getService("UserManagementService", "1.0");
+        if (ums != null) {
+            Permission p = ums.getPermissions(adminCollection);
+            p.setMode(Permission.USER_STRING + "=+read,+write," + Permission.GROUP_STRING + "=-read,-write," + Permission.OTHER_STRING + "=-read,-write");
+            ums.setPermissions(adminCollection, p);
 
-                }
+            Collection guestCollection = DatabaseManager.getCollection(URI + XmldbURI.ROOT_COLLECTION + "/" + ADMIN_COLLECTION_NAME, "guest", "guest");
 
-                cms.removeCollection(ADMIN_COLLECTION_NAME);
+            Resource resource = guestCollection.createResource("testguest", "BinaryResource");
+            resource.setContent("123".getBytes());
+            try {
+                guestCollection.storeResource(resource);
+                fail();
+            } catch (XMLDBException e) {
+
             }
-        } catch (Exception e) {
-            fail(e.getMessage());
+
+            cms.removeCollection(ADMIN_COLLECTION_NAME);
         }
     }
-
-    public static void main(String[] args) {
-    	TestRunner.run(RemoteDatabaseImplTest.class);
-		//Explicit shutdownDB for the shutdownDB hook
-		System.exit(0);
-	}
 }

@@ -422,8 +422,8 @@ public class RemoteCollection extends AbstractRemote implements CollectionImpl {
         }
         r.setPermissions(perm);
         r.setContentLength(contentLen);
-        r.setCreationTime((Date) hash.get("created"));
-        r.setLastModificationTime((Date) hash.get("modified"));
+        r.dateCreated = (Date) hash.get("created");
+        r.dateModified = (Date) hash.get("modified");
         if (hash.containsKey("mime-type")) {
             r.setMimeType((String) hash.get("mime-type"));
         }
@@ -486,8 +486,8 @@ public class RemoteCollection extends AbstractRemote implements CollectionImpl {
                 fileLength = ((EXistInputSource) content).getByteStreamLength();
             }
             if (res instanceof AbstractRemoteResource) {
-                ((AbstractRemoteResource) res).setCreationTime(a);
-                ((AbstractRemoteResource) res).setLastModificationTime(b);
+                ((AbstractRemoteResource) res).dateCreated = a;
+                ((AbstractRemoteResource) res).dateModified = b;
             }
             if (!BinaryResource.RESOURCE_TYPE.equals(res.getResourceType()) && fileLength != -1
                     && fileLength < MAX_CHUNK_LENGTH) {
@@ -496,8 +496,8 @@ public class RemoteCollection extends AbstractRemote implements CollectionImpl {
                 uploadAndStore(res);
             }
         } else {
-            ((AbstractRemoteResource) res).setCreationTime(a);
-            ((AbstractRemoteResource) res).setLastModificationTime(b);
+            ((AbstractRemoteResource) res).dateCreated = a;
+            ((AbstractRemoteResource) res).dateModified = b;
             if (XMLResource.RESOURCE_TYPE.equals(res.getResourceType())) {
                 store((RemoteXMLResource) res);
             } else {

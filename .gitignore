@@ -23,7 +23,12 @@ extensions/security/openid/lib/
 installer/apps/
 installer/eXist-db-setup-*.jar
 installer/install.xml
-installer/scripts/
+installer/scripts/backup*
+installer/scripts/client*
+installer/scripts/eXist-db.app/
+installer/scripts/server*
+installer/scripts/shutdown*
+installer/scripts/startup*
 lib/extensions/
 lib/user/icu4j*.jar
 lib/user/je*.jar
