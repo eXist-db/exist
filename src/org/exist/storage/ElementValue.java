@@ -37,13 +37,13 @@ public class ElementValue extends Value {
     public static final byte ELEMENT = 0;
     public static final byte ATTRIBUTE = 1;
 
-    public static int LENGTH_TYPE = 1; //size of byte
+    public static final int LENGTH_TYPE = 1; //size of byte
 
-    public static int OFFSET_COLLECTION_ID = 0;	
-    public static int OFFSET_TYPE = OFFSET_COLLECTION_ID + Collection.LENGTH_COLLECTION_ID; //2
-    public static int OFFSET_SYMBOL = OFFSET_TYPE + ElementValue.LENGTH_TYPE; //3
-    public static int OFFSET_NSSYMBOL = OFFSET_SYMBOL + SymbolTable.LENGTH_LOCAL_NAME; //5
-    public static int OFFSET_ID_STRING_VALUE = OFFSET_TYPE + LENGTH_TYPE; //3
+    public static final int OFFSET_COLLECTION_ID = 0;
+    public static final int OFFSET_TYPE = OFFSET_COLLECTION_ID + Collection.LENGTH_COLLECTION_ID; //2
+    public static final int OFFSET_SYMBOL = OFFSET_TYPE + ElementValue.LENGTH_TYPE; //3
+    public static final int OFFSET_NSSYMBOL = OFFSET_SYMBOL + SymbolTable.LENGTH_LOCAL_NAME; //5
+    public static final int OFFSET_ID_STRING_VALUE = OFFSET_TYPE + LENGTH_TYPE; //3
 
     public static final String[] type = { "element", "attribute", "id" };
 

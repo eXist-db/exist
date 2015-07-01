@@ -317,7 +317,6 @@ public class XACMLUtil implements UpdateListener
 		final AtomicValue comparison = new AnyURIValue(attributeValue);
 
 		final DocumentSet documentSet = getPolicyDocuments(broker, true);
-		final NodeSet nodeSet = documentSet.docsToNodeSet();
 
         final NativeValueIndex valueIndex = broker.getValueIndex();
         final Sequence results = valueIndex.find(null, Constants.EQ, documentSet, null, NodeSet.ANCESTOR, attributeQName, comparison);

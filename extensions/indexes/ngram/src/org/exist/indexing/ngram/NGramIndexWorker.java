@@ -856,7 +856,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         }
     }
 
-    private class NodeOffset {
+    private static class NodeOffset {
         NodeId nodeId;
         int offset = 0;
 
@@ -870,7 +870,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         }
     }
     
-    private class QNameTerm implements Comparable<QNameTerm> {
+    private static class QNameTerm implements Comparable<QNameTerm> {
 
         QName qname;
         String term;

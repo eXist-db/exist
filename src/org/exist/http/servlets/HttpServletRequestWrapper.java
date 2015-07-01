@@ -64,7 +64,7 @@ import org.exist.util.VirtualTempFile;
 public class HttpServletRequestWrapper implements HttpServletRequest
 {
 	/** Simple Enumeration implementation for String's, needed for getParameterNames() */
-	private class StringEnumeration implements Enumeration
+	private static class StringEnumeration implements Enumeration
 	{
 		private String[] strings = null;	//Strings in the Enumeration
 		int aryPos = -1;					//Current Position in Enumeration
@@ -132,7 +132,7 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 	}
 	
 	/** Simple class to hold the value and type of a request parameter */
-	private class RequestParamater
+	private static class RequestParamater
 	{
 		public final static int PARAM_TYPE_URL = 1;		//parameter from the URL of the request
 		public final static int PARAM_TYPE_CONTENT = 2;	//parameter from the Content of the request
@@ -320,14 +320,14 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 			{
 				//key exists in hash map, add value and type to vector
 				final Vector<RequestParamater> vecValues = params.get(thePair[0]);
-				vecValues.add(new RequestParamater((thePair.length == 2 ? thePair[1] : new String()), type));
+				vecValues.add(new RequestParamater((thePair.length == 2 ? thePair[1] : ""), type));
 				params.put(thePair[0], vecValues);
 			}
 			else
 			{
 				//not in hash map so add a vector with the initial value
 				final Vector<RequestParamater> vecValues = new Vector<RequestParamater>();
-				vecValues.add(new RequestParamater((thePair.length == 2 ? thePair[1] : new String()), type));
+				vecValues.add(new RequestParamater((thePair.length == 2 ? thePair[1] : ""), type));
 				params.put(thePair[0], vecValues);
 			}
 		}

@@ -81,8 +81,6 @@ public class UTF8 {
 			if (0 <= cc) {
 
 				xs.append((char) cc);
-			} else if (0 == cc) {
-				return xs;
 			} else {
 				ch = 0;
 

@@ -273,25 +273,27 @@ public class SendEmailFunction extends BasicFunction
             allrecipients.addAll(mail.getBCC());
 
             //Get a string of all recipients email addresses
-            String recipients = "";
+            final StringBuilder recipients = new StringBuilder();
 
             for(int x = 0; x < allrecipients.size(); x++)
             {
+                recipients.append(" ");
+
                 //Check format of to address does it include a name as well as the email address?
                 if(((String)allrecipients.get(x)).indexOf("<") != -1)
                 {
                     //yes, just add the email address
-                    recipients += " " + ((String)allrecipients.get(x)).substring(((String)allrecipients.get(x)).indexOf("<") + 1, ((String)allrecipients.get(x)).indexOf(">"));
+                     recipients.append(((String)allrecipients.get(x)).substring(((String)allrecipients.get(x)).indexOf("<") + 1, ((String)allrecipients.get(x)).indexOf(">")));
                 }
                 else
                 {
                     //add the email address
-                    recipients += " " + ((String)allrecipients.get(x));
+                    recipients.append((String)allrecipients.get(x));
                 }
             }
 
             //Create a sendmail Process
-            Process p = Runtime.getRuntime().exec("/usr/sbin/sendmail" + recipients);
+            Process p = Runtime.getRuntime().exec("/usr/sbin/sendmail" + recipients.toString());
 
             //Get a Buffered Print Writer to the Processes stdOut
             out = new PrintWriter(new OutputStreamWriter(p.getOutputStream(),charset));
@@ -318,7 +320,7 @@ public class SendEmailFunction extends BasicFunction
         return true;
     }
 
-    private class SMTPException extends Exception
+    private static class SMTPException extends Exception
     {
 		private static final long serialVersionUID = 4859093648476395159L;
 
@@ -336,7 +338,7 @@ public class SendEmailFunction extends BasicFunction
     /**
      * Sends an email using SMTP
      *
-     * @param mail		A mail object representing the email to send
+     * @param mails		A list of mail object representing the email to send
      * @param SMTPServer	The SMTP Server to send the email through
      * @return		boolean value of true of false indicating success or failure to send email
      */
@@ -377,6 +379,12 @@ public class SendEmailFunction extends BasicFunction
 
             //get "HELLO" response, should be "250 blah blah"
             smtpResult = smtpIn.readLine();
+            if(smtpResult == null)
+            {
+                String errMsg = "Error - Unexpected null response to SMTP HELO";
+                LOG.error(errMsg);
+                throw new SMTPException(errMsg);
+            }
             if(!smtpResult.substring(0, 3).equals("250"))
             {
                 String errMsg = "Error - SMTP HELO Failed: '" + smtpResult + "'";
@@ -442,6 +450,11 @@ public class SendEmailFunction extends BasicFunction
 
             //Get "MAIL FROM:" response
             smtpResult = smtpIn.readLine();
+            if(smtpResult == null)
+            {
+                LOG.error("Error - Unexpected null response to SMTP MAIL FROM");
+                return false;
+            }
             if(!smtpResult.substring(0, 3).equals("250"))
             {
                 LOG.error("Error - SMTP MAIL FROM failed: " + smtpResult);
@@ -508,8 +521,8 @@ public class SendEmailFunction extends BasicFunction
     /**
      * Writes an email payload (Headers + Body) from a mail object
      *
-     * @param smtpOut		A PrintWriter to receive the email
-     * @param mail		A mail object representing the email to write out
+     * @param out		A PrintWriter to receive the email
+     * @param aMail		A mail object representing the email to write out
      */
     private void writeMessage(PrintWriter out, Mail aMail) throws IOException
     {
@@ -1162,7 +1175,7 @@ public class SendEmailFunction extends BasicFunction
         dateString += tHour + ":" + tMinute + ":" + tSecond + " ";
 
         //TimeZone Correction
-        String tzSign = new String();
+        final String tzSign;
         String tzHours = new String();
         String tzMinutes = new String();
 
@@ -1257,7 +1270,7 @@ public class SendEmailFunction extends BasicFunction
      *
      * @version 1.2
      */
-    private class MailAttachment
+    private static class MailAttachment
     {
         private String filename;
         private String mimeType;
@@ -1290,7 +1303,7 @@ public class SendEmailFunction extends BasicFunction
      *
      * @version 1.2
      */
-    private class Mail
+    private static class Mail
     {
         private String from = "";				//Who is the mail from
         private String replyTo = null;                          //Who should you reply to

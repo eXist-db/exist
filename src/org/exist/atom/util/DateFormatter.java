@@ -22,7 +22,7 @@ public class DateFormatter {
    private DateFormatter() {
    }
    
-   static DateFormat xsdFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
+   private static final DateFormat xsdFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
    
    public static String toXSDDateTime(long value)
    {
@@ -30,7 +30,7 @@ public class DateFormatter {
       return toXSDDateTime(d);
    }
    
-   public static String toXSDDateTime(Date d)
+   public static synchronized String toXSDDateTime(Date d)
    {
       String result = xsdFormat.format(d);
       result = result.substring(0, result.length()-2)

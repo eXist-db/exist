@@ -491,7 +491,7 @@ public class XQueryURLRewrite extends HttpServlet {
 			model.getSourceInfo().source.validate(broker.getSubject(), Permission.EXECUTE);
 			
 			if (model.getSourceInfo().source.isValid(broker) != Source.VALID) {
-                ModelAndView removed = urlCache.remove(url);
+                urlCache.remove(url);
 				return null;
 			}
 			
@@ -673,8 +673,8 @@ public class XQueryURLRewrite extends HttpServlet {
         }
         final String basePath = staticRewrite == null ? "." : staticRewrite.getTarget();
         
-        final XQuery xquery = broker.getXQueryService();
-        final XQueryPool xqyPool = xquery.getXQueryPool();
+        final XQuery xquery = broker.getBrokerPool().getXQueryService();
+        final XQueryPool xqyPool = broker.getBrokerPool().getXQueryPool();
 		
         CompiledXQuery compiled = null;
         if (compiledCache) {
@@ -682,7 +682,7 @@ public class XQueryURLRewrite extends HttpServlet {
         }
         XQueryContext queryContext;
         if (compiled == null) {
-			queryContext = xquery.newContext(AccessContext.REST);
+			queryContext = new XQueryContext(broker.getBrokerPool(), AccessContext.REST);
 		} else {
 			queryContext = compiled.getContext();
 		}
@@ -691,7 +691,7 @@ public class XQueryURLRewrite extends HttpServlet {
         declareVariables(queryContext, sourceInfo, staticRewrite, basePath, request, response);
         if (compiled == null) {
 			try {
-				compiled = xquery.compile(queryContext, sourceInfo.source);
+				compiled = xquery.compile(broker, queryContext, sourceInfo.source);
 			} catch (final IOException e) {
 				throw new ServletException("Failed to read query from " + query, e);
 			}
@@ -706,7 +706,7 @@ public class XQueryURLRewrite extends HttpServlet {
 //      outputProperties.put("base-uri", collectionURI.toString());
 
         try {
-			return xquery.execute(compiled, null, outputProperties);
+			return xquery.execute(broker, compiled, null, outputProperties);
 		} finally {
             queryContext.runCleanupTasks();
 			xqyPool.returnCompiledXQuery(sourceInfo.source, compiled);
@@ -977,7 +977,7 @@ public class XQueryURLRewrite extends HttpServlet {
         }
 	}
 
-    private class ModelAndView {
+    private static class ModelAndView {
 
         URLRewrite rewrite = null;
         List<URLRewrite> views = new LinkedList<URLRewrite>();
@@ -1324,8 +1324,6 @@ public class XQueryURLRewrite extends HttpServlet {
 
     private class CachingResponseWrapper extends HttpServletResponseWrapper {
 
-        @SuppressWarnings("unused")
-		protected HttpServletResponse origResponse;
         protected CachingServletOutputStream sos = null;
         protected PrintWriter writer = null;
         protected int status = HttpServletResponse.SC_OK;
@@ -1335,7 +1333,6 @@ public class XQueryURLRewrite extends HttpServlet {
         public CachingResponseWrapper(HttpServletResponse servletResponse, boolean cache) {
             super(servletResponse);
             this.cache = cache;
-            this.origResponse = servletResponse;
         }
 
         @Override
@@ -1440,7 +1437,7 @@ public class XQueryURLRewrite extends HttpServlet {
         }
     }
 
-    private class CachingServletOutputStream extends ServletOutputStream {
+    private static class CachingServletOutputStream extends ServletOutputStream {
 
         protected ByteArrayOutputStream ostream = new ByteArrayOutputStream(512);
 

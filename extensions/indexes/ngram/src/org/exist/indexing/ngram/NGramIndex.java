@@ -71,7 +71,7 @@ public class NGramIndex extends AbstractIndex implements RawBackupSupport {
     @Override
     public void open() throws DatabaseConfigurationException {
         try {
-            db = new BFile(pool, (byte) 0, false, dataFile, pool.getCacheManager(), 1.4, 0.01, 0.07);
+            db = new BFile(pool, (byte) 0, false, dataFile, pool.getCacheManager(), 1.4, 0.07);
         } catch (DBException e) {
             throw new DatabaseConfigurationException("Failed to create index file: " + dataFile.getAbsolutePath() + ": " +
                 e.getMessage());

@@ -122,8 +122,8 @@ public class DOMIndexerTest {
         try {
             pool = BrokerPool.getInstance();
             broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            XQuery xquery = broker.getXQueryService();
-            Sequence result = xquery.execute(XQUERY, null, AccessContext.TEST);
+            XQuery xquery = broker.getBrokerPool().getXQueryService();
+            Sequence result = xquery.execute(broker, XQUERY, null, AccessContext.TEST);
             int count = result.getItemCount();
             StringWriter out = new StringWriter();
             Properties props = new Properties();

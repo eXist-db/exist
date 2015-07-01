@@ -71,15 +71,19 @@ public class MimeTypeFileFilter extends FileFilter {
     
     @Override
     public String getDescription() {
-        String description = this.description + " ("; 
+        final StringBuilder description = new StringBuilder(this.description);
+
+        description.append(" (");
 
         for(final Iterator<String> itExtensions = extensions.iterator(); itExtensions.hasNext();) {
-            description += itExtensions.next();
+            description.append(itExtensions.next());
             if(itExtensions.hasNext()) {
-                description += ' ';
+                description.append(' ');
             }
         }
 
-        return description + ")";
+        description.append(")");
+
+        return description.toString();
     }
 }

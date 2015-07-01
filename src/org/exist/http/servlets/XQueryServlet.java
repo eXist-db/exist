@@ -436,15 +436,15 @@ public class XQueryServlet extends AbstractExistHttpServlet {
         DBBroker broker = null;
         try {
         	broker = getPool().get(user);
-            final XQuery xquery = broker.getXQueryService();
-            CompiledXQuery query = xquery.getXQueryPool().borrowCompiledXQuery(broker, source);
+            final XQuery xquery = broker.getBrokerPool().getXQueryService();
+            CompiledXQuery query = getPool().getXQueryPool().borrowCompiledXQuery(broker, source);
 
             XQueryContext context;
             if (query==null) {
-               context = xquery.newContext(AccessContext.REST);
+               context = new XQueryContext(getPool(), AccessContext.REST);
                context.setModuleLoadPath(moduleLoadPath);
                try {
-            	   query = xquery.compile(context, source);
+            	   query = xquery.compile(broker, context, source);
                    
                } catch (final XPathException ex) {
                   throw new EXistException("Cannot compile xquery: "+ ex.getMessage(), ex);
@@ -489,11 +489,11 @@ public class XQueryServlet extends AbstractExistHttpServlet {
 
             Sequence resultSequence;
             try {
-                resultSequence = xquery.execute(query, null, outputProperties);
+                resultSequence = xquery.execute(broker, query, null, outputProperties);
                 
             } finally {
                 context.runCleanupTasks();
-                xquery.getXQueryPool().returnCompiledXQuery(source, query);
+                getPool().getXQueryPool().returnCompiledXQuery(source, query);
             }
 
             final String mediaType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE);

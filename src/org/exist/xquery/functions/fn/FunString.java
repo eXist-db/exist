@@ -86,8 +86,9 @@ public class FunString extends Function {
 			contextSequence = getArgument(0).eval(contextSequence);
             if (contextSequence.isEmpty())
                 {return StringValue.EMPTY_STRING;}
-        } else if (contextSequence == null)
-			{throw new XPathException(this, ErrorCodes.XPDY0002, "Undefined context sequence for '" + this.toString() + "'", contextSequence);}
+        } else if (contextSequence == null) {
+			throw new XPathException(this, ErrorCodes.XPDY0002, "Undefined context sequence for '" + this.toString() + "'");
+		}
         // no argument and the context sequence is empty: return the empty sequence
         else if (contextSequence.isEmpty())
             {return Sequence.EMPTY_SEQUENCE;}

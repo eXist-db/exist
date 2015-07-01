@@ -142,7 +142,7 @@ public class RestoreTask extends AbstractXMLDBTask
                 final String msg = "Exception during restore: " + e.getMessage();
 
                 if( failonerror ) {
-                    throw( new BuildException( msg, e ) );
+                    throw new BuildException( msg, e );
                 } else {
                     log( msg, e, Project.MSG_ERR );
                 }

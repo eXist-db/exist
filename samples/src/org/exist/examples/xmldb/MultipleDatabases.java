@@ -26,12 +26,12 @@ import org.xmldb.api.modules.XUpdateQueryService;
  */
 public class MultipleDatabases {
 
-	protected static String driver = "org.exist.xmldb.DatabaseImpl";
+	protected static final String driver = "org.exist.xmldb.DatabaseImpl";
 
-	protected static String URI_DB1 = "xmldb:exist://" + XmldbURI.ROOT_COLLECTION;
-	protected static String URI_DB2 = "xmldb:test://" + XmldbURI.ROOT_COLLECTION;
+	protected static final String URI_DB1 = "xmldb:exist://" + XmldbURI.ROOT_COLLECTION;
+	protected static final String URI_DB2 = "xmldb:test://" + XmldbURI.ROOT_COLLECTION;
 
-	protected static String XUPDATE_1 =
+	protected static final String XUPDATE_1 =
 		"<xu:modifications version=\"1.0\" xmlns:xu=\"" + XUpdateProcessor.XUPDATE_NS + "\">" +
 		"<xu:insert-after select=\"//SPEECH/LINE[. &amp;= 'loving']\">" +
 		"<TEST>New line inserted</TEST>" +

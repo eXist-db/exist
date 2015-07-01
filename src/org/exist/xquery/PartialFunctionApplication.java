@@ -115,7 +115,7 @@ public class PartialFunctionApplication extends AbstractExpression {
 		return new FunctionReference(newCall);
 	}
 	
-	private class PrecomputedValue extends AbstractExpression {
+	private static class PrecomputedValue extends AbstractExpression {
 
 		Sequence sequence;
 		

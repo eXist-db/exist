@@ -217,7 +217,8 @@ public class Eval extends BasicFunction {
 
             final String uuid = UUIDGenerator.getUUID();
             final CallableEval asyncEval = new CallableEval(context, contextSequence, args);
-            final Future<Sequence> f = asyncExecutorService.submit(asyncEval);
+//            final Future<Sequence> f =
+            asyncExecutorService.submit(asyncEval);
             //context.addAsyncQueryReference(f); //TODO keep a reference, so threads can be interogated/cancelled - perhaps a WeakReference?
             return new StringValue(uuid);
         } else {
@@ -325,11 +326,11 @@ public class Eval extends BasicFunction {
 
         // fixme! - hook for debugger here /ljo
 
-        final XQuery xqueryService = evalContext.getBroker().getXQueryService();
+        final XQuery xqueryService = evalContext.getBroker().getBrokerPool().getXQueryService();
         final XQueryContext innerContext;
         if (contextInit != null) {
             // eval-with-context: initialize a new context
-            innerContext = xqueryService.newContext(evalContext.getAccessContext());
+            innerContext = new XQueryContext(context.getBroker().getBrokerPool(), evalContext.getAccessContext());
             initContextSequence = initContext(contextInit.getNode(), innerContext);
         } else {
             // use the existing outer context
@@ -428,17 +429,17 @@ public class Eval extends BasicFunction {
     private Sequence execute(DBBroker broker, XQuery xqueryService, Source querySource, XQueryContext innerContext, Sequence exprContext, boolean cache) throws XPathException {
 
         CompiledXQuery compiled = null;
-        final XQueryPool pool = xqueryService.getXQueryPool();
+        final XQueryPool pool = broker.getBrokerPool().getXQueryPool();
 
         try {
             compiled = cache ? pool.borrowCompiledXQuery(broker, querySource) : null;
             if(compiled == null) {
-                compiled = xqueryService.compile(innerContext, querySource);
+                compiled = xqueryService.compile(broker, innerContext, querySource);
             } else {
                 compiled.getContext().updateContext(innerContext);
             }
 
-            Sequence sequence = xqueryService.execute(compiled, exprContext, false);
+            Sequence sequence = xqueryService.execute(broker, compiled, exprContext, false);
             ValueSequence newSeq = new ValueSequence();
             newSeq.keepUnOrdered(unordered);
             boolean hasSupplements = false;
@@ -569,7 +570,7 @@ public class Eval extends BasicFunction {
 			} else if (child.getNodeType() == Node.ELEMENT_NODE &&	"output-size-limit".equals(child.getLocalName())) {
 				final Element elem = (Element) child;
 				//TODO : error check
-				innerContext.getWatchDog().setMaxNodes(Integer.valueOf(elem.getAttribute("value")).intValue());
+				innerContext.getWatchDog().setMaxNodes(Integer.parseInt(elem.getAttribute("value")));
 			} else if (child.getNodeType() == Node.ELEMENT_NODE &&	"current-dateTime".equals(child.getLocalName())) {
 				final Element elem = (Element) child;
 				//TODO : error check

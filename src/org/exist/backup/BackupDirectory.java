@@ -25,7 +25,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 
 import java.text.DateFormat;
@@ -47,7 +46,8 @@ public class BackupDirectory
 
     public final static String     FILE_REGEX              = "(" + PREFIX_FULL_BACKUP_FILE + "|" + PREFIX_INC_BACKUP_FILE + ")(\\d{8}-\\d{4}).*";
 
-    public final static DateFormat DATE_FORMAT             = new SimpleDateFormat( "yyyyMMdd-HHmm" );
+    public final static String DATE_FORMAT_PICTURE = "yyyyMMdd-HHmm";
+    private final DateFormat dateFormat = new SimpleDateFormat( DATE_FORMAT_PICTURE );
 
 
     private File                   dir;
@@ -75,7 +75,7 @@ public class BackupDirectory
         do {
             final StringBuilder buf = new StringBuilder();
             buf.append( incremental ? PREFIX_INC_BACKUP_FILE : PREFIX_FULL_BACKUP_FILE );
-            buf.append( DATE_FORMAT.format( new Date() ) );
+            buf.append(dateFormat.format(new Date()));
 
             if( counter++ > 0 ) {
                 buf.append( '_' ).append( counter );
@@ -104,7 +104,7 @@ public class BackupDirectory
                 final String dateTime = matcher.group( 2 );
 
                 try {
-                    Date date = DATE_FORMAT.parse( dateTime );
+                    Date date = dateFormat.parse( dateTime );
 
                     if( ( newestDate == null ) || date.after( newestDate ) ) {
                         newestDate = date;

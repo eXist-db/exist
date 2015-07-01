@@ -40,12 +40,12 @@ import java.util.TreeMap;
 /** base class for {@link org.exist.storage.structural.NativeStructuralIndex} */
 public abstract class ElementIndex extends Observable {
 
-    protected static Logger LOG = LogManager.getLogger(ElementIndex.class.getName());
+    protected static final Logger LOG = LogManager.getLogger(ElementIndex.class.getName());
 
     /** The broker that is using this value index */
     protected DBBroker broker;
 
-    protected TreeMap<QName, ArrayList<NodeProxy>> pending = new TreeMap<QName, ArrayList<NodeProxy>>();
+    protected TreeMap<QName, ArrayList<NodeProxy>> pending = new TreeMap<>();
 
     /** The current document */
     protected DocumentImpl doc;

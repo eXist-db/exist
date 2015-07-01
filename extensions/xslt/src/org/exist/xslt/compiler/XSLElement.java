@@ -147,11 +147,8 @@ public class XSLElement implements org.w3c.dom.Element, INode, Names {
 		} else if (node.getNodeType() == Node.COMMENT_NODE) {
 //UNDERSTAND:			constructer = new CommentConstructor((XQueryContext) context, node.getNodeName());
 		} else if (node.getNodeType() == Node.TEXT_NODE) {
-			if (content instanceof XSLPathExpr) {
-				XSLPathExpr xslExpr = (XSLPathExpr) content;
-				xslExpr.addText(node.getNodeValue());
-			} else
-				constructer = new Text((XSLContext) context, node.getNodeValue());
+			XSLPathExpr xslExpr = (XSLPathExpr) content;
+			xslExpr.addText(node.getNodeValue());
 		} else if (node.getNodeType() == Node.CDATA_SECTION_NODE) {
 //UNDERSTAND:			constructer = new CDATAConstructor((XQueryContext) context, node.getNodeName());
 		} else if (node.getNodeType() == Node.PROCESSING_INSTRUCTION_NODE) {

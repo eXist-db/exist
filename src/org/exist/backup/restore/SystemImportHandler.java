@@ -366,8 +366,8 @@ public class SystemImportHandler extends DefaultHandler {
         try {
             
             listener.setCurrentResource(name);
-            if(currentCollection instanceof Observable) {
-                listener.observe((Observable)currentCollection);
+            if(currentCollection != null) {
+                listener.observe(currentCollection);
             }
 
 			final TransactionManager txnManager = broker.getDatabase().getTransactionManager();

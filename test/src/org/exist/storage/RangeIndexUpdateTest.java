@@ -101,9 +101,9 @@ public class RangeIndexUpdateTest {
             checkIndex(broker, docs, ITEM_QNAME, new StringValue("Table892.25"), 1);
             checkIndex(broker, docs, ITEM_QNAME, new StringValue("Cabinet1525.00"), 1);
 
-            final XQuery xquery = broker.getXQueryService();
+            final XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
-            final Sequence seq = xquery.execute("//item[. = 'Chair']", null, AccessContext.TEST);
+            final Sequence seq = xquery.execute(broker, "//item[. = 'Chair']", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
 

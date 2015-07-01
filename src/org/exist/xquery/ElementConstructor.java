@@ -397,9 +397,11 @@ public class ElementConstructor extends NodeConstructor {
 	public void setPrimaryAxis(int axis) {
 	}
 
+    @Override
     public int getPrimaryAxis() {
-        if (content != null)
-            {content.getPrimaryAxis();}
+        if (content != null) {
+            return content.getPrimaryAxis();
+        }
         return Constants.UNKNOWN_AXIS;
     }
 

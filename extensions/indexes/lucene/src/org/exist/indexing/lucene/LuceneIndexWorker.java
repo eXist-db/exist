@@ -236,7 +236,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             }
             NamedNodeMap attributes = parentStoredNode.getAttributes();
             for (int i = 0; i < attributes.getLength(); ++i) {
-                IStoredNode attr = (IStoredNode) attributes.item(i);
+                IStoredNode<?> attr = (IStoredNode<?>) attributes.item(i);
                 configIt = config.getConfig(attr.getPath());
                 while (configIt.hasNext()) {
                     LuceneIndexConfig idxConfig = configIt.next();
@@ -592,9 +592,6 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         PlainTextIndexConfig solrconfParser = new PlainTextIndexConfig();
         solrconfParser.parse(descriptor);
         
-        // Get <doc> information
-        PlainTextDoc solrDoc = solrconfParser.getDoc();
-        
         if (pendingDoc == null) {
 	    // create Lucene document
 	    pendingDoc = new Document();
@@ -783,8 +780,6 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
     
     public String getFieldContent(int docId, String field) throws IOException {
-        Set<String> fields = new HashSet<>();
-        fields.add(field);
         BytesRef bytes = new BytesRef(NumericUtils.BUF_SIZE_INT);
         NumericUtils.intToPrefixCoded(docId, 0, bytes);
         Term dt = new Term(FIELD_DOC_ID, bytes);
@@ -1178,7 +1173,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 	}
     }
 
-    private class PendingDoc {
+    private static class PendingDoc {
         NodeId nodeId;
         CharSequence text;
         QName qname;
@@ -1194,7 +1189,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         }
     }
 
-    private class PendingAttr {
+    private static class PendingAttr {
 	AttrImpl attr;
 	LuceneIndexConfig conf;
 	NodePath path;
@@ -1295,17 +1290,17 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     facetFields.addFields(doc, paths);
                 }
 
-                byte[] docNodeId = LuceneUtil.createId(currentDoc.getDocId(), pending.nodeId);
-                Field fDocNodeId = new StoredField("docNodeId", docNodeId);
+                final byte[] docNodeId = LuceneUtil.createId(currentDoc.getDocId(), pending.nodeId);
+                final Field fDocNodeId = new StoredField("docNodeId", docNodeId);
                 doc.add(fDocNodeId);
-                Term delTerm = new Term("docNodeId", new BytesRef(docNodeId));
+
                 if (pending.idxConf.getAnalyzer() == null) {
                     writer.addDocument(doc);
                 } else {
                     writer.addDocument(doc, pending.idxConf.getAnalyzer());
-		}
-	    }
-        } catch (IOException e) {
+		        }
+	        }
+        } catch (final IOException e) {
             LOG.warn("An exception was caught while indexing document: " + e.getMessage(), e);
         } finally {
             index.releaseWriter(writer);

@@ -74,9 +74,9 @@ public class GetConnectionFunction extends BasicFunction {
         Sequence result = Sequence.EMPTY_SEQUENCE;
         
         // get the ftp connection details
-        String host = args[0].getStringValue();
-        String username = args[1].getStringValue();
-        String password = args[2].getStringValue();
+        final String host = args[0].getStringValue();
+        final String username = args[1].getStringValue();
+        final String password = args[2].getStringValue();
 
         final FTPClient ftp = new FTPClient();
         try {
@@ -88,18 +88,23 @@ public class GetConnectionFunction extends BasicFunction {
             // success.
             int reply = ftp.getReplyCode();
 
-            if(!FTPReply.isPositiveCompletion(reply)) {
+            if (!FTPReply.isPositiveCompletion(reply)) {
                 ftp.disconnect();
                 log.warn("FTP server refused connection.");
             } else {
-                // store the Connection and return the uid handle of the Connection
-                result = new IntegerValue(FTPClientModule.storeConnection(context, ftp));
+                if(ftp.login(username, password)) {
+                    // store the Connection and return the uid handle of the Connection
+                    result = new IntegerValue(FTPClientModule.storeConnection(context, ftp));
+                } else {
+                    ftp.disconnect();
+                    log.warn("Unable to login with username/password to FTP server");
+                }
             }
-        } catch(IOException se) {
+        } catch(final IOException se) {
             if(ftp.isConnected()) {
                 try {
                     ftp.disconnect();
-                } catch(IOException ioe) {
+                } catch(final IOException ioe) {
                     log.error(ioe.getMessage(), ioe);
                 }
             }

@@ -44,7 +44,7 @@ public class XMLWriter {
         defaultProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
     }
 
-    private Writer writer = null;
+    protected Writer writer = null;
 
     protected CharacterSet charSet = null;
 
@@ -86,14 +86,13 @@ public class XMLWriter {
     }
 
     public XMLWriter() {
-        super();
         charSet = CharacterSet.getCharacterSet("UTF-8");
         if(charSet == null) {
             throw EX_CHARSET_NULL;
         }
     }
 
-    public XMLWriter(Writer writer) {
+    public XMLWriter(final Writer writer) {
         this();
         this.writer = writer;
     }

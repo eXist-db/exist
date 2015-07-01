@@ -20,9 +20,9 @@ import org.xmldb.api.modules.XMLResource;
  */
 public class Retrieve {
 
-	protected static String driver = "org.exist.xmldb.DatabaseImpl";
+	protected static final String driver = "org.exist.xmldb.DatabaseImpl";
 
-	protected static String URI = "xmldb:exist://localhost:8080/exist/xmlrpc";
+	protected static final String URI = "xmldb:exist://localhost:8080/exist/xmlrpc";
 
 	protected static void usage() {
 		System.out.println("usage: org.exist.examples.xmldb.Retrieve collection docName");

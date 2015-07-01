@@ -125,7 +125,7 @@ public class FunAnalyzeString extends BasicFunction {
         }
     }
     
-    private class GroupPosition {
+    private static class GroupPosition {
 
         public GroupPosition(final int groupNumber, final int position) {
             this.groupNumber = groupNumber;

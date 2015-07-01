@@ -42,7 +42,7 @@ public class SessionManager {
     
     private final static Logger LOG = LogManager.getLogger(SessionManager.class);
     
-    private class QueryResult {
+    private static class QueryResult {
 
         long lastAccess;
         String queryString;

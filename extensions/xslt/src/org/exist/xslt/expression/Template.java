@@ -21,6 +21,7 @@
  */
 package org.exist.xslt.expression;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -266,7 +267,7 @@ public class Template extends Declaration implements Parameted, Comparable<Templ
         if (name != null)
         	dumper.display(" name = "+name);
         if (mode != null)
-        	dumper.display(" mode = "+mode);
+        	dumper.display(" mode = " + Arrays.toString(mode));
         if (attr_priority != null)
         	dumper.display(" priority = "+attr_priority);
         if (as != null)
@@ -288,7 +289,7 @@ public class Template extends Declaration implements Parameted, Comparable<Templ
         if (name != null)
         	result.append(" name = "+name.getStringValue());    
         if (mode != null)
-        	result.append(" mode = "+mode);    
+        	result.append(" mode = " + Arrays.toString(mode));
         if (attr_priority != null)
         	result.append(" priority = "+attr_priority);    
         if (as != null)

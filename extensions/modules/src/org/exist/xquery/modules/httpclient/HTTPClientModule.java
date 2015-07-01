@@ -147,7 +147,7 @@ public class HTTPClientModule extends AbstractInternalModule
 
             // Hostname / port
             final String proxyHost = props.getProperty("proxy.host");
-            final int proxyPort = Integer.valueOf(props.getProperty("proxy.port", "8080"));
+            final int proxyPort = Integer.parseInt(props.getProperty("proxy.port", "8080"));
 
             // Username / password
             final String proxyUser = props.getProperty("proxy.user");

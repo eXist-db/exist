@@ -562,8 +562,8 @@ public class Deployment {
             LOG.warn("The XQuery resource specified in the <setup> element was not found");
             return Sequence.EMPTY_SEQUENCE;
         }
-        final XQuery xqs = broker.getXQueryService();
-        final XQueryContext ctx = xqs.newContext(AccessContext.REST);
+        final XQuery xqs = broker.getBrokerPool().getXQueryService();
+        final XQueryContext ctx = new XQueryContext(broker.getBrokerPool(), AccessContext.REST);
         ctx.declareVariable("dir", tempDir.getAbsolutePath());
         final File home = broker.getConfiguration().getExistHome();
         ctx.declareVariable("home", home.getAbsolutePath());
@@ -579,8 +579,8 @@ public class Deployment {
 
         CompiledXQuery compiled;
         try {
-            compiled = xqs.compile(ctx, new FileSource(xquery, "UTF-8", false));
-            return xqs.execute(compiled, null);
+            compiled = xqs.compile(broker, ctx, new FileSource(xquery, "UTF-8", false));
+            return xqs.execute(broker, compiled, null);
         } catch (final PermissionDeniedException e) {
             throw new PackageException(e.getMessage(), e);
         }
@@ -753,10 +753,10 @@ public class Deployment {
      * Update repo.xml while copying it. For security reasons, make sure
      * any default password is removed before uploading.
      */
-    private class UpdatingDocumentReceiver extends DocumentBuilderReceiver {
+    private static class UpdatingDocumentReceiver extends DocumentBuilderReceiver {
 
         private String time;
-        private Stack<String> stack = new Stack<String>();
+        private Stack<String> stack = new Stack<>();
 
         public UpdatingDocumentReceiver( MemTreeBuilder builder, String time )
         {

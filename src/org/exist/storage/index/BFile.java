@@ -153,8 +153,8 @@ public class BFile extends BTree {
     protected int maxValueSize;
 
     public BFile(BrokerPool pool, byte fileId, boolean transactional, File file, DefaultCacheManager cacheManager,
-            double cacheGrowth, double thresholdBTree, double thresholdData) throws DBException {
-        super(pool, fileId, transactional, cacheManager, file, thresholdBTree);
+            double cacheGrowth, double thresholdData) throws DBException {
+        super(pool, fileId, transactional, cacheManager, file);
         fileHeader = (BFileHeader) getFileHeader();
         dataCache = new LRUCache(64, cacheGrowth, thresholdData, CacheManager.DATA_CACHE);
         dataCache.setFileName(file.getName());
@@ -357,7 +357,7 @@ public class BFile extends BTree {
         }
     }
 
-    private class RemoveCallback implements BTreeCallback {
+    private static class RemoveCallback implements BTreeCallback {
         long[] pointers = new long[128];
         int count = 0;
         
@@ -2184,7 +2184,7 @@ public class BFile extends BTree {
      * 
      * @author wolf
      */
-    private final class SimplePageInput extends VariableByteArrayInput
+    private final static class SimplePageInput extends VariableByteArrayInput
             implements PageInputStream {
 
         private long address = 0L;

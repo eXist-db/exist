@@ -108,14 +108,26 @@ public abstract class NamedResource extends Resource {
 		 * @param what the access right to check for
 		 * @return <code>true</code> if the given subject has the given permission, <code>false</code> otherwise
 		 */
-		public boolean hasPermission(char who, char what) {
+		public boolean hasPermission(final char who, final char what) {
 			int mask = convertPermissionBit(what);
 			switch(who) {
-				case Permission.ALL_CHAR: mask = mask | (mask << 3) | (mask << 6);
-				case Permission.USER_CHAR: mask <<= 6; break;
-				case Permission.GROUP_CHAR: mask <<= 3; break;
-				case Permission.OTHER_CHAR: break;
-				default: throw new IllegalArgumentException("illegal permission \"who\" code '" + who + "'");
+				case Permission.ALL_CHAR:
+					mask = mask | (mask << 3) | (mask << 6);
+					break;
+
+				case Permission.USER_CHAR:
+					mask <<= 6;
+					break;
+
+				case Permission.GROUP_CHAR:
+					mask <<= 3;
+					break;
+
+				case Permission.OTHER_CHAR:
+					break;
+
+				default:
+					throw new IllegalArgumentException("illegal permission \"who\" code '" + who + "'");
 			}
 			return (permissions.getMode() & mask) == mask;
 		}
@@ -177,10 +189,17 @@ public abstract class NamedResource extends Resource {
                                 if (all || matcher.group(1).indexOf('o') != -1) mask |= perms;
                                 int newPerms;
                                 switch(matcher.group(2).charAt(0)) {
-                                        case '=': newPerms = mask; break;
-                                        case '+': newPerms = permissions.getMode() | mask;
-                                        case '-': newPerms = permissions.getMode() & ~mask;
-                                        default: throw new RuntimeException("internal error: illegal segment operator got through syntax regex, instruction string " + instructions);
+										case '=':
+											newPerms = mask;
+											break;
+                                        case '+':
+											newPerms = permissions.getMode() | mask;
+											break;
+                                        case '-':
+											newPerms = permissions.getMode() & ~mask;
+											break;
+                                        default:
+											throw new RuntimeException("internal error: illegal segment operator got through syntax regex, instruction string " + instructions);
                                 }
                                 permissions.setMode(newPerms);
                         }

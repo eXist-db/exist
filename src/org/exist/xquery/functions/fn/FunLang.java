@@ -47,7 +47,7 @@ import org.exist.xquery.value.Type;
  */
 public class FunLang extends Function {
 	
-	public static String queryString = "(ancestor-or-self::*/@xml:lang)[position() = last()]";
+	private static final String queryString = "(ancestor-or-self::*/@xml:lang)[position() = last()]";
 	public CompiledXQuery query; 
 	
     protected static final String FUNCTION_DESCRIPTION_1_PARAM =
@@ -98,7 +98,7 @@ public class FunLang extends Function {
 	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
 		super.analyze(contextInfo);
 		try {
-			query = context.getBroker().getXQueryService().compile(context, queryString);
+			query = context.getBroker().getBrokerPool().getXQueryService().compile(context.getBroker(), context, queryString);
 		} catch (final PermissionDeniedException e) {
 			throw new XPathException(this, e);
 		}		

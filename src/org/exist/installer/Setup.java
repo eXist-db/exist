@@ -58,14 +58,14 @@ public class Setup {
             System.err.println("No password specified. Admin password will be empty.");
             return;
         }
-        int offset = 0;
+//        int offset = 0;
         String passwd = null;
         if (args[0].startsWith("pass:")) {
             passwd = args[0].substring(5);
-            offset = 1;
+//            offset = 1;
         }
         System.setProperty(AutoDeploymentTrigger.AUTODEPLOY_PROPERTY, "off");
-        final XQueryService query = initDb(passwd);
+//        final XQueryService query = initDb(passwd);
 //        if (query != null) {
 //            try {
 //                installApps(query, args, offset);
