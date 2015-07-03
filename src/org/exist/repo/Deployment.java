@@ -22,6 +22,7 @@
 package org.exist.repo;
 
 import org.exist.SystemProperties;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.memtree.DocumentBuilderReceiver;
 import org.exist.dom.memtree.InMemoryNodeSet;
 import org.exist.dom.memtree.DocumentImpl;
@@ -160,8 +161,8 @@ public class Deployment {
      * Install and deploy a give xar archive. Dependencies are installed from
      * the PackageLoader.
      *
-     * @param xar the .xar file to install
-     * @param loader package loader to use
+     * @param xar         the .xar file to install
+     * @param loader      package loader to use
      * @param enforceDeps when set to true, the method will throw an exception if a dependency could not be resolved
      *                    or an older version of the required dependency is installed and needs to be replaced.
      */
@@ -217,8 +218,8 @@ public class Deployment {
                                     LOG.debug("Package " + pkgName + " needs to be upgraded");
                                     if (enforceDeps) {
                                         throw new PackageException("Package requires version " + version.toString() +
-                                            " of package " + pkgName +
-                                            ". Installed version is " + latest.getVersion() + ". Please upgrade!");
+                                                " of package " + pkgName +
+                                                ". Installed version is " + latest.getVersion() + ". Please upgrade!");
                                     }
                                 }
                             } else {
@@ -270,14 +271,14 @@ public class Deployment {
         final DependencyVersion depVersion = version.getDependencyVersion();
         if (!depVersion.isCompatible(procVersion)) {
             throw new PackageException("Package requires eXistdb version " + version.toString() + ". " +
-                "Installed version is " + procVersion);
+                    "Installed version is " + procVersion);
         }
     }
 
     public String undeploy(String pkgName, ExistRepository repo) throws PackageException {
         final File packageDir = getPackageDir(pkgName, repo);
         if (packageDir == null)
-            // fails silently if package dir is not found?
+        // fails silently if package dir is not found?
             {return null;}
         final DocumentImpl repoXML = getRepoXML(packageDir);
         final Package pkg = getPackage(pkgName, repo);
@@ -433,7 +434,7 @@ public class Deployment {
                 FileUtils.forceDelete(fileToDelete);
             } catch (final IOException e) {
                 LOG.warn("Cleanup: failed to delete file " + fileToDelete.getAbsolutePath() + " in package " +
-                    pkgName);
+                        pkgName);
             }
         }
     }
@@ -477,7 +478,7 @@ public class Deployment {
             }
         }
         final TransactionManager mgr = broker.getBrokerPool().getTransactionManager();
-        try(final Txn txn = mgr.beginTransaction()) {
+        try (final Txn txn = mgr.beginTransaction()) {
             Collection collection = broker.getOrCreateCollection(txn, targetCollection);
             if (collection != null)
                 {broker.removeCollection(txn, collection);}
@@ -516,7 +517,7 @@ public class Deployment {
         final DocumentImpl updatedXML = builder.getDocument();
 
         final TransactionManager mgr = broker.getBrokerPool().getTransactionManager();
-        try(final Txn txn = mgr.beginTransaction()) {
+        try (final Txn txn = mgr.beginTransaction()) {
             final Collection collection = broker.getOrCreateCollection(txn, targetCollection);
             final XmldbURI name = XmldbURI.createInternal("repo.xml");
             final IndexInfo info = collection.validateXMLResource(txn, broker, name, updatedXML);
@@ -573,8 +574,8 @@ public class Deployment {
         } else
             {ctx.declareVariable("target", Sequence.EMPTY_SEQUENCE);}
         if (preInstall)
-            // when running pre-setup scripts, base path should point to directory
-            // because the target collection does not yet exist
+        // when running pre-setup scripts, base path should point to directory
+        // because the target collection does not yet exist
             {ctx.setModuleLoadPath(tempDir.getAbsolutePath());}
 
         CompiledXQuery compiled;
@@ -596,7 +597,7 @@ public class Deployment {
     private void scanDirectory(File directory, XmldbURI target, boolean inRootDir) {
         final TransactionManager mgr = broker.getBrokerPool().getTransactionManager();
         Collection collection = null;
-        try(final Txn txn = mgr.beginTransaction()) {
+        try (final Txn txn = mgr.beginTransaction()) {
             collection = broker.getOrCreateCollection(txn, target);
             setPermissions(true, null, collection.getPermissionsNoLock());
             broker.saveCollection(txn, collection);
@@ -635,26 +636,24 @@ public class Deployment {
                     {mime = MimeType.BINARY_TYPE;}
                 final XmldbURI name = XmldbURI.create(file.getName());
 
-                try(final Txn txn = mgr.beginTransaction()) {
+                try (final Txn txn = mgr.beginTransaction()) {
                     if (mime.isXMLType()) {
-                        final InputSource is = new InputSource(file.toURI().toASCIIString());
-                        final IndexInfo info = targetCollection.validateXMLResource(txn, broker, name, is);
-                        info.getDocument().getMetadata().setMimeType(mime.getName());
-                        final Permission permission = info.getDocument().getPermissions();
-                        setPermissions(false, mime, permission);
-
-                        targetCollection.store(txn, broker, info, is, false);
-                    } else {
-                        final long size = file.length();
-                        try(final FileInputStream is = new FileInputStream(file)) {
-                            final BinaryDocument doc =
-                                    targetCollection.addBinaryResource(txn, broker, name, is, mime.getName(), size);
-
-                            final Permission permission = doc.getPermissions();
+                        try {
+                            final InputSource is = new InputSource(file.toURI().toASCIIString());
+                            final IndexInfo info = targetCollection.validateXMLResource(txn, broker, name, is);
+                            info.getDocument().getMetadata().setMimeType(mime.getName());
+                            final Permission permission = info.getDocument().getPermissions();
                             setPermissions(false, mime, permission);
-                            doc.getMetadata().setMimeType(mime.getName());
-                            broker.storeXMLResource(txn, doc);
+                            targetCollection.store(txn, broker, info, is, false);
+                        } catch (final Exception e) {
+                            //check for .html ending
+                            if(mime.getName().equals(MimeType.HTML_TYPE.getName())){
+                                //store it
+                                storeBinary(targetCollection, file, mime, name, txn);
+                            }
                         }
+                    } else {
+                        storeBinary(targetCollection, file, mime, name, txn);
                     }
                     mgr.commit(txn);
                 } catch (final Exception e) {
@@ -664,16 +663,29 @@ public class Deployment {
         }
     }
 
+    private void storeBinary(Collection targetCollection, File file, MimeType mime, XmldbURI name, Txn txn) throws IOException, EXistException, PermissionDeniedException, LockException, TriggerException {
+        final long size = file.length();
+        try (final FileInputStream is = new FileInputStream(file)) {
+            final BinaryDocument doc =
+                    targetCollection.addBinaryResource(txn, broker, name, is, mime.getName(), size);
+
+            final Permission permission = doc.getPermissions();
+            setPermissions(false, mime, permission);
+            doc.getMetadata().setMimeType(mime.getName());
+            broker.storeXMLResource(txn, doc);
+        }
+    }
+
     /**
      * Set owner, group and permissions. For XQuery resources, always set the executable flag.
      * @param mime
      * @param permission
      */
     private void setPermissions(boolean isCollection, MimeType mime, Permission permission) throws PermissionDeniedException {
-        if (user != null){
+        if (user != null) {
             permission.setOwner(user);
         }
-        if (group != null){
+        if (group != null) {
             permission.setGroup(group);
         }
 
@@ -760,7 +772,7 @@ public class Deployment {
 
         public UpdatingDocumentReceiver( MemTreeBuilder builder, String time )
         {
-            super( builder, false );
+            super(builder, false);
             this.time = time;
         }
 
@@ -771,7 +783,7 @@ public class Deployment {
             if (attribs != null && "permissions".equals(qname.getLocalPart())) {
                 newAttrs = new AttrList();
                 for (int i = 0; i < attribs.getLength(); i++) {
-                    if (!"password". equals(attribs.getQName(i).getLocalPart())) {
+                    if (!"password".equals(attribs.getQName(i).getLocalPart())) {
                         newAttrs.addAttribute(attribs.getQName(i), attribs.getValue(i), attribs.getType(i));
                     }
                 }
