@@ -31,21 +31,22 @@ import org.xmldb.api.modules.XMLResource;
  */
 public class XQueryExample {
 
-    protected static String URI = "xmldb:exist://";
+    protected static final String URI = "xmldb:exist://";
 
-    protected static String driver = "org.exist.xmldb.DatabaseImpl";
+    protected static final String driver = "org.exist.xmldb.DatabaseImpl";
 
     /**
      * Read the xquery file and return as string.
      */
     protected static String readFile(String file) throws IOException {
-    	BufferedReader f = new BufferedReader(new FileReader(file));
-    	String line;
-    	StringBuffer xml = new StringBuffer();
-    	while((line = f.readLine()) != null)
-    		xml.append(line);
-    	f.close();
-    	return xml.toString();
+    	try(BufferedReader f = new BufferedReader(new FileReader(file))) {
+            String line;
+            StringBuffer xml = new StringBuffer();
+            while ((line = f.readLine()) != null) {
+                xml.append(line);
+            }
+            return xml.toString();
+        }
     }
     
     public static void main( String args[] ) {

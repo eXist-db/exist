@@ -151,11 +151,6 @@ public class BTree extends Paged implements Lockable {
     /** Cache of BTreeNode(s) */
     protected Cache cache;
 
-    protected double growthThreshold;
-
-    /** Size of BTreeNode cache */
-    protected int buffers;
-
     /** Fileheader of a BTree file */
     private BTreeFileHeader fileHeader;
 
@@ -166,17 +161,12 @@ public class BTree extends Paged implements Lockable {
 
     protected boolean isTransactional;
 
-    protected BrokerPool pool;
-
     private double splitFactor = -1;
 
     protected BTree(BrokerPool pool, byte fileId, boolean transactional,
-            DefaultCacheManager cacheManager, double growthThreshold) throws DBException {
+            DefaultCacheManager cacheManager) throws DBException {
         super(pool);
-        this.pool = pool;
         this.cacheManager = cacheManager;
-        this.buffers = cacheManager.getDefaultInitialSize();
-        this.growthThreshold = growthThreshold;
         this.fileId = fileId;
         fileHeader = (BTreeFileHeader) getFileHeader();
         fileHeader.setPageCount(0);
@@ -187,9 +177,9 @@ public class BTree extends Paged implements Lockable {
     }
 
     public BTree(BrokerPool pool, byte fileId, boolean transactional,
-            DefaultCacheManager cacheManager, File file, double growthThreshold)
+            DefaultCacheManager cacheManager, File file)
             throws DBException {
-        this(pool, fileId, transactional, cacheManager, growthThreshold);
+        this(pool, fileId, transactional, cacheManager);
         setFile(file);
     }
 

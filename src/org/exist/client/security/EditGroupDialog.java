@@ -119,7 +119,6 @@ public class EditGroupDialog extends GroupDialog {
         }
         
         //2) only add those in this dialog
-        final Set<String> groupManagers = new HashSet<String>();
         for(int i = 0; i < getGroupMembersTableModel().getRowCount(); i++) {
             final boolean isManager = (Boolean)getGroupMembersTableModel().getValueAt(i, 1);
             if(isManager) {

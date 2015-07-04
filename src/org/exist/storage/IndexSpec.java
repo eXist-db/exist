@@ -233,8 +233,8 @@ public class IndexSpec {
                     {result.append(spec.toString()).append('\n');}
             }
         }
-        for (final QName qName : qnameSpecs.keySet()) {
-            result.append(qnameSpecs.get(qName).toString()).append('\n');
+        for (final Map.Entry<QName, QNameRangeIndexSpec> qNameSpec : qnameSpecs.entrySet()) {
+            result.append(qNameSpec.getValue().toString()).append('\n');
         }
         return result.toString();
     }

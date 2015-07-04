@@ -90,7 +90,6 @@ public class EmbeddedDownloadThread extends Thread {
      */
     public void run() {
         logger.debug("Thread started." );
-        IOException exception=null;
         try {
             final EmbeddedDownload ed = new EmbeddedDownload();
             ed.setBrokerPool(brokerPool);
@@ -98,7 +97,6 @@ public class EmbeddedDownloadThread extends Thread {
             
         } catch (IOException ex) {
             logger.error(ex);
-            exception = ex;
             
         } finally {
             try { // NEEDED!

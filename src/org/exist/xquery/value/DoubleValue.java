@@ -132,7 +132,7 @@ public class DoubleValue extends NumericValue {
 				//if (Float.compare(value, 0.0f) && (value < Float.MIN_VALUE || value > Float.MAX_VALUE)
 				//	throw new XPathException("Value is out of range for type xs:float");
 				//return new FloatValue((float) value);
-				return new FloatValue(new Float(value).floatValue());
+				return new FloatValue((float)value);
 			case Type.UNTYPED_ATOMIC :
 				return new UntypedAtomicValue(getStringValue());
 			case Type.STRING :

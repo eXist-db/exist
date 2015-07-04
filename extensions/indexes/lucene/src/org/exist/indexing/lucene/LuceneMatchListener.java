@@ -296,7 +296,7 @@ public class LuceneMatchListener extends AbstractMatchListener {
 
     private NodePath getPath(NodeProxy proxy) {
         NodePath path = new NodePath();
-        IStoredNode node = (IStoredNode) proxy.getNode();
+        IStoredNode<?> node = (IStoredNode<?>) proxy.getNode();
         walkAncestor(node, path);
         return path;
     }
@@ -335,7 +335,7 @@ public class LuceneMatchListener extends AbstractMatchListener {
         }
     }
 
-    private class OffsetList {
+    private static class OffsetList {
 
         int[] offsets = new int[16];
         NodeId[] ids = new NodeId[16];

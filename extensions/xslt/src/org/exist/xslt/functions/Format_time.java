@@ -81,7 +81,7 @@ public class Format_time extends BasicFunction {
             TimeValue value = (TimeValue)args[0].itemAt(0);
             String picture = FormatFunctionConstants.translate(args[1].itemAt(0).getStringValue());
             String language = (args.length <= 2 || args[2].isEmpty()) ? null : args[2].itemAt(0).getStringValue();
-            String calendar = (args.length <= 2 || args[3].isEmpty()) ? null : args[3].itemAt(0).getStringValue();
+//            String calendar = (args.length <= 2 || args[3].isEmpty()) ? null : args[3].itemAt(0).getStringValue();
             String country = (args.length <= 2 || args[4].isEmpty()) ? null : args[4].itemAt(0).getStringValue();
             SimpleDateFormat format = null;
 

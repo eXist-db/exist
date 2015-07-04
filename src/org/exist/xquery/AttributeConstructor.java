@@ -155,10 +155,7 @@ public class AttributeConstructor extends NodeConstructor {
         result.append("{");        
 
 		for(final Object next : contents) {
-			if(next instanceof Expression)
-				{result.append(next.toString());}
-			else
-				{result.append(next.toString());}
+			result.append(next.toString());
 		}      
 		result.append("} ");
 		return result.toString();

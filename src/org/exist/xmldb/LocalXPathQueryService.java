@@ -199,8 +199,8 @@ public class LocalXPathQueryService extends AbstractLocalService implements XPat
             }
             setupContext(null, context);
 
-            final XQuery xquery = broker.getXQueryService();
-            result = xquery.execute(expr, contextSet, properties);
+            final XQuery xquery = brokerPool.getXQueryService();
+            result = xquery.execute(broker, expr, contextSet, properties);
         } catch (final Exception e) {
             // need to catch all runtime exceptions here to be able to release locked documents
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
@@ -238,13 +238,13 @@ public class LocalXPathQueryService extends AbstractLocalService implements XPat
 
             final XmldbURI[] docs = new XmldbURI[]{XmldbURI.create(collection.getName())};
 
-            final XQuery xquery = broker.getXQueryService();
-            final XQueryPool pool = xquery.getXQueryPool();
+            final XQuery xquery = brokerPool.getXQueryService();
+            final XQueryPool pool = brokerPool.getXQueryPool();
 
             XQueryContext context;
             CompiledXQuery compiled = pool.borrowCompiledXQuery(broker, source);
             if (compiled == null) {
-                context = xquery.newContext(accessCtx);
+                context = new XQueryContext(broker.getBrokerPool(), accessCtx);
             } else {
                 context = compiled.getContext();
             }
@@ -259,11 +259,11 @@ public class LocalXPathQueryService extends AbstractLocalService implements XPat
             setupContext(source, context);
 
             if (compiled == null) {
-                compiled = xquery.compile(context, source);
+                compiled = xquery.compile(broker, context, source);
             }
 
             try {
-                final Sequence result = xquery.execute(compiled, null, properties);
+                final Sequence result = xquery.execute(broker, compiled, null, properties);
                 if(LOG.isDebugEnabled()) {
                     LOG.debug("query took " + (System.currentTimeMillis() - start) + " ms.");
                 }
@@ -299,12 +299,12 @@ public class LocalXPathQueryService extends AbstractLocalService implements XPat
 
     private Either<XPathException, CompiledExpression> compileAndCheck(final DBBroker broker, final Txn transaction, final String query) throws XMLDBException {
         final long start = System.currentTimeMillis();
-        final XQuery xquery = broker.getXQueryService();
-        final XQueryContext context = xquery.newContext(accessCtx);
+        final XQuery xquery = broker.getBrokerPool().getXQueryService();
+        final XQueryContext context = new XQueryContext(broker.getBrokerPool(), accessCtx);
 
         try {
             setupContext(null, context);
-            final CompiledExpression expr = xquery.compile(context, query);
+            final CompiledExpression expr = xquery.compile(broker, context, query);
             if(LOG.isDebugEnabled()) {
                 LOG.debug("compilation took " + (System.currentTimeMillis() - start));
             }

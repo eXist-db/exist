@@ -40,7 +40,7 @@ public class CaseVariants {
      */
 
     public static int[] getCaseVariants(int code) {
-        final int mono = (Integer) monoVariants.get(code);
+//        final int mono = (Integer) monoVariants.get(code);
         //UNDERSTAND: is it safe?
 //        if (mono != monoVariants.getDefaultValue()) {
 //            return new int[]{mono};
@@ -58,7 +58,7 @@ public class CaseVariants {
      * Get the case variants of roman letters (A-Z, a-z), other than the letters A-Z and a-z themselves
      */
 
-    public static int[] ROMAN_VARIANTS = {0x0130, 0x0131, 0x212A, 0x017F};
+    static final int[] ROMAN_VARIANTS = {0x0130, 0x0131, 0x212A, 0x017F};
 
     /**
      * The following data was generated from the Unicode database as follows:

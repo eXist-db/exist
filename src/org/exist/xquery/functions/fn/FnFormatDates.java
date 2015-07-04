@@ -383,9 +383,11 @@ public class FnFormatDates extends BasicFunction {
             if (widths != null) {
                 final int min = widths[0];
                 final int max = widths[1];
+                final StringBuilder ws = new StringBuilder();
                 while(name.length() < min) {
-                    name = name + " ";
+                    ws.append(" ");
                 }
+                name = name + ws.toString();
 
                 if(name.length() > max) {
                     name = name.substring(0, max);

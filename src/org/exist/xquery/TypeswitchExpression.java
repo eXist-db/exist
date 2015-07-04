@@ -43,7 +43,7 @@ public class TypeswitchExpression extends AbstractExpression {
     /**
      * Internal class used to hold a single case clause.
      */
-    private class Case {
+    private static class Case {
         SequenceType[] types;
         Expression returnClause;
         QName variable;

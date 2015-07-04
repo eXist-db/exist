@@ -55,7 +55,7 @@ public class NodeTest {
             doc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"),Lock.READ_LOCK);
             NodeList children = doc.getChildNodes();
             for (int i = 0; i < children.getLength(); i++) {
-                IStoredNode<?> node = (IStoredNode) children.item(i);
+                IStoredNode<?> node = (IStoredNode<?>) children.item(i);
                 node.getNodeId();
                 node.getNodeName();
             }
@@ -75,7 +75,7 @@ public class NodeTest {
             
             //Testing getChildNodes()
             NodeList cl = rootNode.getChildNodes();
-            assertEquals(((IStoredNode)rootNode).getChildCount(), cl.getLength());
+            assertEquals(((IStoredNode<?>)rootNode).getChildCount(), cl.getLength());
             assertEquals(4, cl.getLength());
         	assertEquals(cl.item(0).getNodeName(), "a");
         	assertEquals(cl.item(1).getNodeName(), "b");

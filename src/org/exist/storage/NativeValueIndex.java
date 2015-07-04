@@ -173,7 +173,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
             LOG.debug("Creating '" + file.getName() + "'...");
             nativeFile = new BFile(broker.getBrokerPool(), id, false, file,
                 broker.getBrokerPool().getCacheManager(), cacheGrowth,
-                cacheKeyThresdhold, cacheValueThresHold);
+                cacheValueThresHold);
             config.setProperty(getConfigKeyForFile(), nativeFile);
         }
         dbValues = nativeFile;
@@ -1344,11 +1344,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
             return( null );
         }
 
-        if( !( atomic instanceof Indexable ) ) {
-            LOG.warn( "Node value '" + Type.getTypeName( xpathType ) + "(" + value + ")'" + " cannot be used as index key. It does not implement " + Indexable.class.getName() );
-            return( null );
-        }
-        return( atomic );
+        return atomic;
     }
 
 
@@ -1385,7 +1381,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
     //*
     //***************************************************************************/
 
-    private class ExactMatcher implements TermMatcher
+    private static class ExactMatcher implements TermMatcher
     {
         private String expr;
 
@@ -1401,7 +1397,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
     }
 
 
-    private class ContainsMatcher implements TermMatcher
+    private static class ContainsMatcher implements TermMatcher
     {
         private String expr;
 
@@ -1417,7 +1413,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
     }
 
 
-    private class StartsWithMatcher implements TermMatcher
+    private static class StartsWithMatcher implements TermMatcher
     {
         private String expr;
 
@@ -1433,7 +1429,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
     }
 
 
-    private class EndsWithMatcher implements TermMatcher
+    private static class EndsWithMatcher implements TermMatcher
     {
         private String expr;
 
@@ -1449,7 +1445,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
     }
 
 
-    private class CollatorMatcher implements TermMatcher
+    private static class CollatorMatcher implements TermMatcher
     {
         private String   expr;
         private int      truncation;

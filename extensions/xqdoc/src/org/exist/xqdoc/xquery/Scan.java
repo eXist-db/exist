@@ -161,12 +161,12 @@ public class Scan extends BasicFunction {
     }
 
     private Sequence normalize(NodeValue input) throws IOException, XPathException {
-        XQuery xquery = context.getBroker().getXQueryService();
+        XQuery xquery = context.getBroker().getBrokerPool().getXQueryService();
         if (normalizeXQuery == null) {
             Source source = new ClassLoaderSource(NORMALIZE_XQUERY);
-            XQueryContext xc = xquery.newContext(AccessContext.INITIALIZE);
+            XQueryContext xc = new XQueryContext(context.getBroker().getBrokerPool(), AccessContext.INITIALIZE);
             try {
-                normalizeXQuery = xquery.compile(xc, source);
+                normalizeXQuery = xquery.compile(context.getBroker(), xc, source);
             } catch(final PermissionDeniedException e) {
                 throw new XPathException(this, e);
             }
@@ -174,7 +174,7 @@ public class Scan extends BasicFunction {
         
         try {
             normalizeXQuery.getContext().declareVariable("xqdoc:doc", input);
-            return xquery.execute(normalizeXQuery, Sequence.EMPTY_SEQUENCE);
+            return xquery.execute(context.getBroker(), normalizeXQuery, Sequence.EMPTY_SEQUENCE);
         } catch(final PermissionDeniedException e) {
             throw new XPathException(this, e);
         }

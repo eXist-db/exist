@@ -1244,6 +1244,7 @@ public abstract class Serializer implements XMLReader {
 			collectionId = collection;
 		}
 
+		@Override
 		public Source resolve(String href, String base) throws TransformerException {
 			LOG.debug("resolving stylesheet ref " + href);
 			if (href.indexOf(':') != Constants.STRING_NOT_FOUND)
@@ -1261,16 +1262,19 @@ public abstract class Serializer implements XMLReader {
     /**
      * An error listener that just rethrows the exception
      */
-    private class ErrorListener implements javax.xml.transform.ErrorListener {
+    private static class ErrorListener implements javax.xml.transform.ErrorListener {
 
+		@Override
         public void warning(TransformerException exception) throws TransformerException {
             LOG.warn("Warning while applying stylesheet: " + exception.getMessage(), exception);
         }
 
+		@Override
         public void error(TransformerException exception) throws TransformerException {
             throw exception;
         }
 
+		@Override
         public void fatalError(TransformerException exception) throws TransformerException {
             throw exception;
         }

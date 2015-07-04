@@ -123,7 +123,7 @@ public class JNDIModule extends AbstractInternalModule
 		HashMap contexts = (HashMap)context.getXQueryContextVar( JNDIModule.JNDICONTEXTS_VARIABLE );
 		
 		if( contexts != null ) {	
-		 	jndiContext = (Context)contexts.get( new Long( ctxID ) );
+		 	jndiContext = (Context)contexts.get( Long.valueOf( ctxID ) );
 		}
 		
 		return( jndiContext );
@@ -154,7 +154,7 @@ public class JNDIModule extends AbstractInternalModule
 		long ctxID = getID();
 
 		// place the connection in the connections map
-		contexts.put( new Long( ctxID ), jndiContext );
+		contexts.put( Long.valueOf( ctxID ), jndiContext );
 
 		// store the updated connections map back in the context
 		context.setXQueryContextVar( JNDIModule.JNDICONTEXTS_VARIABLE, contexts );
@@ -185,7 +185,7 @@ public class JNDIModule extends AbstractInternalModule
 	/**
 	 * Closes a specified JNDI Context for the specified XQueryContext
 	 * 
-	 * @param xqueryContext 	The context to close JNDI Contexts for
+	 * @param context 	The context to close JNDI Contexts for
 	 * @param ctxID 			The ID of the JNDI Context to retrieve from the Context of the XQuery
 	 * @param contexts 			The contexts hashmap
 	 */
@@ -195,7 +195,7 @@ public class JNDIModule extends AbstractInternalModule
 		Context ctx = null;
 
 		if( contexts != null ) {	
-			ctx = (Context)contexts.get( new Long( ctxID ) );
+			ctx = (Context)contexts.get( Long.valueOf( ctxID ) );
 			
 			if( ctx != null ) {
 				try {

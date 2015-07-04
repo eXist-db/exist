@@ -66,6 +66,7 @@ import org.exist.util.Configuration.StartupTriggerConfig;
 import org.exist.xmldb.ShutdownListener;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.PerformanceStats;
+import org.exist.xquery.XQuery;
 import org.expath.pkg.repo.PackageException;
 
 import java.io.File;
@@ -176,6 +177,10 @@ public class BrokerPool implements Database {
 
     private static Observer statusObserver = null;
     private StatusReporter statusReporter = null;
+
+    private final XQuery xqueryService = new XQuery();
+
+
 
     /**
      * Whether of not the JVM should run the shutdown thread.
@@ -1403,6 +1408,15 @@ public class BrokerPool implements Database {
     }
 
     /**
+     * Retuns the XQuery Service
+     *
+     * @return The XQuery service
+     */
+    public XQuery getXQueryService() {
+        return xqueryService;
+    }
+
+    /**
      * Returns a monitor in which the database instance's <strong>running</strong> XQueries are managed.
      *
      * @return The monitor
@@ -1688,11 +1702,11 @@ public class BrokerPool implements Database {
             if(activeBrokers.remove(Thread.currentThread()) == null) {
                 LOG.error("release() has been called from the wrong thread for broker " + broker.getId());
                 // Cleanup the state of activeBrokers
-                for(final Thread t : activeBrokers.keySet()) {
-                    if(activeBrokers.get(t) == broker) {
+                for(final Entry<Thread, DBBroker> activeBroker : activeBrokers.entrySet()) {
+                    if(activeBroker.getValue() == broker) {
                         final EXistException ex = new EXistException();
-                        LOG.error("release() has been called from '" + Thread.currentThread() + "', but occupied at '" + t + "'.", ex);
-                        activeBrokers.remove(t);
+                        LOG.error("release() has been called from '" + Thread.currentThread() + "', but occupied at '" + activeBroker.getKey() + "'.", ex);
+                        activeBrokers.remove(activeBroker.getKey());
                         break;
                     }
                 }
@@ -2120,7 +2134,7 @@ public class BrokerPool implements Database {
         System.err.println(s);
     }
 
-    private class StatusReporter extends Observable implements Runnable {
+    private static class StatusReporter extends Observable implements Runnable {
 
         private String status;
         private volatile boolean terminate = false;

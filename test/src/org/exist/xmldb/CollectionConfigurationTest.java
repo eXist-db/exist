@@ -21,6 +21,7 @@
  */
 package org.exist.xmldb;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.exist.security.Account;
 import org.junit.After;
@@ -750,7 +751,7 @@ public class CollectionConfigurationTest {
         assertEquals(0, result.getSize());
     }
 
-   @Test
+   @Test @Ignore
    public void rangeIndex1() throws XMLDBException {
        Collection testCollection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
        
@@ -867,7 +868,7 @@ public class CollectionConfigurationTest {
        assertEquals(1, result.getSize());
   }   
 
-   @Test
+   @Test @Ignore
     public void rangeIndex2() throws XMLDBException {
        Collection testCollection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
 
@@ -984,7 +985,7 @@ public class CollectionConfigurationTest {
        assertEquals(1, result.getSize());
   }
 
-   @Test
+   @Test @Ignore
     public void rangeIndex3() throws XMLDBException {
         Collection testCollection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
         
@@ -1069,7 +1070,7 @@ public class CollectionConfigurationTest {
         assertTrue(exceptionCaught);
     }
 
-   @Test
+   @Test @Ignore
    public void rangeIndexOverAttributes() throws XMLDBException {
        Collection testCollection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
        

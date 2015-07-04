@@ -1498,9 +1498,9 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
         if(children.getLength() == 0) {
             return false;
         }
-        IStoredNode child;
+        IStoredNode<?> child;
         for(int i = 0; i < children.getLength(); i++) {
-            child = (IStoredNode) children.item(i);
+            child = (IStoredNode<?>) children.item(i);
             if(child.getQName().equals(qname)) {
                 return true;
             }

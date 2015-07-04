@@ -219,7 +219,7 @@ public class Deploy extends BasicFunction {
 		super.resetState(postOptimization);
 	}
 
-    private class RepoPackageLoader implements PackageLoader {
+    private static class RepoPackageLoader implements PackageLoader {
 
         private String repoURL;
 

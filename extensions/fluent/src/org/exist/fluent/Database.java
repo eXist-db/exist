@@ -352,7 +352,7 @@ public class Database {
 	private Sequence adoptInternal(Object o) {
 		DBBroker broker = acquireBroker();
 		try {
-			XQueryContext context = broker.getXQueryService().newContext(AccessContext.INTERNAL_PREFIX_LOOKUP);
+			XQueryContext context = new XQueryContext(broker.getBrokerPool(), AccessContext.INTERNAL_PREFIX_LOOKUP);
 			context.declareNamespaces(namespaceBindings.getCombinedMap());
 			context.setBackwardsCompatibility(false);
 			context.setStaticallyKnownDocuments(DocumentSet.EMPTY_DOCUMENT_SET);

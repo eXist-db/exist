@@ -109,7 +109,7 @@ public class NativeSerializer extends Serializer {
     	
     	// iterate through children
     	for (int i = 0; i < children.getLength(); i++) {
-    		final IStoredNode node = (IStoredNode) children.item(i);
+    		final IStoredNode<?> node = (IStoredNode<?>) children.item(i);
     		try(final INodeIterator domIter = broker.getNodeIterator(node)) {
                 domIter.next();
                 final NodeProxy p = new NodeProxy(node);

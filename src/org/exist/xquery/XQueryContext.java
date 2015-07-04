@@ -3573,7 +3573,7 @@ public class XQueryContext implements BinaryValueManager, Context
     // ====================================================================================
 
     
-    private class ContextUpdateListener implements UpdateListener {
+    private static class ContextUpdateListener implements UpdateListener {
 
         private List<UpdateListener> listeners = new ArrayList<UpdateListener>();
 

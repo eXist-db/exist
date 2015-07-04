@@ -8,7 +8,7 @@ package org.exist.security;
  */
 public class NFSv4ACL {
 
-    private class nfs4ace {
+    private static class nfs4ace {
       int type;
       int flag;
       int access_mask;

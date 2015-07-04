@@ -235,7 +235,7 @@ public class RpcConnection implements RpcAPI {
 
     protected QueryResult doQuery(final DBBroker broker, final CompiledXQuery compiled,
             final NodeSet contextSet, final Map<String, Object> parameters) throws XPathException, EXistException, PermissionDeniedException {
-        final XQuery xquery = broker.getXQueryService();
+        final XQuery xquery = broker.getBrokerPool().getXQueryService();
 
         checkPragmas(compiled.getContext(), parameters);
         LockedDocumentMap lockedDocuments = null;
@@ -246,7 +246,7 @@ public class RpcConnection implements RpcAPI {
                 compiled.getContext().setProtectedDocs(lockedDocuments);
             }
             final Properties outputProperties = new Properties();
-            final Sequence result = xquery.execute(compiled, contextSet, outputProperties);
+            final Sequence result = xquery.execute(broker, compiled, contextSet, outputProperties);
             // pass last modified date to the HTTP response
             HTTPUtils.addLastModifiedHeader(result, compiled.getContext());
             LOG.info("query took " + (System.currentTimeMillis() - start) + "ms.");
@@ -286,12 +286,12 @@ public class RpcConnection implements RpcAPI {
      */
     @Deprecated
     private CompiledXQuery compile(final DBBroker broker, final Source source, final Map<String, Object> parameters) throws XPathException, IOException, PermissionDeniedException {
-        final XQuery xquery = broker.getXQueryService();
-        final XQueryPool pool = xquery.getXQueryPool();
+        final XQuery xquery = broker.getBrokerPool().getXQueryService();
+        final XQueryPool pool = broker.getBrokerPool().getXQueryPool();
         CompiledXQuery compiled = pool.borrowCompiledXQuery(broker, source);
         XQueryContext context;
         if (compiled == null) {
-            context = xquery.newContext(AccessContext.XMLRPC);
+            context = new XQueryContext(broker.getBrokerPool(), AccessContext.XMLRPC);
         } else {
             context = compiled.getContext();
         }
@@ -333,7 +333,7 @@ public class RpcConnection implements RpcAPI {
             context.setStaticallyKnownDocuments(new XmldbURI[]{context.getBaseURI().toXmldbURI()});
         }
         if (compiled == null) {
-            compiled = xquery.compile(context, source);
+            compiled = xquery.compile(broker, context, source);
         }
         return compiled;
     }
@@ -728,7 +728,7 @@ public class RpcConnection implements RpcAPI {
             sr.touch();
             final VirtualTempFile vfile = sr.result;
 
-            final long longOffset = Long.valueOf(offset);
+            final long longOffset = Long.parseLong(offset);
             if (longOffset < 0 || longOffset > vfile.length()) {
                 factory.resultSets.remove(resultId);
                 throw new EXistException("No more data available");
@@ -2437,11 +2437,11 @@ public class RpcConnection implements RpcAPI {
         }
 
         if (metadata != null) {
-            for (final String key : metadata.keySet()) {
-                if (AXSchemaType.valueOfNamespace(key) != null) {
-                    u.setMetadataValue(AXSchemaType.valueOfNamespace(key), metadata.get(key));
-                } else if (EXistSchemaType.valueOfNamespace(key) != null) {
-                    u.setMetadataValue(EXistSchemaType.valueOfNamespace(key), metadata.get(key));
+            for (final Map.Entry<String, String> m : metadata.entrySet()) {
+                if (AXSchemaType.valueOfNamespace(m.getKey()) != null) {
+                    u.setMetadataValue(AXSchemaType.valueOfNamespace(m.getKey()), m.getValue());
+                } else if (EXistSchemaType.valueOfNamespace(m.getKey()) != null) {
+                    u.setMetadataValue(EXistSchemaType.valueOfNamespace(m.getKey()), m.getValue());
                 }
             }
         }
@@ -2479,11 +2479,11 @@ public class RpcConnection implements RpcAPI {
         }
 
         if (metadata != null) {
-            for (final String key : metadata.keySet()) {
-                if (AXSchemaType.valueOfNamespace(key) != null) {
-                    account.setMetadataValue(AXSchemaType.valueOfNamespace(key), metadata.get(key));
-                } else if (EXistSchemaType.valueOfNamespace(key) != null) {
-                    account.setMetadataValue(EXistSchemaType.valueOfNamespace(key), metadata.get(key));
+            for (final Map.Entry<String, String> m : metadata.entrySet()) {
+                if (AXSchemaType.valueOfNamespace(m.getKey()) != null) {
+                    account.setMetadataValue(AXSchemaType.valueOfNamespace(m.getKey()), m.getValue());
+                } else if (EXistSchemaType.valueOfNamespace(m.getKey()) != null) {
+                    account.setMetadataValue(EXistSchemaType.valueOfNamespace(m.getKey()), m.getValue());
                 }
             }
         }
@@ -2506,11 +2506,11 @@ public class RpcConnection implements RpcAPI {
 
             final Group role = new GroupAider(name);
 
-            for (final String key : metadata.keySet()) {
-                if (AXSchemaType.valueOfNamespace(key) != null) {
-                    role.setMetadataValue(AXSchemaType.valueOfNamespace(key), metadata.get(key));
-                } else if (EXistSchemaType.valueOfNamespace(key) != null) {
-                    role.setMetadataValue(EXistSchemaType.valueOfNamespace(key), metadata.get(key));
+            for (final Map.Entry<String, String> m : metadata.entrySet()) {
+                if (AXSchemaType.valueOfNamespace(m.getKey()) != null) {
+                    role.setMetadataValue(AXSchemaType.valueOfNamespace(m.getKey()), m.getValue());
+                } else if (EXistSchemaType.valueOfNamespace(m.getKey()) != null) {
+                    role.setMetadataValue(EXistSchemaType.valueOfNamespace(m.getKey()), m.getValue());
                 }
             }
 
@@ -2558,11 +2558,11 @@ public class RpcConnection implements RpcAPI {
             }
 
             if (metadata != null) {
-                for (final String key : metadata.keySet()) {
-                    if (AXSchemaType.valueOfNamespace(key) != null) {
-                        group.setMetadataValue(AXSchemaType.valueOfNamespace(key), metadata.get(key));
-                    } else if (EXistSchemaType.valueOfNamespace(key) != null) {
-                        group.setMetadataValue(EXistSchemaType.valueOfNamespace(key), metadata.get(key));
+                for (final Map.Entry<String, String> m : metadata.entrySet()) {
+                    if (AXSchemaType.valueOfNamespace(m.getKey()) != null) {
+                        group.setMetadataValue(AXSchemaType.valueOfNamespace(m.getKey()), m.getValue());
+                    } else if (EXistSchemaType.valueOfNamespace(m.getKey()) != null) {
+                        group.setMetadataValue(EXistSchemaType.valueOfNamespace(m.getKey()), m.getValue());
                     }
                 }
             }
@@ -2960,7 +2960,7 @@ public class RpcConnection implements RpcAPI {
         return properties;
     }
 
-    class CachedQuery {
+    static class CachedQuery {
 
         final PathExpr expression;
         final String queryString;
@@ -2973,7 +2973,7 @@ public class RpcConnection implements RpcAPI {
         }
     }
 
-    class DoctypeCount {
+    static class DoctypeCount {
 
         int count = 1;
         final DocumentType doctype;
@@ -2987,7 +2987,7 @@ public class RpcConnection implements RpcAPI {
         }
     }
 
-    class NodeCount {
+    static class NodeCount {
 
         int count = 1;
         final DocumentImpl doc;
@@ -3491,7 +3491,7 @@ public class RpcConnection implements RpcAPI {
      */
     private <R> Function3E<XmlRpcCompiledXQueryFunction<R>, R, EXistException, PermissionDeniedException, XPathException> compileQuery(final DBBroker broker, final Txn transaction, final Source source, final Map<String, Object> parameters) throws EXistException, PermissionDeniedException {
         return compiledOp -> {
-            final XQueryPool pool = broker.getXQueryService().getXQueryPool();
+            final XQueryPool pool = broker.getBrokerPool().getXQueryPool();
             CompiledXQuery compiled = null;
             try {
                 compiled = compile(broker, source, parameters);

@@ -55,7 +55,7 @@ public class TransformerFactoryAllocator {
 
     public final static String PROPERTY_BROKER_POOL = "transformer.brokerPool";
 
-    private static SAXTransformerFactory saxTransformerFactory = null;
+    private static volatile SAXTransformerFactory saxTransformerFactory = null;
 
     //private constructor
     private TransformerFactoryAllocator() {

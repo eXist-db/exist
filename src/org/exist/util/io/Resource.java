@@ -210,9 +210,11 @@ public class Resource extends File {
 				broker.saveCollection(transaction, child);
 				tm.commit(transaction);
 			} catch (final Exception e) {
+                LOG.error(e);
 				return false;
 			}
         } catch (final Exception e) {
+            LOG.error(e);
 			return false;
 		}
     	
@@ -241,10 +243,12 @@ public class Resource extends File {
 				broker.saveCollection(transaction, child);
 				tm.commit(transaction);
 			} catch (final Exception e) {
+                LOG.error(e);
 				return false;
 			}
 
 		} catch (final Exception e) {
+            LOG.error(e);
 			return false;
 		}
     	
@@ -671,6 +675,7 @@ public class Resource extends File {
 
 				tm.commit(transaction);
 			} catch (final Exception e) {
+                LOG.error(e);
 				throw new IOException(e);
 			} finally {
 				if (resource != null)
@@ -678,8 +683,8 @@ public class Resource extends File {
 			}
 			
 		} catch (final Exception e) {
+            LOG.error(e);
 			return false;
-			
 		}
 		
 		return true;
@@ -1253,12 +1258,14 @@ public class Resource extends File {
 					}
 				}
 			} catch (final Exception e) {
+                LOG.error(e);
 				throw new IOException(e);
 			} finally {
 				if (resource != null)
 					{resource.getUpdateLock().release(Lock.READ_LOCK);}
 			}
         } catch (final EXistException e) {
+            LOG.error(e);
             throw new IOException(e);
         }
 		

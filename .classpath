@@ -10,8 +10,6 @@
 	<classpathentry kind="src" path="extensions/indexes/lucene/test/src"/>
 	<classpathentry kind="src" path="extensions/indexes/ngram/src"/>
 	<classpathentry kind="src" path="extensions/indexes/ngram/test/src"/>
-	<classpathentry kind="src" path="extensions/versioning/src"/>
-	<classpathentry kind="src" path="extensions/versioning/test"/>
 	<classpathentry excluding="org/exist/xquery/modules/cqlparser/**|org/exist/xquery/modules/jfreechart/**|org/exist/xquery/modules/memcached/**|org/exist/xquery/modules/oracle/**|org/exist/xquery/modules/xmlcalabash/**|org/exist/xquery/modules/xmpp/**|org/exist/xquery/modules/xslfo/**" kind="src" path="extensions/modules/src"/>
 	<classpathentry kind="src" path="extensions/xslt/src"/>
 	<classpathentry kind="src" path="extensions/xslt/test/src"/>

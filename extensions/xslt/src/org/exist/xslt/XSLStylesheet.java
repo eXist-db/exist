@@ -277,10 +277,10 @@ public class XSLStylesheet extends Declaration
 	}
 
     private void functionDeclaration(Sequence contextSequence, Item contextItem) throws XPathException {
-    	for (org.exist.xslt.expression.Function function : functions) {
-    		//TODO: need interface for functions
-    		//context.declareFunction(function);
-    	}
+//    	for (org.exist.xslt.expression.Function function : functions) {
+//    		//TODO: need interface for functions
+//    		//context.declareFunction(function);
+//    	}
 	}
 
 //    public Set<AttributeSet> getAttributeSet(String name) throws XPathException {

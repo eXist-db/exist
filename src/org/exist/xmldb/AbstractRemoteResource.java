@@ -322,7 +322,7 @@ public abstract class AbstractRemoteResource extends AbstractRemote
                 params.add(table.get("handle"));
                 params.add(useLongOffset ? Long.toString(offset) : Integer.valueOf((int) offset));
                 table = (Map<?, ?>) collection.getClient().execute(method, params);
-                offset = useLongOffset ? Long.valueOf((String) table.get("offset")).longValue() : ((Integer) table.get("offset")).longValue();
+                offset = useLongOffset ? Long.parseLong((String) table.get("offset")) : ((Integer) table.get("offset"));
                 data = (byte[]) table.get("data");
 
                 // One for the local cached file

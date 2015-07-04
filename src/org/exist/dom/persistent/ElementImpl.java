@@ -556,10 +556,10 @@ public class ElementImpl extends NamedNode implements Element {
                 } else {
                     if(child > 1 && child <= children) {
                         final NodeList cl = getChildNodes();
-                        final IStoredNode last = (IStoredNode) cl.item(child - 2);
+                        final IStoredNode<?> last = (IStoredNode<?>) cl.item(child - 2);
                         insertAfter(transaction, nodes, last);
                     } else {
-                        final IStoredNode<?> last = (IStoredNode) getLastChild();
+                        final IStoredNode<?> last = (IStoredNode<?>) getLastChild();
                         appendChildren(transaction, last.getNodeId().nextSibling(), null,
                             new NodeImplRef(getLastNode(last)), path, nodes, listener);
                     }
@@ -1264,8 +1264,9 @@ public class ElementImpl extends NamedNode implements Element {
             } else {
                 listener = null;
             }
-            final IStoredNode<?> following = (IStoredNode) refChild;
-            final IStoredNode<?> previous = (IStoredNode) following.getPreviousSibling();
+
+            final IStoredNode<?> following = (IStoredNode<?>) refChild;
+            final IStoredNode<?> previous = (IStoredNode<?>) following.getPreviousSibling();
             if(previous == null) {
                 // there's no sibling node before the new node
                 final NodeId newId = following.getNodeId().insertBefore();
@@ -1320,8 +1321,8 @@ public class ElementImpl extends NamedNode implements Element {
                 listener = null;
             }
 
-            final IStoredNode<?> previous = (IStoredNode) refChild;
-            final IStoredNode<?> following = (IStoredNode) previous.getNextSibling();
+            final IStoredNode<?> previous = (IStoredNode<?>) refChild;
+            final IStoredNode<?> following = (IStoredNode<?>) previous.getNextSibling();
             final NodeId followingId = following == null ? null : following.getNodeId();
             final NodeId newNodeId = previous.getNodeId().insertNode(followingId);
             appendChildren(transaction, newNodeId, followingId, new NodeImplRef(getLastNode(previous)), path, nodes, listener);
@@ -1369,7 +1370,7 @@ public class ElementImpl extends NamedNode implements Element {
             IStoredNode<?> last = this;
             int i = nodes.getLength();
             for(; i > 0; i--) {
-                IStoredNode child = (IStoredNode) nodes.item(i - 1);
+                IStoredNode<?> child = (IStoredNode<?>) nodes.item(i - 1);
                 if(child.getNodeType() == Node.ATTRIBUTE_NODE) {
                     last = child;
                     break;
@@ -1417,8 +1418,8 @@ public class ElementImpl extends NamedNode implements Element {
             throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "Wrong node type");
         }
 
-        final IStoredNode<?> oldNode = (IStoredNode) oldChild;
-        final IStoredNode<?> newNode = (IStoredNode) newChild;
+        final IStoredNode<?> oldNode = (IStoredNode<?>) oldChild;
+        final IStoredNode<?> newNode = (IStoredNode<?>) newChild;
         if(!oldNode.getNodeId().getParentId().equals(nodeId)) {
             throw new DOMException(DOMException.NOT_FOUND_ERR,
                 "Node is not a child of this element");
@@ -1430,7 +1431,7 @@ public class ElementImpl extends NamedNode implements Element {
             attr.setValue(StringValue.trimWhitespace(StringValue.collapseWhitespace(attr.getValue())));
             attr.setType(AttrImpl.ID);
         }
-        IStoredNode previousNode = (IStoredNode) oldNode.getPreviousSibling();
+        IStoredNode<?> previousNode = (IStoredNode<?>) oldNode.getPreviousSibling();
         if(previousNode == null) {
             previousNode = this;
         } else {
@@ -1631,7 +1632,7 @@ public class ElementImpl extends NamedNode implements Element {
                 "Node is not a child of this element");
         }
 
-        IStoredNode previous = (IStoredNode) oldNode.getPreviousSibling();
+        IStoredNode<?> previous = (IStoredNode<?>) oldNode.getPreviousSibling();
         if(previous == null) {
             previous = this;
         } else {

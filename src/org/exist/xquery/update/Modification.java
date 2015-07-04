@@ -280,6 +280,7 @@ public abstract class Modification extends AbstractExpression
             
             txnMgr.commit(transaction);
         } catch (final Exception e) {
+			LOG.error(e);
             txnMgr.abort(transaction);
         } finally {
             txnMgr.close(transaction);

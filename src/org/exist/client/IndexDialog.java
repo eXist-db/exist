@@ -348,7 +348,7 @@ class IndexDialog extends JFrame {
 		
 	}
 	
-	public class ComboBoxCellRenderer extends JComboBox implements TableCellRenderer
+	public static class ComboBoxCellRenderer extends JComboBox implements TableCellRenderer
 	{
 		private static final long serialVersionUID = 1L;
 
@@ -377,7 +377,7 @@ class IndexDialog extends JFrame {
     }
     
 	
-    public class ComboBoxCellEditor extends DefaultCellEditor
+    public static class ComboBoxCellEditor extends DefaultCellEditor
     {
 		private static final long serialVersionUID = 1L;
 

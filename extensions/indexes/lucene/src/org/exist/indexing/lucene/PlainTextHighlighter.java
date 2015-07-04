@@ -91,7 +91,7 @@ public class PlainTextHighlighter {
                             stateList.add(stream.captureState());
                             while (stream.incrementToken() && t < terms.length) {
                                 // DW: what does this do
-                                text = text = stream.getAttribute(CharTermAttribute.class).toString();
+                                text = stream.getAttribute(CharTermAttribute.class).toString();
                                 if (text.equals(terms[t].text())) {
                                     stateList.add(stream.captureState());
                                     if (++t == terms.length) {

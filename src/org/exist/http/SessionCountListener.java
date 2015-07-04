@@ -23,28 +23,23 @@ package org.exist.http;
 
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
+import java.util.concurrent.atomic.AtomicLong;
 
-/**
- * Created by IntelliJ IDEA.
- * User: lcahlander
- * Date: Jul 27, 2010
- * Time: 10:31:47 PM
- * To change this template use File | Settings | File Templates.
- */
 public class SessionCountListener implements HttpSessionListener {
 
-    private static long activeSessions = 0;
-    
+    private static AtomicLong activeSessions = new AtomicLong();
+
+    @Override
     public void sessionCreated(HttpSessionEvent httpSessionEvent) {
-        activeSessions++;
+        activeSessions.incrementAndGet();
     }
 
+    @Override
     public void sessionDestroyed(HttpSessionEvent httpSessionEvent) {
-        if (activeSessions > 0)
-            {activeSessions--;}
+        activeSessions.decrementAndGet();
     }
 
     public static long getActiveSessions() {
-        return activeSessions;
+        return activeSessions.get();
     }
 }

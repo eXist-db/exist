@@ -54,21 +54,21 @@ public abstract class CacheBasicFunction extends BasicFunction {
         OUTPUT_PROPERTIES.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
     }
     
-	protected String serialize(Sequence q) throws SAXException, XPathException {
-		String tmp = "";
-		Serializer serializer = context.getBroker().getSerializer();
+	protected String serialize(final Sequence q) throws SAXException, XPathException {
+		final StringBuilder builder = new StringBuilder();
+		final Serializer serializer = context.getBroker().getSerializer();
         serializer.reset();
         serializer.setProperties(OUTPUT_PROPERTIES);
-        for (SequenceIterator i = q.iterate(); i.hasNext();){
-        	Item item = i.nextItem();
+        for (final SequenceIterator i = q.iterate(); i.hasNext();){
+        	final Item item = i.nextItem();
         	try {
-            	NodeValue node = (NodeValue)item;
-            	tmp += serializer.serialize(node);
+            	final NodeValue node = (NodeValue)item;
+            	builder.append(serializer.serialize(node));
         	} catch (ClassCastException e){
-        		tmp += item.getStringValue();
+        		builder.append(item.getStringValue());
         	}
         }
-        return tmp;
+        return builder.toString();
 	}
 	
 }

@@ -133,7 +133,6 @@ public class XMLDBStoreTask extends AbstractXMLDBTask
 
         } else {
             Resource   res;
-            File       file;
             Collection col          = root;
             String     relDir;
             String     prevDir      = null;
@@ -221,7 +220,6 @@ public class XMLDBStoreTask extends AbstractXMLDBTask
                         for( final String included : includedDirs ) {
 
                             try {
-                                file = new File( baseDir, included );
                                 log( "Creating " + included + " ...\n" );
 
                                 //TODO : use dedicated function in XmldbURI
@@ -261,7 +259,7 @@ public class XMLDBStoreTask extends AbstractXMLDBTask
                     for( final String included : includedFiles ) {
 
                         try {
-                            file = new File( baseDir, included );
+                            final File file = new File( baseDir, included );
                             log( "Storing " + included + " ...\n" );
 
                             //TODO : use dedicated function in XmldbURI

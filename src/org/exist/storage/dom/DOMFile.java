@@ -191,7 +191,7 @@ public class DOMFile extends BTree implements Lockable {
     private final AddValueLoggable addValueLog = new AddValueLoggable();
 
     public DOMFile(BrokerPool pool, byte id, String dataDir, Configuration config) throws DBException {
-        super(pool, id, true, pool.getCacheManager(), 0.01);
+        super(pool, id, true, pool.getCacheManager());
         lock = new ReentrantReadWriteLock(getFileName());
         fileHeader = (BTreeFileHeader)getFileHeader();
         fileHeader.setPageCount(0);
@@ -1264,7 +1264,7 @@ public class DOMFile extends BTree implements Lockable {
                 if (nodeID == null) {
                     SanityCheck.TRACE("Node " + node.getOwnerDocument().getDocId() + ":" +
                         nodeID + " not found.");
-                    throw new BTreeException("Node " + nodeID + " not found.");
+                    throw new BTreeException("Node not found.");
                 }
                 if (nodeID == NodeId.DOCUMENT_NODE) {
                     SanityCheck.TRACE("Node " + node.getOwnerDocument().getDocId() + ":" +
@@ -1798,7 +1798,7 @@ public class DOMFile extends BTree implements Lockable {
         buf.append("Pages used by ").append(doc.getURI());
         buf.append("; (docId: ").append(doc.getDocId()).append("): ");
         long pageNum = StorageAddress.pageFromPointer((
-            (IStoredNode) doc.getFirstChild()).getInternalAddress());
+            (IStoredNode<?>) doc.getFirstChild()).getInternalAddress());
         while (pageNum != Page.NO_PAGE) {
             final DOMPage page = getDOMPage(pageNum);
             final DOMFilePageHeader pageHeader = page.getPageHeader();
@@ -2259,7 +2259,7 @@ public class DOMFile extends BTree implements Lockable {
                 "tid " + ItemId.getId(loggable.tid) +
                 " not found on page " + page.getPageNum() +
                 "; contents: " + debugPageContents(page));
-            ByteConversion.byteToShort(rec.getPage().data, rec.offset);
+//            ByteConversion.byteToShort(rec.getPage().data, rec.offset);
             rec.offset += LENGTH_DATA_LENGTH;
             if (ItemId.isRelocated(rec.getTupleID()))
                 {rec.offset += LENGTH_ORIGINAL_LOCATION;}

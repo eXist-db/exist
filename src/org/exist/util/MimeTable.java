@@ -148,12 +148,12 @@ public class MimeTable {
     }
     
     public List<String> getAllExtensions(String mimeType) {
-    	final List<String> extns = new ArrayList<String>();
+    	final List<String> extns = new ArrayList<>();
     	
-    	for(final String extKey : extensions.keySet()) {
-            final MimeType mt = extensions.get(extKey);
+    	for(final Map.Entry<String, MimeType> extension : extensions.entrySet()) {
+            final MimeType mt = extension.getValue();
             if(mt.getName().equals(mimeType)) {
-                extns.add(extKey);
+                extns.add(extension.getKey());
             }
     	}
     	

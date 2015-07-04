@@ -242,18 +242,21 @@ public class GetFragmentBetween extends Function {
 
   private String getStartElementTag(XMLStreamReader reader) {
     final String elemName = reader.getLocalName();
-    String elemAttrString = "";
-    String elemNsString ="";
+
     final int nsCount = reader.getNamespaceCount();
+    final StringBuilder elemNsString = new StringBuilder();
     for (int ni = 0; ni < nsCount; ni++) {
       final String nsPrefix = reader.getNamespacePrefix(ni);
       final String nsUri = reader.getNamespaceURI(ni);
       String nsString = "xmlns:" + nsPrefix + "=\"" + nsUri + "\"";
-      if (nsPrefix != null && "".equals(nsPrefix))  
-        {nsString = "xmlns" + "=\"" + nsUri + "\"";}  
-      elemNsString = elemNsString + " " +nsString;
+      if (nsPrefix != null && "".equals(nsPrefix)) {
+        nsString = "xmlns" + "=\"" + nsUri + "\"";
+      }
+      elemNsString.append(" ").append(nsString);
     }
+
     final int attrCount = reader.getAttributeCount();
+    final StringBuilder elemAttrString = new StringBuilder();
     for (int j = 0; j < attrCount; j++) {
       final String attrNamePrefix = reader.getAttributePrefix(j);
       final String attrName = reader.getAttributeLocalName(j);
@@ -263,14 +266,14 @@ public class GetFragmentBetween extends Function {
       if (! (attrNamePrefix == null || attrNamePrefix.length() == 0))
         {attrString = attrNamePrefix + ":";}
       attrString = attrString + attrName + "=\"" + attrValue + "\"";
-      elemAttrString = elemAttrString + " " + attrString;
+      elemAttrString.append(" ").append(attrString);
     }
     final String elemPrefix = reader.getPrefix();
     String elemPart = "";
     if (! (elemPrefix == null || elemPrefix.length() == 0))
       {elemPart = elemPrefix + ":";}
     elemPart = elemPart + elemName;
-    final String elementString = "<" + elemPart + elemNsString + elemAttrString + ">";
+    final String elementString = "<" + elemPart + elemNsString.toString() + elemAttrString.toString() + ">";
     return elementString;
   }
 
