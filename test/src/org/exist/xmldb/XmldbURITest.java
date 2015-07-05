@@ -854,4 +854,13 @@ public class XmldbURITest {
         
         assertEquals("/db/colB/other", newUri.toString());
     }
+
+    @Test
+    public void lastSegment() {
+        XmldbURI uri = XmldbURI.create("/db/xmldb:something 1.xml");
+
+        assertEquals("/db/xmldb:something%201.xml", uri.toString());
+
+        assertEquals("xmldb:something%201.xml", uri.lastSegment().toString());
+    }
 }
