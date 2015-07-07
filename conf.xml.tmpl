@@ -820,9 +820,8 @@
 
             
             <!-- Modules to be enabled when building the distribution -->
-            <!--
             <module uri="http://exist-db.org/xquery/contentextraction"  class="org.exist.contentextraction.xquery.ContentExtractionModule" />
-            <module uri="http://exist-db.org/xquery/context"            class="org.exist.xquery.modules.context.ContextModule" />
+            <!--module uri="http://exist-db.org/xquery/context"            class="org.exist.xquery.modules.context.ContextModule" /-->
             <module uri="http://exist-db.org/xquery/counter"            class="org.exist.xquery.modules.counter.CounterModule" />
             <module uri="http://exist-db.org/xquery/datetime"           class="org.exist.xquery.modules.datetime.DateTimeModule" />
             <module uri="http://exist-db.org/xquery/httpclient"         class="org.exist.xquery.modules.httpclient.HTTPClientModule" />
@@ -831,9 +830,8 @@
             <module uri="http://exist-db.org/xquery/mail"               class="org.exist.xquery.modules.mail.MailModule" />
             <module uri="http://exist-db.org/xquery/scheduler"          class="org.exist.xquery.modules.scheduler.SchedulerModule" />
             <module uri="http://exist-db.org/xquery/sql"                class="org.exist.xquery.modules.sql.SQLModule" />
-            <module uri="http://exist-db.org/xquery/versioning/svn"     class="org.exist.versioning.svn.xquery.SVNModule" />
+            <!--module uri="http://exist-db.org/xquery/versioning/svn"     class="org.exist.versioning.svn.xquery.SVNModule" /-->
             <module uri="http://exist-db.org/xquery/xmldiff"            class="org.exist.xquery.modules.xmldiff.XmlDiffModule" />
-            -->
 
             <!--
                 XSLFO:
@@ -842,11 +840,9 @@
                 - org.exist.xquery.modules.xslfo.RenderXXepProcessorAdapter for RenderX's XEP
                 - org.exist.xquery.modules.xslfo.AntennaHouseProcessorAdapter for AntennaHouse Formatter
             -->
-            <!--
             <module uri="http://exist-db.org/xquery/xslfo" class="org.exist.xquery.modules.xslfo.XSLFOModule">
                 <parameter name="processorAdapter" value="org.exist.xquery.modules.xslfo.ApacheFopProcessorAdapter"/>
             </module>
-            -->
 
             <!--
                 exiftool:
