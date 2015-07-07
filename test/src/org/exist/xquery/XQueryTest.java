@@ -171,14 +171,14 @@ public class XQueryTest {
     @AfterClass
     public static void tearDownOnce() throws XMLDBException {
         DatabaseInstanceManager dim =
-                (DatabaseInstanceManager) DatabaseManager.getCollection("xmldb:exist:///db", "admin", null).getService("DatabaseInstanceManager", "1.0");
+                (DatabaseInstanceManager) DatabaseManager.getCollection("xmldb:exist:///db", "admin", "").getService("DatabaseInstanceManager", "1.0");
         dim.shutdown();
         DatabaseManager.deregisterDatabase(database);
         database = null;
     }
 
     private Collection getTestCollection() throws XMLDBException {
-        return DatabaseManager.getCollection("xmldb:exist:///db/test", "admin", null);
+        return DatabaseManager.getCollection("xmldb:exist:///db/test", "admin", "");
     }
 
     @Test

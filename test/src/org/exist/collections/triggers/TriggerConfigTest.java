@@ -151,7 +151,7 @@ public class TriggerConfigTest {
             IndexQueryService iqs = (IndexQueryService) root.getService("IndexQueryService", "1.0");
             iqs.configureCollection(EMPTY_COLLECTION_CONFIG);
 
-            Collection configCol =  DatabaseManager.getCollection(BASE_URI + "/db/system/config" + testCollection, "admin", null);
+            Collection configCol =  DatabaseManager.getCollection(BASE_URI + "/db/system/config" + testCollection, "admin", "");
             Resource resource = configCol.createResource("collection.xconf", "XMLResource");
             resource.setContent(COLLECTION_CONFIG);
             configCol.storeResource(resource);
@@ -173,7 +173,7 @@ public class TriggerConfigTest {
     @After
     public void cleanDB() {
         try {
-            Collection config = DatabaseManager.getCollection(BASE_URI + "/db/system/config" + testCollection, "admin", null);
+            Collection config = DatabaseManager.getCollection(BASE_URI + "/db/system/config" + testCollection, "admin", "");
             if (config != null) {
                 CollectionManagementService mgmt = (CollectionManagementService) config.getService("CollectionManagementService", "1.0");
                 mgmt.removeCollection(".");

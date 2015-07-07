@@ -294,7 +294,7 @@ public class ValidationFunctions_DTD_Test {
         database = (Database) cl.newInstance();
         database.setProperty("create-database", "true");
         DatabaseManager.registerDatabase(database);
-        root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", null);
+        root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", "");
         service = (XPathQueryService) root.getService( "XQueryService", "1.0" );
 
         try {
