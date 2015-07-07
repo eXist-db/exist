@@ -9,7 +9,6 @@ declare variable $t:TEST_COLLECTION := "xqunit";
 declare variable $t:XCONF :=
     <collection xmlns="http://exist-db.org/collection-config/1.0">
         <index xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mods="http://www.loc.gov/mods/v3">
-            <fulltext default="none" attributes="false"/>
             <lucene>
                 <text qname="SPEECH"/>
             </lucene>

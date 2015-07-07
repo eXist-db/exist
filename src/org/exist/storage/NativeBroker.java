@@ -2493,8 +2493,8 @@ public class NativeBroker extends DBBroker {
     }
 
     private void copyXMLResource(final Txn transaction, final DocumentImpl oldDoc, final DocumentImpl newDoc) throws IOException {
-        LOG.debug("Copying document " + oldDoc.getFileURI() + " to " +
-            newDoc.getURI());
+        if (LOG.isDebugEnabled())
+            LOG.debug("Copying document " + oldDoc.getFileURI() + " to " + newDoc.getURI());
         final long start = System.currentTimeMillis();
         indexController.setDocument(newDoc, StreamListener.STORE);
         final StreamListener listener = indexController.getStreamListener();
@@ -2503,12 +2503,13 @@ public class NativeBroker extends DBBroker {
             final IStoredNode<?> node = (IStoredNode<?>) nodes.item(i);
             try(final INodeIterator iterator = getNodeIterator(node)) {
                 iterator.next();
-                copyNodes(transaction, iterator, node, new NodePath(), newDoc, false, true, listener);
+                copyNodes(transaction, iterator, node, new NodePath(), newDoc, false, listener);
             }
         }
         flush();
         closeDocument();
-        LOG.debug("Copy took " + (System.currentTimeMillis() - start) + "ms.");
+        if (LOG.isDebugEnabled())
+            LOG.debug("Copy took " + (System.currentTimeMillis() - start) + "ms.");
     }
 
     /**
@@ -2868,8 +2869,8 @@ public class NativeBroker extends DBBroker {
     @Override
     public void defragXMLResource(final Txn transaction, final DocumentImpl doc) {
         //TODO : use dedicated function in XmldbURI
-        LOG.debug("============> Defragmenting document " +
-            doc.getCollection().getURI() + "/" + doc.getFileURI());
+        if (LOG.isDebugEnabled())
+            LOG.debug("============> Defragmenting document " + doc.getURI());
         final long start = System.currentTimeMillis();
         try {
             final long firstChild = doc.getFirstChildAddress();
@@ -2904,7 +2905,7 @@ public class NativeBroker extends DBBroker {
                 final IStoredNode<?> node = (IStoredNode<?>) nodes.item(i);
                 try(final INodeIterator iterator = getNodeIterator(node)) {
                     iterator.next();
-                    copyNodes(transaction, iterator, node, new NodePath(), tempDoc, true, true, listener);
+                    copyNodes(transaction, iterator, node, new NodePath(), tempDoc, true, listener);
                 }
             }
             flush();
@@ -2916,7 +2917,7 @@ public class NativeBroker extends DBBroker {
                     try {
                         domDb.flush();
                     } catch(final DBException e) {
-                        LOG.warn("start() - " + "error while removing doc", e);
+                        LOG.warn("start() - error while removing doc", e);
                     }
                     return null;
                 }
@@ -2926,7 +2927,8 @@ public class NativeBroker extends DBBroker {
             doc.getMetadata().setPageCount(tempDoc.getMetadata().getPageCount());
             storeXMLResource(transaction, doc);
             closeDocument();
-            LOG.debug("Defragmentation took " + (System.currentTimeMillis() - start) + "ms.");
+            if (LOG.isDebugEnabled())
+                LOG.debug("Defragmentation took " + (System.currentTimeMillis() - start) + "ms.");
         } catch(final ReadOnlyException e) {
             LOG.warn(DATABASE_IS_READ_ONLY, e);
         } catch(final IOException e) {
@@ -3008,12 +3010,10 @@ public class NativeBroker extends DBBroker {
      *
      * @param node        the node to be stored
      * @param currentPath path expression which points to this node's
-     *                    element-parent or to itself if it is an element (currently used by
-     *                    the Broker to determine if a node's content should be
-     *                    fulltext-indexed).  @param index switch to activate fulltext indexation
+     *                    element-parent or to itself if it is an element.
      */
     @Override
-    public <T extends IStoredNode> void storeNode(final Txn transaction, final IStoredNode<T> node, final NodePath currentPath, final IndexSpec indexSpec, final boolean fullTextIndex) {
+    public <T extends IStoredNode> void storeNode(final Txn transaction, final IStoredNode<T> node, final NodePath currentPath, final IndexSpec indexSpec) {
         checkAvailableMemory();
         final DocumentImpl doc = node.getOwnerDocument();
         final short nodeType = node.getNodeType();
@@ -3040,7 +3040,7 @@ public class NativeBroker extends DBBroker {
         }.run();
         ++nodesCount;
         ByteArrayPool.releaseByteArray(data);
-        nodeProcessor.reset(transaction, node, currentPath, indexSpec, fullTextIndex);
+        nodeProcessor.reset(transaction, node, currentPath, indexSpec);
         nodeProcessor.doIndex();
     }
 
@@ -3103,13 +3103,13 @@ public class NativeBroker extends DBBroker {
     }
 
     private <T extends IStoredNode> void copyNodes(final Txn transaction, final INodeIterator iterator, final IStoredNode<T> node,
-                           final NodePath currentPath, final DocumentImpl newDoc, final boolean defragment, final boolean index,
+                           final NodePath currentPath, final DocumentImpl newDoc, final boolean defragment,
                            final StreamListener listener) {
-        copyNodes(transaction, iterator, node, currentPath, newDoc, defragment, index, listener, null);
+        copyNodes(transaction, iterator, node, currentPath, newDoc, defragment, listener, null);
     }
 
     private <T extends IStoredNode> void copyNodes(final Txn transaction, INodeIterator iterator, final IStoredNode<T> node,
-                           final NodePath currentPath, final DocumentImpl newDoc, final boolean defragment, final boolean index,
+                           final NodePath currentPath, final DocumentImpl newDoc, final boolean defragment,
                            final StreamListener listener, NodeId oldNodeId) {
         if(node.getNodeType() == Node.ELEMENT_NODE) {
             currentPath.addComponent(node.getQName());
@@ -3118,7 +3118,7 @@ public class NativeBroker extends DBBroker {
         final long oldAddress = node.getInternalAddress();
         node.setOwnerDocument(newDoc);
         node.setInternalAddress(BFile.UNKNOWN_ADDRESS);
-        storeNode(transaction, node, currentPath, null, index);
+        storeNode(transaction, node, currentPath, null);
         if(defragment && oldNodeId != null) {
             pool.getNotificationService().notifyMove(oldNodeId, node);
         }
@@ -3167,7 +3167,7 @@ public class NativeBroker extends DBBroker {
                     }
                     child.setNodeId(nodeId);
                 }
-                copyNodes(transaction, iterator, child, currentPath, newDoc, defragment, index, listener, oldNodeId);
+                copyNodes(transaction, iterator, child, currentPath, newDoc, defragment, listener, oldNodeId);
             }
         }
         if(node.getNodeType() == Node.ELEMENT_NODE) {
@@ -3349,7 +3349,7 @@ public class NativeBroker extends DBBroker {
     }
 
     public void indexNode(final Txn transaction, final IStoredNode node, final NodePath currentPath, final int repairMode) {
-        nodeProcessor.reset(transaction, node, currentPath, null, true);
+        nodeProcessor.reset(transaction, node, currentPath, null);
         nodeProcessor.setMode(repairMode);
         nodeProcessor.index();
     }
@@ -3752,20 +3752,14 @@ public class NativeBroker extends DBBroker {
         private long address;
 
         private IndexSpec idxSpec;
-        //private FulltextIndexSpec ftIdx;
         private int level;
         private int mode = MODE_STORE;
-
-        /**
-         * overall switch to activate fulltext indexation
-         */
-        private boolean fullTextIndex = true;
 
         NodeProcessor() {
             //ignore
         }
 
-        public <T extends IStoredNode> void reset(final Txn transaction, final IStoredNode<T> node, final NodePath currentPath, IndexSpec indexSpec, final boolean fullTextIndex) {
+        public <T extends IStoredNode> void reset(final Txn transaction, final IStoredNode<T> node, final NodePath currentPath, IndexSpec indexSpec) {
             if(node.getNodeId() == null) {
                 LOG.warn("illegal node: " + node.getNodeName());
             }
@@ -3780,9 +3774,7 @@ public class NativeBroker extends DBBroker {
                 indexSpec = doc.getCollection().getIndexConfiguration(NativeBroker.this);
             }
             idxSpec = indexSpec;
-            //ftIdx = idxSpec == null ? null : idxSpec.getFulltextIndexSpec();
             level = node.getNodeId().getTreeLevel();
-            this.fullTextIndex = fullTextIndex;
         }
 
         public void setMode(int mode) {
@@ -3815,7 +3807,6 @@ public class NativeBroker extends DBBroker {
                         }
                     }
                     ((ElementImpl) node).setIndexType(indexType);
-                    //notifyStartElement((ElementImpl)node, currentPath, fullTextIndex);
                     break;
 
                 case Node.ATTRIBUTE_NODE:

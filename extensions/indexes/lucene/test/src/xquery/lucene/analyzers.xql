@@ -7,7 +7,6 @@ declare namespace test="http://exist-db.org/xquery/xqsuite";
 declare variable $analyze:XCONF1 :=
     <collection xmlns="http://exist-db.org/collection-config/1.0">
         <index xmlns:xs="http://www.w3.org/2001/XMLSchema">
-            <fulltext default="none" attributes="false"/>
             <lucene diacritics="no">
                 <parser class="org.apache.lucene.queryparser.analyzing.AnalyzingQueryParser"/>
                 <text qname="p"/>
@@ -21,7 +20,6 @@ declare variable $analyze:XCONF1 :=
 declare variable $analyze:XCONF2 :=
     <collection xmlns="http://exist-db.org/collection-config/1.0">
         <index xmlns:xs="http://www.w3.org/2001/XMLSchema">
-            <fulltext default="none" attributes="false"/>
             <lucene diacritics="yes">
                 <text qname="p"/>
             </lucene>

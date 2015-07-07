@@ -30,11 +30,11 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 /**
  * Top class for index definitions as specified in a collection configuration
@@ -45,10 +45,6 @@ import java.util.TreeMap;
  *  
  *  <pre>
  *  &lt;index index-depth="idx-depth"&gt;
- *      &lt;fulltext default="all|none" attributes="true|false"&gt;
- *          &lt;include path="node-path"/&gt;
- *          &lt;exclude path="node-path"/&gt;
- *      &lt;/fulltext&gt;
  *      &lt;create path="node-path" type="schema-type"&gt;
  *  &lt;/index&gt;
  *  </pre>
@@ -61,12 +57,9 @@ public class IndexSpec {
     private static final String PATH_ATTRIB = "path";
     private static final String CREATE_ELEMENT = "create";
     private static final String QNAME_ATTRIB = "qname";
-    private static final String FULLTEXT_ELEMENT = "fulltext";
-
-    private FulltextIndexSpec ftSpec = null;
 
     private GeneralRangeIndexSpec specs[] = null;
-    private Map<QName, QNameRangeIndexSpec> qnameSpecs = new TreeMap<QName, QNameRangeIndexSpec>(new TypedQNameComparator());
+    private Map<QName, QNameRangeIndexSpec> qnameSpecs = new TreeMap<>(new TypedQNameComparator());
 
     private Map<String, Object> customIndexSpecs = null;
 
@@ -75,10 +68,9 @@ public class IndexSpec {
     }
 
     /**
-     * Read index configurations from an "index" element node. The node should have
-     * exactly one "fulltext" child node and zero or more "create" nodes. The "fulltext"
-     * section  is forwarded to class {@link FulltextIndexSpec}. The "create" elements
-     * add a {@link GeneralRangeIndexSpec} to the current configuration.
+     * Read index configurations from an "index" element node.
+     * The node should have zero or more "create" nodes.
+     * The "create" elements add a {@link GeneralRangeIndexSpec} to the current configuration.
      *  
      * @param index
      * @throws DatabaseConfigurationException
@@ -89,9 +81,7 @@ public class IndexSpec {
         for (int i = 0; i < childNodes.getLength(); i++) {
             final Node node = childNodes.item(i);
             if (node.getNodeType() == Node.ELEMENT_NODE) {
-                if (FULLTEXT_ELEMENT.equals(node.getLocalName())) {
-                    ftSpec = new FulltextIndexSpec(namespaces, (Element)node);
-                } else if (CREATE_ELEMENT.equals(node.getLocalName())) {
+                if (CREATE_ELEMENT.equals(node.getLocalName())) {
                     final Element elem = (Element) node;
                     final String type = elem.getAttribute(TYPE_ATTRIB);
                     if (elem.hasAttribute(QNAME_ATTRIB)) {
@@ -114,14 +104,6 @@ public class IndexSpec {
         // the default index config from conf.xml)
         if (broker != null)
             {customIndexSpecs = broker.getIndexController().configure(childNodes, namespaces);}
-    }
-
-    /**
-     * Returns the fulltext index configuration object for the current
-     * configuration.
-     */
-    public FulltextIndexSpec getFulltextIndexSpec() {
-        return ftSpec;
     }
 
     /**
@@ -164,11 +146,7 @@ public class IndexSpec {
     }
 
     public List<QName> getIndexedQNames() {
-        final ArrayList<QName> qnames = new ArrayList<QName>(8);
-        for (final QName qname : qnameSpecs.keySet()) {
-            qnames.add(qname);
-        }
-        return qnames;
+        return qnameSpecs.keySet().stream().collect(Collectors.toList());
     }
 
     /**
@@ -199,7 +177,7 @@ public class IndexSpec {
         final Node parent = elem.getParentNode();
         if (parent != null)
             {elem = (Element) parent;}
-        final HashMap<String, String> map = new HashMap<String, String>();
+        final HashMap<String, String> map = new HashMap<>();
         map.put("xml", Namespaces.XML_NS);
         getNamespaceMap(elem, map);
         return map;
@@ -209,8 +187,10 @@ public class IndexSpec {
         final NamedNodeMap attrs = elem.getAttributes();
         for(int i = 0; i < attrs.getLength(); i++) {
             final Attr attr = (Attr) attrs.item(i);
-            if(attr.getPrefix() != null && "xmlns".equals(attr.getPrefix()) &&
-            		!attr.getValue().equals(CollectionConfiguration.NAMESPACE)) {
+            if (attr.getPrefix() != null
+                && "xmlns".equals(attr.getPrefix())
+                && !attr.getValue().equals(CollectionConfiguration.NAMESPACE)
+            ) {
                 map.put(attr.getLocalName(), attr.getValue());
             }
         }
@@ -224,13 +204,11 @@ public class IndexSpec {
 
     public String toString() {
         final StringBuilder result = new StringBuilder();
-        if (ftSpec != null)
-            {result.append(ftSpec.toString()).append('\n');}
         if (specs!= null) {
-            for (int i = 0 ; i < specs.length ; i++) {
-                final GeneralRangeIndexSpec spec = specs[i];
-                if (spec != null)
-                    {result.append(spec.toString()).append('\n');}
+            for (final GeneralRangeIndexSpec spec : specs) {
+                if (spec != null) {
+                    result.append(spec.toString()).append('\n');
+                }
             }
         }
         for (final Map.Entry<QName, QNameRangeIndexSpec> qNameSpec : qnameSpecs.entrySet()) {
@@ -238,5 +216,4 @@ public class IndexSpec {
         }
         return result.toString();
     }
-
 }
