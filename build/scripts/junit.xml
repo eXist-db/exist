@@ -3,10 +3,9 @@
 <!-- ======================================================================= -->
 <!-- eXist-db build file : Run jUnit tests                                    -->
 <!-- ======================================================================= -->
-<!-- $Id$ -->
 
 <project basedir="../.." default="test" name="jUnit tests">
-	
+
     <description>jUnit tests for eXist-db</description>
     
     <!-- import common targets -->
@@ -23,7 +22,7 @@
     </path>
 
     <condition property="junit.haltonerror" value="true" else="false">
-    	<isset property="test.haltonerror"/>
+        <isset property="test.haltonerror"/>
     </condition>
 
     <condition property="junit.haltonfailure" value="true" else="false">
@@ -40,8 +39,8 @@
     <property name="jetty.port" value="8080" />
     <property name="jetty.port.ssl" value="8443" />
     <!-- Or shall we rather have two, eg
-	 jetty.port.jetty and jetty.port.standalone
-	 with jetty.port pointing to jetty.port.jetty? /ljo -->
+            jetty.port.jetty and jetty.port.standalone
+            with jetty.port pointing to jetty.port.jetty? /ljo -->
     <property name="jetty.port.jetty" value="8080" />
     <property name="jetty.port.ssl.jetty" value="8443" />
     <property name="jetty.port.standalone" value="8088" />
@@ -122,7 +121,7 @@
             maxmemory="${junit.forked.VM.maxmemory}">
             <sysproperty key="exist.home" value="${basedir}" />
             <sysproperty key="java.util.logging.manager" value="org.apache.logging.log4j.jul.LogManager"/>
-	    <!-- local database, so should not be needed. /ljo -->
+            <!-- local database, so should not be needed. /ljo -->
             <sysproperty key="jetty.port" value="${jetty.port}" />
             <sysproperty key="jetty.port.ssl" value="${jetty.port.ssl}" />
             <classpath refid="classpath.core"/>
@@ -158,9 +157,8 @@
             <test fork="yes" name="org.exist.xupdate.StressTest" todir="${junit.reports.dat}"/>
             <test fork="yes" name="org.exist.xquery.AllXqueryTests" todir="${junit.reports.dat}"/>
             <test fork="yes" name="org.exist.xquery.OptimizerTest" todir="${junit.reports.dat}"/>
-	    	<test fork="yes" name="org.exist.collections.triggers.AllTriggerTests" todir="${junit.reports.dat}"/>
-	    	<test fork="yes" name="org.exist.collections.AllCollectionTests" todir="${junit.reports.dat}"/>
-	    	<!-- <test fork="yes" name="org.exist.fulltext.AllFulltextTests" todir="${junit.reports.dat}"/> -->
+            <test fork="yes" name="org.exist.collections.triggers.AllTriggerTests" todir="${junit.reports.dat}"/>
+            <test fork="yes" name="org.exist.collections.AllCollectionTests" todir="${junit.reports.dat}"/>
             <test fork="yes" name="org.exist.security.XMLDBSecurityTest" todir="${junit.reports.dat}"/>
             <test fork="yes" name="org.exist.security.SecurityManagerRoundtripTest" todir="${junit.reports.dat}"/>
 
@@ -180,18 +178,17 @@
                     <exclude name="**/storage/lock/*.java"/>
                     <exclude name="**/soap/*.java"/>
                     <exclude name="**/numbering/*.java"/>
-		    		<exclude name="**/collections/*.java"/>
+                    <exclude name="**/collections/*.java"/>
                     <exclude name="**/security/*.java"/>
                     <exclude name="org/exist/*.java"/>
-                    <exclude name="**/fulltext/**/*.java"/>
-		    		<exclude name="org/exist/http/underheavyload/*.java"/>
-		    		<exclude name="org/exist/util/hashtable/Abstract*.java"/>
+                    <exclude name="org/exist/http/underheavyload/*.java"/>
+                    <exclude name="org/exist/util/hashtable/Abstract*.java"/>
                     <exclude name="xquery/**/*.java"/>
                 </fileset>
             </batchtest>
         </junit>
     </target>
-	
+
     <!-- Test set 2 : Jetty Server -->
     <target name="test-jetty">
         <echo message="------------------------------------------"/>
@@ -201,7 +198,7 @@
         <junit haltonfailure="${junit.haltonfailure}" haltonerror="${junit.haltonerror}" printsummary="yes" showoutput="${junit.output}" maxmemory="${junit.forked.VM.maxmemory}">
             <sysproperty key="exist.home" value="${basedir}" />
             <sysproperty key="java.util.logging.manager" value="org.apache.logging.log4j.jul.LogManager"/>
-	    <!-- fixme! - jetty.port.jetty /ljo -->
+            <!-- fixme! - jetty.port.jetty /ljo -->
             <sysproperty key="jetty.port" value="${jetty.port}" />
             <sysproperty key="jetty.port.ssl" value="${jetty.port.ssl}" />
             <classpath refid="classpath.core"/>
@@ -233,7 +230,7 @@
         <junit haltonfailure="${junit.haltonfailure}" haltonerror="${junit.haltonerror}" printsummary="on" showoutput="${junit.output}" fork="no">
             <sysproperty key="exist.home" value="${basedir}" />
             <sysproperty key="java.util.logging.manager" value="org.apache.logging.log4j.jul.LogManager"/>
-	    <!-- local database, so should not be needed. /ljo -->
+            <!-- local database, so should not be needed. /ljo -->
             <sysproperty key="jetty.port" value="${jetty.port}" />
             <sysproperty key="jetty.port.ssl" value="${jetty.port.ssl}" />
             <classpath refid="classpath.core"/>
@@ -256,7 +253,7 @@
         <junit haltonfailure="${junit.haltonfailure}" haltonerror="${junit.haltonerror}" printsummary="on" showoutput="${junit.output}" fork="yes" maxmemory="${junit.forked.VM.maxmemory}">
             <sysproperty key="exist.home" value="${basedir}" />
             <sysproperty key="java.util.logging.manager" value="org.apache.logging.log4j.jul.LogManager"/>
-	    <!-- local database, so should not be needed. /ljo -->
+            <!-- local database, so should not be needed. /ljo -->
             <sysproperty key="jetty.port" value="${jetty.port}" />
             <sysproperty key="jetty.port.ssl" value="${jetty.port.ssl}" />
             <classpath refid="classpath.core"/>
@@ -287,7 +284,7 @@
         <java classname="org.exist.jetty.StandaloneServer">
             <sysproperty key="exist.home" value="${basedir}" />
             <sysproperty key="java.util.logging.manager" value="org.apache.logging.log4j.jul.LogManager"/>
-	    <!-- fixme! - jetty.port.standalone /ljo -->
+            <!-- fixme! - jetty.port.standalone /ljo -->
             <sysproperty key="jetty.port" value="${jetty.port.standalone}" />
             <sysproperty key="jetty.port.ssl" value="${jetty.port.ssl.standalone}" />
             <classpath refid="classpath.core"/>
@@ -307,7 +304,7 @@
         <junit haltonfailure="${junit.haltonfailure}" haltonerror="${junit.haltonerror}" printsummary="yes" showoutput="${junit.output}" maxmemory="${junit.forked.VM.maxmemory}">
             <sysproperty key="exist.home" value="${basedir}" />
             <sysproperty key="java.util.logging.manager" value="org.apache.logging.log4j.jul.LogManager"/>
-	    <!-- fixme! - jetty.port.standalone /ljo -->
+            <!-- fixme! - jetty.port.standalone /ljo -->
             <sysproperty key="jetty.port" value="${jetty.port.standalone}" />
             <sysproperty key="jetty.port.ssl" value="${jetty.port.ssl.standalone}" />
             <classpath refid="classpath.core"/>
@@ -337,7 +334,7 @@
         <junit haltonfailure="${junit.haltonfailure}" haltonerror="${junit.haltonerror}" printsummary="yes" showoutput="${junit.output}" maxmemory="${junit.forked.VM.maxmemory}">
             <sysproperty key="exist.home" value="${basedir}" />
             <sysproperty key="java.util.logging.manager" value="org.apache.logging.log4j.jul.LogManager"/>
-	    <!-- local database, so should not be needed. /ljo -->
+            <!-- local database, so should not be needed. /ljo -->
             <sysproperty key="jetty.port" value="${jetty.port}" />
             <sysproperty key="jetty.port.ssl" value="${jetty.port.ssl}" />
             <classpath refid="classpath.core"/>
@@ -360,7 +357,7 @@
         <junit haltonfailure="${junit.haltonfailure}" haltonerror="${junit.haltonerror}" printsummary="yes" showoutput="${junit.output}" maxmemory="${junit.forked.VM.maxmemory}">
             <sysproperty key="exist.home" value="${basedir}" />
             <sysproperty key="java.util.logging.manager" value="org.apache.logging.log4j.jul.LogManager"/>
-	    <!-- fixme! - jetty.port.jetty /ljo -->
+            <!-- fixme! - jetty.port.jetty /ljo -->
             <sysproperty key="jetty.port" value="${jetty.port}" />
             <sysproperty key="jetty.port.ssl" value="${jetty.port.ssl}" />
             <classpath refid="classpath.core"/>
@@ -382,9 +379,9 @@
       <!-- Register Ant tasks for eXist-db -->
       <typedef resource="org/exist/ant/antlib.xml" uri="http://exist-db.org/ant">
 
-	<!-- fixme! -  jetty.port.standalone.
-	     But no need to pass in here in shutdown. 
-	     And no .ssl needed. /ljo -->
+        <!-- fixme! -  jetty.port.standalone.
+             But no need to pass in here in shutdown.
+             And no .ssl needed. /ljo -->
         <sysproperty key="jetty.port" value="${jetty.port.standalone}" />
         <classpath refid="classpath.core"/>
         <classpath refid="classpath.junit"/>
@@ -422,14 +419,14 @@
         <delete failonerror="false">
             <fileset dir="${junit.reports}/src/org/exist/xquery/xqts/" excludes="XQTS_case.java,XQTS_To_junit.java,QT3TS_case.java,QT3TS_To_junit.java"/>
         </delete>
-    	<!-- workaround include bug -->
-    	<copy todir="${basedir}/cat">
-    		<fileset dir="${junit.reports}/external/XQTS_1_0_3/cat"/>
-    	</copy>
+        <!-- workaround include bug -->
+        <copy todir="${basedir}/cat">
+            <fileset dir="${junit.reports}/external/XQTS_1_0_3/cat"/>
+        </copy>
         <java classname="org.exist.xquery.xqts.XQTS_To_junit">
             <sysproperty key="exist.home" value="${basedir}" />
             <sysproperty key="exist.jmxagent" value="" />
-	    	<!-- fixme! - jetty.port.jetty /ljo -->
+            <!-- fixme! - jetty.port.jetty /ljo -->
             <sysproperty key="jetty.port" value="${jetty.port}" />
             <sysproperty key="jetty.port.ssl" value="${jetty.port.ssl}" />
             <classpath refid="classpath.core"/>
@@ -478,7 +475,7 @@
         <java classname="org.exist.xslt.XSLTStoJUnit">
             <sysproperty key="exist.home" value="${basedir}" />
             <sysproperty key="exist.jmxagent" value="" />
-	    <!-- fixme! - jetty.port.jetty /ljo -->
+            <!-- fixme! - jetty.port.jetty /ljo -->
             <sysproperty key="jetty.port" value="${jetty.port}" />
             <sysproperty key="jetty.port.ssl" value="${jetty.port.ssl}" />
             <classpath refid="classpath.core"/>
@@ -520,7 +517,7 @@
         <junit haltonfailure="${junit.haltonfailure}" haltonerror="${junit.haltonerror}" printsummary="on" showoutput="${junit.output}" fork="yes" maxmemory="${junit.forked.VM.maxmemory.external}">
             <sysproperty key="exist.home" value="${basedir}" />
             <sysproperty key="java.util.logging.manager" value="org.apache.logging.log4j.jul.LogManager"/>
-	    <!-- fixme! - jetty.port.jetty /ljo -->
+            <!-- fixme! - jetty.port.jetty /ljo -->
             <sysproperty key="jetty.port" value="${jetty.port}" />
             <sysproperty key="jetty.port.ssl" value="${jetty.port.ssl}" />
             <classpath refid="classpath.core"/>
@@ -547,7 +544,7 @@
         <junit haltonfailure="${junit.haltonfailure}" haltonerror="${junit.haltonerror}" printsummary="on" showoutput="${junit.output}" fork="yes" maxmemory="${junit.forked.VM.maxmemory.external}">
             <sysproperty key="exist.home" value="${basedir}" />
             <sysproperty key="java.util.logging.manager" value="org.apache.logging.log4j.jul.LogManager"/>
-	    <!-- fixme! - jetty.port.jetty /ljo -->
+            <!-- fixme! - jetty.port.jetty /ljo -->
             <sysproperty key="jetty.port" value="${jetty.port}" />
             <sysproperty key="jetty.port.ssl" value="${jetty.port.ssl}" />
             <classpath refid="classpath.core"/>

@@ -54,8 +54,6 @@ public class ConcurrencyTest {
     private static String COLLECTION_CONFIG1 =
         "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
     	"	<index>" +
-    	"		<fulltext default=\"none\">" +
-        "		</fulltext>" +
         "       <lucene>" +
         "           <text qname=\"LINE\"/>" +
         "           <text qname=\"SPEAKER\"/>" +
@@ -69,11 +67,7 @@ public class ConcurrencyTest {
 
         for (int i = 0; i < 10; i++) {
             final String name = "thread" + i;
-            Runnable run = new Runnable() {
-                public void run() {
-                    storeRemoveDocs(name);
-                }
-            };
+            Runnable run = () -> storeRemoveDocs(name);
             executor.submit(run);
         }
 

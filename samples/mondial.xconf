@@ -1,19 +1,15 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <collection xmlns="http://exist-db.org/collection-config/1.0">
     <validation mode="auto"/>
-    
-	<!-- Defines a bunch of numeric indexes on the mondial collection.
-		 This file should be stored into /db/system/config/db/mondial.
-	-->
-	<index>
-        <fulltext default="none" attributes="no">
-            <create qname="name"/>
-        </fulltext>
 
+    <!-- Defines a bunch of numeric indexes on the mondial collection.
+         This file should be stored into /db/system/config/db/mondial.
+    -->
+    <index>
         <create qname="population" type="xs:integer"/>
-	    <create path="/mondial//population_growth" type="xs:double"/>
-	    <create qname="infant_mortality" type="xs:double"/>
-	    <create qname="inflation" type="xs:double"/>
-		<create qname="name" type="xs:string"/>
+        <create path="/mondial//population_growth" type="xs:double"/>
+        <create qname="infant_mortality" type="xs:double"/>
+        <create qname="inflation" type="xs:double"/>
+        <create qname="name" type="xs:string"/>
     </index>
 </collection>

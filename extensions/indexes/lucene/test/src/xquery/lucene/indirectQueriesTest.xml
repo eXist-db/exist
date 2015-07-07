@@ -18,12 +18,6 @@
         <store collection="/db/system/config/db/coll" name="collection.xconf">
             <collection xmlns="http://exist-db.org/collection-config/1.0">
                 <index>
-                    <fulltext default="none" attributes="no">
-                        <create qname="p1"/>
-                        <create qname="@att1"/>
-                        <include path="//p2"/>
-                        <include path="//@att2"/>                        
-                    </fulltext>
                     <lucene>
                         <analyzer class="org.apache.lucene.analysis.standard.StandardAnalyzer"/>
                         <analyzer id="ws" class="org.apache.lucene.analysis.core.WhitespaceAnalyzer"/>
