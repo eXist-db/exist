@@ -1,23 +1,21 @@
 /*
- * eXist Open Source Native XML Database
- * Copyright (C) 2001-2007 The eXist team
- * http://exist-db.org
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2001-2015 The eXist Project
+ *  http://exist-db.org
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *  
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program; if not, write to the Free Software Foundation
- * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *  
- *  $Id$
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist;
 
@@ -25,9 +23,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Stack;
-
-//import javax.xml.parsers.ParserConfigurationException;
-//import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -64,8 +59,6 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
-//import org.xml.sax.SAXNotRecognizedException;
-//import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.ext.LexicalHandler;
 
@@ -76,8 +69,7 @@ import org.xml.sax.ext.LexicalHandler;
  * @author wolf
  * 
  */
-public class Indexer extends Observable implements ContentHandler,
-        LexicalHandler, ErrorHandler {
+public class Indexer extends Observable implements ContentHandler, LexicalHandler, ErrorHandler {
 
     private static final int CACHE_CHILD_COUNT_MAX = 0x10000;
 
@@ -114,11 +106,11 @@ public class Indexer extends Observable implements ContentHandler,
     protected int level = 0;
     protected Locator locator = null;
     protected int normalize = XMLString.SUPPRESS_BOTH;
-    protected Map<String, String> nsMappings = new HashMap<String, String>();
+    protected Map<String, String> nsMappings = new HashMap<>();
     protected Element rootNode;
 
-    protected Stack<ElementImpl> stack = new Stack<ElementImpl>();
-    protected Stack<XMLString> nodeContentStack = new Stack<XMLString>();
+    protected Stack<ElementImpl> stack = new Stack<>();
+    protected Stack<XMLString> nodeContentStack = new Stack<>();
 
     protected StoredNode prevNode = null;
 
@@ -144,7 +136,7 @@ public class Indexer extends Observable implements ContentHandler,
 
     // reusable fields
     private TextImpl text = new TextImpl();
-    private Stack<ElementImpl> usedElements = new Stack<ElementImpl>();
+    private Stack<ElementImpl> usedElements = new Stack<>();
 
     // when storing the document data, validation will be switched off, so
     // entities will not be reported. We thus have to cache all needed entities
@@ -224,7 +216,7 @@ public class Indexer extends Observable implements ContentHandler,
         // reset internal fields
         level = 0;
         currentPath.reset();
-        stack = new Stack<ElementImpl>();
+        stack = new Stack<>();
         docSize = 0;
         nsMappings.clear();
         indexListener = null;
@@ -276,16 +268,7 @@ public class Indexer extends Observable implements ContentHandler,
             document.appendChild((NodeHandle)comment);
         } else {
             final ElementImpl last = stack.peek();
-            if (charBuf != null && charBuf.length() > 0) {
-                text.setData(charBuf);
-                text.setOwnerDocument(document);
-                last.appendChildInternal(prevNode, text);
-                if (!validate) {
-                    storeText();
-                }
-                setPrevious(text);
-                charBuf.reset();
-            }
+            processText(last);
             last.appendChildInternal(prevNode, comment);
             setPrevious(comment);
             if (!validate) {
@@ -332,46 +315,77 @@ public class Indexer extends Observable implements ContentHandler,
         //LOG.debug("elementCnt = " + childCnt.length);
     }
 
+    private void processText(ElementImpl last) {
+        //keep for reference until sure that it's not required
+//        if (charBuf != null && charBuf.length() > 0) {
+//            // remove whitespace if the node has just a single text child,
+//            // keep whitespace for mixed content.
+//            final XMLString normalized;
+//            if ((charBuf.isWhitespaceOnly() && suppressWSmixed) || last.preserveSpace()) {
+//                normalized = charBuf;
+//            } else {
+//                if (last.getChildCount() == 0) {
+//                    normalized = charBuf.normalize(normalize);
+//                } else {
+//                    normalized = charBuf.isWhitespaceOnly() ? null : charBuf;
+//                }
+//            }
+//            if (normalized != null && normalized.length() > 0) {
+//                text.setData(normalized);
+//                text.setOwnerDocument(document);
+//                last.appendChildInternal(prevNode, text);
+//                if (!validate) storeText();
+//                setPrevious(text);
+//            }
+//            charBuf.reset();
+//        }
+
+        //from startElement method
+        if (charBuf != null && charBuf.length() > 0) {
+            XMLString normalized = null;
+            if (charBuf.isWhitespaceOnly()) {
+                if (last.preserveSpace()) {
+                    normalized = charBuf;
+                } else if (suppressWSmixed) {
+                    if (!(last.getChildCount() == 0 && (normalize & XMLString.SUPPRESS_LEADING_WS) != 0)) {
+                        normalized = charBuf;
+                    }
+                }
+            } else {
+                // mixed element content: don't normalize the text node,
+                // just check if there is any text at all
+                normalized = charBuf;
+            }
+
+            if (normalized != null) {
+                text.setData(normalized);
+                text.setOwnerDocument(document);
+                last.appendChildInternal(prevNode, text);
+                if (!validate) storeText();
+                setPrevious(text);
+            }
+            charBuf.reset();
+        }
+    }
+
     public void endElement(String namespace, String name, String qname) {
         final ElementImpl last = stack.peek();
         if (last.getNodeName().equals(qname)) {
-            if (charBuf != null && charBuf.length() > 0) {
-                // remove whitespace if the node has just a single text child,
-                // keep whitespace for mixed content.
-                final XMLString normalized;
-                if ((charBuf.isWhitespaceOnly() && suppressWSmixed) || last.preserveSpace()) {
-                    normalized = charBuf;
-                } else {
-                    normalized = last.getChildCount() == 0 ? 
-                        charBuf.normalize(normalize) : 
-                            (charBuf.isWhitespaceOnly() ? null : charBuf);
-                }
-                if (normalized != null && normalized.length() > 0) {
-                    text.setData(normalized);
-                    text.setOwnerDocument(document);
-                    last.appendChildInternal(prevNode, text);
-                    if (!validate)
-                        {storeText();}
-                    setPrevious(text);
-                }
-                charBuf.reset();
-            }
+            processText(last);
             stack.pop();
             XMLString elemContent = null;
             if (!validate && RangeIndexSpec.hasQNameOrValueIndex(last.getIndexType())) {
                 elemContent = nodeContentStack.pop();
             }
             if (!validate) {
-                final String content = elemContent == null ?
-                        null : elemContent.toString();
+                final String content = elemContent == null ? null : elemContent.toString();
                 broker.endElement(last, currentPath, content);
-                if (indexListener != null)
-                    {indexListener.endElement(transaction, last, currentPath);}
+
+                if (indexListener != null) indexListener.endElement(transaction, last, currentPath);
             }
             currentPath.removeLastComponent();
             if (validate) {
-                if (childCnt != null)
-                    {setChildCount(last);}
+                if (childCnt != null) setChildCount(last);
             } else {
                 document.setOwnerDocument(document);
                 if ((childCnt == null && last.getChildCount() > 0)
@@ -409,15 +423,13 @@ public class Indexer extends Observable implements ContentHandler,
     }
 
     public void error(SAXParseException e) throws SAXException {
-        final String msg = "error at (" + e.getLineNumber() + ","
-            + e.getColumnNumber() + ") : " + e.getMessage();
+        final String msg = "error at (" + e.getLineNumber() + "," + e.getColumnNumber() + ") : " + e.getMessage();
         LOG.debug(msg);
         throw new SAXException(msg, e);
     }
 
     public void fatalError(SAXParseException e) throws SAXException {
-        final String msg = "fatal error at (" + e.getLineNumber() + ","
-            + e.getColumnNumber() + ") : " + e.getMessage();
+        final String msg = "fatal error at (" + e.getLineNumber() + "," + e.getColumnNumber() + ") : " + e.getMessage();
         LOG.debug(msg);
         throw new SAXException(msg, e);
     }
@@ -430,34 +442,18 @@ public class Indexer extends Observable implements ContentHandler,
         final ProcessingInstructionImpl pi = new ProcessingInstructionImpl(target, data);
         pi.setOwnerDocument(document);
         if (stack.isEmpty()) {
-            pi.setNodeId(broker.getBrokerPool().getNodeFactory()
-                .createInstance(nodeFactoryInstanceCnt++));
-            if (!validate) {
-                broker.storeNode(transaction, pi, currentPath, indexSpec);
-            }
+            pi.setNodeId(broker.getBrokerPool().getNodeFactory().createInstance(nodeFactoryInstanceCnt++));
+
+            if (!validate) broker.storeNode(transaction, pi, currentPath, indexSpec);
+
             document.appendChild((NodeHandle)pi);
         } else {
             final ElementImpl last = stack.peek();
-            if (charBuf != null && charBuf.length() > 0) {
-                final XMLString normalized = charBuf.normalize(normalize);
-                if (normalized.length() > 0) {
-                    // TextImpl text =
-                    // new TextImpl( normalized );
-                    text.setData(normalized);
-                    text.setOwnerDocument(document);
-                    last.appendChildInternal(prevNode, text);
-                    if (!validate) {
-                        storeText();
-                    }
-                    setPrevious(text);
-                }
-                charBuf.reset();
-            }
+            processText(last);
             last.appendChildInternal(prevNode, pi);
             setPrevious(pi);
-            if (!validate) {
-                broker.storeNode(transaction, pi, currentPath, indexSpec);
-            }
+
+            if (!validate) broker.storeNode(transaction, pi, currentPath, indexSpec);
         }
     }
 
@@ -465,38 +461,9 @@ public class Indexer extends Observable implements ContentHandler,
         this.locator = locator;
     }
 
-//    /**
-//     * set SAX parser feature. This method will catch (and ignore) exceptions if
-//     * the used parser does not support a feature.
-//     *
-//     *@param factory
-//     *@param feature
-//     *@param value
-//     */
-//    //private void setFeature(SAXParserFactory factory, String feature, boolean value) {
-//        //try {
-//            //factory.setFeature(feature, value);
-//        //} catch (SAXNotRecognizedException e) {
-//            //LOG.warn(e);
-//        //} catch (SAXNotSupportedException snse) {
-//            //LOG.warn(snse);
-//        //} catch (ParserConfigurationException pce) {
-//            //LOG.warn(pce);
-//        //}
-//    //}
-
     public void startCDATA() {
         if (!stack.isEmpty()) {
-            final ElementImpl last = stack.peek();
-            if (charBuf != null && charBuf.length() > 0) {
-                text.setData(charBuf);
-                text.setOwnerDocument(document);
-                last.appendChildInternal(prevNode, text);
-                if (!validate)
-                    {storeText();}
-                setPrevious(text);
-                charBuf.reset();
-            }
+            processText(stack.peek());
         }
         inCDATASection = true;
     }
@@ -505,8 +472,7 @@ public class Indexer extends Observable implements ContentHandler,
     // used to determine Doctype
 
     public void startDTD(String name, String publicId, String systemId) {
-        final DocumentTypeImpl docType = new DocumentTypeImpl(name, publicId,
-                systemId);
+        final DocumentTypeImpl docType = new DocumentTypeImpl(name, publicId, systemId);
         document.setDocumentType(docType);
         insideDTD = true;
     }
@@ -528,8 +494,8 @@ public class Indexer extends Observable implements ContentHandler,
         nodeFactoryInstanceCnt = 1;
     }
 
-    public void startElement(String namespace, String name, String qname,
-            Attributes attributes) throws SAXException {
+    public void startElement(String namespace, String name, String qname, Attributes attributes) throws SAXException {
+
         // calculate number of real attributes:
         // don't store namespace declarations
         int attrLength = attributes.getLength();
@@ -545,37 +511,11 @@ public class Indexer extends Observable implements ContentHandler,
         ElementImpl last;
         ElementImpl node;
         int p = qname.indexOf(':');
-        final String prefix = (p != Constants.STRING_NOT_FOUND) ? 
-                qname.substring(0, p) : "";
-        final QName qn = broker.getBrokerPool().getSymbols().getQName(
-                Node.ELEMENT_NODE, namespace, name, prefix);
+        final String prefix = (p != Constants.STRING_NOT_FOUND) ? qname.substring(0, p) : "";
+        final QName qn = broker.getBrokerPool().getSymbols().getQName(Node.ELEMENT_NODE, namespace, name, prefix);
         if (!stack.empty()) {
             last = stack.peek();
-            if (charBuf != null) {
-                if (charBuf.isWhitespaceOnly()) {
-                    if (suppressWSmixed) {
-                        if (charBuf.length() > 0 && !(last.getChildCount() == 0 && (normalize & XMLString.SUPPRESS_LEADING_WS) != 0)) {
-                            text.setData(charBuf);
-                            text.setOwnerDocument(document);
-                            last.appendChildInternal(prevNode, text);
-                            if (!validate)
-                                {storeText();}
-                            setPrevious(text);
-                        }
-                    }
-                } else if (charBuf.length() > 0) {
-                    // mixed element content: don't normalize the text node,
-                    // just check
-                    // if there is any text at all
-                    text.setData(charBuf);
-                    text.setOwnerDocument(document);
-                    last.appendChildInternal(prevNode, text);
-                    if (!validate)
-                        {storeText();}
-                    setPrevious(text);
-                }
-                charBuf.reset();
-            }
+            processText(last);
             try {
                 if (!usedElements.isEmpty()) {
                     node = usedElements.pop();
@@ -602,9 +542,7 @@ public class Indexer extends Observable implements ContentHandler,
             currentPath.addComponent(qn);
             node.setPosition(elementCnt++);
             if (!validate) {
-                if (childCnt != null) {
-                    node.setChildCount(childCnt[node.getPosition()]);
-                }
+                if (childCnt != null) node.setChildCount(childCnt[node.getPosition()]);
                 storeElement(node);
             }
         } else {
@@ -616,8 +554,7 @@ public class Indexer extends Observable implements ContentHandler,
             rootNode = node;
             setPrevious(null);
             node.setOwnerDocument(document);
-            node.setNodeId(broker.getBrokerPool().getNodeFactory()
-                .createInstance(nodeFactoryInstanceCnt++));
+            node.setNodeId(broker.getBrokerPool().getNodeFactory().createInstance(nodeFactoryInstanceCnt++));
             node.setAttributes((short) attrLength);
             if (nsMappings != null && nsMappings.size() > 0) {
                 node.setNamespaceMappings(nsMappings);
@@ -627,9 +564,7 @@ public class Indexer extends Observable implements ContentHandler,
             currentPath.addComponent(qn);
             node.setPosition(elementCnt++);
             if (!validate) {
-                if (childCnt != null) {
-                    node.setChildCount(childCnt[node.getPosition()]);
-                }
+                if (childCnt != null) node.setChildCount(childCnt[node.getPosition()]);
                 storeElement(node);
             }
             document.appendChild((NodeHandle)node);
@@ -643,13 +578,10 @@ public class Indexer extends Observable implements ContentHandler,
             attrLocalName = attributes.getLocalName(i);
             attrQName = attributes.getQName(i);
             // skip xmlns-attributes and attributes in eXist's namespace
-            if (attrQName.startsWith("xmlns")
-                    || attrNS.equals(Namespaces.EXIST_NS))
-                {--attrLength;}
+            if (attrQName.startsWith("xmlns") || attrNS.equals(Namespaces.EXIST_NS)) --attrLength;
             else {
                 p = attrQName.indexOf(':');
-                attrPrefix = (p != Constants.STRING_NOT_FOUND) ?
-                    attrQName.substring(0, p) : null;
+                attrPrefix = (p != Constants.STRING_NOT_FOUND) ? attrQName.substring(0, p) : null;
                 final AttrImpl attr = (AttrImpl) NodePool.getInstance().borrowNode(Node.ATTRIBUTE_NODE);
                 final QName attrQN = broker.getBrokerPool().getSymbols().getQName(Node.ATTRIBUTE_NODE, attrNS, attrLocalName, attrPrefix);
                 try {
@@ -668,12 +600,12 @@ public class Indexer extends Observable implements ContentHandler,
                 } else if (attr.getQName().equals(Namespaces.XML_ID_QNAME)) {
                     // an xml:id attribute. Normalize the attribute and set its
                     // type to ID
-                    attr.setValue(StringValue.trimWhitespace(StringValue
-                            .collapseWhitespace(attr.getValue())));
+                    attr.setValue(StringValue.trimWhitespace(StringValue.collapseWhitespace(attr.getValue())));
+
                     if (!XMLChar.isValidNCName(attr.getValue()))
-                        {throw new SAXException(
-                            "Value of xml:id attribute is not a valid NCName: "
-                            + attr.getValue());}
+                        throw new SAXException(
+                            "Value of xml:id attribute is not a valid NCName: " + attr.getValue());
+
                     attr.setType(AttrImpl.ID);
                 } else if (attr.getQName().equals(Namespaces.XML_SPACE_QNAME)) {
                     node.setPreserveSpace("preserve".equals(attr.getValue()));
@@ -682,13 +614,13 @@ public class Indexer extends Observable implements ContentHandler,
                 setPrevious(attr);
                 if (!validate) {
                     broker.storeNode(transaction, attr, currentPath, indexSpec);
-                    if (indexListener != null)
-                        {indexListener.attribute(transaction, attr, currentPath);}
+
+                    if (indexListener != null) indexListener.attribute(transaction, attr, currentPath);
                 }
             }
         }
-        if (attrLength > 0)
-            {node.setAttributes((short) attrLength);}
+        if (attrLength > 0) node.setAttributes((short) attrLength);
+
         // notify observers about progress every 100 lines
         if (locator != null) {
             currentLine = locator.getLineNumber();
@@ -710,15 +642,15 @@ public class Indexer extends Observable implements ContentHandler,
             }
         }
         broker.storeNode(transaction, text, currentPath, indexSpec);
-        if (indexListener != null) {
-            indexListener.characters(transaction, text, currentPath);
-        }
+
+        if (indexListener != null) indexListener.characters(transaction, text, currentPath);
     }
 
     private void storeElement(ElementImpl node) {
         broker.storeNode(transaction, node, currentPath, indexSpec);
-        if (indexListener != null)
-            {indexListener.startElement(transaction, node, currentPath);}
+
+        if (indexListener != null) indexListener.startElement(transaction, node, currentPath);
+
         node.setChildCount(0);
         if (RangeIndexSpec.hasQNameOrValueIndex(node.getIndexType())) {
             final XMLString contentBuf = new XMLString();
@@ -730,8 +662,7 @@ public class Indexer extends Observable implements ContentHandler,
         // while validating, all entities are put into a map
         // to cache them for later use
         if (validate) {
-            if (entityMap == null)
-                {entityMap = new HashMap<String, String>();}
+            if (entityMap == null) entityMap = new HashMap<>();
             currentEntityName = name;
         }
     }
@@ -748,10 +679,10 @@ public class Indexer extends Observable implements ContentHandler,
     public void skippedEntity(String name) {
         if (!validate && entityMap != null) {
             final String value = entityMap.get(name);
-            if (value != null)
-                {characters(value.toCharArray(), 0, value.length());}
+
+            if (value != null) characters(value.toCharArray(), 0, value.length());
         }
-	}
+    }
 
     public void startPrefixMapping(String prefix, String uri) {
         // skip the eXist namespace
@@ -763,8 +694,7 @@ public class Indexer extends Observable implements ContentHandler,
     }
 
     public void warning(SAXParseException e) throws SAXException {
-        final String msg = "warning at (" + e.getLineNumber() + ","
-            + e.getColumnNumber() + ") : " + e.getMessage();
+        final String msg = "warning at (" + e.getLineNumber() + "," + e.getColumnNumber() + ") : " + e.getMessage();
         throw new SAXException(msg, e);
     }
 

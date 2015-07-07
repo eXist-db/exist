@@ -246,7 +246,7 @@ public class ValidationFunctions_Node_Test {
 //        logger.info("shutdownDB");
 //
 //
-//        root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", null);
+//        root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", "");
 //
 //
 //        DatabaseManager.deregisterDatabase(database);

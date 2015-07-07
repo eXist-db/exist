@@ -149,7 +149,7 @@ public class CollectionRemovalTest {
     private void doQuery(int expected) {
         try {
             org.xmldb.api.base.Collection testCollection =
-                    DatabaseManager.getCollection("xmldb:exist://" + TestConstants.TEST_COLLECTION_URI.toString(), "admin", null);
+                    DatabaseManager.getCollection("xmldb:exist://" + TestConstants.TEST_COLLECTION_URI.toString(), "admin", "");
             if (testCollection == null)
                 return;
             XPathQueryServiceImpl service = (XPathQueryServiceImpl)
@@ -169,7 +169,7 @@ public class CollectionRemovalTest {
     public void clearDB() {
         try {
 			org.xmldb.api.base.Collection root =
-                    DatabaseManager.getCollection("xmldb:exist://" + TestConstants.TEST_COLLECTION_URI.toString(), "admin", null);
+                    DatabaseManager.getCollection("xmldb:exist://" + TestConstants.TEST_COLLECTION_URI.toString(), "admin", "");
 			CollectionManagementService service = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
 			service.removeCollection(".");
         } catch (XMLDBException e) {
@@ -258,7 +258,7 @@ public class CollectionRemovalTest {
 	public static void stopDB() {
 		try {
 			org.xmldb.api.base.Collection root = DatabaseManager.getCollection(
-					"xmldb:exist:///db", "admin", null);
+					"xmldb:exist:///db", "admin", "");
             DatabaseInstanceManager dim = (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
 			dim.shutdown();
 		} catch (XMLDBException e) {
