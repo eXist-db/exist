@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2003-2014 The eXist-db Project
+ * Copyright (C) 2003-2015 The eXist-db Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -17,7 +17,6 @@
  * along with this program; if not, write to the Free Software Foundation
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- *  $Id$
  */
 package org.exist.storage;
 
@@ -871,6 +870,16 @@ public class BrokerPool implements Database {
                         symbols = new SymbolTable(conf);
                         isReadOnly = isReadOnly || !symbols.getFile().canWrite();
 
+                        try {
+                            // initialize EXPath repository so indexManager and
+                            // startup triggers can access it
+                            expathRepo = ExistRepository.getRepository(this.conf);
+                        } catch(final PackageException e) {
+                            LOG.warn("Failed to initialize expath repository: " + e.getMessage() + " - " +
+                                     "indexing apps and the package manager may not work.");
+                        }
+                        ClasspathHelper.updateClasspath(this);
+
                         indexManager = new IndexManager(this, conf);
 
                         //TODO : replace the following code by get()/release() statements ?
@@ -998,14 +1007,6 @@ public class BrokerPool implements Database {
                             //require to allow access by BrokerPool.getInstance();
                             instances.put(instanceName, this);
 
-                            try {
-                                // initialize EXPath repository so startup triggers can access it
-                                expathRepo = ExistRepository.getRepository(this.conf);
-                            } catch(final PackageException e) {
-                                LOG.warn("Failed to initialize expath repository: " + e.getMessage() + " - this is not fatal, but " +
-                                    "the package manager may not work.");
-                            }
-
                             callStartupTriggers((List<StartupTriggerConfig>) conf.getProperty(BrokerPool.PROPERTY_STARTUP_TRIGGERS), broker);
                         } finally {
                             release(broker);
@@ -1048,8 +1049,6 @@ public class BrokerPool implements Database {
                         //scheduler.executeStartupJobs();
 
                         scheduler.run();
-
-                        ClasspathHelper.updateClasspath(this);
 
                         statusReporter.setStatus(SIGNAL_STARTED);
                     } catch(final Throwable t) {
