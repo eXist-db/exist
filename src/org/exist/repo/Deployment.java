@@ -562,8 +562,8 @@ public class Deployment {
             LOG.warn("The XQuery resource specified in the <setup> element was not found");
             return Sequence.EMPTY_SEQUENCE;
         }
-        final XQuery xqs = broker.getXQueryService();
-        final XQueryContext ctx = xqs.newContext(AccessContext.REST);
+        final XQuery xqs = broker.getBrokerPool().getXQueryService();
+        final XQueryContext ctx = new XQueryContext(broker.getBrokerPool(), AccessContext.REST);
         ctx.declareVariable("dir", tempDir.getAbsolutePath());
         final File home = broker.getConfiguration().getExistHome();
         ctx.declareVariable("home", home.getAbsolutePath());
@@ -579,8 +579,8 @@ public class Deployment {
 
         CompiledXQuery compiled;
         try {
-            compiled = xqs.compile(ctx, new FileSource(xquery, "UTF-8", false));
-            return xqs.execute(compiled, null);
+            compiled = xqs.compile(broker, ctx, new FileSource(xquery, "UTF-8", false));
+            return xqs.execute(broker, compiled, null);
         } catch (final PermissionDeniedException e) {
             throw new PackageException(e.getMessage(), e);
         }

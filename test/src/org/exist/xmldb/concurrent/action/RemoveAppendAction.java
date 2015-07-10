@@ -51,7 +51,7 @@ public class RemoveAppendAction extends Action {
 	 * @see org.exist.xmldb.test.concurrent.ConcurrentXUpdateTest.Action#execute()
 	 */
 	public boolean execute() throws Exception {
-		Collection col = DatabaseManager.getCollection(collectionPath, "admin", null);
+		Collection col = DatabaseManager.getCollection(collectionPath, "admin", "");
 		XUpdateQueryService service = (XUpdateQueryService)
 			col.getService("XUpdateQueryService", "1.0");
 		append(service);

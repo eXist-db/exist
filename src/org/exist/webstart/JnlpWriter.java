@@ -20,7 +20,6 @@
 
 package org.exist.webstart;
 
-import com.bradmcevoy.io.FileUtils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -31,6 +30,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamWriter;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.logging.log4j.LogManager;
@@ -306,7 +306,7 @@ public class JnlpWriter {
 
     private String getImageMimeType(String filename) {
         String type;
-        switch (FileUtils.getExtension(filename)) {
+        switch (FilenameUtils.getExtension(filename)) {
             case ".gif":
                 type = "image/gif";
                 break;
@@ -318,7 +318,7 @@ public class JnlpWriter {
                 type = "image/jpeg";
                 break;
             default:
-                type = "unknown";
+                type = "application/octet-stream";
         }
         return type;
     }

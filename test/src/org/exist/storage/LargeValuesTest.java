@@ -150,7 +150,7 @@ public class LargeValuesTest {
             }
 //            XQuery xquery = broker.getXQueryService();
 //            DocumentSet docs = broker.getAllXMLResources(new DefaultDocumentSet());
-//            Sequence result = xquery.execute("//key/@id/string()", docs.docsToNodeSet(), AccessContext.TEST);
+//            Sequence result = xquery.execute(broker, "//key/@id/string()", docs.docsToNodeSet(), AccessContext.TEST);
 //            assertEquals(KEY_COUNT, result.getItemCount());
 //            for (SequenceIterator i = result.iterate(); i.hasNext();) {
 //                Item item = i.nextItem();

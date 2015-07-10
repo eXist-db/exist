@@ -224,7 +224,7 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
  			//old
  			if(urlQuery != null || strQuery != null)
  			{
-				service = broker.getXQueryService();
+				service = broker.getBrokerPool().getXQueryService();
 				
 				return;
  			}
@@ -273,13 +273,13 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
 		}
 		TriggerStatePerThread.setTransaction(transaction);
 		
-		final XQueryContext context = service.newContext(AccessContext.TRIGGER);
+		final XQueryContext context = new XQueryContext(broker.getBrokerPool(), AccessContext.TRIGGER);
          //TODO : further initialisations ?
         CompiledXQuery compiledQuery;
         try
         {
         	//compile the XQuery
-        	compiledQuery = service.compile(context, query);
+        	compiledQuery = service.compile(broker, context, query);
 
         	//declare external variables
         	context.declareVariable(bindingPrefix + "type", EVENT_TYPE_PREPARE);
@@ -334,7 +334,7 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
         try {
         	//TODO : should we provide another contextSet ?
 	        final NodeSet contextSet = NodeSet.EMPTY_SET;
-			service.execute(compiledQuery, contextSet);
+			service.execute(broker, compiledQuery, contextSet);
 			//TODO : should we have a special processing ?
 			LOG.debug("Trigger fired for prepare");
         } catch(final XPathException e) {
@@ -359,11 +359,11 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
 		if(!TriggerStatePerThread.verifyUniqueTriggerPerThreadBeforeFinish(this, src))
 			{return;}
 		
-        final XQueryContext context = service.newContext(AccessContext.TRIGGER);
+        final XQueryContext context = new XQueryContext(broker.getBrokerPool(), AccessContext.TRIGGER);
         CompiledXQuery compiledQuery = null;
         try {
         	//compile the XQuery
-        	compiledQuery = service.compile(context, query);
+        	compiledQuery = service.compile(broker, context, query);
         	
         	//declare external variables
         	context.declareVariable(bindingPrefix + "type", EVENT_TYPE_FINISH);
@@ -414,7 +414,7 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
         try {
         	//TODO : should we provide another contextSet ?
 	        final NodeSet contextSet = NodeSet.EMPTY_SET;	        
-			service.execute(compiledQuery, contextSet);
+			service.execute(broker, compiledQuery, contextSet);
 			//TODO : should we have a special processing ?
         } catch (final XPathException e) {
         	//Should never be reached
@@ -445,7 +445,7 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
 		}
 		TriggerStatePerThread.setTransaction(transaction);
 		
-		final XQueryContext context = service.newContext(AccessContext.TRIGGER);
+		final XQueryContext context = new XQueryContext(broker.getBrokerPool(), AccessContext.TRIGGER);
         if (query instanceof DBSource) {
             context.setModuleLoadPath(XmldbURI.EMBEDDED_SERVER_URI_PREFIX + ((DBSource)query).getDocumentPath().removeLastSegment().toString());
         }
@@ -453,7 +453,7 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
         CompiledXQuery compiledQuery;
         try {
         	//compile the XQuery
-        	compiledQuery = service.compile(context, query);
+        	compiledQuery = service.compile(broker, context, query);
 
         	//declare user defined parameters as external variables
         	for(final Iterator itUserVarName = userDefinedVariables.keySet().iterator(); itUserVarName.hasNext();) {

@@ -11,7 +11,6 @@ declare variable $rt:COLLECTION := "/db/rangetest";
 declare variable $rt:COLLECTION_CONFIG := 
     <collection xmlns="http://exist-db.org/collection-config/1.0">
         <index xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:vra="http://www.vraweb.org/vracore4.htm" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:mods="http://www.loc.gov/mods/v3">
-            <fulltext default="none" attributes="false"/>
             <lucene>
                 <analyzer class="org.apache.lucene.analysis.standard.StandardAnalyzer"/>
                 

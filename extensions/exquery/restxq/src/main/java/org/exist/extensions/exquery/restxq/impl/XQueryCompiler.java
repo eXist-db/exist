@@ -73,14 +73,14 @@ public class XQueryCompiler {
                 if(metadata.getMimeType().equals(XQUERY_MIME_TYPE)){
             
                     //compile the query
-                    final XQuery xquery = broker.getXQueryService();
-                    final XQueryContext context = xquery.newContext(AccessContext.REST);
+                    final XQuery xquery = broker.getBrokerPool().getXQueryService();
+                    final XQueryContext context = new XQueryContext(broker.getBrokerPool(), AccessContext.REST);
                     final Source source = new DBSource(broker, (BinaryDocument)document, true);
 
                     //set the module load path for any module imports that are relative
                     context.setModuleLoadPath(XmldbURI.EMBEDDED_SERVER_URI_PREFIX + ((XmldbURI)source.getKey()).removeLastSegment());
                     
-                    return broker.getXQueryService().compile(context, source);
+                    return broker.getBrokerPool().getXQueryService().compile(broker, context, source);
                 } else {
                     throw new RestXqServiceCompilationException("Invalid mimetype '" +  metadata.getMimeType() + "' for XQuery: "  + document.getURI().toString().toString());
                 }

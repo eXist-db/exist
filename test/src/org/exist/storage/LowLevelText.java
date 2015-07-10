@@ -50,9 +50,9 @@ public class LowLevelText {
 		pool = new XQueryPool(configuration);
 		stringSource = new StringSource(TEST_XQUERY_SOURCE);
 
-		XQuery xquery = broker.getXQueryService();
+		XQuery xquery = brokerPool.getXQueryService();
 		XQueryContext context = new XQueryContext(broker.getBrokerPool(), AccessContext.TEST);
-		preCompiledXQuery = xquery.compile(context, stringSource);
+		preCompiledXQuery = xquery.compile(broker, context, stringSource);
 	}
 
 	@After

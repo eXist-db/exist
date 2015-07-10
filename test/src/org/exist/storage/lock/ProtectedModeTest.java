@@ -72,7 +72,7 @@ public class ProtectedModeTest {
     @Test
     public void queryCollection() {
         try {
-            Collection root = DatabaseManager.getCollection("xmldb:exist:///db/protected", "admin", null);
+            Collection root = DatabaseManager.getCollection("xmldb:exist:///db/protected", "admin", "");
             XPathQueryServiceImpl service = (XPathQueryServiceImpl) root.getService("XQueryService", "1.0");
             try {
                 service.beginProtected();
@@ -90,7 +90,7 @@ public class ProtectedModeTest {
     @Test
     public void queryRoot() {
         try {
-            Collection root = DatabaseManager.getCollection("xmldb:exist:///db/protected", "admin", null);
+            Collection root = DatabaseManager.getCollection("xmldb:exist:///db/protected", "admin", "");
             XPathQueryServiceImpl service = (XPathQueryServiceImpl) root.getService("XQueryService", "1.0");
             try {
                 service.beginProtected();
@@ -108,7 +108,7 @@ public class ProtectedModeTest {
     @Test
     public void queryDocs() {
         try {
-            Collection root = DatabaseManager.getCollection("xmldb:exist:///db/protected", "admin", null);
+            Collection root = DatabaseManager.getCollection("xmldb:exist:///db/protected", "admin", "");
             XPathQueryServiceImpl service = (XPathQueryServiceImpl) root.getService("XQueryService", "1.0");
             Random random = new Random();
             for (int i = 0; i < COLLECTION_COUNT; i++) {

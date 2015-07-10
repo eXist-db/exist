@@ -61,8 +61,8 @@ public class ClearXQueryCache extends BasicFunction {
     	
     	final DBBroker broker = context.getBroker();
     	
-    	final XQuery xquery = broker.getXQueryService();
-		final XQueryPool pool = xquery.getXQueryPool();
+    	final XQuery xquery = broker.getBrokerPool().getXQueryService();
+		final XQueryPool pool = broker.getBrokerPool().getXQueryPool();
 		
 		pool.clear();
 		

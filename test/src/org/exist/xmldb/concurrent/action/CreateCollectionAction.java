@@ -41,7 +41,7 @@ public class CreateCollectionAction extends Action {
     }
     
     public boolean execute() throws Exception {
-        Collection col = DatabaseManager.getCollection(collectionPath, "admin", null);
+        Collection col = DatabaseManager.getCollection(collectionPath, "admin", "");
         Collection target = DBUtils.addCollection(col, "C" + ++collectionCnt);
         addFiles(target);
         String resources[] = target.listResources();

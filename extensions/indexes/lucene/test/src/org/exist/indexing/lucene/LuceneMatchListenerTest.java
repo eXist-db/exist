@@ -73,47 +73,39 @@ public class LuceneMatchListenerTest {
             "</article>";
 
     private static String CONF1 =
-            "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
-            "	<index>" +
-            "		<fulltext default=\"none\">" +
-            "		</fulltext>" +
-            "   <text qname=\"para\"/>" +
-            "	</index>" +
-            "</collection>";
+        "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
+        "   <index>" +
+        "       <text qname=\"para\"/>" +
+        "   </index>" +
+        "</collection>";
 
     private static String CONF2 =
         "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
-        "	<index>" +
-        "		<fulltext default=\"none\">" +
-        "		</fulltext>" +
+        "   <index>" +
         "       <text qname=\"para\"/>" +
         "       <text qname=\"term\"/>" +
-        "	</index>" +
+        "   </index>" +
         "</collection>";
 
     private static String CONF3 =
-            "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
-            "	<index>" +
-            "		<fulltext default=\"none\">" +
-            "		</fulltext>" +
-            "   <text qname=\"hi\"/>" +
-            "	</index>" +
-            "</collection>";
+        "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
+        "   <index>" +
+        "       <text qname=\"hi\"/>" +
+        "   </index>" +
+        "</collection>";
 
     private static String CONF4 =
-            "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
-            "   <index xmlns:tei=\"http://www.tei-c.org/ns/1.0\">" +
-            "       <fulltext default=\"none\" attributes=\"no\">" +
-            "       </fulltext>" +
-            "       <lucene>" +
-            "           <text qname=\"p\">" +
-            "               <ignore qname=\"note\"/>" +
-            "           </text>" +
-            "           <text qname=\"head\"/>" +
-            "           <inline qname=\"s\"/>" +
-            "       </lucene>" +
-            "   </index>" +
-            "</collection>";
+        "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
+        "   <index xmlns:tei=\"http://www.tei-c.org/ns/1.0\">" +
+        "       <lucene>" +
+        "           <text qname=\"p\">" +
+        "               <ignore qname=\"note\"/>" +
+        "           </text>" +
+        "           <text qname=\"head\"/>" +
+        "           <inline qname=\"s\"/>" +
+        "       </lucene>" +
+        "   </index>" +
+        "</collection>";
 
     private static String MATCH_START = "<exist:match xmlns:exist=\"http://exist.sourceforge.net/NS/exist\">";
     private static String MATCH_END = "</exist:match>";
@@ -132,16 +124,16 @@ public class LuceneMatchListenerTest {
 
             broker = pool.get(pool.getSecurityManager().getSystemSubject());
 
-            XQuery xquery = broker.getXQueryService();
+            XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
-            Sequence seq = xquery.execute("//para[ft:query(., 'mixed')]", null, AccessContext.TEST);
+            Sequence seq = xquery.execute(broker, "//para[ft:query(., 'mixed')]", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             String result = queryResult2String(broker, seq);
             XMLAssert.assertEquals("<para>some paragraph with <hi>" + MATCH_START + "mixed" +
                     MATCH_END + "</hi> content.</para>", result);
 
-            seq = xquery.execute("//para[ft:query(., '+nested +inner +elements')]", null, AccessContext.TEST);
+            seq = xquery.execute(broker, "//para[ft:query(., '+nested +inner +elements')]", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             result = queryResult2String(broker, seq);
@@ -149,14 +141,14 @@ public class LuceneMatchListenerTest {
                     MATCH_END + "</hi> " + MATCH_START +
                     "inner" + MATCH_END + "</note> " + MATCH_START + "elements" + MATCH_END + ".</para>", result);
 
-            seq = xquery.execute("//para[ft:query(term, 'term')]", null, AccessContext.TEST);
+            seq = xquery.execute(broker, "//para[ft:query(term, 'term')]", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             result = queryResult2String(broker, seq);
             XMLAssert.assertEquals("<para>a third paragraph with <term>" + MATCH_START + "term" + MATCH_END +
                     "</term>.</para>", result);
 
-            seq = xquery.execute("//para[ft:query(., '+double +match')]", null, AccessContext.TEST);
+            seq = xquery.execute(broker, "//para[ft:query(., '+double +match')]", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             result = queryResult2String(broker, seq);
@@ -164,7 +156,7 @@ public class LuceneMatchListenerTest {
                     MATCH_START + "match" + MATCH_END + " " + MATCH_START + "double" + MATCH_END + " " +
                     MATCH_START + "match" + MATCH_END + "</para>", result);
 
-            seq = xquery.execute(
+            seq = xquery.execute(broker,
                     "for $para in //para[ft:query(., '+double +match')] return\n" +
                             "   <hit>{$para}</hit>", null, AccessContext.TEST);
             assertNotNull(seq);
@@ -189,15 +181,15 @@ public class LuceneMatchListenerTest {
 
             broker = pool.get(pool.getSecurityManager().getSystemSubject());
 
-            XQuery xquery = broker.getXQueryService();
+            XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
-            Sequence seq = xquery.execute("//para[ft:query(., 'mixed')]/hi", null, AccessContext.TEST);
+            Sequence seq = xquery.execute(broker, "//para[ft:query(., 'mixed')]/hi", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             String result = queryResult2String(broker, seq);
             XMLAssert.assertXpathEvaluatesTo("1", "count(//exist:match)", result);
 
-            seq = xquery.execute("//para[ft:query(., 'nested')]/note", null, AccessContext.TEST);
+            seq = xquery.execute(broker, "//para[ft:query(., 'nested')]/note", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             result = queryResult2String(broker, seq);
@@ -218,15 +210,15 @@ public class LuceneMatchListenerTest {
 
             broker = pool.get(pool.getSecurityManager().getSystemSubject());
 
-            XQuery xquery = broker.getXQueryService();
+            XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
-            Sequence seq = xquery.execute("//hi[ft:query(., 'mixed')]/ancestor::para", null, AccessContext.TEST);
+            Sequence seq = xquery.execute(broker, "//hi[ft:query(., 'mixed')]/ancestor::para", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             String result = queryResult2String(broker, seq);
             XMLAssert.assertXpathEvaluatesTo("1", "count(//exist:match)", result);
 
-            seq = xquery.execute("//hi[ft:query(., 'nested')]/parent::note", null, AccessContext.TEST);
+            seq = xquery.execute(broker, "//hi[ft:query(., 'nested')]/parent::note", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             result = queryResult2String(broker, seq);
@@ -247,23 +239,23 @@ public class LuceneMatchListenerTest {
 
             broker = pool.get(pool.getSecurityManager().getSystemSubject());
 
-            XQuery xquery = broker.getXQueryService();
+            XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
-            Sequence seq = xquery.execute("//p[ft:query(., 'mixed')]", null, AccessContext.TEST);
+            Sequence seq = xquery.execute(broker, "//p[ft:query(., 'mixed')]", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             String result = queryResult2String(broker, seq);
             XMLAssert.assertEquals("<p>Paragraphs with <s>" + MATCH_START + "mix" + MATCH_END +
                     "</s><s>ed</s> content are <s>danger</s>ous.</p>", result);
 
-            seq = xquery.execute("//p[ft:query(., 'ignored')]", null, AccessContext.TEST);
+            seq = xquery.execute(broker, "//p[ft:query(., 'ignored')]", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             result = queryResult2String(broker, seq);
             XMLAssert.assertEquals("<p>A simple<note>sic</note> paragraph with <hi>highlighted</hi> text <note>and a note</note> to be " +
                     MATCH_START + "ignored" + MATCH_END + ".</p>", result);
 
-            seq = xquery.execute("//p[ft:query(., 'highlighted')]", null, AccessContext.TEST);
+            seq = xquery.execute(broker, "//p[ft:query(., 'highlighted')]", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             result = queryResult2String(broker, seq);
@@ -271,13 +263,13 @@ public class LuceneMatchListenerTest {
                     "highlighted" + MATCH_END + "</hi> text <note>and a note</note> to be " +
                     "ignored.</p>", result);
 
-            seq = xquery.execute("//p[ft:query(., 'highlighted')]/hi", null, AccessContext.TEST);
+            seq = xquery.execute(broker, "//p[ft:query(., 'highlighted')]/hi", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             result = queryResult2String(broker, seq);
             XMLAssert.assertEquals("<hi>" + MATCH_START + "highlighted" + MATCH_END + "</hi>", result);
             
-            seq = xquery.execute("//head[ft:query(., 'title')]", null, AccessContext.TEST);
+            seq = xquery.execute(broker, "//head[ft:query(., 'title')]", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             result = queryResult2String(broker, seq);

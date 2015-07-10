@@ -44,6 +44,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.xacml.AccessContext;
 import org.exist.source.URLSource;
 import org.exist.storage.DBBroker;
+import org.exist.storage.XQueryPool;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.serializer.SAXSerializer;
@@ -217,15 +218,16 @@ public class AtomFeeds extends AtomModuleBase implements Atom {
 	public void getEntryById(DBBroker broker, String path, String id,
 			OutgoingMessage response) throws EXistException,
 			BadRequestException, PermissionDeniedException {
-		final XQuery xquery = broker.getXQueryService();
-		CompiledXQuery feedQuery = xquery.getXQueryPool().borrowCompiledXQuery(
+		final XQuery xquery = broker.getBrokerPool().getXQueryService();
+		final XQueryPool xqueryPool = broker.getBrokerPool().getXQueryPool();
+		CompiledXQuery feedQuery = xqueryPool.borrowCompiledXQuery(
 				broker, entryByIdSource);
 
 		XQueryContext context;
 		if (feedQuery == null) {
-			context = xquery.newContext(AccessContext.REST);
+			context = new XQueryContext(broker.getBrokerPool(), AccessContext.REST);
 			try {
-				feedQuery = xquery.compile(context, entryByIdSource);
+				feedQuery = xquery.compile(broker, context, entryByIdSource);
 			} catch (final XPathException ex) {
 				throw new EXistException("Cannot compile xquery "
 						+ entryByIdSource.getURL(), ex);
@@ -242,7 +244,7 @@ public class AtomFeeds extends AtomModuleBase implements Atom {
 
 		try {
 			context.declareVariable("id", id);
-			final Sequence resultSequence = xquery.execute(feedQuery, null);
+			final Sequence resultSequence = xquery.execute(broker, feedQuery, null);
 			if (resultSequence.isEmpty()) {
 				throw new BadRequestException("No topic was found.");
 			}
@@ -280,7 +282,7 @@ public class AtomFeeds extends AtomModuleBase implements Atom {
 					+ entryByIdSource.getURL(), ex);
 
 		} finally {
-			xquery.getXQueryPool().returnCompiledXQuery(entryByIdSource, feedQuery);
+			xqueryPool.returnCompiledXQuery(entryByIdSource, feedQuery);
 		}
 
 	}
@@ -289,15 +291,16 @@ public class AtomFeeds extends AtomModuleBase implements Atom {
 			throws EXistException, BadRequestException,
 			PermissionDeniedException {
 		
-		final XQuery xquery = broker.getXQueryService();
-		CompiledXQuery feedQuery = xquery.getXQueryPool().borrowCompiledXQuery(
+		final XQuery xquery = broker.getBrokerPool().getXQueryService();
+		final XQueryPool xqueryPool = broker.getBrokerPool().getXQueryPool();
+		CompiledXQuery feedQuery = xqueryPool.borrowCompiledXQuery(
 				broker, getFeedSource);
 
 		XQueryContext context;
 		if (feedQuery == null) {
-			context = xquery.newContext(AccessContext.REST);
+			context = new XQueryContext(broker.getBrokerPool(), AccessContext.REST);
 			try {
-				feedQuery = xquery.compile(context, getFeedSource);
+				feedQuery = xquery.compile(broker, context, getFeedSource);
 			} catch (final XPathException ex) {
 				throw new EXistException("Cannot compile xquery "
 						+ getFeedSource.getURL(), ex);
@@ -316,7 +319,7 @@ public class AtomFeeds extends AtomModuleBase implements Atom {
 		);
 
 		try {
-			final Sequence resultSequence = xquery.execute(feedQuery, null);
+			final Sequence resultSequence = xquery.execute(broker, feedQuery, null);
 			if (resultSequence.isEmpty()) {
 				throw new BadRequestException("No feed was found.");
 			}
@@ -353,7 +356,7 @@ public class AtomFeeds extends AtomModuleBase implements Atom {
 			throw new EXistException("Cannot execute xquery " + getFeedSource.getURL(), ex);
 
 		} finally {
-			xquery.getXQueryPool().returnCompiledXQuery(getFeedSource, feedQuery);
+			xqueryPool.returnCompiledXQuery(getFeedSource, feedQuery);
 		}
 	}
 }

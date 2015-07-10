@@ -4,9 +4,6 @@
         This file should be stored into /db/system/config/db/mondial.
     -->
     <index>
-        <fulltext default="none" attributes="no">
-        </fulltext>
-        
         <lucene>
             <text qname="SPEECH">
                 <ignore qname="SPEAKER"/>

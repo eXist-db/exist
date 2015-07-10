@@ -1272,13 +1272,13 @@ public class RESTServer {
         final XmldbURI pathUri = XmldbURI.create(path);
         try {
             final Source source = new StringSource(query);
-            final XQuery xquery = broker.getXQueryService();
-            final XQueryPool pool = xquery.getXQueryPool();
+            final XQuery xquery = broker.getBrokerPool().getXQueryService();
+            final XQueryPool pool = broker.getBrokerPool().getXQueryPool();
             CompiledXQuery compiled = pool.borrowCompiledXQuery(broker, source);
 
             XQueryContext context;
             if (compiled == null) {
-                context = xquery.newContext(AccessContext.REST);
+                context = new XQueryContext(broker.getBrokerPool(), AccessContext.REST);
             } else {
                 context = compiled.getContext();
             }
@@ -1290,7 +1290,7 @@ public class RESTServer {
             declareVariables(context, variables, request, response);
 
             if (compiled == null) {
-                compiled = xquery.compile(context, source);
+                compiled = xquery.compile(broker, context, source);
             } else {
                 compiled.getContext().updateContext(context);
                 context.getWatchDog().reset();
@@ -1298,7 +1298,7 @@ public class RESTServer {
 
             try {
                 final long startTime = System.currentTimeMillis();
-                final Sequence resultSequence = xquery.execute(compiled, null, outputProperties);
+                final Sequence resultSequence = xquery.execute(broker, compiled, null, outputProperties);
                 final long queryTime = System.currentTimeMillis() - startTime;
 
                 if (LOG.isDebugEnabled()) {
@@ -1453,8 +1453,8 @@ public class RESTServer {
             throws XPathException, BadRequestException, PermissionDeniedException {
 
         final Source source = new DBSource(broker, (BinaryDocument) resource, true);
-        final XQuery xquery = broker.getXQueryService();
-        final XQueryPool pool = xquery.getXQueryPool();
+        final XQuery xquery = broker.getBrokerPool().getXQueryService();
+        final XQueryPool pool = broker.getBrokerPool().getXQueryPool();
         XQueryContext context;
 
         CompiledXQuery compiled = pool.borrowCompiledXQuery(broker, source);
@@ -1462,7 +1462,7 @@ public class RESTServer {
             // special header to indicate that the query is not returned from
             // cache
             response.setHeader("X-XQuery-Cached", "false");
-            context = xquery.newContext(AccessContext.REST);
+            context = new XQueryContext(broker.getBrokerPool(), AccessContext.REST);
 
         } else {
             response.setHeader("X-XQuery-Cached", "true");
@@ -1483,7 +1483,7 @@ public class RESTServer {
 
         if (compiled == null) {
             try {
-                compiled = xquery.compile(context, source);
+                compiled = xquery.compile(broker, context, source);
             } catch (final IOException e) {
                 throw new BadRequestException("Failed to read query from " + resource.getURI(), e);
             }
@@ -1495,7 +1495,7 @@ public class RESTServer {
                 && "yes".equals(outputProperties.getProperty("_wrap"));
 
         try {
-            final Sequence result = xquery.execute(compiled, null, outputProperties);
+            final Sequence result = xquery.execute(broker, compiled, null, outputProperties);
             writeResults(response, broker, result, -1, 1, false, outputProperties, wrap);
 
         } finally {
@@ -1515,12 +1515,12 @@ public class RESTServer {
             throws XPathException, BadRequestException, PermissionDeniedException {
 
         final URLSource source = new URLSource(this.getClass().getResource("run-xproc.xq"));
-        final XQuery xquery = broker.getXQueryService();
-        final XQueryPool pool = xquery.getXQueryPool();
+        final XQuery xquery = broker.getBrokerPool().getXQueryService();
+        final XQueryPool pool = broker.getBrokerPool().getXQueryPool();
         XQueryContext context;
         CompiledXQuery compiled = pool.borrowCompiledXQuery(broker, source);
         if (compiled == null) {
-            context = xquery.newContext(AccessContext.REST);
+            context = new XQueryContext(broker.getBrokerPool(), AccessContext.REST);
         } else {
             context = compiled.getContext();
         }
@@ -1555,7 +1555,7 @@ public class RESTServer {
         reqw.setPathInfo(pathInfo);
         if (compiled == null) {
             try {
-                compiled = xquery.compile(context, source);
+                compiled = xquery.compile(broker, context, source);
             } catch (final IOException e) {
                 throw new BadRequestException("Failed to read query from "
                         + source.getURL(), e);
@@ -1563,7 +1563,7 @@ public class RESTServer {
         }
 
         try {
-            final Sequence result = xquery.execute(compiled, null, outputProperties);
+            final Sequence result = xquery.execute(broker, compiled, null, outputProperties);
             writeResults(response, broker, result, -1, 1, false, outputProperties, false);
         } finally {
             pool.returnCompiledXQuery(source, compiled);

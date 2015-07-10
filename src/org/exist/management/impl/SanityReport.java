@@ -199,15 +199,15 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
     		broker = pool.get(pool.getSecurityManager().getGuestSubject());
     		
     		if (checkQueryEngine) {
-    			final XQuery xquery = broker.getXQueryService();
-    			final XQueryPool xqPool = xquery.getXQueryPool();
+    			final XQuery xquery = pool.getXQueryService();
+    			final XQueryPool xqPool = pool.getXQueryPool();
     			CompiledXQuery compiled = xqPool.borrowCompiledXQuery(broker, TEST_XQUERY);
     			if (compiled == null) {
-    				final XQueryContext context = xquery.newContext(AccessContext.TEST);
-    				compiled = xquery.compile(context, TEST_XQUERY);
+    				final XQueryContext context = new XQueryContext(pool, AccessContext.TEST);
+    				compiled = xquery.compile(broker, context, TEST_XQUERY);
     			}
 				try {
-					xquery.execute(compiled, null);
+					xquery.execute(broker, compiled, null);
 				} finally {
 					xqPool.returnCompiledXQuery(TEST_XQUERY, compiled);
 				}

@@ -193,7 +193,7 @@ public class GMLIndexTest extends TestCase {
         try {
             pool = BrokerPool.getInstance();
             broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            XQuery xquery = broker.getXQueryService();
+            XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
             Sequence seq = xquery.execute(
                 "declare namespace gml = 'http://www.opengis.net/gml'; " +
@@ -278,7 +278,7 @@ public class GMLIndexTest extends TestCase {
             pool = BrokerPool.getInstance();
             assertNotNull(pool);
             broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            XQuery xquery = broker.getXQueryService();
+            XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
             String query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
                 "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
@@ -378,7 +378,7 @@ public class GMLIndexTest extends TestCase {
             pool = BrokerPool.getInstance();
             assertNotNull(pool);
             broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            XQuery xquery = broker.getXQueryService();
+            XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
             String query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
                 "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
@@ -735,7 +735,7 @@ public class GMLIndexTest extends TestCase {
             pool = BrokerPool.getInstance();
             assertNotNull(pool);
             broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            XQuery xquery = broker.getXQueryService();
+            XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
             String query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
                 "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
@@ -1003,7 +1003,7 @@ public class GMLIndexTest extends TestCase {
             pool = BrokerPool.getInstance();
             assertNotNull(pool);
             broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            XQuery xquery = broker.getXQueryService();
+            XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
             String query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
                 "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +

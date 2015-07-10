@@ -8,7 +8,6 @@ declare variable $tt:COLLECTION_CONFIG :=
     <collection xmlns="http://exist-db.org/collection-config/1.0">
         <index xmlns:xs="http://www.w3.org/2001/XMLSchema"
             xmlns:tei="http://www.tei-c.org/ns/1.0">
-            <fulltext default="none" attributes="false"/>
             <range>
                 <create qname="date" type="xs:date"/>
                 <create qname="date4" type="xs:date" converter="org.exist.indexing.range.conversion.DateConverter"/>
