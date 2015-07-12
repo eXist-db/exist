@@ -26,6 +26,7 @@ import org.apache.logging.log4j.Logger;
 import org.exist.dom.memtree.DocumentBuilderReceiver;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.memtree.NodeImpl;
+import org.exist.dom.persistent.IStoredNode;
 import org.exist.dom.INodeHandle;
 import org.exist.dom.QName;
 import org.exist.storage.NodePath;
@@ -218,6 +219,9 @@ public class ContentReceiver implements Receiver {
     @Override
     public void setCurrentNode(INodeHandle node) {
     }
+	@Override
+	public void setCurrentNode(IStoredNode node) {		
+	}
 
     /**
      * Does not return anything.
