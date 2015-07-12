@@ -25,6 +25,7 @@ import java.io.File;
 import java.util.Properties;
 
 import org.exist.EXistException;
+import org.exist.scheduler.JobDescription;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.SystemTask;
@@ -32,7 +33,6 @@ import org.exist.util.Configuration;
 
 public class SyncTask implements SystemTask {
 
-    private final static String JOB_GROUP = "eXist.internal";
     private final static String JOB_NAME = "Sync";
 
     public static String getJobName() {
@@ -40,7 +40,7 @@ public class SyncTask implements SystemTask {
     }
 
     public static String getJobGroup() {
-        return JOB_GROUP;
+        return JobDescription.EXIST_INTERNAL_GROUP;
     }
 
     private File dataDir;
@@ -53,8 +53,7 @@ public class SyncTask implements SystemTask {
     }
 
     @Override
-    public void configure(Configuration config, Properties properties)
-            throws EXistException {
+    public void configure(Configuration config, Properties properties) throws EXistException {
         final Integer min = (Integer) config.getProperty(BrokerPool.DISK_SPACE_MIN_PROPERTY);
         if (min != null)
             {diskSpaceMin = min * 1024L * 1024L;}
@@ -71,7 +70,7 @@ public class SyncTask implements SystemTask {
     @Override
     public void execute(DBBroker broker) throws EXistException {
         final BrokerPool pool = broker.getBrokerPool();
-        if (!checkDiskSpace(pool)) {
+        if (!checkDiskSpace()) {
             LOG.fatal("Partition containing DATA_DIR: " + dataDir.getAbsolutePath() + " is running out of disk space. " +
                 "Switching eXist-db to read only to prevent data loss!");
             pool.setReadOnly();
@@ -84,7 +83,7 @@ public class SyncTask implements SystemTask {
         }
     }
 
-    private boolean checkDiskSpace(BrokerPool pool) {
+    private boolean checkDiskSpace() {
         final long space = dataDir.getUsableSpace();
         //LOG.info("Usable space on partition containing DATA_DIR: " + dataDir.getAbsolutePath() + ": " + (space / 1024 / 1024) + "mb");
         return space > diskSpaceMin;

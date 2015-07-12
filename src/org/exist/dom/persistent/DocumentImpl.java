@@ -524,7 +524,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
                     ostream.writeShort(StorageAddress.tidFromPointer(childAddress[i]));
                 }
             }
-            getMetadata().write(pool, ostream);
+            getMetadata().write(pool.getSymbols(), ostream);
         } catch(final IOException e) {
             LOG.warn("io error while writing document data", e);
             //TODO : raise exception ?
@@ -567,7 +567,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
                 childAddress[i] = StorageAddress.createPointer(istream.readInt(), istream.readShort());
             }
             metadata = new DocumentMetadata();
-            metadata.read(pool, istream);
+            metadata.read(pool.getSymbols(), istream);
         } catch(final IOException e) {
             LOG.error("IO error while reading document data for document " + fileURI, e);
             //TODO : raise exception ?
@@ -596,7 +596,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
             istream.skip(children * 2); //actual children
 
             metadata = new DocumentMetadata();
-            metadata.read(pool, istream);
+            metadata.read(pool.getSymbols(), istream);
 
         } catch(final IOException e) {
             LOG.error("IO error while reading document metadata for " + fileURI, e);

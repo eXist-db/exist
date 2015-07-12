@@ -942,7 +942,7 @@ public class BrokerPool implements Database {
                             pluginManager.start(broker);
 
                             //wake-up the security manager
-                            securityManager.attach(this, broker);
+                            securityManager.attach(broker);
 
                             //have to do this after initializing = false
                             // so that the policies collection is saved
@@ -1166,7 +1166,7 @@ public class BrokerPool implements Database {
     }
 
     public long getReservedMem() {
-        return reservedMem - cacheManager.getSizeInBytes();
+        return reservedMem - cacheManager.getCurrentSize();
     }
 
     public int getPageSize() {
@@ -1341,7 +1341,7 @@ public class BrokerPool implements Database {
     }
 
     public TransactionManager getTransactionManager() {
-        return this.transactionManager;
+        return transactionManager;
     }
 
     /**
@@ -1394,6 +1394,7 @@ public class BrokerPool implements Database {
      *
      * @return The IndexManager
      */
+    @Override
     public IndexManager getIndexManager() {
         return indexManager;
     }

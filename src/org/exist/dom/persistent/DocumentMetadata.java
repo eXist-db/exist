@@ -24,7 +24,6 @@ package org.exist.dom.persistent;
 
 import java.io.IOException;
 
-import org.exist.storage.BrokerPool;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.util.MimeType;
@@ -148,10 +147,10 @@ public class DocumentMetadata {
         --pageCount;
     }
 
-    public void write(final BrokerPool pool, final VariableByteOutputStream ostream) throws IOException {
+    public void write(final SymbolTable symbolTable, final VariableByteOutputStream ostream) throws IOException {
         ostream.writeLong(created);
         ostream.writeLong(lastModified);
-        ostream.writeInt(pool.getSymbols().getMimeTypeId(mimeType));
+        ostream.writeInt(symbolTable.getMimeTypeId(mimeType));
         ostream.writeInt(pageCount);
         ostream.writeInt(userLock);
 
@@ -171,11 +170,11 @@ public class DocumentMetadata {
         }
     }
 
-    public void read(final BrokerPool pool, final VariableByteInput istream) throws IOException {
+    public void read(final SymbolTable symbolTable, final VariableByteInput istream) throws IOException {
         created = istream.readLong();
         lastModified = istream.readLong();
         final int mimeTypeSymbolsIndex = istream.readInt();
-        mimeType = pool.getSymbols().getMimeType(mimeTypeSymbolsIndex);
+        mimeType = symbolTable.getMimeType(mimeTypeSymbolsIndex);
         pageCount = istream.readInt();
         userLock = istream.readInt();
         if(istream.readByte() == HAS_DOCTYPE) {

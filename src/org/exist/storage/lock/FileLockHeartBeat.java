@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2006-2007 The eXist Project
+ *  Copyright (C) 2001-2015 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -13,11 +13,9 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software Foundation
- *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- *  $Id$
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.storage.lock;
 
@@ -35,14 +33,14 @@ import java.util.Map;
  */
 public class FileLockHeartBeat implements JobDescription, Job {
 
-    private String JOB_NAME = "FileLockHeartBeat";
+    private final String JOB_NAME;
 
     public FileLockHeartBeat() {
-        //Nothing to do
+        JOB_NAME = "FileLockHeartBeat";
     }
 
     public FileLockHeartBeat(String lockName) {
-        JOB_NAME += ": " + lockName;
+        JOB_NAME = "FileLockHeartBeat: " + lockName;
     }
 
     public String getName() {
@@ -54,13 +52,13 @@ public class FileLockHeartBeat implements JobDescription, Job {
     }
 
     public String getGroup() {
-        return "eXist.internal";
+        return EXIST_INTERNAL_GROUP;
     }
 
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
         //get the file lock
         final JobDataMap jobDataMap = jobExecutionContext.getJobDetail().getJobDataMap();
-        final Map<String, FileLock> params = (Map<String, FileLock>) jobDataMap.get("params");
+        final Map<String, FileLock> params = (Map<String, FileLock>) jobDataMap.get(PARAMS);
         final FileLock lock = params.get(FileLock.class.getName());
         if(lock != null) {
             try {

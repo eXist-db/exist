@@ -23,8 +23,8 @@ import org.exist.storage.cache.Cache;
 
 public interface CacheManager {
 
-    public final static String BTREE_CACHE = "BTREE";
-    public final static String DATA_CACHE = "DATA";
+    String BTREE_CACHE = "BTREE";
+    String DATA_CACHE = "DATA";
     
     /**
      * Register a cache, i.e. put it under control of
@@ -79,4 +79,11 @@ public interface CacheManager {
      * @return Current size of all Caches in bytes (unit of measurement is implementation defined)
      */
     long getCurrentSize();
+
+    /**
+     * Returns the default initial size for all caches.
+     *
+     * @return  Default initial size.
+     */
+    int getDefaultInitialSize();
 }
