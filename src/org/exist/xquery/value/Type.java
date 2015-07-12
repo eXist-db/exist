@@ -114,12 +114,6 @@ public class Type {
     public final static int MAP = 102;
     public final static int ARRAY = 103;
 
-    /**
-     * Special type constant to indicate that an item has been
-     * fulltext indexed.
-     */
-    public final static int IDX_FULLTEXT = 200;
-
     private final static int[] superTypes = new int[512];
 
     static {

@@ -57,7 +57,7 @@ public class TestTools {
             Database database = (Database) cl.newInstance();
             database.setProperty("create-database", "true");
             DatabaseManager.registerDatabase(database);
-            Collection root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", null);
+            Collection root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", "");
             XPathQueryService service = (XPathQueryService) root.getService("XQueryService", "1.0");
 
             CollectionManagementService cmservice = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");

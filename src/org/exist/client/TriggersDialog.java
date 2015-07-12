@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2012 The eXist Project
+ *  Copyright (C) 2001-2015 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -16,18 +16,13 @@
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- *  $Id$
  */
 package org.exist.client;
 
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
@@ -42,7 +37,6 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.TitledBorder;
@@ -61,7 +55,7 @@ import org.xmldb.api.base.XMLDBException;
  * @version 1.1
  */
 class TriggersDialog extends JFrame {
-	
+
     private static final long serialVersionUID = 1L;
 
     private CollectionXConf cx = null;
@@ -72,28 +66,27 @@ class TriggersDialog extends JFrame {
     private TriggersTableModel triggersModel;
 
     private InteractiveClient client;
-	
-	
+
     public TriggersDialog(final String title, final InteractiveClient client) {
         super(title);
         this.client = client;
-        this.setIconImage(InteractiveClient.getExistIcon(getClass()).getImage());		
+        this.setIconImage(InteractiveClient.getExistIcon(getClass()).getImage());
         //capture the frame's close event
         final WindowListener windowListener = new WindowAdapter() {
             @Override
             public void windowClosing(final WindowEvent e) {
                 saveChanges();
-	    		
+
                 TriggersDialog.this.setVisible(false);
                 TriggersDialog.this.dispose();
             }
         };
         
         this.addWindowListener(windowListener);
-		
+
         //draw the GUI
         setupComponents();
-		
+
         //Get the indexes for the root collection
         actionGetTriggers(XmldbURI.ROOT_COLLECTION);
     }
@@ -118,16 +111,16 @@ class TriggersDialog extends JFrame {
         getContentPane().add(label);
 
         //get the collections but not system collections
-        final List<PrettyXmldbURI> alCollections = new ArrayList<PrettyXmldbURI>();
+        final List<PrettyXmldbURI> alCollections = new ArrayList<>();
         
         try {
             final Collection root = client.getCollection(XmldbURI.ROOT_COLLECTION);
-            final List<PrettyXmldbURI> alAllCollections = getCollections(root, new ArrayList<PrettyXmldbURI>());
+            final List<PrettyXmldbURI> alAllCollections = getCollections(root, new ArrayList<>());
             for(int i = 0; i < alAllCollections.size(); i++) {
-            	//TODO : use XmldbURIs !
-            	if(alAllCollections.get(i).toString().indexOf(XmldbURI.CONFIG_COLLECTION)  == -1) {
-            		alCollections.add(alAllCollections.get(i));
-            	}
+                //TODO : use XmldbURIs !
+                if(!alAllCollections.get(i).toString().contains(XmldbURI.CONFIG_COLLECTION)) {
+                    alCollections.add(alAllCollections.get(i));
+                }
             }
         } catch(final XMLDBException e) {
             ClientFrame.showErrorMessage(e.getMessage(), e);
@@ -136,15 +129,11 @@ class TriggersDialog extends JFrame {
         
         //Create a combobox listing the collections
         cmbCollections = new JComboBox(alCollections.toArray());
-        cmbCollections.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(final ActionEvent e) {
-        		
-                saveChanges();
-        		
-                final JComboBox cb = (JComboBox)e.getSource();
-                actionGetTriggers(cb.getSelectedItem().toString());
-            }
+        cmbCollections.addActionListener(e -> {
+            saveChanges();
+
+            final JComboBox cb = (JComboBox)e.getSource();
+            actionGetTriggers(cb.getSelectedItem().toString());
         });
         
         c.gridx = 1;
@@ -167,39 +156,17 @@ class TriggersDialog extends JFrame {
         tblTriggers = new JTable(triggersModel);
         tblTriggers.setAutoResizeMode(JTable.AUTO_RESIZE_NEXT_COLUMN);
         tblTriggers.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        
-        final JScrollPane scrollFullTextIndexes = new JScrollPane(tblTriggers);
-        scrollFullTextIndexes.setPreferredSize(new Dimension(250, 150));
-        c.gridx = 0;
-        c.gridy = 3;
-        c.gridwidth = 2;
-        c.anchor = GridBagConstraints.WEST;
-        c.fill = GridBagConstraints.BOTH;
-        c.weightx = 1;
-        c.weighty = 1;
-        panelTriggersGrid.setConstraints(scrollFullTextIndexes, c);
-        panelTriggers.add(scrollFullTextIndexes);
-		
+
         //Toolbar with add/delete buttons for Triggers
         final Box triggersToolbarBox = Box.createHorizontalBox();
         //add button
         final JButton btnAddTrigger = new JButton(Messages.getString("TriggersDialog.addbutton"));
-        btnAddTrigger.addActionListener(new ActionListener(){
-            @Override
-            public void actionPerformed(final ActionEvent e) {
-                actionAddTrigger();
-            }
-        });
+        btnAddTrigger.addActionListener(e -> actionAddTrigger());
         triggersToolbarBox.add(btnAddTrigger);
         
         //delete button
         final JButton btnDeleteTrigger = new JButton(Messages.getString("TriggersDialog.deletebutton"));
-        btnDeleteTrigger.addActionListener(new ActionListener(){
-            @Override
-            public void actionPerformed(final ActionEvent e) {
-                actionDeleteTrigger();
-            }
-        });
+        btnDeleteTrigger.addActionListener(e -> actionDeleteTrigger());
         triggersToolbarBox.add(btnDeleteTrigger);
         c.gridx = 0;
         c.gridy = 4;
@@ -210,7 +177,7 @@ class TriggersDialog extends JFrame {
         c.weighty = 0;
         panelTriggersGrid.setConstraints(triggersToolbarBox, c);
         panelTriggers.add(triggersToolbarBox);
-		
+
         //add triggers panel to content frame
         c.gridx = 0;
         c.gridy = 1;
@@ -244,7 +211,7 @@ class TriggersDialog extends JFrame {
             }
         }
     }
-	
+
     //THIS IS A COPY FROM ClientFrame
     //TODO: share this code between the two classes
     private List<PrettyXmldbURI> getCollections(final Collection root, final List<PrettyXmldbURI> collectionsList) throws XMLDBException {
@@ -269,14 +236,14 @@ class TriggersDialog extends JFrame {
     private void actionAddTrigger() {
         triggersModel.addRow();
     }
-	
+
     private void actionDeleteTrigger() {
         final int iSelectedRow = tblTriggers.getSelectedRow();
         if(iSelectedRow > -1 ) {
             triggersModel.removeRow(iSelectedRow);
         }
     }
-	
+
     //Displays the indexes when a collection is selection
     private void actionGetTriggers(final String collectionName) {
         try {
@@ -287,7 +254,7 @@ class TriggersDialog extends JFrame {
         }
 
     }
-	
+
     public static class CheckBoxCellRenderer extends JCheckBox implements TableCellRenderer {
         private static final long serialVersionUID = 1L;
 
@@ -311,8 +278,7 @@ class TriggersDialog extends JFrame {
             return this;
         }
     }
-    
-	
+
     public static class CheckBoxCellEditor extends DefaultCellEditor {
         private static final long serialVersionUID = 1L;
 
@@ -320,8 +286,8 @@ class TriggersDialog extends JFrame {
             super(new JCheckBox());
         }
     }
-	
-    class TriggersTableModel extends AbstractTableModel {	
+
+    class TriggersTableModel extends AbstractTableModel {
         private static final long serialVersionUID = 1L;
 
         private final String[] columnNames = new String[] { "class", "Parameters" };
@@ -330,7 +296,7 @@ class TriggersDialog extends JFrame {
             super();
             fireTableDataChanged();
         }
-		
+
         /* (non-Javadoc)
         * @see javax.swing.table.TableModel#isCellEditable()
         */
@@ -343,7 +309,7 @@ class TriggersDialog extends JFrame {
                 triggerClass = (String)aValue;
             }
 
-            cx.updateTrigger(rowIndex, triggerClass, null);			
+            cx.updateTrigger(rowIndex, triggerClass, null);
             fireTableCellUpdated(rowIndex, columnIndex);
         }
 

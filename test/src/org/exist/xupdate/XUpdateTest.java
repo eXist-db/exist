@@ -128,7 +128,7 @@ public class XUpdateTest {
         removeWhiteSpace(referenceXML);
 
         //compare
-        new CompareDocuments().compare(referenceXML, xupdateResult);
+        new CompareDocuments().compare(referenceXML, xupdateResult, "", false);
 
         removeDocument();
     }

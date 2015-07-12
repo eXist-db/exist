@@ -69,7 +69,7 @@ public class ReplaceResourceAction extends Action {
 	 * @see org.exist.xmldb.test.concurrent.Action#execute()
 	 */
 	public boolean execute() throws Exception {
-		Collection col = DatabaseManager.getCollection(collectionPath, "admin", null);
+		Collection col = DatabaseManager.getCollection(collectionPath, "admin", "");
 		String xml =
 			"<data now=\"" + System.currentTimeMillis() + "\" count=\"" +
 			++count + "\">" + XML + "</data>";

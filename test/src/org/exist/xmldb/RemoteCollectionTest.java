@@ -127,11 +127,11 @@ public class RemoteCollectionTest extends RemoteDBTest {
 
         String parentName = c.getName() + "/" + System.currentTimeMillis();
         String colName = parentName + "/a";
-        c = DatabaseManager.getCollection(URI + parentName, "admin", null);
+        c = DatabaseManager.getCollection(URI + parentName, "admin", "");
         assertNull(c);
 
         // following fails for XmlDb 20051203
-        c = DatabaseManager.getCollection(URI + colName, "admin", null);
+        c = DatabaseManager.getCollection(URI + colName, "admin", "");
         assertNull(c);
 	}
 	

@@ -1281,7 +1281,7 @@ public class CollectionConfigurationTest {
                exceptionThrown = false;
                result = service.query("/test/c[(# exist:force-index-use #) { . = xs:dateTime(\"2002-12-07T12:20:46.275+01:00\") }]");
        } catch (Exception e) {
-           e.printStackTrace();
+           //e.printStackTrace();
            if (e.getMessage().indexOf("XQDYxxxx") != Constants.STRING_NOT_FOUND)
                        exceptionThrown = true;
                else throw e;
@@ -1438,7 +1438,7 @@ public class CollectionConfigurationTest {
    private void storeConfiguration(XmldbURI collPath, XmldbURI confName, String confContent) throws XMLDBException {
        Collection testCollection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
        String fullCollPath = ROOT_URI + collPath.toString();
-       Collection configColl = DatabaseManager.getCollection(fullCollPath, "admin", null);
+       Collection configColl = DatabaseManager.getCollection(fullCollPath, "admin", "");
        if(configColl == null) {
      	   CollectionManagementService cms = (CollectionManagementService)testCollection.getService("CollectionManagementService", "1.0");
             configColl = cms.createCollection(collPath.toString());

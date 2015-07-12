@@ -105,7 +105,7 @@ public class ValueIndexTest {
         database.setProperty("create-database", "true");
         DatabaseManager.registerDatabase(database);
 
-        Collection root = DatabaseManager.getCollection(URI, "admin", null);
+        Collection root = DatabaseManager.getCollection(URI, "admin", "");
         CollectionManagementService service = (CollectionManagementService) root
                 .getService("CollectionManagementService", "1.0");
         testCollection = service.createCollection("test");
@@ -115,7 +115,7 @@ public class ValueIndexTest {
     @After
     public void tearDown() throws Exception {
         try {
-            Collection root = DatabaseManager.getCollection(URI, "admin", null);
+            Collection root = DatabaseManager.getCollection(URI, "admin", "");
             CollectionManagementService service = (CollectionManagementService) root
                     .getService("CollectionManagementService", "1.0");
             service.removeCollection("test");
