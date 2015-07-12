@@ -1,7 +1,6 @@
 package org.exist.storage;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 
 import org.exist.EXistException;
@@ -25,7 +24,6 @@ import org.exist.xquery.value.Sequence;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -72,13 +70,8 @@ public class ShutdownTest {
 	            final CollectionConfigurationManager mgr = broker.getBrokerPool().getConfigurationManager();
 	            mgr.addConfiguration(transaction, broker, test, COLLECTION_CONFIG);
 
-	            final File files[] = dir.listFiles(new FilenameFilter() {
-		        	public boolean accept(final File dir, final String name) {
-		        		return name.endsWith(".xml");
-		        	}
-		        });
+	            final File files[] = dir.listFiles((dir1, name) -> name.endsWith(".xml"));
 	            assertNotNull(files);
-
 
                 // store some documents.
 	            for(final File f : files) {
