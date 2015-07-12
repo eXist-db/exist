@@ -148,6 +148,7 @@
             <test fork="yes" name="xquery.maps.MapTests" todir="${junit.reports.dat}"/>
             <test fork="yes" name="xquery.logicalOp.LogicalOpTests" todir="${junit.reports.dat}"/>
             <test fork="yes" name="xquery.numbers.NumberTests" todir="${junit.reports.dat}"/>
+            <test fork="yes" name="xquery.modules.compression.CompressionTests" todir="${junit.reports.dat}"/>
 
             <!--  //-->            
             <test fork="yes" name="org.exist.util.SortTests" todir="${junit.reports.dat}"/>
