@@ -105,47 +105,22 @@ public class UnZipFunction extends AbstractExtractFunction {
     @Override
     protected Sequence processCompressedData(final BinaryValue compressedData, final Charset encoding) throws XPathException, XMLDBException
     {
-        ZipInputStream zis = null;
-        try
-        {
-            zis = new ZipInputStream(compressedData.getInputStream(), encoding);
+        try(final ZipInputStream zis = new ZipInputStream(compressedData.getInputStream(), encoding)) {
             ZipEntry entry = null;
 
-            Sequence results = new ValueSequence();
+            final Sequence results = new ValueSequence();
 
-            while((entry = zis.getNextEntry()) != null)
-            {
-                Sequence processCompressedEntryResults;
-                if (entry.getMethod() == ZipEntry.STORED) {
-                }
-
-                processCompressedEntryResults = processCompressedEntry(entry.getName(), entry.isDirectory(), zis, filterParam, storeParam);
-
+            while((entry = zis.getNextEntry()) != null) {
+                final Sequence processCompressedEntryResults = processCompressedEntry(entry.getName(), entry.isDirectory(), zis, filterParam, storeParam);
                 results.addAll(processCompressedEntryResults);
 
                 zis.closeEntry();
             }
 
             return results;
-        }
-        catch(IOException ioe)
-        {
+        } catch(final IOException ioe) {
             LOG.error(ioe.getMessage(), ioe);
             throw new XPathException(this, ioe.getMessage(), ioe);
-        }
-        finally
-        {
-            if(zis != null)
-            {
-                try
-                {
-                    zis.close();
-                }
-                catch(IOException ioe)
-                {
-                    LOG.warn(ioe.getMessage(), ioe);
-                }
-            }
         }
     }
 }

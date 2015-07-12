@@ -109,41 +109,21 @@ public class UnTarFunction extends AbstractExtractFunction {
     @Override
     protected Sequence processCompressedData(final BinaryValue compressedData, final Charset encoding) throws XPathException, XMLDBException
     {
-        TarArchiveInputStream tis = null;
-        try
-        {
-            tis = new TarArchiveInputStream(compressedData.getInputStream(), encoding.name());
+        try(final TarArchiveInputStream tis = new TarArchiveInputStream(compressedData.getInputStream(), encoding.name())) {
+
             TarArchiveEntry entry = null;
 
-            Sequence results = new ValueSequence();
+            final Sequence results = new ValueSequence();
 
-            while((entry = tis.getNextTarEntry()) != null)
-            {
-                Sequence processCompressedEntryResults = processCompressedEntry(entry.getName(), entry.isDirectory(), tis, filterParam, storeParam);
-
+            while((entry = tis.getNextTarEntry()) != null) {
+                final Sequence processCompressedEntryResults = processCompressedEntry(entry.getName(), entry.isDirectory(), tis, filterParam, storeParam);
                 results.addAll(processCompressedEntryResults);
             }
 
             return results;
-        }
-        catch(IOException ioe)
-        {
+        } catch(final IOException ioe) {
             LOG.error(ioe.getMessage(), ioe);
             throw new XPathException(this, ioe.getMessage(), ioe);
-        }
-        finally
-        {
-            if(tis != null)
-            {
-                try
-                {
-                    tis.close();
-                }
-                catch(IOException ioe)
-                {
-                    LOG.warn(ioe.getMessage(), ioe);
-                }
-            }
         }
     }
 }

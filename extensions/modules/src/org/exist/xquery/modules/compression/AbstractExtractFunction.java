@@ -158,83 +158,84 @@ public abstract class AbstractExtractFunction extends BasicFunction
             Sequence uncompressedData = Sequence.EMPTY_SEQUENCE;
             
             //copy the input data
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            byte buf[] = new byte[1024];
-            int read = -1;
-            while((read = is.read(buf)) != -1)
-            {
-                baos.write(buf, 0, read);
-            }
-            byte[] entryData = baos.toByteArray();
+            try(final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+                final byte buf[] = new byte[1024];
+                int read = -1;
+                while ((read = is.read(buf)) != -1) {
+                    baos.write(buf, 0, read);
+                }
 
-            if (entryDataFunction.getSignature().getArgumentCount() == 3){
-            	
-                Sequence dataParams[] = new Sequence[3];
-                System.arraycopy(filterParams, 0, dataParams, 0, 2);
-                dataParams[2] = storeParam;
-                entryDataFunctionResult = entryDataFunction.evalFunction(contextSequence, null, dataParams);
-                
-                String path = entryDataFunctionResult.itemAt(0).getStringValue();
-                
-                Collection root = new LocalCollection(context.getUser(), context.getBroker().getBrokerPool(), new AnyURIValue("/db").toXmldbURI(), context.getAccessContext());
+                final byte[] entryData = baos.toByteArray();
 
-    			if (isDirectory){
-                	
-                	XMLDBAbstractCollectionManipulator.createCollection(root, path);
-                	
+                if (entryDataFunction.getSignature().getArgumentCount() == 3) {
+
+                    Sequence dataParams[] = new Sequence[3];
+                    System.arraycopy(filterParams, 0, dataParams, 0, 2);
+                    dataParams[2] = storeParam;
+                    entryDataFunctionResult = entryDataFunction.evalFunction(contextSequence, null, dataParams);
+
+                    String path = entryDataFunctionResult.itemAt(0).getStringValue();
+
+                    Collection root = new LocalCollection(context.getUser(), context.getBroker().getBrokerPool(), new AnyURIValue("/db").toXmldbURI(), context.getAccessContext());
+
+                    if (isDirectory) {
+
+                        XMLDBAbstractCollectionManipulator.createCollection(root, path);
+
+                    } else {
+
+                        Resource resource;
+
+                        File file = new File(path);
+                        name = file.getName();
+                        path = file.getParent();
+
+                        Collection target = (path == null) ? root : XMLDBAbstractCollectionManipulator.createCollection(root, path);
+
+                        MimeType mime = MimeTable.getInstance().getContentTypeFor(name);
+
+                        try(final InputStream bis = new ByteArrayInputStream(entryData)) {
+                            NodeValue content = ModuleUtils.streamToXML(context, bis);
+                            resource = target.createResource(name, "XMLResource");
+                            ContentHandler handler = ((XMLResource) resource).setContentAsSAX();
+                            handler.startDocument();
+                            content.toSAX(context.getBroker(), handler, null);
+                            handler.endDocument();
+                        } catch (SAXException e) {
+                            resource = target.createResource(name, "BinaryResource");
+                            resource.setContent(entryData);
+                        }
+
+                        if (resource != null) {
+                            if (mime != null) {
+                                ((EXistResource) resource).setMimeType(mime.getName());
+                            }
+                            target.storeResource(resource);
+                        }
+
+                    }
+
                 } else {
 
-                    Resource resource;
-                    
-            		File file = new File(path);
-            		name = file.getName();
-            		path = file.getParent();
-            		
-            		Collection target = (path==null) ? root : XMLDBAbstractCollectionManipulator.createCollection(root, path);
-            		
-            	    MimeType mime = MimeTable.getInstance().getContentTypeFor(name);
-            	    
-            		try{
-            			NodeValue content = ModuleUtils.streamToXML(context, new ByteArrayInputStream(baos.toByteArray()));
-            			resource = target.createResource(name, "XMLResource");
-            			ContentHandler handler = ((XMLResource)resource).setContentAsSAX();
-            			handler.startDocument();
-            			content.toSAX(context.getBroker(), handler, null);
-            			handler.endDocument();
-            		} catch(SAXException e){
-            			resource = target.createResource(name, "BinaryResource");
-            			resource.setContent(baos.toByteArray());
+                    //try and parse as xml, fall back to binary
+                    try(final InputStream bis = new ByteArrayInputStream(entryData)) {
+                        uncompressedData = ModuleUtils.streamToXML(context, bis);
+                    } catch (SAXException saxe) {
+                        if (entryData.length > 0) {
+                            try(final InputStream bis = new ByteArrayInputStream(entryData)){
+                                uncompressedData = BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), bis);
+                            }
+                        }
                     }
-            		
-            		if (resource != null){
-            			if (mime != null){
-            				((EXistResource)resource).setMimeType(mime.getName());
-            			}
-            			target.storeResource(resource);
-            		}
-                	
-                }
-                
-            } else {
-            	
-                //try and parse as xml, fall back to binary
-                try
-                {
-                    uncompressedData = ModuleUtils.streamToXML(context, new ByteArrayInputStream(entryData));
-                }
-                catch(SAXException saxe)
-                {
-                    if(entryData.length > 0)
-                        uncompressedData = BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new ByteArrayInputStream(entryData));
-                }
 
-                //call the entry-data function
-                Sequence dataParams[] = new Sequence[4];
-                System.arraycopy(filterParams, 0, dataParams, 0, 2);
-                dataParams[2] = uncompressedData;
-                dataParams[3] = storeParam;
-                entryDataFunctionResult = entryDataFunction.evalFunction(contextSequence, null, dataParams);
-                
+                    //call the entry-data function
+                    Sequence dataParams[] = new Sequence[4];
+                    System.arraycopy(filterParams, 0, dataParams, 0, 2);
+                    dataParams[2] = uncompressedData;
+                    dataParams[3] = storeParam;
+                    entryDataFunctionResult = entryDataFunction.evalFunction(contextSequence, null, dataParams);
+
+                }
             }
             
             return entryDataFunctionResult;
