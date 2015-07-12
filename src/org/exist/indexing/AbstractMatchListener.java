@@ -19,7 +19,6 @@
  */
 package org.exist.indexing;
 
-import org.exist.dom.persistent.IStoredNode;
 import org.exist.dom.persistent.NodeHandle;
 import org.exist.dom.QName;
 import org.exist.util.serializer.AttrList;
@@ -65,11 +64,7 @@ public class AbstractMatchListener implements MatchListener {
             getNextInChain().setCurrentNode(node);
         }
     }
-	@Override
-	public void setCurrentNode(IStoredNode node) {
-		setCurrentNode((NodeHandle)node);
-	}
-	
+
     protected NodeHandle getCurrentNode() {
         return currentNode;
     }

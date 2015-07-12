@@ -214,7 +214,6 @@
         <get src="${url}/upgrading.xml" dest="${build.docs.html}/upgrading.html"/>
         <get src="${url}/urlrewrite.xml" dest="${build.docs.html}/urlrewrite.html"/>
         <get src="${url}/validation.xml" dest="${build.docs.html}/validation.html"/>
-        <get src="${url}/versioning.xml" dest="${build.docs.html}/versioning.html"/>
         <get src="${url}/webdav.xml" dest="${build.docs.html}/webdav.html"/>
         <get src="${url}/xacml-dev.xml" dest="${build.docs.html}/xacml-dev.html"/>
         <get src="${url}/xacml-features.xml" dest="${build.docs.html}/xacml-features.html"/>

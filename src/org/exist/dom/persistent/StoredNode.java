@@ -83,7 +83,7 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
         this.internalAddress = internalAddress;
     }
 
-    protected StoredNode(final StoredNode<?> other) {
+    protected StoredNode(final StoredNode other) {
         this.nodeType = other.nodeType;
         this.nodeId = other.nodeId;
         this.internalAddress = other.internalAddress;
@@ -93,8 +93,8 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
     /**
      * Extracts just the details of the StoredNode
      */
-    public StoredNode<?> extract() {
-        return new StoredNode<StoredNode<?>>(this) {
+    public StoredNode extract() {
+        return new StoredNode(this) {
         };
     }
 

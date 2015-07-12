@@ -188,7 +188,7 @@ public abstract class Serializer implements XMLReader {
     protected TransformerHandler xslHandler = null;
     protected XIncludeFilter xinclude;
     protected CustomMatchListenerFactory customMatchListeners;
-    protected Receiver<?> receiver = null;
+    protected Receiver receiver = null;
     protected SAXSerializer xmlout = null;
     protected LexicalHandler lexicalHandler = null;
     protected Subject user = null;
@@ -476,7 +476,7 @@ public abstract class Serializer implements XMLReader {
 			//looking for serializer properties in <?exist-serialize?> 
 	    	final NodeList children = doc.getChildNodes();
 	    	for (int i = 0; i < children.getLength(); i++) {
-	    		final StoredNode<?> node = (StoredNode<?>) children.item(i);
+	    		final StoredNode node = (StoredNode) children.item(i);
 	    		if (node.getNodeType() == Node.PROCESSING_INSTRUCTION_NODE 
 	    				&& "exist-serialize".equals(node.getNodeName())) {
 
@@ -570,11 +570,11 @@ public abstract class Serializer implements XMLReader {
 			{receiver = toSAX;}
 	}
 
-    public void setReceiver(Receiver<?> receiver) {
+    public void setReceiver(Receiver receiver) {
         this.receiver = receiver;
     }
 
-    public void setReceiver(Receiver<?> receiver, boolean handleIncludes) {
+    public void setReceiver(Receiver receiver, boolean handleIncludes) {
         if (handleIncludes && "yes".equals(getProperty(EXistOutputKeys.EXPAND_XINCLUDES, "yes"))) {
 			xinclude.setReceiver(receiver);
 			this.receiver = xinclude;
@@ -662,8 +662,8 @@ public abstract class Serializer implements XMLReader {
         }
     }
 
-    protected Receiver<?> setupMatchListeners(NodeProxy p) {
-        final Receiver<?> oldReceiver = receiver;
+    protected Receiver setupMatchListeners(NodeProxy p) {
+        final Receiver oldReceiver = receiver;
         if (getHighlightingMode() != TAG_NONE) {
             final IndexController controller = broker.getIndexController();
             MatchListener listener = controller.getMatchListener(p);
@@ -763,7 +763,8 @@ public abstract class Serializer implements XMLReader {
             }
 
             // save handlers
-            Receiver<?> oldReceiver = receiver;
+            Receiver oldReceiver = receiver;
+
             // compile stylesheet
             factory.setErrorListener(new ErrorListener());
             final TemplatesHandler handler = factory.newTemplatesHandler();
@@ -1054,7 +1055,7 @@ public abstract class Serializer implements XMLReader {
     }
 
     public void toReceiver(NodeProxy p, boolean highlightMatches, boolean checkAttributes) throws SAXException {
-        Receiver<?> oldReceiver = highlightMatches ? setupMatchListeners(p) : receiver;
+        Receiver oldReceiver = highlightMatches ? setupMatchListeners(p) : receiver;
         serializeToReceiver(p, false, checkAttributes);
         receiver = oldReceiver;
     }

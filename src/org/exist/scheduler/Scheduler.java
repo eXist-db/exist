@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2013 The eXist-db team
+ *  Copyright (C) 2001-2015 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -13,11 +13,9 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software Foundation
- *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- *  $Id$
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.scheduler;
 
@@ -30,8 +28,8 @@ import java.util.Properties;
  * @author  Adam Retter <adam@existsolutions.com>
  */
 public interface Scheduler {
-    
-    public void run();
+
+    void run();
 
     /**
      * Shutdown the running Scheduler.
@@ -41,9 +39,9 @@ public interface Scheduler {
      * @param  waitForJobsToComplete Should we wait for currently executing jobs
      * to complete before shutting down?
      */
-    public void shutdown(final boolean waitForJobsToComplete);
+    void shutdown(final boolean waitForJobsToComplete);
 
-    public boolean isShutdown();
+    boolean isShutdown();
 
     /**
      * Create Periodic Job
@@ -54,7 +52,7 @@ public interface Scheduler {
      *
      * @return  true if the job was successfully scheduled, false otherwise
      */
-    public boolean createPeriodicJob(final long period, final JobDescription job, final long delay);
+    boolean createPeriodicJob(final long period, final JobDescription job, final long delay);
 
     /**
      * Create Periodic Job
@@ -66,7 +64,7 @@ public interface Scheduler {
      *
      * @return  true if the job was successfully scheduled, false otherwise
      */
-    public boolean createPeriodicJob(final long period, final JobDescription job, final long delay, final Properties params);
+    boolean createPeriodicJob(final long period, final JobDescription job, final long delay, final Properties params);
 
     /**
      * Create Periodic Job
@@ -79,7 +77,7 @@ public interface Scheduler {
      *
      * @return  true if the job was successfully scheduled, false otherwise
      */
-    public boolean createPeriodicJob(final long period, final JobDescription job, final long delay, final Properties params, final int repeatCount);
+    boolean createPeriodicJob(final long period, final JobDescription job, final long delay, final Properties params, final int repeatCount);
 
     /**
      * Create Periodic Job
@@ -93,7 +91,7 @@ public interface Scheduler {
      *
      * @return  true if the job was successfully scheduled, false otherwise
      */
-    public boolean createPeriodicJob(final long period, final JobDescription job, final long delay, final Properties params, final int repeatCount, final boolean unschedule);
+    boolean createPeriodicJob(final long period, final JobDescription job, final long delay, final Properties params, final int repeatCount, final boolean unschedule);
 
     /**
      * Create Cron Job
@@ -103,7 +101,7 @@ public interface Scheduler {
      *
      * @return  true if the job was successfully scheduled, false otherwise
      */
-    public boolean createCronJob(final String cronExpression, final JobDescription job);
+    boolean createCronJob(final String cronExpression, final JobDescription job);
 
     /**
      * Create Cron Job
@@ -114,7 +112,7 @@ public interface Scheduler {
      *
      * @return  true if the job was successfully scheduled, false otherwise
      */
-    public boolean createCronJob(final String cronExpression, final JobDescription job, final Properties params);
+    boolean createCronJob(final String cronExpression, final JobDescription job, final Properties params);
 
     /**
      * Create Cron Job
@@ -126,7 +124,7 @@ public interface Scheduler {
      *
      * @return  true if the job was successfully scheduled, false otherwise
      */
-    public boolean createCronJob(final String cronExpression, final JobDescription job, final Properties params, final boolean unschedule);
+    boolean createCronJob(final String cronExpression, final JobDescription job, final Properties params, final boolean unschedule);
 
     /**
      * Removes a Job from the Scheduler.
@@ -136,7 +134,7 @@ public interface Scheduler {
      *
      * @return  true if the job was deleted, false otherwise
      */
-    public boolean deleteJob(final String jobName, final String jobGroup);
+    boolean deleteJob(final String jobName, final String jobGroup);
 
     /**
      * Pauses a Job with the Scheduler.
@@ -146,7 +144,7 @@ public interface Scheduler {
      *
      * @return  true if the job was paused, false otherwise
      */
-    public boolean pauseJob(final String jobName, final String jobGroup);
+    boolean pauseJob(final String jobName, final String jobGroup);
 
     /**
      * Resume a Job with the Scheduler.
@@ -156,31 +154,31 @@ public interface Scheduler {
      *
      * @return  true if the job was resumed, false otherwise
      */
-    public boolean resumeJob(final String jobName, final String jobGroup);
+    boolean resumeJob(final String jobName, final String jobGroup);
 
     /**
      * Gets the names of the Job groups.
      *
      * @return  List of the Job group names
      */
-    public List<String> getJobGroupNames();
+    List<String> getJobGroupNames();
 
     /**
      * Gets information about currently Scheduled Jobs.
      *
      * @return List of ScheduledJobInfo
      */
-    public List<ScheduledJobInfo> getScheduledJobs();
+    List<ScheduledJobInfo> getScheduledJobs();
 
     /**
      * Gets information about currently Executing Jobs.
      *
      * @return  An array of ScheduledJobInfo
      */
-    public ScheduledJobInfo[] getExecutingJobs();
+    ScheduledJobInfo[] getExecutingJobs();
 
     /**
      * Set's up all the jobs that are listed in conf.xml and loaded through org.exist.util.Configuration.
      */
-    public void setupConfiguredJobs();
+    void setupConfiguredJobs();
 }

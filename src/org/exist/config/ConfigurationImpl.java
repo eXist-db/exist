@@ -1,30 +1,27 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2008-2013 The eXist Project
+ *  Copyright (C) 2001-2015 The eXist Project
  *  http://exist-db.org
- *  
+ *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
  *  as published by the Free Software Foundation; either version 2
  *  of the License, or (at your option) any later version.
- *  
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *  
- *  $Id$
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.config;
 
 import java.lang.ref.WeakReference;
 import java.util.*;
 
-import jdk.nashorn.internal.runtime.regexp.joni.Config;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
@@ -42,7 +39,7 @@ import org.w3c.dom.NodeList;
  */
 public class ConfigurationImpl implements Configuration {
 
-    private Map<String, Object> runtimeProperties = new HashMap<String, Object>();
+    private Map<String, Object> runtimeProperties = new HashMap<>();
 
     protected WeakReference<Configurable> configuredObjectReference = null;
 
@@ -87,7 +84,7 @@ public class ConfigurationImpl implements Configuration {
     @Override
     public List<Configuration> getConfigurations(String name) {
 
-        final List<Configuration> list = new ArrayList<Configuration>();
+        final List<Configuration> list = new ArrayList<>();
         
         Node child = element.getFirstChild();
         while (child != null) {
@@ -100,13 +97,10 @@ public class ConfigurationImpl implements Configuration {
                     
                     final Configuration config = new ConfigurationImpl(el);
                     list.add(config);
-                
                 }
             }
-            
             child = child.getNextSibling();
         }
-
         return list;
     }
     
@@ -117,8 +111,8 @@ public class ConfigurationImpl implements Configuration {
         if (props != null)
             return;
         
-        props = new HashMap<String, String>();
-        Set<String> names = new HashSet<String>();
+        props = new HashMap<>();
+        Set<String> names = new HashSet<>();
         
         Node child = element.getFirstChild();
         while (child != null) {
@@ -140,7 +134,6 @@ public class ConfigurationImpl implements Configuration {
                     }
                 }
             }
-            
             child = child.getNextSibling();
         }
         
@@ -180,16 +173,14 @@ public class ConfigurationImpl implements Configuration {
     public String getProperty(String name, String default_property) {
         final String property = getProperty(name);
         
-        if (property == null) {
-            return default_property;
-        }
+        if (property == null) return default_property;
         
         return property;
     }
 
     @Override
     public Map<String, String> getPropertyMap(String name) {
-        final Map<String, String> map = new HashMap<String, String>();
+        final Map<String, String> map = new HashMap<>();
 
         if (hasProperty(name)) {
             map.put(name, getProperty(name));
@@ -222,16 +213,12 @@ public class ConfigurationImpl implements Configuration {
                     
                     final String key = attr.getNodeValue();
                     final String value = el.getNodeValue();
-                    
-                    if(key == null || key.isEmpty() || value == null || value.isEmpty()){
-                        ; //skip
-                    } else {
+
+                    if (key != null && !key.isEmpty() && value != null && !value.isEmpty()) {
                         map.put(key, value);
                     }
-                
                 }
             }
-            
             child = child.getNextSibling();
         }
 
@@ -305,10 +292,10 @@ public class ConfigurationImpl implements Configuration {
     }
 
     public Boolean getPropertyBoolean(String name, boolean defaultValue) {
-        final String value = getProperty(name);
-        if(value == null)
-            {return Boolean.valueOf(defaultValue);}
-        return Boolean.valueOf("yes".equalsIgnoreCase(value) || "true".equalsIgnoreCase(value));
+        Boolean value = getPropertyBoolean(name);
+        if(value == null) return Boolean.valueOf(defaultValue);
+
+        return value;
     }
 
     @Override
@@ -356,11 +343,13 @@ public class ConfigurationImpl implements Configuration {
     public Integer getPropertyMegabytes(String name, Integer defaultValue) {
         String cacheMem = element.getAttribute(name);
         if (cacheMem != null) {
-            if (cacheMem.endsWith("M") || cacheMem.endsWith("m"))
-                {cacheMem = cacheMem.substring(0, cacheMem.length() - 1);}
+            if (cacheMem.endsWith("M") || cacheMem.endsWith("m")) {
+                cacheMem = cacheMem.substring(0, cacheMem.length() - 1);
+            }
             final Integer result = Integer.valueOf(cacheMem);
-            if (result < 0)
-                {return defaultValue;}
+            if (result < 0) {
+                return defaultValue;
+            }
             return result;
         }
         return defaultValue;
@@ -372,7 +361,7 @@ public class ConfigurationImpl implements Configuration {
 
     @Override
     public Set<String> getProperties() {
-        final Set<String> properties = new HashSet<String>();
+        final Set<String> properties = new HashSet<>();
         final NamedNodeMap attrs = element.getAttributes();
         for (int i = 0; i < attrs.getLength(); i++) {
             //ignore namespace declarations

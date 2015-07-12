@@ -249,8 +249,8 @@ public class IndexController {
      * @param includeSelf if set to true, the current node itself will be included in the check
      * @return the top-most root node to be re-indexed
      */
-    public IStoredNode<?> getReindexRoot(IStoredNode<?> node, NodePath path, boolean insert, boolean includeSelf) {
-        IStoredNode<?> next, top = null;
+    public IStoredNode getReindexRoot(IStoredNode node, NodePath path, boolean insert, boolean includeSelf) {
+        IStoredNode next, top = null;
         for (final IndexWorker indexWorker : indexWorkers.values()) {
             next = indexWorker.getReindexRoot(node, path, insert, includeSelf);
             if (next != null && (top == null || top.getNodeId().isDescendantOf(next.getNodeId()))) {

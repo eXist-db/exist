@@ -26,7 +26,6 @@ import org.apache.logging.log4j.Logger;
 import org.exist.dom.INodeHandle;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.IStoredNode;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.SAXAdapter;
 import org.exist.security.Permission;
@@ -62,7 +61,6 @@ import org.xml.sax.XMLReader;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -609,9 +607,4 @@ public class XIncludeFilter implements Receiver {
     	//ignored
     	return null;
     }
-
-	@Override
-	public void setCurrentNode(IStoredNode node) {
-		// TODO Auto-generated method stub
-	}
 }

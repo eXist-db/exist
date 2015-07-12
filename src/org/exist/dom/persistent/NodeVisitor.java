@@ -29,5 +29,5 @@ package org.exist.dom.persistent;
  */
 public interface NodeVisitor {
 
-    public boolean visit(IStoredNode<?> node);
+    public boolean visit(IStoredNode node);
 }

@@ -316,12 +316,11 @@ public class DefaultCacheManager implements CacheManager
     }
 
     /**
-     * @return Current size of all Caches in pages
+     * @return Current size of all Caches in bytes
      */
     @Override
-    public long getCurrentSize()
-    {
-        return( currentPageCount );
+    public long getCurrentSize() {
+        return currentPageCount * pageSize;
     }
 
     /**
@@ -333,16 +332,10 @@ public class DefaultCacheManager implements CacheManager
         return( maxCacheSize );
     }
 
-    public long getSizeInBytes()
-    {
-        return( currentPageCount * pageSize );
-    }
-
     public long getTotalMem()
     {
         return( totalMem );
     }
-
 
     /**
      * Returns the default initial size for all caches.

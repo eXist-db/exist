@@ -55,7 +55,7 @@ public class NodeTest {
             doc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"),Lock.READ_LOCK);
             NodeList children = doc.getChildNodes();
             for (int i = 0; i < children.getLength(); i++) {
-                IStoredNode<?> node = (IStoredNode<?>) children.item(i);
+                IStoredNode node = (IStoredNode<?>) children.item(i);
                 node.getNodeId();
                 node.getNodeName();
             }
@@ -199,7 +199,7 @@ public class NodeTest {
             StoredNode rootNode = (StoredNode) doc.getDocumentElement();
             NodeVisitor visitor = new NodeVisitor() {
                 @Override
-                public boolean visit(IStoredNode<?> node) {
+                public boolean visit(IStoredNode node) {
                     node.getNodeId();
                     node.getNodeName();
                     return true;

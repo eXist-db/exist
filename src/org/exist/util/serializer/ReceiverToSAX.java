@@ -23,7 +23,6 @@ package org.exist.util.serializer;
 
 import org.exist.dom.INodeHandle;
 import org.exist.dom.QName;
-import org.exist.dom.persistent.IStoredNode;
 import org.w3c.dom.Document;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -188,15 +187,9 @@ public class ReceiverToSAX implements Receiver {
     public void setCurrentNode(INodeHandle node) {
         // just ignore
     }
-
+    
     public Document getDocument() {
     	//just ignore
     	return null;
-    }
-
-	@Override
-	public void setCurrentNode(IStoredNode node) {
-		// TODO Auto-generated method stub
-		
-	}    
+    }    
 }

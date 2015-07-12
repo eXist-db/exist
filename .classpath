@@ -66,7 +66,6 @@
 	<classpathentry kind="lib" path="lib/optional/jaxrpc-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/optional/saaj-1.2.jar"/>
 	<classpathentry kind="lib" path="lib/optional/wsdl4j-1.5.1.jar"/>
-	<classpathentry kind="lib" path="tools/ircbot/lib/pircbot.jar"/>
 	<classpathentry kind="lib" path="tools/wrapper/lib/wrapper.jar"/>
 	<classpathentry kind="lib" path="lib/core/jta-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/core/commons-collections-3.2.1.jar"/>

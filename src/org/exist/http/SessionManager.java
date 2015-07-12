@@ -25,6 +25,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.scheduler.JobException;
 import org.exist.scheduler.JobException.JobExceptionAction;
+import org.exist.scheduler.ScheduledJobInfo;
+import org.exist.scheduler.Scheduler;
 import org.exist.scheduler.UserJavaJob;
 import org.exist.storage.BrokerPool;
 import org.exist.xquery.value.Sequence;
@@ -33,6 +35,8 @@ import java.util.Map;
 import java.util.Properties;
 
 public class SessionManager {
+
+    public static final String SESSION_MANAGER = "session-manager";
 
     public final static long TIMEOUT = 120000;
 
@@ -45,10 +49,10 @@ public class SessionManager {
     private static class QueryResult {
 
         long lastAccess;
-        String queryString;
-        Sequence sequence;
+        final String queryString;
+        final Sequence sequence;
 
-        private QueryResult(String query, Sequence sequence) {
+        private QueryResult(final String query, final Sequence sequence) {
             this.queryString = query;
             this.sequence = sequence;
             this.lastAccess = System.currentTimeMillis();
@@ -69,11 +73,11 @@ public class SessionManager {
             return "REST_TimeoutCheck";
         }
 
-        public void setName(String name) {
+        public void setName(final String name) {
         }
 
         public void execute(final BrokerPool brokerpool, final Map<String, ?> params) throws JobException {
-            final SessionManager manager = (SessionManager)params.get("session-manager");
+            final SessionManager manager = (SessionManager)params.get(SESSION_MANAGER);
             if (manager == null) {
                 throw new JobException(JobExceptionAction.JOB_ABORT, "parameter 'session-manager' is not set");
             }
@@ -83,13 +87,22 @@ public class SessionManager {
 
     private QueryResult[] slots = new QueryResult[32];
 
-    public SessionManager(BrokerPool pool) {
+    public SessionManager(final BrokerPool pool) {
+        final TimeoutCheck task = new TimeoutCheck();
+        final Scheduler scheduler = pool.getScheduler();
+
+        for (final ScheduledJobInfo job : scheduler.getScheduledJobs()) {
+            if (task.getName().equals(job.getName())) {
+                 return;
+            }
+        }
+
         final Properties props = new Properties();
-        props.put("session-manager", this);
-        pool.getScheduler().createPeriodicJob(TIMEOUT_CHECK_PERIOD, new TimeoutCheck(), 2000, props);
+        props.put(SESSION_MANAGER, this);
+        scheduler.createPeriodicJob(TIMEOUT_CHECK_PERIOD, task, 2000, props);
     }
 
-    public int add(String query, Sequence sequence) {
+    public int add(final String query, final Sequence sequence) {
         final int len = slots.length;
         for (int i = 0; i < len; i++) {
             if (slots[i] == null) {
@@ -98,28 +111,34 @@ public class SessionManager {
             }
         }
         // no free slots, resize
-        QueryResult[] t = new QueryResult[(len * 3) / 2];
+        final QueryResult[] t = new QueryResult[(len * 3) / 2];
         System.arraycopy(slots, 0, t, 0, len);
         t[len] = new QueryResult(query, sequence);
         slots = t;
         return len;
     }
 
-    public Sequence get(String query, int sessionId) {
-        if (sessionId < 0 || sessionId >= slots.length)
-            {return null;} // out of scope
+    public Sequence get(final String query, final int sessionId) {
+        if (sessionId < 0 || sessionId >= slots.length) {
+            return null; // out of scope
+        }
+
         final QueryResult cached = slots[sessionId];
-        if (cached == null)
-            {return null;}
-        if (cached.queryString.equals(query))
-            {return cached.sequence();}
+        if (cached == null) {
+            return null;
+        }
+        if (cached.queryString.equals(query)) {
+            return cached.sequence();
+        }
+
         // wrong query
         return null;
     }
 
-    public void release(int sessionId) {
-        if (sessionId < 0 || sessionId >= slots.length)
-            {return;} // out of scope
+    public void release(final int sessionId) {
+        if (sessionId < 0 || sessionId >= slots.length) {
+            return; // out of scope
+        }
         slots[sessionId] = null;
     }
 
@@ -127,7 +146,9 @@ public class SessionManager {
         final long now = System.currentTimeMillis();
         for (int i = 0; i < slots.length; i++) {
             if (slots[i] != null && now - slots[i].lastAccess > TIMEOUT) {
-                LOG.debug("Removing cached query result for session " + i);
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Removing cached query result for session " + i);
+                }
                 slots[i] = null;
             }
         }

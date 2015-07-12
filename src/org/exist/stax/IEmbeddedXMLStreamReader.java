@@ -50,7 +50,7 @@ public interface IEmbeddedXMLStreamReader extends ExtendedXMLStreamReader {
      *
      * @return the node at the current position.
      */
-    IStoredNode<?> getNode();
+    IStoredNode getNode();
 
     /**
      * Returns the last node in document sequence that occurs before the
@@ -59,7 +59,7 @@ public interface IEmbeddedXMLStreamReader extends ExtendedXMLStreamReader {
      *
      * @return the last node in document sequence before the current node
      */
-    IStoredNode<?> getPreviousNode();
+    IStoredNode getPreviousNode();
 
     /**
      * Iterates over each node until

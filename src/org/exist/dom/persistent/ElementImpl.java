@@ -454,7 +454,7 @@ public class ElementImpl extends NamedNode implements Element {
      * @param child
      * @throws DOMException
      */
-    public void appendChildInternal(final IStoredNode<?> prevNode, final NodeHandle child) throws DOMException {
+    public void appendChildInternal(final IStoredNode prevNode, final NodeHandle child) throws DOMException {
         final NodeId childId;
         if(prevNode == null) {
             childId = getNodeId().newChild();
@@ -1367,7 +1367,7 @@ public class ElementImpl extends NamedNode implements Element {
             // TODO: fix once range index has been moved to new architecture
             final IStoredNode valueReindexRoot = broker.getValueIndex().getReindexRoot(this, path);
             broker.getValueIndex().reindex(valueReindexRoot);
-            IStoredNode<?> last = this;
+            IStoredNode last = this;
             int i = nodes.getLength();
             for(; i > 0; i--) {
                 IStoredNode<?> child = (IStoredNode<?>) nodes.item(i - 1);
@@ -1498,7 +1498,7 @@ public class ElementImpl extends NamedNode implements Element {
             //May help getReindexRoot() to make some useful things
             broker = ownerDocument.getBrokerPool().get(null);
             broker.getIndexController().setDocument(ownerDocument);
-            final IStoredNode<?> reindexRoot = broker.getIndexController().getReindexRoot(oldNode, oldPath, false);
+            final IStoredNode reindexRoot = broker.getIndexController().getReindexRoot(oldNode, oldPath, false);
             broker.getIndexController().setMode(StreamListener.REMOVE_SOME_NODES);
             final StreamListener listener;
             if(reindexRoot == null) {
@@ -1597,11 +1597,11 @@ public class ElementImpl extends NamedNode implements Element {
     }
 
     private class AttribVisitor implements NodeVisitor {
-        private IStoredNode<?> lastAttrib = null;
-        private IStoredNode<?> firstChild = null;
+        private IStoredNode lastAttrib = null;
+        private IStoredNode firstChild = null;
 
         @Override
-        public boolean visit(final IStoredNode<?> node) {
+        public boolean visit(final IStoredNode node) {
             if(node.getNodeType() == Node.ATTRIBUTE_NODE) {
                 lastAttrib = node;
             } else if(node.getNodeId().isChildOf(ElementImpl.this.nodeId)) {
