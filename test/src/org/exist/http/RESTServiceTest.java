@@ -73,7 +73,63 @@ public class RESTServiceTest {
             SERVER_URI_REDIRECTED + XmldbURI.ROOT_COLLECTION + "/test";
 
     private final static String RESOURCE_URI = SERVER_URI + XmldbURI.ROOT_COLLECTION + "/test/test.xml";
-    
+
+    /* About path components of URIs:
+
+     ** reserved characters # http://tools.ietf.org/html/rfc3986#section-2.2
+     *
+     *  gen-delims  = ":" / "/" / "?" / "#" / "[" / "]" / "@"
+     *  sub-delims  = "!" / "$" / "&" / "'" / "(" / ")"
+     *              / "*" / "+" / "," / ";" / "="
+     *  reserved    = gen-delims / sub-delims
+        RCHAR=": / ? # [ ] @ ! $ & ' ( ) *  + , ; ="
+
+     ** path-segment # http://tools.ietf.org/html/rfc3986#section-3.3
+     *
+     *  unreserved  = ALPHA / DIGIT / "-" / "." / "_" / "~"
+     *  pct-encoded = "%" HEXDIG HEXDIG
+     *  sub-delims  = "!" / "$" / "&" / "'" / "(" / ")"
+     *              / "*" / "+" / "," / ";" / "="
+     *  pchar       = unreserved / pct-encoded / sub-delims / ":" / "@"
+
+     ** So, characters literally allowed in a path-segment are:
+        PCHAR="A-Z a-z 0-9 - . _ ~ ! $ & ' ( ) *  + , ; = : @"
+
+     ** All the rest has to be percent-encoded
+     *  the percent sign itself MUST start a code
+     *  reserved+ chars in need of encoding - in a path-segment - are:
+     *       /   ?   #   [   ]   %
+     *  %20 %2F %3F %23 %5B %5D %25
+
+     ** Interoperability /rest/ space:
+     *  most webbrowsers act mostly correct
+     *  curl does _no_ encoding on its own
+     *  all browsers send a bare / as is (user error? will separate path-segments)
+     *  all browsers send a bare ? as is (user error? will start the query-string)
+     *  no browser sends a bare # at all (user error? will start the fragment-identifier)
+     *  chrome and msie send [] verbatim (wrong? apache can accomodate…)
+     *  all browsers send a bare % as is (user error? will start an escape, apache returns Bad Request)
+
+     ** Interoperability /webdav/ space:
+     *  the GET and PUT methods mirror /rest/ space
+     *  These characters are not allowed in an NFTS filename
+        INTFS='/ \ : *   ? " < > |'
+     *  of those, Macintosh HFS only prohibits the colon
+     *  most other UN*X FSs only prohibit the slash
+     *  Quick test with bash on Linux extfs:
+        TWDAV="$PCHAR $RCHAR $INTFS %"
+     *  set -f; for fn in $TWDAV; do echo T__${fn}__ > /tmp/T__${fn}__; done
+     *  only the slash will error out (twice)
+     *  anything in this set can be thrown at webdav!
+
+     ** Beware, some chars valid in a path-segment must not be in a filename (mostly NTFS)
+     */
+    // Below String mostly contains the PCHAR set literally; the colon fails though, so its omitted…
+    // Also in the mix: some (mandatory except %27) escapes, some multibyte UTF-8 characters
+    // and a superficial directory traversal and a superficial double slash too
+    private final static String RESOURCE_URI_PLUS = SERVER_URI + XmldbURI.ROOT_COLLECTION +
+            "/test//../test/A-Za-z0-9_~!$&'()*+,;=@%20%23%25%27%2F%3F%5B%5Däöü.xml";
+
     private final static String XML_DATA = "<test>"
             + "<para>\u00E4\u00E4\u00FC\u00FC\u00F6\u00F6\u00C4\u00C4\u00D6\u00D6\u00DC\u00DC</para>"
             + "</test>";
@@ -286,6 +342,14 @@ public class RESTServiceTest {
         assertEquals("Server returned response code " + r, 201, r);
 
         doGet();
+    }
+
+    @Test
+    public void testPutPlus() throws IOException {
+        int r = uploadDataPlus();
+        assertEquals("Server returned response code " + r, 201, r);
+
+        doGetPlus();
     }
 
     @Test
@@ -593,6 +657,37 @@ public class RESTServiceTest {
     
     private void doGet() throws IOException {
         HttpURLConnection connect = getConnection(RESOURCE_URI);
+        connect.setRequestMethod("GET");
+        connect.connect();
+
+        int r = connect.getResponseCode();
+        assertEquals("Server returned response code " + r, 200, r);
+        String contentType = connect.getContentType();
+        int semicolon = contentType.indexOf(';');
+        if (semicolon > 0) {
+            contentType = contentType.substring(0, semicolon).trim();
+        }
+        assertEquals("Server returned content type " + contentType, "application/xml", contentType);
+
+        readResponse(connect.getInputStream());
+    }
+
+    private int uploadDataPlus() throws IOException {
+        HttpURLConnection connect = getConnection(RESOURCE_URI_PLUS);
+        connect.setRequestProperty("Authorization", "Basic " + credentials);
+        connect.setRequestMethod("PUT");
+        connect.setDoOutput(true);
+        connect.setRequestProperty("ContentType", "application/xml");
+        Writer writer = new OutputStreamWriter(connect.getOutputStream(), "UTF-8");
+        writer.write(XML_DATA);
+        writer.close();
+
+        connect.connect();
+        return connect.getResponseCode();
+    }
+
+    private void doGetPlus() throws IOException {
+        HttpURLConnection connect = getConnection(RESOURCE_URI_PLUS);
         connect.setRequestMethod("GET");
         connect.connect();
 
