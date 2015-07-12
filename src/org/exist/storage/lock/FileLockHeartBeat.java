@@ -33,14 +33,14 @@ import java.util.Map;
  */
 public class FileLockHeartBeat implements JobDescription, Job {
 
-    private String JOB_NAME = "FileLockHeartBeat";
+    private final String JOB_NAME;
 
     public FileLockHeartBeat() {
-        //Nothing to do
+        JOB_NAME = "FileLockHeartBeat";
     }
 
     public FileLockHeartBeat(String lockName) {
-        JOB_NAME += ": " + lockName;
+        JOB_NAME = "FileLockHeartBeat: " + lockName;
     }
 
     public String getName() {
@@ -52,13 +52,13 @@ public class FileLockHeartBeat implements JobDescription, Job {
     }
 
     public String getGroup() {
-        return "eXist.internal";
+        return EXIST_INTERNAL_GROUP;
     }
 
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
         //get the file lock
         final JobDataMap jobDataMap = jobExecutionContext.getJobDetail().getJobDataMap();
-        final Map<String, FileLock> params = (Map<String, FileLock>) jobDataMap.get("params");
+        final Map<String, FileLock> params = (Map<String, FileLock>) jobDataMap.get(PARAMS);
         final FileLock lock = params.get(FileLock.class.getName());
         if(lock != null) {
             try {

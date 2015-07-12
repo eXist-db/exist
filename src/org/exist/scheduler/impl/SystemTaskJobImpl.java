@@ -97,8 +97,8 @@ public class SystemTaskJobImpl implements SystemTaskJob, StatefulJob {
     @Override
     public final void execute(final JobExecutionContext jec) throws JobExecutionException {
         final JobDataMap jobDataMap = jec.getJobDetail().getJobDataMap();
-        final BrokerPool pool = (BrokerPool)jobDataMap.get("brokerpool");
-        final SystemTask task = ( SystemTask )jobDataMap.get("systemtask");
+        final BrokerPool pool = (BrokerPool)jobDataMap.get(DATABASE);
+        final SystemTask task = (SystemTask)jobDataMap.get(SYSTEM_TASK);
 
         //if invalid arguments then abort
         if((pool == null) || (task == null)) {

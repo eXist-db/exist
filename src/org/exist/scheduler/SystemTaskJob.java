@@ -22,8 +22,7 @@ package org.exist.scheduler;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
-
 public interface SystemTaskJob extends JobDescription {
 
-    public void execute(final JobExecutionContext jec) throws JobExecutionException;    
+    void execute(final JobExecutionContext jec) throws JobExecutionException;
 }

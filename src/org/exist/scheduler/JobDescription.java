@@ -26,24 +26,33 @@ package org.exist.scheduler;
  */
 public interface JobDescription {
 
+    String EXIST_INTERNAL_GROUP = "eXist.internal";
+
+    String DATABASE = "database";
+    String SYSTEM_TASK = "systemtask";
+    String XQUERY_SOURCE = "xqueryresource";
+    String ACCOUNT = "account";
+    String PARAMS = "params";
+    String UNSCHEDULE = "unschedule";
+
     /**
      * Get the name of the job.
      *
      * @return  The job's name
      */
-    public String getName();
+    String getName();
 
     /**
      * Set the name of the job.
      *
      * @param  name  The job's new name
      */
-    public void setName(final String name );
+    void setName(final String name );
 
     /**
      * Get the name group for the job.
      *
      * @return  The job's group name
      */
-    public String getGroup();
+    String getGroup();
 }

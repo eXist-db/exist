@@ -20,7 +20,6 @@
 package org.exist.scheduler;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.Map.Entry;
 import java.util.Properties;
 import org.apache.logging.log4j.LogManager;
@@ -63,27 +62,26 @@ public class UserXQueryJob extends UserJob {
 
     private String name;
     private final String xqueryResource;
-    private final Subject user;
+    private final Subject subject;
 
     /**
      * Default Constructor for Quartz.
      */
     public UserXQueryJob(){
         xqueryResource = null;
-        user = null;
+        subject = null;
     }
-
 
     /**
      * Constructor for Creating a new XQuery User Job.
      *
      * @param  jobName         The name of the job
      * @param  xqueryResource  The XQuery itself
-     * @param  user            The user under which the xquery should be executed
+     * @param  subject         The subject under which the xquery should be executed
      */
-    public UserXQueryJob(final String jobName, final String xqueryResource, final Subject user) {
+    public UserXQueryJob(final String jobName, final String xqueryResource, final Subject subject) {
         this.xqueryResource = xqueryResource;
-        this.user = user;
+        this.subject = subject;
 
         if(jobName == null) {
             this.name = DEFAULT_JOB_NAME_PREFIX + ": " + xqueryResource;
@@ -115,9 +113,19 @@ public class UserXQueryJob extends UserJob {
      * Returns the User for this Job.
      *
      * @return  The User for this Job
+     * @deprecated use getSubject method
      */
     public Subject getUser() {
-        return user;
+        return subject;
+    }
+
+    /**
+     * Returns the subject for this Job.
+     *
+     * @return  The subject for this Job
+     */
+    public Subject getSubject() {
+        return subject;
     }
 
     @Override
@@ -126,29 +134,25 @@ public class UserXQueryJob extends UserJob {
         final JobDataMap jobDataMap = jec.getJobDetail().getJobDataMap();
         
         //TODO why are these values not used from the class members?
-        final String xqueryresource = (String)jobDataMap.get("xqueryresource");
-        final Subject user = (Subject)jobDataMap.get("user");
+        final String xqueryresource = (String)jobDataMap.get(XQUERY_SOURCE);
+        final Subject user = (Subject)jobDataMap.get(ACCOUNT);
         
-        final BrokerPool pool = (BrokerPool)jobDataMap.get("brokerpool");
-        final Properties params = (Properties)jobDataMap.get("params");
-        final boolean unschedule = ((Boolean)jobDataMap.get("unschedule")).booleanValue();
+        final BrokerPool pool = (BrokerPool)jobDataMap.get(DATABASE);
+        final Properties params = (Properties)jobDataMap.get(PARAMS);
+        final boolean unschedule = ((Boolean)jobDataMap.get(UNSCHEDULE));
 
         //if invalid arguments then abort
         if((pool == null) || (xqueryresource == null) || (user == null)) {
             abort("BrokerPool or XQueryResource or User was null!");
         }
 
-        DBBroker broker = null;
         DocumentImpl resource = null;
         Source source = null;
         XQueryPool xqPool  = null;
         CompiledXQuery compiled = null;
         XQueryContext context = null;
 
-        try {
-
-            //get the xquery
-            broker = pool.get(user);
+        try (final DBBroker broker = pool.get(user)) {
 
             if(xqueryresource.indexOf(':') > 0) {
                 source = SourceFactory.getSource(broker, "", xqueryresource, true);
@@ -221,8 +225,6 @@ public class UserXQueryJob extends UserJob {
             abort("Permission denied for the scheduling user: " + user.getName() + "!");
         } catch(final XPathException xpe) {
             abort("XPathException in the Job: " + xpe.getMessage() + "!", unschedule);
-        } catch(final MalformedURLException e) {
-            abort("Could not load XQuery: " + e.getMessage());
         } catch(final IOException e) {
             abort("Could not load XQuery: " + e.getMessage());
         } finally {
@@ -240,23 +242,19 @@ public class UserXQueryJob extends UserJob {
             if(resource != null) {
                 resource.getUpdateLock().release(Lock.READ_LOCK);
             }
-
-            // Release the DBBroker
-            if(pool != null && broker != null) {
-                pool.release(broker);
-            }
         }
-
     }
 
     private void abort(final String message) throws JobExecutionException {
         abort(message, true);
     }
-	
 
     private void abort(final String message, final boolean unschedule) throws JobExecutionException {
-        final JobExecutionException jaa = new JobExecutionException("UserXQueryJob Failed: " + message + (unschedule ? " Unscheduling UserXQueryJob." : ""), false);
-		
+        final JobExecutionException jaa = new JobExecutionException(
+            "UserXQueryJob Failed: " + message + (unschedule ? " Unscheduling UserXQueryJob." : ""),
+            false
+        );
+
         //abort all triggers for this job if specified that we should unschedule the job
         jaa.setUnscheduleAllTriggers(unschedule);
 

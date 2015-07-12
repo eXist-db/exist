@@ -25,7 +25,6 @@ import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
-
 /**
  * Class to represent a User's Java Job.
  *
@@ -46,10 +45,10 @@ public abstract class UserJavaJob extends UserJob {
         final JobDataMap jobDataMap = jec.getJobDetail().getJobDataMap();
 
         //get the brokerpool from the data map
-        final BrokerPool pool = (BrokerPool)jobDataMap.get("brokerpool");
+        final BrokerPool pool = (BrokerPool)jobDataMap.get(DATABASE);
 
         //get any parameters from the data map
-        final Map params = (Map)jobDataMap.get("params");
+        final Map params = (Map)jobDataMap.get(PARAMS);
 
         try {
             //execute the job
@@ -59,7 +58,6 @@ public abstract class UserJavaJob extends UserJob {
             je.cleanupJob();
         }
     }
-
 
     /**
      * Function that is executed by the Scheduler.

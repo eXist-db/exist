@@ -26,7 +26,6 @@ import org.quartz.SchedulerException;
 import org.quartz.SimpleTrigger;
 import org.quartz.Trigger;
 
-
 /**
  * Information about a Scheduled Job.
  *
@@ -146,7 +145,6 @@ public class ScheduledJobInfo {
         return null;
     }
 
-
     /**
      * Get the State of the Job's Trigger.
      *
@@ -155,8 +153,7 @@ public class ScheduledJobInfo {
     public TriggerState getTriggerState() {
         try {
             switch(scheduler.getTriggerState(trigger.getKey())) {
-                
-                
+
                 case ERROR:
                     return TriggerState.ERROR;
 

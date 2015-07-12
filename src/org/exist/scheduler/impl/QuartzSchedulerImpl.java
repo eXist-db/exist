@@ -26,6 +26,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
+import java.util.stream.Collectors;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
@@ -35,13 +37,15 @@ import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.SystemTask;
 import org.exist.util.Configuration;
-import static org.quartz.CronScheduleBuilder.cronSchedule;
 
 import org.quartz.*;
 
+import static org.quartz.CronScheduleBuilder.cronSchedule;
 import static org.quartz.JobBuilder.newJob;
 import static org.quartz.SimpleScheduleBuilder.simpleSchedule;
 import static org.quartz.TriggerBuilder.newTrigger;
+
+import static org.exist.scheduler.JobDescription.*;
 
 import org.quartz.Job;
 import org.quartz.impl.StdSchedulerFactory;
@@ -55,7 +59,7 @@ import org.quartz.impl.matchers.GroupMatcher;
  */
 public class QuartzSchedulerImpl implements Scheduler {
 
-    private final static Logger LOG = LogManager.getLogger(QuartzSchedulerImpl.class); //Logger
+    private final static Logger LOG = LogManager.getLogger(QuartzSchedulerImpl.class);
 
     //the scheduler
     private final org.quartz.Scheduler scheduler;
@@ -100,26 +104,16 @@ public class QuartzSchedulerImpl implements Scheduler {
 
     private Properties getQuartzProperties() {
         //try and load the properties for quartz
-        InputStream is = null;
         final Properties properties = new Properties();
-        try {
-            is = this.getClass().getResourceAsStream("quartz.properties");
+        try (final InputStream is = this.getClass().getResourceAsStream("quartz.properties")) {
             if(is != null) {
                 properties.load(is);
-                LOG.info("Succesfully loaded quartz.properties");
+                LOG.info("Successfully loaded quartz.properties");
             } else {
                 LOG.warn("Could not load quartz.properties, will use defaults.");
             }
         } catch(final IOException ioe) {
             LOG.warn("Could not load quartz.properties, will defaults. " + ioe.getMessage(), ioe);
-        } finally {
-            if(is != null) {
-                try {
-                    is.close();
-                } catch(final IOException ioe) {
-                    //Nothing to do
-                }
-            }
         }
         if (properties == null || properties.size() == 0) {
             LOG.warn("Using default properties for Quartz scheduler");
@@ -165,13 +159,12 @@ public class QuartzSchedulerImpl implements Scheduler {
 
     @Override
     public boolean isShutdown() {
-        boolean isShutdown = false;
         try {
-            isShutdown = getScheduler().isShutdown();
+            return getScheduler().isShutdown();
         } catch(final SchedulerException se) {
-            LOG.warn("Unable to determine the status of the Scheuler: " + se.getMessage(), se);
+            LOG.warn("Unable to determine the status of the Scheduler: " + se.getMessage(), se);
         }
-        return isShutdown;
+        return false;
     }
 
     /**
@@ -243,11 +236,12 @@ public class QuartzSchedulerImpl implements Scheduler {
 
         //setup a trigger for the job, millisecond based
         final TriggerBuilder triggerBuilder = newTrigger()
-                .withIdentity(job.getName() + " Trigger", job.getGroup())
-                .withSchedule(simpleSchedule()
-                                .withIntervalInMilliseconds(period)
-                                .withRepeatCount(repeatCount)
-                );
+            .withIdentity(job.getName() + " Trigger", job.getGroup())
+            .withSchedule(
+                simpleSchedule()
+                    .withIntervalInMilliseconds(period)
+                    .withRepeatCount(repeatCount)
+            );
 
         //when should the trigger start
         final Trigger trigger;
@@ -324,8 +318,8 @@ public class QuartzSchedulerImpl implements Scheduler {
         try {
             //setup a trigger for the job, Cron based
             final Trigger trigger = newTrigger()
-            .withIdentity(job.getName() + " Trigger", job.getGroup())
-            .withSchedule(cronSchedule(cronExpression)).build();
+                .withIdentity(job.getName() + " Trigger", job.getGroup())
+                .withSchedule(cronSchedule(cronExpression)).build();
             
             //schedule the job
             getScheduler().scheduleJob(jobDetail, trigger);
@@ -367,14 +361,13 @@ public class QuartzSchedulerImpl implements Scheduler {
      */
     @Override
     public boolean pauseJob(final String jobName, final String jobGroup) {
-        boolean pausedJob = false;
         try {
             getScheduler().pauseJob(new JobKey(jobName, jobGroup));
-            pausedJob = true;
+            return true;
         } catch(final SchedulerException se) {
             LOG.error( "Failed to pause job '" + jobName + "': " + se.getMessage(), se);
         }
-        return pausedJob;
+        return false;
     }
 
     /**
@@ -387,14 +380,13 @@ public class QuartzSchedulerImpl implements Scheduler {
      */
     @Override
     public boolean resumeJob(final String jobName, final String jobGroup) {
-        boolean resumedJob = false;
         try {
             getScheduler().resumeJob(new JobKey(jobName, jobGroup));
-            resumedJob = true;
+            return true;
         } catch(final SchedulerException se) {
             LOG.error("Failed to resume job '" + jobName + "': " + se.getMessage(), se);
         }
-        return resumedJob;
+        return false;
     }
 
     /**
@@ -404,7 +396,7 @@ public class QuartzSchedulerImpl implements Scheduler {
      */
     @Override
     public List<String> getJobGroupNames() {
-        final List<String> jobNames = new ArrayList<String>();
+        final List<String> jobNames = new ArrayList<>();
         try {
             jobNames.addAll(getScheduler().getJobGroupNames());
         } catch(final SchedulerException se) {
@@ -420,7 +412,7 @@ public class QuartzSchedulerImpl implements Scheduler {
      */
     @Override
     public List<ScheduledJobInfo> getScheduledJobs() {
-        final List<ScheduledJobInfo> scheduledJobs = new ArrayList<ScheduledJobInfo>();
+        final List<ScheduledJobInfo> scheduledJobs = new ArrayList<>();
         try {
             //get the trigger groups
             for(final String triggerGroupName : getScheduler().getTriggerGroupNames()) {
@@ -445,10 +437,12 @@ public class QuartzSchedulerImpl implements Scheduler {
     public ScheduledJobInfo[] getExecutingJobs() {
         ScheduledJobInfo result[] = null;
         try {
-            final List<ScheduledJobInfo> jobs = new ArrayList<ScheduledJobInfo>();
-            for(final JobExecutionContext jobExecutionCtx : (List<JobExecutionContext>)getScheduler().getCurrentlyExecutingJobs()) {
-                jobs.add(new ScheduledJobInfo(getScheduler(), jobExecutionCtx.getTrigger()));
-            }
+            final List<ScheduledJobInfo> jobs = getScheduler()
+                .getCurrentlyExecutingJobs()
+                .stream()
+                .map(jobExecutionCtx -> new ScheduledJobInfo(getScheduler(), jobExecutionCtx.getTrigger()))
+                .collect(Collectors.toList());
+
             result = new ScheduledJobInfo[jobs.size()];
             jobs.toArray(result);
         } catch(final SchedulerException se) {
@@ -481,7 +475,7 @@ public class QuartzSchedulerImpl implements Scheduler {
                         // check if a job with the same name is already registered
                         if(getScheduler().getJobDetail(new JobKey(job.getName(), UserJob.JOB_GROUP)) != null) {
                             // yes, try to make the job's name unique
-                            ((UserXQueryJob)job).setName(job.getName() + job.hashCode());
+                            job.setName(job.getName() + job.hashCode());
                         }
                         
                     } catch(final SchedulerException e) {
@@ -545,21 +539,21 @@ public class QuartzSchedulerImpl implements Scheduler {
      */
     private void setupJobDataMap(final JobDescription job, final JobDataMap jobDataMap, final Properties params, final boolean unschedule) {
         //if this is a system job, store the BrokerPool in the job's data map
-        jobDataMap.put("brokerpool", brokerPool);
+        jobDataMap.put(DATABASE, brokerPool);
         //if this is a system task job, store the SystemTask in the job's data map
         if(job instanceof SystemTaskJobImpl) {
-            jobDataMap.put("systemtask", ((SystemTaskJobImpl)job).getSystemTask());
+            jobDataMap.put(SYSTEM_TASK, ((SystemTaskJobImpl)job).getSystemTask());
         }
         //if this is a users XQuery job, store the XQuery resource and user in the job's data map
         if(job instanceof UserXQueryJob) {
-            jobDataMap.put("xqueryresource", ((UserXQueryJob)job).getXQueryResource());
-            jobDataMap.put("user", ((UserXQueryJob)job).getUser());
+            jobDataMap.put(XQUERY_SOURCE, ((UserXQueryJob)job).getXQueryResource());
+            jobDataMap.put(ACCOUNT, ((UserXQueryJob)job).getUser());
         }
         //copy any parameters into the job's data map
         if(params != null) {
-            jobDataMap.put("params", params);
+            jobDataMap.put(PARAMS, params);
         }
         //Store the value of the unschedule setting
-        jobDataMap.put("unschedule", Boolean.valueOf(unschedule));
+        jobDataMap.put(UNSCHEDULE, Boolean.valueOf(unschedule));
     }
 }

@@ -1341,7 +1341,7 @@ public class BrokerPool implements Database {
     }
 
     public TransactionManager getTransactionManager() {
-        return this.transactionManager;
+        return transactionManager;
     }
 
     /**
@@ -1394,6 +1394,7 @@ public class BrokerPool implements Database {
      *
      * @return The IndexManager
      */
+    @Override
     public IndexManager getIndexManager() {
         return indexManager;
     }
