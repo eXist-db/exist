@@ -23,25 +23,24 @@ import org.exist.EXistException;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
- *
  */
 public class ConfigurationException extends EXistException {
 
-	private static final long serialVersionUID = 1441009248525222734L;
+    private static final long serialVersionUID = 1441009248525222734L;
 
-	public ConfigurationException() {
-		super();
-	}
+    public ConfigurationException() {
+        super();
+    }
 
-	public ConfigurationException(String message) {
-		super(message);
-	}
+    public ConfigurationException(String message) {
+        super(message);
+    }
 
-	public ConfigurationException(String message, Throwable cause) {
-		super(message, cause);
-	}
+    public ConfigurationException(String message, Throwable cause) {
+        super(message, cause);
+    }
 
-	public ConfigurationException(Throwable cause) {
-		super(cause);
-	}
+    public ConfigurationException(Throwable cause) {
+        super(cause);
+    }
 }

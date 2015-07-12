@@ -28,24 +28,24 @@ package org.exist.config;
  *
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  */
-public interface Reference<R,O> {
+public interface Reference<R, O> {
 
-	/**
-	 * Reference resolver.
-	 * 
-	 * @return resolver
-	 */
-	public R resolver();
-	
-	/**
-	 * Resolve reference and return referent.
-	 *  
-	 * @return referent
-	 */
-	public O resolve();
-        
-        /**
-         * Get the name of the reference
-         */
-        public String getName();
+    /**
+     * Reference resolver.
+     *
+     * @return resolver
+     */
+    R resolver();
+
+    /**
+     * Resolve reference and return referent.
+     *
+     * @return referent
+     */
+    O resolve();
+
+    /**
+     * Get the name of the reference
+     */
+    String getName();
 }

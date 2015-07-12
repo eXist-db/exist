@@ -23,90 +23,85 @@ import java.lang.reflect.Method;
 
 /**
  * Forward reference resolver universal implementation.
- * 
- * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
+ * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  */
 public class ReferenceImpl<R, O extends Configurable> implements Reference<R, O>, Configurable {
 
-	private R resolver;
-	private String methodName;
-	private String name;
-	private O cached = null;
-	
-	public ReferenceImpl(R resolver, String methodName, String name) {
-		this.resolver = resolver;
-		this.methodName = methodName;
-		this.name = name;
-	}
-	
-     
-        /**
-         * @deprecated Use ReferenceImpl(R, O, String) instead
-         */
-        @Deprecated
-        public ReferenceImpl(R resolver, O cached) {
-		this.resolver = resolver;
-		this.methodName = null;
-		this.name = null;
-		this.cached = cached;
-	}
-        
-	public ReferenceImpl(R resolver, O cached, String name) {
-		this.resolver = resolver;
-		this.methodName = null;
-		this.name = name;
-		this.cached = cached;
-	}
-        
-        @Override
-        public String getName() {
-            return name;
+    private R resolver;
+    private String methodName;
+    private String name;
+    private O cached = null;
+
+    public ReferenceImpl(R resolver, String methodName, String name) {
+        this.resolver = resolver;
+        this.methodName = methodName;
+        this.name = name;
+    }
+
+    /**
+     * @deprecated Use ReferenceImpl(R, O, String) instead
+     */
+    @Deprecated
+    public ReferenceImpl(R resolver, O cached) {
+        this.resolver = resolver;
+        this.methodName = null;
+        this.name = null;
+        this.cached = cached;
+    }
+
+    public ReferenceImpl(R resolver, O cached, String name) {
+        this.resolver = resolver;
+        this.methodName = null;
+        this.name = name;
+        this.cached = cached;
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public O resolve() {
+        if (cached == null) {
+            final Class<? extends Object> clazz = resolver.getClass();
+
+            for (final Method method : clazz.getMethods()) {
+                if (method.getName().equals(methodName)
+                    && method.getParameterTypes().length == 1
+                    && "java.lang.String".equals(method.getParameterTypes()[0].getName())
+                    ) {
+                    try {
+                        cached = (O) method.invoke(resolver, name);
+                        break;
+                    } catch (final Exception e) {
+                        cached = null;
+                    }
+                }
+            }
         }
+        return cached;
+    }
 
-	@SuppressWarnings("unchecked")
-	@Override
-	public O resolve() {
-		if (cached == null) {
-			final Class<? extends Object> clazz = resolver.getClass();
-			
-			for (final Method method : clazz.getMethods()) {
-				if (method.getName().equals(methodName)
-						&& method.getParameterTypes().length == 1
-						&& "java.lang.String".equals(method.getParameterTypes()[0].getName())
-					)
-					try {
-						cached = (O) method.invoke(resolver, name);
-						break;
-					} catch (final Exception e) {
-						cached = null;
-					}
+    @Override
+    public R resolver() {
+        return resolver;
+    }
 
-			}
+    @Override
+    public boolean isConfigured() {
+        final O obj = resolve();
+        return obj != null && obj.isConfigured();
 
-			
-		}
-		return cached;
-	}
+    }
 
-	@Override
-	public R resolver() {
-		return resolver;
-	}
+    @Override
+    public Configuration getConfiguration() {
+        final O obj = resolve();
+        if (obj == null) return null;
 
-	@Override
-	public boolean isConfigured() {
-		final O obj = resolve();
-		if (obj == null) {return false;}
-		
-		return obj.isConfigured();
-	}
-
-	@Override
-	public Configuration getConfiguration() {
-		final O obj = resolve();
-		if (obj == null) {return null;}
-		
-		return obj.getConfiguration();
-	}
+        return obj.getConfiguration();
+    }
 }

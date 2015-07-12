@@ -1,23 +1,21 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2008-2013 The eXist Project
+ *  Copyright (C) 2001-2015 The eXist Project
  *  http://exist-db.org
- *  
+ *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
  *  as published by the Free Software Foundation; either version 2
  *  of the License, or (at your option) any later version.
- *  
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *  
- *  $Id$
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.config;
 
@@ -97,9 +95,9 @@ public class Configurator {
         final AFields fields = new AFields();
         for (final Field field : clazz.getDeclaredFields()) {
             if (field.isAnnotationPresent(ConfigurationFieldAsAttribute.class)) {
-                fields.addAttribute(new AField<ConfigurationFieldAsAttribute>(field.getAnnotation(ConfigurationFieldAsAttribute.class), field));
+                fields.addAttribute(new AField<>(field.getAnnotation(ConfigurationFieldAsAttribute.class), field));
             } else if (field.isAnnotationPresent(ConfigurationFieldAsElement.class)) {
-                fields.addElement(new AField<ConfigurationFieldAsElement>(field.getAnnotation(ConfigurationFieldAsElement.class), field));
+                fields.addElement(new AField<>(field.getAnnotation(ConfigurationFieldAsElement.class), field));
             }
         }
         final Class<?> superClass = clazz.getSuperclass();
@@ -135,12 +133,9 @@ public class Configurator {
                     return method;
                 }
             }
-        } catch (final SecurityException se) {
-            LOG.error(se.getMessage(), se);
-        } catch (final NoClassDefFoundError ncdfe) {
-            LOG.error(ncdfe.getMessage(), ncdfe);
+        } catch (final SecurityException | NoClassDefFoundError e) {
+            LOG.error(e.getMessage(), e);
         }
-        
         return null;
     }
 
@@ -160,12 +155,9 @@ public class Configurator {
                     return method;
                 }
             }
-        } catch (final SecurityException se) {
-            LOG.error(se.getMessage(), se);
-        } catch (final NoClassDefFoundError ncdfe) {
-            LOG.error(ncdfe.getMessage(), ncdfe);
+        } catch (final SecurityException | NoClassDefFoundError e) {
+            LOG.error(e.getMessage(), e);
         }
-        
         return null;
     }
 
@@ -187,12 +179,9 @@ public class Configurator {
                     return method;
                 }
             }
-        } catch (final SecurityException se) {
-            LOG.error(se.getMessage(), se);
-        } catch (final NoClassDefFoundError ncdfe) {
-            LOG.error(ncdfe.getMessage(), ncdfe);
+        } catch (final SecurityException | NoClassDefFoundError e) {
+            LOG.error(e.getMessage(), e);
         }
-        
         return null;
     }
 
@@ -207,10 +196,8 @@ public class Configurator {
                     return method;
                 }
             }
-        } catch (final SecurityException se) {
-            LOG.error(se.getMessage(), se);
-        } catch (final NoClassDefFoundError ncdfe) {
-            LOG.error(ncdfe.getMessage(), ncdfe);
+        } catch (final SecurityException | NoClassDefFoundError e) {
+            LOG.error(e.getMessage(), e);
         }
 
         return null;
@@ -252,7 +239,7 @@ public class Configurator {
                 }
                 
             } else {
-                impl.configuredObjectReference = new WeakReference<Configurable>(instance);
+                impl.configuredObjectReference = new WeakReference<>(instance);
             }
             //end (lock issue)
         }
@@ -476,12 +463,14 @@ public class Configurator {
                             }
                             
                             if (current_conf == null) {
-                                //skip internal staff //TODO: static list
+                                //skip internal stuff //TODO: static list
                                 if (obj instanceof org.exist.security.internal.RealmImpl) {
                                     continue;
                                 }
-                                
-                                LOG.debug("Unconfigured instance [" + obj + "], will attempt to replace object...");
+
+                                if (LOG.isDebugEnabled()) {
+                                    LOG.debug("No configured instance of [" + obj + "], will attempt to replace object...");
+                                }
 
                                 final Field referee = getFieldRecursive(Optional.of(list.get(i).getClass()), referenceBy.get());
                                 if(referee != null) {
@@ -759,24 +748,11 @@ public class Configurator {
             reader.parse(src);
             
             return new ConfigurationImpl(adapter.getDocument().getDocumentElement());
-        } catch (final ParserConfigurationException e) {
-            throw new ConfigurationException(e);
-        } catch (final SAXException e) {
-            throw new ConfigurationException(e);
-        } catch (final IOException e) {
+
+        } catch (final ParserConfigurationException | SAXException | IOException e) {
             throw new ConfigurationException(e);
         }
     }
-
-    /*
-    public static Configuration parseDefault() throws ConfigurationException {
-        try {
-            return parse(new FileInputStream(ConfigurationHelper.lookup("conf.xml")));
-            
-        } catch (final FileNotFoundException e) {
-            throw new ConfigurationException(e);
-        }
-    }*/
 
     private static Boolean implementsInterface(final Class<?> object, final Class<?> iface) {
         for (final Class<?> c : object.getInterfaces()) {
@@ -863,17 +839,13 @@ public class Configurator {
         try {
             value = extractFieldValue(field, instance);
             
-        } catch (final IllegalArgumentException iae) {
+        } catch (final IllegalArgumentException | IllegalAccessException iae) {
             LOG.error(iae.getMessage(), iae);
             //TODO : throw exception , -pb
             return;
             
-        } catch (final IllegalAccessException iae) {
-            LOG.error(iae.getMessage(), iae);
-            //TODO : throw exception ? -pb
-            return;
         }
-        
+
         final QName qnConfig = new QName(fieldAsElementName, Configuration.NS);
         if (value == null) {
             final String comment = "<" + qnConfig + " " + referenceBy + "=''/>";
@@ -1061,11 +1033,9 @@ public class Configurator {
                     }
                 }
                 
-            } catch (final IllegalArgumentException e) {
+            } catch (final IllegalArgumentException | IllegalAccessException e) {
                 throw new ConfigurationException(e.getMessage(), e);
                 
-            } catch (final IllegalAccessException e) {
-                throw new ConfigurationException(e.getMessage(), e);
             }
             //close tag
             serializer.endElement(qnConfig);
@@ -1156,7 +1126,7 @@ public class Configurator {
         if (uri instanceof FullXmldbURI) {
             return (FullXmldbURI) uri;
         }
-        
+
         final StringBuilder accessor = new StringBuilder(XmldbURI.XMLDB_URI_PREFIX);
         accessor.append(pool.getId());
         accessor.append("://");
@@ -1168,15 +1138,14 @@ public class Configurator {
     public static Configuration parse(final Configurable instance, final DBBroker broker,
             final Collection collection, final XmldbURI fileURL) throws ConfigurationException {
         
-        Configuration conf = null;
         final FullXmldbURI key = getFullURI(broker.getBrokerPool(), collection.getURI().append(fileURL));
-        conf = hotConfigs.get(key);
+        Configuration conf = hotConfigs.get(key);
         if (conf != null) {
             return conf;
         }
 
         //XXX: locking required
-        DocumentImpl document = null;
+        DocumentImpl document;
         try {
             document = collection.getDocument(broker, fileURL);
             
@@ -1233,7 +1202,7 @@ public class Configurator {
         if (document == null) {
             return null;
         }
-        
+
         Configuration conf;
         final FullXmldbURI key = getFullURI(pool, document.getURI());
         
@@ -1283,11 +1252,9 @@ public class Configurator {
             }
             return save(instance, broker, collection, uri.lastSegment());
             
-        } catch (final PermissionDeniedException pde) {
+        } catch (final PermissionDeniedException | EXistException pde) {
             throw new IOException(pde);
             
-        } catch (final EXistException e) {
-            throw new IOException(e);
         }
     }
     
@@ -1327,7 +1294,7 @@ public class Configurator {
             final DocumentImpl doc = info.getDocument();
             doc.getMetadata().setMimeType(MimeType.XML_TYPE.getName());
             doc.getPermissions().setMode(Permission.DEFAULT_SYSTSEM_RESOURCE_PERM);
-            fullURI = getFullURI(broker.getBrokerPool(), doc.getURI());
+            fullURI = getFullURI(pool, doc.getURI());
             saving.add(fullURI);
             collection.store(txn, broker, info, data, false);
             broker.saveCollection(txn, doc.getCollection());
@@ -1386,25 +1353,11 @@ public class Configurator {
         }
     }
 
-    /*
-    private static Object instantiateObject(final String className, final Configuration configuration) throws ConfigurationException {
-        try {
-            final Class<?> clazz = Class.forName(className);
-            final Constructor<?> cstr = clazz.getConstructor(Configuration.class);
-            return cstr.newInstance(configuration);
-            
-        } catch (final Exception e) {
-            throw new ConfigurationException(e.getMessage(), e);
-        }
-    }*/
-
     private static class AFields implements Iterable<AField> {
 
-        private List<AField<ConfigurationFieldAsAttribute>> attributes =
-                new ArrayList<AField<ConfigurationFieldAsAttribute>>();
+        private List<AField<ConfigurationFieldAsAttribute>> attributes = new ArrayList<>();
         
-        private List<AField<ConfigurationFieldAsElement>> elements =
-                new ArrayList<AField<ConfigurationFieldAsElement>>();
+        private List<AField<ConfigurationFieldAsElement>> elements = new ArrayList<>();
 
         public void addAttribute(final AField<ConfigurationFieldAsAttribute> attribute) {
             this.attributes.add(attribute);

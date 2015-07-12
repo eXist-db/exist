@@ -26,9 +26,9 @@ package org.exist.config;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  */
 public interface Configurable {
-	
-	public boolean isConfigured();
-	
-	public Configuration getConfiguration();
+
+    boolean isConfigured();
+
+    Configuration getConfiguration();
 
 }
