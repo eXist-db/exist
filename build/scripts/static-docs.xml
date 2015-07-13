@@ -161,7 +161,6 @@
         <get src="${url}/config-file.xml" dest="${build.docs.html}/config-file.html"/>
         <get src="${url}/config-fluent.xml" dest="${build.docs.html}/config-fluent.html"/>
         <get src="${url}/config-openid.xml" dest="${build.docs.html}/config-openid.html"/>
-        <get src="${url}/config-versioning.xml" dest="${build.docs.html}/config-versioning.html"/>
         <get src="${url}/config-xqdoc.xml" dest="${build.docs.html}/config-xqdoc.html"/>
         <get src="${url}/config-xslt.xml" dest="${build.docs.html}/config-xslt.html"/>
         <get src="${url}/configuration.xml" dest="${build.docs.html}/configuration.html"/>
