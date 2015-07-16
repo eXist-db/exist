@@ -2,6 +2,10 @@
 
 rem $Id$
 
+::remove any quotes from JAVA_HOME and EXIST_HOME env var, will be re-added below
+for /f "delims=" %%G IN (%JAVA_HOME%) DO SET JAVA_HOME=%%G
+for /f "delims=" %%G IN (%EXIST_HOME%) DO SET EXIST_HOME=%%G
+
 if not "%JAVA_HOME%" == "" goto gotJavaHome
 set JAVA_HOME=$JAVA_HOME
 
