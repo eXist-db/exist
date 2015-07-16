@@ -1,6 +1,11 @@
 @echo off
 
+
 rem $Id$
+
+::remove any quotes from JAVA_HOME and EXIST_HOME env var, will be re-added below
+for /f "delims=" %%G IN (%JAVA_HOME%) DO SET JAVA_HOME=%%G
+for /f "delims=" %%G IN (%EXIST_HOME%) DO SET EXIST_HOME=%%G
 
 rem will be set by the installer
 set EXIST_HOME=$INSTALL_PATH
