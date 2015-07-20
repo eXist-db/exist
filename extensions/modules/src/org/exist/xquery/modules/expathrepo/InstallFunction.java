@@ -1,8 +1,29 @@
+/*
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2010-2015 The eXist-db Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
 package org.exist.xquery.modules.expathrepo;
 
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Optional;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -38,7 +59,7 @@ import org.expath.pkg.repo.tui.BatchUserInteraction;
  *
  * @author James Fuller <jim.fuller@exist-db.org>
  * @author Wolfgang Meier
- * @version 1.0
+ * @author ljo
  */
 public class InstallFunction extends BasicFunction {
 
@@ -48,7 +69,7 @@ public class InstallFunction extends BasicFunction {
 		new FunctionSignature(
 			new QName("install", ExpathPackageModule.NAMESPACE_URI, ExpathPackageModule.PREFIX),
 			"Install package from repository.",
-			new SequenceType[] { new FunctionParameterSequenceType("text", Type.STRING, Cardinality.EXACTLY_ONE, "package name")},
+			new SequenceType[] { new FunctionParameterSequenceType("pkgName", Type.STRING, Cardinality.EXACTLY_ONE, "package name")},
 			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if successful, false otherwise"));
 
     public final static FunctionSignature signatureInstallFromDB =
@@ -58,55 +79,60 @@ public class InstallFunction extends BasicFunction {
 			new SequenceType[] { new FunctionParameterSequenceType("path", Type.STRING, Cardinality.EXACTLY_ONE, "database path to the package archive (.xar file)")},
 			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if successful, false otherwise"));
     
-	public InstallFunction(XQueryContext context, FunctionSignature signature) {
+    public InstallFunction(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
- 	}
+    }
 
-	public Sequence eval(Sequence[] args, Sequence contextSequence)
-		throws XPathException {
-        Sequence removed = BooleanValue.FALSE;
-        boolean force = true;
-        UserInteractionStrategy interact = new BatchUserInteraction();
-        String pkgOrPath = args[0].getStringValue();
-        
-        ExistRepository repo = getContext().getRepository();
-        Repository parent_repo = repo.getParentRepo();
-
-        try {
-            Package pkg;
-            if (isCalledAs("install")) {
-        		// download .xar from a URI
-        		URI uri = _getURI(pkgOrPath);
-                pkg = parent_repo.installPackage(uri, force, interact);
-                repo.reportAction(ExistRepository.Action.INSTALL, pkg.getName());
-        	} else {
-        		// .xar is stored as a binary resource
-        		BinaryDocument doc = null;
-        		try {
-        			doc = _getDocument(pkgOrPath);
-        			File file = ((NativeBroker)context.getBroker()).getCollectionBinaryFileFsPath(doc.getURI());
-        			LOG.debug("Installing file: " + file.getAbsolutePath());
-        			pkg = parent_repo.installPackage(file, force, interact);
-                    repo.reportAction(ExistRepository.Action.INSTALL, pkg.getName());
-        		} finally {
-        			if (doc != null)
-        				doc.getUpdateLock().release(Lock.READ_LOCK);
-        		}
-        	}
-            ExistPkgInfo info = (ExistPkgInfo) pkg.getInfo("exist");
-            if (info != null && !info.getJars().isEmpty())
-                ClasspathHelper.updateClasspath(context.getBroker().getBrokerPool(), pkg);
-            // TODO: expath libs do not provide a way to see if there were any XQuery modules installed at all
-            context.getBroker().getBrokerPool().getXQueryPool().clear();
-            removed = BooleanValue.TRUE;
-        } catch (PackageException ex ) {
-        	logger.debug(ex.getMessage(), ex);
+    public Sequence eval(Sequence[] args, Sequence contextSequence)
+	throws XPathException {
+	Sequence removed = BooleanValue.FALSE;
+	boolean force = true;
+	UserInteractionStrategy interact = new BatchUserInteraction();
+	    String pkgOrPath = args[0].getStringValue();
+	    Optional<ExistRepository> repo = getContext().getRepository();
+	    try {
+		if (repo.isPresent()) {
+		    Repository parent_repo = repo.get().getParentRepo();
+		    Package pkg;
+		    if (isCalledAs("install")) {
+			// download .xar from a URI
+			URI uri = _getURI(pkgOrPath);
+			pkg = parent_repo.installPackage(uri, force, interact);
+			repo.get().reportAction(ExistRepository.Action.INSTALL, pkg.getName());
+		    } else {
+			// .xar is stored as a binary resource
+			BinaryDocument doc = null;
+			try {
+			    doc = _getDocument(pkgOrPath);
+			    File file = ((NativeBroker)context.getBroker()).getCollectionBinaryFileFsPath(doc.getURI());
+			    LOG.debug("Installing file: " + file.getAbsolutePath());
+			    pkg = parent_repo.installPackage(file, force, interact);
+			    repo.get().reportAction(ExistRepository.Action.INSTALL, pkg.getName());
+			} finally {
+			    if (doc != null)
+				doc.getUpdateLock().release(Lock.READ_LOCK);
+			}
+		    }
+		    ExistPkgInfo info = (ExistPkgInfo) pkg.getInfo("exist");
+		    if (info != null && !info.getJars().isEmpty())
+			ClasspathHelper.updateClasspath(context.getBroker().getBrokerPool(), pkg);
+		    // TODO: expath libs do not provide a way to see if there were any XQuery modules installed at all
+		    context.getBroker().getBrokerPool().getXQueryPool().clear();
+		    removed = BooleanValue.TRUE;
+                } else {
+		    throw new XPathException("expath repository not available");
+		}
+            } catch (PackageException ex ) {
+                logger.error(ex.getMessage(), ex);
+		return removed;
+		// /TODO: _repo.removePackage seems to throw PackageException
+		//throw new XPathException("Problem installing package " + pkg + " in expath repository, check that eXist-db has access permissions to expath repository file directory  ", ex);
+	    } catch (XPathException xpe) {
+		logger.error(xpe.getMessage());
+		return removed;
+	    }
             return removed;
-            // /TODO: _repo.removePackage seems to throw PackageException
-            //throw new XPathException("Problem installing package " + pkg + " in expath repository, check that eXist-db has access permissions to expath repository file directory  ", ex);
-        }
-        return removed;
-	}
+    }
 
     private URI _getURI(String s) throws XPathException
     {

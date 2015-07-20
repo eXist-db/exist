@@ -619,7 +619,7 @@ public class BrokerPool implements Database {
 
     private ClassLoader classLoader;
 
-    private ExistRepository expathRepo = null;
+    private Optional<ExistRepository> expathRepo = Optional.empty();
 
     /**
      * Creates and configures the database instance.
@@ -873,9 +873,9 @@ public class BrokerPool implements Database {
                         try {
                             // initialize EXPath repository so indexManager and
                             // startup triggers can access it
-                            expathRepo = ExistRepository.getRepository(this.conf);
+                            expathRepo = Optional.ofNullable(ExistRepository.getRepository(this.conf));
                         } catch(final PackageException e) {
-                            LOG.warn("Failed to initialize expath repository: " + e.getMessage() + " - " +
+                            LOG.error("Failed to initialize expath repository: " + e.getMessage() + " - " +
                                      "indexing apps and the package manager may not work.");
                         }
                         ClasspathHelper.updateClasspath(this);
@@ -1268,7 +1268,7 @@ public class BrokerPool implements Database {
         return conf;
     }
 
-    public ExistRepository getExpathRepo() {
+    public Optional<ExistRepository> getExpathRepo() {
         return expathRepo;
     }
 

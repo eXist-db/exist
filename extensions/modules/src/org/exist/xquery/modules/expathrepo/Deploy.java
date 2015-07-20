@@ -1,4 +1,31 @@
+/*
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2010-2015 The eXist-db Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
 package org.exist.xquery.modules.expathrepo;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.*;
+import java.util.Optional;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -16,12 +43,6 @@ import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 import org.expath.pkg.repo.PackageException;
 import org.xml.sax.helpers.AttributesImpl;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.*;
 
 public class Deploy extends BasicFunction {
 
@@ -122,7 +143,7 @@ public class Deploy extends BasicFunction {
 		String pkgName = args[0].getStringValue();
         try {
             Deployment deployment = new Deployment(context.getBroker());
-            String target;
+            Optional<String> target = Optional.empty();
             if (isCalledAs("deploy")) {
                 String userTarget = null;
                 if (getArgumentCount() == 2)
@@ -143,8 +164,10 @@ public class Deploy extends BasicFunction {
                 if (getArgumentCount() == 2)
                     repoURI = args[1].getStringValue();
                 target = installAndDeployFromDb(pkgName, repoURI);
-            } else
+            } else {
                 target = deployment.undeploy(pkgName, context.getRepository());
+	    }
+	    target.orElseThrow(() -> new XPathException("expath repository is not available."));
             return statusReport(target);
         } catch (PackageException e) {
             throw new XPathException(this, EXPathErrorCode.EXPDY001, e.getMessage());
@@ -153,14 +176,14 @@ public class Deploy extends BasicFunction {
         }
     }
 
-    private String installAndDeploy(String pkgName, String version, String repoURI) throws XPathException {
+    private Optional<String> installAndDeploy(String pkgName, String version, String repoURI) throws XPathException {
         try {
             RepoPackageLoader loader = new RepoPackageLoader(repoURI);
             Deployment deployment = new Deployment(context.getBroker());
             File xar = loader.load(pkgName, new PackageLoader.Version(version, false));
             if (xar != null)
                 return deployment.installAndDeploy(xar, loader);
-            return null;
+            return Optional.empty();
         } catch (MalformedURLException e) {
             throw new XPathException(this, EXPathErrorCode.EXPDY005, "Malformed URL: " + repoURI);
         } catch (PackageException e) {
@@ -170,7 +193,7 @@ public class Deploy extends BasicFunction {
         }
     }
 
-    private String installAndDeployFromDb(String path, String repoURI) throws XPathException {
+    private Optional<String> installAndDeployFromDb(String path, String repoURI) throws XPathException {
         XmldbURI docPath = XmldbURI.createInternal(path);
         DocumentImpl doc = null;
         try {
@@ -196,14 +219,17 @@ public class Deploy extends BasicFunction {
         }
     }
 
-	private Sequence statusReport(String target) {
+	private Sequence statusReport(Optional<String> target) {
 		context.pushDocumentContext();
 		try {
 			MemTreeBuilder builder = context.getDocumentBuilder();
 			AttributesImpl attrs = new AttributesImpl();
-			attrs.addAttribute("", "result", "result", "CDATA", "ok");
-			if (target != null)
-				attrs.addAttribute("", "target", "target", "CDATA", target);
+			if (target.isPresent()) {
+			    attrs.addAttribute("", "result", "result", "CDATA", "ok");
+			    attrs.addAttribute("", "target", "target", "CDATA", target.get());
+			} else {
+			    attrs.addAttribute("", "result", "result", "CDATA", "fail");
+			}
 			builder.startElement(STATUS_ELEMENT, attrs);
 			builder.endElement();
 			
