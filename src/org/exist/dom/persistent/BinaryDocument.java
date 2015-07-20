@@ -83,7 +83,7 @@ public class BinaryDocument extends DocumentImpl {
         getPermissions().write(ostream);
 
         ostream.writeLong(realSize);
-        getMetadata().write(getBrokerPool(), ostream);
+        getMetadata().write(getBrokerPool().getSymbols(), ostream);
     }
 
     @Override
@@ -96,7 +96,7 @@ public class BinaryDocument extends DocumentImpl {
 
         this.realSize = istream.readLong();
         final DocumentMetadata metadata = new DocumentMetadata();
-        metadata.read(getBrokerPool(), istream);
+        metadata.read(getBrokerPool().getSymbols(), istream);
         setMetadata(metadata);
     }
 }

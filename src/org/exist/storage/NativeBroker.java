@@ -3671,7 +3671,7 @@ public class NativeBroker extends DBBroker {
                         "; max: " + nf.format(run.maxMemory()) +
                         "; free: " + nf.format(run.freeMemory()) +
                         "; reserved: " + nf.format(pool.getReservedMem()) +
-                        "; used: " + nf.format(pool.getCacheManager().getSizeInBytes()));
+                        "; used: " + nf.format(pool.getCacheManager().getCurrentSize()));
                     flush();
                     System.gc();
                 }

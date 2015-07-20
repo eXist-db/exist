@@ -459,7 +459,7 @@ public class Main {
 
         } else {
             // if not, warn user
-            System.err.println("ERROR: exist.home cound not be autodetected, bailing out.");
+            System.err.println("ERROR: exist.home could not be autodetected, bailing out.");
             System.err.flush();
         }
     }

@@ -23,6 +23,7 @@ package org.exist.xquery.modules.compression;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
@@ -67,6 +68,17 @@ public class TarFunction extends AbstractCompressFunction
                 COLLECTION_HIERARCHY_PARAM,
                 STRIP_PREFIX_PARAM
             },
+            new SequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_MORE)),
+
+        new FunctionSignature(
+            TAR_FUNCTION_NAME,
+            TAR_FUNCTION_DESCRIPTION,
+            new SequenceType[] {
+                SOURCES_PARAM,
+                COLLECTION_HIERARCHY_PARAM,
+                STRIP_PREFIX_PARAM,
+				ENCODING_PARAM
+            },
             new SequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_MORE))
     };
 
@@ -94,8 +106,8 @@ public class TarFunction extends AbstractCompressFunction
     }
 
     @Override
-    protected OutputStream stream(ByteArrayOutputStream baos)
+    protected OutputStream stream(final ByteArrayOutputStream baos, final Charset encoding)
     {
-            return new TarArchiveOutputStream(baos);
+            return new TarArchiveOutputStream(baos, encoding.name());
     }	
 }

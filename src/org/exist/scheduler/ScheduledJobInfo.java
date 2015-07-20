@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2006 The eXist team
+ *  Copyright (C) 2001-2015 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -13,11 +13,9 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software Foundation
- *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- *  $Id$
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.scheduler;
 
@@ -27,7 +25,6 @@ import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.SimpleTrigger;
 import org.quartz.Trigger;
-
 
 /**
  * Information about a Scheduled Job.
@@ -148,7 +145,6 @@ public class ScheduledJobInfo {
         return null;
     }
 
-
     /**
      * Get the State of the Job's Trigger.
      *
@@ -157,8 +153,7 @@ public class ScheduledJobInfo {
     public TriggerState getTriggerState() {
         try {
             switch(scheduler.getTriggerState(trigger.getKey())) {
-                
-                
+
                 case ERROR:
                     return TriggerState.ERROR;
 

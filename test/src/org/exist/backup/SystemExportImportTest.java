@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2012 The eXist Project
+ *  Copyright (C) 2001-2015 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -16,8 +16,6 @@
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- *  $Id$
  */
 package org.exist.backup;
 
@@ -25,6 +23,7 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Properties;
 
 import javax.xml.transform.OutputKeys;
@@ -44,13 +43,19 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.Txn;
-import org.exist.test.TestConstants;
+import static org.exist.test.TestConstants.TEST_COLLECTION_URI;
 import org.exist.util.Configuration;
 import org.exist.util.ConfigurationHelper;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 import org.xml.sax.SAXException;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Database;
@@ -60,7 +65,22 @@ import org.xmldb.api.base.XMLDBException;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
+@RunWith(Parameterized.class)
 public class SystemExportImportTest {
+
+    @Parameters(name = "{0}")
+    public static java.util.Collection<Object[]> data() {
+        return Arrays.asList(new Object[][]{
+                {"direct", true},
+                {"non-direct", false}
+        });
+    }
+
+    @Parameter
+    public String apiName;
+
+    @Parameter(value = 1)
+    public boolean direct;
 
     private static String COLLECTION_CONFIG =
             "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
@@ -68,12 +88,10 @@ public class SystemExportImportTest {
             "	</index>" +
         	"</collection>";
 
-    private static XmldbURI col1uri = TestConstants.TEST_COLLECTION_URI;
-
-    private static XmldbURI doc01uri = col1uri.append("test1.xml");
-    private static XmldbURI doc02uri = col1uri.append("test2.xml");
-    private static XmldbURI doc03uri = col1uri.append("test3.xml");
-    private static XmldbURI doc11uri = col1uri.append("test.binary");
+    private static XmldbURI doc01uri = TEST_COLLECTION_URI.append("test1.xml");
+    private static XmldbURI doc02uri = TEST_COLLECTION_URI.append("test2.xml");
+    private static XmldbURI doc03uri = TEST_COLLECTION_URI.append("test3.xml");
+    private static XmldbURI doc11uri = TEST_COLLECTION_URI.append("test.binary");
     
     private static String XML1 = "<test attr=\"test\"/>";
     private static String XML2 = 
@@ -94,154 +112,125 @@ public class SystemExportImportTest {
     private static BrokerPool pool;
 
     @Test
-	public void test_01() throws Exception {
-    	
-    	startDB();
-    	
-    	File file;
-    	
-        DBBroker broker = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);
+    public void exportImport() throws Exception {
+        File file;
 
-            Collection root = broker.getCollection(col1uri);
-        	assertNotNull(root);
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
 
-            SystemExport sysexport = new SystemExport( broker, null, null, true );
-            file = sysexport.export( "backup", false, false, null );
-        } finally {
-        	pool.release(broker);
-        }
-    	
-    	clean();
-    	
-    	//check that it clean
-    	broker = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            final Collection test = broker.getCollection(TEST_COLLECTION_URI);
+            assertNotNull(test);
 
-            Collection col = broker.getCollection(col1uri);
-            assertNull(col);
-        } finally {
-        	pool.release(broker);
+            final SystemExport sysexport = new SystemExport(broker, null, null, direct);
+            file = sysexport.export("backup", false, false, null);
         }
 
-    	SystemImport restore = new SystemImport(pool);
-		RestoreListener listener = new LogRestoreListener();
-		restore.restore(listener, "admin", "", "", file, "xmldb:exist://");
+        clean();
 
-        broker = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);
+        final SystemImport restore = new SystemImport(pool);
+        final RestoreListener listener = new LogRestoreListener();
+        restore.restore(listener, "admin", "", "", file, "xmldb:exist://");
 
-            Collection col = broker.getCollection(col1uri);
-        	assertNotNull(col);
-        	
-        	DocumentImpl doc = getDoc(broker, col, doc01uri.lastSegment());
-        	assertEquals(XML1, serializer(broker, doc));
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
 
-        	doc = getDoc(broker, col, doc02uri.lastSegment());
-        	assertEquals(XML2_PROPER, serializer(broker, doc));
+            final Collection test = broker.getCollection(TEST_COLLECTION_URI);
+            assertNotNull(test);
 
-        	doc = getDoc(broker, col, doc03uri.lastSegment());
-        	assertEquals(XML3_PROPER, serializer(broker, doc));
+            DocumentImpl doc = getDoc(broker, test, doc01uri.lastSegment());
+            assertEquals(XML1, serializer(broker, doc));
 
-        } finally {
-        	pool.release(broker);
+            doc = getDoc(broker, test, doc02uri.lastSegment());
+            assertEquals(XML2_PROPER, serializer(broker, doc));
+
+            doc = getDoc(broker, test, doc03uri.lastSegment());
+            assertEquals(XML3_PROPER, serializer(broker, doc));
         }
-        
-        BrokerPool.stopAll(false);
 	}
-	
-	private DocumentImpl getDoc(DBBroker broker, Collection col, XmldbURI uri) throws PermissionDeniedException {
-        DocumentImpl doc = col.getDocument(broker, uri);
+
+	private DocumentImpl getDoc(final DBBroker broker, final Collection col, final XmldbURI uri) throws PermissionDeniedException {
+        final DocumentImpl doc = col.getDocument(broker, uri);
     	assertNotNull(doc);
 		
     	return doc;
 	}
 
-    public Properties contentsOutputProps = new Properties();
-    {
+    private final static Properties contentsOutputProps = new Properties();
+    static {
         contentsOutputProps.setProperty( OutputKeys.INDENT, "yes" );
         contentsOutputProps.setProperty( EXistOutputKeys.OUTPUT_DOCTYPE, "yes" );
     }
 	
-	private String serializer(DBBroker broker, DocumentImpl document) throws SAXException {
-		Serializer serializer = broker.getSerializer();
+	private String serializer(final DBBroker broker, final DocumentImpl document) throws SAXException, IOException {
+		final Serializer serializer = broker.getSerializer();
 		serializer.setUser(broker.getSubject());
 		serializer.setProperties(contentsOutputProps);
 		return serializer.serialize(document);
 	}
     
-	//@BeforeClass
-    public static void startDB() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, SAXException, CollectionConfigurationException, LockException, ClassNotFoundException, InstantiationException, XMLDBException, IllegalAccessException {
+	@Before
+    public void startDB() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, SAXException, CollectionConfigurationException, LockException, ClassNotFoundException, InstantiationException, XMLDBException, IllegalAccessException {
 
-        File confFile = ConfigurationHelper.lookup("conf.xml");
-        Configuration config = new Configuration(confFile.getAbsolutePath());
+        final File confFile = ConfigurationHelper.lookup("conf.xml");
+        final Configuration config = new Configuration(confFile.getAbsolutePath());
         BrokerPool.configure(1, 5, config);
         pool = BrokerPool.getInstance();
         assertNotNull(pool);
         pool.getPluginsManager().addPlugin("org.exist.storage.md.Plugin");
 
-        try (final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
-             final Txn transaction = pool.getTransactionManager().beginTransaction()) {
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+                final Txn transaction = pool.getTransactionManager().beginTransaction()) {
 
-            assertNotNull(transaction);
+            final Collection test = broker.getOrCreateCollection(transaction, TEST_COLLECTION_URI);
+            assertNotNull(test);
+            broker.saveCollection(transaction, test);
 
-            Collection root = broker.getOrCreateCollection(transaction, col1uri);
-            assertNotNull(root);
-            broker.saveCollection(transaction, root);
+            final CollectionConfigurationManager mgr = pool.getConfigurationManager();
+            mgr.addConfiguration(transaction, broker, test, COLLECTION_CONFIG);
 
-            CollectionConfigurationManager mgr = pool.getConfigurationManager();
-            mgr.addConfiguration(transaction, broker, root, COLLECTION_CONFIG);
-
-            IndexInfo info = root.validateXMLResource(transaction, broker, doc01uri.lastSegment(), XML1);
+            IndexInfo info = test.validateXMLResource(transaction, broker, doc01uri.lastSegment(), XML1);
             assertNotNull(info);
-            root.store(transaction, broker, info, XML1, false);
+            test.store(transaction, broker, info, XML1, false);
 
-            info = root.validateXMLResource(transaction, broker, doc02uri.lastSegment(), XML2);
+            info = test.validateXMLResource(transaction, broker, doc02uri.lastSegment(), XML2);
             assertNotNull(info);
-            root.store(transaction, broker, info, XML2, false);
+            test.store(transaction, broker, info, XML2, false);
 
-            info = root.validateXMLResource(transaction, broker, doc03uri.lastSegment(), XML3);
+            info = test.validateXMLResource(transaction, broker, doc03uri.lastSegment(), XML3);
             assertNotNull(info);
-            root.store(transaction, broker, info, XML3, false);
+            test.store(transaction, broker, info, XML3, false);
 
-            root.addBinaryResource(transaction, broker, doc11uri.lastSegment(), BINARY.getBytes(), null);
+            test.addBinaryResource(transaction, broker, doc11uri.lastSegment(), BINARY.getBytes(), null);
 
-            pool.getTransactionManager().commit(transaction);
+            transaction.commit();
         }
 
         rundb();
     }
 
 
-    private static void rundb() throws ClassNotFoundException, XMLDBException, IllegalAccessException, InstantiationException {
-        Class cl = Class.forName("org.exist.xmldb.DatabaseImpl");
-        Database database = (Database) cl.newInstance();
+    private void rundb() throws ClassNotFoundException, XMLDBException, IllegalAccessException, InstantiationException {
+        final Class cl = Class.forName("org.exist.xmldb.DatabaseImpl");
+        final Database database = (Database) cl.newInstance();
         database.setProperty("create-database", "true");
         DatabaseManager.registerDatabase(database);
     }
     
-    //@AfterClass
-    public static void cleanup() throws PermissionDeniedException, IOException, TriggerException, EXistException {
+    @After
+    public void cleanup() throws PermissionDeniedException, IOException, TriggerException, EXistException {
     	clean();
         BrokerPool.stopAll(false);
         pool = null;
     }
 
-    private static void clean() throws PermissionDeniedException, IOException, TriggerException, EXistException {
-        
+    private void clean() throws PermissionDeniedException, IOException, TriggerException, EXistException {
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
                 final Txn transaction = pool.getTransactionManager().beginTransaction()) {
 
-            Collection root = broker.getOrCreateCollection(transaction, col1uri);
-            assertNotNull(root);
-            broker.removeCollection(transaction, root);
+            final Collection test = broker.getCollection(TEST_COLLECTION_URI);
+            if(test != null) {
+                broker.removeCollection(transaction, test);
+            }
 
-            pool.getTransactionManager().commit(transaction);
+            transaction.commit();
         }
     }
 }

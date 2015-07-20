@@ -218,15 +218,15 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
             Class<?> openid = null;
             try {
             	openid = Class.forName("org.exist.security.realm.openid.AuthenticatorOpenIdServlet");
-            } catch (final ClassNotFoundException e) {
-                // ignore
+            } catch (final NoClassDefFoundError | ClassNotFoundException e) {
+                logger.warn("Could not find OpenID extension. OpenID will be disabled!");
 			}
             
             Class<?> oauth = null;
             try {
             	oauth = Class.forName("org.exist.security.realm.oauth.OAuthServlet");
-            } catch (final ClassNotFoundException e) {
-                // ignore
+            } catch (final NoClassDefFoundError | ClassNotFoundException e) {
+                logger.warn("Could not find OAuthServlet extension. OAuth will be disabled!");
 			}
             
             //*************************************************************

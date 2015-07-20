@@ -1,6 +1,8 @@
+package xquery.modules.compression;
+
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2015 The eXist Project
+ *  Copyright (C) 2015 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -16,19 +18,16 @@
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- */
-package org.exist.config;
-
-/**
- * Configurable object must implement this interface and
- * it must have constructor with parent class and Configuration.
  *
- * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
+ *  $Id$
  */
-public interface Configurable {
+import xquery.TestRunner;
 
-    boolean isConfigured();
+public class CompressionTests extends TestRunner {
 
-    Configuration getConfiguration();
-
+    @Override
+    protected String getDirectory() {
+        return "test/src/xquery/modules/compression";
+    }
 }
+

@@ -22,6 +22,7 @@
 package org.exist.xquery.modules.compression;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import org.exist.dom.QName;
@@ -68,6 +69,31 @@ public class UnZipFunction extends AbstractExtractFunction {
                 new FunctionParameterSequenceType("entry-data-param", Type.ANY_TYPE, Cardinality.ZERO_OR_MORE, "A sequence with an additional parameters for storing function."),
             },
             new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
+        ),
+		
+        new FunctionSignature(
+            new QName("unzip", CompressionModule.NAMESPACE_URI, CompressionModule.PREFIX),
+            "UnZip all the resources/folders from the provided data by calling user defined functions " +
+            "to determine what and how to store the resources/folders",
+            new SequenceType[] {
+                new FunctionParameterSequenceType("zip-data", Type.BASE64_BINARY, Cardinality.EXACTLY_ONE, "The zip file data"),
+                new FunctionParameterSequenceType("entry-filter", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, 
+                		"A user defined function for filtering resources from the zip file. The function takes 3 parameters e.g. " +
+                		"user:unzip-entry-filter($path as xs:string, $data-type as xs:string, $param as item()*) as xs:boolean. " +
+                		"$data-type may be 'resource' or 'folder'. $param is a sequence with any additional parameters, " +
+                		"for example a list of extracted files. If the return type is true() it indicates the entry " +
+                		"should be processed and passed to the entry-data function, else the resource is skipped."),
+                new FunctionParameterSequenceType("entry-filter-param", Type.ANY_TYPE, Cardinality.ZERO_OR_MORE, "A sequence with an additional parameters for filtering function."),
+                new FunctionParameterSequenceType("entry-data", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, 
+                		"A user defined function for storing an extracted resource from the zip file. The function takes 4 parameters e.g. " +
+                		"user:unzip-entry-data($path as xs:string, $data-type as xs:string, $data as item()?, $param as item()*). " +
+                		"Or a user defined function wich returns path for storing an extracted resource from the tar file. The function takes 3 parameters e.g. " +
+                		"user:entry-path($path as xs:string, $data-type as xs:string, $param as item()*) as xs:anyURI. " +
+                		"$data-type may be 'resource' or 'folder'. $param is a sequence with any additional parameters."),
+                new FunctionParameterSequenceType("entry-data-param", Type.ANY_TYPE, Cardinality.ZERO_OR_MORE, "A sequence with an additional parameters for storing function."),
+				new FunctionParameterSequenceType("encoding", Type.STRING, Cardinality.EXACTLY_ONE, "The encoding to be used during uncompressing eg: UTF8 or Cp437 from https://docs.oracle.com/javase/8/docs/technotes/guides/intl/encoding.doc.html"),
+            },
+            new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
         )
     };
 
@@ -77,49 +103,24 @@ public class UnZipFunction extends AbstractExtractFunction {
     }
 
     @Override
-    protected Sequence processCompressedData(BinaryValue compressedData) throws XPathException, XMLDBException
+    protected Sequence processCompressedData(final BinaryValue compressedData, final Charset encoding) throws XPathException, XMLDBException
     {
-        ZipInputStream zis = null;
-        try
-        {
-            zis = new ZipInputStream(compressedData.getInputStream());
+        try(final ZipInputStream zis = new ZipInputStream(compressedData.getInputStream(), encoding)) {
             ZipEntry entry = null;
 
-            Sequence results = new ValueSequence();
+            final Sequence results = new ValueSequence();
 
-            while((entry = zis.getNextEntry()) != null)
-            {
-                Sequence processCompressedEntryResults;
-                if (entry.getMethod() == ZipEntry.STORED) {
-                }
-
-                processCompressedEntryResults = processCompressedEntry(entry.getName(), entry.isDirectory(), zis, filterParam, storeParam);
-
+            while((entry = zis.getNextEntry()) != null) {
+                final Sequence processCompressedEntryResults = processCompressedEntry(entry.getName(), entry.isDirectory(), zis, filterParam, storeParam);
                 results.addAll(processCompressedEntryResults);
 
                 zis.closeEntry();
             }
 
             return results;
-        }
-        catch(IOException ioe)
-        {
+        } catch(final IOException ioe) {
             LOG.error(ioe.getMessage(), ioe);
             throw new XPathException(this, ioe.getMessage(), ioe);
-        }
-        finally
-        {
-            if(zis != null)
-            {
-                try
-                {
-                    zis.close();
-                }
-                catch(IOException ioe)
-                {
-                    LOG.warn(ioe.getMessage(), ioe);
-                }
-            }
         }
     }
 }
