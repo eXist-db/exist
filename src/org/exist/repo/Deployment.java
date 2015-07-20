@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-12 The eXist Project
+ *  Copyright (C) 2001-2015 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -17,9 +17,16 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- *  $Id$
  */
 package org.exist.repo;
+
+
+import java.io.*;
+import java.util.Date;
+import java.util.Optional;
+import java.util.Stack;
+import java.util.jar.JarEntry;
+import java.util.jar.JarInputStream;
 
 import org.exist.SystemProperties;
 import org.exist.dom.memtree.DocumentBuilderReceiver;
@@ -69,12 +76,6 @@ import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import java.io.*;
-import java.util.Date;
-import java.util.Stack;
-import java.util.jar.JarEntry;
-import java.util.jar.JarInputStream;
-
 /**
  * Deploy a .xar package into the database using the information provided
  * in expath-pkg.xml and repo.xml.
@@ -111,15 +112,16 @@ public class Deployment {
         this.broker = broker;
     }
 
-    protected File getPackageDir(String pkgName, ExistRepository repo) throws PackageException {
+    protected File getPackageDir(String pkgName, Optional<ExistRepository> repo) throws PackageException {
         File packageDir = null;
-
-        for (final Packages pp : repo.getParentRepo().listPackages()) {
-            final org.expath.pkg.repo.Package pkg = pp.latest();
-            if (pkg.getName().equals(pkgName)) {
-                packageDir = getPackageDir(pkg);
-            }
-        }
+	if (repo.isPresent()) {
+	    for (final Packages pp : repo.get().getParentRepo().listPackages()) {
+		final org.expath.pkg.repo.Package pkg = pp.latest();
+		if (pkg.getName().equals(pkgName)) {
+		    packageDir = getPackageDir(pkg);
+		}
+	    }
+	}
         return packageDir;
     }
 
@@ -128,14 +130,16 @@ public class Deployment {
         return resolver.resolveResourceAsFile(".");
     }
 
-    protected org.expath.pkg.repo.Package getPackage(String pkgName, ExistRepository repo) throws PackageException {
-        for (final Packages pp : repo.getParentRepo().listPackages()) {
-            final org.expath.pkg.repo.Package pkg = pp.latest();
-            if (pkg.getName().equals(pkgName)) {
-                return pkg;
-            }
-        }
-        return null;
+    protected Optional<org.expath.pkg.repo.Package> getPackage(String pkgName, Optional<ExistRepository> repo) throws PackageException {
+	if (repo.isPresent()) {
+	    for (final Packages pp : repo.get().getParentRepo().listPackages()) {
+		final org.expath.pkg.repo.Package pkg = pp.latest();
+		if (pkg.getName().equals(pkgName)) {
+		    return Optional.ofNullable(pkg);
+		}
+	    }
+	}
+        return Optional.empty();
     }
 
     protected DocumentImpl getRepoXML(File packageDir) throws PackageException {
@@ -152,7 +156,7 @@ public class Deployment {
         }
     }
 
-    public String installAndDeploy(File xar, PackageLoader loader) throws PackageException, IOException {
+    public Optional<String> installAndDeploy(File xar, PackageLoader loader) throws PackageException, IOException {
         return installAndDeploy(xar, loader, true);
     }
 
@@ -165,18 +169,20 @@ public class Deployment {
      * @param enforceDeps when set to true, the method will throw an exception if a dependency could not be resolved
      *                    or an older version of the required dependency is installed and needs to be replaced.
      */
-    public String installAndDeploy(File xar, PackageLoader loader, boolean enforceDeps) throws PackageException, IOException {
+    public Optional<String> installAndDeploy(File xar, PackageLoader loader, boolean enforceDeps) throws PackageException, IOException {
         final DocumentImpl document = getDescriptor(xar);
         final ElementImpl root = (ElementImpl) document.getDocumentElement();
         final String name = root.getAttribute("name");
         final String pkgVersion = root.getAttribute("version");
 
-        final ExistRepository repo = broker.getBrokerPool().getExpathRepo();
-        final Packages packages = repo.getParentRepo().getPackages(name);
-        if (packages != null && (!enforceDeps || pkgVersion.equals(packages.latest().getVersion()))) {
-            LOG.info("Application package " + name + " already installed. Skipping.");
-            return null;
-        }
+        final Optional<ExistRepository> repo = broker.getBrokerPool().getExpathRepo();
+	if (repo.isPresent()) {
+	    final Packages packages = repo.get().getParentRepo().getPackages(name);
+
+	    if (packages != null && (!enforceDeps || pkgVersion.equals(packages.latest().getVersion()))) {
+		LOG.info("Application package " + name + " already installed. Skipping.");
+		return null;
+	    }
 
         InMemoryNodeSet deps;
         try {
@@ -203,9 +209,9 @@ public class Deployment {
                 } else if (pkgName != null) {
                     LOG.info("Package " + name + " depends on " + pkgName);
                     boolean isInstalled = false;
-                    if (repo.getParentRepo().getPackages(pkgName) != null) {
+                    if (repo.get().getParentRepo().getPackages(pkgName) != null) {
                         LOG.debug("Package " + pkgName + " already installed");
-                        Packages pkgs = repo.getParentRepo().getPackages(pkgName);
+                        Packages pkgs = repo.get().getParentRepo().getPackages(pkgName);
                         // check if installed package matches required version
                         if (pkgs != null) {
                             if (version != null) {
@@ -251,7 +257,7 @@ public class Deployment {
         // installing the xar into the expath repo
         LOG.info("Installing package " + xar.getAbsolutePath());
         final UserInteractionStrategy interact = new BatchUserInteraction();
-        final org.expath.pkg.repo.Package pkg = repo.getParentRepo().installPackage(xar, true, interact);
+        final org.expath.pkg.repo.Package pkg = repo.get().getParentRepo().installPackage(xar, true, interact);
         final ExistPkgInfo info = (ExistPkgInfo) pkg.getInfo("exist");
         if (info != null && !info.getJars().isEmpty())
             {ClasspathHelper.updateClasspath(broker.getBrokerPool(), pkg);}
@@ -259,10 +265,13 @@ public class Deployment {
         final String pkgName = pkg.getName();
         // signal status
         broker.getBrokerPool().reportStatus("Installing app: " + pkg.getAbbrev());
-        repo.reportAction(ExistRepository.Action.INSTALL, pkg.getName());
+        repo.get().reportAction(ExistRepository.Action.INSTALL, pkg.getName());
 
         LOG.info("Deploying package " + pkgName);
         return deploy(pkgName, repo, null);
+    }
+	// Totally unneccessary to do the above if repo is unavailable.
+	return Optional.empty();
     }
 
     private void checkProcessorVersion(PackageLoader.Version version) throws PackageException {
@@ -274,13 +283,13 @@ public class Deployment {
         }
     }
 
-    public String undeploy(String pkgName, ExistRepository repo) throws PackageException {
+    public Optional<String> undeploy(String pkgName, Optional<ExistRepository> repo) throws PackageException {
         final File packageDir = getPackageDir(pkgName, repo);
         if (packageDir == null)
             // fails silently if package dir is not found?
-            {return null;}
+            {return Optional.empty();}
         final DocumentImpl repoXML = getRepoXML(packageDir);
-        final Package pkg = getPackage(pkgName, repo);
+        final Optional<Package> pkg = getPackage(pkgName, repo);
         if (repoXML != null) {
             ElementImpl target = null;
             try {
@@ -289,9 +298,10 @@ public class Deployment {
                 if (cleanup != null) {
                     runQuery(null, packageDir, cleanup.getStringValue(), false);
                 }
-
-                uninstall(pkg, target);
-                return target == null ? null : target.getStringValue();
+		if (pkg.isPresent()) {
+		    uninstall(pkg.get(), target);
+		}
+                return Optional.ofNullable(target.getStringValue());
             } catch (final XPathException e) {
                 throw new PackageException("Error found while processing repo.xml: " + e.getMessage(), e);
             } catch (final IOException e) {
@@ -299,25 +309,27 @@ public class Deployment {
             }
         } else {
             // we still may need to remove the copy of the package from /db/system/repo
-            uninstall(pkg, null);
+            if (pkg.isPresent()) {
+		uninstall(pkg.get(), null);
+	    }
         }
-        return null;
+        return Optional.empty();
     }
 
-    public String deploy(String pkgName, ExistRepository repo, String userTarget) throws PackageException, IOException {
+    public Optional<String> deploy(String pkgName, Optional<ExistRepository> repo, String userTarget) throws PackageException, IOException {
         final File packageDir = getPackageDir(pkgName, repo);
         if (packageDir == null)
             {throw new PackageException("Package not found: " + pkgName);}
         final DocumentImpl repoXML = getRepoXML(packageDir);
         if (repoXML == null)
-            {return null;}
+            {return Optional.empty();}
         try {
             // if there's a <setup> element, run the query it points to
             final ElementImpl setup = findElement(repoXML, SETUP_ELEMENT);
             String path = setup == null ? null : setup.getStringValue();
             if (path != null && path.length() > 0) {
                 runQuery(null, packageDir, path, true);
-                return null;
+                return Optional.empty();
             } else {
                 // otherwise copy all child directories to the target collection
                 XmldbURI targetCollection = null;
@@ -344,8 +356,9 @@ public class Deployment {
                 if (targetCollection == null) {
                     // no target means: package does not need to be deployed into database
                     // however, we need to preserve a copy for backup purposes
-                    final Package pkg = getPackage(pkgName, repo);
-                    final String pkgColl = pkg.getAbbrev() + "-" + pkg.getVersion();
+                    final Optional<Package> pkg = getPackage(pkgName, repo);
+		    pkg.orElseThrow(() -> new XPathException("expath repository is not available so the package was not stored."));
+                    final String pkgColl = pkg.get().getAbbrev() + "-" + pkg.get().getVersion();
                     targetCollection = XmldbURI.SYSTEM.append("repo/" + pkgColl);
                 }
                 final ElementImpl permissions = findElement(repoXML, PERMISSIONS_ELEMENT);
@@ -389,11 +402,11 @@ public class Deployment {
 
                 storeRepoXML(repoXML, targetCollection);
 
-                // TODO: it should be save to clean up the file system after a package
+                // TODO: it should be safe to clean up the file system after a package
                 // has been deployed. Might be enabled after 2.0
                 //cleanup(pkgName, repo);
 
-                return targetCollection.getCollectionPath();
+                return Optional.ofNullable(targetCollection.getCollectionPath());
             }
         } catch (final XPathException e) {
             throw new PackageException("Error found while processing repo.xml: " + e.getMessage(), e);
@@ -409,33 +422,35 @@ public class Deployment {
      * @param repo
      * @throws PackageException
      */
-    private void cleanup(String pkgName, ExistRepository repo) throws PackageException {
-        final Package pkg = getPackage(pkgName, repo);
-        final String abbrev = pkg.getAbbrev();
-        final File packageDir = getPackageDir(pkg);
-        if (packageDir == null) {
-            throw new PackageException("Cleanup: package dir for package " + pkgName + " not found");
-        }
-        File[] filesToDelete = packageDir.listFiles(new FileFilter() {
-            @Override
-            public boolean accept(File file) {
-                String name = file.getName();
-                if (file.isDirectory()) {
-                    return !(name.equals(abbrev) || name.equals("content"));
-                } else {
-                    return !(name.equals("expath-pkg.xml") || name.equals("repo.xml") ||
-                            "exist.xml".equals(name) || name.startsWith("icon"));
-                }
-            }
-        });
-        for (final File fileToDelete : filesToDelete) {
-            try {
-                FileUtils.forceDelete(fileToDelete);
-            } catch (final IOException e) {
-                LOG.warn("Cleanup: failed to delete file " + fileToDelete.getAbsolutePath() + " in package " +
-                    pkgName);
-            }
-        }
+    private void cleanup(String pkgName, Optional<ExistRepository> repo) throws PackageException {
+	if (repo.isPresent()) {
+	    final Optional<Package> pkg = getPackage(pkgName, repo);
+	    final File packageDir = getPackageDir(pkg.get());
+	    if (packageDir == null) {
+		throw new PackageException("Cleanup: package dir for package " + pkgName + " not found");
+	    }
+	    final String abbrev = pkg.get().getAbbrev();
+	    File[] filesToDelete = packageDir.listFiles(new FileFilter() {
+		    @Override
+		    public boolean accept(File file) {
+			String name = file.getName();
+			if (file.isDirectory()) {
+			    return !(name.equals(abbrev) || name.equals("content"));
+			} else {
+			    return !(name.equals("expath-pkg.xml") || name.equals("repo.xml") ||
+				     "exist.xml".equals(name) || name.startsWith("icon"));
+			}
+		    }
+		});
+	    for (final File fileToDelete : filesToDelete) {
+		try {
+		    FileUtils.forceDelete(fileToDelete);
+		} catch (final IOException e) {
+		    LOG.warn("Cleanup: failed to delete file " + fileToDelete.getAbsolutePath() + " in package " +
+			     pkgName);
+		}
+	    }
+	}
     }
 
     private String getTargetCollection(String targetFromRepo) {

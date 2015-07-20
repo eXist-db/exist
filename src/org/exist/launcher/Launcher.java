@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2012 The eXist-db Project
+ *  Copyright (C) 2012-2015 The eXist-db Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -17,22 +17,9 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- *  $Id$
  */
 package org.exist.launcher;
 
-import org.exist.EXistException;
-import org.exist.jetty.JettyStart;
-import org.exist.repo.ExistRepository;
-import org.exist.security.PermissionDeniedException;
-import org.exist.security.xacml.AccessContext;
-import org.exist.storage.BrokerPool;
-import org.exist.storage.DBBroker;
-import org.exist.util.ConfigurationHelper;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQuery;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -47,6 +34,20 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.Optional;
+
+import org.exist.EXistException;
+import org.exist.jetty.JettyStart;
+import org.exist.repo.ExistRepository;
+import org.exist.security.PermissionDeniedException;
+import org.exist.security.xacml.AccessContext;
+import org.exist.storage.BrokerPool;
+import org.exist.storage.DBBroker;
+import org.exist.util.ConfigurationHelper;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQuery;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
 
 /**
  * A launcher for the eXist-db server integrated with the desktop.
@@ -437,8 +438,12 @@ public class Launcher extends Observable implements Observer {
             final Sequence pkgs = xquery.execute(broker, "repo:list()", null, AccessContext.INITIALIZE);
             for (final SequenceIterator i = pkgs.iterate(); i.hasNext(); ) {
                 final ExistRepository.Notification notification = new ExistRepository.Notification(ExistRepository.Action.INSTALL, i.nextItem().getStringValue());
-                update(pool.getExpathRepo(), notification);
-                utilityPanel.update(pool.getExpathRepo(), notification);
+		Optional<ExistRepository> expathRepo = pool.getExpathRepo();
+                if (expathRepo.isPresent()) {
+		    update(expathRepo.get(), notification);
+		    utilityPanel.update(expathRepo.get(), notification);
+		}
+		expathRepo.orElseThrow(() -> new XPathException("expath repository is not available."));
             }
         } catch (final EXistException e) {
             System.err.println("Failed to check installed packages: " + e.getMessage());
@@ -458,8 +463,13 @@ public class Launcher extends Observable implements Observer {
     private void registerObserver() {
         try {
             final BrokerPool pool = BrokerPool.getInstance();
-            pool.getExpathRepo().addObserver(this);
-            pool.getExpathRepo().addObserver(utilityPanel);
+	    Optional<ExistRepository> repo = pool.getExpathRepo();
+	    if (repo.isPresent()) {
+		repo.get().addObserver(this);
+		repo.get().addObserver(utilityPanel);
+	    } else {
+		System.err.println("expath repository is not available.");
+	    }
         } catch (final EXistException e) {
             System.err.println("Failed to register as observer for package manager events");
             e.printStackTrace();
