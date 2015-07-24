@@ -29,6 +29,7 @@ import java.util.Optional;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exist.SystemProperties;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.QName;
@@ -254,7 +255,8 @@ public class Deploy extends BasicFunction {
         }
 
         public File load(String name, Version version) throws IOException {
-            String pkgURL = repoURL + "?name=" + URLEncoder.encode(name, "UTF-8");
+            String pkgURL = repoURL + "?name=" + URLEncoder.encode(name, "UTF-8") +
+                "&processor=" + SystemProperties.getInstance().getSystemProperty("product-semver", "2.2.0");;
             if (version != null) {
                 if (version.getMin() != null) {
                     pkgURL += "&semver-min=" + version.getMin();
