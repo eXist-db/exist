@@ -34,6 +34,9 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.util.ExpressionDumper;
 import org.w3c.dom.Node;
 
+import java.util.Arrays;
+import java.util.stream.Stream;
+
 /**
  * A sequence that sorts its entries in the order specified by the order specs of
  * an "order by" clause. Used by {@link org.exist.xquery.ForExpr}.
@@ -127,7 +130,13 @@ public class OrderedValueSequence extends AbstractSequence {
 	}
 	
 	public void sort() {
-		FastQSort.sort(items, 0, count - 1);
+//		FastQSort.sort(items, 0, count - 1);
+		items =
+			Stream.of(items).filter(entry -> entry != null)
+					.parallel()
+					.sorted()
+					.map(entry -> { entry.clear(); return entry; })
+					.toArray(Entry[]::new);
 	}
 	
 	/* (non-Javadoc)
@@ -378,6 +387,10 @@ public class OrderedValueSequence extends AbstractSequence {
     		}
     		builder.append("]");
     		return builder.toString();
+		}
+
+		public void clear() {
+			values = null;
 		}
 	}
 	

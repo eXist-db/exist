@@ -113,7 +113,11 @@ options {
 	private void throwException(XQueryAST ast, String message) throws XPathException {
 		throw new XPathException(ast, message);
 	}
-	
+
+	private enum BindingType {
+	    FOR, LET, GROUPBY, ORDERBY
+	}
+
 	private static class ForLetClause {
 		XQueryAST ast;
 		String varName;
@@ -121,7 +125,7 @@ options {
 		String posVar= null;
 		Expression inputSequence;
 		Expression action;
-		boolean isForClause= true;
+		BindingType type = BindingType.FOR;
 		List<GroupSpec> groupSpecs = null;
 	}
 
@@ -1365,7 +1369,7 @@ throws PermissionDeniedException, EXistException, XPathException
 			Expression action= new PathExpr(context);
 			action.setASTNode(r);
 			PathExpr whereExpr= null;
-			List orderBy= null;
+			List<OrderSpec> orderBy= null;
 		}
 		(
 			#(
@@ -1407,7 +1411,7 @@ throws PermissionDeniedException, EXistException, XPathException
 						{
 							ForLetClause clause= new ForLetClause();
 							clause.ast = letVarName;
-							clause.isForClause= false;
+							clause.type = BindingType.LET;
 							PathExpr inputSequence= new PathExpr(context);
 						}
 						(
@@ -1438,22 +1442,14 @@ throws PermissionDeniedException, EXistException, XPathException
         // XQuery 3.0 group by clause 
 		(
 			#(
-                GROUP_BY
+                gb:GROUP_BY
                 {
-                	// attach group by to last for expression, skipping lets
-                	ForLetClause clause = null;
-                	for (int i = clauses.size() - 1; i > -1; i--) {
-                		ForLetClause currentClause = clauses.get(i);
-                		if (currentClause.isForClause) {
-                			clause = currentClause;
-                			break;
-                		}
-                	}
-                	if (clause == null)
-                		clause = clauses.get(clauses.size() - 1);
+                    ForLetClause clause= new ForLetClause();
+                    clause.ast = gb;
+                    clause.type = BindingType.GROUPBY;
                 	clause.groupSpecs = new ArrayList<GroupSpec>(4);
+                	clauses.add(clause);
                 }
-                // { groupSpecs = new ArrayList<GroupSpec>(4); }
                 (
 	                #(
 	                	groupVarName:VARIABLE_BINDING
@@ -1473,7 +1469,8 @@ throws PermissionDeniedException, EXistException, XPathException
 	                    		ForLetClause groupVarDef = null;
 			                	for (int i = clauses.size() - 1; i > -1; i--) {
 			                		ForLetClause currentClause = clauses.get(i);
-			                		if (!currentClause.isForClause && currentClause.varName.equals(groupKeyVar)) {
+			                		if (currentClause.type != BindingType.GROUPBY && currentClause.varName.equals
+			                		(groupKeyVar)) {
 			                			groupVarDef = currentClause;
 			                			break;
 			                		}
@@ -1501,7 +1498,7 @@ throws PermissionDeniedException, EXistException, XPathException
          
         ( 
             #( 			
-				ORDER_BY { orderBy= new ArrayList(3); }
+				ob:ORDER_BY { orderBy = new ArrayList(3); }
 				(
 					{ PathExpr orderSpecExpr= new PathExpr(context); }
 					step=expr [orderSpecExpr]
@@ -1555,52 +1552,63 @@ throws PermissionDeniedException, EXistException, XPathException
 						}
 					)?
 				)+
+				{
+				    ForLetClause clause= new ForLetClause();
+                    clause.ast = ob;
+                    clause.type = BindingType.ORDERBY;
+                    clauses.add(clause);
+				}
 			)
 		)?
 		step=expr [(PathExpr) action]
 		{
-            //bv : save the "real" return expression (used in groupBy) 
-            PathExpr groupReturnExpr = (PathExpr) action; 
 			for (int i= clauses.size() - 1; i >= 0; i--) {
 				ForLetClause clause= (ForLetClause) clauses.get(i);
-				BindingExpression expr;
-				if (clause.isForClause)
-					expr= new ForExpr(context);
-				else
-					expr= new LetExpr(context);
+				FLWORClause expr;
+				switch (clause.type) {
+				    case LET:
+				        expr= new LetExpr(context);
+				        break;
+				    case GROUPBY:
+                        expr = new GroupByClause(context);
+                        break;
+                    case ORDERBY:
+                        expr = new OrderByClause(context, orderBy);
+                        break;
+                    default:
+                        expr= new ForExpr(context);
+                        break;
+				}
 				expr.setASTNode(clause.ast);
-				expr.setVariable(clause.varName);
-				expr.setSequenceType(clause.sequenceType);
-				expr.setInputSequence(clause.inputSequence);
-                if (!(action instanceof BindingExpression))
+				if (clause.type == BindingType.FOR || clause.type == BindingType.LET) {
+				    final BindingExpression bind = (BindingExpression)expr;
+                    bind.setVariable(clause.varName);
+                    bind.setSequenceType(clause.sequenceType);
+                    bind.setInputSequence(clause.inputSequence);
+                    if (clause.type == BindingType.FOR)
+                         ((ForExpr) bind).setPositionalVariable(clause.posVar);
+                    if (whereExpr != null) {
+                        bind.setWhereExpression(new DebuggableExpression(whereExpr));
+                        whereExpr= null;
+                    }
+				} else if (clause.type == BindingType.GROUPBY ) {
+				    if (clause.groupSpecs != null) {
+                        GroupSpec specs[]= new GroupSpec[clause.groupSpecs.size()];
+                        int k= 0;
+                        for (GroupSpec groupSpec : clause.groupSpecs) {
+                            specs[k++]= groupSpec;
+                        }
+                        ((GroupByExpression)expr).setGroupSpecs(specs);
+                    }
+				}
+                if (!(action instanceof FLWORClause))
                     expr.setReturnExpression(new DebuggableExpression(action));
-                else
+                else {
                     expr.setReturnExpression(action);
-                if (clause.groupSpecs != null) {
-                	GroupSpec specs[]= new GroupSpec[clause.groupSpecs.size()]; 
-	                int k= 0;
-	                for (GroupSpec groupSpec : clause.groupSpecs) {
-	                    specs[k++]= groupSpec; 
-	                }
-	                expr.setGroupSpecs(specs);
-	                expr.setGroupReturnExpr(action);
+                    ((FLWORClause)action).setPreviousClause(expr);
                 }
-				if (clause.isForClause)
-					 ((ForExpr) expr).setPositionalVariable(clause.posVar);
-				if (whereExpr != null) {
-					expr.setWhereExpression(new DebuggableExpression(whereExpr));
-					whereExpr= null;
-				}
+
 				action= expr;
-			}
-			if (orderBy != null) {
-				OrderSpec orderSpecs[]= new OrderSpec[orderBy.size()];
-				int k= 0;
-				for (Iterator j= orderBy.iterator(); j.hasNext(); k++) {
-					OrderSpec orderSpec= (OrderSpec) j.next();
-					orderSpecs[k]= orderSpec;
-				}
-				((BindingExpression)action).setOrderSpecs(orderSpecs);
 			}
          
 			path.add(action);

@@ -63,8 +63,8 @@ public class ForExpr extends BindingExpression {
     }
 
     public void analyze(AnalyzeContextInfo contextInfo, OrderSpec orderBy[]) throws XPathException { 
-        analyze(contextInfo, orderBy, null); 
-    } 
+        analyze(contextInfo, orderBy, null);
+    }
 
 	/* (non-Javadoc)
      * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression)
@@ -197,7 +197,7 @@ public class ForExpr extends BindingExpression {
             in = inputSequence.eval(contextSequence, null);
             clearContext(getExpressionId(), in);
             // Declare the iteration variable
-            var = new LocalVariable(QName.parse(context, varName, null));
+            var = createVariable(varName);
             var.setSequenceType(sequenceType);
             context.declareVariableBinding(var);
             registerUpdateListener(in);
@@ -362,7 +362,7 @@ public class ForExpr extends BindingExpression {
                     at.setValue(ps);
                 }
                 //evaluate real return expression 
-                final Sequence val = groupReturnExpr.eval(null); 
+                final Sequence val = groupReturnExpr.eval(null);
                 resultSequence.addAll(val);
 
                 p += currentGroup.getItemCount();
@@ -399,6 +399,11 @@ public class ForExpr extends BindingExpression {
             }
         }
         actualReturnType = resultSequence.getItemType();
+
+        if (getPreviousClause() == null) {
+            resultSequence = postEval(resultSequence);
+        }
+
         context.expressionEnd(this);
         if (context.getProfiler().isEnabled())
             {context.getProfiler().end(this, "", resultSequence);}

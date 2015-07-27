@@ -24,6 +24,7 @@ package org.exist.xquery;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exist.dom.QName;
 import org.exist.dom.persistent.ContextItem;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.DocumentSet;
@@ -48,7 +49,7 @@ import org.exist.xquery.value.ValueSequence;
  * 
  * @author Wolfgang Meier <wolfgang@exist-db.org>
  */
-public abstract class BindingExpression extends AbstractExpression implements RewritableExpression {
+public abstract class BindingExpression extends AbstractFLWORClause implements RewritableExpression {
 
 	protected final static Logger LOG =
 		LogManager.getLogger(BindingExpression.class);
@@ -59,7 +60,6 @@ public abstract class BindingExpression extends AbstractExpression implements Re
 	protected String varName;
 	protected SequenceType sequenceType = null;
 	protected Expression inputSequence;
-	protected Expression returnExpr;
 	protected Expression whereExpr;
 	protected OrderSpec orderSpecs[] = null;
 	protected int actualReturnType = Type.ITEM;
@@ -84,7 +84,7 @@ public abstract class BindingExpression extends AbstractExpression implements Re
     public String getVariable() {
         return this.varName;
     }
-    
+
     /**
 	 * Set the sequence type of the variable (as specified in the "as" clause).
 	 * 
@@ -100,14 +100,6 @@ public abstract class BindingExpression extends AbstractExpression implements Re
 
     public Expression getInputSequence() {
         return this.inputSequence;
-    }
-    
-    public void setReturnExpression(Expression expr) {
-		this.returnExpr = expr.simplify();
-	}
-
-    public Expression getReturnExpression() {
-        return this.returnExpr;
     }
 
     public void setWhereExpression(Expression expr) {
@@ -136,19 +128,11 @@ public abstract class BindingExpression extends AbstractExpression implements Re
 
 	public void setGroupReturnExpr(Expression expr) {
 		this.groupReturnExpr = expr;
-	}	
-	
-	public void setGroupVariable(String qname) {
-		groupVarName = qname;
 	}
 
-	public void setToGroupVariable(String qname) {
-		toGroupVarName = qname;
-	}
-
-	/* (non-Javadoc)
-     * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression, int)
-     */
+    /* (non-Javadoc)
+             * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression, int)
+             */
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
         unordered = (contextInfo.getFlags() & UNORDERED) > 0;
 
@@ -172,7 +156,15 @@ public abstract class BindingExpression extends AbstractExpression implements Re
 	public abstract Sequence eval(Sequence contextSequence,    Item contextItem, Sequence resultSequence, GroupedValueSequenceTable groupedSequence) 
 		throws XPathException;
 
-	protected Sequence applyWhereExpression(Sequence contextSequence) throws XPathException {
+    @Override
+    public Sequence postEval(Sequence seq) throws XPathException {
+        if (returnExpr instanceof FLWORClause) {
+            return ((FLWORClause)returnExpr).postEval(seq);
+        }
+        return seq;
+    }
+
+    protected Sequence applyWhereExpression(Sequence contextSequence) throws XPathException {
 		if (contextSequence != null &&
 				Type.subTypeOf(contextSequence.getItemType(), Type.NODE) &&
                 contextSequence.isPersistentSet() &&

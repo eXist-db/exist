@@ -142,7 +142,7 @@ public class LetExpr extends BindingExpression {
                 in = inputSequence.eval(contextSequence, null);
                 clearContext(getExpressionId(), in);
                 // Declare the iteration variable
-                var = new LocalVariable(QName.parse(context, varName, null));
+                var = createVariable(varName);
                 var.setSequenceType(sequenceType);
                 context.declareVariableBinding(var);
                 var.setValue(in);
