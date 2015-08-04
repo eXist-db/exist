@@ -83,17 +83,17 @@ public class GetData extends BasicFunction {
         final Variable var = myModule.resolveVariable(RequestModule.REQUEST_VAR);
 
         if(var == null || var.getValue() == null) {
-            throw new XPathException(this, "No request object found in the current XQuery context.");
+            throw new XPathException(this, ErrorCodes.XPDY0002, "No request object found in the current XQuery context.");
         }
 
         if(var.getValue().getItemType() != Type.JAVA_OBJECT) {
-            throw new XPathException(this, "Variable $request is not bound to an Java object.");
+            throw new XPathException(this, ErrorCodes.XPDY0002, "Variable $request is not bound to an Java object.");
         }
 
         final JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
 
         if(!(value.getObject() instanceof RequestWrapper)) {
-            throw new XPathException(this, "Variable $request is not bound to a Request object.");
+            throw new XPathException(this, ErrorCodes.XPDY0002, "Variable $request is not bound to a Request object.");
         }
         final RequestWrapper request = (RequestWrapper)value.getObject();
 
