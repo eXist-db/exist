@@ -25,14 +25,7 @@ package org.exist.xquery.functions.session;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.http.servlets.SessionWrapper;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.Dependency;
-import org.exist.xquery.Function;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Profiler;
-import org.exist.xquery.Variable;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Item;
@@ -96,7 +89,7 @@ public class SetMaxInactiveInterval extends Function
 			// No saved session, so create one
 			session = SessionModule.createSession( context, this );
 		} else if( var.getValue().getItemType() != Type.JAVA_OBJECT ) {
-			throw( new XPathException( this, "Variable $session is not bound to a Java object." ) );
+			throw( new XPathException( this, ErrorCodes.XPDY0002, "Variable $session is not bound to a Java object." ) );
 		} else {
 			session = (JavaObjectValue)var.getValue().itemAt( 0 );
 		}
@@ -107,7 +100,7 @@ public class SetMaxInactiveInterval extends Function
 		if( session.getObject() instanceof SessionWrapper ) {
 			((SessionWrapper)session.getObject()).setMaxInactiveInterval(interval);
 		} else {
-			throw( new XPathException( this, "Type error: variable $session is not bound to a session object" ) );
+			throw( new XPathException( this, ErrorCodes.XPDY0002, "Type error: variable $session is not bound to a session object" ) );
 		}
 
 		return( Sequence.EMPTY_SEQUENCE );

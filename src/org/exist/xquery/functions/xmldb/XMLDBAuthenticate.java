@@ -33,12 +33,7 @@ import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.BasicFunction;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Variable;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.functions.request.RequestModule;
 import org.exist.xquery.functions.session.SessionModule;
 import org.exist.xquery.value.BooleanValue;
@@ -242,12 +237,11 @@ public class XMLDBAuthenticate extends BasicFunction {
 			
 			if( reqVar == null || reqVar.getValue() == null ) {
 			    logger.error("No request object found in the current XQuery context.");
-
-			    throw( new XPathException( this, "No request object found in the current XQuery context." ) );
+			    throw( new XPathException( this, ErrorCodes.XPDY0002, "No request object found in the current XQuery context." ) );
 			}
 			if( reqVar.getValue().getItemType() != Type.JAVA_OBJECT ) {
 			    logger.error( "Variable $request is not bound to an Java object.");
-				throw( new XPathException( this, "Variable $request is not bound to an Java object." ) );
+				throw( new XPathException( this, ErrorCodes.XPDY0002, "Variable $request is not bound to an Java object." ) );
 			}
 			
 			final JavaObjectValue reqValue = (JavaObjectValue)reqVar.getValue().itemAt( 0) ;

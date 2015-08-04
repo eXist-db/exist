@@ -26,13 +26,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.http.servlets.RequestWrapper;
-import org.exist.xquery.BasicFunction;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Variable;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XPathUtil;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.JavaObjectValue;
@@ -81,7 +75,7 @@ public class GetHeader extends BasicFunction {
 		final Variable var = myModule.resolveVariable(RequestModule.REQUEST_VAR);
 		if (var == null || var.getValue() == null
 				|| var.getValue().getItemType() != Type.JAVA_OBJECT)
-			{throw new XPathException(this,
+			{throw new XPathException(this, ErrorCodes.XPDY0002,
 					"Variable $request is not bound to an Java object.");}
 
 		// get parameters
@@ -97,7 +91,7 @@ public class GetHeader extends BasicFunction {
 				return XPathUtil.javaObjectToXPath(headerValue, null, false);
 			}
 		} else
-			{throw new XPathException(
+			{throw new XPathException(this, ErrorCodes.XPDY0002,
 					"Variable $request is not bound to a Request object.");}
 	}
 }
