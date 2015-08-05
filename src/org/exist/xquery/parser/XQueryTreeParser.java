@@ -2837,7 +2837,7 @@ public XQueryTreeParser() {
 			for (GroupSpec groupSpec : clause.groupSpecs) {
 			specs[k++]= groupSpec;
 			}
-			((GroupByExpression)expr).setGroupSpecs(specs);
+			((GroupByClause)expr).setGroupSpecs(specs);
 			}
 							}
 			if (!(action instanceof FLWORClause))

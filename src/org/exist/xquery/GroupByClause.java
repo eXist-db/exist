@@ -14,7 +14,7 @@ public class GroupByClause extends AbstractFLWORClause {
 
     protected FLWORClause rootClause = null;
     private GroupSpec[] groupSpecs;
-    private Map<String, Tuple> groupedMap = null;
+    private Map<List<AtomicValue>, Tuple> groupedMap = null;
     private Map<QName, LocalVariable> variables = null;
     private List<LocalVariable> groupingVars = null;
 
@@ -24,14 +24,16 @@ public class GroupByClause extends AbstractFLWORClause {
 
     @Override
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
-        final boolean collectVars = variables == null;
-        if (collectVars) {
+        final boolean init = groupedMap == null;
+        if (init) {
+            groupedMap = new TreeMap<>(GroupByClause::compareKeys);
             variables = new HashMap<>();
             groupingVars = new ArrayList<>();
         }
 
+        // Evaluate group spec to create grouping key sequence
         final List<Sequence> groupingValues = new ArrayList<>();
-        final ValueSequence keySequence = new ValueSequence();
+        final List<AtomicValue> groupingKeys = new ArrayList<>();
         for (GroupSpec spec: groupSpecs) {
             final Sequence groupingSeq = spec.getGroupExpression().eval(null);
             if (groupingSeq.getItemCount() > 1) {
@@ -40,36 +42,27 @@ public class GroupByClause extends AbstractFLWORClause {
             }
             final AtomicValue groupingValue = groupingSeq.isEmpty() ? AtomicValue.EMPTY_VALUE : groupingSeq.itemAt(0)
                     .atomize();
-            if (collectVars) {
+            if (init) {
                 final LocalVariable groupingVar = new LocalVariable(QName.parse(context, spec.getKeyVarName(), null));
                 groupingVar.setSequenceType(new SequenceType(Type.ATOMIC, groupingValue.isEmpty() ? Cardinality
                         .EMPTY : Cardinality.EXACTLY_ONE));
                 groupingVar.setStaticType(groupingValue.getType());
                 groupingVars.add(groupingVar);
             }
-            groupingValues.add(groupingValue);
-            keySequence.add(groupingValue);
-        }
-        final String hashKey = keySequence.getHashKey();
-        LOG.debug("hash key: {}", hashKey);
-
-        if (groupedMap == null) {
-            groupedMap = new HashMap<>();
+            groupingValues.add(groupingSeq);
+            groupingKeys.add(groupingValue);
         }
 
-        final Tuple tuple;
-        if (groupedMap.containsKey(hashKey)) {
-            tuple = groupedMap.get(hashKey);
-        } else {
-            tuple = new Tuple(groupingValues);
-            groupedMap.put(hashKey, tuple);
-        }
+        // collect the current tuples into the grouping map
+        final Tuple tuple = groupedMap.computeIfAbsent(groupingKeys, ks -> new Tuple(groupingValues));
+
+        // scan in-scope variables to collect tuples
         LocalVariable nextVar = rootClause.getStartVariable();
         Objects.requireNonNull(nextVar);
         while(nextVar != null) {
-            LOG.debug("next var: {}: {}", nextVar.getQName().toString(), nextVar.getValue().getItemCount());
             tuple.add(nextVar.getQName(), nextVar.getValue());
-            if (collectVars) {
+            if (init) {
+                // on first call: initialize non-grouping variable for later use
                 final LocalVariable var = new LocalVariable(nextVar.getQName());
                 var.setSequenceType(nextVar.getSequenceType());
                 var.setStaticType(nextVar.getStaticType());
@@ -84,26 +77,30 @@ public class GroupByClause extends AbstractFLWORClause {
 
     @Override
     public Sequence postEval(final Sequence seq) throws XPathException {
-        LOG.debug("group by post eval: {}", seq.getItemCount());
         if (groupedMap != null) {
-            final ValueSequence result = new ValueSequence();
+            Sequence result = new ValueSequence();
             final LocalVariable mark = context.markLocalVariables(false);
             try {
+                // declare non-grouping variables
                 for (LocalVariable var: variables.values()) {
                     context.declareVariableBinding(var);
                 }
+                // declare grouping variables
                 for (LocalVariable var: groupingVars) {
                     context.declareVariableBinding(var);
                 }
+                // iterate over each group
                 for (Tuple tuple: groupedMap.values()) {
                     context.proceed();
 
-                    // set grouping variables
+                    // set grouping variable values
                     final Iterator<Sequence> siter = tuple.groupingValues.iterator();
                     for (LocalVariable var : groupingVars) {
                         if (siter.hasNext()) {
                             Sequence val = siter.next();
                             var.setValue(val);
+                        } else {
+                            throw new XPathException(this, "Internal error: missing grouping value");
                         }
                     }
                     // set values of non-grouping variables
@@ -116,6 +113,13 @@ public class GroupByClause extends AbstractFLWORClause {
             } finally {
                 context.popLocalVariables(mark, result);
             }
+            groupedMap = null;
+            groupingVars = null;
+            variables = null;
+            if (returnExpr instanceof FLWORClause) {
+                result = ((FLWORClause) returnExpr).postEval(result);
+            }
+            result = super.postEval(result);
             return result;
         }
         return seq;
@@ -151,7 +155,6 @@ public class GroupByClause extends AbstractFLWORClause {
             rootClause = prevClause;
             prevClause = prevClause.getPreviousClause();
         }
-        LOG.debug("group by root expr: {}", ExpressionDumper.dump(rootClause));
     }
 
     @Override
@@ -159,7 +162,7 @@ public class GroupByClause extends AbstractFLWORClause {
         return Type.ITEM;
     }
 
-    public void setGroupSpecs(GroupSpec specs[]) {
+    public void setGroupSpecs(final GroupSpec specs[]) {
         this.groupSpecs = specs;
     }
 
@@ -186,10 +189,33 @@ public class GroupByClause extends AbstractFLWORClause {
     public void resetState(boolean postOptimization) {
         super.resetState(postOptimization);
         groupedMap = null;
+        groupingVars = null;
+        variables = null;
         returnExpr.resetState(postOptimization);
         for (GroupSpec spec: groupSpecs) {
             spec.resetState(postOptimization);
         }
+    }
+
+    private static int compareKeys(List<AtomicValue> s1, List<AtomicValue> s2) {
+        final int c1 = s1.size();
+        final int c2 = s2.size();
+        if (c1 == c2) {
+            try {
+                for (int i = 0; i < c1; i++) {
+                    final AtomicValue v1 = s1.get(i);
+                    final AtomicValue v2 = s2.get(i);
+                    final int r = v1.compareTo(null, v2);
+                    if (r != Constants.EQUAL) {
+                        return r;
+                    }
+                }
+                return Constants.EQUAL;
+            } catch (XPathException e) {
+                return Constants.INFERIOR;
+            }
+        }
+        return c1 < c2 ? Constants.INFERIOR : Constants.SUPERIOR;
     }
 
     static class Tuple extends HashMap<QName, Sequence> {

@@ -31,6 +31,7 @@ public class OrderByClause extends AbstractFLWORClause {
                 spec.analyze(newContextInfo);
             }
         }
+        returnExpr.analyze(newContextInfo);
     }
 
     @Override
@@ -51,14 +52,14 @@ public class OrderByClause extends AbstractFLWORClause {
             return seq;
         }
         orderedResult.sort();
-        final Sequence result = orderedResult;
+        Sequence result = orderedResult;
         // reset to prepare for next iteration of outer loop
         orderedResult = null;
 
         if (getReturnExpression() instanceof FLWORClause) {
-            return ((FLWORClause) getReturnExpression()).postEval(seq);
+            result = ((FLWORClause) getReturnExpression()).postEval(seq);
         }
-        return result;
+        return super.postEval(result);
     }
 
     @Override

@@ -1,6 +1,7 @@
 package org.exist.xquery;
 
 import org.exist.dom.QName;
+import org.exist.xquery.value.Sequence;
 
 /**
  * Abstract base class for clauses in a FLWOR expressions, for/let/group by ...
@@ -21,6 +22,13 @@ public abstract class AbstractFLWORClause extends AbstractExpression implements 
             firstVar = var;
         }
         return var;
+    }
+
+    @Override
+    public Sequence postEval(Sequence seq) throws XPathException {
+        // reset variable after evaluation has completed
+        firstVar = null;
+        return seq;
     }
 
     @Override
