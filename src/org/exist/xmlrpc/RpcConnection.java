@@ -2170,6 +2170,7 @@ public class RpcConnection implements RpcAPI {
 //			serialize results
             handler.startDocument();
             handler.startPrefixMapping("exist", Namespaces.EXIST_NS);
+            handler.startPrefixMapping("xs", Namespaces.SCHEMA_NS);
             final AttributesImpl attribs = new AttributesImpl();
             attribs.addAttribute("", "hitCount", "hitCount", "CDATA", Integer.toString(qr.result.getItemCount()));
             handler.startElement(Namespaces.EXIST_NS, "result", "exist:result", attribs);
@@ -2178,17 +2179,26 @@ public class RpcConnection implements RpcAPI {
             try {
                 for (final SequenceIterator i = qr.result.iterate(); i.hasNext(); ) {
                     current = i.nextItem();
+
                     if (Type.subTypeOf(current.getType(), Type.NODE)) {
                         current.toSAX(broker, handler, null);
                     } else {
+
+                        final AttributesImpl typeAttr = new AttributesImpl();
+                        typeAttr.addAttribute("", "type", "type", "CDATA", Type.getTypeName(current.getType()));
+                        handler.startElement(Namespaces.EXIST_NS, "value", "exist:value", typeAttr);
+
                         value = current.toString().toCharArray();
                         handler.characters(value, 0, value.length);
+                        
+                        handler.endElement(Namespaces.EXIST_NS, "value", "exist:value");
                     }
                 }
             } catch(final XPathException e) {
                 throw new EXistException(e);
             }
             handler.endElement(Namespaces.EXIST_NS, "result", "exist:result");
+            handler.endPrefixMapping("xs");
             handler.endPrefixMapping("exist");
             handler.endDocument();
             SerializerPool.getInstance().returnObject(handler);
