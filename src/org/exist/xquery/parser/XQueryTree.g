@@ -1488,7 +1488,7 @@ throws PermissionDeniedException, EXistException, XPathException
 	                    (
 							"collation" groupCollURI:STRING_LITERAL
 							{
-								groupSpec.setCollation(groupCollURI.getText());
+								groupSpec.setCollator(groupCollURI.getText());
 							}
 						)?
 	                )

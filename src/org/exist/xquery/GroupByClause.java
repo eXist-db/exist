@@ -6,6 +6,7 @@ import org.exist.dom.QName;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.*;
 
+import java.text.Collator;
 import java.util.*;
 
 public class GroupByClause extends AbstractFLWORClause {
@@ -26,7 +27,7 @@ public class GroupByClause extends AbstractFLWORClause {
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         final boolean init = groupedMap == null;
         if (init) {
-            groupedMap = new TreeMap<>(GroupByClause::compareKeys);
+            groupedMap = new TreeMap<>(this::compareKeys);
             variables = new HashMap<>();
             groupingVars = new ArrayList<>();
         }
@@ -197,7 +198,11 @@ public class GroupByClause extends AbstractFLWORClause {
         }
     }
 
-    private static int compareKeys(List<AtomicValue> s1, List<AtomicValue> s2) {
+    /**
+     * Compare keys using the collator given in the group spec. Used to
+     * sort keys into the grouping map.
+     */
+    private int compareKeys(List<AtomicValue> s1, List<AtomicValue> s2) {
         final int c1 = s1.size();
         final int c2 = s2.size();
         if (c1 == c2) {
@@ -205,7 +210,8 @@ public class GroupByClause extends AbstractFLWORClause {
                 for (int i = 0; i < c1; i++) {
                     final AtomicValue v1 = s1.get(i);
                     final AtomicValue v2 = s2.get(i);
-                    final int r = v1.compareTo(null, v2);
+                    final Collator collator = groupSpecs[i].getCollator();
+                    final int r = v1.compareTo(collator, v2);
                     if (r != Constants.EQUAL) {
                         return r;
                     }

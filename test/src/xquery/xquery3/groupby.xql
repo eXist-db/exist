@@ -184,6 +184,18 @@ declare variable $groupby:products-doc :=
   </product>
 </products>;
 
+declare variable $groupby:addresses := 
+    <addresses>
+        <address>
+            <name>Rudi Rüssel</name>
+            <city>Düsseldorf</city>
+        </address>
+        <address>
+            <name>Berta Bär</name>
+            <city>Dusseldorf</city>
+        </address>
+    </addresses>;
+    
 declare
     %test:assertEqualsPermutation(
         "1 11 21 31 41 51 61 71 81 91", "2 12 22 32 42 52 62 72 82 92", "3 13 23 33 43 53 63 73 83 93", 
@@ -427,3 +439,36 @@ function groupby:useCase5() {
             }</store>
     }</result>
 };
+
+(: Should create two groups for "Düsseldorf" and "Dusseldorf" :)
+declare 
+    %test:assertEquals(1, 1)
+function groupby:collation3() {
+    for $address in $groupby:addresses/address
+    group by $city := $address/city
+    return
+        count($address)
+};
+
+(: Should create one group only due to the collation :)
+declare 
+    %test:assertEquals(2)
+function groupby:collation4() {
+    for $address in $groupby:addresses/address
+    group by $city := $address/city collation "?strength=primary"
+    return
+        count($address)
+};
+
+declare 
+    %test:pending
+    %test:assertEquals(
+        '<grp even="1" y="1">1 1 1 1 3 3 3 3 5 5 5 5 7 7 7 7 9 9 9 9</grp><grp even="0" y="1">2 2 2 2 4 4 4 4 6 6 6 6 8 8 8 8 10 10 10 10</grp>',
+        '<grp even="0" y="1">2 2 2 2 4 4 4 4 6 6 6 6 8 8 8 8 10 10 10 10</grp><grp even="1" y="1">1 1 1 1 3 3 3 3 5 5 5 5 7 7 7 7 9 9 9 9</grp>')
+function groupby:existing-var() 
+{
+    for $x in 1 to 10, $y in 1 to 4
+    let $org_y := $y
+    group by $y, $y := $x mod 2
+    return <grp y="{$org_y[1]}" even="{$y}">{$x}</grp>
+}; 

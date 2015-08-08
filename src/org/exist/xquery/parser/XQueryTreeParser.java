@@ -2059,7 +2059,7 @@ public XQueryTreeParser() {
 							match(_t,STRING_LITERAL);
 							_t = _t.getNextSibling();
 							
-															groupSpec.setCollation(groupCollURI.getText());
+															groupSpec.setCollator(groupCollURI.getText());
 														
 							break;
 						}
