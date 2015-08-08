@@ -273,6 +273,9 @@ public class LetExpr extends BindingExpression {
                 {return Sequence.EMPTY_SEQUENCE;}
             if (!(resultSequence instanceof DeferredFunctionCall))
                 {actualReturnType = resultSequence.getItemType();}
+            if (getPreviousClause() == null) {
+                resultSequence = postEval(resultSequence);
+            }
             return resultSequence;
         } finally {
             context.popDocumentContext();
