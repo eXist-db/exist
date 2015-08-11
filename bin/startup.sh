@@ -15,7 +15,7 @@
 usage="startup.sh [-j[jmx-port]|--jmx[=jmx-port]]\n"
 
 # This will enable Java debugging via JDWP on port 4000 in Server mode
-DEBUG_OPTS="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=4000"
+#DEBUG_OPTS="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=4000"
 
 #DEBUG_OPTS="-Dexist.start.debug=true"
 
