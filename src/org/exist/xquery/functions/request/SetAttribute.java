@@ -26,14 +26,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.http.servlets.RequestWrapper;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.Dependency;
-import org.exist.xquery.Function;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Profiler;
-import org.exist.xquery.Variable;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.JavaObjectValue;
@@ -88,11 +81,11 @@ public class SetAttribute extends Function {
 		Variable var = myModule.resolveVariable( RequestModule.REQUEST_VAR );
 		
 		if( var == null || var.getValue() == null ) {
-			throw( new XPathException( this, "Request not set" ) );
+			throw( new XPathException( this, ErrorCodes.XPDY0002, "Request not set" ) );
 		}
 
 		if( var.getValue().getItemType() != Type.JAVA_OBJECT ) {
-			throw( new XPathException( this, "Variable $request is not bound to a Java object." ) );
+			throw( new XPathException( this, ErrorCodes.XPDY0002, "Variable $request is not bound to a Java object." ) );
 		}
 
 		JavaObjectValue request = (JavaObjectValue)var.getValue().itemAt( 0 );
@@ -104,7 +97,7 @@ public class SetAttribute extends Function {
 		if( request.getObject() instanceof RequestWrapper ) {
 			((RequestWrapper)request.getObject()).setAttribute( attribName, attribValue );
 		} else {
-			throw(  new XPathException( this, "Type error: variable $request is not bound to a request object" ) );
+			throw(  new XPathException( this, ErrorCodes.XPDY0002, "Type error: variable $request is not bound to a request object" ) );
 		}
 
 		return( Sequence.EMPTY_SEQUENCE );

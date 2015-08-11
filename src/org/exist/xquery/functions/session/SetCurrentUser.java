@@ -30,12 +30,7 @@ import org.exist.http.servlets.SessionWrapper;
 import org.exist.security.AuthenticationException;
 import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
-import org.exist.xquery.BasicFunction;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Variable;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.functions.request.RequestModule;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
@@ -80,9 +75,9 @@ public class SetCurrentUser extends BasicFunction {
 		// request object is read from global variable $session
 		final Variable var = myModule.resolveVariable(RequestModule.REQUEST_VAR);
 		if(var == null || var.getValue() == null)
-			{throw new XPathException(this, "No request object found in the current XQuery context.");}
+			{throw new XPathException(this, ErrorCodes.XPDY0002, "No request object found in the current XQuery context.");}
 		if (var.getValue().getItemType() != Type.JAVA_OBJECT)
-			{throw new XPathException(this, "Variable $request is not bound to an Java object.");}
+			{throw new XPathException(this, ErrorCodes.XPDY0002, "Variable $request is not bound to an Java object.");}
 		final JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
 		
 		if(value.getObject() instanceof RequestWrapper)
@@ -115,7 +110,7 @@ public class SetCurrentUser extends BasicFunction {
 		}
 		else
 		{
-			throw new XPathException(this, "Variable $request is not bound to a Request object.");
+			throw new XPathException(this, ErrorCodes.XPDY0002, "Variable $request is not bound to a Request object.");
 		}
 	}
 

@@ -27,14 +27,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.exist.dom.QName;
 import org.exist.http.servlets.ResponseWrapper;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.Dependency;
-import org.exist.xquery.Function;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Profiler;
-import org.exist.xquery.Variable;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.DurationValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
@@ -113,11 +106,11 @@ public class SetCookie extends Function
         final Variable       var      = myModule.resolveVariable( ResponseModule.RESPONSE_VAR );
 
         if( ( var == null ) || ( var.getValue() == null ) ) {
-            throw( new XPathException( this, "Response not set" ) );
+            throw( new XPathException( this, ErrorCodes.XPDY0002, "Response not set" ) );
         }
 
         if( var.getValue().getItemType() != Type.JAVA_OBJECT ) {
-            throw( new XPathException( this, "Variable $response is not bound to a Java object." ) );
+            throw( new XPathException( this, ErrorCodes.XPDY0002, "Variable $response is not bound to a Java object." ) );
         }
         final JavaObjectValue response  = (JavaObjectValue)var.getValue().itemAt( 0 );
 
@@ -183,7 +176,7 @@ public class SetCookie extends Function
                 }
             }
         } else {
-            throw( new XPathException( this, "Type error: variable $response is not bound to a response object" ) );
+            throw( new XPathException( this, ErrorCodes.XPDY0002, "Type error: variable $response is not bound to a response object" ) );
         }
         
         return( Sequence.EMPTY_SEQUENCE );

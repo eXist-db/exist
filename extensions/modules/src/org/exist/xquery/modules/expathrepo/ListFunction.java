@@ -1,4 +1,26 @@
+/*
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2010-2015 The eXist-db Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
 package org.exist.xquery.modules.expathrepo;
+
+import java.util.Optional;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -40,19 +62,24 @@ public class ListFunction extends BasicFunction {
 		super(context, signature);
  	}
 
-	public Sequence eval(Sequence[] args, Sequence contextSequence)
+        public Sequence eval(Sequence[] args, Sequence contextSequence)
 		throws XPathException {
-        ValueSequence result = new ValueSequence();
-        try {
-            ExistRepository repo = getContext().getRepository();
-            Repository parent_repo = repo.getParentRepo();
-            for ( Packages pkg :  parent_repo.listPackages() ) {
-                String name = pkg.name();
-                result.add(new StringValue(name));
-            }
-        } catch (Exception ex ) {
-            throw new XPathException("Problem listing packages in expath repository ", ex);
-        }
-        return result;
+	    ValueSequence result = new ValueSequence();
+            Optional<ExistRepository> repo = getContext().getRepository();
+	    if (repo.isPresent()) {
+		try {
+		    Repository parent_repo = repo.get().getParentRepo();
+		    for ( Packages pkg :  parent_repo.listPackages() ) {
+			String name = pkg.name();
+			result.add(new StringValue(name));
+		    }
+		} catch (Exception ex) {
+		    throw new XPathException("Problem listing packages in expath repository ", ex);
+		}
+		return result;
+	    } else {
+		throw new XPathException("expath repository not available");
+	    }
+
 	}
 }

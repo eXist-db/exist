@@ -1,15 +1,12 @@
 package org.exist.xquery.functions.util;
 
+import org.exist.xmldb.*;
+import org.exist.xquery.ErrorCodes;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-import org.exist.xmldb.DatabaseInstanceManager;
-import org.exist.xmldb.EXistResource;
-import org.exist.xmldb.LocalXMLResource;
-import org.exist.xmldb.XQueryService;
-import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.w3c.dom.Node;
 
@@ -280,6 +277,57 @@ public class EvalTest {
 
         executeQuery(query);
     }
+
+    /**
+     * The original issue was caused by VariableReference inside util:eval
+     * not calling XQueryContext#popNamespaceContext when a variable
+     * reference could not be resolved, which led to the wrong
+     * namespaces being present in the XQueryContext the next time
+     * the same query was executed
+     */
+    @Test
+    public void evalWithMissingVariableReferenceShouldReportTheSameErrorEachTime() throws XMLDBException {
+        final String testHomeName = "testEvalWithMissingVariableReferenceShouldReportTheSameErrorEachTime";
+        final Collection testHome = createCollection(testHomeName);
+
+        final String configModuleName = "config-test.xqm";
+        final String configModule = "xquery version \"1.0\";\r\n" +
+            "module namespace ct = \"http://config/test\";\r\n" +
+            "declare variable $ct:var1 { request:get-parameter(\"var1\", ()) };";
+
+        writeModule(testHome, configModuleName, configModule);
+
+        final String testModuleName = "test.xqy";
+        final String testModule = "import module namespace ct = \"http://config/test\" at \"xmldb:exist:///db/" + testHomeName + "/" + configModuleName + "\";\r\n" +
+            "declare namespace x = \"http://x\";\r\n" +
+            "declare function local:hello() {\r\n" +
+            " (\r\n" +
+            "<x:hello>hello</x:hello>,\r\n" +
+            "util:eval(\"$ct:var1\")\r\n" +
+            ")\r\n" +
+            "};\r\n" +
+            "local:hello()";
+
+        writeModule(testHome, testModuleName, testModule);
+
+        //run the 1st time
+        try {
+            executeModule(testHome, testModuleName);
+        } catch(final XMLDBException e) {
+            final Throwable cause = e.getCause();
+            assertTrue(cause instanceof XPathException);
+            assertEquals(ErrorCodes.XPDY0002, ((XPathException) cause).getErrorCode());
+        }
+
+        //run a 2nd time, error code should be the same!
+        try {
+            executeModule(testHome, testModuleName);
+        } catch(final XMLDBException e) {
+            final Throwable cause = e.getCause();
+            assertTrue(cause instanceof XPathException);
+            assertEquals(ErrorCodes.XPDY0002, ((XPathException)cause).getErrorCode());
+        }
+    }
     
     private Collection createCollection(String collectionName) throws XMLDBException {
         Collection collection = root.getChildCollection(collectionName);
@@ -306,5 +354,11 @@ public class EvalTest {
         CompiledExpression compiledQuery = service.compile(query);
         ResourceSet result = service.execute(compiledQuery);
         return result;
+    }
+
+    private ResourceSet executeModule(final Collection collection, final String moduleName) throws XMLDBException {
+        final XPathQueryServiceImpl service = (XPathQueryServiceImpl) collection.getService("XQueryService", "1.0");
+        final XmldbURI moduleUri = ((CollectionImpl)collection).getPathURI().append(moduleName);
+        return service.executeStoredQuery(moduleUri.toString());
     }
 }

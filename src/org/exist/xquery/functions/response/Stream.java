@@ -38,13 +38,7 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
-import org.exist.xquery.BasicFunction;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Option;
-import org.exist.xquery.Variable;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
@@ -103,14 +97,14 @@ public class Stream extends BasicFunction {
         final Variable respVar = myModule.resolveVariable(ResponseModule.RESPONSE_VAR);
         
         if(respVar == null)
-            {throw new XPathException(this, "No response object found in the current XQuery context.");}
+            {throw new XPathException(this, ErrorCodes.XPDY0002, "No response object found in the current XQuery context.");}
         
         if(respVar.getValue().getItemType() != Type.JAVA_OBJECT)
-            {throw new XPathException(this, "Variable $response is not bound to an Java object.");}
+            {throw new XPathException(this, ErrorCodes.XPDY0002, "Variable $response is not bound to an Java object.");}
         final JavaObjectValue respValue = (JavaObjectValue) respVar.getValue().itemAt(0);
         
         if (!"org.exist.http.servlets.HttpResponseWrapper".equals(respValue.getObject().getClass().getName()))
-            {throw new XPathException(this, signature.toString() + " can only be used within the EXistServlet or XQueryServlet");}
+            {throw new XPathException(this, ErrorCodes.XPDY0002, signature.toString() + " can only be used within the EXistServlet or XQueryServlet");}
         
         final ResponseWrapper response = (ResponseWrapper) respValue.getObject();
         

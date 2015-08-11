@@ -1,4 +1,26 @@
+/*
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2010-2015 The eXist-db Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
 package org.exist.xquery.modules.expathrepo;
+
+import java.util.Optional;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -21,7 +43,7 @@ import org.expath.pkg.repo.tui.BatchUserInteraction;
  *
  * @author James Fuller <jim.fuller@exist-db.org>
  * @author cutlass
- * @version 1.0
+ * @author ljo
  */
 public class RemoveFunction extends BasicFunction {
     @SuppressWarnings("unused")
@@ -30,8 +52,8 @@ public class RemoveFunction extends BasicFunction {
     public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("remove", ExpathPackageModule.NAMESPACE_URI, ExpathPackageModule.PREFIX),
-			"Remove package from repository.",
-			new SequenceType[] { new FunctionParameterSequenceType("text", Type.STRING, Cardinality.ZERO_OR_MORE, "package name")},
+			"Remove package, pkgName, from repository.",
+			new SequenceType[] { new FunctionParameterSequenceType("pkgName", Type.STRING, Cardinality.EXACTLY_ONE, "package name")},
 			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if successful, false otherwise"));
 
 	public RemoveFunction(XQueryContext context) {
@@ -40,27 +62,28 @@ public class RemoveFunction extends BasicFunction {
 
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 		throws XPathException {
-        Sequence removed = BooleanValue.TRUE;
-        boolean force = false;
-        UserInteractionStrategy interact = new BatchUserInteraction();
-        String pkg = args[0].getStringValue();
+	    Sequence removed = BooleanValue.TRUE;
+	    boolean force = false;
+	    UserInteractionStrategy interact = new BatchUserInteraction();
+	    String pkg = args[0].getStringValue();
 
-        try {
-            if ( pkg == null ) {
-                System.err.println("Package name required");
-            }
-            else {
-                ExistRepository repo = getContext().getRepository();
-                Repository parent_repo = repo.getParentRepo();
-                parent_repo.removePackage(pkg, force, interact);
-                repo.reportAction(ExistRepository.Action.UNINSTALL, pkg);
-                context.getBroker().getBrokerPool().getXQueryPool().clear();
-            }
-        } catch (PackageException ex ) {
-            return removed;
-            // /TODO: _repo.removePackage seems to throw PackageException
-            // throw new XPathException("Problem removing package " + pkg + " in expath repository, check that eXist-db has access permissions to expath repository file directory  ", ex);
-        }
-        return removed;
+	    try {
+		Optional<ExistRepository> repo = getContext().getRepository();
+		if (repo.isPresent()) {
+		    Repository parent_repo = repo.get().getParentRepo();
+		    parent_repo.removePackage(pkg, force, interact);
+		    repo.get().reportAction(ExistRepository.Action.UNINSTALL, pkg);
+		    context.getBroker().getBrokerPool().getXQueryPool().clear();
+		} else {
+		    throw new XPathException("expath repository not available");
+		}
+	    } catch (PackageException pe) {
+		return BooleanValue.FALSE;
+		// /TODO: _repo.removePackage seems to throw PackageException
+		// throw new XPathException("Problem removing package " + pkg + " in expath repository, check that eXist-db has access permissions to expath repository file directory  ", pe);
+	    } catch (XPathException xpe) {
+		return BooleanValue.FALSE;
+	    }
+	    return removed;
 	}
 }
