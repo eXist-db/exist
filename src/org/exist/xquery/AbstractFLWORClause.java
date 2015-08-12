@@ -2,6 +2,7 @@ package org.exist.xquery;
 
 import org.exist.dom.QName;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.Type;
 
 /**
  * Abstract base class for clauses in a FLWOR expressions, for/let/group by ...
@@ -11,6 +12,7 @@ public abstract class AbstractFLWORClause extends AbstractExpression implements 
     protected LocalVariable firstVar = null;
     private FLWORClause previousClause  = null;
     protected Expression returnExpr;
+    private int actualReturnType = Type.ITEM;
 
     public AbstractFLWORClause(XQueryContext context) {
         super(context);
@@ -56,9 +58,24 @@ public abstract class AbstractFLWORClause extends AbstractExpression implements 
         return previousClause;
     }
 
+    protected void setActualReturnType(int type) {
+        this.actualReturnType = type;
+    }
+
+    @Override
+    public int returnsType() {
+        //Type.ITEM by default : this may change *after* evaluation
+        return actualReturnType;
+    }
+
     @Override
     public void resetState(boolean postOptimization) {
         super.resetState(postOptimization);
         firstVar = null;
+    }
+
+    @Override
+    public int getDependencies() {
+        return returnExpr.getDependencies();
     }
 }

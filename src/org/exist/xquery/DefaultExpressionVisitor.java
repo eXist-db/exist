@@ -64,12 +64,6 @@ public class DefaultExpressionVisitor extends BasicExpressionVisitor {
         if (where != null) {
             where.accept(this);
         }
-        for (OrderSpec orderSpec: forExpr.getOrderSpecs()) {
-            orderSpec.getSortExpression().accept(this);
-        }
-        for (GroupSpec groupSpec: forExpr.getGroupSpecs()) {
-            groupSpec.getGroupExpression().accept(this);
-        }
         forExpr.getReturnExpression().accept(this);
     }
 
@@ -79,13 +73,23 @@ public class DefaultExpressionVisitor extends BasicExpressionVisitor {
         if (where != null) {
             where.accept(this);
         }
-        for (OrderSpec orderSpec: letExpr.getOrderSpecs()) {
-            orderSpec.getSortExpression().accept(this);
-        }
-        for (GroupSpec groupSpec: letExpr.getGroupSpecs()) {
-            groupSpec.getGroupExpression().accept(this);
-        }
         letExpr.getReturnExpression().accept(this);
+    }
+
+    @Override
+    public void visitOrderByClause(OrderByClause orderBy) {
+        for (OrderSpec spec: orderBy.getOrderSpecs()) {
+            spec.getSortExpression().accept(this);
+        }
+        orderBy.getReturnExpression().accept(this);
+    }
+
+    @Override
+    public void visitGroupByClause(GroupByClause groupBy) {
+        for (GroupSpec spec: groupBy.getGroupSpecs()) {
+            spec.getGroupExpression().accept(this);
+        }
+        groupBy.getReturnExpression().accept(this);
     }
 
     public void visitConditional(ConditionalExpression conditional) {

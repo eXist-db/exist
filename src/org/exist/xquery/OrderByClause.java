@@ -20,6 +20,10 @@ public class OrderByClause extends AbstractFLWORClause {
         this.orderSpecs = orderSpecs.toArray(new OrderSpec[orderSpecs.size()]);
     }
 
+    public OrderSpec[] getOrderSpecs() {
+        return orderSpecs;
+    }
+
     @Override
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
         contextInfo.setParent(this);
@@ -69,6 +73,23 @@ public class OrderByClause extends AbstractFLWORClause {
 
     @Override
     public void dump(ExpressionDumper dumper) {
+        dumper.display("order by ");
+        for (int i = 0; i < orderSpecs.length; i++) {
+            if (i > 0)
+            {dumper.display(", ");}
+            dumper.display(orderSpecs[i]);
+        }
+        dumper.nl();
+    }
 
+    @Override
+    public void accept(ExpressionVisitor visitor) {
+        visitor.visitOrderByClause(this);
+    }
+
+    @Override
+    public void resetState(boolean postOptimization) {
+        super.resetState(postOptimization);
+        orderedResult = null;
     }
 }

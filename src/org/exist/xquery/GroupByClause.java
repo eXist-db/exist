@@ -1,17 +1,14 @@
 package org.exist.xquery;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.*;
 
 import java.text.Collator;
 import java.util.*;
+import java.util.stream.Stream;
 
 public class GroupByClause extends AbstractFLWORClause {
-
-    private final static Logger LOG = LogManager.getLogger(GroupByClause.class);
 
     protected FLWORClause rootClause = null;
     private GroupSpec[] groupSpecs;
@@ -27,7 +24,13 @@ public class GroupByClause extends AbstractFLWORClause {
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         final boolean init = groupedMap == null;
         if (init) {
-            groupedMap = new TreeMap<>(this::compareKeys);
+            // check if we can use a hash map
+            if (usesDefaultCollator()) {
+                groupedMap = new HashMap<>();
+            } else {
+                // non-default collation: must use tree map
+                groupedMap = new TreeMap<>(this::compareKeys);
+            }
             variables = new HashMap<>();
             groupingVars = new ArrayList<>();
         }
@@ -198,6 +201,11 @@ public class GroupByClause extends AbstractFLWORClause {
         }
     }
 
+    @Override
+    public void accept(ExpressionVisitor visitor) {
+        visitor.visitGroupByClause(this);
+    }
+
     /**
      * Compare keys using the collator given in the group spec. Used to
      * sort keys into the grouping map.
@@ -222,6 +230,10 @@ public class GroupByClause extends AbstractFLWORClause {
             }
         }
         return c1 < c2 ? Constants.INFERIOR : Constants.SUPERIOR;
+    }
+
+    private boolean usesDefaultCollator() {
+        return Stream.of(groupSpecs).allMatch(spec -> spec.getCollator() == null);
     }
 
     static class Tuple extends HashMap<QName, Sequence> {

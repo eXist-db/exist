@@ -34,55 +34,59 @@ public interface ExpressionVisitor {
      * 
      * @param expression
      */
-    public void visit(Expression expression);
+    void visit(Expression expression);
 
     /** Found a PathExpr */
-    public void visitPathExpr(PathExpr expression);
+    void visitPathExpr(PathExpr expression);
 
     /** Found a LocationStep */
-    public void visitLocationStep(LocationStep locationStep);
+    void visitLocationStep(LocationStep locationStep);
 
-    public void visitFilteredExpr(FilteredExpression filtered);
+    void visitFilteredExpr(FilteredExpression filtered);
 
-    public void visitPredicate(Predicate predicate);
+    void visitPredicate(Predicate predicate);
 
-    public void visitFunctionCall(FunctionCall call);
+    void visitFunctionCall(FunctionCall call);
 
-    public void visitGeneralComparison(GeneralComparison comparison);
+    void visitGeneralComparison(GeneralComparison comparison);
 
-    public void visitCastExpr(CastExpression expression);
+    void visitCastExpr(CastExpression expression);
 
-    public void visitUnionExpr(Union union);
+    void visitUnionExpr(Union union);
 
-    public void visitIntersectionExpr(Intersect intersect);
+    void visitIntersectionExpr(Intersect intersect);
 
-    public void visitAndExpr(OpAnd and);
+    void visitAndExpr(OpAnd and);
 
-    public void visitOrExpr(OpOr or);
+    void visitOrExpr(OpOr or);
 
-    public void visitForExpression(ForExpr forExpr);
+    void visitForExpression(ForExpr forExpr);
 
-    public void visitLetExpression(LetExpr letExpr);
+    void visitLetExpression(LetExpr letExpr);
 
-    public void visitBuiltinFunction(Function function);
+    void visitOrderByClause(OrderByClause orderBy);
 
-    public void visitUserFunction(UserDefinedFunction function);
+    void visitGroupByClause(GroupByClause groupBy);
 
-    public void visitConditional(ConditionalExpression conditional);
+    void visitBuiltinFunction(Function function);
 
-    public void visitTryCatch(TryCatchExpression tryCatch);
+    void visitUserFunction(UserDefinedFunction function);
 
-    public void visitDocumentConstructor(DocumentConstructor constructor);
+    void visitConditional(ConditionalExpression conditional);
 
-    public void visitElementConstructor(ElementConstructor constructor);
+    void visitTryCatch(TryCatchExpression tryCatch);
 
-    public void visitTextConstructor(DynamicTextConstructor constructor);
+    void visitDocumentConstructor(DocumentConstructor constructor);
 
-    public void visitAttribConstructor(AttributeConstructor constructor);
+    void visitElementConstructor(ElementConstructor constructor);
 
-    public void visitAttribConstructor(DynamicAttributeConstructor constructor);
+    void visitTextConstructor(DynamicTextConstructor constructor);
 
-    public void visitVariableReference(VariableReference ref);
+    void visitAttribConstructor(AttributeConstructor constructor);
 
-    public void visitVariableDeclaration(VariableDeclaration decl);
+    void visitAttribConstructor(DynamicAttributeConstructor constructor);
+
+    void visitVariableReference(VariableReference ref);
+
+    void visitVariableDeclaration(VariableDeclaration decl);
 }
