@@ -60,19 +60,11 @@ public class DefaultExpressionVisitor extends BasicExpressionVisitor {
 
     public void visitForExpression(ForExpr forExpr) {
         forExpr.getInputSequence().accept(this);
-        final Expression where = forExpr.getWhereExpression();
-        if (where != null) {
-            where.accept(this);
-        }
         forExpr.getReturnExpression().accept(this);
     }
 
     public void visitLetExpression(LetExpr letExpr) {
         letExpr.getInputSequence().accept(this);
-        final Expression where = letExpr.getWhereExpression();
-        if (where != null) {
-            where.accept(this);
-        }
         letExpr.getReturnExpression().accept(this);
     }
 
@@ -90,6 +82,12 @@ public class DefaultExpressionVisitor extends BasicExpressionVisitor {
             spec.getGroupExpression().accept(this);
         }
         groupBy.getReturnExpression().accept(this);
+    }
+
+    @Override
+    public void visitWhereClause(WhereClause where) {
+        where.getWhereExpr().accept(this);
+        where.getReturnExpression().accept(this);
     }
 
     public void visitConditional(ConditionalExpression conditional) {

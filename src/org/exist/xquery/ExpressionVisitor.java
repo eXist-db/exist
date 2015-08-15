@@ -68,6 +68,8 @@ public interface ExpressionVisitor {
 
     void visitGroupByClause(GroupByClause groupBy);
 
+    void visitWhereClause(WhereClause where);
+
     void visitBuiltinFunction(Function function);
 
     void visitUserFunction(UserDefinedFunction function);

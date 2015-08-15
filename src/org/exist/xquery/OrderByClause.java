@@ -67,11 +67,6 @@ public class OrderByClause extends AbstractFLWORClause {
     }
 
     @Override
-    public int returnsType() {
-        return 0;
-    }
-
-    @Override
     public void dump(ExpressionDumper dumper) {
         dumper.display("order by ");
         for (int i = 0; i < orderSpecs.length; i++) {

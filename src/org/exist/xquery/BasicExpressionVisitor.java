@@ -182,6 +182,11 @@ public class BasicExpressionVisitor implements ExpressionVisitor {
     }
 
     @Override
+    public void visitWhereClause(WhereClause where) {
+        // Nothing to do
+    }
+
+    @Override
     public void visitBuiltinFunction(Function function) {
         //Nothing to do
     }

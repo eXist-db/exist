@@ -19,6 +19,10 @@ public class WhereClause extends AbstractFLWORClause {
         this.whereExpr = whereExpr;
     }
 
+    public Expression getWhereExpr() {
+        return whereExpr;
+    }
+
     @Override
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
         contextInfo.setParent(this);

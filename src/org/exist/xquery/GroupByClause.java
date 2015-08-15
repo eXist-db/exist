@@ -161,11 +161,6 @@ public class GroupByClause extends AbstractFLWORClause {
         }
     }
 
-    @Override
-    public int returnsType() {
-        return Type.ITEM;
-    }
-
     public void setGroupSpecs(final GroupSpec specs[]) {
         this.groupSpecs = specs;
     }

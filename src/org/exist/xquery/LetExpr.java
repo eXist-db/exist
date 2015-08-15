@@ -55,11 +55,6 @@ public class LetExpr extends BindingExpression {
             inVar.setSequenceType(sequenceType);
             inVar.setStaticType(varContextInfo.getStaticReturnType());
             context.declareVariableBinding(inVar);
-            if (whereExpr != null) {
-                final AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
-                newContextInfo.setFlags(contextInfo.getFlags() | IN_PREDICATE | IN_WHERE_CLAUSE);
-                whereExpr.analyze(newContextInfo);
-            }
             //Reset the context position
             context.setContextSequencePosition(0, null);
 
@@ -107,20 +102,6 @@ public class LetExpr extends BindingExpression {
                     {var.checkType();} //Just because it makes conversions !                	
                 var.setContextDocs(inputSequence.getContextDocSet());
                 registerUpdateListener(in);
-                if (whereExpr != null) {
-                    final Sequence filtered = applyWhereExpression(null);
-                    // TODO: don't use returnsType here
-                    if (filtered.isEmpty()) {
-                        if (context.getProfiler().isEnabled())
-                            {context.getProfiler().end(this, "", Sequence.EMPTY_SEQUENCE);}
-                        return Sequence.EMPTY_SEQUENCE;
-                    } else if (filtered.getItemType() == Type.BOOLEAN &&
-                               !filtered.effectiveBooleanValue()) {
-                        if (context.getProfiler().isEnabled())
-                            {context.getProfiler().end(this, "", Sequence.EMPTY_SEQUENCE);}
-                        return Sequence.EMPTY_SEQUENCE;
-                    }
-                }
 
                 resultSequence = returnExpr.eval(contextSequence, null);
 
@@ -187,10 +168,6 @@ public class LetExpr extends BindingExpression {
         dumper.display(" := ");
         inputSequence.dump(dumper);
         dumper.endIndent();
-        if (whereExpr != null) {
-            dumper.nl().display("where ");
-            whereExpr.dump(dumper);
-        }
         //TODO : QuantifiedExpr
         if (returnExpr instanceof LetExpr)
             {dumper.display(", ");}
@@ -208,10 +185,6 @@ public class LetExpr extends BindingExpression {
         result.append(" := ");
         result.append(inputSequence.toString());
         result.append(" ");
-        if (whereExpr != null) {
-            result.append(" where ");
-            result.append(whereExpr.toString());
-        }
         //TODO : QuantifiedExpr
         if (returnExpr instanceof LetExpr)
             {result.append(", ");}
