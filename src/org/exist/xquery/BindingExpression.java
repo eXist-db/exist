@@ -182,7 +182,7 @@ public abstract class BindingExpression extends AbstractFLWORClause implements R
 		returnExpr.resetState(postOptimization);
 	}
 	
-	protected final static void setContext(int contextId, Sequence seq) throws XPathException {
+	public final static void setContext(int contextId, Sequence seq) throws XPathException {
 		if (seq instanceof VirtualNodeSet) {
 			((VirtualNodeSet)seq).setInPredicate(true);
             ((VirtualNodeSet)seq).setSelfIsContext();
@@ -196,7 +196,7 @@ public abstract class BindingExpression extends AbstractFLWORClause implements R
 		}
 	}
 	
-	protected final static void clearContext(int contextId, Sequence seq) throws XPathException {
+	public final static void clearContext(int contextId, Sequence seq) throws XPathException {
 		if (seq != null && !(seq instanceof VirtualNodeSet)) {
             seq.clearContext(contextId);
 		}

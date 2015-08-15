@@ -27,6 +27,15 @@ public abstract class AbstractFLWORClause extends AbstractExpression implements 
     }
 
     @Override
+    public Sequence preEval(Sequence seq) throws XPathException {
+        // just return the input sequence by default
+        if (returnExpr instanceof FLWORClause) {
+            return ((FLWORClause)returnExpr).preEval(seq);
+        }
+        return seq;
+    }
+
+    @Override
     public Sequence postEval(Sequence seq) throws XPathException {
         // reset variable after evaluation has completed
         firstVar = null;

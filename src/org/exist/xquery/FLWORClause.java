@@ -41,6 +41,17 @@ public interface FLWORClause extends Expression {
     FLWORClause getPreviousClause();
 
     /**
+     * Called by a for clause before it starts iteration, passing in
+     * the sequence of items to be iterated. Used by {@link WhereClause}
+     * to filter the input sequence in advance if possible.
+     *
+     * @param seq the sequence of items to be iterated by the current for
+     * @return post-processed result sequence
+     * @throws XPathException
+     */
+    Sequence preEval(Sequence seq) throws XPathException;
+
+    /**
      * Called by the top FLWOR expression when it finished iteration.
      * Implemented by {@link GroupByClause}, which first collects
      * tuples into groups, then processes them in this method.

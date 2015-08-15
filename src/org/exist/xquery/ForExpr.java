@@ -78,12 +78,6 @@ public class ForExpr extends BindingExpression {
                 posVar.setStaticType(Type.INTEGER);
                 context.declareVariableBinding(posVar);
             }
-            if (whereExpr != null) {
-                final AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
-                newContextInfo.setFlags(contextInfo.getFlags() | IN_PREDICATE | IN_WHERE_CLAUSE);
-                newContextInfo.setContextId(getExpressionId());
-                whereExpr.analyze(newContextInfo);
-            }
 
             final AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
             newContextInfo.addFlag(SINGLE_STEP_EXECUTION);
@@ -151,21 +145,8 @@ public class ForExpr extends BindingExpression {
             // calling the where expression for each item in the input sequence)
             // This is possible if the input sequence is a node set and has no
             // dependencies on the current context item.
-            boolean fastExec = 
-                whereExpr != null && at == null &&
-                !Dependency.dependsOn(whereExpr, Dependency.CONTEXT_ITEM) &&
-                in.isPersistentSet() &&
-                Type.subTypeOf(in.getItemType(), Type.NODE);
-            // If possible, apply the where expression ahead of the iteration
-            if (fastExec) {
-                if (!in.isCached()) {
-                    setContext(getExpressionId(), in);
-                    if (whereExpr != null)
-                        {whereExpr.setContextId(getExpressionId());}
-                }
-                in = applyWhereExpression(in);
-                if (!in.isCached())
-                    {clearContext(getExpressionId(), in);}
+            if (at == null && returnExpr instanceof FLWORClause) {
+                in = ((FLWORClause)returnExpr).preEval(in);
             }
 
             Sequence val = null;
@@ -196,17 +177,6 @@ public class ForExpr extends BindingExpression {
                 var.setValue(contextSequence);
                 if (sequenceType == null)
                     {var.checkType();} //because it makes some conversions !
-                // check optional where clause
-                if (whereExpr != null && (!fastExec)) {
-                    if (contextItem instanceof NodeProxy)
-                        {((NodeProxy)contextItem).addContextNode(getExpressionId(), (NodeProxy)contextItem);}
-                    final Sequence bool = applyWhereExpression(null);
-                    if (contextItem instanceof NodeProxy)
-                        {((NodeProxy)contextItem).clearContext(getExpressionId());}
-                    // if where returned false, continue
-                    if (!bool.effectiveBooleanValue())
-                        {continue;}
-                }
                 //Reset the context position
                 context.setContextSequencePosition(0, null);
 
@@ -258,9 +228,16 @@ public class ForExpr extends BindingExpression {
         return resultSequence;
     }
 
+    @Override
+    public Sequence preEval(Sequence seq) throws XPathException {
+        // do not call subsequent clauses, just return the input sequence
+        // this for clause will later call preEval itself
+        return seq;
+    }
+
     /* (non-Javadoc)
-     * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)
-     */
+         * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)
+         */
     public void dump(ExpressionDumper dumper) {
         dumper.display("for ", line);
         dumper.startIndent();
@@ -272,12 +249,6 @@ public class ForExpr extends BindingExpression {
         dumper.display(" in ");
         inputSequence.dump(dumper);
         dumper.endIndent().nl();
-        if (whereExpr != null) {
-            dumper.display("where", whereExpr.getLine());
-            dumper.startIndent();
-            whereExpr.dump(dumper);
-            dumper.endIndent().nl();
-        }
         //TODO : QuantifiedExpr
         if (returnExpr instanceof LetExpr)
             {dumper.display(" ", returnExpr.getLine());}
@@ -299,12 +270,6 @@ public class ForExpr extends BindingExpression {
         result.append(" in ");
         result.append(inputSequence.toString());
         result.append(" ");
-        if (whereExpr != null) {
-            result.append("where");
-            result.append(" ");
-            result.append(whereExpr.toString());
-            result.append(" ");
-        }
         //TODO : QuantifiedExpr
         if (returnExpr instanceof LetExpr)
             {result.append(" ");}
