@@ -141,8 +141,8 @@ public interface DeclScannerTokenTypes {
 	int LITERAL_following = 135;
 	int LITERAL_catch = 136;
 	int UNION = 137;
-	int LITERAL_where = 138;
-	int LITERAL_return = 139;
+	int LITERAL_return = 138;
+	int LITERAL_where = 139;
 	int LITERAL_in = 140;
 	int LITERAL_by = 141;
 	int LITERAL_stable = 142;

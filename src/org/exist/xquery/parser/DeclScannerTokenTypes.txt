@@ -134,8 +134,8 @@ LITERAL_preceding="preceding"=134
 LITERAL_following="following"=135
 LITERAL_catch="catch"=136
 UNION("union")=137
-LITERAL_where="where"=138
-LITERAL_return="return"=139
+LITERAL_return="return"=138
+LITERAL_where="where"=139
 LITERAL_in="in"=140
 LITERAL_by="by"=141
 LITERAL_stable="stable"=142

@@ -74,7 +74,7 @@ public class XQueryTreeParser extends antlr.TreeParser       implements XQueryTr
 	public ExternalModule getModule() {
 		return myModule;
 	}
-	
+
 	public boolean foundErrors() {
 		return foundError;
 	}
@@ -102,7 +102,7 @@ public class XQueryTreeParser extends antlr.TreeParser       implements XQueryTr
 	}
 
 	private enum BindingType {
-	    FOR, LET, GROUPBY, ORDERBY
+	    FOR, LET, GROUPBY, ORDERBY, WHERE
 	}
 
 	private static class ForLetClause {
@@ -114,6 +114,7 @@ public class XQueryTreeParser extends antlr.TreeParser       implements XQueryTr
 		Expression action;
 		BindingType type = BindingType.FOR;
 		List<GroupSpec> groupSpecs = null;
+		List<OrderSpec> orderSpecs = null;
 	}
 
 	/**
@@ -267,12 +268,12 @@ public XQueryTreeParser() {
 		org.exist.xquery.parser.XQueryAST posVar = null;
 		org.exist.xquery.parser.XQueryAST l = null;
 		org.exist.xquery.parser.XQueryAST letVarName = null;
-		org.exist.xquery.parser.XQueryAST w = null;
 		org.exist.xquery.parser.XQueryAST gb = null;
 		org.exist.xquery.parser.XQueryAST groupVarName = null;
 		org.exist.xquery.parser.XQueryAST groupCollURI = null;
 		org.exist.xquery.parser.XQueryAST ob = null;
 		org.exist.xquery.parser.XQueryAST collURI = null;
+		org.exist.xquery.parser.XQueryAST w = null;
 		org.exist.xquery.parser.XQueryAST switchAST = null;
 		org.exist.xquery.parser.XQueryAST var = null;
 		org.exist.xquery.parser.XQueryAST dvar = null;
@@ -291,7 +292,7 @@ public XQueryTreeParser() {
 			// Added for handling empty mainModule /ljo
 			// System.out.println("EMPTY EXPR");
 			if (eof.getText() == null || "".equals(eof.getText()))
-			throw new XPathException(eof, "err:XPST0003: EOF or zero-length string found where a valid XPath expression was expected.");     
+			throw new XPathException(eof, "err:XPST0003: EOF or zero-length string found where a valid XPath expression was expected.");
 			
 			
 			break;
@@ -332,7 +333,7 @@ public XQueryTreeParser() {
 			} while (true);
 			}
 			
-				   path.addPath(sc); 
+				   path.addPath(sc);
 				   step = sc;
 			
 			_t = __t127;
@@ -420,8 +421,8 @@ public XQueryTreeParser() {
 			
 			thenExpr.setASTNode(astThen);
 			elseExpr.setASTNode(astElse);
-						ConditionalExpression cond = 
-			new ConditionalExpression(context, testExpr, thenExpr, 
+						ConditionalExpression cond =
+			new ConditionalExpression(context, testExpr, thenExpr,
 			new DebuggableExpression(elseExpr));
 						cond.setASTNode(astIf);
 						path.add(cond);
@@ -1264,8 +1265,8 @@ public XQueryTreeParser() {
 						List<OrderSpec> orderBy= null;
 					
 			{
-			int _cnt170=0;
-			_loop170:
+			int _cnt185=0;
+			_loop185:
 			do {
 				if (_t==null) _t=ASTNULL;
 				switch ( _t.getType()) {
@@ -1734,528 +1735,388 @@ public XQueryTreeParser() {
 					_t = _t.getNextSibling();
 					break;
 				}
-				default:
+				case GROUP_BY:
 				{
-					if ( _cnt170>=1 ) { break _loop170; } else {throw new NoViableAltException(_t);}
-				}
-				}
-				_cnt170++;
-			} while (true);
-			}
-			{
-			if (_t==null) _t=ASTNULL;
-			switch ( _t.getType()) {
-			case LITERAL_where:
-			{
-				w = (org.exist.xquery.parser.XQueryAST)_t;
-				match(_t,LITERAL_where);
-				_t = _t.getNextSibling();
-				
-								whereExpr= new PathExpr(context); 
-								whereExpr.setASTNode(w);
-							
-				step=expr(_t,whereExpr);
-				_t = _retTree;
-				break;
-			}
-			case EOF:
-			case EQNAME:
-			case PARENTHESIZED:
-			case ABSOLUTE_SLASH:
-			case ABSOLUTE_DSLASH:
-			case WILDCARD:
-			case PREFIX_WILDCARD:
-			case FUNCTION:
-			case UNARY_MINUS:
-			case UNARY_PLUS:
-			case VARIABLE_REF:
-			case ELEMENT:
-			case TEXT:
-			case INLINE_FUNCTION_DECL:
-			case LOOKUP:
-			case ARRAY:
-			case ORDER_BY:
-			case GROUP_BY:
-			case ATTRIBUTE_TEST:
-			case COMP_ELEM_CONSTRUCTOR:
-			case COMP_ATTR_CONSTRUCTOR:
-			case COMP_TEXT_CONSTRUCTOR:
-			case COMP_COMMENT_CONSTRUCTOR:
-			case COMP_PI_CONSTRUCTOR:
-			case COMP_NS_CONSTRUCTOR:
-			case COMP_DOC_CONSTRUCTOR:
-			case PRAGMA:
-			case GTEQ:
-			case SEQUENCE:
-			case NCNAME:
-			case EQ:
-			case STRING_LITERAL:
-			case LITERAL_element:
-			case COMMA:
-			case LCURLY:
-			case STAR:
-			case PLUS:
-			case LITERAL_map:
-			case LITERAL_try:
-			case LITERAL_some:
-			case LITERAL_every:
-			case LITERAL_if:
-			case LITERAL_switch:
-			case LITERAL_typeswitch:
-			case LITERAL_update:
-			case LITERAL_preceding:
-			case LITERAL_following:
-			case UNION:
-			case LITERAL_return:
-			case LITERAL_or:
-			case LITERAL_and:
-			case LITERAL_instance:
-			case LITERAL_treat:
-			case LITERAL_castable:
-			case LITERAL_cast:
-			case BEFORE:
-			case AFTER:
-			case LITERAL_eq:
-			case LITERAL_ne:
-			case LITERAL_lt:
-			case LITERAL_le:
-			case LITERAL_gt:
-			case LITERAL_ge:
-			case GT:
-			case NEQ:
-			case LT:
-			case LTEQ:
-			case LITERAL_is:
-			case LITERAL_isnot:
-			case CONCAT:
-			case LITERAL_to:
-			case MINUS:
-			case LITERAL_div:
-			case LITERAL_idiv:
-			case LITERAL_mod:
-			case BANG:
-			case LITERAL_intersect:
-			case LITERAL_except:
-			case SLASH:
-			case DSLASH:
-			case LITERAL_text:
-			case LITERAL_node:
-			case LITERAL_attribute:
-			case LITERAL_comment:
-			case 189:
-			case 190:
-			case HASH:
-			case SELF:
-			case XML_COMMENT:
-			case XML_PI:
-			case AT:
-			case PARENT:
-			case LITERAL_child:
-			case LITERAL_self:
-			case LITERAL_descendant:
-			case 203:
-			case 204:
-			case LITERAL_parent:
-			case LITERAL_ancestor:
-			case 207:
-			case 208:
-			case INTEGER_LITERAL:
-			case DOUBLE_LITERAL:
-			case DECIMAL_LITERAL:
-			case XML_CDATA:
-			{
-				break;
-			}
-			default:
-			{
-				throw new NoViableAltException(_t);
-			}
-			}
-			}
-			{
-			if (_t==null) _t=ASTNULL;
-			switch ( _t.getType()) {
-			case GROUP_BY:
-			{
-				AST __t173 = _t;
-				gb = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
-				match(_t,GROUP_BY);
-				_t = _t.getFirstChild();
-				
-				ForLetClause clause= new ForLetClause();
-				clause.ast = gb;
-				clause.type = BindingType.GROUPBY;
+					AST __t170 = _t;
+					gb = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
+					match(_t,GROUP_BY);
+					_t = _t.getFirstChild();
+					
+					ForLetClause clause= new ForLetClause();
+					clause.ast = gb;
+					clause.type = BindingType.GROUPBY;
 					clause.groupSpecs = new ArrayList<GroupSpec>(4);
 					clauses.add(clause);
-				
-				{
-				int _cnt178=0;
-				_loop178:
-				do {
-					if (_t==null) _t=ASTNULL;
-					if ((_t.getType()==VARIABLE_BINDING)) {
-						AST __t175 = _t;
-						groupVarName = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
-						match(_t,VARIABLE_BINDING);
-						_t = _t.getFirstChild();
-						PathExpr groupSpecExpr= null;
-						{
-						if (_t==null) _t=ASTNULL;
-						switch ( _t.getType()) {
-						case EOF:
-						case EQNAME:
-						case PARENTHESIZED:
-						case ABSOLUTE_SLASH:
-						case ABSOLUTE_DSLASH:
-						case WILDCARD:
-						case PREFIX_WILDCARD:
-						case FUNCTION:
-						case UNARY_MINUS:
-						case UNARY_PLUS:
-						case VARIABLE_REF:
-						case ELEMENT:
-						case TEXT:
-						case INLINE_FUNCTION_DECL:
-						case LOOKUP:
-						case ARRAY:
-						case ATTRIBUTE_TEST:
-						case COMP_ELEM_CONSTRUCTOR:
-						case COMP_ATTR_CONSTRUCTOR:
-						case COMP_TEXT_CONSTRUCTOR:
-						case COMP_COMMENT_CONSTRUCTOR:
-						case COMP_PI_CONSTRUCTOR:
-						case COMP_NS_CONSTRUCTOR:
-						case COMP_DOC_CONSTRUCTOR:
-						case PRAGMA:
-						case GTEQ:
-						case SEQUENCE:
-						case NCNAME:
-						case EQ:
-						case STRING_LITERAL:
-						case LITERAL_element:
-						case COMMA:
-						case LCURLY:
-						case STAR:
-						case PLUS:
-						case LITERAL_map:
-						case LITERAL_try:
-						case LITERAL_some:
-						case LITERAL_every:
-						case LITERAL_if:
-						case LITERAL_switch:
-						case LITERAL_typeswitch:
-						case LITERAL_update:
-						case LITERAL_preceding:
-						case LITERAL_following:
-						case UNION:
-						case LITERAL_return:
-						case LITERAL_or:
-						case LITERAL_and:
-						case LITERAL_instance:
-						case LITERAL_treat:
-						case LITERAL_castable:
-						case LITERAL_cast:
-						case BEFORE:
-						case AFTER:
-						case LITERAL_eq:
-						case LITERAL_ne:
-						case LITERAL_lt:
-						case LITERAL_le:
-						case LITERAL_gt:
-						case LITERAL_ge:
-						case GT:
-						case NEQ:
-						case LT:
-						case LTEQ:
-						case LITERAL_is:
-						case LITERAL_isnot:
-						case CONCAT:
-						case LITERAL_to:
-						case MINUS:
-						case LITERAL_div:
-						case LITERAL_idiv:
-						case LITERAL_mod:
-						case BANG:
-						case LITERAL_intersect:
-						case LITERAL_except:
-						case SLASH:
-						case DSLASH:
-						case LITERAL_text:
-						case LITERAL_node:
-						case LITERAL_attribute:
-						case LITERAL_comment:
-						case 189:
-						case 190:
-						case HASH:
-						case SELF:
-						case XML_COMMENT:
-						case XML_PI:
-						case AT:
-						case PARENT:
-						case LITERAL_child:
-						case LITERAL_self:
-						case LITERAL_descendant:
-						case 203:
-						case 204:
-						case LITERAL_parent:
-						case LITERAL_ancestor:
-						case 207:
-						case 208:
-						case INTEGER_LITERAL:
-						case DOUBLE_LITERAL:
-						case DECIMAL_LITERAL:
-						case XML_CDATA:
-						{
-							groupSpecExpr = new PathExpr(context);
-							step=expr(_t,groupSpecExpr);
-							_t = _retTree;
-							break;
-						}
-						case 3:
-						case LITERAL_collation:
-						{
-							break;
-						}
-						default:
-						{
-							throw new NoViableAltException(_t);
-						}
-						}
-						}
-						
-							                    	String groupKeyVar = groupVarName.getText();
-						
-							                    	// if there is no groupSpec expression, try to find definition of
-							                    	// grouping variable and inline it
-							                    	if (groupSpecExpr == null) {
-							                    		ForLetClause groupVarDef = null;
-									                	for (int i = clauses.size() - 1; i > -1; i--) {
-									                		ForLetClause currentClause = clauses.get(i);
-									                		if (currentClause.type != BindingType.GROUPBY && currentClause.varName.equals
-									                		(groupKeyVar)) {
-									                			groupVarDef = currentClause;
-									                			break;
-									                		}
-									                	}
-									                	if (groupVarDef == null) {
-									                		throw new XPathException("Definition for grouping var " + groupKeyVar + " not found");
-									                	}
-									                	// inline the grouping expression
-									                	clauses.remove(groupVarDef);
-									                	groupSpecExpr = (PathExpr) groupVarDef.inputSequence;
-							                    	}
-							                    	GroupSpec groupSpec= new GroupSpec(context, groupSpecExpr, groupKeyVar);  
-							                    	clause.groupSpecs.add(groupSpec);
-							
-						{
-						if (_t==null) _t=ASTNULL;
-						switch ( _t.getType()) {
-						case LITERAL_collation:
-						{
-							org.exist.xquery.parser.XQueryAST tmp10_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
-							match(_t,LITERAL_collation);
-							_t = _t.getNextSibling();
-							groupCollURI = (org.exist.xquery.parser.XQueryAST)_t;
-							match(_t,STRING_LITERAL);
-							_t = _t.getNextSibling();
-							
-															groupSpec.setCollator(groupCollURI.getText());
-														
-							break;
-						}
-						case 3:
-						{
-							break;
-						}
-						default:
-						{
-							throw new NoViableAltException(_t);
-						}
-						}
-						}
-						_t = __t175;
-						_t = _t.getNextSibling();
-					}
-					else {
-						if ( _cnt178>=1 ) { break _loop178; } else {throw new NoViableAltException(_t);}
-					}
 					
-					_cnt178++;
-				} while (true);
-				}
-				_t = __t173;
-				_t = _t.getNextSibling();
-				break;
-			}
-			case EOF:
-			case EQNAME:
-			case PARENTHESIZED:
-			case ABSOLUTE_SLASH:
-			case ABSOLUTE_DSLASH:
-			case WILDCARD:
-			case PREFIX_WILDCARD:
-			case FUNCTION:
-			case UNARY_MINUS:
-			case UNARY_PLUS:
-			case VARIABLE_REF:
-			case ELEMENT:
-			case TEXT:
-			case INLINE_FUNCTION_DECL:
-			case LOOKUP:
-			case ARRAY:
-			case ORDER_BY:
-			case ATTRIBUTE_TEST:
-			case COMP_ELEM_CONSTRUCTOR:
-			case COMP_ATTR_CONSTRUCTOR:
-			case COMP_TEXT_CONSTRUCTOR:
-			case COMP_COMMENT_CONSTRUCTOR:
-			case COMP_PI_CONSTRUCTOR:
-			case COMP_NS_CONSTRUCTOR:
-			case COMP_DOC_CONSTRUCTOR:
-			case PRAGMA:
-			case GTEQ:
-			case SEQUENCE:
-			case NCNAME:
-			case EQ:
-			case STRING_LITERAL:
-			case LITERAL_element:
-			case COMMA:
-			case LCURLY:
-			case STAR:
-			case PLUS:
-			case LITERAL_map:
-			case LITERAL_try:
-			case LITERAL_some:
-			case LITERAL_every:
-			case LITERAL_if:
-			case LITERAL_switch:
-			case LITERAL_typeswitch:
-			case LITERAL_update:
-			case LITERAL_preceding:
-			case LITERAL_following:
-			case UNION:
-			case LITERAL_return:
-			case LITERAL_or:
-			case LITERAL_and:
-			case LITERAL_instance:
-			case LITERAL_treat:
-			case LITERAL_castable:
-			case LITERAL_cast:
-			case BEFORE:
-			case AFTER:
-			case LITERAL_eq:
-			case LITERAL_ne:
-			case LITERAL_lt:
-			case LITERAL_le:
-			case LITERAL_gt:
-			case LITERAL_ge:
-			case GT:
-			case NEQ:
-			case LT:
-			case LTEQ:
-			case LITERAL_is:
-			case LITERAL_isnot:
-			case CONCAT:
-			case LITERAL_to:
-			case MINUS:
-			case LITERAL_div:
-			case LITERAL_idiv:
-			case LITERAL_mod:
-			case BANG:
-			case LITERAL_intersect:
-			case LITERAL_except:
-			case SLASH:
-			case DSLASH:
-			case LITERAL_text:
-			case LITERAL_node:
-			case LITERAL_attribute:
-			case LITERAL_comment:
-			case 189:
-			case 190:
-			case HASH:
-			case SELF:
-			case XML_COMMENT:
-			case XML_PI:
-			case AT:
-			case PARENT:
-			case LITERAL_child:
-			case LITERAL_self:
-			case LITERAL_descendant:
-			case 203:
-			case 204:
-			case LITERAL_parent:
-			case LITERAL_ancestor:
-			case 207:
-			case 208:
-			case INTEGER_LITERAL:
-			case DOUBLE_LITERAL:
-			case DECIMAL_LITERAL:
-			case XML_CDATA:
-			{
-				break;
-			}
-			default:
-			{
-				throw new NoViableAltException(_t);
-			}
-			}
-			}
-			{
-			if (_t==null) _t=ASTNULL;
-			switch ( _t.getType()) {
-			case ORDER_BY:
-			{
-				AST __t180 = _t;
-				ob = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
-				match(_t,ORDER_BY);
-				_t = _t.getFirstChild();
-				orderBy = new ArrayList(3);
-				{
-				int _cnt187=0;
-				_loop187:
-				do {
-					if (_t==null) _t=ASTNULL;
-					if ((_tokenSet_0.member(_t.getType()))) {
-						PathExpr orderSpecExpr= new PathExpr(context);
-						step=expr(_t,orderSpecExpr);
-						_t = _retTree;
-						
-												OrderSpec orderSpec= new OrderSpec(context, orderSpecExpr);
-												int modifiers= 0;
-												boolean orderDescending = false; 
-												orderBy.add(orderSpec);
-						
-						if (!context.orderEmptyGreatest()) {
-						modifiers |= OrderSpec.EMPTY_LEAST;
-						orderSpec.setModifiers(modifiers);
-						}
-											
-						{
+					{
+					int _cnt175=0;
+					_loop175:
+					do {
 						if (_t==null) _t=ASTNULL;
-						switch ( _t.getType()) {
-						case LITERAL_ascending:
-						case LITERAL_descending:
-						{
+						if ((_t.getType()==VARIABLE_BINDING)) {
+							AST __t172 = _t;
+							groupVarName = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
+							match(_t,VARIABLE_BINDING);
+							_t = _t.getFirstChild();
+							PathExpr groupSpecExpr= null;
+							{
+							if (_t==null) _t=ASTNULL;
+							switch ( _t.getType()) {
+							case EOF:
+							case EQNAME:
+							case PARENTHESIZED:
+							case ABSOLUTE_SLASH:
+							case ABSOLUTE_DSLASH:
+							case WILDCARD:
+							case PREFIX_WILDCARD:
+							case FUNCTION:
+							case UNARY_MINUS:
+							case UNARY_PLUS:
+							case VARIABLE_REF:
+							case ELEMENT:
+							case TEXT:
+							case INLINE_FUNCTION_DECL:
+							case LOOKUP:
+							case ARRAY:
+							case ATTRIBUTE_TEST:
+							case COMP_ELEM_CONSTRUCTOR:
+							case COMP_ATTR_CONSTRUCTOR:
+							case COMP_TEXT_CONSTRUCTOR:
+							case COMP_COMMENT_CONSTRUCTOR:
+							case COMP_PI_CONSTRUCTOR:
+							case COMP_NS_CONSTRUCTOR:
+							case COMP_DOC_CONSTRUCTOR:
+							case PRAGMA:
+							case GTEQ:
+							case SEQUENCE:
+							case NCNAME:
+							case EQ:
+							case STRING_LITERAL:
+							case LITERAL_element:
+							case COMMA:
+							case LCURLY:
+							case STAR:
+							case PLUS:
+							case LITERAL_map:
+							case LITERAL_try:
+							case LITERAL_some:
+							case LITERAL_every:
+							case LITERAL_if:
+							case LITERAL_switch:
+							case LITERAL_typeswitch:
+							case LITERAL_update:
+							case LITERAL_preceding:
+							case LITERAL_following:
+							case UNION:
+							case LITERAL_return:
+							case LITERAL_or:
+							case LITERAL_and:
+							case LITERAL_instance:
+							case LITERAL_treat:
+							case LITERAL_castable:
+							case LITERAL_cast:
+							case BEFORE:
+							case AFTER:
+							case LITERAL_eq:
+							case LITERAL_ne:
+							case LITERAL_lt:
+							case LITERAL_le:
+							case LITERAL_gt:
+							case LITERAL_ge:
+							case GT:
+							case NEQ:
+							case LT:
+							case LTEQ:
+							case LITERAL_is:
+							case LITERAL_isnot:
+							case CONCAT:
+							case LITERAL_to:
+							case MINUS:
+							case LITERAL_div:
+							case LITERAL_idiv:
+							case LITERAL_mod:
+							case BANG:
+							case LITERAL_intersect:
+							case LITERAL_except:
+							case SLASH:
+							case DSLASH:
+							case LITERAL_text:
+							case LITERAL_node:
+							case LITERAL_attribute:
+							case LITERAL_comment:
+							case 189:
+							case 190:
+							case HASH:
+							case SELF:
+							case XML_COMMENT:
+							case XML_PI:
+							case AT:
+							case PARENT:
+							case LITERAL_child:
+							case LITERAL_self:
+							case LITERAL_descendant:
+							case 203:
+							case 204:
+							case LITERAL_parent:
+							case LITERAL_ancestor:
+							case 207:
+							case 208:
+							case INTEGER_LITERAL:
+							case DOUBLE_LITERAL:
+							case DECIMAL_LITERAL:
+							case XML_CDATA:
+							{
+								groupSpecExpr = new PathExpr(context);
+								step=expr(_t,groupSpecExpr);
+								_t = _retTree;
+								break;
+							}
+							case 3:
+							case LITERAL_collation:
+							{
+								break;
+							}
+							default:
+							{
+								throw new NoViableAltException(_t);
+							}
+							}
+							}
+							
+							String groupKeyVar = groupVarName.getText();
+							
+							// if there is no groupSpec expression, try to find definition of
+							// grouping variable and inline it
+							if (groupSpecExpr == null) {
+							ForLetClause groupVarDef = null;
+							for (int i = clauses.size() - 1; i > -1; i--) {
+							ForLetClause currentClause = clauses.get(i);
+							if (currentClause.type != BindingType.GROUPBY && currentClause.varName.equals
+							(groupKeyVar)) {
+							groupVarDef = currentClause;
+							break;
+							}
+							}
+							if (groupVarDef == null) {
+							throw new XPathException("Definition for grouping var " + groupKeyVar + " not found");
+							}
+							// inline the grouping expression
+							clauses.remove(groupVarDef);
+							groupSpecExpr = (PathExpr) groupVarDef.inputSequence;
+							}
+							GroupSpec groupSpec= new GroupSpec(context, groupSpecExpr, groupKeyVar);
+							clause.groupSpecs.add(groupSpec);
+							
+							{
+							if (_t==null) _t=ASTNULL;
+							switch ( _t.getType()) {
+							case LITERAL_collation:
+							{
+								org.exist.xquery.parser.XQueryAST tmp10_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
+								match(_t,LITERAL_collation);
+								_t = _t.getNextSibling();
+								groupCollURI = (org.exist.xquery.parser.XQueryAST)_t;
+								match(_t,STRING_LITERAL);
+								_t = _t.getNextSibling();
+								
+								groupSpec.setCollator(groupCollURI.getText());
+								
+								break;
+							}
+							case 3:
+							{
+								break;
+							}
+							default:
+							{
+								throw new NoViableAltException(_t);
+							}
+							}
+							}
+							_t = __t172;
+							_t = _t.getNextSibling();
+						}
+						else {
+							if ( _cnt175>=1 ) { break _loop175; } else {throw new NoViableAltException(_t);}
+						}
+						
+						_cnt175++;
+					} while (true);
+					}
+					_t = __t170;
+					_t = _t.getNextSibling();
+					break;
+				}
+				case ORDER_BY:
+				{
+					AST __t176 = _t;
+					ob = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
+					match(_t,ORDER_BY);
+					_t = _t.getFirstChild();
+					orderBy = new ArrayList(3);
+					{
+					int _cnt183=0;
+					_loop183:
+					do {
+						if (_t==null) _t=ASTNULL;
+						if ((_tokenSet_0.member(_t.getType()))) {
+							PathExpr orderSpecExpr= new PathExpr(context);
+							step=expr(_t,orderSpecExpr);
+							_t = _retTree;
+							
+							OrderSpec orderSpec= new OrderSpec(context, orderSpecExpr);
+							int modifiers= 0;
+							boolean orderDescending = false;
+							orderBy.add(orderSpec);
+							
+							if (!context.orderEmptyGreatest()) {
+							modifiers |= OrderSpec.EMPTY_LEAST;
+							orderSpec.setModifiers(modifiers);
+							}
+							
 							{
 							if (_t==null) _t=ASTNULL;
 							switch ( _t.getType()) {
 							case LITERAL_ascending:
-							{
-								org.exist.xquery.parser.XQueryAST tmp11_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
-								match(_t,LITERAL_ascending);
-								_t = _t.getNextSibling();
-								break;
-							}
 							case LITERAL_descending:
 							{
-								org.exist.xquery.parser.XQueryAST tmp12_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
-								match(_t,LITERAL_descending);
-								_t = _t.getNextSibling();
-								
-																modifiers |= OrderSpec.DESCENDING_ORDER;
-																orderSpec.setModifiers(modifiers);
-								orderDescending = true;
-															
+								{
+								if (_t==null) _t=ASTNULL;
+								switch ( _t.getType()) {
+								case LITERAL_ascending:
+								{
+									org.exist.xquery.parser.XQueryAST tmp11_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
+									match(_t,LITERAL_ascending);
+									_t = _t.getNextSibling();
+									break;
+								}
+								case LITERAL_descending:
+								{
+									org.exist.xquery.parser.XQueryAST tmp12_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
+									match(_t,LITERAL_descending);
+									_t = _t.getNextSibling();
+									
+									modifiers |= OrderSpec.DESCENDING_ORDER;
+									orderSpec.setModifiers(modifiers);
+									orderDescending = true;
+									
+									break;
+								}
+								default:
+								{
+									throw new NoViableAltException(_t);
+								}
+								}
+								}
+								break;
+							}
+							case EOF:
+							case 3:
+							case EQNAME:
+							case PARENTHESIZED:
+							case ABSOLUTE_SLASH:
+							case ABSOLUTE_DSLASH:
+							case WILDCARD:
+							case PREFIX_WILDCARD:
+							case FUNCTION:
+							case UNARY_MINUS:
+							case UNARY_PLUS:
+							case VARIABLE_REF:
+							case ELEMENT:
+							case TEXT:
+							case INLINE_FUNCTION_DECL:
+							case LOOKUP:
+							case ARRAY:
+							case ATTRIBUTE_TEST:
+							case COMP_ELEM_CONSTRUCTOR:
+							case COMP_ATTR_CONSTRUCTOR:
+							case COMP_TEXT_CONSTRUCTOR:
+							case COMP_COMMENT_CONSTRUCTOR:
+							case COMP_PI_CONSTRUCTOR:
+							case COMP_NS_CONSTRUCTOR:
+							case COMP_DOC_CONSTRUCTOR:
+							case PRAGMA:
+							case GTEQ:
+							case SEQUENCE:
+							case NCNAME:
+							case EQ:
+							case STRING_LITERAL:
+							case LITERAL_collation:
+							case LITERAL_element:
+							case LITERAL_empty:
+							case COMMA:
+							case LCURLY:
+							case STAR:
+							case PLUS:
+							case LITERAL_map:
+							case LITERAL_try:
+							case LITERAL_some:
+							case LITERAL_every:
+							case LITERAL_if:
+							case LITERAL_switch:
+							case LITERAL_typeswitch:
+							case LITERAL_update:
+							case LITERAL_preceding:
+							case LITERAL_following:
+							case UNION:
+							case LITERAL_return:
+							case LITERAL_or:
+							case LITERAL_and:
+							case LITERAL_instance:
+							case LITERAL_treat:
+							case LITERAL_castable:
+							case LITERAL_cast:
+							case BEFORE:
+							case AFTER:
+							case LITERAL_eq:
+							case LITERAL_ne:
+							case LITERAL_lt:
+							case LITERAL_le:
+							case LITERAL_gt:
+							case LITERAL_ge:
+							case GT:
+							case NEQ:
+							case LT:
+							case LTEQ:
+							case LITERAL_is:
+							case LITERAL_isnot:
+							case CONCAT:
+							case LITERAL_to:
+							case MINUS:
+							case LITERAL_div:
+							case LITERAL_idiv:
+							case LITERAL_mod:
+							case BANG:
+							case LITERAL_intersect:
+							case LITERAL_except:
+							case SLASH:
+							case DSLASH:
+							case LITERAL_text:
+							case LITERAL_node:
+							case LITERAL_attribute:
+							case LITERAL_comment:
+							case 189:
+							case 190:
+							case HASH:
+							case SELF:
+							case XML_COMMENT:
+							case XML_PI:
+							case AT:
+							case PARENT:
+							case LITERAL_child:
+							case LITERAL_self:
+							case LITERAL_descendant:
+							case 203:
+							case 204:
+							case LITERAL_parent:
+							case LITERAL_ancestor:
+							case 207:
+							case 208:
+							case INTEGER_LITERAL:
+							case DOUBLE_LITERAL:
+							case DECIMAL_LITERAL:
+							case XML_CDATA:
+							{
 								break;
 							}
 							default:
@@ -2264,157 +2125,156 @@ public XQueryTreeParser() {
 							}
 							}
 							}
-							break;
-						}
-						case EOF:
-						case 3:
-						case EQNAME:
-						case PARENTHESIZED:
-						case ABSOLUTE_SLASH:
-						case ABSOLUTE_DSLASH:
-						case WILDCARD:
-						case PREFIX_WILDCARD:
-						case FUNCTION:
-						case UNARY_MINUS:
-						case UNARY_PLUS:
-						case VARIABLE_REF:
-						case ELEMENT:
-						case TEXT:
-						case INLINE_FUNCTION_DECL:
-						case LOOKUP:
-						case ARRAY:
-						case ATTRIBUTE_TEST:
-						case COMP_ELEM_CONSTRUCTOR:
-						case COMP_ATTR_CONSTRUCTOR:
-						case COMP_TEXT_CONSTRUCTOR:
-						case COMP_COMMENT_CONSTRUCTOR:
-						case COMP_PI_CONSTRUCTOR:
-						case COMP_NS_CONSTRUCTOR:
-						case COMP_DOC_CONSTRUCTOR:
-						case PRAGMA:
-						case GTEQ:
-						case SEQUENCE:
-						case NCNAME:
-						case EQ:
-						case STRING_LITERAL:
-						case LITERAL_collation:
-						case LITERAL_element:
-						case LITERAL_empty:
-						case COMMA:
-						case LCURLY:
-						case STAR:
-						case PLUS:
-						case LITERAL_map:
-						case LITERAL_try:
-						case LITERAL_some:
-						case LITERAL_every:
-						case LITERAL_if:
-						case LITERAL_switch:
-						case LITERAL_typeswitch:
-						case LITERAL_update:
-						case LITERAL_preceding:
-						case LITERAL_following:
-						case UNION:
-						case LITERAL_return:
-						case LITERAL_or:
-						case LITERAL_and:
-						case LITERAL_instance:
-						case LITERAL_treat:
-						case LITERAL_castable:
-						case LITERAL_cast:
-						case BEFORE:
-						case AFTER:
-						case LITERAL_eq:
-						case LITERAL_ne:
-						case LITERAL_lt:
-						case LITERAL_le:
-						case LITERAL_gt:
-						case LITERAL_ge:
-						case GT:
-						case NEQ:
-						case LT:
-						case LTEQ:
-						case LITERAL_is:
-						case LITERAL_isnot:
-						case CONCAT:
-						case LITERAL_to:
-						case MINUS:
-						case LITERAL_div:
-						case LITERAL_idiv:
-						case LITERAL_mod:
-						case BANG:
-						case LITERAL_intersect:
-						case LITERAL_except:
-						case SLASH:
-						case DSLASH:
-						case LITERAL_text:
-						case LITERAL_node:
-						case LITERAL_attribute:
-						case LITERAL_comment:
-						case 189:
-						case 190:
-						case HASH:
-						case SELF:
-						case XML_COMMENT:
-						case XML_PI:
-						case AT:
-						case PARENT:
-						case LITERAL_child:
-						case LITERAL_self:
-						case LITERAL_descendant:
-						case 203:
-						case 204:
-						case LITERAL_parent:
-						case LITERAL_ancestor:
-						case 207:
-						case 208:
-						case INTEGER_LITERAL:
-						case DOUBLE_LITERAL:
-						case DECIMAL_LITERAL:
-						case XML_CDATA:
-						{
-							break;
-						}
-						default:
-						{
-							throw new NoViableAltException(_t);
-						}
-						}
-						}
-						{
-						if (_t==null) _t=ASTNULL;
-						switch ( _t.getType()) {
-						case LITERAL_empty:
-						{
-							org.exist.xquery.parser.XQueryAST tmp13_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
-							match(_t,LITERAL_empty);
-							_t = _t.getNextSibling();
 							{
 							if (_t==null) _t=ASTNULL;
 							switch ( _t.getType()) {
-							case LITERAL_greatest:
+							case LITERAL_empty:
 							{
-								org.exist.xquery.parser.XQueryAST tmp14_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
-								match(_t,LITERAL_greatest);
+								org.exist.xquery.parser.XQueryAST tmp13_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
+								match(_t,LITERAL_empty);
 								_t = _t.getNextSibling();
-								
-								if (!context.orderEmptyGreatest())
-								modifiers &= OrderSpec.EMPTY_GREATEST;
-								if (orderDescending)
-								modifiers |= OrderSpec.DESCENDING_ORDER;
-								orderSpec.setModifiers(modifiers);
-								
+								{
+								if (_t==null) _t=ASTNULL;
+								switch ( _t.getType()) {
+								case LITERAL_greatest:
+								{
+									org.exist.xquery.parser.XQueryAST tmp14_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
+									match(_t,LITERAL_greatest);
+									_t = _t.getNextSibling();
+									
+									if (!context.orderEmptyGreatest())
+									modifiers &= OrderSpec.EMPTY_GREATEST;
+									if (orderDescending)
+									modifiers |= OrderSpec.DESCENDING_ORDER;
+									orderSpec.setModifiers(modifiers);
+									
+									break;
+								}
+								case LITERAL_least:
+								{
+									org.exist.xquery.parser.XQueryAST tmp15_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
+									match(_t,LITERAL_least);
+									_t = _t.getNextSibling();
+									
+									modifiers |= OrderSpec.EMPTY_LEAST;
+									orderSpec.setModifiers(modifiers);
+									
+									break;
+								}
+								default:
+								{
+									throw new NoViableAltException(_t);
+								}
+								}
+								}
 								break;
 							}
-							case LITERAL_least:
+							case EOF:
+							case 3:
+							case EQNAME:
+							case PARENTHESIZED:
+							case ABSOLUTE_SLASH:
+							case ABSOLUTE_DSLASH:
+							case WILDCARD:
+							case PREFIX_WILDCARD:
+							case FUNCTION:
+							case UNARY_MINUS:
+							case UNARY_PLUS:
+							case VARIABLE_REF:
+							case ELEMENT:
+							case TEXT:
+							case INLINE_FUNCTION_DECL:
+							case LOOKUP:
+							case ARRAY:
+							case ATTRIBUTE_TEST:
+							case COMP_ELEM_CONSTRUCTOR:
+							case COMP_ATTR_CONSTRUCTOR:
+							case COMP_TEXT_CONSTRUCTOR:
+							case COMP_COMMENT_CONSTRUCTOR:
+							case COMP_PI_CONSTRUCTOR:
+							case COMP_NS_CONSTRUCTOR:
+							case COMP_DOC_CONSTRUCTOR:
+							case PRAGMA:
+							case GTEQ:
+							case SEQUENCE:
+							case NCNAME:
+							case EQ:
+							case STRING_LITERAL:
+							case LITERAL_collation:
+							case LITERAL_element:
+							case COMMA:
+							case LCURLY:
+							case STAR:
+							case PLUS:
+							case LITERAL_map:
+							case LITERAL_try:
+							case LITERAL_some:
+							case LITERAL_every:
+							case LITERAL_if:
+							case LITERAL_switch:
+							case LITERAL_typeswitch:
+							case LITERAL_update:
+							case LITERAL_preceding:
+							case LITERAL_following:
+							case UNION:
+							case LITERAL_return:
+							case LITERAL_or:
+							case LITERAL_and:
+							case LITERAL_instance:
+							case LITERAL_treat:
+							case LITERAL_castable:
+							case LITERAL_cast:
+							case BEFORE:
+							case AFTER:
+							case LITERAL_eq:
+							case LITERAL_ne:
+							case LITERAL_lt:
+							case LITERAL_le:
+							case LITERAL_gt:
+							case LITERAL_ge:
+							case GT:
+							case NEQ:
+							case LT:
+							case LTEQ:
+							case LITERAL_is:
+							case LITERAL_isnot:
+							case CONCAT:
+							case LITERAL_to:
+							case MINUS:
+							case LITERAL_div:
+							case LITERAL_idiv:
+							case LITERAL_mod:
+							case BANG:
+							case LITERAL_intersect:
+							case LITERAL_except:
+							case SLASH:
+							case DSLASH:
+							case LITERAL_text:
+							case LITERAL_node:
+							case LITERAL_attribute:
+							case LITERAL_comment:
+							case 189:
+							case 190:
+							case HASH:
+							case SELF:
+							case XML_COMMENT:
+							case XML_PI:
+							case AT:
+							case PARENT:
+							case LITERAL_child:
+							case LITERAL_self:
+							case LITERAL_descendant:
+							case 203:
+							case 204:
+							case LITERAL_parent:
+							case LITERAL_ancestor:
+							case 207:
+							case 208:
+							case INTEGER_LITERAL:
+							case DOUBLE_LITERAL:
+							case DECIMAL_LITERAL:
+							case XML_CDATA:
 							{
-								org.exist.xquery.parser.XQueryAST tmp15_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
-								match(_t,LITERAL_least);
-								_t = _t.getNextSibling();
-								
-																modifiers |= OrderSpec.EMPTY_LEAST;
-																orderSpec.setModifiers(modifiers);
-															
 								break;
 							}
 							default:
@@ -2423,380 +2283,183 @@ public XQueryTreeParser() {
 							}
 							}
 							}
-							break;
+							{
+							if (_t==null) _t=ASTNULL;
+							switch ( _t.getType()) {
+							case LITERAL_collation:
+							{
+								org.exist.xquery.parser.XQueryAST tmp16_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
+								match(_t,LITERAL_collation);
+								_t = _t.getNextSibling();
+								collURI = (org.exist.xquery.parser.XQueryAST)_t;
+								match(_t,STRING_LITERAL);
+								_t = _t.getNextSibling();
+								
+								orderSpec.setCollation(collURI.getText());
+								
+								break;
+							}
+							case EOF:
+							case 3:
+							case EQNAME:
+							case PARENTHESIZED:
+							case ABSOLUTE_SLASH:
+							case ABSOLUTE_DSLASH:
+							case WILDCARD:
+							case PREFIX_WILDCARD:
+							case FUNCTION:
+							case UNARY_MINUS:
+							case UNARY_PLUS:
+							case VARIABLE_REF:
+							case ELEMENT:
+							case TEXT:
+							case INLINE_FUNCTION_DECL:
+							case LOOKUP:
+							case ARRAY:
+							case ATTRIBUTE_TEST:
+							case COMP_ELEM_CONSTRUCTOR:
+							case COMP_ATTR_CONSTRUCTOR:
+							case COMP_TEXT_CONSTRUCTOR:
+							case COMP_COMMENT_CONSTRUCTOR:
+							case COMP_PI_CONSTRUCTOR:
+							case COMP_NS_CONSTRUCTOR:
+							case COMP_DOC_CONSTRUCTOR:
+							case PRAGMA:
+							case GTEQ:
+							case SEQUENCE:
+							case NCNAME:
+							case EQ:
+							case STRING_LITERAL:
+							case LITERAL_element:
+							case COMMA:
+							case LCURLY:
+							case STAR:
+							case PLUS:
+							case LITERAL_map:
+							case LITERAL_try:
+							case LITERAL_some:
+							case LITERAL_every:
+							case LITERAL_if:
+							case LITERAL_switch:
+							case LITERAL_typeswitch:
+							case LITERAL_update:
+							case LITERAL_preceding:
+							case LITERAL_following:
+							case UNION:
+							case LITERAL_return:
+							case LITERAL_or:
+							case LITERAL_and:
+							case LITERAL_instance:
+							case LITERAL_treat:
+							case LITERAL_castable:
+							case LITERAL_cast:
+							case BEFORE:
+							case AFTER:
+							case LITERAL_eq:
+							case LITERAL_ne:
+							case LITERAL_lt:
+							case LITERAL_le:
+							case LITERAL_gt:
+							case LITERAL_ge:
+							case GT:
+							case NEQ:
+							case LT:
+							case LTEQ:
+							case LITERAL_is:
+							case LITERAL_isnot:
+							case CONCAT:
+							case LITERAL_to:
+							case MINUS:
+							case LITERAL_div:
+							case LITERAL_idiv:
+							case LITERAL_mod:
+							case BANG:
+							case LITERAL_intersect:
+							case LITERAL_except:
+							case SLASH:
+							case DSLASH:
+							case LITERAL_text:
+							case LITERAL_node:
+							case LITERAL_attribute:
+							case LITERAL_comment:
+							case 189:
+							case 190:
+							case HASH:
+							case SELF:
+							case XML_COMMENT:
+							case XML_PI:
+							case AT:
+							case PARENT:
+							case LITERAL_child:
+							case LITERAL_self:
+							case LITERAL_descendant:
+							case 203:
+							case 204:
+							case LITERAL_parent:
+							case LITERAL_ancestor:
+							case 207:
+							case 208:
+							case INTEGER_LITERAL:
+							case DOUBLE_LITERAL:
+							case DECIMAL_LITERAL:
+							case XML_CDATA:
+							{
+								break;
+							}
+							default:
+							{
+								throw new NoViableAltException(_t);
+							}
+							}
+							}
 						}
-						case EOF:
-						case 3:
-						case EQNAME:
-						case PARENTHESIZED:
-						case ABSOLUTE_SLASH:
-						case ABSOLUTE_DSLASH:
-						case WILDCARD:
-						case PREFIX_WILDCARD:
-						case FUNCTION:
-						case UNARY_MINUS:
-						case UNARY_PLUS:
-						case VARIABLE_REF:
-						case ELEMENT:
-						case TEXT:
-						case INLINE_FUNCTION_DECL:
-						case LOOKUP:
-						case ARRAY:
-						case ATTRIBUTE_TEST:
-						case COMP_ELEM_CONSTRUCTOR:
-						case COMP_ATTR_CONSTRUCTOR:
-						case COMP_TEXT_CONSTRUCTOR:
-						case COMP_COMMENT_CONSTRUCTOR:
-						case COMP_PI_CONSTRUCTOR:
-						case COMP_NS_CONSTRUCTOR:
-						case COMP_DOC_CONSTRUCTOR:
-						case PRAGMA:
-						case GTEQ:
-						case SEQUENCE:
-						case NCNAME:
-						case EQ:
-						case STRING_LITERAL:
-						case LITERAL_collation:
-						case LITERAL_element:
-						case COMMA:
-						case LCURLY:
-						case STAR:
-						case PLUS:
-						case LITERAL_map:
-						case LITERAL_try:
-						case LITERAL_some:
-						case LITERAL_every:
-						case LITERAL_if:
-						case LITERAL_switch:
-						case LITERAL_typeswitch:
-						case LITERAL_update:
-						case LITERAL_preceding:
-						case LITERAL_following:
-						case UNION:
-						case LITERAL_return:
-						case LITERAL_or:
-						case LITERAL_and:
-						case LITERAL_instance:
-						case LITERAL_treat:
-						case LITERAL_castable:
-						case LITERAL_cast:
-						case BEFORE:
-						case AFTER:
-						case LITERAL_eq:
-						case LITERAL_ne:
-						case LITERAL_lt:
-						case LITERAL_le:
-						case LITERAL_gt:
-						case LITERAL_ge:
-						case GT:
-						case NEQ:
-						case LT:
-						case LTEQ:
-						case LITERAL_is:
-						case LITERAL_isnot:
-						case CONCAT:
-						case LITERAL_to:
-						case MINUS:
-						case LITERAL_div:
-						case LITERAL_idiv:
-						case LITERAL_mod:
-						case BANG:
-						case LITERAL_intersect:
-						case LITERAL_except:
-						case SLASH:
-						case DSLASH:
-						case LITERAL_text:
-						case LITERAL_node:
-						case LITERAL_attribute:
-						case LITERAL_comment:
-						case 189:
-						case 190:
-						case HASH:
-						case SELF:
-						case XML_COMMENT:
-						case XML_PI:
-						case AT:
-						case PARENT:
-						case LITERAL_child:
-						case LITERAL_self:
-						case LITERAL_descendant:
-						case 203:
-						case 204:
-						case LITERAL_parent:
-						case LITERAL_ancestor:
-						case 207:
-						case 208:
-						case INTEGER_LITERAL:
-						case DOUBLE_LITERAL:
-						case DECIMAL_LITERAL:
-						case XML_CDATA:
-						{
-							break;
+						else {
+							if ( _cnt183>=1 ) { break _loop183; } else {throw new NoViableAltException(_t);}
 						}
-						default:
-						{
-							throw new NoViableAltException(_t);
-						}
-						}
-						}
-						{
-						if (_t==null) _t=ASTNULL;
-						switch ( _t.getType()) {
-						case LITERAL_collation:
-						{
-							org.exist.xquery.parser.XQueryAST tmp16_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
-							match(_t,LITERAL_collation);
-							_t = _t.getNextSibling();
-							collURI = (org.exist.xquery.parser.XQueryAST)_t;
-							match(_t,STRING_LITERAL);
-							_t = _t.getNextSibling();
-							
-														orderSpec.setCollation(collURI.getText());
-													
-							break;
-						}
-						case EOF:
-						case 3:
-						case EQNAME:
-						case PARENTHESIZED:
-						case ABSOLUTE_SLASH:
-						case ABSOLUTE_DSLASH:
-						case WILDCARD:
-						case PREFIX_WILDCARD:
-						case FUNCTION:
-						case UNARY_MINUS:
-						case UNARY_PLUS:
-						case VARIABLE_REF:
-						case ELEMENT:
-						case TEXT:
-						case INLINE_FUNCTION_DECL:
-						case LOOKUP:
-						case ARRAY:
-						case ATTRIBUTE_TEST:
-						case COMP_ELEM_CONSTRUCTOR:
-						case COMP_ATTR_CONSTRUCTOR:
-						case COMP_TEXT_CONSTRUCTOR:
-						case COMP_COMMENT_CONSTRUCTOR:
-						case COMP_PI_CONSTRUCTOR:
-						case COMP_NS_CONSTRUCTOR:
-						case COMP_DOC_CONSTRUCTOR:
-						case PRAGMA:
-						case GTEQ:
-						case SEQUENCE:
-						case NCNAME:
-						case EQ:
-						case STRING_LITERAL:
-						case LITERAL_element:
-						case COMMA:
-						case LCURLY:
-						case STAR:
-						case PLUS:
-						case LITERAL_map:
-						case LITERAL_try:
-						case LITERAL_some:
-						case LITERAL_every:
-						case LITERAL_if:
-						case LITERAL_switch:
-						case LITERAL_typeswitch:
-						case LITERAL_update:
-						case LITERAL_preceding:
-						case LITERAL_following:
-						case UNION:
-						case LITERAL_return:
-						case LITERAL_or:
-						case LITERAL_and:
-						case LITERAL_instance:
-						case LITERAL_treat:
-						case LITERAL_castable:
-						case LITERAL_cast:
-						case BEFORE:
-						case AFTER:
-						case LITERAL_eq:
-						case LITERAL_ne:
-						case LITERAL_lt:
-						case LITERAL_le:
-						case LITERAL_gt:
-						case LITERAL_ge:
-						case GT:
-						case NEQ:
-						case LT:
-						case LTEQ:
-						case LITERAL_is:
-						case LITERAL_isnot:
-						case CONCAT:
-						case LITERAL_to:
-						case MINUS:
-						case LITERAL_div:
-						case LITERAL_idiv:
-						case LITERAL_mod:
-						case BANG:
-						case LITERAL_intersect:
-						case LITERAL_except:
-						case SLASH:
-						case DSLASH:
-						case LITERAL_text:
-						case LITERAL_node:
-						case LITERAL_attribute:
-						case LITERAL_comment:
-						case 189:
-						case 190:
-						case HASH:
-						case SELF:
-						case XML_COMMENT:
-						case XML_PI:
-						case AT:
-						case PARENT:
-						case LITERAL_child:
-						case LITERAL_self:
-						case LITERAL_descendant:
-						case 203:
-						case 204:
-						case LITERAL_parent:
-						case LITERAL_ancestor:
-						case 207:
-						case 208:
-						case INTEGER_LITERAL:
-						case DOUBLE_LITERAL:
-						case DECIMAL_LITERAL:
-						case XML_CDATA:
-						{
-							break;
-						}
-						default:
-						{
-							throw new NoViableAltException(_t);
-						}
-						}
-						}
-					}
-					else {
-						if ( _cnt187>=1 ) { break _loop187; } else {throw new NoViableAltException(_t);}
+						
+						_cnt183++;
+					} while (true);
 					}
 					
-					_cnt187++;
-				} while (true);
+					ForLetClause clause= new ForLetClause();
+					clause.ast = ob;
+					clause.type = BindingType.ORDERBY;
+												clause.orderSpecs = orderBy;
+					clauses.add(clause);
+					
+					_t = __t176;
+					_t = _t.getNextSibling();
+					break;
 				}
-				
-								    ForLetClause clause= new ForLetClause();
-				clause.ast = ob;
-				clause.type = BindingType.ORDERBY;
-				clauses.add(clause);
-								
-				_t = __t180;
-				_t = _t.getNextSibling();
-				break;
-			}
-			case EOF:
-			case EQNAME:
-			case PARENTHESIZED:
-			case ABSOLUTE_SLASH:
-			case ABSOLUTE_DSLASH:
-			case WILDCARD:
-			case PREFIX_WILDCARD:
-			case FUNCTION:
-			case UNARY_MINUS:
-			case UNARY_PLUS:
-			case VARIABLE_REF:
-			case ELEMENT:
-			case TEXT:
-			case INLINE_FUNCTION_DECL:
-			case LOOKUP:
-			case ARRAY:
-			case ATTRIBUTE_TEST:
-			case COMP_ELEM_CONSTRUCTOR:
-			case COMP_ATTR_CONSTRUCTOR:
-			case COMP_TEXT_CONSTRUCTOR:
-			case COMP_COMMENT_CONSTRUCTOR:
-			case COMP_PI_CONSTRUCTOR:
-			case COMP_NS_CONSTRUCTOR:
-			case COMP_DOC_CONSTRUCTOR:
-			case PRAGMA:
-			case GTEQ:
-			case SEQUENCE:
-			case NCNAME:
-			case EQ:
-			case STRING_LITERAL:
-			case LITERAL_element:
-			case COMMA:
-			case LCURLY:
-			case STAR:
-			case PLUS:
-			case LITERAL_map:
-			case LITERAL_try:
-			case LITERAL_some:
-			case LITERAL_every:
-			case LITERAL_if:
-			case LITERAL_switch:
-			case LITERAL_typeswitch:
-			case LITERAL_update:
-			case LITERAL_preceding:
-			case LITERAL_following:
-			case UNION:
-			case LITERAL_return:
-			case LITERAL_or:
-			case LITERAL_and:
-			case LITERAL_instance:
-			case LITERAL_treat:
-			case LITERAL_castable:
-			case LITERAL_cast:
-			case BEFORE:
-			case AFTER:
-			case LITERAL_eq:
-			case LITERAL_ne:
-			case LITERAL_lt:
-			case LITERAL_le:
-			case LITERAL_gt:
-			case LITERAL_ge:
-			case GT:
-			case NEQ:
-			case LT:
-			case LTEQ:
-			case LITERAL_is:
-			case LITERAL_isnot:
-			case CONCAT:
-			case LITERAL_to:
-			case MINUS:
-			case LITERAL_div:
-			case LITERAL_idiv:
-			case LITERAL_mod:
-			case BANG:
-			case LITERAL_intersect:
-			case LITERAL_except:
-			case SLASH:
-			case DSLASH:
-			case LITERAL_text:
-			case LITERAL_node:
-			case LITERAL_attribute:
-			case LITERAL_comment:
-			case 189:
-			case 190:
-			case HASH:
-			case SELF:
-			case XML_COMMENT:
-			case XML_PI:
-			case AT:
-			case PARENT:
-			case LITERAL_child:
-			case LITERAL_self:
-			case LITERAL_descendant:
-			case 203:
-			case 204:
-			case LITERAL_parent:
-			case LITERAL_ancestor:
-			case 207:
-			case 208:
-			case INTEGER_LITERAL:
-			case DOUBLE_LITERAL:
-			case DECIMAL_LITERAL:
-			case XML_CDATA:
-			{
-				break;
-			}
-			default:
-			{
-				throw new NoViableAltException(_t);
-			}
-			}
+				case LITERAL_where:
+				{
+					AST __t184 = _t;
+					w = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
+					match(_t,LITERAL_where);
+					_t = _t.getFirstChild();
+					
+										whereExpr= new PathExpr(context);
+									
+					step=expr(_t,whereExpr);
+					_t = _retTree;
+					
+										ForLetClause clause = new ForLetClause();
+										clause.ast = w;
+										clause.type = BindingType.WHERE;
+										clause.inputSequence = whereExpr;
+										clauses.add(clause);
+									
+					_t = __t184;
+					_t = _t.getNextSibling();
+					break;
+				}
+				default:
+				{
+					if ( _cnt185>=1 ) { break _loop185; } else {throw new NoViableAltException(_t);}
+				}
+				}
+				_cnt185++;
+			} while (true);
 			}
 			step=expr(_t,(PathExpr) action);
 			_t = _retTree;
@@ -2812,8 +2475,11 @@ public XQueryTreeParser() {
 			expr = new GroupByClause(context);
 			break;
 			case ORDERBY:
-			expr = new OrderByClause(context, orderBy);
+			expr = new OrderByClause(context, clause.orderSpecs);
 			break;
+													case WHERE:
+															expr = new WhereClause(context, new DebuggableExpression(clause.inputSequence));
+															break;
 			default:
 			expr= new ForExpr(context);
 			break;
@@ -2826,10 +2492,6 @@ public XQueryTreeParser() {
 			bind.setInputSequence(clause.inputSequence);
 			if (clause.type == BindingType.FOR)
 			((ForExpr) bind).setPositionalVariable(clause.posVar);
-			if (whereExpr != null) {
-			bind.setWhereExpression(new DebuggableExpression(whereExpr));
-			whereExpr= null;
-			}
 							} else if (clause.type == BindingType.GROUPBY ) {
 							    if (clause.groupSpecs != null) {
 			GroupSpec specs[]= new GroupSpec[clause.groupSpecs.size()];
@@ -2859,51 +2521,51 @@ public XQueryTreeParser() {
 		}
 		case LITERAL_instance:
 		{
-			AST __t188 = _t;
+			AST __t186 = _t;
 			org.exist.xquery.parser.XQueryAST tmp17_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,LITERAL_instance);
 			_t = _t.getFirstChild();
 			
 						PathExpr expr = new PathExpr(context);
-						SequenceType type= new SequenceType(); 
+						SequenceType type= new SequenceType();
 					
 			step=expr(_t,expr);
 			_t = _retTree;
 			sequenceType(_t,type);
 			_t = _retTree;
 			
-						step = new InstanceOfExpression(context, expr, type); 
+						step = new InstanceOfExpression(context, expr, type);
 						path.add(step);
 					
-			_t = __t188;
+			_t = __t186;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case LITERAL_treat:
 		{
-			AST __t189 = _t;
+			AST __t187 = _t;
 			org.exist.xquery.parser.XQueryAST tmp18_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,LITERAL_treat);
 			_t = _t.getFirstChild();
 			
 						PathExpr expr = new PathExpr(context);
-						SequenceType type= new SequenceType(); 
+						SequenceType type= new SequenceType();
 					
 			step=expr(_t,expr);
 			_t = _retTree;
 			sequenceType(_t,type);
 			_t = _retTree;
 			
-						step = new TreatAsExpression(context, expr, type); 
+						step = new TreatAsExpression(context, expr, type);
 						path.add(step);
 					
-			_t = __t189;
+			_t = __t187;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case LITERAL_switch:
 		{
-			AST __t190 = _t;
+			AST __t188 = _t;
 			switchAST = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,LITERAL_switch);
 			_t = _t.getFirstChild();
@@ -2915,11 +2577,11 @@ public XQueryTreeParser() {
 			
 						SwitchExpression switchExpr = new SwitchExpression(context, operand);
 			switchExpr.setASTNode(switchAST);
-						path.add(switchExpr); 
+						path.add(switchExpr);
 					
 			{
-			int _cnt196=0;
-			_loop196:
+			int _cnt194=0;
+			_loop194:
 			do {
 				if (_t==null) _t=ASTNULL;
 				if ((_t.getType()==LITERAL_case)) {
@@ -2929,8 +2591,8 @@ public XQueryTreeParser() {
 								
 					{
 					{
-					int _cnt194=0;
-					_loop194:
+					int _cnt192=0;
+					_loop192:
 					do {
 						if (_t==null) _t=ASTNULL;
 						if ((_t.getType()==LITERAL_case)) {
@@ -2943,28 +2605,28 @@ public XQueryTreeParser() {
 							caseOperands.add(caseOperand);
 						}
 						else {
-							if ( _cnt194>=1 ) { break _loop194; } else {throw new NoViableAltException(_t);}
+							if ( _cnt192>=1 ) { break _loop192; } else {throw new NoViableAltException(_t);}
 						}
 						
-						_cnt194++;
+						_cnt192++;
 					} while (true);
 					}
-					AST __t195 = _t;
+					AST __t193 = _t;
 					org.exist.xquery.parser.XQueryAST tmp20_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
 					match(_t,LITERAL_return);
 					_t = _t.getFirstChild();
 					step=expr(_t,returnExpr);
 					_t = _retTree;
 					switchExpr.addCase(caseOperands, returnExpr);
-					_t = __t195;
+					_t = __t193;
 					_t = _t.getNextSibling();
 					}
 				}
 				else {
-					if ( _cnt196>=1 ) { break _loop196; } else {throw new NoViableAltException(_t);}
+					if ( _cnt194>=1 ) { break _loop194; } else {throw new NoViableAltException(_t);}
 				}
 				
-				_cnt196++;
+				_cnt194++;
 			} while (true);
 			}
 			{
@@ -2981,13 +2643,13 @@ public XQueryTreeParser() {
 						
 			}
 			step = switchExpr;
-			_t = __t190;
+			_t = __t188;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case LITERAL_typeswitch:
 		{
-			AST __t198 = _t;
+			AST __t196 = _t;
 			org.exist.xquery.parser.XQueryAST tmp22_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,LITERAL_typeswitch);
 			_t = _t.getFirstChild();
@@ -2998,11 +2660,11 @@ public XQueryTreeParser() {
 			_t = _retTree;
 			
 						TypeswitchExpression tswitch = new TypeswitchExpression(context, operand);
-						path.add(tswitch); 
+						path.add(tswitch);
 					
 			{
-			int _cnt205=0;
-			_loop205:
+			int _cnt203=0;
+			_loop203:
 			do {
 				if (_t==null) _t=ASTNULL;
 				if ((_t.getType()==LITERAL_case)) {
@@ -3012,7 +2674,7 @@ public XQueryTreeParser() {
 									List<SequenceType> types = new ArrayList<SequenceType>(2);
 									SequenceType type = new SequenceType();
 								
-					AST __t200 = _t;
+					AST __t198 = _t;
 					org.exist.xquery.parser.XQueryAST tmp23_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
 					match(_t,LITERAL_case);
 					_t = _t.getFirstChild();
@@ -3051,8 +2713,8 @@ public XQueryTreeParser() {
 					}
 					}
 					{
-					int _cnt203=0;
-					_loop203:
+					int _cnt201=0;
+					_loop201:
 					do {
 						if (_t==null) _t=ASTNULL;
 						if ((_tokenSet_1.member(_t.getType()))) {
@@ -3064,13 +2726,13 @@ public XQueryTreeParser() {
 							
 						}
 						else {
-							if ( _cnt203>=1 ) { break _loop203; } else {throw new NoViableAltException(_t);}
+							if ( _cnt201>=1 ) { break _loop201; } else {throw new NoViableAltException(_t);}
 						}
 						
-						_cnt203++;
+						_cnt201++;
 					} while (true);
 					}
-					AST __t204 = _t;
+					AST __t202 = _t;
 					org.exist.xquery.parser.XQueryAST tmp24_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
 					match(_t,LITERAL_return);
 					_t = _t.getFirstChild();
@@ -3081,16 +2743,16 @@ public XQueryTreeParser() {
 					atype = types.toArray(atype);
 					tswitch.addCase(atype, qn, returnExpr);
 					
-					_t = __t204;
+					_t = __t202;
 					_t = _t.getNextSibling();
-					_t = __t200;
+					_t = __t198;
 					_t = _t.getNextSibling();
 				}
 				else {
-					if ( _cnt205>=1 ) { break _loop205; } else {throw new NoViableAltException(_t);}
+					if ( _cnt203>=1 ) { break _loop203; } else {throw new NoViableAltException(_t);}
 				}
 				
-				_cnt205++;
+				_cnt203++;
 			} while (true);
 			}
 			{
@@ -3231,13 +2893,13 @@ public XQueryTreeParser() {
 						
 			}
 			step = tswitch;
-			_t = __t198;
+			_t = __t196;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case LITERAL_or:
 		{
-			AST __t208 = _t;
+			AST __t206 = _t;
 			org.exist.xquery.parser.XQueryAST tmp26_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,LITERAL_or);
 			_t = _t.getFirstChild();
@@ -3247,7 +2909,7 @@ public XQueryTreeParser() {
 			PathExpr right= new PathExpr(context);
 			step=expr(_t,right);
 			_t = _retTree;
-			_t = __t208;
+			_t = __t206;
 			_t = _t.getNextSibling();
 			
 					OpOr or= new OpOr(context);
@@ -3260,7 +2922,7 @@ public XQueryTreeParser() {
 		}
 		case LITERAL_and:
 		{
-			AST __t209 = _t;
+			AST __t207 = _t;
 			org.exist.xquery.parser.XQueryAST tmp27_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,LITERAL_and);
 			_t = _t.getFirstChild();
@@ -3272,7 +2934,7 @@ public XQueryTreeParser() {
 			_t = _retTree;
 			step=expr(_t,right);
 			_t = _retTree;
-			_t = __t209;
+			_t = __t207;
 			_t = _t.getNextSibling();
 			
 					OpAnd and= new OpAnd(context);
@@ -3285,7 +2947,7 @@ public XQueryTreeParser() {
 		}
 		case UNION:
 		{
-			AST __t210 = _t;
+			AST __t208 = _t;
 			org.exist.xquery.parser.XQueryAST tmp28_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,UNION);
 			_t = _t.getFirstChild();
@@ -3297,7 +2959,7 @@ public XQueryTreeParser() {
 			_t = _retTree;
 			step=expr(_t,right);
 			_t = _retTree;
-			_t = __t210;
+			_t = __t208;
 			_t = _t.getNextSibling();
 			
 					Union union= new Union(context, left, right);
@@ -3308,7 +2970,7 @@ public XQueryTreeParser() {
 		}
 		case LITERAL_intersect:
 		{
-			AST __t211 = _t;
+			AST __t209 = _t;
 			org.exist.xquery.parser.XQueryAST tmp29_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,LITERAL_intersect);
 			_t = _t.getFirstChild();
@@ -3320,7 +2982,7 @@ public XQueryTreeParser() {
 			_t = _retTree;
 			step=expr(_t,right);
 			_t = _retTree;
-			_t = __t211;
+			_t = __t209;
 			_t = _t.getNextSibling();
 			
 					Intersect intersect = new Intersect(context, left, right);
@@ -3331,7 +2993,7 @@ public XQueryTreeParser() {
 		}
 		case LITERAL_except:
 		{
-			AST __t212 = _t;
+			AST __t210 = _t;
 			org.exist.xquery.parser.XQueryAST tmp30_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,LITERAL_except);
 			_t = _t.getFirstChild();
@@ -3343,7 +3005,7 @@ public XQueryTreeParser() {
 			_t = _retTree;
 			step=expr(_t,right);
 			_t = _retTree;
-			_t = __t212;
+			_t = __t210;
 			_t = _t.getNextSibling();
 			
 					Except intersect = new Except(context, left, right);
@@ -3354,7 +3016,7 @@ public XQueryTreeParser() {
 		}
 		case ABSOLUTE_SLASH:
 		{
-			AST __t213 = _t;
+			AST __t211 = _t;
 			org.exist.xquery.parser.XQueryAST tmp31_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,ABSOLUTE_SLASH);
 			_t = _t.getFirstChild();
@@ -3483,13 +3145,13 @@ public XQueryTreeParser() {
 			}
 			}
 			}
-			_t = __t213;
+			_t = __t211;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case ABSOLUTE_DSLASH:
 		{
-			AST __t215 = _t;
+			AST __t213 = _t;
 			org.exist.xquery.parser.XQueryAST tmp32_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,ABSOLUTE_DSLASH);
 			_t = _t.getFirstChild();
@@ -3632,13 +3294,13 @@ public XQueryTreeParser() {
 			}
 			}
 			}
-			_t = __t215;
+			_t = __t213;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case LITERAL_to:
 		{
-			AST __t217 = _t;
+			AST __t215 = _t;
 			org.exist.xquery.parser.XQueryAST tmp33_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,LITERAL_to);
 			_t = _t.getFirstChild();
@@ -3659,7 +3321,7 @@ public XQueryTreeParser() {
 						path.addPath(range);
 						step = range;
 					
-			_t = __t217;
+			_t = __t215;
 			_t = _t.getNextSibling();
 			break;
 		}
@@ -3876,7 +3538,7 @@ public XQueryTreeParser() {
 			if (!enc.getText().equals("UTF-8")) {
 			//util.serializer.encodings.CharacterSet
 			//context.setEncoding(enc.getText());
-			}   
+			}
 			}
 			
 			_t = __t7;
@@ -4551,7 +4213,7 @@ public XQueryTreeParser() {
 				match(_t,STRING_LITERAL);
 				_t = _t.getNextSibling();
 				
-				context.setDefaultFunctionNamespace(deff.getText()); 
+				context.setDefaultFunctionNamespace(deff.getText());
 				staticContext.setDefaultFunctionNamespace(deff.getText());
 				
 				_t = __t29;
@@ -4875,11 +4537,11 @@ public XQueryTreeParser() {
 											isDeclared = (decl != null);
 										} catch (XPathException ignoredException) {
 										}
-										
+					
 										if (!isDeclared)
 					decl = context.declareVariable(qname.getText(), null);
 					
-					if (decl != null)                        
+					if (decl != null)
 					decl.setSequenceType(type);
 									
 					break;
@@ -4960,7 +4622,7 @@ public XQueryTreeParser() {
 				annotation(_t,annotList);
 				_t = _retTree;
 				if (annotList.size() != 0)
-				annots.add(annotList); 
+				annots.add(annotList);
 				
 			}
 			else {
@@ -6061,7 +5723,7 @@ public XQueryTreeParser() {
 		String ns = qn.getNamespaceURI();
 		
 		if(!annotationValid(qn)) {
-		XPathException e = new XPathException(ErrorCodes.XQST0045, 
+		XPathException e = new XPathException(ErrorCodes.XQST0045,
 									"Annotation in a reserved namespace: " + qn.getNamespaceURI());
 								e.setLocation(name.getLine(), name.getColumn());
 								throw e;
@@ -6175,7 +5837,7 @@ public XQueryTreeParser() {
 				match(_t,DOUBLE_LITERAL);
 				_t = _t.getNextSibling();
 				
-				step= new LiteralValue(context, 
+				step= new LiteralValue(context,
 				new DoubleValue(Double.parseDouble(dbl.getText())));
 				step.setASTNode(dbl);
 				
@@ -6508,7 +6170,7 @@ public XQueryTreeParser() {
 		switch ( _t.getType()) {
 		case LITERAL_cast:
 		{
-			AST __t338 = _t;
+			AST __t336 = _t;
 			castAST = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,LITERAL_cast);
 			_t = _t.getFirstChild();
@@ -6546,13 +6208,13 @@ public XQueryTreeParser() {
 						path.add(castExpr);
 						step = castExpr;
 					
-			_t = __t338;
+			_t = __t336;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case LITERAL_castable:
 		{
-			AST __t340 = _t;
+			AST __t338 = _t;
 			castableAST = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,LITERAL_castable);
 			_t = _t.getFirstChild();
@@ -6590,7 +6252,7 @@ public XQueryTreeParser() {
 						path.add(castExpr);
 						step = castExpr;
 					
-			_t = __t340;
+			_t = __t338;
 			_t = _t.getNextSibling();
 			break;
 		}
@@ -6625,7 +6287,7 @@ public XQueryTreeParser() {
 		switch ( _t.getType()) {
 		case EQ:
 		{
-			AST __t297 = _t;
+			AST __t295 = _t;
 			eq = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,EQ);
 			_t = _t.getFirstChild();
@@ -6638,13 +6300,13 @@ public XQueryTreeParser() {
 			step.setASTNode(eq);
 						path.add(step);
 					
-			_t = __t297;
+			_t = __t295;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case NEQ:
 		{
-			AST __t298 = _t;
+			AST __t296 = _t;
 			neq = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,NEQ);
 			_t = _t.getFirstChild();
@@ -6657,13 +6319,13 @@ public XQueryTreeParser() {
 			step.setASTNode(neq);
 						path.add(step);
 					
-			_t = __t298;
+			_t = __t296;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case LT:
 		{
-			AST __t299 = _t;
+			AST __t297 = _t;
 			lt = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,LT);
 			_t = _t.getFirstChild();
@@ -6676,13 +6338,13 @@ public XQueryTreeParser() {
 			step.setASTNode(lt);
 						path.add(step);
 					
-			_t = __t299;
+			_t = __t297;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case LTEQ:
 		{
-			AST __t300 = _t;
+			AST __t298 = _t;
 			lteq = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,LTEQ);
 			_t = _t.getFirstChild();
@@ -6695,13 +6357,13 @@ public XQueryTreeParser() {
 			step.setASTNode(lteq);
 						path.add(step);
 					
-			_t = __t300;
+			_t = __t298;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case GT:
 		{
-			AST __t301 = _t;
+			AST __t299 = _t;
 			gt = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,GT);
 			_t = _t.getFirstChild();
@@ -6714,13 +6376,13 @@ public XQueryTreeParser() {
 			step.setASTNode(gt);
 						path.add(step);
 					
-			_t = __t301;
+			_t = __t299;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case GTEQ:
 		{
-			AST __t302 = _t;
+			AST __t300 = _t;
 			gteq = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,GTEQ);
 			_t = _t.getFirstChild();
@@ -6733,7 +6395,7 @@ public XQueryTreeParser() {
 			step.setASTNode(gteq);
 						path.add(step);
 					
-			_t = __t302;
+			_t = __t300;
 			_t = _t.getNextSibling();
 			break;
 		}
@@ -6768,7 +6430,7 @@ public XQueryTreeParser() {
 		switch ( _t.getType()) {
 		case LITERAL_eq:
 		{
-			AST __t290 = _t;
+			AST __t288 = _t;
 			eq = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,LITERAL_eq);
 			_t = _t.getFirstChild();
@@ -6781,13 +6443,13 @@ public XQueryTreeParser() {
 			step.setASTNode(eq);
 						path.add(step);
 					
-			_t = __t290;
+			_t = __t288;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case LITERAL_ne:
 		{
-			AST __t291 = _t;
+			AST __t289 = _t;
 			ne = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,LITERAL_ne);
 			_t = _t.getFirstChild();
@@ -6800,13 +6462,13 @@ public XQueryTreeParser() {
 			step.setASTNode(ne);
 						path.add(step);
 					
-			_t = __t291;
+			_t = __t289;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case LITERAL_lt:
 		{
-			AST __t292 = _t;
+			AST __t290 = _t;
 			lt = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,LITERAL_lt);
 			_t = _t.getFirstChild();
@@ -6819,13 +6481,13 @@ public XQueryTreeParser() {
 			step.setASTNode(lt);
 						path.add(step);
 					
-			_t = __t292;
+			_t = __t290;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case LITERAL_le:
 		{
-			AST __t293 = _t;
+			AST __t291 = _t;
 			le = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,LITERAL_le);
 			_t = _t.getFirstChild();
@@ -6838,13 +6500,13 @@ public XQueryTreeParser() {
 			step.setASTNode(le);
 						path.add(step);
 					
-			_t = __t293;
+			_t = __t291;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case LITERAL_gt:
 		{
-			AST __t294 = _t;
+			AST __t292 = _t;
 			gt = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,LITERAL_gt);
 			_t = _t.getFirstChild();
@@ -6857,13 +6519,13 @@ public XQueryTreeParser() {
 			step.setASTNode(gt);
 						path.add(step);
 					
-			_t = __t294;
+			_t = __t292;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case LITERAL_ge:
 		{
-			AST __t295 = _t;
+			AST __t293 = _t;
 			ge = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,LITERAL_ge);
 			_t = _t.getFirstChild();
@@ -6876,7 +6538,7 @@ public XQueryTreeParser() {
 			step.setASTNode(ge);
 						path.add(step);
 					
-			_t = __t295;
+			_t = __t293;
 			_t = _t.getNextSibling();
 			break;
 		}
@@ -6909,7 +6571,7 @@ public XQueryTreeParser() {
 		switch ( _t.getType()) {
 		case LITERAL_is:
 		{
-			AST __t304 = _t;
+			AST __t302 = _t;
 			is = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,LITERAL_is);
 			_t = _t.getFirstChild();
@@ -6922,13 +6584,13 @@ public XQueryTreeParser() {
 			step.setASTNode(is);
 						path.add(step);
 					
-			_t = __t304;
+			_t = __t302;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case LITERAL_isnot:
 		{
-			AST __t305 = _t;
+			AST __t303 = _t;
 			isnot = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,LITERAL_isnot);
 			_t = _t.getFirstChild();
@@ -6941,13 +6603,13 @@ public XQueryTreeParser() {
 			step.setASTNode(isnot);
 						path.add(step);
 					
-			_t = __t305;
+			_t = __t303;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case BEFORE:
 		{
-			AST __t306 = _t;
+			AST __t304 = _t;
 			before = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,BEFORE);
 			_t = _t.getFirstChild();
@@ -6960,13 +6622,13 @@ public XQueryTreeParser() {
 			step.setASTNode(before);
 						path.add(step);
 					
-			_t = __t306;
+			_t = __t304;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case AFTER:
 		{
-			AST __t307 = _t;
+			AST __t305 = _t;
 			after = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,AFTER);
 			_t = _t.getFirstChild();
@@ -6979,7 +6641,7 @@ public XQueryTreeParser() {
 			step.setASTNode(after);
 						path.add(step);
 					
-			_t = __t307;
+			_t = __t305;
 			_t = _t.getNextSibling();
 			break;
 		}
@@ -7049,7 +6711,7 @@ public XQueryTreeParser() {
 		}
 		case PARENTHESIZED:
 		{
-			AST __t219 = _t;
+			AST __t217 = _t;
 			org.exist.xquery.parser.XQueryAST tmp91_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,PARENTHESIZED);
 			_t = _t.getFirstChild();
@@ -7189,7 +6851,7 @@ public XQueryTreeParser() {
 			}
 			}
 			}
-			_t = __t219;
+			_t = __t217;
 			_t = _t.getNextSibling();
 			step=postfixExpr(_t,pathExpr);
 			_t = _retTree;
@@ -7369,7 +7031,7 @@ public XQueryTreeParser() {
 			}
 			}
 			
-					NodeTest test = null; 
+					NodeTest test = null;
 					XQueryAST ast = null;
 				
 			{
@@ -7400,14 +7062,14 @@ public XQueryTreeParser() {
 			}
 			case PREFIX_WILDCARD:
 			{
-				AST __t224 = _t;
+				AST __t222 = _t;
 				org.exist.xquery.parser.XQueryAST tmp92_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
 				match(_t,PREFIX_WILDCARD);
 				_t = _t.getFirstChild();
 				nc1 = (org.exist.xquery.parser.XQueryAST)_t;
 				match(_t,NCNAME);
 				_t = _t.getNextSibling();
-				_t = __t224;
+				_t = __t222;
 				_t = _t.getNextSibling();
 				
 							try {
@@ -7424,14 +7086,14 @@ public XQueryTreeParser() {
 			}
 			case NCNAME:
 			{
-				AST __t225 = _t;
+				AST __t223 = _t;
 				nc = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 				match(_t,NCNAME);
 				_t = _t.getFirstChild();
 				org.exist.xquery.parser.XQueryAST tmp93_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
 				match(_t,WILDCARD);
 				_t = _t.getNextSibling();
-				_t = __t225;
+				_t = __t223;
 				_t = _t.getNextSibling();
 				
 							try {
@@ -7471,7 +7133,7 @@ public XQueryTreeParser() {
 							//	throw new XPathException(n, "Cannot test for node() on the attribute axis");
 							   test= new TypeTest(Type.ATTRIBUTE);
 				} else {
-							   test= new AnyNodeTest(); 
+							   test= new AnyNodeTest();
 				}
 							ast = n;
 						
@@ -7484,22 +7146,22 @@ public XQueryTreeParser() {
 				_t = _t.getNextSibling();
 				
 							if (axis == Constants.ATTRIBUTE_AXIS)
-								throw new XPathException(t, "Cannot test for text() on the attribute axis"); 
-							test= new TypeTest(Type.TEXT); 
+								throw new XPathException(t, "Cannot test for text() on the attribute axis");
+							test= new TypeTest(Type.TEXT);
 							ast = t;
 						
 				break;
 			}
 			case LITERAL_element:
 			{
-				AST __t226 = _t;
+				AST __t224 = _t;
 				e = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 				match(_t,LITERAL_element);
 				_t = _t.getFirstChild();
 				
 								if (axis == Constants.ATTRIBUTE_AXIS)
-									throw new XPathException(e, "Cannot test for element() on the attribute axis"); 
-								test= new TypeTest(Type.ELEMENT); 
+									throw new XPathException(e, "Cannot test for element() on the attribute axis");
+								test= new TypeTest(Type.ELEMENT);
 								ast = e;
 							
 				{
@@ -7557,13 +7219,13 @@ public XQueryTreeParser() {
 				}
 				}
 				}
-				_t = __t226;
+				_t = __t224;
 				_t = _t.getNextSibling();
 				break;
 			}
 			case ATTRIBUTE_TEST:
 			{
-				AST __t229 = _t;
+				AST __t227 = _t;
 				att = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 				match(_t,ATTRIBUTE_TEST);
 				_t = _t.getFirstChild();
@@ -7631,7 +7293,7 @@ public XQueryTreeParser() {
 				}
 				}
 				}
-				_t = __t229;
+				_t = __t227;
 				_t = _t.getNextSibling();
 				break;
 			}
@@ -7643,21 +7305,21 @@ public XQueryTreeParser() {
 				
 							if (axis == Constants.ATTRIBUTE_AXIS)
 								throw new XPathException(n, "Cannot test for comment() on the attribute axis");
-							test= new TypeTest(Type.COMMENT); 
+							test= new TypeTest(Type.COMMENT);
 							ast = com;
 						
 				break;
 			}
 			case 189:
 			{
-				AST __t232 = _t;
+				AST __t230 = _t;
 				pi = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 				match(_t,189);
 				_t = _t.getFirstChild();
 				
 							if (axis == Constants.ATTRIBUTE_AXIS)
 								throw new XPathException(n, "Cannot test for processing-instruction() on the attribute axis");
-							test= new TypeTest(Type.PROCESSING_INSTRUCTION); 
+							test= new TypeTest(Type.PROCESSING_INSTRUCTION);
 							ast = pi;
 						
 				{
@@ -7682,7 +7344,7 @@ public XQueryTreeParser() {
 					_t = _t.getNextSibling();
 					
 					QName qname;
-					qname= new QName(slpi.getText(), "", null);                
+					qname= new QName(slpi.getText(), "", null);
 					test= new NameTest(Type.PROCESSING_INSTRUCTION, qname);
 					
 					break;
@@ -7697,7 +7359,7 @@ public XQueryTreeParser() {
 				}
 				}
 				}
-				_t = __t232;
+				_t = __t230;
 				_t = _t.getNextSibling();
 				break;
 			}
@@ -7713,7 +7375,7 @@ public XQueryTreeParser() {
 				{
 				if (_t==null) _t=ASTNULL;
 				if ((_t.getType()==LITERAL_element)) {
-					AST __t235 = _t;
+					AST __t233 = _t;
 					org.exist.xquery.parser.XQueryAST tmp96_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
 					match(_t,LITERAL_element);
 					_t = _t.getFirstChild();
@@ -7772,18 +7434,18 @@ public XQueryTreeParser() {
 					}
 					}
 					}
-					_t = __t235;
+					_t = __t233;
 					_t = _t.getNextSibling();
 				}
 				else if ((_t.getType()==212)) {
-					AST __t238 = _t;
+					AST __t236 = _t;
 					org.exist.xquery.parser.XQueryAST tmp98_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
 					match(_t,212);
 					_t = _t.getFirstChild();
 					org.exist.xquery.parser.XQueryAST tmp99_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
 					match(_t,EQNAME);
 					_t = _t.getNextSibling();
-					_t = __t238;
+					_t = __t236;
 					_t = _t.getNextSibling();
 				}
 				else if ((_tokenSet_8.member(_t.getType()))) {
@@ -7808,7 +7470,7 @@ public XQueryTreeParser() {
 						step.setASTNode(ast);
 				
 			{
-			_loop240:
+			_loop238:
 			do {
 				if (_t==null) _t=ASTNULL;
 				if ((_t.getType()==PREDICATE)) {
@@ -7816,7 +7478,7 @@ public XQueryTreeParser() {
 					_t = _retTree;
 				}
 				else {
-					break _loop240;
+					break _loop238;
 				}
 				
 			} while (true);
@@ -7845,14 +7507,14 @@ public XQueryTreeParser() {
 			}
 			case PREFIX_WILDCARD:
 			{
-				AST __t242 = _t;
+				AST __t240 = _t;
 				org.exist.xquery.parser.XQueryAST tmp100_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
 				match(_t,PREFIX_WILDCARD);
 				_t = _t.getFirstChild();
 				nc2 = (org.exist.xquery.parser.XQueryAST)_t;
 				match(_t,NCNAME);
 				_t = _t.getNextSibling();
-				_t = __t242;
+				_t = __t240;
 				_t = _t.getNextSibling();
 				
 				qname = new QName.WildcardNamespaceURIQName(nc2.getText(), ElementValue.ATTRIBUTE);
@@ -7861,14 +7523,14 @@ public XQueryTreeParser() {
 			}
 			case NCNAME:
 			{
-				AST __t243 = _t;
+				AST __t241 = _t;
 				nc3 = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 				match(_t,NCNAME);
 				_t = _t.getFirstChild();
 				org.exist.xquery.parser.XQueryAST tmp101_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
 				match(_t,WILDCARD);
 				_t = _t.getNextSibling();
-				_t = __t243;
+				_t = __t241;
 				_t = _t.getNextSibling();
 				
 							String namespaceURI= staticContext.getURIForPrefix(nc3.getText());
@@ -7898,6 +7560,31 @@ public XQueryTreeParser() {
 					path.add(step);
 				
 			{
+			_loop243:
+			do {
+				if (_t==null) _t=ASTNULL;
+				if ((_t.getType()==PREDICATE)) {
+					predicate(_t,(LocationStep) step);
+					_t = _retTree;
+				}
+				else {
+					break _loop243;
+				}
+				
+			} while (true);
+			}
+			break;
+		}
+		case SELF:
+		{
+			org.exist.xquery.parser.XQueryAST tmp103_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
+			match(_t,SELF);
+			_t = _t.getNextSibling();
+			
+					step= new LocationStep(context, Constants.SELF_AXIS, new TypeTest(Type.NODE));
+					path.add(step);
+				
+			{
 			_loop245:
 			do {
 				if (_t==null) _t=ASTNULL;
@@ -7913,13 +7600,13 @@ public XQueryTreeParser() {
 			}
 			break;
 		}
-		case SELF:
+		case PARENT:
 		{
-			org.exist.xquery.parser.XQueryAST tmp103_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
-			match(_t,SELF);
+			org.exist.xquery.parser.XQueryAST tmp104_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
+			match(_t,PARENT);
 			_t = _t.getNextSibling();
 			
-					step= new LocationStep(context, Constants.SELF_AXIS, new TypeTest(Type.NODE));
+					step= new LocationStep(context, Constants.PARENT_AXIS, new TypeTest(Type.NODE));
 					path.add(step);
 				
 			{
@@ -7938,39 +7625,14 @@ public XQueryTreeParser() {
 			}
 			break;
 		}
-		case PARENT:
-		{
-			org.exist.xquery.parser.XQueryAST tmp104_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
-			match(_t,PARENT);
-			_t = _t.getNextSibling();
-			
-					step= new LocationStep(context, Constants.PARENT_AXIS, new TypeTest(Type.NODE));
-					path.add(step);
-				
-			{
-			_loop249:
-			do {
-				if (_t==null) _t=ASTNULL;
-				if ((_t.getType()==PREDICATE)) {
-					predicate(_t,(LocationStep) step);
-					_t = _retTree;
-				}
-				else {
-					break _loop249;
-				}
-				
-			} while (true);
-			}
-			break;
-		}
 		case BANG:
 		{
-			AST __t250 = _t;
+			AST __t248 = _t;
 			org.exist.xquery.parser.XQueryAST tmp105_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,BANG);
 			_t = _t.getFirstChild();
 			
-						PathExpr left = new PathExpr(context); 
+						PathExpr left = new PathExpr(context);
 						PathExpr right = new PathExpr(context);
 					
 			expr(_t,left);
@@ -7982,13 +7644,13 @@ public XQueryTreeParser() {
 						path.add(map);
 						step = path;
 					
-			_t = __t250;
+			_t = __t248;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case SLASH:
 		{
-			AST __t251 = _t;
+			AST __t249 = _t;
 			org.exist.xquery.parser.XQueryAST tmp106_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,SLASH);
 			_t = _t.getFirstChild();
@@ -8128,7 +7790,7 @@ public XQueryTreeParser() {
 			}
 			}
 			}
-			_t = __t251;
+			_t = __t249;
 			_t = _t.getNextSibling();
 			
 					if (step instanceof LocationStep && ((LocationStep) step).getAxis() == Constants.UNKNOWN_AXIS)
@@ -8138,7 +7800,7 @@ public XQueryTreeParser() {
 		}
 		case DSLASH:
 		{
-			AST __t253 = _t;
+			AST __t251 = _t;
 			org.exist.xquery.parser.XQueryAST tmp107_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,DSLASH);
 			_t = _t.getFirstChild();
@@ -8256,7 +7918,7 @@ public XQueryTreeParser() {
 				
 								if (rightStep instanceof LocationStep) {
 									LocationStep rs= (LocationStep) rightStep;
-									if (rs.getAxis() == Constants.ATTRIBUTE_AXIS || 
+									if (rs.getAxis() == Constants.ATTRIBUTE_AXIS ||
 										(rs.getTest().getType() == Type.ATTRIBUTE && rs.getAxis() == Constants.CHILD_AXIS)) {
 										rs.setAxis(Constants.DESCENDANT_ATTRIBUTE_AXIS);
 									} else if (rs.getAxis() == Constants.CHILD_AXIS && rs.getTest().isWildcardTest()) {
@@ -8290,7 +7952,7 @@ public XQueryTreeParser() {
 			}
 			}
 			}
-			_t = __t253;
+			_t = __t251;
 			_t = _t.getNextSibling();
 			
 					if (step instanceof LocationStep && ((LocationStep) step).getAxis() == Constants.UNKNOWN_AXIS) {
@@ -8324,12 +7986,12 @@ public XQueryTreeParser() {
 		
 		
 		{
-		int _cnt346=0;
-		_loop346:
+		int _cnt344=0;
+		_loop344:
 		do {
 			if (_t==null) _t=ASTNULL;
 			if ((_t.getType()==PRAGMA)) {
-				AST __t344 = _t;
+				AST __t342 = _t;
 				p = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 				match(_t,PRAGMA);
 				_t = _t.getFirstChild();
@@ -8361,14 +8023,14 @@ public XQueryTreeParser() {
 									ext.addPragma(pragma);
 								}
 							
-				_t = __t344;
+				_t = __t342;
 				_t = _t.getNextSibling();
 			}
 			else {
-				if ( _cnt346>=1 ) { break _loop346; } else {throw new NoViableAltException(_t);}
+				if ( _cnt344>=1 ) { break _loop344; } else {throw new NoViableAltException(_t);}
 			}
 			
-			_cnt346++;
+			_cnt344++;
 		} while (true);
 		}
 		expr(_t,pathExpr);
@@ -8411,7 +8073,7 @@ public XQueryTreeParser() {
 		switch ( _t.getType()) {
 		case PLUS:
 		{
-			AST __t258 = _t;
+			AST __t256 = _t;
 			plus = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,PLUS);
 			_t = _t.getFirstChild();
@@ -8419,7 +8081,7 @@ public XQueryTreeParser() {
 			_t = _retTree;
 			step=expr(_t,right);
 			_t = _retTree;
-			_t = __t258;
+			_t = __t256;
 			_t = _t.getNextSibling();
 			
 					OpNumeric op= new OpNumeric(context, left, right, Constants.PLUS);
@@ -8431,7 +8093,7 @@ public XQueryTreeParser() {
 		}
 		case MINUS:
 		{
-			AST __t259 = _t;
+			AST __t257 = _t;
 			minus = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,MINUS);
 			_t = _t.getFirstChild();
@@ -8439,7 +8101,7 @@ public XQueryTreeParser() {
 			_t = _retTree;
 			step=expr(_t,right);
 			_t = _retTree;
-			_t = __t259;
+			_t = __t257;
 			_t = _t.getNextSibling();
 			
 					OpNumeric op= new OpNumeric(context, left, right, Constants.MINUS);
@@ -8451,13 +8113,13 @@ public XQueryTreeParser() {
 		}
 		case UNARY_MINUS:
 		{
-			AST __t260 = _t;
+			AST __t258 = _t;
 			uminus = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,UNARY_MINUS);
 			_t = _t.getFirstChild();
 			step=expr(_t,left);
 			_t = _retTree;
-			_t = __t260;
+			_t = __t258;
 			_t = _t.getNextSibling();
 			
 					UnaryExpr unary= new UnaryExpr(context, Constants.MINUS);
@@ -8470,13 +8132,13 @@ public XQueryTreeParser() {
 		}
 		case UNARY_PLUS:
 		{
-			AST __t261 = _t;
+			AST __t259 = _t;
 			uplus = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,UNARY_PLUS);
 			_t = _t.getFirstChild();
 			step=expr(_t,left);
 			_t = _retTree;
-			_t = __t261;
+			_t = __t259;
 			_t = _t.getNextSibling();
 			
 					UnaryExpr unary= new UnaryExpr(context, Constants.PLUS);
@@ -8489,7 +8151,7 @@ public XQueryTreeParser() {
 		}
 		case LITERAL_div:
 		{
-			AST __t262 = _t;
+			AST __t260 = _t;
 			div = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,LITERAL_div);
 			_t = _t.getFirstChild();
@@ -8497,7 +8159,7 @@ public XQueryTreeParser() {
 			_t = _retTree;
 			step=expr(_t,right);
 			_t = _retTree;
-			_t = __t262;
+			_t = __t260;
 			_t = _t.getNextSibling();
 			
 					OpNumeric op= new OpNumeric(context, left, right, Constants.DIV);
@@ -8509,7 +8171,7 @@ public XQueryTreeParser() {
 		}
 		case LITERAL_idiv:
 		{
-			AST __t263 = _t;
+			AST __t261 = _t;
 			idiv = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,LITERAL_idiv);
 			_t = _t.getFirstChild();
@@ -8517,7 +8179,7 @@ public XQueryTreeParser() {
 			_t = _retTree;
 			step=expr(_t,right);
 			_t = _retTree;
-			_t = __t263;
+			_t = __t261;
 			_t = _t.getNextSibling();
 			
 					OpNumeric op= new OpNumeric(context, left, right, Constants.IDIV);
@@ -8529,7 +8191,7 @@ public XQueryTreeParser() {
 		}
 		case LITERAL_mod:
 		{
-			AST __t264 = _t;
+			AST __t262 = _t;
 			mod = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,LITERAL_mod);
 			_t = _t.getFirstChild();
@@ -8537,7 +8199,7 @@ public XQueryTreeParser() {
 			_t = _retTree;
 			step=expr(_t,right);
 			_t = _retTree;
-			_t = __t264;
+			_t = __t262;
 			_t = _t.getNextSibling();
 			
 					OpNumeric op= new OpNumeric(context, left, right, Constants.MOD);
@@ -8549,7 +8211,7 @@ public XQueryTreeParser() {
 		}
 		case STAR:
 		{
-			AST __t265 = _t;
+			AST __t263 = _t;
 			mult = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,STAR);
 			_t = _t.getFirstChild();
@@ -8557,7 +8219,7 @@ public XQueryTreeParser() {
 			_t = _retTree;
 			step=expr(_t,right);
 			_t = _retTree;
-			_t = __t265;
+			_t = __t263;
 			_t = _t.getNextSibling();
 			
 					OpNumeric op= new OpNumeric(context, left, right, Constants.MULT);
@@ -8586,7 +8248,7 @@ public XQueryTreeParser() {
 		
 		
 		
-		AST __t348 = _t;
+		AST __t346 = _t;
 		updateAST = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 		match(_t,LITERAL_update);
 		_t = _t.getFirstChild();
@@ -8811,7 +8473,7 @@ public XQueryTreeParser() {
 					path.add(mod);
 					step = mod;
 				
-		_t = __t348;
+		_t = __t346;
 		_t = _t.getNextSibling();
 		_retTree = _t;
 		return step;
@@ -8851,7 +8513,7 @@ public XQueryTreeParser() {
 		switch ( _t.getType()) {
 		case COMP_ELEM_CONSTRUCTOR:
 		{
-			AST __t309 = _t;
+			AST __t307 = _t;
 			qn = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,COMP_ELEM_CONSTRUCTOR);
 			_t = _t.getFirstChild();
@@ -8869,7 +8531,7 @@ public XQueryTreeParser() {
 			qnameExpr=expr(_t,qnamePathExpr);
 			_t = _retTree;
 			{
-			_loop311:
+			_loop309:
 			do {
 				if (_t==null) _t=ASTNULL;
 				if ((_tokenSet_0.member(_t.getType()))) {
@@ -8879,18 +8541,18 @@ public XQueryTreeParser() {
 					construct.addPath(elementContent);
 				}
 				else {
-					break _loop311;
+					break _loop309;
 				}
 				
 			} while (true);
 			}
-			_t = __t309;
+			_t = __t307;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case COMP_NS_CONSTRUCTOR:
 		{
-			AST __t312 = _t;
+			AST __t310 = _t;
 			qns = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,COMP_NS_CONSTRUCTOR);
 			_t = _t.getFirstChild();
@@ -8898,7 +8560,7 @@ public XQueryTreeParser() {
 						NamespaceConstructor c = new NamespaceConstructor(context);
 						c.setASTNode(qns);
 						step = c;
-						PathExpr qnamePathExpr = new PathExpr(context); 
+						PathExpr qnamePathExpr = new PathExpr(context);
 						c.setNameExpr(qnamePathExpr);
 			elementContent = new PathExpr(context);
 			c.setContentExpr(elementContent);
@@ -9026,13 +8688,13 @@ public XQueryTreeParser() {
 			}
 			}
 			}
-			_t = __t312;
+			_t = __t310;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case COMP_ATTR_CONSTRUCTOR:
 		{
-			AST __t314 = _t;
+			AST __t312 = _t;
 			attr = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,COMP_ATTR_CONSTRUCTOR);
 			_t = _t.getFirstChild();
@@ -9050,11 +8712,11 @@ public XQueryTreeParser() {
 			_t = _retTree;
 			
 			QName qname = QName.parse(staticContext, qna.getText());
-			if (Namespaces.XMLNS_NS.equals(qname.getNamespaceURI()) 
+			if (Namespaces.XMLNS_NS.equals(qname.getNamespaceURI())
 			|| ("".equals(qname.getNamespaceURI()) && qname.getLocalPart().equals(XMLConstants.XMLNS_ATTRIBUTE)))
 			throw new XPathException("err:XQDY0044: the node-name property of the node constructed by a computed attribute constructor is in the namespace http://www.w3.org/2000/xmlns/ (corresponding to namespace prefix xmlns), or is in no namespace and has local name xmlns.");
 			
-			AST __t315 = _t;
+			AST __t313 = _t;
 			org.exist.xquery.parser.XQueryAST tmp116_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,LCURLY);
 			_t = _t.getFirstChild();
@@ -9179,15 +8841,15 @@ public XQueryTreeParser() {
 			}
 			}
 			}
-			_t = __t315;
+			_t = __t313;
 			_t = _t.getNextSibling();
-			_t = __t314;
+			_t = __t312;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case COMP_PI_CONSTRUCTOR:
 		{
-			AST __t317 = _t;
+			AST __t315 = _t;
 			pid = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,COMP_PI_CONSTRUCTOR);
 			_t = _t.getFirstChild();
@@ -9202,7 +8864,7 @@ public XQueryTreeParser() {
 					
 			qnameExpr=expr(_t,qnamePathExpr);
 			_t = _retTree;
-			AST __t318 = _t;
+			AST __t316 = _t;
 			org.exist.xquery.parser.XQueryAST tmp117_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,LCURLY);
 			_t = _t.getFirstChild();
@@ -9332,15 +8994,15 @@ public XQueryTreeParser() {
 			}
 			}
 			}
-			_t = __t318;
+			_t = __t316;
 			_t = _t.getNextSibling();
-			_t = __t317;
+			_t = __t315;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case ELEMENT:
 		{
-			AST __t320 = _t;
+			AST __t318 = _t;
 			e = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,ELEMENT);
 			_t = _t.getFirstChild();
@@ -9351,11 +9013,11 @@ public XQueryTreeParser() {
 						staticContext.pushInScopeNamespaces();
 					
 			{
-			_loop326:
+			_loop324:
 			do {
 				if (_t==null) _t=ASTNULL;
 				if ((_t.getType()==ATTRIBUTE)) {
-					AST __t322 = _t;
+					AST __t320 = _t;
 					attrName = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 					match(_t,ATTRIBUTE);
 					_t = _t.getFirstChild();
@@ -9364,7 +9026,7 @@ public XQueryTreeParser() {
 										attrib.setASTNode(attrName);
 									
 					{
-					_loop325:
+					_loop323:
 					do {
 						if (_t==null) _t=ASTNULL;
 						switch ( _t.getType()) {
@@ -9374,13 +9036,13 @@ public XQueryTreeParser() {
 							match(_t,ATTRIBUTE_CONTENT);
 							_t = _t.getNextSibling();
 							
-													attrib.addValue(StringValue.expand(attrVal.getText())); 
+													attrib.addValue(StringValue.expand(attrVal.getText()));
 												
 							break;
 						}
 						case LCURLY:
 						{
-							AST __t324 = _t;
+							AST __t322 = _t;
 							org.exist.xquery.parser.XQueryAST tmp118_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
 							match(_t,LCURLY);
 							_t = _t.getFirstChild();
@@ -9388,18 +9050,18 @@ public XQueryTreeParser() {
 							expr(_t,enclosed);
 							_t = _retTree;
 							attrib.addEnclosedExpr(enclosed);
-							_t = __t324;
+							_t = __t322;
 							_t = _t.getNextSibling();
 							break;
 						}
 						default:
 						{
-							break _loop325;
+							break _loop323;
 						}
 						}
 					} while (true);
 					}
-					c.addAttribute(attrib); 
+					c.addAttribute(attrib);
 					if (attrib.isNamespaceDeclaration()) {
 					String nsPrefix = attrib.getQName().equals(XMLConstants.XMLNS_ATTRIBUTE) ?
 					"" : QName.extractLocalName(attrib.getQName());
@@ -9407,17 +9069,17 @@ public XQueryTreeParser() {
 					}
 					
 					
-					_t = __t322;
+					_t = __t320;
 					_t = _t.getNextSibling();
 				}
 				else {
-					break _loop326;
+					break _loop324;
 				}
 				
 			} while (true);
 			}
 			{
-			_loop328:
+			_loop326:
 			do {
 				if (_t==null) _t=ASTNULL;
 				if ((_tokenSet_10.member(_t.getType()))) {
@@ -9432,7 +9094,7 @@ public XQueryTreeParser() {
 					elementContent.add(contentExpr);
 				}
 				else {
-					break _loop328;
+					break _loop326;
 				}
 				
 			} while (true);
@@ -9440,13 +9102,13 @@ public XQueryTreeParser() {
 			
 			staticContext.popInScopeNamespaces();
 			
-			_t = __t320;
+			_t = __t318;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case TEXT:
 		{
-			AST __t329 = _t;
+			AST __t327 = _t;
 			pcdata = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,TEXT);
 			_t = _t.getFirstChild();
@@ -9455,13 +9117,13 @@ public XQueryTreeParser() {
 			text.setASTNode(pcdata);
 						step= text;
 					
-			_t = __t329;
+			_t = __t327;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case COMP_TEXT_CONSTRUCTOR:
 		{
-			AST __t330 = _t;
+			AST __t328 = _t;
 			t = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,COMP_TEXT_CONSTRUCTOR);
 			_t = _t.getFirstChild();
@@ -9473,13 +9135,13 @@ public XQueryTreeParser() {
 					
 			contentExpr=expr(_t,elementContent);
 			_t = _retTree;
-			_t = __t330;
+			_t = __t328;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case COMP_COMMENT_CONSTRUCTOR:
 		{
-			AST __t331 = _t;
+			AST __t329 = _t;
 			tc = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,COMP_COMMENT_CONSTRUCTOR);
 			_t = _t.getFirstChild();
@@ -9491,13 +9153,13 @@ public XQueryTreeParser() {
 					
 			contentExpr=expr(_t,elementContent);
 			_t = _retTree;
-			_t = __t331;
+			_t = __t329;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case COMP_DOC_CONSTRUCTOR:
 		{
-			AST __t332 = _t;
+			AST __t330 = _t;
 			d = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,COMP_DOC_CONSTRUCTOR);
 			_t = _t.getFirstChild();
@@ -9509,13 +9171,13 @@ public XQueryTreeParser() {
 					
 			contentExpr=expr(_t,elementContent);
 			_t = _retTree;
-			_t = __t332;
+			_t = __t330;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case XML_COMMENT:
 		{
-			AST __t333 = _t;
+			AST __t331 = _t;
 			cdata = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,XML_COMMENT);
 			_t = _t.getFirstChild();
@@ -9524,13 +9186,13 @@ public XQueryTreeParser() {
 			comment.setASTNode(cdata);
 						step= comment;
 					
-			_t = __t333;
+			_t = __t331;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case XML_PI:
 		{
-			AST __t334 = _t;
+			AST __t332 = _t;
 			p = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,XML_PI);
 			_t = _t.getFirstChild();
@@ -9539,13 +9201,13 @@ public XQueryTreeParser() {
 			pi.setASTNode(p);
 						step= pi;
 					
-			_t = __t334;
+			_t = __t332;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case XML_CDATA:
 		{
-			AST __t335 = _t;
+			AST __t333 = _t;
 			cdataSect = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,XML_CDATA);
 			_t = _t.getFirstChild();
@@ -9554,24 +9216,24 @@ public XQueryTreeParser() {
 						cd.setASTNode(cdataSect);
 						step= cd;
 					
-			_t = __t335;
+			_t = __t333;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case LCURLY:
 		{
-			AST __t336 = _t;
+			AST __t334 = _t;
 			l = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,LCURLY);
 			_t = _t.getFirstChild();
 			
-			EnclosedExpr subexpr= new EnclosedExpr(context); 
+			EnclosedExpr subexpr= new EnclosedExpr(context);
 			subexpr.setASTNode(l);
 			
 			step=expr(_t,subexpr);
 			_t = _retTree;
 			step= subexpr;
-			_t = __t336;
+			_t = __t334;
 			_t = _t.getNextSibling();
 			break;
 		}
@@ -9600,13 +9262,13 @@ public XQueryTreeParser() {
 		
 		
 		{
-		_loop273:
+		_loop271:
 		do {
 			if (_t==null) _t=ASTNULL;
 			switch ( _t.getType()) {
 			case PREDICATE:
 			{
-				AST __t268 = _t;
+				AST __t266 = _t;
 				org.exist.xquery.parser.XQueryAST tmp119_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
 				match(_t,PREDICATE);
 				_t = _t.getFirstChild();
@@ -9620,13 +9282,13 @@ public XQueryTreeParser() {
 				
 								filter.addPredicate(predicateExpr);
 							
-				_t = __t268;
+				_t = __t266;
 				_t = _t.getNextSibling();
 				break;
 			}
 			case DYNAMIC_FCALL:
 			{
-				AST __t269 = _t;
+				AST __t267 = _t;
 				fn = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 				match(_t,DYNAMIC_FCALL);
 				_t = _t.getFirstChild();
@@ -9635,7 +9297,7 @@ public XQueryTreeParser() {
 								boolean isPartial = false;
 							
 				{
-				_loop272:
+				_loop270:
 				do {
 					if (_t==null) _t=ASTNULL;
 					if ((_tokenSet_11.member(_t.getType()))) {
@@ -9771,7 +9433,7 @@ public XQueryTreeParser() {
 						}
 					}
 					else {
-						break _loop272;
+						break _loop270;
 					}
 					
 				} while (true);
@@ -9779,7 +9441,7 @@ public XQueryTreeParser() {
 				
 								step = new DynamicFunctionCall(context, step, params, isPartial);
 							
-				_t = __t269;
+				_t = __t267;
 				_t = _t.getNextSibling();
 				break;
 			}
@@ -9790,7 +9452,7 @@ public XQueryTreeParser() {
 					_t = _retTree;
 				}
 			else {
-				break _loop273;
+				break _loop271;
 			}
 			}
 		} while (true);
@@ -9808,7 +9470,7 @@ public XQueryTreeParser() {
 		
 		
 		
-		AST __t353 = _t;
+		AST __t351 = _t;
 		org.exist.xquery.parser.XQueryAST tmp121_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
 		match(_t,LITERAL_map);
 		_t = _t.getFirstChild();
@@ -9818,11 +9480,11 @@ public XQueryTreeParser() {
 					step = expr;
 				
 		{
-		_loop356:
+		_loop354:
 		do {
 			if (_t==null) _t=ASTNULL;
 			if ((_t.getType()==COLON)) {
-				AST __t355 = _t;
+				AST __t353 = _t;
 				org.exist.xquery.parser.XQueryAST tmp122_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
 				match(_t,COLON);
 				_t = _t.getFirstChild();
@@ -9835,16 +9497,16 @@ public XQueryTreeParser() {
 				step=expr(_t,value);
 				_t = _retTree;
 				expr.map(key, value);
-				_t = __t355;
+				_t = __t353;
 				_t = _t.getNextSibling();
 			}
 			else {
-				break _loop356;
+				break _loop354;
 			}
 			
 		} while (true);
 		}
-		_t = __t353;
+		_t = __t351;
 		_t = _t.getNextSibling();
 		_retTree = _t;
 		return step;
@@ -9860,7 +9522,7 @@ public XQueryTreeParser() {
 		
 		
 		
-		AST __t358 = _t;
+		AST __t356 = _t;
 		t = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 		match(_t,ARRAY);
 		_t = _t.getFirstChild();
@@ -9875,7 +9537,7 @@ public XQueryTreeParser() {
 				    step = array;
 				
 		{
-		_loop360:
+		_loop358:
 		do {
 			if (_t==null) _t=ASTNULL;
 			if ((_tokenSet_0.member(_t.getType()))) {
@@ -9885,12 +9547,12 @@ public XQueryTreeParser() {
 				array.addArgument(arg);
 			}
 			else {
-				break _loop360;
+				break _loop358;
 			}
 			
 		} while (true);
 		}
-		_t = __t358;
+		_t = __t356;
 		_t = _t.getNextSibling();
 		_retTree = _t;
 		return step;
@@ -9909,13 +9571,13 @@ public XQueryTreeParser() {
 			boolean isPartial = false;
 		
 		
-		AST __t282 = _t;
+		AST __t280 = _t;
 		fn = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 		match(_t,FUNCTION);
 		_t = _t.getFirstChild();
 		List params= new ArrayList(2);
 		{
-		_loop285:
+		_loop283:
 		do {
 			if (_t==null) _t=ASTNULL;
 			if ((_tokenSet_11.member(_t.getType()))) {
@@ -10051,12 +9713,12 @@ public XQueryTreeParser() {
 				}
 			}
 			else {
-				break _loop285;
+				break _loop283;
 			}
 			
 		} while (true);
 		}
-		_t = __t282;
+		_t = __t280;
 		_t = _t.getNextSibling();
 		
 				step = FunctionFactory.createFunction(context, fn, path, params);
@@ -10082,7 +9744,7 @@ public XQueryTreeParser() {
 			step = null;
 		
 		
-		AST __t287 = _t;
+		AST __t285 = _t;
 		name = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 		match(_t,HASH);
 		_t = _t.getFirstChild();
@@ -10101,7 +9763,7 @@ public XQueryTreeParser() {
 					NamedFunctionReference ref = new NamedFunctionReference(context, qname, Integer.parseInt(arity.getText()));
 					step = ref;
 				
-		_t = __t287;
+		_t = __t285;
 		_t = _t.getNextSibling();
 		_retTree = _t;
 		return step;
@@ -10116,7 +9778,7 @@ public XQueryTreeParser() {
 		org.exist.xquery.parser.XQueryAST lookup = null;
 		org.exist.xquery.parser.XQueryAST pos = null;
 		
-		AST __t277 = _t;
+		AST __t275 = _t;
 		lookup = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 		match(_t,LOOKUP);
 		_t = _t.getFirstChild();
@@ -10240,8 +9902,8 @@ public XQueryTreeParser() {
 		case XML_CDATA:
 		{
 			{
-			int _cnt280=0;
-			_loop280:
+			int _cnt278=0;
+			_loop278:
 			do {
 				if (_t==null) _t=ASTNULL;
 				if ((_tokenSet_0.member(_t.getType()))) {
@@ -10249,10 +9911,10 @@ public XQueryTreeParser() {
 					_t = _retTree;
 				}
 				else {
-					if ( _cnt280>=1 ) { break _loop280; } else {throw new NoViableAltException(_t);}
+					if ( _cnt278>=1 ) { break _loop278; } else {throw new NoViableAltException(_t);}
 				}
 				
-				_cnt280++;
+				_cnt278++;
 			} while (true);
 			}
 			break;
@@ -10281,7 +9943,7 @@ public XQueryTreeParser() {
 		}
 		step.setASTNode(lookup);
 		
-		_t = __t277;
+		_t = __t275;
 		_t = _t.getNextSibling();
 		_retTree = _t;
 		return step;
@@ -10406,7 +10068,7 @@ public XQueryTreeParser() {
 		
 		org.exist.xquery.parser.XQueryAST predicate_AST_in = (_t == ASTNULL) ? null : (org.exist.xquery.parser.XQueryAST)_t;
 		
-		AST __t275 = _t;
+		AST __t273 = _t;
 		org.exist.xquery.parser.XQueryAST tmp136_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
 		match(_t,PREDICATE);
 		_t = _t.getFirstChild();
@@ -10418,7 +10080,7 @@ public XQueryTreeParser() {
 				    predicateExpr.addPath(path);
 				    step.addPredicate(predicateExpr);
 		
-		_t = __t275;
+		_t = __t273;
 		_t = _t.getNextSibling();
 		_retTree = _t;
 	}
@@ -10563,8 +10225,8 @@ public XQueryTreeParser() {
 		"\"following\"",
 		"\"catch\"",
 		"union",
-		"\"where\"",
 		"\"return\"",
+		"\"where\"",
 		"\"in\"",
 		"\"by\"",
 		"\"stable\"",
@@ -10679,7 +10341,7 @@ public XQueryTreeParser() {
 		long[] data = new long[8];
 		data[0]=-9006778328432862L;
 		data[1]=9157507459273721352L;
-		data[2]=9215490737469131456L;
+		data[2]=9215490737469130432L;
 		data[3]=2148532175L;
 		return data;
 	}
@@ -10693,7 +10355,7 @@ public XQueryTreeParser() {
 		long[] data = new long[8];
 		data[0]=-9006777254691038L;
 		data[1]=9157547041692321288L;
-		data[2]=9215490737469131456L;
+		data[2]=9215490737469130432L;
 		data[3]=2148532175L;
 		return data;
 	}
@@ -10702,7 +10364,7 @@ public XQueryTreeParser() {
 		long[] data = new long[8];
 		data[0]=-9006778328432862L;
 		data[1]=9157547041692321288L;
-		data[2]=9215490737469131456L;
+		data[2]=9215490737469130432L;
 		data[3]=2148532175L;
 		return data;
 	}
@@ -10731,9 +10393,9 @@ public XQueryTreeParser() {
 	public static final BitSet _tokenSet_7 = new BitSet(mk_tokenSet_7());
 	private static final long[] mk_tokenSet_8() {
 		long[] data = new long[8];
-		data[0]=-8948950888759446L;
+		data[0]=-9001727446892694L;
 		data[1]=9160181471703467528L;
-		data[2]=9215490737469754336L;
+		data[2]=9215490737469753312L;
 		data[3]=2148532175L;
 		return data;
 	}
@@ -10742,7 +10404,7 @@ public XQueryTreeParser() {
 		long[] data = new long[8];
 		data[0]=-9006778328432854L;
 		data[1]=9157507459273721352L;
-		data[2]=9215490737469131456L;
+		data[2]=9215490737469130432L;
 		data[3]=2148532175L;
 		return data;
 	}
@@ -10759,7 +10421,7 @@ public XQueryTreeParser() {
 		long[] data = new long[8];
 		data[0]=-9006778328432862L;
 		data[1]=9157788934250432008L;
-		data[2]=9215490737469131456L;
+		data[2]=9215490737469130432L;
 		data[3]=2148532175L;
 		return data;
 	}
