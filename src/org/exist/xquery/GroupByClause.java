@@ -8,6 +8,11 @@ import java.text.Collator;
 import java.util.*;
 import java.util.stream.Stream;
 
+/**
+ * Implements a "group by" clause inside a FLWOR.
+ *
+ * @author wolf
+ */
 public class GroupByClause extends AbstractFLWORClause {
 
     protected FLWORClause rootClause = null;

@@ -7,7 +7,9 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 
 /**
- * Created by wolf on 15/08/15.
+ * Implements a where clause inside a FLWOR expressions.
+ *
+ * @author wolf
  */
 public class WhereClause extends AbstractFLWORClause {
 

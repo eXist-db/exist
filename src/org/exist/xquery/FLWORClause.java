@@ -13,6 +13,11 @@ public interface FLWORClause extends Expression {
         FOR, LET, GROUPBY, ORDERBY, WHERE, SOME, EVERY
     }
 
+    /**
+     * Returns the type of clause implemented by a subclass.
+     *
+     * @return the type of the clause
+     */
     ClauseType getType();
 
     /**
