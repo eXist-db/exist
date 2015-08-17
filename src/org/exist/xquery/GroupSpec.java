@@ -22,7 +22,6 @@
  */ 
 package org.exist.xquery; 
  
-import org.exist.util.Collations;
 import org.exist.xquery.util.ExpressionDumper;
 
 import java.text.Collator;

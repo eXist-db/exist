@@ -303,6 +303,7 @@ public DeclScanner(ParserSharedInputState state) {
 		"\"return\"",
 		"\"where\"",
 		"\"in\"",
+		"\"allowing\"",
 		"\"by\"",
 		"\"stable\"",
 		"\"ascending\"",

@@ -65,3 +65,16 @@ function flwor:where-multi-groupby() {
     return
         $a/string()
 };
+
+declare
+    %test:args(0)
+    %test:assertEquals("[]")
+    %test:args(1)
+    %test:assertEquals("[1]")
+    %test:args(6)
+    %test:assertEquals("[1]", "[2]", "[3]", "[4]", "[6]")
+function flwor:allowing-empty($n as xs:integer) {
+    for $x allowing empty in 1 to $n
+    where not($x = 5)
+    return concat("[", $x, "]")
+};

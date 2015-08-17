@@ -36,9 +36,11 @@ import org.exist.xquery.value.*;
 public class ForExpr extends BindingExpression {
 
     private String positionalVariable = null;
+    private boolean allowEmpty = false;
 
-    public ForExpr(XQueryContext context) {
+    public ForExpr(XQueryContext context, boolean allowingEmpty) {
         super(context);
+        this.allowEmpty = allowingEmpty;
     }
 
     @Override
@@ -154,8 +156,6 @@ public class ForExpr extends BindingExpression {
                 in = ((FLWORClause)returnExpr).preEval(in);
             }
 
-            Sequence val = null;
-            int p = 1;
             final IntegerValue atVal = new IntegerValue(1);
             if(positionalVariable != null)
                 {at.setValue(atVal);}
@@ -170,26 +170,13 @@ public class ForExpr extends BindingExpression {
                     ", got " + Cardinality.getDescription(in.getCardinality()));
             }
             // Loop through each variable binding
-            p = 0;
-            for (final SequenceIterator i = in.iterate(); i.hasNext(); p++) {
-                context.proceed(this);
-                contextItem = i.nextItem();
-                context.setContextSequencePosition(p, in);
-                if (positionalVariable != null)
-                    {at.setValue(new IntegerValue(p + 1));}
-                contextSequence = contextItem.toSequence();
-                // set variable value to current item
-                var.setValue(contextSequence);
-                if (sequenceType == null)
-                    {var.checkType();} //because it makes some conversions !
-                //Reset the context position
-                context.setContextSequencePosition(0, null);
-
-                val = returnExpr.eval(null);
-                resultSequence.addAll(val);
-
-                // free resources
-                var.destroy(context, resultSequence);
+            int p = 0;
+            if (in.isEmpty() && allowEmpty) {
+                processItem(var, AtomicValue.EMPTY_VALUE, Sequence.EMPTY_SEQUENCE, resultSequence, at, p);
+            } else {
+                for (final SequenceIterator i = in.iterate(); i.hasNext(); p++) {
+                    processItem(var, i.nextItem(), in, resultSequence, at, p);
+                }
             }
         } finally {
             // restore the local variable stack 
@@ -233,6 +220,27 @@ public class ForExpr extends BindingExpression {
         return resultSequence;
     }
 
+    private void processItem(LocalVariable var, Item contextItem, Sequence in, Sequence resultSequence, LocalVariable
+            at, int p) throws XPathException {
+        context.proceed(this);
+        context.setContextSequencePosition(p, in);
+        if (positionalVariable != null) {
+            at.setValue(new IntegerValue(p + 1));
+        }
+        final Sequence contextSequence = contextItem.toSequence();
+        // set variable value to current item
+        var.setValue(contextSequence);
+        if (sequenceType == null)
+            {var.checkType();} //because it makes some conversions !
+        //Reset the context position
+        context.setContextSequencePosition(0, null);
+
+        resultSequence.addAll(returnExpr.eval(null));
+
+        // free resources
+        var.destroy(context, resultSequence);
+    }
+
     private boolean callPostEval() {
         FLWORClause prev = getPreviousClause();
         while (prev != null) {
@@ -263,10 +271,14 @@ public class ForExpr extends BindingExpression {
         dumper.display("for ", line);
         dumper.startIndent();
         dumper.display("$").display(varName);
+        if (sequenceType != null) {
+            dumper.display(" as ").display(sequenceType);
+        }
+        if (allowEmpty) {
+            dumper.display(" allowing empty ");
+        }
         if (positionalVariable != null)
             {dumper.display(" at ").display(positionalVariable);}
-        if (sequenceType != null)
-            {dumper.display(" as ").display(sequenceType);}
         dumper.display(" in ");
         inputSequence.dump(dumper);
         dumper.endIndent().nl();
@@ -284,10 +296,14 @@ public class ForExpr extends BindingExpression {
         final StringBuilder result = new StringBuilder();
         result.append("for ");
         result.append("$").append(varName);
-        if (positionalVariable != null)
-            {result.append(" at ").append(positionalVariable);}
         if (sequenceType != null)
             {result.append(" as ").append(sequenceType);}
+        if (allowEmpty) {
+            result.append(" allowing empty ");
+        }
+        if (positionalVariable != null) {
+            result.append(" at ").append(positionalVariable);
+        }
         result.append(" in ");
         result.append(inputSequence.toString());
         result.append(" ");

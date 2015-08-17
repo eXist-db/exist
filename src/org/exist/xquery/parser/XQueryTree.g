@@ -124,6 +124,7 @@ options {
 		FLWORClause.ClauseType type = FLWORClause.ClauseType.FOR;
 		List<GroupSpec> groupSpecs = null;
 		List<OrderSpec> orderSpecs = null;
+		boolean allowEmpty = false;
 	}
 
 	/**
@@ -1387,6 +1388,10 @@ throws PermissionDeniedException, EXistException, XPathException
 							)
 						)?
 						(
+								"empty"
+								{ clause.allowEmpty = true; }
+						)?
+						(
 							posVar:POSITIONAL_VAR
 							{ clause.posVar= posVar.getText(); }
 						)?
@@ -1562,7 +1567,7 @@ throws PermissionDeniedException, EXistException, XPathException
 								expr = new WhereClause(context, new DebuggableExpression(clause.inputSequence));
 								break;
             default:
-                expr= new ForExpr(context);
+                expr= new ForExpr(context, clause.allowEmpty);
                 break;
 				}
 				expr.setASTNode(clause.ast);
@@ -1571,24 +1576,25 @@ throws PermissionDeniedException, EXistException, XPathException
             bind.setVariable(clause.varName);
             bind.setSequenceType(clause.sequenceType);
             bind.setInputSequence(clause.inputSequence);
-            if (clause.type == FLWORClause.ClauseType.FOR)
+            if (clause.type == FLWORClause.ClauseType.FOR) {
                  ((ForExpr) bind).setPositionalVariable(clause.posVar);
+						 }
 				} else if (clause.type == FLWORClause.ClauseType.GROUPBY ) {
 				    if (clause.groupSpecs != null) {
-                        GroupSpec specs[]= new GroupSpec[clause.groupSpecs.size()];
-                        int k= 0;
-                        for (GroupSpec groupSpec : clause.groupSpecs) {
-                            specs[k++]= groupSpec;
-                        }
-                        ((GroupByClause)expr).setGroupSpecs(specs);
-                    }
-				}
-                if (!(action instanceof FLWORClause))
-                    expr.setReturnExpression(new DebuggableExpression(action));
-                else {
-                    expr.setReturnExpression(action);
-                    ((FLWORClause)action).setPreviousClause(expr);
+                GroupSpec specs[]= new GroupSpec[clause.groupSpecs.size()];
+                int k= 0;
+                for (GroupSpec groupSpec : clause.groupSpecs) {
+                    specs[k++]= groupSpec;
                 }
+                ((GroupByClause)expr).setGroupSpecs(specs);
+            }
+				}
+        if (!(action instanceof FLWORClause))
+            expr.setReturnExpression(new DebuggableExpression(action));
+        else {
+            expr.setReturnExpression(action);
+            ((FLWORClause)action).setPreviousClause(expr);
+        }
 
 				action= expr;
 			}

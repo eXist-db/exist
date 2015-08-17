@@ -778,7 +778,7 @@ letClause throws XPathException
 inVarBinding throws XPathException
 { String varName; }
 :
-	DOLLAR! varName=v:varName! ( typeDeclaration )?
+	DOLLAR! varName=v:varName! ( typeDeclaration )? ( allowingEmpty )?
 	( positionalVar )?
 	"in"! exprSingle
 	{
@@ -792,6 +792,11 @@ positionalVar
 :
 	"at" DOLLAR! varName=varName
 	{ #positionalVar= #[POSITIONAL_VAR, varName]; }
+	;
+
+allowingEmpty
+:
+	"allowing"! "empty"
 	;
 
 letVarBinding throws XPathException
