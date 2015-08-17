@@ -22,9 +22,10 @@
  */ 
 package org.exist.xquery; 
  
-import org.exist.util.Collations;
 import org.exist.xquery.util.ExpressionDumper;
- 
+
+import java.text.Collator;
+
 /** 
  * A XQuery grouping specifier as specified in an "group by" clause (based on 
  * {@link org.exist.xquery.OrderSpec}). 
@@ -41,7 +42,7 @@ public class GroupSpec {
 	private final XQueryContext context; 
     private Expression expression;
     private String keyVarName = null;
-    private String collation = Collations.CODEPOINT;
+    private Collator collator;
      
     public GroupSpec(XQueryContext context, Expression groupExpr, String keyVarName) {
         if (groupExpr == null) {
@@ -52,15 +53,20 @@ public class GroupSpec {
         }
         this.expression = groupExpr;
         this.context = context; 
-        this.keyVarName = keyVarName; 
+        this.keyVarName = keyVarName;
+        this.collator = context.getDefaultCollator();
     } 
 
-    public void setCollation(String collation) {
-        this.collation = collation;
+    public void setCollator(String collation) throws XPathException {
+        this.collator = context.getCollator(collation);
+    }
+
+    public Collator getCollator() {
+        return this.collator;
     }
 
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException { 
-        expression.analyze(contextInfo); 
+        expression.analyze(contextInfo);
     }
 
     public Expression getGroupExpression() { 
@@ -73,6 +79,7 @@ public class GroupSpec {
      
     public String toString() { 
         final StringBuilder buf = new StringBuilder();
+        buf.append('$').append(keyVarName).append(" := ");
         buf.append(ExpressionDumper.dump(expression)); 
         return buf.toString(); 
     } 
@@ -86,4 +93,9 @@ public class GroupSpec {
             expression = newExpr;
         }
     }
-} 
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof GroupSpec && ((GroupSpec)obj).keyVarName.equals(keyVarName);
+    }
+}
