@@ -498,10 +498,9 @@ function groupby:collation4() {
 };
 
 declare
-    %test:pending
     %test:assertEquals(
-        '<grp even="1" y="1">1 1 1 1 3 3 3 3 5 5 5 5 7 7 7 7 9 9 9 9</grp><grp even="0" y="1">2 2 2 2 4 4 4 4 6 6 6 6 8 8 8 8 10 10 10 10</grp>',
-        '<grp even="0" y="1">2 2 2 2 4 4 4 4 6 6 6 6 8 8 8 8 10 10 10 10</grp><grp even="1" y="1">1 1 1 1 3 3 3 3 5 5 5 5 7 7 7 7 9 9 9 9</grp>')
+        '<grp even="1" y="1">1 1 1 1 3 3 3 3 5 5 5 5 7 7 7 7 9 9 9 9</grp>',
+        '<grp even="0" y="1">2 2 2 2 4 4 4 4 6 6 6 6 8 8 8 8 10 10 10 10</grp>')
 function groupby:existing-var()
 {
     for $x in 1 to 10, $y in 1 to 4

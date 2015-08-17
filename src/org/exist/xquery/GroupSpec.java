@@ -79,6 +79,7 @@ public class GroupSpec {
      
     public String toString() { 
         final StringBuilder buf = new StringBuilder();
+        buf.append('$').append(keyVarName).append(" := ");
         buf.append(ExpressionDumper.dump(expression)); 
         return buf.toString(); 
     } 
@@ -92,4 +93,9 @@ public class GroupSpec {
             expression = newExpr;
         }
     }
-} 
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof GroupSpec && ((GroupSpec)obj).keyVarName.equals(keyVarName);
+    }
+}

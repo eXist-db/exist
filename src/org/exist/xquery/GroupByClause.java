@@ -167,7 +167,20 @@ public class GroupByClause extends AbstractFLWORClause {
     }
 
     public void setGroupSpecs(final GroupSpec specs[]) {
-        this.groupSpecs = specs;
+        final List<GroupSpec> distinctSpecs = new ArrayList<>(specs.length);
+        for (int i = 0; i < specs.length; i++) {
+            boolean duplicate = false;
+            for (int j = i + 1; j < specs.length; j++) {
+                if (specs[i].equals(specs[j])) {
+                    duplicate = true;
+                    break;
+                }
+            }
+            if (!duplicate) {
+                distinctSpecs.add(specs[i]);
+            }
+        }
+        this.groupSpecs = distinctSpecs.toArray(new GroupSpec[distinctSpecs.size()]);
     }
 
     public GroupSpec[] getGroupSpecs() {
