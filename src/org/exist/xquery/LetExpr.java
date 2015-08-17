@@ -39,9 +39,14 @@ public class LetExpr extends BindingExpression {
         super(context);
     }
 
+    @Override
+    public ClauseType getType() {
+        return ClauseType.LET;
+    }
+
     /* (non-Javadoc)
-     * @see org.exist.xquery.BindingExpression#analyze(org.exist.xquery.Expression, int, org.exist.xquery.OrderSpec[])
-     */
+         * @see org.exist.xquery.BindingExpression#analyze(org.exist.xquery.Expression, int, org.exist.xquery.OrderSpec[])
+         */
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
         super.analyze(contextInfo);
         //Save the local variable stack

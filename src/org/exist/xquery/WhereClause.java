@@ -19,6 +19,11 @@ public class WhereClause extends AbstractFLWORClause {
         this.whereExpr = whereExpr;
     }
 
+    @Override
+    public ClauseType getType() {
+        return ClauseType.WHERE;
+    }
+
     public Expression getWhereExpr() {
         return whereExpr;
     }

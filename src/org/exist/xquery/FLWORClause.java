@@ -9,6 +9,12 @@ import org.exist.xquery.value.Sequence;
  */
 public interface FLWORClause extends Expression {
 
+    enum ClauseType {
+        FOR, LET, GROUPBY, ORDERBY, WHERE, SOME, EVERY
+    }
+
+    ClauseType getType();
+
     /**
      * Set the return expression of the clause. Might either be
      * an expression given in a "return" or another clause.

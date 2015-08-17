@@ -59,9 +59,14 @@ public class QuantifiedExpression extends BindingExpression {
 		}		
 	}
 
+    @Override
+    public ClauseType getType() {
+        return mode == SOME ? ClauseType.SOME : ClauseType.EVERY;
+    }
+
     /* (non-Javadoc)
-     * @see org.exist.xquery.BindingExpression#analyze(org.exist.xquery.Expression, int, org.exist.xquery.OrderSpec[])
-     */
+         * @see org.exist.xquery.BindingExpression#analyze(org.exist.xquery.Expression, int, org.exist.xquery.OrderSpec[])
+         */
 	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
 		final LocalVariable mark = context.markLocalVariables(false);
 		try {

@@ -41,6 +41,11 @@ public class ForExpr extends BindingExpression {
         super(context);
     }
 
+    @Override
+    public ClauseType getType() {
+        return ClauseType.FOR;
+    }
+
     /**
      * A "for" expression may have an optional positional variable whose
      * QName can be set via this method.
@@ -218,7 +223,7 @@ public class ForExpr extends BindingExpression {
         }
         setActualReturnType(resultSequence.getItemType());
 
-        if (getPreviousClause() == null) {
+        if (callPostEval()) {
             resultSequence = postEval(resultSequence);
         }
 
@@ -226,6 +231,22 @@ public class ForExpr extends BindingExpression {
         if (context.getProfiler().isEnabled())
             {context.getProfiler().end(this, "", resultSequence);}
         return resultSequence;
+    }
+
+    private boolean callPostEval() {
+        FLWORClause prev = getPreviousClause();
+        while (prev != null) {
+            switch (prev.getType()) {
+                case LET:
+                case FOR:
+                    return false;
+                case ORDERBY:
+                case GROUPBY:
+                    return true;
+            }
+            prev = prev.getPreviousClause();
+        }
+        return true;
     }
 
     @Override

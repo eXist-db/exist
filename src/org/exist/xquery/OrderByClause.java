@@ -25,6 +25,11 @@ public class OrderByClause extends AbstractFLWORClause {
     }
 
     @Override
+    public ClauseType getType() {
+        return ClauseType.ORDERBY;
+    }
+
+    @Override
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
         contextInfo.setParent(this);
         unordered = (contextInfo.getFlags() & UNORDERED) > 0;
@@ -61,7 +66,7 @@ public class OrderByClause extends AbstractFLWORClause {
         orderedResult = null;
 
         if (getReturnExpression() instanceof FLWORClause) {
-            result = ((FLWORClause) getReturnExpression()).postEval(seq);
+            result = ((FLWORClause) getReturnExpression()).postEval(result);
         }
         return super.postEval(result);
     }

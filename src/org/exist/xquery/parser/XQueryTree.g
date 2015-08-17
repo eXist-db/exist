@@ -114,10 +114,6 @@ options {
 		throw new XPathException(ast, message);
 	}
 
-	private enum BindingType {
-	    FOR, LET, GROUPBY, ORDERBY, WHERE
-	}
-
 	private static class ForLetClause {
 		XQueryAST ast;
 		String varName;
@@ -125,7 +121,7 @@ options {
 		String posVar= null;
 		Expression inputSequence;
 		Expression action;
-		BindingType type = BindingType.FOR;
+		FLWORClause.ClauseType type = FLWORClause.ClauseType.FOR;
 		List<GroupSpec> groupSpecs = null;
 		List<OrderSpec> orderSpecs = null;
 	}
@@ -1412,7 +1408,7 @@ throws PermissionDeniedException, EXistException, XPathException
 						{
 							ForLetClause clause= new ForLetClause();
 							clause.ast = letVarName;
-							clause.type = BindingType.LET;
+							clause.type = FLWORClause.ClauseType.LET;
 							PathExpr inputSequence= new PathExpr(context);
 						}
 						(
@@ -1438,7 +1434,7 @@ throws PermissionDeniedException, EXistException, XPathException
           {
               ForLetClause clause= new ForLetClause();
               clause.ast = gb;
-              clause.type = BindingType.GROUPBY;
+              clause.type = FLWORClause.ClauseType.GROUPBY;
               clause.groupSpecs = new ArrayList<GroupSpec>(4);
               clauses.add(clause);
           }
@@ -1455,25 +1451,6 @@ throws PermissionDeniedException, EXistException, XPathException
                   {
                       String groupKeyVar = groupVarName.getText();
 
-                      // if there is no groupSpec expression, try to find definition of
-                      // grouping variable and inline it
-                      if (groupSpecExpr == null) {
-                          ForLetClause groupVarDef = null;
-                          for (int i = clauses.size() - 1; i > -1; i--) {
-                              ForLetClause currentClause = clauses.get(i);
-                              if (currentClause.type != BindingType.GROUPBY && currentClause.varName.equals
-                              (groupKeyVar)) {
-                                  groupVarDef = currentClause;
-                                  break;
-                              }
-                          }
-                          if (groupVarDef == null) {
-                              throw new XPathException("Definition for grouping var " + groupKeyVar + " not found");
-                          }
-                          // inline the grouping expression
-                          clauses.remove(groupVarDef);
-                          groupSpecExpr = (PathExpr) groupVarDef.inputSequence;
-                      }
                       GroupSpec groupSpec= new GroupSpec(context, groupSpecExpr, groupKeyVar);
                       clause.groupSpecs.add(groupSpec);
                   }
@@ -1545,7 +1522,7 @@ throws PermissionDeniedException, EXistException, XPathException
           {
               ForLetClause clause= new ForLetClause();
               clause.ast = ob;
-              clause.type = BindingType.ORDERBY;
+              clause.type = FLWORClause.ClauseType.ORDERBY;
 							clause.orderSpecs = orderBy;
               clauses.add(clause);
           }
@@ -1560,7 +1537,7 @@ throws PermissionDeniedException, EXistException, XPathException
 				{
 					ForLetClause clause = new ForLetClause();
 					clause.ast = w;
-					clause.type = BindingType.WHERE;
+					clause.type = FLWORClause.ClauseType.WHERE;
 					clause.inputSequence = whereExpr;
 					clauses.add(clause);
 				}
@@ -1576,27 +1553,27 @@ throws PermissionDeniedException, EXistException, XPathException
 				        expr= new LetExpr(context);
 				        break;
 				    case GROUPBY:
-                        expr = new GroupByClause(context);
-                        break;
-                    case ORDERBY:
-                        expr = new OrderByClause(context, clause.orderSpecs);
-                        break;
-										case WHERE:
-												expr = new WhereClause(context, new DebuggableExpression(clause.inputSequence));
-												break;
-                    default:
-                        expr= new ForExpr(context);
-                        break;
+                expr = new GroupByClause(context);
+                break;
+            case ORDERBY:
+                expr = new OrderByClause(context, clause.orderSpecs);
+                break;
+						case WHERE:
+								expr = new WhereClause(context, new DebuggableExpression(clause.inputSequence));
+								break;
+            default:
+                expr= new ForExpr(context);
+                break;
 				}
 				expr.setASTNode(clause.ast);
-				if (clause.type == BindingType.FOR || clause.type == BindingType.LET) {
+				if (clause.type == FLWORClause.ClauseType.FOR || clause.type == FLWORClause.ClauseType.LET) {
 				    final BindingExpression bind = (BindingExpression)expr;
             bind.setVariable(clause.varName);
             bind.setSequenceType(clause.sequenceType);
             bind.setInputSequence(clause.inputSequence);
-            if (clause.type == BindingType.FOR)
+            if (clause.type == FLWORClause.ClauseType.FOR)
                  ((ForExpr) bind).setPositionalVariable(clause.posVar);
-				} else if (clause.type == BindingType.GROUPBY ) {
+				} else if (clause.type == FLWORClause.ClauseType.GROUPBY ) {
 				    if (clause.groupSpecs != null) {
                         GroupSpec specs[]= new GroupSpec[clause.groupSpecs.size()];
                         int k= 0;

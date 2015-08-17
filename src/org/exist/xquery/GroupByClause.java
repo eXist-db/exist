@@ -21,6 +21,11 @@ public class GroupByClause extends AbstractFLWORClause {
     }
 
     @Override
+    public ClauseType getType() {
+        return ClauseType.GROUPBY;
+    }
+
+    @Override
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         final boolean init = groupedMap == null;
         if (init) {
