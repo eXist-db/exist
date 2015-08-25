@@ -106,6 +106,7 @@ import java.io.*;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.zip.DeflaterOutputStream;
 import javax.xml.parsers.ParserConfigurationException;
@@ -863,7 +864,7 @@ public class RpcConnection implements RpcAPI {
 
     @Override
     public boolean dataBackup(final String dest) {
-        factory.getBrokerPool().triggerSystemTask(new DataBackup(dest));
+        factory.getBrokerPool().triggerSystemTask(new DataBackup(Paths.get(dest)));
         return true;
     }
 
@@ -3105,7 +3106,7 @@ public class RpcConnection implements RpcAPI {
             final Backup backup = new Backup(
                     userbackup,
                     password,
-                    destcollection + "-backup",
+                    Paths.get(destcollection + "-backup"),
                     XmldbURI.xmldbUriFor(XmldbURI.EMBEDDED_SERVER_URI.toString() + collection));
             backup.backup(false, null);
 

@@ -3,6 +3,7 @@ package org.exist.xquery.modules.process;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.ElementImpl;
 import org.exist.dom.memtree.MemTreeBuilder;
+import org.exist.util.FileUtils;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 import org.xml.sax.helpers.AttributesImpl;
@@ -10,10 +11,9 @@ import org.xml.sax.helpers.AttributesImpl;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
 
 public class Execute extends BasicFunction {
 
@@ -36,24 +36,24 @@ public class Execute extends BasicFunction {
     public final static QName STDOUT_QNAME = new QName("stdout");
     public final static QName LINE_QNAME = new QName("line");
 
-    public Execute(XQueryContext context) {
+    public Execute(final XQueryContext context) {
         super(context, signature);
     }
 
     @Override
-    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+    public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
         if (!context.getSubject().hasDbaRole())
             throw new XPathException(this, "process:execute is only available to users with dba role");
 
         // create list of parameters to pass to shell
-        List<String> cmdArgs = new ArrayList<String>(args[0].getItemCount());
+        List<String> cmdArgs = new ArrayList<>(args[0].getItemCount());
         for (SequenceIterator i = args[0].iterate(); i.hasNext(); ) {
             cmdArgs.add(i.nextItem().getStringValue());
         }
 
         // parse options
         List<String> stdin = null;
-        File workingDir = null;
+        Path workingDir = null;
         Map<String, String> environment = null;
         if (!args[1].isEmpty()) {
             try {
@@ -67,11 +67,11 @@ public class Execute extends BasicFunction {
                             workingDir = getWorkingDir(reader.getElementText());
                         } else if (name.equals("line")) {
                             if (stdin == null)
-                                stdin = new ArrayList<String>(21);
+                                stdin = new ArrayList<>(21);
                             stdin.add(reader.getElementText() + "\n");
                         } else if (name.equals("env")) {
                             if (environment == null)
-                                environment = new HashMap<String, String>();
+                                environment = new HashMap<>();
                             String key = reader.getAttributeValue(null, "name");
                             String value = reader.getAttributeValue(null, "value");
                             if (key != null && value != null)
@@ -91,7 +91,7 @@ public class Execute extends BasicFunction {
         ProcessBuilder pb = new ProcessBuilder(cmdArgs);
         pb.redirectErrorStream(true);
         if (workingDir != null)
-            pb.directory(workingDir);
+            pb.directory(workingDir.toFile());
         if (environment != null) {
             Map<String, String> env = pb.environment();
             env.putAll(environment);
@@ -99,11 +99,11 @@ public class Execute extends BasicFunction {
         try {
             Process process = pb.start();
             if (stdin != null) {
-                BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(process.getOutputStream(), "UTF-8"));
-                for (String line : stdin) {
-                    writer.write(line);
+                try(final Writer writer = new BufferedWriter(new OutputStreamWriter(process.getOutputStream(), "UTF-8"))) {
+                    for (final String line : stdin) {
+                        writer.write(line);
+                    }
                 }
-                writer.close();
             }
             List<String> output = readOutput(process);
             int exitValue = process.waitFor();
@@ -115,12 +115,13 @@ public class Execute extends BasicFunction {
         }
     }
 
-    private File getWorkingDir(String arg) {
-        File file = new File(arg);
-        if (file.isAbsolute())
+    private Path getWorkingDir(String arg) {
+        final Path file = Paths.get(arg);
+        if (file.isAbsolute()) {
             return file;
-        File home = context.getBroker().getConfiguration().getExistHome();
-        return new File(home, arg);
+        }
+        final Optional<Path> home = context.getBroker().getConfiguration().getExistHome();
+        return FileUtils.resolve(home, arg);
     }
 
     private ElementImpl createReport(int exitValue, List<String> output, List<String> cmdArgs) {
@@ -154,10 +155,9 @@ public class Execute extends BasicFunction {
     }
 
     private List<String> readOutput(Process process) throws XPathException {
-        BufferedReader reader = null;
-        try {
-            List<String> output = new ArrayList<String>(31);
-            reader = new BufferedReader(new InputStreamReader(process.getInputStream(), "UTF-8"));
+        try(final BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), "UTF-8"));) {
+            List<String> output = new ArrayList<>(31);
+
             String line;
             while ((line = reader.readLine()) != null) {
                 output.add(line);
@@ -165,12 +165,6 @@ public class Execute extends BasicFunction {
             return output;
         } catch (IOException e) {
             throw new XPathException(this, "An IO error occurred while reading output from the process: " + e.getMessage(), e);
-        } finally {
-            if (reader != null)
-                try {
-                    reader.close();
-                } catch (IOException e) {
-                }
         }
     }
 }

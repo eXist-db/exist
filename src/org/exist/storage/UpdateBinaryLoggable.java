@@ -20,12 +20,12 @@
  */
 package org.exist.storage;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -40,13 +40,13 @@ public class UpdateBinaryLoggable extends AbstractLoggable {
 
     private final static Logger LOG = LogManager.getLogger(UpdateBinaryLoggable.class);
 
-    private File original;
-    private File backup;
+    private Path original;
+    private Path backup;
 
     /**
      * Creates a new instance of RenameBinaryLoggable
      */
-    public UpdateBinaryLoggable(final DBBroker broker, final Txn txn, File original, final File backup) {
+    public UpdateBinaryLoggable(final DBBroker broker, final Txn txn, Path original, final Path backup) {
         super(NativeBroker.LOG_UPDATE_BINARY, txn.getId());
         this.original = original;
         this.backup = backup;
@@ -58,11 +58,11 @@ public class UpdateBinaryLoggable extends AbstractLoggable {
 
     @Override
     public void write(final ByteBuffer out) {
-        final String originalPath = original.getAbsolutePath();
+        final String originalPath = original.toAbsolutePath().toString();
         byte[] data = originalPath.getBytes(StandardCharsets.UTF_8);
         out.putInt(data.length);
         out.put(data);
-        final String backupPath = backup.getAbsolutePath();
+        final String backupPath = backup.toAbsolutePath().toString();
         data = backupPath.getBytes(StandardCharsets.UTF_8);
         out.putInt(data.length);
         out.put(data);
@@ -73,16 +73,16 @@ public class UpdateBinaryLoggable extends AbstractLoggable {
         int size = in.getInt();
         byte[] data = new byte[size];
         in.get(data);
-        original = new File(new String(data, StandardCharsets.UTF_8));
+        original = Paths.get(new String(data, StandardCharsets.UTF_8));
         size = in.getInt();
         data = new byte[size];
         in.get(data);
-        backup = new File(new String(data, StandardCharsets.UTF_8));
+        backup = Paths.get(new String(data, StandardCharsets.UTF_8));
     }
 
     @Override
     public int getLogSize() {
-        return 8 + original.getAbsolutePath().getBytes(StandardCharsets.UTF_8).length + backup.getAbsolutePath().getBytes(StandardCharsets.UTF_8).length;
+        return 8 + original.toAbsolutePath().toString().getBytes(StandardCharsets.UTF_8).length + backup.toAbsolutePath().toString().getBytes(StandardCharsets.UTF_8).length;
     }
 
     @Override
@@ -92,15 +92,10 @@ public class UpdateBinaryLoggable extends AbstractLoggable {
 
     @Override
     public void undo() throws LogException {
-        try(final FileInputStream is = new FileInputStream(backup);
-                final FileOutputStream os = new FileOutputStream(original)) {
-            final byte[] buffer = new byte[4096];
-            int len = -1;
-            while ((len = is.read(buffer)) > -1) {
-                os.write(buffer, 0, len);
-            }
+        try {
+            Files.copy(backup, original);
         } catch (final IOException ioe) {
-            LOG.error(ioe);
+            throw new LogException("Cannot copy backup " + backup.toAbsolutePath().toString() + " to original " + original.toAbsolutePath().toString(), ioe);
         }
     }
 

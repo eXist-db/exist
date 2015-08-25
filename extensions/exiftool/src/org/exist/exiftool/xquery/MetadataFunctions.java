@@ -2,7 +2,8 @@ package org.exist.exiftool.xquery;
 
 import java.io.ByteArrayInputStream;
 import org.apache.commons.io.output.ByteArrayOutputStream;
-import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -96,8 +97,8 @@ public class MetadataFunctions extends BasicFunction {
             doc = context.getBroker().getXMLResource(docUri, Lock.READ_LOCK);
             if (doc instanceof BinaryDocument) {
                 //resolve real filesystem path of binary file
-                File binaryFile = ((NativeBroker) context.getBroker()).getCollectionBinaryFileFsPath(docUri);
-                if (!binaryFile.exists()) {
+                final Path binaryFile = ((NativeBroker) context.getBroker()).getCollectionBinaryFileFsPath(docUri);
+                if (!Files.exists(binaryFile)) {
                     throw new XPathException("Binary Document at " + docUri.toString() + " does not exist.");
                 }
                 return exifToolExtract(binaryFile);
@@ -125,111 +126,76 @@ public class MetadataFunctions extends BasicFunction {
        
     }
 
-    private Sequence exifToolExtract(File binaryFile) throws XPathException {
-        ExiftoolModule module = (ExiftoolModule) getParentModule();
-        InputStream stdIn = null;
-        ByteArrayOutputStream baos = null;
+    private Sequence exifToolExtract(final Path binaryFile) throws XPathException {
+        final ExiftoolModule module = (ExiftoolModule) getParentModule();
         try {
-            Process p = Runtime.getRuntime().exec(module.getPerlPath() + " " + module.getExiftoolPath() + " -X -struct " + binaryFile.getAbsolutePath());
-            stdIn = p.getInputStream();
+            final Process p = Runtime.getRuntime().exec(module.getPerlPath() + " " + module.getExiftoolPath() + " -X -struct " + binaryFile.toAbsolutePath().toString());
+            try(final InputStream stdIn = p.getInputStream();
+                    final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
 
-            baos = new ByteArrayOutputStream();
+                //buffer stdin
+                int read = -1;
+                byte buf[] = new byte[4096];
+                while ((read = stdIn.read(buf)) > -1) {
+                    baos.write(buf, 0, read);
+                }
 
-            //buffer stdin
-            int read = -1;
-            byte buf[] = new byte[4096];
-            while ((read = stdIn.read(buf)) > -1) {
-                baos.write(buf, 0, read);
+                //make sure process is complete
+                p.waitFor();
+
+                return ModuleUtils.inputSourceToXML(context, new InputSource(new ByteArrayInputStream(baos.toByteArray())));
             }
-
-            //make sure process is complete
-            p.waitFor();
-
-            return ModuleUtils.inputSourceToXML(context, new InputSource(new ByteArrayInputStream(baos.toByteArray())));
-
-        } catch (IOException ex) {
+        } catch (final IOException ex) {
             throw new XPathException("Could not execute the Exiftool " + ex.getMessage(), ex);
-        } catch (SAXException saxe) {
-            LOG.error("exiftool returned=" + new String(baos.toByteArray()), saxe);
+        } catch (final SAXException saxe) {
             throw new XPathException("Could not parse output from the Exiftool " + saxe.getMessage(), saxe);
-        } catch (InterruptedException ie) {
+        } catch (final InterruptedException ie) {
             throw new XPathException("Could not execute the Exiftool " + ie.getMessage(), ie);
-        } finally {
-            if (baos != null) {
-                try {
-                    baos.close();
-                } catch (IOException ioe) {
-                }
-            }
-
-            if (stdIn != null) {
-                try {
-                    stdIn.close();
-                } catch (IOException ioe) {
-                }
-            }
-
         }
     }
 
-    private Sequence exifToolWebExtract(URI uri) throws XPathException {
-
-        ExiftoolModule module = (ExiftoolModule) getParentModule();
-        InputStream stdIn = null;
-        ByteArrayOutputStream baos = null;
+    private Sequence exifToolWebExtract(final URI uri) throws XPathException {
+        final ExiftoolModule module = (ExiftoolModule) getParentModule();
         try {
-            Process p = Runtime.getRuntime().exec(module.getExiftoolPath()+" -fast -X -");
-            stdIn = p.getInputStream();
+            final Process p = Runtime.getRuntime().exec(module.getExiftoolPath()+" -fast -X -");
 
-            OutputStream stdOut = p.getOutputStream();
-            Source src = SourceFactory.getSource(context.getBroker(), null, uri.toString(), false);
-            InputStream isSrc = src.getInputStream();
+            try(final InputStream stdIn = p.getInputStream();
+                    final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
 
-            //write the remote data to stdOut
-            int read = -1;
-            byte buf[] = new byte[4096];
-            while((read = isSrc.read(buf))> -1) {
-                stdOut.write(buf, 0, read);
+                try(final OutputStream stdOut = p.getOutputStream()) {
+                    final Source src = SourceFactory.getSource(context.getBroker(), null, uri.toString(), false);
+                    try(final InputStream isSrc = src.getInputStream()) {
+
+                        //write the remote data to stdOut
+                        int read = -1;
+                        byte buf[] = new byte[4096];
+                        while ((read = isSrc.read(buf)) > -1) {
+                            stdOut.write(buf, 0, read);
+                        }
+                    }
+                }
+
+                //read stdin to buffer
+                int read = -1;
+                byte buf[] = new byte[4096];
+                while ((read = stdIn.read(buf)) > -1) {
+                    baos.write(buf, 0, read);
+                }
+
+                //make sure process is complete
+                p.waitFor();
+
+                return ModuleUtils.inputSourceToXML(context, new InputSource(new ByteArrayInputStream(baos.toByteArray())));
             }
-            stdOut.flush();
-            stdOut.close();
 
-            //read stdin to buffer
-            baos = new ByteArrayOutputStream();
-            read = -1;
-            while ((read = stdIn.read(buf)) > -1) {
-                baos.write(buf, 0, read);
-            }
-
-            //make sure process is complete
-            p.waitFor();
-
-            return ModuleUtils.inputSourceToXML(context, new InputSource(new ByteArrayInputStream(baos.toByteArray())));
-
-        } catch (IOException ex) {
+        } catch (final IOException ex) {
             throw new XPathException("Could not execute the Exiftool " + ex.getMessage(), ex);
-        } catch(PermissionDeniedException pde) {
+        } catch(final PermissionDeniedException pde) {
             throw new XPathException("Could not execute the Exiftool " + pde.getMessage(), pde);
-        } catch (SAXException saxe) {
-            LOG.error("exiftool returned=" + new String(baos.toByteArray()), saxe);
+        } catch (final SAXException saxe) {
             throw new XPathException("Could not parse output from the Exiftool " + saxe.getMessage(), saxe);
-        } catch (InterruptedException ie) {
+        } catch (final InterruptedException ie) {
             throw new XPathException("Could not execute the Exiftool " + ie.getMessage(), ie);
-        } finally {
-            if (baos != null) {
-                try {
-                    baos.close();
-                } catch (IOException ioe) {
-                }
-            }
-
-            if (stdIn != null) {
-                try {
-                    stdIn.close();
-                } catch (IOException ioe) {
-                }
-            }
-
         }
     }
 }

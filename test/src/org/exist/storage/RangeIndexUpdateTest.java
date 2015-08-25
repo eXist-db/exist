@@ -52,9 +52,9 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
+import java.nio.file.Path;
 
 public class RangeIndexUpdateTest {
 
@@ -173,8 +173,8 @@ public class RangeIndexUpdateTest {
 
     @BeforeClass
     public static void startDB() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, SAXException, CollectionConfigurationException, LockException {
-        final File confFile = ConfigurationHelper.lookup("conf.xml");
-        final Configuration config = new Configuration(confFile.getAbsolutePath());
+        final Path confFile = ConfigurationHelper.lookup("conf.xml");
+        final Configuration config = new Configuration(confFile.toAbsolutePath().toString());
         BrokerPool.configure(1, 5, config);
         pool = BrokerPool.getInstance();
 

@@ -22,13 +22,15 @@
 package org.exist.validation;
 
 import java.io.IOException;
+import java.nio.file.Path;
+
 import org.exist.collections.Collection;
-import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
+import org.exist.util.FileUtils;
 import org.exist.util.XMLReaderObjectFactory;
 import org.exist.xmldb.XmldbURI;
 import org.junit.AfterClass;
@@ -41,7 +43,7 @@ import org.junit.Test;
  * @author Dannes Wessels (dizzzz@exist-db.org)
  */
 public class DatabaseInsertResources_NoValidation_Test {
-    
+
     private static Configuration config;
 
     private final static String TEST_COLLECTION = "testNoValidationInsert";
@@ -60,49 +62,49 @@ public class DatabaseInsertResources_NoValidation_Test {
     @Test
     public void insertValidationResources_xsd() throws IOException {
         config.setProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, "no");
-        String addressbook = TestTools.getEXistHome() + "/samples/validation/addressbook";
+        final Path addressbook = FileUtils.resolve(TestTools.getEXistHome(), "samples/validation/addressbook");
 
-        TestTools.insertDocumentToURL(addressbook + "/addressbook.xsd",
+        TestTools.insertDocumentToURL(addressbook.resolve("addressbook.xsd"),
             "xmldb:exist://" + VALIDATION_HOME_COLLECTION_URI + "/" + TestTools.VALIDATION_XSD_COLLECTION + "/addressbook.xsd");
 
 
-        TestTools.insertDocumentToURL(addressbook+"/catalog.xml",
+        TestTools.insertDocumentToURL(addressbook.resolve("catalog.xml"),
             "xmldb:exist://" + VALIDATION_HOME_COLLECTION_URI + "/" + TestTools.VALIDATION_XSD_COLLECTION + "/catalog.xml");
 
-        TestTools.insertDocumentToURL(addressbook+"/addressbook_valid.xml",
+        TestTools.insertDocumentToURL(addressbook.resolve("addressbook_valid.xml"),
             "xmldb:exist://" + VALIDATION_HOME_COLLECTION_URI + "/addressbook_valid.xml");
 
-        TestTools.insertDocumentToURL(addressbook+"/addressbook_invalid.xml",
+        TestTools.insertDocumentToURL(addressbook.resolve("addressbook_invalid.xml"),
             "xmldb:exist://" + VALIDATION_HOME_COLLECTION_URI + "/addressbook_invalid.xml");
     }
 
     @Test
     public void insertValidationResources_dtd() throws IOException {
         config.setProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, "no");
-        String hamlet = TestTools.getEXistHome() + "/samples/validation/dtd";
+        final Path hamlet = FileUtils.resolve(TestTools.getEXistHome(), "samples/validation/dtd");
 
-        TestTools.insertDocumentToURL(hamlet+"/hamlet.dtd",
+        TestTools.insertDocumentToURL(hamlet.resolve("hamlet.dtd"),
             "xmldb:exist://" + VALIDATION_HOME_COLLECTION_URI + "/" + TestTools.VALIDATION_DTD_COLLECTION + "/hamlet.dtd");
 
-        TestTools.insertDocumentToURL(hamlet+"/catalog.xml",
+        TestTools.insertDocumentToURL(hamlet.resolve("catalog.xml"),
             "xmldb:exist://" + VALIDATION_HOME_COLLECTION_URI + "/" + TestTools.VALIDATION_DTD_COLLECTION + "/catalog.xml");
 
-        TestTools.insertDocumentToURL(hamlet+"/hamlet_valid.xml",
+        TestTools.insertDocumentToURL(hamlet.resolve("hamlet_valid.xml"),
             "xmldb:exist://" + VALIDATION_HOME_COLLECTION_URI + "/hamlet_valid.xml");
 
-        TestTools.insertDocumentToURL(hamlet+"/hamlet_invalid.xml",
+        TestTools.insertDocumentToURL(hamlet.resolve("hamlet_invalid.xml"),
             "xmldb:exist://" + VALIDATION_HOME_COLLECTION_URI + "/hamlet_invalid.xml");
     }
 
     @Test
     public void insertValidationResource_dtd_badDocType() throws IOException {
         config.setProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, "no");
-        String hamlet = TestTools.getEXistHome() + "/samples/validation/dtd";
+        final Path hamlet = FileUtils.resolve(TestTools.getEXistHome(), "samples/validation/dtd");
 
-        TestTools.insertDocumentToURL(hamlet + "/hamlet_nodoctype.xml",
+        TestTools.insertDocumentToURL(hamlet.resolve("hamlet_nodoctype.xml"),
             "xmldb:exist://" + VALIDATION_HOME_COLLECTION_URI +"/hamlet_nodoctype.xml");
 
-        TestTools.insertDocumentToURL(hamlet + "/hamlet_wrongdoctype.xml",
+        TestTools.insertDocumentToURL(hamlet.resolve("hamlet_wrongdoctype.xml"),
             "xmldb:exist://" + VALIDATION_HOME_COLLECTION_URI +"/hamlet_wrongdoctype.xml");
     }
 
@@ -160,7 +162,7 @@ public class DatabaseInsertResources_NoValidation_Test {
         try(final DBBroker broker = pool.get(pool.getSecurityManager().authenticate(ADMIN_UID, ADMIN_PWD));
             final Txn txn = transact.beginTransaction()) {
 
-            /** create nessecary collections if they dont exist */
+            /** create necessary collections if they dont exist */
             Collection testCollection = broker.getOrCreateCollection(txn, XmldbURI.create(VALIDATION_HOME_COLLECTION_URI));
             broker.removeCollection(txn, testCollection);
 

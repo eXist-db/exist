@@ -13,6 +13,7 @@ import org.exist.storage.btree.BTreeException;
 import org.exist.storage.btree.Paged.Page;
 import org.exist.storage.lock.Lock;
 import org.exist.util.ByteConversion;
+import org.exist.util.FileUtils;
 import org.exist.util.LockException;
 import org.exist.util.sanity.SanityCheck;
 
@@ -73,7 +74,7 @@ public final class NodeIterator implements INodeIterator {
             try {
                 lock.acquire(Lock.READ_LOCK);
             } catch (final LockException e) {
-                LOG.warn("Failed to acquire read lock on " + db.getFile().getName());
+                LOG.warn("Failed to acquire read lock on " + FileUtils.fileName(db.getFile()));
                 //TODO : throw exception here ? -pb
                 return false;
             }
@@ -111,7 +112,7 @@ public final class NodeIterator implements INodeIterator {
             try {
                 lock.acquire(Lock.READ_LOCK);
             } catch (final LockException e) {
-                LOG.warn("Failed to acquire read lock on " + db.getFile().getName());
+                LOG.warn("Failed to acquire read lock on " + FileUtils.fileName(db.getFile()));
                 //TODO : throw exception here ? -pb
                 return null;
             }

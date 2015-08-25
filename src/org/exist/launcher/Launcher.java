@@ -26,12 +26,14 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Optional;
@@ -44,6 +46,7 @@ import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.util.ConfigurationHelper;
+import org.exist.util.FileUtils;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Sequence;
@@ -492,15 +495,17 @@ public class Launcher extends Observable implements Observer {
     }
 
     private String getJettyHome() {
-        String jettyProperty = System.getProperty("jetty.home");
-        if(jettyProperty==null) {
-            final File home = ConfigurationHelper.getExistHome();
-            final File jettyHome = new File(new File(home, "tools"), "jetty");
-            jettyProperty = jettyHome.getAbsolutePath();
-            System.setProperty("jetty.home", jettyProperty);
-        }
-        final File standaloneFile = new File(new File(jettyProperty, "etc"), "jetty.xml");
-        return standaloneFile.getAbsolutePath();
+        final String jettyProperty = Optional.ofNullable(System.getProperty("jetty.home"))
+                .orElseGet(() -> {
+                    final Optional<Path> home = ConfigurationHelper.getExistHome();
+                    final Path jettyHome = FileUtils.resolve(home, "tools").resolve("jetty");
+                    final String jettyPath = jettyHome.toAbsolutePath().toString();
+                    System.setProperty("jetty.home", jettyPath);
+                    return jettyPath;
+                });
+
+        final Path standaloneFile = Paths.get(jettyProperty).resolve("etc").resolve("jetty.xml");
+        return standaloneFile.toAbsolutePath().toString();
     }
 
     protected void showMessageAndExit(String title, String message, boolean logs) {
@@ -570,13 +575,15 @@ public class Launcher extends Observable implements Observer {
             if (!Desktop.isDesktopSupported())
                 {return;}
             final Desktop desktop = Desktop.getDesktop();
-            final File home = ConfigurationHelper.getExistHome();
-            final File logFile = new File(home, "webapp/WEB-INF/logs/exist.log");
-            if (!logFile.canRead()) {
+            final Optional<Path> home = ConfigurationHelper.getExistHome();
+
+            final Path logFile = FileUtils.resolve(home, "webapp/WEB-INF/logs/exist.log");
+
+            if (!Files.isReadable(logFile)) {
                 trayIcon.displayMessage(null, "Log file not found", TrayIcon.MessageType.ERROR);
             } else {
                 try {
-                    desktop.open(logFile);
+                    desktop.open(logFile.toFile());
                 } catch (final IOException e) {
                     trayIcon.displayMessage(null, "Failed to open log file", TrayIcon.MessageType.ERROR);
                 }

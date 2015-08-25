@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012, Adam Retter
+Copyright (c) 2015, Adam Retter
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -26,12 +26,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 package org.exist.util.io;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.file.Path;
 
 /**
  * Cache implementation for CachingFilterInputStream
@@ -48,7 +47,7 @@ public class MemoryMappedFileFilterInputStreamCache implements FilterInputStream
     private final RandomAccessFile raf;
     private final FileChannel channel;
     private MappedByteBuffer buf;
-    private File tempFile = null;
+    private Path tempFile = null;
     private final long memoryMapSize = DEFAULT_MEMORY_MAP_SIZE;
     
     private boolean externalFile = true;
@@ -57,7 +56,7 @@ public class MemoryMappedFileFilterInputStreamCache implements FilterInputStream
         this(null);
     }
     
-    public MemoryMappedFileFilterInputStreamCache(final File f) throws FileNotFoundException, IOException {
+    public MemoryMappedFileFilterInputStreamCache(final Path f) throws IOException {
         
         if(f == null) {
             tempFile = TemporaryFileManager.getInstance().getTemporaryFile();
@@ -73,7 +72,7 @@ public class MemoryMappedFileFilterInputStreamCache implements FilterInputStream
          *  http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6417205 (fixed in 1.6)
          */
         
-        this.raf =  new RandomAccessFile(tempFile, "rw");
+        this.raf =  new RandomAccessFile(tempFile.toFile(), "rw");  //TODO(AR) consider moving to Files.newByteChannel(tempFile)
         this.channel = raf.getChannel();
         this.buf = channel.map(FileChannel.MapMode.READ_WRITE, 0, getMemoryMapSize());
     }
@@ -91,7 +90,7 @@ public class MemoryMappedFileFilterInputStreamCache implements FilterInputStream
 
         buf.force();
         
-        //TODO revisit this based on the comment below, I now believe setting position in map does work, but you have to have the correct offset added in as well! Adam
+        //TODO(AR) revisit this based on the comment below, I now believe setting position in map does work, but you have to have the correct offset added in as well!
         final int position = buf.position();
         buf = channel.map(FileChannel.MapMode.READ_WRITE, 0, buf.capacity() + (getMemoryMapSize() * factor));
         buf.position(position); //setting the position in the map() call above does not seem to work!

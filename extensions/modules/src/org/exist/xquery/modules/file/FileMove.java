@@ -21,7 +21,10 @@
  */
 package org.exist.xquery.modules.file;
 
-import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -65,15 +68,13 @@ public class FileMove extends BasicFunction {
 		};
 	
 
-	public FileMove( XQueryContext context, FunctionSignature signature )
+	public FileMove(final XQueryContext context, final FunctionSignature signature)
 	{
-		super( context, signature );
+		super(context, signature);
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
-	 */
-	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException 
+	@Override
+	public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException
 	{
 		if (!context.getSubject().hasDbaRole()) {
 			XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getSubject().getName() + "' must be a DBA to call this function.");
@@ -83,16 +84,18 @@ public class FileMove extends BasicFunction {
 
 		Sequence moved 	= BooleanValue.FALSE;
 
-		String inputPath1 = args[0].getStringValue();
-        File original = FileModuleHelper.getFile(inputPath1);
+		final String inputPath1 = args[0].getStringValue();
+        final Path src = FileModuleHelper.getFile(inputPath1);
 
-		String inputPath2 = args[1].getStringValue();
-        File destination = FileModuleHelper.getFile(inputPath2);
-		
-		if( original.renameTo(destination) ) {
-			moved = BooleanValue.TRUE;
+		final String inputPath2 = args[1].getStringValue();
+        final Path dest = FileModuleHelper.getFile(inputPath2);
+
+		try {
+			Files.move(src, dest, StandardCopyOption.ATOMIC_MOVE);
+			return BooleanValue.TRUE;
+		} catch(final IOException ioe) {
+			LOG.error(ioe);
+			return BooleanValue.FALSE;
 		}
-		
-		return( moved );
 	}
 }

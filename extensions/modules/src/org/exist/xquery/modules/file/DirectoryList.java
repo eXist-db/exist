@@ -22,6 +22,7 @@
 package org.exist.xquery.modules.file;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.Date;
 
 import org.apache.logging.log4j.LogManager;
@@ -94,49 +95,36 @@ public class DirectoryList extends BasicFunction {
      *
      * @param context	The Context of the calling XQuery
      */
-    public DirectoryList(XQueryContext context, FunctionSignature signature) {
+    public DirectoryList(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
 
-    /**
-     * evaluate the call to the XQuery execute() function, it is really the main
-     * entry point of this class
-     *
-     * @param args	arguments from the execute() function call
-     * @param contextSequence	the Context Sequence to operate on (not used here
-     * internally!)
-     * @return	A node representing the SQL result set
-     *
-     * @see
-     * org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[],
-     * org.exist.xquery.value.Sequence)
-     */
-    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+    @Override
+    public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
         if (!context.getSubject().hasDbaRole()) {
             XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getSubject().getName() + "' must be a DBA to call this function.");
             logger.error("Invalid user", xPathException);
             throw xPathException;
         }
 
-        String inputPath = args[0].getStringValue();
-        File baseDir = FileModuleHelper.getFile(inputPath);
+        final String inputPath = args[0].getStringValue();
+        final Path baseDir = FileModuleHelper.getFile(inputPath);
 
-        Sequence patterns = args[1];
+        final Sequence patterns = args[1];
 
         if (logger.isDebugEnabled()) {
             logger.debug("Listing matching files in directory: " + baseDir);
         }
 
-        MemTreeBuilder builder = context.getDocumentBuilder();
+        final MemTreeBuilder builder = context.getDocumentBuilder();
 
         builder.startDocument();
         builder.startElement(new QName("list", NAMESPACE_URI, PREFIX), null);
         builder.addAttribute(new QName("directory", null, null), baseDir.toString());
 
-        for (SequenceIterator i = patterns.iterate(); i.hasNext();) {
-            String pattern = i.nextItem().getStringValue();
-            File[] scannedFiles = DirectoryScanner.scanDir(baseDir, pattern);
-            
+        for (final SequenceIterator i = patterns.iterate(); i.hasNext();) {
+            final String pattern = i.nextItem().getStringValue();
+            final File[] scannedFiles = DirectoryScanner.scanDir(baseDir.toFile(), pattern);
 
             if (logger.isDebugEnabled()) {
                 logger.debug("Found: " + scannedFiles.length);

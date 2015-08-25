@@ -1,8 +1,15 @@
 package org.exist.xquery.modules.counter;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Hashtable;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.apache.logging.log4j.LogManager;
@@ -11,6 +18,7 @@ import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.backup.RawDataBackup;
 import org.exist.indexing.RawBackupSupport;
+import org.exist.util.FileUtils;
 
 /**
  * @author Jasper Linthorst (jasper.linthorst@gmail.com)
@@ -25,67 +33,52 @@ public class Counters implements RawBackupSupport {
     public final static String COUNTERSTORE = "counters";
     public final static String DELIMITER = ";";
 
-    private File store = null;
+    private Path store = null;
     private Map<String, Long> counters = new Hashtable<>();
 
-    private Counters(String dataDir) throws EXistException {
+    private Counters(final Optional<Path> dataDir) throws EXistException {
+        this.store = FileUtils.resolve(dataDir, COUNTERSTORE);
+        loadStore();
+    }
 
-        store = new File(dataDir, COUNTERSTORE);
-
-        BufferedReader br = null;
+    /**
+     * Loads data from the on-disk counter store
+     */
+    private void loadStore() throws EXistException {
         try {
-            br = new BufferedReader(new FileReader(store));
+            if(Files.exists(store)) {
+                try(final BufferedReader br = Files.newBufferedReader(store, StandardCharsets.UTF_8)) {
+                    String line = "";
+                    while ((line = br.readLine()) != null) {
+                        //Use ; as a DELIMITER, counter names must be tested and rejected when they contain this character!
+                        final String[] tokens = line.split(DELIMITER);
 
-        } catch (FileNotFoundException e) {
-            try {
-                store.createNewFile();
-                br = new BufferedReader(new FileReader(store));
-            } catch (IOException e1) {
-                // Failed to create an empty file, probably no write permission..
-                throw new EXistException("Unable to create counter store file.");
-            }
-        }
-
-        try {
-            if (store.exists() && store.canRead()) {
-                String line = "";
-
-                while ((line = br.readLine()) != null) {
-                    //Use ; as a DELIMITER, counter names must be tested and rejected when they contain this character!
-                    String[] tokens = line.split(DELIMITER);
-                    counters.put(tokens[0], Long.parseLong(tokens[1]));
+                        try {
+                            counters.put(tokens[0], Long.parseLong(tokens[1]));
+                        } catch (final NumberFormatException e) {
+                            throw new EXistException("Corrupt counter store file: " + store.toAbsolutePath().toString());
+                        }
+                    }
                 }
-
-                br.close();
             }
-
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new EXistException("IOException occurred when reading counter store file.");
-
-        } catch (NumberFormatException e) {
-            throw new EXistException("Corrupt counter store file: " + store.getAbsolutePath());
-
-        } catch (ArrayIndexOutOfBoundsException e) {
-            throw new EXistException("Corrupt counter store file: " + store.getAbsolutePath());
         }
     }
 
     /**
      *  Get singleton of Counters object.
      */
-    public static Counters getInstance(String dataDir) throws EXistException {
+    public static Counters getInstance(final Path dataDir) throws EXistException {
         if (instance == null) {
             LOG.debug("Initializing counters.");
-            instance = new Counters(dataDir);
+            instance = new Counters(Optional.ofNullable(dataDir));
         }
         return instance;
     }
 
     public static Counters getInstance() throws EXistException {
-        if (instance == null) {
-            instance = getInstance(COUNTERSTORE);
-        }
-        return instance;
+        return getInstance(null);
     }
 
     /**
@@ -95,7 +88,7 @@ public class Counters implements RawBackupSupport {
      * @return the initial value of the newly created counter
      * @throws EXistException
      */
-    public long createCounter(String counterName) throws EXistException {
+    public long createCounter(final String counterName) throws EXistException {
         return createCounter(counterName, (long) 0);
     }
 
@@ -108,7 +101,7 @@ public class Counters implements RawBackupSupport {
      * @return the current value of the named counter
      * @throws EXistException 
      */
-    public synchronized long createCounter(String counterName, long initValue) throws EXistException {
+    public synchronized long createCounter(final String counterName, final long initValue) throws EXistException {
         if (counters.containsKey(counterName)) {
             return counters.get(counterName);
         } else {
@@ -116,8 +109,8 @@ public class Counters implements RawBackupSupport {
 
             try {
                 serializeTable();
-            } catch (FileNotFoundException e) {
-                throw new EXistException("Unable to save to counter store file.");
+            } catch (final IOException e) {
+                throw new EXistException("Unable to save to counter store file.", e);
             }
 
             return counters.get(counterName);
@@ -131,14 +124,14 @@ public class Counters implements RawBackupSupport {
      * @return true if the counter is removed
      * @throws EXistException 
      */
-    public synchronized boolean destroyCounter(String counterName) throws EXistException {
+    public synchronized boolean destroyCounter(final String counterName) throws EXistException {
         if (counters.containsKey(counterName)) {
             counters.remove(counterName);
 
             try {
                 serializeTable();
-            } catch (FileNotFoundException e) {
-                throw new EXistException("Unable to remove counter from counter store file.");
+            } catch (final IOException e) {
+                throw new EXistException("Unable to remove counter from counter store file.", e);
             }
 
             return true;
@@ -154,7 +147,7 @@ public class Counters implements RawBackupSupport {
      * @return the next counter value or -1 if the counter does not exist.
      * @throws EXistException
      */
-    public synchronized long nextValue(String counterName) throws EXistException {
+    public synchronized long nextValue(final String counterName) throws EXistException {
         if (!counters.containsKey(counterName)) {
             return -1;
         }
@@ -166,8 +159,8 @@ public class Counters implements RawBackupSupport {
 
         try {
             serializeTable();
-        } catch (FileNotFoundException e) {
-            throw new EXistException("Unable to save to counter store file.");
+        } catch (final IOException e) {
+            throw new EXistException("Unable to save to counter store file.", e);
         }
 
         return c;
@@ -185,30 +178,26 @@ public class Counters implements RawBackupSupport {
     /**
      * Serializes the Map with counters to the filesystem.
      * 
-     * @throws FileNotFoundException
+     * @throws IOException
      */
-    private synchronized void serializeTable() throws FileNotFoundException {
-        try(PrintWriter p = new PrintWriter(store)) {
+    private synchronized void serializeTable() throws IOException {
+        try(final PrintWriter pw = new PrintWriter(Files.newBufferedWriter(store, StandardCharsets.UTF_8))) {
             for(final Map.Entry<String, Long> counter : counters.entrySet()) {
-                p.println(counter.getKey() + DELIMITER + counter.getValue().toString());
+                pw.println(counter.getKey() + DELIMITER + counter.getValue().toString());
             }
         }
     }
 
     @Override
-    public void backupToArchive(RawDataBackup backup) throws IOException {
-        if (!store.exists())
+    public void backupToArchive(final RawDataBackup backup) throws IOException {
+        if (!Files.exists(store)) {
             return;
-        OutputStream os = backup.newEntry(store.getName());
-        InputStream is = new FileInputStream(store);
-        byte[] buf = new byte[4096];
-        int len;
-        while ((len = is.read(buf)) > 0) {
-            os.write(buf, 0, len);
         }
-        is.close();
-        os.close();
-        backup.closeEntry();
-    }
 
+        try(final OutputStream os = backup.newEntry(FileUtils.fileName(store))) {
+            Files.copy(store, os);
+        } finally {
+            backup.closeEntry();
+        }
+    }
 }

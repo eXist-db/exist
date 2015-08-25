@@ -1,6 +1,9 @@
 package org.exist.xquery;
 
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Optional;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
@@ -463,13 +466,10 @@ public class XQueryUpdateTest {
     }
 
     protected BrokerPool startDB() throws DatabaseConfigurationException, EXistException {
-        String home, file = "conf.xml";
-        home = System.getProperty("exist.home");
-        if (home == null) {
-            home = System.getProperty("user.dir");
-        }
+        final String file = "conf.xml";
+        final Optional<Path> home = Optional.ofNullable(System.getProperty("exist.home", System.getProperty("user.dir"))).map(Paths::get);
 
-        Configuration config = new Configuration(file, home);
+        final Configuration config = new Configuration(file, home);
         BrokerPool.configure(1, 5, config);
         return BrokerPool.getInstance();
     }

@@ -20,9 +20,13 @@
  */
 package org.exist.storage;
 
-import java.io.File;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -37,13 +41,13 @@ public class RenameBinaryLoggable extends AbstractLoggable {
 
     private final static Logger LOG = LogManager.getLogger(RenameBinaryLoggable.class);
 
-    private File original;
-    private File backup;
+    private Path original;
+    private Path backup;
 
     /**
      * Creates a new instance of RenameBinaryLoggable
      */
-    public RenameBinaryLoggable(final DBBroker broker, final Txn txn, final File original, final File backup) {
+    public RenameBinaryLoggable(final DBBroker broker, final Txn txn, final Path original, final Path backup) {
         super(NativeBroker.LOG_RENAME_BINARY, txn.getId());
         this.original = original;
         this.backup = backup;
@@ -57,11 +61,11 @@ public class RenameBinaryLoggable extends AbstractLoggable {
 
     @Override
     public void write(final ByteBuffer out) {
-        final String originalPath = original.getAbsolutePath();
+        final String originalPath = original.toAbsolutePath().toString();
         byte[] data = originalPath.getBytes(StandardCharsets.UTF_8);
         out.putInt(data.length);
         out.put(data);
-        final String backupPath = backup.getAbsolutePath();
+        final String backupPath = backup.toAbsolutePath().toString();
         data = backupPath.getBytes(StandardCharsets.UTF_8);
         out.putInt(data.length);
         out.put(data);
@@ -72,17 +76,17 @@ public class RenameBinaryLoggable extends AbstractLoggable {
         int size = in.getInt();
         byte[] data = new byte[size];
         in.get(data);
-        original = new File(new String(data, StandardCharsets.UTF_8));
+        original = Paths.get(new String(data, StandardCharsets.UTF_8));
         size = in.getInt();
         data = new byte[size];
         in.get(data);
-        backup = new File(new String(data, StandardCharsets.UTF_8));
-        LOG.debug("Rename binary read: " + original + " -> " + backup);
+        backup = Paths.get(new String(data, StandardCharsets.UTF_8));
+        LOG.debug("Rename binary read: " + original.toAbsolutePath().toString() + " -> " + backup.toAbsolutePath().toString());
     }
 
     @Override
     public int getLogSize() {
-        return 8 + original.getAbsolutePath().getBytes(StandardCharsets.UTF_8).length + backup.getAbsolutePath().getBytes(StandardCharsets.UTF_8).length;
+        return 8 + original.toAbsolutePath().toString().getBytes(StandardCharsets.UTF_8).length + backup.toAbsolutePath().toString().getBytes(StandardCharsets.UTF_8).length;
     }
 
     @Override
@@ -91,9 +95,11 @@ public class RenameBinaryLoggable extends AbstractLoggable {
 
     @Override
     public void undo() throws LogException {
-        LOG.debug("Undo rename: " + original);
-        if (!backup.renameTo(original)) {
-            throw new LogException("Cannot move original " + original + " to backup file " + backup);
+        LOG.debug("Undo rename: " + original.toAbsolutePath().toString());
+        try {
+            Files.move(backup, original, StandardCopyOption.ATOMIC_MOVE);
+        } catch (final IOException ioe) {
+            throw new LogException("Cannot move backup " + backup.toAbsolutePath().toString() + " to original file " + original.toAbsolutePath().toString());
         }
     }
 

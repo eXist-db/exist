@@ -2,10 +2,7 @@ package org.exist.storage.btree;
 
 import org.exist.EXistException;
 import org.exist.storage.BrokerPool;
-import org.exist.util.ByteConversion;
-import org.exist.util.Configuration;
-import org.exist.util.UTF8;
-import org.exist.util.XMLString;
+import org.exist.util.*;
 import org.exist.xquery.TerminatedException;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.DoubleValue;
@@ -16,9 +13,11 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Random;
 import java.util.TreeMap;
@@ -29,7 +28,7 @@ import java.util.TreeMap;
 public class BTreeTest {
 
     private BrokerPool pool;
-    private File file = null;
+    private Path file = null;
 
     private int count = 0;
     private static final int COUNT = 5000;
@@ -437,8 +436,8 @@ public class BTreeTest {
             BrokerPool.configure(1, 5, config);
             pool = BrokerPool.getInstance();
 
-            file = new File(System.getProperty("exist.home", ".") + "/test/junit/test.dbx");
-            assertFalse(file.exists());
+            file = Paths.get(System.getProperty("exist.home", ".")).resolve("test/junit/test.dbx");
+            assertFalse(Files.exists(file));
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());
@@ -450,7 +449,7 @@ public class BTreeTest {
     	try {
 	        BrokerPool.stopAll(false);
 
-            file.delete();
+            FileUtils.deleteQuietly(file);
         } catch (Exception e) {
 	        fail(e.getMessage());
 	    }

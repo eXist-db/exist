@@ -43,12 +43,12 @@ public abstract class DatabaseTestCase {
 			throw new DatabaseException("Missing ConfigFile annotation on DatabaseTestCase subclass");
 		File configFile = new File(configFileAnnotation.value());
 		if (!Database.isStarted()) {
-			Database.startup(configFile);
+			Database.startup(configFile.toPath());
 			db = null;
 		}
 		if (db == null) db = Database.login("admin", "");
 		wipeDatabase();
-		Database.configureRootCollection(configFile);	// config file gets erased by wipeDatabase()
+		Database.configureRootCollection(configFile.toPath());	// config file gets erased by wipeDatabase()
 	}
 	
 	@AfterClass public static void shutdownDatabase() throws Exception {

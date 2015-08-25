@@ -1,9 +1,11 @@
 package org.exist.storage;
 
-import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
-import org.apache.commons.io.FileUtils;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Optional;
+import java.util.stream.Stream;
+
 import org.exist.collections.triggers.TriggerException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.util.LockException;
@@ -17,6 +19,7 @@ import org.exist.Database;
 import org.exist.start.Main;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.util.FileUtils;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.exist.util.ConfigurationHelper;
@@ -29,19 +32,12 @@ public class StoreBinaryTest {
 
     @BeforeClass
     public static void ensureCleanDatabase() throws IOException {
-        final File home = ConfigurationHelper.getExistHome();
-        final File data = new File(home, "webapp/WEB-INF/data");
+        final Optional<Path> home = ConfigurationHelper.getExistHome();
+        final Path data = FileUtils.resolve(home, "webapp/WEB-INF/data");
 
-        final File[] dataFiles = data.listFiles(new FilenameFilter() {
-            @Override
-            public boolean accept(final File dir, final String name) {
-                return !(name.equals("RECOVERY") || name.equals("README") || name.equals(".DO_NOT_DELETE"));
-            }
-        });
-
-        for(final File dataFile : dataFiles) {
-            FileUtils.deleteQuietly(dataFile);
-        }
+        final Stream<Path> dataFiles  = Files.list(data)
+                .filter(path -> !(FileUtils.fileName(path).equals("RECOVERY") || FileUtils.fileName(path).equals("README") || FileUtils.fileName(path).equals(".DO_NOT_DELETE")));
+        dataFiles.forEach(FileUtils::deleteQuietly);
     }
 
     @Test

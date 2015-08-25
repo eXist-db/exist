@@ -23,17 +23,22 @@ package org.exist.backup;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exist.util.FileUtils;
 
-import java.io.File;
 import java.io.IOException;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
 import java.util.Date;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 
 public class BackupDirectory
@@ -50,27 +55,27 @@ public class BackupDirectory
     private final DateFormat dateFormat = new SimpleDateFormat( DATE_FORMAT_PICTURE );
 
 
-    private File                   dir;
+    private Path                   dir;
 
     private Matcher                matcher;
 
-    public BackupDirectory( String dirPath )
+    public BackupDirectory(final String dirPath)
     {
-        this( new File( dirPath ) );
+        this(Paths.get(dirPath));
     }
 
 
-    public BackupDirectory( File directory )
+    public BackupDirectory(final Path directory)
     {
         this.dir = directory;
         final Pattern pattern = Pattern.compile( FILE_REGEX );
         matcher = pattern.matcher( "" );
     }
 
-    public File createBackup( boolean incremental, boolean zip )
+    public Path createBackup( boolean incremental, boolean zip )
     {
         int  counter = 0;
-        File file;
+        Path file;
 
         do {
             final StringBuilder buf = new StringBuilder();
@@ -84,21 +89,20 @@ public class BackupDirectory
             if( zip ) {
                 buf.append( ".zip" );
             }
-            file = new File( dir, buf.toString() );
-        } while( file.exists() );
+            file = dir.resolve(buf.toString());
+        } while( Files.exists(file) );
         return( file );
     }
 
 
-    public BackupDescriptor lastBackupFile()
-    {
-        final File[] files      = dir.listFiles();
+    public BackupDescriptor lastBackupFile() throws IOException {
+        final List<Path> files = Files.list(dir).collect(Collectors.toList());
 
-        File newest       = null;
+        Path newest       = null;
         Date newestDate   = null;
 
-        for( int i = 0; i < files.length; i++ ) {
-            matcher.reset( files[i].getName() );
+        for(final Path file : files) {
+            matcher.reset(FileUtils.fileName(file));
 
             if( matcher.matches() ) {
                 final String dateTime = matcher.group( 2 );
@@ -108,7 +112,7 @@ public class BackupDirectory
 
                     if( ( newestDate == null ) || date.after( newestDate ) ) {
                         newestDate = date;
-                        newest     = files[i];
+                        newest     = file;
                     }
                 }
                 catch( final ParseException e ) {
@@ -121,10 +125,10 @@ public class BackupDirectory
 
             try {
 
-                if( newest.getName().endsWith( ".zip" ) || newest.getName().endsWith( ".ZIP" ) ) {
+                if(FileUtils.fileName(newest).toLowerCase().endsWith( ".zip" )) {
                     descriptor = new ZipArchiveBackupDescriptor( newest );
                 } else {
-                    descriptor = new FileSystemBackupDescriptor( new File( newest + "/db", BackupDescriptor.COLLECTION_DESCRIPTOR ) );
+                    descriptor = new FileSystemBackupDescriptor(newest.resolve("db").resolve(BackupDescriptor.COLLECTION_DESCRIPTOR));
                 }
             }
             catch( final IOException e ) {

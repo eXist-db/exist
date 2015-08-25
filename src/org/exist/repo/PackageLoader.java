@@ -24,8 +24,8 @@ package org.exist.repo;
 import org.expath.pkg.repo.PackageException;
 import org.expath.pkg.repo.deps.DependencyVersion;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 
 /**
  * Interface for resolving package dependencies. Implementations may load
@@ -101,5 +101,5 @@ public interface PackageLoader {
      * @param version the version to install
      * @return a file containing the package or null if not found
      */
-    public File load(String name, Version version) throws IOException;
+    public Path load(String name, Version version) throws IOException;
 }

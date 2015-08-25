@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012, Adam Retter
+Copyright (c) 2015, Adam Retter
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -26,9 +26,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 package org.exist.util.io;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.file.Path;
 
 /**
  * Cache implementation for CachingFilterInputStream
@@ -42,7 +42,7 @@ import java.io.RandomAccessFile;
  * @author Adam Retter <adam.retter@googlemail.com>
  */
 public class FileFilterInputStreamCache implements FilterInputStreamCache {
-    private final File tempFile;
+    private final Path tempFile;
     private final boolean externalFile;
     private int length = 0;
     private int offset = 0;
@@ -53,7 +53,7 @@ public class FileFilterInputStreamCache implements FilterInputStreamCache {
         this(null);
     }
     
-    public FileFilterInputStreamCache(final File f) throws IOException {
+    public FileFilterInputStreamCache(final Path f) throws IOException {
          if(f == null) {
             tempFile = TemporaryFileManager.getInstance().getTemporaryFile();
             externalFile = false;
@@ -61,8 +61,7 @@ public class FileFilterInputStreamCache implements FilterInputStreamCache {
             tempFile = f;
             externalFile = true;
         }
-         
-        this.raf = new RandomAccessFile(tempFile, "rw");
+        this.raf = new RandomAccessFile(tempFile.toFile(), "rw"); //TODO(AR) consider moving to Files.newByteChannel(tempFile)
     }
     
     

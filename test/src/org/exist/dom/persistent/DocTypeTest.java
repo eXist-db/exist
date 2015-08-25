@@ -2,8 +2,11 @@ package org.exist.dom.persistent;
 
 import org.exist.EXistException;
 import org.exist.collections.triggers.TriggerException;
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Optional;
 import java.util.Properties;
 
 import javax.xml.transform.OutputKeys;
@@ -67,11 +70,11 @@ public class DocTypeTest {
 		final TransactionManager transact = pool.getTransactionManager();
 
 		try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
-			final File existHome = pool.getConfiguration().getExistHome();
-			final File testFile = new File(existHome, "/test/src/org/exist/dom/persistent/test_content.xml");
-			assertEquals(true, testFile.canRead());
+			final Optional<Path> existHome = pool.getConfiguration().getExistHome();
+			final Path testFile = FileUtils.resolve(existHome, "test/src/org/exist/dom/persistent/test_content.xml");
+			assertTrue(Files.isReadable(testFile));
 			
-			final InputSource is = new FileInputSource(testFile);
+			final InputSource is = new FileInputSource(testFile.toFile());
 
 			try(final Txn transaction = transact.beginTransaction()) {
                 final IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("test2.xml"), is);
@@ -157,10 +160,7 @@ public class DocTypeTest {
 	
 	protected BrokerPool startDB() throws DatabaseConfigurationException, EXistException {
         final String file = "conf.xml";
-        String home = System.getProperty("exist.home");
-        if (home == null) {
-            home = System.getProperty("user.dir");
-        }
+        final Optional<Path> home = Optional.ofNullable(System.getProperty("exist.home", System.getProperty("user.dir"))).map(Paths::get);
 
         final Configuration config = new Configuration(file, home);
         BrokerPool.configure(1, 5, config);

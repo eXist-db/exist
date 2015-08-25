@@ -25,6 +25,7 @@ import static org.junit.Assert.assertNotNull;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
+import java.nio.file.Path;
 import java.util.*;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.ParserConfigurationException;
@@ -1270,8 +1271,8 @@ public class LuceneIndexTest {
 
     @BeforeClass
     public static void startDB() throws DatabaseConfigurationException, EXistException {
-        final File confFile = ConfigurationHelper.lookup("conf.xml");
-        final Configuration config = new Configuration(confFile.getAbsolutePath());
+        final Path confFile = ConfigurationHelper.lookup("conf.xml");
+        final Configuration config = new Configuration(confFile.toAbsolutePath().toString());
         config.setProperty(Indexer.PROPERTY_SUPPRESS_WHITESPACE, "none");
         config.setProperty(Indexer.PRESERVE_WS_MIXED_CONTENT_ATTRIBUTE, Boolean.TRUE);
         BrokerPool.configure(1, 5, config);

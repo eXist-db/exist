@@ -21,12 +21,11 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.base.XMLDBException;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Properties;
 
@@ -123,13 +122,13 @@ public class ServerShutdown {
     private static Properties loadProperties() {
 
         final Properties clientProps = new Properties();
-        final File propFile = ConfigurationHelper.lookup("client.properties");
+        final Path propFile = ConfigurationHelper.lookup("client.properties");
         InputStream pin = null;
 
         // Try to load from file
         try {
-            pin = new FileInputStream(propFile);
-        } catch (final FileNotFoundException ex) {
+            pin = Files.newInputStream(propFile);
+        } catch (final IOException ex) {
             // File not found, no exception handling
         }
 

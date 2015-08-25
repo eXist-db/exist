@@ -44,14 +44,13 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 
 /**
  * @author wolf
  *
  */
 public class RecoverBinaryTest {
-    
+
     private BrokerPool pool;
 
     @Test

@@ -26,6 +26,8 @@ import org.exist.storage.btree.DBException;
 import org.exist.util.DatabaseConfigurationException;
 import org.w3c.dom.Element;
 
+import java.nio.file.Path;
+
 public abstract class AbstractIndex implements Index {
 	
     /**
@@ -39,10 +41,10 @@ public abstract class AbstractIndex implements Index {
 
     protected BrokerPool pool;    
     //Probably not useful for every kind of index. Anyway...
-    private String dataDir = null; 
+    private Path dataDir = null;
     protected String name = null;    
 
-    public void configure(BrokerPool pool, String dataDir, Element config)
+    public void configure(BrokerPool pool, Path dataDir, Element config)
             throws DatabaseConfigurationException {
         this.pool = pool;
         this.dataDir = dataDir; 
@@ -67,7 +69,7 @@ public abstract class AbstractIndex implements Index {
     }
 
     //TODO : declare in interface ?
-    public String getDataDir() {
+    public Path getDataDir() {
         return dataDir;
     } 
 

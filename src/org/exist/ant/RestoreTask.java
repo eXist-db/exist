@@ -30,7 +30,8 @@ import org.exist.backup.Restore;
 import org.exist.backup.restore.listener.ConsoleRestoreListener;
 import org.exist.backup.restore.listener.RestoreListener;
 
-import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 
 /**
@@ -40,8 +41,8 @@ import java.io.File;
  */
 public class RestoreTask extends AbstractXMLDBTask
 {
-    private File   zipFile         = null;
-    private File   dir             = null;
+    private Path zipFile         = null;
+    private Path   dir             = null;
     private DirSet dirSet          = null;
     private String restorePassword = null;
 
@@ -58,8 +59,8 @@ public class RestoreTask extends AbstractXMLDBTask
             throw( new BuildException( "Missing required argument: either dir, dirset or file required" ) );
         }
 
-        if( ( dir != null ) && !dir.canRead() ) {
-            final String msg = "Cannot read restore file: " + dir.getAbsolutePath();
+        if( ( dir != null ) && !Files.isReadable(dir)) {
+            final String msg = "Cannot read restore file: " + dir.toAbsolutePath().toString();
 
             if( failonerror ) {
                 throw( new BuildException( msg ) );
@@ -73,11 +74,11 @@ public class RestoreTask extends AbstractXMLDBTask
             try {
 
                 if( dir != null ) {
-                    log( "Restoring from " + dir.getAbsolutePath(), Project.MSG_INFO );
-                    final File file = new File( dir, "__contents__.xml" );
+                    log( "Restoring from " + dir.toAbsolutePath().toString(), Project.MSG_INFO );
+                    final Path file = dir.resolve("__contents__.xml" );
 
-                    if( !file.exists() ) {
-                        final String msg = "Did not found file " + file.getAbsolutePath();
+                    if( !Files.exists(file)) {
+                        final String msg = "Could not find file " + file.toAbsolutePath().toString();
 
                         if( failonerror ) {
                             throw( new BuildException( msg ) );
@@ -97,11 +98,11 @@ public class RestoreTask extends AbstractXMLDBTask
                     log( "Found " + includedFiles.length + " files.\n" );
 
                     for( final String included : includedFiles ) {
-                        dir = new File( scanner.getBasedir() + File.separator + included );
-                        final File contentsFile = new File( dir, "__contents__.xml" );
+                        dir = scanner.getBasedir().toPath().resolve(included);
+                        final Path contentsFile = dir.resolve("__contents__.xml");
 
-                        if( !contentsFile.exists() ) {
-                            final String msg = "Did not found file " + contentsFile.getAbsolutePath();
+                        if( !Files.exists(contentsFile)) {
+                            final String msg = "Did not found file " + contentsFile.toAbsolutePath().toString();
 
                             if( failonerror ) {
                                 throw( new BuildException( msg ) );
@@ -109,7 +110,7 @@ public class RestoreTask extends AbstractXMLDBTask
                                 log( msg, Project.MSG_ERR );
                             }
                         } else {
-                            log( "Restoring from " + contentsFile.getAbsolutePath() + " ...\n" );
+                            log( "Restoring from " + contentsFile.toAbsolutePath().toString() + " ...\n" );
 
                             // TODO subdirectories as sub-collections?
                             final Restore         restore  = new Restore();
@@ -119,10 +120,10 @@ public class RestoreTask extends AbstractXMLDBTask
                     }
 
                 } else if( zipFile != null ) {
-                    log( "Restoring from " + zipFile.getAbsolutePath(), Project.MSG_INFO );
+                    log( "Restoring from " + zipFile.toAbsolutePath().toString(), Project.MSG_INFO );
 
-                    if( !zipFile.exists() ) {
-                        final String msg = "File not found: " + zipFile.getAbsolutePath();
+                    if( !Files.exists(zipFile)) {
+                        final String msg = "File not found: " + zipFile.toAbsolutePath().toString();
 
                         if( failonerror ) {
                             throw( new BuildException( msg ) );
@@ -163,13 +164,13 @@ public class RestoreTask extends AbstractXMLDBTask
      *
      * @param  dir
      */
-    public void setDir( File dir )
+    public void setDir( Path dir )
     {
         this.dir = dir;
     }
 
 
-    public void setFile( File file )
+    public void setFile( Path file )
     {
         this.zipFile = file;
     }
