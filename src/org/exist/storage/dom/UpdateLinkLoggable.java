@@ -1,23 +1,22 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 The eXist Project
- *  http://exist-db.org
- *  
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *  
- *  $Id$
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2015 The eXist Project
+ *
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 package org.exist.storage.dom;
 
@@ -30,14 +29,13 @@ import org.exist.storage.journal.LogException;
 import org.exist.storage.txn.Txn;
 
 public class UpdateLinkLoggable extends AbstractLoggable {
-
     protected long pageNum;
     protected int offset;
     protected long link;
     protected long oldLink;
     private DOMFile domDb = null;
-    
-    public UpdateLinkLoggable(Txn transaction, long pageNum, int offset, long link, long oldLink) {
+
+    public UpdateLinkLoggable(final Txn transaction, final long pageNum, final int offset, final long link, final long oldLink) {
         super(DOMFile.LOG_UPDATE_LINK, transaction.getId());
         this.pageNum = pageNum;
         this.offset = offset;
@@ -45,37 +43,43 @@ public class UpdateLinkLoggable extends AbstractLoggable {
         this.oldLink = oldLink;
     }
 
-    public UpdateLinkLoggable(DBBroker broker, long transactId) {
+    public UpdateLinkLoggable(final DBBroker broker, final long transactId) {
         super(DOMFile.LOG_UPDATE_LINK, transactId);
-        this.domDb = ((NativeBroker)broker).getDOMFile();
+        this.domDb = ((NativeBroker) broker).getDOMFile();
     }
-    
-    public void write(ByteBuffer out) {
+
+    @Override
+    public void write(final ByteBuffer out) {
         out.putInt((int) pageNum);
         out.putShort((short) offset);
         out.putLong(link);
         out.putLong(oldLink);
     }
 
-    public void read(ByteBuffer in) {
+    @Override
+    public void read(final ByteBuffer in) {
         pageNum = in.getInt();
         offset = in.getShort();
         link = in.getLong();
         oldLink = in.getLong();
     }
 
+    @Override
     public int getLogSize() {
         return 22;
     }
 
+    @Override
     public void redo() throws LogException {
         domDb.redoUpdateLink(this);
     }
-    
+
+    @Override
     public void undo() throws LogException {
         domDb.undoUpdateLink(this);
     }
-    
+
+    @Override
     public String dump() {
         return super.dump() + " - updated link on page: " + pageNum + " at offset: " + offset;
     }
