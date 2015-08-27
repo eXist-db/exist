@@ -64,7 +64,7 @@ public class CreateBinaryLoggable extends AbstractLoggable {
 
     @Override
     public int getLogSize() {
-        return 4 + original.getAbsolutePath().getBytes().length;
+        return 4 + original.getAbsolutePath().getBytes(StandardCharsets.UTF_8).length;
     }
 
     @Override

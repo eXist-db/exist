@@ -22,6 +22,7 @@ package org.exist.storage;
 
 import java.io.File;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -57,11 +58,11 @@ public class RenameBinaryLoggable extends AbstractLoggable {
     @Override
     public void write(final ByteBuffer out) {
         final String originalPath = original.getAbsolutePath();
-        byte[] data = originalPath.getBytes();
+        byte[] data = originalPath.getBytes(StandardCharsets.UTF_8);
         out.putInt(data.length);
         out.put(data);
         final String backupPath = backup.getAbsolutePath();
-        data = backupPath.getBytes();
+        data = backupPath.getBytes(StandardCharsets.UTF_8);
         out.putInt(data.length);
         out.put(data);
     }
@@ -71,17 +72,17 @@ public class RenameBinaryLoggable extends AbstractLoggable {
         int size = in.getInt();
         byte[] data = new byte[size];
         in.get(data);
-        original = new File(new String(data));
+        original = new File(new String(data, StandardCharsets.UTF_8));
         size = in.getInt();
         data = new byte[size];
         in.get(data);
-        backup = new File(new String(data));
+        backup = new File(new String(data, StandardCharsets.UTF_8));
         LOG.debug("Rename binary read: " + original + " -> " + backup);
     }
 
     @Override
     public int getLogSize() {
-        return 8 + original.getAbsolutePath().getBytes().length + backup.getAbsolutePath().getBytes().length;
+        return 8 + original.getAbsolutePath().getBytes(StandardCharsets.UTF_8).length + backup.getAbsolutePath().getBytes(StandardCharsets.UTF_8).length;
     }
 
     @Override

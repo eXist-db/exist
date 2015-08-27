@@ -128,16 +128,16 @@ public class BFile extends BTree {
 
     static {
         // register log entry types for this db file
-        LogEntryTypes.addEntryType(LOG_CREATE_PAGE, CreatePageLoggable.class);
-        LogEntryTypes.addEntryType(LOG_STORE_VALUE, StoreValueLoggable.class);
-        LogEntryTypes.addEntryType(LOG_REMOVE_VALUE, RemoveValueLoggable.class);
-        LogEntryTypes.addEntryType(LOG_REMOVE_PAGE, RemoveEmptyPageLoggable.class);
-        LogEntryTypes.addEntryType(LOG_OVERFLOW_APPEND, OverflowAppendLoggable.class);
-        LogEntryTypes.addEntryType(LOG_OVERFLOW_STORE, OverflowStoreLoggable.class);
-        LogEntryTypes.addEntryType(LOG_OVERFLOW_CREATE, OverflowCreateLoggable.class);
-        LogEntryTypes.addEntryType(LOG_OVERFLOW_MODIFIED, OverflowModifiedLoggable.class);
-        LogEntryTypes.addEntryType(LOG_OVERFLOW_CREATE_PAGE, OverflowCreatePageLoggable.class);
-        LogEntryTypes.addEntryType(LOG_OVERFLOW_REMOVE, OverflowRemoveLoggable.class);
+        LogEntryTypes.addEntryType(LOG_CREATE_PAGE, CreatePageLoggable::new);
+        LogEntryTypes.addEntryType(LOG_STORE_VALUE, StoreValueLoggable::new);
+        LogEntryTypes.addEntryType(LOG_REMOVE_VALUE, RemoveValueLoggable::new);
+        LogEntryTypes.addEntryType(LOG_REMOVE_PAGE, RemoveEmptyPageLoggable::new);
+        LogEntryTypes.addEntryType(LOG_OVERFLOW_APPEND, OverflowAppendLoggable::new);
+        LogEntryTypes.addEntryType(LOG_OVERFLOW_STORE, OverflowStoreLoggable::new);
+        LogEntryTypes.addEntryType(LOG_OVERFLOW_CREATE, OverflowCreateLoggable::new);
+        LogEntryTypes.addEntryType(LOG_OVERFLOW_MODIFIED, OverflowModifiedLoggable::new);
+        LogEntryTypes.addEntryType(LOG_OVERFLOW_CREATE_PAGE, OverflowCreatePageLoggable::new);
+        LogEntryTypes.addEntryType(LOG_OVERFLOW_REMOVE, OverflowRemoveLoggable::new);
     }
 
     protected BFileHeader fileHeader;
