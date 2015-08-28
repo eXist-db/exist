@@ -21,13 +21,10 @@
  */
 package org.exist.storage;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Properties;
 
@@ -55,7 +52,7 @@ public class ConsistencyCheckTask implements SystemTask {
     private boolean checkDocs = false;
     private int maxInc = -1;
 
-    private File lastExportedBackup = null;
+    private Path lastExportedBackup = null;
 
     private ProcessMonitor.Monitor monitor = new ProcessMonitor.Monitor();
     
@@ -77,12 +74,18 @@ public class ConsistencyCheckTask implements SystemTask {
     public void configure(Configuration config, Properties properties) throws EXistException {
         
         exportDir = properties.getProperty(OUTPUT_PROP_NAME, "export");
-        File dir = new File(exportDir);
+        Path dir = Paths.get(exportDir);
         if (!dir.isAbsolute()) {
-            dir = new File((String) config.getProperty(BrokerPool.PROPERTY_DATA_DIR), exportDir);
+            dir = ((Path) config.getProperty(BrokerPool.PROPERTY_DATA_DIR)).resolve(exportDir);
         }
-        dir.mkdirs();
-        exportDir = dir.getAbsolutePath();
+
+        try {
+            Files.createDirectories(dir);
+        } catch(final IOException ioe) {
+            throw new EXistException("Unable to create export directory: " + exportDir, ioe);
+        }
+
+        exportDir = dir.toAbsolutePath().toString();
 
         if (LOG.isDebugEnabled()) {
             LOG.debug("Using output directory " + exportDir);
@@ -168,7 +171,7 @@ public class ConsistencyCheckTask implements SystemTask {
                 agentInstance.changeStatus(brokerPool, new TaskStatus(TaskStatus.Status.RUNNING_BACKUP));
 
                 if (lastExportedBackup != null) {
-                    LOG.info("Created backup to file: " + lastExportedBackup.getAbsolutePath());
+                    LOG.info("Created backup to file: " + lastExportedBackup.toAbsolutePath().toString());
                 }
                 
                 LOG.info("Finished backup");
@@ -194,7 +197,7 @@ public class ConsistencyCheckTask implements SystemTask {
     /**
      * Gets the last exported backup
      */
-    public File getLastExportedBackup()
+    public Path getLastExportedBackup()
     {
         return lastExportedBackup;
     }

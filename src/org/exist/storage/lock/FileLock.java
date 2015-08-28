@@ -24,17 +24,21 @@ package org.exist.storage.lock;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.storage.BrokerPool;
+import org.exist.util.FileUtils;
 import org.exist.util.ReadOnlyException;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
+import java.nio.channels.SeekableByteChannel;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.DateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Properties;
+import static java.nio.file.StandardOpenOption.READ;
+import static java.nio.file.StandardOpenOption.SYNC;
+import static java.nio.file.StandardOpenOption.WRITE;
 
 /**
  * Cooperative inter-process file locking, used to synchronize access to database files across
@@ -77,10 +81,10 @@ public class FileLock {
     private BrokerPool pool;
 
     /** The lock file */
-    private File lockFile;
+    private Path lockFile;
 
     /** An open channel to the lock file */
-    private FileChannel channel = null;
+    private SeekableByteChannel channel = null;
 
     /** Temporary buffer used for writing */
     private final ByteBuffer buf = ByteBuffer.allocate(MAGIC.length + 8);
@@ -88,14 +92,9 @@ public class FileLock {
     /** The time (in milliseconds) of the last heartbeat written to the lock file */
     private long lastHeartbeat = -1L;
 
-    public FileLock(BrokerPool pool, String path) {
+    public FileLock(final BrokerPool pool, final Path path) {
         this.pool = pool;
-        this.lockFile = new File(path);
-    }
-
-    public FileLock(BrokerPool pool, File parent, String lockName) {
-        this.pool = pool;
-        this.lockFile = new File(parent, lockName);
+        this.lockFile = path;
     }
 
     /**
@@ -107,7 +106,7 @@ public class FileLock {
      */
     public boolean tryLock() throws ReadOnlyException {
         int attempt = 0;
-        while (lockFile.exists()) {
+        while (Files.exists(lockFile)) {
             if (++attempt > 2) {
                 return false;
             }
@@ -146,19 +145,17 @@ public class FileLock {
                 }
             }
         }
-        
+
+
+
         try {
-            if (!lockFile.createNewFile()) {
-                return false;
-            }
-            
+            this.lockFile = Files.createFile(lockFile);
         } catch (final IOException e) {
             throw new ReadOnlyException(message("Could not create lock file", e));
         }
         
         try {
             save();
-            
         } catch (final IOException e) {
             throw new ReadOnlyException(message("Caught exception while trying to write lock file", e));
         }
@@ -167,7 +164,7 @@ public class FileLock {
         final Properties params = new Properties();
         params.put(FileLock.class.getName(), this);
         pool.getScheduler().createPeriodicJob(HEARTBEAT,
-                new FileLockHeartBeat(lockFile.getAbsolutePath()), -1, params);
+                new FileLockHeartBeat(lockFile.toAbsolutePath().toString()), -1, params);
         
         return true;
     }
@@ -186,9 +183,11 @@ public class FileLock {
         } catch (final Exception e) {
             message("Failed to close lock file", e);
         }
-        
-        LOG.info("Deleting lock file: " + lockFile.getAbsolutePath());
-        lockFile.delete();
+
+        if(Files.exists(lockFile)) {
+            LOG.info("Deleting lock file: " + lockFile.toAbsolutePath().toString());
+            FileUtils.deleteQuietly(lockFile);
+        }
     }
 
     /**
@@ -206,12 +205,8 @@ public class FileLock {
      * 
      * @return lock file
      */
-    public File getFile() {
+    public Path getFile() {
         return lockFile;
-    }
-    
-    public long getFreeSpace() {
-    	return lockFile.getFreeSpace();
     }
 
     /**
@@ -232,8 +227,7 @@ public class FileLock {
     }
 
     private void open() throws IOException {
-        final RandomAccessFile raf = new RandomAccessFile(lockFile, "rw");
-        channel = raf.getChannel();
+        this.channel = Files.newByteChannel(lockFile, READ, WRITE, SYNC);
     }
 
     protected void save() throws IOException {
@@ -249,7 +243,7 @@ public class FileLock {
             buf.flip();
             channel.position(0);
             channel.write(buf);
-            channel.force(true);
+            //channel.force(true); //handled by SYNC on open option
             lastHeartbeat = now;
             
         } catch(final NullPointerException npe) {
@@ -286,9 +280,9 @@ public class FileLock {
         message("File lock last access timestamp: " + df.format(getLastHeartbeat()), null);
     }
 
-    protected String message(String message, Exception e) {
+    protected String message(String message, final Exception e) {
         final StringBuilder str = new StringBuilder(message);
-        str.append(' ').append(lockFile.getAbsolutePath());
+        str.append(' ').append(lockFile.toAbsolutePath().toString());
         if (e != null) {
             str.append(": ").append(e.getMessage());
         }

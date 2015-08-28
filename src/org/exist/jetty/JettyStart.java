@@ -20,15 +20,13 @@
  */
 package org.exist.jetty;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.lang.management.ManagementFactory;
 import java.net.SocketException;
-import java.util.Observable;
-import java.util.Observer;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
 
 import javax.servlet.Servlet;
 
@@ -51,6 +49,7 @@ import org.eclipse.jetty.xml.XmlConfiguration;
 import org.exist.SystemProperties;
 import org.exist.storage.BrokerPool;
 import org.exist.util.ConfigurationHelper;
+import org.exist.util.FileUtils;
 import org.exist.util.SingleInstanceConfiguration;
 import org.exist.validation.XmlLibraryChecker;
 import org.exist.xmldb.DatabaseImpl;
@@ -93,15 +92,17 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
     }
 
     public void run() {
-        String jettyProperty = System.getProperty("jetty.home");
-        if(jettyProperty==null) {
-            final File home = ConfigurationHelper.getExistHome();
-            final File jettyHome = new File(new File(home, "tools"), "jetty");
-            jettyProperty = jettyHome.getAbsolutePath();
-            System.setProperty("jetty.home", jettyProperty);
-        }
-        final File standaloneFile = new File(new File(jettyProperty, "etc"), "standalone.xml");
-        run(new String[]{standaloneFile.getAbsolutePath()}, null);
+        final String jettyProperty = Optional.ofNullable(System.getProperty("jetty.home"))
+                .orElseGet(() -> {
+                    final Optional<Path> home = ConfigurationHelper.getExistHome();
+                    final Path jettyHome = FileUtils.resolve(home, "tools").resolve("jetty");
+                    final String jettyPath = jettyHome.toAbsolutePath().toString();
+                    System.setProperty("jetty.home", jettyPath);
+                    return jettyPath;
+                });
+
+        final Path standaloneFile = Paths.get(jettyProperty).resolve("etc").resolve("standalone.xml");
+        run(new String[] { standaloneFile.toAbsolutePath().toString() }, null);
     }
     
     public void run(String[] args, Observer observer) {
@@ -186,9 +187,10 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
             server.addBean(mBeanContainer);
             server.addBean(Log.getLog());
 
-            final InputStream is = new FileInputStream(args[0]);
-            final XmlConfiguration configuration = new XmlConfiguration(is);
-            configuration.configure(server);
+            try(final InputStream is = Files.newInputStream(Paths.get(args[0]))) {
+                final XmlConfiguration configuration = new XmlConfiguration(is);
+                configuration.configure(server);
+            }
             
             server.setStopAtShutdown(true);
             server.addLifeCycleListener(this);

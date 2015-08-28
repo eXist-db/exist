@@ -1,16 +1,17 @@
 package org.exist.repo;
 
-import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.storage.DBBroker;
 import org.exist.storage.StartupTrigger;
+import org.exist.util.FileUtils;
 import org.expath.pkg.repo.*;
-import org.expath.pkg.repo.tui.BatchUserInteraction;
 
 /**
  * Startup trigger for automatic deployment of application packages. Scans the "autodeploy" directory
@@ -28,68 +29,60 @@ public class AutoDeploymentTrigger implements StartupTrigger {
     public void execute(final DBBroker broker, final Map<String, List<? extends Object>> params) {
         // do not process if the system property exist.autodeploy=off
         final String property = System.getProperty(AUTODEPLOY_PROPERTY, "on");
-        if (property.equalsIgnoreCase("off"))
-            {return;}
-
-        final File homeDir = broker.getConfiguration().getExistHome();
-        final File autodeployDir = new File(homeDir, AUTODEPLOY_DIRECTORY);
-        if (!autodeployDir.canRead() && autodeployDir.isDirectory())
-            {return;}
-
-        final File[] xars = autodeployDir.listFiles(new FileFilter() {
-            @Override
-            public boolean accept(File file) {
-                return file.getName().endsWith(".xar");
-            }
-        });
-
-        if (xars == null) {
-            LOG.error(autodeployDir.getAbsolutePath() + " does not exist.");
+        if (property.equalsIgnoreCase("off")) {
             return;
-
-        } else {
-            LOG.info("Scanning autodeploy directory. Found " + xars.length + " app packages.");
         }
 
-        Arrays.sort(xars, new Comparator<File>() {
-            @Override
-            public int compare(File o1, File o2) {
-                return o1.getName().compareTo(o2.getName());
-            }
-        });
-
-        final Deployment deployment = new Deployment(broker);
-        // build a map with uri -> file so we can resolve dependencies
-        final Map<String, File> packages = new HashMap<String, File>();
-        for (final File xar : xars) {
-            try {
-                final String name = deployment.getNameFromDescriptor(xar);
-                packages.put(name, xar);
-            } catch (final IOException e) {
-                LOG.warn("Caught exception while reading app package " + xar.getAbsolutePath(), e);
-            } catch (final PackageException e) {
-                LOG.warn("Caught exception while reading app package " + xar.getAbsolutePath(), e);
-            }
+        final Optional<Path> homeDir = broker.getConfiguration().getExistHome();
+        final Path autodeployDir = FileUtils.resolve(homeDir, AUTODEPLOY_DIRECTORY);
+        if (!Files.isReadable(autodeployDir) && Files.isDirectory(autodeployDir)) {
+            return;
         }
 
-        final PackageLoader loader = new PackageLoader() {
-            @Override
-            public File load(String name, PackageLoader.Version version) {
-                // TODO: enforce version check
-                return packages.get(name);
-            }
-        };
+        try {
+            final List<Path> xars = Files
+                    .find(autodeployDir, 1, (path, attrs) -> (!attrs.isDirectory()) && FileUtils.fileName(path).endsWith(".xar"))
+                    .sorted((o1, o2) -> o1.getFileName().compareTo(o2.getFileName()))
+                    .collect(Collectors.toList());
 
-        for (final File xar : xars) {
-            try {
-                deployment.installAndDeploy(xar, loader, false);
-            } catch (final PackageException e) {
-                LOG.warn("Exception during deployment of app " + xar.getName() + ": " + e.getMessage(), e);
-                broker.getBrokerPool().reportStatus("An error occurred during app deployment: " + e.getMessage());
-            } catch (final IOException e) {
-                LOG.warn("Exception during deployment of app " + xar.getName() + ": " + e.getMessage(), e);
-                broker.getBrokerPool().reportStatus("An error occurred during app deployment: " + e.getMessage());
+            LOG.info("Scanning autodeploy directory. Found " + xars.size() + " app packages.");
+
+            final Deployment deployment = new Deployment(broker);
+
+            // build a map with uri -> file so we can resolve dependencies
+            final Map<String, Path> packages = new HashMap<>();
+            for (final Path xar : xars) {
+                try {
+                    final String name = deployment.getNameFromDescriptor(xar);
+                    packages.put(name, xar);
+                } catch (final IOException e) {
+                    LOG.warn("Caught exception while reading app package " + xar.toAbsolutePath().toString(), e);
+                } catch (final PackageException e) {
+                    LOG.warn("Caught exception while reading app package " + xar.toAbsolutePath().toString(), e);
+                }
             }
+
+            final PackageLoader loader = new PackageLoader() {
+                @Override
+                public Path load(String name, PackageLoader.Version version) {
+                    // TODO: enforce version check
+                    return packages.get(name);
+                }
+            };
+
+            for (final Path xar : xars) {
+                try {
+                    deployment.installAndDeploy(xar, loader, false);
+                } catch (final PackageException e) {
+                    LOG.warn("Exception during deployment of app " + FileUtils.fileName(xar) + ": " + e.getMessage(), e);
+                    broker.getBrokerPool().reportStatus("An error occurred during app deployment: " + e.getMessage());
+                } catch (final IOException e) {
+                    LOG.warn("Exception during deployment of app " + FileUtils.fileName(xar) + ": " + e.getMessage(), e);
+                    broker.getBrokerPool().reportStatus("An error occurred during app deployment: " + e.getMessage());
+                }
+            }
+        } catch(final IOException ioe) {
+            LOG.error(ioe);
         }
     }
 

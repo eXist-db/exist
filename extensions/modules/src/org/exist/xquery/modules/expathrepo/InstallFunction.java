@@ -20,9 +20,9 @@
  */
 package org.exist.xquery.modules.expathrepo;
 
-import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Path;
 import java.util.Optional;
 
 import org.apache.logging.log4j.LogManager;
@@ -104,9 +104,9 @@ public class InstallFunction extends BasicFunction {
 			BinaryDocument doc = null;
 			try {
 			    doc = _getDocument(pkgOrPath);
-			    File file = ((NativeBroker)context.getBroker()).getCollectionBinaryFileFsPath(doc.getURI());
-			    LOG.debug("Installing file: " + file.getAbsolutePath());
-			    pkg = parent_repo.installPackage(file, force, interact);
+			    Path file = ((NativeBroker)context.getBroker()).getCollectionBinaryFileFsPath(doc.getURI());
+			    LOG.debug("Installing file: " + file.toAbsolutePath().toString());
+			    pkg = parent_repo.installPackage(file.toFile(), force, interact);
 			    repo.get().reportAction(ExistRepository.Action.INSTALL, pkg.getName());
 			} finally {
 			    if (doc != null)

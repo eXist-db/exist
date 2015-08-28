@@ -21,15 +21,16 @@
  */
 package org.exist.storage.journal;
 
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.text.DateFormat;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -123,7 +124,7 @@ public class Journal {
     /** the data directory where journal files are written to */
     @ConfigurationFieldAsAttribute("journal-dir") 
     //TODO: conf.xml refactoring <recovery journal-dir=""> => <journal dir="">
-    private File dir;
+    private Path dir;
 
     private FileLock fileLock;
 
@@ -156,12 +157,12 @@ public class Journal {
     //TODO: conf.xml refactoring <recovery sync-on-commit=""> => <journal sync-on-commit="">
     private boolean syncOnCommit = true;
 
-    private File fsJournalDir;
+    private Path fsJournalDir;
 
-    public Journal(BrokerPool pool, File directory) throws EXistException {
+    public Journal(final BrokerPool pool, final Path directory) throws EXistException {
         this.dir = directory;
         this.pool = pool;
-        this.fsJournalDir = new File(directory,"fs.journal");
+        this.fsJournalDir = directory.resolve("fs.journal");
         // we use a 1 megabyte buffer:
         currentBuffer = ByteBuffer.allocateDirect(1024 * 1024);
 
@@ -171,53 +172,58 @@ public class Journal {
         final Boolean syncOpt = (Boolean) pool.getConfiguration().getProperty(PROPERTY_RECOVERY_SYNC_ON_COMMIT);
         if (syncOpt != null) {
             syncOnCommit = syncOpt.booleanValue();
-            if (LOG.isDebugEnabled())
-                {LOG.debug("SyncOnCommit = " + syncOnCommit);}
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("SyncOnCommit = " + syncOnCommit);
+            }
         }
 
-        final String logDir = (String) pool.getConfiguration().getProperty(PROPERTY_RECOVERY_JOURNAL_DIR);
-        if (logDir != null) {
-            File f = new File(logDir);
+        final Optional<Path> logDir = Optional.ofNullable((Path) pool.getConfiguration().getProperty(PROPERTY_RECOVERY_JOURNAL_DIR));
+        if (logDir.isPresent()) {
+            Path f = logDir.get();
             if (!f.isAbsolute()) {
-               if (pool.getConfiguration().getExistHome()!=null) {
-                  f = new File(pool.getConfiguration().getExistHome(), logDir);
-               } else if (pool.getConfiguration().getConfigFilePath()!=null) {
-                  final File confFile = new File(pool.getConfiguration().getConfigFilePath());
-                  f = new File(confFile.getParent(), logDir);
-               }
+                f = pool.getConfiguration().getExistHome()
+                        .map(h -> Optional.of(h.resolve(logDir.get())))
+                        .orElse(pool.getConfiguration().getConfigFilePath().map(p -> p.getParent().resolve(logDir.get())))
+                        .orElse(f);
             }
-            if (!f.exists()) {
-                if (LOG.isDebugEnabled())
-                    {LOG.debug("Output directory for journal files does not exist. Creating " + f.getAbsolutePath());}
+
+            if (!Files.exists(f)) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Output directory for journal files does not exist. Creating " + f.toAbsolutePath().toString());
+                }
+
                 try {
-                    f.mkdirs();
-                } catch (final SecurityException e) {
-                    throw new EXistException("Failed to create output directory: " + f.getAbsolutePath());
+                    Files.createDirectories(f);
+                } catch (final IOException | SecurityException e) {
+                    throw new EXistException("Failed to create output directory: " + f.toAbsolutePath().toString());
                 }
             }
-            if (!(f.canWrite())) {
-                throw new EXistException("Cannot write to journal output directory: " + f.getAbsolutePath());
+            if (!Files.isWritable(f)) {
+                throw new EXistException("Cannot write to journal output directory: " + f.toAbsolutePath().toString());
             }
             this.dir = f;
         }
-        if (LOG.isDebugEnabled())
-            {LOG.debug("Using directory for the journal: " + dir.getAbsolutePath());}
+
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Using directory for the journal: " + dir.toAbsolutePath().toString());
+        }
 
         final Integer sizeOpt = (Integer) pool.getConfiguration().getProperty(PROPERTY_RECOVERY_SIZE_LIMIT);
-        if (sizeOpt != null)
-            {journalSizeLimit = sizeOpt.intValue() * 1024 * 1024;}
+        if (sizeOpt != null) {
+            journalSizeLimit = sizeOpt.intValue() * 1024 * 1024;
+        }
     }
 
     public void initialize() throws EXistException, ReadOnlyException {
-        final File lck = new File(dir, LCK_FILE);
-        fileLock = new FileLock(pool, lck.getAbsolutePath());
+        final Path lck = dir.resolve(LCK_FILE);
+        fileLock = new FileLock(pool, lck);
         boolean locked = fileLock.tryLock();
         if (!locked) {
             final String lastHeartbeat =
                 DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM)
                     .format(fileLock.getLastHeartbeat());
                     throw new EXistException("The journal log directory seems to be locked by another " +
-                    "eXist process. A lock file: " + lck.getAbsolutePath() + " is present in the " +
+                    "eXist process. A lock file: " + lck.toAbsolutePath().toString() + " is present in the " +
                     "log directory. Last access to the lock file: " + lastHeartbeat);
         }
     }
@@ -338,7 +344,7 @@ public class Journal {
             {flushToLog(true, true);}
         try {
             if (switchLogFiles && channel != null && channel.position() > MIN_REPLACE) {
-                final File oldFile = getFile(currentFile);
+                final Path oldFile = getFile(currentFile);
                 final RemoveThread rt = new RemoveThread(channel, oldFile);
                 try {
                     switchFiles();
@@ -363,17 +369,17 @@ public class Journal {
     }
 
     public void clearBackupFiles() {
-       fsJournalDir.listFiles(
-           new FileFilter() {
-               public boolean accept(File file) {
-                   LOG.info("Checkpoint deleting "+file);
-                   if (!FileUtils.delete(file)) {
-                       LOG.fatal("Cannot delete file "+file+" from backup journal.");
-                   }
-                   return false;
-               }
-           }
-       );
+        try {
+            Files.list(fsJournalDir)
+                    .forEach(p -> {
+                        LOG.info("Checkpoint deleting: " + p.toAbsolutePath().toString());
+                        if (!FileUtils.deleteQuietly(p)) {
+                            LOG.fatal("Cannot delete file '" + p.toAbsolutePath().toString() + "' from backup journal.");
+                        }
+                    });
+        } catch(final IOException ioe) {
+            LOG.fatal("Could not clear journal backup files", ioe);
+        }
     }
 
     /**
@@ -385,27 +391,36 @@ public class Journal {
     public void switchFiles() throws LogException {
         ++currentFile;
         final String fname = getFileName(currentFile);
-        File file = new File(dir, fname);
-        if (file.exists()) {
-            if (LOG.isDebugEnabled())
-                {LOG.debug("Journal file " + file.getAbsolutePath() + " already exists. Copying it.");}
-            final boolean renamed = file.renameTo(new File(file.getAbsolutePath() + BAK_FILE_SUFFIX));
-            if (renamed && LOG.isDebugEnabled())
-                {LOG.debug("Old file renamed to " + file.getAbsolutePath());}
-            file = new File(dir, fname);
+        final Path file = dir.resolve(fname);
+        if (Files.exists(file)) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Journal file " + file.toAbsolutePath() + " already exists. Copying it.");
+            }
+
+            try {
+                final Path renamed = Files.move(file, file.resolveSibling(FileUtils.fileName(file) + BAK_FILE_SUFFIX), StandardCopyOption.ATOMIC_MOVE);
+                if(LOG.isDebugEnabled()) {
+                    LOG.debug("Old file renamed from '" + file.toAbsolutePath().toString() + "' to '" + renamed.toAbsolutePath().toString() + "'");
+                }
+            } catch(final IOException ioe) {
+                LOG.warn(ioe); //TODO(AR) should probably be an LogException but wasn't previously!
+            }
         }
-        if (LOG.isDebugEnabled())
-            {LOG.debug("Creating new journal: " + file.getAbsolutePath());}
+
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Creating new journal: " + file.toAbsolutePath().toString());
+        }
+
         synchronized (latch) {
             close();
             try {
                 //RandomAccessFile raf = new RandomAccessFile(file, "rw");
-                final FileOutputStream os = new FileOutputStream(file, true);
+                final FileOutputStream os = new FileOutputStream(file.toFile(), true);
                 channel = os.getChannel();
                 
                 syncThread.setChannel(channel);
             } catch (final FileNotFoundException e) {
-                throw new LogException("Failed to open new journal: " + file.getAbsolutePath(), e);
+                throw new LogException("Failed to open new journal: " + file.toAbsolutePath().toString(), e);
             }
         }
         inFilePos = 0;
@@ -421,23 +436,23 @@ public class Journal {
         }
     }
 
+    private static int journalFileNum(final Path path) {
+        final String fileName = FileUtils.fileName(path);
+        final int p = fileName.indexOf('.');
+        final String baseName = fileName.substring(0, p);
+        return Integer.parseInt(baseName, 16);
+    }
+
     /**
      * Find the journal file with the highest file number.
      * 
      * @param files
      */
-    public final static int findLastFile(File files[]) {
-        int max = -1;
-        for (int i = 0; i < files.length; i++) {
-            final int p = files[i].getName().indexOf('.');
-            final String baseName = files[i].getName().substring(0, p);
-            int num = Integer.parseInt(baseName, 16);
-            if (num > max) {
-                max = num;
-                /*File last = files[i];*/
-            }
-        }
-        return max;
+    public final static int findLastFile(final Stream<Path> files) {
+        return files
+                .map(Journal::journalFileNum)
+                .max(Integer::max)
+                .orElse(-1);
     }
 
     /**
@@ -445,19 +460,14 @@ public class Journal {
      * 
      * @return all journal files
      */
-    public File[] getFiles() {
+    public Stream<Path> getFiles() throws IOException {
         final String suffix = '.' + LOG_FILE_SUFFIX;
-        final File files[] = dir.listFiles(
-                new FileFilter() {
-                    public boolean accept(File file) {
-                        if (file.isDirectory())
-                            return false;
-                        final String name = file.getName();
-                        return name.endsWith(suffix) && !name.endsWith("_index" + suffix);
-                    }
-                }
-        );
-        return files;
+        final String indexSuffix = "_index" + suffix;
+
+        return Files.find(dir, 1, (path, attrs) ->
+                attrs.isRegularFile() &&
+                        FileUtils.fileName(path).endsWith(suffix) &&
+                        !FileUtils.fileName(path).endsWith(indexSuffix));
     }
 
     /**
@@ -466,8 +476,8 @@ public class Journal {
      * 
      * @param fileNum
      */
-    public File getFile(int fileNum) {
-        return new File(dir, getFileName(fileNum));
+    public Path getFile(final int fileNum) {
+        return dir.resolve(getFileName(fileNum));
     }
 
     /**
@@ -524,25 +534,25 @@ public class Journal {
     }
 
     private static class RemoveThread extends Thread {
+        final FileChannel channel;
+        final Path path;
 
-        FileChannel channel;
-        File file;
-
-        RemoveThread(FileChannel channel, File file) {
+        RemoveThread(final FileChannel channel, final Path path) {
             super("RemoveJournalThread");
             this.channel = channel;
-            this.file = file;
+            this.path = path;
         }
 
         @Override
         public void run() {
             try {
-            	if (channel != null)
-            		channel.close();
+            	if (channel != null) {
+                    channel.close();
+                }
             } catch (final IOException e) {
                 LOG.warn("Exception while closing journal file: " + e.getMessage(), e);
             }
-            file.delete();
+            FileUtils.deleteQuietly(path);
         }
     }
 }

@@ -1,6 +1,5 @@
 package org.exist.launcher;
 
-import org.apache.commons.io.FileUtils;
 import org.exist.util.ConfigurationHelper;
 
 import javax.xml.transform.ErrorListener;
@@ -9,21 +8,23 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.Map;
 import java.util.Properties;
 
 public class ConfigurationUtility {
 
     public static boolean isFirstStart() {
-        final File propFile = ConfigurationHelper.lookup("vm.properties");
-        return !propFile.exists();
+        final Path propFile = ConfigurationHelper.lookup("vm.properties");
+        return !Files.exists(propFile);
     }
 
     public static void saveProperties(Properties properties) throws IOException {
-        final File propFile = ConfigurationHelper.lookup("vm.properties");
+        final Path propFile = ConfigurationHelper.lookup("vm.properties");
         final Properties vmProperties = LauncherWrapper.getVMProperties();
         System.out.println("system properties: " + vmProperties.toString());
         for (Map.Entry entry : vmProperties.entrySet()) {
@@ -33,24 +34,24 @@ public class ConfigurationUtility {
             }
         }
 
-        FileOutputStream os = new FileOutputStream(propFile);
-        properties.store(os, "This file contains a list of VM parameters to be passed to Java\n" +
-                "when eXist is started by double clicking on start.jar (or calling\n" +
-                "\"java -jar start.jar\" without parameters on the shell).");
-        os.close();
+        try(final OutputStream os = Files.newOutputStream(propFile)) {
+            properties.store(os, "This file contains a list of VM parameters to be passed to Java\n" +
+                    "when eXist is started by double clicking on start.jar (or calling\n" +
+                    "\"java -jar start.jar\" without parameters on the shell).");
+        }
     }
 
     public static void saveConfiguration(Properties properties) throws IOException, TransformerException {
-        final File config = ConfigurationHelper.lookup("conf.xml");
-        final File bakFile = new File(config.getParent(), "conf.xml.orig");
-        if (!bakFile.exists()) {
-            FileUtils.copyFile(config, bakFile);
+        final Path config = ConfigurationHelper.lookup("conf.xml");
+        final Path bakFile = config.resolveSibling("conf.xml.orig");
+        if (!Files.exists(bakFile)) {
+            Files.copy(config, bakFile, StandardCopyOption.REPLACE_EXISTING);
         }
         final TransformerFactory factory = TransformerFactory.newInstance();
         final StreamSource xslSource = new StreamSource(ConfigurationUtility.class.getResourceAsStream("conf.xsl"));
         final Transformer transformer = factory.newTransformer(xslSource);
-        final StreamSource xmlSource = new StreamSource(config);
-        final StreamResult output = new StreamResult(config);
+        final StreamSource xmlSource = new StreamSource(config.toFile());
+        final StreamResult output = new StreamResult(config.toFile());
 
         transformer.setErrorListener(new ErrorListener() {
             @Override

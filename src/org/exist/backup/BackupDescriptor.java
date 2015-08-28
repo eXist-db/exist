@@ -26,9 +26,9 @@ import org.xml.sax.SAXException;
 
 import org.exist.util.EXistInputSource;
 
-import java.io.File;
 import java.io.IOException;
 
+import java.nio.file.Path;
 import java.util.Date;
 import java.util.Properties;
 
@@ -77,7 +77,7 @@ public interface BackupDescriptor
     Properties getProperties() throws IOException;
 
 
-    File getParentDir();
+    Path getParentDir();
 
 
     Date getDate();
@@ -88,5 +88,5 @@ public interface BackupDescriptor
 
     void parse( ContentHandler handler ) throws IOException, SAXException, ParserConfigurationException;
 
-    File getRepoBackup() throws IOException;
+    Path getRepoBackup() throws IOException;
 }

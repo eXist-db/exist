@@ -15,16 +15,19 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 import javax.xml.transform.stream.StreamSource;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.exist.EXistException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.NativeBroker;
 import org.exist.util.Configuration;
+import org.exist.util.FileUtils;
 import org.exist.xquery.Module;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
@@ -182,40 +185,42 @@ public class ExistRepository extends Observable {
     }
 
     public static ExistRepository getRepository(Configuration config) throws PackageException {
-        final File expathDir = getRepositoryDir(config);
+        try {
+            final Path expathDir = getRepositoryDir(config);
 
-        LOG.info("Using directory " + expathDir.getAbsolutePath() + " for expath package repository");
-        final FileSystemStorage storage = new FileSystemStorage(expathDir);
-        return new ExistRepository(storage);
+            LOG.info("Using directory " + expathDir.toAbsolutePath().toString() + " for expath package repository");
+            final FileSystemStorage storage = new FileSystemStorage(expathDir.toFile());
+            return new ExistRepository(storage);
+        } catch(final IOException ioe) {
+            throw new PackageException("Unable to access EXPath repository", ioe);
+        }
     }
 
-    public static File getRepositoryDir(Configuration config) {
-        String dataDirPath = (String) config.getProperty(BrokerPool.PROPERTY_DATA_DIR);
-        if (dataDirPath == null)
-            {dataDirPath = NativeBroker.DEFAULT_DATA_DIR;}
-        final File dataDir = new File(dataDirPath);
-        final File expathDir = new File(dataDir, EXPATH_REPO_DIR);
-        if (!expathDir.exists()) {
+    public static Path getRepositoryDir(final Configuration config) throws IOException {
+        final Path dataDir = Optional.ofNullable((Path) config.getProperty(BrokerPool.PROPERTY_DATA_DIR))
+                        .orElse(Paths.get(NativeBroker.DEFAULT_DATA_DIR));
+        final Path expathDir = dataDir.resolve(EXPATH_REPO_DIR);
+
+        if(!Files.exists(expathDir)) {
             moveOldRepo(config.getExistHome(), expathDir);
         }
-        expathDir.mkdir();
+        Files.createDirectories(expathDir);
         return expathDir;
     }
 
-    private static void moveOldRepo(File home, File newRepo) {
-        File repo_dir = null;
-        if (home != null){
-            if ("WEB-INF".equals(home.getName()))
-                {repo_dir = new File(home, EXPATH_REPO_DIR);}
-            else
-                {repo_dir = new File(home, EXPATH_REPO_DEFAULT);}
-        } else {
-            repo_dir = new File(System.getProperty("java.io.tmpdir"), EXPATH_REPO_DIR);
-        }
-        if (repo_dir.exists() && repo_dir.canRead()) {
-            LOG.info("Found old expathrepo directory. Moving to new default location: " + newRepo.getAbsolutePath());
+    private static void moveOldRepo(final Optional<Path> home, final Path newRepo) {
+        final Path repo_dir = home.map(h -> {
+            if(FileUtils.fileName(h).equals("WEB-INF")) {
+                return h.resolve(EXPATH_REPO_DIR);
+            } else {
+                return h.resolve( EXPATH_REPO_DEFAULT);
+            }
+        }).orElse(Paths.get(System.getProperty("java.io.tmpdir")).resolve(EXPATH_REPO_DIR));
+
+        if (Files.isReadable(repo_dir)) {
+            LOG.info("Found old expathrepo directory. Moving to new default location: " + newRepo.toAbsolutePath().toString());
             try {
-                FileUtils.moveDirectory(repo_dir, newRepo);
+                Files.move(repo_dir, newRepo, StandardCopyOption.ATOMIC_MOVE);
             } catch (final IOException e) {
                 LOG.error("Failed to move old expathrepo directory to new default location. Keeping it.", e);
             }

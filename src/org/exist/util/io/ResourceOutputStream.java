@@ -34,13 +34,13 @@ public class ResourceOutputStream extends FileOutputStream {
 	private Resource resource;
 	
 	public ResourceOutputStream(Resource file) throws FileNotFoundException {
-		super(file.getFile());
+		super(file.getFile().toFile());
 		
 		resource = file;
 	}
 	
 	public ResourceOutputStream(Resource file, boolean append) throws FileNotFoundException {
-		super(file.getFile(), append);
+		super(file.getFile().toFile(), append);
 		
 		resource = file;
 	}

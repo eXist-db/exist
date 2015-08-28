@@ -20,10 +20,12 @@
  */
 package org.exist.storage;
 
-import java.io.File;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import org.exist.storage.journal.AbstractLoggable;
 import org.exist.storage.journal.LogException;
 import org.exist.storage.txn.Txn;
@@ -32,12 +34,12 @@ import org.exist.storage.txn.Txn;
  * @author alex
  */
 public class CreateBinaryLoggable extends AbstractLoggable {
-    private File original;
+    private Path original;
 
     /**
      * Creates a new instance of RenameBinaryLoggable
      */
-    public CreateBinaryLoggable(final DBBroker broker, final Txn txn, final File original) {
+    public CreateBinaryLoggable(final DBBroker broker, final Txn txn, final Path original) {
         super(NativeBroker.LOG_CREATE_BINARY, txn.getId());
         this.original = original;
     }
@@ -48,7 +50,7 @@ public class CreateBinaryLoggable extends AbstractLoggable {
 
     @Override
     public void write(final ByteBuffer out) {
-        final String originalPath = original.getAbsolutePath();
+        final String originalPath = original.toAbsolutePath().toString();
         final byte[] data = originalPath.getBytes(StandardCharsets.UTF_8);
         out.putInt(data.length);
         out.put(data);
@@ -59,12 +61,12 @@ public class CreateBinaryLoggable extends AbstractLoggable {
         final int size = in.getInt();
         final byte[] data = new byte[size];
         in.get(data);
-        original = new File(new String(data, StandardCharsets.UTF_8));
+        original = Paths.get(new String(data, StandardCharsets.UTF_8));
     }
 
     @Override
     public int getLogSize() {
-        return 4 + original.getAbsolutePath().getBytes(StandardCharsets.UTF_8).length;
+        return 4 + original.toAbsolutePath().toString().getBytes(StandardCharsets.UTF_8).length;
     }
 
     @Override
@@ -74,8 +76,10 @@ public class CreateBinaryLoggable extends AbstractLoggable {
 
     @Override
     public void undo() throws LogException {
-        if (!original.delete()) {
-            throw new LogException("Cannot delete binary resource " + original);
+        try {
+            Files.delete(original);
+        } catch(final IOException ioe) {
+            throw new LogException("Cannot delete binary resource: " + original.toAbsolutePath().toString(), ioe);
         }
     }
 
@@ -83,5 +87,4 @@ public class CreateBinaryLoggable extends AbstractLoggable {
     public String dump() {
         return super.dump() + " - create binary " + original;
     }
-
 }

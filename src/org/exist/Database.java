@@ -19,7 +19,7 @@
  */
 package org.exist;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.util.Collection;
 
 import org.exist.collections.CollectionConfigurationManager;
@@ -150,7 +150,7 @@ public interface Database {
 
     public NodeIdFactory getNodeFactory();
 
-    public File getStoragePlace();
+    public Path getStoragePlace();
 
     public CollectionConfigurationManager getConfigurationManager();
 

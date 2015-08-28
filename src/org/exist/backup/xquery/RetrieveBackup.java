@@ -25,6 +25,7 @@ import org.exist.backup.ZipArchiveBackupDescriptor;
 import org.exist.dom.QName;
 import org.exist.http.servlets.ResponseWrapper;
 import org.exist.storage.BrokerPool;
+import org.exist.util.FileUtils;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -38,12 +39,11 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
-
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Properties;
 
 
@@ -53,8 +53,6 @@ public class RetrieveBackup extends BasicFunction
             new FunctionParameterSequenceType( "directory", Type.STRING, Cardinality.EXACTLY_ONE, "The path to the directory where the backup file is located." ),
             new FunctionParameterSequenceType( "name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the file to retrieve." )
         }, new SequenceType( Type.ITEM, Cardinality.EMPTY ) );
-
-    private final static int CHUNK_SIZE = 512 * 1024;
 
     public RetrieveBackup( XQueryContext context )
     {
@@ -68,15 +66,15 @@ public class RetrieveBackup extends BasicFunction
         }
 
         final String exportDir = args[0].getStringValue();
-        File   dir       = new File( exportDir );
+        Path dir       = Paths.get( exportDir );
 
         if( !dir.isAbsolute() ) {
-            dir = new File( (String)context.getBroker().getConfiguration().getProperty( BrokerPool.PROPERTY_DATA_DIR ), exportDir );
+            dir = ((Path)context.getBroker().getConfiguration().getProperty(BrokerPool.PROPERTY_DATA_DIR)).resolve(exportDir);
         }
         final String name       = args[1].getStringValue();
-        final File   backupFile = new File( dir, name );
+        final Path   backupFile = dir.resolve(name);
 
-        if( !backupFile.canRead() ) {
+        if( !Files.isReadable(backupFile)) {
             return( Sequence.EMPTY_SEQUENCE );
         }
 
@@ -116,19 +114,12 @@ public class RetrieveBackup extends BasicFunction
         }
         final ResponseWrapper response = (ResponseWrapper)respValue.getObject();
 
-        response.setContentType( "application/zip" );
-        response.setHeader("Content-Length", String.valueOf(backupFile.length()));
+        response.setContentType("application/zip");
+        response.setHeader("Content-Length", String.valueOf(FileUtils.sizeQuietly(backupFile)));
         try {
-            final InputStream  is  = new FileInputStream( backupFile );
-            final OutputStream os  = response.getOutputStream();
-            final byte[]       buf = new byte[4096];
-            int          c;
-
-            while( ( c = is.read( buf ) ) > -1 ) {
-                os.write( buf, 0, c );
+            try(final OutputStream os  = response.getOutputStream()) {
+                Files.copy(backupFile, os);
             }
-            is.close();
-            os.close();
             response.flushBuffer();
         }
         catch( final IOException e ) {

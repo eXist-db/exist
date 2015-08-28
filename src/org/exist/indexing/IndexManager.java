@@ -30,6 +30,7 @@ import org.exist.util.DatabaseConfigurationException;
 import org.w3c.dom.Element;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.*;
 
 /**
@@ -68,7 +69,7 @@ public class IndexManager {
         this.pool = pool;
         final Configuration.IndexModuleConfig modConf[] = (Configuration.IndexModuleConfig[])
                 config.getProperty(PROPERTY_INDEXER_MODULES);
-        final String dataDir = (String) config.getProperty(BrokerPool.PROPERTY_DATA_DIR);
+        final Path dataDir = (Path) config.getProperty(BrokerPool.PROPERTY_DATA_DIR);
         if (modConf != null) {
             for (int i = 0; i < modConf.length; i++) {
                 final String className = modConf[i].getClassName();
@@ -83,7 +84,7 @@ public class IndexManager {
         }
     }
 
-    private AbstractIndex initIndex(BrokerPool pool, String id, Element config, String dataDir, String className) throws DatabaseConfigurationException {
+    private AbstractIndex initIndex(BrokerPool pool, String id, Element config, Path dataDir, String className) throws DatabaseConfigurationException {
         try {
             final Class<?> clazz = Class.forName(className);
             if (!AbstractIndex.class.isAssignableFrom(clazz)) {

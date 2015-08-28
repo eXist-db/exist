@@ -36,6 +36,8 @@ import org.exist.xquery.TerminatedException;
 import java.io.File;
 
 import java.util.List;
+import java.util.Optional;
+
 import org.exist.security.PermissionDeniedException;
 
 
@@ -76,7 +78,7 @@ public class ExportMain
             if( configFile == null ) {
                 config = new Configuration();
             } else {
-                config = new Configuration( configFile, null );
+                config = new Configuration( configFile, Optional.empty() );
             }
             config.setProperty(BrokerPool.PROPERTY_EXPORT_ONLY, Boolean.TRUE);
             BrokerPool.configure( 1, 5, config );

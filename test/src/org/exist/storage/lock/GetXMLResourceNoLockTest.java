@@ -2,6 +2,8 @@ package org.exist.storage.lock;
 
 
 import java.io.IOException;
+import java.nio.file.Path;
+
 import org.junit.After;
 import org.junit.Before;
 import org.exist.dom.persistent.BinaryDocument;
@@ -27,7 +29,7 @@ import org.exist.util.DatabaseConfigurationException;
  */
 public class GetXMLResourceNoLockTest {
 
-	private String dataDirBackup;
+	private Path dataDirBackup;
 	private Main database;
 
     private static String EMPTY_BINARY_FILE = "What's an up dog?";

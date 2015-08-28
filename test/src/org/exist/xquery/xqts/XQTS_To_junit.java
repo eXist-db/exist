@@ -24,8 +24,10 @@ package org.exist.xquery.xqts;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Optional;
 
 import junit.framework.Assert;
 
@@ -36,10 +38,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
-import org.exist.util.Configuration;
-import org.exist.util.ConfigurationHelper;
-import org.exist.util.MimeTable;
-import org.exist.util.MimeType;
+import org.exist.util.*;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Sequence;
@@ -191,9 +190,9 @@ public class XQTS_To_junit {
     }
 
     public void create() throws Exception {
-        File file = ConfigurationHelper.getExistHome();
-        File folder = new File(file.getAbsolutePath()+sep+"test"+sep+"src"+sep+"org"+sep+"exist"+sep+"xquery"+sep+"xqts"+sep);
-        if (!folder.canRead()) {
+        Optional<Path> file = ConfigurationHelper.getExistHome();
+        Path folder = FileUtils.resolve(file, "test/src/org/exist/xquery/xqts");
+        if (!Files.isReadable(folder)) {
             throw new IOException("XQTS junit tests folder unreadable.");
         }
 
@@ -208,7 +207,7 @@ public class XQTS_To_junit {
         if (! results.isEmpty()) {
             String catalog = (String) results.itemAt(0).getStringValue();
             catalog = "XQTS_"+adoptString(catalog);
-            File subfolder = new File(folder.getAbsolutePath()+sep+catalog);
+            Path subfolder = folder.resolve(catalog);
             processGroups(null, subfolder, "."+catalog);
         }
     }
@@ -241,7 +240,7 @@ public class XQTS_To_junit {
 //        }
 //    }
 
-    private boolean processGroups(String parentName, File folder, String _package_) throws Exception {
+    private boolean processGroups(String parentName, Path folder, String _package_) throws Exception {
 
         String query = 
             "declare namespace catalog=\"http://www.w3.org/2005/02/query-test-XQTSCatalog\";"+
@@ -258,7 +257,7 @@ public class XQTS_To_junit {
         Sequence results = xqs.execute(broker, query, null, AccessContext.TEST);
 
         if (!results.isEmpty()) {
-            File subfolder;
+            Path subfolder;
             String subPackage;
 
             //if (parentName == null) {
@@ -282,7 +281,7 @@ public class XQTS_To_junit {
 
             for (int i = 0; i < results.getItemCount(); i++) {
                 String groupName = results.itemAt(i).getStringValue();
-                subfolder = new File(folder.getAbsolutePath()+sep+groupName);
+                subfolder = folder.resolve(groupName);
                 subPackage = _package_+"."+adoptString(groupName);
 
                 if (processGroups(groupName, subfolder, subPackage)) { 
@@ -305,17 +304,16 @@ public class XQTS_To_junit {
         return false;
     }
 
-    private BufferedWriter startAllTests(File folder, String _package_) throws IOException {
-        folder.mkdirs();
-        File jTest = new File(folder.getAbsolutePath()+sep+"AllTests.java");
-        FileWriter fstream = new FileWriter(jTest.getAbsoluteFile());
-        BufferedWriter out = new BufferedWriter(fstream);
+    private BufferedWriter startAllTests(Path folder, String _package_) throws IOException {
+        Files.createDirectories(folder);
+        Path jTest = folder.resolve("AllTests.java");
+        BufferedWriter out = Files.newBufferedWriter(jTest);
 
-        out.write("package org.exist.xquery.xqts"+_package_+";\n\n" +
-            "import org.junit.runner.RunWith;\n" +
-            "import org.junit.runners.Suite;\n\n" +
-            "@RunWith(Suite.class)\n" +
-            "@Suite.SuiteClasses({\n");
+        out.write("package org.exist.xquery.xqts" + _package_ + ";\n\n" +
+                "import org.junit.runner.RunWith;\n" +
+                "import org.junit.runners.Suite;\n\n" +
+                "@RunWith(Suite.class)\n" +
+                "@Suite.SuiteClasses({\n");
         return out;
     }
 
@@ -326,7 +324,7 @@ public class XQTS_To_junit {
         out.close();
     }
 
-    private boolean testCases(String testGroup, File folder, String _package_) throws Exception {
+    private boolean testCases(String testGroup, Path folder, String _package_) throws Exception {
 
         String query = "declare namespace catalog=\"http://www.w3.org/2005/02/query-test-XQTSCatalog\";"+
             "let $XQTSCatalog := xmldb:document('/db/XQTS/XQTSCatalog.xml')"+
@@ -337,28 +335,27 @@ public class XQTS_To_junit {
         Sequence results = xqs.execute(broker, query, null, AccessContext.TEST);
 
         if (!results.isEmpty()) {
-            folder.mkdirs();
-            File jTest = new File(folder.getAbsolutePath()+sep+"C_"+adoptString(testGroup)+".java");
-            FileWriter fstream = new FileWriter(jTest.getAbsoluteFile());
-            BufferedWriter out = new BufferedWriter(fstream);
+            Files.createDirectories(folder);
+            Path jTest = folder.resolve("C_"+adoptString(testGroup)+".java");
+            try(BufferedWriter out = Files.newBufferedWriter(jTest)) {
 
-            out.write("package org.exist.xquery.xqts"+_package_+";\n\n"+
-                "import org.exist.xquery.xqts.XQTS_case;\n" +
-                //"import static org.junit.Assert.*;\n" +
-                "import org.junit.Test;\n\n" +
-                "public class C_"+adoptString(testGroup)+" extends XQTS_case {\n" +
-                "\tprivate String testGroup = \""+testGroup+"\";\n\n");
+                out.write("package org.exist.xquery.xqts" + _package_ + ";\n\n" +
+                        "import org.exist.xquery.xqts.XQTS_case;\n" +
+                        //"import static org.junit.Assert.*;\n" +
+                        "import org.junit.Test;\n\n" +
+                        "public class C_" + adoptString(testGroup) + " extends XQTS_case {\n" +
+                        "\tprivate String testGroup = \"" + testGroup + "\";\n\n");
 
-            for (int i = 0; i < results.getItemCount(); i++) {
-                String caseName = results.itemAt(i).getStringValue();
-                out.write("\t/* "+caseName+" */" +
-                    "\t@Test\n" +
-                    "\tpublic void test_"+adoptString(caseName)+"() {\n" +
-                    "\tgroupCase(testGroup, \""+caseName+"\");"+
-                    "\t}\n\n");
+                for (int i = 0; i < results.getItemCount(); i++) {
+                    String caseName = results.itemAt(i).getStringValue();
+                    out.write("\t/* " + caseName + " */" +
+                            "\t@Test\n" +
+                            "\tpublic void test_" + adoptString(caseName) + "() {\n" +
+                            "\tgroupCase(testGroup, \"" + caseName + "\");" +
+                            "\t}\n\n");
+                }
+                out.write("}");
             }
-            out.write("}");
-            out.close();
             return true;
         }
         return false;

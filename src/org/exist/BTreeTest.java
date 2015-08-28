@@ -2,27 +2,24 @@ package org.exist;
 
 import org.exist.storage.BrokerPool;
 import org.exist.storage.btree.BTree;
-import org.exist.storage.btree.BTreeCallback;
 import org.exist.storage.btree.DBException;
 import org.exist.storage.btree.Value;
-import org.exist.util.Configuration;
-import org.exist.util.DatabaseConfigurationException;
-import org.exist.util.UTF8;
-import org.exist.util.XMLString;
+import org.exist.util.*;
 import org.exist.xquery.TerminatedException;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class BTreeTest {
 
-    private File file;
+    private Path file;
 
     private BrokerPool pool = null;
 
     public BTreeTest() {
-        file = new File(System.getProperty("exist.home", ".") + "/test/test.dbx");
+        file = Paths.get(System.getProperty("exist.home", ".")).resolve("test/test.dbx");
         try {
             Configuration config = new Configuration();
 
@@ -40,7 +37,7 @@ public class BTreeTest {
     }
 
     public void create(int count) throws DBException, IOException {
-        file.delete();
+        FileUtils.deleteQuietly(file);
         BTree btree = null;
         try {
             btree = new BTree(pool, (byte) 0, false, pool.getCacheManager(), file);

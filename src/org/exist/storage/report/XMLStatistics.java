@@ -19,7 +19,9 @@
  */
 package org.exist.storage.report;
 
+import java.nio.file.Path;
 import java.util.Iterator;
+import java.util.Optional;
 
 import org.exist.storage.BrokerPool;
 import org.exist.storage.BufferStats;
@@ -28,6 +30,7 @@ import org.exist.storage.dom.DOMFile;
 import org.exist.storage.index.BFile;
 import org.exist.storage.index.CollectionStore;
 import org.exist.util.Configuration;
+import org.exist.util.FileUtils;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
@@ -60,11 +63,14 @@ public class XMLStatistics {
         for(final Iterator<BrokerPool> i = BrokerPool.getInstances(); i.hasNext(); ) {
             instance = i.next();
             atts.addAttribute("", "name", "name", "CDATA", instance.getId());
-            this.contentHandler.startElement(NAMESPACE, "database-instance", 
-                PREFIX + ":database-instance", atts);
+            this.contentHandler.startElement(NAMESPACE, "database-instance",
+                    PREFIX + ":database-instance", atts);
             atts.clear();
-            addValue("configuration", instance.getConfiguration().getConfigFilePath());
-            addValue("data-directory", (String)instance.getConfiguration().getProperty(BrokerPool.PROPERTY_DATA_DIR));
+            final Optional<Path> configPath = instance.getConfiguration().getConfigFilePath();
+            if(configPath.isPresent()) {
+                addValue("configuration", configPath.get().toAbsolutePath().toString());
+            }
+            addValue("data-directory", ((Path)instance.getConfiguration().getProperty(BrokerPool.PROPERTY_DATA_DIR)).toAbsolutePath().toString());
             addValue("cache-size", String.valueOf(instance.getConfiguration().getInteger("db-connection.cache-size")));
             addValue("page-size", String.valueOf(instance.getConfiguration().getInteger("db-connection.page-size")));
             addValue("collection-cache-mem", String.valueOf(instance.getConfiguration().getInteger("db-connection.collection-cache-mem")));
@@ -87,12 +93,12 @@ public class XMLStatistics {
         final Configuration conf = instance.getConfiguration();
         BFile db;
         db = (BFile) conf.getProperty(CollectionStore.FILE_KEY_IN_CONFIG);
-        genBufferDetails(db.getIndexBufferStats(), db.getDataBufferStats(), "Collections storage ("+ db.getFile().getName() + ")");
+        genBufferDetails(db.getIndexBufferStats(), db.getDataBufferStats(), "Collections storage ("+ FileUtils.fileName(db.getFile()) + ")");
         final DOMFile dom = (DOMFile) conf.getProperty(DOMFile.CONFIG_KEY_FOR_FILE);
-        genBufferDetails(dom.getIndexBufferStats(), dom.getDataBufferStats(), "Resource storage ("+ dom.getFile().getName() + ")");
+        genBufferDetails(dom.getIndexBufferStats(), dom.getDataBufferStats(), "Resource storage ("+ FileUtils.fileName(dom.getFile()) + ")");
         db = (BFile) conf.getProperty(NativeValueIndex.FILE_KEY_IN_CONFIG);
         if (db != null)
-            {genBufferDetails(db.getIndexBufferStats(), db.getDataBufferStats(), "Values index ("+ db.getFile().getName() + ")");}
+            {genBufferDetails(db.getIndexBufferStats(), db.getDataBufferStats(), "Values index ("+ FileUtils.fileName(db.getFile()) + ")");}
         this.contentHandler.endElement(NAMESPACE, "buffers", PREFIX + ":buffers");
     }
 

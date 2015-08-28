@@ -19,9 +19,14 @@
 package org.exist.xquery.functions.system;
 
 
-import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 import org.exist.start.LatestFileResolver;
 import org.exist.xquery.BasicFunction;
@@ -36,68 +41,55 @@ public abstract class LibFunction extends BasicFunction {
     private final static String   LIB_WEBINF = "WEB-INF/lib/";
     private final static String[] LIB  = {"./lib/core", "./lib/optional", "./lib/extensions", "./lib/user", "."};
     
-    private static Map<String, File> allFiles = new HashMap<String, File>();
+    private static Map<String, Path> allFiles = new HashMap<String, Path>();
     
     private static LatestFileResolver libFileResolver = new LatestFileResolver();
     
-	private File[] libFolders;
+	private Stream<Path> libFolders;
 
 	public LibFunction(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
-		libFolders = libFolders(context.getBroker().getConfiguration().getExistHome());
+        libFolders = context.getBroker().getConfiguration().getExistHome().map(this::libFolders).orElse(Stream.empty());
 	}
 
-    private File[] libFolders(File contextRoot){
-        
-    	File[] libFolders;
-        
+    private Stream<Path> libFolders(final Path contextRoot){
         // Setup path based on installation (in jetty, container)
         if(isInWarFile(contextRoot)){
             // all files mixed in contextRoot/WEB-INF/lib
-            libFolders = new File[]{new File(contextRoot, LIB_WEBINF)};
+            return Stream.of(contextRoot.resolve(LIB_WEBINF));
             
         } else {
             //files located in contextRoot/lib/* and contextRoot
-        	libFolders = new File[LIB.length];
-        	for (int i=0; i<LIB.length; i++){
-        		libFolders[i] = new File(contextRoot, LIB[i]);
-        	}
+            return Arrays.stream(LIB)
+                    .map(contextRoot::resolve);
         }
-        
-        return libFolders;
     }
     
-    private boolean isInWarFile(File existHome){
-        
-        if( new File(existHome, LIB[0]).isDirectory() ) {
-            return false;
-        }
-        return true;
+    private boolean isInWarFile(Path existHome){
+        return !Files.isDirectory(existHome.resolve(LIB[0]));
     }
     
-    private File getLib(File folder, String libFileBaseName){
-        final String fileToFind = folder.getAbsolutePath() + File.separatorChar + libFileBaseName;
+    private Optional<Path> getLib(final Path folder, final String libFileBaseName){
+        final String fileToFind = folder.toAbsolutePath().resolve(libFileBaseName).toString();
         final String resolvedFile = libFileResolver.getResolvedFileName(fileToFind);
-        final File lib = new File(resolvedFile);
-        if (lib.exists()) {
-            return lib;
-        } else {
-            return null;
-        }
+        return Optional.of(Paths.get(resolvedFile)).filter(Files::exists);
     }
 
-    protected File getLib(String key){
-    	File retVal = allFiles.get(key);
+    protected Path getLib(final String key){
+    	Path retVal = allFiles.get(key);
     	if (allFiles.keySet().contains(key)){
     		return retVal; 
     	}
-        for (final File libFolder : libFolders){
-        	retVal = getLib(libFolder, key);
-        	if (retVal != null){
-        		break;
-        	}
+
+        final Optional<Optional<Path>> libVal = libFolders.map(libFolder -> getLib(libFolder, key)).filter(Optional::isPresent).findFirst();
+
+        if(libVal.isPresent()) {
+            if(libVal.get().isPresent()) {
+                retVal = libVal.get().get();
+            }
         }
-		allFiles.put(key, retVal);
+
+        allFiles.put(key, retVal);
         return retVal;
     }
     

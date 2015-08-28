@@ -1,7 +1,9 @@
 package org.exist.util;
 
-import java.io.File;
 import java.lang.reflect.Field;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Optional;
 
 import static org.junit.Assert.*;
 import org.junit.*;
@@ -34,11 +36,9 @@ public class MimeTableTest  {
 	 */
     @Test
 	public void testDistributionVersionOfMimeTypesXml() {
-		File existDir;
-		String existHome = System.getProperty("exist.home");
-		existDir = existHome == null ? new File(".") : new File(existHome);
+		Path existDir = Optional.ofNullable(System.getProperty("exist.home")).map(Paths::get).orElse(Paths.get("."));
 
-		File file = new File(existDir, "mime-types.xml");
+		Path file = existDir.resolve("mime-types.xml");
 
 		MimeTable mimeTable = MimeTable.getInstance(file);
 		assertNotNull("Mime table not found", mimeTable);
@@ -73,11 +73,9 @@ public class MimeTableTest  {
 	 */
     @Test
 	public void testWithDefaultResourceTypeFeature() {
-		File existDir;
-		String existHome = System.getProperty("exist.home");
-		existDir = existHome == null ? new File("./test/src/org/exist/util") : new File(existHome+"/test/src/org/exist/util");
+		Path existDir = Optional.ofNullable(System.getProperty("exist.home")).map(Paths::get).orElse(Paths.get(".")).resolve("test/src/org/exist/util");
 
-		MimeTable mimeTable = MimeTable.getInstance(new File(existDir, "mime-types-xml-default.xml"));
+		MimeTable mimeTable = MimeTable.getInstance(existDir.resolve("mime-types-xml-default.xml"));
 		assertNotNull("Mime table not found", mimeTable);
 
 		MimeType mt;
@@ -114,11 +112,9 @@ public class MimeTableTest  {
 	 */
     @Test
 	public void testWithDefaultMimeTypeFeature() {
-		File existDir;
-		String existHome = System.getProperty("exist.home");
-		existDir = existHome == null ? new File("./test/src/org/exist/util") : new File(existHome+"/test/src/org/exist/util");
+		Path existDir = Optional.ofNullable(System.getProperty("exist.home")).map(Paths::get).orElse(Paths.get(".")).resolve("test/src/org/exist/util");
 
-		MimeTable mimeTable = MimeTable.getInstance(new File(existDir, "mime-types-foo-default.xml"));
+		MimeTable mimeTable = MimeTable.getInstance(existDir.resolve("mime-types-foo-default.xml"));
 		assertNotNull("Mime table not found", mimeTable);
 
 		MimeType mt;

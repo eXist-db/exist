@@ -21,11 +21,12 @@
  */
 package org.exist.xquery.modules.file;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.net.MalformedURLException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -83,56 +84,40 @@ public class FileReadUnicode extends BasicFunction {
 	 * @param context
 	 * @param signature
 	 */
-	public FileReadUnicode( XQueryContext context, FunctionSignature signature ) 
-	{
-		super( context, signature );
+	public FileReadUnicode(final XQueryContext context, final FunctionSignature signature) {
+		super(context, signature);
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
-	 */
-	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException 
-	{
+	@Override
+	public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
 		if (!context.getSubject().hasDbaRole()) {
 			XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getSubject().getName() + "' must be a DBA to call this function.");
 			logger.error("Invalid user", xPathException);
 			throw xPathException;
 		}
 
-		String inputPath = args[0].getStringValue();
-        File file = FileModuleHelper.getFile(inputPath);
-        
-        
-		StringWriter sw;
-		
-		try {
-			FileInputStream fis = new FileInputStream(file);
-            
-			UnicodeReader reader;			
-			if( args.length > 1 ) {			
-				reader = new UnicodeReader( fis, args[1].getStringValue() );
-			} else {
-				reader = new UnicodeReader( fis );
-			}
-			
-			sw = new StringWriter();
-			char[] buf = new char[1024];
-			int len;
-			while( ( len = reader.read( buf ) ) > 0 ) {
-				sw.write( buf, 0, len) ;
-			}
-			reader.close();
-			sw.close();
-		} 
-		
-		catch( MalformedURLException e ) {
-			throw new XPathException(this, e);	
-		} catch( IOException e ) {
-			throw new XPathException(this, e);	
+		final String inputPath = args[0].getStringValue();
+        final Path file = FileModuleHelper.getFile(inputPath);
+
+		final Charset encoding;
+		if(args.length == 2) {
+			encoding = Charset.forName(args[1].getStringValue());
+		} else {
+			encoding = StandardCharsets.UTF_8;
 		}
 		
-		//TODO : return an *Item* built with sw.toString()
-		
-		return( new StringValue( sw.toString() ) );
+		try(final UnicodeReader reader = new UnicodeReader(Files.newInputStream(file), encoding.name());
+				final StringWriter sw  = new StringWriter()) {
+
+			char[] buf = new char[1024];
+			int len;
+			while(( len = reader.read( buf ) ) > 0) {
+				sw.write( buf, 0, len) ;
+			}
+
+			return new StringValue(sw.toString());
+		} catch(final IOException e) {
+			throw new XPathException(this, e);
+		}
 	}
 }

@@ -1,11 +1,13 @@
 package org.exist.http.realm;
 
 import java.io.File;
+import java.nio.file.Paths;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.Realm;
@@ -209,13 +211,13 @@ public class XmldbRealm extends org.apache.catalina.realm.RealmBase {
 				this.log("Starting Database");
 				
 				this.log("exist.home=" + basedir);
-				File f = new File(basedir + File.separator + configuration);
+				File f = new File(basedir, configuration);
 				
 				this.log("reading configuration from " + f.getAbsolutePath());
 				if (!f.canRead())
 					throw new LifecycleException("configuration file "
 							+ configuration + " not found or not readable");
-				Configuration conf = new Configuration(configuration, basedir);
+				Configuration conf = new Configuration(configuration, Optional.ofNullable(basedir).map(Paths::get));
 				BrokerPool.configure(1, 5, conf);
 			}
 			
