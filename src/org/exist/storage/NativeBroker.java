@@ -119,9 +119,9 @@ public class NativeBroker extends DBBroker {
     public final static byte LOG_UPDATE_BINARY = 0x42;
 
     static {
-        LogEntryTypes.addEntryType(LOG_RENAME_BINARY, RenameBinaryLoggable.class);
-        LogEntryTypes.addEntryType(LOG_CREATE_BINARY, CreateBinaryLoggable.class);
-        LogEntryTypes.addEntryType(LOG_UPDATE_BINARY, UpdateBinaryLoggable.class);
+        LogEntryTypes.addEntryType(LOG_RENAME_BINARY, RenameBinaryLoggable::new);
+        LogEntryTypes.addEntryType(LOG_CREATE_BINARY, CreateBinaryLoggable::new);
+        LogEntryTypes.addEntryType(LOG_UPDATE_BINARY, UpdateBinaryLoggable::new);
     }
 
     public static final byte PREPEND_DB_ALWAYS = 0;

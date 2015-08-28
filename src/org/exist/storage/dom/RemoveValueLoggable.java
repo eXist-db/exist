@@ -1,23 +1,22 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 The eXist Project
- *  http://exist-db.org
- *  
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *  
- *  $Id$
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2015 The eXist Project
+ *
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 package org.exist.storage.dom;
 
@@ -31,7 +30,6 @@ import org.exist.storage.txn.Txn;
 
 /**
  * @author wolf
- *
  */
 public class RemoveValueLoggable extends AbstractLoggable {
 
@@ -42,18 +40,9 @@ public class RemoveValueLoggable extends AbstractLoggable {
     protected byte[] oldData;
     protected boolean isOverflow;
     protected long backLink;
-    
-    /**
-     * @param transaction 
-     * @param pageNum 
-     * @param tid 
-     * @param offset 
-     * @param oldData 
-     * @param isOverflow 
-     * @param backLink 
-     */
-    public RemoveValueLoggable(Txn transaction, long pageNum, short tid, int offset, byte[] oldData, 
-            boolean isOverflow, long backLink) {
+
+    public RemoveValueLoggable(final Txn transaction, final long pageNum, final short tid, final int offset,
+                               final byte[] oldData, final boolean isOverflow, final long backLink) {
         super(DOMFile.LOG_REMOVE_VALUE, transaction.getId());
         this.pageNum = pageNum;
         this.tid = tid;
@@ -63,56 +52,55 @@ public class RemoveValueLoggable extends AbstractLoggable {
         this.backLink = backLink;
     }
 
-    public RemoveValueLoggable(DBBroker broker, long transactionId) {
+    public RemoveValueLoggable(final DBBroker broker, final long transactionId) {
         super(DOMFile.LOG_REMOVE_VALUE, transactionId);
-        this.domDb = ((NativeBroker)broker).getDOMFile();
+        this.domDb = ((NativeBroker) broker).getDOMFile();
     }
-    
-    /* (non-Javadoc)
-     * @see org.exist.storage.log.Loggable#write(java.nio.ByteBuffer)
-     */
-    public void write(ByteBuffer out) {
-        out.put((byte)(isOverflow ? 1 : 0));
-        out.putInt((int)pageNum);
+
+    @Override
+    public void write(final ByteBuffer out) {
+        out.put((byte) (isOverflow ? 1 : 0));
+        out.putInt((int) pageNum);
         out.putShort(tid);
         out.putShort((short) offset);
         out.putShort((short) oldData.length);
         out.put(oldData);
-        if (ItemId.isRelocated(tid))
+        if (ItemId.isRelocated(tid)) {
             out.putLong(backLink);
+        }
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.storage.log.Loggable#read(java.nio.ByteBuffer)
-     */
-    public void read(ByteBuffer in) {
+    @Override
+    public void read(final ByteBuffer in) {
         isOverflow = in.get() == 1;
         pageNum = in.getInt();
         tid = in.getShort();
         offset = in.getShort();
         oldData = new byte[in.getShort()];
         in.get(oldData);
-        if (ItemId.isRelocated(tid))
+        if (ItemId.isRelocated(tid)) {
             backLink = in.getLong();
+        }
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.storage.log.Loggable#getLogSize()
-     */
+    @Override
     public int getLogSize() {
         return 11 + oldData.length + (ItemId.isRelocated(tid) ? 8 : 0);
     }
 
+    @Override
     public void redo() throws LogException {
         domDb.redoRemoveValue(this);
     }
-    
+
+    @Override
     public void undo() throws LogException {
         domDb.undoRemoveValue(this);
     }
-    
+
+    @Override
     public String dump() {
         return super.dump() + " - removed value; tid = " + ItemId.getId(tid) + " from page " + pageNum + " at " + offset +
-            "; len = " + oldData.length;
+                "; len = " + oldData.length;
     }
 }

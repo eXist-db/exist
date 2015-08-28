@@ -137,13 +137,13 @@ public class BTree extends Paged implements Lockable {
 
     static {
         // register the log entry types used for the BTree
-        LogEntryTypes.addEntryType(LOG_INSERT_VALUE, InsertValueLoggable.class);
-        LogEntryTypes.addEntryType(LOG_UPDATE_VALUE, UpdateValueLoggable.class);
-        LogEntryTypes.addEntryType(LOG_REMOVE_VALUE, RemoveValueLoggable.class);
-        LogEntryTypes.addEntryType(LOG_CREATE_BNODE, CreateBTNodeLoggable.class);
-        LogEntryTypes.addEntryType(LOG_UPDATE_PAGE, UpdatePageLoggable.class);
-        LogEntryTypes.addEntryType(LOG_SET_PARENT, SetParentLoggable.class);
-        LogEntryTypes.addEntryType(LOG_SET_LINK, SetPageLinkLoggable.class);
+        LogEntryTypes.addEntryType(LOG_INSERT_VALUE, InsertValueLoggable::new);
+        LogEntryTypes.addEntryType(LOG_UPDATE_VALUE, UpdateValueLoggable::new);
+        LogEntryTypes.addEntryType(LOG_REMOVE_VALUE, RemoveValueLoggable::new);
+        LogEntryTypes.addEntryType(LOG_CREATE_BNODE, CreateBTNodeLoggable::new);
+        LogEntryTypes.addEntryType(LOG_UPDATE_PAGE, UpdatePageLoggable::new);
+        LogEntryTypes.addEntryType(LOG_SET_PARENT, SetParentLoggable::new);
+        LogEntryTypes.addEntryType(LOG_SET_LINK, SetPageLinkLoggable::new);
     }
 
     protected DefaultCacheManager cacheManager;

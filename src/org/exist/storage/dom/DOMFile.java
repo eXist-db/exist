@@ -150,20 +150,20 @@ public class DOMFile extends BTree implements Lockable {
 
     static {
         // register log entry types for this db file
-        LogEntryTypes.addEntryType(LOG_CREATE_PAGE, CreatePageLoggable.class);
-        LogEntryTypes.addEntryType(LOG_ADD_VALUE, AddValueLoggable.class);
-        LogEntryTypes.addEntryType(LOG_REMOVE_VALUE, RemoveValueLoggable.class);
-        LogEntryTypes.addEntryType(LOG_REMOVE_EMPTY_PAGE, RemoveEmptyPageLoggable.class);
-        LogEntryTypes.addEntryType(LOG_UPDATE_VALUE, UpdateValueLoggable.class);
-        LogEntryTypes.addEntryType(LOG_REMOVE_PAGE, RemovePageLoggable.class);
-        LogEntryTypes.addEntryType(LOG_WRITE_OVERFLOW, WriteOverflowPageLoggable.class);
-        LogEntryTypes.addEntryType(LOG_REMOVE_OVERFLOW, RemoveOverflowLoggable.class);
-        LogEntryTypes.addEntryType(LOG_INSERT_RECORD, InsertValueLoggable.class);
-        LogEntryTypes.addEntryType(LOG_SPLIT_PAGE, SplitPageLoggable.class);
-        LogEntryTypes.addEntryType(LOG_ADD_LINK, AddLinkLoggable.class);
-        LogEntryTypes.addEntryType(LOG_ADD_MOVED_REC, AddMovedValueLoggable.class);
-        LogEntryTypes.addEntryType(LOG_UPDATE_HEADER, UpdateHeaderLoggable.class);
-        LogEntryTypes.addEntryType(LOG_UPDATE_LINK, UpdateLinkLoggable.class);
+        LogEntryTypes.addEntryType(LOG_CREATE_PAGE, CreatePageLoggable::new);
+        LogEntryTypes.addEntryType(LOG_ADD_VALUE, AddValueLoggable::new);
+        LogEntryTypes.addEntryType(LOG_REMOVE_VALUE, RemoveValueLoggable::new);
+        LogEntryTypes.addEntryType(LOG_REMOVE_EMPTY_PAGE, RemoveEmptyPageLoggable::new);
+        LogEntryTypes.addEntryType(LOG_UPDATE_VALUE, UpdateValueLoggable::new);
+        LogEntryTypes.addEntryType(LOG_REMOVE_PAGE, RemovePageLoggable::new);
+        LogEntryTypes.addEntryType(LOG_WRITE_OVERFLOW, WriteOverflowPageLoggable::new);
+        LogEntryTypes.addEntryType(LOG_REMOVE_OVERFLOW, RemoveOverflowLoggable::new);
+        LogEntryTypes.addEntryType(LOG_INSERT_RECORD, InsertValueLoggable::new);
+        LogEntryTypes.addEntryType(LOG_SPLIT_PAGE, SplitPageLoggable::new);
+        LogEntryTypes.addEntryType(LOG_ADD_LINK, AddLinkLoggable::new);
+        LogEntryTypes.addEntryType(LOG_ADD_MOVED_REC, AddMovedValueLoggable::new);
+        LogEntryTypes.addEntryType(LOG_UPDATE_HEADER, UpdateHeaderLoggable::new);
+        LogEntryTypes.addEntryType(LOG_UPDATE_LINK, UpdateLinkLoggable::new);
     }
 
     public final static short FILE_FORMAT_VERSION_ID = 9;
@@ -1567,8 +1567,9 @@ public class DOMFile extends BTree implements Lockable {
 
     /**
      * Remove the link at the specified position from the file.
-     * 
-     * @param p
+     *
+     * @param transaction
+     * @param pointer
      */
     private void removeLink(Txn transaction, long pointer) {
         final RecordPos rec = findRecord(pointer, false);
