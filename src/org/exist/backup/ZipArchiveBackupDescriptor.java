@@ -30,6 +30,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Enumeration;
 import java.util.Properties;
 import java.util.zip.ZipEntry;
@@ -183,7 +184,7 @@ public class ZipArchiveBackupDescriptor extends AbstractBackupDescriptor {
         }
         final Path temp = Files.createTempFile("expathrepo", "zip");
         try(final InputStream is = archive.getInputStream(ze)) {
-            Files.copy(is, temp);
+            Files.copy(is, temp, StandardCopyOption.REPLACE_EXISTING);
         }
         return temp;
     }

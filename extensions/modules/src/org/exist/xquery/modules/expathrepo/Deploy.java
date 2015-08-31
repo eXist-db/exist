@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.net.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.Optional;
 
 import org.apache.logging.log4j.LogManager;
@@ -187,9 +188,10 @@ public class Deploy extends BasicFunction {
                 return deployment.installAndDeploy(xar, loader);
             }
             return Optional.empty();
-        } catch (MalformedURLException e) {
+        } catch (final MalformedURLException e) {
             throw new XPathException(this, EXPathErrorCode.EXPDY005, "Malformed URL: " + repoURI);
-        } catch (PackageException | IOException e) {
+        } catch (final PackageException | IOException e) {
+            LOG.error(e.getMessage(), e);
             throw new XPathException(this, EXPathErrorCode.EXPDY007, e.getMessage());
         }
     }
@@ -210,6 +212,7 @@ public class Deploy extends BasicFunction {
             final Deployment deployment = new Deployment(context.getBroker());
             return deployment.installAndDeploy(file, loader);
         } catch (PackageException | IOException | PermissionDeniedException e) {
+            LOG.error(e.getMessage(), e);
             throw new XPathException(this, EXPathErrorCode.EXPDY007, e.getMessage());
         } finally {
             if (doc != null)
@@ -279,7 +282,7 @@ public class Deploy extends BasicFunction {
 
             try(final InputStream is = connection.getInputStream()) {
                 final Path outFile = Files.createTempFile("deploy", "xar");
-                Files.copy(is, outFile);
+                Files.copy(is, outFile, StandardCopyOption.REPLACE_EXISTING);
                 return outFile;
             }
         }
