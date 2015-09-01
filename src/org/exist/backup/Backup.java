@@ -233,7 +233,13 @@ public class Backup
         if(FileUtils.fileName(target).endsWith(".zip")) {
             fWriter = currentName -> new ZipWriter(target, encode(URIUtils.urlDecodeUtf8(currentName)));
         } else {
-            fWriter = currentName -> new FileSystemWriter(target.resolve(encode(URIUtils.urlDecodeUtf8(currentName))));
+            fWriter = currentName -> {
+                String child = encode(URIUtils.urlDecodeUtf8(currentName));
+                if(child.charAt(0) == '/') {
+                    child = child.substring(1);
+                }
+                return new FileSystemWriter(target.resolve(child));
+            };
         }
 
         try(final BackupWriter output = fWriter.apply(cname)) {
