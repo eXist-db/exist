@@ -21,9 +21,8 @@ package org.exist.storage.md;
 
 import static org.junit.Assert.*;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
+import java.nio.file.Path;
 import java.util.List;
 
 import org.exist.EXistException;
@@ -690,8 +689,8 @@ public class SimpleMDTest {
 	public void test_08() throws Exception {
 
         try {
-            final File confFile = ConfigurationHelper.lookup("conf.xml");
-            final Configuration config = new Configuration(confFile.getAbsolutePath());
+            final Path confFile = ConfigurationHelper.lookup("conf.xml");
+            final Configuration config = new Configuration(confFile.toAbsolutePath().toString());
             BrokerPool.configure(1, 5, config);
             pool = BrokerPool.getInstance();
         	pool.getPluginsManager().addPlugin("org.exist.storage.md.Plugin");
@@ -757,7 +756,9 @@ public class SimpleMDTest {
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());
-        }
+        } finally {
+			cleanup();
+		}
 	}
 
 //	private DocumentImpl getDoc(DBBroker broker, Collection col, XmldbURI uri) throws PermissionDeniedException {
@@ -778,8 +779,8 @@ public class SimpleMDTest {
 
 	//@BeforeClass
     public static void startDB() throws DatabaseConfigurationException, EXistException {
-        final File confFile = ConfigurationHelper.lookup("conf.xml");
-        final Configuration config = new Configuration(confFile.getAbsolutePath());
+        final Path confFile = ConfigurationHelper.lookup("conf.xml");
+        final Configuration config = new Configuration(confFile.toAbsolutePath().toString());
         BrokerPool.configure(1, 5, config);
         pool = BrokerPool.getInstance();
         assertNotNull(pool);
