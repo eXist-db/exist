@@ -25,7 +25,6 @@ package org.exist.xquery;
 import org.exist.dom.QName;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.BooleanValue;
-import org.exist.xquery.value.GroupedValueSequenceTable;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
@@ -59,10 +58,15 @@ public class QuantifiedExpression extends BindingExpression {
 		}		
 	}
 
+    @Override
+    public ClauseType getType() {
+        return mode == SOME ? ClauseType.SOME : ClauseType.EVERY;
+    }
+
     /* (non-Javadoc)
-     * @see org.exist.xquery.BindingExpression#analyze(org.exist.xquery.Expression, int, org.exist.xquery.OrderSpec[])
-     */
-	public void analyze(AnalyzeContextInfo contextInfo, OrderSpec orderBy[], GroupSpec groupBy[]) throws XPathException { 
+         * @see org.exist.xquery.BindingExpression#analyze(org.exist.xquery.Expression, int, org.exist.xquery.OrderSpec[])
+         */
+	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
 		final LocalVariable mark = context.markLocalVariables(false);
 		try {
 			context.declareVariableBinding(new LocalVariable(QName.parse(context, varName, null)));
@@ -75,7 +79,7 @@ public class QuantifiedExpression extends BindingExpression {
 		}
 	}
 
-	public Sequence eval(Sequence contextSequence, Item contextItem, Sequence resultSequence, GroupedValueSequenceTable groupedSequence)   
+	public Sequence eval(Sequence contextSequence, Item contextItem)
         throws XPathException {
         
         if (context.getProfiler().isEnabled()) {
@@ -85,8 +89,6 @@ public class QuantifiedExpression extends BindingExpression {
                 {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
                 {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
-            if (resultSequence != null)        
-                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "RESULT SEQUENCE", resultSequence);}
         }        
         
 		final LocalVariable var = new LocalVariable(QName.parse(context, varName, null));

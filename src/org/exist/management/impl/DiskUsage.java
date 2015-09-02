@@ -21,14 +21,19 @@
  */
 package org.exist.management.impl;
 
-import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
-import org.apache.commons.lang3.StringUtils;
+import java.nio.file.FileStore;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Optional;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.journal.Journal;
 import org.exist.util.Configuration;
+import org.exist.util.FileUtils;
+import org.exist.util.function.FunctionE;
 
 /**
  * Class DiskUsage. Retrieves data from the java File object
@@ -37,135 +42,119 @@ import org.exist.util.Configuration;
  */
 public class DiskUsage implements DiskUsageMBean {
 
-    private File journalDir;
-    private File dataDir;
+    private final static Logger LOG = LogManager.getLogger(DiskUsage.class);
 
-    public DiskUsage(BrokerPool pool) {
+    private Optional<Path> journalDir;
+    private Optional<Path> dataDir;
 
-        Configuration config = pool.getConfiguration();
+    public DiskUsage(final BrokerPool pool) {
 
-        String journalDirValue = (String) config.getProperty(Journal.PROPERTY_RECOVERY_JOURNAL_DIR);
-        if (StringUtils.isNotBlank(journalDirValue)) {
-            File tmpDir = new File(journalDirValue);
-            if (tmpDir.isDirectory()) {
-                journalDir = tmpDir;
-            }
-        }
+        final Configuration config = pool.getConfiguration();
 
-        String dataDirValue = (String) config.getProperty(BrokerPool.PROPERTY_DATA_DIR);
-        if (StringUtils.isNotBlank(dataDirValue)) {
-            File tmpDir = new File(dataDirValue);
-            if (tmpDir.isDirectory()) {
-                dataDir = tmpDir;
-            }
-        }
+        this.journalDir = Optional.ofNullable((Path)config.getProperty(Journal.PROPERTY_RECOVERY_JOURNAL_DIR))
+                .filter(Files::isDirectory);
 
+        this.dataDir = Optional.ofNullable((Path)config.getProperty(BrokerPool.PROPERTY_DATA_DIR))
+                .filter(Files::isDirectory);
     }
 
     @Override
     public String getDataDirectory() {
-        if (dataDir != null) {
-            try {
-                return dataDir.getCanonicalPath();
-            } catch (IOException ex) {
-                return dataDir.getAbsolutePath();
-            }
-        }
-        return NOT_CONFIGURED;
+        return dataDir.map(d -> d.toAbsolutePath().toString()).orElse(NOT_CONFIGURED);
     }
 
     @Override
     public String getJournalDirectory() {
-        if (journalDir != null) {
+        return journalDir.map(d -> d.toAbsolutePath().toString()).orElse(NOT_CONFIGURED);
+    }
+
+    private long measureFileStore(final Optional<Path> path, final FunctionE<FileStore, Long, IOException> measurement) {
+        return path.map(p -> {
             try {
-                return journalDir.getCanonicalPath();
-            } catch (IOException ex) {
-                return journalDir.getAbsolutePath();
+                return measurement.apply(Files.getFileStore(p));
+            } catch(final IOException ioe) {
+                LOG.error(ioe);
+                return NO_VALUE;
             }
-        }
-        return NOT_CONFIGURED;
+        }).orElse(NO_VALUE);
     }
 
     @Override
     public long getDataDirectoryTotalSpace() {
-        if (dataDir != null) {
-            return dataDir.getTotalSpace();
-        }
-
-        return NO_VALUE;
+        return measureFileStore(dataDir, fs -> fs.getTotalSpace());
     }
 
     @Override
     public long getDataDirectoryUsableSpace() {
-        if (dataDir != null) {
-            return dataDir.getUsableSpace();
-        }
-        return NO_VALUE;
+        return measureFileStore(dataDir, fs -> fs.getUsableSpace());
     }
 
     @Override
     public long getJournalDirectoryTotalSpace() {
-        if (journalDir != null) {
-            return journalDir.getTotalSpace();
-        }
-        return NO_VALUE;
+        return measureFileStore(journalDir, fs -> fs.getTotalSpace());
     }
 
     @Override
     public long getJournalDirectoryUsableSpace() {
-        if (journalDir != null) {
-            return journalDir.getUsableSpace();
-        }
-        return NO_VALUE;
+        return measureFileStore(journalDir, fs -> fs.getUsableSpace());
     }
 
     @Override
     public long getDataDirectoryUsedSpace() {
-
-        long totalSize = 0;
-
-        final File dir = new File(getDataDirectory());
-        final File[] files = dir.listFiles(new DbxFilenameFilter());
-        for (final File file : files) {
-            totalSize += file.length();
-        }
-
-        return totalSize;
+        return dataDir.map(d -> {
+            try {
+                return Files.list(d)
+                        .filter(this::isDbxFile)
+                        .mapToLong(p -> {
+                            final long size = FileUtils.sizeQuietly(p);
+                            return size == NO_VALUE ? 0 : size;
+                        })
+                        .sum();
+            } catch(final IOException ioe) {
+                LOG.error(ioe);
+                return NO_VALUE;
+            }
+        }).orElse(NO_VALUE);
     }
 
     @Override
     public long getJournalDirectoryUsedSpace() {
-        long totalSize = 0;
-
-        final File dir = new File(getJournalDirectory());
-        final File[] files = dir.listFiles(new JournalFilenameFilter());
-        for (final File file : files) {
-            totalSize += file.length();
-        }
-
-        return totalSize;
+        return dataDir.map(d -> {
+            try {
+                return Files.list(d)
+                        .filter(this::isJournalFile)
+                        .mapToLong(p -> {
+                            final long size = FileUtils.sizeQuietly(p);
+                            return size == NO_VALUE ? 0 : size;
+                        })
+                        .sum();
+            } catch(final IOException ioe) {
+                LOG.error(ioe);
+                return NO_VALUE;
+            }
+        }).orElse(NO_VALUE);
     }
 
     @Override
-    public int getJournalDirectoryNumberOfFiles() {
-        final File dir = new File(getJournalDirectory());
-        final File[] files = dir.listFiles(new JournalFilenameFilter());
-        return files.length;
+    public long getJournalDirectoryNumberOfFiles() {
+        return journalDir.map(j -> {
+            try {
+                return Files.list(j)
+                        .filter(this::isJournalFile)
+                        .count();
+            } catch (final IOException ioe) {
+                LOG.error(ioe);
+                return NO_VALUE;
+            }
+        }).orElse(NO_VALUE);
+
     }
-}
 
-class DbxFilenameFilter implements FilenameFilter {
-
-    @Override
-    public boolean accept(File directory, String name) {
-        return name.endsWith(".dbx");
+    private boolean isJournalFile(final Path path) {
+        return FileUtils.fileName(path).endsWith(".log");
     }
-}
 
-class JournalFilenameFilter implements FilenameFilter {
-
-    @Override
-    public boolean accept(File directory, String name) {
-        return name.endsWith(".log");
+    private boolean isDbxFile(final Path path) {
+        return FileUtils.fileName(path).endsWith(".dbx");
     }
 }

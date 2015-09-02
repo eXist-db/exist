@@ -1,21 +1,22 @@
 package org.exist;
 
-import org.apache.commons.io.FileUtils;
 import org.exist.collections.Collection;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.start.Main;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
+import org.exist.util.FileUtils;
 import org.exist.xmldb.XmldbURI;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.Iterator;
 
 /**
@@ -87,29 +88,26 @@ public class TestUtils {
      * @author Patrick Bosek <patrick.bosek@jorsek.com>
      * @throws DatabaseConfigurationException 
      */
-    public static String moveDataDirToTempAndCreateClean() throws IOException, DatabaseConfigurationException {
+    public static Path moveDataDirToTempAndCreateClean() throws IOException, DatabaseConfigurationException {
     	
 		Configuration conf = new Configuration();
 		
-		String dataDirPath = (String) conf.getProperty(BrokerPool.PROPERTY_DATA_DIR);
+		Path dataDirPath = (Path) conf.getProperty(BrokerPool.PROPERTY_DATA_DIR);
 		
-		if(dataDirPath == null || dataDirPath.equals(""))
-			throw new DatabaseConfigurationException("Could not find configuration for data directory");
-		
-		dataDirPath = dataDirPath.replaceAll("/$", "");
+		if(dataDirPath == null || dataDirPath.toString().equals("")) {
+            throw new DatabaseConfigurationException("Could not find configuration for data directory");
+        }
 		
 //		java.util.GregorianCalendar cal = new java.util.GregorianCalendar();
 //		String dateString = cal.toString();
+
+		final Path dataBackup = dataDirPath.resolve(".temp-test-bak");
+
+        Files.move(dataDirPath, dataBackup, StandardCopyOption.ATOMIC_MOVE);
+
+        Files.createDirectory(dataDirPath);
 		
-		File data = new File(dataDirPath);
-		File dataBackup = new File(dataDirPath + ".temp-test-bak");
-		
-		data.renameTo(dataBackup);
-		
-		data = new File(dataDirPath);
-		data.mkdir();
-		
-		return dataBackup.getAbsolutePath();
+		return dataBackup;
 	}
 	
 	/**
@@ -122,23 +120,19 @@ public class TestUtils {
 	 * @author Patrick Bosek <patrick.bosek@jorsek.com>
 	 * @throws DatabaseConfigurationException 
 	 */
-	public static void moveDataDirBack(String backupDataDirPath) throws IOException, DatabaseConfigurationException {
+	public static void moveDataDirBack(final Path backupDataDirPath) throws IOException, DatabaseConfigurationException {
 
 		Configuration conf = new Configuration();
 		
-		String dataDirPath = (String) conf.getProperty(BrokerPool.PROPERTY_DATA_DIR);
-		dataDirPath = dataDirPath.replaceAll("/$", "");
+		Path dataDirPath = (Path) conf.getProperty(BrokerPool.PROPERTY_DATA_DIR);
 		
-		File lastTestRunDataDir = new File(dataDirPath + ".last-test-run");
+		final Path lastTestRunDataDir = dataDirPath.resolve(".last-test-run");
 		
-		if(lastTestRunDataDir.exists()) FileUtils.deleteDirectory(lastTestRunDataDir);
-		
-		File data = new File(dataDirPath);
-		
-		data.renameTo(lastTestRunDataDir);
-		
-		File dataBackup = new File(backupDataDirPath);
-		
-		dataBackup.renameTo(data);
+		if(Files.exists(lastTestRunDataDir)) {
+            FileUtils.delete(lastTestRunDataDir);
+        }
+
+        Files.move(dataDirPath, lastTestRunDataDir, StandardCopyOption.ATOMIC_MOVE);
+		Files.move(backupDataDirPath, dataDirPath, StandardCopyOption.ATOMIC_MOVE);
 	}
 }

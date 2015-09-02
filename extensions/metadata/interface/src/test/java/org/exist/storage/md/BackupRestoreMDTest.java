@@ -19,8 +19,8 @@
  */
 package org.exist.storage.md;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 
 import junit.framework.TestCase;
 
@@ -95,7 +95,7 @@ public class BackupRestoreMDTest extends TestCase {
     	String key2UUID = null;
     	String key3UUID = null;
     	
-    	File file;
+    	Path file;
     	
         DBBroker broker = null;
         try {
@@ -218,8 +218,8 @@ public class BackupRestoreMDTest extends TestCase {
     
 	//@BeforeClass
     public static void startDB() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, SAXException, CollectionConfigurationException, LockException {
-        final File confFile = ConfigurationHelper.lookup("conf.xml");
-        Configuration config = new Configuration(confFile.getAbsolutePath());
+        final Path confFile = ConfigurationHelper.lookup("conf.xml");
+        Configuration config = new Configuration(confFile.toAbsolutePath().toString());
         BrokerPool.configure(1, 5, config);
         pool = BrokerPool.getInstance();
         assertNotNull(pool);

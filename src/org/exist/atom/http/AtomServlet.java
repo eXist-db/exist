@@ -21,15 +21,15 @@
  */
 package org.exist.atom.http;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.URI;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -146,35 +146,28 @@ public class AtomServlet extends AbstractExistHttpServlet {
         formEncoding=super.getFormEncoding();
 
 		// Load all the modules
-		// modules = new HashMap<String,AtomModule>();
-		modules = new HashMap<String, AtomModule>();
-		noAuth = new HashMap<String, Boolean>();
+		// modules = new HashMap<>();
+		modules = new HashMap<>();
+		noAuth = new HashMap<>();
 
-		final String configFileOpt = config.getInitParameter("config-file");
-		final File dbHome = pool.getConfiguration().getExistHome();
+		final Optional<String> configFileOpt = Optional.ofNullable(config.getInitParameter("config-file"));
+		final Optional<Path> dbHome = pool.getConfiguration().getExistHome();
 
-		File atomConf;
-		if (configFileOpt == null)
-			{atomConf = new File(dbHome, "atom-services.xml");}
-		else
-			{atomConf = new File(config.getServletContext().getRealPath(
-					configFileOpt));}
+		final Path atomConf = configFileOpt
+				.map(cf -> Paths.get(config.getServletContext().getRealPath(cf)))
+				.orElse(dbHome.map(h -> h.resolve("atom-services.xml")).orElse(Paths.get("atom-services.xml")));
 
-		config.getServletContext().log(
-				"Checking for atom configuration in "
-						+ atomConf.getAbsolutePath());
+		config.getServletContext().log("Checking for atom configuration in " + atomConf.toAbsolutePath().toString());
 
-		if (atomConf.exists()) {
-			config.getServletContext().log("Loading configuration " + atomConf.getAbsolutePath());
+		if (Files.exists(atomConf)) {
+			config.getServletContext().log("Loading configuration " + atomConf.toAbsolutePath().toString());
 			final DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
 			docFactory.setNamespaceAware(true);
 			DocumentBuilder docBuilder = null;
 			Document confDoc = null;
-			InputStream is = null;
-			try {
-				is = new FileInputStream(atomConf);
+			try(final InputStream is = Files.newInputStream(atomConf)) {
 				final InputSource src = new InputSource(new InputStreamReader(is, formEncoding));
-				final URI docBaseURI = atomConf.toURI();
+				final URI docBaseURI = atomConf.toUri();
 				src.setSystemId(docBaseURI.toString());
 				docBuilder = docFactory.newDocumentBuilder();
 
@@ -202,7 +195,7 @@ public class AtomServlet extends AbstractExistHttpServlet {
 							final Class<?> moduleClass = Class.forName(className);
 							final AtomModule amodule = (AtomModule) moduleClass.newInstance();
 							modules.put(name, amodule);
-							amodule.init(new ModuleContext(config, name, atomConf.getParent()));
+							amodule.init(new ModuleContext(config, name, atomConf.getParent().toString()));
 
 						} catch (final Exception ex) {
 							throw new ServletException(
@@ -288,8 +281,7 @@ public class AtomServlet extends AbstractExistHttpServlet {
 							}
 							mconf.setQuerySource(queryURI);
 						}
-						query.init(new ModuleContext(config, name, atomConf
-								.getParent()));
+						query.init(new ModuleContext(config, name, atomConf.getParent().toString()));
 
 					}
 				}
@@ -306,41 +298,34 @@ public class AtomServlet extends AbstractExistHttpServlet {
 			} catch (final EXistException e) {
 				getLog().warn(e);
 				throw new ServletException(e.getMessage());
-			} finally {
-				if (is != null) {
-					try {
-						is.close();
-					} catch (final IOException ex) {
-					}
-				}
 			}
 
 		} else {
 			try {
 				final AtomProtocol protocol = new AtomProtocol();
 				modules.put("edit", protocol);
-				protocol.init(new ModuleContext(config, "edit", dbHome.getAbsolutePath()));
+				protocol.init(new ModuleContext(config, "edit", dbHome.get().toAbsolutePath().toString()));
 
 				final AtomFeeds feeds = new AtomFeeds();
 				modules.put("content", feeds);
-				feeds.init(new ModuleContext(config, "content", dbHome.getAbsolutePath()));
+				feeds.init(new ModuleContext(config, "content", dbHome.get().toAbsolutePath().toString()));
 
 				final Query query = new Query();
 				query.setQueryByPost(true);
 				modules.put("query", query);
-				query.init(new ModuleContext(config, "query", dbHome.getAbsolutePath()));
+				query.init(new ModuleContext(config, "query", dbHome.get().toAbsolutePath().toString()));
 
 				final Query topics = new Query();
 				modules.put("topic", topics);
 				topics.getMethodConfiguration("GET").setQuerySource(
 						topics.getClass().getResource("topic.xq"));
-				topics.init(new ModuleContext(config, "topic", dbHome.getAbsolutePath()));
+				topics.init(new ModuleContext(config, "topic", dbHome.get().toAbsolutePath().toString()));
 
 				final Query introspect = new Query();
 				modules.put("introspect", introspect);
 				introspect.getMethodConfiguration("GET").setQuerySource(
 						introspect.getClass().getResource("introspect.xq"));
-				introspect.init(new ModuleContext(config, "introspect", dbHome.getAbsolutePath()));
+				introspect.init(new ModuleContext(config, "introspect", dbHome.get().toAbsolutePath().toString()));
 
 			} catch (final EXistException ex) {
 				throw new ServletException("Exception during module init(): "

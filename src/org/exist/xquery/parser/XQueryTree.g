@@ -87,7 +87,7 @@ options {
 	public ExternalModule getModule() {
 		return myModule;
 	}
-	
+
 	public boolean foundErrors() {
 		return foundError;
 	}
@@ -113,7 +113,7 @@ options {
 	private void throwException(XQueryAST ast, String message) throws XPathException {
 		throw new XPathException(ast, message);
 	}
-	
+
 	private static class ForLetClause {
 		XQueryAST ast;
 		String varName;
@@ -121,8 +121,10 @@ options {
 		String posVar= null;
 		Expression inputSequence;
 		Expression action;
-		boolean isForClause= true;
+		FLWORClause.ClauseType type = FLWORClause.ClauseType.FOR;
 		List<GroupSpec> groupSpecs = null;
+		List<OrderSpec> orderSpecs = null;
+		boolean allowEmpty = false;
 	}
 
 	/**
@@ -233,7 +235,7 @@ throws XPathException
 module [PathExpr path]
 throws PermissionDeniedException, EXistException, XPathException
 { Expression step = null; }:
-    ( 
+    (
         #(
             v:VERSION_DECL
             {
@@ -257,10 +259,10 @@ throws PermissionDeniedException, EXistException, XPathException
                     if (!enc.getText().equals("UTF-8")) {
                         //util.serializer.encodings.CharacterSet
                         //context.setEncoding(enc.getText());
-                    }   
+                    }
                 }
             }
-        ) 
+        )
     )?
     (   libraryModule [path]
     |
@@ -313,7 +315,7 @@ throws PermissionDeniedException, EXistException, XPathException
 	(
 		#(
 			prefix:NAMESPACE_DECL uri:STRING_LITERAL
-			{ 
+			{
 				if (declaredNamespaces.get(prefix.getText()) != null)
 					throw new XPathException(prefix, "err:XQST0033: Prolog contains " +
 						"multiple declarations for namespace prefix: " + prefix.getText());
@@ -326,7 +328,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		#(
 			"boundary-space"
 			(
-				"preserve" 
+				"preserve"
                 {
                 if (boundaryspace)
 					throw new XPathException("err:XQST0068: Boundary-space already declared.");
@@ -334,7 +336,7 @@ throws PermissionDeniedException, EXistException, XPathException
                 context.setStripWhitespace(false);
                 }
 				|
-				"strip" 
+				"strip"
                 {
                 if (boundaryspace)
 					throw new XPathException("err:XQST0068: Boundary-space already declared.");
@@ -345,13 +347,13 @@ throws PermissionDeniedException, EXistException, XPathException
 		)
 		|
 		#(
-			"order" 
+			"order"
             ( "greatest"
-              { 
+              {
                 context.setOrderEmptyGreatest(true);
               }
             |
-              "least" 
+              "least"
               {
                 context.setOrderEmptyGreatest(false);
               }
@@ -364,27 +366,27 @@ throws PermissionDeniedException, EXistException, XPathException
 		)
 		|
 		#(
-			"copy-namespaces" 
-            ( 
+			"copy-namespaces"
+            (
             "preserve"
-            {   
+            {
                 staticContext.setPreserveNamespaces(true);
                 context.setPreserveNamespaces(true);
             }
-            | 
+            |
             "no-preserve"
             {
                 staticContext.setPreserveNamespaces(false);
                 context.setPreserveNamespaces(false);
             }
-            ) 
-            ( 
+            )
+            (
             "inherit"
             {
                 staticContext.setInheritNamespaces(true);
                 context.setInheritNamespaces(true);
             }
-            | 
+            |
             "no-inherit"
             {
                 staticContext.setInheritNamespaces(false);
@@ -402,7 +404,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		|
 		#(
 			"base-uri" base:STRING_LITERAL
-			{ 
+			{
                 context.setBaseURI(new AnyURIValue(StringValue.expand(base.getText())), true);
                 if (baseuri)
                     throw new XPathException(base, "err:XQST0032: Base URI is already declared.");
@@ -411,7 +413,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		)
 		|
 		#(
-			"ordering" ( "ordered" | "unordered" )	
+			"ordering" ( "ordered" | "unordered" )
             {
                 // ignored
                 if (ordering)
@@ -441,7 +443,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		#(
 			DEF_FUNCTION_NS_DECL deff:STRING_LITERAL
 			{
-                context.setDefaultFunctionNamespace(deff.getText()); 
+                context.setDefaultFunctionNamespace(deff.getText());
                 staticContext.setDefaultFunctionNamespace(deff.getText());
             }
 		)
@@ -504,11 +506,11 @@ throws PermissionDeniedException, EXistException, XPathException
 						isDeclared = (decl != null);
 					} catch (XPathException ignoredException) {
 					}
-					
+
 					if (!isDeclared)
                         decl = context.declareVariable(qname.getText(), null);
-                        
-                    if (decl != null)                        
+
+                    if (decl != null)
                         decl.setSequenceType(type);
 				}
 			)
@@ -538,13 +540,13 @@ throws PermissionDeniedException, EXistException, XPathException
 :
 	#(
 		i:MODULE_IMPORT
-		{ 
+		{
 			String modulePrefix = null;
 			String location = null;
             List uriList= new ArrayList(2);
 		}
-		( pfx:NCNAME { modulePrefix = pfx.getText(); } )? 
-		moduleURI:STRING_LITERAL 
+		( pfx:NCNAME { modulePrefix = pfx.getText(); } )?
+		moduleURI:STRING_LITERAL
 		( uriList [uriList] )?
 		{
 			if (modulePrefix != null) {
@@ -586,7 +588,7 @@ throws PermissionDeniedException, EXistException, XPathException
             List uriList= new ArrayList(2);
 		}
 		( pfx1:NCNAME { nsPrefix = pfx1.getText(); }
-          | 
+          |
           "default" "element" "namespace" { defaultElementNS = true; }
         )?
 		targetURI:STRING_LITERAL
@@ -627,7 +629,7 @@ throws XPathException
 :       ( { annotList = new ArrayList(); }
           annotation[annotList]
           { if (annotList.size() != 0)
-              annots.add(annotList); 
+              annots.add(annotList);
           }
         )*
 ;
@@ -637,7 +639,7 @@ throws XPathException
 { Expression le = null; }
 :
         #(
-		name:ANNOT_DECL { 
+		name:ANNOT_DECL {
                     QName qn= null;
                     try {
                         qn = QName.parse(staticContext, name.getText(), staticContext.getDefaultFunctionNamespace());
@@ -646,11 +648,11 @@ throws XPathException
                         e.setLocation(name.getLine(), name.getColumn());
                         throw e;
                     }
-                    
+
                     String ns = qn.getNamespaceURI();
 
                     if(!annotationValid(qn)) {
-                        XPathException e = new XPathException(ErrorCodes.XQST0045, 
+                        XPathException e = new XPathException(ErrorCodes.XQST0045,
 							"Annotation in a reserved namespace: " + qn.getNamespaceURI());
 						e.setLocation(name.getLine(), name.getColumn());
 						throw e;
@@ -678,7 +680,7 @@ throws PermissionDeniedException, EXistException, XPathException
 { step = null; }:
 	#(
 		name:FUNCTION_DECL // for inline functions, name is null
-		{ 
+		{
 			PathExpr body= new PathExpr(context);
 		}
 		{
@@ -697,7 +699,7 @@ throws PermissionDeniedException, EXistException, XPathException
 			List varList= new ArrayList(3);
 		}
                 { List annots = new ArrayList(); }
-                (annotations [annots] 
+                (annotations [annots]
                  {
                     processAnnotations(annots, signature);
                   }
@@ -718,7 +720,7 @@ throws PermissionDeniedException, EXistException, XPathException
 			// the function body:
 			#(
 				LCURLY expr [body]
-				{ 
+				{
 					func.setFunctionBody(body);
                     context.declareFunction(func);
                     if(myModule != null)
@@ -862,7 +864,7 @@ throws XPathException
         #(eq:EQNAME
         {
 			catchErrors.add(eq.toString());
-		}   
+		}
         )
 	)
 	;
@@ -966,7 +968,7 @@ throws XPathException
 		)
 		|
 		#(
-			lelement:"element" 
+			lelement:"element"
 			{ type.setPrimaryType(Type.ELEMENT); }
 			(
 				WILDCARD
@@ -996,7 +998,7 @@ throws XPathException
 		)
 		|
 		#(
-			lattr:ATTRIBUTE_TEST 
+			lattr:ATTRIBUTE_TEST
 			{ type.setPrimaryType(Type.ATTRIBUTE); }
 			(
 				eq2:EQNAME
@@ -1031,7 +1033,7 @@ throws XPathException
 		)
 		|
 		#(
-			"processing-instruction" 
+			"processing-instruction"
             { type.setPrimaryType(Type.PROCESSING_INSTRUCTION); }
             ( nc:NCNAME | sl:STRING_LITERAL )?
             {
@@ -1067,7 +1069,7 @@ throws XPathException
 	                    	throw e;
 	                    }
                     }
-                    | 
+                    |
                     WILDCARD
                     {
                         TypeTest test= new TypeTest(Type.DOCUMENT);
@@ -1105,7 +1107,7 @@ throws XPathException
 expr [PathExpr path]
 returns [Expression step]
 throws PermissionDeniedException, EXistException, XPathException
-{ 
+{
 	step= null;
 }
 :
@@ -1114,7 +1116,7 @@ throws PermissionDeniedException, EXistException, XPathException
             // Added for handling empty mainModule /ljo
             // System.out.println("EMPTY EXPR");
             if (eof.getText() == null || "".equals(eof.getText()))
-                throw new XPathException(eof, "err:XPST0003: EOF or zero-length string found where a valid XPath expression was expected.");     
+                throw new XPathException(eof, "err:XPST0003: EOF or zero-length string found where a valid XPath expression was expected.");
 
         }
     |
@@ -1130,12 +1132,12 @@ throws PermissionDeniedException, EXistException, XPathException
 	 (
 	   { PathExpr seqPath = new PathExpr(context); }
 	   step = expr [seqPath]
-	   { 
+	   {
 	     sc.addPath(seqPath);
 	   }
 	 )*
 	 {
-	   path.addPath(sc); 
+	   path.addPath(sc);
 	   step = sc;
    }
 	)
@@ -1190,8 +1192,8 @@ throws PermissionDeniedException, EXistException, XPathException
 		{
             thenExpr.setASTNode(astThen);
             elseExpr.setASTNode(astElse);
-			ConditionalExpression cond = 
-                new ConditionalExpression(context, testExpr, thenExpr, 
+			ConditionalExpression cond =
+                new ConditionalExpression(context, testExpr, thenExpr,
                                           new DebuggableExpression(elseExpr));
 			cond.setASTNode(astIf);
 			path.add(cond);
@@ -1326,7 +1328,7 @@ throws PermissionDeniedException, EXistException, XPathException
 					{
                         qncode = QName.parse(staticContext, code.getText());
                         catchVars.add(qncode);
-                    }     
+                    }
                     (
                         desc:CATCH_ERROR_DESC
                         {
@@ -1345,7 +1347,7 @@ throws PermissionDeniedException, EXistException, XPathException
                     )?
                 )?
                 step= expr [catchExpr]
-				{ 
+				{
                   catchExpr.setASTNode(astCatch);
                   cond.addCatchClause(catchErrorList, catchVars, catchExpr);
                 }
@@ -1365,7 +1367,7 @@ throws PermissionDeniedException, EXistException, XPathException
 			Expression action= new PathExpr(context);
 			action.setASTNode(r);
 			PathExpr whereExpr= null;
-			List orderBy= null;
+			List<OrderSpec> orderBy= null;
 		}
 		(
 			#(
@@ -1384,6 +1386,10 @@ throws PermissionDeniedException, EXistException, XPathException
 								{ clause.sequenceType= new SequenceType(); }
 								sequenceType [clause.sequenceType]
 							)
+						)?
+						(
+								"empty"
+								{ clause.allowEmpty = true; }
 						)?
 						(
 							posVar:POSITIONAL_VAR
@@ -1407,7 +1413,7 @@ throws PermissionDeniedException, EXistException, XPathException
 						{
 							ForLetClause clause= new ForLetClause();
 							clause.ast = letVarName;
-							clause.isForClause= false;
+							clause.type = FLWORClause.ClauseType.LET;
 							PathExpr inputSequence= new PathExpr(context);
 						}
 						(
@@ -1426,183 +1432,173 @@ throws PermissionDeniedException, EXistException, XPathException
 					)
 				)+
 			)
-		)+
-		(
-			w:"where"
-			{ 
-				whereExpr= new PathExpr(context); 
-				whereExpr.setASTNode(w);
-			}
-			step=expr [whereExpr]
-		)?
-        // XQuery 3.0 group by clause 
-		(
+			|
+			// XQuery 3.0 group by clause
+      #(
+          gb:GROUP_BY
+          {
+              ForLetClause clause= new ForLetClause();
+              clause.ast = gb;
+              clause.type = FLWORClause.ClauseType.GROUPBY;
+              clause.groupSpecs = new ArrayList<GroupSpec>(4);
+              clauses.add(clause);
+          }
+          (
+              #(
+                  groupVarName:VARIABLE_BINDING
+
+                  // optional := exprSingle
+                  { PathExpr groupSpecExpr= null; }
+                  (
+                      { groupSpecExpr = new PathExpr(context); }
+                      step=expr [groupSpecExpr]
+                  )?
+                  {
+                      String groupKeyVar = groupVarName.getText();
+
+                      GroupSpec groupSpec= new GroupSpec(context, groupSpecExpr, groupKeyVar);
+                      clause.groupSpecs.add(groupSpec);
+                  }
+                  (
+                      "collation" groupCollURI:STRING_LITERAL
+                      {
+                          groupSpec.setCollator(groupCollURI.getText());
+                      }
+                  )?
+              )
+          )+
+      )
+      |
+      #(
+          ob:ORDER_BY { orderBy = new ArrayList(3); }
+          (
+              { PathExpr orderSpecExpr= new PathExpr(context); }
+              step=expr [orderSpecExpr]
+              {
+                  OrderSpec orderSpec= new OrderSpec(context, orderSpecExpr);
+                  int modifiers= 0;
+                  boolean orderDescending = false;
+                  orderBy.add(orderSpec);
+
+                  if (!context.orderEmptyGreatest()) {
+                      modifiers |= OrderSpec.EMPTY_LEAST;
+                      orderSpec.setModifiers(modifiers);
+                  }
+              }
+              (
+                  (
+
+                      "ascending"
+                      |
+                      "descending"
+                      {
+                          modifiers |= OrderSpec.DESCENDING_ORDER;
+                          orderSpec.setModifiers(modifiers);
+                          orderDescending = true;
+                      }
+                  )
+              )?
+              (
+                  "empty"
+                  (
+                      "greatest"
+                      {
+                          if (!context.orderEmptyGreatest())
+                              modifiers &= OrderSpec.EMPTY_GREATEST;
+                          if (orderDescending)
+                              modifiers |= OrderSpec.DESCENDING_ORDER;
+                          orderSpec.setModifiers(modifiers);
+                      }
+                      |
+                      "least"
+                      {
+                          modifiers |= OrderSpec.EMPTY_LEAST;
+                          orderSpec.setModifiers(modifiers);
+                      }
+                  )
+              )?
+              (
+                  "collation" collURI:STRING_LITERAL
+                  {
+                      orderSpec.setCollation(collURI.getText());
+                  }
+              )?
+          )+
+          {
+              ForLetClause clause= new ForLetClause();
+              clause.ast = ob;
+              clause.type = FLWORClause.ClauseType.ORDERBY;
+							clause.orderSpecs = orderBy;
+              clauses.add(clause);
+          }
+      )
+			|
 			#(
-                GROUP_BY
-                {
-                	// attach group by to last for expression, skipping lets
-                	ForLetClause clause = null;
-                	for (int i = clauses.size() - 1; i > -1; i--) {
-                		ForLetClause currentClause = clauses.get(i);
-                		if (currentClause.isForClause) {
-                			clause = currentClause;
-                			break;
-                		}
-                	}
-                	if (clause == null)
-                		clause = clauses.get(clauses.size() - 1);
-                	clause.groupSpecs = new ArrayList<GroupSpec>(4);
-                }
-                // { groupSpecs = new ArrayList<GroupSpec>(4); }
-                (
-	                #(
-	                	groupVarName:VARIABLE_BINDING
-	                	
-	                	// optional := exprSingle
-	                	{ PathExpr groupSpecExpr= null; }
-	                	(
-	                		{ groupSpecExpr = new PathExpr(context); }
-	                    	step=expr [groupSpecExpr]
-	                    )?
-	                    {
-	                    	String groupKeyVar = groupVarName.getText();
-
-	                    	// if there is no groupSpec expression, try to find definition of
-	                    	// grouping variable and inline it
-	                    	if (groupSpecExpr == null) {
-	                    		ForLetClause groupVarDef = null;
-			                	for (int i = clauses.size() - 1; i > -1; i--) {
-			                		ForLetClause currentClause = clauses.get(i);
-			                		if (!currentClause.isForClause && currentClause.varName.equals(groupKeyVar)) {
-			                			groupVarDef = currentClause;
-			                			break;
-			                		}
-			                	}
-			                	if (groupVarDef == null) {
-			                		throw new XPathException("Definition for grouping var " + groupKeyVar + " not found");
-			                	}
-			                	// inline the grouping expression
-			                	clauses.remove(groupVarDef);
-			                	groupSpecExpr = (PathExpr) groupVarDef.inputSequence;
-	                    	}
-	                    	GroupSpec groupSpec= new GroupSpec(context, groupSpecExpr, groupKeyVar);  
-	                    	clause.groupSpecs.add(groupSpec);
-	                    }
-	                    (
-							"collation" groupCollURI:STRING_LITERAL
-							{
-								groupSpec.setCollation(groupCollURI.getText());
-							}
-						)?
-	                )
-	            )+
-            )
-        )? 
-         
-        ( 
-            #( 			
-				ORDER_BY { orderBy= new ArrayList(3); }
-				(
-					{ PathExpr orderSpecExpr= new PathExpr(context); }
-					step=expr [orderSpecExpr]
-					{
-						OrderSpec orderSpec= new OrderSpec(context, orderSpecExpr);
-						int modifiers= 0;
-						boolean orderDescending = false; 
-						orderBy.add(orderSpec);
-
-                        if (!context.orderEmptyGreatest()) {
-                            modifiers |= OrderSpec.EMPTY_LEAST;
-                            orderSpec.setModifiers(modifiers);
-                        }
-					}
-					(
-						(
-		
-                            "ascending"
-							|
-							"descending"
-							{
-								modifiers |= OrderSpec.DESCENDING_ORDER;
-								orderSpec.setModifiers(modifiers);
-                                orderDescending = true;
-							}
-						)
-					)?
-					(
-						"empty"
-						(
-							"greatest"
-                            {  
-                                if (!context.orderEmptyGreatest())
-                                    modifiers &= OrderSpec.EMPTY_GREATEST;
-                                if (orderDescending)
-                                    modifiers |= OrderSpec.DESCENDING_ORDER;
-                                orderSpec.setModifiers(modifiers);
-                            }
-							|
-							"least"
-							{
-								modifiers |= OrderSpec.EMPTY_LEAST;
-								orderSpec.setModifiers(modifiers);
-							}
-						)
-					)?
-					(
-						"collation" collURI:STRING_LITERAL
-						{
-							orderSpec.setCollation(collURI.getText());
-						}
-					)?
-				)+
+				w:"where"
+				{
+					whereExpr= new PathExpr(context);
+				}
+				step=expr [whereExpr]
+				{
+					ForLetClause clause = new ForLetClause();
+					clause.ast = w;
+					clause.type = FLWORClause.ClauseType.WHERE;
+					clause.inputSequence = whereExpr;
+					clauses.add(clause);
+				}
 			)
-		)?
+		)+
 		step=expr [(PathExpr) action]
 		{
-            //bv : save the "real" return expression (used in groupBy) 
-            PathExpr groupReturnExpr = (PathExpr) action; 
 			for (int i= clauses.size() - 1; i >= 0; i--) {
 				ForLetClause clause= (ForLetClause) clauses.get(i);
-				BindingExpression expr;
-				if (clause.isForClause)
-					expr= new ForExpr(context);
-				else
-					expr= new LetExpr(context);
-				expr.setASTNode(clause.ast);
-				expr.setVariable(clause.varName);
-				expr.setSequenceType(clause.sequenceType);
-				expr.setInputSequence(clause.inputSequence);
-                if (!(action instanceof BindingExpression))
-                    expr.setReturnExpression(new DebuggableExpression(action));
-                else
-                    expr.setReturnExpression(action);
-                if (clause.groupSpecs != null) {
-                	GroupSpec specs[]= new GroupSpec[clause.groupSpecs.size()]; 
-	                int k= 0;
-	                for (GroupSpec groupSpec : clause.groupSpecs) {
-	                    specs[k++]= groupSpec; 
-	                }
-	                expr.setGroupSpecs(specs);
-	                expr.setGroupReturnExpr(action);
-                }
-				if (clause.isForClause)
-					 ((ForExpr) expr).setPositionalVariable(clause.posVar);
-				if (whereExpr != null) {
-					expr.setWhereExpression(new DebuggableExpression(whereExpr));
-					whereExpr= null;
+				FLWORClause expr;
+				switch (clause.type) {
+				    case LET:
+				        expr= new LetExpr(context);
+				        break;
+				    case GROUPBY:
+                expr = new GroupByClause(context);
+                break;
+            case ORDERBY:
+                expr = new OrderByClause(context, clause.orderSpecs);
+                break;
+						case WHERE:
+								expr = new WhereClause(context, new DebuggableExpression(clause.inputSequence));
+								break;
+            default:
+                expr= new ForExpr(context, clause.allowEmpty);
+                break;
 				}
+				expr.setASTNode(clause.ast);
+				if (clause.type == FLWORClause.ClauseType.FOR || clause.type == FLWORClause.ClauseType.LET) {
+				    final BindingExpression bind = (BindingExpression)expr;
+            bind.setVariable(clause.varName);
+            bind.setSequenceType(clause.sequenceType);
+            bind.setInputSequence(clause.inputSequence);
+            if (clause.type == FLWORClause.ClauseType.FOR) {
+                 ((ForExpr) bind).setPositionalVariable(clause.posVar);
+						 }
+				} else if (clause.type == FLWORClause.ClauseType.GROUPBY ) {
+				    if (clause.groupSpecs != null) {
+                GroupSpec specs[]= new GroupSpec[clause.groupSpecs.size()];
+                int k= 0;
+                for (GroupSpec groupSpec : clause.groupSpecs) {
+                    specs[k++]= groupSpec;
+                }
+                ((GroupByClause)expr).setGroupSpecs(specs);
+            }
+				}
+        if (!(action instanceof FLWORClause))
+            expr.setReturnExpression(new DebuggableExpression(action));
+        else {
+            expr.setReturnExpression(action);
+            ((FLWORClause)action).setPreviousClause(expr);
+        }
+
 				action= expr;
 			}
-			if (orderBy != null) {
-				OrderSpec orderSpecs[]= new OrderSpec[orderBy.size()];
-				int k= 0;
-				for (Iterator j= orderBy.iterator(); j.hasNext(); k++) {
-					OrderSpec orderSpec= (OrderSpec) j.next();
-					orderSpecs[k]= orderSpec;
-				}
-				((BindingExpression)action).setOrderSpecs(orderSpecs);
-			}
-         
+
 			path.add(action);
 			step = action;
 		}
@@ -1611,14 +1607,14 @@ throws PermissionDeniedException, EXistException, XPathException
 	// instance of:
 	#(
 		"instance"
-		{ 
+		{
 			PathExpr expr = new PathExpr(context);
-			SequenceType type= new SequenceType(); 
+			SequenceType type= new SequenceType();
 		}
 		step=expr [expr]
 		sequenceType [type]
-		{ 
-			step = new InstanceOfExpression(context, expr, type); 
+		{
+			step = new InstanceOfExpression(context, expr, type);
 			path.add(step);
 		}
 	)
@@ -1626,14 +1622,14 @@ throws PermissionDeniedException, EXistException, XPathException
 	// treat as:
 	#(
 		"treat"
-		{ 
+		{
 			PathExpr expr = new PathExpr(context);
-			SequenceType type= new SequenceType(); 
+			SequenceType type= new SequenceType();
 		}
 		step=expr [expr]
 		sequenceType [type]
-		{ 
-			step = new TreatAsExpression(context, expr, type); 
+		{
+			step = new TreatAsExpression(context, expr, type);
 			path.add(step);
 		}
 	)
@@ -1645,10 +1641,10 @@ throws PermissionDeniedException, EXistException, XPathException
 			PathExpr operand = new PathExpr(context);
 		}
 		step=expr [operand]
-		{ 
+		{
 			SwitchExpression switchExpr = new SwitchExpression(context, operand);
             switchExpr.setASTNode(switchAST);
-			path.add(switchExpr); 
+			path.add(switchExpr);
 		}
 		(
 			{
@@ -1669,7 +1665,7 @@ throws PermissionDeniedException, EXistException, XPathException
         )+
         (
 			"default"
-			{ 
+			{
 				PathExpr returnExpr = new PathExpr(context);
 			}
 			step=expr [returnExpr]
@@ -1687,9 +1683,9 @@ throws PermissionDeniedException, EXistException, XPathException
 			PathExpr operand = new PathExpr(context);
 		}
 		step=expr [operand]
-		{ 
+		{
 			TypeswitchExpression tswitch = new TypeswitchExpression(context, operand);
-			path.add(tswitch); 
+			path.add(tswitch);
 		}
 		(
 			{
@@ -1699,7 +1695,7 @@ throws PermissionDeniedException, EXistException, XPathException
 				SequenceType type = new SequenceType();
 			}
 			#(
-				"case"                     
+				"case"
 				(
 					var:VARIABLE_BINDING
 					{ qn = QName.parse(staticContext, var.getText()); }
@@ -1711,7 +1707,7 @@ throws PermissionDeniedException, EXistException, XPathException
                         type = new SequenceType();
                     }
                 )+
-                // Need return as root in following to disambiguate 
+                // Need return as root in following to disambiguate
                 // e.g. ( case a xs:integer ( * 3 3 ) )
                 // which gives xs:integer* and no operator left for 3 3 ...
                 // Now ( case a xs:integer ( return ( + 3 3 ) ) ) /ljo
@@ -1729,7 +1725,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		)+
         (
 			"default"
-			{ 
+			{
 				PathExpr returnExpr = new PathExpr(context);
 				QName qn = null;
 			}
@@ -1750,7 +1746,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		"or"
 		{ PathExpr left= new PathExpr(context);	}
 		step=expr [left]
-		{ PathExpr right= new PathExpr(context); } 
+		{ PathExpr right= new PathExpr(context); }
 		step=expr [right]
 	)
 	{
@@ -1948,7 +1944,7 @@ throws PermissionDeniedException, EXistException, XPathException
 	{ path.add(step); }
 	|
 	v:VARIABLE_REF
-	{ 
+	{
         step= new VariableReference(context, v.getText());
         step.setASTNode(v);
     }
@@ -1970,7 +1966,7 @@ throws PermissionDeniedException, EXistException, XPathException
 	step=postfixExpr [step]
 	{ path.add(step); }
 	;
-	
+
 pathExpr [PathExpr path]
 returns [Expression step]
 throws PermissionDeniedException, EXistException, XPathException
@@ -1982,8 +1978,8 @@ throws PermissionDeniedException, EXistException, XPathException
 }
 :
 	( axis=forwardAxis { axisGiven = true; })?
-	{ 
-		NodeTest test = null; 
+	{
+		NodeTest test = null;
 		XQueryAST ast = null;
 	}
 	(
@@ -2033,7 +2029,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		}
 		|
 		w:WILDCARD
-		{ 
+		{
 			if (axis == Constants.ATTRIBUTE_AXIS)
 				test= new TypeTest(Type.ATTRIBUTE);
 			else
@@ -2047,7 +2043,7 @@ throws PermissionDeniedException, EXistException, XPathException
 			//	throw new XPathException(n, "Cannot test for node() on the attribute axis");
 			   test= new TypeTest(Type.ATTRIBUTE);
             } else {
-			   test= new AnyNodeTest(); 
+			   test= new AnyNodeTest();
             }
 			ast = n;
 		}
@@ -2055,21 +2051,21 @@ throws PermissionDeniedException, EXistException, XPathException
 		t:"text"
 		{
 			if (axis == Constants.ATTRIBUTE_AXIS)
-				throw new XPathException(t, "Cannot test for text() on the attribute axis"); 
-			test= new TypeTest(Type.TEXT); 
+				throw new XPathException(t, "Cannot test for text() on the attribute axis");
+			test= new TypeTest(Type.TEXT);
 			ast = t;
 		}
 		|
 		#( e:"element"
 			{
 				if (axis == Constants.ATTRIBUTE_AXIS)
-					throw new XPathException(e, "Cannot test for element() on the attribute axis"); 
-				test= new TypeTest(Type.ELEMENT); 
+					throw new XPathException(e, "Cannot test for element() on the attribute axis");
+				test= new TypeTest(Type.ELEMENT);
 				ast = e;
 			}
 			(
 				eq2:EQNAME
-				{ 
+				{
 					QName qname= QName.parse(staticContext, eq2.getText());
 					test= new NameTest(Type.ELEMENT, qname);
 				}
@@ -2085,7 +2081,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		)
 		|
 		#( att:ATTRIBUTE_TEST
-			{ 
+			{
 				test= new TypeTest(Type.ATTRIBUTE);
 				ast = att;
 
@@ -2095,7 +2091,7 @@ throws PermissionDeniedException, EXistException, XPathException
 			}
 			(
 				eq3:EQNAME
-				{ 
+				{
 					QName qname = QName.parse(staticContext, eq3.getText());
 					qname = new QName(qname, ElementValue.ATTRIBUTE);
 					test= new NameTest(Type.ATTRIBUTE, qname);
@@ -2115,7 +2111,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		{
 			if (axis == Constants.ATTRIBUTE_AXIS)
 				throw new XPathException(n, "Cannot test for comment() on the attribute axis");
-			test= new TypeTest(Type.COMMENT); 
+			test= new TypeTest(Type.COMMENT);
 			ast = com;
 		}
 		|
@@ -2123,28 +2119,28 @@ throws PermissionDeniedException, EXistException, XPathException
 		{
 			if (axis == Constants.ATTRIBUTE_AXIS)
 				throw new XPathException(n, "Cannot test for processing-instruction() on the attribute axis");
-			test= new TypeTest(Type.PROCESSING_INSTRUCTION); 
+			test= new TypeTest(Type.PROCESSING_INSTRUCTION);
 			ast = pi;
 		}
             (
                 ncpi:NCNAME
-                { 
+                {
                     QName qname;
                     qname= new QName(ncpi.getText(), "", null);
                     test= new NameTest(Type.PROCESSING_INSTRUCTION, qname);
                 }
                 |
                 slpi:STRING_LITERAL
-                { 
+                {
                     QName qname;
-                    qname= new QName(slpi.getText(), "", null);                
+                    qname= new QName(slpi.getText(), "", null);
                     test= new NameTest(Type.PROCESSING_INSTRUCTION, qname);
                 }
             )?
         )
 		|
 		dn:"document-node"
-		{ 
+		{
 			test= new TypeTest(Type.DOCUMENT);
 			ast = dn;
 		}
@@ -2188,7 +2184,7 @@ throws PermissionDeniedException, EXistException, XPathException
         }
 		|
 		#( PREFIX_WILDCARD nc2:NCNAME )
-		{ 
+		{
           qname = new QName.WildcardNamespaceURIQName(nc2.getText(), ElementValue.ATTRIBUTE);
 		}
 		|
@@ -2226,8 +2222,8 @@ throws PermissionDeniedException, EXistException, XPathException
 	|
 	#(
 		BANG
-		{ 
-			PathExpr left = new PathExpr(context); 
+		{
+			PathExpr left = new PathExpr(context);
 			PathExpr right = new PathExpr(context);
 		}
 		expr [left] expr [right]
@@ -2236,7 +2232,7 @@ throws PermissionDeniedException, EXistException, XPathException
 			path.add(map);
 			step = path;
 		}
-	)	
+	)
 	|
 	#(
 		SLASH step=expr [path]
@@ -2269,7 +2265,7 @@ throws PermissionDeniedException, EXistException, XPathException
 			{
 				if (rightStep instanceof LocationStep) {
 					LocationStep rs= (LocationStep) rightStep;
-					if (rs.getAxis() == Constants.ATTRIBUTE_AXIS || 
+					if (rs.getAxis() == Constants.ATTRIBUTE_AXIS ||
 						(rs.getTest().getType() == Type.ATTRIBUTE && rs.getAxis() == Constants.CHILD_AXIS)) {
 						rs.setAxis(Constants.DESCENDANT_ATTRIBUTE_AXIS);
 					} else if (rs.getAxis() == Constants.CHILD_AXIS && rs.getTest().isWildcardTest()) {
@@ -2307,7 +2303,7 @@ throws XPathException
 { step= null; }
 :
 	c:STRING_LITERAL
-	{ 
+	{
 		StringValue val = new StringValue(c.getText());
 		val.expand();
         step= new LiteralValue(context, val);
@@ -2315,21 +2311,21 @@ throws XPathException
     }
 	|
 	i:INTEGER_LITERAL
-	{ 
+	{
         step= new LiteralValue(context, new IntegerValue(i.getText()));
         step.setASTNode(i);
     }
 	|
 	(
 		dec:DECIMAL_LITERAL
-		{ 
+		{
             step= new LiteralValue(context, new DecimalValue(dec.getText()));
             step.setASTNode(dec);
         }
 		|
 		dbl:DOUBLE_LITERAL
-		{ 
-            step= new LiteralValue(context, 
+		{
+            step= new LiteralValue(context,
                 new DoubleValue(Double.parseDouble(dbl.getText())));
             step.setASTNode(dbl);
         }
@@ -2446,17 +2442,17 @@ throws PermissionDeniedException, EXistException, XPathException
 				boolean isPartial = false;
 			}
 			(
-				( 
-					QUESTION { 
+				(
+					QUESTION {
 						params.add(new Function.Placeholder(context));
 						isPartial = true;
 					}
-					| 
+					|
 					{ PathExpr pathExpr = new PathExpr(context); }
 					expr [pathExpr] { params.add(pathExpr); }
 				)
 			)*
-			{ 
+			{
 				step = new DynamicFunctionCall(context, step, params, isPartial);
 			}
 		)
@@ -2524,17 +2520,17 @@ throws PermissionDeniedException, EXistException, XPathException
 		{ List params= new ArrayList(2); }
 		(
 			{ pathExpr= new PathExpr(context); }
-			( 
-				QUESTION { 
+			(
+				QUESTION {
 					params.add(new Function.Placeholder(context));
 					isPartial = true;
 				}
-				| 
+				|
 				expr [pathExpr] { params.add(pathExpr); }
 			)
 		)*
 	)
-	{ 
+	{
 		step = FunctionFactory.createFunction(context, fn, path, params);
 		if (isPartial) {
 			if (!(step instanceof FunctionCall))
@@ -2543,7 +2539,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		}
 	}
 	;
-			
+
 functionReference [PathExpr path]
 returns  [Expression step]
 throws PermissionDeniedException, EXistException, XPathException
@@ -2666,7 +2662,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		}
 	)
 	;
-	
+
 generalComp [PathExpr path]
 returns [Expression step]
 throws PermissionDeniedException, EXistException, XPathException
@@ -2782,7 +2778,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		}
 	)
 	;
-	
+
 constructor [PathExpr path]
 returns [Expression step]
 throws PermissionDeniedException, EXistException, XPathException
@@ -2807,7 +2803,7 @@ throws PermissionDeniedException, EXistException, XPathException
 			PathExpr qnamePathExpr = new PathExpr(context);
 			c.setNameExpr(qnamePathExpr);
 		}
-		
+
 		qnameExpr=expr [qnamePathExpr]
 		(
 			{ elementContent = new PathExpr(context); }
@@ -2818,11 +2814,11 @@ throws PermissionDeniedException, EXistException, XPathException
 	|
 	#(
 		qns:COMP_NS_CONSTRUCTOR
-		{ 
+		{
 			NamespaceConstructor c = new NamespaceConstructor(context);
 			c.setASTNode(qns);
 			step = c;
-			PathExpr qnamePathExpr = new PathExpr(context); 
+			PathExpr qnamePathExpr = new PathExpr(context);
 			c.setNameExpr(qnamePathExpr);
             elementContent = new PathExpr(context);
             c.setContentExpr(elementContent);
@@ -2847,7 +2843,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		qnameExpr=qna:expr [qnamePathExpr]
         {
             QName qname = QName.parse(staticContext, qna.getText());
-            if (Namespaces.XMLNS_NS.equals(qname.getNamespaceURI()) 
+            if (Namespaces.XMLNS_NS.equals(qname.getNamespaceURI())
                 || ("".equals(qname.getNamespaceURI()) && qname.getLocalPart().equals(XMLConstants.XMLNS_ATTRIBUTE)))
                 throw new XPathException("err:XQDY0044: the node-name property of the node constructed by a computed attribute constructor is in the namespace http://www.w3.org/2000/xmlns/ (corresponding to namespace prefix xmlns), or is in no namespace and has local name xmlns.");
         }
@@ -2900,7 +2896,7 @@ throws PermissionDeniedException, EXistException, XPathException
 				(
 					attrVal:ATTRIBUTE_CONTENT
 					{
-						attrib.addValue(StringValue.expand(attrVal.getText())); 
+						attrib.addValue(StringValue.expand(attrVal.getText()));
 					}
 					|
 					#(
@@ -2909,7 +2905,7 @@ throws PermissionDeniedException, EXistException, XPathException
 						{ attrib.addEnclosedExpr(enclosed); }
 					)
 				)*
-				{ c.addAttribute(attrib); 
+				{ c.addAttribute(attrib);
                                   if (attrib.isNamespaceDeclaration()) {
                                      String nsPrefix = attrib.getQName().equals(XMLConstants.XMLNS_ATTRIBUTE) ?
                                         "" : QName.extractLocalName(attrib.getQName());
@@ -2945,7 +2941,7 @@ throws PermissionDeniedException, EXistException, XPathException
 	|
 	#(
 		t:COMP_TEXT_CONSTRUCTOR
-		{ 
+		{
 			elementContent = new PathExpr(context);
 			DynamicTextConstructor text = new DynamicTextConstructor(context, elementContent);
 			text.setASTNode(t);
@@ -3005,19 +3001,19 @@ throws PermissionDeniedException, EXistException, XPathException
 	|
 	// enclosed expression within element content
 	#(
-		l:LCURLY { 
-            EnclosedExpr subexpr= new EnclosedExpr(context); 
+		l:LCURLY {
+            EnclosedExpr subexpr= new EnclosedExpr(context);
             subexpr.setASTNode(l);
         }
 		step=expr [subexpr]
 		{ step= subexpr; }
 	)
 	;
-	
+
 typeCastExpr [PathExpr path]
 returns [Expression step]
 throws PermissionDeniedException, EXistException, XPathException
-{ 
+{
 	step= null;
 	PathExpr expr= new PathExpr(context);
 	int cardinality= Cardinality.EXACTLY_ONE;
@@ -3058,7 +3054,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		}
 	)
 	;
-	
+
 extensionExpr [PathExpr path]
 returns [Expression step]
 throws XPathException, PermissionDeniedException, EXistException
@@ -3100,7 +3096,7 @@ throws XPathException, PermissionDeniedException, EXistException
 {
 }:
 	#( updateAST:"update"
-		{ 
+		{
 			PathExpr p1 = new PathExpr(context);
 			PathExpr p2 = new PathExpr(context);
 			int type;
@@ -3160,7 +3156,7 @@ throws XPathException, PermissionDeniedException, EXistException
 		(
 			#(
 				COLON
-				{ 
+				{
 					PathExpr key = new PathExpr(context);
 					PathExpr value = new PathExpr(context);
 				}

@@ -19,6 +19,8 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
+import java.nio.file.Path;
+
 /**
  * @author Jasper Linthorst (jasper.linthorst@gmail.com)
  *
@@ -82,7 +84,7 @@ public class CounterFunctions extends BasicFunction {
         super(context, signature);
 
         // Setup counters
-        String counterDir = (String) context.getBroker().getConfiguration()
+        final Path counterDir = (Path) context.getBroker().getConfiguration()
                                                         .getProperty(BrokerPool.PROPERTY_DATA_DIR);
 
         logger.debug("Counters directory: "+counterDir);

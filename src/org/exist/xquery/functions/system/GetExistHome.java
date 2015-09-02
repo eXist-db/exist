@@ -22,8 +22,9 @@
  */
 package org.exist.xquery.functions.system;
 
-import java.io.File;
-import java.io.IOException;
+import java.nio.file.Path;
+import java.util.Optional;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
@@ -56,21 +57,10 @@ public class GetExistHome extends BasicFunction {
     public GetExistHome(XQueryContext context) {
         super(context, signature);
     }
-    
-        /* (non-Javadoc)
-         * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
-         */
+
+    @Override
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-        final File existHome = context.getBroker().getConfiguration().getExistHome();
-        
-        String path = null;
-        try {
-            // Try to get canonical path
-            path = existHome.getCanonicalPath();
-        } catch (IOException ex) {
-            // Fallback to old mechanism
-            path = existHome.getAbsolutePath();
-        }
-		return new StringValue( path );
+        final Optional<Path> existHome = context.getBroker().getConfiguration().getExistHome();
+        return existHome.<Sequence>map(h -> new StringValue(h.toAbsolutePath().toString())).orElse(Sequence.EMPTY_SEQUENCE);
     }
 }

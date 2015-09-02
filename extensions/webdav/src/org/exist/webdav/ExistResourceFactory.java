@@ -27,10 +27,12 @@ import org.apache.logging.log4j.Logger;
 
 import com.bradmcevoy.http.Resource;
 import com.bradmcevoy.http.ResourceFactory;
-import java.io.File;
-import java.io.FileInputStream;
 
+import java.io.InputStream;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Optional;
 import java.util.Properties;
 import javax.xml.transform.OutputKeys;
 
@@ -41,6 +43,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.EXistOutputKeys;
+import org.exist.util.FileUtils;
 import org.exist.xmldb.XmldbURI;
 
 /**
@@ -92,14 +95,14 @@ public class ExistResourceFactory implements ResourceFactory {
         // load specific options
         try {
             // Find right file
-            File eXistHome = brokerPool.getConfiguration().getExistHome();
-            File config = new File(eXistHome, "webdav.properties");
+            final Optional<Path> eXistHome = brokerPool.getConfiguration().getExistHome();
+            final Path config = FileUtils.resolve(eXistHome, "webdav.properties");
             
             // Read from file if existent
-            if(config.canRead()){
-                LOG.info(String.format("Read WebDAV configuration from %s", config.getCanonicalPath()));
-                try (FileInputStream fis = new FileInputStream(config)) {
-                    webDavOptions.load(fis);
+            if(Files.isReadable(config)) {
+                LOG.info(String.format("Read WebDAV configuration from %s", config.toAbsolutePath().toString()));
+                try (final InputStream is = Files.newInputStream(config)) {
+                    webDavOptions.load(is);
                 }
                 
             } else {

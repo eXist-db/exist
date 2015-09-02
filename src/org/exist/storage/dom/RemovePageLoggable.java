@@ -1,23 +1,22 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 The eXist Project
- *  http://exist-db.org
- *  
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *  
- *  $Id$
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2015 The eXist Project
+ *
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 package org.exist.storage.dom;
 
@@ -34,7 +33,6 @@ import org.exist.storage.txn.Txn;
  *
  */
 public class RemovePageLoggable extends AbstractLoggable {
-
     private DOMFile domDb;
     protected long pageNum;
     protected long prevPage;
@@ -43,19 +41,9 @@ public class RemovePageLoggable extends AbstractLoggable {
     protected int oldLen;
     protected short oldTid;
     protected short oldRecCnt;
-    
-    /**
-     * @param transaction 
-     * @param pageNum 
-     * @param prevPage 
-     * @param nextPage 
-     * @param oldData 
-     * @param oldLen 
-     * @param oldTid 
-     * @param oldRecCnt 
-     */
-    public RemovePageLoggable(Txn transaction, long pageNum, long prevPage, long nextPage,
-            byte[] oldData, int oldLen, short oldTid, short oldRecCnt) {
+
+    public RemovePageLoggable(final Txn transaction, final long pageNum, final long prevPage, final long nextPage,
+                              final byte[] oldData, final int oldLen, final short oldTid, final short oldRecCnt) {
         super(DOMFile.LOG_REMOVE_PAGE, transaction.getId());
         this.pageNum = pageNum;
         this.prevPage = prevPage;
@@ -66,15 +54,13 @@ public class RemovePageLoggable extends AbstractLoggable {
         this.oldRecCnt = oldRecCnt;
     }
 
-    public RemovePageLoggable(DBBroker broker, long transactionId) {
+    public RemovePageLoggable(final DBBroker broker, final long transactionId) {
         super(DOMFile.LOG_REMOVE_PAGE, transactionId);
         this.domDb = ((NativeBroker)broker).getDOMFile();
     }
     
-    /* (non-Javadoc)
-     * @see org.exist.storage.log.Loggable#write(java.nio.ByteBuffer)
-     */
-    public void write(ByteBuffer out) {
+    @Override
+    public void write(final ByteBuffer out) {
         out.putInt((int) pageNum);
         out.putInt((int) prevPage);
         out.putInt((int) nextPage);
@@ -84,10 +70,8 @@ public class RemovePageLoggable extends AbstractLoggable {
         out.put(oldData, 0, oldLen);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.storage.log.Loggable#read(java.nio.ByteBuffer)
-     */
-    public void read(ByteBuffer in) {
+    @Override
+    public void read(final ByteBuffer in) {
         pageNum = in.getInt();
         prevPage = in.getInt();
         nextPage = in.getInt();
@@ -98,21 +82,22 @@ public class RemovePageLoggable extends AbstractLoggable {
         in.get(oldData, 0, oldLen);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.storage.log.Loggable#getLogSize()
-     */
+    @Override
     public int getLogSize() {
         return 18 + oldLen;
     }
 
+    @Override
     public void redo() throws LogException {
         domDb.redoRemovePage(this);
     }
-    
+
+    @Override
     public void undo() throws LogException {
         domDb.undoRemovePage(this);
     }
-    
+
+    @Override
     public String dump() {
         return super.dump() + " - removed page " + pageNum;
     }

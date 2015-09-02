@@ -38,7 +38,8 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
-import java.io.File;
+import java.nio.file.Paths;
+
 import org.exist.backup.restore.listener.AbstractRestoreListener;
 import org.exist.backup.restore.listener.RestoreListener;
 
@@ -83,7 +84,7 @@ public class Restore extends BasicFunction {
         try {
             final org.exist.backup.Restore restore = new org.exist.backup.Restore();
             final RestoreListener listener = new XMLRestoreListener(builder);
-            restore.restore(listener, org.exist.security.SecurityManager.DBA_USER, adminPass, adminPassAfter, new File(dirOrFile), XmldbURI.EMBEDDED_SERVER_URI.toString());
+            restore.restore(listener, org.exist.security.SecurityManager.DBA_USER, adminPass, adminPassAfter, Paths.get(dirOrFile), XmldbURI.EMBEDDED_SERVER_URI.toString());
         } catch (final Exception e) {
             throw new XPathException(this, "restore failed with exception: " + e.getMessage(), e);
         }

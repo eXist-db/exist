@@ -25,11 +25,9 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.EOFException;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -43,23 +41,11 @@ import java.lang.reflect.Field;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
-import java.util.Observable;
-import java.util.Observer;
-import java.util.Properties;
-import java.util.Random;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.TreeSet;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import javax.swing.ImageIcon;
@@ -183,10 +169,10 @@ public class InteractiveClient {
     protected static final String driver = "org.exist.xmldb.DatabaseImpl";
     protected static String configuration = null;
     
-    protected final TreeSet<String> completitions = new TreeSet<String>();
-    protected final LinkedList<String> queryHistory = new LinkedList<String>();
-    protected File queryHistoryFile;
-    protected File historyFile;
+    protected final TreeSet<String> completitions = new TreeSet<>();
+    protected final LinkedList<String> queryHistory = new LinkedList<>();
+    protected Path queryHistoryFile;
+    protected Path historyFile;
     
     protected ConsoleReader console = null;
     
@@ -198,7 +184,7 @@ public class InteractiveClient {
     
     protected String[] resources = null;
     protected ResourceSet result = null;
-    protected final HashMap<String, String> namespaceMappings = new HashMap<String, String>();
+    protected final HashMap<String, String> namespaceMappings = new HashMap<>();
     /** number of files of a recursive store  */
     protected int filesCount = 0;
     /** total length of a recursive store   */
@@ -1904,13 +1890,13 @@ public class InteractiveClient {
     private Properties loadClientProperties(){
         
         final Properties clientProps = new Properties();
-        final File propFile = ConfigurationHelper.lookup("client.properties");
+        final Path propFile = ConfigurationHelper.lookup("client.properties");
         InputStream pin = null;
         
         // Try to load from file
         try{
-            pin = new FileInputStream(propFile);
-        } catch (final FileNotFoundException ex) {
+            pin = Files.newInputStream(propFile);
+        } catch (final IOException ex) {
             // File not found, no exception handling
         }
         
@@ -2339,7 +2325,7 @@ public class InteractiveClient {
      */
     public boolean run(final String args[]) throws Exception {  
         // Get exist home directory
-        final  File home = ConfigurationHelper.getExistHome();
+        final Optional<Path> home = ConfigurationHelper.getExistHome();
 
         // initialize with default properties, before add client properties
         properties = new Properties(defaultProps);
@@ -2347,9 +2333,9 @@ public class InteractiveClient {
         // get default configuration filename from the driver class and set it in properties
         final Class<?> cl = Class.forName(properties.getProperty(DRIVER));
         final Field CONF_XML = cl.getDeclaredField("CONF_XML");
-        if (CONF_XML != null && home != null) {
-            final File configuration = ConfigurationHelper.lookup((String)CONF_XML.get(""));
-            properties.setProperty(CONFIGURATION, configuration.getAbsolutePath());
+        if (CONF_XML != null && home.isPresent()) {
+            final Path configuration = ConfigurationHelper.lookup((String)CONF_XML.get(""));
+            properties.setProperty(CONFIGURATION, configuration.toAbsolutePath().toString());
         }
 
         properties.putAll(loadClientProperties());
@@ -2385,10 +2371,10 @@ public class InteractiveClient {
         }
 
         
-        historyFile = new File(home, ".exist_history");
-        queryHistoryFile = new File(home, ".exist_query_history");
+        historyFile = home.map(h -> h.resolve(".exist_history")).orElse(Paths.get(".exist_history"));
+        queryHistoryFile = home.map(h -> h.resolve(".exist_query_history")).orElse(Paths.get(".exist_query_history"));
         
-        if (queryHistoryFile.canRead()) {
+        if (Files.isReadable(queryHistoryFile)) {
             readQueryHistory();
         }
         
@@ -2399,7 +2385,7 @@ public class InteractiveClient {
             console = new ConsoleReader();
             console.addCompletor(new CollectionCompleter());
             try {
-                final History history = new History(historyFile);
+                final History history = new History(historyFile.toFile());
                 console.setHistory(history);
             } catch (final Exception e) {
                 // No error handling
@@ -2509,7 +2495,7 @@ public class InteractiveClient {
                 qd.setLocation(100, 100);
                 qd.setVisible(true);
             } else if (!startGUI) {
-                readlineInputLoop(home.getAbsolutePath());
+                readlineInputLoop();
             } else {
                 frame.displayPrompt();
             }
@@ -2534,7 +2520,7 @@ public class InteractiveClient {
         try {
             final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             final DocumentBuilder builder = factory.newDocumentBuilder();
-            final Document doc = builder.parse(queryHistoryFile);
+            final Document doc = builder.parse(queryHistoryFile.toFile());
             final NodeList nodes = doc.getElementsByTagName("query");
             for (int i = 0; i < nodes.getLength(); i++) {
                 final Element query = (Element) nodes.item(i);
@@ -2567,8 +2553,7 @@ public class InteractiveClient {
             console.getHistory().flushBuffer();
         } catch (final Exception e) {
         }
-        try {
-            final BufferedWriter writer = new BufferedWriter(new FileWriter(queryHistoryFile));
+        try(final BufferedWriter writer = Files.newBufferedWriter(queryHistoryFile, StandardCharsets.UTF_8)) {
             final SAXSerializer serializer = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
             serializer.setOutput(writer, null);
             int p = 0;
@@ -2596,7 +2581,7 @@ public class InteractiveClient {
         
     }
     
-    public void readlineInputLoop(final String home) {
+    public void readlineInputLoop() {
         String line;
         boolean cont = true;
         while (cont) {
@@ -2623,7 +2608,7 @@ public class InteractiveClient {
         try {
             console.getHistory().flushBuffer();
         } catch (final Exception e) {
-            System.err.println("Could not write history File to " + historyFile.getAbsolutePath() );
+            System.err.println("Could not write history File to " + historyFile.toAbsolutePath().toString() );
         }
         shutdown(false);
         messageln("quit.");

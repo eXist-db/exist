@@ -24,8 +24,9 @@ package org.exist.backup;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Properties;
 import java.util.Stack;
 import javax.xml.parsers.ParserConfigurationException;
@@ -33,11 +34,10 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.exist.backup.restore.RestoreHandler;
 import org.exist.backup.restore.listener.RestoreListener;
-import org.exist.repo.RepoBackup;
 import org.exist.security.Account;
 import org.exist.security.SecurityManager;
 import org.exist.util.EXistInputSource;
-import org.exist.xmldb.DatabaseInstanceManager;
+import org.exist.util.FileUtils;
 import org.exist.xmldb.UserManagementService;
 import org.exist.xmldb.XmldbURI;
 import org.xml.sax.SAXException;
@@ -46,7 +46,6 @@ import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
-import org.xmldb.api.modules.BinaryResource;
 
 /**
  * Restore.java.
@@ -58,7 +57,7 @@ public class Restore {
     
 //    private final static Logger LOG = LogManager.getLogger(Restore.class);
 
-    public void restore(RestoreListener listener, String username, String password, String newAdminPass, File f, String uri) throws XMLDBException, FileNotFoundException, IOException, SAXException, ParserConfigurationException, URISyntaxException {
+    public void restore(RestoreListener listener, String username, String password, String newAdminPass, Path f, String uri) throws XMLDBException, FileNotFoundException, IOException, SAXException, ParserConfigurationException, URISyntaxException {
         
         //set the admin password
         if(newAdminPass != null) {
@@ -93,9 +92,9 @@ public class Restore {
         }
     }
     
-    private Stack<BackupDescriptor> getBackupDescriptors(File contents) throws XMLDBException, IOException {
+    private Stack<BackupDescriptor> getBackupDescriptors(Path contents) throws XMLDBException, IOException {
         
-        final Stack<BackupDescriptor> descriptors = new Stack<BackupDescriptor>();
+        final Stack<BackupDescriptor> descriptors = new Stack<>();
         
         do {
 
@@ -125,10 +124,10 @@ public class Restore {
                 final String previous = properties.getProperty("previous", "");
 
                 if(previous.length() > 0) {
-                    contents = new File(bd.getParentDir(), previous);
+                    contents = bd.getParentDir().resolve(previous);
 
-                    if(!contents.canRead()) {
-                        throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, "Required part of incremental backup not found: " + contents.getAbsolutePath());
+                    if(!Files.isReadable(contents)) {
+                        throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, "Required part of incremental backup not found: " + contents.toAbsolutePath().toString());
                     }
                 }
             }
@@ -137,11 +136,11 @@ public class Restore {
         return descriptors;
     }
     
-    private BackupDescriptor getBackupDescriptor(File f) throws IOException {
+    private BackupDescriptor getBackupDescriptor(final Path f) throws IOException {
         final BackupDescriptor bd;
-        if(f.isDirectory()) {
-            bd = new FileSystemBackupDescriptor(new File(new File(f, "db"), BackupDescriptor.COLLECTION_DESCRIPTOR));
-        } else if(f.getName().toLowerCase().endsWith( ".zip" )) {
+        if(Files.isDirectory(f)) {
+            bd = new FileSystemBackupDescriptor(f.resolve("db").resolve(BackupDescriptor.COLLECTION_DESCRIPTOR));
+        } else if(FileUtils.fileName(f).toLowerCase().endsWith(".zip")) {
             bd = new ZipArchiveBackupDescriptor(f);
         } else {
             bd = new FileSystemBackupDescriptor(f);

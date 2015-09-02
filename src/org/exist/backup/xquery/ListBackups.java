@@ -21,6 +21,7 @@
  */
 package org.exist.backup.xquery;
 
+import org.exist.util.FileUtils;
 import org.xml.sax.helpers.AttributesImpl;
 
 import org.exist.Namespaces;
@@ -45,10 +46,16 @@ import org.exist.xquery.value.Type;
 import java.io.File;
 import java.io.IOException;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 
 public class ListBackups extends BasicFunction
@@ -74,10 +81,10 @@ public class ListBackups extends BasicFunction
         }
 
         final String exportDir = args[0].getStringValue();
-        File   dir       = new File( exportDir );
+        Path dir = Paths.get(exportDir);
 
-        if( !dir.isAbsolute() ) {
-            dir = new File( (String)context.getBroker().getConfiguration().getProperty( BrokerPool.PROPERTY_DATA_DIR ), exportDir );
+        if(!dir.isAbsolute() ) {
+            dir = ((Path)context.getBroker().getConfiguration().getProperty(BrokerPool.PROPERTY_DATA_DIR)).resolve(exportDir);
         }
 
         context.pushDocumentContext();
@@ -86,30 +93,30 @@ public class ListBackups extends BasicFunction
             final MemTreeBuilder builder = context.getDocumentBuilder();
             final int            nodeNr  = builder.startElement( DIRECTORY_ELEMENT, null );
 
-            if( dir.isDirectory() && dir.canRead() ) {
+            if(Files.isDirectory(dir) && Files.isReadable(dir)) {
                 final Pattern pattern = Pattern.compile( BackupDirectory.FILE_REGEX );
                 final Matcher matcher = pattern.matcher( "" );
-                final File[]  files   = dir.listFiles();
+                final List<Path> files   = Files.list(dir).collect(Collectors.toList());
 
-                for( int i = 0; i < files.length; i++ ) {
-                    matcher.reset( files[i].getName() );
+                for(final Path file : files) {
+                    matcher.reset(FileUtils.fileName(file));
 
                     if( matcher.matches() ) {
                         BackupDescriptor descriptor;
 
                         try {
 
-                            if( files[i].getName().endsWith( ".zip" ) ) {
-                                descriptor = new ZipArchiveBackupDescriptor( files[i] );
+                            if( FileUtils.fileName(file).endsWith( ".zip" ) ) {
+                                descriptor = new ZipArchiveBackupDescriptor( file );
                             } else {
-                            	final File descriptorFile = new File(new File(files[i], "db"), BackupDescriptor.COLLECTION_DESCRIPTOR);
+                            	final Path descriptorFile = file.resolve("db").resolve(BackupDescriptor.COLLECTION_DESCRIPTOR);
                                 descriptor = new FileSystemBackupDescriptor( descriptorFile );
                             }
                             final Properties properties = descriptor.getProperties();
 
                             if( properties != null ) {
                                 final AttributesImpl attrs = new AttributesImpl();
-                                attrs.addAttribute( "", "file", "file", "CDATA", files[i].getName() );
+                                attrs.addAttribute( "", "file", "file", "CDATA", FileUtils.fileName(file));
                                 builder.startElement( BACKUP_ELEMENT, attrs );
 
                                 for( final Iterator<Object> iter = properties.keySet().iterator(); iter.hasNext(); ) {
@@ -128,6 +135,8 @@ public class ListBackups extends BasicFunction
             }
             builder.endElement();
             return( builder.getDocument().getNode( nodeNr ) );
+        } catch (final IOException ioe) {
+            throw new XPathException(this, ioe);
         }
         finally {
             context.popDocumentContext();

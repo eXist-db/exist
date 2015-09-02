@@ -76,15 +76,17 @@ import org.apache.logging.log4j.Logger;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.journal.Lsn;
 import org.exist.util.ByteConversion;
+import org.exist.util.FileUtils;
 import org.exist.xquery.Constants;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.channels.NonWritableChannelException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 
 /**
@@ -126,7 +128,7 @@ public abstract class Paged {
     protected static int PAGE_SIZE = 4096;
 
     private RandomAccessFile raf;
-    private File file;
+    private Path file;
     private FileHeader fileHeader;
     private boolean readOnly = false;
     private boolean fileIsNew = false;
@@ -175,7 +177,7 @@ public abstract class Paged {
             return true;
         } catch (final Exception e) {
             e.printStackTrace();
-            throw new DBException(0, "Error creating " + file.getName());
+            throw new DBException(0, "Error creating " + FileUtils.fileName(file));
         }
     }
 
@@ -238,7 +240,7 @@ public abstract class Paged {
      *
      *@return    The File
      */
-    public final File getFile() {
+    public final Path getFile() {
         return file;
     }
 
@@ -261,9 +263,9 @@ public abstract class Paged {
             raf.close();
         } catch (final IOException e) {
             //TODO : forward the exception ? -pb
-            LOG.error("Failed to close data file: " + file.getAbsolutePath());
+            LOG.error("Failed to close data file: " + file.toAbsolutePath().toString());
         }
-        file.delete();
+        FileUtils.deleteQuietly(file);
     }
 
     protected final Page getFreePage() throws IOException {
@@ -338,7 +340,7 @@ public abstract class Paged {
                 fileHeader.read();
                 if(fileHeader.getVersion() != expectedVersion)
                     {throw new DBException("Database file " +
-                        getFile().getName() + " has a storage format incompatible with this " +
+                        FileUtils.fileName(getFile()) + " has a storage format incompatible with this " +
                         "version of eXist. You need to upgrade your database by creating a backup," +
                         "cleaning your data directory and restoring the data. In some cases," +
                         "a reindex may be sufficient. " +
@@ -351,7 +353,7 @@ public abstract class Paged {
             }
         } catch (final Exception e) {
             e.printStackTrace();
-            throw new DBException(0, "Error opening " + file.getName() + ": " + e.getMessage());
+            throw new DBException(0, "Error opening " + FileUtils.fileName(file) + ": " + e.getMessage());
         }
     }
 
@@ -364,7 +366,7 @@ public abstract class Paged {
         long pageNum = fileHeader.firstFreePage;
         System.out.println("first free page: " + pageNum);
         Page next;
-        System.out.println("free pages for " + getFile().getName());
+        System.out.println("free pages for " + FileUtils.fileName(getFile()));
         while (pageNum != Page.NO_PAGE) {
             next = getPage(pageNum);
             next.read();
@@ -379,31 +381,32 @@ public abstract class Paged {
      *
      *@param  file  The File
      */
-    protected final void setFile(final File file) throws DBException {
+    protected final void setFile(final Path file) throws DBException {
         this.file = file;
-        fileIsNew = !file.exists();
+        fileIsNew = !Files.exists(file);
         try {
-            if ((!file.exists()) || file.canWrite()) {
+            if ((!Files.exists(file)) || Files.isWritable(file)) {
                 try {
-                    raf = new RandomAccessFile(file, "rw");
+                    raf = new RandomAccessFile(file.toFile(), "rw");
                     final FileChannel channel = raf.getChannel();   
                     final FileLock lock = channel.tryLock();
-                    if (lock == null)
-                        {readOnly = true;}
+                    if (lock == null) {
+                        readOnly = true;
+                    }
                 //TODO : who will release the lock ? -pb
                 } catch (final NonWritableChannelException e) {
                     //No way : switch to read-only mode
                     readOnly = true;
-                    raf = new RandomAccessFile(file, "r");
+                    raf = new RandomAccessFile(file.toFile(), "r");
                     LOG.warn(e);
                 }
             } else {
                 readOnly = true;
-                raf = new RandomAccessFile(file, "r");
+                raf = new RandomAccessFile(file.toFile(), "r");
             }
         } catch (final IOException e) {
-            LOG.warn("An exception occured while opening database file " +
-                file.getAbsolutePath() + ": " + e.getMessage(), e);
+            LOG.warn("An exception occurred while opening database file " +
+                file.toAbsolutePath().toString() + ": " + e.getMessage(), e);
         }
     }
 
@@ -893,7 +896,7 @@ public abstract class Paged {
          */
         public String getPageInfo() {
             return "page: " + pageNum +
-                "; file = " + getFile().getName() + 
+                "; file = " + FileUtils.fileName(getFile()) +
                 "; address = " + Long.toHexString(offset) +
                 "; page header = " + fileHeader.getPageHeaderSize() +
                 "; data start = " + Long.toHexString(offset + fileHeader.getPageHeaderSize());

@@ -29,13 +29,13 @@ import org.exist.EXistException;
 import org.exist.backup.RawDataBackup;
 import org.exist.util.Configuration;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.Properties;
 import java.util.zip.Deflater;
 import java.util.zip.ZipEntry;
@@ -48,12 +48,12 @@ public class DataBackup implements SystemTask {
     public static final String DATE_FORMAT_PICTURE = "yyyyMMddHHmmssS";
     private final SimpleDateFormat creationDateFormat = new SimpleDateFormat(DATE_FORMAT_PICTURE);
     
-	private String dest;
+	private Path dest;
 	
     public DataBackup() {
     }
     
-    public DataBackup(String destination) {
+    public DataBackup(final Path destination) {
         dest = destination;
     }
     
@@ -66,19 +66,21 @@ public class DataBackup implements SystemTask {
      * @see org.exist.storage.SystemTask#configure(java.util.Properties)
      */
     public void configure(Configuration config, Properties properties) throws EXistException { 
-        dest = properties.getProperty("output-dir", "backup");
-        File f = new File(dest);
-        if (!f.isAbsolute()) {
-            dest = (String)config.getProperty(BrokerPool.PROPERTY_DATA_DIR) +
-                File.separatorChar + dest;
-            f = new File(dest);
+        dest = Paths.get(properties.getProperty("output-dir", "backup"));
+        if (!dest.isAbsolute()) {
+            dest = ((Path)config.getProperty(BrokerPool.PROPERTY_DATA_DIR)).resolve(dest);
         }
-        if (f.exists() && !(f.canWrite() && f.isDirectory()))
-            {throw new EXistException("Cannot write backup files to " + f.getAbsolutePath() +
-                    ". It should be a writable directory.");}
-        else
-            {f.mkdirs();}
-        dest = f.getAbsolutePath();
+        if (Files.exists(dest) && !(Files.isWritable(dest) && Files.isDirectory(dest))) {
+            throw new EXistException("Cannot write backup files to " + dest.toAbsolutePath().toString() +
+                    ". It should be a writable directory.");
+        } else {
+            try {
+                Files.createDirectories(dest);
+            } catch(final IOException ioe) {
+                throw new EXistException("Unable to create directory: " + dest.toAbsolutePath().toString(), ioe);
+            }
+        }
+
         LOG.debug("Setting backup data directory: " + dest);
     }
     
@@ -91,18 +93,16 @@ public class DataBackup implements SystemTask {
 		LOG.debug("Backing up data files ...");
 		
 		final String creationDate = creationDateFormat.format(Calendar.getInstance().getTime());
-        final String outFilename = dest + File.separatorChar + creationDate + ".zip";
+        final Path outFilename = dest.resolve(creationDate + ".zip");
         
         // Create the ZIP file
         LOG.debug("Archiving data files into: " + outFilename);
         
-        try {
-			final ZipOutputStream out = new ZipOutputStream(new FileOutputStream(outFilename));
+        try(final ZipOutputStream out = new ZipOutputStream(Files.newOutputStream(outFilename))) {
             out.setLevel(Deflater.NO_COMPRESSION);
             final Callback cb = new Callback(out);
             broker.backupToArchive(cb);
             // close the zip file
-			out.close();
 		} catch (final IOException e) {
 			LOG.warn("An IO error occurred while backing up data files: " + e.getMessage(), e);
 		}

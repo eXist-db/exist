@@ -1,17 +1,13 @@
 package org.exist.xquery.modules.file;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.FileTime;
+import java.util.*;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -31,6 +27,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
+import org.exist.util.FileUtils;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
 import org.exist.xmldb.XmldbURI;
@@ -76,45 +73,46 @@ public class Sync extends BasicFunction {
         DEFAULT_PROPERTIES.put(EXistOutputKeys.EXPAND_XINCLUDES, "no");
 	}
 	
-	public Sync(XQueryContext context) {
+	public Sync(final XQueryContext context) {
 		super(context, signature);
 	}
 
 	@Override
-	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+	public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
         
-		if (!context.getSubject().hasDbaRole())
+		if (!context.getSubject().hasDbaRole()) {
 			throw new XPathException(this, "Function file:sync is only available to the DBA role");
+		}
 		
-		String collectionPath = args[0].getStringValue();
+		final String collectionPath = args[0].getStringValue();
 		Date startDate = null;
 		if (args[2].hasOne()) {
 			DateTimeValue dtv = (DateTimeValue) args[2].itemAt(0);
 			startDate = dtv.getDate();
 		}
         
-		String target = args[1].getStringValue();
-        File targetDir = FileModuleHelper.getFile(target);
+		final String target = args[1].getStringValue();
+        Path targetDir = FileModuleHelper.getFile(target);
         
 		
 		context.pushDocumentContext();
-		MemTreeBuilder output = context.getDocumentBuilder();
+		final MemTreeBuilder output = context.getDocumentBuilder();
 		try {
 			if (!targetDir.isAbsolute()) {
-				File home = context.getBroker().getConfiguration().getExistHome();
-				targetDir = new File(home, target);
+				final Optional<Path> home = context.getBroker().getConfiguration().getExistHome();
+				targetDir = FileUtils.resolve(home, target);
 			}
 			
 			output.startDocument();
 			output.startElement(new QName("sync", FileModule.NAMESPACE_URI), null);
 			output.addAttribute(new QName("collection", FileModule.NAMESPACE_URI), collectionPath);
-			output.addAttribute(new QName("dir", FileModule.NAMESPACE_URI), targetDir.getAbsolutePath());
+			output.addAttribute(new QName("dir", FileModule.NAMESPACE_URI), targetDir.toAbsolutePath().toString());
 			
 			saveCollection(XmldbURI.create(collectionPath), targetDir, startDate, output);
 			
 			output.endElement();
 			output.endDocument();
-        } catch(PermissionDeniedException pde) {
+        } catch(final PermissionDeniedException pde) {
             throw new XPathException(this, pde);
 		} finally {
 			context.popDocumentContext();
@@ -122,14 +120,17 @@ public class Sync extends BasicFunction {
 		return output.getDocument();
 	}
 
-	private void saveCollection(XmldbURI collectionPath, File targetDir, Date startDate, MemTreeBuilder output) throws PermissionDeniedException {
-		if (!targetDir.exists() && !targetDir.mkdirs()) {
-			reportError(output, "Failed to create output directory: " + targetDir.getAbsolutePath() + 
+	private void saveCollection(final XmldbURI collectionPath, Path targetDir, final Date startDate, final MemTreeBuilder output) throws PermissionDeniedException {
+		try {
+			targetDir = Files.createDirectories(targetDir);
+		} catch(final IOException ioe) {
+			reportError(output, "Failed to create output directory: " + targetDir.toAbsolutePath().toString() +
 					" for collection " + collectionPath);
 			return;
 		}
-		if (!targetDir.canWrite()) {
-			reportError(output, "Failed to write to output directory: " + targetDir.getAbsolutePath());
+
+		if (!Files.isWritable(targetDir)) {
+			reportError(output, "Failed to write to output directory: " + targetDir.toAbsolutePath().toString());
 			return;
 		}
 		
@@ -141,7 +142,7 @@ public class Sync extends BasicFunction {
 				reportError(output, "Collection not found: " + collectionPath);
 				return;
 			}
-			for (Iterator<DocumentImpl> i = collection.iterator(context.getBroker()); i.hasNext(); ) {
+			for (final Iterator<DocumentImpl> i = collection.iterator(context.getBroker()); i.hasNext(); ) {
 				DocumentImpl doc = i.next();
 				if (startDate == null || doc.getMetadata().getLastModified() > startDate.getTime()) {
 					if (doc.getResourceType() == DocumentImpl.BINARY_FILE) {
@@ -153,7 +154,7 @@ public class Sync extends BasicFunction {
 			}
 			
 			subcollections = new ArrayList<>(collection.getChildCollectionCount(context.getBroker()));
-			for (Iterator<XmldbURI> i = collection.collectionIterator(context.getBroker()); i.hasNext(); ) {
+			for (final Iterator<XmldbURI> i = collection.collectionIterator(context.getBroker()); i.hasNext(); ) {
 				subcollections.add(i.next());
 			}
 		} finally {
@@ -161,28 +162,29 @@ public class Sync extends BasicFunction {
 				collection.getLock().release(Lock.READ_LOCK);
 		}
 		
-		for (XmldbURI childURI : subcollections) {
-			File childDir = new File(targetDir, childURI.lastSegment().toString());
+		for (final XmldbURI childURI : subcollections) {
+			final Path childDir = targetDir.resolve(childURI.lastSegment().toString());
 			saveCollection(collectionPath.append(childURI), childDir, startDate, output);
 		}
 	}
 
-	private void reportError(MemTreeBuilder output, String msg) {
+	private void reportError(final MemTreeBuilder output,final String msg) {
 		output.startElement(new QName("error", FileModule.NAMESPACE_URI), null);
 		output.characters(msg);
 		output.endElement();
 	}
 
-	private void saveXML(File targetDir, DocumentImpl doc, MemTreeBuilder output) {
-		File targetFile = new File(targetDir, doc.getFileURI().toASCIIString());
-		if (targetFile.exists() && targetFile.lastModified() >= doc.getMetadata().getLastModified()) {
-			return;
-		}
-        boolean isRepoXML = targetFile.exists() && targetFile.getName().equals("repo.xml");
-		SAXSerializer sax = (SAXSerializer)SerializerPool.getInstance().borrowObject( SAXSerializer.class );
+	private void saveXML(final Path targetDir, final DocumentImpl doc, final MemTreeBuilder output) {
+		Path targetFile = targetDir.resolve(doc.getFileURI().toASCIIString());
+		final SAXSerializer sax = (SAXSerializer)SerializerPool.getInstance().borrowObject( SAXSerializer.class );
 		try {
+			if (Files.exists(targetFile) && Files.getLastModifiedTime(targetFile).compareTo(FileTime.fromMillis(doc.getMetadata().getLastModified())) >= 0) {
+				return;
+			}
+    	    boolean isRepoXML = Files.exists(targetFile) && FileUtils.fileName(targetFile).equals("repo.xml");
+
 			output.startElement(new QName("update", FileModule.NAMESPACE_URI), null);
-			output.addAttribute(new QName("file"), targetFile.getAbsolutePath());
+			output.addAttribute(new QName("file"), targetFile.toAbsolutePath().toString());
 			output.addAttribute(new QName("name"), doc.getFileURI().toString());
 			output.addAttribute(new QName("collection"), doc.getCollection().getURI().toString());
 			output.addAttribute(new QName("type"), "xml");
@@ -190,26 +192,25 @@ public class Sync extends BasicFunction {
             if (isRepoXML) {
                 processRepoDesc(targetFile, doc, sax, output);
             } else {
-                OutputStream os = new FileOutputStream(targetFile);
-                            try (Writer writer = new OutputStreamWriter(os, "UTF-8")) {
-                                sax.setOutput(writer, DEFAULT_PROPERTIES);
-                                Serializer serializer = context.getBroker().getSerializer();
-                                serializer.reset();
-                                serializer.setProperties(DEFAULT_PROPERTIES);
-                                
-                                serializer.setSAXHandlers(sax, sax);
-                                serializer.toSAX(doc);
-                            }
+				try(final Writer writer = new OutputStreamWriter(Files.newOutputStream(targetFile), "UTF-8")) {
+					sax.setOutput(writer, DEFAULT_PROPERTIES);
+					Serializer serializer = context.getBroker().getSerializer();
+					serializer.reset();
+					serializer.setProperties(DEFAULT_PROPERTIES);
+
+					serializer.setSAXHandlers(sax, sax);
+					serializer.toSAX(doc);
+				}
             }
-		} catch (IOException e) {
-			reportError(output, "IO error while saving file: " + targetFile.getAbsolutePath());
-		} catch (SAXException e) {
-			reportError(output, "SAX exception while saving file " + targetFile.getAbsolutePath() + ": " + e.getMessage());
-		} catch (XPathException e) {
+		} catch (final IOException e) {
+			reportError(output, "IO error while saving file: " + targetFile.toAbsolutePath().toString());
+		} catch (final SAXException e) {
+			reportError(output, "SAX exception while saving file " + targetFile.toAbsolutePath().toString() + ": " + e.getMessage());
+		} catch (final XPathException e) {
 			reportError(output, e.getMessage());
 		} finally {
 			output.endElement();
-			SerializerPool.getInstance().returnObject( sax );
+			SerializerPool.getInstance().returnObject(sax);
 		}		
 	}
 
@@ -218,19 +219,18 @@ public class Sync extends BasicFunction {
      * remove sensitive information during upload (default password) and need to restore it
      * when the package is synchronized back to disk.
      */
-    private void processRepoDesc(File targetFile, DocumentImpl doc, SAXSerializer sax, MemTreeBuilder output) {
+    private void processRepoDesc(final Path targetFile, final DocumentImpl doc, final SAXSerializer sax, final MemTreeBuilder output) {
         try {
-            DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-            Document original = builder.parse(targetFile);
+            final DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+            final Document original = builder.parse(targetFile.toFile());
 
-            OutputStream os = new FileOutputStream(targetFile);
-            try (Writer writer = new OutputStreamWriter(os, "UTF-8")) {
+            try (final Writer writer = new OutputStreamWriter(Files.newOutputStream(targetFile), "UTF-8")) {
                 sax.setOutput(writer, DEFAULT_PROPERTIES);
                 
-                StreamSource stylesource = new StreamSource(Sync.class.getResourceAsStream("repo.xsl"));
+                final StreamSource stylesource = new StreamSource(Sync.class.getResourceAsStream("repo.xsl"));
                 
                 final SAXTransformerFactory factory = TransformerFactoryAllocator.getTransformerFactory(context.getBroker().getBrokerPool());
-                TransformerHandler handler = factory.newTransformerHandler(stylesource);
+                final TransformerHandler handler = factory.newTransformerHandler(stylesource);
                 handler.getTransformer().setParameter("original", original.getDocumentElement());
                 handler.setResult(new SAXResult(sax));
                 
@@ -241,44 +241,37 @@ public class Sync extends BasicFunction {
                 
                 serializer.toSAX(doc);
             }
-        } catch (ParserConfigurationException e) {
-            reportError(output, "Parser exception while saving file " + targetFile.getAbsolutePath() + ": " + e.getMessage());
-        } catch (SAXException e) {
-            reportError(output, "SAX exception while saving file " + targetFile.getAbsolutePath() + ": " + e.getMessage());
-        } catch (IOException e) {
-            reportError(output, "IO exception while saving file " + targetFile.getAbsolutePath() + ": " + e.getMessage());
-        } catch (TransformerException e) {
-            reportError(output, "Transformation exception while saving file " + targetFile.getAbsolutePath() + ": " + e.getMessage());
+        } catch (final ParserConfigurationException e) {
+            reportError(output, "Parser exception while saving file " + targetFile.toAbsolutePath().toString() + ": " + e.getMessage());
+        } catch (final SAXException e) {
+            reportError(output, "SAX exception while saving file " + targetFile.toAbsolutePath().toString() + ": " + e.getMessage());
+        } catch (final IOException e) {
+            reportError(output, "IO exception while saving file " + targetFile.toAbsolutePath().toString() + ": " + e.getMessage());
+        } catch (final TransformerException e) {
+            reportError(output, "Transformation exception while saving file " + targetFile.toAbsolutePath().toString() + ": " + e.getMessage());
         }
     }
 
-	private void saveBinary(File targetDir, BinaryDocument binary, MemTreeBuilder output) {
-		File targetFile = new File(targetDir, binary.getFileURI().toASCIIString());
-		if (targetFile.exists() && targetFile.lastModified() >= binary.getMetadata().getLastModified()) {
-			return;
-		}
+	private void saveBinary(final Path targetDir, final BinaryDocument binary, final MemTreeBuilder output) {
+		final Path targetFile = targetDir.resolve(binary.getFileURI().toASCIIString());
 		try {
+			if (Files.exists(targetFile) && Files.getLastModifiedTime(targetFile).compareTo(FileTime.fromMillis(binary.getMetadata().getLastModified())) >= 0) {
+				return;
+			}
+
 			output.startElement(new QName("update", FileModule.NAMESPACE_URI), null);
-			output.addAttribute(new QName("file"), targetFile.getAbsolutePath());
+			output.addAttribute(new QName("file"), targetFile.toAbsolutePath().toString());
 			output.addAttribute(new QName("name"), binary.getFileURI().toString());
 			output.addAttribute(new QName("collection"), binary.getCollection().getURI().toString());
 			output.addAttribute(new QName("type"), "binary");
-			output.addAttribute(new QName("modified"), 
-					new DateTimeValue(new Date(binary.getMetadata().getLastModified())).getStringValue());
-			
-                        InputStream is;
-                    try (OutputStream os = new FileOutputStream(targetFile)) {
-                        is = context.getBroker().getBinaryResource(binary);
-                        int c;
-                        byte buf[] = new byte[4096];
-                        while ((c = is.read(buf)) > -1) {
-                            os.write(buf, 0, c);
-                        }
-                    }
-			is.close();
-		} catch (IOException e) {
-			reportError(output, "IO error while saving file: " + targetFile.getAbsolutePath());
-		} catch (XPathException e) {
+			output.addAttribute(new QName("modified"), new DateTimeValue(new Date(binary.getMetadata().getLastModified())).getStringValue());
+
+			try(final InputStream is = context.getBroker().getBinaryResource(binary)) {
+				Files.copy(is, targetFile);
+			}
+		} catch (final IOException e) {
+			reportError(output, "IO error while saving file: " + targetFile.toAbsolutePath().toString());
+		} catch (final XPathException e) {
 			reportError(output, e.getMessage());
 		} finally {
 			output.endElement();

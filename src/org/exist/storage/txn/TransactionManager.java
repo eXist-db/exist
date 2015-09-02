@@ -37,8 +37,8 @@ import org.exist.storage.recovery.RecoveryManager;
 import org.exist.util.ReadOnlyException;
 import org.exist.xmldb.XmldbURI;
 
-import java.io.File;
 import java.io.PrintStream;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -102,7 +102,7 @@ public class TransactionManager {
      * @param transactionsEnabled
      * @throws EXistException
      */
-    public TransactionManager(final BrokerPool pool, final File dataDir, final boolean transactionsEnabled) throws EXistException {
+    public TransactionManager(final BrokerPool pool, final Path dataDir, final boolean transactionsEnabled) throws EXistException {
     	this(
             pool,
             transactionsEnabled,

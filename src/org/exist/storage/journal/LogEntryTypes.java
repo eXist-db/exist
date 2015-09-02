@@ -1,28 +1,26 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 The eXist Team
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2015 The eXist Project
  *
- *  http://exist-db.org
- *  
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *  
- *  $Id$
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 package org.exist.storage.journal;
 
-import java.lang.reflect.Constructor;
+import java.util.function.BiFunction;
 
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Checkpoint;
@@ -35,75 +33,50 @@ import org.exist.util.hashtable.Int2ObjectHashMap;
  * Registry for log entry types. All classes that can be read from or written to the journal
  * have to be registered here. The recovery manager uses this information to create
  * the correct {@link org.exist.storage.journal.Loggable} object when reading the log.
- * 
+ *
  * @author wolf
  */
 public class LogEntryTypes {
-
-    /**
-     * Used to register a class for a given log entry type.
-     */
-    private static class LogEntry {
-
-        private static Class<?> constructorArgs[] = { DBBroker.class, long.class };
-
-        @SuppressWarnings("unused")
-        private byte type;
-        private Class<? extends Loggable> clazz;
-
-        public LogEntry(byte type, Class<? extends Loggable> myClass) {
-            this.type = type;
-            this.clazz = myClass;
-        }
-
-        public Loggable newInstance(DBBroker broker, long transactId) throws Exception {
-            final Constructor<? extends Loggable> constructor = clazz.getConstructor(constructorArgs);
-            return constructor.newInstance(new Object[] { broker, Long.valueOf(transactId) });
-        }
-    }
 
     public final static byte TXN_START = 0;
     public final static byte TXN_COMMIT = 1;
     public final static byte CHECKPOINT = 2;
     public final static byte TXN_ABORT = 3;
 
-    private final static Int2ObjectHashMap<LogEntry> entryTypes = new Int2ObjectHashMap<LogEntry>();
+    private final static Int2ObjectHashMap<BiFunction<DBBroker, Long, Loggable>> entryTypes = new Int2ObjectHashMap<>();
 
-    // register the common entry types
     static {
-        addEntryType(TXN_START, TxnStart.class);
-        addEntryType(TXN_COMMIT, TxnCommit.class);
-        addEntryType(CHECKPOINT, Checkpoint.class);
-        addEntryType(TXN_ABORT, TxnAbort.class);
+        // register the common entry types
+        entryTypes.put(TXN_START, TxnStart::new);
+        entryTypes.put(TXN_COMMIT, TxnCommit::new);
+        entryTypes.put(CHECKPOINT, Checkpoint::new);
+        entryTypes.put(TXN_ABORT, TxnAbort::new);
     }
 
     /**
      * Add an entry type to the registry.
-     * 
-     * @param type
-     * @param clazz the class implementing {@link Loggable}.
+     *
+     * @param type The type of the Loggable
+     * @param cstr Function for constructing a Loggable of the indicated type
      */
-    public final static void addEntryType(byte type, Class<? extends Loggable> clazz) {
-        final LogEntry entry = new LogEntry(type, clazz);
-        entryTypes.put(type, entry);
+    public final static void addEntryType(final byte type, final BiFunction<DBBroker, Long, Loggable> cstr) {
+        entryTypes.put(type, cstr);
     }
 
     /**
-     * Create a new loggable object for the given type.
-     * 
-     * @param type
-     * @param transactId the id of the current transaction.
-     * @throws LogException
+     * Create a new loggable for the given type.
+     *
+     * @param type The type of the loggable
+     * @param transactionId the id of the current transaction
+     *
+     * @retun The loggable for the type, or null if no loggable for the type is known
      */
-    public final static Loggable create(byte type, DBBroker broker, long transactId) throws LogException {
-        final LogEntry entry = entryTypes.get(type);
-        if (entry == null)
-            {return null;}
-        try {
-            return entry.newInstance(broker, transactId);
-        } catch (final Exception e) {
-            throw new LogException("Failed to create log entry object", e);
+    public final static Loggable create(final byte type, final DBBroker broker, final long transactionId) throws LogException {
+        final BiFunction<DBBroker, Long, Loggable> cstr = entryTypes.get(type);
+        if (cstr == null) {
+            return null;
+        } else {
+            return cstr.apply(broker, transactionId);
         }
     }
-
 }

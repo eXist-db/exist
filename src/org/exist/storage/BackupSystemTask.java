@@ -5,19 +5,18 @@ import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.backup.Backup;
 import org.exist.util.Configuration;
+import org.exist.util.FileUtils;
 import org.exist.xmldb.XmldbURI;
 import org.xml.sax.SAXException;
 import org.xmldb.api.base.XMLDBException;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.TreeMap;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * BackupSystemTask creates an XML backup of the current database into a directory
@@ -64,7 +63,7 @@ public class BackupSystemTask implements SystemTask {
     private final SimpleDateFormat creationDateFormat = new SimpleDateFormat(DataBackup.DATE_FORMAT_PICTURE);
     private String user;
     private String password;
-    private File directory;
+    private Path directory;
     private String suffix;
     private XmldbURI collection;
     private String prefix;
@@ -84,29 +83,33 @@ public class BackupSystemTask implements SystemTask {
         prefix = properties.getProperty("prefix", "");
         
         String dir = properties.getProperty("dir", "backup");
-        directory = new File(dir);
+        directory = Paths.get(dir);
         if (!directory.isAbsolute()) {
-            dir = (String)config.getProperty(BrokerPool.PROPERTY_DATA_DIR) +
-                File.separatorChar + dir;
-            directory = new File(dir);
+            directory = ((Path)config.getProperty(BrokerPool.PROPERTY_DATA_DIR)).resolve(dir);
         }
-        directory.mkdirs();
+
+        try {
+            Files.createDirectories(directory);
+        } catch(final IOException ioe) {
+            throw new EXistException("Unable to create backup directory: " + directory.toAbsolutePath().toString(), ioe);
+        }
 
         // check for max zip files
         final String filesMaxStr = properties.getProperty("zip-files-max");
         if (LOG.isDebugEnabled()) {LOG.debug("zip-files-max: " + filesMaxStr);}
-        if (null != filesMaxStr)
-            try
-            {
+        if (null != filesMaxStr) {
+            try {
                 zipFilesMax = Integer.parseInt(filesMaxStr);
+            } catch (final NumberFormatException e) {
+                LOG.debug("zip-files-max property error", e);
             }
-            catch (final NumberFormatException e) {LOG.debug("zip-files-max property error", e);}
+        }
     }
 
 
     public void execute(DBBroker broker) throws EXistException {
         final String dateTime = creationDateFormat.format(Calendar.getInstance().getTime());
-        final String dest = directory.getAbsolutePath() + File.separatorChar + prefix + dateTime + suffix;
+        final Path dest = directory.resolve(prefix + dateTime + suffix);
 
         final Backup backup = new Backup(user, password, dest, collection);
         try {
@@ -123,25 +126,30 @@ public class BackupSystemTask implements SystemTask {
         }
 
         // see if old zip files need to be purged
-        if (".zip".equals(suffix) && zipFilesMax > 0) {purgeZipFiles();}
+        if (".zip".equals(suffix) && zipFilesMax > 0) {
+            try {
+                purgeZipFiles();
+            } catch(final IOException ioe) {
+                throw new EXistException("Unable to purge zip files", ioe);
+            }
+        }
     }
 
-    public void purgeZipFiles()
-    {
+    public void purgeZipFiles() throws IOException {
         if (LOG.isDebugEnabled()) {LOG.debug("starting purgeZipFiles()");}
 
         // get all files in target directory
-        final File[] files = directory.listFiles();
+        final List<Path> files = Files.list(directory).collect(Collectors.toList());
 
-        if (files.length > 0)
+        if (!files.isEmpty())
         {
-            final Map<String, File> sorted = new TreeMap<String, File>();
-            for (int i=0; i < files.length; i++)
+            final Map<String, Path> sorted = new TreeMap<>();
+            for (final Path file : files)
             {
                 //check for prefix and suffix match
-                if (files[i].getName().startsWith(prefix) && files[i].getName().endsWith(suffix))
+                if (file.getFileName().startsWith(prefix) && FileUtils.fileName(file).endsWith(suffix))
                 {
-                    sorted.put(Long.toString(files[i].lastModified()), files[i]);
+                    sorted.put(Long.toString(Files.getLastModifiedTime(file).toMillis()), file);
                 }
             }
             if (sorted.size() > zipFilesMax)
@@ -151,11 +159,13 @@ public class BackupSystemTask implements SystemTask {
                 int i = sorted.size() - zipFilesMax;
                 while (ki.hasNext())
                 {
-                    final File f = sorted.get(ki.next());
+                    final Path f = sorted.get(ki.next());
                     if (i > 0)
                     {
-                        if (LOG.isDebugEnabled()) {LOG.debug("Purging backup : " + f.getName());}
-                        f.delete();
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug("Purging backup : " + FileUtils.fileName(f));
+                        }
+                        FileUtils.deleteQuietly(f);
                     }
                     i--;
                 }

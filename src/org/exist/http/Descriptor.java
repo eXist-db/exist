@@ -23,10 +23,12 @@ package org.exist.http;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -86,20 +88,19 @@ public class Descriptor implements ErrorHandler
 	 */
     private Descriptor()
 	{
+        InputStream is = null;
         try
 		{
-        	InputStream is = null;
-
         	// First, try to read Descriptor from file. Guess the location if necessary
         	// from the home folder.
-        	final File f = ConfigurationHelper.lookup(file);
-            if(! f.canRead())
+        	final Path f = ConfigurationHelper.lookup(file);
+            if(!Files.isReadable(f))
             {
                 LOG.warn("Giving up unable to read descriptor file from " + f);
             }
             else
             {
-            	is = new FileInputStream(f);
+            	is = Files.newInputStream(f);
 				LOG.info("Reading Descriptor from file " + f);
             }
         	
@@ -172,6 +173,14 @@ public class Descriptor implements ErrorHandler
 		{
             LOG.warn("Error while reading descriptor file: " + file, io);
             return;
+        } finally {
+            if(is != null) {
+                try {
+                    is.close();
+                } catch(final IOException ioe) {
+                    LOG.warn(ioe);
+                }
+            }
         }
     }
     
@@ -218,7 +227,7 @@ public class Descriptor implements ErrorHandler
             	return;
             }
             path=path.replaceAll("\\$\\{WEBAPP_HOME\\}", 
-                    SingleInstanceConfiguration.getWebappHome().getAbsolutePath().replace('\\','/') );
+                    SingleInstanceConfiguration.getWebappHome().orElse(Paths.get(".")).toAbsolutePath().toString().replace('\\','/') );
 
             //store the path
             allowSourceList[i] = path;
@@ -257,7 +266,7 @@ public class Descriptor implements ErrorHandler
             	return;
             }           
             path=path.replaceAll("\\$\\{WEBAPP_HOME\\}", 
-                    SingleInstanceConfiguration.getWebappHome().getAbsolutePath().replace('\\','/') );
+                    SingleInstanceConfiguration.getWebappHome().orElse(Paths.get(".")).toAbsolutePath().toString().replace('\\','/') );
             
             //must be a view to map to
             if(view == null)
@@ -266,7 +275,7 @@ public class Descriptor implements ErrorHandler
             	return;
             }
             view=view.replaceAll("\\$\\{WEBAPP_HOME\\}", 
-                    SingleInstanceConfiguration.getWebappHome().getAbsolutePath().replace('\\','/') );
+                    SingleInstanceConfiguration.getWebappHome().orElse(Paths.get(".")).toAbsolutePath().toString().replace('\\','/') );
             
             //store what to map from
            /* if(path != null)

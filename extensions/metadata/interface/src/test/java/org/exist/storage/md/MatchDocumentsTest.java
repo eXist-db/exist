@@ -21,7 +21,7 @@ package org.exist.storage.md;
 
 import static org.junit.Assert.*;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.util.List;
 
 import org.exist.EXistException;
@@ -502,8 +502,8 @@ public class MatchDocumentsTest {
 	@Before
     public void startDB() throws DatabaseConfigurationException, EXistException {
 
-        final File confFile = ConfigurationHelper.lookup("conf.xml");
-        Configuration config = new Configuration(confFile.getAbsolutePath());
+        final Path confFile = ConfigurationHelper.lookup("conf.xml");
+        Configuration config = new Configuration(confFile.toAbsolutePath().toString());
         BrokerPool.configure(1, 5, config);
         pool = BrokerPool.getInstance();
         pool.getPluginsManager().addPlugin("org.exist.storage.md.Plugin");

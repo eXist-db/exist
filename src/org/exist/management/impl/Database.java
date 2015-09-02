@@ -120,7 +120,7 @@ public class Database implements DatabaseMBean {
 
     @Override
     public String getExistHome() {
-        return pool.getConfiguration().getExistHome().getAbsolutePath();
+        return pool.getConfiguration().getExistHome().map(p -> p.toAbsolutePath().toString()).orElse(null);
     }
     
     public String printStackTrace(Thread thread) {

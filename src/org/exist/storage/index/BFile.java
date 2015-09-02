@@ -48,12 +48,7 @@ import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.ReentrantReadWriteLock;
 import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.Txn;
-import org.exist.util.ByteArray;
-import org.exist.util.ByteConversion;
-import org.exist.util.FixedByteArray;
-import org.exist.util.IndexCallback;
-import org.exist.util.LockException;
-import org.exist.util.ReadOnlyException;
+import org.exist.util.*;
 import org.exist.util.sanity.SanityCheck;
 import org.exist.xquery.Constants;
 import org.exist.xquery.TerminatedException;
@@ -61,8 +56,9 @@ import org.exist.xquery.TerminatedException;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 
 import java.io.EOFException;
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -128,16 +124,16 @@ public class BFile extends BTree {
 
     static {
         // register log entry types for this db file
-        LogEntryTypes.addEntryType(LOG_CREATE_PAGE, CreatePageLoggable.class);
-        LogEntryTypes.addEntryType(LOG_STORE_VALUE, StoreValueLoggable.class);
-        LogEntryTypes.addEntryType(LOG_REMOVE_VALUE, RemoveValueLoggable.class);
-        LogEntryTypes.addEntryType(LOG_REMOVE_PAGE, RemoveEmptyPageLoggable.class);
-        LogEntryTypes.addEntryType(LOG_OVERFLOW_APPEND, OverflowAppendLoggable.class);
-        LogEntryTypes.addEntryType(LOG_OVERFLOW_STORE, OverflowStoreLoggable.class);
-        LogEntryTypes.addEntryType(LOG_OVERFLOW_CREATE, OverflowCreateLoggable.class);
-        LogEntryTypes.addEntryType(LOG_OVERFLOW_MODIFIED, OverflowModifiedLoggable.class);
-        LogEntryTypes.addEntryType(LOG_OVERFLOW_CREATE_PAGE, OverflowCreatePageLoggable.class);
-        LogEntryTypes.addEntryType(LOG_OVERFLOW_REMOVE, OverflowRemoveLoggable.class);
+        LogEntryTypes.addEntryType(LOG_CREATE_PAGE, CreatePageLoggable::new);
+        LogEntryTypes.addEntryType(LOG_STORE_VALUE, StoreValueLoggable::new);
+        LogEntryTypes.addEntryType(LOG_REMOVE_VALUE, RemoveValueLoggable::new);
+        LogEntryTypes.addEntryType(LOG_REMOVE_PAGE, RemoveEmptyPageLoggable::new);
+        LogEntryTypes.addEntryType(LOG_OVERFLOW_APPEND, OverflowAppendLoggable::new);
+        LogEntryTypes.addEntryType(LOG_OVERFLOW_STORE, OverflowStoreLoggable::new);
+        LogEntryTypes.addEntryType(LOG_OVERFLOW_CREATE, OverflowCreateLoggable::new);
+        LogEntryTypes.addEntryType(LOG_OVERFLOW_MODIFIED, OverflowModifiedLoggable::new);
+        LogEntryTypes.addEntryType(LOG_OVERFLOW_CREATE_PAGE, OverflowCreatePageLoggable::new);
+        LogEntryTypes.addEntryType(LOG_OVERFLOW_REMOVE, OverflowRemoveLoggable::new);
     }
 
     protected BFileHeader fileHeader;
@@ -152,22 +148,22 @@ public class BFile extends BTree {
 
     protected int maxValueSize;
 
-    public BFile(BrokerPool pool, byte fileId, boolean transactional, File file, DefaultCacheManager cacheManager,
+    public BFile(BrokerPool pool, byte fileId, boolean transactional, final Path file, DefaultCacheManager cacheManager,
             double cacheGrowth, double thresholdData) throws DBException {
         super(pool, fileId, transactional, cacheManager, file);
         fileHeader = (BFileHeader) getFileHeader();
         dataCache = new LRUCache(64, cacheGrowth, thresholdData, CacheManager.DATA_CACHE);
-        dataCache.setFileName(file.getName());
+        dataCache.setFileName(FileUtils.fileName(file));
         cacheManager.registerCache(dataCache);
         minFree = PAGE_MIN_FREE;
-        lock = new ReentrantReadWriteLock(file.getName());
+        lock = new ReentrantReadWriteLock(FileUtils.fileName(file));
         maxValueSize = fileHeader.getWorkSize() / 2;
         
         if(exists()) {
             open();
         } else {
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Creating data file: " + getFile().getName());
+                LOG.debug("Creating data file: " + FileUtils.fileName(getFile()));
             }
             create();
         }
@@ -242,7 +238,7 @@ public class BFile extends BTree {
                 if (offset < 0)
                     {throw new IOException("tid " + tid + " not found on page " + pnum);}
                 if (offset + 4 > data.length) {
-                    LOG.error("found invalid pointer in file " + getFile().getName() + 
+                    LOG.error("found invalid pointer in file " + FileUtils.fileName(getFile()) +
                             " for page" + page.getPageInfo() + " : " +
                             "tid = " + tid + "; offset = " + offset);
                     return UNKNOWN_ADDRESS;
@@ -250,7 +246,7 @@ public class BFile extends BTree {
                 final int l = ByteConversion.byteToInt(data, offset);
                 //TOUNDERSTAND : unless l can be negative, we should never get there -pb
                 if (offset + 4 + l > data.length) {
-                    LOG.error("found invalid data record in file " + getFile().getName() +
+                    LOG.error("found invalid data record in file " + FileUtils.fileName(getFile()) +
                             " for page" + page.getPageInfo() + " : " +
                             "length = " + data.length + "; required = " + (offset + 4 + l));
                     return UNKNOWN_ADDRESS;
@@ -418,7 +414,7 @@ public class BFile extends BTree {
         super.printStatistics();
         final NumberFormat nf = NumberFormat.getPercentInstance();
         final StringBuilder buf = new StringBuilder();
-        buf.append(getFile().getName()).append(" DATA ");
+        buf.append(FileUtils.fileName(getFile())).append(" DATA ");
         buf.append("Buffers occupation : ");
         if (dataCache.getBuffers() == 0 && dataCache.getUsedBuffers() == 0)
             {buf.append("N/A");}
@@ -538,13 +534,13 @@ public class BFile extends BTree {
         final byte[] data = page.getData();
         if (offset < 0 || offset > data.length) {
             LOG.error("wrong pointer (tid: " + tid + page.getPageInfo()
-                    + ") in file " + getFile().getName() + "; offset = "
+                    + ") in file " + FileUtils.fileName(getFile()) + "; offset = "
                     + offset);
             return null;
         }
         final int l = ByteConversion.byteToInt(data, offset);
         if (l + 6 > data.length) {
-            LOG.error(getFile().getName() + " wrong data length in page "
+            LOG.error(FileUtils.fileName(getFile()) + " wrong data length in page "
                     + page.getPageNum() + ": expected=" + (l + 6) + "; found="
                     + data.length);
             return null;
@@ -807,8 +803,8 @@ public class BFile extends BTree {
         	{fileHeader.removeFreeSpace(space);}
     }
 
-    public void setLocation(String location) throws DBException {
-        setFile(new File(location + ".dbx"));
+    public void setLocation(final String location) throws DBException {
+        setFile(Paths.get(location + ".dbx"));
     }
 
     public long storeValue(Txn transaction, ByteArray value) throws IOException {
@@ -1345,7 +1341,7 @@ public class BFile extends BTree {
         try {
             value.copyTo(page.data, len);
         } catch (final RuntimeException e) {
-            LOG.warn(getFile().getName() + ": storage error in page: " + page.getPageNum() +
+            LOG.warn(FileUtils.fileName(getFile()) + ": storage error in page: " + page.getPageNum() +
                     "; len: " + len + " ; value: " + value.size() + "; max: " + fileHeader.getWorkSize() +
                     "; status: " + page.ph.getStatus());
             LOG.debug(page.printContents());
@@ -1465,7 +1461,7 @@ public class BFile extends BTree {
         }
 
         public void debugFreeList() {
-        	LOG.debug(getFile().getName() + ": " + freeList.toString());
+        	LOG.debug(FileUtils.fileName(getFile()) + ": " + freeList.toString());
         }
 
         @Override
@@ -2002,7 +1998,7 @@ public class BFile extends BTree {
             } while (next > 0);
             data = os.toByteArray();
             if (data.length != firstPage.getPageHeader().getDataLength()) {
-                LOG.warn(getFile().getName() + " read=" + data.length
+                LOG.warn(FileUtils.fileName(getFile()) + " read=" + data.length
                         + "; expected="
                         + firstPage.getPageHeader().getDataLength());
             }
@@ -2343,7 +2339,7 @@ public class BFile extends BTree {
                 dataCache.add(nextPage);
             } catch (final LockException e) {
                 throw new IOException("failed to acquire a read lock on "
-                        + getFile().getName());
+                        + FileUtils.fileName(getFile()));
             } finally {
                 lock.release(Lock.READ_LOCK);
             }
@@ -2476,7 +2472,7 @@ public class BFile extends BTree {
                 offset = newOffset;
                 dataCache.add(nextPage);
             } catch (final LockException e) {
-                throw new IOException("Failed to acquire a read lock on " + getFile().getName());
+                throw new IOException("Failed to acquire a read lock on " + FileUtils.fileName(getFile()));
             } finally {
                 lock.release(Lock.READ_LOCK);
             }
@@ -2618,7 +2614,7 @@ public class BFile extends BTree {
         @Override
         public void setOffset(short tid, int offset) {
             if (offsets == null) {
-                LOG.warn("page: " + page.getPageNum() + " file: " + getFile().getName() + " status: " +
+                LOG.warn("page: " + page.getPageNum() + " file: " + FileUtils.fileName(getFile()) + " status: " +
                     getPageHeader().getStatus());
                 throw new RuntimeException("page offsets not initialized");
             }

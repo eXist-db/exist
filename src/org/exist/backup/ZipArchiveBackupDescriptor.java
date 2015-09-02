@@ -27,6 +27,10 @@ import org.exist.util.ZipEntryInputSource;
 
 import java.io.*;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Enumeration;
 import java.util.Properties;
 import java.util.zip.ZipEntry;
@@ -40,8 +44,8 @@ public class ZipArchiveBackupDescriptor extends AbstractBackupDescriptor {
     protected ZipEntry descriptor;
     protected String   base;
 
-    public ZipArchiveBackupDescriptor(File fileArchive) throws ZipException, IOException, FileNotFoundException {
-        archive    = new ZipFile(fileArchive);
+    public ZipArchiveBackupDescriptor(Path fileArchive) throws ZipException, IOException, FileNotFoundException {
+        archive    = new ZipFile(fileArchive.toFile());
 
         //is it full backup?
         base       = "db/";
@@ -77,7 +81,7 @@ public class ZipArchiveBackupDescriptor extends AbstractBackupDescriptor {
         }
 
         if(descriptor == null) {
-            throw new FileNotFoundException("Archive " + fileArchive.getAbsolutePath() + " is not a valid eXist backup archive");
+            throw new FileNotFoundException("Archive " + fileArchive.toAbsolutePath().toString() + " is not a valid eXist backup archive");
         }
     }
 
@@ -172,26 +176,22 @@ public class ZipArchiveBackupDescriptor extends AbstractBackupDescriptor {
     }
 
     @Override
-    public File getRepoBackup() throws IOException {
+    public Path getRepoBackup() throws IOException {
         final ZipEntry ze = archive.getEntry(RepoBackup.REPO_ARCHIVE);
 
-        if (ze == null)
-            {return null;}
-        final File temp = File.createTempFile("expathrepo", "zip");
-        final FileOutputStream os = new FileOutputStream(temp);
-        final InputStream is = archive.getInputStream(ze);
-        final byte[] buf = new byte[4096];
-        int count;
-        while ((count = is.read(buf)) > 0) {
-            os.write(buf, 0, count);
+        if (ze == null) {
+            return null;
         }
-        os.close();
+        final Path temp = Files.createTempFile("expathrepo", "zip");
+        try(final InputStream is = archive.getInputStream(ze)) {
+            Files.copy(is, temp, StandardCopyOption.REPLACE_EXISTING);
+        }
         return temp;
     }
 
     @Override
-    public File getParentDir() {
-        return new File(archive.getName()).getParentFile();
+    public Path getParentDir() {
+        return Paths.get(archive.getName()).getParent();
     }
 
     @Override

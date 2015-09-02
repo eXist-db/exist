@@ -112,7 +112,7 @@ public class Lookup extends AbstractExpression {
             } catch (XPathException e) {
                 // impossible
             }
-        } else {
+        } else if (keyExpression != null) {
             keyExpression.dump(dumper);
         }
     }

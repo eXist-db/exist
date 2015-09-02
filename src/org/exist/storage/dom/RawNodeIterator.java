@@ -33,6 +33,7 @@ import org.exist.storage.btree.Paged;
 import org.exist.storage.btree.Value;
 import org.exist.storage.lock.Lock;
 import org.exist.util.ByteConversion;
+import org.exist.util.FileUtils;
 import org.exist.util.LockException;
 import org.exist.util.sanity.SanityCheck;
 
@@ -108,7 +109,7 @@ public class RawNodeIterator implements IRawNodeIterator {
             try {
                 lock.acquire(Lock.READ_LOCK);
             } catch (final LockException e) {
-                LOG.error("Failed to acquire read lock on " + db.getFile().getName());
+                LOG.error("Failed to acquire read lock on " + FileUtils.fileName(db.getFile()));
                 //TODO : throw exception here ? -pb
                 return null;
             }

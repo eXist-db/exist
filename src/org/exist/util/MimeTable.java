@@ -21,11 +21,11 @@
  */
 package org.exist.util;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -86,9 +86,9 @@ public class MimeTable {
     /**
      * Returns the singleton, using a custom mime-types.xml file
      */
-    public static MimeTable getInstance(File f) {
+    public static MimeTable getInstance(final Path path) {
         if (instance == null) {
-            instance = new MimeTable(f);
+            instance = new MimeTable(path);
         }
         return instance;
     }
@@ -97,7 +97,7 @@ public class MimeTable {
      * Returns the singleton, using a custom mime-types.xml stream,
      * like for instance an internal database resource.
      */
-    public static MimeTable getInstance(InputStream stream,String src) {
+    public static MimeTable getInstance(final InputStream stream, final String src) {
         if (instance == null) {
             instance = new MimeTable(stream, src);
         }
@@ -105,20 +105,20 @@ public class MimeTable {
     }
 
     private MimeType defaultMime = null;
-    private Map<String, MimeType> mimeTypes = new TreeMap<String, MimeType>();
-    private Map<String, MimeType> extensions = new TreeMap<String, MimeType>();
-    private Map<String, String> preferredExtension = new TreeMap<String, String>();
+    private Map<String, MimeType> mimeTypes = new TreeMap<>();
+    private Map<String, MimeType> extensions = new TreeMap<>();
+    private Map<String, String> preferredExtension = new TreeMap<>();
     
     public MimeTable() {
         load();
     }
     
-    public MimeTable(File f) {
-        load(f);
+    public MimeTable(final Path path) {
+        load(path);
     }
     
-    public MimeTable(InputStream stream,String src) {
-        load(stream,src);
+    public MimeTable(final InputStream stream, final String src) {
+        load(stream, src);
     }
     
     /**
@@ -199,8 +199,8 @@ public class MimeTable {
     }
     
     private String getExtension(String fileName) {
-        final File f = new File(fileName);
-        fileName = f.getName();
+        final Path path = Paths.get(fileName);
+        fileName = FileUtils.fileName(path);
         final int p = fileName.lastIndexOf('.');
         if(p < 0 || p + 1 == fileName.length()) {
             return null;
@@ -212,7 +212,7 @@ public class MimeTable {
         load(ConfigurationHelper.lookup(MIME_TYPES_XML));
     }
     
-    private void load(InputStream stream,String src) {
+    private void load(final InputStream stream, final String src) {
         boolean loaded = false;
         System.out.println("Loading mime table from stream "+src);
         try {
@@ -237,16 +237,18 @@ public class MimeTable {
         }
     }
     
-    private void load(File f) {
+    private void load(final Path path) {
         boolean loaded = false;
-        if (f.canRead()) {
+        if (Files.isReadable(path)) {
             try {
-                LOG.info("Loading mime table from file " + f.getAbsolutePath());
-                loadMimeTypes(new FileInputStream(f));
+                LOG.info("Loading mime table from file " + path.toAbsolutePath().toString());
+                try(final InputStream is = Files.newInputStream(path)) {
+                    loadMimeTypes(is);
+                }
                 loaded = true;
-                this.src=f.toURI().toString();
+                this.src = path.toUri().toString();
             } catch (final ParserConfigurationException | SAXException | IOException e) {
-                LOG.error(FILE_LOAD_FAILED_ERR + f.getAbsolutePath(), e);
+                LOG.error(FILE_LOAD_FAILED_ERR + path.toAbsolutePath().toString(), e);
             }
         }
         if (!loaded) {

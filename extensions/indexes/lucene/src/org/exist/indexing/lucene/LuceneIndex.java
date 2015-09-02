@@ -47,6 +47,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
     
@@ -84,7 +86,7 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
     }
 
     @Override
-    public void configure(BrokerPool pool, String dataDir, Element config) throws DatabaseConfigurationException {
+    public void configure(BrokerPool pool, Path dataDir, Element config) throws DatabaseConfigurationException {
         super.configure(pool, dataDir, config);
         if (LOG.isDebugEnabled())
             LOG.debug("Configuring Lucene index");
@@ -114,19 +116,22 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
 
     @Override
     public void open() throws DatabaseConfigurationException {
-        File dir = new File(getDataDir(), getDirName());
+        Path dir = getDataDir().resolve(getDirName());
         if (LOG.isDebugEnabled())
-            LOG.debug("Opening Lucene index directory: " + dir.getAbsolutePath());
-        if (dir.exists()) {
-            if (!dir.isDirectory())
-                throw new DatabaseConfigurationException("Lucene index location is not a directory: " +
-                    dir.getAbsolutePath());
-        } else
-            dir.mkdirs();
+            LOG.debug("Opening Lucene index directory: " + dir.toAbsolutePath().toString());
+
         IndexWriter writer = null;
         try {
-            directory = FSDirectory.open(dir);
-            taxonomyDirectory = FSDirectory.open(new File(dir, "taxonomy"));
+            if (Files.exists(dir)) {
+                if (!Files.isDirectory(dir))
+                    throw new DatabaseConfigurationException("Lucene index location is not a directory: " +
+                        dir.toAbsolutePath().toString());
+            } else {
+                Files.createDirectories(dir);
+            }
+
+            directory = FSDirectory.open(dir.toFile());
+            taxonomyDirectory = FSDirectory.open(dir.resolve("taxonomy").toFile());
 
             final IndexWriterConfig idxWriterConfig = new IndexWriterConfig(LUCENE_VERSION_IN_USE, defaultAnalyzer);
             idxWriterConfig.setRAMBufferSizeMB(bufferSize);
@@ -273,16 +278,12 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
 	public void backupToArchive(RawDataBackup backup) throws IOException {
 		for (String name : directory.listAll()) {
 			String path = getDirName() + "/" + name;
-			OutputStream os = backup.newEntry(path);
-			InputStream is = new FileInputStream(new File(getDataDir(), path));
-	        byte[] buf = new byte[4096];
-	        int len;
-	        while ((len = is.read(buf)) > 0) {
-	            os.write(buf, 0, len);
-	        }
-	        is.close();
-	        backup.closeEntry();
+
+            try(final OutputStream os = backup.newEntry(path)) {
+                Files.copy(getDataDir().resolve(path), os);
+            } finally {
+                backup.closeEntry();
+            }
 		}
 	}
-	
 }

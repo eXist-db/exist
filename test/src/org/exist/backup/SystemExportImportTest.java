@@ -23,6 +23,7 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Properties;
 
@@ -113,7 +114,7 @@ public class SystemExportImportTest {
 
     @Test
     public void exportImport() throws Exception {
-        File file;
+        Path file;
 
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
 
@@ -169,8 +170,8 @@ public class SystemExportImportTest {
 	@Before
     public void startDB() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, SAXException, CollectionConfigurationException, LockException, ClassNotFoundException, InstantiationException, XMLDBException, IllegalAccessException {
 
-        final File confFile = ConfigurationHelper.lookup("conf.xml");
-        final Configuration config = new Configuration(confFile.getAbsolutePath());
+        final Path confFile = ConfigurationHelper.lookup("conf.xml");
+        final Configuration config = new Configuration(confFile.toAbsolutePath().toString());
         BrokerPool.configure(1, 5, config);
         pool = BrokerPool.getInstance();
         assertNotNull(pool);

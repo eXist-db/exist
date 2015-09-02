@@ -21,8 +21,13 @@
  */
 package org.exist.backup;
 
-import java.io.*;
-
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -33,20 +38,20 @@ import java.util.zip.ZipOutputStream;
  */
 public class ZipWriter implements BackupWriter
 {
-    private String          currentPath;
+    private String currentPath;
     private ZipOutputStream out;
-    private StringWriter    contents;
-    private boolean         dataWritten = false;
+    private StringWriter contents;
+    private boolean dataWritten = false;
 
-    public ZipWriter( String zipFile, String collection ) throws IOException
+    public ZipWriter(final String zipFile, final String collection) throws IOException
     {
-        this( new File( zipFile ), collection );
+        this(Paths.get(zipFile), collection);
     }
 
 
-    public ZipWriter( File zipFile, String collection ) throws IOException
+    public ZipWriter(final Path zipFile, final String collection) throws IOException
     {
-        out         = new ZipOutputStream( new FileOutputStream( zipFile ) );
+        out         = new ZipOutputStream(Files.newOutputStream(zipFile));
         currentPath = collection;
     }
 
@@ -61,8 +66,11 @@ public class ZipWriter implements BackupWriter
     {
         final ZipEntry entry = new ZipEntry( mkRelative( currentPath ) + "/__contents__.xml" );
         out.putNextEntry( entry );
-        out.write( contents.toString().getBytes( "UTF-8" ) );
-        out.closeEntry();
+        try {
+            out.write(contents.toString().getBytes("UTF-8"));
+        } finally {
+            out.closeEntry();
+        }
         dataWritten = true;
     }
 
@@ -115,28 +123,24 @@ public class ZipWriter implements BackupWriter
         }
         final ZipEntry entry = new ZipEntry( "backup.properties" );
         out.putNextEntry( entry );
-        properties.store( out, "Backup properties" );
-        out.closeEntry();
+        try {
+            properties.store(out, "Backup properties");
+        } finally {
+            out.closeEntry();
+        }
     }
 
-    public void addToRoot(String name, File file) throws IOException {
+    public void addToRoot(final String name, final Path file) throws IOException {
         if (dataWritten) {
             throw new IOException("Additional files have to be added before backup data is written");
         }
         final ZipEntry entry = new ZipEntry(name);
         out.putNextEntry(entry);
-
-        final byte[] buf = new byte[4096];
-        int len;
-        final FileInputStream is = new FileInputStream(file);
         try {
-            while ((len = is.read(buf)) > 0) {
-                out.write(buf, 0, len);
-            }
+            Files.copy(file, out);
         } finally {
-            is.close();
+            out.closeEntry();
         }
-        out.closeEntry();
     }
 
     private String mkRelative( String path )
