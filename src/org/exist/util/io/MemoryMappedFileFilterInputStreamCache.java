@@ -27,20 +27,22 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package org.exist.util.io;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Path;
 
 /**
- * Cache implementation for CachingFilterInputStream
- * Backed by a Memory Mapped File
+ * Cache implementation for CachingFilterInputStream Backed by a Memory Mapped
+ * File
  *
- * @version 1.0
+ * @version 1.1
  *
  * @author Adam Retter <adam.retter@googlemail.com>
+ * @author Tobi Krebs <tobi.krebs AT gmail.com>
  */
-public class MemoryMappedFileFilterInputStreamCache implements FilterInputStreamCache {
+public class MemoryMappedFileFilterInputStreamCache extends AbstractFilterInputStreamCache {
 
     private final static long DEFAULT_MEMORY_MAP_SIZE = 64 * 1024 * 1024; //64MB
 
@@ -49,29 +51,32 @@ public class MemoryMappedFileFilterInputStreamCache implements FilterInputStream
     private MappedByteBuffer buf;
     private Path tempFile = null;
     private final long memoryMapSize = DEFAULT_MEMORY_MAP_SIZE;
-    
+
     private boolean externalFile = true;
 
-    public MemoryMappedFileFilterInputStreamCache() throws IOException {
-        this(null);
+    public MemoryMappedFileFilterInputStreamCache(InputStream src) throws IOException {
+        this(src, null);
     }
-    
-    public MemoryMappedFileFilterInputStreamCache(final Path f) throws IOException {
-        
-        if(f == null) {
+
+
+    public MemoryMappedFileFilterInputStreamCache(InputStream src, final Path f) throws IOException {
+        super(src);
+
+        if (f == null) {
             tempFile = TemporaryFileManager.getInstance().getTemporaryFile();
             externalFile = false;
         } else {
             tempFile = f;
             externalFile = true;
         }
-        
+
         /**
          * Check the applicability of these bugs to this code:
-         *  http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4724038
-         *  http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6417205 (fixed in 1.6)
+         * http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4724038
+         * http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6417205 (fixed in
+         * 1.6)
          */
-        
+
         this.raf =  new RandomAccessFile(tempFile.toFile(), "rw");  //TODO(AR) consider moving to Files.newByteChannel(tempFile)
         this.channel = raf.getChannel();
         this.buf = channel.map(FileChannel.MapMode.READ_WRITE, 0, getMemoryMapSize());
@@ -84,12 +89,12 @@ public class MemoryMappedFileFilterInputStreamCache implements FilterInputStream
     private void increaseSize(final long bytes) throws IOException {
 
         long factor = (bytes / getMemoryMapSize());
-        if(factor == 0 || bytes % getMemoryMapSize() > 0) {
+        if (factor == 0 || bytes % getMemoryMapSize() > 0) {
             factor++;
         }
 
         buf.force();
-        
+
         //TODO(AR) revisit this based on the comment below, I now believe setting position in map does work, but you have to have the correct offset added in as well!
         final int position = buf.position();
         buf = channel.map(FileChannel.MapMode.READ_WRITE, 0, buf.capacity() + (getMemoryMapSize() * factor));
@@ -100,7 +105,7 @@ public class MemoryMappedFileFilterInputStreamCache implements FilterInputStream
     @Override
     public void write(final byte[] b, final int off, final int len) throws IOException {
 
-        if(buf.remaining() < len) {
+        if (buf.remaining() < len) {
             //we need to remap the file
             increaseSize(len - buf.remaining());
         }
@@ -111,18 +116,18 @@ public class MemoryMappedFileFilterInputStreamCache implements FilterInputStream
     @Override
     public void write(final int i) throws IOException {
 
-        if(buf.remaining() < 1) {
+        if (buf.remaining() < 1) {
             //we need to remap the file
             increaseSize(1);
         }
 
-        buf.put((byte)i);
+        buf.put((byte) i);
     }
 
     @Override
     public byte get(final int off) throws IOException {
 
-       if(off > buf.capacity()) {
+        if (off > buf.capacity()) {
             //we need to remap the file
             increaseSize(off - buf.capacity());
         }
@@ -138,7 +143,7 @@ public class MemoryMappedFileFilterInputStreamCache implements FilterInputStream
     @Override
     public void copyTo(final int cacheOffset, final byte[] b, final int off, final int len) throws IOException {
 
-        if(off + len > buf.capacity()) {
+        if (off + len > buf.capacity()) {
             //we need to remap the file
             increaseSize(off + len - buf.capacity());
         }
@@ -167,9 +172,9 @@ public class MemoryMappedFileFilterInputStreamCache implements FilterInputStream
         channel.close();
         raf.close();
         //System.gc();
-        
-        if(tempFile != null && (!externalFile)) {
-           TemporaryFileManager.getInstance().returnTemporaryFile(tempFile);
+
+        if (tempFile != null && (!externalFile)) {
+            TemporaryFileManager.getInstance().returnTemporaryFile(tempFile);
         }
     }
 }
