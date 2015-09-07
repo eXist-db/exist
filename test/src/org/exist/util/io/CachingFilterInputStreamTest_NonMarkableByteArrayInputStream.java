@@ -1,17 +1,43 @@
+/**
+ * Copyright © 2013, Adam Retter All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met: *
+ * Redistributions of source code must retain the above copyright notice, this
+ * list of conditions and the following disclaimer. * Redistributions in binary
+ * form must reproduce the above copyright notice, this list of conditions and
+ * the following disclaimer in the documentation and/or other materials provided
+ * with the distribution. * Neither the name of the <organization> nor the names
+ * of its contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 package org.exist.util.io;
 
+import org.junit.runners.Parameterized.Parameters;
 import java.util.Collection;
 import java.util.Arrays;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Random;
 import org.junit.Test;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertArrayEquals;
 
@@ -23,24 +49,31 @@ import static org.junit.Assert.assertArrayEquals;
  * @author Adam Retter <adam.retter@googlemail.com>
  */
 @RunWith(value = Parameterized.class)
-public class CachingFilterInputStreamTest {
+public class CachingFilterInputStreamTest_NonMarkableByteArrayInputStream {
 
-    @Parameters(name = "{0}")
-    public static Collection<Object[]> data() {
-        return Arrays.asList(new Object[][]{
-            {"MemoryFilterInputStreamCache", MemoryFilterInputStreamCache.class},
-            {"MemoryMappedFileFilterInputStreamCache", MemoryMappedFileFilterInputStreamCache.class},
-            {"FileFilterInputStreamCache", FileFilterInputStreamCache.class}
-        });
+    @Parameters
+    public static Collection data() throws IOException {
+        Object[][] data = new Object[][]{
+            {MemoryFilterInputStreamCache.class},
+            {MemoryMappedFileFilterInputStreamCache.class},
+            {FileFilterInputStreamCache.class}
+        };
+        return Arrays.asList(data);
     }
 
-    @Parameter
-    public String cacheName;
+    private final static int _4KB = 4 * 1024;
+    private final static int _6KB = 6 * 1024;
+    private final static int _12KB = 12 * 1024;
+    private final static int _32KB = 32 * 1024;
+    private final static int _64KB = 64 * 1024;
 
-    @Parameter(value = 1)
-    public Class<FilterInputStreamCache> cacheClass;
+    private final Class<FilterInputStreamCache> cacheClass;
 
-    public FilterInputStreamCache getNewCache(InputStream is) throws InstantiationException, IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
+    public CachingFilterInputStreamTest_NonMarkableByteArrayInputStream(final Class<FilterInputStreamCache> cacheClass) {
+        this.cacheClass = cacheClass;
+    }
+
+    private FilterInputStreamCache getNewCache(InputStream is) throws InstantiationException, IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
         Constructor ctor = cacheClass.getDeclaredConstructor(InputStream.class);
         ctor.setAccessible(true);
         return (FilterInputStreamCache) ctor.newInstance(is);
@@ -52,9 +85,9 @@ public class CachingFilterInputStreamTest {
         final String testString = "helloWorld";
         final byte testData[] = testString.getBytes();
 
-        InputStream is = new ByteArrayInputStream(testData);
+        final InputStream is = new ByteArrayInputStream(testData);
 
-        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
+        final CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
 
         //read the first 3 bytes
         assertEquals(testData[0], cfis.read());
@@ -112,8 +145,8 @@ public class CachingFilterInputStreamTest {
         final String testString = "helloWorld";
         final byte testData[] = testString.getBytes();
 
-        InputStream is = new ByteArrayInputStream(testData);
-        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
+        final InputStream is = new ByteArrayInputStream(testData);
+        final CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
 
         assertEquals(testData[0], cfis.read());
 
@@ -129,9 +162,9 @@ public class CachingFilterInputStreamTest {
         final String testString = "he";
         final byte testData[] = testString.getBytes();
 
-        InputStream is = new ByteArrayInputStream(testData);
+        final InputStream is = new ByteArrayInputStream(testData);
 
-        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
+        final CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
 
         cfis.mark(Integer.MAX_VALUE);
 
@@ -144,7 +177,7 @@ public class CachingFilterInputStreamTest {
         assertEquals(testData[1], cfis.read());
 
         //read byte past end of cache
-        int b = cfis.read();
+        final int b = cfis.read();
         assertEquals(-1, b);
     }
 
@@ -154,9 +187,9 @@ public class CachingFilterInputStreamTest {
         final String testString = "helloWorld";
         final byte testData[] = testString.getBytes();
 
-        InputStream is = new ByteArrayInputStream(testData);
+        final InputStream is = new ByteArrayInputStream(testData);
 
-        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
+        final CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
 
         //read all the bytes upto end of stream
         int b = -1;
@@ -175,9 +208,9 @@ public class CachingFilterInputStreamTest {
         final String testString = "hello";
         final byte testData[] = testString.getBytes();
 
-        InputStream is = new ByteArrayInputStream(testData);
+        final InputStream is = new ByteArrayInputStream(testData);
 
-        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
+        final CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
 
         //mark the position
         cfis.mark(Integer.MAX_VALUE);
@@ -206,9 +239,9 @@ public class CachingFilterInputStreamTest {
         final String testString = "helloWorld";
         final byte testData[] = testString.getBytes();
 
-        InputStream is = new ByteArrayInputStream(testData);
+        final InputStream is = new ByteArrayInputStream(testData);
 
-        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
+        final CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
 
         //read the first 3 bytes
         byte result[] = new byte[3];
@@ -274,10 +307,10 @@ public class CachingFilterInputStreamTest {
         final String testString = "helloWorld";
         final byte testData[] = testString.getBytes();
 
-        InputStream is = new ByteArrayInputStream(testData);
-        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
+        final InputStream is = new ByteArrayInputStream(testData);
+        final CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
 
-        byte result[] = new byte[2];
+        final byte result[] = new byte[2];
         cfis.read(result);
         assertArrayEquals(subArray(testData, 2), result);
 
@@ -293,16 +326,16 @@ public class CachingFilterInputStreamTest {
         final String testString = "helloWorld";
         final byte testData[] = testString.getBytes();
 
-        InputStream is = new ByteArrayInputStream(testData);
+        final InputStream is = new ByteArrayInputStream(testData);
 
-        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
+        final CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
 
-        byte result[] = new byte[testData.length];
+        final byte result[] = new byte[testData.length];
         int read = cfis.read(result);
         assertEquals(testData.length, read);
         assertArrayEquals(testData, result);
 
-        byte endOfStreamResult[] = new byte[testData.length];
+        final byte endOfStreamResult[] = new byte[testData.length];
         read = cfis.read(endOfStreamResult);
         assertEquals(-1, read);
         assertArrayEquals(new byte[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, endOfStreamResult);
@@ -314,14 +347,14 @@ public class CachingFilterInputStreamTest {
         final String testString = "helloWorld";
         final byte testData[] = testString.getBytes();
 
-        InputStream is = new ByteArrayInputStream(testData);
+        final InputStream is = new ByteArrayInputStream(testData);
 
-        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
+        final CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
 
         cfis.mark(Integer.MAX_VALUE);
 
         //read first two bytes from stream
-        byte result[] = new byte[2];
+        final byte result[] = new byte[2];
         int read = cfis.read(result);
         assertEquals(2, read);
         assertArrayEquals(subArray(testData, 2), result);
@@ -329,14 +362,16 @@ public class CachingFilterInputStreamTest {
         cfis.reset();
 
         //read all bytes from cache and src, +1 past end of stream
-        byte endOfStreamResult[] = new byte[testData.length + 1];
+        final byte endOfStreamResult[] = new byte[testData.length + 1];
         read = cfis.read(endOfStreamResult);
-        byte expectedResult[] = new byte[testData.length + 1];
+        final byte expectedResult[] = new byte[testData.length + 1];
         System.arraycopy(testData, 0, expectedResult, 0, testData.length);
         assertEquals(testData.length, read);
         assertArrayEquals(expectedResult, endOfStreamResult);
 
         //2nd attempt to read past end of stream
+        read = cfis.read(result);
+        assertEquals(-1, read);
         read = cfis.read(result);
         assertEquals(-1, read);
     }
@@ -346,9 +381,9 @@ public class CachingFilterInputStreamTest {
         final String testString = "hello";
         final byte testData[] = testString.getBytes();
 
-        InputStream is = new ByteArrayInputStream(testData);
+        final InputStream is = new ByteArrayInputStream(testData);
 
-        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
+        final CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
 
         //mark the position
         cfis.mark(Integer.MAX_VALUE);
@@ -374,9 +409,9 @@ public class CachingFilterInputStreamTest {
         final String testString = "helloWorld";
         final byte testData[] = testString.getBytes();
 
-        InputStream is = new ByteArrayInputStream(testData);
+        final InputStream is = new ByteArrayInputStream(testData);
 
-        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
+        final CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
 
         //mark the position
         cfis.mark(Integer.MAX_VALUE);
@@ -402,9 +437,9 @@ public class CachingFilterInputStreamTest {
         final String testString = "hello";
         final byte testData[] = testString.getBytes();
 
-        InputStream is = new ByteArrayInputStream(testData);
+        final InputStream is = new ByteArrayInputStream(testData);
 
-        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
+        final CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
 
         //mark the position
         cfis.mark(Integer.MAX_VALUE);
@@ -430,9 +465,9 @@ public class CachingFilterInputStreamTest {
         final String testString = "helloWorld";
         final byte testData[] = testString.getBytes();
 
-        InputStream is = new ByteArrayInputStream(testData);
+        final InputStream is = new ByteArrayInputStream(testData);
 
-        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
+        final CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
 
         //mark the position
         cfis.mark(Integer.MAX_VALUE);
@@ -458,9 +493,9 @@ public class CachingFilterInputStreamTest {
         final String testString = "helloWorld";
         final byte testData[] = testString.getBytes();
 
-        InputStream is = new ByteArrayInputStream(testData);
+        final InputStream is = new ByteArrayInputStream(testData);
 
-        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
+        final CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
 
         //mark the position
         cfis.mark(Integer.MAX_VALUE);
@@ -493,9 +528,9 @@ public class CachingFilterInputStreamTest {
         final String testString = "helloWorld";
         final byte testData[] = testString.getBytes();
 
-        InputStream is = new ByteArrayInputStream(testData);
+        final InputStream is = new ByteArrayInputStream(testData);
 
-        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
+        final CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
 
         //read the first 3 bytes
         assertEquals(testData[0], cfis.read());
@@ -516,9 +551,9 @@ public class CachingFilterInputStreamTest {
         final String testString = "helloWorld";
         final byte testData[] = testString.getBytes();
 
-        InputStream is = new ByteArrayInputStream(testData);
+        final InputStream is = new ByteArrayInputStream(testData);
 
-        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
+        final CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
 
         //read the first 2 bytes
         assertEquals(testData[0], cfis.read());
@@ -558,9 +593,9 @@ public class CachingFilterInputStreamTest {
         final String testString = "helloWorld";
         final byte testData[] = testString.getBytes();
 
-        InputStream is = new ByteArrayInputStream(testData);
+        final InputStream is = new ByteArrayInputStream(testData);
 
-        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
+        final CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
 
         cfis.close();
 
@@ -573,12 +608,12 @@ public class CachingFilterInputStreamTest {
         final String testString = "helloWorld";
         final byte testData[] = testString.getBytes();
 
-        InputStream is = new ByteArrayInputStream(testData);
+        final InputStream is = new ByteArrayInputStream(testData);
 
-        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
+        final CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
 
         //should cause IOException
-        long skipped = cfis.skip(-1);
+        final long skipped = cfis.skip(-1);
         assertEquals(0, skipped);
     }
 
@@ -587,9 +622,9 @@ public class CachingFilterInputStreamTest {
         final String testString = "helloWorld";
         final byte testData[] = testString.getBytes();
 
-        InputStream is = new ByteArrayInputStream(testData);
+        final InputStream is = new ByteArrayInputStream(testData);
 
-        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
+        final CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
 
         cfis.close();
 
@@ -599,9 +634,9 @@ public class CachingFilterInputStreamTest {
     @Test
     public void available_onEmptyStream() throws IOException, InstantiationException, IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
 
-        InputStream is = new ByteArrayInputStream(new byte[]{});
+        final InputStream is = new ByteArrayInputStream(new byte[]{});
 
-        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
+        final CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
 
         cfis.close();
 
@@ -613,9 +648,9 @@ public class CachingFilterInputStreamTest {
         final String testString = "helloWorld";
         final byte testData[] = testString.getBytes();
 
-        InputStream is = new ByteArrayInputStream(testData);
+        final InputStream is = new ByteArrayInputStream(testData);
 
-        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
+        final CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
 
         assertEquals(testData.length, cfis.available());
     }
@@ -626,9 +661,9 @@ public class CachingFilterInputStreamTest {
         final String testString = "helloWorld";
         final byte testData[] = testString.getBytes();
 
-        InputStream is = new ByteArrayInputStream(testData);
+        final InputStream is = new ByteArrayInputStream(testData);
 
-        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
+        final CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
 
         //read first 2 bytes
         cfis.read();
@@ -643,9 +678,9 @@ public class CachingFilterInputStreamTest {
         final String testString = "helloWorld";
         final byte testData[] = testString.getBytes();
 
-        InputStream is = new ByteArrayInputStream(testData);
+        final InputStream is = new ByteArrayInputStream(testData);
 
-        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
+        final CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
 
         //mark for later reset
         cfis.mark(Integer.MAX_VALUE);
@@ -666,9 +701,9 @@ public class CachingFilterInputStreamTest {
         final String testString = "helloWorld";
         final byte testData[] = testString.getBytes();
 
-        InputStream is = new ByteArrayInputStream(testData);
+        final InputStream is = new ByteArrayInputStream(testData);
 
-        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
+        final CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
 
         //read first 2 bytes
         cfis.read();
@@ -693,9 +728,9 @@ public class CachingFilterInputStreamTest {
         final String testString = "helloWorld";
         final byte testData[] = testString.getBytes();
 
-        InputStream is = new ByteArrayInputStream(testData);
+        final InputStream is = new ByteArrayInputStream(testData);
 
-        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
+        final CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
 
         //mark for later reset
         cfis.mark(Integer.MAX_VALUE);
@@ -716,9 +751,9 @@ public class CachingFilterInputStreamTest {
         final String testString = "helloWorld";
         final byte testData[] = testString.getBytes();
 
-        InputStream is = new ByteArrayInputStream(testData);
+        final InputStream is = new ByteArrayInputStream(testData);
 
-        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
+        final CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
 
         //read first 2 bytes
         cfis.read();
@@ -737,14 +772,139 @@ public class CachingFilterInputStreamTest {
         assertEquals(testData.length - 2, cfis.available());
     }
 
-    private byte[] subArray(byte data[], int len) {
-        byte newData[] = new byte[len];
+    @Test
+    public void constructed_from_CachingFilterInputStream() throws IOException, InstantiationException, IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
+
+        final byte[] testData = generateRandomData(_12KB);
+        final InputStream is = new ByteArrayInputStream(testData);
+
+        //first CachingFilterInputStream
+        final CachingFilterInputStream cfis1 = new CachingFilterInputStream(getNewCache(is));
+
+        //second CachingFilterInputStream wraps first CachingFilterInputStream
+        final CachingFilterInputStream cfis2 = new CachingFilterInputStream(cfis1);
+
+        assertArrayEquals(testData, consumeInputStream(cfis2));
+    }
+
+    @Test
+    public void constructed_from_CachingFilterInputStream_consumed() throws IOException, InstantiationException, IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
+
+        final byte[] testData = generateRandomData(_12KB);
+        final InputStream is = new NonMarkableByteArrayInputStream(testData);
+
+        //first CachingFilterInputStream
+        final CachingFilterInputStream cfis1 = new CachingFilterInputStream(getNewCache(is));
+
+        assertArrayEquals(testData, consumeInputStream(cfis1));
+
+        //second CachingFilterInputStream wraps first CachingFilterInputStream
+        final CachingFilterInputStream cfis2 = new CachingFilterInputStream(cfis1);
+
+        assertArrayEquals(testData, consumeInputStream(cfis2));
+    }
+
+    @Test
+    public void constructed_from_CachingFilterInputStream_partiallyConsumed() throws IOException, InstantiationException, IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
+
+        final byte[] testData = generateRandomData(_12KB);
+        final InputStream is = new NonMarkableByteArrayInputStream(testData);
+
+        //first CachingFilterInputStream
+        final CachingFilterInputStream cfis1 = new CachingFilterInputStream(getNewCache(is));
+
+        //read first 6KB
+        final byte firstPart[] = new byte[_6KB];
+        cfis1.read(firstPart);
+        assertArrayEquals(subArray(testData, _6KB), firstPart); //ensure first 6KB was read!
+
+        //second CachingFilterInputStream wraps first CachingFilterInputStream
+        final CachingFilterInputStream cfis2 = new CachingFilterInputStream(cfis1);
+
+        assertArrayEquals(testData, consumeInputStream(cfis2));
+    }
+
+    /**
+     * When given an underlying InputSource and caching it twice with the same
+     * cache we should be able to read the input twice assuming that the input
+     * that we are interested in has not been read before a mark()
+     */
+    @Test
+    public void interleavedSourceReads() throws IOException, InstantiationException, IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
+        final byte[] testData = generateRandomData(_64KB);
+        final InputStream is = new NonMarkableByteArrayInputStream(testData);
+
+        final FilterInputStreamCache cache1 = getNewCache(is);
+
+        final CachingFilterInputStream cfis1 = new CachingFilterInputStream(cache1);
+        cfis1.mark(Integer.MAX_VALUE);
+
+        final CachingFilterInputStream cfis2 = new CachingFilterInputStream(cache1);
+
+        final byte result1[] = new byte[_12KB];
+        cfis1.read(result1);
+        assertArrayEquals(subArray(testData, _12KB), result1);
+
+        final byte result2[] = new byte[_12KB];
+        cfis2.read(result2);
+        assertArrayEquals(subArray(testData, _12KB), result2);
+    }
+
+    @Test
+    public void sharedCacheWritesInOrder() throws IOException, InstantiationException, IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
+        final byte[] testData = generateRandomData(_64KB);
+        final InputStream is = new NonMarkableByteArrayInputStream(testData);
+
+        //first CachingFilterInputStream
+        final CachingFilterInputStream cfis1 = new CachingFilterInputStream(getNewCache(is));
+
+        //read first 6KB
+        final byte cfis1Part1[] = new byte[_6KB];
+        cfis1.read(cfis1Part1);
+        assertArrayEquals(subArray(testData, _6KB), cfis1Part1); //ensure first 6KB was read!
+
+        //second CachingFilterInputStream wraps first CachingFilterInputStream
+        final CachingFilterInputStream cfis2 = new CachingFilterInputStream(cfis1);
+
+        //read first 32KB from second InputStream
+        final byte cfis2Part1[] = new byte[_32KB];
+        cfis2.read(cfis2Part1);
+        assertArrayEquals(subArray(testData, _32KB), cfis2Part1); //ensure next 32KB was read!
+
+        //interleave by reading another 6KB from first InputStream
+        final byte cfis1Part2[] = new byte[_6KB];
+        cfis1.read(cfis1Part2);
+        assertArrayEquals(subArray(testData, _6KB, _6KB), cfis1Part2); //ensure first 6KB was read!
+    }
+
+    private byte[] consumeInputStream(final CachingFilterInputStream is) throws IOException {
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try {
+            int read = -1;
+            final byte buf[] = new byte[_4KB];
+            while ((read = is.read(buf)) > -1) {
+                baos.write(buf, 0, read);
+            }
+            return baos.toByteArray();
+        } finally {
+            baos.close();
+        }
+    }
+
+    private byte[] generateRandomData(final int bytes) {
+        final byte[] data = new byte[bytes];
+        new Random().nextBytes(data);
+        return data;
+    }
+
+    private byte[] subArray(final byte data[], final int len) {
+        final byte newData[] = new byte[len];
         System.arraycopy(data, 0, newData, 0, len);
         return newData;
     }
 
-    private byte[] subArray(byte data[], int offset, int len) {
-        byte newData[] = new byte[len];
+    private byte[] subArray(final byte data[], final int offset, final int len) {
+        final byte newData[] = new byte[len];
         System.arraycopy(data, offset, newData, 0, len);
         return newData;
     }
