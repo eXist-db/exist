@@ -76,13 +76,10 @@ public class RestXqServlet extends AbstractExistHttpServlet {
             // "Permission denied: unknown user or password");
             return;
         }
-        
-        DBBroker broker = null;
-        try {
-            broker = getPool().get(user);
 
+        try(final DBBroker broker = getPool().get(user)) {
             final Configuration configuration = broker.getConfiguration();
-            
+
             final HttpRequest requestAdapter = new HttpServletRequestAdapter(
                 request,
                 new FilterInputStreamCacheConfiguration(){
@@ -91,8 +88,7 @@ public class RestXqServlet extends AbstractExistHttpServlet {
                         return (String)configuration.getProperty(Configuration.BINARY_CACHE_CLASS_PROPERTY);
                     }
                 });
-          
-            
+
             final RestXqService service = getRegistry().findService(requestAdapter);
             if(service != null) {
                 
@@ -113,20 +109,16 @@ public class RestXqServlet extends AbstractExistHttpServlet {
                 
                 super.service(request, response);
             }
-        } catch(EXistException ee) {
+        } catch(final EXistException ee) {
             getLog().error(ee.getMessage(), ee);
             throw new ServletException(ee.getMessage(), ee);
-        } catch(RestXqServiceException rqse) {
+        } catch(final RestXqServiceException rqse) {
             if (rqse.getCause() instanceof PermissionDeniedException) {
                 getAuthenticator().sendChallenge(request, response);
             } else {
                 //TODO should probably be caught higher up and returned as a HTTP Response? maybe need two different types of exception to differentiate critical vs processing exception
                 getLog().error(rqse.getMessage(), rqse);
                 throw new ServletException(rqse.getMessage(), rqse);
-            }
-        } finally {
-            if(broker != null) {
-                getPool().release(broker);
             }
         }
     }

@@ -234,15 +234,12 @@ public class HttpServletRequestAdapter implements HttpRequest {
         final Map<String, List<String>> fields = new Hashtable<String, List<String>>();
 
         final StringBuilder builder = new StringBuilder();
-        final Reader reader = new InputStreamReader(in);
-        try {
+        try(final Reader reader = new InputStreamReader(in)) {
             int read = -1;
             final char[] cbuf = new char[1024];
             while ((read = reader.read(cbuf)) > -1) {
                 builder.append(cbuf, 0, read);
             }
-        } finally {
-            reader.close();
         }
 
         final StringTokenizer st = new StringTokenizer(builder.toString(), "&");

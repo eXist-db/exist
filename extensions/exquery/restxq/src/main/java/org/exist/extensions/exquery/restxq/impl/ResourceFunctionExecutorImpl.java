@@ -116,17 +116,13 @@ public class ResourceFunctionExecutorImpl implements ResourceFunctionExecuter {
     
     @Override
     public Sequence execute(final ResourceFunction resourceFunction, final Iterable<TypedArgumentValue> arguments, final HttpRequest request) throws RestXqServiceException {
-        
+
         final RestXqServiceCompiledXQueryCache cache = RestXqServiceCompiledXQueryCacheImpl.getInstance();
-        
-        DBBroker broker = null;
+
         CompiledXQuery xquery = null;
         ProcessMonitor processMonitor = null;
-        
-        try {
-            
-            broker = getBrokerPool().get(getBrokerPool().getSubject());
-            
+
+        try(final DBBroker broker = getBrokerPool().get(getBrokerPool().getSubject())) {
             //ensure we can execute the function before going any further
             checkSecurity(broker, resourceFunction.getXQueryLocation());
             
@@ -170,14 +166,8 @@ public class ResourceFunctionExecutorImpl implements ResourceFunctionExecuter {
             final org.exist.xquery.value.Sequence result = fnRef.evalFunction(null, null, fnArgs);
             
             return new SequenceAdapter(result);
-        } catch(final URISyntaxException use) {
+        } catch(final URISyntaxException | EXistException | XPathException | PermissionDeniedException use) {
             throw new RestXqServiceException(use.getMessage(), use);
-        } catch(final PermissionDeniedException pde) {
-            throw new RestXqServiceException(pde.getMessage(), pde);
-        } catch(final XPathException xpe) {
-            throw new RestXqServiceException(xpe.getMessage(), xpe);
-        } catch(final EXistException ee) {
-            throw new RestXqServiceException(ee.getMessage(), ee);
         } finally {
             
             //clear down monitoring
@@ -185,12 +175,7 @@ public class ResourceFunctionExecutorImpl implements ResourceFunctionExecuter {
                 xquery.getContext().getProfiler().traceQueryEnd(xquery.getContext());
                 processMonitor.queryCompleted(xquery.getContext().getWatchDog());
             }
-            
-            //return the broker
-            if(broker != null) {
-                getBrokerPool().release(broker);
-            }
-            
+
             if(xquery != null) {
                 //return the compiled query to the pool
                 cache.returnCompiledQuery(resourceFunction.getXQueryLocation(), xquery);

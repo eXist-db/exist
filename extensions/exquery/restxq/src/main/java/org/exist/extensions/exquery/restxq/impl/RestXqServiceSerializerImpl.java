@@ -80,24 +80,13 @@ public class RestXqServiceSerializerImpl extends AbstractRestXqServiceSerializer
         while(itResult.hasNext()) {
             final TypedValue typedValue = itResult.next();
             if(typedValue.getType() == Type.BASE64_BINARY || typedValue.getType() == Type.HEX_BINARY) {
-                
                 final BinaryValue binaryValue = (BinaryValue)typedValue.getValue();
-                OutputStream os = null; 
-                try {
-                    os = response.getOutputStream();
+                try(final OutputStream os = response.getOutputStream()) {
                     binaryValue.streamBinaryTo(os);
                 } catch(final IOException ioe) {
                     throw new RestXqServiceException("Error while serializing binary: " + ioe.toString(), ioe);
-                } finally {
-                    if(os != null) {
-                        try { 
-                            os.close();
-                        } catch (final IOException ioe) {
-                            LOG.warn(ioe);
-                        }
-                    }
                 }
-                
+
                 return; //TODO support more than one binary result -- multipart?
             } else {
                 throw new RestXqServiceException("Expected binary value, but found: " + typedValue.getType().name());
@@ -107,32 +96,14 @@ public class RestXqServiceSerializerImpl extends AbstractRestXqServiceSerializer
 
     @Override
     protected void serializeNodeBody(final Sequence result, final HttpResponse response, final Map<SerializationProperty, String> serializationProperties) throws RestXqServiceException {
-        
-        DBBroker broker = null;
-
-        try {
-            broker = getBrokerPool().get(brokerPool.getSubject());
-	        
-            final Writer writer = new OutputStreamWriter(response.getOutputStream(), serializationProperties.get(SerializationProperty.ENCODING));
+        try(final DBBroker broker = getBrokerPool().get(brokerPool.getSubject());
+                final Writer writer = new OutputStreamWriter(response.getOutputStream(), serializationProperties.get(SerializationProperty.ENCODING))) {
             final Properties outputProperties = serializationPropertiesToProperties(serializationProperties);
             final XQuerySerializer xqSerializer = new XQuerySerializer(broker, outputProperties, writer);
             xqSerializer.serialize(((SequenceAdapter)result).getExistSequence());
-	
             writer.flush();
-            writer.close();
-	        
-        } catch(IOException ioe) {    
+        } catch(IOException | XPathException | SAXException | EXistException ioe) {
             throw new RestXqServiceException("Error while serializing xml: " + ioe.toString(), ioe);
-        } catch(EXistException ee) {   
-            throw new RestXqServiceException("Error while serializing xml: " + ee.toString(), ee);
-        } catch(SAXException se) {    
-            throw new RestXqServiceException("Error while serializing xml: " + se.toString(), se);
-        } catch(XPathException se) {
-            throw new RestXqServiceException("Error while serializing xml: " + se.toString(), se);
-        } finally {
-            if(broker != null) {
-                getBrokerPool().release(broker);
-            }
         }
     }
     

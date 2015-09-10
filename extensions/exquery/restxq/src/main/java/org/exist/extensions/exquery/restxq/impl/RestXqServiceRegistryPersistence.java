@@ -100,9 +100,8 @@ public class RestXqServiceRegistryPersistence implements RestXqServiceRegistryLi
         
         log.info("Loading RESTXQ registry from: " + fRegistry.toAbsolutePath().toString());
 
-        DBBroker broker = null;
-        try(final LineNumberReader reader = new LineNumberReader(Files.newBufferedReader(fRegistry))) {
-            broker = getBrokerPool().getBroker();
+        try(final LineNumberReader reader = new LineNumberReader(Files.newBufferedReader(fRegistry));
+                final DBBroker broker = getBrokerPool().getBroker()) {
     
             String line = null;
             
@@ -121,18 +120,10 @@ public class RestXqServiceRegistryPersistence implements RestXqServiceRegistryLi
                     getRegistry().register(services);
                 }
             }
-        } catch(final ExQueryException eqe) {
+        } catch(final ExQueryException | IOException | EXistException | URISyntaxException eqe) {
             log.error(eqe.getMessage(), eqe);
-        } catch(final URISyntaxException use) {
-            log.error(use.getMessage(), use);
-        } catch(final EXistException ee) {
-            log.error(ee.getMessage(), ee);
-        } catch(final IOException ioe) {
-            log.error(ioe.getMessage(), ioe);
-        } finally {
-            getBrokerPool().release(broker);
         }
-        
+
         log.info("RESTXQ registry loaded.");
     }
     
@@ -218,22 +209,15 @@ public class RestXqServiceRegistryPersistence implements RestXqServiceRegistryLi
         REMOVE;
     }
     
-    private Path getRegistryFile(boolean temp) {
-        
-        DBBroker broker = null;
-        try {
-            broker = getBrokerPool().getBroker();
+    private Path getRegistryFile(final boolean temp) {
+        try(final DBBroker broker = getBrokerPool().getBroker()) {
             final Configuration configuration = broker.getConfiguration();
             final Path dataDir = (Path)configuration.getProperty(BrokerPool.PROPERTY_DATA_DIR);
-            
+
             return dataDir.resolve(temp != true ? REGISTRY_FILENAME : REGISTRY_FILENAME_TMP);
-          } catch(EXistException ee) {
+        } catch(EXistException ee) {
             log.error(ee.getMessage(), ee);
             return null;
-          } finally {
-            if(broker != null) {
-                getBrokerPool().release(broker);
-            }
         }
     }
 }
