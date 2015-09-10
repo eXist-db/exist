@@ -1,6 +1,7 @@
 package org.exist.security;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.exist.EXistException;
 import org.exist.util.DatabaseConfigurationException;
@@ -178,6 +179,56 @@ public abstract class AbstractSecurityManagerRoundtripTest {
             try { ums.removeGroup(group1); } catch(Exception e) {}
             try { ums.removeGroup(group2); } catch(Exception e) {}
             try { ums.removeAccount(user); } catch(Exception e) {}
+        }
+    }
+
+    @Test
+    public void checkGroupManagerStability() throws XMLDBException, PermissionDeniedException {
+
+        Collection root = DatabaseManager.getCollection(baseUri + "/db", "admin", "");
+        UserManagementService ums = (UserManagementService)root.getService("UserManagementService", "1.0");
+
+        final String group1Name = "testGroupA";
+        final String userName = "testUserA";
+        Group group1 = new GroupAider(group1Name);
+
+        final Group userGroup = new GroupAider(userName);
+        final Account user = new UserAider(userName, userGroup); //set users primary group as personal group
+
+        try {
+            ums.addGroup(group1);
+
+            ums.addGroup(userGroup);
+            ums.addAccount(user);
+            ums.getAccount(userName);
+
+            ums.updateAccount(user);
+
+            //add user1 as a manager of group1
+            group1.addManager(user);
+            ums.updateGroup(group1);
+
+            /*** RESTART THE SERVER ***/
+            stopServer();
+            startServer();
+            /**************************/
+
+            root = DatabaseManager.getCollection(baseUri + "/db", "admin", "");
+            ums = (UserManagementService)root.getService("UserManagementService", "1.0");
+
+            group1 = ums.getGroup(group1Name);
+            assertNotNull(group1);
+
+            final List<Account> group1Managers = group1.getManagers();
+            assertNotNull(group1Managers);
+            assertEquals(1, group1Managers.size());
+            assertEquals(group1Managers.get(0).getName(), userName);
+
+        } finally {
+            //cleanup
+            try { ums.removeGroup(group1); } catch(Exception e) {}
+            try { ums.removeAccount(user); } catch(Exception e) {}
+            try { ums.removeGroup(userGroup); } catch(Exception e) {}
         }
     }
 }
