@@ -38,11 +38,11 @@ import org.exquery.restxq.RestXqServiceException;
  */
 public interface RestXqServiceCompiledXQueryCache {
     
-    public CompiledXQuery getCompiledQuery(DBBroker broker, URI xqueryLocation) throws RestXqServiceException;
+    CompiledXQuery getCompiledQuery(DBBroker broker, URI xqueryLocation) throws RestXqServiceException;
     
-    public void returnCompiledQuery(URI xqueryLocation, CompiledXQuery xquery);
+    void returnCompiledQuery(URI xqueryLocation, CompiledXQuery xquery);
     
-    public void removeService(RestXqService Service);
+    void removeService(RestXqService Service);
     
-    public void removeServices(Iterable<RestXqService> services);
+    void removeServices(Iterable<RestXqService> services);
 }

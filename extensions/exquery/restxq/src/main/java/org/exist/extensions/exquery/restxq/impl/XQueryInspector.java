@@ -38,7 +38,6 @@ import java.util.Set;
 import org.exist.extensions.exquery.restxq.impl.adapters.AnnotationAdapter;
 import org.exist.source.DBSource;
 import org.exist.source.Source;
-import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Annotation;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.ExternalModule;
@@ -56,17 +55,17 @@ import org.exquery.restxq.impl.annotation.RestAnnotationFactory;
  *
  * @author Adam Retter <adam.retter@googlemail.com>
  */
-public class XQueryInspector {
+class XQueryInspector {
     
     public static List<RestXqService> findServices(final CompiledXQuery compiled) throws ExQueryException {
         
-        final List<RestXqService> services = new ArrayList<RestXqService>();
+        final List<RestXqService> services = new ArrayList<>();
         
         try {
             //look at each function
             final Iterator<UserDefinedFunction> itFunctions = compiled.getContext().localFunctions();
 
-            final Set<URI> xqueryLocations = new HashSet<URI>();
+            final Set<URI> xqueryLocations = new HashSet<>();
             while(itFunctions.hasNext()) {
                 final UserDefinedFunction function = itFunctions.next();
                 final Annotation annotations[] = function.getSignature().getAnnotations();
@@ -78,7 +77,7 @@ public class XQueryInspector {
                     if(RestAnnotationFactory.isRestXqAnnotation(annotation.getName().toJavaQName())) {
                         final org.exquery.xquery3.Annotation restAnnotation = RestAnnotationFactory.getAnnotation(new AnnotationAdapter(annotation));
                         if(functionRestAnnotations == null) {
-                            functionRestAnnotations = new HashSet<org.exquery.xquery3.Annotation>();
+                            functionRestAnnotations = new HashSet<>();
                         }
                         functionRestAnnotations.add(restAnnotation);
                     }
@@ -101,17 +100,15 @@ public class XQueryInspector {
                 RestXqServiceCompiledXQueryCacheImpl.getInstance().returnCompiledQuery(xqueryLocation, compiled);
             }
             
-        } catch(final URISyntaxException use) {
+        } catch(final URISyntaxException | AnnotationException use) {
             throw new ExQueryException(use.getMessage(), use);
-        } catch(final AnnotationException ae) {
-            throw new ExQueryException(ae.getMessage(), ae);
         }
-        
+
         return services;
     }
     
     public static Map<String, Set<String>> getDependencies(final CompiledXQuery compiled) {
-        final Map<String, Set<String>> dependencies = new HashMap<String, Set<String>>();
+        final Map<String, Set<String>> dependencies = new HashMap<>();
         getDependencies(compiled.getContext(), dependencies);
         return dependencies;
     }
@@ -131,7 +128,7 @@ public class XQueryInspector {
                     if(source instanceof DBSource) {
                         final String moduleUri = getDbUri(source);
                         if(depSet == null) {
-                            depSet = new HashSet<String>();
+                            depSet = new HashSet<>();
                         }
                         depSet.add(moduleUri);
                         
@@ -149,9 +146,9 @@ public class XQueryInspector {
         }
     }
     
-    private static String getDbUri(Source source) {
+    private static String getDbUri(final Source source) {
         if(source != null && source instanceof DBSource) {
-            return ((XmldbURI)source.getKey()).toString();
+            return source.getKey().toString();
         } else {
             return null;
         }

@@ -41,7 +41,7 @@ import org.exist.storage.StartupTrigger;
 public class RestXqStartupTrigger implements StartupTrigger {
     
     @Override
-    public void execute(final DBBroker broker, final Map<String, List<? extends Object>> params) {
+    public void execute(final DBBroker broker, final Map<String, List<?>> params) {
         RestXqServiceRegistryManager.getRegistry(broker.getBrokerPool());
     }
 }

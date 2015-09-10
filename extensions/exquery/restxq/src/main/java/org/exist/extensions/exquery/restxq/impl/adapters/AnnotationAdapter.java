@@ -26,9 +26,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 package org.exist.extensions.exquery.restxq.impl.adapters;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
 import javax.xml.namespace.QName;
 import org.exist.xquery.LiteralValue;
 import org.exquery.xquery.Literal;
@@ -48,11 +45,11 @@ public class AnnotationAdapter implements Annotation {
     public AnnotationAdapter() {
     }
     
-    public AnnotationAdapter(org.exist.xquery.Annotation annotation) {
+    public AnnotationAdapter(final org.exist.xquery.Annotation annotation) {
         this(annotation, new FunctionSignatureAdapter(annotation.getFunctionSignature()));
     }
 
-    protected AnnotationAdapter(final org.exist.xquery.Annotation annotation, final FunctionSignatureAdapter functionSignatureAdapter) {
+    AnnotationAdapter(final org.exist.xquery.Annotation annotation, final FunctionSignatureAdapter functionSignatureAdapter) {
         this.name = annotation.getName().toJavaQName();
         
         final LiteralValue literalValues[] = annotation.getValue();

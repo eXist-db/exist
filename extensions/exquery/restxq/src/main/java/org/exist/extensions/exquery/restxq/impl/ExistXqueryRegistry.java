@@ -64,30 +64,30 @@ public class ExistXqueryRegistry {
     private ExistXqueryRegistry() {
     }
     
-    public final static ExistXqueryRegistry getInstance() {
+    public static ExistXqueryRegistry getInstance() {
         return instance;
     }
     
     
-    protected final static Logger LOG = LogManager.getLogger(ExistXqueryRegistry.class);
+    private final static Logger LOG = LogManager.getLogger(ExistXqueryRegistry.class);
     
     /**
      * Key is XQuery Module URI
      * Value is set of XQuery Module URIs on which the Module indicated by the Key depends on
      */
-    final static Map<String, Set<String>> dependenciesTree = new HashMap<String, Set<String>>();
+    private final static Map<String, Set<String>> dependenciesTree = new HashMap<>();
     
     /**
      * Key is the missing Module URI
      * Value is the Set of XQuery Module URIs that require the missing Module indicated by the Key
      */
-    final static Map<String, Set<String>> missingDependencies = new HashMap<String, Set<String>>();
+    private final static Map<String, Set<String>> missingDependencies = new HashMap<>();
     
     /**
      * The list of XQuerys that could not be compiled
      * for reasons other than missing dependencies
      */
-    final static Set<String> invalidQueries = new HashSet<String>();
+    private final static Set<String> invalidQueries = new HashSet<>();
     
     public boolean isXquery(final DocumentImpl document) {
          return document instanceof BinaryDocument && document.getMetadata().getMimeType().equals(XQueryCompiler.XQUERY_MIME_TYPE);
@@ -120,14 +120,14 @@ public class ExistXqueryRegistry {
                     //record the now missing dependency
                     recordMissingDependency(xqueryLocation.toString(), XmldbURI.create(dependant));
                 }
-            } catch(final URISyntaxException urise) {
-                LOG.error(urise.getMessage(), urise);
+            } catch(final URISyntaxException e) {
+                LOG.error(e.getMessage(), e);
             }
         }
         
         /*
          * update the missingDependencies??
-         * Probaly not needed as this will be done in find services
+         * Probably not needed as this will be done in find services
          */
     }
     
@@ -155,32 +155,32 @@ public class ExistXqueryRegistry {
                     //record the now missing dependency
                     recordMissingDependency(xqueryLocation.toString(), XmldbURI.create(dependant));
                 }
-            } catch(final URISyntaxException urise) {
-                LOG.error(urise.getMessage(), urise);
+            } catch(final URISyntaxException e) {
+                LOG.error(e.getMessage(), e);
             }
         }*/
         
         /*
          * update the missingDependencies??
-         * Probaly not needed as this will be done in find services
+         * Probably not needed as this will be done in find services
          */
     }
     
     private Set<String> getDependants(final XmldbURI xqueryLocation) {
-        final Set<String> dependants = new HashSet<String>();
+        final Set<String> dependants = new HashSet<>();
         
         //make a copy of the dependenciesTree into depTree
         final Map<String, Set<String>> depTree;
         synchronized(dependenciesTree) {
-            depTree = new HashMap<String, Set<String>>(dependenciesTree);
+            depTree = new HashMap<>(dependenciesTree);
         }
         
         //find all modules that have a dependency on this one
         for(final Map.Entry<String, Set<String>> depTreeEntry : depTree.entrySet()) {
-            for(String dependency : depTreeEntry.getValue()) {
+            for(final String dependency : depTreeEntry.getValue()) {
                 if(dependency.equals(xqueryLocation.toString())) {
                     dependants.add(depTreeEntry.getKey());
-                    continue;
+                    continue; //TODO(AR) do we mean continue or break?
                 }
             }
         }
@@ -216,10 +216,10 @@ public class ExistXqueryRegistry {
             removeInvalidQuery(document.getURI());
 
             return XQueryInspector.findServices(compiled);
-        } catch(final RestXqServiceCompilationException rxsce) {
+        } catch(final RestXqServiceCompilationException e) {
 
             //if there was a missing dependency then record it
-            final MissingModuleHint missingModuleHint = extractMissingModuleHint(rxsce);
+            final MissingModuleHint missingModuleHint = extractMissingModuleHint(e);
             if(missingModuleHint != null) {
                 
                 if(missingModuleHint.dependantModule == null) {
@@ -230,12 +230,12 @@ public class ExistXqueryRegistry {
                         recordMissingDependency(missingModuleHint.moduleHint, XmldbURI.xmldbUriFor(missingModuleHint.dependantModule));
                     } catch(final URISyntaxException use) {
                         recordInvalidQuery(document.getURI());
-                        LOG.error("XQuery '" + document.getURI() + "' could not be compiled! " + rxsce.getMessage());
+                        LOG.error("XQuery '" + document.getURI() + "' could not be compiled! " + e.getMessage());
                     }
                 }
             } else {
                 recordInvalidQuery(document.getURI());
-                LOG.error("XQuery '" + document.getURI() + "' could not be compiled! " + rxsce.getMessage());
+                LOG.error("XQuery '" + document.getURI() + "' could not be compiled! " + e.getMessage());
             }
 
             /*
@@ -246,7 +246,7 @@ public class ExistXqueryRegistry {
              */
         }
         
-        return new ArrayList<RestXqService>();
+        return new ArrayList<>();
     }
     
    
@@ -262,9 +262,9 @@ public class ExistXqueryRegistry {
         synchronized(missingDependencies) {
             final Set<String> deps = missingDependencies.get(compiledModuleUri);
             if(deps != null) {
-                dependants = new HashSet(deps);
+                dependants = new HashSet<>(deps);
             } else {
-                dependants = new HashSet();
+                dependants = new HashSet<>();
             }
         }
         
@@ -295,13 +295,11 @@ public class ExistXqueryRegistry {
                     //we need to remove dependant from the dependenciesTree of dependant
                     removeDependency(dependant, compiledModuleUri);
                 }
-            } catch(final PermissionDeniedException pde) {
+            } catch(final PermissionDeniedException | ExQueryException pde) {
                 LOG.error(pde.getMessage(), pde);
-            } catch(final ExQueryException eqe) {
-                LOG.error(eqe.getMessage(), eqe);
             }
-            
-            //remove the resolve dependecies from the missing dependencies
+
+            //remove the resolve dependencies from the missing dependencies
             removeMissingDependency(compiledModuleUri, dependant);
         }
     }
@@ -318,7 +316,7 @@ public class ExistXqueryRegistry {
     
     private void recordQueryDependenciesTree(final Map<String, Set<String>> queryDependenciesTree) {
         synchronized(dependenciesTree) {
-            //Its not a merge its an ovewrite!
+            //Its not a merge its an overwrite!
             dependenciesTree.putAll(queryDependenciesTree);
         }
     }
@@ -340,12 +338,12 @@ public class ExistXqueryRegistry {
         public String dependantModule = null;
     }
     
-    private MissingModuleHint extractMissingModuleHint(final RestXqServiceCompilationException rxsce) {
+    private MissingModuleHint extractMissingModuleHint(final RestXqServiceCompilationException e) {
         
         MissingModuleHint missingModuleHint = null;
         
-        if(rxsce.getCause() instanceof XPathException) {
-            final XPathException xpe = (XPathException)rxsce.getCause();
+        if(e.getCause() instanceof XPathException) {
+            final XPathException xpe = (XPathException)e.getCause();
             if(xpe.getErrorCode() == ErrorCodes.XQST0059) {
                 final Sequence errorVals = xpe.getErrorVal();
                 
@@ -353,9 +351,7 @@ public class ExistXqueryRegistry {
                     
                     final Item errorVal1 = errorVals.itemAt(0);
                     if(errorVal1 instanceof StringValue) {
-                        if(missingModuleHint == null) {
-                            missingModuleHint = new MissingModuleHint();
-                        }
+                        missingModuleHint = new MissingModuleHint();
                         missingModuleHint.moduleHint = ((StringValue)errorVal1).getStringValue();
                     }
                     
@@ -387,7 +383,7 @@ public class ExistXqueryRegistry {
             if(missingDependencies.containsKey(moduleUri)) {
                 dependants = missingDependencies.get(moduleUri);
             } else {
-                dependants = new HashSet<String>();
+                dependants = new HashSet<>();
             }
             
             dependants.add(xqueryUri.toString());
