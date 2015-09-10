@@ -44,6 +44,7 @@ import org.exist.EXistException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
+import org.exist.util.FileUtils;
 import org.exist.xquery.CompiledXQuery;
 import org.exquery.ExQueryException;
 import org.exquery.restxq.RestXqService;
@@ -64,7 +65,6 @@ public class RestXqServiceRegistryPersistence implements RestXqServiceRegistryLi
     public final static String ARITY_SEP = "#";
     
     public final static String REGISTRY_FILENAME = "restxq.registry";
-    public final static String REGISTRY_FILENAME_TMP = REGISTRY_FILENAME + ".tmp";
     
     private final Logger log = LogManager.getLogger(getClass());
     private final BrokerPool pool;
@@ -145,52 +145,49 @@ public class RestXqServiceRegistryPersistence implements RestXqServiceRegistryLi
             log.error("Could not save RESTXQ Registry to disk!");
         } else {
             final Path newRegistry = optNewRegistry.get();
-            log.info("Updating new RESTXQ registry on disk: " + newRegistry.toAbsolutePath().toString());
+            log.info("Preparing new RESTXQ registry on disk: " + newRegistry.toAbsolutePath().toString());
 
-            try(final PrintWriter writer = new PrintWriter(Files.newBufferedWriter(newRegistry, StandardOpenOption.TRUNCATE_EXISTING))) {
-
-                writer.println(VERSION_LABEL + LABEL_SEP + REGISTRY_FILE_VERSION);
-                
-                //get details of RESTXQ functions in XQuery modules
-                final Map<URI, List<FunctionSignature>> xqueryServices = new HashMap<>();
-                for(final RestXqService service : getRegistry()) {
-                    List<FunctionSignature> fnNames = xqueryServices.get(service.getResourceFunction().getXQueryLocation());
-                    if(fnNames == null) {
-                        fnNames = new ArrayList<>();
-                    }
-                    fnNames.add(service.getResourceFunction().getFunctionSignature());
-                    xqueryServices.put(service.getResourceFunction().getXQueryLocation(), fnNames);
-                }
-                
-                //iterate and save to disk
-                for(final Entry<URI, List<FunctionSignature>> xqueryServiceFunctions : xqueryServices.entrySet()) {
-                    writer.print(xqueryServiceFunctions.getKey() + FIELD_SEP);
-                    
-                    final List<FunctionSignature> fnSigs = xqueryServiceFunctions.getValue();
-                    for (final FunctionSignature fnSig : fnSigs) {
-                        writer.print(qnameToClarkNotation(fnSig.getName()) + ARITY_SEP + fnSig.getArgumentCount());
-                    }
-                    writer.println();
-                }
-            } catch(final IOException ioe) {
-                log.error(ioe.getMessage(), ioe);
-            }
-            
             try {
-                final Optional<Path> optRegistry = getRegistryFile(false);
+                try(final PrintWriter writer = new PrintWriter(Files.newBufferedWriter(newRegistry, StandardOpenOption.TRUNCATE_EXISTING))) {
 
+                    writer.println(VERSION_LABEL + LABEL_SEP + REGISTRY_FILE_VERSION);
+
+                    //get details of RESTXQ functions in XQuery modules
+                    final Map<URI, List<FunctionSignature>> xqueryServices = new HashMap<>();
+                    for (final RestXqService service : getRegistry()) {
+                        List<FunctionSignature> fnNames = xqueryServices.get(service.getResourceFunction().getXQueryLocation());
+                        if (fnNames == null) {
+                            fnNames = new ArrayList<>();
+                        }
+                        fnNames.add(service.getResourceFunction().getFunctionSignature());
+                        xqueryServices.put(service.getResourceFunction().getXQueryLocation(), fnNames);
+                    }
+
+                    //iterate and save to disk
+                    for (final Entry<URI, List<FunctionSignature>> xqueryServiceFunctions : xqueryServices.entrySet()) {
+                        writer.print(xqueryServiceFunctions.getKey() + FIELD_SEP);
+
+                        final List<FunctionSignature> fnSigs = xqueryServiceFunctions.getValue();
+                        for (final FunctionSignature fnSig : fnSigs) {
+                            writer.print(qnameToClarkNotation(fnSig.getName()) + ARITY_SEP + fnSig.getArgumentCount());
+                        }
+                        writer.println();
+                    }
+                }
+
+                final Optional<Path> optRegistry = getRegistryFile(false);
                 if(optRegistry.isPresent()) {
                     final Path registry = optRegistry.get();
 
                     //replace the original registry with the new registry
                     Files.move(newRegistry, registry, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
 
-                    log.info("Replaced RESTXQ registry with new registry: " + registry.toAbsolutePath().toString());
+                    log.info("Replaced RESTXQ registry: " + FileUtils.fileName(newRegistry) + " -> " + FileUtils.fileName(registry));
                 } else {
-                    throw new IOException("Unable to retrieve existing registry");
+                    throw new IOException("Unable to retrieve existing RESTXQ registry");
                 }
             } catch(final IOException ioe) {
-                log.error("Could not replace RESTXQ registry with updated registry: " + ioe.getMessage(), ioe);
+                log.error(ioe.getMessage(), ioe);
             }
         }
     }
@@ -213,9 +210,15 @@ public class RestXqServiceRegistryPersistence implements RestXqServiceRegistryLi
             final Configuration configuration = broker.getConfiguration();
             final Path dataDir = (Path)configuration.getProperty(BrokerPool.PROPERTY_DATA_DIR);
 
-            return Optional.of(dataDir.resolve(!temp ? REGISTRY_FILENAME : REGISTRY_FILENAME_TMP));
-        } catch(final EXistException ee) {
-            log.error(ee.getMessage(), ee);
+            final Path registryFile;
+            if(temp) {
+                registryFile = Files.createTempFile(dataDir, REGISTRY_FILENAME, ".tmp");
+            } else {
+                registryFile = dataDir.resolve(REGISTRY_FILENAME);
+            }
+            return Optional.of(registryFile);
+        } catch(final EXistException | IOException e) {
+            log.error(e.getMessage(), e);
             return Optional.empty();
         }
     }
