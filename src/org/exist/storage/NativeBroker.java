@@ -295,6 +295,15 @@ public class NativeBroker extends DBBroker {
         }
     }
 
+    /**
+     * Get the filesystem directory
+     *
+     * @return The filesystem directory
+     */
+    protected Path getFsDir() {
+        return fsDir;
+    }
+
     @Override
     public ElementIndex getElementIndex() {
         return null;
@@ -510,7 +519,7 @@ public class NativeBroker extends DBBroker {
             }
         }
         pool.getSymbols().backupToArchive(backup);
-        backupBinary(backup, fsDir, "");
+        backupBinary(backup, getFsDir(), "");
         pool.getIndexManager().backupToArchive(backup);
         //TODO backup counters
         //TODO USE zip64 or tar to create snapshots larger then 4Gb
@@ -1249,7 +1258,7 @@ public class NativeBroker extends DBBroker {
 
             // sourceDir must be known in advance, because once moveCollectionRecursive
             // is called, both collection and destination can point to the same resource
-            final Path fsSourceDir = getCollectionFile(fsDir, collection.getURI(), false);
+            final Path fsSourceDir = getCollectionFile(getFsDir(), collection.getURI(), false);
 
             // Need to move each collection in the source tree individually, so recurse.
             moveCollectionRecursive(transaction, trigger, collection, destination, newName, false);
@@ -1266,7 +1275,7 @@ public class NativeBroker extends DBBroker {
     }
 
     private void moveBinaryFork(final Txn transaction, final Path sourceDir, final Collection destination, final XmldbURI newName) throws IOException {
-        final Path targetDir = getCollectionFile(fsDir, destination.getURI().append(newName), false);
+        final Path targetDir = getCollectionFile(getFsDir(), destination.getURI().append(newName), false);
         if(Files.exists(sourceDir)) {
             if(Files.exists(targetDir)) {
                 final Path targetDelDir = getCollectionFile(fsBackupDir, transaction, destination.getURI().append(newName), true);
@@ -1586,7 +1595,7 @@ public class NativeBroker extends DBBroker {
                 }
 
                 //now that the database has been updated, update the binary collections on disk
-                final Path fsSourceDir = getCollectionFile(fsDir, collection.getURI(), false);
+                final Path fsSourceDir = getCollectionFile(getFsDir(), collection.getURI(), false);
                 final Path fsTargetDir = getCollectionFile(fsBackupDir, transaction, collection.getURI(), true);
 
                 // remove child binary collections
@@ -2000,12 +2009,16 @@ public class NativeBroker extends DBBroker {
         trigger.afterUpdateDocumentMetadata(this, transaction, doc);
     }
 
-    private Path getCollectionFile(final Path dir, final XmldbURI uri, final boolean create) throws IOException {
+    protected Path getCollectionFile(final Path dir, final XmldbURI uri, final boolean create) throws IOException {
         return getCollectionFile(dir, null, uri, create);
     }
 
     public Path getCollectionBinaryFileFsPath(final XmldbURI uri) {
-        return fsDir.resolve(uri.getURI().toString());
+        String suri = uri.getURI().toString();
+        if(suri.startsWith("/")) {
+            suri = suri.substring(1);
+        }
+        return getFsDir().resolve(suri);
     }
 
     private Path getCollectionFile(Path dir, final Txn transaction, final XmldbURI uri, final boolean create)
@@ -2061,7 +2074,7 @@ public class NativeBroker extends DBBroker {
      */
     private void storeBinaryResource(final Txn transaction, final BinaryDocument blob, final ConsumerE<Path, IOException> fWriteData) throws IOException {
         blob.setPage(Page.NO_PAGE);
-        final Path binFile = getCollectionFile(fsDir, blob.getURI(), true);
+        final Path binFile = getCollectionFile(getFsDir(), blob.getURI(), true);
         final boolean exists = Files.exists(binFile);
 
         final Function<Path, Loggable> fLoggable;
@@ -2201,19 +2214,19 @@ public class NativeBroker extends DBBroker {
     @Override
     public long getBinaryResourceSize(final BinaryDocument blob)
         throws IOException {
-        final Path binFile = getCollectionFile(fsDir, blob.getURI(), false);
+        final Path binFile = getCollectionFile(getFsDir(), blob.getURI(), false);
         return Files.size(binFile);
     }
 
     @Override
     public Path getBinaryFile(final BinaryDocument blob) throws IOException {
-        return getCollectionFile(fsDir, blob.getURI(), false);
+        return getCollectionFile(getFsDir(), blob.getURI(), false);
     }
 
     @Override
     public InputStream getBinaryResource(final BinaryDocument blob)
         throws IOException {
-        return Files.newInputStream(getCollectionFile(fsDir, blob.getURI(), false));
+        return Files.newInputStream(getCollectionFile(getFsDir(), blob.getURI(), false));
     }
 
     //TODO : consider a better cooperation with Collection -pb
@@ -2522,7 +2535,7 @@ public class NativeBroker extends DBBroker {
         
         
         /* Copy reference to original document */
-        final Path fsOriginalDocument = getCollectionFile(fsDir, doc.getURI(), true);
+        final Path fsOriginalDocument = getCollectionFile(getFsDir(), doc.getURI(), true);
 
 
         final XmldbURI oldName = doc.getFileURI();
@@ -2585,9 +2598,9 @@ public class NativeBroker extends DBBroker {
                 // binary resource
                 doc.setCollection(destination);
                 destination.addDocument(transaction, this, doc);
-                final Path colDir = getCollectionFile(fsDir, destination.getURI(), true);
+                final Path colDir = getCollectionFile(getFsDir(), destination.getURI(), true);
                 final Path binFile = colDir.resolve(newName.lastSegment().toString());
-                final Path sourceFile = getCollectionFile(fsDir, doc.getURI(), false);
+                final Path sourceFile = getCollectionFile(getFsDir(), doc.getURI(), false);
 
                 /* Create required directories */
                 Files.createDirectories(binFile.getParent());
@@ -2703,7 +2716,7 @@ public class NativeBroker extends DBBroker {
             LOG.debug("removing binary resource " + blob.getDocId() + "...");
         }
 
-        final Path binFile = getCollectionFile(fsDir, blob.getURI(), false);
+        final Path binFile = getCollectionFile(getFsDir(), blob.getURI(), false);
         if(Files.exists(binFile)) {
             final Path binBackupFile = getCollectionFile(fsBackupDir, transaction, blob.getURI(), true);
             final Loggable loggable = new RenameBinaryLoggable(this, transaction, binFile, binBackupFile);
