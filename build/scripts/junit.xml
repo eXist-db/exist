@@ -162,6 +162,7 @@
             <test fork="yes" name="org.exist.collections.AllCollectionTests" todir="${junit.reports.dat}"/>
             <test fork="yes" name="org.exist.security.XMLDBSecurityTest" todir="${junit.reports.dat}"/>
             <test fork="yes" name="org.exist.security.SecurityManagerRoundtripTest" todir="${junit.reports.dat}"/>
+            <test fork="yes" name="org.exist.storage.NativeBrokerTest" todir="${junit.reports.dat}"/>
 
             <!-- Execute all other tests except those that have to be called manually.   -->
             <batchtest fork="yes" todir="${junit.reports.dat}">
