@@ -73,7 +73,7 @@ import org.xml.sax.XMLReader;
  *
  * @author Adam Retter <adam.retter@googlemail.com>
  */
-public class RestXqServiceImpl extends AbstractRestXqService {
+class RestXqServiceImpl extends AbstractRestXqService {
 
     private final static Logger LOG = LogManager.getLogger(RestXqServiceImpl.class);
 
@@ -85,7 +85,7 @@ public class RestXqServiceImpl extends AbstractRestXqService {
         this.brokerPool = brokerPool;
         this.binaryValueManager = new BinaryValueManager() {
 
-            final List<BinaryValue> binaryValues = new ArrayList<BinaryValue>();
+            final List<BinaryValue> binaryValues = new ArrayList<>();
 
             @Override
             public void registerBinaryValueInstance(final BinaryValue binaryValue) {
@@ -124,8 +124,8 @@ public class RestXqServiceImpl extends AbstractRestXqService {
     @Override
     protected Sequence extractRequestBody(final HttpRequest request) throws RestXqServiceException {
 
-        //TODO dont use close shield input stream and move parsing of form parameters from HttpServletRequestAdapter into RequestBodyParser
-        InputStream is = null;
+        //TODO don't use close shield input stream and move parsing of form parameters from HttpServletRequestAdapter into RequestBodyParser
+        InputStream is;
         FilterInputStreamCache cache = null;
 
         try {
@@ -139,12 +139,9 @@ public class RestXqServiceImpl extends AbstractRestXqService {
 
             //if marking is not supported, we have to cache the input stream, so we can reread it, as we may use it twice (once for xml attempt and once for string attempt)
             if (!is.markSupported()) {
-                cache = FilterInputStreamCacheFactory.getCacheInstance(new FilterInputStreamCacheFactory.FilterInputStreamCacheConfiguration() {
-                    @Override
-                    public String getCacheClass() {
-                        final Configuration configuration = getBrokerPool().getConfiguration();
-                        return (String) configuration.getProperty(Configuration.BINARY_CACHE_CLASS_PROPERTY);
-                    }
+                cache = FilterInputStreamCacheFactory.getCacheInstance(() -> {
+                    final Configuration configuration = getBrokerPool().getConfiguration();
+                    return (String) configuration.getProperty(Configuration.BINARY_CACHE_CLASS_PROPERTY);
                 }, is);
 
                 is = new CachingFilterInputStream(cache);
@@ -164,7 +161,7 @@ public class RestXqServiceImpl extends AbstractRestXqService {
                 // 1) determine if exists mime database considers this binary data
                 if (contentType != null) {
                     //strip off any charset encoding info
-                    if (contentType.indexOf(";") > -1) {
+                    if (contentType.contains(";")) {
                         contentType = contentType.substring(0, contentType.indexOf(";"));
                     }
 
@@ -176,7 +173,7 @@ public class RestXqServiceImpl extends AbstractRestXqService {
 
                             final BinaryValue binaryValue = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), is);
                             if (binaryValue != null) {
-                                result = new SequenceImpl<BinaryValue>(new BinaryTypedValue(binaryValue));
+                                result = new SequenceImpl<>(new BinaryTypedValue(binaryValue));
                             }
                         } catch (final XPathException xpe) {
                             throw new RestXqServiceException(RestXqErrorCodes.RQDY0014, xpe);
@@ -185,10 +182,10 @@ public class RestXqServiceImpl extends AbstractRestXqService {
                 }
 
                 if (result == null) {
-                    //2) not binary, try and parse as an XML documemnt
+                    //2) not binary, try and parse as an XML document
                     final DocumentImpl doc = parseAsXml(is);
                     if (doc != null) {
-                        result = new SequenceImpl<Document>(new DocumentTypedValue(doc));
+                        result = new SequenceImpl<>(new DocumentTypedValue(doc));
                     }
                 }
 
@@ -206,7 +203,7 @@ public class RestXqServiceImpl extends AbstractRestXqService {
 
                         final StringValue str = parseAsString(is, encoding);
                         if (str != null) {
-                            result = new SequenceImpl<StringValue>(new StringTypedValue(str));
+                            result = new SequenceImpl<>(new StringTypedValue(str));
                         }
                     } catch (final IOException ioe) {
                         throw new RestXqServiceException(RestXqErrorCodes.RQDY0014, ioe);
@@ -279,9 +276,7 @@ public class RestXqServiceImpl extends AbstractRestXqService {
             final Document doc = receiver.getDocument();
 
             result = (DocumentImpl) doc;
-        } catch (final SAXException saxe) {
-            //do nothing, we will default to trying to return a string below
-        } catch (final IOException ioe) {
+        } catch (final SAXException | IOException saxe) {
             //do nothing, we will default to trying to return a string below
         } finally {
             if (reader != null) {

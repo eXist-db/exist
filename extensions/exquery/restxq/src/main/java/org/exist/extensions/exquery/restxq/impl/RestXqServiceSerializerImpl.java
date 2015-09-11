@@ -30,19 +30,13 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.extensions.exquery.restxq.impl.adapters.SequenceAdapter;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.storage.serializers.Serializer;
-import org.exist.util.serializer.SAXSerializer;
-import org.exist.util.serializer.SerializerPool;
 import org.exist.util.serializer.XQuerySerializer;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.BinaryValue;
@@ -60,11 +54,8 @@ import org.xml.sax.SAXException;
  *
  * @author Adam Retter <adam.retter@googlemail.com>
  */
-public class RestXqServiceSerializerImpl extends AbstractRestXqServiceSerializer {
-
-    private final static Logger LOG = LogManager.getLogger(RestXqServiceSerializerImpl.class);
-    
-    final BrokerPool brokerPool;
+class RestXqServiceSerializerImpl extends AbstractRestXqServiceSerializer {
+    private final BrokerPool brokerPool;
     
     public RestXqServiceSerializerImpl(final BrokerPool brokerPool) {
         this.brokerPool = brokerPool;
@@ -76,28 +67,15 @@ public class RestXqServiceSerializerImpl extends AbstractRestXqServiceSerializer
     
     @Override
     protected void serializeBinaryBody(final Sequence result, final HttpResponse response) throws RestXqServiceException {
-        final Iterator<TypedValue> itResult = result.iterator();
-        while(itResult.hasNext()) {
-            final TypedValue typedValue = itResult.next();
-            if(typedValue.getType() == Type.BASE64_BINARY || typedValue.getType() == Type.HEX_BINARY) {
-                
-                final BinaryValue binaryValue = (BinaryValue)typedValue.getValue();
-                OutputStream os = null; 
-                try {
-                    os = response.getOutputStream();
+        for (final TypedValue typedValue : (Iterable<TypedValue>) result) {
+            if (typedValue.getType() == Type.BASE64_BINARY || typedValue.getType() == Type.HEX_BINARY) {
+                final BinaryValue binaryValue = (BinaryValue) typedValue.getValue();
+                try (final OutputStream os = response.getOutputStream()) {
                     binaryValue.streamBinaryTo(os);
-                } catch(final IOException ioe) {
+                } catch (final IOException ioe) {
                     throw new RestXqServiceException("Error while serializing binary: " + ioe.toString(), ioe);
-                } finally {
-                    if(os != null) {
-                        try { 
-                            os.close();
-                        } catch (final IOException ioe) {
-                            LOG.warn(ioe);
-                        }
-                    }
                 }
-                
+
                 return; //TODO support more than one binary result -- multipart?
             } else {
                 throw new RestXqServiceException("Expected binary value, but found: " + typedValue.getType().name());
@@ -107,32 +85,14 @@ public class RestXqServiceSerializerImpl extends AbstractRestXqServiceSerializer
 
     @Override
     protected void serializeNodeBody(final Sequence result, final HttpResponse response, final Map<SerializationProperty, String> serializationProperties) throws RestXqServiceException {
-        
-        DBBroker broker = null;
-
-        try {
-            broker = getBrokerPool().get(brokerPool.getSubject());
-	        
-            final Writer writer = new OutputStreamWriter(response.getOutputStream(), serializationProperties.get(SerializationProperty.ENCODING));
+        try(final DBBroker broker = getBrokerPool().get(brokerPool.getSubject());
+                final Writer writer = new OutputStreamWriter(response.getOutputStream(), serializationProperties.get(SerializationProperty.ENCODING))) {
             final Properties outputProperties = serializationPropertiesToProperties(serializationProperties);
             final XQuerySerializer xqSerializer = new XQuerySerializer(broker, outputProperties, writer);
             xqSerializer.serialize(((SequenceAdapter)result).getExistSequence());
-	
             writer.flush();
-            writer.close();
-	        
-        } catch(IOException ioe) {    
+        } catch(IOException | XPathException | SAXException | EXistException ioe) {
             throw new RestXqServiceException("Error while serializing xml: " + ioe.toString(), ioe);
-        } catch(EXistException ee) {   
-            throw new RestXqServiceException("Error while serializing xml: " + ee.toString(), ee);
-        } catch(SAXException se) {    
-            throw new RestXqServiceException("Error while serializing xml: " + se.toString(), se);
-        } catch(XPathException se) {
-            throw new RestXqServiceException("Error while serializing xml: " + se.toString(), se);
-        } finally {
-            if(broker != null) {
-                getBrokerPool().release(broker);
-            }
         }
     }
     
@@ -143,7 +103,7 @@ public class RestXqServiceSerializerImpl extends AbstractRestXqServiceSerializer
         for(final Entry<SerializationProperty, String> serializationProperty : serializationProperties.entrySet()) {
             
             if(serializationProperty.getKey() == SerializationProperty.METHOD && serializationProperty.getValue().equals(SupportedMethod.html.name())) {
-                //Map HTML -> HTML5 as eXist doesnt have a html serializer that isnt html5
+                //Map HTML -> HTML5 as eXist doesn't have a html serializer that isn't html5
                 props.setProperty(serializationProperty.getKey().name().toLowerCase(), SupportedMethod.html5.name());
             } else if(serializationProperty.getKey() == SerializationProperty.OMIT_XML_DECLARATION) {
                 

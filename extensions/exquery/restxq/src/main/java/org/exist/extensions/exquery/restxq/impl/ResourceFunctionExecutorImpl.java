@@ -116,17 +116,13 @@ public class ResourceFunctionExecutorImpl implements ResourceFunctionExecuter {
     
     @Override
     public Sequence execute(final ResourceFunction resourceFunction, final Iterable<TypedArgumentValue> arguments, final HttpRequest request) throws RestXqServiceException {
-        
+
         final RestXqServiceCompiledXQueryCache cache = RestXqServiceCompiledXQueryCacheImpl.getInstance();
-        
-        DBBroker broker = null;
+
         CompiledXQuery xquery = null;
         ProcessMonitor processMonitor = null;
-        
-        try {
-            
-            broker = getBrokerPool().get(getBrokerPool().getSubject());
-            
+
+        try(final DBBroker broker = getBrokerPool().get(getBrokerPool().getSubject())) {
             //ensure we can execute the function before going any further
             checkSecurity(broker, resourceFunction.getXQueryLocation());
             
@@ -170,14 +166,8 @@ public class ResourceFunctionExecutorImpl implements ResourceFunctionExecuter {
             final org.exist.xquery.value.Sequence result = fnRef.evalFunction(null, null, fnArgs);
             
             return new SequenceAdapter(result);
-        } catch(final URISyntaxException use) {
+        } catch(final URISyntaxException | EXistException | XPathException | PermissionDeniedException use) {
             throw new RestXqServiceException(use.getMessage(), use);
-        } catch(final PermissionDeniedException pde) {
-            throw new RestXqServiceException(pde.getMessage(), pde);
-        } catch(final XPathException xpe) {
-            throw new RestXqServiceException(xpe.getMessage(), xpe);
-        } catch(final EXistException ee) {
-            throw new RestXqServiceException(ee.getMessage(), ee);
         } finally {
             
             //clear down monitoring
@@ -185,12 +175,7 @@ public class ResourceFunctionExecutorImpl implements ResourceFunctionExecuter {
                 xquery.getContext().getProfiler().traceQueryEnd(xquery.getContext());
                 processMonitor.queryCompleted(xquery.getContext().getWatchDog());
             }
-            
-            //return the broker
-            if(broker != null) {
-                getBrokerPool().release(broker);
-            }
-            
+
             if(xquery != null) {
                 //return the compiled query to the pool
                 cache.returnCompiledQuery(resourceFunction.getXQueryLocation(), xquery);
@@ -212,7 +197,7 @@ public class ResourceFunctionExecutorImpl implements ResourceFunctionExecuter {
      * @throws URISyntaxException if the xqueryLocation cannot be parsed
      * @throws PermissionDeniedException if there is not READ and EXECUTE access on the xqueryLocation for the current user
      */
-    private final void checkSecurity(final DBBroker broker, final URI xqueryLocation) throws URISyntaxException, PermissionDeniedException {
+    private void checkSecurity(final DBBroker broker, final URI xqueryLocation) throws URISyntaxException, PermissionDeniedException {
         broker.getResource(XmldbURI.xmldbUriFor(xqueryLocation), Permission.READ | Permission.EXECUTE);
     }
     
@@ -241,7 +226,7 @@ public class ResourceFunctionExecutorImpl implements ResourceFunctionExecuter {
      */
     private org.exist.xquery.value.Sequence[] convertToExistFunctionArguments(final XQueryContext xqueryContext, final UserDefinedFunction fn, final Iterable<TypedArgumentValue> arguments) throws XPathException, RestXqServiceException {
         
-        final List<org.exist.xquery.value.Sequence> fnArgs = new ArrayList<org.exist.xquery.value.Sequence>();
+        final List<org.exist.xquery.value.Sequence> fnArgs = new ArrayList<>();
         
         for(final SequenceType argumentType : fn.getSignature().getArgumentTypes()) {
             
@@ -259,10 +244,10 @@ public class ResourceFunctionExecutorImpl implements ResourceFunctionExecuter {
                 }
             }
             
-            if(found == false) {
+            if(!found) {
                 //value is not always provided, e.g. by PathAnnotation, so use empty sequence
 
-                //TODO do we need to check the cardiality of the receiving arg to make sure it permits ZERO?
+                //TODO do we need to check the cardinality of the receiving arg to make sure it permits ZERO?
                 //argumentType.getCardinality();
         
                 //create the empty sequence

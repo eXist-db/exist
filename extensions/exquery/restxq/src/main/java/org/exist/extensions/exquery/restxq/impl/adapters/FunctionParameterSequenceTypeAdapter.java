@@ -26,9 +26,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 package org.exist.extensions.exquery.restxq.impl.adapters;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exquery.xquery.Cardinality;
 import org.exquery.xquery.FunctionArgument;
@@ -38,7 +35,7 @@ import org.exquery.xquery.Type;
  *
  * @author Adam Retter <adam.retter@googlemail.com>
  */
-public class FunctionParameterSequenceTypeAdapter implements FunctionArgument {
+class FunctionParameterSequenceTypeAdapter implements FunctionArgument {
     private String name;
     private Type primaryType;
     private Cardinality cardinality;

@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import java.util.*;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -49,7 +50,6 @@ public class HttpServletRequestAdapter implements HttpRequest {
     private final HttpServletRequest request;
     private final FilterInputStreamCacheConfiguration cacheConfiguration;
     private InputStream is = null;
-    private FilterInputStreamCache cache = null;
     private Map<String, List<String>> formFields = null;
 
     public HttpServletRequestAdapter(final HttpServletRequest request, final FilterInputStreamCacheConfiguration cacheConfiguration) {
@@ -116,7 +116,7 @@ public class HttpServletRequestAdapter implements HttpRequest {
     public InputStream getInputStream() throws IOException {
 
         if (is == null) {
-            cache = FilterInputStreamCacheFactory.getCacheInstance(cacheConfiguration, request.getInputStream());
+            final FilterInputStreamCache cache = FilterInputStreamCacheFactory.getCacheInstance(cacheConfiguration, request.getInputStream());
             is = new CachingFilterInputStream(cache);
             is.mark(Integer.MAX_VALUE);
         } else {
@@ -138,7 +138,7 @@ public class HttpServletRequestAdapter implements HttpRequest {
 
     @Override
     public List<String> getHeaderNames() {
-        final List<String> names = new ArrayList<String>();
+        final List<String> names = new ArrayList<>();
         for (final Enumeration<String> enumNames = request.getHeaderNames(); enumNames.hasMoreElements();) {
             names.add(enumNames.nextElement());
         }
@@ -223,7 +223,7 @@ public class HttpServletRequestAdapter implements HttpRequest {
 
     @Override
     public List<String> getParameterNames() {
-        final List<String> names = new ArrayList<String>();
+        final List<String> names = new ArrayList<>();
         for (final Enumeration<String> enumNames = request.getParameterNames(); enumNames.hasMoreElements();) {
             names.add(enumNames.nextElement());
         }
@@ -231,24 +231,21 @@ public class HttpServletRequestAdapter implements HttpRequest {
     }
 
     private Map<String, List<String>> extractFormFields(final InputStream in) throws IOException {
-        final Map<String, List<String>> fields = new Hashtable<String, List<String>>();
+        final Map<String, List<String>> fields = new Hashtable<>();
 
         final StringBuilder builder = new StringBuilder();
-        final Reader reader = new InputStreamReader(in);
-        try {
+        try(final Reader reader = new InputStreamReader(in)) {
             int read = -1;
             final char[] cbuf = new char[1024];
             while ((read = reader.read(cbuf)) > -1) {
                 builder.append(cbuf, 0, read);
             }
-        } finally {
-            reader.close();
         }
 
         final StringTokenizer st = new StringTokenizer(builder.toString(), "&");
 
-        String key = null;
-        String val = null;
+        String key;
+        String val;
 
         while (st.hasMoreTokens()) {
             final String pair = st.nextToken();
@@ -258,15 +255,15 @@ public class HttpServletRequestAdapter implements HttpRequest {
             }
 
             try {
-                key = java.net.URLDecoder.decode(pair.substring(0, pos));
-                val = java.net.URLDecoder.decode(pair.substring(pos + 1, pair.length()));
+                key = java.net.URLDecoder.decode(pair.substring(0, pos), UTF_8.name());
+                val = java.net.URLDecoder.decode(pair.substring(pos + 1, pair.length()), UTF_8.name());
             } catch (final Exception e) {
                 throw new IllegalArgumentException(e);
             }
 
             List<String> vals = fields.get(key);
             if (vals == null) {
-                vals = new ArrayList<String>();
+                vals = new ArrayList<>();
             }
             vals.add(val);
 

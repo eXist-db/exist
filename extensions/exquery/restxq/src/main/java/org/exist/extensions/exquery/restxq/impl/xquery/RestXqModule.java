@@ -48,7 +48,7 @@ public class RestXqModule extends AbstractInternalModule {
         new FunctionDef(UriFunctions.signatures[1], UriFunctions.class)
     };
     
-    public RestXqModule(final Map<String, List<? extends Object>> parameters) {
+    public RestXqModule(final Map<String, List<?>> parameters) {
         super(signatures, parameters);
     }
 
