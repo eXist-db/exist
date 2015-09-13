@@ -1,6 +1,27 @@
+/*
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2010-2015 The eXist-db Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
 package org.exist.xquery.modules.expathrepo;
 
 import java.io.File;
+import java.util.Optional;
 
 import javax.xml.transform.stream.StreamSource;
 
@@ -45,26 +66,29 @@ public class GetResource extends BasicFunction {
 		throws XPathException {
 		String pkgName = args[0].getStringValue();
 		String path = args[1].getStringValue();
-		try {
-			File packageDir = null;
-			
-			ExistRepository repo = context.getRepository();
-			Package pkg = null;
-			for (Packages pp : repo.getParentRepo().listPackages()) {
-				pkg = pp.latest();
-				if (pkg.getName().equals(pkgName)) {
-					try {
-						StreamSource source = pkg.getResolver().resolveResource(path);
-						return Base64BinaryDocument.getInstance(context, source.getInputStream());
-					} catch (Storage.NotExistException ex) {
-						// nothing
-					}
-				}
-			}
-			return Sequence.EMPTY_SEQUENCE;
-		} catch (PackageException e) {
-			throw new XPathException(this, ErrorCodes.FOER0000, "Caught package error while reading expath package");
-		}
-	}
+		File packageDir = null;
 
+		Optional<ExistRepository> repo = context.getRepository();
+		if (repo.isPresent()) {
+		    Package pkg = null;
+		    try {
+			for (Packages pp : repo.get().getParentRepo().listPackages()) {
+			    pkg = pp.latest();
+			    if (pkg.getName().equals(pkgName)) {
+				try {
+				    StreamSource source = pkg.getResolver().resolveResource(path);
+				    return Base64BinaryDocument.getInstance(context, source.getInputStream());
+				} catch (Storage.NotExistException ex) {
+				    // nothing
+				}
+			    }
+			}
+		    } catch (PackageException e) {
+			throw new XPathException(this, ErrorCodes.FOER0000, "Caught package error while reading expath package");
+		    }
+		} else {
+		    throw new XPathException("expath repository not available");
+		}
+                return Sequence.EMPTY_SEQUENCE;
+	}
 }

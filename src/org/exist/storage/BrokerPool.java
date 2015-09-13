@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2003-2014 The eXist-db Project
+ * Copyright (C) 2003-2015 The eXist-db Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -17,7 +17,6 @@
  * along with this program; if not, write to the Free Software Foundation
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- *  $Id$
  */
 package org.exist.storage;
 
@@ -69,10 +68,12 @@ import org.exist.xquery.PerformanceStats;
 import org.exist.xquery.XQuery;
 import org.expath.pkg.repo.PackageException;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.NumberFormat;
 import java.util.*;
 import java.util.Map.Entry;
@@ -620,7 +621,7 @@ public class BrokerPool implements Database {
 
     private ClassLoader classLoader;
 
-    private ExistRepository expathRepo = null;
+    private Optional<ExistRepository> expathRepo = Optional.empty();
 
     /**
      * Creates and configures the database instance.
@@ -755,19 +756,16 @@ public class BrokerPool implements Database {
 
     //TODO : create a canReadJournalDir() method in the *relevant* class. The two directories may be different.
     protected boolean canReadDataDir(final Configuration conf) throws EXistException {
-        String dataDir = (String) conf.getProperty(PROPERTY_DATA_DIR);
-        if(dataDir == null) {
-            dataDir = "data";
-        } //TODO : DEFAULT_DATA_DIR
+        final Path dataDir = Optional.ofNullable((Path) conf.getProperty(PROPERTY_DATA_DIR))
+                .orElse(Paths.get(NativeBroker.DEFAULT_DATA_DIR));
 
-        final File dir = new File(dataDir);
-        if(!dir.exists()) {
+        if(!Files.exists(dataDir)) {
             try {
                 //TODO : shall we force the creation ? use a parameter to decide ?
-                LOG.info("Data directory '" + dir.getAbsolutePath() + "' does not exist. Creating one ...");
-                dir.mkdirs();
-            } catch(final SecurityException e) {
-                LOG.info("Cannot create data directory '" + dir.getAbsolutePath() + "'. Switching to read-only mode.");
+                LOG.info("Data directory '" + dataDir.toAbsolutePath().toString() + "' does not exist. Creating one ...");
+                Files.createDirectories(dataDir);
+            } catch(final SecurityException | IOException e) {
+                LOG.info("Cannot create data directory '" + dataDir.toAbsolutePath().toString() + "'. Switching to read-only mode.");
                 return false;
             }
         }
@@ -775,13 +773,13 @@ public class BrokerPool implements Database {
         //Save it for further use.
         //TODO : "data-dir" has sense for *native* brokers
         conf.setProperty(PROPERTY_DATA_DIR, dataDir);
-        if(!dir.canWrite()) {
-            LOG.info("Cannot write to data directory: " + dir.getAbsolutePath() + ". Switching to read-only mode.");
+        if(!Files.isWritable(dataDir)) {
+            LOG.info("Cannot write to data directory: " + dataDir.toAbsolutePath().toString() + ". Switching to read-only mode.");
             return false;
         }
 
         // try to acquire lock on the data dir
-        dataLock = new FileLock(this, dir, "dbx_dir.lck");
+        dataLock = new FileLock(this, dataDir.resolve("dbx_dir.lck"));
 
         try {
             final boolean locked = dataLock.tryLock();
@@ -858,7 +856,7 @@ public class BrokerPool implements Database {
 
                     //REFACTOR : construct then... configure
                     //TODO : journal directory *may* be different from BrokerPool.PROPERTY_DATA_DIR
-                    transactionManager = new TransactionManager(this, new File((String) conf.getProperty(BrokerPool.PROPERTY_DATA_DIR)), isTransactional());
+                    transactionManager = new TransactionManager(this, (Path)conf.getProperty(BrokerPool.PROPERTY_DATA_DIR), isTransactional());
                     try {
                         transactionManager.initialize();
                     } catch(final ReadOnlyException e) {
@@ -869,7 +867,17 @@ public class BrokerPool implements Database {
                     // or the FileSyncThread for the journal can/will hang.
                     try {
                         symbols = new SymbolTable(conf);
-                        isReadOnly = isReadOnly || !symbols.getFile().canWrite();
+                        isReadOnly = isReadOnly || !Files.isWritable(symbols.getFile());
+
+                        try {
+                            // initialize EXPath repository so indexManager and
+                            // startup triggers can access it
+                            expathRepo = Optional.ofNullable(ExistRepository.getRepository(this.conf));
+                        } catch(final PackageException e) {
+                            LOG.error("Failed to initialize expath repository: " + e.getMessage() + " - " +
+                                     "indexing apps and the package manager may not work.");
+                        }
+                        ClasspathHelper.updateClasspath(this);
 
                         indexManager = new IndexManager(this, conf);
 
@@ -998,14 +1006,6 @@ public class BrokerPool implements Database {
                             //require to allow access by BrokerPool.getInstance();
                             instances.put(instanceName, this);
 
-                            try {
-                                // initialize EXPath repository so startup triggers can access it
-                                expathRepo = ExistRepository.getRepository(this.conf);
-                            } catch(final PackageException e) {
-                                LOG.warn("Failed to initialize expath repository: " + e.getMessage() + " - this is not fatal, but " +
-                                    "the package manager may not work.");
-                            }
-
                             callStartupTriggers((List<StartupTriggerConfig>) conf.getProperty(BrokerPool.PROPERTY_STARTUP_TRIGGERS), broker);
                         } finally {
                             release(broker);
@@ -1048,8 +1048,6 @@ public class BrokerPool implements Database {
                         //scheduler.executeStartupJobs();
 
                         scheduler.run();
-
-                        ClasspathHelper.updateClasspath(this);
 
                         statusReporter.setStatus(SIGNAL_STARTED);
                     } catch(final Throwable t) {
@@ -1269,7 +1267,7 @@ public class BrokerPool implements Database {
         return conf;
     }
 
-    public ExistRepository getExpathRepo() {
+    public Optional<ExistRepository> getExpathRepo() {
         return expathRepo;
     }
 
@@ -1321,9 +1319,9 @@ public class BrokerPool implements Database {
     }
 
     public boolean isReadOnly() {
-        final long freeSpace = dataLock.getFile().getUsableSpace();
+        final long freeSpace = dataLock.getFile().toFile().getUsableSpace();
         if(freeSpace < diskSpaceMin) {
-            LOG.fatal("Partition containing DATA_DIR: " + dataLock.getFile().getAbsolutePath() + " is running out of disk space. " +
+            LOG.fatal("Partition containing DATA_DIR: " + dataLock.getFile().toAbsolutePath().toString() + " is running out of disk space. " +
                 "Switching eXist-db to read only to prevent data loss!");
             setReadOnly();
         }
@@ -2171,8 +2169,8 @@ public class BrokerPool implements Database {
     }
 
     @Override
-    public File getStoragePlace() {
-        return new File((String) conf.getProperty(BrokerPool.PROPERTY_DATA_DIR));
+    public Path getStoragePlace() {
+        return (Path)conf.getProperty(BrokerPool.PROPERTY_DATA_DIR);
     }
 
     private final List<TriggerProxy<? extends DocumentTrigger>> documentTriggers = new ArrayList<>();

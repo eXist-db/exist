@@ -26,12 +26,7 @@ package org.exist.xquery.functions.session;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.http.servlets.ResponseWrapper;
-import org.exist.xquery.BasicFunction;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Variable;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.functions.response.ResponseModule;
 import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
@@ -75,10 +70,10 @@ public class EncodeURL extends BasicFunction {
 		// request object is read from global variable $response
 		final Variable var = myModule.resolveVariable(ResponseModule.RESPONSE_VAR);
 		if(var == null || var.getValue() == null) {
-			throw new XPathException(this, "No request object found in the current XQuery context.");
+			throw new XPathException(this, ErrorCodes.XPDY0002, "No request object found in the current XQuery context.");
 		}
 		if(var.getValue().getItemType() != Type.JAVA_OBJECT) {
-			throw new XPathException(this, "Variable $response is not bound to an Java object.");
+			throw new XPathException(this, ErrorCodes.XPDY0002, "Variable $response is not bound to an Java object.");
 		}
 		
 		// get parameters
@@ -89,7 +84,7 @@ public class EncodeURL extends BasicFunction {
 		if(value.getObject() instanceof ResponseWrapper) {
 			return new AnyURIValue(((ResponseWrapper)value.getObject()).encodeURL(url));
 		} else {
-			throw new XPathException(this, "Variable $response is not bound to a Response object.");
+			throw new XPathException(this, ErrorCodes.XPDY0002, "Variable $response is not bound to a Response object.");
 		}
 	}
 }

@@ -107,7 +107,7 @@ public class DatabaseImpl implements Database {
      */
     private void configure(final String instanceName) throws XMLDBException {
         try {
-            final Configuration config = new Configuration(configuration, null);
+            final Configuration config = new Configuration(configuration, Optional.empty());
             BrokerPool.configure(instanceName, 1, 5, config);
             if (shutdown != null) {
                 BrokerPool.getInstance(instanceName).registerShutdownListener(shutdown);

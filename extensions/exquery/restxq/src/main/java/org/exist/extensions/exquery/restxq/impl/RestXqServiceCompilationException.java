@@ -32,7 +32,7 @@ import org.exquery.restxq.RestXqServiceException;
  *
  * @author Adam Retter <adam.retter@googlemail.com>
  */
-public class RestXqServiceCompilationException extends RestXqServiceException {
+class RestXqServiceCompilationException extends RestXqServiceException {
 
     public RestXqServiceCompilationException(final String message, final Throwable cause) {
         super(message, cause);

@@ -29,12 +29,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.http.servlets.RequestWrapper;
-import org.exist.xquery.BasicFunction;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Variable;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.value.DoubleValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
@@ -79,9 +74,9 @@ public class GetUploadedFileSize extends BasicFunction {
 		// request object is read from global variable $request
 		final Variable var = myModule.resolveVariable(RequestModule.REQUEST_VAR);
 		if(var == null || var.getValue() == null)
-			{throw new XPathException(this, "No request object found in the current XQuery context.");}
+			{throw new XPathException(this, ErrorCodes.XPDY0002, "No request object found in the current XQuery context.");}
 		if (var.getValue().getItemType() != Type.JAVA_OBJECT)
-			{throw new XPathException(this, "Variable $request is not bound to an Java object.");}
+			{throw new XPathException(this, ErrorCodes.XPDY0002, "Variable $request is not bound to an Java object.");}
 
 		// get parameters
 		final String uploadParamName = args[0].getStringValue();
@@ -99,7 +94,7 @@ public class GetUploadedFileSize extends BasicFunction {
 			}
 			return result;
 		} else
-			{throw new XPathException(this, "Variable $request is not bound to a Request object.");}
+			{throw new XPathException(this, ErrorCodes.XPDY0002, "Variable $request is not bound to a Request object.");}
 	}
 
 }

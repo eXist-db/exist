@@ -48,7 +48,9 @@ import org.exist.storage.btree.Value;
 import org.exist.storage.index.CollectionStore;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.serializers.EXistOutputKeys;
+import org.exist.util.FileUtils;
 import org.exist.util.UTF8;
+import org.exist.util.function.FunctionE;
 import org.exist.util.serializer.AttrList;
 import org.exist.util.serializer.Receiver;
 import org.exist.util.serializer.SAXSerializer;
@@ -71,8 +73,11 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.transform.OutputKeys;
 import java.io.*;
+import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 
 /**
@@ -135,7 +140,7 @@ public class SystemExport
     	bh = broker.getDatabase().getPluginsManager().getBackupHandler(LOG);
     }
 
-    public File export( String targetDir, boolean incremental, boolean zip, List<ErrorReport> errorList )
+    public Path export( String targetDir, boolean incremental, boolean zip, List<ErrorReport> errorList )
     {
         return( export( targetDir, incremental, -1, zip, errorList ) );
     }
@@ -154,9 +159,9 @@ public class SystemExport
      *
      * @return  DOCUMENT ME!
      */
-    public File export( String targetDir, boolean incremental, int maxInc, boolean zip, List<ErrorReport> errorList )
+    public Path export( String targetDir, boolean incremental, int maxInc, boolean zip, List<ErrorReport> errorList )
     {
-        File backupFile = null;
+        Path backupFile = null;
 
         try {
             final BackupDirectory  directory  = new BackupDirectory( targetDir );
@@ -206,40 +211,38 @@ public class SystemExport
             }
 
             backupFile = directory.createBackup( incremental && ( prevBackup != null ), zip );
-            BackupWriter output;
 
-            if( zip ) {
-                output = new ZipWriter( backupFile, XmldbURI.ROOT_COLLECTION );
+            final FunctionE<Path, BackupWriter, IOException> fWriter;
+            if(zip) {
+                fWriter = p -> new ZipWriter(p, XmldbURI.ROOT_COLLECTION );
             } else {
-                output = new FileSystemWriter( backupFile );
+                fWriter = p -> new FileSystemWriter(p);
             }
-            output.setProperties( properties );
+
+            try(final BackupWriter output = fWriter.apply(backupFile)) {
+                output.setProperties(properties);
 
 //            File repoBackup = RepoBackup.backup(broker);
 //            output.addToRoot(RepoBackup.REPO_ARCHIVE, repoBackup);
-//
-//
 //            FileUtils.forceDelete(repoBackup);
 
-            final Date date = ( prevBackup == null ) ? null : prevBackup.getDate();
-            final CollectionCallback cb   = new CollectionCallback( output, date, prevBackup, errorList, true );
-            broker.getCollectionsFailsafe( cb );
+                final Date date = (prevBackup == null) ? null : prevBackup.getDate();
+                final CollectionCallback cb = new CollectionCallback(output, date, prevBackup, errorList, true);
+                broker.getCollectionsFailsafe(cb);
 
-            exportOrphans( output, cb.getDocs(), errorList );
-
-            output.close();
-            return( backupFile );
-        }
-        catch( final IOException e ) {
-            reportError( "A write error occurred while exporting data: '" + e.getMessage() + "'. Aborting export.", e );
-            return( null );
-        }
-        catch( final TerminatedException e ) {
-
-            if( backupFile != null ) {
-                backupFile.delete();
+                exportOrphans(output, cb.getDocs(), errorList);
             }
-            return( null );
+
+            return backupFile;
+
+        } catch(final IOException e) {
+            reportError( "A write error occurred while exporting data: '" + e.getMessage() + "'. Aborting export.", e );
+            return null;
+        } catch(final TerminatedException e) {
+            if(backupFile != null) {
+                FileUtils.deleteQuietly(backupFile);
+            }
+            return null;
         }
     }
 
@@ -310,8 +313,7 @@ public class SystemExport
      * @param  docs       a document set containing all the documents which were exported regularily. the method will ignore those.
      * @param  errorList  a list of {@link org.exist.backup.ErrorReport} objects as returned by methods in {@link ConsistencyCheck}
      */
-    private void exportOrphans( BackupWriter output, DocumentSet docs, List<ErrorReport> errorList )
-    {
+    private void exportOrphans( BackupWriter output, DocumentSet docs, List<ErrorReport> errorList ) throws IOException {
         output.newCollection( "/db/__lost_and_found__" );
 
         try {

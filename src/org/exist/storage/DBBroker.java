@@ -48,14 +48,13 @@ import org.exist.util.Configuration;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.TerminatedException;
-import org.exist.xquery.XQuery;
 import org.w3c.dom.Document;
 
 import javax.xml.stream.XMLStreamException;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Observable;
@@ -564,7 +563,7 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
     public abstract void readBinaryResource(final BinaryDocument blob,
         final OutputStream os) throws IOException;
 
-    public abstract File getBinaryFile(final BinaryDocument blob) throws IOException;
+    public abstract Path getBinaryFile(final BinaryDocument blob) throws IOException;
 
 	public abstract InputStream getBinaryResource(final BinaryDocument blob)
            throws IOException;

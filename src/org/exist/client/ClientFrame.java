@@ -59,6 +59,8 @@ import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -1273,7 +1275,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
             try {
                 final Backup backup = new Backup(
                     properties.getProperty(InteractiveClient.USER, SecurityManager.DBA_USER), 
-                    properties.getProperty(InteractiveClient.PASSWORD, null), backuptarget, 
+                    properties.getProperty(InteractiveClient.PASSWORD, null), Paths.get(backuptarget),
                     XmldbURI.xmldbUriFor(properties.getProperty(InteractiveClient.URI, "xmldb:exist://") 
                     + collection)
                 );
@@ -1313,12 +1315,12 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
 	            final String restoreFile = f.getAbsolutePath();
 	            
                     final GuiRestoreListener listener = new GuiRestoreListener(this);    
-                    doRestore(listener, properties.getProperty(InteractiveClient.USER, SecurityManager.DBA_USER), properties.getProperty(InteractiveClient.PASSWORD, null), newDbaPass, new File(restoreFile), properties.getProperty(InteractiveClient.URI, "xmldb:exist://"));
+                    doRestore(listener, properties.getProperty(InteractiveClient.USER, SecurityManager.DBA_USER), properties.getProperty(InteractiveClient.PASSWORD, null), newDbaPass, Paths.get(restoreFile), properties.getProperty(InteractiveClient.URI, "xmldb:exist://"));
         	}
         }
     }
     
-    private void doRestore(final GuiRestoreListener listener, final String username, final String password, final String dbaPassword, final File f, final String uri) { 
+    private void doRestore(final GuiRestoreListener listener, final String username, final String password, final String dbaPassword, final Path f, final String uri) {
         
         final Callable<Void> callable = new Callable<Void>() {
 
@@ -1849,7 +1851,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
     }
     
     /**
-     * @param   properties pass properties to the login panel
+     * @param   props pass properties to the login panel
      * @return  the modified properties
      */
     protected static Properties getLoginData(final Properties props) {

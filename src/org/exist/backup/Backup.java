@@ -21,6 +21,8 @@
  */
 package org.exist.backup;
 
+import org.exist.util.FileUtils;
+import org.exist.util.function.FunctionE;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
@@ -52,7 +54,8 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 
-import java.util.Arrays;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Date;
 import java.util.Properties;
 
@@ -69,7 +72,7 @@ public class Backup
 	
     private static final int 	currVersion             = 1;
 
-    private String           target;
+    private Path           target;
     private XmldbURI         rootCollection;
     private String           user;
     private String           pass;
@@ -90,22 +93,22 @@ public class Backup
         contentsOutputProps.setProperty( OutputKeys.INDENT, "yes" );
     }
 
-    public Backup( String user, String pass, String target, XmldbURI rootCollection )
+    public Backup( String user, String pass, final Path target, XmldbURI rootCollection )
     {
-        this.user           = user;
-        this.pass           = pass;
-        this.target         = target;
+        this.user = user;
+        this.pass = pass;
+        this.target = target;
         this.rootCollection = rootCollection;
     }
 
 
-    public Backup( String user, String pass, String target )
+    public Backup( String user, String pass, final Path target )
     {
-        this( user, pass, target, XmldbURI.LOCAL_DB_URI );
+        this(user, pass, target, XmldbURI.LOCAL_DB_URI);
     }
 
 
-    public Backup( String user, String pass, String target, XmldbURI rootCollection, Properties property )
+    public Backup( String user, String pass, final Path target, XmldbURI rootCollection, Properties property )
     {
         this( user, pass, target, rootCollection );
         this.defaultOutputProperties.setProperty( OutputKeys.INDENT, property.getProperty( "indent", "no" ) );
@@ -188,7 +191,7 @@ public class Backup
 
     public void backup( boolean guiMode, JFrame parent ) throws XMLDBException, IOException, SAXException
     {
-        final Collection current = DatabaseManager.getCollection( rootCollection.toString(), user, pass );
+        final Collection current = DatabaseManager.getCollection(rootCollection.toString(), user, pass);
 
         if( guiMode ) {
             final BackupDialog dialog = new BackupDialog( parent, false );
@@ -222,19 +225,26 @@ public class Backup
     {
         String cname = current.getName();
 
-        if( cname.charAt( 0 ) != '/' ) {
+        if(cname.charAt( 0 ) != '/') {
             cname = "/" + cname;
         }
-        final String       path   = target + encode( URIUtils.urlDecodeUtf8( cname ) );
-        BackupWriter output;
 
-        if( target.endsWith( ".zip" ) ) {
-            output = new ZipWriter( target, encode( URIUtils.urlDecodeUtf8( cname ) ) );
+        final FunctionE<String, BackupWriter, IOException> fWriter;
+        if(FileUtils.fileName(target).endsWith(".zip")) {
+            fWriter = currentName -> new ZipWriter(target, encode(URIUtils.urlDecodeUtf8(currentName)));
         } else {
-            output = new FileSystemWriter( path );
+            fWriter = currentName -> {
+                String child = encode(URIUtils.urlDecodeUtf8(currentName));
+                if(child.charAt(0) == '/') {
+                    child = child.substring(1);
+                }
+                return new FileSystemWriter(target.resolve(child));
+            };
         }
-        backup( current, output, dialog );
-        output.close();
+
+        try(final BackupWriter output = fWriter.apply(cname)) {
+            backup(current, output, dialog);
+        }
     }
 
 
@@ -434,7 +444,7 @@ public class Backup
             final Database database = (Database)cl.newInstance();
             database.setProperty( "create-database", "true" );
             DatabaseManager.registerDatabase( database );
-            final Backup backup = new Backup( "admin", null, "backup", URIUtils.encodeXmldbUriFor( args[0] ) );
+            final Backup backup = new Backup( "admin", null, Paths.get("backup"), URIUtils.encodeXmldbUriFor( args[0] ) );
             backup.backup( false, null );
         }
         catch( final Throwable e ) {

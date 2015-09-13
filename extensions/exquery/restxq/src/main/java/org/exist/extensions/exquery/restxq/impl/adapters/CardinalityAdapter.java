@@ -32,7 +32,7 @@ import org.exquery.xquery.Cardinality;
  *
  * @author Adam Retter <adam.retter@googlemail.com>
  */
-public class CardinalityAdapter {
+class CardinalityAdapter {
     
     public static Cardinality getCardinality(int cardinality) {
         

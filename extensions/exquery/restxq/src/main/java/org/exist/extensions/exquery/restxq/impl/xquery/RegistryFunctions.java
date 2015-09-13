@@ -59,22 +59,22 @@ import org.xml.sax.helpers.AttributesImpl;
  */
 public class RegistryFunctions extends BasicFunction {
     
-    public final static QName RESOURCE_FUNCTIONS = new QName("resource-functions", RestXqModule.NAMESPACE_URI, RestXqModule.PREFIX);
-    public final static QName RESOURCE_FUNCTION = new QName("resource-function", RestXqModule.NAMESPACE_URI, RestXqModule.PREFIX);
-    public final static QName ANNOTATIONS = new QName("annotations", RestXqModule.NAMESPACE_URI, RestXqModule.PREFIX);
-    public final static QName SEGMENT = new QName("segment", RestXqModule.NAMESPACE_URI, RestXqModule.PREFIX);
-    public final static QName INTERNET_MEDIA_TYPE = new QName("internet-media-type", RestXqModule.NAMESPACE_URI, RestXqModule.PREFIX);
-    
-    public final static String XQUERY_URI = "xquery-uri";
-    public final static QName RESOURCE_FUNCTION_IDENTITY = new QName("identity", RestXqModule.NAMESPACE_URI, RestXqModule.PREFIX);
-    public final static String NAMESPACE = "namespace";
-    public final static String LOCAL_NAME = "local-name";
-    public final static String ARITY = "arity";
-    public final static String VALUE = "value";
-    public final static String NAME = "name";
-    public final static String ARGUMENT = "argument";
-    public final static String DEFAULT_VALUE = "default-value";
-    public final static String SPECIFICITY_METRIC = "specificity-metric";
+    private final static QName RESOURCE_FUNCTIONS = new QName("resource-functions", RestXqModule.NAMESPACE_URI, RestXqModule.PREFIX);
+    private final static QName RESOURCE_FUNCTION = new QName("resource-function", RestXqModule.NAMESPACE_URI, RestXqModule.PREFIX);
+    private final static QName ANNOTATIONS = new QName("annotations", RestXqModule.NAMESPACE_URI, RestXqModule.PREFIX);
+    private final static QName SEGMENT = new QName("segment", RestXqModule.NAMESPACE_URI, RestXqModule.PREFIX);
+    private final static QName INTERNET_MEDIA_TYPE = new QName("internet-media-type", RestXqModule.NAMESPACE_URI, RestXqModule.PREFIX);
+
+    private final static String XQUERY_URI = "xquery-uri";
+    private final static QName RESOURCE_FUNCTION_IDENTITY = new QName("identity", RestXqModule.NAMESPACE_URI, RestXqModule.PREFIX);
+    private final static String NAMESPACE = "namespace";
+    private final static String LOCAL_NAME = "local-name";
+    private final static String ARITY = "arity";
+    private final static String VALUE = "value";
+    private final static String NAME = "name";
+    private final static String ARGUMENT = "argument";
+    private final static String DEFAULT_VALUE = "default-value";
+    private final static String SPECIFICITY_METRIC = "specificity-metric";
     
     public final static FunctionSignature signatures[] = {
 		
@@ -127,7 +127,7 @@ public class RegistryFunctions extends BasicFunction {
      * @param builder The receiver for the serialization
      * @param resourceFn The resource function to describe
      */
-    static void serializeResourceFunction(final MemTreeBuilder builder, final ResourceFunction resourceFn) {
+    private static void serializeResourceFunction(final MemTreeBuilder builder, final ResourceFunction resourceFn) {
         AttributesImpl attrs = new AttributesImpl();
         attrs.addAttribute(null, XQUERY_URI, "", "string", resourceFn.getXQueryLocation().toString());
         builder.startElement(RESOURCE_FUNCTION, attrs);
@@ -148,7 +148,7 @@ public class RegistryFunctions extends BasicFunction {
         builder.endElement();
     }
 
-    static void serializeAnnotations(final MemTreeBuilder builder, final ResourceFunction resourceFn) {
+    private static void serializeAnnotations(final MemTreeBuilder builder, final ResourceFunction resourceFn) {
         final List<Annotation> annotations = new ArrayList<>();
         annotations.addAll(resourceFn.getHttpMethodAnnotations());
         annotations.addAll(resourceFn.getConsumesAnnotations());

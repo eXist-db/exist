@@ -5,9 +5,15 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.NativeBroker;
 import org.exist.storage.lock.Lock;
+import org.exist.util.FileUtils;
 import org.exist.xmldb.XmldbURI;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -19,23 +25,16 @@ public class RepoBackup {
 
     public final static String REPO_ARCHIVE = "expathrepo.zip";
 
-    public static File backup(DBBroker broker) throws IOException {
-        ZipOutputStream os = null;
-        File tempFile = null;
-        try {
-            final File directory = ExistRepository.getRepositoryDir(broker.getConfiguration());
-            tempFile = File.createTempFile("expathrepo", "zip");
-            os = new ZipOutputStream(new FileOutputStream(tempFile));
-
-            zipDir(directory.getAbsolutePath(), os, "");
-        } finally {
-            if (os != null)
-                {os.close();}
+    public static Path backup(final DBBroker broker) throws IOException {
+        final Path tempFile = Files.createTempFile("expathrepo", "zip");
+        try(final ZipOutputStream os = new ZipOutputStream(Files.newOutputStream(tempFile))) {
+            final Path directory = ExistRepository.getRepositoryDir(broker.getConfiguration());
+            zipDir(directory.toAbsolutePath(), os, "");
         }
         return tempFile;
     }
 
-    public static void restore(DBBroker broker) throws IOException, PermissionDeniedException {
+    public static void restore(final DBBroker broker) throws IOException, PermissionDeniedException {
         final XmldbURI docPath = XmldbURI.createInternal(XmldbURI.ROOT_COLLECTION + "/" + REPO_ARCHIVE);
         DocumentImpl doc = null;
         try {
@@ -45,8 +44,8 @@ public class RepoBackup {
             if (doc.getResourceType() != DocumentImpl.BINARY_FILE)
                 {throw new IOException(docPath + " is not a binary resource");}
 
-            final File file = ((NativeBroker)broker).getCollectionBinaryFileFsPath(doc.getURI());
-            final File directory = ExistRepository.getRepositoryDir(broker.getConfiguration());
+            final Path file = ((NativeBroker)broker).getCollectionBinaryFileFsPath(doc.getURI());
+            final Path directory = ExistRepository.getRepositoryDir(broker.getConfiguration());
             unzip(file, directory);
         } finally {
             if (doc != null)
@@ -62,33 +61,20 @@ public class RepoBackup {
      * @param path
      * @throws IOException
      */
-    public static void zipDir(String directory, ZipOutputStream zos, String path)
-            throws IOException {
-        final File zipDir = new File(directory);
+    public static void zipDir(final Path directory, final ZipOutputStream zos, final String path) throws IOException {
         // get a listing of the directory content
-        final String[] dirList = zipDir.list();
-        final byte[] readBuffer = new byte[2156];
-        int bytesIn = 0;
+        final List<Path> dirList = Files.list(directory).collect(Collectors.toList());
+
         // loop through dirList, and zip the files
-        for (int i = 0; i < dirList.length; i++) {
-            final File f = new File(zipDir, dirList[i]);
-            if (f.isDirectory()) {
-                final String filePath = f.getPath();
-                zipDir(filePath, zos, path + f.getName() + "/");
+        for (final Path f : dirList) {
+            if (Files.isDirectory(f)) {
+                zipDir(f, zos, path + FileUtils.fileName(f) + "/");
                 continue;
             }
-            final FileInputStream fis = new FileInputStream(f);
-            try {
-                final ZipEntry anEntry = new ZipEntry(path + f.getName());
-                zos.putNextEntry(anEntry);
-                bytesIn = fis.read(readBuffer);
-                while (bytesIn != -1) {
-                    zos.write(readBuffer, 0, bytesIn);
-                    bytesIn = fis.read(readBuffer);
-                }
-            } finally {
-                fis.close();
-            }
+
+            final ZipEntry anEntry = new ZipEntry(path + FileUtils.fileName(f));
+            zos.putNextEntry(anEntry);
+            Files.copy(f, zos);
         }
     }
 
@@ -98,61 +84,31 @@ public class RepoBackup {
      * @param zipfile Input .zip file
      * @param outdir Output directory
      */
-    public static void unzip(File zipfile, File outdir) throws IOException {
-        ZipInputStream zin = null;
-        try
-        {
-            zin = new ZipInputStream(new FileInputStream(zipfile));
+    public static void unzip(final Path zipfile, final Path outdir) throws IOException {
+        try(final ZipInputStream zin = new ZipInputStream(Files.newInputStream(zipfile))) {
             ZipEntry entry;
             String name, dir;
             while ((entry = zin.getNextEntry()) != null)
             {
                 name = entry.getName();
-                if( entry.isDirectory() )
-                {
-                    mkdirs(outdir, name);
+                if(entry.isDirectory() ) {
+                    Files.createDirectories(outdir.resolve(name));
                     continue;
                 }
+
                 dir = dirpart(name);
-                if( dir != null )
-                    {mkdirs(outdir, dir);}
-
-                extractFile(zin, outdir, name);
-            }
-        } finally {
-            if (zin != null)
-                try {
-                    zin.close();
-                } catch (final IOException e) {
-                    // ignore
+                if(dir != null) {
+                    Files.createDirectories(outdir.resolve(name));
                 }
-        }
-    }
 
-    private static void extractFile(ZipInputStream in, File directory, String name) throws IOException
-    {
-        final byte[] buf = new byte[4096];
-        final OutputStream out = new FileOutputStream(new File(directory, name));
-        int count;
-        try {
-            while ((count = in.read(buf)) != -1) {
-                out.write(buf, 0, count);
+                //extract file
+                Files.copy(zin, outdir.resolve(name));
             }
-        } finally {
-            out.close();
         }
     }
 
-    private static void mkdirs(File directory,String path)
-    {
-        final File d = new File(directory, path);
-        if( !d.exists() )
-            {d.mkdirs();}
-    }
-
-    private static String dirpart(String name)
-    {
-        final int s = name.lastIndexOf( File.separatorChar );
+    private static String dirpart(final String name) {
+        final int s = name.lastIndexOf(File.separatorChar);
         return s == -1 ? null : name.substring( 0, s );
     }
 }

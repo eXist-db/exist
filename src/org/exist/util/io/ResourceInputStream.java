@@ -34,7 +34,7 @@ public class ResourceInputStream extends FileInputStream {
 	Resource resource;
 	
 	public ResourceInputStream(Resource file) throws FileNotFoundException {
-		super(file.getFile());
+		super(file.getFile().toFile());
 		
 		resource = file;
 	}

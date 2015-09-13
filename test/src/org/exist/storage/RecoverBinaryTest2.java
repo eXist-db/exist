@@ -22,6 +22,7 @@
 package org.exist.storage;
 
 import java.io.*;
+import java.nio.file.Path;
 import java.util.Date;
 import java.util.Iterator;
 
@@ -39,7 +40,6 @@ import org.exist.xmldb.XmldbURI;
 import org.junit.After;
 import org.junit.Test;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 
 public class RecoverBinaryTest2 {
     
@@ -128,9 +128,9 @@ public class RecoverBinaryTest2 {
     
     private void storeFiles(final DBBroker broker, final Txn transaction, final Collection test2) throws IOException, EXistException, PermissionDeniedException, LockException, TriggerException {
         // Get files in directory
-        final File dir = new File(ConfigurationHelper.getExistHome(), directory);
-        final File files[] = dir.listFiles();
-        assertNotNull("Check directory '"+dir.getAbsolutePath()+"'.",files);
+        final Path dir = FileUtils.resolve(ConfigurationHelper.getExistHome(), directory);
+        final File files[] = dir.toFile().listFiles();
+        assertNotNull("Check directory '"+dir.toAbsolutePath().toString()+"'.",files);
         
         // store some documents.
         for (int j = 0; j < 10; j++) {

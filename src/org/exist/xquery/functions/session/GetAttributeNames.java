@@ -28,12 +28,7 @@ import java.util.Enumeration;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.http.servlets.SessionWrapper;
-import org.exist.xquery.BasicFunction;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Variable;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
@@ -75,9 +70,9 @@ public class GetAttributeNames extends BasicFunction {
 		// session object is read from global variable $session
 		final Variable var = myModule.resolveVariable(SessionModule.SESSION_VAR);
 		if(var == null || var.getValue() == null)
-			{throw new XPathException(this, "Session not set");}
+			{throw new XPathException(this, ErrorCodes.XPDY0002, "Session not set");}
 		if (var.getValue().getItemType() != Type.JAVA_OBJECT)
-			{throw new XPathException(this, "Variable $session is not bound to an Java object.");}
+			{throw new XPathException(this, ErrorCodes.XPDY0002, "Variable $session is not bound to an Java object.");}
 		final JavaObjectValue session = (JavaObjectValue) var.getValue().itemAt(0);
 		
 		if(session.getObject() instanceof SessionWrapper)
@@ -92,6 +87,6 @@ public class GetAttributeNames extends BasicFunction {
 			return result;
 		}
 		else
-			{throw new XPathException(this, "Type error: variable $session is not bound to a session object");}
+			{throw new XPathException(this, ErrorCodes.XPDY0002, "Type error: variable $session is not bound to a session object");}
 	}
 }

@@ -4,6 +4,26 @@ module namespace groupby="http://exist-db.org/xquery/test/groupby";
 
 declare namespace test="http://exist-db.org/xquery/xqsuite";
 
+declare variable $groupby:plays := (
+  document {
+   <play>
+    <title>Hamlet</title>
+    <characters>
+      <character>Hamlet</character>
+      <character>Polonius</character>
+    </characters>
+   </play>
+   },
+   document {<play>
+    <title>Rosenkrantz and Guildenstern are Dead</title>
+    <characters>
+      <character>Alfred</character>
+      <character>Hamlet</character>
+    </characters>
+   </play>
+   }
+);
+
 declare variable $groupby:works :=
  <works>
   <employee name="Jane Doe 1" gender="female">
@@ -32,7 +52,7 @@ declare variable $groupby:works :=
    <empnum>E1</empnum>
    <pnum>P5</pnum>
    <hours>20</hours>
-   <hours>30</hours>   
+   <hours>30</hours>
   </employee>
   <employee name= "John Doe 6" gender="male">
    <empnum>E1</empnum>
@@ -184,90 +204,102 @@ declare variable $groupby:products-doc :=
   </product>
 </products>;
 
+declare variable $groupby:addresses :=
+    <addresses>
+        <address>
+            <name>Rudi Rüssel</name>
+            <city>Düsseldorf</city>
+        </address>
+        <address>
+            <name>Berta Bär</name>
+            <city>Dusseldorf</city>
+        </address>
+    </addresses>;
+
 declare
     %test:assertEqualsPermutation(
-        "1 11 21 31 41 51 61 71 81 91", "2 12 22 32 42 52 62 72 82 92", "3 13 23 33 43 53 63 73 83 93", 
-        "4 14 24 34 44 54 64 74 84 94", "5 15 25 35 45 55 65 75 85 95", "6 16 26 36 46 56 66 76 86 96", 
-        "7 17 27 37 47 57 67 77 87 97", "8 18 28 38 48 58 68 78 88 98", "9 19 29 39 49 59 69 79 89 99", 
+        "1 11 21 31 41 51 61 71 81 91", "2 12 22 32 42 52 62 72 82 92", "3 13 23 33 43 53 63 73 83 93",
+        "4 14 24 34 44 54 64 74 84 94", "5 15 25 35 45 55 65 75 85 95", "6 16 26 36 46 56 66 76 86 96",
+        "7 17 27 37 47 57 67 77 87 97", "8 18 28 38 48 58 68 78 88 98", "9 19 29 39 49 59 69 79 89 99",
         "10 20 30 40 50 60 70 80 90 100"
     )
 function groupby:atomic1() {
-    for $x in 1 to 100 
-    let $key := $x mod 10 
-    group by $key 
+    for $x in 1 to 100
+    let $key := $x mod 10
+    group by $key
     return string(text{$x})
 };
 
 declare
     %test:assertEqualsPermutation(
-        "1 11 21 31 41 51 61 71 81 91", "2 12 22 32 42 52 62 72 82 92", "3 13 23 33 43 53 63 73 83 93", 
-        "4 14 24 34 44 54 64 74 84 94", "5 15 25 35 45 55 65 75 85 95", "6 16 26 36 46 56 66 76 86 96", 
-        "7 17 27 37 47 57 67 77 87 97", "8 18 28 38 48 58 68 78 88 98", "9 19 29 39 49 59 69 79 89 99", 
+        "1 11 21 31 41 51 61 71 81 91", "2 12 22 32 42 52 62 72 82 92", "3 13 23 33 43 53 63 73 83 93",
+        "4 14 24 34 44 54 64 74 84 94", "5 15 25 35 45 55 65 75 85 95", "6 16 26 36 46 56 66 76 86 96",
+        "7 17 27 37 47 57 67 77 87 97", "8 18 28 38 48 58 68 78 88 98", "9 19 29 39 49 59 69 79 89 99",
         "10 20 30 40 50 60 70 80 90 100"
     )
 function groupby:atomic2() {
-    for $x in 1 to 100 
-    group by $key := $x mod 10 
+    for $x in 1 to 100
+    group by $key := $x mod 10
     return
         string(text{$x})
 };
 
-declare 
+declare
     %test:assertEqualsPermutation(
         "female:Jane Doe 1,Jane Doe 3,Jane Doe 5,Jane Doe 7,Jane Doe 9,Jane Doe 11,Jane Doe 13",
         "male:John Doe 2,John Doe 4,John Doe 6,John Doe 8,John Doe 10,John Doe 12"
     )
 function groupby:basic1() {
     for $x in $groupby:works//employee
-    let $key := $x/@gender 
-    group by $key 
-    return concat($key, ':',  
-           string-join(for $e in $x return $e/@name/string(), ',')) 
+    let $key := $x/@gender
+    group by $key
+    return concat($key, ':',
+           string-join(for $e in $x return $e/@name/string(), ','))
 };
 
-declare 
+declare
     %test:assertEqualsPermutation(
         "female:Jane Doe 1,Jane Doe 3,Jane Doe 5,Jane Doe 7,Jane Doe 9,Jane Doe 11,Jane Doe 13",
         "male:John Doe 2,John Doe 4,John Doe 6,John Doe 8,John Doe 10,John Doe 12"
     )
 function groupby:basic2() {
-    for $x in $groupby:works//employee 
-    group by $key := $x/@gender 
-    return concat($key, ':',  
+    for $x in $groupby:works//employee
+    group by $key := $x/@gender
+    return concat($key, ':',
            string-join(for $e in $x return $e/@name/string(), ','))
 };
 
-declare 
+declare
     %test:assertEqualsPermutation(
         "false:Jane Doe 1,Jane Doe 3,Jane Doe 5,Jane Doe 7,Jane Doe 9,Jane Doe 11,Jane Doe 13",
         "true:John Doe 2,John Doe 4,John Doe 6,John Doe 8,John Doe 10,John Doe 12"
     )
 function groupby:basicBooleanGroupKey1() {
-    for $x in $groupby:works//employee 
+    for $x in $groupby:works//employee
     let $key := ($x/@gender = 'male')
-    group by $key 
-    return concat($key, ':',  
-           string-join(for $e in $x return $e/@name/string(), ',')) 
+    group by $key
+    return concat($key, ':',
+           string-join(for $e in $x return $e/@name/string(), ','))
 };
 
-declare 
+declare
     %test:assertEqualsPermutation(
         "false:Jane Doe 1,Jane Doe 3,Jane Doe 5,Jane Doe 7,Jane Doe 9,Jane Doe 11,Jane Doe 13",
         "true:John Doe 2,John Doe 4,John Doe 6,John Doe 8,John Doe 10,John Doe 12"
     )
 function groupby:basicBooleanGroupKey2() {
-    for $x in $groupby:works//employee 
-    group by $key := ($x/@gender = 'male') 
-    return concat($key, ':',  
-           string-join(for $e in $x return $e/@name/string(), ',')) 
+    for $x in $groupby:works//employee
+    group by $key := ($x/@gender = 'male')
+    return concat($key, ':',
+           string-join(for $e in $x return $e/@name/string(), ','))
 };
 
-declare 
+declare
     %test:assertEqualsPermutation("female:41.25", "male:37.75")
 function groupby:aggregateOverKey() {
-    for $x in $groupby:works//employee 
-    let $key := $x/@gender 
-    group by $key 
+    for $x in $groupby:works//employee
+    let $key := $x/@gender
+    group by $key
     return concat($key, ':', avg($x/hours))
 };
 
@@ -275,44 +307,43 @@ declare
     %test:assertXPath("$result/group[@status='active'][@count='1']")
 function groupby:emptyGroupKey() {
     (: <out><group status="" count="12"/><group status="active" count="1"/></out> :)
-    <out>{ 
-        for $x in $groupby:works//employee 
-        group by $key := $x/status 
-        return <group status="{$key}" count="{count($x)}"/> 
+    <out>{
+        for $x in $groupby:works//employee
+        group by $key := $x/status
+        return <group status="{$key}" count="{count($x)}"/>
     }</out>
 };
 
 declare
     %test:assertEquals('<out><group count="6" key="E1">P1|P2|P3|P4|P5|P6</group><group count="2" key="E2">P1|P2</group><group count="2" key="E3">P2|P2</group><group count="3" key="E4">P2|P4|P5</group></out>')
 function groupby:collation() {
-    <out>{ 
-        for $x in $groupby:works//employee 
-        let $key := $x/empnum 
-        group by $key collation "http://www.w3.org/2005/xpath-functions/collation/codepoint" 
-        order by $key 
-        return <group count="{count($x)}" key="{$key}"> {string-join($x/pnum, '|')} </group> 
+    <out>{
+        for $x in $groupby:works//employee
+        let $key := $x/empnum
+        group by $key collation "http://www.w3.org/2005/xpath-functions/collation/codepoint"
+        order by $key
+        return <group count="{count($x)}" key="{$key}"> {string-join($x/pnum, '|')} </group>
     }</out>
 };
 
 declare
     %test:assertEquals('<out><group count="6" key="E1">P1|P2|P3|P4|P5|P6</group><group count="2" key="E2">P1|P2</group><group count="2" key="E3">P2|P2</group><group count="3" key="E4">P2|P4|P5</group></out>')
 function groupby:collation2() {
-    <out>{ 
-        for $x in $groupby:works//employee 
-        group by $key := $x/empnum collation "http://www.w3.org/2005/xpath-functions/collation/codepoint" 
-        order by $key 
-        return <group count="{count($x)}" key="{$key}"> {string-join($x/pnum, '|')} </group> 
+    <out>{
+        for $x in $groupby:works//employee
+        group by $key := $x/empnum collation "http://www.w3.org/2005/xpath-functions/collation/codepoint"
+        order by $key
+        return <group count="{count($x)}" key="{$key}"> {string-join($x/pnum, '|')} </group>
     }</out>
 };
 
 declare
-    %test:pending
     %test:assertEqualsPermutation("40:3", "80:3", "20:5")
 function groupby:whereClause() {
-    for $x in $groupby:works//employee 
-    let $key := $x/hours[1] 
-    where count($x) gt 2 
-    group by $key 
+    for $x in $groupby:works//employee
+    let $key := $x/hours[1]
+    group by $key
+    where count($x) gt 2
     return concat($key, ':', count($x))
 };
 
@@ -320,11 +351,11 @@ declare
     %test:assertEquals('<out><group count="2">Jane Doe 7|John Doe 8</group><group count="2">Jane Doe 9|John Doe 10</group><group count="3">Jane Doe 11|John Doe 12|Jane Doe 13</group><group count="6">Jane Doe 1|John Doe 2|Jane Doe 3|John Doe 4|Jane Doe 5|John Doe 6</group></out>')
 function groupby:orderByClause() {
     <out>{
-        for $x in $groupby:works//employee 
-        let $key := $x/empnum 
-        group by $key 
-        order by count($x), $key 
-        return <group count="{count($x)}"> {string-join($x/@name, '|')} </group> 
+        for $x in $groupby:works//employee
+        let $key := $x/empnum
+        group by $key
+        order by count($x), $key
+        return <group count="{count($x)}"> {string-join($x/@name, '|')} </group>
     }</out>
 };
 
@@ -341,10 +372,10 @@ function groupby:useCase1() {
             <product name="{$pname}">{
                 sum($sales/qty)
             }</product>
-    }</sales-qty-by-product> 
+    }</sales-qty-by-product>
 };
 
-declare 
+declare
     %test:assertEquals('<result><group><state>CA</state><category>clothes</category><total-qty>510</total-qty></group><group><state>CA</state><category>kitchen</category><total-qty>170</total-qty></group><group><state>MA</state><category>clothes</category><total-qty>10</total-qty></group><group><state>MA</state><category>kitchen</category><total-qty>300</total-qty></group></result>')
 function groupby:useCase2() {
     <result>{
@@ -363,7 +394,6 @@ function groupby:useCase2() {
 };
 
 declare
-    %test:pending
     %test:assertEquals('<result><group><state>CA</state><category>clothes</category><total-revenue>2550</total-revenue></group><group><state>CA</state><category>kitchen</category><total-revenue>6500</total-revenue></group><group><state>MA</state><category>clothes</category><total-revenue>100</total-revenue></group><group><state>MA</state><category>kitchen</category><total-revenue>14000</total-revenue></group></result>')
 function groupby:useCase3() {
     <result>{
@@ -411,7 +441,7 @@ function groupby:useCase4() {
     }</result>
 };
 
-declare 
+declare
     %test:assertEquals('<result><store number="1"><product name="socks" qty="500"/><product name="broiler" qty="20"/></store><store number="2"><product name="toaster" qty="100"/><product name="toaster" qty="50"/><product name="socks" qty="10"/></store><store number="3"><product name="blender" qty="150"/><product name="blender" qty="100"/><product name="toaster" qty="50"/><product name="shirt" qty="10"/></store></result>')
 function groupby:useCase5() {
     <result>{
@@ -427,4 +457,90 @@ function groupby:useCase5() {
                     <product name = "{$s/product-name}" qty = "{$s/qty}"/>
             }</store>
     }</result>
+};
+
+declare
+    %test:assertEquals('<result><store number="3" total-profit="7320"/><store number="2" total-profit="3030"/><store number="1" total-profit="2100"/></result>')
+function groupby:useCase6() {
+    <result>{
+        for $sales in $groupby:sales-records-doc/record
+        let $storeno := $sales/store-number,
+            $product := $groupby:products-doc/product[name = $sales/product-name],
+            $prd := $product,
+            $profit := $sales/qty * ($prd/price - $prd/cost)
+        group by $storeno
+        let $total-store-profit := sum($profit)
+        where $total-store-profit > 100
+        order by $total-store-profit descending
+        return
+            <store number = "{$storeno}" total-profit = "{$total-store-profit}"/>
+    }</result>
+};
+
+(: Should create two groups for "Düsseldorf" and "Dusseldorf" :)
+declare
+    %test:assertEquals(1, 1)
+function groupby:collation3() {
+    for $address in $groupby:addresses/address
+    group by $city := $address/city
+    return
+        count($address)
+};
+
+(: Should create one group only due to the collation :)
+declare
+    %test:assertEquals(2)
+function groupby:collation4() {
+    for $address in $groupby:addresses/address
+    group by $city := $address/city collation "?strength=primary"
+    return
+        count($address)
+};
+
+declare
+    %test:assertEquals(
+        '<grp even="1" y="1">1 1 1 1 3 3 3 3 5 5 5 5 7 7 7 7 9 9 9 9</grp>',
+        '<grp even="0" y="1">2 2 2 2 4 4 4 4 6 6 6 6 8 8 8 8 10 10 10 10</grp>')
+function groupby:existing-var()
+{
+    for $x in 1 to 10, $y in 1 to 4
+    let $org_y := $y
+    group by $y, $y := $x mod 2
+    return <grp y="{$org_y[1]}" even="{$y}">{$x}</grp>
+};
+
+(: https://github.com/eXist-db/exist/issues/384 :)
+declare
+    %test:assertEquals('<character name="Hamlet"><play><title>Hamlet</title></play><play><title>Rosenkrantz and Guildenstern are Dead</title></play></character>',
+    '<character name="Polonius"><play><title>Hamlet</title></play></character>',
+    '<character name="Alfred"><play><title>Rosenkrantz and Guildenstern are Dead</title></play></character>')
+function groupby:multi-for-groupby-bug1() {
+    for $play in $groupby:plays/play
+    let $title := $play/title
+    for $character in $play/characters/character
+    group by $character
+    return
+        <character name="{$character}">
+         {
+            $title ! <play>{ . }</play>
+         }
+        </character>
+};
+
+(: https://github.com/eXist-db/exist/issues/384 :)
+declare
+    %test:assertEquals('<character name="Hamlet"><play><title>Hamlet</title></play><play><title>Rosenkrantz and Guildenstern are Dead</title></play></character>',
+    '<character name="Polonius"><play><title>Hamlet</title></play></character>',
+    '<character name="Alfred"><play><title>Rosenkrantz and Guildenstern are Dead</title></play></character>')
+function groupby:multi-for-groupby-bug2() {
+    for $play in $groupby:plays/play
+    let $title := $play/title
+    for $c in  $play/characters/character
+    group by $character := $c
+    return
+        <character name="{$character}">
+         {
+            $title ! <play>{ . }</play>
+         }
+        </character>
 };

@@ -27,7 +27,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package org.exist.extensions.exquery.restxq.impl;
 
 import java.io.IOException;
-import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -37,12 +36,10 @@ import org.exist.EXistException;
 import org.exist.extensions.exquery.restxq.impl.adapters.HttpServletRequestAdapter;
 import org.exist.extensions.exquery.restxq.impl.adapters.HttpServletResponseAdapter;
 import org.exist.http.servlets.AbstractExistHttpServlet;
-import org.exist.http.servlets.BasicAuthenticator;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
-import org.exist.util.io.FilterInputStreamCacheFactory.FilterInputStreamCacheConfiguration;
 import org.exquery.http.HttpRequest;
 import org.exquery.restxq.RestXqService;
 import org.exquery.restxq.RestXqServiceException;
@@ -54,15 +51,10 @@ import org.exquery.restxq.RestXqServiceRegistry;
  */
 public class RestXqServlet extends AbstractExistHttpServlet {
 
-    final Logger log = LogManager.getLogger(getClass());
+    private final Logger log = LogManager.getLogger(getClass());
 
     private RestXqServiceRegistry getRegistry() {
         return RestXqServiceRegistryManager.getRegistry(getPool());
-    }
-
-    @Override
-    public void init(final ServletConfig config) throws ServletException {
-        super.init(config);
     }
 
     @Override
@@ -76,23 +68,14 @@ public class RestXqServlet extends AbstractExistHttpServlet {
             // "Permission denied: unknown user or password");
             return;
         }
-        
-        DBBroker broker = null;
-        try {
-            broker = getPool().get(user);
 
+        try(final DBBroker broker = getPool().get(user)) {
             final Configuration configuration = broker.getConfiguration();
-            
+
             final HttpRequest requestAdapter = new HttpServletRequestAdapter(
                 request,
-                new FilterInputStreamCacheConfiguration(){
-                    @Override
-                    public String getCacheClass() {
-                        return (String)configuration.getProperty(Configuration.BINARY_CACHE_CLASS_PROPERTY);
-                    }
-                });
-          
-            
+                    () -> (String)configuration.getProperty(Configuration.BINARY_CACHE_CLASS_PROPERTY));
+
             final RestXqService service = getRegistry().findService(requestAdapter);
             if(service != null) {
                 
@@ -113,20 +96,16 @@ public class RestXqServlet extends AbstractExistHttpServlet {
                 
                 super.service(request, response);
             }
-        } catch(EXistException ee) {
-            getLog().error(ee.getMessage(), ee);
-            throw new ServletException(ee.getMessage(), ee);
-        } catch(RestXqServiceException rqse) {
-            if (rqse.getCause() instanceof PermissionDeniedException) {
+        } catch(final EXistException e) {
+            getLog().error(e.getMessage(), e);
+            throw new ServletException(e.getMessage(), e);
+        } catch(final RestXqServiceException e) {
+            if (e.getCause() instanceof PermissionDeniedException) {
                 getAuthenticator().sendChallenge(request, response);
             } else {
                 //TODO should probably be caught higher up and returned as a HTTP Response? maybe need two different types of exception to differentiate critical vs processing exception
-                getLog().error(rqse.getMessage(), rqse);
-                throw new ServletException(rqse.getMessage(), rqse);
-            }
-        } finally {
-            if(broker != null) {
-                getPool().release(broker);
+                getLog().error(e.getMessage(), e);
+                throw new ServletException(e.getMessage(), e);
             }
         }
     }

@@ -19,6 +19,7 @@
  */
 package org.exist.xmldb;
 
+import java.nio.file.Path;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -31,7 +32,7 @@ public class DatabaseStatus {
 
 	private final String id;
     private final String confPath = null;
-	private final String dataDir;
+	private final Path dataDir;
 	private final int runningBrokers;
 	private final int availableBrokers;
 	private final int maxBrokers;
@@ -45,7 +46,7 @@ public class DatabaseStatus {
 		
 		// paths
 		//this.confPath = conf.getPath();
-		this.dataDir = (String)conf.getProperty(BrokerPool.PROPERTY_DATA_DIR);
+		this.dataDir = (Path)conf.getProperty(BrokerPool.PROPERTY_DATA_DIR);
 		
 		// broker statistics
 		this.runningBrokers = pool.countActiveBrokers();
@@ -80,7 +81,7 @@ public class DatabaseStatus {
 	 * 
 	 * @return String
 	 */
-	public String getDataDir() {
+	public Path getDataDir() {
 		return dataDir;
 	}
 

@@ -47,7 +47,7 @@ public class RestXqServiceCompiledXQueryCacheImpl implements RestXqServiceCompil
     private final static RestXqServiceCompiledXQueryCacheImpl instance = new RestXqServiceCompiledXQueryCacheImpl();
     
     //TODO could introduce a MAX stack size, i.e. you can only have N compiled main.xqy's in the cache
-    private final Map<URI, Deque<CompiledXQuery>> cache = new HashMap<URI, Deque<CompiledXQuery>>();
+    private final Map<URI, Deque<CompiledXQuery>> cache = new HashMap<>();
     private final ReentrantReadWriteLock cacheLock = new ReentrantReadWriteLock();
     
     public static RestXqServiceCompiledXQueryCacheImpl getInstance() {
@@ -87,7 +87,7 @@ public class RestXqServiceCompiledXQueryCacheImpl implements RestXqServiceCompil
         try {
             Deque<CompiledXQuery> queries = cache.get(xqueryLocation);
             if(queries == null) {
-                queries = new ArrayDeque<CompiledXQuery>();
+                queries = new ArrayDeque<>();
             }
             
             //reset the query and context

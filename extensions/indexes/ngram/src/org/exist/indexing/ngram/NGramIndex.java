@@ -31,11 +31,12 @@ import org.exist.storage.btree.BTree;
 import org.exist.storage.btree.DBException;
 import org.exist.storage.index.BFile;
 import org.exist.util.DatabaseConfigurationException;
+import org.exist.util.FileUtils;
 import org.w3c.dom.Element;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Path;
 
 /**
  */
@@ -47,14 +48,14 @@ public class NGramIndex extends AbstractIndex implements RawBackupSupport {
 
 	protected BFile db;
     private int gramSize = 3;
-    private File dataFile = null;
+    private Path dataFile = null;
     
     public NGramIndex() {
         //Nothing to do
     }
 
     @Override
-    public void configure(BrokerPool pool, String dataDir, Element config) throws DatabaseConfigurationException {
+    public void configure(BrokerPool pool, Path dataDir, Element config) throws DatabaseConfigurationException {
         super.configure(pool, dataDir, config);
         String fileName = "ngram.dbx";
         if (config.hasAttribute("file"))
@@ -65,7 +66,7 @@ public class NGramIndex extends AbstractIndex implements RawBackupSupport {
             } catch (NumberFormatException e) {
                 throw new DatabaseConfigurationException("Configuration parameter 'n' should be an integer.");
             }
-        dataFile = new File(dataDir, fileName);
+        dataFile = dataDir.resolve(fileName);
     }
 
     @Override
@@ -73,11 +74,11 @@ public class NGramIndex extends AbstractIndex implements RawBackupSupport {
         try {
             db = new BFile(pool, (byte) 0, false, dataFile, pool.getCacheManager(), 1.4, 0.07);
         } catch (DBException e) {
-            throw new DatabaseConfigurationException("Failed to create index file: " + dataFile.getAbsolutePath() + ": " +
+            throw new DatabaseConfigurationException("Failed to create index file: " + dataFile.toAbsolutePath().toString() + ": " +
                 e.getMessage());
         }
         if (LOG.isDebugEnabled())
-            LOG.debug("Created NGram index: " + dataFile.getAbsolutePath());
+            LOG.debug("Created NGram index: " + dataFile.toAbsolutePath().toString());
     }
 
     @Override
@@ -117,7 +118,7 @@ public class NGramIndex extends AbstractIndex implements RawBackupSupport {
     }
 
     public void backupToArchive(RawDataBackup backup) throws IOException {
-        OutputStream os = backup.newEntry(db.getFile().getName());
+        OutputStream os = backup.newEntry(FileUtils.fileName(db.getFile()));
         db.backupToStream(os);
         backup.closeEntry();
     }

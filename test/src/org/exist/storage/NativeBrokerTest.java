@@ -16,9 +16,13 @@ import org.exist.xmldb.XmldbURI;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 
 public class NativeBrokerTest {
@@ -653,6 +657,75 @@ public class NativeBrokerTest {
         verify(newDestPermissions, newDestCollection, srcSubDocumentPermissions, srcSubDocument, destCollection, destPermissions, srcCollection, srcPermissions, subject, broker);
 
         assertEquals(dest.append(newName), newDestURICapture.getValue());
+    }
+
+    @Test
+    public void getCollectionFile_resolvesPath() throws IOException {
+        final Path tmpFolder = Files.createTempDirectory("exist-test-getCollectionFile_resolvesPath");
+
+        final XmldbURI collectionUri = XmldbURI.create("/db/a/b/c");
+        final boolean create = false;
+
+        final NativeBroker broker = EasyMock.createMockBuilder(NativeBroker.class)
+                .createStrictMock();
+
+        //test below
+        replay(broker);
+
+        //run the test
+        final Path collectionFile = broker.getCollectionFile(tmpFolder, collectionUri, create);
+
+        verify(broker);
+
+        assertEquals(tmpFolder.toAbsolutePath() + collectionUri.toString(),  collectionFile.toAbsolutePath().toString());
+        assertEquals(create, Files.exists(collectionFile.getParent()));
+    }
+
+    @Test
+    public void getCollectionFile_createsParent() throws IOException {
+        final Path tmpFolder = Files.createTempDirectory("exist-test-getCollectionFile_createsParent");
+        tmpFolder.toFile().deleteOnExit();
+
+        final XmldbURI collectionUri = XmldbURI.create("/db/a/b/c");
+        final boolean create = true;
+
+        final NativeBroker broker = EasyMock.createMockBuilder(NativeBroker.class)
+                .createStrictMock();
+
+        //test below
+        replay(broker);
+
+        //run the test
+        final Path collectionFile = broker.getCollectionFile(tmpFolder, collectionUri, create);
+
+        verify(broker);
+
+        assertEquals(tmpFolder.toAbsolutePath() + collectionUri.toString(), collectionFile.toAbsolutePath().toString());
+        assertEquals(create, Files.exists(collectionFile.getParent()));
+    }
+
+    @Test
+    public void getCollectionBinaryFileFsPath_resolvesPath() throws IOException {
+        final Path tmpFolder = Files.createTempDirectory("exist-test-getCollectionBinaryFileFsPath_resolvesPath");
+        tmpFolder.toFile().deleteOnExit();
+
+        final XmldbURI collectionUri = XmldbURI.create("/db/a/b/c/something.bin");
+
+        final NativeBroker broker = EasyMock.createMockBuilder(NativeBroker.class)
+                .addMockedMethod("getFsDir")
+                .createStrictMock();
+
+        expect(broker.getFsDir()).andReturn(tmpFolder);
+
+        //test below
+        replay(broker);
+
+        //run the test
+        final Path collectionFile = broker.getCollectionBinaryFileFsPath(collectionUri);
+
+        verify(broker);
+
+        assertEquals(tmpFolder.toAbsolutePath() + collectionUri.toString(), collectionFile.toAbsolutePath().toString());
     }
 
     class ArrayIterator<T> implements Iterator<T> {

@@ -130,18 +130,6 @@ public class CollectionConfigurationManager {
             // TODO : unlock the collection here ?
             confCol.store(txn, broker, info, config, false);
             // broker.sync(Sync.MAJOR_SYNC);
-
-            latch.writeE(new Callable<Void>() {
-                @Override
-                public Void call() throws Exception {
-
-                    configurations.remove(new CollectionURI(path.getRawCollectionPath()));
-                    loadConfiguration(broker, confCol);
-
-                    return null;
-                }
-            });
-
         } catch (final CollectionConfigurationException e) {
             throw e;
         } catch (final Exception e) {

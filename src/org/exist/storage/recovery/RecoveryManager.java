@@ -21,7 +21,11 @@
  */
 package org.exist.storage.recovery;
 
-import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -35,6 +39,7 @@ import org.exist.storage.journal.Loggable;
 import org.exist.storage.journal.Lsn;
 import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.Checkpoint;
+import org.exist.util.FileUtils;
 import org.exist.util.ProgressBar;
 import org.exist.util.hashtable.Long2ObjectHashMap;
 import org.exist.util.sanity.SanityCheck;
@@ -49,11 +54,7 @@ import org.exist.util.sanity.SanityCheck;
 public class RecoveryManager {
 	
 	private final static Logger LOG = LogManager.getLogger(RecoveryManager.class);
-	
-	/**
-     * @uml.property name="logManager"
-     * @uml.associationEnd multiplicity="(1 1)"
-     */
+
 	private Journal logManager;
 	private DBBroker broker;
     private boolean restartOnError;
@@ -63,7 +64,7 @@ public class RecoveryManager {
 		this.logManager = log;
         this.restartOnError = restartOnError;
 	}
-	
+
 	/**
 	 * Checks if the database is in a consistent state. If not, start a recovery run.
 	 * 
@@ -76,12 +77,17 @@ public class RecoveryManager {
 	 */
 	public boolean recover() throws LogException {
         boolean recoveryRun = false;
-		final File files[] = logManager.getFiles();
+		final List<Path> files;
+        try {
+            files = logManager.getFiles().collect(Collectors.toList());
+        } catch(final IOException ioe) {
+            throw new LogException("Unable to find journal files in data dir", ioe);
+        }
         // find the last log file in the data directory
-		final int lastNum = Journal.findLastFile(files);
+		final int lastNum = Journal.findLastFile(files.stream());
 		if (-1 < lastNum) {
             // load the last log file
-			final File last = logManager.getFile(lastNum);
+			final Path last = logManager.getFile(lastNum);
 			// scan the last log file and record the last checkpoint found
 			final JournalReader reader = new JournalReader(broker, last, lastNum);
             try {
@@ -109,12 +115,12 @@ public class RecoveryManager {
                     LOG.info("Unclean shutdown detected. Scanning journal...");
                     broker.getBrokerPool().reportStatus("Unclean shutdown detected. Scanning log...");
     				reader.position(1);
-    				final Long2ObjectHashMap<Loggable> txnsStarted = new Long2ObjectHashMap<Loggable>();
+    				final Long2ObjectHashMap<Loggable> txnsStarted = new Long2ObjectHashMap<>();
 	    			Checkpoint lastCheckpoint = null;
 	    			long lastLsn = Lsn.LSN_INVALID;
 	                Loggable next;
 	                try {
-						final ProgressBar progress = new ProgressBar("Scanning journal ", last.length());
+						final ProgressBar progress = new ProgressBar("Scanning journal ", FileUtils.sizeQuietly(last));
 	        			while ((next = reader.nextEntry()) != null) {
 //	                        LOG.debug(next.dump());
 							progress.set(Lsn.getOffset(next.getLsn()));
@@ -134,7 +140,7 @@ public class RecoveryManager {
 	                    if (LOG.isDebugEnabled()) {
                             LOG.debug("Caught exception while reading log", e);
                         }
-                        LOG.info("Last readable journal log entry lsn: " + Lsn.dump(lastLsn));
+                        LOG.warn("Last readable journal log entry lsn: " + Lsn.dump(lastLsn));
                     }
 
 	    			// if the last checkpoint record is not the last record in the file
@@ -165,15 +171,16 @@ public class RecoveryManager {
                                 throw e;
                             }
                         }
-                    } else
-	    				{LOG.info("Database is in clean state. Nothing to recover from the journal.");}
+                    } else {
+                        LOG.info("Database is in clean state. Nothing to recover from the journal.");
+                    }
     			}
             } finally {
                 reader.close();
                 // remove .log files from directory even if recovery failed.
                 // Re-applying them on a second start up attempt would definitely damage the db, so we better
                 // delete them before user tries to launch again.
-                cleanDirectory(files);
+                cleanDirectory(files.stream());
                 if (recoveryRun) {
                     broker.repairPrimary();
                     broker.sync(Sync.MAJOR_SYNC);
@@ -189,24 +196,28 @@ public class RecoveryManager {
 
     /**
      * Called by {@link #recover()} to do the actual recovery.
-     * 
+     *
+     * @param txnCount
+     * @param last
      * @param reader
      * @param lastLsn
+     *
      * @throws LogException
      */
-    private void doRecovery(int txnCount, File last, JournalReader reader, long lastLsn) throws LogException {
-        if (LOG.isInfoEnabled())
-            {LOG.info("Running recovery ...");}
+    private void doRecovery(final int txnCount, final Path last, final JournalReader reader, final long lastLsn) throws LogException {
+        if (LOG.isInfoEnabled()) {
+            LOG.info("Running recovery ...");
+        }
         logManager.setInRecovery(true);
 
         try {
             // map to track running transactions
-            final Long2ObjectHashMap<Loggable> runningTxns = new Long2ObjectHashMap<Loggable>();
+            final Long2ObjectHashMap<Loggable> runningTxns = new Long2ObjectHashMap<>();
 
             // ------- REDO ---------
             if (LOG.isInfoEnabled())
                 {LOG.info("First pass: redoing " + txnCount + " transactions...");}
-            final ProgressBar progress = new ProgressBar("Redo ", last.length());
+            final ProgressBar progress = new ProgressBar("Redo ", FileUtils.sizeQuietly(last));
             Loggable next = null;
             int redoCnt = 0;
             try {
@@ -285,8 +296,7 @@ public class RecoveryManager {
         }
     }
     
-	private void cleanDirectory(File[] files) {
-		for (int i = 0; i < files.length; i++)
-			files[i].delete();
+	private void cleanDirectory(final Stream<Path> files) {
+        files.forEach(FileUtils::deleteQuietly);
 	}
 }

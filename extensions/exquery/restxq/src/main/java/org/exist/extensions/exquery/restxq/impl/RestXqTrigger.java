@@ -27,9 +27,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package org.exist.extensions.exquery.restxq.impl;
 
 import java.util.List;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.exist.collections.triggers.FilteringTrigger;
+import org.exist.collections.triggers.SAXTrigger;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.storage.DBBroker;
@@ -42,9 +40,7 @@ import org.exquery.restxq.RestXqService;
  *
  * @author Adam Retter <adam.retter@googlemail.com>
  */
-public class RestXqTrigger extends FilteringTrigger {
-    
-    protected final static Logger LOG = LogManager.getLogger(RestXqTrigger.class);
+public class RestXqTrigger extends SAXTrigger {
     
     @Override
     public void beforeCreateDocument(final DBBroker broker, final Txn transaction, final XmldbURI uri) throws TriggerException {

@@ -21,18 +21,19 @@
  */
 package org.exist.backup;
 
-import java.io.File;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
 
+import java.nio.file.Path;
 import java.util.Properties;
 
 
 /**
  * Helper interface for writing backups. Serves as an abstraction for writing to different targets like directories or zip files.
  */
-public interface BackupWriter
+public interface BackupWriter extends Closeable
 {
     Writer newContents() throws IOException;
 
@@ -46,16 +47,13 @@ public interface BackupWriter
     void closeEntry() throws IOException;
 
 
-    void newCollection( String name );
+    void newCollection( String name ) throws IOException;
 
 
     void closeCollection();
 
 
-    void close() throws IOException;
-
-
     void setProperties( Properties properties ) throws IOException;
 
-    public void addToRoot(String name, File file) throws IOException;
+    public void addToRoot(String name, Path file) throws IOException;
 }

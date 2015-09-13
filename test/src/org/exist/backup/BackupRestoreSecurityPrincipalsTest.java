@@ -21,7 +21,6 @@
  */
 package org.exist.backup;
 
-import org.apache.commons.io.FileUtils;
 import org.exist.EXistException;
 import org.exist.backup.restore.listener.RestoreListener;
 import org.exist.jetty.JettyStart;
@@ -36,6 +35,7 @@ import org.exist.storage.journal.Journal;
 import org.exist.util.Configuration;
 import org.exist.util.ConfigurationHelper;
 import org.exist.util.DatabaseConfigurationException;
+import org.exist.util.FileUtils;
 import org.exist.xmldb.UserManagementService;
 import org.junit.*;
 import org.w3c.dom.Node;
@@ -50,19 +50,23 @@ import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XPathQueryService;
 
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
 import java.util.Observable;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 
 public class BackupRestoreSecurityPrincipalsTest {
 
-    private File backupFile = null;
+    private Path backupFile = null;
     private static JettyStart server;
-    private final static String BACKUP_FILE = "exist.BackupRestoreSecurityPrincipalsTest.backup.zip";
+    private final static String BACKUP_FILE_PREFIX = "exist.BackupRestoreSecurityPrincipalsTest";
+    private final static String BACKUP_FILE_SUFFIX = ".backup.zip";
     private final static String FRANK_USER = "frank";
     private final static String JOE_USER = "joe";
     private final static String JACK_USER = "jack";
@@ -93,34 +97,33 @@ public class BackupRestoreSecurityPrincipalsTest {
         createUser(JOE_USER, JOE_USER);       //should have id RealmImpl.INITIAL_LAST_ACCOUNT_ID + 2
         createUser(JACK_USER, JACK_USER);     //should have id RealmImpl.INITIAL_LAST_ACCOUNT_ID + 3
 
-        final File tmpDir = new File(System.getProperty("java.io.tmpdir"));
-        backupFile = new File(tmpDir, BACKUP_FILE);
-        backupFile.deleteOnExit();
+        backupFile = Files.createTempFile(BACKUP_FILE_PREFIX, BACKUP_FILE_SUFFIX);
+        backupFile.toFile().deleteOnExit();
 
-        final Backup backup = new Backup("admin", "", backupFile.getAbsolutePath());
+        final Backup backup = new Backup("admin", "", backupFile);
         backup.backup(false, null);
 
         //reset database
         resetDatabaseToClean();
     }
 
-    private void resetDatabaseToClean() throws EXistException, DatabaseConfigurationException {
+    private void resetDatabaseToClean() throws EXistException, DatabaseConfigurationException, IOException {
         shutdownDatabase();
         deleteDatabaseFiles();
         startupDatabase();
     }
 
-    private void deleteDatabaseFiles() throws DatabaseConfigurationException {
-        final File confFile = ConfigurationHelper.lookup("conf.xml");
-        final Configuration config = new Configuration(confFile.getAbsolutePath());
+    private void deleteDatabaseFiles() throws DatabaseConfigurationException, IOException {
+        final Path confFile = ConfigurationHelper.lookup("conf.xml");
+        final Configuration config = new Configuration(confFile.toAbsolutePath().toString());
 
-        final File dataDir = new File(config.getProperty(BrokerPool.PROPERTY_DATA_DIR).toString());
-        if(dataDir.exists()) {
+        final Path dataDir = Paths.get(config.getProperty(BrokerPool.PROPERTY_DATA_DIR).toString());
+        if(Files.exists(dataDir)) {
             deleteAllDataFiles(dataDir);
         }
 
-        final File journalDir = new File(config.getProperty(Journal.PROPERTY_RECOVERY_JOURNAL_DIR).toString());
-        if(journalDir.exists()) {
+        final Path journalDir = Paths.get(config.getProperty(Journal.PROPERTY_RECOVERY_JOURNAL_DIR).toString());
+        if(Files.exists(journalDir)) {
             deleteAllDataFiles(journalDir);
         }
     }
@@ -131,16 +134,13 @@ public class BackupRestoreSecurityPrincipalsTest {
      * Typically executed in $EXIST_HOME/webapp/WEB-INF/data
      * to clear the database
      */
-    private void deleteAllDataFiles(final File root) {
-        final File[] dataFiles = root.listFiles(new FilenameFilter() {
-            @Override
-            public boolean accept(final File dir, final String name) {
-                return !(name.equals("RECOVERY") || name.equals("README") || name.equals(".DO_NOT_DELETE"));
-            }
-        });
+    private void deleteAllDataFiles(final Path root) throws IOException {
+        final List<Path> files = Files.list(root)
+            .filter(path -> !(FileUtils.fileName(path).equals("RECOVERY") || FileUtils.fileName(path).equals("README") || FileUtils.fileName(path).equals(".DO_NOT_DELETE")))
+                    .collect(Collectors.toList());
 
-        for(final File dataFile : dataFiles) {
-            FileUtils.deleteQuietly(dataFile);
+        for(final Path file : files) {
+            FileUtils.delete(file);
         }
     }
 
@@ -148,7 +148,7 @@ public class BackupRestoreSecurityPrincipalsTest {
     public void shutdownDatabase() {
         server.shutdown();
         server = null;
-	System.setProperty(AUTODEPLOY_PROPERTY, autodeploy); //set the autodeploy trigger enablement back to how it was before this test class
+	    System.setProperty(AUTODEPLOY_PROPERTY, autodeploy); //set the autodeploy trigger enablement back to how it was before this test class
     }
 
     /**

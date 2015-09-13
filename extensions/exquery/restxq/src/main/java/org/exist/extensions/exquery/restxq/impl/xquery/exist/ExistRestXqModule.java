@@ -50,7 +50,7 @@ public class ExistRestXqModule extends AbstractInternalModule {
         new FunctionDef(RegistryFunctions.FNS_DEREGISTER_RESOURCE_FUNCTION, RegistryFunctions.class)
     };
     
-    public ExistRestXqModule(final Map<String, List<? extends Object>> parameters) {
+    public ExistRestXqModule(final Map<String, List<?>> parameters) {
         super(signatures, parameters);
     }
     

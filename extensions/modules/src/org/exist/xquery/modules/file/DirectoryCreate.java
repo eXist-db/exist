@@ -21,7 +21,9 @@
  */
 package org.exist.xquery.modules.file;
 
-import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -74,14 +76,12 @@ public class DirectoryCreate extends BasicFunction {
     };
 
 
-    public DirectoryCreate(XQueryContext context, FunctionSignature signature) {
+    public DirectoryCreate(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
-     */
-    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+    @Override
+    public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
         
         if (!context.getSubject().hasDbaRole()) {
             XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getSubject().getName() + "' must be a DBA to call this function.");
@@ -91,21 +91,20 @@ public class DirectoryCreate extends BasicFunction {
 
         Sequence created = BooleanValue.FALSE;
         
-        String inputPath = args[0].itemAt(0).getStringValue();
-        File file =  FileModuleHelper.getFile(inputPath);
+        final String inputPath = args[0].itemAt(0).getStringValue();
+        final Path file =  FileModuleHelper.getFile(inputPath);
 
-        if (isCalledAs("mkdir")) {
-
-            if (file.mkdir()) {
+        try {
+            if (isCalledAs("mkdir") && Files.notExists(file)) {
+                Files.createDirectory(file);
+                created = BooleanValue.TRUE;
+            } else if (isCalledAs("mkdirs")) {
+                Files.createDirectories(file);
                 created = BooleanValue.TRUE;
             }
-
-        } else if (isCalledAs("mkdirs")) {
-            if (file.mkdirs()) {
-                created = BooleanValue.TRUE;
-            }
+            return created;
+        } catch(final IOException ioe) {
+            throw new XPathException(this, ioe);
         }
-
-        return created;
     }
 }

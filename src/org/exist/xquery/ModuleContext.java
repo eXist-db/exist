@@ -515,14 +515,17 @@ public class ModuleContext extends XQueryContext {
         parentContext.declareInScopeNamespace(prefix, uri);
     }
 
+    @Override
     public void pushInScopeNamespaces(boolean inherit) {
         parentContext.pushInScopeNamespaces(inherit);
     }
 
+    @Override
     public void pushInScopeNamespaces() {
         parentContext.pushInScopeNamespaces();
     }
 
+    @Override
     public void popInScopeNamespaces() {
         parentContext.popInScopeNamespaces();
     }

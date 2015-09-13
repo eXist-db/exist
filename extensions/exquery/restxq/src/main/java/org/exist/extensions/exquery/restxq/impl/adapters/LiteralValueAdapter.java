@@ -35,7 +35,7 @@ import org.exquery.xquery.Type;
  *
  * @author Adam Retter <adam.retter@googlemail.com>
  */
-public class LiteralValueAdapter implements Literal {
+class LiteralValueAdapter implements Literal {
     private Type type;
     private String value;
     

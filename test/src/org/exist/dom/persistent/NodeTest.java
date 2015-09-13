@@ -24,6 +24,9 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -235,12 +238,9 @@ public class NodeTest {
 	}
 	
 	protected BrokerPool startDB() throws DatabaseConfigurationException, EXistException {
-        String home, file = "conf.xml";
-        home = System.getProperty("exist.home");
-        if (home == null) {
-            home = System.getProperty("user.dir");
-        }
-        Configuration config = new Configuration(file, home);
+        final String file = "conf.xml";
+        final Optional<Path> home = Optional.ofNullable(System.getProperty("exist.home", System.getProperty("user.dir"))).map(Paths::get);
+        final Configuration config = new Configuration(file, home);
         BrokerPool.configure(1, 5, config);
         return BrokerPool.getInstance();
     }

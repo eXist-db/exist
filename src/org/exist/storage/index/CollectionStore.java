@@ -11,14 +11,11 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.btree.DBException;
 import org.exist.storage.btree.Value;
 import org.exist.storage.lock.Lock;
-import org.exist.util.ByteConversion;
-import org.exist.util.Configuration;
-import org.exist.util.LockException;
-import org.exist.util.UTF8;
+import org.exist.util.*;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
+import java.nio.file.Path;
 import java.util.Stack;
 
 /**
@@ -49,8 +46,8 @@ public class CollectionStore extends BFile {
      * @param config
      * @throws DBException
      */
-    public CollectionStore(BrokerPool pool, byte id, String dataDir, Configuration config) throws DBException {
-        super(pool, id, true, new File(dataDir + File.separatorChar + getFileName()), 
+    public CollectionStore(BrokerPool pool, byte id, Path dataDir, Configuration config) throws DBException {
+        super(pool, id, true, dataDir.resolve(getFileName()),
                 pool.getCacheManager(), 1.25, 0.03);
         config.setProperty(getConfigKeyForFile(), this);
     }
@@ -88,7 +85,7 @@ public class CollectionStore extends BFile {
 
             freeResourceIds.push(id);
         } catch (LockException e) {
-            LOG.warn("Failed to acquire lock on " + getFile().getName(), e);
+            LOG.warn("Failed to acquire lock on " + FileUtils.fileName(getFile()), e);
         } finally {
             lock.release(Lock.WRITE_LOCK);
         }
@@ -104,7 +101,7 @@ public class CollectionStore extends BFile {
                 freeDocId = freeResourceIds.pop();
             }
         } catch (final LockException e) {
-            LOG.warn("Failed to acquire lock on " + getFile().getName(), e);
+            LOG.warn("Failed to acquire lock on " + FileUtils.fileName(getFile()), e);
             return DocumentImpl.UNKNOWN_DOCUMENT_ID;
             //TODO : rethrow ? -pb
         } finally {
@@ -120,7 +117,7 @@ public class CollectionStore extends BFile {
 
             freeCollectionIds.push(id);
         } catch (LockException e) {
-            LOG.warn("Failed to acquire lock on " + getFile().getName(), e);
+            LOG.warn("Failed to acquire lock on " + FileUtils.fileName(getFile()), e);
         } finally {
             lock.release(Lock.WRITE_LOCK);
         }
@@ -136,7 +133,7 @@ public class CollectionStore extends BFile {
                 freeCollectionId = freeCollectionIds.pop();
             }
         } catch (final LockException e) {
-            LOG.warn("Failed to acquire lock on " + getFile().getName(), e);
+            LOG.warn("Failed to acquire lock on " + FileUtils.fileName(getFile()), e);
             return Collection.UNKNOWN_COLLECTION_ID;
             //TODO : rethrow ? -pb
         } finally {

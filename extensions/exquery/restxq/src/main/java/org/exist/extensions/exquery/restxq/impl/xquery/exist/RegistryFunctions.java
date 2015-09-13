@@ -58,7 +58,7 @@ import org.exquery.restxq.RestXqServiceRegistry;
  *
  * @author Adam Retter <adam.retter@googlemail.com>
  */
-public class RegistryFunctions extends BasicFunction {
+class RegistryFunctions extends BasicFunction {
     
     private final static QName qnFindResourceFunctions = new QName("find-resource-functions", ExistRestXqModule.NAMESPACE_URI, ExistRestXqModule.PREFIX);
     private final static QName qnRegisterModule = new QName("register-module", ExistRestXqModule.NAMESPACE_URI, ExistRestXqModule.PREFIX);
@@ -137,8 +137,8 @@ public class RegistryFunctions extends BasicFunction {
                         final List<RestXqService> resourceFunctions = xqueryRegistry.findServices(getContext().getBroker(), module);
                         xqueryRegistry.registerServices(getContext().getBroker(), resourceFunctions);
                         result = (NodeValue)org.exist.extensions.exquery.restxq.impl.xquery.RegistryFunctions.serializeRestXqServices(context.getDocumentBuilder(), resourceFunctions).getDocumentElement();
-                    } catch(final ExQueryException exqe) {
-                        LOG.warn(exqe.getMessage(), exqe);
+                    } catch(final ExQueryException e) {
+                        LOG.warn(e.getMessage(), e);
                         result = Sequence.EMPTY_SEQUENCE;
                     }
                 } else {
@@ -147,7 +147,7 @@ public class RegistryFunctions extends BasicFunction {
             } else if(isCalledAs(qnDeregisterModule.getLocalPart())) {
                 final DocumentImpl module = getContext().getBroker().getResource(moduleUri, Permission.READ);
                 if(xqueryRegistry.isXquery(module)) {                
-                    final List<RestXqService> deregisteringServices = new ArrayList<RestXqService>();
+                    final List<RestXqService> deregisteringServices = new ArrayList<>();
                     for(final RestXqService service : registry) {
                         if(XmldbURI.create(service.getResourceFunction().getXQueryLocation()).equals(moduleUri)) {
                             deregisteringServices.add(service);
@@ -165,8 +165,8 @@ public class RegistryFunctions extends BasicFunction {
                         final List<RestXqService> resourceFunctions = xqueryRegistry.findServices(getContext().getBroker(), module);
                         xqueryRegistry.deregisterServices(getContext().getBroker(), moduleUri);
                         result = (NodeValue)org.exist.extensions.exquery.restxq.impl.xquery.RegistryFunctions.serializeRestXqServices(context.getDocumentBuilder(), resourceFunctions).getDocumentElement();
-                    } catch(final ExQueryException exqe) {
-                        LOG.warn(exqe.getMessage(), exqe);
+                    } catch(final ExQueryException e) {
+                        LOG.warn(e.getMessage(), e);
                         result = Sequence.EMPTY_SEQUENCE;
                     }
                 } else {
@@ -186,8 +186,8 @@ public class RegistryFunctions extends BasicFunction {
                          } else {
                              result = BooleanValue.FALSE;
                          }
-                       } catch(final ExQueryException exqe) {
-                           LOG.warn(exqe.getMessage(), exqe);
+                       } catch(final ExQueryException e) {
+                           LOG.warn(e.getMessage(), e);
                            result = BooleanValue.FALSE;
                        }
                    } else {
@@ -250,8 +250,8 @@ public class RegistryFunctions extends BasicFunction {
     }
     
     private class SignatureDetail {
-        javax.xml.namespace.QName name; 
-        int arity;
+        final javax.xml.namespace.QName name;
+        final int arity;
         
         public SignatureDetail(final javax.xml.namespace.QName name, final int arity) {
             this.name = name;

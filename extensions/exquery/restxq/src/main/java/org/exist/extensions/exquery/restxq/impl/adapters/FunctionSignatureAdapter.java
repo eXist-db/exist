@@ -37,7 +37,7 @@ import org.exquery.xquery3.FunctionSignature;
  *
  * @author Adam Retter <adam.retter@googlemail.com>
  */
-public class FunctionSignatureAdapter implements FunctionSignature {
+class FunctionSignatureAdapter implements FunctionSignature {
     private QName name;
     private int argumentCount;
     private FunctionParameterSequenceTypeAdapter[] arguments;
@@ -46,7 +46,7 @@ public class FunctionSignatureAdapter implements FunctionSignature {
     protected FunctionSignatureAdapter() {
     }
     
-    public FunctionSignatureAdapter(org.exist.xquery.FunctionSignature functionSignature) {
+    public FunctionSignatureAdapter(final org.exist.xquery.FunctionSignature functionSignature) {
         this.name = functionSignature.getName().toJavaQName();
         this.argumentCount = functionSignature.getArgumentCount();
         

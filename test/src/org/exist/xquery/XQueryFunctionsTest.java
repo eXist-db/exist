@@ -21,12 +21,14 @@
  */
 package org.exist.xquery;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Optional;
 
 import org.exist.util.ConfigurationHelper;
+import org.exist.util.FileUtils;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.XmldbURI;
 import org.junit.*;
@@ -837,15 +839,12 @@ public class XQueryFunctionsTest {
         Collection testCollection = colService.createCollection(TEST_BINARY_COLLECTION);
         assertNotNull(testCollection);
 
-        File home = ConfigurationHelper.getExistHome();
-        File fLogo;
-        if (home != null)
-            fLogo = new File(home, "webapp/" + BINARY_RESOURCE_FILENAME);
-        else
-            fLogo = new File("webapp/" + BINARY_RESOURCE_FILENAME);
+        Optional<Path> home = ConfigurationHelper.getExistHome();
+        Path fLogo = FileUtils.resolve(home, "webapp").resolve(BINARY_RESOURCE_FILENAME);
+
         //store the eXist logo in the test collection
         BinaryResource br = (BinaryResource) testCollection.createResource(BINARY_RESOURCE_FILENAME, "BinaryResource");
-        br.setContent(fLogo);
+        br.setContent(fLogo.toFile());
         testCollection.storeResource(br);
 
         //create an XML resource with the logo base64 embedded in it

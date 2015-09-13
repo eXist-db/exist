@@ -1,87 +1,90 @@
 /*
- * RenameBinaryLoggable.java
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2015 The eXist Project
  *
- * Created on December 9, 2007, 1:57 PM
+ * http://exist-db.org
  *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-
 package org.exist.storage;
 
-import java.io.File;
+import java.io.IOException;
 import java.nio.ByteBuffer;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import org.exist.storage.journal.AbstractLoggable;
 import org.exist.storage.journal.LogException;
 import org.exist.storage.txn.Txn;
 
 /**
- *
  * @author alex
  */
 public class CreateBinaryLoggable extends AbstractLoggable {
+    private Path original;
 
-   protected final static Logger LOG = LogManager.getLogger(RenameBinaryLoggable.class);
-   
-   DBBroker broker;
-   File original;
-   
-   /**
-    * Creates a new instance of RenameBinaryLoggable
-    */
-   public CreateBinaryLoggable(DBBroker broker,Txn txn,File original)
-   {
-      super(NativeBroker.LOG_CREATE_BINARY,txn.getId());
-      this.broker = broker;
-      this.original = original;
-   }
-   
-   public CreateBinaryLoggable(DBBroker broker,long transactionId) {
-      super(NativeBroker.LOG_CREATE_BINARY,transactionId);
-      this.broker = broker;
-   }
-   
-   /* (non-Javadoc)
-    * @see org.exist.storage.log.Loggable#write(java.nio.ByteBuffer)
-    */
-   public void write(ByteBuffer out) {
-      final String originalPath = original.getAbsolutePath();
-      final byte [] data = originalPath.getBytes();
-      out.putInt(data.length);
-      out.put(data);
+    /**
+     * Creates a new instance of RenameBinaryLoggable
+     */
+    public CreateBinaryLoggable(final DBBroker broker, final Txn txn, final Path original) {
+        super(NativeBroker.LOG_CREATE_BINARY, txn.getId());
+        this.original = original;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.storage.log.Loggable#read(java.nio.ByteBuffer)
-     */
-    public void read(ByteBuffer in) {
-       final int size = in.getInt();
-       final byte [] data = new byte[size];
-       in.get(data);
-       original = new File(new String(data));
+    public CreateBinaryLoggable(final DBBroker broker, final long transactionId) {
+        super(NativeBroker.LOG_CREATE_BINARY, transactionId);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.storage.log.Loggable#getLogSize()
-     */
+    @Override
+    public void write(final ByteBuffer out) {
+        final String originalPath = original.toAbsolutePath().toString();
+        final byte[] data = originalPath.getBytes(StandardCharsets.UTF_8);
+        out.putInt(data.length);
+        out.put(data);
+    }
+
+    @Override
+    public void read(final ByteBuffer in) {
+        final int size = in.getInt();
+        final byte[] data = new byte[size];
+        in.get(data);
+        original = Paths.get(new String(data, StandardCharsets.UTF_8));
+    }
+
+    @Override
     public int getLogSize() {
-        return 4 + original.getAbsolutePath().getBytes().length;
+        return 4 + original.toAbsolutePath().toString().getBytes(StandardCharsets.UTF_8).length;
     }
 
+    @Override
     public void redo() throws LogException {
-       // TODO: do we need to redo?  The file was stored...
-    }
-    
-    public void undo() throws LogException {
-       if (!original.delete()) {
-          throw new LogException("Cannot delete binary resource "+original);
-       }
-    }
-    
-     public String dump() {
-        return super.dump() + " - create binary "+original;
+        // TODO: do we need to redo?  The file was stored...
     }
 
+    @Override
+    public void undo() throws LogException {
+        try {
+            Files.delete(original);
+        } catch(final IOException ioe) {
+            throw new LogException("Cannot delete binary resource: " + original.toAbsolutePath().toString(), ioe);
+        }
+    }
+
+    @Override
+    public String dump() {
+        return super.dump() + " - create binary " + original;
+    }
 }

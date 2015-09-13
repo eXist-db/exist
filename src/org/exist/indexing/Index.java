@@ -26,6 +26,8 @@ import org.exist.storage.btree.DBException;
 import org.exist.util.DatabaseConfigurationException;
 import org.w3c.dom.Element;
 
+import java.nio.file.Path;
+
 /**
  * Represents an arbitrary index structure that can be used by eXist. This is the
  * main interface to be registered with the database instance. It provides methods
@@ -64,7 +66,7 @@ public interface Index {
      * @param config the module element which configures this index, as found in conf.xml
      * @throws DatabaseConfigurationException
      */
-    void configure(BrokerPool pool, String dataDir, Element config) throws DatabaseConfigurationException;
+    void configure(BrokerPool pool, Path dataDir, Element config) throws DatabaseConfigurationException;
 
     /**
      * Opens the index for writing and reading. Will be called during initialization, but also

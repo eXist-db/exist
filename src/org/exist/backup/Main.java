@@ -21,6 +21,9 @@
  */
 package org.exist.backup;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.concurrent.ExecutorService;
 import org.apache.avalon.excalibur.cli.CLArgsParser;
 import org.apache.avalon.excalibur.cli.CLOption;
@@ -39,7 +42,6 @@ import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.XmldbURI;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -109,11 +111,11 @@ public class Main
         final Properties properties = new Properties();
 
         try {
-            final File        propFile = ConfigurationHelper.lookup( "backup.properties" );
+            final Path propFile = ConfigurationHelper.lookup( "backup.properties" );
             InputStream pin;
 
-            if( propFile.canRead() ) {
-                pin = new FileInputStream( propFile );
+            if(Files.isReadable(propFile)) {
+                pin = Files.newInputStream(propFile);
             } else {
                 pin = Main.class.getResourceAsStream( "backup.properties" );
             }
@@ -271,7 +273,7 @@ public class Main
             if( optionBackup != null ) {
 
                 try {
-                    final Backup backup = new Backup( properties.getProperty( "user", "admin" ), properties.getProperty( "password", "" ), properties.getProperty( "backup-dir", "backup" ), XmldbURI.xmldbUriFor( properties.getProperty( "uri", "xmldb:exist://" ) + optionBackup ), properties );
+                    final Backup backup = new Backup( properties.getProperty( "user", "admin" ), properties.getProperty( "password", "" ), Paths.get(properties.getProperty("backup-dir", "backup")), XmldbURI.xmldbUriFor( properties.getProperty( "uri", "xmldb:exist://" ) + optionBackup ), properties );
                     backup.backup( guiMode, null );
                 }
                 catch( final Exception e ) {
@@ -296,7 +298,7 @@ public class Main
             if(optionRestore != null) {
 
                 final String username = properties.getProperty( "user", "admin" );
-                final File f = new File(optionRestore);
+                final Path f = Paths.get(optionRestore);
                 final String uri = properties.getProperty( "uri", "xmldb:exist://");
                 
                 try {
@@ -327,7 +329,7 @@ public class Main
         System.exit( 0 );
     }
 
-    private static void restoreWithoutGui(final String username, final String password, final String dbaPassword, final File f,
+    private static void restoreWithoutGui(final String username, final String password, final String dbaPassword, final Path f,
                                           final String uri, final boolean rebuildRepo, boolean quiet) {
         
         final RestoreListener listener = new ConsoleRestoreListener(quiet);
@@ -382,7 +384,7 @@ public class Main
         }
     }
     
-    private static void restoreWithGui(final String username, final String password, final String dbaPassword, final File f, final String uri) {
+    private static void restoreWithGui(final String username, final String password, final String dbaPassword, final Path f, final String uri) {
         
         final GuiRestoreListener listener = new GuiRestoreListener();
         
