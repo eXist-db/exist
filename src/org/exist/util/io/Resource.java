@@ -25,6 +25,9 @@ import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Date;
@@ -55,10 +58,7 @@ import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
-import org.exist.util.FileInputSource;
-import org.exist.util.LockException;
-import org.exist.util.MimeTable;
-import org.exist.util.MimeType;
+import org.exist.util.*;
 import org.exist.xmldb.XmldbURI;
 import org.xml.sax.SAXException;
 
@@ -121,7 +121,7 @@ public class Resource extends File {
     private Collection collection = null;
     private DocumentImpl resource = null;
     
-    File file = null;
+    Path file = null;
 	
     public Resource(XmldbURI uri) {
 		super(uri.toString());
@@ -394,7 +394,7 @@ public class Resource extends File {
         }
     }
     
-    private synchronized File serialize(final DBBroker broker, final DocumentImpl doc) throws IOException {
+    private synchronized Path serialize(final DBBroker broker, final DocumentImpl doc) throws IOException {
     	if (file != null)
     		{throw new IOException(doc.getFileURI().toString()+" locked.");}
     		
@@ -403,14 +403,12 @@ public class Resource extends File {
 			serializer.setUser(broker.getSubject());
 			serializer.setProperties(XML_OUTPUT_PROPERTIES);
 			
-            file = File.createTempFile("eXist-resource-", ".xml");
-            file.deleteOnExit();
+            file = Files.createTempFile("eXist-resource-", ".xml");
+            file.toFile().deleteOnExit();
 
-            final Writer w = new OutputStreamWriter(new FileOutputStream(file), "UTF-8");
-			
-			serializer.serialize(doc, w);
-			w.flush();
-			w.close();
+            try(final Writer w = Files.newBufferedWriter(file, UTF_8)) {
+                serializer.serialize(doc, w);
+            }
 			
 			return file;
 			
@@ -427,8 +425,8 @@ public class Resource extends File {
 	    	    //throw new IOException();
 	    	    return;
     	    }
-	    	
-	    	file.delete();
+
+            FileUtils.deleteQuietly(file);
 	    	
 	    	file = null;
     	}
@@ -450,12 +448,12 @@ public class Resource extends File {
         try(final DBBroker broker = db.get(null);
                 final Txn txn = tm.beginTransaction();) {
 
-            FileInputSource is = new FileInputSource(file);
+            FileInputSource is = new FileInputSource(file.toFile());
 	        
             final IndexInfo info = collection.validateXMLResource(txn, broker, uri.lastSegment(), is);
 //	        info.getDocument().getMetadata().setMimeType(mimeType.getName());
 	
-	        is = new FileInputSource(file);
+	        is = new FileInputSource(file.toFile());
 	        collection.store(txn, broker, info, is, false);
 
             tm.commit(txn);
@@ -489,14 +487,14 @@ public class Resource extends File {
             } else {
                 //convert BINARY to XML
                 
-                final File file = broker.getBinaryFile((BinaryDocument) doc);
+                final Path file = broker.getBinaryFile((BinaryDocument) doc);
 
-                FileInputSource is = new FileInputSource(file);
+                FileInputSource is = new FileInputSource(file.toFile());
                 
                 final IndexInfo info = destination.validateXMLResource(txn, broker, newName, is);
                 info.getDocument().getMetadata().setMimeType(mimeType.getName());
 
-                is = new FileInputSource(file);
+                is = new FileInputSource(file.toFile());
                 destination.store(txn, broker, info, is, false);
                 
                 source.removeBinaryResource(txn, broker, doc);
@@ -1035,7 +1033,7 @@ public class Resource extends File {
     	return false;
     }
 
-	protected File getFile() throws FileNotFoundException {
+	protected Path getFile() throws FileNotFoundException {
 		if (isDirectory())
 			{throw new FileNotFoundException("unsupported operation for collection.");}
 

@@ -32,17 +32,19 @@ import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteInputStream;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.util.Configuration;
+import org.exist.util.FileUtils;
 import org.exist.util.hashtable.Object2IntHashMap;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.Iterator;
 
 /**
@@ -112,13 +114,13 @@ public class SymbolTable {
     /**
      * the underlying symbols.dbx file
      */
-    private final File file;
+    private final Path file;
     private final VariableByteOutputStream outBuffer = new VariableByteOutputStream(512);
     private OutputStream os = null;
 
-    public SymbolTable(final File dataDir) throws EXistException {
-        file = new File(dataDir, getFileName());
-        if(!file.canRead()) {
+    public SymbolTable(final Path dataDir) throws EXistException {
+        file = dataDir.resolve(getFileName());
+        if(!Files.isReadable(file)) {
             saveSymbols();
         } else {
             loadSymbols();
@@ -126,7 +128,7 @@ public class SymbolTable {
     }
 
     public SymbolTable(final Configuration config) throws EXistException {
-        this(new File((String) config.getProperty(BrokerPool.PROPERTY_DATA_DIR)));
+        this((Path) config.getProperty(BrokerPool.PROPERTY_DATA_DIR));
     }
 
     public static final String getFileName() {
@@ -328,7 +330,7 @@ public class SymbolTable {
         changed = false;
     }
 
-    public final File getFile() {
+    public final Path getFile() {
         return file;
     }
 
@@ -339,17 +341,16 @@ public class SymbolTable {
      * @throws EXistException
      */
     private void saveSymbols() throws EXistException {
-        try {
-            final VariableByteOutputStream os = new VariableByteOutputStream(256);
+        try(final VariableByteOutputStream os = new VariableByteOutputStream(256);
+                final OutputStream fos =  Files.newOutputStream(getFile())) {
+
             writeAll(os);
-            final FileOutputStream fos = new FileOutputStream(getFile().getAbsolutePath(), false);
             fos.write(os.toByteArray());
-            fos.close();
         } catch(final FileNotFoundException e) {
-            throw new EXistException("File not found: " + this.getFile().getAbsolutePath(), e);
+            throw new EXistException("File not found: " + this.getFile().toAbsolutePath().toString(), e);
         } catch(final IOException e) {
             throw new EXistException("IO error occurred while creating "
-                + this.getFile().getAbsolutePath(), e);
+                + this.getFile().toAbsolutePath().toString(), e);
         }
     }
 
@@ -360,8 +361,8 @@ public class SymbolTable {
      * @throws EXistException
      */
     private synchronized void loadSymbols() throws EXistException {
-        try {
-            final FileInputStream fis = new FileInputStream(getFile());
+        try(final InputStream fis = Files.newInputStream(getFile())) {
+
             final VariableByteInput is = new VariableByteInputStream(fis);
             final int magic = is.readFixedInt();
             if(magic == LEGACY_FILE_FORMAT_VERSION_ID) {
@@ -375,27 +376,20 @@ public class SymbolTable {
             } else {
                 read(is);
             }
-            fis.close();
         } catch(final FileNotFoundException e) {
-            throw new EXistException("Could not read " + this.getFile().getAbsolutePath(), e);
+            throw new EXistException("Could not read " + this.getFile().toAbsolutePath().toString(), e);
         } catch(final IOException e) {
             throw new EXistException("IO error occurred while reading "
-                + this.getFile().getAbsolutePath() + ": " + e.getMessage(), e);
+                + this.getFile().toAbsolutePath().toString() + ": " + e.getMessage(), e);
         }
     }
 
     public void backupSymbolsTo(final OutputStream os) throws IOException {
-        final FileInputStream fis = new FileInputStream(this.getFile());
-        final byte[] buf = new byte[1024];
-        int len;
-        while((len = fis.read(buf)) > 0) {
-            os.write(buf, 0, len);
-        }
-        fis.close();
+        Files.copy(getFile(), os);
     }
 
     public void backupToArchive(final RawDataBackup backup) throws IOException {
-        final OutputStream os = backup.newEntry(getFile().getName());
+        final OutputStream os = backup.newEntry(FileUtils.fileName(getFile()));
         backupSymbolsTo(os);
     }
 
@@ -403,9 +397,9 @@ public class SymbolTable {
         //Noting to do ? -pb
     }
 
-    private OutputStream getOutputStream() throws FileNotFoundException {
+    private OutputStream getOutputStream() throws IOException {
         if(os == null) {
-            os = new FileOutputStream(getFile().getAbsolutePath(), true);
+            os = Files.newOutputStream(getFile(), StandardOpenOption.APPEND);
         }
         return os;
     }

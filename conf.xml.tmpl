@@ -166,6 +166,11 @@
             <triggers>
 
 		<!--
+		    Trigger for registering the GNU Crypto JCE Provider with Java
+		-->
+		<trigger class="org.exist.security.GnuCryptoJceProviderStartupTrigger"/>
+
+		<!--
 		    Trigger for registering eXists XML:DB URL handler with Java
 		-->
 		<trigger class="org.exist.protocolhandler.URLStreamHandlerStartupTrigger"/>

@@ -2,6 +2,7 @@ package org.exist.http.servlets;
 
 import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.file.Path;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -78,7 +79,7 @@ public class DatabaseAdminServlet extends AbstractExistHttpServlet {
                     "</td></tr>" );
                 output.println( "<tr><td>Configuration:</td><td>" + conf.getConfigFilePath() + "</td></tr>" );
                 output.println( "<tr><td>Data directory:</td><td>" +
-                    (String) conf.getProperty(BrokerPool.PROPERTY_DATA_DIR) +
+                        ((Path) conf.getProperty(BrokerPool.PROPERTY_DATA_DIR)).toAbsolutePath().toString() +
                     "</td></tr>" );
                 output.println( "<tr><td>Active instances:</td><td>" +
                     pool.countActiveBrokers() + "</td></tr>" );

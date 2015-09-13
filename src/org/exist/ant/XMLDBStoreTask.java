@@ -418,7 +418,7 @@ public class XMLDBStoreTask extends AbstractXMLDBTask
 
             if( ( mimeTypesFile != null ) && mimeTypesFile.exists() ) {
                 log( "Trying to use MIME Types file " + mimeTypesFile.getAbsolutePath(), Project.MSG_DEBUG );
-                mtable = MimeTable.getInstance( mimeTypesFile );
+                mtable = MimeTable.getInstance( mimeTypesFile.toPath() );
             } else {
                 log( "Using default MIME Types resources", Project.MSG_DEBUG );
                 mtable = MimeTable.getInstance();

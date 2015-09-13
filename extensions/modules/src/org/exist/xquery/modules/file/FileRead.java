@@ -21,12 +21,12 @@
  */
 package org.exist.xquery.modules.file;
 
-import java.io.File;
-import java.io.FileInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.StringWriter;
-import java.net.MalformedURLException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -82,15 +82,13 @@ public class FileRead extends BasicFunction {
 	 * @param context
 	 * @param signature
 	 */
-	public FileRead( XQueryContext context, FunctionSignature signature ) 
+	public FileRead(final XQueryContext context, final FunctionSignature signature)
 	{
-		super( context, signature );
+		super(context, signature);
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
-	 */
-	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException 
+	@Override
+	public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException
 	{
 		if (!context.getSubject().hasDbaRole()) {
 			XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getSubject().getName() + "' must be a DBA to call this function.");
@@ -98,39 +96,21 @@ public class FileRead extends BasicFunction {
 			throw xPathException;
 		}
 
-        String inputPath = args[0].getStringValue();
-        File file = FileModuleHelper.getFile(inputPath);
-        
-		StringWriter sw = new StringWriter();
-		
-		try {
-			FileInputStream fis = new FileInputStream(file);
-            
-			InputStreamReader reader;
-			
-			if( args.length > 1 ) {			
-				reader = new InputStreamReader( fis, args[1].getStringValue() );
-			} else {
-				reader = new InputStreamReader( fis );
-			}
-			
-			char[] buf = new char[1024];
-			int len;
-			while( ( len = reader.read( buf ) ) > 0 ) {
-				sw.write( buf, 0, len) ;
-			}
-            
-			reader.close();
-			sw.close();
-            
-		} catch( MalformedURLException e ) {
-			throw new XPathException(this, e);	
-		} catch( IOException e ) {
+		final String inputPath = args[0].getStringValue();
+		final Path file = FileModuleHelper.getFile(inputPath);
+
+		final Charset encoding;
+		if(args.length == 2) {
+			encoding = Charset.forName(args[1].getStringValue());
+		} else {
+			encoding = StandardCharsets.UTF_8;
+		}
+
+		try(final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+			Files.copy(file, os);
+            return new StringValue(new String(os.toByteArray(), encoding));
+		} catch(final IOException e ) {
 			throw new XPathException(this, e);	
 		}
-		
-		//TODO : return an *Item* built with sw.toString()
-		
-		return new StringValue( sw.toString() );
 	}
 }

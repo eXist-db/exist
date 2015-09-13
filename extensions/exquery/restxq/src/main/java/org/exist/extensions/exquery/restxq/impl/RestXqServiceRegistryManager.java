@@ -41,7 +41,6 @@ public final class RestXqServiceRegistryManager {
     private final static Logger LOG = LogManager.getLogger(RestXqServiceRegistryManager.class);
     
     private static RestXqServiceRegistryImpl registry = null;
-    private static RestXqServiceRegistryPersistence persistence = null;
     
     
     public static synchronized RestXqServiceRegistry getRegistry(final BrokerPool pool) {
@@ -57,7 +56,7 @@ public final class RestXqServiceRegistryManager {
             registry.addListener(new RestXqServiceCompiledXQueryCacheCleanupListener());
             
             //add persistence listener
-            persistence = new RestXqServiceRegistryPersistence(pool, registry);
+            final RestXqServiceRegistryPersistence persistence = new RestXqServiceRegistryPersistence(pool, registry);
             
             //load registry
             persistence.loadRegistry();

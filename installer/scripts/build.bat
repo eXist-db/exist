@@ -2,6 +2,10 @@
 
 rem $Id$
 
+::remove any quotes from JAVA_HOME and EXIST_HOME env var, will be re-added below
+for /f "delims=" %%G IN (%JAVA_HOME%) DO SET JAVA_HOME=%%G
+for /f "delims=" %%G IN (%EXIST_HOME%) DO SET EXIST_HOME=%%G
+
 if not "%JAVA_HOME%" == "" goto gotJavaHome
 set JAVA_HOME=$JAVA_HOME
 
@@ -11,7 +15,7 @@ set EXIST_HOME=$INSTALL_PATH
 
 :gotExistHome
 set ANT_HOME=%EXIST_HOME%\tools\ant
-set _LIBJARS=%CLASSPATH%;%ANT_HOME%\lib\ant-launcher.jar;%EXIST_HOME%\lib\test\junit-4.8.2.jar;%JAVA_HOME%\lib\tools.jar
+set _LIBJARS=%CLASSPATH%;%ANT_HOME%\lib\ant-launcher-1.9.4.jar;%EXIST_HOME%\lib\test\junit-4.12.jar;%JAVA_HOME%\lib\tools.jar
 
 set JAVA_ENDORSED_DIRS=%EXIST_HOME%\lib\endorsed
 

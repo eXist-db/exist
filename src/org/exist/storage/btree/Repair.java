@@ -10,6 +10,7 @@ import org.exist.storage.lock.Lock;
 import org.exist.storage.structural.NativeStructuralIndexWorker;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
+import org.exist.util.FileUtils;
 
 
 /**
@@ -55,7 +56,7 @@ public class Repair {
             try {
                 lock.acquire(Lock.WRITE_LOCK);
 
-                System.console().printf("Rebuilding %15s ...", btree.getFile().getName());
+                System.console().printf("Rebuilding %15s ...", FileUtils.fileName(btree.getFile()));
                 btree.rebuild();
                 System.out.println("Done");
             } finally {

@@ -24,32 +24,34 @@ package org.exist.backup;
 import org.exist.repo.RepoBackup;
 import org.exist.util.EXistInputSource;
 import org.exist.util.FileInputSource;
+import org.exist.util.FileUtils;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Properties;
 
 
 public class FileSystemBackupDescriptor extends AbstractBackupDescriptor
 {
-    protected File descriptor;
+    protected Path descriptor;
 
-    public FileSystemBackupDescriptor( File theDesc ) throws FileNotFoundException
+    public FileSystemBackupDescriptor( Path theDesc ) throws FileNotFoundException
     {
-        if( !theDesc.getName().equals( BackupDescriptor.COLLECTION_DESCRIPTOR ) || !theDesc.isFile() || !theDesc.canRead() ) {
-            throw( new FileNotFoundException( theDesc.getAbsolutePath() + " is not a valid collection descriptor" ) );
+        if( !FileUtils.fileName(theDesc).equals(BackupDescriptor.COLLECTION_DESCRIPTOR) || Files.isDirectory(theDesc) || !Files.isReadable(theDesc) ) {
+            throw( new FileNotFoundException( theDesc.toAbsolutePath().toString() + " is not a valid collection descriptor" ) );
         }
         descriptor = theDesc;
     }
 
+    @Override
     public BackupDescriptor getChildBackupDescriptor( String describedItem )
     {
-        final File             child = new File( new File( descriptor.getParentFile(), describedItem ), BackupDescriptor.COLLECTION_DESCRIPTOR );
+        final Path             child = descriptor.getParent().resolve(describedItem).resolve(BackupDescriptor.COLLECTION_DESCRIPTOR);
         BackupDescriptor bd    = null;
 
         try {
@@ -61,16 +63,16 @@ public class FileSystemBackupDescriptor extends AbstractBackupDescriptor
         return( bd );
     }
 
-
+    @Override
     public BackupDescriptor getBackupDescriptor( String describedItem )
     {
-        final String           topDir = descriptor.getParentFile().getParentFile().getAbsolutePath();
+        final String           topDir = descriptor.getParent().getParent().toAbsolutePath().toString();
         final String           subDir = topDir + describedItem;
         final String           desc   = subDir + '/' + BackupDescriptor.COLLECTION_DESCRIPTOR;
         BackupDescriptor bd     = null;
 
         try {
-            bd = new FileSystemBackupDescriptor( new File( desc ) );
+            bd = new FileSystemBackupDescriptor( Paths.get(desc) );
         }
         catch( final FileNotFoundException fnfe ) {
             // DoNothing(R)
@@ -78,88 +80,81 @@ public class FileSystemBackupDescriptor extends AbstractBackupDescriptor
         return( bd );
     }
 
-
+    @Override
     public EXistInputSource getInputSource()
     {
-        return( new FileInputSource( descriptor ) );
+        return( new FileInputSource( descriptor.toFile() ) );
     }
 
-
+    @Override
     public EXistInputSource getInputSource( String describedItem )
     {
-        final File             child = new File( descriptor.getParentFile(), describedItem );
+        final Path             child = descriptor.getParent().resolve(describedItem);
         EXistInputSource is    = null;
 
-        if( child.isFile() && child.canRead() ) {
-            is = new FileInputSource( child );
+        if((!Files.isDirectory(child)) && Files.isReadable(child) ) {
+            is = new FileInputSource( child.toFile() );
         }
 
         return( is );
     }
 
-
+    @Override
     public String getSymbolicPath()
     {
-        return( descriptor.getAbsolutePath() );
-    }
-
-
-    public String getSymbolicPath( String describedItem, boolean isChildDescriptor )
-    {
-        File resbase = new File( descriptor.getParentFile(), describedItem );
-
-        if( isChildDescriptor ) {
-            resbase = new File( resbase, BackupDescriptor.COLLECTION_DESCRIPTOR );
-        }
-        return( resbase.getAbsolutePath() );
-    }
-
-
-    public Properties getProperties() throws IOException
-    {
-        File dir = descriptor.getParentFile();
-
-        if( dir != null ) {
-        	dir = dir.getParentFile();
-        	if (dir != null) {
-	        	final File propFile = new File( dir, BACKUP_PROPERTIES );
-	
-	        	try {
-	        		final InputStream is         = new BufferedInputStream( new FileInputStream( propFile ) );
-	        		final Properties  properties = new Properties();
-	
-	        		try {
-	        			properties.load( is );
-	        		}
-	        		finally {
-	        			is.close();
-	        		}
-	        		return( properties );
-	        	}
-	        	catch( final FileNotFoundException e ) {
-	        		// do nothing, return null
-	        	}
-        	}
-        }
-        return( null );
-    }
-
-    public File getParentDir()
-    {
-        return( descriptor.getParentFile().getParentFile().getParentFile() );
-    }
-
-
-    public String getName()
-    {
-        return( descriptor.getParentFile().getParentFile().getName() );
+        return( descriptor.toAbsolutePath().toString() );
     }
 
     @Override
-    public File getRepoBackup() throws IOException {
-        final File archive = new File(descriptor.getParentFile().getParentFile(), RepoBackup.REPO_ARCHIVE);
-        if (archive.exists())
-            {return archive;}
+    public String getSymbolicPath( String describedItem, boolean isChildDescriptor )
+    {
+        Path resbase = descriptor.getParent().resolve(describedItem);
+
+        if( isChildDescriptor ) {
+            resbase = resbase.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR);
+        }
+        return( resbase.toAbsolutePath().toString() );
+    }
+
+    @Override
+    public Properties getProperties() throws IOException
+    {
+        Path dir = descriptor.getParent();
+
+        if( dir != null ) {
+        	dir = dir.getParent();
+        	if (dir != null) {
+	        	final Path propFile = dir.resolve(BACKUP_PROPERTIES);
+                if(Files.exists(propFile)) {
+                    final Properties properties = new Properties();
+                    try (final InputStream is = Files.newInputStream(propFile)) {
+                        properties.load(is);
+                    }
+                    return properties;
+                }
+        	}
+        }
+        return null;
+    }
+
+    @Override
+    public Path getParentDir()
+    {
+        return( descriptor.getParent().getParent().getParent() );
+    }
+
+    @Override
+    public String getName()
+    {
+        return( FileUtils.fileName(descriptor.getParent().getParent()) );
+    }
+
+    @Override
+    public Path getRepoBackup() throws IOException {
+        final Path archive = descriptor.getParent().getParent().resolve(RepoBackup.REPO_ARCHIVE);
+        if (Files.exists(archive)) {
+            return archive;
+        }
         return null;
     }
 }

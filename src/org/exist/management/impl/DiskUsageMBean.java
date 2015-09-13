@@ -56,7 +56,7 @@ public interface DiskUsageMBean
     
     public long getJournalDirectoryUsedSpace();
     
-    public int getJournalDirectoryNumberOfFiles();
+    public long getJournalDirectoryNumberOfFiles();
     
 }
 

@@ -21,21 +21,26 @@
  */
 package org.exist.storage;
 
+import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Iterator;
 
+import org.exist.EXistException;
 import org.exist.collections.Collection;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.DocumentImpl;
+import org.exist.security.PermissionDeniedException;
 import org.exist.storage.btree.BTree;
+import org.exist.storage.btree.BTreeException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
+import org.exist.util.DatabaseConfigurationException;
 import org.exist.xmldb.XmldbURI;
 import org.junit.After;
 import org.junit.Test;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 
 /**
  * @author wolf
@@ -57,14 +62,14 @@ public class CollectionTest {
         "</test>";
 
     @Test
-    public void storeRead() {
+    public void storeRead() throws EXistException, IOException, PermissionDeniedException, BTreeException, DatabaseConfigurationException, TriggerException  {
         store();
         BrokerPool.stopAll(false);
         read();
         BrokerPool.stopAll(false);
     }
 
-    private void store() {
+    private void store() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, TriggerException {
         BrokerPool.FORCE_CORRUPTION = true;
         BrokerPool pool = startDB();
         final TransactionManager transact = pool.getTransactionManager();
@@ -78,18 +83,14 @@ public class CollectionTest {
             broker.saveCollection(transaction, test);
             
             transact.commit(transaction);
-        } catch (Exception e) {
-            fail(e.getMessage());              
         }
     }
     
-    public void read() {
+    public void read() throws EXistException, IOException, PermissionDeniedException, BTreeException, DatabaseConfigurationException {
         BrokerPool.FORCE_CORRUPTION = false;
         BrokerPool pool = startDB();
 
-        DBBroker broker = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
             BTree btree = ((NativeBroker)broker).getStorage(NativeBroker.COLLECTIONS_DBX_ID);
             Writer writer = new StringWriter();
             btree.dump(writer);
@@ -99,22 +100,13 @@ public class CollectionTest {
             for (Iterator<DocumentImpl> i = test.iterator(broker); i.hasNext(); ) {
                 DocumentImpl next = i.next();
             }
-        } catch (Exception e) {            
-            fail(e.getMessage());              
-        } finally {
-            pool.release(broker);
         }
     }
     
-    protected BrokerPool startDB() {
-        try {
-            Configuration config = new Configuration();
-            BrokerPool.configure(1, 5, config);
-            return BrokerPool.getInstance();
-        } catch (Exception e) {           
-            fail(e.getMessage());
-        }
-        return null;
+    protected BrokerPool startDB() throws DatabaseConfigurationException, EXistException {
+        Configuration config = new Configuration();
+        BrokerPool.configure(1, 5, config);
+        return BrokerPool.getInstance();
     }
 
     @After

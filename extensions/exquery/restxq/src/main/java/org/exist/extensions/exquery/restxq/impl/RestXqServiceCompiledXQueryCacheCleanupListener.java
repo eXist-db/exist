@@ -33,7 +33,7 @@ import org.exquery.restxq.RestXqServiceRegistryListener;
  *
  * @author Adam Retter <adam.retter@googlemail.com>
  */
-public class RestXqServiceCompiledXQueryCacheCleanupListener implements RestXqServiceRegistryListener {
+class RestXqServiceCompiledXQueryCacheCleanupListener implements RestXqServiceRegistryListener {
 
     @Override
     public void registered(final RestXqService service) {

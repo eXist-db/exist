@@ -24,7 +24,7 @@ import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.*;
 
@@ -61,11 +61,11 @@ public class Database {
 	 * @param configFile the config file that specifies the database to use
 	 * @throws IllegalStateException if the database has already been started
 	 */
-	public static void startup(File configFile) {
+	public static void startup(Path configFile) {
 		try {
 			if (isStarted()) throw new IllegalStateException("database already started");
-			configFile = configFile.getAbsoluteFile();
-			Configuration config = new Configuration(configFile.getName(), configFile.getParentFile().getAbsolutePath());
+			configFile = configFile.toAbsolutePath();
+			Configuration config = new Configuration(FileUtils.fileName(configFile), Optional.of(configFile.getParent().toAbsolutePath()));
 			BrokerPool.configure(dbName, 1, 5, config);
 			pool = BrokerPool.getInstance(dbName);
 			txManager = pool.getTransactionManager();
@@ -79,13 +79,13 @@ public class Database {
 		}
 	}
 
-	static void configureRootCollection(File configFile) {
+	static void configureRootCollection(Path configFile) {
 		Database db = new Database(pool.getSecurityManager().getSystemSubject());
 		StringBuilder configXml = new StringBuilder();
 		configXml.append("<collection xmlns='http://exist-db.org/collection-config/1.0'>");
 		configXml.append(ListenerManager.getTriggerConfigXml());
 		{
-			XMLDocument configDoc = db.getFolder("/").documents().load(Name.generate(db), Source.xml(configFile));
+			XMLDocument configDoc = db.getFolder("/").documents().load(Name.generate(db), Source.xml(configFile.toFile()));
 			Node indexNode = configDoc.query().optional("/exist/indexer/index").node();
 			if (indexNode.extant()) configXml.append(indexNode.toString());
 			configDoc.delete();
@@ -140,13 +140,14 @@ public class Database {
 	 * @param configFile the config file that specifies the database to use
 	 * @throws IllegalStateException if the database was already started with a different config file
 	 * 
-	 * @deprecated Please use a combination of {@link #isStarted()} and {@link #startup(File)}.
+	 * @deprecated Please use a combination of {@link #isStarted()} and {@link #startup(Path)}.
 	 */
-	@Deprecated public static void ensureStarted(File configFile) {
+	@Deprecated public static void ensureStarted(final Path configFile) {
 		if (isStarted()) {
-			String currentPath = pool.getConfiguration().getConfigFilePath();
-			if (!configFile.getAbsoluteFile().equals(new File(currentPath).getAbsoluteFile()))
+			final Optional<Path> currentPath = pool.getConfiguration().getConfigFilePath();
+			if(!currentPath.map(cp -> cp.toAbsolutePath().equals(configFile.toAbsolutePath())).orElse(false)) {
 				throw new IllegalStateException("database already started with different configuration " + currentPath);
+			}
 		} else {
 			startup(configFile);
 		}
@@ -154,7 +155,7 @@ public class Database {
 	
 	/**
 	 * Return whether the database has been started and is currently running in this JVM.  This will
-	 * be the case if {@link #startup(File)} or {@link #ensureStarted(File)} was previously called
+	 * be the case if {@link #startup(Path)} or {@link #ensureStarted(Path)} was previously called
 	 * successfully and {@link #shutdown()} was not yet called.
 	 *
 	 * @return <code>true</code> if the database has been started with any configuration file

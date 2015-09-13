@@ -26,18 +26,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 package org.exist.extensions.exquery.restxq.impl.adapters;
 
-import java.lang.reflect.Method;
 import net.sf.cglib.proxy.Callback;
 import net.sf.cglib.proxy.CallbackFilter;
 import net.sf.cglib.proxy.Dispatcher;
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.NoOp;
-import org.exist.dom.persistent.ContextItem;
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.Match;
 import org.exist.dom.persistent.NodeHandle;
 import org.exist.dom.persistent.NodeProxy;
-import org.exist.numbering.NodeId;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
@@ -53,9 +48,9 @@ import org.w3c.dom.Text;
  *
  * @author Adam Retter <adam.retter@googlemail.com>
  */
-public class DomEnhancingNodeProxyAdapter {
+class DomEnhancingNodeProxyAdapter {
     
-    public final static NodeProxy create(final NodeProxy nodeProxy) {
+    public static NodeProxy create(final NodeProxy nodeProxy) {
         
         final Class<? extends Node> clazzes[] = getNodeClasses(nodeProxy);
          
@@ -66,31 +61,28 @@ public class DomEnhancingNodeProxyAdapter {
           new NodeDispatcher(nodeProxy)
         };
         
-        final CallbackFilter callbackFilter = new CallbackFilter() {
-            @Override
-            public int accept(final Method method) {
-                
-                final Class declaringClass = method.getDeclaringClass();
-                
-                //look for nodes
-                boolean isMethodOnNode = false;
-                if(declaringClass.equals(Node.class)) {
-                    isMethodOnNode = true;
-                } else {
-                    //search parent interfaces
-                    for(final Class iface : declaringClass.getInterfaces()) {
-                        if(iface.equals(Node.class)) {
-                            isMethodOnNode = true;
-                            break;
-                        }
+        final CallbackFilter callbackFilter = method -> {
+
+            final Class declaringClass = method.getDeclaringClass();
+
+            //look for nodes
+            boolean isMethodOnNode = false;
+            if(declaringClass.equals(Node.class)) {
+                isMethodOnNode = true;
+            } else {
+                //search parent interfaces
+                for(final Class iface : declaringClass.getInterfaces()) {
+                    if(iface.equals(Node.class)) {
+                        isMethodOnNode = true;
+                        break;
                     }
                 }
-                
-                if(isMethodOnNode) {
-                    return 1; //The NodeDispatcher
-                } else {
-                    return 0; //The NoOp passthrough
-                }
+            }
+
+            if(isMethodOnNode) {
+                return 1; //The NodeDispatcher
+            } else {
+                return 0; //The NoOp pass through
             }
         };
         
@@ -100,18 +92,16 @@ public class DomEnhancingNodeProxyAdapter {
         enhancer.setCallbackFilter(callbackFilter);
         enhancer.setCallbacks(callbacks);
         
-        final NodeProxy enhancedNodeProxy = (NodeProxy)enhancer.create(
+        return (NodeProxy)enhancer.create(
             new Class[] {
                 NodeHandle.class
             },
             new Object[] {
                 nodeProxy
             });
-        
-        return enhancedNodeProxy;
     }
     
-    private final static Class<? extends Node>[] getNodeClasses(final NodeProxy nodeProxy) {
+    private static Class<? extends Node>[] getNodeClasses(final NodeProxy nodeProxy) {
         switch(nodeProxy.getType()) {
             
             case Type.DOCUMENT:

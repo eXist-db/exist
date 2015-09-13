@@ -11,6 +11,10 @@ set JMX_ENABLED=0
 set JMX_PORT=1099
 set JAVA_ARGS=
 
+::remove any quotes from JAVA_HOME and EXIST_HOME env var, will be re-added below
+for /f "delims=" %%G IN (%JAVA_HOME%) DO SET JAVA_HOME=%%G
+for /f "delims=" %%G IN (%EXIST_HOME%) DO SET EXIST_HOME=%%G
+
 set JAVA_RUN="java"
 
 if not "%JAVA_HOME%" == "" (

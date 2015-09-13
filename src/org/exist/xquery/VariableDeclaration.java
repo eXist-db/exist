@@ -97,11 +97,9 @@ public class VariableDeclaration extends AbstractExpression implements Rewritabl
         expression.analyze(contextInfo);
         var.setIsInitialized(true);
     }
-    
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#eval(org.exist.dom.persistent.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
-	 */
-	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+
+    @Override
+    public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
@@ -110,33 +108,42 @@ public class VariableDeclaration extends AbstractExpression implements Rewritabl
             if (contextItem != null)
                 {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }
+
         context.pushInScopeNamespaces(false);
-		final QName qn = QName.parse(context, qname, null);
-        
-		final Module myModule = context.getRootModule(qn.getNamespaceURI());		
-        context.pushDocumentContext();
-        context.prologEnter(this);
-		// declare the variable
-		final Sequence seq = expression.eval(null, null);
-        Variable var;
-		if(myModule != null) {
-			var = myModule.declareVariable(qn, seq);
-            var.setSequenceType(sequenceType);
-            var.checkType();
-        } else {
-			var = new VariableImpl(qn);
-			var.setValue(seq);
-            var.setSequenceType(sequenceType);
-            var.checkType();
-			context.declareGlobalVariable(var);
-		}
-        
-        if (context.getProfiler().isEnabled())
-            //Note : that we use seq but we return Sequence.EMPTY_SEQUENCE
-            {context.getProfiler().end(this, "", seq);}
-        context.popInScopeNamespaces();
-        context.popDocumentContext();
-		return Sequence.EMPTY_SEQUENCE;
+        try {
+            final QName qn = QName.parse(context, qname, null);
+            final Module myModule = context.getRootModule(qn.getNamespaceURI());
+
+            context.pushDocumentContext();
+            try {
+                context.prologEnter(this);
+                // declare the variable
+                final Sequence seq = expression.eval(null, null);
+                final Variable var;
+                if (myModule != null) {
+                    var = myModule.declareVariable(qn, seq);
+                    var.setSequenceType(sequenceType);
+                    var.checkType();
+                } else {
+                    var = new VariableImpl(qn);
+                    var.setValue(seq);
+                    var.setSequenceType(sequenceType);
+                    var.checkType();
+                    context.declareGlobalVariable(var);
+                }
+
+                if (context.getProfiler().isEnabled()) {
+                    //Note : that we use seq but we return Sequence.EMPTY_SEQUENCE
+                    context.getProfiler().end(this, "", seq);
+                }
+            } finally {
+                context.popDocumentContext();
+            }
+        } finally {
+            context.popInScopeNamespaces();
+        }
+
+		    return Sequence.EMPTY_SEQUENCE;
 	}
 	
 	/* (non-Javadoc)

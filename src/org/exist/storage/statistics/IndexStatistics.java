@@ -30,17 +30,17 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.btree.DBException;
 import org.exist.util.DatabaseConfigurationException;
+import org.exist.util.FileUtils;
 import org.w3c.dom.Element;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.channels.FileChannel;
+import java.nio.channels.SeekableByteChannel;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 
 /**
  * Collects statistics on the distribution of elements in the database.
@@ -57,7 +57,7 @@ public class IndexStatistics extends AbstractIndex implements RawBackupSupport {
 
     protected final static Logger LOG = LogManager.getLogger(IndexStatistics.class);
 
-    private File dataFile;
+    private Path dataFile;
     private DataGuide dataGuide = new DataGuide();
     
     public IndexStatistics() {
@@ -79,31 +79,29 @@ public class IndexStatistics extends AbstractIndex implements RawBackupSupport {
         dataGuide = newGuide;
     }
 
-    public void configure(BrokerPool pool, String dataDir, Element config) throws DatabaseConfigurationException {
+    public void configure(BrokerPool pool, Path dataDir, Element config) throws DatabaseConfigurationException {
         super.configure(pool, dataDir, config);
         String fileName = "stats.dbx";
         if (config.hasAttribute("file"))
             {fileName = config.getAttribute("file");}
-        dataFile = new File(dataDir, fileName);
+        dataFile = dataDir.resolve(fileName);
     }
 
     public void open() throws DatabaseConfigurationException {
         dataGuide = new DataGuide();
-        if (dataFile.exists()) {
-            try {
-                final long start = System.currentTimeMillis();
-                final FileInputStream is = new FileInputStream(dataFile);
-                final FileChannel fc = is.getChannel();
-                dataGuide.read(fc, getBrokerPool().getSymbols());
-                is.close();
+        if (Files.exists(dataFile)) {
+            final long start = System.currentTimeMillis();
+            try(final SeekableByteChannel chan = Files.newByteChannel(dataFile)) {
+                dataGuide.read(chan, getBrokerPool().getSymbols());
+
                 if (LOG.isDebugEnabled())
-                    {LOG.debug("Reading " + dataFile.getName() + " took " +
+                    {LOG.debug("Reading " + FileUtils.fileName(dataFile) + " took " +
                         (System.currentTimeMillis() - start) + "ms. Size of " +
                         "the graph: " + dataGuide.getSize());}
             } catch (final IOException e) {
                 LOG.error(e.getMessage(), e);
                 throw new DatabaseConfigurationException("Error while loading " +
-                    dataFile.getAbsolutePath() + ": " + e.getMessage(), e);
+                    dataFile.toAbsolutePath() + ": " + e.getMessage(), e);
             }
         }
     }
@@ -112,20 +110,17 @@ public class IndexStatistics extends AbstractIndex implements RawBackupSupport {
     }
 
     public void sync() throws DBException {
-        try {
-            final FileOutputStream os = new FileOutputStream(dataFile);
-            final FileChannel fc = os.getChannel();
-            dataGuide.write(fc, getBrokerPool().getSymbols());
-            os.close();
+        try(final SeekableByteChannel chan = Files.newByteChannel(dataFile,StandardOpenOption.WRITE)) {
+            dataGuide.write(chan, getBrokerPool().getSymbols());
         } catch (final IOException e) {
             LOG.error(e.getMessage(), e);
-            throw new DBException("Error while writing " + dataFile.getAbsolutePath() +
+            throw new DBException("Error while writing " + dataFile.toAbsolutePath().toString() +
                     ": " + e.getMessage());
         }
     }
 
     public void remove() throws DBException {
-        dataFile.delete();
+        FileUtils.deleteQuietly(dataFile);
     }
 
     public IndexWorker getWorker(DBBroker broker) {
@@ -146,15 +141,11 @@ public class IndexStatistics extends AbstractIndex implements RawBackupSupport {
 
 	@Override
 	public void backupToArchive(RawDataBackup backup) throws IOException {
-        final OutputStream os = backup.newEntry(dataFile.getName());
-		final InputStream is = new FileInputStream(dataFile);
-        final byte[] buf = new byte[4096];
-        int len;
-        while ((len = is.read(buf)) > 0) {
-            os.write(buf, 0, len);
+        try(final OutputStream os = backup.newEntry(FileUtils.fileName(dataFile))) {
+            Files.copy(dataFile, os);
+        } finally {
+            backup.closeEntry();
         }
-        is.close();
-        backup.closeEntry();
 	}
 	
 }

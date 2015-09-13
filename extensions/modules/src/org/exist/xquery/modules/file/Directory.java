@@ -21,14 +21,18 @@
  */
 package org.exist.xquery.modules.file;
 
-import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Date;
+import java.util.stream.Stream;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
+import org.exist.util.FileUtils;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -83,14 +87,12 @@ public class Directory extends BasicFunction {
      *
      * @param context	The Context of the calling XQuery
      */
-    public Directory(XQueryContext context, FunctionSignature signature) {
+    public Directory(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
 
-    /*
-     * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
-     */
-    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+    @Override
+    public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
         
         if (!context.getSubject().hasDbaRole()) {
             XPathException xPathException = new XPathException(this, "Permission denied, calling user '"
@@ -100,78 +102,76 @@ public class Directory extends BasicFunction {
         }
 
         
-        String inputPath = args[0].getStringValue();
-        File directoryPath = FileModuleHelper.getFile(inputPath);
-        
+        final String inputPath = args[0].getStringValue();
+        final Path directoryPath = FileModuleHelper.getFile(inputPath);
 		
         if (logger.isDebugEnabled()) {
-            logger.debug("Listing matching files in directory: " + directoryPath);
+            logger.debug("Listing matching files in directory: " + directoryPath.toAbsolutePath().toString());
         }
 
+        if(!Files.isDirectory(directoryPath)) {
+            throw new XPathException(this, "'" + inputPath + "' does not point to a valid directory.");
+        }
         
         // Get list of files, null if baseDir does not point to a directory
-        File[] scannedFiles = directoryPath.listFiles();
-        
-        if(scannedFiles==null){
-            throw new XPathException("'" + inputPath + "' does not point to a valid directory.");
-        }
-        
-        if (logger.isDebugEnabled() ) {
-            logger.debug("Found: " + scannedFiles.length);
-        }
+        try {
+            final Stream<Path> scannedFiles = Files.list(directoryPath);
 
+            final MemTreeBuilder builder = context.getDocumentBuilder();
 
-        MemTreeBuilder builder = context.getDocumentBuilder();
+            builder.startDocument();
+            builder.startElement(new QName("list", null, null), null);
 
-        builder.startDocument();
-        builder.startElement(new QName("list", null, null), null);
+            scannedFiles.forEach(entry -> {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Found: " + entry.toAbsolutePath().toString());
+                }
 
-        for (File entry : scannedFiles) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Found: " + entry.getAbsolutePath());
-            }
+                String entryType = "unknown";
+                if (Files.isRegularFile(entry)) {
+                    entryType = "file";
+                } else if (Files.isDirectory(entry)) {
+                    entryType = "directory";
+                }
 
-            String entryType = "unknown";
-            if(entry.isFile()){
-                entryType="file";
+                builder.startElement(new QName(entryType, NAMESPACE_URI, PREFIX), null);
 
-            } else if(entry.isDirectory()){
-                entryType="directory";
-            }
+                builder.addAttribute(new QName("name", null, null), FileUtils.fileName(entry));
 
-            builder.startElement(new QName(entryType, NAMESPACE_URI, PREFIX), null);
+                try {
+                    if (Files.isRegularFile(entry)) {
+                        final Long sizeLong = Files.size(entry);
+                        String sizeString = Long.toString(sizeLong);
+                        String humanSize = getHumanSize(sizeLong, sizeString);
 
-            builder.addAttribute(new QName("name", null, null), entry.getName());
+                        builder.addAttribute(new QName("size", null, null), sizeString);
+                        builder.addAttribute(new QName("human-size", null, null), humanSize);
+                    }
 
-            if(entry.isFile()){
-                Long sizeLong = entry.length();
-                String sizeString = Long.toString(sizeLong);
-                String humanSize = getHumanSize(sizeLong, sizeString);
+                    builder.addAttribute(new QName("modified", null, null),
+                            new DateTimeValue(new Date(Files.getLastModifiedTime(entry).toMillis())).getStringValue());
 
-                builder.addAttribute(new QName("size", null, null), sizeString);
-                builder.addAttribute(new QName("human-size", null, null), humanSize);
-            }
+                    builder.addAttribute(new QName("hidden", null, null),
+                            new BooleanValue(Files.isHidden(entry)).getStringValue());
 
-            builder.addAttribute(new QName("modified", null, null),
-                    new DateTimeValue(new Date(entry.lastModified())).getStringValue());
+                    builder.addAttribute(new QName("canRead", null, null),
+                            new BooleanValue(Files.isReadable(entry)).getStringValue());
 
-            builder.addAttribute(new QName("hidden", null, null),
-                    new BooleanValue(entry.isHidden()).getStringValue());
+                    builder.addAttribute(new QName("canWrite", null, null),
+                            new BooleanValue(Files.isWritable(entry)).getStringValue());
+                } catch (final IOException | XPathException ioe) {
+                    LOG.warn(ioe);
+                }
+                builder.endElement();
 
-            builder.addAttribute(new QName("canRead", null, null),
-                    new BooleanValue(entry.canRead()).getStringValue());
-
-            builder.addAttribute(new QName("canWrite", null, null),
-                    new BooleanValue(entry.canWrite()).getStringValue());
+            });
 
             builder.endElement();
 
+            return (NodeValue) builder.getDocument().getDocumentElement();
+        } catch(final IOException ioe) {
+            throw new XPathException(this, ioe);
         }
-
-        builder.endElement();
-
-
-        return (NodeValue) builder.getDocument().getDocumentElement();
     }
 
     private String getHumanSize(final Long sizeLong, final String sizeString) {

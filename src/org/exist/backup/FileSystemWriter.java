@@ -21,122 +21,111 @@
  */
 package org.exist.backup;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.Writer;
 
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Properties;
 
-import org.apache.commons.io.FileUtils;
-import org.exist.storage.DBBroker;
+import org.exist.util.FileUtils;
 import org.exist.xmldb.XmldbURI;
 
 
 /**
  * Implementation of BackupWriter that writes to the file system.
  */
-public class FileSystemWriter implements BackupWriter
-{
-	private File		 rootDir;
-    private File         currentDir;
-    private File         currentContents;
-    private Writer       currentContentsOut;
+public class FileSystemWriter implements BackupWriter {
+    private final Path rootDir;
+    private Path currentDir;
+    private Path currentContents;
+    private Writer currentContentsOut;
     private OutputStream currentOut;
-    private boolean      dataWritten = false;
+    private boolean dataWritten = false;
 
-    public FileSystemWriter( String path )
-    {
-        this( new File( path ) );
+    public FileSystemWriter(final String path) throws IOException {
+        this(Paths.get(path));
     }
 
-
-    public FileSystemWriter( File file )
-    {
-        if( file.exists() ) {
+    public FileSystemWriter(final Path file) throws IOException {
+        if (Files.exists(file)) {
 
             //removing "path"
-            file.delete();
+            FileUtils.deleteQuietly(file);
         }
-        file.mkdirs();
+        Files.createDirectories(file);
         currentDir = file;
         rootDir = file;
     }
 
-    public void newCollection( String name )
-    {
-    	File file;
+    @Override
+    public void newCollection(final String name) throws IOException {
+        final Path file;
         if (XmldbURI.createInternal(name).isAbsolute()) {
-            file = new File( rootDir, name );
-    	} else {
-            file = new File( currentDir, name );
-    	}
-
-        if( file.exists() ) {
-            file.delete();
+            file = rootDir.resolve(name.replaceAll("^/?(.*)", "$1"));
+        } else {
+            file = currentDir.resolve(name.replaceAll("^/?(.*)", "$1"));
         }
-        file.mkdirs();
-        dataWritten = true;
-        currentDir  = file;
-    }
 
-
-    public void closeCollection()
-    {
-        currentDir = currentDir.getParentFile();
-    }
-
-
-    public void close() throws IOException
-    {
-    }
-
-
-    public Writer newContents() throws IOException
-    {
-        currentContents    = new File( currentDir, "__contents__.xml" );
-        currentContentsOut = new BufferedWriter( new OutputStreamWriter( new FileOutputStream( currentContents ), "UTF-8" ) );
-        dataWritten        = true;
-        return( currentContentsOut );
-    }
-
-
-    public void closeContents() throws IOException
-    {
-        currentContentsOut.close();
-    }
-
-
-    public OutputStream newEntry( String name ) throws IOException
-    {
-        currentOut  = new FileOutputStream( new File( currentDir, name ) );
-        dataWritten = true;
-        return( currentOut );
-    }
-
-
-    public void closeEntry() throws IOException
-    {
-        currentOut.close();
-    }
-
-
-    public void setProperties( Properties properties ) throws IOException
-    {
-        if( dataWritten ) {
-            throw( new IOException( "Backup properties need to be set before any backup data is written" ) );
+        if (Files.exists(file)) {
+            FileUtils.deleteQuietly(file);
         }
-        final File         propFile = new File( rootDir, "backup.properties" );
-        final OutputStream os       = new FileOutputStream( propFile );
-        properties.store( os, "Backup properties" );
-        os.close();
+        Files.createDirectories(file);
+        dataWritten = true;
+        currentDir = file;
     }
 
     @Override
-    public void addToRoot(String name, File file) throws IOException {
-        FileUtils.copyFile(file, new File(rootDir, name));
+    public void closeCollection() {
+        currentDir = currentDir.getParent();
+    }
+
+    @Override
+    public void close() throws IOException {
+    }
+
+    @Override
+    public Writer newContents() throws IOException {
+        currentContents = currentDir.resolve("__contents__.xml");
+        currentContentsOut = Files.newBufferedWriter(currentContents, StandardCharsets.UTF_8);
+        dataWritten = true;
+        return (currentContentsOut);
+    }
+
+    @Override
+    public void closeContents() throws IOException {
+        currentContentsOut.close();
+    }
+
+    @Override
+    public OutputStream newEntry(final String name) throws IOException {
+        currentOut = Files.newOutputStream(currentDir.resolve(name));
+        dataWritten = true;
+        return (currentOut);
+    }
+
+    @Override
+    public void closeEntry() throws IOException {
+        currentOut.close();
+    }
+
+    @Override
+    public void setProperties(final Properties properties) throws IOException {
+        if (dataWritten) {
+            throw (new IOException("Backup properties need to be set before any backup data is written"));
+        }
+        final Path propFile = rootDir.resolve("backup.properties");
+        try (final OutputStream os = Files.newOutputStream(propFile)) {
+            properties.store(os, "Backup properties");
+        }
+    }
+
+    @Override
+    public void addToRoot(final String name, final Path file) throws IOException {
+        Files.copy(file, rootDir.resolve(name), StandardCopyOption.ATOMIC_MOVE);
     }
 }

@@ -22,11 +22,12 @@
  */
 package org.exist.storage.journal;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
+import java.nio.channels.SeekableByteChannel;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import static java.nio.file.StandardOpenOption.READ;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -44,7 +45,7 @@ public class JournalReader {
 
     private static final Logger LOG = LogManager.getLogger(JournalReader.class);
 
-    private FileChannel fc;
+    private SeekableByteChannel fc;
     private ByteBuffer header = ByteBuffer.allocateDirect(Journal.LOG_ENTRY_HEADER_LEN);
     private ByteBuffer payload = ByteBuffer.allocateDirect(8192);
 
@@ -59,14 +60,13 @@ public class JournalReader {
      * @param fileNumber
      * @throws LogException
      */
-    public JournalReader(DBBroker broker, File file, int fileNumber) throws LogException {
+    public JournalReader(final DBBroker broker, final Path file, final int fileNumber) throws LogException {
         this.broker = broker;
         this.fileNumber = fileNumber;
         try {
-            final FileInputStream is = new FileInputStream(file);
-            fc = is.getChannel();
+            fc = Files.newByteChannel(file, READ);
         } catch (final IOException e) {
-            throw new LogException("Failed to read log file " + file.getAbsolutePath(), e);
+            throw new LogException("Failed to read log file " + file.toAbsolutePath().toString(), e);
         }
     }
 
@@ -181,7 +181,7 @@ public class JournalReader {
      * @param lsn
      * @throws LogException 
      */
-    public void position(long lsn) throws LogException {
+    public void position(final long lsn) throws LogException {
         try {
             fc.position((int) Lsn.getOffset(lsn) - 1);
         } catch (final IOException e) {

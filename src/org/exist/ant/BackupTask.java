@@ -27,6 +27,8 @@ import org.apache.tools.ant.Project;
 import org.exist.backup.Backup;
 import org.exist.xmldb.XmldbURI;
 
+import java.nio.file.Paths;
+
 
 /**
  * DOCUMENT ME!
@@ -55,7 +57,7 @@ public class BackupTask extends AbstractXMLDBTask
         log( "Backup directory: " + dir );
 
         try {
-            final Backup backup = new Backup( user, password, dir, XmldbURI.create( uri ) );
+            final Backup backup = new Backup( user, password, Paths.get(dir), XmldbURI.create( uri ) );
             backup.backup( false, null );
 
         }

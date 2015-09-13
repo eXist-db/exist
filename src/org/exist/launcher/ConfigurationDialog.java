@@ -1,16 +1,18 @@
 package org.exist.launcher;
 
 import java.awt.*;
-import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import javax.swing.*;
 import javax.xml.transform.TransformerException;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.CollectionCacheManager;
@@ -18,6 +20,7 @@ import org.exist.storage.DefaultCacheManager;
 import org.exist.util.Configuration;
 import org.exist.util.ConfigurationHelper;
 import org.exist.util.DatabaseConfigurationException;
+import org.exist.util.FileUtils;
 
 /**
  *
@@ -57,8 +60,8 @@ public class ConfigurationDialog extends JDialog {
             final int collectionCacheProp = existConfig.getInteger(CollectionCacheManager.PROPERTY_CACHE_SIZE);
             collectionCache.setValue(Integer.valueOf(collectionCacheProp));
 
-            final String dir = existConfig.getProperty(BrokerPool.PROPERTY_DATA_DIR).toString();
-            dataDir.setText(dir);
+            final Path dir = (Path)existConfig.getProperty(BrokerPool.PROPERTY_DATA_DIR);
+            dataDir.setText(dir.toAbsolutePath().toString());
         } catch (DatabaseConfigurationException ex) {
             Logger.getLogger(ConfigurationDialog.class.getName()).log(Level.SEVERE, null, ex);
         }      
@@ -84,8 +87,8 @@ public class ConfigurationDialog extends JDialog {
             lbStartupWarn.setVisible(true);
 
             if (SystemUtils.IS_OS_MAC_OSX) {
-                File dir = new File(System.getProperty("user.home") + "/Library/Application Support/org.exist");
-                dataDir.setText(dir.getAbsolutePath());
+                Path dir = Paths.get(System.getProperty("user.home")).resolve("Library/Application Support/org.exist");
+                dataDir.setText(dir.toAbsolutePath().toString());
             }
         } else {
             lbStartupMsg.setVisible(false);
@@ -396,25 +399,33 @@ public class ConfigurationDialog extends JDialog {
     private boolean checkDataDir() {
         if (!dataDirChanged)
             return true;
-        File dir = new File(dataDir.getText());
-        if (dir.exists()) {
-            Collection<File> files = FileUtils.listFiles(dir, new String[]{"dbx"}, false);
-            if (files.size() > 0) {
-                final int r = JOptionPane.showConfirmDialog(this, "The specified data directory already contains data. " +
-                        "Do you want to use this? Data will not be removed.", "Confirm Data Directory", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
-                if (r == JOptionPane.OK_OPTION) {
-                    return true;
+
+        Path dir = Paths.get(dataDir.getText());
+        if (Files.exists(dir)) {
+
+            try {
+                final java.util.List<Path> files = Files.list(dir).filter(p -> FileUtils.fileName(p).endsWith(".dbx")).collect(Collectors.toList());
+                if (!files.isEmpty()) {
+                    final int r = JOptionPane.showConfirmDialog(this, "The specified data directory already contains data. " +
+                            "Do you want to use this? Data will not be removed.", "Confirm Data Directory", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
+                    if (r == JOptionPane.OK_OPTION) {
+                        return true;
+                    }
+                    return false;
                 }
-                return false;
+            } catch (final IOException e) {
+            JOptionPane.showMessageDialog(this, "Failed to enumerate data files from directory: " + dir.toAbsolutePath().toString(),
+                    "Failed to enumerate data files", JOptionPane.ERROR_MESSAGE);
+            return false;
             }
         } else {
             final int r = JOptionPane.showConfirmDialog(this, "The specified data directory does not exist. Do you want to create it?",
                 "Create data directory?", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
             if (r == JOptionPane.YES_OPTION) {
                 try {
-                    FileUtils.forceMkdir(dir);
+                    Files.createDirectories(dir);
                 } catch (IOException e) {
-                    JOptionPane.showMessageDialog(this, "Failed to create data directory: " + dir.getAbsolutePath(),
+                    JOptionPane.showMessageDialog(this, "Failed to create data directory: " + dir.toAbsolutePath().toString(),
                             "Failed to create directory", JOptionPane.ERROR_MESSAGE);
                     return false;
                 }
@@ -422,7 +433,7 @@ public class ConfigurationDialog extends JDialog {
             }
             return false;
         }
-        if (!dir.canWrite()) {
+        if (!Files.isWritable(dir)) {
             JOptionPane.showMessageDialog(this, "The specified data directory is not writable. " +
                     "Please choose a different one.", "Data Directory Error", JOptionPane.ERROR_MESSAGE);
             return false;
@@ -492,15 +503,16 @@ public class ConfigurationDialog extends JDialog {
     }//GEN-LAST:event_dataDirActionPerformed
 
     private void btnSelectDirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSelectDirActionPerformed
-        File currentDir = new File(dataDir.getText());
-        if (!currentDir.exists()) {
-            currentDir = ConfigurationHelper.getExistHome();
-        }
+        final Optional<Path> currentDir = Optional.ofNullable(dataDir.getText())
+                .map(d -> Optional.of(Paths.get(d)))
+                .filter(md -> md.map(Files::exists).orElse(false))
+                .orElse(ConfigurationHelper.getExistHome());
+
         final JFileChooser chooser = new JFileChooser();
         chooser.setMultiSelectionEnabled(false);
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 
-        chooser.setCurrentDirectory(currentDir);
+        currentDir.map(Path::toFile).ifPresent(chooser::setCurrentDirectory);
 
         if(chooser.showDialog(this, "Choose Data Directory") == JFileChooser.APPROVE_OPTION) {
             dataDir.setText(chooser.getSelectedFile().getAbsolutePath());

@@ -19,8 +19,6 @@
  */
 package org.exist.storage;
 
-//import java.io.EOFException;
-
 import org.exist.dom.TypedQNameComparator;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.QName;
@@ -38,6 +36,7 @@ import org.exist.dom.persistent.NodeSet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import org.exist.util.*;
 import org.exist.xquery.XQueryWatchDog;
 import org.w3c.dom.Node;
 
@@ -59,15 +58,6 @@ import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.Txn;
-import org.exist.util.ByteConversion;
-import org.exist.util.Collations;
-import org.exist.util.Configuration;
-import org.exist.util.FastQSort;
-import org.exist.util.LockException;
-import org.exist.util.ReadOnlyException;
-import org.exist.util.UTF8;
-import org.exist.util.ValueOccurrences;
-import org.exist.util.XMLString;
 import org.exist.xquery.Constants;
 import org.exist.xquery.TerminatedException;
 import org.exist.xquery.XPathException;
@@ -75,11 +65,9 @@ import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
-import java.io.File;
 import java.io.IOException;
-
+import java.nio.file.Path;
 import java.text.Collator;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -155,7 +143,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
     //TODO : reconsider this. Case sensitivity have nothing to do with atomic values -pb
     protected boolean caseSensitive = true;
 
-    public NativeValueIndex(DBBroker broker, byte id, String dataDir,
+    public NativeValueIndex(DBBroker broker, byte id, Path dataDir,
         Configuration config ) throws DBException {
         this.broker = broker;
         this.config = config;
@@ -169,8 +157,8 @@ public class NativeValueIndex implements ContentLoadingObserver {
         BFile nativeFile = (BFile)config.getProperty(getConfigKeyForFile());
         if (nativeFile == null) {
             //use inheritance
-            final File file = new File(dataDir + File.separatorChar + getFileName());
-            LOG.debug("Creating '" + file.getName() + "'...");
+            final Path file = dataDir.resolve(getFileName());
+            LOG.debug("Creating '" + FileUtils.fileName(file) + "'...");
             nativeFile = new BFile(broker.getBrokerPool(), id, false, file,
                 broker.getBrokerPool().getCacheManager(), cacheGrowth,
                 cacheValueThresHold);
@@ -381,7 +369,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
             dbValues.flush();
         }
         catch( final LockException e ) {
-            LOG.warn( "Failed to acquire lock for '" + dbValues.getFile().getName() + "'", e );
+            LOG.warn( "Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e );
             //TODO : throw an exception ? -pb
         }
         catch( final DBException e ) {
@@ -466,7 +454,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                     LOG.error( e.getMessage(), e );
                 }
                 catch( final LockException e ) {
-                    LOG.warn( "Failed to acquire lock for '" + dbValues.getFile().getName() + "'", e );
+                    LOG.warn( "Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e );
                     //TODO : return ?
                 }
                 catch( final IOException e ) {
@@ -611,11 +599,11 @@ public class NativeValueIndex implements ContentLoadingObserver {
                     LOG.error( e.getMessage(), e );
                 }
                 catch( final LockException e ) {
-                    LOG.warn( "Failed to acquire lock for '" + dbValues.getFile().getName() + "'", e );
+                    LOG.warn( "Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e );
                     //TODO : return ?
                 }
                 catch( final ReadOnlyException e ) {
-                    LOG.warn( "Read-only error on '" + dbValues.getFile().getName() + "'", e );
+                    LOG.warn( "Read-only error on '" + FileUtils.fileName(dbValues.getFile()) + "'", e );
                 }
                 catch( final IOException e ) {
                     LOG.error( e.getMessage(), e );
@@ -662,7 +650,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
             dbValues.removeAll( null, new IndexQuery( IndexQuery.TRUNC_RIGHT, ref ) );
         }
         catch( final LockException e ) {
-            LOG.warn( "Failed to acquire lock for '" + dbValues.getFile().getName() + "'", e );
+            LOG.warn( "Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e );
         }
         catch( final BTreeException e ) {
             LOG.error( e.getMessage(), e );
@@ -756,7 +744,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
             }
         }
         catch( final LockException e ) {
-            LOG.warn( "Failed to acquire lock for '" + dbValues.getFile().getName() + "'", e );
+            LOG.warn( "Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e );
         }
         catch( final IOException e ) {
             LOG.error( e.getMessage(), e );
@@ -866,7 +854,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                     LOG.error( e.getMessage(), e );
                 }
                 catch( final LockException e ) {
-                    LOG.warn( "Failed to acquire lock for '" + dbValues.getFile().getName() + "'", e );
+                    LOG.warn( "Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e );
                 }
                 catch( final IOException e ) {
                     LOG.error( e.getMessage(), e );
@@ -901,7 +889,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                         LOG.error( e.getMessage(), e );
                     }
                     catch( final LockException e ) {
-                        LOG.warn( "Failed to acquire lock for '" + dbValues.getFile().getName() + "'", e );
+                        LOG.warn( "Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e );
                     }
                     catch( final IOException e ) {
                         LOG.error( e.getMessage(), e );
@@ -1083,7 +1071,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                     dbValues.query( query, cb );
                 }
                 catch( final LockException e ) {
-                    LOG.warn( "Failed to acquire lock for '" + dbValues.getFile().getName() + "'", e );
+                    LOG.warn( "Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e );
                 }
                 catch( final IOException e ) {
                     LOG.error( e.getMessage(), e );
@@ -1112,7 +1100,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                         dbValues.query( query, cb );
                     }
                     catch( final LockException e ) {
-                        LOG.warn( "Failed to acquire lock for '" + dbValues.getFile().getName() + "'", e );
+                        LOG.warn( "Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e );
                     }
                     catch( final IOException e ) {
                         LOG.error( e.getMessage(), e );
@@ -1160,7 +1148,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 LOG.error( e.getMessage(), e );
             }
             catch( final LockException e ) {
-                LOG.warn( "Failed to acquire lock for '" + dbValues.getFile().getName() + "'", e );
+                LOG.warn( "Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e );
             }
             catch( final IOException e ) {
                 LOG.error( e.getMessage(), e );
@@ -1230,7 +1218,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                     LOG.error( e.getMessage(), e );
                 }
                 catch( final LockException e ) {
-                    LOG.warn( "Failed to acquire lock for '" + dbValues.getFile().getName() + "'", e );
+                    LOG.warn( "Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e );
                 }
                 catch( final IOException e ) {
                     LOG.error( e.getMessage(), e );
@@ -1373,7 +1361,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
 
     public String toString()
     {
-        return( this.getClass().getName() + " at " + dbValues.getFile().getName() + " owned by " + broker.toString() + " (case sensitive = " + caseSensitive + ")" );
+        return( this.getClass().getName() + " at " + FileUtils.fileName(dbValues.getFile()) + " owned by " + broker.toString() + " (case sensitive = " + caseSensitive + ")" );
     }
 
     //***************************************************************************

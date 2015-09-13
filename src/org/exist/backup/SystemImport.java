@@ -21,10 +21,11 @@
  */
 package org.exist.backup;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Properties;
 import java.util.Stack;
 import javax.xml.parsers.ParserConfigurationException;
@@ -42,6 +43,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.storage.DBBroker;
 import org.exist.util.EXistInputSource;
+import org.exist.util.FileUtils;
 import org.exist.xmldb.XmldbURI;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -63,7 +65,7 @@ public class SystemImport {
     	this.db = db;
 	}
 
-    public void restore(RestoreListener listener, String username, Object credentials, String newCredentials, File f, String uri) throws XMLDBException, FileNotFoundException, IOException, SAXException, ParserConfigurationException, URISyntaxException, AuthenticationException, ConfigurationException, PermissionDeniedException {
+    public void restore(RestoreListener listener, String username, Object credentials, String newCredentials, final Path f, String uri) throws XMLDBException, FileNotFoundException, IOException, SAXException, ParserConfigurationException, URISyntaxException, AuthenticationException, ConfigurationException, PermissionDeniedException {
         
         //login
         final DBBroker broker = db.authenticate(username, credentials);
@@ -101,9 +103,9 @@ public class SystemImport {
         }
     }
     
-    private Stack<BackupDescriptor> getBackupDescriptors(File contents) throws XMLDBException, IOException {
+    private Stack<BackupDescriptor> getBackupDescriptors(Path contents) throws XMLDBException, IOException {
         
-        final Stack<BackupDescriptor> descriptors = new Stack<BackupDescriptor>();
+        final Stack<BackupDescriptor> descriptors = new Stack<>();
         
         do {
             final BackupDescriptor bd = getBackupDescriptor(contents);
@@ -131,10 +133,10 @@ public class SystemImport {
                 final String previous = properties.getProperty("previous", "");
 
                 if(previous.length() > 0) {
-                    contents = new File(bd.getParentDir(), previous);
+                    contents = bd.getParentDir().resolve(previous);
 
-                    if(!contents.canRead()) {
-                        throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, "Required part of incremental backup not found: " + contents.getAbsolutePath());
+                    if(!Files.isReadable(contents)) {
+                        throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, "Required part of incremental backup not found: " + contents.toAbsolutePath().toString());
                     }
                 }
             }
@@ -143,11 +145,11 @@ public class SystemImport {
         return descriptors;
     }
     
-    private BackupDescriptor getBackupDescriptor(File f) throws IOException {
+    private BackupDescriptor getBackupDescriptor(final Path f) throws IOException {
         final BackupDescriptor bd;
-        if(f.isDirectory()) {
-            bd = new FileSystemBackupDescriptor(new File(new File(f, "db"), BackupDescriptor.COLLECTION_DESCRIPTOR));
-        } else if(f.getName().toLowerCase().endsWith( ".zip" )) {
+        if(Files.isDirectory(f)) {
+            bd = new FileSystemBackupDescriptor(f.resolve("db").resolve(BackupDescriptor.COLLECTION_DESCRIPTOR));
+        } else if(FileUtils.fileName(f).toLowerCase().endsWith(".zip")) {
             bd = new ZipArchiveBackupDescriptor(f);
         } else {
             bd = new FileSystemBackupDescriptor(f);

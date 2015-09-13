@@ -21,15 +21,16 @@
  */
 package org.exist.xquery.modules.file;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Properties;
-
 import javax.xml.transform.OutputKeys;
+import static java.nio.file.StandardOpenOption.APPEND;
+import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -147,15 +148,15 @@ public class SerializeToFile extends BasicFunction {
 
             //check the file output path
             final String inputPath = args[1].getStringValue();
-            final File file = FileModuleHelper.getFile(inputPath);
+            final Path file = FileModuleHelper.getFile(inputPath);
 
-            if(file.isDirectory()) {
-                logger.debug("Cannot serialize file. Output file is a directory: " + file.getAbsolutePath());
+            if(Files.isDirectory(file)) {
+                logger.debug("Cannot serialize file. Output file is a directory: " + file.toAbsolutePath().toString());
                 return BooleanValue.FALSE;
             }
 
-            if(file.exists() && !file.canWrite()) {
-                logger.debug("Cannot serialize file. Cannot write to file " + file.getAbsolutePath() );
+        if(Files.exists(file) && !Files.isWritable(file)) {
+                logger.debug("Cannot serialize file. Cannot write to file " + file.toAbsolutePath().toString() );
                 return BooleanValue.FALSE;
             }
 
@@ -202,11 +203,11 @@ public class SerializeToFile extends BasicFunction {
 	}
 	
 	
-	private void serializeXML(final SequenceIterator siNode, final Properties outputProperties, final File file, final boolean doAppend) throws XPathException {
+	private void serializeXML(final SequenceIterator siNode, final Properties outputProperties, final Path file, final boolean doAppend) throws XPathException {
         final Serializer serializer = context.getBroker().getSerializer();
         serializer.reset();
 
-        try(final OutputStream os = new FileOutputStream(file, doAppend);
+        try(final OutputStream os = Files.newOutputStream(file, doAppend ? APPEND : TRUNCATE_EXISTING);
                 final Writer writer = new OutputStreamWriter(os)) {
 
             serializer.setProperties(outputProperties);
@@ -220,8 +221,8 @@ public class SerializeToFile extends BasicFunction {
         }
 	}
 
-    private void serializeBinary(final BinaryValue binary, final File file, final boolean doAppend) throws XPathException {
-        try(final OutputStream os = new FileOutputStream(file, doAppend)) {
+    private void serializeBinary(final BinaryValue binary, final Path file, final boolean doAppend) throws XPathException {
+        try(final OutputStream os = Files.newOutputStream(file, doAppend ? APPEND : TRUNCATE_EXISTING)) {
             binary.streamBinaryTo(os);
         } catch(final IOException ioe) {
             throw new XPathException(this, "Cannot serialize file. A problem occurred while serializing the binary data: " + ioe.getMessage(), ioe);

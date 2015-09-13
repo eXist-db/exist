@@ -1,6 +1,5 @@
 package org.exist.dom.persistent;
 
-import org.exist.dom.persistent.SymbolTable;
 import org.exist.storage.io.VariableByteInput;
 import org.easymock.Capture;
 import org.exist.storage.io.VariableByteOutputStream;
@@ -11,8 +10,10 @@ import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.captureByte;
 import static org.easymock.EasyMock.captureInt;
 import static org.easymock.EasyMock.capture;
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 import org.exist.EXistException;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
@@ -22,7 +23,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class SymbolTableTest {
 
-    private final File tmpDir = new File(System.getProperty("java.io.tmpdir"));
+    private final Path tmpDir = Paths.get(System.getProperty("java.io.tmpdir"));
 
     @Test
     public void getName_returns_empty_string_when_id_is_zero() throws EXistException, IOException {

@@ -21,8 +21,9 @@
  */
 package org.exist.util;
 
-import java.io.File;
-import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Optional;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -40,19 +41,19 @@ public class SingleInstanceConfiguration extends Configuration {
     
     @SuppressWarnings("unused")
 	private final static Logger LOG = LogManager.getLogger(SingleInstanceConfiguration.class); //Logger
-    protected static String _configFile = null; //config file (conf.xml by default)
-    protected static File _existHome = null;
+    protected static Optional<Path> _configFile = Optional.empty(); //config file (conf.xml by default)
+    protected static Optional<Path> _existHome = Optional.empty();
     
 
     public SingleInstanceConfiguration() throws DatabaseConfigurationException {
-        this("conf.xml", null);
+        this("conf.xml", Optional.empty());
     }
     
-    public SingleInstanceConfiguration(String configFilename) throws DatabaseConfigurationException {
-        this(configFilename, null);
+    public SingleInstanceConfiguration(final String configFilename) throws DatabaseConfigurationException {
+        this(configFilename, Optional.empty());
     }
     
-    public SingleInstanceConfiguration(String configFilename, String existHomeDirname) throws DatabaseConfigurationException {
+    public SingleInstanceConfiguration(String configFilename, Optional<Path> existHomeDirname) throws DatabaseConfigurationException {
     	super(configFilename, existHomeDirname);
     	_configFile = configFilePath;
     	_existHome = existHome;
@@ -63,10 +64,10 @@ public class SingleInstanceConfiguration extends Configuration {
      *
      * @return the path to the configuration file
      */
-    public static String getPath() {
-        if (_configFile == null) {
-            final File f = ConfigurationHelper.lookup("conf.xml");
-            return f.getAbsolutePath();
+    public static Optional<Path> getPath() {
+        if (!_configFile.isPresent()) {
+            final Path f = ConfigurationHelper.lookup("conf.xml");
+            return Optional.of(f.toAbsolutePath());
         }
         return _configFile;
     }
@@ -80,61 +81,29 @@ public class SingleInstanceConfiguration extends Configuration {
         boolean retVal =true;
         
         // if existHome is not set,try to do so.
-        if (_existHome == null){
-            ConfigurationHelper.getExistHome();
+        if (!_existHome.isPresent()){
+            _existHome = ConfigurationHelper.getExistHome();
         }
         
-        if( new File(_existHome, "lib/core").isDirectory() ) {
-            retVal=false;
+        if(_existHome.map(h -> Files.isDirectory(h.resolve("lib/core"))).orElse(false)) {
+            retVal = false;
         }
         return retVal;
     }
     
     /**
-     *  Get folder in which the exist webapplications are found.
+     * Get folder in which the exist webapplications are found.
      * For default install ("jar install") and in webcontainer ("war install")
      * the location is different. (EXIST_HOME/webapps vs. TOMCAT/webapps/exist)
      *
      * @return folder.
      */
-    public static File getWebappHome(){
-        File webappFolder =null;
-        
-        // if existHome is not set,try to do so.
-        if (_existHome == null){
-        	ConfigurationHelper.getExistHome();
+    public static Optional<Path> getWebappHome(){
+        // if existHome is not set, try to do so.
+        if (!_existHome.isPresent()){
+        	_existHome = ConfigurationHelper.getExistHome();
         }
-        
-        if(isInWarFile()){
-            webappFolder= new File(_existHome, "..");
-        } else {
-            webappFolder= new File(_existHome, "webapp");
-        }
-        
-        // convert to real path
-        try {
-            File tmpFolder = webappFolder.getCanonicalFile();
-            webappFolder=tmpFolder;
-        } catch (final IOException ex) {
-            // oops ; use previous path
-        }
-        
-        return webappFolder;
-    }
-    
-    /**
-     * Returns <code>true</code> if the directory <code>dir</code> contains a file
-     * named <tt>conf.xml</tt>.
-     *
-     * @param dir the directory
-     * @return <code>true</code> if the directory contains a configuration file
-     */
-    @SuppressWarnings("unused")
-	private static boolean containsConfig(File dir, String config) {
-        if (dir != null && dir.exists() && dir.isDirectory() && dir.canRead()) {
-            final File c = new File(dir, config);
-            return c.exists() && c.isFile() && c.canRead();
-        }
-        return false;
+
+        return _existHome.map(h -> isInWarFile() ? h.getParent() : h.resolve("webapp"));
     }
 }
