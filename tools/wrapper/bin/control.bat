@@ -21,15 +21,15 @@ rem The base name for the Wrapper binary.
 set _WRAPPER_BASE=wrapper
 
 rem The directory where the Wrapper binary (.exe) file is located, this can be
-rem either a absolute or relative path. If the path contains any special characters, 
-rem please make sure to quote the variable. 
+rem either a absolute or relative path. If the path contains any special characters,
+rem please make sure to quote the variable.
 set _WRAPPER_DIR=
 
 rem The name and location of the Wrapper configuration file.   This will be used
 rem  if the user does not specify a configuration file as the first parameter to
 rem  this script.  It will not be possible to specify a configuration file on the
-rem  command line if _PASS_THROUGH is set. 
-rem If a relative path is specified, please note that the location is based on the 
+rem  command line if _PASS_THROUGH is set.
+rem If a relative path is specified, please note that the location is based on the
 rem location.
 set _WRAPPER_CONF_DEFAULT="../conf/%_WRAPPER_BASE%.conf"
 
@@ -125,11 +125,9 @@ shift
 if not [%1]==[] goto :parameters
 
 if [%_PASS_THROUGH%]==[] (
-    %_WRAPPER_EXE% -it %_WRAPPER_CONF%
+    %_WRAPPER_EXE% -i %_WRAPPER_CONF%
 ) else (
-    %_WRAPPER_EXE% -it %_WRAPPER_CONF% -- %_PARAMETERS%
+    %_WRAPPER_EXE% %_PARAMETERS% %_WRAPPER_CONF%
 )
 if not errorlevel 1 goto :eof
 pause
-
-
