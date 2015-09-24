@@ -1,13 +1,13 @@
 package org.exist.xquery.modules.xslfo;
 
 import java.io.OutputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Map.Entry;
 import java.util.Properties;
 import org.apache.avalon.framework.configuration.Configuration;
 import org.apache.avalon.framework.configuration.SAXConfigurationHandler;
-import org.apache.fop.apps.FOUserAgent;
-import org.apache.fop.apps.Fop;
-import org.apache.fop.apps.FopFactory;
+import org.apache.fop.apps.*;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.exist.storage.DBBroker;
@@ -22,28 +22,37 @@ public class ApacheFopProcessorAdapter implements ProcessorAdapter {
 
     private static final Logger LOG = LogManager.getLogger(ApacheFopProcessorAdapter.class);
 
-    private final FopFactory fopFactory = FopFactory.newInstance();
-
     @Override
-    public ContentHandler getContentHandler(DBBroker broker, NodeValue configFile, Properties parameters, String mimeType, OutputStream os) throws SAXException {
+    public ContentHandler getContentHandler(final DBBroker broker, final NodeValue configFile, final Properties parameters, final String mimeType, final OutputStream os) throws SAXException {
 
         // setup the FopFactory
-        if(configFile != null) {
-            FopConfigurationBuilder cfgBuilder = new FopConfigurationBuilder(broker);
-            Configuration cfg = cfgBuilder.buildFromNode(configFile);
-            fopFactory.setUserConfig(cfg);
+        final FopFactoryBuilder builder;
+        try {
+            if (configFile != null) {
+                final FopConfigurationBuilder cfgBuilder = new FopConfigurationBuilder(broker);
+                final Configuration cfg = cfgBuilder.buildFromNode(configFile);
+                final URI defaultBaseURI = new URI(configFile.getOwnerDocument().getBaseURI());
+                final EnvironmentProfile environment = EnvironmentalProfileFactory.createDefault(defaultBaseURI, null);
+                builder = new FopFactoryBuilder(environment).setConfiguration(cfg);
+            } else {
+                builder = new FopFactoryBuilder(new URI("/db"));
+            }
+
+            final FopFactory fopFactory = builder.build();
+
+            // setup the foUserAgent, using given parameters held in the
+            // transformer handler
+            final FOUserAgent foUserAgent = setupFOUserAgent(fopFactory.newFOUserAgent(), parameters);
+
+            // create new instance of FOP using the mimetype, the created user
+            // agent, and the output stream
+            final Fop fop = fopFactory.newFop(mimeType, foUserAgent, os);
+
+            // Obtain FOP's DefaultHandler
+            return fop.getDefaultHandler();
+        } catch(final URISyntaxException e) {
+            throw new SAXException("Unable to parse baseURI");
         }
-
-        // setup the foUserAgent, using given parameters held in the
-        // transformer handler
-        FOUserAgent foUserAgent = setupFOUserAgent(fopFactory.newFOUserAgent(), parameters);
-
-        // create new instance of FOP using the mimetype, the created user
-        // agent, and the output stream
-        Fop fop = fopFactory.newFop(mimeType, foUserAgent, os);
-        
-        // Obtain FOP's DefaultHandler
-        return fop.getDefaultHandler();
     }
 
     @Override
@@ -53,9 +62,7 @@ public class ApacheFopProcessorAdapter implements ProcessorAdapter {
     /**
      * Setup the UserAgent for FOP, from given parameters *
      *
-     * @param transformer
-     *            Created based on the XSLT, so containing any parameters to the
-     *            XSL-FO specified in the XQuery
+     * @param foUserAgent The user agent to set parameters for
      * @param parameters
      *            any user defined parameters to the XSL-FO process
      * @return FOUserAgent The generated FOUserAgent to include any parameters
