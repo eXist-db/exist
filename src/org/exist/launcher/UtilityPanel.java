@@ -103,7 +103,7 @@ public class UtilityPanel extends JFrame implements Observer {
         });
         toolbar.add(button);
 
-        button = createButton(toolbar, "shutdown.png", "Shut Down");
+        button = createButton(toolbar, "shutdown.png", "Quit");
         button.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
