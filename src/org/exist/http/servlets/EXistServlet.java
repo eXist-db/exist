@@ -161,7 +161,10 @@ public class EXistServlet extends AbstractExistHttpServlet {
             return "";
         }
 
-LOG.info(" In: " + path);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug(" In: " + path);
+        }
+
         // path contains both required and superficial escapes,
         // as different user agents use different conventions;
         // for the sake of interoperability, remove any unnecessary escapes
@@ -180,7 +183,10 @@ LOG.info(" In: " + path);
             path = path.substring(0, path.length() - 1);
         }
         // path now is in proper canonical encoded form
-LOG.info("Out: " + path);
+        
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Out: " + path);
+        }
 
         return path;
     }
