@@ -41,7 +41,6 @@ import org.exist.xquery.value.Sequence;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
-import org.w3c.dom.NodeList;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -84,19 +83,17 @@ public class IdFunctionTest {
         assertEquals(1, result.getItemCount());
 
         final XpathEngine xpathEngine = XMLUnit.newXpathEngine();
-        final Map<String, String> namespaces = new HashMap<String, String>();
+        final Map<String, String> namespaces = new HashMap<>();
         namespaces.put("sm", "http://exist-db.org/xquery/securitymanager");
         xpathEngine.setNamespaceContext(new SimpleNamespaceContext(namespaces));
 
         final DocumentImpl resultDoc = (DocumentImpl)result.itemAt(0);
 
-        final NodeList nlRealUsername = xpathEngine.getMatchingNodes("/sm:id/sm:real/sm:username", resultDoc);
-        assertEquals(1, nlRealUsername.getLength());
-        assertEquals(realUsername, nlRealUsername.item(0).getTextContent());
+        final String actualRealUsername = xpathEngine.evaluate("/sm:id/sm:real/sm:username", resultDoc);
+        assertEquals(realUsername, actualRealUsername);
 
-        final NodeList nlEffectiveUsername = xpathEngine.getMatchingNodes("/sm:id/sm:effective/sm:username", resultDoc);
-        assertEquals(1, nlEffectiveUsername.getLength());
-        assertEquals(effectiveUsername, nlEffectiveUsername.item(0).getTextContent());
+        final String actualEffectiveUsername = xpathEngine.evaluate("/sm:id/sm:effective/sm:username", resultDoc);
+        assertEquals(effectiveUsername, actualEffectiveUsername);
 
         verify(mckEffectiveUser, mckRealUser, mckContext);
     }
@@ -130,18 +127,17 @@ public class IdFunctionTest {
         assertEquals(1, result.getItemCount());
 
         final XpathEngine xpathEngine = XMLUnit.newXpathEngine();
-        final Map<String, String> namespaces = new HashMap<String, String>();
+        final Map<String, String> namespaces = new HashMap<>();
         namespaces.put("sm", "http://exist-db.org/xquery/securitymanager");
         xpathEngine.setNamespaceContext(new SimpleNamespaceContext(namespaces));
 
         final DocumentImpl resultDoc = (DocumentImpl)result.itemAt(0);
 
-        final NodeList nlRealUsername = xpathEngine.getMatchingNodes("/sm:id/sm:real/sm:username", resultDoc);
-        assertEquals(1, nlRealUsername.getLength());
-        assertEquals(username, nlRealUsername.item(0).getTextContent());
+        final String actualRealUsername = xpathEngine.evaluate("/sm:id/sm:real/sm:username", resultDoc);
+        assertEquals(username, actualRealUsername);
 
-        final NodeList nlEffectiveUsername = xpathEngine.getMatchingNodes("/sm:id/sm:effective/sm:username", resultDoc);
-        assertEquals(0, nlEffectiveUsername.getLength());
+        final String actualEffectiveUsername = xpathEngine.evaluate("/sm:id/sm:effective/sm:username", resultDoc);
+        assertEquals("", actualEffectiveUsername);
 
         verify(mckUser, mckContext);
     }
