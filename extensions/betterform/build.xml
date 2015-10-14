@@ -33,7 +33,7 @@
                   fork="true">
                 <classpath>
                     <fileset dir="${exist.rootdir}/lib/endorsed">
-                        <include name="saxon*.jar"/>
+                        <include name="Saxon*.jar"/>
                     </fileset>
                 </classpath>
                 <arg value="@{in}"/>
@@ -85,6 +85,9 @@
         <delete file="${exist.rootdir}/webapp/WEB-INF/dwr.xml" />
         <delete file="${exist.rootdir}/webapp/WEB-INF/dwr20.dtd" />
         <delete file="${exist.rootdir}/webapp/WEB-INF/classes/infinispan.xml"/>
+	<delete>
+	  <fileset dir="${betterform.lib}" includes="*.jar" excludes="dwr-3.0.RC2.jar"/>
+	</delete>
 
         <!-- restore web.xml -->
         <move file="${betterform.home}/uninstall/web.xml" tofile="${exist.rootdir}/webapp/WEB-INF/web.xml" overwrite="true" failonerror="false"/>
