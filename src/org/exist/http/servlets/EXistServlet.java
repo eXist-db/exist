@@ -162,7 +162,7 @@ public class EXistServlet extends AbstractExistHttpServlet {
         }
 
         if (LOG.isDebugEnabled()) {
-            LOG.info(" In: " + path);
+            LOG.debug(" In: " + path);
         }
 
         // path contains both required and superficial escapes,
