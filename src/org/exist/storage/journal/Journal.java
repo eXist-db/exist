@@ -112,7 +112,8 @@ public class Journal {
     private int journalSizeLimit = DEFAULT_MAX_SIZE;
 
     /** the current output channel 
-     * Only valid after switchFiles() was called at least once! */ 
+     * Only valid after switchFiles() was called at least once! */
+    private FileOutputStream os;
     private FileChannel channel;
 
     /** Synching the journal is done by a background thread */
@@ -415,7 +416,7 @@ public class Journal {
             close();
             try {
                 //RandomAccessFile raf = new RandomAccessFile(file, "rw");
-                final FileOutputStream os = new FileOutputStream(file.toFile(), true);
+                os = new FileOutputStream(file.toFile(), true);
                 channel = os.getChannel();
                 
                 syncThread.setChannel(channel);
@@ -430,6 +431,13 @@ public class Journal {
         if (channel != null) {
             try {
                 channel.close();
+            } catch (final IOException e) {
+                LOG.warn("Failed to close journal", e);
+            }
+        }
+        if (os != null) {
+            try {
+                os.close();
             } catch (final IOException e) {
                 LOG.warn("Failed to close journal", e);
             }
