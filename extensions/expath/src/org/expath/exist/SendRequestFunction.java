@@ -45,10 +45,10 @@ import org.expath.httpclient.HttpRequest;
 import org.expath.httpclient.HttpResponse;
 import org.expath.httpclient.impl.ApacheHttpConnection;
 import org.expath.httpclient.impl.RequestParser;
-import org.expath.httpclient.model.Element;
-import org.expath.httpclient.model.exist.EXistElement;
+import org.expath.tools.model.Element;
+import org.expath.tools.model.exist.EXistElement;
 import org.expath.httpclient.model.exist.EXistResult;
-import org.expath.httpclient.model.exist.EXistSequence;
+import org.expath.tools.model.exist.EXistSequence;
 
 /**
  * @author Adam Retter <adam@existsolutions.com>
@@ -137,13 +137,13 @@ public class SendRequestFunction extends BasicFunction {
         
         HttpRequest req = null;
         try {
-            final org.expath.httpclient.model.Sequence b = new EXistSequence(bodies, getContext());
+            final org.expath.tools.model.Sequence b = new EXistSequence(bodies, getContext());
             final Element r = new EXistElement(request, getContext());
-            final RequestParser parser = new RequestParser();
-            req = parser.parse(r, b, href);
+            final RequestParser parser = new RequestParser(r);
+            req = parser.parse(b, href);
 
             // override anyway it href exists
-            if (href != null && ! "".equals(href) ) {
+            if (href != null && !href.isEmpty() ) {
                 req.setHref(href);
             }
         

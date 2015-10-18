@@ -19,10 +19,10 @@
  *  
  *  $Id$
  */
-package org.expath.httpclient.model.exist;
+package org.expath.tools.model.exist;
 
-import org.expath.httpclient.HttpClientException;
-import org.expath.httpclient.model.Attribute;
+import org.expath.tools.ToolsException;
+import org.expath.tools.model.Attribute;
 import org.w3c.dom.Attr;
 
 /**
@@ -52,18 +52,18 @@ public class EXistAttribute implements Attribute {
     }
 
     @Override
-    public boolean getBoolean() throws HttpClientException {
+    public boolean getBoolean() throws ToolsException {
         return attribute.getValue().toLowerCase().equals("true");
     }
 
     @Override
-    public int getInteger() throws HttpClientException {
+    public int getInteger() throws ToolsException {
         String s = attribute.getValue();
         try {
             return Integer.parseInt(s);
         }
         catch ( NumberFormatException ex ) {
-            throw new HttpClientException("@" + getLocalName() + " is not an integer");
+            throw new ToolsException("@" + getLocalName() + " is not an integer");
         }
     }
 }
