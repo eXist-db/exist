@@ -19,25 +19,25 @@
  *  
  *  $Id$
  */
-package org.expath.httpclient.model.exist;
+package org.expath.tools.model.exist;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
+
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.ValueSequence;
-import org.expath.httpclient.HttpClientException;
 import org.expath.httpclient.HttpConstants;
-import org.expath.httpclient.model.Attribute;
-import org.expath.httpclient.model.Element;
-import org.expath.httpclient.model.Sequence;
+import org.expath.tools.ToolsException;
+import org.expath.tools.model.Attribute;
+import org.expath.tools.model.Element;
+import org.expath.tools.model.Sequence;
 import org.w3c.dom.Attr;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import javax.xml.namespace.QName;
 
 /**
  * @author Adam Retter <adam@existsolutions.com>
@@ -47,13 +47,13 @@ public class EXistElement implements Element {
     private final NodeValue element;
     private final XQueryContext context;
     
-    public EXistElement(NodeValue element, XQueryContext context) {
+    public EXistElement(final NodeValue element, final XQueryContext context) {
         this.element = element;
         this.context = context;
     }
     
     @Override
-    public Iterable<Attribute> attributes() throws HttpClientException {
+    public Iterable<Attribute> attributes() {
         
         return new Iterable<Attribute>() {
             @Override
@@ -89,16 +89,16 @@ public class EXistElement implements Element {
     }
 
     @Override
-    public Iterable<Element> children() throws HttpClientException {
+    public Iterable<Element> children() {
         final Node node = element.getNode();
         return new IterableElement(node);
     }
 
     @Override
-    public String getAttribute(String local_name) throws HttpClientException {
+    public String getAttribute(final String local_name) {
         String attrValue = null;
-        NamedNodeMap attrs = element.getNode().getAttributes();
-        Node attr = attrs.getNamedItem(local_name);
+        final NamedNodeMap attrs = element.getNode().getAttributes();
+        final Node attr = attrs.getNamedItem(local_name);
         if(attr != null) {
             attrValue = ((Attr)attr).getValue();
         }
@@ -107,29 +107,29 @@ public class EXistElement implements Element {
     }
 
     @Override
-    public Sequence getContent() throws HttpClientException {
-        org.exist.xquery.value.Sequence valueSequence = new ValueSequence();
+    public Sequence getContent() {
+        final org.exist.xquery.value.Sequence valueSequence = new ValueSequence();
         
-        NodeList children = element.getNode().getChildNodes();
+        final NodeList children = element.getNode().getChildNodes();
         
         try {
             for(int i = 0; i < children.getLength(); i++) {
-                Node child = children.item(i);
+                final Node child = children.item(i);
                 valueSequence.add((NodeValue)child);
             }
             return new EXistSequence(valueSequence, context);
-        } catch(XPathException xpe) {
-            throw new HttpClientException(xpe.getMessage(), xpe);
+        } catch(final XPathException xpe) {
+            throw new RuntimeException(xpe.getMessage(), xpe);
         }
     }
 
     @Override
-    public String getDisplayName() throws HttpClientException {
+    public String getDisplayName() {
         return element.getNode().getNodeName();
     }
 
     @Override
-    public String getLocalName() throws HttpClientException {
+    public String getLocalName() {
         return element.getNode().getLocalName();
     }
 
@@ -139,10 +139,10 @@ public class EXistElement implements Element {
     }
 
     @Override
-    public boolean hasNoNsChild() throws HttpClientException {
-        NodeList children = element.getNode().getChildNodes();
+    public boolean hasNoNsChild() {
+        final NodeList children = element.getNode().getChildNodes();
         for(int i = 0; i < children.getLength(); i++) {
-            Node child = children.item(i);
+            final Node child = children.item(i);
             if(child.getNamespaceURI() == null && child.getPrefix() == null || child.getNamespaceURI().equalsIgnoreCase("")) {
                 return true;
             }
@@ -151,51 +151,60 @@ public class EXistElement implements Element {
     }
 
     @Override
-    public Iterable<Element> httpNsChildren() throws HttpClientException {
-       
+    public Iterable<Element> children(final String ns) {
         final Node node = element.getNode();
-        return new IterableElement(node, HttpConstants.HTTP_CLIENT_NS_URI);
+        return new IterableElement(node, ns);
     }
 
-    /**
-     * Check the element {@code elem} does not have attributes other than {@code names}.
-     *
-     * {@code names} contains non-qualified names, for allowed attributes.  The
-     * element can have other attributes in other namespace (not in the HTTP
-     * Client namespace) but no attributes in no namespace.
-     *
-     * @param names The non-qualified names of allowed attributes (cannot be
-     * null, but can be empty.)
-     *
-     * @throws HttpClientException If the element contains an attribute in the
-     * HTTP Client namespace, or in no namespace and the name of which is not
-     * in {@code names}.
-     */
     @Override
-    public void noOtherNCNameAttribute(String[] names) throws HttpClientException {
-        NamedNodeMap attributes = element.getNode().getAttributes();
+    public void noOtherNCNameAttribute(final String[] names, String[] forbidden_ns) throws ToolsException {
+        if ( forbidden_ns == null ) {
+            forbidden_ns = new String[] { };
+        }
+
+        final String[] sorted_names = sortCopy(names);
+        final String[] sorted_ns = sortCopy(forbidden_ns);
+
+        final NamedNodeMap attributes = element.getNode().getAttributes();
         
         for(int i = 0; i < attributes.getLength(); i++) {
-            Node attribute = attributes.item(i);
-            if(attribute.getNamespaceURI() != null) {
-                if(attribute.getNamespaceURI().equals(HttpConstants.HTTP_CLIENT_NS_URI)) {
-                    throw new HttpClientException("Element contains an attribute '" + attribute.getNodeName() + "' in the HTTP Client namespace");
+            final Node attr = attributes.item(i);
+            final String attr_name = attr.getLocalName();
+            final String ns = attr.getNamespaceURI();
+
+            if( Arrays.binarySearch(sorted_ns, ns) >= 0 ) {
+                if(attr.getNamespaceURI().equals(HttpConstants.HTTP_CLIENT_NS_URI)) {
+                    throw new ToolsException("@" + attr_name + " in namespace " + ns + " not allowed on " + getDisplayName());
                 }
-            } else {
-                boolean matched = false;
-                for(String name: names) {
-                    if(attribute.getLocalName().equals(name)) {
-                        matched = true;
-                        break;
-                    }
-                }
-                if(!matched) {
-                    throw new HttpClientException("Element contains an attribute '" + attribute.getNodeName() + "' in no namespace but that attribute is not permitted");
-                }
+            } else if ( ! "".equals(ns) ) {
+                // ignore other-namespace-attributes
+            } else if ( Arrays.binarySearch(sorted_names, attr.getLocalName()) < 0 ) {
+                throw new ToolsException("@" + attr_name + " not allowed on " + getDisplayName());
             }
         }
     }
-    
+
+    private String[] sortCopy(final String[] array)
+    {
+        final String[] sorted = new String[array.length];
+        System.arraycopy(array, 0, sorted, 0, sorted.length);
+        Arrays.sort(sorted);
+        return sorted;
+    }
+
+    @Override
+    public QName parseQName(final String value)
+            throws ToolsException
+    {
+        try {
+            final org.exist.dom.QName qn = org.exist.dom.QName.parse(context, value, element.getQName().getNamespaceURI());
+            return qn.toJavaQName();
+        }
+        catch ( final XPathException ex ) {
+            throw new ToolsException("Error parsing the literal QName: " + value, ex);
+        }
+    }
+
     public class IterableElement implements Iterable<Element> {
 
         private final Node node;
@@ -259,11 +268,11 @@ public class EXistElement implements Element {
         private List<org.w3c.dom.Element> getElements() {
 
             if(elements == null) {
-                elements = new ArrayList<org.w3c.dom.Element>();
-                NodeList children = parent.getChildNodes();
+                elements = new ArrayList<>();
+                final NodeList children = parent.getChildNodes();
 
                 for(int i = 0; i < children.getLength(); i++) {
-                    Node child = children.item(i);
+                    final Node child = children.item(i);
                     if(child.getNodeType() == Node.ELEMENT_NODE) {
                         if(inNamespaceURI != null) {
                             if(inNamespaceURI.equals(child.getNamespaceURI())){
