@@ -26,7 +26,10 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Adam Retter <adam.retter@googlemail.com>
@@ -163,6 +166,17 @@ public class FileUtils {
      */
     public static String fileName(final Path path) {
         return path.getFileName().toString();
+    }
+
+    /**
+     * A list of the entries in the directory. The listing is not recursive.
+     *
+     * @return The list of entries
+     */
+    public static List<Path> list(final Path directory) throws IOException {
+        try(final Stream<Path> entries = Files.list(directory)) {
+            return entries.collect(Collectors.toList());
+        }
     }
 
     /**

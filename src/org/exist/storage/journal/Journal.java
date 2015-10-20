@@ -370,14 +370,13 @@ public class Journal {
     }
 
     public void clearBackupFiles() {
-        try {
-            Files.list(fsJournalDir)
-                    .forEach(p -> {
-                        LOG.info("Checkpoint deleting: " + p.toAbsolutePath().toString());
-                        if (!FileUtils.deleteQuietly(p)) {
-                            LOG.fatal("Cannot delete file '" + p.toAbsolutePath().toString() + "' from backup journal.");
-                        }
-                    });
+        try(final Stream<Path> backupFiles = Files.list(fsJournalDir)) {
+            backupFiles.forEach(p -> {
+                LOG.info("Checkpoint deleting: " + p.toAbsolutePath().toString());
+                if (!FileUtils.deleteQuietly(p)) {
+                    LOG.fatal("Cannot delete file '" + p.toAbsolutePath().toString() + "' from backup journal.");
+                }
+            });
         } catch(final IOException ioe) {
             LOG.fatal("Could not clear journal backup files", ioe);
         }
@@ -464,9 +463,10 @@ public class Journal {
     }
 
     /**
-     * Returns all journal files found in the data directory.
+     * Returns a Stream of all journal files found in the data directory.
      * 
-     * @return all journal files
+     * @return A Stream of all journal files. NOTE - This is
+     * an I/O Stream and so you are responsible for closing it!
      */
     public Stream<Path> getFiles() throws IOException {
         final String suffix = '.' + LOG_FILE_SUFFIX;

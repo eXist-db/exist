@@ -93,6 +93,7 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.exist.dom.persistent.StoredNode;
 import org.exist.storage.dom.INodeIterator;
@@ -528,7 +529,7 @@ public class NativeBroker extends DBBroker {
     private void backupBinary(final RawDataBackup backup, final Path file, final String path) throws IOException {
         final String thisPath = path + "/" + file.getFileName();
         if(Files.isDirectory(file)) {
-            for(final Path p : Files.list(file).collect(Collectors.toList())) {
+            for(final Path p : FileUtils.list(file)) {
                 backupBinary(backup, p, thisPath);
             }
         } else {
