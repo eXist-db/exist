@@ -78,8 +78,8 @@ public class RecoveryManager {
 	public boolean recover() throws LogException {
         boolean recoveryRun = false;
 		final List<Path> files;
-        try {
-            files = logManager.getFiles().collect(Collectors.toList());
+        try(final Stream<Path> fileStream = logManager.getFiles()) {
+            files = fileStream.collect(Collectors.toList());
         } catch(final IOException ioe) {
             throw new LogException("Unable to find journal files in data dir", ioe);
         }

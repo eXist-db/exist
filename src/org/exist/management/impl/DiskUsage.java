@@ -26,6 +26,7 @@ import java.nio.file.FileStore;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -102,8 +103,8 @@ public class DiskUsage implements DiskUsageMBean {
     @Override
     public long getDataDirectoryUsedSpace() {
         return dataDir.map(d -> {
-            try {
-                return Files.list(d)
+            try(final Stream<Path> files = Files.list(d)) {
+                return files
                         .filter(this::isDbxFile)
                         .mapToLong(p -> {
                             final long size = FileUtils.sizeQuietly(p);
@@ -120,8 +121,8 @@ public class DiskUsage implements DiskUsageMBean {
     @Override
     public long getJournalDirectoryUsedSpace() {
         return dataDir.map(d -> {
-            try {
-                return Files.list(d)
+            try(final Stream<Path> files = Files.list(d)) {
+                return files
                         .filter(this::isJournalFile)
                         .mapToLong(p -> {
                             final long size = FileUtils.sizeQuietly(p);
@@ -138,8 +139,8 @@ public class DiskUsage implements DiskUsageMBean {
     @Override
     public long getJournalDirectoryNumberOfFiles() {
         return journalDir.map(j -> {
-            try {
-                return Files.list(j)
+            try(final Stream<Path> files = Files.list(j)) {
+                return files
                         .filter(this::isJournalFile)
                         .count();
             } catch (final IOException ioe) {

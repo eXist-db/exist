@@ -114,8 +114,7 @@ public class Directory extends BasicFunction {
         }
         
         // Get list of files, null if baseDir does not point to a directory
-        try {
-            final Stream<Path> scannedFiles = Files.list(directoryPath);
+        try(final Stream<Path> scannedFiles = Files.list(directoryPath)) {
 
             final MemTreeBuilder builder = context.getDocumentBuilder();
 

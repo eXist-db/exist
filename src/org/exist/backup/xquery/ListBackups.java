@@ -96,7 +96,7 @@ public class ListBackups extends BasicFunction
             if(Files.isDirectory(dir) && Files.isReadable(dir)) {
                 final Pattern pattern = Pattern.compile( BackupDirectory.FILE_REGEX );
                 final Matcher matcher = pattern.matcher( "" );
-                final List<Path> files   = Files.list(dir).collect(Collectors.toList());
+                final List<Path> files   = FileUtils.list(dir);
 
                 for(final Path file : files) {
                     matcher.reset(FileUtils.fileName(file));
