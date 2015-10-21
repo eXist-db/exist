@@ -388,7 +388,7 @@ public class RemoteUserManagementService extends AbstractRemote implements EXist
     @Override
     public Date getSubCollectionCreationTime(final Collection cParent, final String name) throws XMLDBException {
         if (collection == null) {
-            throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "collection is null");
+            throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "collection is null");
         }
 
         Long creationTime;
@@ -413,7 +413,7 @@ public class RemoteUserManagementService extends AbstractRemote implements EXist
     @Override
     public Permission getSubCollectionPermissions(final Collection cParent, final String name) throws XMLDBException {
         if (collection == null) {
-            throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "collection is null");
+            throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "collection is null");
         }
 
         Permission perm;
@@ -481,7 +481,7 @@ public class RemoteUserManagementService extends AbstractRemote implements EXist
     @Override
     public Permission getPermissions(final Collection coll) throws XMLDBException {
         if (coll == null) {
-            throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "collection is null");
+            throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "collection is null");
         }
 
         try {
