@@ -21,7 +21,7 @@
  */
 package org.exist.xquery.functions.util;
 
-import org.easymock.classextension.EasyMock;
+import org.easymock.EasyMock;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.IntegerValue;
@@ -35,7 +35,7 @@ import static org.junit.Assert.*;
  * @author Adam Retter <adam.retter@googlemail.com>
  */
 public class BaseConversionFunctionsTest {
-    
+
     /**
      * Test of eval method, of class PermissionsFunctions.
      */

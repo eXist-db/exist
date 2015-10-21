@@ -1,7 +1,5 @@
 package org.exist.dom.persistent;
 
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.DocumentMetadata;
 import org.exist.Database;
 import org.exist.security.Group;
 import org.exist.security.internal.RealmImpl;
@@ -11,11 +9,11 @@ import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.exist.security.PermissionFactory;
 import org.exist.security.SecurityManager;
-import org.easymock.classextension.EasyMock;
+import org.easymock.EasyMock;
 import org.exist.security.Permission;
-import static org.easymock.classextension.EasyMock.replay;
-import static org.easymock.classextension.EasyMock.verify;
-import static org.easymock.classextension.EasyMock.expect;
+import static org.easymock.EasyMock.replay;
+import static org.easymock.EasyMock.verify;
+import static org.easymock.EasyMock.expect;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
