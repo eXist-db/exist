@@ -2,10 +2,10 @@ package org.exist.security;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.easymock.classextension.EasyMock;
-import static org.easymock.classextension.EasyMock.expect;
-import static org.easymock.classextension.EasyMock.verify;
-import static org.easymock.classextension.EasyMock.replay;
+import org.easymock.EasyMock;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.verify;
+import static org.easymock.EasyMock.replay;
 import org.exist.Database;
 import org.exist.config.ConfigurationException;
 import org.junit.Test;
@@ -32,6 +32,7 @@ public class AbstractAccountTest {
         expect(mockRealm.getDatabase()).andReturn(mockDatabase);
         expect(mockDatabase.getSubject()).andReturn(mockSubject);
         mockGroup.assertCanModifyGroup(mockSubject);
+        expect(mockGroup.getName()).andReturn("testGroup");
 
         replay(mockRealm, mockDatabase, mockGroup, partialMockAccount);
 
