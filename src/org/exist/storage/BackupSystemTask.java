@@ -17,6 +17,7 @@ import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * BackupSystemTask creates an XML backup of the current database into a directory
@@ -139,29 +140,25 @@ public class BackupSystemTask implements SystemTask {
         if (LOG.isDebugEnabled()) {LOG.debug("starting purgeZipFiles()");}
 
         // get all files in target directory
-        final List<Path> files = Files.list(directory).collect(Collectors.toList());
+        final List<Path> files = FileUtils.list(directory);
 
-        if (!files.isEmpty())
-        {
+        if (!files.isEmpty()) {
             final Map<String, Path> sorted = new TreeMap<>();
-            for (final Path file : files)
-            {
+            for (final Path file : files) {
                 //check for prefix and suffix match
-                if (file.getFileName().startsWith(prefix) && FileUtils.fileName(file).endsWith(suffix))
-                {
+                if (file.getFileName().startsWith(prefix) && FileUtils.fileName(file).endsWith(suffix)) {
                     sorted.put(Long.toString(Files.getLastModifiedTime(file).toMillis()), file);
                 }
             }
-            if (sorted.size() > zipFilesMax)
-            {
-               final Set<String> keys = sorted.keySet();
+
+
+            if (sorted.size() > zipFilesMax) {
+                final Set<String> keys = sorted.keySet();
                 final Iterator<String> ki = keys.iterator();
                 int i = sorted.size() - zipFilesMax;
-                while (ki.hasNext())
-                {
+                while (ki.hasNext()) {
                     final Path f = sorted.get(ki.next());
-                    if (i > 0)
-                    {
+                    if (i > 0) {
                         if (LOG.isDebugEnabled()) {
                             LOG.debug("Purging backup : " + FileUtils.fileName(f));
                         }

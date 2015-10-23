@@ -96,7 +96,7 @@ public class BackupDirectory
 
 
     public BackupDescriptor lastBackupFile() throws IOException {
-        final List<Path> files = Files.list(dir).collect(Collectors.toList());
+        final List<Path> files = FileUtils.list(dir);
 
         Path newest       = null;
         Date newestDate   = null;

@@ -9,6 +9,7 @@ import org.expath.httpclient.HeaderSet;
 import org.expath.httpclient.HttpClientException;
 import org.expath.httpclient.HttpConstants;
 import org.expath.httpclient.model.TreeBuilder;
+import org.expath.tools.ToolsException;
 
 /**
  * @author Adam Retter <adam@existsolutions.com>
@@ -17,28 +18,14 @@ public class EXistTreeBuilder implements TreeBuilder {
 
     final MemTreeBuilder builder;
     
-    public EXistTreeBuilder(XQueryContext context) {
+    public EXistTreeBuilder(final XQueryContext context) {
         builder = context.getDocumentBuilder();
         builder.startDocument();
-    }
-    
-    //TODO this should NOT be in this interface! It should be in the EXPath Caller, otherwise we mix concerns and duplicate code.
-    @Override
-    public void outputHeaders(HeaderSet headers) throws HttpClientException {
-        for (Header h : headers ) {
-            assert h.getName() != null : "Header name cannot be null";
-            startElem("header");
-            attribute("name", h.getName().toLowerCase());
-            attribute("value", h.getValue());
-            startContent();
-            endElem();
-        }
     }
 
     //TODO EXPath Caller should send QName, otherwise we duplicate code and reduce reuse!
     @Override
-    public void startElem(String localname) throws HttpClientException {
-        
+    public void startElem(final String localname) throws ToolsException {
         final String prefix = HttpConstants.HTTP_CLIENT_NS_PREFIX;
         final String uri = HttpConstants.HTTP_CLIENT_NS_URI;
         
@@ -46,17 +33,17 @@ public class EXistTreeBuilder implements TreeBuilder {
     }
 
     @Override
-    public void attribute(String localname, CharSequence value) throws HttpClientException {
+    public void attribute(final String localname, final CharSequence value) throws ToolsException {
         builder.addAttribute(new QName(localname), value.toString());
     }
 
     @Override
-    public void startContent() throws HttpClientException {
+    public void startContent() throws ToolsException {
         //TODO this is not needed in eXist-db, it is very saxon specific
     }
 
     @Override
-    public void endElem() throws HttpClientException {
+    public void endElem() throws ToolsException {
         builder.endElement();
     }
     
@@ -64,4 +51,25 @@ public class EXistTreeBuilder implements TreeBuilder {
         builder.endDocument();
         return builder.getDocument();
     }
+
+    @Override
+    public void outputHeaders(HeaderSet headers)
+            throws HttpClientException
+    {
+        for ( Header h : headers ) {
+            assert h.getName() != null : "Header name cannot be null";
+            String name = h.getName().toLowerCase();
+            try {
+                startElem("header");
+                attribute("name", name);
+                attribute("value", h.getValue());
+                //startContent();
+                endElem();
+            }
+            catch ( ToolsException ex ) {
+                throw new HttpClientException("Error building the header " + name, ex);
+            }
+        }
+    }
+
 }

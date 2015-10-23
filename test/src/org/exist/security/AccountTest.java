@@ -1,12 +1,10 @@
 package org.exist.security;
 
-import java.lang.reflect.Method;
-import org.easymock.classextension.ConstructorArgs;
-import org.easymock.classextension.EasyMock;
+import org.easymock.EasyMock;
 import org.exist.security.internal.AccountImpl;
-import static org.easymock.classextension.EasyMock.expect;
-import static org.easymock.classextension.EasyMock.replay;
-import static org.easymock.classextension.EasyMock.verify;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.replay;
+import static org.easymock.EasyMock.verify;
 import org.exist.Database;
 import org.exist.config.Configuration;
 import org.exist.security.internal.SecurityManagerImpl;
@@ -29,40 +27,25 @@ public class AccountTest {
 
         Database mockDatabase = EasyMock.createMock(Database.class);
 
-        SecurityManagerImpl mockSecurityManager = EasyMock.createMock(SecurityManagerImpl.class,
-                new ConstructorArgs(
-                    SecurityManagerImpl.class.getConstructor(Database.class),
-                    new Object[] {
-                        mockDatabase
-                    }
-                )
-        );
+        SecurityManagerImpl mockSecurityManager = EasyMock.createMockBuilder(SecurityManagerImpl.class)
+                .withConstructor(Database.class)
+                .withArgs(mockDatabase)
+                .createMock();
 
         Configuration mockConfiguration = EasyMock.createMock(Configuration.class);
 
-        AbstractRealm mockRealm = EasyMock.createMock(AbstractRealm.class,
-                new ConstructorArgs(
-                    AbstractRealm.class.getDeclaredConstructor(SecurityManager.class, Configuration.class),
-                    new Object[] {
-                        mockSecurityManager,
-                        mockConfiguration
-                    }
-                )
-        );
+        AbstractRealm mockRealm = EasyMock.createMockBuilder(AbstractRealm.class)
+                .withConstructor(SecurityManager.class, Configuration.class)
+                .withArgs(mockSecurityManager, mockConfiguration)
+                .createMock();
 
-        AccountImpl mockAccountImpl = EasyMock.createMock(AccountImpl.class,
-            new ConstructorArgs(
-                AccountImpl.class.getDeclaredConstructor(AbstractRealm.class, String.class),
-                new Object[] {
-                    mockRealm,
-                    testAccountName
-                }
-            ),
-            new Method[]{
-                AccountImpl.class.getMethod("getRealm"),
-                AccountImpl.class.getMethod("addGroup", Group.class)
-            }
-        );
+        AccountImpl mockAccountImpl = EasyMock.createMockBuilder(AccountImpl.class)
+                .withConstructor(AbstractRealm.class, String.class)
+                .withArgs(mockRealm, testAccountName)
+                .addMockedMethods(
+                        AccountImpl.class.getMethod("getRealm"),
+                        AccountImpl.class.getMethod("addGroup", Group.class)
+                ).createMock();
 
         
         expect(mockAccountImpl.getRealm()).andReturn(mockRealm);

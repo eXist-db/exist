@@ -35,9 +35,11 @@ public class StoreBinaryTest {
         final Optional<Path> home = ConfigurationHelper.getExistHome();
         final Path data = FileUtils.resolve(home, "webapp/WEB-INF/data");
 
-        final Stream<Path> dataFiles  = Files.list(data)
-                .filter(path -> !(FileUtils.fileName(path).equals("RECOVERY") || FileUtils.fileName(path).equals("README") || FileUtils.fileName(path).equals(".DO_NOT_DELETE")));
-        dataFiles.forEach(FileUtils::deleteQuietly);
+        try(final Stream<Path> dataFiles  = Files.list(data)) {
+            dataFiles
+                    .filter(path -> !(FileUtils.fileName(path).equals("RECOVERY") || FileUtils.fileName(path).equals("README") || FileUtils.fileName(path).equals(".DO_NOT_DELETE")))
+                    .forEach(FileUtils::deleteQuietly);
+        }
     }
 
     @Test

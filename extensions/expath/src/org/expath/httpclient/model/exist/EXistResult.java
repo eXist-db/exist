@@ -59,11 +59,17 @@ public class EXistResult implements Result {
     public EXistResult(final XQueryContext context) {
         this.context = context;
     }
-    
+
+    @Override
+    public Result makeNewResult() throws HttpClientException {
+        return new EXistResult(context.copyContext());
+    }
+
     @Override
     public void add(final Reader reader) throws HttpClientException {
-        
-        // START TEMP - replace with a defferred StingReader when eXist has this soon.
+
+        // START TEMP
+        //TODO(AR) - replace with a deferred StringReader when eXist has this soon.
         final StringBuilder builder = new StringBuilder();
         try {
             final char cbuf[] = new char[4096];
@@ -83,7 +89,6 @@ public class EXistResult implements Result {
         // END TEMP
         
         result.add(new StringValue(builder.toString()));
-        
     }
 
     @Override
@@ -114,7 +119,7 @@ public class EXistResult implements Result {
         final DocumentImpl doc = builder.close();
         try {
             // we add the root *element* to the result sequence
-            NodeTest kind = new TypeTest(Type.ELEMENT);
+            final NodeTest kind = new TypeTest(Type.ELEMENT);
             // the elem must always be added at the front, so if there are
             // already other items, we create a new one, add the elem, then
             // add the original items after

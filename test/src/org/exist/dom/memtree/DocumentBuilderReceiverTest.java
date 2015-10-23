@@ -1,11 +1,9 @@
 package org.exist.dom.memtree;
 
-import org.exist.dom.memtree.MemTreeBuilder;
-import org.exist.dom.memtree.DocumentBuilderReceiver;
-import org.easymock.classextension.EasyMock;
-import static org.easymock.classextension.EasyMock.expect;
-import static org.easymock.classextension.EasyMock.verify;
-import static org.easymock.classextension.EasyMock.replay;
+import org.easymock.EasyMock;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.verify;
+import static org.easymock.EasyMock.replay;
 import org.exist.util.hashtable.NamePool;
 import org.exist.xquery.XQueryContext;
 import org.junit.Test;

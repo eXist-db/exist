@@ -443,8 +443,7 @@ public class Deployment {
             final Path packageDir = maybePackageDir.get();
             final String abbrev = pkg.get().getAbbrev();
 
-            try {
-                final Stream<Path> filesToDelete = Files.find(packageDir, 1, (path, attrs) -> {
+            try(final Stream<Path> filesToDelete = Files.find(packageDir, 1, (path, attrs) -> {
                     if(path.equals(packageDir)) {
                         return false;
                     }
@@ -455,7 +454,7 @@ public class Deployment {
                         return !(name.equals("expath-pkg.xml") || name.equals("repo.xml") ||
                                 "exist.xml".equals(name) || name.startsWith("icon"));
                     }
-                });
+            })) {
 
                 filesToDelete.forEach(path -> {
                     try {
@@ -645,9 +644,8 @@ public class Deployment {
         storeFiles(directory, collection, inRootDir);
 
         // scan sub directories
-        try {
-            Files.find(directory, 1, (path, attrs) -> (!path.equals(directory)) && attrs.isDirectory())
-                    .forEach(path -> scanDirectory(path, target.append(FileUtils.fileName(path)), false));
+        try(final Stream<Path> subDirs = Files.find(directory, 1, (path, attrs) -> (!path.equals(directory)) && attrs.isDirectory())) {
+            subDirs.forEach(path -> scanDirectory(path, target.append(FileUtils.fileName(path)), false));
         } catch(final IOException ioe) {
             LOG.warn("Unable to scan sub-directories", ioe);
         }
@@ -662,7 +660,7 @@ public class Deployment {
     private void storeFiles(final Path directory, final Collection targetCollection, final boolean inRootDir) {
         List<Path> files;
         try {
-            files = Files.list(directory).collect(Collectors.toList());
+            files = FileUtils.list(directory);
         } catch(final IOException ioe) {
             LOG.error(ioe);
             files = Collections.EMPTY_LIST;

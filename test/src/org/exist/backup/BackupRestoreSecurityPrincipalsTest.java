@@ -55,9 +55,11 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.List;
 import java.util.Observable;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.junit.Assert.assertEquals;
 
@@ -135,12 +137,15 @@ public class BackupRestoreSecurityPrincipalsTest {
      * to clear the database
      */
     private void deleteAllDataFiles(final Path root) throws IOException {
-        final List<Path> files = Files.list(root)
-            .filter(path -> !(FileUtils.fileName(path).equals("RECOVERY") || FileUtils.fileName(path).equals("README") || FileUtils.fileName(path).equals(".DO_NOT_DELETE")))
+        List<Path> dataFiles = Collections.emptyList();
+        try(final Stream<Path> filesStream = Files.list(root)) {
+            dataFiles = filesStream
+                    .filter(path -> !(FileUtils.fileName(path).equals("RECOVERY") || FileUtils.fileName(path).equals("README") || FileUtils.fileName(path).equals(".DO_NOT_DELETE")))
                     .collect(Collectors.toList());
+        }
 
-        for(final Path file : files) {
-            FileUtils.delete(file);
+        for (final Path dataFile : dataFiles) {
+            FileUtils.delete(dataFile);
         }
     }
 

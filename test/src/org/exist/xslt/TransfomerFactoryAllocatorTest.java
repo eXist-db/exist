@@ -9,13 +9,13 @@ import org.junit.runner.RunWith;
 import java.util.Hashtable;
 import org.exist.util.Configuration;
 import javax.xml.transform.sax.SAXTransformerFactory;
-import org.easymock.classextension.EasyMock;
+import org.easymock.EasyMock;
 import org.exist.storage.BrokerPool;
 import org.junit.Test;
 
-import static org.easymock.classextension.EasyMock.expect;
-import static org.easymock.classextension.EasyMock.verify;
-import static org.easymock.classextension.EasyMock.replay;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.verify;
+import static org.easymock.EasyMock.replay;
 import org.junit.After;
 import static org.junit.Assert.assertEquals;
 import org.junit.runners.Parameterized.Parameter;

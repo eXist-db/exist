@@ -37,20 +37,20 @@
     <property name="jvmarg" value="-Xmx128000k -Xms32000k -Djetty.home=${jetty.dir} -Dexist.home=${basedir}"/>
     <property name="xmldb.src" value="undefined"/>
     <property name="dist.dir" value="${dist}/${project.name}-${project.version}"/>
-        
+
     <!-- import common targets -->
     <!-- <import file="../../build.xml"/> -->
     <import file="git-support.xml"/>
     <import file="./junit.xml"/>
     <import file="./antlr3.xml"/>
-    
+
     <!-- setup conditional properties -->
     <available file="${xmldb.src}" type="dir" property="has.xmldb.src"/>
     <available file="key.store" property="key.store.present"/>
 
     <!-- additional set of ant tasks -->
     <property name="asocat-exist.jar" location="${tools.ant}/lib/asocat-exist.jar"/>
-    
+
     <path id="classpath.external">
         <fileset dir="${lib.core}">
             <include name="*.jar"/>
@@ -61,22 +61,25 @@
         <fileset dir="${lib.endorsed}">
             <include name="*.jar"/>
         </fileset>
-        
+
         <fileset dir="${lib.user}">
             <include name="*.jar"/>
         </fileset>
         <fileset dir="${lib.extensions}" erroronmissingdir="false">
             <include name="*.jar"/>
         </fileset>
-        
+
         <fileset dir="extensions" erroronmissingdir="false">
             <include name="**/lib/*.jar"/>
         </fileset>
         <fileset dir="${tools.ant}/lib">
             <include name="*.jar"/>
         </fileset>
+        <fileset dir="tools/wrapper/lib">
+            <include name="*.jar"/>
+        </fileset>
     </path>
-    
+
     <!-- setup class path -->
     <path id="classpath.core">
         <path refid="classpath.external"/>
@@ -149,7 +152,7 @@
         <copy file="${basedir}/mime-types.xml.tmpl" tofile="${basedir}/mime-types.xml"
             filtering="true"/>
         <copy file="${basedir}/mime-types.xml" tofile="${src}/org/exist/util/mime-types.xml"/>
-        
+
         <copy file="${src.webapp}/WEB-INF/web.xml.tmpl" tofile="${src.webapp}/WEB-INF/web.xml"
             filtering="true" overwrite="true"/>
 
@@ -406,13 +409,13 @@
     <target name="all"
         depends="prepare,jar,wrapper,extension-betterform,extension-modules,extension-xprocxq,extensions-xar,test-compile"
         description="Build all">
-        
+
         <!--  hand over build to extensions build -->
         <ant antfile="${build.scripts}/extensions-build.xml" target="all" inheritAll="false"/>
-        
+
         <!--  this module must be built after the ldap extension -->
         <ant antfile="build.xml" dir="extensions/security/activedirectory" inheritall="false"/>
-        
+
         <antcall target="sign"/>
     </target>
 
@@ -430,7 +433,7 @@
 
         <delete dir="${build.javadoc}"/>
         <mkdir dir="${build.javadoc}"/>
-        
+
         <echo message="Generating Javadocs ..."/>
         <javadoc bottom="Copyright (C) The eXist-db Project. All rights reserved." destdir="${build.javadoc}"
             doctitle="eXist Javadocs" noindex="true" notree="true" access="public" maxmemory="1024M"
@@ -456,7 +459,7 @@
             <classpath>
                 <path refid="classpath.core"/>
                 <path refid="classpath.jetty"/>
-                <path refid="classpath.aspectj"/>                
+                <path refid="classpath.aspectj"/>
             </classpath>
             <link href="http://xmldb.exist-db.org/javadoc/"/>
             <link href="http://java.sun.com/javase/7/docs/api/"/>
@@ -474,18 +477,18 @@
             <link href="http://www.slf4j.org/api/"/>
             <link href="http://nekohtml.sourceforge.net/javadoc/"/>
             <link href="http://www.quartz-scheduler.org/api/1.8.5/"/>
-            <link href="http://sunxacml.sourceforge.net/javadoc/"/>  
+            <link href="http://sunxacml.sourceforge.net/javadoc/"/>
             <link href="http://ws.apache.org/xmlrpc/apidocs/"/>
-            <link href="http://www.antlr2.org/javadoc/"/>          
+            <link href="http://www.antlr2.org/javadoc/"/>
             <link href="http://xerces.apache.org/xerces2-j/javadocs/api/"/>
             <link href="http://xerces.apache.org/xerces2-j/javadocs/xerces2/"/>
             <link href="http://xerces.apache.org/xerces2-j/javadocs/xni/"/>
             <link href="http://xml.apache.org/commons/components/apidocs/resolver/"/>
             <link href="http://xml.apache.org/xalan-j/apidocs/"/>
             <link href="http://java.sun.com/products/javamail/javadocs/"/>
-            <link href="http://java.sun.com/javase/technologies/desktop/javabeans/glasgow/javadocs"/>   
-            <link href="http://download.eclipse.org/jetty/stable-7/apidocs/"/> 
-            <link href="http://www.saxonica.com/documentation/javadoc"/> 
+            <link href="http://java.sun.com/javase/technologies/desktop/javabeans/glasgow/javadocs"/>
+            <link href="http://download.eclipse.org/jetty/stable-7/apidocs/"/>
+            <link href="http://www.saxonica.com/documentation/javadoc"/>
             <link href="http://lucene.apache.org/java/2_9_4/api/all/"/>
         </javadoc>
 
@@ -545,17 +548,17 @@
             <link href="http://logging.apache.org/log4j/2.x/log4j-api/apidocs/"/>
             <link href="http://nekohtml.sourceforge.net/javadoc/"/>
             <link href="http://www.quartz-scheduler.org/docs/api/"/>
-            <link href="http://sunxacml.sourceforge.net/javadoc/"/>  
+            <link href="http://sunxacml.sourceforge.net/javadoc/"/>
             <link href="http://ws.apache.org/xmlrpc/apidocs/"/>
             <link href="http://www.antlr2.org/javadoc/"/>
-            <link href="http://www.jgroups.org/javagroupsnew/docs/javadoc/"/>          
+            <link href="http://www.jgroups.org/javagroupsnew/docs/javadoc/"/>
             <link href="http://xerces.apache.org/xerces2-j/javadocs/api/"/>
             <link href="http://xerces.apache.org/xerces2-j/javadocs/xerces2/"/>
             <link href="http://xerces.apache.org/xerces2-j/javadocs/xni/"/>
             <link href="http://xml.apache.org/commons/components/apidocs/resolver/"/>
             <link href="http://xml.apache.org/xalan-j/apidocs/"/>
             <link href="http://java.sun.com/products/javamail/javadocs/"/>
-            <link href="http://java.sun.com/javase/technologies/desktop/javabeans/glasgow/javadocs"/>   
+            <link href="http://java.sun.com/javase/technologies/desktop/javabeans/glasgow/javadocs"/>
         </javadoc>
 
         <ant antfile="build.xml" dir="extensions/fluent" target="javadoc"/>
@@ -597,26 +600,26 @@
         </delete>
 
         <delete failonerror="no" dir="${dist}"/>
-        
+
         <!-- XQTS files -->
         <delete failonerror="no">
             <fileset dir="${junit.reports}/external" includes="*.zip"/>
         </delete>
         <delete failonerror="no" dir="cat"/>
-        
+
         <ant antfile="build.xml" dir="extensions/betterform" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/modules" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/security/activedirectory"  target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/xprocxq" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="tools/wrapper" target="clean" inheritall="false"/>
-        
+
         <ant antfile="${build.scripts}/extensions-build.xml" target="clean" inheritAll="false"/>
-        
+
         <!-- fall back -->
         <delete failonerror="no">
             <fileset dir="${lib.extensions}" includes="*.jar"/>
-        </delete> 
-        
+        </delete>
+
     </target>
 
     <target name="clean-conf" description="Cleanup config file">
@@ -663,7 +666,7 @@
 
         <!-- autodeploy -->
         <delete failonerror="no" dir="autodeploy"/>
-        
+
         <!-- XQTS files -->
         <delete failonerror="no">
             <fileset dir="${junit.reports}/src/org/exist/xquery/xqts" includes="*" excludes="QT3TS_case.java,QT3TS_To_junit.java,XQTS_case.java,XQTS_To_junit.java,config.xml,hacked-tests.xml,xqts.xql"/>
@@ -671,7 +674,7 @@
         </delete>
         <delete failonerror="no">
             <fileset dir="${jetty.dir}/tmp" includes="*"/>
-        </delete> 
+        </delete>
         <mkdir dir="${jetty.dir}/tmp"/>
 		<ant antfile="build.xml" dir="extensions/modules" target="clean-all" inheritall="false"/>
     </target>
@@ -687,11 +690,11 @@
     <target name="extension-modules" depends="jar">
         <ant antfile="build.xml" dir="extensions/modules" inheritall="false"/>
     </target>
-    
+
     <target name="extension-xprocxq" depends="jar">
         <ant antfile="build.xml" dir="extensions/xprocxq" inheritall="false"/>
     </target>
-    
+
     <target name="samples" depends="jar" description="Build samples">
         <ant antfile="build.xml" dir="samples"/>
     </target>
@@ -699,7 +702,7 @@
     <target name="extensions-xar" depends="jar" if="${use.autodeploy.feature}" >
         <ant antfile="build/scripts/setup.xml" dir="." inheritall="false"/>
     </target>
-    
+
     <target name="cleandocs">
         <replaceregexp>
             <regexp pattern="/\*.*Description of the Method.*\*/"/>
@@ -733,7 +736,7 @@
         <!-- the jars are some how locked by ant (classpath.core)-->
 
     </target>
-    
+
 
     <!-- ============================================================================ -->
     <!-- Download additional files                                                    -->
@@ -750,5 +753,5 @@
     </target>
 
 
-    
+
 </project>

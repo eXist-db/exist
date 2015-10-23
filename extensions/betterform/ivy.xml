@@ -33,7 +33,7 @@
             <exclude module="slf4j-api" />
             <exclude module="log4j" />
         </dependency>
-        <dependency org="de.betterform" name="betterform-exist" rev="5.1-SNAPSHOT-20150603" conf="*->*,!sources,!javadoc">
+        <dependency org="de.betterform" name="betterform-exist" rev="5.1-SNAPSHOT-20151014" conf="*->*,!sources,!javadoc">
             <exclude module="infinispan-core" />
         </dependency>
     </dependencies>

@@ -1,6 +1,5 @@
 package org.exist.xquery;
 
-import org.easymock.ConstructorArgs;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.persistent.DocumentImpl;
@@ -11,10 +10,7 @@ import org.exist.xquery.value.*;
 import org.junit.Test;
 import org.w3c.dom.Document;
 
-import static org.easymock.EasyMock.createMock;
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.replay;
-import static org.easymock.EasyMock.verify;
+import static org.easymock.EasyMock.*;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -39,15 +35,14 @@ public class ExceptTest {
 
         final DocumentImpl mockPersistentDoc = createMock(DocumentImpl.class);
 
-        final org.exist.dom.persistent.NodeProxy mockPersistentNode = createMock(org.exist.dom.persistent.NodeProxy.class,
-                new ConstructorArgs(NodeProxy.class.getConstructor(DocumentImpl.class, NodeId.class),
-                        mockPersistentDoc,
-                        new DLN(1)
-                ),
-                NodeProxy.class.getMethod("isEmpty", new Class[]{}),
-                NodeProxy.class.getMethod("getItemType", new Class[]{}),
-                NodeProxy.class.getMethod("equals", new Class[]{Object.class})
-        );
+        final NodeProxy mockPersistentNode = createMockBuilder(NodeProxy.class)
+                .withConstructor(DocumentImpl.class, NodeId.class)
+                .withArgs(mockPersistentDoc, new DLN(1))
+                .addMockedMethods(
+                        NodeProxy.class.getMethod("isEmpty", new Class[]{}),
+                        NodeProxy.class.getMethod("getItemType", new Class[]{}),
+                        NodeProxy.class.getMethod("equals", new Class[]{Object.class})
+                ).createMock();
 
         expect(mockContext.nextExpressionId()).andReturn(1);
         expect(mockContext.getProfiler()).andReturn(mockProfiler);
@@ -89,15 +84,14 @@ public class ExceptTest {
 
         final DocumentImpl mockPersistentDoc = createMock(DocumentImpl.class);
 
-        final org.exist.dom.persistent.NodeProxy mockPersistentNode = createMock(org.exist.dom.persistent.NodeProxy.class,
-                new ConstructorArgs(NodeProxy.class.getConstructor(DocumentImpl.class, NodeId.class),
-                        mockPersistentDoc,
-                        new DLN(1)
-                ),
-                NodeProxy.class.getMethod("isEmpty", new Class[]{}),
-                NodeProxy.class.getMethod("getItemType", new Class[]{}),
-                NodeProxy.class.getMethod("equals", new Class[]{Object.class})
-        );
+        final NodeProxy mockPersistentNode = createMockBuilder(NodeProxy.class)
+                .withConstructor(DocumentImpl.class, NodeId.class)
+                .withArgs(mockPersistentDoc, new DLN(1))
+                .addMockedMethods(
+                        NodeProxy.class.getMethod("isEmpty", new Class[]{}),
+                        NodeProxy.class.getMethod("getItemType", new Class[]{}),
+                        NodeProxy.class.getMethod("equals", new Class[]{Object.class})
+                ).createMock();
 
         expect(mockContext.nextExpressionId()).andReturn(1);
         expect(mockContext.getProfiler()).andReturn(mockProfiler);

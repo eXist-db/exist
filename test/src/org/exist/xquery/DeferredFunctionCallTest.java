@@ -2,21 +2,21 @@ package org.exist.xquery;
 
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Item;
-import org.easymock.classextension.EasyMock;
+import org.easymock.EasyMock;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 import org.junit.Test;
 import static org.junit.Assert.assertNull;
-import static org.easymock.classextension.EasyMock.replay;
-import static org.easymock.classextension.EasyMock.verify;
-import static org.easymock.classextension.EasyMock.expect;
-import static org.easymock.classextension.EasyMock.anyObject;
+import static org.easymock.EasyMock.replay;
+import static org.easymock.EasyMock.verify;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.anyObject;
 
 /**
  * @author Adam Retter <adam@exist-db.org>
  */
 public class DeferredFunctionCallTest {
-    
+
     /**
      * resetState() make be called on the UserDefinedFunction of a DeferredFunctionCall
      * before the function is eval'd, this is because the evaluation is deferred!

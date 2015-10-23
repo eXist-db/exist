@@ -63,7 +63,7 @@ public class RepoBackup {
      */
     public static void zipDir(final Path directory, final ZipOutputStream zos, final String path) throws IOException {
         // get a listing of the directory content
-        final List<Path> dirList = Files.list(directory).collect(Collectors.toList());
+        final List<Path> dirList = FileUtils.list(directory);
 
         // loop through dirList, and zip the files
         for (final Path f : dirList) {

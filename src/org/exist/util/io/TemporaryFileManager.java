@@ -32,6 +32,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Stack;
 import java.util.UUID;
+import java.util.stream.Stream;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.exist.util.FileUtils;
@@ -141,8 +143,8 @@ public class TemporaryFileManager {
      */
     private void cleanupOldTempFolders() {
         final Path tmpDir = Paths.get(System.getProperty("java.io.tmpdir"));
-        try {
-            Files.list(tmpDir)
+        try(final Stream<Path> tmpFiles = Files.list(tmpDir)) {
+            tmpFiles
                     .filter(path -> Files.isDirectory(path) && path.startsWith(FOLDER_PREFIX))
                     .forEach(FileUtils::deleteQuietly);
         } catch(final IOException ioe) {
