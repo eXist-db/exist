@@ -65,6 +65,20 @@ public abstract class AbstractLocal {
     protected <R> FunctionE<LocalXmldbCollectionFunction<R>, R, XMLDBException> read(final XmldbURI collectionUri) throws XMLDBException {
         return readOp -> withDb((broker, transaction) -> this.<R>read(broker, transaction, collectionUri).apply(readOp));
     }
+
+    /**
+     * Higher-order-function for performing read-only operations against a database collection
+     *
+     * @param collectionUri The uri of the collection to perform read-only operations on
+     * @param errorCode The error code to use in the XMLDBException if the collection does not exist, see {@link ErrorCodes}
+     * @return A function to receive a read-only operation to perform against the collection
+     *
+     * @throws XMLDBException if the collection could not be read
+     */
+    protected <R> FunctionE<LocalXmldbCollectionFunction<R>, R, XMLDBException> read(final XmldbURI collectionUri, final int errorCode) throws XMLDBException {
+        return readOp -> withDb((broker, transaction) -> this.<R>read(broker, transaction, collectionUri, errorCode).apply(readOp));
+    }
+
     /**
      * Higher-order-function for performing read-only operations against a database collection
      *
@@ -75,6 +89,21 @@ public abstract class AbstractLocal {
      */
     protected <R> FunctionE<LocalXmldbCollectionFunction<R>, R, XMLDBException> read(final DBBroker broker, final Txn transaction, final XmldbURI collectionUri) throws XMLDBException {
         return this.<R>with(Lock.READ_LOCK, broker, transaction, collectionUri);
+    }
+
+    /**
+     * Higher-order-function for performing read-only operations against a database collection
+     *
+     * @param broker The database broker to use when accessing the collection
+     * @param transaction The transaction to use when accessing the collection
+     * @param collectionUri The uri of the collection to perform read-only operations on
+     * @param errorCode The error code to use in the XMLDBException if the collection does not exist, see {@link ErrorCodes}
+     * @return A function to receive a read-only operation to perform against the collection
+     *
+     * @throws XMLDBException if the collection could not be read
+     */
+    protected <R> FunctionE<LocalXmldbCollectionFunction<R>, R, XMLDBException> read(final DBBroker broker, final Txn transaction, final XmldbURI collectionUri, final int errorCode) throws XMLDBException {
+        return this.<R>with(Lock.READ_LOCK, broker, transaction, collectionUri, errorCode);
     }
 
     /**
@@ -106,14 +135,36 @@ public abstract class AbstractLocal {
      * @param broker The broker to use for the operation
      * @param transaction The transaction to use for the operation
      * @return A function to receive an operation to perform on the locked database collection
+     *
+     * @throws XMLDBException if the collection does not exist or the caller does not have permission to open
+     * the collection. The error code of the XMLDBException will be either {@link ErrorCodes#INVALID_COLLECTION}
+     * if the collection does not exist, or {@link ErrorCodes#PERMISSION_DENIED} if the caller does not have
+     * permission to open the collection.
      */
     protected <R> FunctionE<LocalXmldbCollectionFunction<R>, R, XMLDBException> with(final int lockMode, final DBBroker broker, final Txn transaction, final XmldbURI collectionUri) throws XMLDBException {
+        return with(lockMode, broker, transaction, collectionUri, ErrorCodes.INVALID_COLLECTION);
+    }
+
+    /**
+     * Higher-order function for performing lockable operations on a collection
+     *
+     * @param lockMode
+     * @param broker The broker to use for the operation
+     * @param transaction The transaction to use for the operation
+     * @param errorCode The error code to use in the XMLDBException if the collection does not exist, see {@link ErrorCodes}
+     * @return A function to receive an operation to perform on the locked database collection
+     *
+     * @throws XMLDBException if the collection does not exist or the caller does not have permission to open
+     * the collection. The error code of the XMLDBException will be either taken from the `errorCode` param
+     * or set to {@link ErrorCodes#PERMISSION_DENIED}
+     */
+    protected <R> FunctionE<LocalXmldbCollectionFunction<R>, R, XMLDBException> with(final int lockMode, final DBBroker broker, final Txn transaction, final XmldbURI collectionUri, final int errorCode) throws XMLDBException {
         return collectionOp -> {
             org.exist.collections.Collection coll = null;
             try {
                 coll = broker.openCollection(collectionUri, lockMode);
                 if (coll == null) {
-                    throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + collectionUri.toString() + " not found");
+                    throw new XMLDBException(errorCode, "Collection " + collectionUri.toString() + " not found");
                 }
 
                 final R result = collectionOp.apply(coll, broker, transaction);

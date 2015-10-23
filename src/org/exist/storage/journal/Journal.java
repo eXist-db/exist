@@ -112,7 +112,8 @@ public class Journal {
     private int journalSizeLimit = DEFAULT_MAX_SIZE;
 
     /** the current output channel 
-     * Only valid after switchFiles() was called at least once! */ 
+     * Only valid after switchFiles() was called at least once! */
+    private FileOutputStream os;
     private FileChannel channel;
 
     /** Synching the journal is done by a background thread */
@@ -369,14 +370,13 @@ public class Journal {
     }
 
     public void clearBackupFiles() {
-        try {
-            Files.list(fsJournalDir)
-                    .forEach(p -> {
-                        LOG.info("Checkpoint deleting: " + p.toAbsolutePath().toString());
-                        if (!FileUtils.deleteQuietly(p)) {
-                            LOG.fatal("Cannot delete file '" + p.toAbsolutePath().toString() + "' from backup journal.");
-                        }
-                    });
+        try(final Stream<Path> backupFiles = Files.list(fsJournalDir)) {
+            backupFiles.forEach(p -> {
+                LOG.info("Checkpoint deleting: " + p.toAbsolutePath().toString());
+                if (!FileUtils.deleteQuietly(p)) {
+                    LOG.fatal("Cannot delete file '" + p.toAbsolutePath().toString() + "' from backup journal.");
+                }
+            });
         } catch(final IOException ioe) {
             LOG.fatal("Could not clear journal backup files", ioe);
         }
@@ -415,7 +415,7 @@ public class Journal {
             close();
             try {
                 //RandomAccessFile raf = new RandomAccessFile(file, "rw");
-                final FileOutputStream os = new FileOutputStream(file.toFile(), true);
+                os = new FileOutputStream(file.toFile(), true);
                 channel = os.getChannel();
                 
                 syncThread.setChannel(channel);
@@ -430,6 +430,13 @@ public class Journal {
         if (channel != null) {
             try {
                 channel.close();
+            } catch (final IOException e) {
+                LOG.warn("Failed to close journal", e);
+            }
+        }
+        if (os != null) {
+            try {
+                os.close();
             } catch (final IOException e) {
                 LOG.warn("Failed to close journal", e);
             }
@@ -456,9 +463,10 @@ public class Journal {
     }
 
     /**
-     * Returns all journal files found in the data directory.
+     * Returns a Stream of all journal files found in the data directory.
      * 
-     * @return all journal files
+     * @return A Stream of all journal files. NOTE - This is
+     * an I/O Stream and so you are responsible for closing it!
      */
     public Stream<Path> getFiles() throws IOException {
         final String suffix = '.' + LOG_FILE_SUFFIX;

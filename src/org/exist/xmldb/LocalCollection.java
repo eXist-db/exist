@@ -129,7 +129,7 @@ public class LocalCollection extends AbstractLocal implements CollectionImpl {
             this.path = name.toCollectionPathURI();
         }
 
-        read().apply((collection, broker, transaction) -> {
+        read(ErrorCodes.NO_SUCH_COLLECTION).apply((collection, broker, transaction) -> {
             /* no-op, used to make sure the current user can open the collection!
                will throw an XMLDBException if they cannot */
             return null;
@@ -685,6 +685,23 @@ public class LocalCollection extends AbstractLocal implements CollectionImpl {
      */
     private <R> FunctionE<LocalXmldbCollectionFunction<R>, R, XMLDBException> read() throws XMLDBException {
         return readOp -> this.<R>read(path).apply((collection, broker, transaction) -> {
+            collection.setReader(userReader);
+            return readOp.apply(collection, broker, transaction);
+        });
+    }
+
+    /**
+     * Higher-order-function for performing read-only operations against this collection
+     *
+     * NOTE this read will occur using the database user set on the collection
+     *
+     * @param errorCode The error code to use in the XMLDBException if the collection does not exist, see {@link ErrorCodes}
+     * @return A function to receive a read-only operation to perform against the collection
+     *
+     * @throws XMLDBException if the collection could not be read
+     */
+    private <R> FunctionE<LocalXmldbCollectionFunction<R>, R, XMLDBException> read(final int errorCode) throws XMLDBException {
+        return readOp -> this.<R>read(path, errorCode).apply((collection, broker, transaction) -> {
             collection.setReader(userReader);
             return readOp.apply(collection, broker, transaction);
         });

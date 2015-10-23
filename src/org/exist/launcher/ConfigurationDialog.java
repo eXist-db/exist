@@ -10,6 +10,7 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.swing.*;
 import javax.xml.transform.TransformerException;
 
@@ -403,8 +404,10 @@ public class ConfigurationDialog extends JDialog {
         Path dir = Paths.get(dataDir.getText());
         if (Files.exists(dir)) {
 
-            try {
-                final java.util.List<Path> files = Files.list(dir).filter(p -> FileUtils.fileName(p).endsWith(".dbx")).collect(Collectors.toList());
+            try(final Stream<Path> fileStream = Files.list(dir)) {
+                final java.util.List<Path> files = fileStream
+                        .filter(p -> FileUtils.fileName(p).endsWith(".dbx"))
+                        .collect(Collectors.toList());
                 if (!files.isEmpty()) {
                     final int r = JOptionPane.showConfirmDialog(this, "The specified data directory already contains data. " +
                             "Do you want to use this? Data will not be removed.", "Confirm Data Directory", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);

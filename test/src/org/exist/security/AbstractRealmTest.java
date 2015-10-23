@@ -1,15 +1,16 @@
 package org.exist.security;
 
-import java.util.ArrayList;
+import java.util.Collections;
+
 import org.exist.storage.DBBroker;
 import org.exist.Database;
 import org.junit.Test;
-import org.easymock.classextension.EasyMock;
+import org.easymock.EasyMock;
 import org.exist.EXistException;
 import org.exist.config.Configuration;
-import static org.easymock.classextension.EasyMock.expect;
-import static org.easymock.classextension.EasyMock.replay;
-import static org.easymock.classextension.EasyMock.verify;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.replay;
+import static org.easymock.EasyMock.verify;
 
 /**
  *
@@ -65,13 +66,13 @@ public class AbstractRealmTest {
         SecurityManager mockSecurityManager = EasyMock.createMock(SecurityManager.class);
         Configuration mockConfiguration = EasyMock.createMock(Configuration.class);
         Database mockDatabase = EasyMock.createMock(Database.class);
-        DBBroker mockBroker = EasyMock.createMock(DBBroker.class);
         Subject mockSubject = EasyMock.createMock(Subject.class);
 
         Group mockGroup = EasyMock.createMockBuilder(AbstractGroup.class)
                 .addMockedMethod("getName", new Class[0])
                 .addMockedMethod("getManagers", new Class[0])
                 .addMockedMethod("assertCanModifyGroup", new Class[]{Account.class})
+                .addMockedMethod("getMetadataKeys", new Class[0])
                 .createNiceMock();
         final String groupName = "someGroup";
 
@@ -80,28 +81,26 @@ public class AbstractRealmTest {
                 .withConstructor(SecurityManager.class, Configuration.class)
                 .withArgs(mockSecurityManager, mockConfiguration)
                 .addMockedMethod("getDatabase", new Class[0])
-                .addMockedMethod("getGroup", new Class[]{Subject.class, String.class})
+                .addMockedMethod("getGroup", new Class[]{String.class})
                 .createNiceMock();
 
         Group mockUpdatingGroup = EasyMock.createNiceMock(Group.class);
 
         //expectations
         expect(mockRealm.getDatabase()).andReturn(mockDatabase);
-        expect(mockDatabase.get(null)).andReturn(mockBroker);
-        expect(mockBroker.getSubject()).andReturn(mockSubject);
+        expect(mockDatabase.getSubject()).andReturn(mockSubject);
         mockGroup.assertCanModifyGroup(mockSubject);
         expect(mockGroup.getName()).andReturn(groupName);
         expect(mockRealm.getGroup(groupName)).andReturn(mockUpdatingGroup);
-        expect(mockRealm.getDatabase()).andReturn(mockDatabase);
-        expect(mockGroup.getManagers()).andReturn(new ArrayList<Account>());
+        expect(mockGroup.getManagers()).andReturn(Collections.emptyList());
+        expect(mockUpdatingGroup.getManagers()).andReturn(Collections.emptyList());
+        expect(mockGroup.getMetadataKeys()).andReturn(Collections.emptySet());
         mockGroup.save();
-        expect(mockUpdatingGroup.getManagers()).andReturn(new ArrayList<Account>());
-        mockDatabase.release(mockBroker);
 
-        replay(mockRealm, mockDatabase, mockBroker, mockGroup, mockSubject, mockUpdatingGroup);
+        replay(mockRealm, mockDatabase, mockGroup, mockSubject, mockUpdatingGroup);
 
         mockRealm.updateGroup(mockGroup);
 
-        verify(mockRealm, mockDatabase, mockBroker, mockGroup, mockSubject, mockUpdatingGroup);
+        verify(mockRealm, mockDatabase, mockGroup, mockSubject, mockUpdatingGroup);
     }
 }

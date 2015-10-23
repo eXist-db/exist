@@ -125,9 +125,9 @@ shift
 if not [%1]==[] goto :parameters
 
 if [%_PASS_THROUGH%]==[] (
-    %_WRAPPER_EXE% -i %_WRAPPER_CONF%
+    %_WRAPPER_EXE% -it %_WRAPPER_CONF%
 ) else (
-    %_WRAPPER_EXE% -i %_WRAPPER_CONF% -- %_PARAMETERS%
+    %_WRAPPER_EXE% -it %_WRAPPER_CONF% -- %_PARAMETERS%
 )
 if not errorlevel 1 goto :eof
 pause

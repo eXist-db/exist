@@ -23,18 +23,20 @@ package org.expath.exist;
 
 import java.util.List;
 import java.util.Map;
+
+import org.expath.httpclient.HttpConstants;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 
 /**
  * @author Adam Retter <adam@existsolutions.com>
- * @version EXPath HTTP Client Module Candidate 9 January 2010 http://expath.org/spec/http-client/20100109
+ * @version EXPath HTTP Client Module Candidate 9 January 2010 http://expath.org/spec/http-client
  */
 public class HttpClientModule extends AbstractInternalModule {
 
-    public final static String NAMESPACE_URI = "http://expath.org/ns/http-client";
+    public final static String NAMESPACE_URI = HttpConstants.HTTP_CLIENT_NS_URI;
 
-    public final static String PREFIX = "http";
+    public final static String PREFIX = HttpConstants.HTTP_CLIENT_NS_PREFIX;
     public final static String INCLUSION_DATE = "2011-03-17";
     public final static String RELEASED_IN_VERSION = "1.5";
 

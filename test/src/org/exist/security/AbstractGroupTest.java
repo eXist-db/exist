@@ -3,10 +3,10 @@ package org.exist.security;
 import org.exist.Database;
 import java.util.ArrayList;
 import java.util.List;
-import org.easymock.classextension.EasyMock;
-import static org.easymock.classextension.EasyMock.verify;
-import static org.easymock.classextension.EasyMock.replay;
-import static org.easymock.classextension.EasyMock.expect;
+import org.easymock.EasyMock;
+import static org.easymock.EasyMock.verify;
+import static org.easymock.EasyMock.replay;
+import static org.easymock.EasyMock.expect;
 import org.exist.config.ConfigurationException;
 import org.exist.config.Reference;
 import org.exist.config.ReferenceImpl;
@@ -19,7 +19,7 @@ import static org.junit.Assert.assertFalse;
  * @author aretter
  */
 public class AbstractGroupTest {
-    
+
     @Test
     public void isManager_retuns_true_when_manager() throws ConfigurationException {
         
@@ -29,8 +29,8 @@ public class AbstractGroupTest {
         
         TestableGroupImpl group = new TestableGroupImpl(mockRealm);
         
-        final List<Reference<SecurityManager, Account>> managers = new ArrayList<Reference<SecurityManager, Account>>();
-        managers.add(new ReferenceImpl<SecurityManager, Account>(mockSecurityManager, mockAccount, "mockAccount"));
+        final List<Reference<SecurityManager, Account>> managers = new ArrayList<>();
+        managers.add(new ReferenceImpl<>(mockSecurityManager, mockAccount, "mockAccount"));
         group.setManagers(managers);
         
         
@@ -47,8 +47,8 @@ public class AbstractGroupTest {
 
         TestableGroupImpl group = new TestableGroupImpl(mockRealm);
 
-        final List<Reference<SecurityManager, Account>> managers = new ArrayList<Reference<SecurityManager, Account>>();
-        managers.add(new ReferenceImpl<SecurityManager, Account>(mockSecurityManager, mockAccount, "mockAccount"));
+        final List<Reference<SecurityManager, Account>> managers = new ArrayList<>();
+        managers.add(new ReferenceImpl<>(mockSecurityManager, mockAccount, "mockAccount"));
         group.setManagers(managers);
 
         final Account otherAccount = EasyMock.createMock(Account.class);
@@ -217,7 +217,7 @@ public class AbstractGroupTest {
         replay(mockRealm, mockDatabase, partialMockGroup);
 
         //test
-        partialMockGroup.removeManager((Account)null);
+        partialMockGroup.removeManager(null);
 
         verify(mockRealm, mockDatabase, partialMockGroup);
     }

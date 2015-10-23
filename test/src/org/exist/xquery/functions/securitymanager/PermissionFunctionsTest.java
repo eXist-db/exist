@@ -21,7 +21,7 @@
  */
 package org.exist.xquery.functions.securitymanager;
 
-import org.easymock.classextension.EasyMock;
+import org.easymock.EasyMock;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Sequence;
