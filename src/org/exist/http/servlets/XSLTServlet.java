@@ -215,11 +215,7 @@ public class XSLTServlet extends HttpServlet {
 
             final String mediaType = properties.getProperty("media-type");
             if (mediaType != null) {
-                if (encoding == null)
-                    {response.setContentType(mediaType);}
-                
-                //check, do mediaType have "charset"
-                else if (mediaType.indexOf("charset") == -1)
+                if (mediaType.indexOf("charset") == -1)
                     {response.setContentType(mediaType + "; charset=" + encoding);}
                 
                 else 
