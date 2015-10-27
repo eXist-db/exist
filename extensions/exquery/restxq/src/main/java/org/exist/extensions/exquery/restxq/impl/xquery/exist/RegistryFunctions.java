@@ -58,7 +58,7 @@ import org.exquery.restxq.RestXqServiceRegistry;
  *
  * @author Adam Retter <adam.retter@googlemail.com>
  */
-class RegistryFunctions extends BasicFunction {
+public class RegistryFunctions extends BasicFunction {
     
     private final static QName qnFindResourceFunctions = new QName("find-resource-functions", ExistRestXqModule.NAMESPACE_URI, ExistRestXqModule.PREFIX);
     private final static QName qnRegisterModule = new QName("register-module", ExistRestXqModule.NAMESPACE_URI, ExistRestXqModule.PREFIX);
