@@ -44,7 +44,7 @@ import org.exquery.restxq.RestXqErrorCodes;
  *
  * @author Adam Retter <adam.retter@googlemail.com>
  */
-class UriFunctions extends BasicFunction {
+public class UriFunctions extends BasicFunction {
     
     public final static FunctionSignature signatures[] = {
 		
