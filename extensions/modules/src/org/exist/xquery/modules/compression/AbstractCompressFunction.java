@@ -48,6 +48,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.Iterator;
 import java.util.zip.CRC32;
+import java.util.zip.DeflaterOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -127,6 +128,12 @@ public abstract class AbstractCompressFunction extends BasicFunction
                     } else {
                         compressFromUri(os, ((AnyURIValue) item).toURI(), useHierarchy, stripOffset, "", null);
                     }
+                }
+
+                os.flush();
+
+                if(os instanceof DeflaterOutputStream) {
+                    ((DeflaterOutputStream)os).finish();
                 }
 
                 return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new ByteArrayInputStream(baos.toByteArray()));
