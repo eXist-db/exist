@@ -76,13 +76,14 @@ public class UnGZipFunction extends BasicFunction
 
         final BinaryValue bin = (BinaryValue) args[0].itemAt(0);
 
+        //TODO(AR) just pass the GZIPInputStream straight into BinaryValueFromInputStream.getInstance
         // ungzip the data
         try(final GZIPInputStream gzis = new GZIPInputStream(bin.getInputStream());
-                ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-            int size;
+                final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            int read = -1;
             final byte[] b = new byte[4096];
-            while ((size = gzis.read(b, 0, 4096)) != -1) {
-                baos.write(b, 0, size);
+            while ((read = gzis.read(b)) != -1) {
+                baos.write(b, 0, read);
             }
 
             return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new ByteArrayInputStream(baos.toByteArray()));

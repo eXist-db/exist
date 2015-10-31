@@ -1931,26 +1931,37 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
     }
     
     public static int showErrorMessageQuery(final String message, final Throwable t) {
-        JScrollPane scroll = null;
         final JTextArea msgArea = new JTextArea(message);
-        msgArea.setBorder(BorderFactory.createTitledBorder(Messages.getString("ClientFrame.217"))); //$NON-NLS-1$
+        msgArea.setLineWrap(true);
+        msgArea.setWrapStyleWord(true);
         msgArea.setEditable(false);
         msgArea.setBackground(null);
+        JScrollPane scrollMsgArea = new JScrollPane(msgArea);
+        scrollMsgArea.setPreferredSize(new Dimension(600, 300));
+        scrollMsgArea.setBorder(BorderFactory
+                .createTitledBorder(Messages.getString("ClientFrame.217"))); //$NON-NLS-1$
+
+        JScrollPane scrollStacktrace = null;
         if (t != null) {
-            final StringWriter out = new StringWriter();
-            final PrintWriter writer = new PrintWriter(out);
-            t.printStackTrace(writer);
-            final JTextArea stacktrace = new JTextArea(out.toString(), 20, 50);
-            stacktrace.setBackground(null);
-            stacktrace.setEditable(false);
-            scroll = new JScrollPane(stacktrace);
-            scroll.setPreferredSize(new Dimension(250, 300));
-            scroll.setBorder(BorderFactory
-                    .createTitledBorder(Messages.getString("ClientFrame.218"))); //$NON-NLS-1$
+            try(final StringWriter out = new StringWriter();
+                    final PrintWriter writer = new PrintWriter(out)) {
+                t.printStackTrace(writer);
+                final JTextArea stacktrace = new JTextArea(out.toString(), 20, 50);
+                stacktrace.setLineWrap(true);
+                stacktrace.setWrapStyleWord(true);
+                stacktrace.setBackground(null);
+                stacktrace.setEditable(false);
+                scrollStacktrace = new JScrollPane(stacktrace);
+                scrollStacktrace.setPreferredSize(new Dimension(600, 300));
+                scrollStacktrace.setBorder(BorderFactory
+                        .createTitledBorder(Messages.getString("ClientFrame.218"))); //$NON-NLS-1$
+            } catch(final IOException ioe) {
+                    ioe.printStackTrace();
+            }
         }
+
         final JOptionPane optionPane = new JOptionPane();
-        
-        optionPane.setMessage(new Object[]{msgArea, scroll});
+        optionPane.setMessage(new Object[]{scrollMsgArea, scrollStacktrace});
         optionPane.setMessageType(JOptionPane.ERROR_MESSAGE);
         optionPane.setOptionType(JOptionPane.OK_CANCEL_OPTION);
         final JDialog dialog = optionPane.createDialog(null, Messages.getString("ClientFrame.219")); //$NON-NLS-1$
