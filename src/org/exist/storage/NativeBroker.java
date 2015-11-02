@@ -816,19 +816,19 @@ public class NativeBroker extends DBBroker {
             lock.acquire(Lock.READ_LOCK);
 
             //TODO write a regexp lookup for key data in BTree.query
-            //IndexQuery idxQuery = new IndexQuery(IndexQuery.REGEXP, regexp);
+            //final IndexQuery idxQuery = new IndexQuery(IndexQuery.REGEXP, regexp);
             //List<Value> keys = collectionsDb.findKeysByCollectionName(idxQuery);
+
             final List<Value> keys = collectionsDb.getKeys();
-
             for(final Value key : keys) {
+                final byte data[] = key.getData();
+                if(data[0] == CollectionStore.KEY_TYPE_COLLECTION) {
+                    final String collectionName = UTF8.decode(data, 1, data.length - 1).toString();
+                    m.reset(collectionName);
 
-                //TODO restrict keys to just collection uri's
-
-                final String collectionName = new String(key.getData());
-                m.reset(collectionName);
-
-                if(m.matches()) {
-                    collections.add(collectionName);
+                    if (m.matches()) {
+                        collections.add(collectionName);
+                    }
                 }
             }
         } catch(final UnsupportedEncodingException e) {
