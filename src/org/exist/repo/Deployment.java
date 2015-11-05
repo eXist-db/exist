@@ -306,6 +306,12 @@ public class Deployment {
                 if (pkg.isPresent()) {
                     uninstall(pkg.get(), target);
                 }
+                if (target == null) {
+                    // a library package does not have a target collection, but we still return
+                    // the temporary location of the package in /db/system
+                    final String pkgColl = pkg.get().getAbbrev() + "-" + pkg.get().getVersion();
+                    return Optional.of(XmldbURI.SYSTEM.append("repo/" + pkgColl).getCollectionPath());
+                }
                 return Optional.ofNullable(target.getStringValue());
             } catch (final XPathException e) {
                 throw new PackageException("Error found while processing repo.xml: " + e.getMessage(), e);
