@@ -250,6 +250,8 @@ public class ArrayListValueSequence extends AbstractSequence implements MemoryNo
         final List<Item> newValues = new ArrayList<>(values.size());
         int newType = Type.ANY_TYPE;
 
+        final ItemComparator itemComparator = new ItemComparator();
+
         for (int i = 0; i < values.size(); i++) {
             final Item value = values.get(i);
             boolean foundDuplicate = false;
@@ -259,7 +261,7 @@ public class ArrayListValueSequence extends AbstractSequence implements MemoryNo
                 for (int j = i + 1; j < values.size(); j++) {
                     final Item otherValue = values.get(j);
                     if (Type.subTypeOf(otherValue.getType(), Type.NODE)) {
-                        if (ItemComparator.INSTANCE.compare(value, otherValue) == 0) {
+                        if (itemComparator.compare(value, otherValue) == 0) {
                             foundDuplicate = true;
                             break;  // exit j loop
                         }

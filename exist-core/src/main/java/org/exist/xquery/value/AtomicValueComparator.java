@@ -33,50 +33,48 @@
 package org.exist.xquery.value;
 
 import com.ibm.icu.text.Collator;
-import net.jcip.annotations.NotThreadSafe;
-import org.exist.xquery.Constants;
+import net.jcip.annotations.ThreadSafe;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.exist.http.RESTServer;
+import org.exist.xquery.XPathException;
 
 import javax.annotation.Nullable;
 import java.util.Comparator;
 
 /**
- * Comparator for comparing instances of Item
- * apart from the XQuery atomic types there are
- * two Node types in eXist org.exist.dom.persistent.*
- * and org.exist.dom.memtree.* this class is
- * used so that both types can be compared to each other
- * as Item even though they have quite different inheritance
- * hierarchies.
- *
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
-@NotThreadSafe
-public class ItemComparator implements Comparator<Item> {
+@ThreadSafe
+public class AtomicValueComparator implements Comparator<AtomicValue> {
 
-    @Nullable private final Collator collator;
-    @Nullable private AtomicValueComparator atomicValueComparator = null;
+    protected static final Logger LOG = LogManager.getLogger(RESTServer.class);
 
-    public ItemComparator() {
+    private final @Nullable Collator collator;
+
+    public AtomicValueComparator() {
         this(null);
     }
 
-    public ItemComparator(@Nullable final Collator collator) {
+    public AtomicValueComparator(@Nullable final Collator collator) {
         this.collator = collator;
     }
 
     @Override
-    public int compare(final Item n1, final Item n2) {
-        if (n1 instanceof org.exist.dom.memtree.NodeImpl && (!(n2 instanceof org.exist.dom.memtree.NodeImpl))) {
-            return Constants.INFERIOR;
-        } else if (n1 instanceof AtomicValue && n2 instanceof AtomicValue) {
-            if (atomicValueComparator == null) {
-                atomicValueComparator = new AtomicValueComparator(collator);
-            }
-            return atomicValueComparator.compare((AtomicValue)n1, (AtomicValue)n2);
-        } else if (n1 instanceof Comparable) {
-            return ((Comparable) n1).compareTo(n2);
-        } else {
-            return Constants.INFERIOR;
+    public int compare(final AtomicValue o1, final AtomicValue o2) {
+        if (o1 == null && o2 == null) {
+            return 0;
+        } else if (o1 == null) {
+            return -1;
+        } else if (o2 == null) {
+            return 1;
+        }
+
+        try {
+            return o1.compareTo(collator, o2);
+        } catch (final XPathException e) {
+            LOG.error(e.getMessage(), e);
+            throw new ClassCastException(e.getMessage());
         }
     }
 }

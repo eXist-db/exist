@@ -48,7 +48,7 @@ public class Intersect extends CombiningExpression {
                 result = ls.toNodeSet().intersection(rs.toNodeSet());
             } else {
                 result = new ValueSequence(true);
-                final Set<Item> set = new TreeSet<>(ItemComparator.INSTANCE);
+                final Set<Item> set = new TreeSet<>(new ItemComparator());
                 for (final SequenceIterator i = ls.unorderedIterator(); i.hasNext(); ) {
                     set.add(i.nextItem());
                 }

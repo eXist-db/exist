@@ -22,12 +22,13 @@
 package org.exist.xquery.functions.array;
 
 import com.github.krukow.clj_lang.*;
+import com.ibm.icu.text.Collator;
 import org.exist.dom.QName;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 
-import java.util.ArrayList;
-import java.util.List;
+import javax.annotation.Nullable;
+import java.util.*;
 
 /**
  * Implements the array type (XQuery 3.1). An array is also a function. This class thus extends
@@ -251,6 +252,34 @@ public class ArrayType extends FunctionReference implements Lookup.LookupSupport
             throw new XPathException(ErrorCodes.XPTY0004, "Expected single atomic value but found sequence of length " + member.getItemCount());
         }
         return member.itemAt(0).atomize();
+    }
+
+    public ArrayType sort(@Nullable final Collator collator, final FunctionReference keyFunRef) throws XPathException {
+        final Map<Sequence, List<Sequence>> sortedMap = new TreeMap<>(new SequenceComparator(collator));
+
+        final Sequence fargs[] = new Sequence[1];
+        for (ISeq<Sequence> seq = vector.seq(); seq != null; seq = seq.next()) {
+            fargs[0] = seq.first();
+
+            final Sequence sortKey = keyFunRef.evalFunction(null, null, fargs);
+            sortedMap.compute(sortKey, (k, v) -> {
+                if (v == null) {
+                    v = new ArrayList<>();
+                }
+                v.add(fargs[0]);
+                return v;
+            });
+        }
+
+        final List<Sequence> sorted = sortedMap
+            .values()
+            .stream()
+            .reduce(new ArrayList<>(), (a,b) -> {
+                a.addAll(b);
+                return a;
+            });
+
+        return new ArrayType(context, (IPersistentVector<Sequence>)PersistentVector.create(sorted));
     }
 
     public ArrayType forEach(FunctionReference ref) throws XPathException {
