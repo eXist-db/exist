@@ -68,8 +68,8 @@ public class Replace extends Modification {
                     continue;
                 }
                 final DocumentImpl doc = node.getOwnerDocument();
-                if (!doc.getPermissions().validate(broker.getSubject(), Permission.WRITE)) {
-                        throw new PermissionDeniedException("User '" + broker.getSubject().getName() + "' does not have permission to write to the document '" + doc.getDocumentURI() + "'!");
+                if (!doc.getPermissions().validate(broker.getCurrentSubject(), Permission.WRITE)) {
+                        throw new PermissionDeniedException("User '" + broker.getCurrentSubject().getName() + "' does not have permission to write to the document '" + doc.getDocumentURI() + "'!");
                 }
                 parent = (ElementImpl) node.getParentStoredNode();
                 if (parent == null)

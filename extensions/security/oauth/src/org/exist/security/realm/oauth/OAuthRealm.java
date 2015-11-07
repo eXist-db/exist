@@ -24,6 +24,7 @@ package org.exist.security.realm.oauth;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -150,7 +151,7 @@ public class OAuthRealm extends AbstractRealm {
 	}
 
         private <R, E extends Throwable> R withDbAsSystem(final Function2E<DBBroker, R, E, EXistException> op) throws EXistException, E {
-            try(final DBBroker broker = getDatabase().get(getSecurityManager().getSystemSubject())) {
+            try(final DBBroker broker = getDatabase().get(Optional.of(getSecurityManager().getSystemSubject()))) {
                 return op.apply(broker);
             }
         }

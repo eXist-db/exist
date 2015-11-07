@@ -21,6 +21,7 @@ package org.exist.storage.md;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Optional;
 
 import junit.framework.TestCase;
 
@@ -99,7 +100,7 @@ public class BackupRestoreMDTest extends TestCase {
     	
         DBBroker broker = null;
         try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             assertNotNull(broker);
 
             //collection
@@ -155,7 +156,7 @@ public class BackupRestoreMDTest extends TestCase {
 
         broker = null;
         try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             assertNotNull(broker);
 
             //collection
@@ -226,7 +227,7 @@ public class BackupRestoreMDTest extends TestCase {
         pool.getPluginsManager().addPlugin("org.exist.storage.md.Plugin");
         final TransactionManager transact = pool.getTransactionManager();
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn transaction = transact.beginTransaction()) {
 
             Collection root = broker.getOrCreateCollection(transaction, col1uri);
@@ -270,7 +271,7 @@ public class BackupRestoreMDTest extends TestCase {
 
     private static void clean() {
         final TransactionManager transact = pool.getTransactionManager();
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn transaction = transact.beginTransaction()) {
 
             Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);

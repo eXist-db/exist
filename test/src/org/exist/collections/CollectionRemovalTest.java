@@ -54,6 +54,7 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 
 import java.io.IOException;
+import java.util.Optional;
 
 /**
  * Creates 3 collections, /db/test/test2, /db/test/test2/test3 and /db/test/test2/test4
@@ -107,7 +108,7 @@ public class CollectionRemovalTest {
     private void removeCollection(String user, String password, XmldbURI uri) {
         Collection test = null;
         final TransactionManager transact = pool.getTransactionManager();
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().authenticate(user, password));
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().authenticate(user, password)));
             final Txn transaction = transact.beginTransaction()) {
 
             test = broker.openCollection(uri, Lock.WRITE_LOCK);
@@ -126,7 +127,7 @@ public class CollectionRemovalTest {
         DBBroker broker = null;
         Collection test = null;
         try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             test = broker.openCollection(uri, Lock.WRITE_LOCK);
             assertNotNull(test);
             
@@ -185,7 +186,7 @@ public class CollectionRemovalTest {
         this.pool = BrokerPool.getInstance();
 
         final TransactionManager transact = pool.getTransactionManager();
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn transaction = transact.beginTransaction()) {
 
 			Collection root = broker.getOrCreateCollection(transaction,

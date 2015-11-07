@@ -1065,7 +1065,7 @@ public class SecurityManagerImpl implements SecurityManager {
 
     @Override
     public Subject getCurrentSubject() {
-        return db.getSubject();
+        return db.getActiveBroker().getCurrentSubject();
     }
 
     @Override

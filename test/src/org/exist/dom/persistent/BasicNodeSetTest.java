@@ -438,7 +438,7 @@ public class BasicNodeSetTest {
         final TransactionManager transact = pool.getTransactionManager();
         try(final Txn transaction = transact.beginTransaction()) {
 
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             root = broker.getOrCreateCollection(transaction, XmldbURI.create(XmldbURI.ROOT_COLLECTION + "/test"));
             broker.saveCollection(transaction, root);
 

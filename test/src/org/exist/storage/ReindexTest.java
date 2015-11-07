@@ -17,6 +17,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import java.io.File;
+import java.util.Optional;
 
 /**
  * Test crash recovery after reindexing a collection.
@@ -51,7 +52,7 @@ public class ReindexTest {
         final BrokerPool pool = startDB();
         final TransactionManager transact = pool.getTransactionManager();
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
 
 
             try(final Txn transaction = transact.beginTransaction()) {
@@ -99,7 +100,7 @@ public class ReindexTest {
         final BrokerPool pool = startDB();
         final TransactionManager transact = pool.getTransactionManager();
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                 final Txn transaction = transact.beginTransaction();) {
 
             BrokerPool.FORCE_CORRUPTION = true;
@@ -126,7 +127,7 @@ public class ReindexTest {
         try {
         	pool = startDB();
         	assertNotNull(pool);
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             assertNotNull(broker);
 
             Collection root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, Lock.READ_LOCK);

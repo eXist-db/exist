@@ -179,7 +179,7 @@ public class XMLDBAuthenticate extends BasicFunction {
             }
 			
             if( isCalledAs( "login" ) ) {
-                context.getBroker().setSubject( user );
+                context.getBroker().pushSubject(user);  //TODO(AR) do we need to pop somewhere? i.e. when the query finishes?
                 
                 /** if there is a http session cache the user in the http session */
                 cacheUserInHttpSession( user, createSession );

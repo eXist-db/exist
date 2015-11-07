@@ -54,6 +54,7 @@ import javax.xml.transform.OutputKeys;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.Optional;
 import java.util.Properties;
 
 public class LuceneMatchListenerTest {
@@ -123,7 +124,7 @@ public class LuceneMatchListenerTest {
         try {
             configureAndStore(CONF2, XML);
 
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
 
             XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
@@ -180,7 +181,7 @@ public class LuceneMatchListenerTest {
         try {
             configureAndStore(CONF1, XML);
 
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
 
             XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
@@ -209,7 +210,7 @@ public class LuceneMatchListenerTest {
         try {
             configureAndStore(CONF3, XML);
 
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
 
             XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
@@ -238,7 +239,7 @@ public class LuceneMatchListenerTest {
         try {
             configureAndStore(CONF4, XML1);
 
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
 
             XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
@@ -292,7 +293,7 @@ public class LuceneMatchListenerTest {
         pool = BrokerPool.getInstance();
 
         final TransactionManager transact = pool.getTransactionManager();
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn transaction = transact.beginTransaction()) {
 
             Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
@@ -319,7 +320,7 @@ public class LuceneMatchListenerTest {
 
     private void configureAndStore(String config, String data) {
         final TransactionManager transact = pool.getTransactionManager();
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn transaction = transact.beginTransaction()) {
 
             Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);

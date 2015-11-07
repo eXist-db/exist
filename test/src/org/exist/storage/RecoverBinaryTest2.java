@@ -25,6 +25,7 @@ import java.io.*;
 import java.nio.file.Path;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.Optional;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
@@ -62,7 +63,7 @@ public class RecoverBinaryTest2 {
         final BrokerPool pool = startDB();
         final TransactionManager transact = pool.getTransactionManager();
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                 final Txn transaction = transact.beginTransaction()) {
 
             final Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
@@ -84,7 +85,7 @@ public class RecoverBinaryTest2 {
         BrokerPool.FORCE_CORRUPTION = false;
         final BrokerPool pool = startDB();
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             final Collection test2 = broker.getCollection(TestConstants.TEST_COLLECTION_URI2);
             for (final Iterator<DocumentImpl> i = test2.iterator(broker); i.hasNext(); ) {
                 DocumentImpl doc = i.next();
@@ -108,7 +109,7 @@ public class RecoverBinaryTest2 {
         BrokerPool.FORCE_CORRUPTION = false;
         final BrokerPool pool = startDB();
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             final Collection test2 = broker.getCollection(TestConstants.TEST_COLLECTION_URI2);
             for (final Iterator<DocumentImpl> i = test2.iterator(broker); i.hasNext(); ) {

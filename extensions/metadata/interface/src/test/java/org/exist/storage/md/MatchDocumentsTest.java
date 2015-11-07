@@ -23,6 +23,7 @@ import static org.junit.Assert.*;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
@@ -96,7 +97,7 @@ public class MatchDocumentsTest {
     	assertNotNull(doc3Metadata);
 
         Collection col1 = null;
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             col1 = broker.openCollection(col1uri, Lock.READ_LOCK);
 
             final DocumentImpl doc2 = col1.getDocument(broker, doc2uri.lastSegment());
@@ -155,7 +156,7 @@ public class MatchDocumentsTest {
 
         Collection col1 = null;
         Collection parentCol = null;
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             col1 = broker.openCollection(col1uri, Lock.WRITE_LOCK);
             parentCol = broker.openCollection(col2uri.removeLastSegment(), Lock.WRITE_LOCK);
 
@@ -213,7 +214,7 @@ public class MatchDocumentsTest {
     	assertNotNull(doc1Metadata);
 
         Collection col1 = null;
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             col1 = broker.openCollection(col1uri, Lock.WRITE_LOCK);
 
             final DocumentImpl doc2 = col1.getDocument(broker, doc2uri.lastSegment());
@@ -261,7 +262,7 @@ public class MatchDocumentsTest {
     	assertNotNull(doc1Metadata);
 
         Collection col1 = null;
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             col1 = broker.openCollection(col1uri, Lock.WRITE_LOCK);
 
             DocumentImpl doc2 = col1.getDocument(broker, doc2uri.lastSegment());
@@ -319,7 +320,7 @@ public class MatchDocumentsTest {
 
         //add some test key-values to metadata of doc1
         Collection col1 = null;
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             col1 = broker.openCollection(col1uri, Lock.WRITE_LOCK);
 
             final DocumentImpl doc2 = col1.getDocument(broker, doc2uri.lastSegment());
@@ -365,7 +366,7 @@ public class MatchDocumentsTest {
     	assertNotNull(doc3Metadata);
 
         Collection col1 = null;
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             col1 = broker.openCollection(col1uri, Lock.WRITE_LOCK);
 
             DocumentImpl doc2 = col1.getDocument(broker, doc2uri.lastSegment());
@@ -413,7 +414,7 @@ public class MatchDocumentsTest {
     	assertNotNull(doc3Metadata);
 
         Collection col1 = null;
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             col1 = broker.openCollection(col1uri, Lock.WRITE_LOCK);
 
             DocumentImpl doc2 = col1.getDocument(broker, doc2uri.lastSegment());
@@ -462,7 +463,7 @@ public class MatchDocumentsTest {
     	assertNotNull(doc3Metadata);
 
         Collection col1 = null;
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             col1 = broker.openCollection(col1uri, Lock.WRITE_LOCK);
 
@@ -510,7 +511,7 @@ public class MatchDocumentsTest {
 
         final TransactionManager txnManager = pool.getTransactionManager();
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn txn = txnManager.beginTransaction()) {
             final Collection root = broker.getOrCreateCollection(txn, col1uri);
             assertNotNull(root);
@@ -549,7 +550,7 @@ public class MatchDocumentsTest {
         final TransactionManager txnManager = pool.getTransactionManager();
         Collection col1 = null;
         Collection col2 = null;
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn txn = txnManager.beginTransaction()) {
 
             col1 = broker.openCollection(col1uri, Lock.WRITE_LOCK);

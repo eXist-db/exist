@@ -23,6 +23,7 @@ package org.exist.storage;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Optional;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
@@ -59,7 +60,7 @@ public class MoveCollectionTest {
         final BrokerPool pool = startDB();
         final TransactionManager transact = pool.getTransactionManager();
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                 final Txn transaction = transact.beginTransaction()) {
 
             Collection root = broker.getOrCreateCollection(transaction,	TestConstants.TEST_COLLECTION_URI);
@@ -92,7 +93,7 @@ public class MoveCollectionTest {
         BrokerPool.FORCE_CORRUPTION = false;
         BrokerPool pool = startDB();
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             Serializer serializer = broker.getSerializer();
             serializer.reset();
             
@@ -110,7 +111,7 @@ public class MoveCollectionTest {
         BrokerPool pool = startDB();
         final TransactionManager transact = pool.getTransactionManager();
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             Collection test2;
 
@@ -153,7 +154,7 @@ public class MoveCollectionTest {
         BrokerPool.FORCE_CORRUPTION = false;
         BrokerPool pool = startDB();
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             Serializer serializer = broker.getSerializer();
             serializer.reset();            
             DocumentImpl doc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("destination2/test3/test.xml"), Lock.READ_LOCK);

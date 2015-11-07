@@ -180,33 +180,27 @@ public class TransformerImpl extends Transformer {
 	}
 
 	private void transformStream(StAXSource source, StAXResult out) throws TransformerException {
-		BrokerPool db = null;
-		DBBroker broker = null;
 		try {
-			db = BrokerPool.getInstance();
-			broker = db.get(null);
-			
-			StAXSequenceIterator sequenceIterator = new StAXSequenceIterator(source);
-			
-			XSLContext context = new XSLContext(db);
-			context.setOutput(out);
+			final BrokerPool db = BrokerPool.getInstance();
+			try(final DBBroker broker = db.getBroker()) {
 
-			context.getResultWriter().writeStartDocument("UTF-8", "1.0");
-			
-			if (compiled.rootTemplate != null)
-				compiled.rootTemplate.process(context, sequenceIterator);
-			else
-				ApplyTemplates.searchAndProcess(sequenceIterator, context);
-			
-			context.getResultWriter().writeEndDocument();
-			
-		} catch (EXistException e) {
+				StAXSequenceIterator sequenceIterator = new StAXSequenceIterator(source);
+
+				XSLContext context = new XSLContext(db);
+				context.setOutput(out);
+
+				context.getResultWriter().writeStartDocument("UTF-8", "1.0");
+
+				if (compiled.rootTemplate != null) {
+					compiled.rootTemplate.process(context, sequenceIterator);
+				} else {
+					ApplyTemplates.searchAndProcess(sequenceIterator, context);
+				}
+
+				context.getResultWriter().writeEndDocument();
+			}
+		} catch (final EXistException | XMLStreamException e) {
 			e.printStackTrace();
-		} catch (XMLStreamException e) {
-			e.printStackTrace();
-		} finally {
-			if (db != null)
-				db.release(broker);
 		}
 
 //		try {

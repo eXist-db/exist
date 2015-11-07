@@ -30,6 +30,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.lang.reflect.Field;
+import java.util.Optional;
 import java.util.Properties;
 
 import javax.xml.parsers.SAXParser;
@@ -88,7 +89,7 @@ public abstract class TestCase {
 
         db = BrokerPool.getInstance();
         
-        broker = db.get(db.getSecurityManager().getSystemSubject());
+        broker = db.get(Optional.of(db.getSecurityManager().getSystemSubject()));
         Assert.assertNotNull(broker);
 	}
 

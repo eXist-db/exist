@@ -104,7 +104,7 @@ public class FindUserFunction extends BasicFunction {
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
 
         final DBBroker broker = getContext().getBroker();
-        final Subject currentUser = broker.getSubject();
+        final Subject currentUser = broker.getCurrentSubject();
 
         final SecurityManager securityManager = broker.getBrokerPool().getSecurityManager();
         

@@ -321,7 +321,7 @@ public class XQueryContext implements BinaryValueManager, Context
      * The Subject of the User that requested the execution of the XQuery
      * attached by this Context. This is not the same as the Effective User
      * as we may be executed setUid or setGid. The Effective User can be retrieved
-     * through broker.getSubject()
+     * through broker.getCurrentSubject()
      */
     private Subject realUser;
 
@@ -529,10 +529,10 @@ public class XQueryContext implements BinaryValueManager, Context
         //then set the DBBroker user
     	final Subject user = getUserFromHttpSession();
         if(user != null) {
-            getBroker().setSubject(user);
+            getBroker().pushSubject(user); //TODO(AR) do we need to pop somewhere? i.e. after query execution or perhaps in XQueryContext#reset()?
         }
         
-        setRealUser(getBroker().getSubject());
+        setRealUser(getBroker().getCurrentSubject());
 
         //Reset current context position
         setContextSequencePosition( 0, null );
@@ -1191,7 +1191,7 @@ public class XQueryContext implements BinaryValueManager, Context
                         if( doc != null ) {
 
                             if( doc.getPermissions().validate( 
-                            		getBroker().getSubject(), Permission.READ ) ) {
+                            		getBroker().getCurrentSubject(), Permission.READ ) ) {
                                 
                             	ndocs.add( doc );
                             }
@@ -2139,7 +2139,7 @@ public class XQueryContext implements BinaryValueManager, Context
      * Get the user which executes the current query.
      *
      * @return  user
-     * @deprecated use getSubject
+     * @deprecated use getCurrentSubject
      */
     public Subject getUser() {
         return getSubject();
@@ -2151,7 +2151,7 @@ public class XQueryContext implements BinaryValueManager, Context
      * @return  subject
      */
     public Subject getSubject() {
-        return getBroker().getSubject();
+        return getBroker().getCurrentSubject();
     }
 
     
@@ -3014,7 +3014,7 @@ public class XQueryContext implements BinaryValueManager, Context
      * @return The Effective User
      */
     public Subject getEffectiveUser() {
-        return getBroker().getSubject();
+        return getBroker().getCurrentSubject();
     }
     
     /**

@@ -42,13 +42,11 @@ import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.Sequence;
 import org.w3c.dom.Node;
 import org.xmldb.api.base.*;
+import org.xmldb.api.base.Collection;
 import org.xmldb.api.modules.XMLResource;
 
 import java.io.Writer;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
-import java.util.TreeMap;
+import java.util.*;
 
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DefaultDocumentSet;
@@ -372,7 +370,7 @@ public class LocalXPathQueryService extends AbstractLocalService implements XPat
         try {
             boolean deadlockCaught;
             do {
-                reservedBroker = brokerPool.get(user);
+                reservedBroker = brokerPool.get(Optional.of(user));
                 deadlockCaught = false;
                 MutableDocumentSet docs = null;
                 try {

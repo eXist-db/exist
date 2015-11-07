@@ -122,7 +122,7 @@ public class GMLIndexTest extends TestCase {
             
             pool = BrokerPool.getInstance();
             assertNotNull(pool);
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             assertNotNull(broker);
             GMLHSQLIndexWorker indexWorker = (GMLHSQLIndexWorker)broker.getIndexController().getWorkerByIndexId(AbstractGMLJDBCIndex.ID);
             //Unplugged
@@ -172,7 +172,7 @@ public class GMLIndexTest extends TestCase {
         try {	
             pool = BrokerPool.getInstance();
             assertNotNull(pool);
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             AbstractGMLJDBCIndex index = (AbstractGMLJDBCIndex)pool.getIndexManager().getIndexById(AbstractGMLJDBCIndex.ID);
             //Unplugged
             if (index != null) {
@@ -192,7 +192,7 @@ public class GMLIndexTest extends TestCase {
         DBBroker broker = null;
         try {
             pool = BrokerPool.getInstance();
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
             Sequence seq = xquery.execute(
@@ -227,7 +227,7 @@ public class GMLIndexTest extends TestCase {
         try {
             pool = BrokerPool.getInstance();
             assertNotNull(pool);
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             assertNotNull(broker);
             AbstractGMLJDBCIndexWorker indexWorker = (AbstractGMLJDBCIndexWorker)broker.getIndexController().getWorkerByIndexId(AbstractGMLJDBCIndex.ID);
             //Unplugged
@@ -277,7 +277,7 @@ public class GMLIndexTest extends TestCase {
         try {
             pool = BrokerPool.getInstance();
             assertNotNull(pool);
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
             String query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
@@ -377,7 +377,7 @@ public class GMLIndexTest extends TestCase {
         try {
             pool = BrokerPool.getInstance();
             assertNotNull(pool);
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
             String query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
@@ -734,7 +734,7 @@ public class GMLIndexTest extends TestCase {
         try {
             pool = BrokerPool.getInstance();
             assertNotNull(pool);
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
             String query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
@@ -1002,7 +1002,7 @@ public class GMLIndexTest extends TestCase {
         try {
             pool = BrokerPool.getInstance();
             assertNotNull(pool);
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
             String query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +

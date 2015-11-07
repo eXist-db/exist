@@ -44,7 +44,7 @@ public class PermissionFactory {
 
     private final static Logger LOG = LogManager.getLogger(PermissionFactory.class);
 
-    public static SecurityManager sm = null;        //TODO The way this gets set is nasty AR
+    public static SecurityManager sm = null;        //TODO(AR) The way this gets set is nasty!
 
     /**
      * Get the Default Resource permissions for the current Subject
@@ -53,8 +53,8 @@ public class PermissionFactory {
     public static Permission getDefaultResourcePermission() {
         
         //TODO consider loading Permission.DEFAULT_PERM from conf.xml instead
-       
-        final Subject currentSubject = sm.getDatabase().getSubject();
+
+        final Subject currentSubject = sm.getDatabase().getActiveBroker().getCurrentSubject();
         final int mode = Permission.DEFAULT_RESOURCE_PERM & ~ currentSubject.getUserMask();
         
         return new SimpleACLPermission(sm, currentSubject.getId(), currentSubject.getDefaultGroup().getId(), mode);
@@ -68,7 +68,7 @@ public class PermissionFactory {
         
         //TODO consider loading Permission.DEFAULT_PERM from conf.xml instead
         
-        final Subject currentSubject = sm.getDatabase().getSubject();
+        final Subject currentSubject = sm.getDatabase().getActiveBroker().getCurrentSubject();
         final int mode = Permission.DEFAULT_COLLECTION_PERM & ~ currentSubject.getUserMask();
         
         return new SimpleACLPermission(sm, currentSubject.getId(), currentSubject.getDefaultGroup().getId(), mode);
@@ -78,7 +78,7 @@ public class PermissionFactory {
      * Get permissions for the current Subject
      */
     public static Permission getPermission(int mode) {
-        final Subject currentSubject = sm.getDatabase().getSubject();
+        final Subject currentSubject = sm.getDatabase().getActiveBroker().getCurrentSubject();
         return new SimpleACLPermission(sm, currentSubject.getId(), currentSubject.getDefaultGroup().getId(), mode);
     }
     
@@ -143,7 +143,7 @@ public class PermissionFactory {
                 broker.flush();
             }
         } catch(final XPathException | PermissionDeniedException | IOException | TriggerException | TransactionException e) {
-            throw new PermissionDeniedException("Permission to modify permissions is denied for user '" + broker.getSubject().getName() + "' on '" + pathUri.toString() + "': " + e.getMessage(), e);
+            throw new PermissionDeniedException("Permission to modify permissions is denied for user '" + broker.getCurrentSubject().getName() + "' on '" + pathUri.toString() + "': " + e.getMessage(), e);
         } finally {
             if(doc != null) {
                 doc.getUpdateLock().release(Lock.WRITE_LOCK);

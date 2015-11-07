@@ -232,7 +232,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
 				DocumentImpl feedDoc = null;
 				feedDoc = collection.getDocument(broker, FEED_DOCUMENT_URI);
 
-				if (!feedDoc.getPermissions().validate(broker.getSubject(), Permission.WRITE))
+				if (!feedDoc.getPermissions().validate(broker.getCurrentSubject(), Permission.WRITE))
 					{throw new PermissionDeniedException(
 							"Permission denied to update feed " + collection.getURI());}
 
@@ -346,7 +346,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
 			if (feedDoc == null)
 				{throw new BadRequestException("Feed at " + request.getPath() + " does not exist.");}
 
-			if (!feedDoc.getPermissions().validate(broker.getSubject(), Permission.WRITE))
+			if (!feedDoc.getPermissions().validate(broker.getCurrentSubject(), Permission.WRITE))
 				{throw new PermissionDeniedException(
 						"Permission denied to update feed " + collection.getURI());}
 
@@ -546,7 +546,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
 							+ request.getPath() + " does not exist.");}
 
 				feedDoc = collection.getDocument(broker, FEED_DOCUMENT_URI);
-				if (!feedDoc.getPermissions().validate(broker.getSubject(), Permission.WRITE))
+				if (!feedDoc.getPermissions().validate(broker.getCurrentSubject(), Permission.WRITE))
 					{throw new PermissionDeniedException(
 							"Permission denied to update feed "
 									+ collection.getURI());}
@@ -555,7 +555,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
 					{throw new BadRequestException(
 							"The feed metadata sent does not contain a title.");}
 
-				if (!feedDoc.getPermissions().validate(broker.getSubject(), Permission.WRITE))
+				if (!feedDoc.getPermissions().validate(broker.getCurrentSubject(), Permission.WRITE))
 					{throw new PermissionDeniedException(
 							"Permission denied to update feed "
 									+ collection.getURI());}
@@ -601,7 +601,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
 					// Get the feed
 					LOG.debug("Acquiring lock on feed document...");
 					feedDoc = collection.getDocument(broker, FEED_DOCUMENT_URI);
-					if (!feedDoc.getPermissions().validate(broker.getSubject(), Permission.WRITE))
+					if (!feedDoc.getPermissions().validate(broker.getCurrentSubject(), Permission.WRITE))
 						{throw new PermissionDeniedException(
 								"Permission denied to update feed "
 										+ collection.getURI());}
@@ -779,7 +779,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
 			// Get the feed
 			// LOG.info("Acquiring lock on feed document...");
 			feedDoc = collection.getDocument(broker, FEED_DOCUMENT_URI);
-			if (!feedDoc.getPermissions().validate(broker.getSubject(), Permission.WRITE))
+			if (!feedDoc.getPermissions().validate(broker.getCurrentSubject(), Permission.WRITE))
 				{throw new PermissionDeniedException(
 						"Permission denied to update feed "
 								+ collection.getURI());}

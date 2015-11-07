@@ -102,7 +102,7 @@ public class SetCurrentUser extends BasicFunction {
 //				return Sequence.EMPTY_SEQUENCE;
 
 			//validated user, store in session
-			context.getBroker().setUser(user);
+			context.getBroker().pushSubject(user);	//TODO(AR) do we need to pop somewhere, i.e. when the query finishes??
 			final SessionWrapper session = request.getSession(true);
 			session.setAttribute("user", userName);
 			session.setAttribute("password", new StringValue(passwd));

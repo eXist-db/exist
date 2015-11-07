@@ -39,6 +39,8 @@ import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 
+import java.util.Optional;
+
 public class SAXTriggerTest {
 
     private final static String DOCUMENT1_CONTENT = 
@@ -81,7 +83,7 @@ public class SAXTriggerTest {
 
         db.registerDocumentTrigger(AnotherTrigger.class);
 
-        try(final DBBroker broker = db.get(db.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = db.get(Optional.of(db.getSecurityManager().getSystemSubject()))) {
 
             final Collection root = DatabaseManager.getCollection(BASE_URI + testCollection, "admin", "");
 
@@ -104,7 +106,7 @@ public class SAXTriggerTest {
 
         db.registerDocumentTrigger(StoreTrigger.class);
 
-        try(final DBBroker broker = db.get(db.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = db.get(Optional.of(db.getSecurityManager().getSystemSubject()))) {
 
             final Collection root = DatabaseManager.getCollection(BASE_URI + testCollection, "admin", "");
 
@@ -124,7 +126,7 @@ public class SAXTriggerTest {
 
         final BrokerPool db = BrokerPool.getInstance();
 
-        try(final DBBroker broker = db.get(db.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = db.get(Optional.of(db.getSecurityManager().getSystemSubject()))) {
 
             final Collection root = DatabaseManager.getCollection(BASE_URI + testCollection, "admin", "");
 

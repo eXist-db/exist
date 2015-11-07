@@ -26,6 +26,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.URISyntaxException;
+import java.util.Optional;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
@@ -93,7 +94,7 @@ public class ExistDocument extends ExistResource {
         DBBroker broker = null;
         DocumentImpl document = null;
         try {
-            broker = brokerPool.get(subject);
+            broker = brokerPool.get(Optional.of(subject));
 
             // If it is not a collection, check if it is a document
             document = broker.getXMLResource(xmldbUri, Lock.READ_LOCK);
@@ -166,44 +167,47 @@ public class ExistDocument extends ExistResource {
 
         long startTime = System.currentTimeMillis();
 
-        DBBroker broker = null;
-        DocumentImpl document = null;
-        try {
-            broker = brokerPool.get(subject);
+        try(final DBBroker broker = brokerPool.get(Optional.of(subject))) {
 
-            // If it is not a collection, check if it is a document
-            document = broker.getXMLResource(xmldbUri, Lock.READ_LOCK);
+            DocumentImpl document = null;
+            try {
+                // If it is not a collection, check if it is a document
+                document = broker.getXMLResource(xmldbUri, Lock.READ_LOCK);
 
-            if (document.getResourceType() == DocumentImpl.XML_FILE) {
-                // Stream XML document
-                Serializer serializer = broker.getSerializer();
-                serializer.reset();
-                try {
-                    // Set serialization options
-                    serializer.setProperties(configuration);
+                if (document.getResourceType() == DocumentImpl.XML_FILE) {
+                    // Stream XML document
+                    Serializer serializer = broker.getSerializer();
+                    serializer.reset();
+                    try {
+                        // Set serialization options
+                        serializer.setProperties(configuration);
 
-                    // Serialize document
-                    try (Writer w = new OutputStreamWriter(os, "UTF-8")) {
-                        serializer.serialize(document, w);
-                        w.flush();
+                        // Serialize document
+                        try (Writer w = new OutputStreamWriter(os, "UTF-8")) {
+                            serializer.serialize(document, w);
+                            w.flush();
+                        }
+
+                        // don;t flush
+                        if (!(os instanceof VirtualTempFile)) {
+                            os.flush();
+                        }
+
+                    } catch (SAXException e) {
+                        LOG.error(e);
+                        throw new IOException(String.format("Error while serializing XML document: %s", e.getMessage()), e);
                     }
 
-                    // don;t flush
-                    if (!(os instanceof VirtualTempFile)) {
-                        os.flush();
-                    }
-
-                } catch (SAXException e) {
-                    LOG.error(e);
-                    throw new IOException(String.format("Error while serializing XML document: %s", e.getMessage()), e);
+                } else {
+                    // Stream NON-XML document
+                    broker.readBinaryResource((BinaryDocument) document, os);
+                    os.flush();
                 }
-
-            } else {
-                // Stream NON-XML document
-                broker.readBinaryResource((BinaryDocument) document, os);
-                os.flush();
+            } finally {
+                if (document != null) {
+                    document.getUpdateLock().release(Lock.READ_LOCK);
+                }
             }
-
         } catch (EXistException e) {
             LOG.error(e);
             throw new IOException(e.getMessage());
@@ -213,13 +217,6 @@ public class ExistDocument extends ExistResource {
             throw e;
 
         } finally {
-
-            if (document != null) {
-                document.getUpdateLock().release(Lock.READ_LOCK);
-            }
-
-            brokerPool.release(broker);
-
             if (LOG.isDebugEnabled()) {
                 LOG.debug(String.format("Stream stopped, duration %s msec.", System.currentTimeMillis() - startTime));
             }
@@ -241,7 +238,7 @@ public class ExistDocument extends ExistResource {
 
         final TransactionManager txnManager = brokerPool.getTransactionManager();
 
-        try(final DBBroker broker = brokerPool.get(subject);
+        try(final DBBroker broker = brokerPool.get(Optional.of(subject));
             final Txn txn = txnManager.beginTransaction()) {
 
             // Need to split path into collection and document name
@@ -306,7 +303,7 @@ public class ExistDocument extends ExistResource {
 
         DocumentImpl document = null;
 
-        try(final DBBroker broker = brokerPool.get(subject)) {
+        try(final DBBroker broker = brokerPool.get(Optional.of(subject))) {
 
             // If it is not a collection, check if it is a document
             document = broker.getXMLResource(xmldbUri, Lock.READ_LOCK);
@@ -372,7 +369,7 @@ public class ExistDocument extends ExistResource {
 
         DocumentImpl document = null;
 
-        try(final DBBroker broker = brokerPool.get(subject)) {
+        try(final DBBroker broker = brokerPool.get(Optional.of(subject))) {
 
             // Try to get document (add catch?)
             document = broker.getXMLResource(xmldbUri, Lock.WRITE_LOCK);
@@ -470,7 +467,7 @@ public class ExistDocument extends ExistResource {
 
         final TransactionManager txnManager = brokerPool.getTransactionManager();
 
-        try(final DBBroker broker = brokerPool.get(subject);
+        try(final DBBroker broker = brokerPool.get(Optional.of(subject));
             final Txn txn = txnManager.beginTransaction()) {
 
 
@@ -549,7 +546,7 @@ public class ExistDocument extends ExistResource {
 
         final TransactionManager txnManager = brokerPool.getTransactionManager();
 
-        try(final DBBroker broker = brokerPool.get(subject);
+        try(final DBBroker broker = brokerPool.get(Optional.of(subject));
             final Txn txn = txnManager.beginTransaction()) {
 
             // Need to split path into collection and document name
@@ -641,7 +638,7 @@ public class ExistDocument extends ExistResource {
             throw new EXistException("token is null");
         }
 
-        try(final DBBroker broker = brokerPool.get(subject)) {
+        try(final DBBroker broker = brokerPool.get(Optional.of(subject))) {
 
             // Try to get document (add catch?)
             document = broker.getXMLResource(xmldbUri, Lock.WRITE_LOCK);

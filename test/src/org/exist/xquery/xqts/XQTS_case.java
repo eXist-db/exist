@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.TimeZone;
 
 import junit.framework.Assert;
@@ -137,7 +138,7 @@ public class XQTS_case extends TestCase {
         XQuery xquery = null;
 
         try {
-            broker = db.get(db.getSecurityManager().getSystemSubject());
+            broker = db.get(Optional.of(db.getSecurityManager().getSystemSubject()));
             broker.getConfiguration().setProperty( XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, true);
 
             xquery = db.getXQueryService();

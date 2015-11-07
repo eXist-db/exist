@@ -169,10 +169,9 @@ public class TxnTest {
     private TransactionManager createTestableTransactionManager() throws NoSuchFieldException, IllegalAccessException, EXistException {
         final BrokerPool mockBrokerPool = createMock(BrokerPool.class);
         final NativeBroker mockBroker = createMock(NativeBroker.class);
-        expect(mockBrokerPool.get(null)).andReturn(mockBroker).anyTimes();
+        expect(mockBrokerPool.getBroker()).andReturn(mockBroker).anyTimes();
         mockBrokerPool.release(mockBroker);
         expectLastCall().anyTimes();
-        expect(mockBrokerPool.getBroker()).andReturn(mockBroker).anyTimes();
 
         final Journal mockJournal = createMock(Journal.class);
         final SystemTaskManager mockTaskManager = createMock(SystemTaskManager.class);

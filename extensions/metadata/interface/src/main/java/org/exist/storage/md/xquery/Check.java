@@ -21,6 +21,7 @@ package org.exist.storage.md.xquery;
 
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.Optional;
 
 import org.exist.collections.Collection;
 import org.exist.collections.triggers.TriggerException;
@@ -70,24 +71,18 @@ public class Check extends BasicFunction {
 	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-		
-		BrokerPool db = null;
-		DBBroker broker = null;
 		try {
-			db = BrokerPool.getInstance();
-			
-			broker = db.get(context.getSubject());
-			
-			Collection col = broker.getCollection(XmldbURI.ROOT_COLLECTION_URI);
-			
-			checkSub(broker, col);
-			
+			final BrokerPool db = BrokerPool.getInstance();
+
+			try(final DBBroker broker = db.get(Optional.of(context.getSubject()))) {
+
+				Collection col = broker.getCollection(XmldbURI.ROOT_COLLECTION_URI);
+
+				checkSub(broker, col);
+			}
 		} catch (Exception e) {
 		    //e.printStackTrace();
 			throw new XPathException(this, e);
-		} finally {
-			if (db != null)
-				db.release(broker);
 		}
 		
 		return Sequence.EMPTY_SEQUENCE;

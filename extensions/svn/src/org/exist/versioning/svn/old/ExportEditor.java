@@ -30,6 +30,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.Date;
 import java.util.Map;
+import java.util.Optional;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
@@ -116,7 +117,7 @@ public class ExportEditor implements ISVNEditor {
 		try {
 			pool = BrokerPool.getInstance();
 			//BUG: need to be released!!! where???
-			broker = pool.get(pool.getSecurityManager().getSystemSubject());
+			broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
 			transact = pool.getTransactionManager();
 
 			myRootDirectory = broker.getCollection(rootPath);

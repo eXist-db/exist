@@ -23,6 +23,7 @@ package org.exist.dom.memtree;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.Optional;
 import java.util.Properties;
 import javax.xml.transform.OutputKeys;
 
@@ -100,7 +101,7 @@ public class DOMIndexerTest {
     	final BrokerPool pool = BrokerPool.getInstance();
         final TransactionManager txnMgr = pool.getTransactionManager();
 
-    	try(final DBBroker broker = pool.get(pool.getSecurityManager().authenticate("admin", ""));
+    	try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().authenticate("admin", "")));
                 final Txn txn = txnMgr.beginTransaction()) {
 
             Collection collection = broker.getOrCreateCollection(txn, TestConstants.TEST_COLLECTION_URI);
@@ -121,7 +122,7 @@ public class DOMIndexerTest {
     	DBBroker broker = null;  
         try {
             pool = BrokerPool.getInstance();
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             XQuery xquery = broker.getBrokerPool().getXQueryService();
             Sequence result = xquery.execute(broker, XQUERY, null, AccessContext.TEST);
             int count = result.getItemCount();

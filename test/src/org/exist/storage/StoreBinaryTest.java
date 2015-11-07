@@ -95,7 +95,7 @@ public class StoreBinaryTest {
         BinaryDocument binaryDoc = null;
         final Database pool = BrokerPool.getInstance();
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
             assertNotNull(broker);
 
             final Collection root = broker.getCollection(TestConstants.TEST_COLLECTION_URI);
@@ -113,7 +113,7 @@ public class StoreBinaryTest {
         final TransactionManager transact = pool.getTransactionManager();
 
         BinaryDocument binaryDoc = null;
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                 final Txn transaction = transact.beginTransaction()) {
 
             final Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);

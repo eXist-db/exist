@@ -45,6 +45,7 @@ import org.w3c.dom.Node;
 
 import java.io.StringWriter;
 import java.io.StringReader;
+import java.util.Optional;
 import java.util.Properties;
 
 /**
@@ -78,7 +79,7 @@ public class MarshallerTest {
     public void atomicValues() {
         DBBroker broker = null;
         try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
 
             ValueSequence values = new ValueSequence(3);
             values.add(new StringValue("foo"));
@@ -112,7 +113,7 @@ public class MarshallerTest {
     public void nodes() {
         DBBroker broker = null;
         try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             DocumentImpl doc = (DocumentImpl) broker.getXMLResource(TEST_COLLECTION_URI.append("test.xml"));
             NodeProxy p = new NodeProxy(doc, pool.getNodeFactory().createFromString("1.1"));
 
@@ -162,7 +163,7 @@ public class MarshallerTest {
 
         final TransactionManager transact = pool.getTransactionManager();
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                 final Txn transaction = transact.beginTransaction()) {
 
             final Collection root = broker.getOrCreateCollection(transaction, TEST_COLLECTION_URI);
@@ -180,7 +181,7 @@ public class MarshallerTest {
     @AfterClass
     public static void shutdown() {
         final TransactionManager transact = pool.getTransactionManager();
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                 final Txn transaction = transact.beginTransaction()) {
             Collection root = broker.getOrCreateCollection(transaction, TEST_COLLECTION_URI);
             broker.removeCollection(transaction, root);

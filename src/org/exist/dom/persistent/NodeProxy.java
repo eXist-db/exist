@@ -638,9 +638,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
     }
 
     public String getNodeValue() {
-        DBBroker broker = null;
-        try {
-            broker = doc.getBrokerPool().get(null);
+        try(final DBBroker broker = doc.getBrokerPool().getBroker()) {
             if(isDocument()) {
                 final Element e = doc.getDocumentElement();
                 if(e instanceof NodeProxy) {
@@ -657,21 +655,15 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
             }
         } catch(final EXistException e) {
             //TODO : raise an exception here ! -pb
-        } finally {
-            doc.getBrokerPool().release(broker);
         }
         return "";
     }
 
     public String getNodeValueSeparated() {
-        DBBroker broker = null;
-        try {
-            broker = doc.getBrokerPool().get(null);
+        try(final DBBroker broker = doc.getBrokerPool().getBroker()) {
             return broker.getNodeValue(asStoredNode(), true);
         } catch(final EXistException e) {
             //TODO : raise an exception here !
-        } finally {
-            doc.getBrokerPool().release(broker);
         }
         return "";
     }

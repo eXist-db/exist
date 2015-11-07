@@ -80,7 +80,7 @@ public class QT3TS_case extends TestCase {
         XQuery xquery = null;
 
         try {
-            broker = db.get(db.getSecurityManager().getSystemSubject());
+            broker = db.get(Optional.of(db.getSecurityManager().getSystemSubject()));
             xquery = broker.getBrokerPool().getXQueryService();
 
             broker.getConfiguration().setProperty(XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, true);
@@ -99,7 +99,7 @@ public class QT3TS_case extends TestCase {
 
         DBBroker broker = null;
         try {
-            broker = db.get(db.getSecurityManager().getSystemSubject());
+            broker = db.get(Optional.of(db.getSecurityManager().getSystemSubject()));
             XQuery xquery = broker.getBrokerPool().getXQueryService();
 
             broker.getConfiguration().setProperty(XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, true);
@@ -148,7 +148,7 @@ public class QT3TS_case extends TestCase {
 
         DBBroker broker = null;
         try {
-            broker = db.get(db.getSecurityManager().getSystemSubject());
+            broker = db.get(Optional.of(db.getSecurityManager().getSystemSubject()));
             XQuery xquery = broker.getBrokerPool().getXQueryService();
 
             broker.getConfiguration().setProperty(XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, true);
@@ -204,7 +204,7 @@ public class QT3TS_case extends TestCase {
         // try {
         Set<String> extectedError = new HashSet<String>();
         try {
-            broker = db.get(db.getSecurityManager().getSystemSubject());
+            broker = db.get(Optional.of(db.getSecurityManager().getSystemSubject()));
             xquery = broker.getBrokerPool().getXQueryService();
 
             final XQueryContext context = new XQueryContext(db, AccessContext.TEST);

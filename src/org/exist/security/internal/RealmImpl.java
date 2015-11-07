@@ -191,10 +191,8 @@ public class RealmImpl extends AbstractRealm {
                 throw new IllegalArgumentException("No such account exists!");
             }
 
-            DBBroker broker = null;
-            try {
-                broker = getDatabase().get(null);
-                final Account user = broker.getSubject();
+            try(final DBBroker broker = getDatabase().getBroker()) {
+                final Account user = broker.getCurrentSubject();
 
                 if(!(account.getName().equals(user.getName()) || user.hasDbaRole()) ) {
                     throw new PermissionDeniedException("You are not allowed to delete '" +account.getName() + "' user");
@@ -214,8 +212,6 @@ public class RealmImpl extends AbstractRealm {
 
                 getSecurityManager().addUser(remove_account.getId(), remove_account);
                 principalDb.remove(remove_account.getName());
-            } finally {
-                getDatabase().release(broker);
             }
         });
         
@@ -233,7 +229,7 @@ public class RealmImpl extends AbstractRealm {
                 {throw new IllegalArgumentException("Group does '"+group.getName()+"' not exist!");}
 
             final DBBroker broker = getDatabase().getActiveBroker();
-            final Subject subject = broker.getSubject();
+            final Subject subject = broker.getCurrentSubject();
 
             ((Group)remove_group).assertCanModifyGroup(subject);
 

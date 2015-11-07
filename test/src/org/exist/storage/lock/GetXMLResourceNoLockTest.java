@@ -3,6 +3,7 @@ package org.exist.storage.lock;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Optional;
 
 import org.junit.After;
 import org.junit.Before;
@@ -44,7 +45,7 @@ public class GetXMLResourceNoLockTest {
         BrokerPool pool = BrokerPool.getInstance();
         
 		try {
-			broker = pool.get(pool.getSecurityManager().getSystemSubject());
+			broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
 			
 			Collection testCollection = broker.openCollection(TestConstants.TEST_COLLECTION_URI, Lock.READ_LOCK);
 			try{
@@ -95,7 +96,7 @@ public class GetXMLResourceNoLockTest {
         final BrokerPool pool = BrokerPool.getInstance();
 
         final TransactionManager transact = pool.getTransactionManager();
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                 final Txn transaction = transact.beginTransaction()) {
 
             Collection collection = broker

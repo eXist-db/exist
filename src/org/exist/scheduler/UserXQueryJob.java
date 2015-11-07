@@ -21,6 +21,7 @@ package org.exist.scheduler;
 
 import java.io.IOException;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Properties;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -113,7 +114,7 @@ public class UserXQueryJob extends UserJob {
      * Returns the User for this Job.
      *
      * @return  The User for this Job
-     * @deprecated use getSubject method
+     * @deprecated use getCurrentSubject method
      */
     public Subject getUser() {
         return subject;
@@ -152,7 +153,7 @@ public class UserXQueryJob extends UserJob {
         CompiledXQuery compiled = null;
         XQueryContext context = null;
 
-        try (final DBBroker broker = pool.get(user)) {
+        try (final DBBroker broker = pool.get(Optional.of(user))) {
 
             if(xqueryresource.indexOf(':') > 0) {
                 source = SourceFactory.getSource(broker, "", xqueryresource, true);

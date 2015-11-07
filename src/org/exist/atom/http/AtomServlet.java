@@ -377,9 +377,8 @@ public class AtomServlet extends AbstractExistHttpServlet {
 			}
 
 			// Handle the resource
-			DBBroker broker = null;
-			try {
-				broker = pool.get(user);
+			try(final DBBroker broker = pool.get(Optional.ofNullable(user))) {
+
 				module.process(broker, new HttpRequestMessage(request, path,
 						'/' + moduleName), new HttpResponseMessage(response));
 
@@ -414,8 +413,6 @@ public class AtomServlet extends AbstractExistHttpServlet {
 				throw new ServletException("An error occurred: "
 						+ e.getMessage(), e);
 
-			} finally {
-				pool.release(broker);
 			}
 
 		} catch (final IOException ex) {

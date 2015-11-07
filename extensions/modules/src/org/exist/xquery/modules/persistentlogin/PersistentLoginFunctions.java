@@ -116,7 +116,7 @@ public class PersistentLoginFunctions extends BasicFunction {
             Subject subject = sm.authenticate(user, pass);
             if (subject == null)
                 return false;
-            context.getBroker().setSubject(subject);
+            context.getBroker().pushSubject(subject);   //TODO(AR) do we need to pop somewhere? i.e. when the query finishes?
             return true;
         } catch (AuthenticationException e) {
             return false;

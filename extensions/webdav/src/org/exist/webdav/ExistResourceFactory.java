@@ -210,7 +210,7 @@ public class ExistResourceFactory implements ResourceFactory {
             // Try to read as system user. Note that the actual user is not know
             // yet. In MiltonResource the actual authentication and authorization
             // is performed.
-            broker = brokerPool.get(brokerPool.getSecurityManager().getSystemSubject());
+            broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));
 
             
             // First check if resource is a collection

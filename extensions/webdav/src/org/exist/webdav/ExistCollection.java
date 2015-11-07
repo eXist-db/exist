@@ -29,6 +29,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.commons.io.IOUtils;
 
@@ -100,7 +101,7 @@ public class ExistCollection extends ExistResource {
         Collection collection = null;
         try {
             // Get access to collection
-            broker = brokerPool.get(subject);
+            broker = brokerPool.get(Optional.of(subject));
             collection = broker.openCollection(xmldbUri, Lock.READ_LOCK);
 
             if (collection == null) {
@@ -150,7 +151,7 @@ public class ExistCollection extends ExistResource {
         Collection collection = null;
         try {
             // Try to read as specified subject
-            broker = brokerPool.get(subject);
+            broker = brokerPool.get(Optional.of(subject));
             collection = broker.openCollection(xmldbUri, Lock.READ_LOCK);
 
             // Get all collections
@@ -188,7 +189,7 @@ public class ExistCollection extends ExistResource {
         Collection collection = null;
         try {
             // Try to read as specified subject
-            broker = brokerPool.get(subject);
+            broker = brokerPool.get(Optional.of(subject));
             collection = broker.openCollection(xmldbUri, Lock.READ_LOCK);
 
             // Get all documents
@@ -227,7 +228,7 @@ public class ExistCollection extends ExistResource {
 
         final TransactionManager txnManager = brokerPool.getTransactionManager();
 
-        try(final DBBroker broker = brokerPool.get(subject);
+        try(final DBBroker broker = brokerPool.get(Optional.of(subject));
             final Txn txn = txnManager.beginTransaction()) {
 
             // Open collection if possible, else abort
@@ -272,7 +273,7 @@ public class ExistCollection extends ExistResource {
 
         final TransactionManager txnManager = brokerPool.getTransactionManager();
 
-        try(final DBBroker broker = brokerPool.get(subject);
+        try(final DBBroker broker = brokerPool.get(Optional.of(subject));
             final Txn txn = txnManager.beginTransaction()) {
 
             // Check if collection exists. not likely to happen since availability is
@@ -366,7 +367,7 @@ public class ExistCollection extends ExistResource {
 
         final TransactionManager txnManager = brokerPool.getTransactionManager();
 
-        try(final DBBroker broker = brokerPool.get(subject);
+        try(final DBBroker broker = brokerPool.get(Optional.of(subject));
             final Txn txn = txnManager.beginTransaction()) {
 
             // Check if collection exists. not likely to happen since availability is checked
@@ -464,7 +465,7 @@ public class ExistCollection extends ExistResource {
 
         final TransactionManager txnManager = brokerPool.getTransactionManager();
 
-        try(final DBBroker broker = brokerPool.get(subject);
+        try(final DBBroker broker = brokerPool.get(Optional.of(subject));
             final Txn txn = txnManager.beginTransaction()) {
 
             // This class contains already the URI of the resource that shall be moved/copied

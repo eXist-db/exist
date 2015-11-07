@@ -32,6 +32,8 @@ import org.exist.xmldb.function.LocalXmldbFunction;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 
+import java.util.Optional;
+
 /**
  * Base class for Local XMLDB classes
  *
@@ -188,7 +190,7 @@ public abstract class AbstractLocal {
      * @throws org.xmldb.api.base.XMLDBException
      */
     <R> R withDb(final LocalXmldbFunction<R> dbOperation) throws XMLDBException {
-        try (final DBBroker broker = brokerPool.get(user);
+        try (final DBBroker broker = brokerPool.get(Optional.ofNullable(user));
              final Txn transaction = brokerPool.getTransactionManager().beginTransaction()) {
             final R result = dbOperation.apply(broker, transaction);
             transaction.commit();
