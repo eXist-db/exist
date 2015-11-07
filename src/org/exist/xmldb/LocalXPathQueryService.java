@@ -382,7 +382,7 @@ public class LocalXPathQueryService extends AbstractLocalService implements XPat
                     LOG.debug("Deadlock detected. Starting over again. Docs: " + docs.getDocumentCount() + "; locked: " +
                             lockedDocuments.size());
                     lockedDocuments.unlock();
-                    brokerPool.release(reservedBroker);
+                    reservedBroker.close();
                     deadlockCaught = true;
                 } catch (final PermissionDeniedException e) {
                     throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,
@@ -390,7 +390,9 @@ public class LocalXPathQueryService extends AbstractLocalService implements XPat
                 }
             } while (deadlockCaught);
         } catch (final EXistException e) {
-            brokerPool.release(reservedBroker);
+            if(reservedBroker != null) {
+                reservedBroker.close();
+            }
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage());
         }
     }
@@ -409,7 +411,7 @@ public class LocalXPathQueryService extends AbstractLocalService implements XPat
         lockedDocuments = null;
 
         if (reservedBroker != null) {
-            brokerPool.release(reservedBroker);
+            reservedBroker.close();
         }
         reservedBroker = null;
     }

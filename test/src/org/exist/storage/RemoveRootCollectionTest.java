@@ -60,7 +60,9 @@ public class RemoveRootCollectionTest {
 	}
 
 	@After public void stopDB() {
-		pool.release(broker);
+		if(broker != null) {
+			broker.close();
+		}
 		BrokerPool.stopAll(false);
 	}
 	

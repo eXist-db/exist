@@ -101,7 +101,9 @@ public class QT3TS_To_junit {
     }
 
     public void release() throws Exception {
-    	db.release(broker);
+    	if(broker != null) {
+            broker.close();
+        }
     }
     	
     public void shutdown() throws Exception {

@@ -124,26 +124,26 @@ public class CollectionRemovalTest {
     }
 
     private void retrieveDoc(XmldbURI uri) {
-        DBBroker broker = null;
-        Collection test = null;
-        try {
-            broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
-            test = broker.openCollection(uri, Lock.WRITE_LOCK);
-            assertNotNull(test);
-            
-            DocumentImpl doc = test.getDocument(broker, XmldbURI.createInternal("document.xml"));
-            assertNotNull(doc);
-            
-            Serializer serializer = broker.getSerializer();
-            serializer.reset();
-            String xml = serializer.serialize(doc);
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+            Collection test = null;
+            try {
+                test = broker.openCollection(uri, Lock.WRITE_LOCK);
+                assertNotNull(test);
+
+                DocumentImpl doc = test.getDocument(broker, XmldbURI.createInternal("document.xml"));
+                assertNotNull(doc);
+
+                Serializer serializer = broker.getSerializer();
+                serializer.reset();
+                String xml = serializer.serialize(doc);
+            } finally {
+                if (test != null) {
+                    test.release(Lock.WRITE_LOCK);
+                }
+            }
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());
-        } finally {
-            if (test != null)
-                test.release(Lock.WRITE_LOCK);
-            pool.release(broker);
         }
     }
 

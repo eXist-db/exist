@@ -93,11 +93,8 @@ public class DocumentAsValueTest {
     	
     	Metas docMD = MetaData.get().getMetas(doc1uri);
     	assertNotNull(docMD);
-    	
-        DBBroker broker = null;
-        try {
-            broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
-            assertNotNull(broker);
+
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             
 	    	//add first key-value
 	    	docMD.put(KEY1, doc2);
@@ -106,9 +103,6 @@ public class DocumentAsValueTest {
 	    	assertNotNull(meta);
 	
 	    	assertEquals(serializer(broker, doc2), serializer(broker, (DocumentImpl)meta.getValue()));
-
-        } finally {
-        	pool.release(broker);
         }
     }
 

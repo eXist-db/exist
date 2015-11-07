@@ -97,7 +97,9 @@ public abstract class TestCase {
 	
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
-	    db.release(broker);
+		if(broker != null) {
+			broker.close();
+		}
 	}
 
 	/**
@@ -147,10 +149,8 @@ public abstract class TestCase {
 		String compare = outputFile.getAttribute("compare");
 		if (compare == null) compare = "Fragment";
 		compare = compare.toUpperCase();
-		
-		Reader reader = null;
-		try {
-			reader = new BufferedReader(new FileReader(expectedResult));
+
+		try(final Reader reader = new BufferedReader(new FileReader(expectedResult))) {
 
 			if (result.isEmpty() && expectedResult.length() > 0)
 				return false;
@@ -261,12 +261,6 @@ public abstract class TestCase {
 			}
 		} catch (Exception e) {
 			return false;
-		} finally {
-			if (reader != null)
-				try {
-					reader.close();
-				} catch (IOException e) {
-				}
 		}
 
 		return true;
@@ -352,13 +346,11 @@ public abstract class TestCase {
 			throw new IOException(e);
 		}
         
-        try {
+        try(final InputStreamReader isr = new InputStreamReader(new FileInputStream(uri), "UTF-8")) {
 //			URL url = new URL(uri);
 //			InputStreamReader isr = new InputStreamReader(url.openStream(), "UTF-8");
-			InputStreamReader isr = new InputStreamReader(new FileInputStream(uri), "UTF-8");
             InputSource src = new InputSource(isr);
             xr.parse(src);
-            isr.close();
             
             adapter.getDocument().setDocumentURI(new File(uri).getAbsoluteFile().toString());
             
@@ -414,12 +406,9 @@ public abstract class TestCase {
 	
 	public static String readFileAsString(File file) throws IOException {
 	    byte[] buffer = new byte[(int) file.length()];
-	    FileInputStream f = new FileInputStream(file);
-	    try {
+	    try(final FileInputStream f = new FileInputStream(file)) {
 	    	f.read(buffer);
 	    	return new String(buffer);
-	    } finally {
-	    	f.close();
 	    }
 	}
 	
@@ -427,12 +416,9 @@ public abstract class TestCase {
 		if (file.length() >= limit) return "DATA TOO BIG";
 		
 	    byte[] buffer = new byte[(int) file.length()];
-	    FileInputStream f = new FileInputStream(file);
-	    try {
+	    try(final FileInputStream f = new FileInputStream(file)) {
 	    	f.read(buffer);
 	    	return new String(buffer);
-	    } finally {
-	    	f.close();
 	    }
 	}
 

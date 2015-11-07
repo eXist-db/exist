@@ -424,21 +424,17 @@ public class ScaleImageJAI extends HttpServlet {
     	private File baseDir;
     	
     	public DBStorage(String baseCollection) throws ServletException {
-    		BrokerPool pool = null;
-    		DBBroker broker = null;
     		try {
-    			pool = BrokerPool.getInstance();
-    			broker = pool.get(pool.getSecurityManager().getGuestSubject());
-    			
-    			XmldbURI uri = XmldbURI.xmldbUriFor(baseCollection);
-    			this.baseDir = ((NativeBroker)broker).getCollectionBinaryFileFsPath(uri.toCollectionPathURI());
-    			log("baseDir = " + baseDir.getAbsolutePath());
+    			final BrokerPool pool = BrokerPool.getInstance();
+
+    			try(final DBBroker broker = pool.get(pool.getSecurityManager().getGuestSubject())) {
+					XmldbURI uri = XmldbURI.xmldbUriFor(baseCollection);
+					this.baseDir = ((NativeBroker) broker).getCollectionBinaryFileFsPath(uri.toCollectionPathURI());
+					log("baseDir = " + baseDir.getAbsolutePath());
+				}
     			
     		} catch (Exception e) {
     			throw new ServletException("Unable to access image collection: " + baseCollection, e);
-    		} finally {
-    			if (pool != null)
-    				pool.release(broker);
     		}
     	}
     	

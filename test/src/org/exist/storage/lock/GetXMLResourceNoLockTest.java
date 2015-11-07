@@ -38,17 +38,14 @@ public class GetXMLResourceNoLockTest {
 	
 	@Test
 	public void testCollectionMaintainsLockWhenResourceIsSelectedNoLock() throws EXistException, InterruptedException {
-		
+
 		storeTestResource();
 
-        DBBroker broker = null;
-        BrokerPool pool = BrokerPool.getInstance();
-        
-		try {
-			broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
-			
+        final BrokerPool pool = BrokerPool.getInstance();
+
+		try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 			Collection testCollection = broker.openCollection(TestConstants.TEST_COLLECTION_URI, Lock.READ_LOCK);
-			try{
+			try {
 
 				XmldbURI docPath = TestConstants.TEST_COLLECTION_URI.append(DOCUMENT_NAME_URI);
 				
@@ -61,17 +58,15 @@ public class GetXMLResourceNoLockTest {
 				
 				assertEquals("Collection does not have lock!", true, testCollection.getLock().hasLock());
 				
-			}finally{
-	    		if(testCollection != null) testCollection.getLock().release(Lock.READ_LOCK);
+			} finally {
+	    		if(testCollection != null) {
+					testCollection.getLock().release(Lock.READ_LOCK);
+				}
 			}
 			
 		} catch (Exception ex){
 			fail("Error opening document" + ex);
 		    
-		} finally {
-			if(pool!=null){
-				pool.release(broker);
-			}
 		}
 
 		assertEquals(1, 1);

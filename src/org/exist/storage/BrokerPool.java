@@ -1637,10 +1637,13 @@ public class BrokerPool implements Database {
      * If there are pending system maintenance tasks,
      * the method will block until these tasks have finished.
      *
+     * NOTE - this is intentionally package-private, it is only meant to be
+     * called internally and from {@link DBBroker#close()}
+     *
      * @param broker The broker to be released
      */
     //TODO : rename as releaseBroker ? releaseInstance (when refactored) ?
-    public void release(final DBBroker broker) {
+    void release(final DBBroker broker) {
 
         // might be null as release() is often called within a finally block
         if(broker == null) {

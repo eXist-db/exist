@@ -58,7 +58,9 @@ public class LowLevelText {
 
 	@After
 	public void tearDown() {
-        brokerPool.release(broker);
+		if(broker != null) {
+			broker.close();
+		}
 		BrokerPool.stopAll(false);
 	}
 

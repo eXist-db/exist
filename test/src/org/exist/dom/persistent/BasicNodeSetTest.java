@@ -463,8 +463,10 @@ public class BasicNodeSetTest {
             seqSpeech = executeQuery(broker, "//SPEECH", 2628, null);
             
         } catch(Exception e) {
+            if(broker != null) {
+                broker.close();
+            }
             if (pool != null) {
-                pool.release(broker);
                 BrokerPool.stopAll(false);
             }
 
@@ -491,7 +493,9 @@ public class BasicNodeSetTest {
 
             transact.commit(transaction);
         } finally {
-            pool.release(broker);
+            if(broker != null) {
+                broker.close();
+            }
             BrokerPool.stopAll(false);
         }
     }

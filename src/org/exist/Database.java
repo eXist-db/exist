@@ -116,8 +116,6 @@ public interface Database {
 
     public DBBroker getActiveBroker(); // throws EXistException;
 
-    public void release(DBBroker broker);
-
     /**
      * Returns the number of brokers currently serving requests for the database
      * instance.

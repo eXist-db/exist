@@ -97,82 +97,68 @@ public class ExistCollection extends ExistResource {
             return;
         }
 
-        DBBroker broker = null;
-        Collection collection = null;
-        try {
+        try(final DBBroker broker = brokerPool.get(Optional.of(subject))) {
             // Get access to collection
-            broker = brokerPool.get(Optional.of(subject));
-            collection = broker.openCollection(xmldbUri, Lock.READ_LOCK);
+            Collection collection = null;
+            try {
+                collection = broker.openCollection(xmldbUri, Lock.READ_LOCK);
 
-            if (collection == null) {
-                LOG.error(String.format("Collection for %s cannot be opened for metadata", xmldbUri));
-                return;
+                if (collection == null) {
+                    LOG.error(String.format("Collection for %s cannot be opened for metadata", xmldbUri));
+                    return;
+                }
+
+                // Retrieve some meta data
+                permissions = collection.getPermissionsNoLock();
+                readAllowed = permissions.validate(subject, Permission.READ);
+                writeAllowed = permissions.validate(subject, Permission.WRITE);
+                executeAllowed = permissions.validate(subject, Permission.EXECUTE);
+
+                creationTime = collection.getCreationTime();
+                lastModified = creationTime; // Collection does not have more information.
+
+                ownerUser = permissions.getOwner().getUsername();
+                ownerGroup = permissions.getGroup().getName();
+            } finally {
+                // Clean up collection
+                if (collection != null) {
+                    collection.release(Lock.READ_LOCK);
+                }
             }
-
-            // Retrieve some meta data
-            permissions = collection.getPermissionsNoLock();
-            readAllowed = permissions.validate(subject, Permission.READ);
-            writeAllowed = permissions.validate(subject, Permission.WRITE);
-            executeAllowed = permissions.validate(subject, Permission.EXECUTE);
-
-            creationTime = collection.getCreationTime();
-            lastModified = creationTime; // Collection does not have more information.
-
-            ownerUser = permissions.getOwner().getUsername();
-            ownerGroup = permissions.getGroup().getName();
-
-        } catch (PermissionDeniedException | EXistException pde) {
+        } catch (final PermissionDeniedException | EXistException pde) {
             LOG.error(pde);
-
-        } finally {
-
-            // Clean up collection
-            if (collection != null) {
-                collection.release(Lock.READ_LOCK);
-            }
-
-            // Return broker
-            brokerPool.release(broker);
-
-            // Set flag
-            isInitialized = true;
         }
+
+        // Set flag
+        isInitialized = true;
     }
 
     /**
      * Retrieve full URIs of all Collections in this collection.
      */
     public List<XmldbURI> getCollectionURIs() {
+        final List<XmldbURI> collectionURIs = new ArrayList<>();
 
-
-        List<XmldbURI> collectionURIs = new ArrayList<>();
-
-        DBBroker broker = null;
-        Collection collection = null;
-        try {
+        try(final DBBroker broker = brokerPool.get(Optional.of(subject))) {
             // Try to read as specified subject
-            broker = brokerPool.get(Optional.of(subject));
-            collection = broker.openCollection(xmldbUri, Lock.READ_LOCK);
+            Collection collection = null;
+            try {
+                collection = broker.openCollection(xmldbUri, Lock.READ_LOCK);
+                // Get all collections
+                final Iterator<XmldbURI> collections = collection.collectionIteratorNoLock(broker); // QQ: use collectionIterator ?
+                while (collections.hasNext()) {
+                    collectionURIs.add(xmldbUri.append(collections.next()));
 
-            // Get all collections
-            Iterator<XmldbURI> collections = collection.collectionIteratorNoLock(broker); // QQ: use collectionIterator ?
-            while (collections.hasNext()) {
-                collectionURIs.add(xmldbUri.append(collections.next()));
-
+                }
+            } finally {
+                if (collection != null) {
+                    collection.release(Lock.READ_LOCK);
+                }
             }
-
-        } catch (EXistException | PermissionDeniedException e) {
+        } catch (final EXistException | PermissionDeniedException e) {
             LOG.error(e);
             //return empty list
             return new ArrayList<>();
-
-        } finally {
-
-            if (collection != null) {
-                collection.release(Lock.READ_LOCK);
-            }
-
-            brokerPool.release(broker);
         }
 
         return collectionURIs;
@@ -182,34 +168,29 @@ public class ExistCollection extends ExistResource {
      * Retrieve full URIs of all Documents in the collection.
      */
     public List<XmldbURI> getDocumentURIs() {
+        final List<XmldbURI> documentURIs = new ArrayList<>();
 
-        List<XmldbURI> documentURIs = new ArrayList<>();
+        try(final DBBroker broker = brokerPool.get(Optional.of(subject))) {
+            Collection collection = null;
+            try {
+                // Try to read as specified subject
+                collection = broker.openCollection(xmldbUri, Lock.READ_LOCK);
 
-        DBBroker broker = null;
-        Collection collection = null;
-        try {
-            // Try to read as specified subject
-            broker = brokerPool.get(Optional.of(subject));
-            collection = broker.openCollection(xmldbUri, Lock.READ_LOCK);
-
-            // Get all documents
-            Iterator<DocumentImpl> documents = collection.iteratorNoLock(broker); // QQ: use 'iterator'
-            while (documents.hasNext()) {
-                documentURIs.add(documents.next().getURI());
+                // Get all documents
+                final Iterator<DocumentImpl> documents = collection.iteratorNoLock(broker); // QQ: use 'iterator'
+                while (documents.hasNext()) {
+                    documentURIs.add(documents.next().getURI());
+                }
+            } finally {
+                // Clean up resources
+                if (collection != null) {
+                    collection.release(Lock.READ_LOCK);
+                }
             }
-
-        } catch (PermissionDeniedException | EXistException e) {
+        } catch (final PermissionDeniedException | EXistException e) {
             LOG.error(e);
             //return empty list
             return new ArrayList<>();
-            
-        } finally {
-            // Clean up resources
-            if (collection != null) {
-                collection.release(Lock.READ_LOCK);
-            }
-
-            brokerPool.release(broker);
         }
 
         return documentURIs;

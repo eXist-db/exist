@@ -1,7 +1,9 @@
 package org.exist.storage;
 
+import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
+import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
@@ -34,7 +36,7 @@ public class ReindexTest {
     }
 
     @Test
-    public void reindexTests() {
+    public void reindexTests() throws EXistException, PermissionDeniedException {
         storeDocuments();
         closeDB();
 
@@ -120,24 +122,12 @@ public class ReindexTest {
     /**
      * Just recover.
      */
-    public void restart() {
+    public void restart() throws EXistException, PermissionDeniedException {
         BrokerPool.FORCE_CORRUPTION = false;
-        BrokerPool pool = null;
-        DBBroker broker = null;
-        try {
-        	pool = startDB();
-        	assertNotNull(pool);
-            broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
-            assertNotNull(broker);
-
+        final BrokerPool pool = startDB();
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             Collection root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, Lock.READ_LOCK);
             assertNull("Removed collection does still exist", root);
-        } catch (Exception e) {
-            e.printStackTrace();
-	        fail(e.getMessage());
-        } finally {
-            if (pool != null)
-                pool.release(broker);
         }
     }
 

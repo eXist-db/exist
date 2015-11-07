@@ -45,7 +45,9 @@ public class OpNumericTest {
 
     @AfterClass
     public static void tearDown() throws EXistException {
-        BrokerPool.getInstance().release(broker);
+        if(broker != null) {
+			broker.close();
+		}
         BrokerPool.stopAll(false);
         broker = null;
         context = null;

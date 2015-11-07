@@ -91,52 +91,44 @@ public class ExistDocument extends ExistResource {
             return;
         }
 
-        DBBroker broker = null;
-        DocumentImpl document = null;
-        try {
-            broker = brokerPool.get(Optional.of(subject));
+        try(final DBBroker broker = brokerPool.get(Optional.of(subject))) {
+            DocumentImpl document = null;
+            try {
+                // If it is not a collection, check if it is a document
+                document = broker.getXMLResource(xmldbUri, Lock.READ_LOCK);
 
-            // If it is not a collection, check if it is a document
-            document = broker.getXMLResource(xmldbUri, Lock.READ_LOCK);
+                if (document.getResourceType() == DocumentImpl.XML_FILE) {
+                    isXmlDocument = true;
+                }
 
-            if (document.getResourceType() == DocumentImpl.XML_FILE) {
-                isXmlDocument = true;
+                // Get meta data
+                creationTime = document.getMetadata().getCreated();
+                lastModified = document.getMetadata().getLastModified();
+                mimeType = document.getMetadata().getMimeType();
+
+                // Retrieve perssions
+                permissions = document.getPermissions();
+                readAllowed = permissions.validate(subject, Permission.READ);
+                writeAllowed = permissions.validate(subject, Permission.WRITE);
+                executeAllowed = permissions.validate(subject, Permission.EXECUTE);
+
+
+                ownerUser = permissions.getOwner().getUsername();
+                ownerGroup = permissions.getGroup().getName();
+
+                // Get (estimated) file size
+                contentLength = document.getContentLength();
+            }  finally {
+                // Cleanup resources
+                if (document != null) {
+                    document.getUpdateLock().release(Lock.READ_LOCK);
+                }
             }
-
-            // Get meta data         
-            creationTime = document.getMetadata().getCreated();
-            lastModified = document.getMetadata().getLastModified();
-            mimeType = document.getMetadata().getMimeType();
-
-            // Retrieve perssions
-            permissions = document.getPermissions();
-            readAllowed = permissions.validate(subject, Permission.READ);
-            writeAllowed = permissions.validate(subject, Permission.WRITE);
-            executeAllowed = permissions.validate(subject, Permission.EXECUTE);
-
-
-            ownerUser = permissions.getOwner().getUsername();
-            ownerGroup = permissions.getGroup().getName();
-
-            // Get (estimated) file size
-            contentLength = document.getContentLength();
-
-        } catch (EXistException | PermissionDeniedException e) {
+        } catch (final EXistException | PermissionDeniedException e) {
             LOG.error(e);
-
-        } finally {
-
-            // Cleanup resources
-            if (document != null) {
-                document.getUpdateLock().release(Lock.READ_LOCK);
-            }
-
-            if(broker != null) {
-                brokerPool.release(broker);
-            }
-
-            isInitialized = true;
         }
+
+        isInitialized = true;
     }
     private String mimeType;
 

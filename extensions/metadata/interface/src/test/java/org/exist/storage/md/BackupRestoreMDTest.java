@@ -97,11 +97,8 @@ public class BackupRestoreMDTest extends TestCase {
     	String key3UUID = null;
     	
     	Path file;
-    	
-        DBBroker broker = null;
-        try {
-            broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
-            assertNotNull(broker);
+
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             //collection
             Collection root = broker.getCollection(TestConstants.TEST_COLLECTION_URI);
@@ -144,8 +141,6 @@ public class BackupRestoreMDTest extends TestCase {
 	
             SystemExport sysexport = new SystemExport( broker, null, null, true );
             file = sysexport.export( "backup", false, false, null );
-        } finally {
-        	pool.release(broker);
         }
     	
     	clean();
@@ -154,9 +149,7 @@ public class BackupRestoreMDTest extends TestCase {
 		RestoreListener listener = new LogRestoreListener();
 		restore.restore(listener, "admin", "", "", file, "xmldb:exist://");
 
-        broker = null;
-        try {
-            broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             assertNotNull(broker);
 
             //collection
@@ -205,8 +198,6 @@ public class BackupRestoreMDTest extends TestCase {
 	
 	    	assertEquals(VALUE2, meta.getValue());
 	    	assertEquals(key3UUID, meta.getUUID());
-        } finally {
-        	pool.release(broker);
         }
 	}
 	
