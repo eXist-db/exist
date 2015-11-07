@@ -1684,7 +1684,16 @@ public class BrokerPool implements Database {
                 }
             }
             
-            final Subject lastUser = broker.popSubject();
+            Subject lastUser = broker.popSubject();
+
+            //guard to ensure that the broker has popped all its subjects
+            if(lastUser == null || broker.getCurrentSubject() != null) {
+                LOG.warn("Broker was returned with extraneous Subjects, cleaning...", new IllegalStateException("DBBroker pushSubject/popSubject mismatch").fillInStackTrace());
+                while(broker.getCurrentSubject() != null) {
+                    lastUser = broker.popSubject();
+                }
+            }
+
             inactiveBrokers.push(broker);
             if(watchdog != null) {
                 watchdog.remove(broker);
