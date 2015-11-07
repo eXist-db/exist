@@ -136,7 +136,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
         this.fileURI = fileURI;
 
         // the permissions assigned to this document
-        this.permissions = PermissionFactory.getDefaultResourcePermission();
+        this.permissions = PermissionFactory.getDefaultResourcePermission(pool.getSecurityManager());
 
         //inherit the group to the resource if current collection is setGid
         if(collection != null && collection.getPermissions().isSetGid()) {

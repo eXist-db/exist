@@ -46,6 +46,7 @@ import org.exist.security.Account;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.PermissionFactory;
+import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
 import org.exist.storage.*;
 import org.exist.storage.cache.Cacheable;
@@ -133,7 +134,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
 
     public Collection(final DBBroker broker, final XmldbURI path) {
         //The permissions assigned to this collection
-        permissions = PermissionFactory.getDefaultCollectionPermission();
+        permissions = PermissionFactory.getDefaultCollectionPermission(broker.getBrokerPool().getSecurityManager());
 
         setPath(path);
         lock = new ReentrantReadWriteLock(path);
@@ -216,8 +217,8 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
 
     public class SubCollectionEntry extends CollectionEntry {
 
-        public SubCollectionEntry(final XmldbURI uri) {
-            super(uri, PermissionFactory.getDefaultCollectionPermission());
+        public SubCollectionEntry(final SecurityManager sm, final XmldbURI uri) {
+            super(uri, PermissionFactory.getDefaultCollectionPermission(sm));
         }
 
         @Override
@@ -266,7 +267,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         final Iterator<XmldbURI> subCollectionIterator = subCollections.iterator();
         while(subCollectionIterator.hasNext()) {
             final XmldbURI subCollectionURI = subCollectionIterator.next();
-            final CollectionEntry entry = new SubCollectionEntry(subCollectionURI);
+            final CollectionEntry entry = new SubCollectionEntry(broker.getBrokerPool().getSecurityManager(), subCollectionURI);
             entry.readMetadata(broker);
             list.add(entry);
         }
@@ -283,7 +284,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             throw new PermissionDeniedException("Permission denied to read collection: " + path);
         }
         final XmldbURI subCollectionURI = getURI().append(name);
-        final CollectionEntry entry = new SubCollectionEntry(subCollectionURI);
+        final CollectionEntry entry = new SubCollectionEntry(broker.getBrokerPool().getSecurityManager(), subCollectionURI);
         entry.readMetadata(broker);
         return entry;
     }
@@ -1739,7 +1740,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
 
 
     /** If an old document exists, keep information  about  the document.
-     * @param broker
+     * @param oldDoc
      * @param document
      */
     private void manageDocumentInformation(final DocumentImpl oldDoc, final DocumentImpl document) {

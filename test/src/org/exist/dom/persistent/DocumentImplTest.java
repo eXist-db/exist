@@ -8,7 +8,6 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
-import org.exist.security.PermissionFactory;
 import org.exist.security.SecurityManager;
 import org.easymock.EasyMock;
 import org.exist.security.Permission;
@@ -34,12 +33,12 @@ public class DocumentImplTest {
         Subject mockCurrentSubject = EasyMock.createMock(Subject.class);
         Group mockCurrentSubjectGroup= EasyMock.createMock(Group.class);
         SecurityManager mockSecurityManager = EasyMock.createMock(SecurityManager.class);
-        PermissionFactory.sm = mockSecurityManager;
 
         //test values
         final DocumentMetadata otherMetadata = new DocumentMetadata();
 
         //expectations
+        expect(mockBrokerPool.getSecurityManager()).andReturn(mockSecurityManager).times(2);
         expect(mockSecurityManager.getDatabase()).andReturn(mockDatabase).times(2);
         expect(mockDatabase.getActiveBroker()).andReturn(mockBroker).times(2);
         expect(mockBroker.getCurrentSubject()).andReturn(mockCurrentSubject).times(2);
@@ -72,13 +71,13 @@ public class DocumentImplTest {
         Subject mockCurrentSubject = EasyMock.createMock(Subject.class);
         Group mockCurrentSubjectGroup= EasyMock.createMock(Group.class);
         SecurityManager mockSecurityManager = EasyMock.createMock(SecurityManager.class);
-        PermissionFactory.sm = mockSecurityManager;
 
         //test values
         final TestableDocumentMetadata docMetadata = new TestableDocumentMetadata();
         final DocumentMetadata otherMetadata = new DocumentMetadata();
 
         //expectations
+        expect(mockBrokerPool.getSecurityManager()).andReturn(mockSecurityManager).times(2);
         expect(mockSecurityManager.getDatabase()).andReturn(mockDatabase).times(2);
         expect(mockDatabase.getActiveBroker()).andReturn(mockBroker).times(2);
         expect(mockBroker.getCurrentSubject()).andReturn(mockCurrentSubject).times(2);
@@ -112,7 +111,6 @@ public class DocumentImplTest {
         Subject mockCurrentSubject = EasyMock.createMock(Subject.class);
         Group mockCurrentSubjectGroup= EasyMock.createMock(Group.class);
         SecurityManager mockSecurityManager = EasyMock.createMock(SecurityManager.class);
-        PermissionFactory.sm = mockSecurityManager;
 
         //test values
         final DocumentMetadata docMetadata = new TestableDocumentMetadata();
@@ -121,6 +119,7 @@ public class DocumentImplTest {
         final long otherLastModified = System.currentTimeMillis() - 1000;
 
         //expectations
+        expect(mockBrokerPool.getSecurityManager()).andReturn(mockSecurityManager).times(2);
         expect(mockSecurityManager.getDatabase()).andReturn(mockDatabase).times(2);
         expect(mockDatabase.getActiveBroker()).andReturn(mockBroker).times(2);
         expect(mockBroker.getCurrentSubject()).andReturn(mockCurrentSubject).times(2);

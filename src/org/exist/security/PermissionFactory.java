@@ -46,13 +46,11 @@ public class PermissionFactory {
 
     private final static Logger LOG = LogManager.getLogger(PermissionFactory.class);
 
-    public static SecurityManager sm = null;        //TODO(AR) The way this gets set is nasty!
-
     /**
      * Get the Default Resource permissions for the current Subject
      * this includes incorporating their umask
      */
-    public static Permission getDefaultResourcePermission() {
+    public static Permission getDefaultResourcePermission(final SecurityManager sm) {
         
         //TODO consider loading Permission.DEFAULT_PERM from conf.xml instead
 
@@ -66,7 +64,7 @@ public class PermissionFactory {
      * Get the Default Collection permissions for the current Subject
      * this includes incorporating their umask
      */
-    public static Permission getDefaultCollectionPermission() {
+    public static Permission getDefaultCollectionPermission(final SecurityManager sm) {
         
         //TODO consider loading Permission.DEFAULT_PERM from conf.xml instead
         
@@ -79,7 +77,7 @@ public class PermissionFactory {
     /**
      * Get permissions for the current Subject
      */
-    public static Permission getPermission(final int mode) {
+    public static Permission getPermission(final SecurityManager sm, final int mode) {
         final Subject currentSubject = sm.getDatabase().getActiveBroker().getCurrentSubject();
         return new SimpleACLPermission(sm, currentSubject.getId(), currentSubject.getDefaultGroup().getId(), mode);
     }
@@ -87,11 +85,11 @@ public class PermissionFactory {
     /**
      * Get permissions for the user, group and mode
      */
-    public static Permission getPermission(final int userId, final int groupId, final int mode) {
+    public static Permission getPermission(final SecurityManager sm, final int userId, final int groupId, final int mode) {
         return new SimpleACLPermission(sm, userId, groupId, mode);
     }
 
-    public static Permission getPermission(final String userName, final String groupName, final int mode) {
+    public static Permission getPermission(final SecurityManager sm, final String userName, final String groupName, final int mode) {
         Permission permission = null;
         try {
             final Account owner = sm.getAccount(userName);
