@@ -325,6 +325,13 @@ public class XQueryContext implements BinaryValueManager, Context
      */
     private Subject realUser;
 
+    /**
+     * Indicates whether a user from a http session
+     * was pushed onto the current broker from {@link XQueryContext#prepareForExecution()},
+     * if so then we must pop the user in {@link XQueryContext#reset(boolean)}
+     */
+    private boolean pushedUserFromHttpSession = false;
+
     public synchronized Optional<ExistRepository> getRepository()
     throws XPathException {
         return getBroker().getBrokerPool().getExpathRepo();
@@ -529,10 +536,11 @@ public class XQueryContext implements BinaryValueManager, Context
         //then set the DBBroker user
     	final Subject user = getUserFromHttpSession();
         if(user != null) {
-            getBroker().pushSubject(user); //TODO(AR) do we need to pop somewhere? i.e. after query execution or perhaps in XQueryContext#reset()?
+            getBroker().pushSubject(user);      //this will be popped in {@link XQueryContext#reset(boolean)}
+            this.pushedUserFromHttpSession = true;
         }
-        
-        setRealUser(getBroker().getCurrentSubject());
+
+        setRealUser(getBroker().getCurrentSubject());   //this will be unset in {@link XQueryContext#reset(boolean)}
 
         //Reset current context position
         setContextSequencePosition( 0, null );
@@ -1361,7 +1369,15 @@ public class XQueryContext implements BinaryValueManager, Context
     @Override
     public void reset(final boolean keepGlobals) {
         setRealUser(null);
-        
+
+        if(this.pushedUserFromHttpSession) {
+            try {
+                getBroker().popSubject();
+            } finally {
+                this.pushedUserFromHttpSession = false;
+            }
+        }
+
         if( modifiedDocuments != null ) {
 
             try {
