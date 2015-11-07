@@ -53,7 +53,7 @@ import org.xmldb.api.base.XMLDBException;
  * @author ljo
  */
 
-public class XMLDBAuthenticate extends BasicFunction {
+public class XMLDBAuthenticate extends UserSwitchingBasicFunction {
     private static final Logger logger = LogManager.getLogger(XMLDBAuthenticate.class);
 
     public final static FunctionSignature authenticateSignature =
@@ -161,9 +161,10 @@ public class XMLDBAuthenticate extends BasicFunction {
             }
 
             if (isCalledAs("login")) {
-                context.getBroker().pushSubject(user);  //TODO(AR) do we need to pop somewhere? i.e. when the query finishes?
+                //switch the user of the current broker
+                switchUser(user);
 
-                /** if there is a http session cache the user in the http session */
+                //if there is a http session cache the user in the http session
                 cacheUserInHttpSession(user, createSession);
             }
 

@@ -45,7 +45,7 @@ import org.exist.xquery.value.Type;
  * @author Wolfgang Meier
  * @author Loren Cahlander
  */
-public class SetCurrentUser extends BasicFunction {
+public class SetCurrentUser extends UserSwitchingBasicFunction {
 
     private static final Logger logger = LogManager.getLogger(SetCurrentUser.class);
 
@@ -95,8 +95,10 @@ public class SetCurrentUser extends BasicFunction {
                 return BooleanValue.FALSE;
             }
 
+            //switch the user of the current broker
+            switchUser(user);
+
             //validated user, store in session
-            context.getBroker().pushSubject(user);    //TODO(AR) do we need to pop somewhere, i.e. when the query finishes??
             final SessionWrapper session = request.getSession(true);
             session.setAttribute("user", userName);
             session.setAttribute("password", new StringValue(passwd));

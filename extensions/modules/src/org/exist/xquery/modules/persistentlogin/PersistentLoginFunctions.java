@@ -13,7 +13,7 @@ import org.exist.xquery.value.StringValue;
 /**
  * Functions to access the persistent login module.
  */
-public class PersistentLoginFunctions extends BasicFunction {
+public class PersistentLoginFunctions extends UserSwitchingBasicFunction {
 
     public final static FunctionSignature signatures[] = {
             new FunctionSignature(
@@ -127,7 +127,10 @@ public class PersistentLoginFunctions extends BasicFunction {
         try {
             final SecurityManager sm = BrokerPool.getInstance().getSecurityManager();
             final Subject subject = sm.authenticate(user, pass);
-            context.getBroker().pushSubject(subject);   //TODO(AR) do we need to pop somewhere? i.e. when the query finishes?
+
+            //switch the user of the current broker
+            switchUser(subject);
+
             return true;
         } catch (final AuthenticationException | EXistException e) {
             return false;
