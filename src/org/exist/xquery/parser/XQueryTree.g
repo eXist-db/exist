@@ -2450,6 +2450,33 @@ throws PermissionDeniedException, EXistException, XPathException
 }
 :
     (
+        #(
+            ARROW_OP
+            {
+                Expression leftExpr = step;
+                PathExpr nameExpr = new PathExpr(context);
+                String name = null;
+            }
+            (
+                eq:EQNAME
+                { name = eq.toString(); }
+                |
+                expr [nameExpr]
+            )
+            { List<Expression> params= new ArrayList<Expression>(5); }
+            (
+                { PathExpr pathExpr = new PathExpr(context); }
+                expr [pathExpr] { params.add(pathExpr); }
+            )*
+            {
+                if (name == null) {
+                    step = new ArrowOperator(context, leftExpr, nameExpr, params);
+                } else {
+                    step = new ArrowOperator(context, leftExpr, name, params);
+                }
+            }
+        )
+        |
         step = lookup [step]
         |
 		#(

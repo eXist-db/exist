@@ -1188,8 +1188,27 @@ postfixExpr throws XPathException:
 		(LPAREN) => dynamicFunCall
 		|
 		(QUESTION) => lookup
+		|
+		(ARROW_OP) => arrowPostfix
 	)*
 	;
+
+arrowPostfix throws XPathException:
+    ARROW_OP^ arrowFunctionSpecifier argumentList
+    ;
+
+arrowFunctionSpecifier throws XPathException
+{ String name= null; }:
+    name=n:eqName
+    {
+        #arrowFunctionSpecifier= #[EQNAME, name];
+        #arrowFunctionSpecifier.copyLexInfo(#n);
+    }
+    |
+    parenthesizedExpr
+    |
+    varRef
+    ;
 
 lookup throws XPathException
 { String name= null; }:
@@ -2099,6 +2118,7 @@ protected SELF options { paraphrase="."; }: '.' ;
 protected PARENT options { paraphrase=".."; }: ".." ;
 protected UNION options { paraphrase="union"; }: '|' ;
 protected CONCAT options { paraphrase="||"; }: '|' '|';
+protected ARROW_OP options { paraphrase="arrow operator"; }: '=' '>';
 protected AT options { paraphrase="@ char"; }: '@' ;
 protected DOLLAR options { paraphrase="dollar sign '$'"; }: '$' ;
 protected EQ options { paraphrase="="; }: '=' ;
@@ -2500,6 +2520,8 @@ options {
 	|
 	DOLLAR { $setType(DOLLAR); }
 	|
+    ARROW_OP { $setType(ARROW_OP); }
+    |
 	EQ { $setType(EQ); }
 	|
 	{ !(inAttributeContent || inElementContent) }?
