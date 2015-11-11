@@ -58,14 +58,10 @@ public class DBFile implements PartSource {
 					URL url = new URL("xmldb:exist://jsessionid:" + subject.getSessionId() + "@" + uri.toString());
 					connection = url.openConnection();
 				}
-			} catch (IllegalArgumentException e) {
-				throw new IOException(e); 
-			} catch (MalformedURLException e) {
-				throw new IOException(e); 
-			} catch (EXistException e) {
+			} catch (IllegalArgumentException | MalformedURLException | EXistException e) {
 				throw new IOException(e); 
 			}
-    	}
+		}
     	return connection;
 	}
 	

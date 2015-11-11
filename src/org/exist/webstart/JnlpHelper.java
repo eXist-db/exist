@@ -61,7 +61,7 @@ public class JnlpHelper {
             //files located in contextRoot/lib/core and contextRoot
             LOGGER.debug("eXist is running private jetty server.");
             coreJarsFolder= new File(contextRoot, LIB_CORE);
-            existJarFolder= new File(contextRoot, LIB_EXIST);;
+            existJarFolder= new File(contextRoot, LIB_EXIST);
             webappsFolder=contextRoot;
         }
         

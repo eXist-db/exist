@@ -191,7 +191,7 @@ public class SendEmailFunction extends BasicFunction
             }
 
         	//Parse the XML <mail> into a mail Object
-        	List<Element> mailElements = new ArrayList<Element>();
+        	List<Element> mailElements = new ArrayList<>();
             if(args[0].getItemCount() > 1 && args[0] instanceof ValueSequence) {
             	for(int i = 0; i < args[0].getItemCount(); i++) {
                 	mailElements.add((Element)args[0].itemAt(i));
@@ -241,7 +241,7 @@ public class SendEmailFunction extends BasicFunction
     	throws IOException, MessagingException, TransformerException
     {
     	//Parse the XML <mail> into a mail Object
-    	List<Element> mailElements = new ArrayList<Element>();
+    	List<Element> mailElements = new ArrayList<>();
         if(arg.getItemCount() > 1 && arg instanceof ValueSequence) {
         	for(int i = 0; i < arg.getItemCount(); i++) {
             	mailElements.add((Element)arg.itemAt(i));
@@ -266,7 +266,7 @@ public class SendEmailFunction extends BasicFunction
         try
         {
             //Create a list of all Recipients, should include to, cc and bcc recipient
-            List<String> allrecipients = new ArrayList<String>();
+            List<String> allrecipients = new ArrayList<>();
 
             allrecipients.addAll(mail.getTo());
             allrecipients.addAll(mail.getCC());
@@ -275,20 +275,16 @@ public class SendEmailFunction extends BasicFunction
             //Get a string of all recipients email addresses
             final StringBuilder recipients = new StringBuilder();
 
-            for(int x = 0; x < allrecipients.size(); x++)
-            {
+            for (String recipient : allrecipients) {
                 recipients.append(" ");
 
                 //Check format of to address does it include a name as well as the email address?
-                if(((String)allrecipients.get(x)).indexOf("<") != -1)
-                {
+                if (recipient.contains("<")) {
                     //yes, just add the email address
-                     recipients.append(((String)allrecipients.get(x)).substring(((String)allrecipients.get(x)).indexOf("<") + 1, ((String)allrecipients.get(x)).indexOf(">")));
-                }
-                else
-                {
+                    recipients.append(recipient.substring(recipient.indexOf("<") + 1, recipient.indexOf(">")));
+                } else {
                     //add the email address
-                    recipients.append((String)allrecipients.get(x));
+                    recipients.append(recipient);
                 }
             }
 
@@ -351,7 +347,7 @@ public class SendEmailFunction extends BasicFunction
         BufferedReader smtpIn = null;
         PrintWriter smtpOut = null;
 
-        List<Boolean> sendMailResults = new ArrayList<Boolean>();
+        List<Boolean> sendMailResults = new ArrayList<>();
 
         try
         {
@@ -436,7 +432,7 @@ public class SendEmailFunction extends BasicFunction
 
             //Send "MAIL FROM:"
             //Check format of from address does it include a name as well as the email address?
-            if(mail.getFrom().indexOf("<") != -1)
+            if(mail.getFrom().contains("<"))
             {
                 //yes, just send the email address
                 smtpOut.println("MAIL FROM:<" + mail.getFrom().substring(mail.getFrom().indexOf("<") + 1, mail.getFrom().indexOf(">")) + ">");
@@ -470,11 +466,11 @@ public class SendEmailFunction extends BasicFunction
             for (String recipient : allrecipients) {
                 //Send "RCPT TO:"
                 //Check format of to address does it include a name as well as the email address?
-                if (((String) recipient).contains("<")) {
+                if (recipient.contains("<")) {
                     //yes, just send the email address
-                    smtpOut.println("RCPT TO:<" + ((String) recipient).substring(((String) recipient).indexOf("<") + 1, ((String) recipient).indexOf(">")) + ">");
+                    smtpOut.println("RCPT TO:<" + recipient.substring(recipient.indexOf("<") + 1, recipient.indexOf(">")) + ">");
                 } else {
-                    smtpOut.println("RCPT TO:<" + ((String) recipient) + ">");
+                    smtpOut.println("RCPT TO:<" + recipient + ">");
                 }
                 smtpOut.flush();
                 //Get "RCPT TO:" response
@@ -724,7 +720,7 @@ public class SendEmailFunction extends BasicFunction
     {
         Properties sysProperties = new Properties();
         sysProperties.load(GetVersion.class.getClassLoader().getResourceAsStream("org/exist/system.properties"));
-        return((String)sysProperties.getProperty("product-version", "unknown version"));
+        return sysProperties.getProperty("product-version", "unknown version");
     }
 	
     /**

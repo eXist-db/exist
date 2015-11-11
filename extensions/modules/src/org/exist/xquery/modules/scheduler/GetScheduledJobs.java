@@ -121,68 +121,68 @@ public class GetScheduledJobs extends BasicFunction
         List<String>           groups         = scheduler.getJobGroupNames();
         List<ScheduledJobInfo> scheduledJobs  = scheduler.getScheduledJobs();
 
-        for( int g = 0; g < groups.size(); g++ ) {
+        for (String group : groups) {
 
-            if( userhasDBARole || groups.get(g).equals( UserJob.JOB_GROUP ) ) {
-                xmlBuf.append( "<" + SchedulerModule.PREFIX + ":group name=\"" + groups.get(g) + "\">" );
+            if (userhasDBARole || group.equals(UserJob.JOB_GROUP)) {
+                xmlBuf.append("<" + SchedulerModule.PREFIX + ":group name=\"").append(group).append("\">");
 
-                for( int j = 0; j < scheduledJobs.size(); j++ ) {
+                for (ScheduledJobInfo scheduledJob : scheduledJobs) {
 
-                    if( scheduledJobs.get(j).getGroup().equals( groups.get(g) ) ) {
-                        xmlBuf.append( "<" + SchedulerModule.PREFIX + ":job name=\"" + scheduledJobs.get(j).getName() + "\">" );
-                        xmlBuf.append( "<" + SchedulerModule.PREFIX + ":trigger name=\"" + scheduledJobs.get(j).getTriggerName() + "\">" );
-                        xmlBuf.append( "<expression>" );
-                        xmlBuf.append( scheduledJobs.get(j).getTriggerExpression() );
-                        xmlBuf.append( "</expression>" );
-                        xmlBuf.append( "<state>" );
-                        xmlBuf.append( scheduledJobs.get(j).getTriggerState() );
-                        xmlBuf.append( "</state>" );
-                        xmlBuf.append( "<start>" );
-                        xmlBuf.append( new DateTimeValue( scheduledJobs.get(j).getStartTime() ) );
-                        xmlBuf.append( "</start>" );
-                        xmlBuf.append( "<end>" );
+                    if (scheduledJob.getGroup().equals(group)) {
+                        xmlBuf.append("<" + SchedulerModule.PREFIX + ":job name=\"" + scheduledJob.getName() + "\">");
+                        xmlBuf.append("<" + SchedulerModule.PREFIX + ":trigger name=\"" + scheduledJob.getTriggerName() + "\">");
+                        xmlBuf.append("<expression>");
+                        xmlBuf.append(scheduledJob.getTriggerExpression());
+                        xmlBuf.append("</expression>");
+                        xmlBuf.append("<state>");
+                        xmlBuf.append(scheduledJob.getTriggerState());
+                        xmlBuf.append("</state>");
+                        xmlBuf.append("<start>");
+                        xmlBuf.append(new DateTimeValue(scheduledJob.getStartTime()));
+                        xmlBuf.append("</start>");
+                        xmlBuf.append("<end>");
 
-                        Date endTime = scheduledJobs.get(j).getEndTime();
+                        Date endTime = scheduledJob.getEndTime();
 
-                        if( endTime != null ) {
-                            xmlBuf.append( new DateTimeValue( endTime ) );
+                        if (endTime != null) {
+                            xmlBuf.append(new DateTimeValue(endTime));
                         }
 
-                        xmlBuf.append( "</end>" );
-                        xmlBuf.append( "<previous>" );
+                        xmlBuf.append("</end>");
+                        xmlBuf.append("<previous>");
 
-                        Date previousTime = scheduledJobs.get(j).getPreviousFireTime();
+                        Date previousTime = scheduledJob.getPreviousFireTime();
 
-                        if( previousTime != null ) {
-                            xmlBuf.append( new DateTimeValue( scheduledJobs.get(j).getPreviousFireTime() ) );
+                        if (previousTime != null) {
+                            xmlBuf.append(new DateTimeValue(scheduledJob.getPreviousFireTime()));
                         }
 
-                        xmlBuf.append( "</previous>" );
-                        xmlBuf.append( "<next>" );
+                        xmlBuf.append("</previous>");
+                        xmlBuf.append("<next>");
 
-                        Date nextTime = scheduledJobs.get(j).getNextFireTime();
+                        Date nextTime = scheduledJob.getNextFireTime();
 
-                        if( nextTime != null ) {
-                            xmlBuf.append( new DateTimeValue() );
+                        if (nextTime != null) {
+                            xmlBuf.append(new DateTimeValue());
                         }
 
-                        xmlBuf.append( "</next>" );
-                        xmlBuf.append( "<final>" );
+                        xmlBuf.append("</next>");
+                        xmlBuf.append("<final>");
 
-                        Date finalTime = scheduledJobs.get(j).getFinalFireTime();
+                        Date finalTime = scheduledJob.getFinalFireTime();
 
-                        if( ( endTime != null ) && ( finalTime != null ) ) {
-                            xmlBuf.append( new DateTimeValue() );
+                        if ((endTime != null) && (finalTime != null)) {
+                            xmlBuf.append(new DateTimeValue());
                         }
 
-                        xmlBuf.append( "</final>" );
-                        xmlBuf.append( "</" + SchedulerModule.PREFIX + ":trigger>" );
-                        xmlBuf.append( "</" + SchedulerModule.PREFIX + ":job>" );
+                        xmlBuf.append("</final>");
+                        xmlBuf.append("</" + SchedulerModule.PREFIX + ":trigger>");
+                        xmlBuf.append("</" + SchedulerModule.PREFIX + ":job>");
                         iJobs++;
                     }
                 }
 
-                xmlBuf.append( "</" + SchedulerModule.PREFIX + ":group>" );
+                xmlBuf.append("</" + SchedulerModule.PREFIX + ":group>");
             }
         }
 
@@ -191,10 +191,8 @@ public class GetScheduledJobs extends BasicFunction
 
         try {
             return ModuleUtils.stringToXML( context, xmlBuf.toString());
-        } catch(SAXException se) {
+        } catch(SAXException | IOException se) {
             throw new XPathException(this, se.getMessage(), se);
-        } catch(IOException ioe) {
-            throw new XPathException(this, ioe.getMessage(), ioe);
         }
     }
 }

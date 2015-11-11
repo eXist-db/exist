@@ -14,7 +14,7 @@ public class Cache extends HashMap<String, Sequence> {
 	
 	private static final long serialVersionUID = 2560835928124595024L;
 
-	private static HashMap<String, Cache> globalCache = new HashMap<String, Cache>();
+	private static HashMap<String, Cache> globalCache = new HashMap<>();
 	
     public Cache(String name) {
     	super();
