@@ -61,6 +61,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
+import java.util.Optional;
 import java.util.Properties;
 
 import static org.junit.Assert.assertEquals;
@@ -109,7 +110,7 @@ public class CustomIndexTest {
     @Test
     public void xupdateRemove() throws EXistException, PermissionDeniedException, XPathException, ParserConfigurationException, IOException, SAXException, LockException {
         final TransactionManager transact = pool.getTransactionManager();
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             	final Txn transaction = transact.beginTransaction()) {
             
             checkIndex(broker, docs, "cha", 1);
@@ -189,7 +190,7 @@ public class CustomIndexTest {
     @Test
     public void xupdateInsert() throws EXistException, LockException, XPathException, PermissionDeniedException, SAXException, IOException, ParserConfigurationException {
         final TransactionManager transact = pool.getTransactionManager();
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             	final Txn transaction = transact.beginTransaction()) {
 
             checkIndex(broker, docs, "cha", 1);
@@ -305,7 +306,7 @@ public class CustomIndexTest {
     @Test
     public void xupdateUpdate() throws EXistException, LockException, XPathException, PermissionDeniedException, SAXException, IOException, ParserConfigurationException {
         final TransactionManager transact = pool.getTransactionManager();
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             	final Txn transaction = transact.beginTransaction()) {
 
             checkIndex(broker, docs, "cha", 1);
@@ -365,7 +366,7 @@ public class CustomIndexTest {
     @Test
     public void xupdateReplace() throws LockException, XPathException, PermissionDeniedException, SAXException, EXistException, IOException, ParserConfigurationException {
         final TransactionManager transact = pool.getTransactionManager();
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             	final Txn transaction = transact.beginTransaction()) {
 
             checkIndex(broker, docs, "cha", 1);
@@ -417,7 +418,7 @@ public class CustomIndexTest {
     @Test
     public void xupdateRename() throws EXistException, LockException, XPathException, PermissionDeniedException, SAXException, IOException, ParserConfigurationException {
         final TransactionManager transact = pool.getTransactionManager();
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             	final Txn transaction = transact.beginTransaction()) {
 
             checkIndex(broker, docs, "cha", 1);
@@ -451,7 +452,7 @@ public class CustomIndexTest {
     @Test
     public void reindex() throws PermissionDeniedException, XPathException, URISyntaxException, EXistException {
         final TransactionManager transact = pool.getTransactionManager();
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             	final Txn transaction = transact.beginTransaction()) {
 
             //Doh ! This reindexes *all* the collections for *every* index
@@ -481,7 +482,7 @@ public class CustomIndexTest {
     @Test
     public void dropIndex() throws EXistException, PermissionDeniedException, XPathException, LockException, TriggerException {
         final TransactionManager transact = pool.getTransactionManager();
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn transaction = transact.beginTransaction()) {
 
             XQuery xquery = pool.getXQueryService();
@@ -510,7 +511,7 @@ public class CustomIndexTest {
 
     @Test
     public void query() throws PermissionDeniedException, XPathException, EXistException {
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
             Sequence seq = xquery.execute(broker, "//item[ngram:contains(., 'cha')]", null, AccessContext.TEST);
@@ -534,7 +535,7 @@ public class CustomIndexTest {
 
     @Test
     public void indexKeys() throws SAXException, PermissionDeniedException, XPathException, EXistException {
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
             
@@ -611,7 +612,7 @@ public class CustomIndexTest {
         pool = BrokerPool.getInstance();
 
         final TransactionManager transact = pool.getTransactionManager();
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                 final Txn transaction = transact.beginTransaction()) {
 
             Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
@@ -644,7 +645,7 @@ public class CustomIndexTest {
         final BrokerPool pool = BrokerPool.getInstance();
 
         final TransactionManager transact = pool.getTransactionManager();
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                 final Txn transaction = transact.beginTransaction()) {
 
             Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);

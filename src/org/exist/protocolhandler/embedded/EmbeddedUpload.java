@@ -27,6 +27,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Optional;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -150,7 +151,7 @@ public class EmbeddedUpload {
                 }
             }
             
-            try(final DBBroker broker = pool.get(user)) {
+            try(final DBBroker broker = pool.get(Optional.of(user))) {
 
                 final XmldbURI collectionUri = XmldbURI.create(xmldbURL.getCollection());
                 final XmldbURI documentUri = XmldbURI.create(xmldbURL.getDocumentName());

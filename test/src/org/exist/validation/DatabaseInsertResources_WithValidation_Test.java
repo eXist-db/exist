@@ -23,6 +23,7 @@ package org.exist.validation;
 
 import org.exist.security.Subject;
 import java.io.IOException;
+import java.util.Optional;
 
 import org.exist.collections.Collection;
 import org.exist.storage.BrokerPool;
@@ -131,7 +132,7 @@ public class DatabaseInsertResources_WithValidation_Test {
         final BrokerPool pool = BrokerPool.getInstance();
         final TransactionManager transact = pool.getTransactionManager();
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().authenticate(ADMIN_UID, ADMIN_PWD));
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().authenticate(ADMIN_UID, ADMIN_PWD)));
             final Txn txn = transact.beginTransaction()) {
 
 
@@ -153,7 +154,7 @@ public class DatabaseInsertResources_WithValidation_Test {
         final BrokerPool pool = BrokerPool.getInstance();
         final TransactionManager transact = pool.getTransactionManager();
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().authenticate(ADMIN_UID, ADMIN_PWD));
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().authenticate(ADMIN_UID, ADMIN_PWD)));
             final Txn txn = transact.beginTransaction()) {
 
             Collection testCollection = broker.getOrCreateCollection(txn, XmldbURI.create(VALIDATION_HOME_COLLECTION_URI));

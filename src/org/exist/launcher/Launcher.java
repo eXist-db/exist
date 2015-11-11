@@ -552,21 +552,21 @@ public class Launcher extends Observable implements Observer {
     }
 
     private void checkInstalledApps() {
-        BrokerPool pool = null;
-        DBBroker broker = null;
         try {
-            pool = BrokerPool.getInstance();
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            final XQuery xquery = pool.getXQueryService();
-            final Sequence pkgs = xquery.execute(broker, "repo:list()", null, AccessContext.INITIALIZE);
-            for (final SequenceIterator i = pkgs.iterate(); i.hasNext(); ) {
-                final ExistRepository.Notification notification = new ExistRepository.Notification(ExistRepository.Action.INSTALL, i.nextItem().getStringValue());
-		        Optional<ExistRepository> expathRepo = pool.getExpathRepo();
-                if (expathRepo.isPresent()) {
-		            update(expathRepo.get(), notification);
-		            utilityPanel.update(expathRepo.get(), notification);
+            final BrokerPool pool = BrokerPool.getInstance();
+            try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+
+                final XQuery xquery = pool.getXQueryService();
+                final Sequence pkgs = xquery.execute(broker, "repo:list()", null, AccessContext.INITIALIZE);
+                for (final SequenceIterator i = pkgs.iterate(); i.hasNext(); ) {
+                    final ExistRepository.Notification notification = new ExistRepository.Notification(ExistRepository.Action.INSTALL, i.nextItem().getStringValue());
+                    Optional<ExistRepository> expathRepo = pool.getExpathRepo();
+                    if (expathRepo.isPresent()) {
+                        update(expathRepo.get(), notification);
+                        utilityPanel.update(expathRepo.get(), notification);
+                    }
+                    expathRepo.orElseThrow(() -> new XPathException("expath repository is not available."));
                 }
-		        expathRepo.orElseThrow(() -> new XPathException("expath repository is not available."));
             }
         } catch (final EXistException e) {
             System.err.println("Failed to check installed packages: " + e.getMessage());
@@ -577,9 +577,6 @@ public class Launcher extends Observable implements Observer {
         } catch (final PermissionDeniedException e) {
             System.err.println("Failed to check installed packages: " + e.getMessage());
             e.printStackTrace();
-        } finally {
-            if (pool != null)
-                {pool.release(broker);}
         }
     }
 

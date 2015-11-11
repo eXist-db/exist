@@ -58,7 +58,7 @@ public class EmbeddedDownloadThread extends Thread {
         
         try {
             BrokerPool pool = BrokerPool.getInstance(url.getInstanceName());
-            subject = pool.getSubject();
+            subject = pool.getActiveBroker().getCurrentSubject();
         } catch (Throwable e) {
             //e.printStackTrace();
         }
@@ -79,7 +79,7 @@ public class EmbeddedDownloadThread extends Thread {
             if (brokerPool == null)
                 brokerPool = BrokerPool.getInstance(url.getInstanceName());
             
-            subject = brokerPool.getSubject();
+            subject = brokerPool.getActiveBroker().getCurrentSubject();
         } catch (Throwable e) {
             //e.printStackTrace();
         }

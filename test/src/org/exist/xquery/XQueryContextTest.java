@@ -31,8 +31,8 @@ public class XQueryContextTest {
 
         //expectations
         expect(context.getUserFromHttpSession()).andReturn(mockSubject);
-        expect(context.getBroker()).andReturn(mockBroker);
-        mockBroker.setSubject(mockSubject);
+        expect(context.getBroker()).andReturn(mockBroker).times(2);
+        mockBroker.pushSubject(mockSubject);
 
         //test
         replay(context);

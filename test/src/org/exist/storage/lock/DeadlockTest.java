@@ -24,10 +24,7 @@ package org.exist.storage.lock;
 import static org.junit.Assert.*;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -151,7 +148,7 @@ public class DeadlockTest {
         pool = BrokerPool.getInstance();
         final TransactionManager transact = pool.getTransactionManager();
 
-		try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+		try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                 final Txn transaction = transact.beginTransaction();) {
 
 			Collection root = broker.getOrCreateCollection(transaction,
@@ -256,7 +253,7 @@ public class DeadlockTest {
 
 		public void run() {
 			final TransactionManager transact = pool.getTransactionManager();
-			try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+			try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
 				TestDataGenerator generator = new TestDataGenerator("xdb", docCount);
 				Collection coll;

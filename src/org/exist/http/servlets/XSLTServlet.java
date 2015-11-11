@@ -31,7 +31,6 @@ import org.exist.security.AuthenticationException;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
-import org.exist.security.internal.AccountImpl;
 import org.exist.security.internal.web.HttpAccount;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -82,10 +81,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
 import java.net.*;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.zip.GZIPInputStream;
 
 /**
@@ -197,9 +193,7 @@ public class XSLTServlet extends HttpServlet {
         }
         
         //do the transformation
-        DBBroker broker = null;
-        try {
-            broker = pool.get(user);
+        try(final DBBroker broker = pool.get(Optional.of(user))) {
 
             final TransformerHandler handler = factory.newTransformerHandler(templates);
             setTransformerParameters(request, handler.getTransformer());
@@ -301,8 +295,6 @@ public class XSLTServlet extends HttpServlet {
             LOG.error(e);
             throw new ServletException("An error occurred: " + e.getMessage(), e);
 
-        } finally {
-            pool.release(broker);
         }
     }
 
@@ -454,36 +446,34 @@ public class XSLTServlet extends HttpServlet {
         public Templates getTemplates(Subject user) throws ServletException {
             if (uri.startsWith("xmldb:exist://")) {
                 final String docPath = uri.substring("xmldb:exist://".length());
-                DocumentImpl doc = null;
-                DBBroker broker = null;
 
-                try {
-                    broker = pool.get(user);
-                    doc = broker.getXMLResource(XmldbURI.create(docPath), Lock.READ_LOCK);
-                    if (doc == null) {
-                        throw new ServletException("Stylesheet not found: " + docPath);
-                    }
-                    
-                    if (!isCaching() || (doc != null && (templates == null
-                                     || doc.getMetadata().getLastModified() > lastModified))) {
-                        templates = getSource(broker, doc);
-                    }
-                    
-                    lastModified = doc.getMetadata().getLastModified();
 
+                try(final DBBroker broker = pool.get(Optional.of(user))) {
+                    DocumentImpl doc = null;
+                    try {
+                        doc = broker.getXMLResource(XmldbURI.create(docPath), Lock.READ_LOCK);
+                        if (doc == null) {
+                            throw new ServletException("Stylesheet not found: " + docPath);
+                        }
+
+                        if (!isCaching() || (doc != null && (templates == null
+                                || doc.getMetadata().getLastModified() > lastModified))) {
+                            templates = getSource(broker, doc);
+                        }
+
+                        lastModified = doc.getMetadata().getLastModified();
+                    } finally {
+                        if (doc != null) {
+                            doc.getUpdateLock().release(Lock.READ_LOCK);
+                        }
+                    }
                 } catch (final PermissionDeniedException e) {
                     throw new ServletException("Permission denied to read stylesheet: " + uri, e);
 
                 } catch (final EXistException e) {
                     throw new ServletException("Error while reading stylesheet source from db: " + e.getMessage(), e);
 
-                } finally {
-                    pool.release(broker);
-                    if (doc != null) {
-                        doc.getUpdateLock().release(Lock.READ_LOCK);
-                    }
                 }
-                
             } else {
                 try {
                     final URL url = new URL(uri);
@@ -609,7 +599,7 @@ public class XSLTServlet extends HttpServlet {
                 return null;
             }
 
-            if(!xslDoc.getPermissions().validate(broker.getSubject(), Permission.READ)){
+            if(!xslDoc.getPermissions().validate(broker.getCurrentSubject(), Permission.READ)){
                 throw new TransformerException("Insufficient privileges to read resource " + path);
             }
             

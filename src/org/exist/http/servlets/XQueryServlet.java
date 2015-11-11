@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.URISyntaxException;
+import java.util.Optional;
 import java.util.Properties;
 
 import javax.servlet.ServletConfig;
@@ -349,18 +350,13 @@ public class XQueryServlet extends AbstractExistHttpServlet {
             source = new StringSource(s);
             
         } else if (urlAttrib != null) {
-            DBBroker broker = null;
-            try {
-        	    broker = getPool().get(user);
+            try(final DBBroker broker = getPool().get(Optional.ofNullable(user))) {
                 source = SourceFactory.getSource(broker, moduleLoadPath, urlAttrib.toString(), true);
             } catch (final Exception e) {
                 getLog().error(e.getMessage(), e);
                 response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 sendError(output, "Error", e.getMessage());
-            } finally {
-                getPool().release(broker);
             }
-            
         } else {
             final File f = new File(path);
             if(!f.canRead()) {
@@ -433,9 +429,7 @@ public class XQueryServlet extends AbstractExistHttpServlet {
 //        }
 
         final String requestAttr = (String) request.getAttribute(ATTR_XQUERY_ATTRIBUTE);
-        DBBroker broker = null;
-        try {
-        	broker = getPool().get(user);
+        try(final DBBroker broker = getPool().get(Optional.ofNullable(user))) {
             final XQuery xquery = broker.getBrokerPool().getXQueryService();
             CompiledXQuery query = getPool().getXQueryPool().borrowCompiledXQuery(broker, source);
 
@@ -561,8 +555,6 @@ public class XQueryServlet extends AbstractExistHttpServlet {
             	sendError(output, "Error", e.getMessage());
             }
             
-        } finally {
-            getPool().release(broker);
         }
 
         output.flush();

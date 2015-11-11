@@ -136,7 +136,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
         this.fileURI = fileURI;
 
         // the permissions assigned to this document
-        this.permissions = PermissionFactory.getDefaultResourcePermission();
+        this.permissions = PermissionFactory.getDefaultResourcePermission(pool.getSecurityManager());
 
         //inherit the group to the resource if current collection is setGid
         if(collection != null && collection.getPermissions().isSetGid()) {
@@ -299,14 +299,10 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
      */
     public DocumentMetadata getMetadata() {
         if(metadata == null) {
-            DBBroker broker = null;
-            try {
-                broker = pool.get(null);
+            try(final DBBroker broker = pool.getBroker()) {
                 broker.getResourceMetadata(this);
             } catch(final EXistException e) {
                 LOG.warn("Error while loading document metadata: " + e.getMessage(), e);
-            } finally {
-                pool.release(broker);
             }
         }
         return metadata;
@@ -446,14 +442,10 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
         if(nodeId.getTreeLevel() == 1) {
             return getDocumentElement();
         }
-        DBBroker broker = null;
-        try {
-            broker = pool.get(null);
+        try(final DBBroker broker = pool.getBroker()) {
             return broker.objectWith(this, nodeId);
         } catch(final EXistException e) {
             LOG.warn("Error occurred while retrieving node: " + e.getMessage(), e);
-        } finally {
-            pool.release(broker);
         }
         return null;
     }
@@ -468,14 +460,10 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
         if(p.getNodeId().getTreeLevel() == 1) {
             return getDocumentElement();
         }
-        DBBroker broker = null;
-        try {
-            broker = pool.get(null);
+        try(final DBBroker broker = pool.getBroker()) {
             return broker.objectWith(p);
         } catch(final Exception e) {
             LOG.warn("Error occurred while retrieving node: " + e.getMessage(), e);
-        } finally {
-            pool.release(broker);
         }
         return null;
     }
@@ -636,9 +624,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
         if(previousNode == null) {
             throw new DOMException(DOMException.NOT_FOUND_ERR, "No previous sibling for the old child");
         }
-        DBBroker broker = null;
-        try {
-            broker = pool.get(null);
+        try(final DBBroker broker = pool.getBroker()) {
             if(oldChild.getNodeType() == Node.ELEMENT_NODE) {
                 // replace the document-element
                 //TODO : be more precise in the type test -pb
@@ -664,8 +650,6 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
         } catch(final EXistException e) {
             LOG.warn("Exception while updating child node: " + e.getMessage(), e);
             //TODO : thow exception ?
-        } finally {
-            pool.release(broker);
         }
         return newNode;
     }
@@ -675,15 +659,11 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
         if(children == 0) {
             return null;
         }
-        DBBroker broker = null;
-        try {
-            broker = pool.get(null);
+        try(final DBBroker broker = pool.getBroker()) {
             return broker.objectWith(new NodeProxy(this, NodeId.DOCUMENT_NODE, childAddress[0]));
         } catch(final EXistException e) {
             LOG.warn("Exception while inserting node: " + e.getMessage(), e);
             //TODO : throw exception ?
-        } finally {
-            pool.release(broker);
         }
         return null;
     }
@@ -712,17 +692,13 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
     @Override
     public NodeList getChildNodes() {
         final org.exist.dom.NodeListImpl list = new org.exist.dom.NodeListImpl();
-        DBBroker broker = null;
-        try {
-            broker = pool.get(null);
+        try(final DBBroker broker = pool.getBroker()) {
             for(int i = 0; i < children; i++) {
                 final Node child = broker.objectWith(new NodeProxy(this, NodeId.DOCUMENT_NODE, childAddress[i]));
                 list.add(child);
             }
         } catch(final EXistException e) {
             LOG.warn("Exception while retrieving child nodes: " + e.getMessage(), e);
-        } finally {
-            pool.release(broker);
         }
         return list;
     }
@@ -769,9 +745,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
      * @return a <code>NodeList</code> value
      */
     protected NodeList findElementsByTagName(final NodeHandle root, final QName qname) {
-        DBBroker broker = null;
-        try {
-            broker = pool.get(null);
+        try(final DBBroker broker = pool.getBroker()) {
             final MutableDocumentSet docs = new DefaultDocumentSet();
             docs.add(this);
             final NodeProxy p = new NodeProxy(this, root.getNodeId(), root.getInternalAddress());
@@ -779,8 +753,6 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
             return broker.getStructuralIndex().findElementsByTagName(ElementValue.ELEMENT, docs, qname, selector, null);
         } catch(final Exception e) {
             LOG.warn("Exception while finding elements: " + e.getMessage(), e);
-        } finally {
-            pool.release(broker);
         }
         return NodeSet.EMPTY_SET;
     }
@@ -990,9 +962,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
      */
     @Override
     public NodeList getElementsByTagNameNS(final String namespaceURI, final String localName) {
-        DBBroker broker = null;
-        try {
-            broker = pool.get(null);
+        try(final DBBroker broker = pool.getBroker()) {
             final MutableDocumentSet docs = new DefaultDocumentSet();
             docs.add(this);
             final QName qname = new QName(localName, namespaceURI);
@@ -1000,8 +970,6 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
         } catch(final Exception e) {
             LOG.warn("Exception while finding elements: " + e.getMessage(), e);
             //TODO : throw exception ?
-        } finally {
-            pool.release(broker);
         }
         return NodeSet.EMPTY_SET;
     }

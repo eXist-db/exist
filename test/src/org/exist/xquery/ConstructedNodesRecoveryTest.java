@@ -31,6 +31,7 @@ import org.xml.sax.InputSource;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.Optional;
 import java.util.Properties;
 import javax.xml.transform.OutputKeys;
 
@@ -182,7 +183,7 @@ public class ConstructedNodesRecoveryTest {
 		BrokerPool.FORCE_CORRUPTION = forceCorruption;
 	    BrokerPool pool = startDB();
 	    
-	    try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+	    try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
 	        TransactionManager transact = pool.getTransactionManager();
             assertNotNull(transact);

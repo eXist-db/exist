@@ -23,10 +23,8 @@
 package org.exist.validation.internal;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
@@ -133,12 +131,10 @@ public class DatabaseResources {
         if(logger.isDebugEnabled()) {
             logger.debug(String.format("collection=%s namespace=%s publicId=%s catalogPath=%s", collection, namespace, publicId, catalogPath));
         }
-        
-        DBBroker broker = null;
+
         Sequence result= null;
-        try {
-            broker = brokerPool.get(user);
-            
+        try(final DBBroker broker = brokerPool.get(Optional.ofNullable(user))) {
+
             final XQuery xquery = brokerPool.getXQueryService();
             final XQueryContext context = new XQueryContext(brokerPool, AccessContext.INTERNAL_PREFIX_LOOKUP);
             
@@ -166,10 +162,6 @@ public class DatabaseResources {
             logger.error("Problem executing xquery", ex);
             result= null;
             
-        } finally{
-            if(brokerPool!=null){
-                brokerPool.release(broker);
-            }
         }
         return result;
     }

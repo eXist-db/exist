@@ -304,18 +304,14 @@ public class TransactionManager {
      * @Deprecated This mixes concerns and should not be here.
      */
     @Deprecated
-    public void reindex(DBBroker broker) {
-    	final Subject currentUser = broker.getSubject();
-    	
-        broker.setSubject(broker.getBrokerPool().getSecurityManager().getSystemSubject());
+    public void reindex(final DBBroker broker) {
+        broker.pushSubject(broker.getBrokerPool().getSecurityManager().getSystemSubject());
         try {
             broker.reindexCollection(XmldbURI.ROOT_COLLECTION_URI);
-
         } catch (final PermissionDeniedException e) {
             LOG.warn("Exception during reindex: " + e.getMessage(), e);
-            
         } finally {
-        	broker.setSubject(currentUser);
+        	broker.popSubject();
         }
     }
 
@@ -383,13 +379,11 @@ public class TransactionManager {
     private abstract class RunWithLock<T> {
     	
     	public T run() {
-    		DBBroker broker = null;
-    		try {
-    			// we first need to get a broker for the current thread
-    			// before we acquire the transaction manager lock. Otherwise
-    			// a deadlock may occur.
-    			broker = pool.get(null);
-    			
+
+            // we first need to get a broker for the current thread
+            // before we acquire the transaction manager lock. Otherwise
+            // a deadlock may occur.
+    		try(final DBBroker broker = pool.getBroker()) {
     			try {
     				lock.lock();
     				return execute();
@@ -399,9 +393,7 @@ public class TransactionManager {
     		} catch (final EXistException e) {
 				LOG.warn("Transaction manager failed to acquire broker for running system tasks");
 				return null;
-			} finally {
-    			pool.release(broker);
-    		}
+			}
     	}
     	
     	public abstract T execute();

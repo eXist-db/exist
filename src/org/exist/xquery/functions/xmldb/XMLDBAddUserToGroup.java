@@ -111,15 +111,14 @@ public class XMLDBAddUserToGroup extends BasicFunction {
                  * Consider Unix /etc/groups design!
                  * See XMLDBCreateGroup and XMLDRemoveUserFromGroup
                  */
-                final Subject currentSubject = context.getBroker().getSubject();
                 try {
                     //escalate
-                    context.getBroker().setSubject(sm.getSystemSubject());
+                    context.getBroker().pushSubject(sm.getSystemSubject());
 
                     //perform action
                     sm.updateAccount(account);
                 } finally {
-                    context.getBroker().setSubject(currentSubject);
+                    context.getBroker().popSubject();
                 }
                 //END TEMP
 

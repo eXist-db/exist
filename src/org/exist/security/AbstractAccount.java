@@ -113,7 +113,7 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
             return null;
         }
 
-        final Account user = getDatabase().getSubject();
+        final Account user = getDatabase().getActiveBroker().getCurrentSubject();
         group.assertCanModifyGroup(user);
 
         if(!groups.contains(group)) {
@@ -130,7 +130,7 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
     @Override
     public void setPrimaryGroup(final Group group) throws PermissionDeniedException {
 
-        final Account user = getDatabase().getSubject();
+        final Account user = getDatabase().getActiveBroker().getCurrentSubject();
         group.assertCanModifyGroup(user);
 
         if(!groups.contains(group)) {
@@ -149,7 +149,7 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
     @Override
     public final void remGroup(final String name) throws PermissionDeniedException {
 
-        final Account subject = getDatabase().getSubject();
+        final Account subject = getDatabase().getActiveBroker().getCurrentSubject();
 
         for (final Group group : groups) {
             if (group.getName().equals(name)) {

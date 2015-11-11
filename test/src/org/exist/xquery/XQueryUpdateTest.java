@@ -47,7 +47,7 @@ public class XQueryUpdateTest {
 
     @Test
     public void append() throws EXistException, PermissionDeniedException, XPathException, SAXException {
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             XQuery xquery = pool.getXQueryService();
             String query =
@@ -85,7 +85,7 @@ public class XQueryUpdateTest {
 
         append();
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             XQuery xquery = pool.getXQueryService();
             String query =
@@ -126,7 +126,7 @@ public class XQueryUpdateTest {
 
     @Test
     public void insertBefore() throws EXistException, PermissionDeniedException, XPathException, SAXException {
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             String query =
                     "   update insert\n" +
@@ -172,7 +172,7 @@ public class XQueryUpdateTest {
 
     @Test
     public void insertAfter() throws EXistException, PermissionDeniedException, XPathException, SAXException {
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             String query =
                     "   update insert\n" +
@@ -221,7 +221,7 @@ public class XQueryUpdateTest {
 
         append();
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             XQuery xquery = pool.getXQueryService();
 
@@ -297,7 +297,7 @@ public class XQueryUpdateTest {
 
         append();
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             XQuery xquery = pool.getXQueryService();
 
         	String query =
@@ -316,7 +316,7 @@ public class XQueryUpdateTest {
 
         append();
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             XQuery xquery = pool.getXQueryService();
 
@@ -344,7 +344,7 @@ public class XQueryUpdateTest {
 
         append();
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             XQuery xquery = pool.getXQueryService();
 
@@ -376,7 +376,7 @@ public class XQueryUpdateTest {
 
     @Test
     public void attrUpdate() throws EXistException, LockException, SAXException, PermissionDeniedException, IOException, XPathException {
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             store(broker, "test.xml", UPDATE_XML);
 
             String query =
@@ -395,7 +395,7 @@ public class XQueryUpdateTest {
 
     @Test
     public void appendCDATA() throws EXistException, PermissionDeniedException, XPathException, SAXException {
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             XQuery xquery = pool.getXQueryService();
             String query =
@@ -425,7 +425,7 @@ public class XQueryUpdateTest {
     @Ignore
     @Test
     public void insertAttribDoc_1730726() throws EXistException, PermissionDeniedException, XPathException {
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             String query =
                 "declare namespace xmldb = \"http://exist-db.org/xquery/xmldb\"; "+
                 "let $uri := xmldb:store(\"/db\", \"insertAttribDoc.xml\", <C/>) "+
@@ -442,7 +442,7 @@ public class XQueryUpdateTest {
     @Before
     public void setUp() throws EXistException, DatabaseConfigurationException, LockException, SAXException, PermissionDeniedException, IOException {
         this.pool = startDB();
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             store(broker, "test.xml", TEST_XML);
         }
     }

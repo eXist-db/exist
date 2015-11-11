@@ -22,6 +22,8 @@
 package org.exist.validation;
 
 import java.io.IOException;
+import java.util.Optional;
+
 import org.exist.EXistException;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.security.PermissionDeniedException;
@@ -197,7 +199,7 @@ public class ValidationFunctions_DTD_Test {
         final BrokerPool pool = BrokerPool.getInstance();
         final TransactionManager transact = pool.getTransactionManager();
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().authenticate(ADMIN_UID, ADMIN_PWD));
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().authenticate(ADMIN_UID, ADMIN_PWD)));
             final Txn txn = transact.beginTransaction()) {
 
             /** create nessecary collections if they dont exist */
@@ -226,7 +228,7 @@ public class ValidationFunctions_DTD_Test {
         final BrokerPool pool = BrokerPool.getInstance();
         final TransactionManager transact = pool.getTransactionManager();
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getGuestSubject());
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getGuestSubject()));
             final Txn txn = transact.beginTransaction()) {
 
             /** create necessary documents  */
@@ -274,7 +276,7 @@ public class ValidationFunctions_DTD_Test {
         final BrokerPool pool = BrokerPool.getInstance();
         final TransactionManager transact = pool.getTransactionManager();
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().authenticate(ADMIN_UID, ADMIN_PWD));
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().authenticate(ADMIN_UID, ADMIN_PWD)));
             final Txn txn = transact.beginTransaction()) {
 
             org.exist.collections.Collection testCollection = broker.getOrCreateCollection(txn, XmldbURI.create(VALIDATION_HOME_COLLECTION_URI));

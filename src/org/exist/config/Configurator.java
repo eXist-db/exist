@@ -679,13 +679,8 @@ public class Configurator {
                 }
                 
                 if (db != null) {
-                    DBBroker broker = null;
-                    try {
-                        broker = db.get(null);
+                    try(final DBBroker broker = db.getBroker()) {
                         ((LifeCycle) obj).start(broker);
-                        
-                    } finally {
-                        db.release(broker);
                     }
                 }
                 
@@ -1229,18 +1224,11 @@ public class Configurator {
         } catch (final EXistException e) {
             throw new IOException(e);
         }
-        
-        DBBroker broker = null;
-        try {
-            broker = database.get(null);
 
+        try(final DBBroker broker = database.getBroker()) {
             return save(broker, instance, uri);
-
         } catch (final EXistException e) {
             throw new IOException(e);
-            
-        } finally {
-            database.release(broker);
         }
     }
 
@@ -1284,10 +1272,10 @@ public class Configurator {
         final TransactionManager transact = pool.getTransactionManager();
         Txn txn = null;
         LOG.info("Storing configuration " + collection.getURI() + "/" + uri);
-        final Subject currentUser = broker.getSubject();
+        final Subject currentUser = broker.getCurrentSubject();
         
         try {
-            broker.setSubject(pool.getSecurityManager().getSystemSubject());
+            broker.pushSubject(pool.getSecurityManager().getSystemSubject());
             txn = transact.beginTransaction();
             txn.acquireLock(collection.getLock(), Lock.WRITE_LOCK);
             final IndexInfo info = collection.validateXMLResource(txn, broker, uri, data);
@@ -1321,7 +1309,7 @@ public class Configurator {
             
         } finally {
             transact.close(txn);
-            broker.setSubject(currentUser);
+            broker.popSubject();
         }
     }
 

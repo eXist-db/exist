@@ -2,6 +2,7 @@ package org.exist.security.xacml;
 
 import java.net.URI;
 import java.util.Iterator;
+import java.util.Optional;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -57,37 +58,34 @@ public class ExistPolicyModule extends PolicyFinderModule
 		this.pdp = pdp;
 	}
 
+	@Override
 	public boolean isRequestSupported()
 	{
 		return true;
 	}
+
+	@Override
 	public boolean isIdReferenceSupported()
 	{
 		return true;
 	}
+
+	@Override
 	public void init(PolicyFinder finder) {}
 
+	@Override
 	public PolicyFinderResult findPolicy(EvaluationCtx context)
 	{
 		final BrokerPool pool = pdp.getBrokerPool();
-		DBBroker broker = null;
-		try
-		{
-			broker = pool.get(pool.getSecurityManager().getSystemSubject());
+		try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 			return findPolicy(broker, context);
-		}
-                catch(final PermissionDeniedException pde) {
-                    	return XACMLUtil.errorResult("Error while finding policy: " + pde.getMessage(), pde);
-                }
-		catch(final EXistException ee)
-		{
+		} catch(final PermissionDeniedException pde) {
+			return XACMLUtil.errorResult("Error while finding policy: " + pde.getMessage(), pde);
+		} catch(final EXistException ee) {
 			return XACMLUtil.errorResult("Error while finding policy: " + ee.getMessage(), ee);
 		}
-		finally
-		{
-			pool.release(broker);
-		}
 	}
+
 	private PolicyFinderResult findPolicy(DBBroker broker, EvaluationCtx context) throws PermissionDeniedException
 	{
 		final DocumentSet mainPolicyDocs = XACMLUtil.getPolicyDocuments(broker, false);
@@ -127,23 +125,16 @@ public class ExistPolicyModule extends PolicyFinderModule
 		else
 			{return new PolicyFinderResult(matchedPolicy);}
 	}
+
+	@Override
 	public PolicyFinderResult findPolicy(URI idReference, int type)
 	{
 		final BrokerPool pool = pdp.getBrokerPool();
-		DBBroker broker = null;
-		try
-		{
-			broker = pool.get(pool.getSecurityManager().getSystemSubject());
+		try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 			final AbstractPolicy policy = pdp.getUtil().findPolicy(broker, idReference, type);
 			return (policy == null) ? new PolicyFinderResult() : new PolicyFinderResult(policy);
-		}
-		catch(final Exception e)
-		{
+		} catch(final Exception e) {
 			return XACMLUtil.errorResult("Error resolving id '" + idReference.toString() + "': " + e.getMessage(), e);
-		}
-		finally
-		{
-			pool.release(broker);
 		}
 	}
 }

@@ -28,7 +28,6 @@ import org.exist.security.SchemaType;
 import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
 import org.exist.storage.DBBroker;
-import org.exist.util.SelectorUtils;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -124,7 +123,7 @@ public class GetPrincipalMetadataFunction extends BasicFunction {
         Sequence result = Sequence.EMPTY_SEQUENCE;
         
         final DBBroker broker = getContext().getBroker();
-        final Subject currentUser = broker.getSubject();
+        final Subject currentUser = broker.getCurrentSubject();
 
         if(args.length == 0) {
             if(isCalledAs(qnGetAccountMetadataKeys.getLocalPart())) {

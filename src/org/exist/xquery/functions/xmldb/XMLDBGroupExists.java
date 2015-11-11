@@ -81,7 +81,7 @@ public class XMLDBGroupExists extends BasicFunction {
         final String groupName = args[0].getStringValue();
 
         final DBBroker broker = context.getBroker();
-        final Subject currentUser = broker.getSubject();
+        final Subject currentUser = broker.getCurrentSubject();
 
         if(currentUser.hasGroup(groupName)) {
             return BooleanValue.TRUE;

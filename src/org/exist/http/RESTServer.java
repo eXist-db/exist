@@ -405,7 +405,7 @@ public class RESTServer {
                 // no document: check if path points to a collection
                 final Collection collection = broker.getCollection(pathUri);
                 if (collection != null) {
-                    if (safeMode || !collection.getPermissionsNoLock().validate(broker.getSubject(), Permission.READ)) {
+                    if (safeMode || !collection.getPermissionsNoLock().validate(broker.getCurrentSubject(), Permission.READ)) {
                         throw new PermissionDeniedException("Not allowed to read collection");
                     }
                     // return a listing of the collection contents
@@ -469,7 +469,7 @@ public class RESTServer {
                 if ((null != descriptor)
                         && descriptor.allowSource(path)
                         && resource.getPermissions().validate(
-                        broker.getSubject(), Permission.READ)) {
+                        broker.getCurrentSubject(), Permission.READ)) {
 
                     // TODO: change writeResourceAs to use a serializer
                     // that will serialize xquery to syntax coloured
@@ -555,7 +555,7 @@ public class RESTServer {
             resource = broker.getXMLResource(pathUri, Lock.READ_LOCK);
 
             if (resource != null) {
-                if (!resource.getPermissions().validate(broker.getSubject(), Permission.READ)) {
+                if (!resource.getPermissions().validate(broker.getCurrentSubject(), Permission.READ)) {
                     throw new PermissionDeniedException(
                             "Permission to read resource " + path + " denied");
                 }
@@ -577,7 +577,7 @@ public class RESTServer {
                     return;
                 }
 
-                if (!col.getPermissionsNoLock().validate(broker.getSubject(), Permission.READ)) {
+                if (!col.getPermissionsNoLock().validate(broker.getCurrentSubject(), Permission.READ)) {
                     throw new PermissionDeniedException(
                             "Permission to read resource " + path + " denied");
                 }
@@ -1599,7 +1599,7 @@ public class RESTServer {
         PermissionDeniedException, IOException {
 
         // Do we have permission to read the resource
-        if (!resource.getPermissions().validate(broker.getSubject(), Permission.READ)) {
+        if (!resource.getPermissions().validate(broker.getCurrentSubject(), Permission.READ)) {
             throw new PermissionDeniedException("Not allowed to read resource");
         }
 
@@ -1903,7 +1903,7 @@ public class RESTServer {
                 final Collection childCollection = broker.getCollection(collection
                         .getURI().append(child));
                 if (childCollection != null
-                        && childCollection.getPermissionsNoLock().validate(broker.getSubject(), Permission.READ)) {
+                        && childCollection.getPermissionsNoLock().validate(broker.getCurrentSubject(), Permission.READ)) {
                     attrs.clear();
                     attrs.addAttribute("", "name", "name", "CDATA", child.toString());
 
@@ -1926,7 +1926,7 @@ public class RESTServer {
 
             for (final Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext();) {
                 final DocumentImpl doc = i.next();
-                if (doc.getPermissions().validate(broker.getSubject(), Permission.READ)) {
+                if (doc.getPermissions().validate(broker.getCurrentSubject(), Permission.READ)) {
                     final XmldbURI resource = doc.getFileURI();
                     final DocumentMetadata metadata = doc.getMetadata();
                     attrs.clear();

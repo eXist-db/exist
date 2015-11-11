@@ -171,14 +171,9 @@ public class Database {
 	 */
 	public static void flush() {
 		if (!BrokerPool.isConfigured(dbName)) throw new IllegalStateException("database not started");
-		try {
-			DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
-			try {
-				broker.flush();
-				broker.sync(Sync.MAJOR_SYNC);
-			} finally {
-				pool.release(broker);
-			}
+		try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+			broker.flush();
+			broker.sync(Sync.MAJOR_SYNC);
 		} catch (EXistException e) {
 			throw new DatabaseException(e);
 		}
@@ -266,7 +261,7 @@ public class Database {
 	        throw new DatabaseException(e);
 	    }
 
-        return new Database( broker.getSubject() );
+        return new Database( broker.getCurrentSubject() );
 	}
 	
 	/**
@@ -325,7 +320,7 @@ public class Database {
 	
 	DBBroker acquireBroker() {
 		try {
-			NativeBroker broker = (NativeBroker) pool.get(user);
+			NativeBroker broker = (NativeBroker) pool.get(Optional.ofNullable(user));
 			if (instrumentedBrokers.get(broker) == null) {
 				broker.addContentLoadingObserver(contentObserver);
 				instrumentedBrokers.put(broker, Boolean.TRUE);
@@ -337,7 +332,7 @@ public class Database {
 	}
 	
 	void releaseBroker(DBBroker broker) {
-		pool.release(broker);
+		broker.close();
 	}
 	
 	/**
@@ -601,38 +596,33 @@ public class Database {
 				}
 					
 				int count = 0;
-				try {
-					DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
-					try {
-						Integer fragmentationLimitObject = broker.getBrokerPool().getConfiguration().getInteger(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR);
-						int fragmentationLimit = fragmentationLimitObject == null ? 0 : fragmentationLimitObject;
-						for (Iterator<DocumentImpl> it = docsToDefragCopy.iterator(); it.hasNext(); ) {
-							DocumentImpl doc = it.next();
-							if (doc.getMetadata().getSplitCount() <= fragmentationLimit) {
-								it.remove();
-							} else {
-								// Must hold write lock on doc before checking stale map to avoid race condition
-								if (doc.getUpdateLock().attempt(Lock.WRITE_LOCK)) try {
-									String docPath = normalizePath(doc.getURI().getCollectionPath());
-									if (!staleMap.containsKey(docPath)) {
-										LOG.debug("defragmenting " + docPath);
-										count++;
-										Transaction tx = Database.requireTransaction();
-										try {
-											broker.defragXMLResource(tx.tx, doc);
-											tx.commit();
-											it.remove();
-										} finally {
-											tx.abortIfIncomplete();
-										}
+				try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+					Integer fragmentationLimitObject = broker.getBrokerPool().getConfiguration().getInteger(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR);
+					int fragmentationLimit = fragmentationLimitObject == null ? 0 : fragmentationLimitObject;
+					for (Iterator<DocumentImpl> it = docsToDefragCopy.iterator(); it.hasNext(); ) {
+						DocumentImpl doc = it.next();
+						if (doc.getMetadata().getSplitCount() <= fragmentationLimit) {
+							it.remove();
+						} else {
+							// Must hold write lock on doc before checking stale map to avoid race condition
+							if (doc.getUpdateLock().attempt(Lock.WRITE_LOCK)) try {
+								String docPath = normalizePath(doc.getURI().getCollectionPath());
+								if (!staleMap.containsKey(docPath)) {
+									LOG.debug("defragmenting " + docPath);
+									count++;
+									Transaction tx = Database.requireTransaction();
+									try {
+										broker.defragXMLResource(tx.tx, doc);
+										tx.commit();
+										it.remove();
+									} finally {
+										tx.abortIfIncomplete();
 									}
-								} finally {
-									doc.getUpdateLock().release(Lock.WRITE_LOCK);
 								}
+							} finally {
+								doc.getUpdateLock().release(Lock.WRITE_LOCK);
 							}
 						}
-					} finally {
-						pool.release(broker);
 					}
 				} catch (EXistException e) {
 					LOG.error("unable to get broker with system privileges to defragment documents", e);

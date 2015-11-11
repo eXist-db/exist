@@ -104,15 +104,14 @@ public class XMLDBRemoveUserFromGroup extends BasicFunction {
             //in the real world we should not be able to do either. The modelling of group
             //membership as a concern of user data is wrong! Should follow Unix approach.
             //see XMLDBAddUserToGroup also
-            final Subject currentSubject = context.getBroker().getSubject();
             try {
                 //escalate
-                context.getBroker().setSubject(sm.getSystemSubject());
+                context.getBroker().pushSubject(sm.getSystemSubject());
 
                 //perform action
                 sm.updateAccount(account);
             } finally {
-                context.getBroker().setSubject(currentSubject);
+                context.getBroker().popSubject();
             }
             //END TEMP
 

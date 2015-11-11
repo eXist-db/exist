@@ -115,37 +115,34 @@ public class Stream extends BasicFunction {
         }
         
         Serializer serializer = null;
-        
-        BrokerPool db = null;
-        DBBroker broker = null;
+
         try {
-        	db = BrokerPool.getInstance();
-        	broker = db.get(null);
-        	
-            serializer = broker.getSerializer();
-            serializer.reset();
-            
-            final OutputStream sout = response.getOutputStream();
-            final PrintWriter output = new PrintWriter(new OutputStreamWriter(sout, encoding));
+        	final BrokerPool db = BrokerPool.getInstance();
+        	try(final DBBroker broker = db.getBroker();
+                    final PrintWriter output = new PrintWriter(new OutputStreamWriter(response.getOutputStream(), encoding))) {
 
-        	final SerializerPool serializerPool = SerializerPool.getInstance();
+                serializer = broker.getSerializer();
+                serializer.reset();
 
-        	final SAXSerializer sax = (SAXSerializer) serializerPool.borrowObject(SAXSerializer.class);
-        	try {
-        		sax.setOutput(output, serializeOptions);
+                final SerializerPool serializerPool = SerializerPool.getInstance();
 
-    	    	serializer.setProperties(serializeOptions);
-    	    	serializer.setSAXHandlers(sax, sax);
-            	serializer.toSAX(inputNode, 1, inputNode.getItemCount(), false, false);
-            	
-        	} catch (final SAXException e) {
-        		e.printStackTrace();
-        		throw new IOException(e);
-        	} finally {
-        		serializerPool.returnObject(sax);
-        	}
-        	output.flush();
-        	output.close();
+                final SAXSerializer sax = (SAXSerializer) serializerPool.borrowObject(SAXSerializer.class);
+                try {
+                    sax.setOutput(output, serializeOptions);
+
+                    serializer.setProperties(serializeOptions);
+                    serializer.setSAXHandlers(sax, sax);
+                    serializer.toSAX(inputNode, 1, inputNode.getItemCount(), false, false);
+
+                } catch (final SAXException e) {
+                    e.printStackTrace();
+                    throw new IOException(e);
+                } finally {
+                    serializerPool.returnObject(sax);
+                }
+
+                output.flush();
+            }
             
             //commit the response
             response.flushBuffer();
@@ -153,9 +150,6 @@ public class Stream extends BasicFunction {
             throw new XPathException(this, "IO exception while streaming node: " + e.getMessage(), e);
         } catch (final EXistException e) {
             throw new XPathException(this, "Exception while streaming node: " + e.getMessage(), e);
-		} finally {
-			if (db != null)
-				{db.release(broker);}
 		}
         return Sequence.EMPTY_SEQUENCE;
 	}

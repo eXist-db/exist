@@ -7,6 +7,7 @@ package org.exist.xquery;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.Optional;
 
 import antlr.RecognitionException;
 import antlr.TokenStreamException;
@@ -65,7 +66,7 @@ public class LexerTest {
 
 
 		final TransactionManager transact = pool.getTransactionManager();
-		try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+		try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
 			try(final Txn transaction = transact.beginTransaction()) {
 				// parse the xml source

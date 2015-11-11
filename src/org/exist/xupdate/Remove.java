@@ -73,9 +73,9 @@ public class Remove extends Modification {
 			for (int i = 0; i < ql.length; i++) {
 				final StoredNode node = ql[i];
                 final DocumentImpl doc = node.getOwnerDocument();
-				if (!doc.getPermissions().validate(broker.getSubject(),
+				if (!doc.getPermissions().validate(broker.getCurrentSubject(),
 						Permission.WRITE)) {
-            				throw new PermissionDeniedException("User '" + broker.getSubject().getName() + "' does not have permission to write to the document '" + doc.getDocumentURI() + "'!");
+            				throw new PermissionDeniedException("User '" + broker.getCurrentSubject().getName() + "' does not have permission to write to the document '" + doc.getDocumentURI() + "'!");
                                 }
 				parent = (NodeImpl) node.getParentNode();
                 if (parent == null || parent.getNodeType() != Node.ELEMENT_NODE) {

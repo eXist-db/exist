@@ -22,6 +22,7 @@
 package org.exist.security.internal;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.exist.Database;
 import org.exist.config.Configurable;
@@ -102,9 +103,7 @@ public class SMEvents implements Configurable {
 	protected void runScript(Subject subject, String scriptURI, String script, QName functionName, List<Expression> args) {
         
 		final Database db = getDatabase();
-        DBBroker broker = null;
-        try {
-            broker = db.get(subject);
+        try(final DBBroker broker = db.get(Optional.ofNullable(subject))) {
 
             final Source source = getQuerySource(broker, scriptURI, script);
             if(source == null) {return;}
@@ -146,8 +145,6 @@ public class SMEvents implements Configurable {
         } catch (final Exception e) {
         	//XXX: log
         	e.printStackTrace();
-        } finally {
-        	db.release(broker);
         }
  	}
 	
