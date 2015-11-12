@@ -174,7 +174,7 @@ public class GrammarTooling extends BasicFunction  {
             parser.registerPreparser(TYPE_XSD , null);
             
            
-            final List<Grammar> allGrammars = new ArrayList<Grammar>();
+            final List<Grammar> allGrammars = new ArrayList<>();
             
              // iterate through the argument sequence and parse url
             for (final SequenceIterator i = args[0].iterate(); i.hasNext();) {
@@ -202,10 +202,6 @@ public class GrammarTooling extends BasicFunction  {
                         throw new XPathException(this, "Only XMLSchemas can be preparsed.");
                     }
 
-                } catch(final IOException ex) {
-                    LOG.debug(ex);
-                    throw new XPathException(this, ex);
-                    
                 } catch(final Exception ex) {
                     LOG.debug(ex);
                     throw new XPathException(this, ex);
@@ -266,7 +262,7 @@ public class GrammarTooling extends BasicFunction  {
 
         builder.endElement();
         
-        return ((DocumentImpl)builder.getDocument()).getNode(nodeNr);
+        return builder.getDocument().getNode(nodeNr);
     }
     
     private void writeGrammar(Grammar grammar,  MemTreeBuilder builder){

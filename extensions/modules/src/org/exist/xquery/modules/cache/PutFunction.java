@@ -76,7 +76,7 @@ public class PutFunction extends CacheBasicFunction {
 				if( logger.isTraceEnabled() ) {
 					logger.trace("putting cache value [" + item.toJavaObject(Cache.class).toString() + ", " + key +"]");
 				}
-				return ((Cache)item.toJavaObject(Cache.class)).put(key, value);
+				return item.toJavaObject(Cache.class).put(key, value);
 			}
 		} catch (SAXException e) {
 			logger.error("Error putting cache value", e);

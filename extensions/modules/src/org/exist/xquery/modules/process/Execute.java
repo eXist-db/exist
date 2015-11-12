@@ -63,13 +63,13 @@ public class Execute extends BasicFunction {
                     int status = reader.next();
                     if (status == XMLStreamReader.START_ELEMENT) {
                         String name = reader.getLocalName();
-                        if (name.equals("workingDir")) {
+                        if ("workingDir".equals(name)) {
                             workingDir = getWorkingDir(reader.getElementText());
-                        } else if (name.equals("line")) {
+                        } else if ("line".equals(name)) {
                             if (stdin == null)
                                 stdin = new ArrayList<>(21);
                             stdin.add(reader.getElementText() + "\n");
-                        } else if (name.equals("env")) {
+                        } else if ("env".equals(name)) {
                             if (environment == null)
                                 environment = new HashMap<>();
                             String key = reader.getAttributeValue(null, "name");
@@ -79,9 +79,7 @@ public class Execute extends BasicFunction {
                         }
                     }
                 }
-            } catch (XMLStreamException e) {
-                throw new XPathException(this, "Invalid XML fragment for options: " + e.getMessage(), e);
-            } catch (IOException e) {
+            } catch (XMLStreamException | IOException e) {
                 throw new XPathException(this, "Invalid XML fragment for options: " + e.getMessage(), e);
             }
         }
@@ -155,7 +153,7 @@ public class Execute extends BasicFunction {
     }
 
     private List<String> readOutput(Process process) throws XPathException {
-        try(final BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), "UTF-8"));) {
+        try(final BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), "UTF-8"))) {
             List<String> output = new ArrayList<>(31);
 
             String line;

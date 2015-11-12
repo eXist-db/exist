@@ -237,7 +237,7 @@ public class GetThumbnailsFunction extends BasicFunction {
                     Iterator<DocumentImpl> i = allPictures.iterator(dbbroker);
 
                     while (i.hasNext()) {
-                        docImage = (DocumentImpl) i.next();
+                        docImage = i.next();
                         // is not already existing??
                         if (!((fileExist(context.getBroker(), existingThumbsCol, docImage, prefix)) || (fileExist(
                                 existingThumbsArray, docImage, prefix)))) {
@@ -334,13 +334,13 @@ public class GetThumbnailsFunction extends BasicFunction {
 		return false;
 	}
 
-	private boolean fileExist(File[] col, DocumentImpl file, String prefix) {
-		if (col != null)
-			for (int i = 0; i < col.length; i++) {
-				if (col[i].getName().endsWith(prefix + file.getFileURI())) {
-					return true;
-				}
-			}
+	private boolean fileExist(File[] cols, DocumentImpl file, String prefix) {
+		if (cols != null)
+            for (File col : cols) {
+                if (col.getName().endsWith(prefix + file.getFileURI())) {
+                    return true;
+                }
+            }
 
 		return false;
 	}

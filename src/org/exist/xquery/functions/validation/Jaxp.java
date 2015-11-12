@@ -294,13 +294,12 @@ public class Jaxp extends BasicFunction {
 
             if (contenthandler instanceof DocumentBuilderReceiver) {
                 //DocumentBuilderReceiver dbr = (DocumentBuilderReceiver) contenthandler;
-                return ((DocumentImpl) instanceBuilder.getDocument()).getNode(0);
+                return instanceBuilder.getDocument().getNode(0);
 
             } else {
 
                 final MemTreeBuilder builder = context.getDocumentBuilder();
-                final NodeImpl result = Shared.writeReport(report, builder);
-                return result;
+                return Shared.writeReport(report, builder);
             }
 
         }
@@ -336,11 +335,9 @@ public class Jaxp extends BasicFunction {
         try {
             xmlReader.setFeature(featureName, value);
             
-        } catch (final SAXNotRecognizedException ex) {
+        } catch (final SAXNotRecognizedException | SAXNotSupportedException ex) {
             LOG.error(ex.getMessage());
 
-        } catch (final SAXNotSupportedException ex) {
-            LOG.error(ex.getMessage());
         }
     }
 
@@ -349,11 +346,9 @@ public class Jaxp extends BasicFunction {
         try {
             xmlReader.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_ENTITYRESOLVER, entityResolver);
 
-        } catch (final SAXNotRecognizedException ex) {
+        } catch (final SAXNotRecognizedException | SAXNotSupportedException ex) {
             LOG.error(ex.getMessage());
 
-        } catch (final SAXNotSupportedException ex) {
-            LOG.error(ex.getMessage());
         }
     }
 

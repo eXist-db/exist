@@ -74,7 +74,7 @@ public class RemoveFunction extends CacheBasicFunction {
 				if( logger.isDebugEnabled() ) {
 					logger.debug("removing cache value [" + item.toJavaObject(Cache.class).toString() + ", " + key +"]");
 				}
-				return ((Cache)item.toJavaObject(Cache.class)).remove(key);
+				return item.toJavaObject(Cache.class).remove(key);
 			}
 		} catch (SAXException e) {
 			logger.error("Error removing cache value", e);

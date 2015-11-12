@@ -99,8 +99,8 @@ public class Compare extends Function {
 	}
 
 	Sequence result = null;
-        StringBuffer v1 = new StringBuffer();
-        StringBuffer v2 = new StringBuffer(); 
+        StringBuilder v1 = new StringBuilder();
+        StringBuilder v2 = new StringBuilder();
 	try {
             if (s1.hasMany()){
                 for (int i = 0; i < s1.getItemCount(); i++) {

@@ -175,10 +175,6 @@ public class Validation extends BasicFunction  {
             LOG.error(ex.getMessage());
             report.setException(ex);
 
-        } catch (final IOException ex) {
-            LOG.error(ex);
-            report.setException(ex);
-
         } catch (final Throwable ex) {
             LOG.error(ex);
             report.setException(ex);

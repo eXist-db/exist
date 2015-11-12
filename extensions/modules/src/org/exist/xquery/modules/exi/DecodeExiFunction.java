@@ -114,14 +114,8 @@ public class DecodeExiFunction extends BasicFunction {
 		    NodeValue node  = (NodeValue)builder.getDocument().getDocumentElement();
 		    return node;
 		}
-		catch(EXIException exie) {
+		catch(EXIException | SAXException | IOException exie) {
 			throw new XPathException(this, new JavaErrorCode(exie.getCause()), exie.getMessage());
-		}
-		catch(SAXException saxe) {
-			throw new XPathException(this, new JavaErrorCode(saxe.getCause()), saxe.getMessage());
-		}
-		catch(IOException ioex) {
-			throw new XPathException(this, new JavaErrorCode(ioex.getCause()), ioex.getMessage());
 		}
 	}
 
