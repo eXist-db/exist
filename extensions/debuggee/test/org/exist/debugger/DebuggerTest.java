@@ -25,6 +25,7 @@ import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 import org.exist.Database;
 import org.exist.EXistException;
