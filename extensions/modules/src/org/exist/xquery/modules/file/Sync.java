@@ -6,6 +6,7 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.FileTime;
 import java.util.*;
 
@@ -189,6 +190,8 @@ public class Sync extends BasicFunction {
 			output.addAttribute(new QName("collection"), doc.getCollection().getURI().toString());
 			output.addAttribute(new QName("type"), "xml");
 			output.addAttribute(new QName("modified"), new DateTimeValue(new Date(doc.getMetadata().getLastModified())).getStringValue());
+            output.endElement();
+
             if (isRepoXML) {
                 processRepoDesc(targetFile, doc, sax, output);
             } else {
@@ -209,7 +212,6 @@ public class Sync extends BasicFunction {
 		} catch (final XPathException e) {
 			reportError(output, e.getMessage());
 		} finally {
-			output.endElement();
 			SerializerPool.getInstance().returnObject(sax);
 		}		
 	}
@@ -265,16 +267,15 @@ public class Sync extends BasicFunction {
 			output.addAttribute(new QName("collection"), binary.getCollection().getURI().toString());
 			output.addAttribute(new QName("type"), "binary");
 			output.addAttribute(new QName("modified"), new DateTimeValue(new Date(binary.getMetadata().getLastModified())).getStringValue());
+            output.endElement();
 
 			try(final InputStream is = context.getBroker().getBinaryResource(binary)) {
-				Files.copy(is, targetFile);
+				Files.copy(is, targetFile, StandardCopyOption.REPLACE_EXISTING);
 			}
 		} catch (final IOException e) {
 			reportError(output, "IO error while saving file: " + targetFile.toAbsolutePath().toString());
-		} catch (final XPathException e) {
+		} catch (final Exception e) {
 			reportError(output, e.getMessage());
-		} finally {
-			output.endElement();
 		}
 	}
 }
