@@ -26,6 +26,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 
 import javax.security.auth.Subject;
 import javax.servlet.*;
@@ -47,6 +48,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.internal.HttpSessionAuthentication;
 import org.exist.security.internal.SubjectAccreditedImpl;
 import org.exist.security.internal.aider.UserAider;
+import org.exist.storage.DBBroker;
 import org.exist.xquery.util.HTTPUtils;
 import org.openid4java.OpenIDException;
 import org.openid4java.association.AssociationSessionType;
@@ -327,16 +329,11 @@ public class AuthenticatorOpenIdServlet extends HttpServlet {
 				AbstractAccount account = (AbstractAccount) OpenIDRealm.instance.getAccount(accountName);
 				if (account == null) {
 					Database db = OpenIDRealm.instance.getDatabase();
-					org.exist.security.Subject currentSubject = db.getSubject();
-					try {
-						db.setSubject(db.getSecurityManager().getSystemSubject());
-					
+					try(final DBBroker broker = db.get(Optional.of(db.getSecurityManager().getSystemSubject()))) {
 						//XXX: set OpenID group by default 
 						account = (AbstractAccount) OpenIDRealm.instance.addAccount(
 								new UserAider(OpenIDRealm.instance.getId(), accountName)
 							);
-					} finally {
-						db.setSubject(currentSubject);
 					}
 				}
 				
@@ -374,13 +371,8 @@ public class AuthenticatorOpenIdServlet extends HttpServlet {
 				}
 				//update metadata
 				Database db = OpenIDRealm.instance.getDatabase();
-				org.exist.security.Subject currentSubject = db.getSubject();
-				try {
-					db.setSubject(db.getSecurityManager().getSystemSubject());
-				
+				try(final DBBroker broker = db.get(Optional.of(db.getSecurityManager().getSystemSubject()))) {
 					OpenIDRealm.instance.updateAccount(principal);
-				} finally {
-					db.setSubject(currentSubject);
 				}
 				
                 OpenIDUtility.registerUser(principal);

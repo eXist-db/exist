@@ -21,10 +21,11 @@ package org.exist.storage.md;
 
 import static org.junit.Assert.*;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
@@ -103,7 +104,7 @@ public class SearchTest {
 
         BrokerPool db = BrokerPool.getInstance();
 
-        try (final DBBroker broker = db.get(db.getSecurityManager().getSystemSubject())) {
+        try (final DBBroker broker = db.get(Optional.of(db.getSecurityManager().getSystemSubject()))) {
             
         	MetaData md = MetaData.get();
         	
@@ -219,8 +220,8 @@ public class SearchTest {
 
 	//@BeforeClass
     public static void startDB() throws DatabaseConfigurationException, EXistException {
-        final File confFile = ConfigurationHelper.lookup("conf.xml");
-        final Configuration config = new Configuration(confFile.getAbsolutePath());
+        final Path confFile = ConfigurationHelper.lookup("conf.xml");
+        final Configuration config = new Configuration(confFile.toAbsolutePath().toString());
         BrokerPool.configure(1, 5, config);
         pool = BrokerPool.getInstance();
         assertNotNull(pool);
@@ -228,7 +229,7 @@ public class SearchTest {
 
         final TransactionManager txnManager = pool.getTransactionManager();
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn txn = txnManager.beginTransaction()) {
             
             clean(broker, txn);
@@ -259,7 +260,7 @@ public class SearchTest {
     //@AfterClass
     public static void cleanup() {
         final TransactionManager txnManager = pool.getTransactionManager();
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn txn = txnManager.beginTransaction()) {
             clean(broker, txn);
             txnManager.commit(txn);

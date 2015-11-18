@@ -172,6 +172,21 @@ public class BasicExpressionVisitor implements ExpressionVisitor {
     }
 
     @Override
+    public void visitOrderByClause(OrderByClause orderBy) {
+        // Nothing to do
+    }
+
+    @Override
+    public void visitGroupByClause(GroupByClause groupBy) {
+        // Nothing to do
+    }
+
+    @Override
+    public void visitWhereClause(WhereClause where) {
+        // Nothing to do
+    }
+
+    @Override
     public void visitBuiltinFunction(Function function) {
         //Nothing to do
     }

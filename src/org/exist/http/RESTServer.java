@@ -32,7 +32,6 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -388,7 +387,7 @@ public class RESTServer {
         }
         // Process the request
         DocumentImpl resource = null;
-        final XmldbURI pathUri = XmldbURI.create(URLDecoder.decode(path, "UTF-8"));
+        final XmldbURI pathUri = XmldbURI.createInternal(path);
         try {
             // check if path leads to an XQuery resource
             final String xquery_mime_type = MimeType.XQUERY_TYPE.getName();
@@ -406,7 +405,7 @@ public class RESTServer {
                 // no document: check if path points to a collection
                 final Collection collection = broker.getCollection(pathUri);
                 if (collection != null) {
-                    if (safeMode || !collection.getPermissionsNoLock().validate(broker.getSubject(), Permission.READ)) {
+                    if (safeMode || !collection.getPermissionsNoLock().validate(broker.getCurrentSubject(), Permission.READ)) {
                         throw new PermissionDeniedException("Not allowed to read collection");
                     }
                     // return a listing of the collection contents
@@ -470,7 +469,7 @@ public class RESTServer {
                 if ((null != descriptor)
                         && descriptor.allowSource(path)
                         && resource.getPermissions().validate(
-                        broker.getSubject(), Permission.READ)) {
+                        broker.getCurrentSubject(), Permission.READ)) {
 
                     // TODO: change writeResourceAs to use a serializer
                     // that will serialize xquery to syntax coloured
@@ -537,7 +536,7 @@ public class RESTServer {
             throws BadRequestException, PermissionDeniedException,
             NotFoundException, IOException {
         
-        final XmldbURI pathUri = XmldbURI.create(path);
+        final XmldbURI pathUri = XmldbURI.createInternal(path);
         if (checkForXQueryTarget(broker, pathUri, request, response)) {
             return;
         }
@@ -556,7 +555,7 @@ public class RESTServer {
             resource = broker.getXMLResource(pathUri, Lock.READ_LOCK);
 
             if (resource != null) {
-                if (!resource.getPermissions().validate(broker.getSubject(), Permission.READ)) {
+                if (!resource.getPermissions().validate(broker.getCurrentSubject(), Permission.READ)) {
                     throw new PermissionDeniedException(
                             "Permission to read resource " + path + " denied");
                 }
@@ -578,7 +577,7 @@ public class RESTServer {
                     return;
                 }
 
-                if (!col.getPermissionsNoLock().validate(broker.getSubject(), Permission.READ)) {
+                if (!col.getPermissionsNoLock().validate(broker.getCurrentSubject(), Permission.READ)) {
                     throw new PermissionDeniedException(
                             "Permission to read resource " + path + " denied");
                 }
@@ -617,7 +616,7 @@ public class RESTServer {
         }
 
         final Properties outputProperties = new Properties(defaultOutputKeysProperties);
-        final XmldbURI pathUri = XmldbURI.create(path);
+        final XmldbURI pathUri = XmldbURI.createInternal(path);
         DocumentImpl resource = null;
 
         final String encoding = outputProperties.getProperty(OutputKeys.ENCODING);
@@ -1111,7 +1110,7 @@ public class RESTServer {
 
     public void doDelete(final DBBroker broker, final String path, final HttpServletRequest request, final HttpServletResponse response)
             throws PermissionDeniedException, NotFoundException, IOException, BadRequestException {
-        final XmldbURI pathURI = XmldbURI.create(path);
+        final XmldbURI pathURI = XmldbURI.createInternal(path);
         if (checkForXQueryTarget(broker, pathURI, request, response)) {
             return;
         }
@@ -1269,7 +1268,7 @@ public class RESTServer {
             }
         }
 
-        final XmldbURI pathUri = XmldbURI.create(path);
+        final XmldbURI pathUri = XmldbURI.createInternal(path);
         try {
             final Source source = new StringSource(query);
             final XQuery xquery = broker.getBrokerPool().getXQueryService();
@@ -1600,7 +1599,7 @@ public class RESTServer {
         PermissionDeniedException, IOException {
 
         // Do we have permission to read the resource
-        if (!resource.getPermissions().validate(broker.getSubject(), Permission.READ)) {
+        if (!resource.getPermissions().validate(broker.getCurrentSubject(), Permission.READ)) {
             throw new PermissionDeniedException("Not allowed to read resource");
         }
 
@@ -1904,7 +1903,7 @@ public class RESTServer {
                 final Collection childCollection = broker.getCollection(collection
                         .getURI().append(child));
                 if (childCollection != null
-                        && childCollection.getPermissionsNoLock().validate(broker.getSubject(), Permission.READ)) {
+                        && childCollection.getPermissionsNoLock().validate(broker.getCurrentSubject(), Permission.READ)) {
                     attrs.clear();
                     attrs.addAttribute("", "name", "name", "CDATA", child.toString());
 
@@ -1927,7 +1926,7 @@ public class RESTServer {
 
             for (final Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext();) {
                 final DocumentImpl doc = i.next();
-                if (doc.getPermissions().validate(broker.getSubject(), Permission.READ)) {
+                if (doc.getPermissions().validate(broker.getCurrentSubject(), Permission.READ)) {
                     final XmldbURI resource = doc.getFileURI();
                     final DocumentMetadata metadata = doc.getMetadata();
                     attrs.clear();

@@ -1467,17 +1467,13 @@ public class SVNFileUtil {
             SVNErrorManager.error(err, e, Level.FINE, SVNLogType.DEFAULT);
             return null;
 		}
-		
-    	DBBroker broker = null;
-		try {
-			broker = database.get(null);
-	        return broker.getSubject();
-		} catch (EXistException e) {
+
+		try(final DBBroker broker = database.getBroker()) {
+	        return broker.getCurrentSubject();
+		} catch (final EXistException e) {
             SVNErrorMessage err = SVNErrorMessage.create(SVNErrorCode.IO_ERROR, 
                     "Cannot get current user: {0}", e.getMessage());
             SVNErrorManager.error(err, e, Level.FINE, SVNLogType.DEFAULT);
-		} finally {
-			database.release(broker);
 		}
 		
 		return null;

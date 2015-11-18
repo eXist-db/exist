@@ -3,9 +3,9 @@ package org.exist.security;
 import java.io.IOException;
 import java.util.Random;
 import static org.easymock.EasyMock.expect;
-import org.easymock.classextension.EasyMock;
-import static org.easymock.classextension.EasyMock.replay;
-import static org.easymock.classextension.EasyMock.verify;
+import org.easymock.EasyMock;
+import static org.easymock.EasyMock.replay;
+import static org.easymock.EasyMock.verify;
 import org.exist.security.internal.RealmImpl;
 import org.exist.security.internal.SecurityManagerImpl;
 import org.exist.storage.io.VariableByteInput;
@@ -22,7 +22,6 @@ import org.junit.Test;
  */
 public class UnixStylePermissionTest {
 
-    
     @Test
     public void writeRead_roundtrip() throws IOException {
 

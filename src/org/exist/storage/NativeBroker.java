@@ -72,6 +72,7 @@ import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.*;
+import org.exist.util.function.ConsumerE;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.TerminatedException;
 import org.exist.xquery.value.Type;
@@ -82,10 +83,16 @@ import org.w3c.dom.NodeList;
 
 import javax.xml.stream.XMLStreamException;
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.text.NumberFormat;
 import java.util.*;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import org.exist.dom.persistent.StoredNode;
 import org.exist.storage.dom.INodeIterator;
 import org.exist.util.function.Tuple2;
@@ -119,9 +126,9 @@ public class NativeBroker extends DBBroker {
     public final static byte LOG_UPDATE_BINARY = 0x42;
 
     static {
-        LogEntryTypes.addEntryType(LOG_RENAME_BINARY, RenameBinaryLoggable.class);
-        LogEntryTypes.addEntryType(LOG_CREATE_BINARY, CreateBinaryLoggable.class);
-        LogEntryTypes.addEntryType(LOG_UPDATE_BINARY, UpdateBinaryLoggable.class);
+        LogEntryTypes.addEntryType(LOG_RENAME_BINARY, RenameBinaryLoggable::new);
+        LogEntryTypes.addEntryType(LOG_CREATE_BINARY, CreateBinaryLoggable::new);
+        LogEntryTypes.addEntryType(LOG_UPDATE_BINARY, UpdateBinaryLoggable::new);
     }
 
     public static final byte PREPEND_DB_ALWAYS = 0;
@@ -181,9 +188,9 @@ public class NativeBroker extends DBBroker {
 
     protected int nodesCountThreshold = DEFAULT_NODES_BEFORE_MEMORY_CHECK;
 
-    protected String dataDir;
-    protected File fsDir;
-    protected File fsBackupDir;
+    protected Path dataDir;
+    protected Path fsDir;
+    protected Path fsBackupDir;
     protected int pageSize;
 
     protected byte prepend;
@@ -213,22 +220,23 @@ public class NativeBroker extends DBBroker {
             prepend = PREPEND_DB_AS_NEEDED;
         }
 
-        dataDir = (String) config.getProperty(BrokerPool.PROPERTY_DATA_DIR);
+        dataDir = (Path) config.getProperty(BrokerPool.PROPERTY_DATA_DIR);
         if(dataDir == null) {
-            dataDir = DEFAULT_DATA_DIR;
+            dataDir = Paths.get(DEFAULT_DATA_DIR);
         }
 
-        fsDir = new File(new File(dataDir), "fs");
-        if(!fsDir.exists()) {
-            if(!fsDir.mkdir()) {
-                throw new EXistException("Cannot make collection filesystem directory: " + fsDir);
-            }
+        final Path fs = dataDir.resolve("fs");
+        try {
+            fsDir = Files.createDirectories(fs);
+        } catch(final IOException ioe) {
+            throw new EXistException("Cannot make collection filesystem directory: " + fs.toAbsolutePath().toString(), ioe);
         }
-        fsBackupDir = new File(new File(dataDir), "fs.journal");
-        if(!fsBackupDir.exists()) {
-            if(!fsBackupDir.mkdir()) {
-                throw new EXistException("Cannot make collection filesystem directory: " + fsBackupDir);
-            }
+
+        final Path fsJournal = dataDir.resolve("fs.journal");
+        try {
+            fsBackupDir = Files.createDirectories(fsJournal);
+        } catch(final IOException ioe) {
+            throw new EXistException("Cannot make collection filesystem directory: " + fsJournal.toAbsolutePath().toString(), ioe);
         }
 
         nodesCountThreshold = config.getInteger(BrokerPool.PROPERTY_NODES_BUFFER);
@@ -248,9 +256,9 @@ public class NativeBroker extends DBBroker {
 
         indexConfiguration = (IndexSpec) config.getProperty(Indexer.PROPERTY_INDEXER_CONFIG);
         xmlSerializer = new NativeSerializer(this, config);
-        setSubject(pool.getSecurityManager().getSystemSubject());
 
         try {
+            pushSubject(pool.getSecurityManager().getSystemSubject());
             //TODO : refactor so that we can,
             //1) customize the different properties (file names, cache settings...)
             //2) have a consistent READ-ONLY behaviour (based on *mandatory* files ?)
@@ -262,7 +270,7 @@ public class NativeBroker extends DBBroker {
                 domDb = new DOMFile(pool, DOM_DBX_ID, dataDir, config);
             }
             if(domDb.isReadOnly()) {
-                LOG.warn(domDb.getFile().getName() + " is read-only!");
+                LOG.warn(FileUtils.fileName(domDb.getFile()) + " is read-only!");
                 pool.setReadOnly();
             }
 
@@ -272,7 +280,7 @@ public class NativeBroker extends DBBroker {
                 collectionsDb = new CollectionStore(pool, COLLECTIONS_DBX_ID, dataDir, config);
             }
             if(collectionsDb.isReadOnly()) {
-                LOG.warn(collectionsDb.getFile().getName() + " is read-only!");
+                LOG.warn(FileUtils.fileName(collectionsDb.getFile()) + " is read-only!");
                 pool.setReadOnly();
             }
 
@@ -283,7 +291,18 @@ public class NativeBroker extends DBBroker {
         } catch(final DBException e) {
             LOG.debug(e.getMessage(), e);
             throw new EXistException(e);
+        } finally {
+            popSubject();
         }
+    }
+
+    /**
+     * Get the filesystem directory
+     *
+     * @return The filesystem directory
+     */
+    protected Path getFsDir() {
+        return fsDir;
     }
 
     @Override
@@ -494,33 +513,31 @@ public class NativeBroker extends DBBroker {
                 LOG.warn("Storage file is null: " + i);
                 continue;
             }
-            final OutputStream os = backup.newEntry(paged.getFile().getName());
-            paged.backupToStream(os);
-            backup.closeEntry();
+            try(final OutputStream os = backup.newEntry(FileUtils.fileName(paged.getFile()))) {
+                paged.backupToStream(os);
+            } finally {
+                backup.closeEntry();
+            }
         }
         pool.getSymbols().backupToArchive(backup);
-        backupBinary(backup, fsDir, "");
+        backupBinary(backup, getFsDir(), "");
         pool.getIndexManager().backupToArchive(backup);
         //TODO backup counters
         //TODO USE zip64 or tar to create snapshots larger then 4Gb
     }
 
-    private void backupBinary(final RawDataBackup backup, final File file, String path) throws IOException {
-        path = path + "/" + file.getName();
-        if(file.isDirectory()) {
-            for(final File f : file.listFiles()) {
-                backupBinary(backup, f, path);
+    private void backupBinary(final RawDataBackup backup, final Path file, final String path) throws IOException {
+        final String thisPath = path + "/" + file.getFileName();
+        if(Files.isDirectory(file)) {
+            for(final Path p : FileUtils.list(file)) {
+                backupBinary(backup, p, thisPath);
             }
         } else {
-            final OutputStream os = backup.newEntry(path);
-            final InputStream is = new FileInputStream(file);
-            final byte[] buf = new byte[4096];
-            int len;
-            while((len = is.read(buf)) > 0) {
-                os.write(buf, 0, len);
+            try(final OutputStream os = backup.newEntry(thisPath)) {
+                Files.copy(file, os);
+            } finally {
+                backup.closeEntry();
             }
-            is.close();
-            backup.closeEntry();
         }
     }
 
@@ -606,27 +623,26 @@ public class NativeBroker extends DBBroker {
      */
     private Collection createTempCollection(final Txn transaction)
         throws LockException, PermissionDeniedException, IOException, TriggerException {
-        final Subject u = getSubject();
         try {
-            setSubject(pool.getSecurityManager().getSystemSubject());
+            pushSubject(pool.getSecurityManager().getSystemSubject());
             final Collection temp = getOrCreateCollection(transaction, XmldbURI.TEMP_COLLECTION_URI);
             temp.setPermissions(0771);
             saveCollection(transaction, temp);
             return temp;
         } finally {
-            setSubject(u);
+            popSubject();
         }
     }
 
     private final String readInitCollectionConfig() {
-        final File fInitCollectionConfig = new File(pool.getConfiguration().getExistHome(), INIT_COLLECTION_CONFIG);
-        if(fInitCollectionConfig.exists() && fInitCollectionConfig.isFile()) {
+        final Path fInitCollectionConfig = pool.getConfiguration().getExistHome()
+                .map(h -> h.resolve(INIT_COLLECTION_CONFIG))
+                .orElse(Paths.get(INIT_COLLECTION_CONFIG));
 
-            InputStream is = null;
-            try {
+        if(Files.isRegularFile(fInitCollectionConfig)) {
+            try(final InputStream is = Files.newInputStream(fInitCollectionConfig)) {
                 final StringBuilder initCollectionConfig = new StringBuilder();
 
-                is = new FileInputStream(fInitCollectionConfig);
                 int read = -1;
                 final byte buf[] = new byte[1024];
                 while((read = is.read(buf)) != -1) {
@@ -636,16 +652,7 @@ public class NativeBroker extends DBBroker {
                 return initCollectionConfig.toString();
             } catch(final IOException ioe) {
                 LOG.error(ioe.getMessage(), ioe);
-            } finally {
-                if(is != null) {
-                    try {
-                        is.close();
-                    } catch(final IOException ioe) {
-                        LOG.warn(ioe.getMessage(), ioe);
-                    }
-                }
             }
-
         }
 
         return null;
@@ -730,14 +737,14 @@ public class NativeBroker extends DBBroker {
                             throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
                         }
 
-                        if(!current.getPermissionsNoLock().validate(getSubject(), Permission.WRITE)) {
+                        if(!current.getPermissionsNoLock().validate(getCurrentSubject(), Permission.WRITE)) {
                             LOG.error("Permission denied to create collection '" + path + "'");
-                            throw new PermissionDeniedException("Account '" + getSubject().getName() + "' not allowed to write to collection '" + current.getURI() + "'");
+                            throw new PermissionDeniedException("Account '" + getCurrentSubject().getName() + "' not allowed to write to collection '" + current.getURI() + "'");
                         }
 
-                        if(!current.getPermissionsNoLock().validate(getSubject(), Permission.EXECUTE)) {
+                        if(!current.getPermissionsNoLock().validate(getCurrentSubject(), Permission.EXECUTE)) {
                             LOG.error("Permission denied to create collection '" + path + "'");
-                            throw new PermissionDeniedException("Account '" + getSubject().getName() + "' not allowed to execute to collection '" + current.getURI() + "'");
+                            throw new PermissionDeniedException("Account '" + getCurrentSubject().getName() + "' not allowed to execute to collection '" + current.getURI() + "'");
                         }
 
                         if(current.hasDocument(this, path.lastSegment())) {
@@ -776,7 +783,7 @@ public class NativeBroker extends DBBroker {
                 }
                 return new Tuple2<>(created, current);
             } catch(final LockException e) {
-                LOG.warn("Failed to acquire lock on " + collectionsDb.getFile().getName());
+                LOG.warn("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()));
                 return null;
             } catch(final ReadOnlyException e) {
                 throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
@@ -808,26 +815,26 @@ public class NativeBroker extends DBBroker {
             lock.acquire(Lock.READ_LOCK);
 
             //TODO write a regexp lookup for key data in BTree.query
-            //IndexQuery idxQuery = new IndexQuery(IndexQuery.REGEXP, regexp);
+            //final IndexQuery idxQuery = new IndexQuery(IndexQuery.REGEXP, regexp);
             //List<Value> keys = collectionsDb.findKeysByCollectionName(idxQuery);
+
             final List<Value> keys = collectionsDb.getKeys();
-
             for(final Value key : keys) {
+                final byte data[] = key.getData();
+                if(data[0] == CollectionStore.KEY_TYPE_COLLECTION) {
+                    final String collectionName = UTF8.decode(data, 1, data.length - 1).toString();
+                    m.reset(collectionName);
 
-                //TODO restrict keys to just collection uri's
-
-                final String collectionName = new String(key.getData());
-                m.reset(collectionName);
-
-                if(m.matches()) {
-                    collections.add(collectionName);
+                    if (m.matches()) {
+                        collections.add(collectionName);
+                    }
                 }
             }
         } catch(final UnsupportedEncodingException e) {
             //LOG.error("Unable to encode '" + uri + "' in UTF-8");
             //return null;
         } catch(final LockException e) {
-            LOG.warn("Failed to acquire lock on " + collectionsDb.getFile().getName());
+            LOG.warn("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()));
             //return null;
         } catch(final TerminatedException | IOException | BTreeException e) {
             LOG.error(e.getMessage(), e);
@@ -866,7 +873,7 @@ public class NativeBroker extends DBBroker {
                 } catch(final UnsupportedEncodingException e) {
                     LOG.error("Unable to encode '" + uri + "' in UTF-8");
                 } catch(final LockException e) {
-                    LOG.warn("Failed to acquire lock on " + collectionsDb.getFile().getName());
+                    LOG.warn("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()));
                 } catch(final IOException e) {
                     LOG.error(e.getMessage(), e);
                 } finally {
@@ -926,7 +933,7 @@ public class NativeBroker extends DBBroker {
                     LOG.error("Unable to encode '" + uri + "' in UTF-8");
                     return null;
                 } catch(final LockException e) {
-                    LOG.warn("Failed to acquire lock on " + collectionsDb.getFile().getName());
+                    LOG.warn("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()));
                     return null;
                 } catch(final IOException e) {
                     LOG.error(e.getMessage(), e);
@@ -941,8 +948,8 @@ public class NativeBroker extends DBBroker {
                 }
                 collectionsCache.add(collection);
 
-                if(!collection.getPermissionsNoLock().validate(getSubject(), Permission.EXECUTE)) {
-                    throw new PermissionDeniedException("Permission denied to open collection: " + collection.getURI().toString() + " by " + getSubject().getName());
+                if(!collection.getPermissionsNoLock().validate(getCurrentSubject(), Permission.EXECUTE)) {
+                    throw new PermissionDeniedException("Permission denied to open collection: " + collection.getURI().toString() + " by " + getCurrentSubject().getName());
                 }
             }
         }
@@ -969,8 +976,8 @@ public class NativeBroker extends DBBroker {
      */
     protected void checkPermissionsForCopy(final Collection src, final XmldbURI destUri, final XmldbURI newName) throws PermissionDeniedException, LockException {
 
-        if(!src.getPermissionsNoLock().validate(getSubject(), Permission.EXECUTE | Permission.READ)) {
-            throw new PermissionDeniedException("Permission denied to copy collection " + src.getURI() + " by " + getSubject().getName());
+        if(!src.getPermissionsNoLock().validate(getCurrentSubject(), Permission.EXECUTE | Permission.READ)) {
+            throw new PermissionDeniedException("Permission denied to copy collection " + src.getURI() + " by " + getCurrentSubject().getName());
         }
 
         final Collection dest = getCollection(destUri);
@@ -978,21 +985,21 @@ public class NativeBroker extends DBBroker {
         final Collection newDest = getCollection(newDestUri);
 
         if(dest != null) {
-            //if(!dest.getPermissionsNoLock().validate(getSubject(), Permission.EXECUTE | Permission.WRITE | Permission.READ)) {
+            //if(!dest.getPermissionsNoLock().validate(getCurrentSubject(), Permission.EXECUTE | Permission.WRITE | Permission.READ)) {
             //TODO do we really need WRITE permission on the dest?
-            if(!dest.getPermissionsNoLock().validate(getSubject(), Permission.EXECUTE | Permission.WRITE)) {
-                throw new PermissionDeniedException("Permission denied to copy collection " + src.getURI() + " to " + dest.getURI() + " by " + getSubject().getName());
+            if(!dest.getPermissionsNoLock().validate(getCurrentSubject(), Permission.EXECUTE | Permission.WRITE)) {
+                throw new PermissionDeniedException("Permission denied to copy collection " + src.getURI() + " to " + dest.getURI() + " by " + getCurrentSubject().getName());
             }
 
             if(newDest != null) {
                 //TODO why do we need READ access on the dest collection?
-                /*if(!dest.getPermissionsNoLock().validate(getSubject(), Permission.EXECUTE | Permission.READ)) {
-                    throw new PermissionDeniedException("Permission denied to copy collection " + src.getURI() + " to " + dest.getURI() + " by " + getSubject().getName());
+                /*if(!dest.getPermissionsNoLock().validate(getCurrentSubject(), Permission.EXECUTE | Permission.READ)) {
+                    throw new PermissionDeniedException("Permission denied to copy collection " + src.getURI() + " to " + dest.getURI() + " by " + getCurrentSubject().getName());
                 }*/
 
                 //if(newDest.isEmpty(this)) {
-                if(!newDest.getPermissionsNoLock().validate(getSubject(), Permission.EXECUTE | Permission.WRITE)) {
-                    throw new PermissionDeniedException("Permission denied to copy collection " + src.getURI() + " to " + newDest.getURI() + " by " + getSubject().getName());
+                if(!newDest.getPermissionsNoLock().validate(getCurrentSubject(), Permission.EXECUTE | Permission.WRITE)) {
+                    throw new PermissionDeniedException("Permission denied to copy collection " + src.getURI() + " to " + newDest.getURI() + " by " + getCurrentSubject().getName());
                 }
                 //}
             }
@@ -1000,16 +1007,16 @@ public class NativeBroker extends DBBroker {
 
         for(final Iterator<DocumentImpl> itSrcSubDoc = src.iterator(this); itSrcSubDoc.hasNext(); ) {
             final DocumentImpl srcSubDoc = itSrcSubDoc.next();
-            if(!srcSubDoc.getPermissions().validate(getSubject(), Permission.READ)) {
-                throw new PermissionDeniedException("Permission denied to copy collection " + src.getURI() + " for resource " + srcSubDoc.getURI() + " by " + getSubject().getName());
+            if(!srcSubDoc.getPermissions().validate(getCurrentSubject(), Permission.READ)) {
+                throw new PermissionDeniedException("Permission denied to copy collection " + src.getURI() + " for resource " + srcSubDoc.getURI() + " by " + getCurrentSubject().getName());
             }
 
             //if the destination resource exists, we must have write access to replace it's metadata etc. (this follows the Linux convention)
             if(newDest != null && !newDest.isEmpty(this)) {
                 final DocumentImpl newDestSubDoc = newDest.getDocument(this, srcSubDoc.getFileURI()); //TODO check this uri is just the filename!
                 if(newDestSubDoc != null) {
-                    if(!newDestSubDoc.getPermissions().validate(getSubject(), Permission.WRITE)) {
-                        throw new PermissionDeniedException("Permission denied to copy collection " + src.getURI() + " for resource " + newDestSubDoc.getURI() + " by " + getSubject().getName());
+                    if(!newDestSubDoc.getPermissions().validate(getCurrentSubject(), Permission.WRITE)) {
+                        throw new PermissionDeniedException("Permission denied to copy collection " + src.getURI() + " for resource " + newDestSubDoc.getURI() + " by " + getCurrentSubject().getName());
                     }
                 }
             }
@@ -1214,16 +1221,16 @@ public class NativeBroker extends DBBroker {
 
         final XmldbURI parentName = collection.getParentURI();
         final Collection parent = parentName == null ? collection : getCollection(parentName);
-        if(!parent.getPermissionsNoLock().validate(getSubject(), Permission.WRITE | Permission.EXECUTE)) {
-            throw new PermissionDeniedException("Account " + getSubject().getName() + " have insufficient privileges on collection " + parent.getURI() + " to move collection " + collection.getURI());
+        if(!parent.getPermissionsNoLock().validate(getCurrentSubject(), Permission.WRITE | Permission.EXECUTE)) {
+            throw new PermissionDeniedException("Account " + getCurrentSubject().getName() + " have insufficient privileges on collection " + parent.getURI() + " to move collection " + collection.getURI());
         }
 
-        if(!collection.getPermissionsNoLock().validate(getSubject(), Permission.WRITE)) {
-            throw new PermissionDeniedException("Account " + getSubject().getName() + " have insufficient privileges on collection to move collection " + collection.getURI());
+        if(!collection.getPermissionsNoLock().validate(getCurrentSubject(), Permission.WRITE)) {
+            throw new PermissionDeniedException("Account " + getCurrentSubject().getName() + " have insufficient privileges on collection to move collection " + collection.getURI());
         }
 
-        if(!destination.getPermissionsNoLock().validate(getSubject(), Permission.WRITE | Permission.EXECUTE)) {
-            throw new PermissionDeniedException("Account " + getSubject().getName() + " have insufficient privileges on collection " + parent.getURI() + " to move collection " + collection.getURI());
+        if(!destination.getPermissionsNoLock().validate(getCurrentSubject(), Permission.WRITE | Permission.EXECUTE)) {
+            throw new PermissionDeniedException("Account " + getCurrentSubject().getName() + " have insufficient privileges on collection " + parent.getURI() + " to move collection " + collection.getURI());
         }
         
         /*
@@ -1251,7 +1258,7 @@ public class NativeBroker extends DBBroker {
 
             // sourceDir must be known in advance, because once moveCollectionRecursive
             // is called, both collection and destination can point to the same resource
-            final File fsSourceDir = getCollectionFile(fsDir, collection.getURI(), false);
+            final Path fsSourceDir = getCollectionFile(getFsDir(), collection.getURI(), false);
 
             // Need to move each collection in the source tree individually, so recurse.
             moveCollectionRecursive(transaction, trigger, collection, destination, newName, false);
@@ -1267,33 +1274,27 @@ public class NativeBroker extends DBBroker {
 
     }
 
-    private void moveBinaryFork(final Txn transaction, final File sourceDir, final Collection destination, final XmldbURI newName) throws IOException {
-        final File targetDir = getCollectionFile(fsDir, destination.getURI().append(newName), false);
-        if(sourceDir.exists()) {
-            if(targetDir.exists()) {
-                final File targetDelDir = getCollectionFile(fsBackupDir, transaction, destination.getURI().append(newName), true);
-                targetDelDir.getParentFile().mkdirs();
-                if(targetDir.renameTo(targetDelDir)) {
-                    final Loggable loggable = new RenameBinaryLoggable(this, transaction, targetDir, targetDelDir);
-                    try {
-                        logManager.writeToLog(loggable);
-                    } catch(final TransactionException e) {
-                        LOG.warn(e.getMessage(), e);
-                    }
-                } else {
-                    LOG.fatal("Cannot rename " + targetDir + " to " + targetDelDir);
-                }
-            }
-            targetDir.getParentFile().mkdirs();
-            if(sourceDir.renameTo(targetDir)) {
-                final Loggable loggable = new RenameBinaryLoggable(this, transaction, sourceDir, targetDir);
+    private void moveBinaryFork(final Txn transaction, final Path sourceDir, final Collection destination, final XmldbURI newName) throws IOException {
+        final Path targetDir = getCollectionFile(getFsDir(), destination.getURI().append(newName), false);
+        if(Files.exists(sourceDir)) {
+            if(Files.exists(targetDir)) {
+                final Path targetDelDir = getCollectionFile(fsBackupDir, transaction, destination.getURI().append(newName), true);
+                Files.createDirectories(targetDelDir);
+                Files.move(targetDir, targetDelDir, StandardCopyOption.ATOMIC_MOVE);
+                final Loggable loggable = new RenameBinaryLoggable(this, transaction, targetDir, targetDelDir);
                 try {
                     logManager.writeToLog(loggable);
                 } catch(final TransactionException e) {
                     LOG.warn(e.getMessage(), e);
                 }
-            } else {
-                LOG.fatal("Cannot move " + sourceDir + " to " + targetDir);
+            }
+            Files.createDirectories(targetDir.getParent());
+            Files.move(sourceDir, targetDir, StandardCopyOption.ATOMIC_MOVE);
+            final Loggable loggable = new RenameBinaryLoggable(this, transaction, sourceDir, targetDir);
+            try {
+                logManager.writeToLog(loggable);
+            } catch(final TransactionException e) {
+                LOG.warn(e.getMessage(), e);
             }
         }
     }
@@ -1404,26 +1405,26 @@ public class NativeBroker extends DBBroker {
         final Collection parent = isRoot ? collection : getCollection(parentName);
 
         //parent collection permissions
-        if(!parent.getPermissionsNoLock().validate(getSubject(), Permission.WRITE)) {
-            throw new PermissionDeniedException("Account '" + getSubject().getName() + "' is not allowed to remove collection '" + collection.getURI() + "'");
+        if(!parent.getPermissionsNoLock().validate(getCurrentSubject(), Permission.WRITE)) {
+            throw new PermissionDeniedException("Account '" + getCurrentSubject().getName() + "' is not allowed to remove collection '" + collection.getURI() + "'");
         }
 
-        if(!parent.getPermissionsNoLock().validate(getSubject(), Permission.EXECUTE)) {
-            throw new PermissionDeniedException("Account '" + getSubject().getName() + "' is not allowed to remove collection '" + collection.getURI() + "'");
+        if(!parent.getPermissionsNoLock().validate(getCurrentSubject(), Permission.EXECUTE)) {
+            throw new PermissionDeniedException("Account '" + getCurrentSubject().getName() + "' is not allowed to remove collection '" + collection.getURI() + "'");
         }
 
         //this collection permissions
-        if(!collection.getPermissionsNoLock().validate(getSubject(), Permission.READ)) {
-            throw new PermissionDeniedException("Account '" + getSubject().getName() + "' is not allowed to remove collection '" + collection.getURI() + "'");
+        if(!collection.getPermissionsNoLock().validate(getCurrentSubject(), Permission.READ)) {
+            throw new PermissionDeniedException("Account '" + getCurrentSubject().getName() + "' is not allowed to remove collection '" + collection.getURI() + "'");
         }
 
         if(!collection.isEmpty(this)) {
-            if(!collection.getPermissionsNoLock().validate(getSubject(), Permission.WRITE)) {
-                throw new PermissionDeniedException("Account '" + getSubject().getName() + "' is not allowed to remove collection '" + collection.getURI() + "'");
+            if(!collection.getPermissionsNoLock().validate(getCurrentSubject(), Permission.WRITE)) {
+                throw new PermissionDeniedException("Account '" + getCurrentSubject().getName() + "' is not allowed to remove collection '" + collection.getURI() + "'");
             }
 
-            if(!collection.getPermissionsNoLock().validate(getSubject(), Permission.EXECUTE)) {
-                throw new PermissionDeniedException("Account '" + getSubject().getName() + "' is not allowed to remove collection '" + collection.getURI() + "'");
+            if(!collection.getPermissionsNoLock().validate(getCurrentSubject(), Permission.EXECUTE)) {
+                throw new PermissionDeniedException("Account '" + getCurrentSubject().getName() + "' is not allowed to remove collection '" + collection.getURI() + "'");
             }
         }
 
@@ -1526,7 +1527,7 @@ public class NativeBroker extends DBBroker {
                         saveCollection(transaction, collection);
                     }
                 } catch(final LockException e) {
-                    LOG.warn("Failed to acquire lock on '" + collectionsDb.getFile().getName() + "'");
+                    LOG.warn("Failed to acquire lock on '" + FileUtils.fileName(collectionsDb.getFile()) + "'");
                 }
                 //catch(ReadOnlyException e) {
                 //throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
@@ -1594,26 +1595,21 @@ public class NativeBroker extends DBBroker {
                 }
 
                 //now that the database has been updated, update the binary collections on disk
-                final File fsSourceDir = getCollectionFile(fsDir, collection.getURI(), false);
-                final File fsTargetDir = getCollectionFile(fsBackupDir, transaction, collection.getURI(), true);
+                final Path fsSourceDir = getCollectionFile(getFsDir(), collection.getURI(), false);
+                final Path fsTargetDir = getCollectionFile(fsBackupDir, transaction, collection.getURI(), true);
 
                 // remove child binary collections
-                if(fsSourceDir.exists()) {
-                    fsTargetDir.getParentFile().mkdirs();
+                if(Files.exists(fsSourceDir)) {
+                    Files.createDirectories(fsTargetDir.getParent());
 
-                    //XXX: log first, rename second ??? -shabanovd
-                    // DW: not sure a Fatal is required here. Copy and delete
-                    // maybe?
-                    if(fsSourceDir.renameTo(fsTargetDir)) {
-                        final Loggable loggable = new RenameBinaryLoggable(this, transaction, fsSourceDir, fsTargetDir);
-                        try {
-                            logManager.writeToLog(loggable);
-                        } catch(final TransactionException e) {
-                            LOG.warn(e.getMessage(), e);
-                        }
-                    } else {
-                        //XXX: throw IOException -shabanovd
-                        LOG.fatal("Cannot rename " + fsSourceDir + " to " + fsTargetDir);
+                    //TODO(DS) log first, rename second ???
+                    //TODO(DW) not sure a Fatal is required here. Copy and delete maybe?
+                    Files.move(fsSourceDir, fsTargetDir, StandardCopyOption.ATOMIC_MOVE);
+                    final Loggable loggable = new RenameBinaryLoggable(this, transaction, fsSourceDir, fsTargetDir);
+                    try {
+                        logManager.writeToLog(loggable);
+                    } catch(final TransactionException e) {
+                        LOG.warn(e.getMessage(), e);
                     }
                 }
 
@@ -1680,7 +1676,7 @@ public class NativeBroker extends DBBroker {
         } catch(final ReadOnlyException e) {
             LOG.warn(DATABASE_IS_READ_ONLY);
         } catch(final LockException e) {
-            LOG.warn("Failed to acquire lock on " + collectionsDb.getFile().getName(), e);
+            LOG.warn("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()), e);
         } finally {
             lock.release(Lock.WRITE_LOCK);
         }
@@ -1711,7 +1707,7 @@ public class NativeBroker extends DBBroker {
             collectionsDb.put(transaction, key, d, true);
             return nextCollectionId;
         } catch(final LockException e) {
-            LOG.warn("Failed to acquire lock on " + collectionsDb.getFile().getName(), e);
+            LOG.warn("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()), e);
             return Collection.UNKNOWN_COLLECTION_ID;
             //TODO : rethrow ? -pb
         } finally {
@@ -1757,8 +1753,8 @@ public class NativeBroker extends DBBroker {
     public void reindexCollection(final Txn transaction, final Collection collection, final int mode) throws PermissionDeniedException {
         final CollectionCache collectionsCache = pool.getCollectionsCache();
         synchronized(collectionsCache) {
-            if(!collection.getPermissionsNoLock().validate(getSubject(), Permission.WRITE)) {
-                throw new PermissionDeniedException("Account " + getSubject().getName() + " have insufficient privileges on collection " + collection.getURI());
+            if(!collection.getPermissionsNoLock().validate(getCurrentSubject(), Permission.WRITE)) {
+                throw new PermissionDeniedException("Account " + getCurrentSubject().getName() + " have insufficient privileges on collection " + collection.getURI());
             }
             LOG.debug("Reindexing collection " + collection.getURI());
             if(mode == NodeProcessor.MODE_STORE) {
@@ -1789,8 +1785,8 @@ public class NativeBroker extends DBBroker {
         if(pool.isReadOnly()) {
             throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
         }
-        if(!collection.getPermissionsNoLock().validate(getSubject(), Permission.WRITE)) {
-            throw new PermissionDeniedException("Account " + getSubject().getName() + " have insufficient privileges on collection " + collection.getURI());
+        if(!collection.getPermissionsNoLock().validate(getCurrentSubject(), Permission.WRITE)) {
+            throw new PermissionDeniedException("Account " + getCurrentSubject().getName() + " have insufficient privileges on collection " + collection.getURI());
         }
         notifyDropIndex(collection);
         indexController.removeCollection(collection, this, reindex);
@@ -1834,64 +1830,67 @@ public class NativeBroker extends DBBroker {
     @Override
     public DocumentImpl storeTempResource(final org.exist.dom.memtree.DocumentImpl doc)
         throws EXistException, PermissionDeniedException, LockException {
-        //store the currentUser
-        final Subject currentUser = getSubject();
-        //elevate getUser() to DBA_USER
-        setSubject(pool.getSecurityManager().getSystemSubject());
-        //start a transaction
-        final TransactionManager transact = pool.getTransactionManager();
-        //create a name for the temporary document
-        final XmldbURI docName = XmldbURI.create(MessageDigester.md5(Thread.currentThread().getName() + Long.toString(System.currentTimeMillis()), false) + ".xml");
 
-        //get the temp collection
-        Collection temp = openCollection(XmldbURI.TEMP_COLLECTION_URI, Lock.WRITE_LOCK);
-        boolean created = false;
-        try(final Txn transaction = transact.beginTransaction()) {
-            //if no temp collection
-            if(temp == null) {
-                //creates temp collection (with write lock)
-                temp = createTempCollection(transaction);
-                if(temp == null) {
-                    LOG.warn("Failed to create temporary collection");
-                    //TODO : emergency exit?
+        try {
+            //elevate getUser() to DBA_USER
+            pushSubject(pool.getSecurityManager().getSystemSubject());
+
+            //start a transaction
+            final TransactionManager transact = pool.getTransactionManager();
+            //create a name for the temporary document
+            final XmldbURI docName = XmldbURI.create(MessageDigester.md5(Thread.currentThread().getName() + Long.toString(System.currentTimeMillis()), false) + ".xml");
+
+            //get the temp collection
+            Collection temp = openCollection(XmldbURI.TEMP_COLLECTION_URI, Lock.WRITE_LOCK);
+            boolean created = false;
+            try (final Txn transaction = transact.beginTransaction()) {
+                //if no temp collection
+                if (temp == null) {
+                    //creates temp collection (with write lock)
+                    temp = createTempCollection(transaction);
+                    if (temp == null) {
+                        LOG.warn("Failed to create temporary collection");
+                        //TODO : emergency exit?
+                    }
+                    created = true;
                 }
-                created = true;
+                //create a temporary document
+                final DocumentImpl targetDoc = new DocumentImpl(pool, temp, docName);
+                targetDoc.getPermissions().setMode(Permission.DEFAULT_TEMPORARY_DOCUMENT_PERM);
+                final long now = System.currentTimeMillis();
+                final DocumentMetadata metadata = new DocumentMetadata();
+                metadata.setLastModified(now);
+                metadata.setCreated(now);
+                targetDoc.setMetadata(metadata);
+                targetDoc.setDocId(getNextResourceId(transaction, temp));
+                //index the temporary document
+                final DOMIndexer indexer = new DOMIndexer(this, transaction, doc, targetDoc); //NULL transaction, so temporary fragment is not journalled - AR
+                indexer.scan();
+                indexer.store();
+                //store the temporary document
+                temp.addDocument(transaction, this, targetDoc); //NULL transaction, so temporary fragment is not journalled - AR
+                // unlock the temp collection
+                if (transaction == null) {
+                    temp.getLock().release(Lock.WRITE_LOCK);
+                } else if (!created) {
+                    transaction.registerLock(temp.getLock(), Lock.WRITE_LOCK);
+                }
+                //NULL transaction, so temporary fragment is not journalled - AR
+                storeXMLResource(transaction, targetDoc);
+                flush();
+                closeDocument();
+                //commit the transaction
+                transact.commit(transaction);
+                return targetDoc;
+            } catch (final Exception e) {
+                LOG.warn("Failed to store temporary fragment: " + e.getMessage(), e);
+                //abort the transaction
             }
-            //create a temporary document
-            final DocumentImpl targetDoc = new DocumentImpl(pool, temp, docName);
-            targetDoc.getPermissions().setMode(Permission.DEFAULT_TEMPORARY_DOCUMENT_PERM);
-            final long now = System.currentTimeMillis();
-            final DocumentMetadata metadata = new DocumentMetadata();
-            metadata.setLastModified(now);
-            metadata.setCreated(now);
-            targetDoc.setMetadata(metadata);
-            targetDoc.setDocId(getNextResourceId(transaction, temp));
-            //index the temporary document
-            final DOMIndexer indexer = new DOMIndexer(this, transaction, doc, targetDoc); //NULL transaction, so temporary fragment is not journalled - AR
-            indexer.scan();
-            indexer.store();
-            //store the temporary document
-            temp.addDocument(transaction, this, targetDoc); //NULL transaction, so temporary fragment is not journalled - AR
-            // unlock the temp collection
-            if(transaction == null) {
-                temp.getLock().release(Lock.WRITE_LOCK);
-            } else if(!created) {
-                transaction.registerLock(temp.getLock(), Lock.WRITE_LOCK);
-            }
-            //NULL transaction, so temporary fragment is not journalled - AR
-            storeXMLResource(transaction, targetDoc);
-            flush();
-            closeDocument();
-            //commit the transaction
-            transact.commit(transaction);
-            return targetDoc;
-        } catch(final Exception e) {
-            LOG.warn("Failed to store temporary fragment: " + e.getMessage(), e);
-            //abort the transaction
         } finally {
             //restore the user
-            setUser(currentUser);
+            popSubject();
         }
+
         return null;
     }
 
@@ -1965,7 +1964,7 @@ public class NativeBroker extends DBBroker {
             LOG.error("Problem reading btree", bte);
             return null;
         } catch(final LockException e) {
-            LOG.error("Failed to acquire lock on " + collectionsDb.getFile().getName());
+            LOG.error("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()));
             return null;
         } catch(final IOException e) {
             LOG.error("IOException while reading resource data", e);
@@ -1994,7 +1993,7 @@ public class NativeBroker extends DBBroker {
             //} catch (ReadOnlyException e) {
             //LOG.warn(DATABASE_IS_READ_ONLY);
         } catch(final LockException e) {
-            LOG.warn("Failed to acquire lock on " + collectionsDb.getFile().getName());
+            LOG.warn("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()));
         } catch(final IOException e) {
             LOG.warn("IOException while writing document data", e);
         } finally {
@@ -2013,42 +2012,42 @@ public class NativeBroker extends DBBroker {
         trigger.afterUpdateDocumentMetadata(this, transaction, doc);
     }
 
-    private File getCollectionFile(final File dir, final XmldbURI uri, final boolean create) throws IOException {
+    protected Path getCollectionFile(final Path dir, final XmldbURI uri, final boolean create) throws IOException {
         return getCollectionFile(dir, null, uri, create);
     }
 
-    public File getCollectionBinaryFileFsPath(final XmldbURI uri) {
-        return new File(fsDir, uri.getURI().toString());
+    public Path getCollectionBinaryFileFsPath(final XmldbURI uri) {
+        String suri = uri.getURI().toString();
+        if(suri.startsWith("/")) {
+            suri = suri.substring(1);
+        }
+        return getFsDir().resolve(suri);
     }
 
-    private File getCollectionFile(File dir, final Txn transaction, final XmldbURI uri, boolean create)
-        throws IOException {
+    private Path getCollectionFile(Path dir, final Txn transaction, final XmldbURI uri, final boolean create)
+            throws IOException {
         if(transaction != null) {
-            dir = new File(dir, "txn." + transaction.getId());
-            if(create && !dir.exists()) {
-                if(!dir.mkdir()) {
-                    throw new IOException("Cannot make transaction filesystem directory: " + dir);
-                }
+            dir = dir.resolve("txn." + transaction.getId());
+            if(create && !Files.exists(dir)) {
+                dir = Files.createDirectory(dir);
             }
 
             //XXX: replace by transaction operation id/number from Txn
             //add unique id for operation in transaction
-            dir = new File(dir, "oper." + UUID.randomUUID().toString());
-            if(create && !dir.exists()) {
-                if(!dir.mkdir()) {
-                    throw new IOException("Cannot make transaction filesystem directory: " + dir);
-                }
+            dir = dir.resolve("oper." + UUID.randomUUID().toString());
+            if(create && !Files.exists(dir)) {
+                dir = Files.createDirectory(dir);
             }
         }
+
+        //TODO(AR) consider just using Files.createDirectories to create the entire path in one atomic go
         final XmldbURI[] segments = uri.getPathSegments();
-        File binFile = dir;
+        Path binFile = dir;
         final int last = segments.length - 1;
         for(int i = 0; i < segments.length; i++) {
-            binFile = new File(binFile, segments[i].toString());
-            if(create && i != last && !binFile.exists()) {
-                if(!binFile.mkdir()) {
-                    throw new IOException("Cannot make collection filesystem directory: " + binFile);
-                }
+            binFile = binFile.resolve(segments[i].toString());
+            if(create && i != last && !Files.exists(binFile)) {
+                Files.createDirectory(binFile);
             }
         }
         return binFile;
@@ -2057,63 +2056,42 @@ public class NativeBroker extends DBBroker {
     @Deprecated
     @Override
     public void storeBinaryResource(final Txn transaction, final BinaryDocument blob, final byte[] data)
-        throws IOException {
-        blob.setPage(Page.NO_PAGE);
-        final File binFile = getCollectionFile(fsDir, blob.getURI(), true);
-        File backupFile = null;
-        final boolean exists = binFile.exists();
-        if(exists) {
-            backupFile = getCollectionFile(fsBackupDir, transaction, blob.getURI(), true);
-            if(!binFile.renameTo(backupFile)) {
-                throw new IOException("Cannot backup binary resource for journal to " + backupFile);
+            throws IOException {
+        storeBinaryResource(transaction, blob, dest -> {
+            try(final InputStream is = new ByteArrayInputStream(data)) {
+                Files.copy(is, dest);
             }
-        }
-        final OutputStream os = new FileOutputStream(binFile);
-        os.write(data, 0, data.length);
-        os.close();
-
-        final Loggable loggable;
-        if(exists) {
-            loggable = new UpdateBinaryLoggable(this, transaction, binFile, backupFile);
-        } else {
-            loggable = new CreateBinaryLoggable(this, transaction, binFile);
-        }
-        try {
-            logManager.writeToLog(loggable);
-        } catch(final TransactionException e) {
-            LOG.warn(e.getMessage(), e);
-        }
+        });
     }
 
     @Override
     public void storeBinaryResource(final Txn transaction, final BinaryDocument blob, final InputStream is)
-        throws IOException {
-        blob.setPage(Page.NO_PAGE);
-        final File binFile = getCollectionFile(fsDir, blob.getURI(), true);
-        File backupFile = null;
-        final boolean exists = binFile.exists();
-        if(exists) {
-            backupFile = getCollectionFile(fsBackupDir, transaction, blob.getURI(), true);
-            if(!binFile.renameTo(backupFile)) {
-                throw new IOException("Cannot backup binary resource for journal to " + backupFile);
-            }
-        }
-        final byte[] buffer = new byte[BINARY_RESOURCE_BUF_SIZE];
-        final OutputStream os = new FileOutputStream(binFile);
-        int len;
-        while((len = is.read(buffer)) >= 0) {
-            if(len > 0) {
-                os.write(buffer, 0, len);
-            }
-        }
-        os.close();
+            throws IOException {
+        storeBinaryResource(transaction, blob, dest -> Files.copy(is, dest));
+    }
 
-        final Loggable loggable;
+    /**
+     * @param transaction
+     * @param blob The binary document to store
+     * @param fWriteData A function that given the destination path, writes the document data to that path
+     */
+    private void storeBinaryResource(final Txn transaction, final BinaryDocument blob, final ConsumerE<Path, IOException> fWriteData) throws IOException {
+        blob.setPage(Page.NO_PAGE);
+        final Path binFile = getCollectionFile(getFsDir(), blob.getURI(), true);
+        final boolean exists = Files.exists(binFile);
+
+        final Function<Path, Loggable> fLoggable;
         if(exists) {
-            loggable = new UpdateBinaryLoggable(this, transaction, binFile, backupFile);
+            final Path backupFile = getCollectionFile(fsBackupDir, transaction, blob.getURI(), true);
+            Files.move(binFile, backupFile, StandardCopyOption.ATOMIC_MOVE);
+            fLoggable = original -> new UpdateBinaryLoggable(this, transaction, original, backupFile);
         } else {
-            loggable = new CreateBinaryLoggable(this, transaction, binFile);
+            fLoggable = original -> new CreateBinaryLoggable(this, transaction, original);
         }
+
+        fWriteData.accept(binFile);
+
+        final Loggable loggable = fLoggable.apply(binFile);
         try {
             logManager.writeToLog(loggable);
         } catch(final TransactionException e) {
@@ -2146,8 +2124,8 @@ public class NativeBroker extends DBBroker {
             return null;
         }
 
-        //if(!collection.getPermissions().validate(getSubject(), Permission.READ)) {
-        //throw new PermissionDeniedException("Permission denied to read collection '" + collUri + "' by " + getSubject().getName());
+        //if(!collection.getPermissions().validate(getCurrentSubject(), Permission.READ)) {
+        //throw new PermissionDeniedException("Permission denied to read collection '" + collUri + "' by " + getCurrentSubject().getName());
         //}
 
         final DocumentImpl doc = collection.getDocument(this, docUri);
@@ -2156,8 +2134,8 @@ public class NativeBroker extends DBBroker {
             return null;
         }
 
-        if(!doc.getPermissions().validate(getSubject(), accessType)) {
-            throw new PermissionDeniedException("Account '" + getSubject().getName() + "' not allowed requested access to document '" + fileName + "'");
+        if(!doc.getPermissions().validate(getCurrentSubject(), accessType)) {
+            throw new PermissionDeniedException("Account '" + getCurrentSubject().getName() + "' not allowed requested access to document '" + fileName + "'");
         }
 
         if(doc.getResourceType() == DocumentImpl.BINARY_FILE) {
@@ -2186,8 +2164,8 @@ public class NativeBroker extends DBBroker {
             return null;
         }
         try {
-            //if (!collection.getPermissions().validate(getSubject(), Permission.EXECUTE)) {
-            //    throw new PermissionDeniedException("Permission denied to read collection '" + collUri + "' by " + getSubject().getName());
+            //if (!collection.getPermissions().validate(getCurrentSubject(), Permission.EXECUTE)) {
+            //    throw new PermissionDeniedException("Permission denied to read collection '" + collUri + "' by " + getCurrentSubject().getName());
             //}
             final DocumentImpl doc = collection.getDocumentWithLock(this, docUri, lockMode);
             if(doc == null) {
@@ -2239,20 +2217,19 @@ public class NativeBroker extends DBBroker {
     @Override
     public long getBinaryResourceSize(final BinaryDocument blob)
         throws IOException {
-        final File binFile = getCollectionFile(fsDir, blob.getURI(), false);
-        return binFile.length();
+        final Path binFile = getCollectionFile(getFsDir(), blob.getURI(), false);
+        return Files.size(binFile);
     }
 
     @Override
-    public File getBinaryFile(final BinaryDocument blob) throws IOException {
-        return getCollectionFile(fsDir, blob.getURI(), false);
+    public Path getBinaryFile(final BinaryDocument blob) throws IOException {
+        return getCollectionFile(getFsDir(), blob.getURI(), false);
     }
 
     @Override
     public InputStream getBinaryResource(final BinaryDocument blob)
         throws IOException {
-        final File binFile = getCollectionFile(fsDir, blob.getURI(), false);
-        return new FileInputStream(binFile);
+        return Files.newInputStream(getCollectionFile(getFsDir(), blob.getURI(), false));
     }
 
     //TODO : consider a better cooperation with Collection -pb
@@ -2266,7 +2243,7 @@ public class NativeBroker extends DBBroker {
 
             collectionsDb.query(query, new DocumentCallback(collectionInternalAccess));
         } catch(final LockException e) {
-            LOG.warn("Failed to acquire lock on " + collectionsDb.getFile().getName());
+            LOG.warn("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()));
         } catch(final IOException | BTreeException | TerminatedException e) {
             LOG.warn("Exception while reading document data", e);
         } finally {
@@ -2287,7 +2264,7 @@ public class NativeBroker extends DBBroker {
                 collectionsDb.query(query, callback);
             }
         } catch(final LockException e) {
-            LOG.warn("Failed to acquire lock on " + collectionsDb.getFile().getName());
+            LOG.warn("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()));
         } catch(final IOException | BTreeException e) {
             LOG.warn("Exception while reading document data", e);
         } finally {
@@ -2304,7 +2281,7 @@ public class NativeBroker extends DBBroker {
             final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, key);
             collectionsDb.query(query, callback);
         } catch(final LockException e) {
-            LOG.warn("Failed to acquire lock on " + collectionsDb.getFile().getName());
+            LOG.warn("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()));
         } catch(final IOException | BTreeException e) {
             LOG.warn("Exception while reading document data", e);
         } finally {
@@ -2328,8 +2305,8 @@ public class NativeBroker extends DBBroker {
                 continue;
             }
             if(doctypeName.equals(doctype.getName())
-                && doc.getCollection().getPermissionsNoLock().validate(getSubject(), Permission.READ)
-                && doc.getPermissions().validate(getSubject(), Permission.READ)) {
+                && doc.getCollection().getPermissionsNoLock().validate(getCurrentSubject(), Permission.READ)
+                && doc.getPermissions().validate(getCurrentSubject(), Permission.READ)) {
                 result.add(doc);
             }
         }
@@ -2377,7 +2354,7 @@ public class NativeBroker extends DBBroker {
                 document.readDocumentMeta(is);
             }
         } catch(final LockException e) {
-            LOG.warn("Failed to acquire lock on " + collectionsDb.getFile().getName());
+            LOG.warn("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()));
         } catch(final IOException e) {
             LOG.warn("IOException while reading document data", e);
         } finally {
@@ -2399,12 +2376,12 @@ public class NativeBroker extends DBBroker {
 
         final Collection collection = doc.getCollection();
 
-        if(!collection.getPermissionsNoLock().validate(getSubject(), Permission.EXECUTE)) {
-            throw new PermissionDeniedException("Account '" + getSubject().getName() + "' has insufficient privileges to copy the resource '" + doc.getFileURI() + "'.");
+        if(!collection.getPermissionsNoLock().validate(getCurrentSubject(), Permission.EXECUTE)) {
+            throw new PermissionDeniedException("Account '" + getCurrentSubject().getName() + "' has insufficient privileges to copy the resource '" + doc.getFileURI() + "'.");
         }
 
-        if(!doc.getPermissions().validate(getSubject(), Permission.READ)) {
-            throw new PermissionDeniedException("Account '" + getSubject().getName() + "' has insufficient privileges to copy the resource '" + doc.getFileURI() + "'.");
+        if(!doc.getPermissions().validate(getCurrentSubject(), Permission.READ)) {
+            throw new PermissionDeniedException("Account '" + getCurrentSubject().getName() + "' has insufficient privileges to copy the resource '" + doc.getFileURI() + "'.");
         }
 
         if(newName == null) {
@@ -2418,8 +2395,8 @@ public class NativeBroker extends DBBroker {
                 lock.acquire(Lock.WRITE_LOCK);
                 final DocumentImpl oldDoc = destination.getDocument(this, newName);
 
-                if(!destination.getPermissionsNoLock().validate(getSubject(), Permission.EXECUTE)) {
-                    throw new PermissionDeniedException("Account '" + getSubject().getName() + "' does not have execute access on the destination collection '" + destination.getURI() + "'.");
+                if(!destination.getPermissionsNoLock().validate(getCurrentSubject(), Permission.EXECUTE)) {
+                    throw new PermissionDeniedException("Account '" + getCurrentSubject().getName() + "' does not have execute access on the destination collection '" + destination.getURI() + "'.");
                 }
 
                 if(destination.hasChildCollection(this, newName.lastSegment())) {
@@ -2434,8 +2411,8 @@ public class NativeBroker extends DBBroker {
                 final DocumentTrigger trigger = new DocumentTriggers(this, collection);
 
                 if(oldDoc == null) {
-                    if(!destination.getPermissionsNoLock().validate(getSubject(), Permission.WRITE)) {
-                        throw new PermissionDeniedException("Account '" + getSubject().getName() + "' does not have write access on the destination collection '" + destination.getURI() + "'.");
+                    if(!destination.getPermissionsNoLock().validate(getCurrentSubject(), Permission.WRITE)) {
+                        throw new PermissionDeniedException("Account '" + getCurrentSubject().getName() + "' does not have write access on the destination collection '" + destination.getURI() + "'.");
                     }
                 } else {
                     //overwrite existing document
@@ -2444,7 +2421,7 @@ public class NativeBroker extends DBBroker {
                         throw new EXistException("Cannot copy resource to itself '" + doc.getURI() + "'.");
                     }
 
-                    if(!oldDoc.getPermissions().validate(getSubject(), Permission.WRITE)) {
+                    if(!oldDoc.getPermissions().validate(getCurrentSubject(), Permission.WRITE)) {
                         throw new PermissionDeniedException("A resource with the same name already exists in the target collection '" + oldDoc.getURI() + "', and you do not have write access on that resource.");
                     }
 
@@ -2529,15 +2506,15 @@ public class NativeBroker extends DBBroker {
 
         final Account docUser = doc.getUserLock();
         if(docUser != null) {
-            if(!(getSubject().getName()).equals(docUser.getName())) {
+            if(!(getCurrentSubject().getName()).equals(docUser.getName())) {
                 throw new PermissionDeniedException("Cannot move '" + doc.getFileURI() + " because is locked by getUser() '" + docUser.getName() + "'");
             }
         }
 
         final Collection collection = doc.getCollection();
 
-        if(!collection.getPermissionsNoLock().validate(getSubject(), Permission.WRITE | Permission.EXECUTE)) {
-            throw new PermissionDeniedException("Account " + getSubject().getName() + " have insufficient privileges on source Collection to move resource " + doc.getFileURI());
+        if(!collection.getPermissionsNoLock().validate(getCurrentSubject(), Permission.WRITE | Permission.EXECUTE)) {
+            throw new PermissionDeniedException("Account " + getCurrentSubject().getName() + " have insufficient privileges on source Collection to move resource " + doc.getFileURI());
         }
 
         /**
@@ -2551,17 +2528,17 @@ public class NativeBroker extends DBBroker {
          * - Adam 2013-03-26
          */
         //must be owner of have execute access for the rename
-//        if(!((doc.getPermissions().getOwner().getId() != getSubject().getId()) | (doc.getPermissions().validate(getSubject(), Permission.EXECUTE)))) {
-//            throw new PermissionDeniedException("Account "+getSubject().getName()+" have insufficient privileges on destination Collection to move resource " + doc.getFileURI());
+//        if(!((doc.getPermissions().getOwner().getId() != getCurrentSubject().getId()) | (doc.getPermissions().validate(getCurrentSubject(), Permission.EXECUTE)))) {
+//            throw new PermissionDeniedException("Account "+getCurrentSubject().getName()+" have insufficient privileges on destination Collection to move resource " + doc.getFileURI());
 //        }
 
-        if(!destination.getPermissionsNoLock().validate(getSubject(), Permission.WRITE | Permission.EXECUTE)) {
-            throw new PermissionDeniedException("Account " + getSubject().getName() + " have insufficient privileges on destination Collection to move resource " + doc.getFileURI());
+        if(!destination.getPermissionsNoLock().validate(getCurrentSubject(), Permission.WRITE | Permission.EXECUTE)) {
+            throw new PermissionDeniedException("Account " + getCurrentSubject().getName() + " have insufficient privileges on destination Collection to move resource " + doc.getFileURI());
         }
         
         
         /* Copy reference to original document */
-        final File fsOriginalDocument = getCollectionFile(fsDir, doc.getURI(), true);
+        final Path fsOriginalDocument = getCollectionFile(getFsDir(), doc.getURI(), true);
 
 
         final XmldbURI oldName = doc.getFileURI();
@@ -2589,7 +2566,7 @@ public class NativeBroker extends DBBroker {
                 }
 
                 // GNU mv command would prompt for Confirmation here, you can say yes or pass the '-f' flag. As we cant prompt for confirmation we assume OK
-                /* if(!oldDoc.getPermissions().validate(getSubject(), Permission.WRITE)) {
+                /* if(!oldDoc.getPermissions().validate(getCurrentSubject(), Permission.WRITE)) {
                     throw new PermissionDeniedException("Resource with same name exists in target collection and write is denied");
                 }
                 */
@@ -2624,21 +2601,20 @@ public class NativeBroker extends DBBroker {
                 // binary resource
                 doc.setCollection(destination);
                 destination.addDocument(transaction, this, doc);
-                final File colDir = getCollectionFile(fsDir, destination.getURI(), true);
-                final File binFile = new File(colDir, newName.lastSegment().toString());
-                final File sourceFile = getCollectionFile(fsDir, doc.getURI(), false);
+                final Path colDir = getCollectionFile(getFsDir(), destination.getURI(), true);
+                final Path binFile = colDir.resolve(newName.lastSegment().toString());
+                final Path sourceFile = getCollectionFile(getFsDir(), doc.getURI(), false);
+
                 /* Create required directories */
-                binFile.getParentFile().mkdirs();
+                Files.createDirectories(binFile.getParent());
+
                 /* Rename original file to new location */
-                if(fsOriginalDocument.renameTo(binFile)) {
-                    final Loggable loggable = new RenameBinaryLoggable(this, transaction, sourceFile, binFile);
-                    try {
-                        logManager.writeToLog(loggable);
-                    } catch(final TransactionException e) {
-                        LOG.warn(e.getMessage(), e);
-                    }
-                } else {
-                    LOG.fatal("Cannot rename " + sourceFile + " to " + binFile + " for journaling of binary resource move.");
+                Files.move(fsOriginalDocument, binFile, StandardCopyOption.ATOMIC_MOVE);
+                final Loggable loggable = new RenameBinaryLoggable(this, transaction, sourceFile, binFile);
+                try {
+                    logManager.writeToLog(loggable);
+                } catch(final TransactionException e) {
+                    LOG.warn(e.getMessage(), e);
                 }
             }
             storeXMLResource(transaction, doc);
@@ -2743,24 +2719,13 @@ public class NativeBroker extends DBBroker {
             LOG.debug("removing binary resource " + blob.getDocId() + "...");
         }
 
-        final File binFile = getCollectionFile(fsDir, blob.getURI(), false);
-        if(binFile.exists()) {
-            final File binBackupFile = getCollectionFile(fsBackupDir, transaction, blob.getURI(), true);
+        final Path binFile = getCollectionFile(getFsDir(), blob.getURI(), false);
+        if(Files.exists(binFile)) {
+            final Path binBackupFile = getCollectionFile(fsBackupDir, transaction, blob.getURI(), true);
             final Loggable loggable = new RenameBinaryLoggable(this, transaction, binFile, binBackupFile);
-            if(!binFile.renameTo(binBackupFile)) {
-                // Workaround for Java bug 6213298 - renameTo() sometimes doesn't work
-                // See http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6213298
-                System.gc(); //TODO remove this, must be a better approach in Java 7?
-                try {
-                    Thread.sleep(50);
-                } catch(final Exception e) {
-                    //ignore
-                }
-                if(!binFile.renameTo(binBackupFile)) {
-                    throw new IOException("Cannot move file " + binFile
-                        + " for delete journal to " + binBackupFile);
-                }
-            }
+
+            Files.move(binFile, binBackupFile, StandardCopyOption.ATOMIC_MOVE);
+
             try {
                 logManager.writeToLog(loggable);
             } catch(final TransactionException e) {
@@ -2790,7 +2755,7 @@ public class NativeBroker extends DBBroker {
             //} catch (ReadOnlyException e) {
             //LOG.warn(DATABASE_IS_READ_ONLY);
         } catch(final LockException e) {
-            LOG.warn("Failed to acquire lock on " + collectionsDb.getFile().getName());
+            LOG.warn("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()));
         } finally {
             lock.release(Lock.READ_LOCK);
         }
@@ -2831,7 +2796,7 @@ public class NativeBroker extends DBBroker {
             //return DocumentImpl.UNKNOWN_DOCUMENT_ID;
             //TODO : rethrow ? -pb
         } catch(final LockException e) {
-            LOG.warn("Failed to acquire lock on " + collectionsDb.getFile().getName(), e);
+            LOG.warn("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()), e);
             //TODO : rethrow ? -pb
         } finally {
             lock.release(Lock.WRITE_LOCK);
@@ -3572,11 +3537,11 @@ public class NativeBroker extends DBBroker {
         try {
             lock.acquire(Lock.WRITE_LOCK);
 
-            LOG.info("Rebuilding index " + btree.getFile().getName());
+            LOG.info("Rebuilding index " + FileUtils.fileName(btree.getFile()));
             btree.rebuild();
-            LOG.info("Index " + btree.getFile().getName() + " was rebuilt.");
+            LOG.info("Index " + FileUtils.fileName(btree.getFile()) + " was rebuilt.");
         } catch(LockException | IOException | TerminatedException | DBException e) {
-            LOG.warn("Caught error while rebuilding core index " + btree.getFile().getName() + ": " + e.getMessage(), e);
+            LOG.warn("Caught error while rebuilding core index " + FileUtils.fileName(btree.getFile()) + ": " + e.getMessage(), e);
         } finally {
             lock.release(Lock.WRITE_LOCK);
         }
@@ -3619,7 +3584,7 @@ public class NativeBroker extends DBBroker {
                     lock.acquire(Lock.WRITE_LOCK);
                     collectionsDb.flush();
                 } catch(final LockException e) {
-                    LOG.warn("Failed to acquire lock on " + collectionsDb.getFile().getName(), e);
+                    LOG.warn("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()), e);
                 } finally {
                     lock.release(Lock.WRITE_LOCK);
                 }
@@ -3671,7 +3636,7 @@ public class NativeBroker extends DBBroker {
                         "; max: " + nf.format(run.maxMemory()) +
                         "; free: " + nf.format(run.freeMemory()) +
                         "; reserved: " + nf.format(pool.getReservedMem()) +
-                        "; used: " + nf.format(pool.getCacheManager().getSizeInBytes()));
+                        "; used: " + nf.format(pool.getCacheManager().getCurrentSize()));
                     flush();
                     System.gc();
                 }

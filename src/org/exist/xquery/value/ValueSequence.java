@@ -765,31 +765,6 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
 		}
 		
 	}
-    
-    /**
-    * Returns a hashKey based on sequence item string values.
-    * This function is faster than toString() but need to be enhanced.
-    * 
-    * Warning : don't use except for experimental GroupBy clause.
-    * author Boris Verhaegen
-    *
-    * @see org.exist.xquery.value.GroupedValueSequenceTable 
-    * 
-    *
-    */
-    public String getHashKey(){
-    	try{
-    		final StringBuilder hashKey = new StringBuilder();
-    		for(final SequenceIterator i = iterate();i.hasNext();){
-     			final Item current = i.nextItem();     			
-    			hashKey.append(current.getStringValue());
-    			hashKey.append("&&");  //bv : sentinel value to separate grouping keys values
-     		}
-      		return hashKey.toString();
-    	} catch (final XPathException e) {
-      		return "ValueSequence.getHashKey() failed: " + e.getMessage();
-      	}
-    }    
 	
 	private class ValueSequenceIterator implements SequenceIterator {
 		

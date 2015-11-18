@@ -19,8 +19,9 @@
  */
 package org.exist.storage.md;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.util.Optional;
 
 import junit.framework.TestCase;
 
@@ -95,12 +96,9 @@ public class BackupRestoreMDTest extends TestCase {
     	String key2UUID = null;
     	String key3UUID = null;
     	
-    	File file;
-    	
-        DBBroker broker = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);
+    	Path file;
+
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             //collection
             Collection root = broker.getCollection(TestConstants.TEST_COLLECTION_URI);
@@ -143,8 +141,6 @@ public class BackupRestoreMDTest extends TestCase {
 	
             SystemExport sysexport = new SystemExport( broker, null, null, true );
             file = sysexport.export( "backup", false, false, null );
-        } finally {
-        	pool.release(broker);
         }
     	
     	clean();
@@ -153,9 +149,7 @@ public class BackupRestoreMDTest extends TestCase {
 		RestoreListener listener = new LogRestoreListener();
 		restore.restore(listener, "admin", "", "", file, "xmldb:exist://");
 
-        broker = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             assertNotNull(broker);
 
             //collection
@@ -204,8 +198,6 @@ public class BackupRestoreMDTest extends TestCase {
 	
 	    	assertEquals(VALUE2, meta.getValue());
 	    	assertEquals(key3UUID, meta.getUUID());
-        } finally {
-        	pool.release(broker);
         }
 	}
 	
@@ -218,15 +210,15 @@ public class BackupRestoreMDTest extends TestCase {
     
 	//@BeforeClass
     public static void startDB() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, SAXException, CollectionConfigurationException, LockException {
-        final File confFile = ConfigurationHelper.lookup("conf.xml");
-        Configuration config = new Configuration(confFile.getAbsolutePath());
+        final Path confFile = ConfigurationHelper.lookup("conf.xml");
+        Configuration config = new Configuration(confFile.toAbsolutePath().toString());
         BrokerPool.configure(1, 5, config);
         pool = BrokerPool.getInstance();
         assertNotNull(pool);
         pool.getPluginsManager().addPlugin("org.exist.storage.md.Plugin");
         final TransactionManager transact = pool.getTransactionManager();
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn transaction = transact.beginTransaction()) {
 
             Collection root = broker.getOrCreateCollection(transaction, col1uri);
@@ -270,7 +262,7 @@ public class BackupRestoreMDTest extends TestCase {
 
     private static void clean() {
         final TransactionManager transact = pool.getTransactionManager();
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn transaction = transact.beginTransaction()) {
 
             Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);

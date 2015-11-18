@@ -66,19 +66,16 @@ public class ScriptRunner implements Runnable, Observer {
 	 */
 	@Override
 	public void run() {
-		Database db = null;
-		DBBroker broker = null;
-		
 		try {
-			db = BrokerPool.getInstance();
+			final Database db = BrokerPool.getInstance();
 			
             BrokerPool.registerStatusObserver(this);
 			
-			broker = db.get(null);
+			try(final DBBroker broker = db.getBroker()) {
 
-	        XQuery xquery = broker.getBrokerPool().getXQueryService();
+				XQuery xquery = broker.getBrokerPool().getXQueryService();
 
-	        xquery.execute(broker, expression, null);
+				xquery.execute(broker, expression, null);
 
 //	        XQueryContext context = expression.getContext();
 //	        
@@ -105,13 +102,10 @@ public class ScriptRunner implements Runnable, Observer {
 //                context.reset();
 //	        	broker.getBrokerPool().getProcessMonitor().queryCompleted(context.getWatchDog());
 //	        }
-		
+			}
         } catch (Exception e) {
         	e.printStackTrace();
         	exception = e;
-		} finally {
-			if (db != null)
-				db.release(broker);
 		}
 	}
 

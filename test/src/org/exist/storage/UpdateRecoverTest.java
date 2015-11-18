@@ -24,7 +24,6 @@ package org.exist.storage;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
-import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.DefaultDocumentSet;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.MutableDocumentSet;
@@ -46,7 +45,6 @@ import org.exist.xupdate.XUpdateProcessor;
 import org.junit.After;
 import org.junit.Test;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xmldb.api.DatabaseManager;
@@ -58,6 +56,7 @@ import org.xmldb.api.modules.XUpdateQueryService;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.Optional;
 
 /**
  * Tests recovery of XUpdate operations.
@@ -95,7 +94,7 @@ public class UpdateRecoverTest {
         final BrokerPool pool = startDB();
         final TransactionManager transact = pool.getTransactionManager();
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             IndexInfo info;
 
@@ -280,7 +279,7 @@ public class UpdateRecoverTest {
         final BrokerPool pool = startDB();
         assertNotNull(pool);
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
             final Serializer serializer = broker.getSerializer();
             assertNotNull(serializer);
             serializer.reset();

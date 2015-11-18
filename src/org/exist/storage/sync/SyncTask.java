@@ -21,10 +21,13 @@
  */
 package org.exist.storage.sync;
 
-import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Properties;
 
 import org.exist.EXistException;
+import org.exist.scheduler.JobDescription;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.SystemTask;
@@ -32,7 +35,6 @@ import org.exist.util.Configuration;
 
 public class SyncTask implements SystemTask {
 
-    private final static String JOB_GROUP = "eXist.internal";
     private final static String JOB_NAME = "Sync";
 
     public static String getJobName() {
@@ -40,10 +42,10 @@ public class SyncTask implements SystemTask {
     }
 
     public static String getJobGroup() {
-        return JOB_GROUP;
+        return JobDescription.EXIST_INTERNAL_GROUP;
     }
 
-    private File dataDir;
+    private Path dataDir;
     private long diskSpaceMin = 64 * 1024L * 1024L;
 
     @Override
@@ -53,26 +55,34 @@ public class SyncTask implements SystemTask {
     }
 
     @Override
-    public void configure(Configuration config, Properties properties)
-            throws EXistException {
+    public void configure(Configuration config, Properties properties) throws EXistException {
         final Integer min = (Integer) config.getProperty(BrokerPool.DISK_SPACE_MIN_PROPERTY);
         if (min != null)
             {diskSpaceMin = min * 1024L * 1024L;}
 
         // fixme! - Shouldn't it be data dir AND journal dir we check
         // rather than EXIST_HOME? /ljo
-        dataDir = new File((String) config.getProperty(BrokerPool.PROPERTY_DATA_DIR));
-        LOG.info("Using DATA_DIR: " + dataDir.getAbsolutePath() + ". Minimal disk space required for database " +
+        dataDir = (Path) config.getProperty(BrokerPool.PROPERTY_DATA_DIR);
+        LOG.info("Using DATA_DIR: " + dataDir.toAbsolutePath().toString() + ". Minimal disk space required for database " +
                  "to continue operations: " + (diskSpaceMin / 1024 / 1024) + "mb");
-        final long space = dataDir.getUsableSpace();
-        LOG.info("Usable space on partition containing DATA_DIR: " + dataDir.getAbsolutePath() + ": " + (space / 1024 / 1024) + "mb");
+        final long space = getUsableSpace(dataDir);
+        LOG.info("Usable space on partition containing DATA_DIR: " + dataDir.toAbsolutePath().toString() + ": " + (space / 1024 / 1024) + "mb");
+    }
+
+    private long getUsableSpace(final Path path) {
+        try {
+            return Files.getFileStore(path).getUsableSpace();
+        } catch(final IOException ioe) {
+            LOG.error(ioe);
+            return -1;
+        }
     }
 
     @Override
     public void execute(DBBroker broker) throws EXistException {
         final BrokerPool pool = broker.getBrokerPool();
-        if (!checkDiskSpace(pool)) {
-            LOG.fatal("Partition containing DATA_DIR: " + dataDir.getAbsolutePath() + " is running out of disk space. " +
+        if (!checkDiskSpace()) {
+            LOG.fatal("Partition containing DATA_DIR: " + dataDir.toAbsolutePath().toString() + " is running out of disk space. " +
                 "Switching eXist-db to read only to prevent data loss!");
             pool.setReadOnly();
         }
@@ -84,8 +94,8 @@ public class SyncTask implements SystemTask {
         }
     }
 
-    private boolean checkDiskSpace(BrokerPool pool) {
-        final long space = dataDir.getUsableSpace();
+    private boolean checkDiskSpace() {
+        final long space = getUsableSpace(dataDir);
         //LOG.info("Usable space on partition containing DATA_DIR: " + dataDir.getAbsolutePath() + ": " + (space / 1024 / 1024) + "mb");
         return space > diskSpaceMin;
     }

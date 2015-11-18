@@ -1,4 +1,28 @@
+/*
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2012-2015 The eXist-db Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
 package org.exist.repo;
+
+import java.io.*;
+import java.util.Collection;
+import java.util.Optional;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -9,9 +33,6 @@ import org.exist.storage.BrokerPool;
 import org.expath.pkg.repo.*;
 import org.expath.pkg.repo.Package;
 import org.expath.pkg.repo.deps.ProcessorDependency;
-
-import java.io.*;
-import java.util.Collection;
 
 /**
  * Helper class to construct classpath for expath modules containing
@@ -55,8 +76,9 @@ public class ClasspathHelper {
 
     private static void scanPackages(BrokerPool pool, Classpath classpath) {
         try {
-            final ExistRepository repo = pool.getExpathRepo();
-            for (final Packages pkgs : repo.getParentRepo().listPackages()) {
+            final Optional<ExistRepository> repo = pool.getExpathRepo();
+	    if (repo.isPresent()) {
+            for (final Packages pkgs : repo.get().getParentRepo().listPackages()) {
                 final Package pkg = pkgs.latest();
                 if (!isCompatible(pkg)) {
                     LOG.warn("Package " + pkg.getName() + " is not compatible with this version of eXist. " +
@@ -71,6 +93,7 @@ public class ClasspathHelper {
                     }
                 }
             }
+	    }
         } catch (final Exception e) {
             LOG.warn("An error occurred while updating classpath for packages", e);
         }

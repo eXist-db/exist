@@ -37,7 +37,9 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 
+import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 
 import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
@@ -126,7 +128,7 @@ public class ExportGUI extends javax.swing.JFrame
         }
 
         try {
-            final Configuration config = new Configuration( confFile.getAbsolutePath(), null );
+            final Configuration config = new Configuration( confFile.getAbsolutePath(), Optional.empty() );
             BrokerPool.configure( 1, 5, config );
             pool = BrokerPool.getInstance();
             return( true );
@@ -460,10 +462,9 @@ public class ExportGUI extends javax.swing.JFrame
         if( !startDB() ) {
             return;
         }
-        DBBroker broker = null;
 
-        try {
-            broker = pool.get( pool.getSecurityManager().getSystemSubject() );
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+
             final SystemExport.StatusCallback callback = new SystemExport.StatusCallback() {
                 public void startCollection( String path )
                 {
@@ -506,9 +507,9 @@ public class ExportGUI extends javax.swing.JFrame
             displayMessage( "Starting export ..." );
             final long start = System.currentTimeMillis();
             final SystemExport sysexport   = new SystemExport( broker, callback, null, directAccess );
-            final File         file        = sysexport.export( exportTarget, incremental, zip, errorList );
+            final Path file        = sysexport.export( exportTarget, incremental, zip, errorList );
 
-            displayMessage( "Export to " + file.getAbsolutePath() + " completed successfully." );
+            displayMessage( "Export to " + file.toAbsolutePath().toString() + " completed successfully." );
             displayMessage( "Export took " + (System.currentTimeMillis() - start) + "ms.");
             progress.setString( "" );
         }
@@ -516,7 +517,6 @@ public class ExportGUI extends javax.swing.JFrame
             System.err.println( "ERROR: Failed to retrieve database broker: " + e.getMessage() );
         }
         finally {
-            pool.release( broker );
             progress.setValue( 0 );
             currentTask.setText( " " );
         }
@@ -528,10 +528,9 @@ public class ExportGUI extends javax.swing.JFrame
         if( !startDB() ) {
             return( null );
         }
-        DBBroker broker = null;
 
-        try {
-            broker = pool.get( pool.getSecurityManager().getSystemSubject() );
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+
             Object[] selected     = directAccessBtn.getSelectedObjects();
             final boolean directAccess = ( selected != null ) && ( selected[0] != null );
             selected = scanBtn.getSelectedObjects();
@@ -600,7 +599,6 @@ public class ExportGUI extends javax.swing.JFrame
             System.err.println( "WARN: Check terminated by db." );
         }
         finally {
-            pool.release( broker );
             progress.setValue( 0 );
             currentTask.setText( " " );
         }

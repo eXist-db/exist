@@ -64,8 +64,6 @@ import org.exist.storage.XQueryPool;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.MimeType;
-import org.exist.util.serializer.SAXSerializer;
-import org.exist.util.serializer.SerializerPool;
 import org.exist.http.servlets.HttpRequestWrapper;
 import org.exist.http.servlets.HttpResponseWrapper;
 import org.exist.http.Descriptor;
@@ -247,9 +245,8 @@ public class XQueryURLRewrite extends HttpServlet {
                     modelView = new ModelAndView();
                     // Execute the query
                     Sequence result = Sequence.EMPTY_SEQUENCE;
-                    DBBroker broker = null;
-                    try {
-                        broker = pool.get(user);
+                    try(final DBBroker broker = pool.get(Optional.ofNullable(user))) {
+
                         modifiedRequest.setAttribute(RQ_ATTR_REQUEST_URI, request.getRequestURI());
                         
                         final Properties outputProperties = new Properties();
@@ -329,9 +326,6 @@ public class XQueryURLRewrite extends HttpServlet {
                             LOG.debug("Caching request to " + request.getRequestURI());
                             urlCache.put(modifiedRequest.getHeader("Host") + request.getRequestURI(), modelView);
                         }
-
-                    } finally {
-                        pool.release(broker);
                     }
 
                     // store the original request URI to org.exist.forward.request-uri
@@ -484,11 +478,9 @@ public class XQueryURLRewrite extends HttpServlet {
 		if (model == null)
 			{return null;}
 
-		DBBroker broker = null;
-		try {
-			broker = pool.get(user);
+		try(final DBBroker broker = pool.get(Optional.ofNullable(user))) {
 
-			model.getSourceInfo().source.validate(broker.getSubject(), Permission.EXECUTE);
+			model.getSourceInfo().source.validate(broker.getCurrentSubject(), Permission.EXECUTE);
 			
 			if (model.getSourceInfo().source.isValid(broker) != Source.VALID) {
                 urlCache.remove(url);
@@ -499,8 +491,6 @@ public class XQueryURLRewrite extends HttpServlet {
 				LOG.debug("Using cached entry for " + url);
 			}
 			return model;
-		} finally {
-			pool.release(broker);
 		}
 	}
 	

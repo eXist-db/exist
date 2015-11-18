@@ -79,16 +79,13 @@ public class XSL {
 	}
     
     protected static XSLStylesheet compile(Element source) throws XPathException {
-    	BrokerPool pool = null;
-    	DBBroker broker = null;
     	try {
-        	pool = BrokerPool.getInstance();
-    		broker = pool.get(null);
-			return compile(source, broker);
+        	final BrokerPool pool = BrokerPool.getInstance();
+			try(final DBBroker broker = pool.getBroker()) {
+				return compile(source, broker);
+			}
 		} catch (EXistException e) {
 			throw new XPathException(e);
-		} finally {
-			if (pool != null) pool.release(broker);
 		}
     }
 

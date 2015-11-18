@@ -224,9 +224,7 @@ public class MessageFunctions extends BasicFunction {
 
         } catch (MessagingException me) {
             throw (new XPathException(this, "Failed to retrieve messages from list", me));
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (SAXException e) {
+        } catch (IOException | SAXException e) {
             e.printStackTrace();
         }
 

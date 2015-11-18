@@ -113,7 +113,7 @@ public class GroupManagementFunction extends BasicFunction {
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
 
         final SecurityManager securityManager = context.getBroker().getBrokerPool().getSecurityManager();
-        final Subject currentSubject = context.getBroker().getSubject();
+        final Subject currentSubject = context.getBroker().getCurrentSubject();
 
         try {
             final String groupName = args[0].itemAt(0).getStringValue();

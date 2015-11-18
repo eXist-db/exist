@@ -26,7 +26,9 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.Optional;
 import java.util.Properties;
 
 import javax.xml.transform.OutputKeys;
@@ -120,7 +122,7 @@ public class MatchListenerTest {
     public void nestedContent() throws PermissionDeniedException, IOException, LockException, CollectionConfigurationException, SAXException, EXistException, XPathException {
         configureAndStore(CONF1, XML);
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
             final XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
             Sequence seq = xquery.execute(broker, "//para[ngram:contains(., 'mixed')]", null, AccessContext.TEST);
@@ -157,7 +159,7 @@ public class MatchListenerTest {
     public void matchInParent() throws PermissionDeniedException, IOException, LockException, CollectionConfigurationException, SAXException, EXistException, XPathException {
         configureAndStore(CONF1, XML);
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
 
             final XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
@@ -173,7 +175,7 @@ public class MatchListenerTest {
     public void matchInAncestor() throws PermissionDeniedException, IOException, LockException, CollectionConfigurationException, SAXException, EXistException, XPathException {
         configureAndStore(CONF1, XML);
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
 
             final XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
@@ -195,7 +197,7 @@ public class MatchListenerTest {
     public void nestedIndex() throws PermissionDeniedException, IOException, LockException, CollectionConfigurationException, SAXException, EXistException, XPathException {
         configureAndStore(CONF1, XML);
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
 
             final XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
@@ -223,7 +225,7 @@ public class MatchListenerTest {
     public void mixedContentQueries() throws PermissionDeniedException, XPathException, SAXException, EXistException, CollectionConfigurationException, LockException, IOException {
         configureAndStore(CONF1, XML);
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
 
             final XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
@@ -263,7 +265,7 @@ public class MatchListenerTest {
     public void indexOnInnerElement() throws PermissionDeniedException, IOException, LockException, CollectionConfigurationException, SAXException, EXistException, XPathException {
         configureAndStore(CONF2, XML);
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
             final XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
             Sequence seq = xquery.execute(broker, "//para[ngram:contains(note, 'nested inner')]", null, AccessContext.TEST);
@@ -286,7 +288,7 @@ public class MatchListenerTest {
     public void doubleMatch() throws PermissionDeniedException, XPathException, SAXException, EXistException, CollectionConfigurationException, LockException, IOException {
         configureAndStore(CONF1, XML);
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
             final XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
 
@@ -316,7 +318,7 @@ public class MatchListenerTest {
     public void wildcardMatch() throws PermissionDeniedException, IOException, LockException, CollectionConfigurationException, SAXException, EXistException, XPathException, XpathException {
         configureAndStore(CONF1, XML);
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
             final XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
 
@@ -466,7 +468,7 @@ public class MatchListenerTest {
     public void smallStrings() throws PermissionDeniedException, IOException, LockException, CollectionConfigurationException, SAXException, EXistException, XPathException, XpathException {
         configureAndStore(CONF3, XML2);
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
             final XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
 
@@ -490,7 +492,7 @@ public class MatchListenerTest {
     public void constructedNodes() throws PermissionDeniedException, XPathException, SAXException, IOException, XpathException, CollectionConfigurationException, LockException, EXistException {
         configureAndStore(CONF3, XML2);
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
             final XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
 
@@ -514,13 +516,13 @@ public class MatchListenerTest {
 
     @BeforeClass
     public static void startDB() throws EXistException, DatabaseConfigurationException, PermissionDeniedException, IOException, TriggerException {
-        final File confFile = ConfigurationHelper.lookup("conf.xml");
-        final Configuration config = new Configuration(confFile.getAbsolutePath());
+        final Path confFile = ConfigurationHelper.lookup("conf.xml");
+        final Configuration config = new Configuration(confFile.toAbsolutePath().toString());
         BrokerPool.configure(1, 5, config);
         pool = BrokerPool.getInstance();
 
         final TransactionManager transact = pool.getTransactionManager();
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                 final Txn transaction = transact.beginTransaction()) {
 
             final Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
@@ -542,7 +544,7 @@ public class MatchListenerTest {
         final BrokerPool pool = BrokerPool.getInstance();
 
         final TransactionManager transact = pool.getTransactionManager();
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                 final Txn transaction = transact.beginTransaction()) {
 
             final Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
@@ -561,7 +563,7 @@ public class MatchListenerTest {
 
     private void configureAndStore(String config, String xml) throws PermissionDeniedException, IOException, SAXException, EXistException, LockException, CollectionConfigurationException {
         final TransactionManager transact = pool.getTransactionManager();
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn transaction = transact.beginTransaction()) {
 
             final Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);

@@ -9,6 +9,8 @@ import org.junit.runners.Parameterized.Parameters;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertArrayEquals;
@@ -25,32 +27,34 @@ public class CachingFilterInputStreamTest {
 
     @Parameters(name = "{0}")
     public static Collection<Object[]> data() {
-        return Arrays.asList(new Object[][] {
-            { "MemoryFilterInputStreamCache", MemoryFilterInputStreamCache.class },
-            { "MemoryMappedFileFilterInputStreamCache", MemoryMappedFileFilterInputStreamCache.class },
-            { "FileFilterInputStreamCache", FileFilterInputStreamCache.class }
+        return Arrays.asList(new Object[][]{
+            {"MemoryFilterInputStreamCache", MemoryFilterInputStreamCache.class},
+            {"MemoryMappedFileFilterInputStreamCache", MemoryMappedFileFilterInputStreamCache.class},
+            {"FileFilterInputStreamCache", FileFilterInputStreamCache.class}
         });
     }
 
     @Parameter
     public String cacheName;
-    
+
     @Parameter(value = 1)
     public Class<FilterInputStreamCache> cacheClass;
 
-    public FilterInputStreamCache getNewCache() throws InstantiationException, IllegalAccessException {
-        return cacheClass.newInstance();
+    public FilterInputStreamCache getNewCache(InputStream is) throws InstantiationException, IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
+        Constructor ctor = cacheClass.getDeclaredConstructor(InputStream.class);
+        ctor.setAccessible(true);
+        return (FilterInputStreamCache) ctor.newInstance(is);
     }
 
     @Test
-    public void readByte() throws IOException, InstantiationException, IllegalAccessException {
+    public void readByte() throws IOException, InstantiationException, IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
 
         final String testString = "helloWorld";
         final byte testData[] = testString.getBytes();
 
         InputStream is = new ByteArrayInputStream(testData);
 
-        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(), is);
+        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
 
         //read the first 3 bytes
         assertEquals(testData[0], cfis.read());
@@ -103,13 +107,13 @@ public class CachingFilterInputStreamTest {
     }
 
     @Test(expected = IOException.class)
-    public void readByte_onClosedStream() throws IOException, InstantiationException, IllegalAccessException {
+    public void readByte_onClosedStream() throws IOException, InstantiationException, IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
 
         final String testString = "helloWorld";
         final byte testData[] = testString.getBytes();
 
         InputStream is = new ByteArrayInputStream(testData);
-        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(), is);
+        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
 
         assertEquals(testData[0], cfis.read());
 
@@ -120,14 +124,14 @@ public class CachingFilterInputStreamTest {
     }
 
     @Test
-    public void readByte_pastEndOfStream_fromCache() throws IOException, InstantiationException, IllegalAccessException {
+    public void readByte_pastEndOfStream_fromCache() throws IOException, InstantiationException, IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
 
         final String testString = "he";
         final byte testData[] = testString.getBytes();
 
         InputStream is = new ByteArrayInputStream(testData);
 
-        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(), is);
+        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
 
         cfis.mark(Integer.MAX_VALUE);
 
@@ -145,19 +149,19 @@ public class CachingFilterInputStreamTest {
     }
 
     @Test
-    public void readByte_pastEndOfStream() throws IOException, InstantiationException, IllegalAccessException {
+    public void readByte_pastEndOfStream() throws IOException, InstantiationException, IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
 
         final String testString = "helloWorld";
         final byte testData[] = testString.getBytes();
 
         InputStream is = new ByteArrayInputStream(testData);
 
-        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(), is);
+        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
 
         //read all the bytes upto end of stream
         int b = -1;
         int testDataOffset = 0;
-        while((b = cfis.read()) > -1) {
+        while ((b = cfis.read()) > -1) {
             assertEquals(testData[testDataOffset++], b);
         }
 
@@ -167,13 +171,13 @@ public class CachingFilterInputStreamTest {
     }
 
     @Test
-    public void readByte_allFromCache() throws IOException, InstantiationException, IllegalAccessException {
+    public void readByte_allFromCache() throws IOException, InstantiationException, IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
         final String testString = "hello";
         final byte testData[] = testString.getBytes();
 
         InputStream is = new ByteArrayInputStream(testData);
 
-        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(), is);
+        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
 
         //mark the position
         cfis.mark(Integer.MAX_VALUE);
@@ -197,14 +201,14 @@ public class CachingFilterInputStreamTest {
     }
 
     @Test
-    public void readBytes() throws IOException, InstantiationException, IllegalAccessException {
+    public void readBytes() throws IOException, InstantiationException, IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
 
         final String testString = "helloWorld";
         final byte testData[] = testString.getBytes();
 
         InputStream is = new ByteArrayInputStream(testData);
 
-        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(), is);
+        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
 
         //read the first 3 bytes
         byte result[] = new byte[3];
@@ -265,13 +269,13 @@ public class CachingFilterInputStreamTest {
     }
 
     @Test(expected = IOException.class)
-    public void readBytes_onClosedStream() throws IOException, InstantiationException, IllegalAccessException {
+    public void readBytes_onClosedStream() throws IOException, InstantiationException, IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
 
         final String testString = "helloWorld";
         final byte testData[] = testString.getBytes();
 
         InputStream is = new ByteArrayInputStream(testData);
-        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(), is);
+        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
 
         byte result[] = new byte[2];
         cfis.read(result);
@@ -284,14 +288,14 @@ public class CachingFilterInputStreamTest {
     }
 
     @Test
-    public void readBytes_pastEndOfStream() throws IOException, InstantiationException, IllegalAccessException {
+    public void readBytes_pastEndOfStream() throws IOException, InstantiationException, IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
 
         final String testString = "helloWorld";
         final byte testData[] = testString.getBytes();
 
         InputStream is = new ByteArrayInputStream(testData);
 
-        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(), is);
+        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
 
         byte result[] = new byte[testData.length];
         int read = cfis.read(result);
@@ -301,18 +305,18 @@ public class CachingFilterInputStreamTest {
         byte endOfStreamResult[] = new byte[testData.length];
         read = cfis.read(endOfStreamResult);
         assertEquals(-1, read);
-        assertArrayEquals(new byte[] {0,0,0,0,0,0,0,0,0,0}, endOfStreamResult);
+        assertArrayEquals(new byte[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, endOfStreamResult);
     }
-    
+
     @Test
-    public void readBytes_pastEndOfStream_fromCache() throws IOException, InstantiationException, IllegalAccessException {
+    public void readBytes_pastEndOfStream_fromCache() throws IOException, InstantiationException, IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
 
         final String testString = "helloWorld";
         final byte testData[] = testString.getBytes();
 
         InputStream is = new ByteArrayInputStream(testData);
 
-        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(), is);
+        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
 
         cfis.mark(Integer.MAX_VALUE);
 
@@ -338,13 +342,13 @@ public class CachingFilterInputStreamTest {
     }
 
     @Test
-    public void readBytes_allFromCache() throws IOException, InstantiationException, IllegalAccessException {
+    public void readBytes_allFromCache() throws IOException, InstantiationException, IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
         final String testString = "hello";
         final byte testData[] = testString.getBytes();
 
         InputStream is = new ByteArrayInputStream(testData);
 
-        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(), is);
+        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
 
         //mark the position
         cfis.mark(Integer.MAX_VALUE);
@@ -366,13 +370,13 @@ public class CachingFilterInputStreamTest {
     }
 
     @Test
-    public void readBytes_partFromCache() throws IOException, InstantiationException, IllegalAccessException {
+    public void readBytes_partFromCache() throws IOException, InstantiationException, IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
         final String testString = "helloWorld";
         final byte testData[] = testString.getBytes();
 
         InputStream is = new ByteArrayInputStream(testData);
 
-        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(), is);
+        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
 
         //mark the position
         cfis.mark(Integer.MAX_VALUE);
@@ -394,13 +398,13 @@ public class CachingFilterInputStreamTest {
     }
 
     @Test
-    public void readBytes_withZeroOffset_allFromCache() throws IOException, InstantiationException, IllegalAccessException {
+    public void readBytes_withZeroOffset_allFromCache() throws IOException, InstantiationException, IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
         final String testString = "hello";
         final byte testData[] = testString.getBytes();
 
         InputStream is = new ByteArrayInputStream(testData);
 
-        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(), is);
+        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
 
         //mark the position
         cfis.mark(Integer.MAX_VALUE);
@@ -422,13 +426,13 @@ public class CachingFilterInputStreamTest {
     }
 
     @Test
-    public void readBytes_withZeroOffset_partFromCache() throws IOException, InstantiationException, IllegalAccessException {
+    public void readBytes_withZeroOffset_partFromCache() throws IOException, InstantiationException, IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
         final String testString = "helloWorld";
         final byte testData[] = testString.getBytes();
 
         InputStream is = new ByteArrayInputStream(testData);
 
-        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(), is);
+        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
 
         //mark the position
         cfis.mark(Integer.MAX_VALUE);
@@ -450,13 +454,13 @@ public class CachingFilterInputStreamTest {
     }
 
     @Test
-    public void readBytes_withOffsetAndLength_allFromCache() throws IOException, InstantiationException, IllegalAccessException {
+    public void readBytes_withOffsetAndLength_allFromCache() throws IOException, InstantiationException, IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
         final String testString = "helloWorld";
         final byte testData[] = testString.getBytes();
 
         InputStream is = new ByteArrayInputStream(testData);
 
-        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(), is);
+        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
 
         //mark the position
         cfis.mark(Integer.MAX_VALUE);
@@ -485,13 +489,13 @@ public class CachingFilterInputStreamTest {
     }
 
     @Test
-    public void skip() throws IOException, InstantiationException, IllegalAccessException {
+    public void skip() throws IOException, InstantiationException, IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
         final String testString = "helloWorld";
         final byte testData[] = testString.getBytes();
 
         InputStream is = new ByteArrayInputStream(testData);
 
-        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(), is);
+        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
 
         //read the first 3 bytes
         assertEquals(testData[0], cfis.read());
@@ -508,13 +512,13 @@ public class CachingFilterInputStreamTest {
     }
 
     @Test
-    public void skip_partFromCache() throws IOException, InstantiationException, IllegalAccessException {
+    public void skip_partFromCache() throws IOException, InstantiationException, IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
         final String testString = "helloWorld";
         final byte testData[] = testString.getBytes();
 
         InputStream is = new ByteArrayInputStream(testData);
 
-        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(), is);
+        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
 
         //read the first 2 bytes
         assertEquals(testData[0], cfis.read());
@@ -550,13 +554,13 @@ public class CachingFilterInputStreamTest {
     }
 
     @Test(expected = IOException.class)
-    public void skip_onClosedStream() throws IOException, InstantiationException, IllegalAccessException {
+    public void skip_onClosedStream() throws IOException, InstantiationException, IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
         final String testString = "helloWorld";
         final byte testData[] = testString.getBytes();
 
         InputStream is = new ByteArrayInputStream(testData);
 
-        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(), is);
+        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
 
         cfis.close();
 
@@ -565,13 +569,13 @@ public class CachingFilterInputStreamTest {
     }
 
     @Test
-    public void skip_negativeBytes() throws IOException, InstantiationException, IllegalAccessException {
+    public void skip_negativeBytes() throws IOException, InstantiationException, IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
         final String testString = "helloWorld";
         final byte testData[] = testString.getBytes();
 
         InputStream is = new ByteArrayInputStream(testData);
 
-        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(), is);
+        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
 
         //should cause IOException
         long skipped = cfis.skip(-1);
@@ -579,13 +583,13 @@ public class CachingFilterInputStreamTest {
     }
 
     @Test
-    public void available_onClosedStream()  throws IOException, InstantiationException, IllegalAccessException {
+    public void available_onClosedStream() throws IOException, InstantiationException, IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
         final String testString = "helloWorld";
         final byte testData[] = testString.getBytes();
 
         InputStream is = new ByteArrayInputStream(testData);
 
-        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(), is);
+        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
 
         cfis.close();
 
@@ -593,11 +597,11 @@ public class CachingFilterInputStreamTest {
     }
 
     @Test
-    public void available_onEmptyStream()  throws IOException, InstantiationException, IllegalAccessException {
+    public void available_onEmptyStream() throws IOException, InstantiationException, IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
 
         InputStream is = new ByteArrayInputStream(new byte[]{});
 
-        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(), is);
+        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
 
         cfis.close();
 
@@ -605,43 +609,43 @@ public class CachingFilterInputStreamTest {
     }
 
     @Test
-    public void available_onUnCachedStream()  throws IOException, InstantiationException, IllegalAccessException {
+    public void available_onUnCachedStream() throws IOException, InstantiationException, IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
         final String testString = "helloWorld";
         final byte testData[] = testString.getBytes();
 
         InputStream is = new ByteArrayInputStream(testData);
 
-        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(), is);
+        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
 
         assertEquals(testData.length, cfis.available());
     }
 
     @Test
-    public void available_onPartiallyReadStream()  throws IOException, InstantiationException, IllegalAccessException {
+    public void available_onPartiallyReadStream() throws IOException, InstantiationException, IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
 
         final String testString = "helloWorld";
         final byte testData[] = testString.getBytes();
 
         InputStream is = new ByteArrayInputStream(testData);
 
-        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(), is);
+        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
 
         //read first 2 bytes
         cfis.read();
         cfis.read();
 
-        assertEquals(testData.length - 2 , cfis.available());
+        assertEquals(testData.length - 2, cfis.available());
     }
 
     @Test
-    public void available_onPartiallyCachedStream()  throws IOException, InstantiationException, IllegalAccessException {
+    public void available_onPartiallyCachedStream() throws IOException, InstantiationException, IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
 
         final String testString = "helloWorld";
         final byte testData[] = testString.getBytes();
 
         InputStream is = new ByteArrayInputStream(testData);
 
-        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(), is);
+        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
 
         //mark for later reset
         cfis.mark(Integer.MAX_VALUE);
@@ -657,14 +661,14 @@ public class CachingFilterInputStreamTest {
     }
 
     @Test
-    public void available_onOffsetPartiallyCachedStream()  throws IOException, InstantiationException, IllegalAccessException {
+    public void available_onOffsetPartiallyCachedStream() throws IOException, InstantiationException, IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
 
         final String testString = "helloWorld";
         final byte testData[] = testString.getBytes();
 
         InputStream is = new ByteArrayInputStream(testData);
 
-        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(), is);
+        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
 
         //read first 2 bytes
         cfis.read();
@@ -684,19 +688,19 @@ public class CachingFilterInputStreamTest {
     }
 
     @Test
-    public void available_onCachedStream()  throws IOException, InstantiationException, IllegalAccessException {
+    public void available_onCachedStream() throws IOException, InstantiationException, IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
 
         final String testString = "helloWorld";
         final byte testData[] = testString.getBytes();
 
         InputStream is = new ByteArrayInputStream(testData);
 
-        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(), is);
+        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
 
         //mark for later reset
         cfis.mark(Integer.MAX_VALUE);
 
-        for(int i = 0; i < testData.length; i++) {
+        for (int i = 0; i < testData.length; i++) {
             cfis.read();
         }
 
@@ -707,14 +711,14 @@ public class CachingFilterInputStreamTest {
     }
 
     @Test
-    public void available_onOffsetCachedStream()  throws IOException, InstantiationException, IllegalAccessException {
+    public void available_onOffsetCachedStream() throws IOException, InstantiationException, IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
 
         final String testString = "helloWorld";
         final byte testData[] = testString.getBytes();
 
         InputStream is = new ByteArrayInputStream(testData);
 
-        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(), is);
+        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(is));
 
         //read first 2 bytes
         cfis.read();
@@ -723,7 +727,7 @@ public class CachingFilterInputStreamTest {
         //mark for later reset
         cfis.mark(Integer.MAX_VALUE);
 
-        for(int i = 0; i < testData.length - 2; i++) {
+        for (int i = 0; i < testData.length - 2; i++) {
             cfis.read();
         }
 
@@ -733,15 +737,13 @@ public class CachingFilterInputStreamTest {
         assertEquals(testData.length - 2, cfis.available());
     }
 
-    
-
     private byte[] subArray(byte data[], int len) {
         byte newData[] = new byte[len];
         System.arraycopy(data, 0, newData, 0, len);
         return newData;
     }
 
-     private byte[] subArray(byte data[], int offset, int len) {
+    private byte[] subArray(byte data[], int offset, int len) {
         byte newData[] = new byte[len];
         System.arraycopy(data, offset, newData, 0, len);
         return newData;

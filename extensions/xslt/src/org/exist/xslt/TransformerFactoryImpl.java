@@ -70,17 +70,19 @@ public class TransformerFactoryImpl extends SAXTransformerFactory {
 	}
 	
 	public DBBroker getBroker() throws EXistException {
-		if (pool != null)
-			return pool.get(null);
+		if (pool != null) {
+			return pool.getBroker();
+		}
 		
 		throw new EXistException("that shouldn't happend. internal error.");
 	}
 
-	public void releaseBroker(DBBroker broker) throws EXistException {
-		if (pool == null)
+	public void releaseBroker(final DBBroker broker) throws EXistException {
+		if (pool == null) {
 			throw new EXistException("Database wan't set properly.");
+		}
 
-		pool.release(broker);
+		broker.close();
 	}
 
 	/* (non-Javadoc)

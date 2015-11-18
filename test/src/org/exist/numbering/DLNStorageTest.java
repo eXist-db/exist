@@ -20,6 +20,10 @@ import org.junit.Test;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Text;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Optional;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -39,7 +43,7 @@ public class DLNStorageTest {
     @Test
     public void nodeStorage() throws Exception {
         BrokerPool pool = BrokerPool.getInstance();
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
             // test element ids
@@ -93,18 +97,15 @@ public class DLNStorageTest {
 
     @Before
     public void setUp() throws Exception {
-        String home, file = "conf.xml";
-        home = System.getProperty("exist.home");
-        if (home == null) {
-            home = System.getProperty("user.dir");
-        }
+        final String file = "conf.xml";
+        final Optional<Path> home = Optional.ofNullable(System.getProperty("exist.home", System.getProperty("user.dir"))).map(Paths::get);
 
-        Configuration config = new Configuration(file, home);
+        final Configuration config = new Configuration(file, home);
         BrokerPool.configure(1, 5, config);
 
         BrokerPool pool = BrokerPool.getInstance();
         final TransactionManager transact = pool.getTransactionManager();
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn transaction = transact.beginTransaction()) {
 
             Collection test = broker.getOrCreateCollection(transaction, TEST_COLLECTION);

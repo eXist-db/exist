@@ -25,6 +25,7 @@ import org.exist.EXistException;
 import org.exist.security.Subject;
 import org.exist.storage.sync.Sync;
 
+import java.util.Optional;
 import java.util.Stack;
 
 public class SystemTaskManager {
@@ -56,27 +57,17 @@ public class SystemTaskManager {
         }
 
         synchronized (waitingSystemTasks) {
-            DBBroker broker = null;
-            Subject oldUser = null;
-            try {
-                broker = pool.get(null);
-                oldUser = broker.getSubject();
-                broker.setSubject(pool.getSecurityManager().getSystemSubject());
+            try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
                 while (!waitingSystemTasks.isEmpty()) {
                 	final SystemTask task = waitingSystemTasks.pop();
-                	if (task.afterCheckpoint())
-                		{pool.sync(broker, Sync.MAJOR_SYNC);}
+                	if (task.afterCheckpoint()) {
+                        pool.sync(broker, Sync.MAJOR_SYNC);
+                    }
                     runSystemTask(task, broker);
                 }
-
             } catch (final Exception e) {
                 SystemTask.LOG.warn("System maintenance task reported error: " + e.getMessage(), e);
                 
-            } finally {
-                if (oldUser != null) {
-                    broker.setSubject(oldUser);
-                }
-                pool.release(broker);
             }
         }
     }

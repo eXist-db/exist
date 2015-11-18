@@ -40,14 +40,13 @@ import org.exist.storage.DBBroker;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XPathException;
-import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
 
 /**
  *
  * @author Adam Retter <adam.retter@googlemail.com>
  */
-public class XQueryCompiler {
+class XQueryCompiler {
     
     public final static String XQUERY_MIME_TYPE = "application/xquery";
     
@@ -73,7 +72,6 @@ public class XQueryCompiler {
                 if(metadata.getMimeType().equals(XQUERY_MIME_TYPE)){
             
                     //compile the query
-                    final XQuery xquery = broker.getBrokerPool().getXQueryService();
                     final XQueryContext context = new XQueryContext(broker.getBrokerPool(), AccessContext.REST);
                     final Source source = new DBSource(broker, (BinaryDocument)document, true);
 
@@ -82,7 +80,7 @@ public class XQueryCompiler {
                     
                     return broker.getBrokerPool().getXQueryService().compile(broker, context, source);
                 } else {
-                    throw new RestXqServiceCompilationException("Invalid mimetype '" +  metadata.getMimeType() + "' for XQuery: "  + document.getURI().toString().toString());
+                    throw new RestXqServiceCompilationException("Invalid mimetype '" +  metadata.getMimeType() + "' for XQuery: "  + document.getURI().toString());
                 }
             } else {
                 throw new RestXqServiceCompilationException("Invalid document location for XQuery: " + document.getURI().toString());

@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.util.Optional;
 import java.util.Random;
 
 /**
@@ -90,7 +91,7 @@ public class LargeValuesTest {
     private void storeDocuments() throws EXistException, DatabaseConfigurationException, PermissionDeniedException, IOException, SAXException, CollectionConfigurationException, LockException {
         final BrokerPool pool = startDB();
         final TransactionManager transact = pool.getTransactionManager();
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             Collection root;
 
@@ -133,7 +134,7 @@ public class LargeValuesTest {
         BrokerPool.FORCE_CORRUPTION = false;
         final BrokerPool pool = startDB();
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
             final Collection root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, Lock.READ_LOCK);
             assertNotNull(root);
 
@@ -166,7 +167,7 @@ public class LargeValuesTest {
 
         final BrokerPool pool = startDB();
         final TransactionManager transact = pool.getTransactionManager();
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                 final Txn transaction = transact.beginTransaction()) {
 
             final Collection root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, Lock.READ_LOCK);

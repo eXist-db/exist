@@ -329,7 +329,7 @@ public class AccountImpl extends AbstractAccount {
             return null;
         }
 
-        final Account user = getDatabase().getSubject();
+        final Account user = getDatabase().getActiveBroker().getCurrentSubject();
         group.assertCanModifyGroup(user);
 
         if(!groups.contains(group)) {

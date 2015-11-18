@@ -87,7 +87,7 @@ public class GetDirListFunction extends BasicFunction {
             builder.endElement();
             builder.endDocument();
             
-            result = (NodeValue)builder.getDocument();
+            result = builder.getDocument();
 
         } catch(IOException ioe) {
             log.error(ioe.getMessage(), ioe);

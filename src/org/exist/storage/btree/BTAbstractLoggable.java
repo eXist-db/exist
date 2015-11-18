@@ -1,24 +1,22 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 The eXist Team
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2015 The eXist Project
  *
- *  http://exist-db.org
- *  
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *  
- *  $Id$
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 package org.exist.storage.btree;
 
@@ -31,39 +29,36 @@ import org.exist.storage.txn.Txn;
 
 /**
  * @author wolf
- *
  */
 public abstract class BTAbstractLoggable extends AbstractLoggable {
+    private byte fileId;
+    private NativeBroker broker;
 
-	protected byte fileId;
-    protected NativeBroker broker;
-    
-	/**
-	 * @param type
-	 * @param fileId
-	 */
-	public BTAbstractLoggable(byte type, byte fileId, Txn transaction) {
-		super(type, transaction.getId());
+    public BTAbstractLoggable(final byte type, final byte fileId, final Txn transaction) {
+        super(type, transaction.getId());
         this.fileId = fileId;
-	}
+    }
 
-	public BTAbstractLoggable(byte type, DBBroker broker, long transactionId) {
-		super(type, transactionId);
-		this.broker = (NativeBroker) broker;
-	}
-    
+    public BTAbstractLoggable(final byte type, final DBBroker broker, final long transactionId) {
+        super(type, transactionId);
+        this.broker = (NativeBroker) broker;
+    }
+
     protected BTree getStorage() {
         return broker.getStorage(fileId);
     }
-    
-    public void read(ByteBuffer in) {
+
+    @Override
+    public void read(final ByteBuffer in) {
         fileId = in.get();
     }
-    
-    public void write(ByteBuffer out) {
+
+    @Override
+    public void write(final ByteBuffer out) {
         out.put(fileId);
     }
-    
+
+    @Override
     public int getLogSize() {
         return 1;
     }

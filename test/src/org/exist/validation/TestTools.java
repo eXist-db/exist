@@ -24,15 +24,17 @@ package org.exist.validation;
 
 import java.io.ByteArrayInputStream;
 import org.apache.commons.io.output.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Optional;
 
 import org.exist.util.ConfigurationHelper;
+import org.exist.util.FileUtils;
 
 /**
  *  A set of helper methods for the validation tests.
@@ -102,27 +104,16 @@ public class TestTools {
      * @param target  Target URL (e.g. xmldb:exist:///db/collection/document.xml)
      * @throws java.lang.Exception  Oops.....
      */
-    public static void insertDocumentToURL(String file, String target) throws IOException {
-        InputStream is = null;
-        OutputStream os = null;
-        try {
-            is = new FileInputStream(file);
-            final URL url = new URL(target);
-            final URLConnection connection = url.openConnection();
-            os = connection.getOutputStream();
-            TestTools.copyStream(is, os);
-        } finally {
-            if(is != null){
-                is.close();
-            }
-            if(os != null) {
-                os.close();
-            }
+    public static void insertDocumentToURL(final Path file, final String target) throws IOException {
+        final URL url = new URL(target);
+        final URLConnection connection = url.openConnection();
+        try(final OutputStream os = connection.getOutputStream()) {
+            Files.copy(file, os);
         }
     }
 
-    public static String getEXistHome() {
-        return ConfigurationHelper.getExistHome().getAbsolutePath();
+    public static Optional<Path> getEXistHome() {
+        return ConfigurationHelper.getExistHome().map(Path::toAbsolutePath);
     }
 
     public static byte[] getHamlet() throws IOException {
@@ -130,22 +121,11 @@ public class TestTools {
     }
 
     public static byte[] loadSample(String sampleRelativePath) throws IOException {
-        File file = new File(getEXistHome(), "samples/" + sampleRelativePath);
-        InputStream fis = null;
-        ByteArrayOutputStream baos = null;
-        try {
-            fis = new FileInputStream(file);
-            baos = new ByteArrayOutputStream();
-            TestTools.copyStream(fis, baos);
-        } finally {
-            if(fis != null){
-                fis.close();
-            }
-            if(baos != null) {
-                baos.close();
-            }
+        final Path file = FileUtils.resolve(getEXistHome(), "samples/" + sampleRelativePath);
+        try(final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            Files.copy(file, baos);
+            return baos.toByteArray();
         }
-        return baos.toByteArray();
     }
 
     public static void insertDocumentToURL(byte[] data, String target) throws IOException {

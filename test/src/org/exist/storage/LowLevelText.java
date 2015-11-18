@@ -15,6 +15,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -46,7 +47,7 @@ public class LowLevelText {
 		brokerPool = BrokerPool.getInstance(MY_TEST_INSTANCE);
 
 		//BUG: need to be released!
-		broker = brokerPool.get(brokerPool.getSecurityManager().getSystemSubject());
+		broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));
 		pool = new XQueryPool(configuration);
 		stringSource = new StringSource(TEST_XQUERY_SOURCE);
 
@@ -57,7 +58,9 @@ public class LowLevelText {
 
 	@After
 	public void tearDown() {
-        brokerPool.release(broker);
+		if(broker != null) {
+			broker.close();
+		}
 		BrokerPool.stopAll(false);
 	}
 

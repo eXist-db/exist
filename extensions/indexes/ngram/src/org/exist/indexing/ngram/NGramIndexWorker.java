@@ -216,11 +216,11 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                         index.getBrokerPool().getSymbols(), key.term);
                 index.db.append(value, data);
             } catch (LockException e) {
-                LOG.warn("Failed to acquire lock for file " + index.db.getFile().getName(), e);
+                LOG.warn("Failed to acquire lock for file " + FileUtils.fileName(index.db.getFile()), e);
             } catch (IOException e) {
-                LOG.warn("IO error for file " + index.db.getFile().getName(), e);
+                LOG.warn("IO error for file " + FileUtils.fileName(index.db.getFile()), e);
             } catch (ReadOnlyException e) {
-                LOG.warn("Read-only error for file " + index.db.getFile().getName(), e);
+                LOG.warn("Read-only error for file " + FileUtils.fileName(index.db.getFile()), e);
             } finally {
                 lock.release(Lock.WRITE_LOCK);
                 os.clear();
@@ -324,16 +324,16 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     } else {
                         if (index.db.put(value, os.data()) == BFile.UNKNOWN_ADDRESS) {
                             LOG.error("Could not put index data for token '" +  key.term + "' in '" +
-                                    index.db.getFile().getName() + "'");
+                                    FileUtils.fileName(index.db.getFile()) + "'");
                         }
                     }
                 }
             } catch (LockException e) {
-                LOG.warn("Failed to acquire lock for file " + index.db.getFile().getName(), e);
+                LOG.warn("Failed to acquire lock for file " + FileUtils.fileName(index.db.getFile()), e);
             } catch (IOException e) {
-                LOG.warn("IO error for file " + index.db.getFile().getName(), e);
+                LOG.warn("IO error for file " + FileUtils.fileName(index.db.getFile()), e);
             } catch (ReadOnlyException e) {
-                LOG.warn("Read-only error for file " + index.db.getFile().getName(), e);
+                LOG.warn("Read-only error for file " + FileUtils.fileName(index.db.getFile()), e);
             } finally {
                 lock.release(Lock.WRITE_LOCK);
                 os.clear();
@@ -353,7 +353,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             Value value = new NGramQNameKey(collection.getId());
             index.db.removeAll(null, new IndexQuery(IndexQuery.TRUNC_RIGHT, value));
         } catch (LockException e) {
-            LOG.warn("Failed to acquire lock for '" + index.db.getFile().getName() + "'", e);
+            LOG.warn("Failed to acquire lock for '" + FileUtils.fileName(index.db.getFile()) + "'", e);
         } catch (BTreeException e) {
             LOG.error(e.getMessage(), e);
         } catch (IOException e) {
@@ -380,11 +380,11 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     int op = query.codePointCount(0, query.length()) < getN() ? IndexQuery.TRUNC_RIGHT : IndexQuery.EQ;
                     index.db.query(new IndexQuery(op, key), cb);
                 } catch (LockException e) {
-                    LOG.warn("Failed to acquire lock for '" + index.db.getFile().getName() + "'", e);
+                    LOG.warn("Failed to acquire lock for '" + FileUtils.fileName(index.db.getFile()) + "'", e);
                 } catch (IOException e) {
-                    LOG.error(e.getMessage() + " in '" + index.db.getFile().getName() + "'", e);
+                    LOG.error(e.getMessage() + " in '" + FileUtils.fileName(index.db.getFile()) + "'", e);
                 } catch (BTreeException e) {
-                    LOG.error(e.getMessage() + " in '" + index.db.getFile().getName() + "'", e);
+                    LOG.error(e.getMessage() + " in '" + FileUtils.fileName(index.db.getFile()) + "'", e);
                 } finally {
                     lock.release(Lock.READ_LOCK);
                 }
@@ -461,7 +461,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     lock.acquire(Lock.READ_LOCK);
                     index.db.query(query, cb);
                 } catch (LockException e) {
-                    LOG.warn("Failed to acquire lock for '" + index.db.getFile().getName() + "'", e);
+                    LOG.warn("Failed to acquire lock for '" + FileUtils.fileName(index.db.getFile()) + "'", e);
                 } catch (IOException e) {
                     LOG.error(e.getMessage(), e);
                 } catch (BTreeException e) {
@@ -1113,7 +1113,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     }
                 }
             } catch(IOException e) {
-                LOG.error(e.getMessage() + " in '" + index.db.getFile().getName() + "'", e);
+                LOG.error(e.getMessage() + " in '" + FileUtils.fileName(index.db.getFile()) + "'", e);
             }
             return true;
         }

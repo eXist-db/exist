@@ -43,8 +43,12 @@ import org.xml.sax.SAXException;
 
 import java.io.*;
 import java.net.URI;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.charset.UnsupportedCharsetException;
 import java.util.Iterator;
 import java.util.zip.CRC32;
+import java.util.zip.DeflaterOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -65,6 +69,7 @@ public abstract class AbstractCompressFunction extends BasicFunction
             "An Entry takes the format <entry name=\"filename.ext\" type=\"collection|uri|binary|xml|text\" method=\"deflate|store\">data</entry>. The method attribute is only effective for the compression:zip function.");
     protected final static SequenceType COLLECTION_HIERARCHY_PARAM = new FunctionParameterSequenceType("use-collection-hierarchy", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "Indicates whether the Collection hierarchy (if any) should be preserved in the zip file.");
     protected final static SequenceType STRIP_PREFIX_PARAM = new FunctionParameterSequenceType("strip-prefix", Type.STRING, Cardinality.EXACTLY_ONE, "This prefix is stripped from the Entrys name");
+    protected final static SequenceType ENCODING_PARAM = new FunctionParameterSequenceType("encoding", Type.STRING, Cardinality.EXACTLY_ONE, "This encoding to be used for filenames inside the compressed file");
 
 
     public AbstractCompressFunction(XQueryContext context, FunctionSignature signature)
@@ -101,29 +106,41 @@ public abstract class AbstractCompressFunction extends BasicFunction
 			stripOffset = args[2].getStringValue();
 		}
 
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		OutputStream os = stream(baos);
+		// Get encoding
+        try {
+            final Charset encoding;
+            if ((args.length >= 4) && !args[3].isEmpty()) {
+                encoding = Charset.forName(args[3].getStringValue());
+            } else {
+                encoding = StandardCharsets.UTF_8;
+            }
 
-		// iterate through the argument sequence
-		for (SequenceIterator i = args[0].iterate(); i.hasNext();) {
-			Item item = i.nextItem();
-			
-                        if(item instanceof Element)
-                        {
-                            Element element = (Element) item;
-                            compressElement(os, element, useHierarchy, stripOffset);
-                        }
-                        else
-                        {
-                            compressFromUri(os, ((AnyURIValue)item).toURI(), useHierarchy, stripOffset, "", null);
-                        }
+            try(final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    OutputStream os = stream(baos, encoding)) {
+
+                // iterate through the argument sequence
+                for (SequenceIterator i = args[0].iterate(); i.hasNext(); ) {
+                    Item item = i.nextItem();
+
+                    if (item instanceof Element) {
+                        Element element = (Element) item;
+                        compressElement(os, element, useHierarchy, stripOffset);
+                    } else {
+                        compressFromUri(os, ((AnyURIValue) item).toURI(), useHierarchy, stripOffset, "", null);
+                    }
+                }
+
+                os.flush();
+
+                if(os instanceof DeflaterOutputStream) {
+                    ((DeflaterOutputStream)os).finish();
+                }
+
+                return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new ByteArrayInputStream(baos.toByteArray()));
+            }
+		} catch (final UnsupportedCharsetException | IOException e) {
+			throw new XPathException(this, e.getMessage(), e);
 		}
-		try {
-			os.close();
-		} catch (IOException ioe) {
-			throw new XPathException(this, ioe.getMessage());
-		}
-		return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new ByteArrayInputStream(baos.toByteArray()));
 	}
 
     private void compressFromUri(OutputStream os, URI uri, boolean useHierarchy, String stripOffset, String method, String resourceName) throws XPathException
@@ -172,23 +189,10 @@ public abstract class AbstractCompressFunction extends BasicFunction
                             compressResource(os, doc, useHierarchy, stripOffset, method, resourceName);
                         }
                     }
-                    catch(PermissionDeniedException pde)
+                    catch(PermissionDeniedException | LockException | SAXException | IOException pde)
                     {
                         throw new XPathException(this, pde.getMessage());
-                    }
-                    catch(IOException ioe)
-                    {
-                        throw new XPathException(this, ioe.getMessage());
-                    }
-                    catch(SAXException saxe)
-                    {
-                        throw new XPathException(this, saxe.getMessage());
-                    }
-                    catch(LockException le)
-                    {
-                        throw new XPathException(this, le.getMessage());
-                    }
-                    finally
+                    } finally
                     {
                         if(doc != null)
                             doc.getUpdateLock().release(Lock.READ_LOCK);
@@ -364,13 +368,9 @@ public abstract class AbstractCompressFunction extends BasicFunction
                     os.write(value);
                 }
             }
-            catch(IOException ioe)
+            catch(IOException | SAXException ioe)
             {
                 throw new XPathException(this, ioe.getMessage(), ioe);
-            }
-            catch(SAXException saxe)
-            {
-                throw new XPathException(this, saxe.getMessage(), saxe);
             }
             finally
             {
@@ -477,9 +477,8 @@ public abstract class AbstractCompressFunction extends BasicFunction
 		// iterate over child documents
 		MutableDocumentSet childDocs = new DefaultDocumentSet();
 		col.getDocuments(context.getBroker(), childDocs);
-		for (Iterator<DocumentImpl> itChildDocs = childDocs.getDocumentIterator(); itChildDocs
-				.hasNext();) {
-			DocumentImpl childDoc = (DocumentImpl) itChildDocs.next();
+		for (Iterator<DocumentImpl> itChildDocs = childDocs.getDocumentIterator(); itChildDocs.hasNext();) {
+			DocumentImpl childDoc = itChildDocs.next();
 			childDoc.getUpdateLock().acquire(Lock.READ_LOCK);
 			try {
 				compressResource(os, childDoc, useHierarchy, stripOffset, "", null);
@@ -490,14 +489,14 @@ public abstract class AbstractCompressFunction extends BasicFunction
 		// iterate over child collections
 		for (Iterator<XmldbURI> itChildCols = col.collectionIterator(context.getBroker()); itChildCols.hasNext();) {
 			// get the child collection
-			XmldbURI childColURI = (XmldbURI) itChildCols.next();
+			XmldbURI childColURI = itChildCols.next();
 			Collection childCol = context.getBroker().getCollection(col.getURI().append(childColURI));
 			// recurse
 			compressCollection(os, childCol, useHierarchy, stripOffset);
 		}
 	}
 	
-	protected abstract OutputStream stream(ByteArrayOutputStream baos); 
+	protected abstract OutputStream stream(ByteArrayOutputStream baos, Charset encoding);
 	
 	protected abstract Object newEntry(String name);
 	

@@ -107,9 +107,7 @@ public class Source extends Command {
 	        		XmldbURI pathUri = XmldbURI.create( URLDecoder.decode( fileURI.substring(15) , "UTF-8" ) );
 	
 	        		Database db = getJoint().getContext().getDatabase();
-	        		DBBroker broker = null;
-	        		try {
-		        		broker = db.getBroker();
+	        		try(final DBBroker broker = db.getBroker()) {
 		    			DocumentImpl resource = broker.getXMLResource(pathUri, Lock.READ_LOCK);
 		
 		    			if (resource.getResourceType() == DocumentImpl.BINARY_FILE) {
@@ -120,9 +118,7 @@ public class Source extends Command {
 		    			}
 	        		} catch (EXistException e) {
 	                    exception = e;
-					} finally {
-	        			db.release(broker);
-	        		}
+					}
         		}
         	} else {
         		URL url = new URL(fileURI);

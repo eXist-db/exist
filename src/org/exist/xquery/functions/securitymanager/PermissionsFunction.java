@@ -29,10 +29,10 @@ import org.exist.security.AbstractUnixStylePermission;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.PermissionFactory;
-import org.exist.security.PermissionFactory.PermissionModifier;
 import org.exist.security.SimpleACLPermission;
 import org.exist.security.Subject;
 import org.exist.util.SyntaxException;
+import org.exist.util.function.ConsumerE;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -85,7 +85,7 @@ public class PermissionsFunction extends BasicFunction {
         qnAddUserACE,
         "Adds a User ACE to the ACL of a resource or collection.",
         new SequenceType[] {
-            new FunctionParameterSequenceType("path", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The path to the resource or collection whoose ACL you wish to add the ACE to."),
+            new FunctionParameterSequenceType("path", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The path to the resource or collection whose ACL you wish to add the ACE to."),
             new FunctionParameterSequenceType("user-name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the user to create an ACE for."),
             new FunctionParameterSequenceType("allowed", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if the ACE is allowing the permission mode, or false() if we are denying the permission mode"),
             new FunctionParameterSequenceType("mode", Type.STRING, Cardinality.EXACTLY_ONE, "The mode to set on the ACE e.g. 'rwx'"),
@@ -97,7 +97,7 @@ public class PermissionsFunction extends BasicFunction {
         qnAddGroupACE,
         "Adds a Group ACE to the ACL of a resource or collection.",
         new SequenceType[] {
-            new FunctionParameterSequenceType("path", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The path to the resource or collection whoose ACL you wish to add the ACE to."),
+            new FunctionParameterSequenceType("path", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The path to the resource or collection whose ACL you wish to add the ACE to."),
             new FunctionParameterSequenceType("group-name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the group to create an ACE for."),
             new FunctionParameterSequenceType("allowed", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if the ACE is allowing the permission mode, or false() if we are denying the permission mode"),
             new FunctionParameterSequenceType("mode", Type.STRING, Cardinality.EXACTLY_ONE, "The mode to set on the ACE e.g. 'rwx'"),
@@ -109,7 +109,7 @@ public class PermissionsFunction extends BasicFunction {
         qnInsertUserACE,
         "Inserts a User ACE into the ACL of a resource or collection.",
         new SequenceType[] {
-            new FunctionParameterSequenceType("path", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The path to the resource or collection whoose ACL you wish to add the ACE to."),
+            new FunctionParameterSequenceType("path", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The path to the resource or collection whose ACL you wish to add the ACE to."),
             new FunctionParameterSequenceType("index", Type.INT, Cardinality.EXACTLY_ONE, "The index in the ACL to insert the ACE before, subsequent entries will be renumbered"),
             new FunctionParameterSequenceType("user-name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the user to create an ACE for."),
             new FunctionParameterSequenceType("allowed", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if the ACE is allowing the permission mode, or false() if we are denying the permission mode"),
@@ -122,7 +122,7 @@ public class PermissionsFunction extends BasicFunction {
         qnInsertGroupACE,
         "Inserts a Group ACE into the ACL of a resource or collection.",
         new SequenceType[] {
-            new FunctionParameterSequenceType("path", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The path to the resource or collection whoose ACL you wish to add the ACE to."),
+            new FunctionParameterSequenceType("path", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The path to the resource or collection whose ACL you wish to add the ACE to."),
             new FunctionParameterSequenceType("index", Type.INT, Cardinality.EXACTLY_ONE, "The index in the ACL to insert the ACE before, subsequent entries will be renumbered"),
             new FunctionParameterSequenceType("group-name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the group to create an ACE for."),
             new FunctionParameterSequenceType("allowed", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if the ACE is allowing the permission mode, or false() if we are denying the permission mode"),
@@ -135,7 +135,7 @@ public class PermissionsFunction extends BasicFunction {
         qnModifyACE,
         "Modified an ACE of an ACL of a resource or collection.",
         new SequenceType[] {
-            new FunctionParameterSequenceType("path", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The path to the resource or collection whoose ACL you wish to modify the ACE of."),
+            new FunctionParameterSequenceType("path", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The path to the resource or collection whose ACL you wish to modify the ACE of."),
             new FunctionParameterSequenceType("index", Type.INT, Cardinality.EXACTLY_ONE, "The index of the ACE in the ACL to modify"),
             new FunctionParameterSequenceType("allowed", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if the ACE is allowing the permission mode, or false() if we are denying the permission mode"),
             new FunctionParameterSequenceType("mode", Type.STRING, Cardinality.EXACTLY_ONE, "The mode to set on the ACE e.g. 'rwx'"),
@@ -147,7 +147,7 @@ public class PermissionsFunction extends BasicFunction {
         qnRemoveACE,
         "Removes an ACE from the ACL of a resource or collection.",
         new SequenceType[] {
-            new FunctionParameterSequenceType("path", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The path to the resource or collection whoose ACL you wish to remove the ACE from."),
+            new FunctionParameterSequenceType("path", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The path to the resource or collection whose ACL you wish to remove the ACE from."),
             new FunctionParameterSequenceType("index", Type.INT, Cardinality.EXACTLY_ONE, "The index of the ACE in the ACL to remove, subsequent entries will be renumbered")
         },
         new SequenceType(Type.EMPTY, Cardinality.ZERO)
@@ -157,7 +157,7 @@ public class PermissionsFunction extends BasicFunction {
         qnClearACL,
         "Removes all ACEs from the ACL of a resource or collection.",
         new SequenceType[] {
-            new FunctionParameterSequenceType("path", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The path to the resource or collection whoose ACL you wish to clear.")
+            new FunctionParameterSequenceType("path", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The path to the resource or collection whose ACL you wish to clear.")
         },
         new SequenceType(Type.EMPTY, Cardinality.ZERO)
     );
@@ -166,7 +166,7 @@ public class PermissionsFunction extends BasicFunction {
         qnChMod,
         "Changes the mode of a resource or collection.",
         new SequenceType[] {
-            new FunctionParameterSequenceType("path", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The path to the resource or collection whoose mode you wish to set"),
+            new FunctionParameterSequenceType("path", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The path to the resource or collection whose mode you wish to set"),
             new FunctionParameterSequenceType("mode", Type.STRING, Cardinality.EXACTLY_ONE, "The mode to set on the resource or collection e.g. 'rwxrwxrwx'"),
         },
         new SequenceType(Type.EMPTY, Cardinality.ZERO)
@@ -176,7 +176,7 @@ public class PermissionsFunction extends BasicFunction {
         qnChOwn,
         "Changes the owner of a resource or collection.",
         new SequenceType[] {
-            new FunctionParameterSequenceType("path", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The path to the resource or collection whoose owner you wish to set"),
+            new FunctionParameterSequenceType("path", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The path to the resource or collection whose owner you wish to set"),
             new FunctionParameterSequenceType("owner", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the user owner to set on the resource or collection e.g. 'guest'. You may also provide a group owner, by using the syntax 'user:group' if you wish."),
         },
         new SequenceType(Type.EMPTY, Cardinality.ZERO)
@@ -186,7 +186,7 @@ public class PermissionsFunction extends BasicFunction {
         qnChGrp,
         "Changes the group owner of a resource or collection.",
         new SequenceType[] {
-            new FunctionParameterSequenceType("path", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The path to the resource or collection whoose group owner you wish to set"),
+            new FunctionParameterSequenceType("path", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The path to the resource or collection whose group owner you wish to set"),
             new FunctionParameterSequenceType("group-name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the user group owner to set on the resource or collection e.g. 'guest'"),
         },
         new SequenceType(Type.EMPTY, Cardinality.ZERO)
@@ -196,7 +196,7 @@ public class PermissionsFunction extends BasicFunction {
         qnHasAccess,
         "Checks whether the current user has access to the resource or collection.",
         new SequenceType[] {
-            new FunctionParameterSequenceType("path", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The path to the resource or collection whoose acess of which you wish to check"),
+            new FunctionParameterSequenceType("path", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The path to the resource or collection whose access of which you wish to check"),
             new FunctionParameterSequenceType("mode", Type.STRING, Cardinality.EXACTLY_ONE, "The partial mode to check against the resource or collection e.g. 'rwx'")
         },
         new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)
@@ -230,7 +230,7 @@ public class PermissionsFunction extends BasicFunction {
     @Override
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
 
-        Sequence result = Sequence.EMPTY_SEQUENCE;
+        final Sequence result;
 
         if(isCalledAs(qnModeToOctal.getLocalPart())) {
             final String mode = args[0].itemAt(0).getStringValue();
@@ -254,18 +254,18 @@ public class PermissionsFunction extends BasicFunction {
                     result = functionAddACE(pathUri, target, name, access_type, mode);
                 } else if(isCalledAs(qnInsertUserACE.getLocalPart()) || isCalledAs(qnInsertGroupACE.getLocalPart())) {
                     final ACE_TARGET target = isCalledAs(qnInsertUserACE.getLocalPart()) ? ACE_TARGET.USER : ACE_TARGET.GROUP;
-                    final int index = ((Integer)args[1].itemAt(0).toJavaObject(Integer.class));
+                    final int index = args[1].itemAt(0).toJavaObject(Integer.class);
                     final String name = args[2].getStringValue();
                     final ACE_ACCESS_TYPE access_type = args[3].effectiveBooleanValue() ? ACE_ACCESS_TYPE.ALLOWED : ACE_ACCESS_TYPE.DENIED;
                     final String mode = args[4].itemAt(0).getStringValue();
                     result = functionInsertACE(pathUri, index, target, name, access_type, mode);
                 } else if(isCalledAs(qnModifyACE.getLocalPart())) {
-                    final int index = ((Integer)args[1].itemAt(0).toJavaObject(Integer.class));
+                    final int index = args[1].itemAt(0).toJavaObject(Integer.class);
                     final ACE_ACCESS_TYPE access_type = args[2].effectiveBooleanValue() ? ACE_ACCESS_TYPE.ALLOWED : ACE_ACCESS_TYPE.DENIED;
                     final String mode = args[3].itemAt(0).getStringValue();
                     result = functionModifyACE(pathUri, index, access_type, mode);
                 } else if(isCalledAs(qnRemoveACE.getLocalPart())) {
-                    final int index = ((Integer)args[1].itemAt(0).toJavaObject(Integer.class));
+                    final int index = args[1].itemAt(0).toJavaObject(Integer.class);
                     result = functionRemoveACE(pathUri, index);
                 } else if(isCalledAs(qnClearACL.getLocalPart())) {
                     result = functionClearACL(pathUri);
@@ -281,6 +281,8 @@ public class PermissionsFunction extends BasicFunction {
                 } else if(isCalledAs(qnHasAccess.getLocalPart())) {
                     final String mode = args[1].itemAt(0).getStringValue();
                     result = functionHasAccess(pathUri, mode);
+                } else {
+                    result = Sequence.EMPTY_SEQUENCE;
                 }
             } catch(final PermissionDeniedException pde) {
               throw new XPathException(this, pde);
@@ -299,122 +301,65 @@ public class PermissionsFunction extends BasicFunction {
     }
 
     private Sequence functionAddACE(final XmldbURI pathUri, final ACE_TARGET target, final String name, final ACE_ACCESS_TYPE access_type, final String mode) throws PermissionDeniedException {
-        PermissionFactory.updatePermissions(context.getBroker(), pathUri, new PermissionModifier(){
-            @Override
-            public void modify(final Permission permission) throws PermissionDeniedException {
-                if(permission instanceof SimpleACLPermission) {
-                    //add the ace
-                    final SimpleACLPermission aclPermission = ((SimpleACLPermission)permission);
-                    aclPermission.addACE(access_type, target, name, mode);
-                } else {
-                    throw new PermissionDeniedException("ACL like permissions have not been enabled");
-                }
-            }
-        });
+        PermissionFactory.updatePermissions(context.getBroker(), pathUri,
+                forAcl(aclPermission -> aclPermission.addACE(access_type, target, name, mode))
+        );
         return Sequence.EMPTY_SEQUENCE;
     }
 
     private Sequence functionInsertACE(final XmldbURI pathUri, final int index, final ACE_TARGET target, final String name, final ACE_ACCESS_TYPE access_type, final String mode) throws PermissionDeniedException {
-        PermissionFactory.updatePermissions(context.getBroker(), pathUri, new PermissionModifier(){
-            @Override
-            public void modify(final Permission permission) throws PermissionDeniedException {
-                if(permission instanceof SimpleACLPermission) {
-                    //insert the ace
-                    final SimpleACLPermission aclPermission = ((SimpleACLPermission)permission);
-                    aclPermission.insertACE(index, access_type, target, name, mode);
-                } else {
-                    throw new PermissionDeniedException("ACL like permissions have not been enabled");
-                }
-            }
-        });
+        PermissionFactory.updatePermissions(context.getBroker(), pathUri,
+                forAcl(aclPermission -> aclPermission.insertACE(index, access_type, target, name, mode))
+        );
         return Sequence.EMPTY_SEQUENCE;
     }
 
     private Sequence functionModifyACE(final XmldbURI pathUri, final int index, final ACE_ACCESS_TYPE access_type, final String mode) throws PermissionDeniedException {
-        PermissionFactory.updatePermissions(context.getBroker(), pathUri, new PermissionModifier(){
-            @Override
-            public void modify(final Permission permission) throws PermissionDeniedException {
-                if(permission instanceof SimpleACLPermission) {
-                    //insert the ace
-                    final SimpleACLPermission aclPermission = ((SimpleACLPermission)permission);
-                    aclPermission.modifyACE(index, access_type, mode);
-                } else {
-                    throw new PermissionDeniedException("ACL like permissions have not been enabled");
-                }
-            }
-        });
+        PermissionFactory.updatePermissions(context.getBroker(), pathUri,
+                forAcl(aclPermission -> aclPermission.modifyACE(index, access_type, mode))
+        );
         return Sequence.EMPTY_SEQUENCE;
     }
 
     private Sequence functionRemoveACE(final XmldbURI pathUri, final int index) throws PermissionDeniedException {
-        PermissionFactory.updatePermissions(context.getBroker(), pathUri, new PermissionModifier(){
-            @Override
-            public void modify(final Permission permission) throws PermissionDeniedException {
-                if(permission instanceof SimpleACLPermission) {
-                    //remove the ace
-                    final SimpleACLPermission aclPermission = ((SimpleACLPermission)permission);
-                    aclPermission.removeACE(index);
-                } else {
-                    throw new PermissionDeniedException("ACL like permissions have not been enabled");
-                }
-            }
-        });
+        PermissionFactory.updatePermissions(context.getBroker(), pathUri,
+                forAcl(aclPermission -> aclPermission.removeACE(index))
+        );
         return Sequence.EMPTY_SEQUENCE;
     }
 
     private Sequence functionClearACL(final XmldbURI pathUri) throws PermissionDeniedException {
-        PermissionFactory.updatePermissions(context.getBroker(), pathUri, new PermissionModifier(){
-            @Override
-            public void modify(final Permission permission) throws PermissionDeniedException {
-                if(permission instanceof SimpleACLPermission) {
-                    //clear the acl
-                    final SimpleACLPermission aclPermission = ((SimpleACLPermission)permission);
-                    aclPermission.clear();
-                } else {
-                    throw new PermissionDeniedException("ACL like permissions have not been enabled");
-                }
-            }
-        });
+        PermissionFactory.updatePermissions(context.getBroker(), pathUri,
+                forAcl(aclPermission -> aclPermission.clear())
+        );
         return Sequence.EMPTY_SEQUENCE;
     }
 
     private Sequence functionChMod(final XmldbURI pathUri, final String modeStr) throws PermissionDeniedException {
-        PermissionFactory.updatePermissions(context.getBroker(), pathUri, new PermissionModifier(){
-            @Override
-            public void modify(final Permission permission) throws PermissionDeniedException {
-                try {
-                    permission.setMode(modeStr);
-                } catch(final SyntaxException se) {
-                    throw new PermissionDeniedException("Unrecognised mode syntax: " + se.getMessage(), se);
-                }
+        PermissionFactory.updatePermissions(context.getBroker(), pathUri, permission -> {
+            try {
+                permission.setMode(modeStr);
+            } catch(final SyntaxException se) {
+                throw new PermissionDeniedException("Unrecognised mode syntax: " + se.getMessage(), se);
             }
         });
         return Sequence.EMPTY_SEQUENCE;
     }
 
     private Sequence functionChOwn(final XmldbURI pathUri, final String owner) throws PermissionDeniedException {
-        PermissionFactory.updatePermissions(context.getBroker(), pathUri, new PermissionModifier(){
-            @Override
-            public void modify(final Permission permission) throws PermissionDeniedException {
-
-                if(owner.indexOf(OWNER_GROUP_SEPARATOR) > -1) {
-                    permission.setOwner(owner.substring(0, owner.indexOf((OWNER_GROUP_SEPARATOR))));
-                    permission.setGroup(owner.substring(owner.indexOf(OWNER_GROUP_SEPARATOR) + 1));
-                } else {
-                    permission.setOwner(owner);
-                }
+        PermissionFactory.updatePermissions(context.getBroker(), pathUri, permission -> {
+            if(owner.indexOf(OWNER_GROUP_SEPARATOR) > -1) {
+                permission.setOwner(owner.substring(0, owner.indexOf((OWNER_GROUP_SEPARATOR))));
+                permission.setGroup(owner.substring(owner.indexOf(OWNER_GROUP_SEPARATOR) + 1));
+            } else {
+                permission.setOwner(owner);
             }
         });
         return Sequence.EMPTY_SEQUENCE;
     }
 
     private Sequence functionChGrp(final XmldbURI pathUri, final String groupname) throws PermissionDeniedException {
-        PermissionFactory.updatePermissions(context.getBroker(), pathUri, new PermissionModifier(){
-            @Override
-            public void modify(final Permission permission) throws PermissionDeniedException {
-                permission.setGroup(groupname);
-            }
-        });
+        PermissionFactory.updatePermissions(context.getBroker(), pathUri, permission -> permission.setGroup(groupname));
         return Sequence.EMPTY_SEQUENCE;
     }
     
@@ -510,5 +455,17 @@ public class PermissionsFunction extends BasicFunction {
         builder.endDocument();
 
         return builder.getDocument();
+    }
+
+    private ConsumerE<Permission, PermissionDeniedException> forAcl(final ConsumerE<SimpleACLPermission, PermissionDeniedException> aclPermissionModifier) {
+        return permission -> {
+            if(permission instanceof SimpleACLPermission) {
+                //add the ace
+                final SimpleACLPermission aclPermission = ((SimpleACLPermission)permission);
+                aclPermissionModifier.accept(aclPermission);
+            } else {
+                throw new PermissionDeniedException("ACL like permissions have not been enabled");
+            }
+        };
     }
 }

@@ -48,17 +48,14 @@ import org.exist.util.Configuration;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.TerminatedException;
-import org.exist.xquery.XQuery;
 import org.w3c.dom.Document;
 
 import javax.xml.stream.XMLStreamException;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Observable;
+import java.nio.file.Path;
+import java.util.*;
 
 /**
  * This is the base class for all database backends. All the basic database
@@ -100,7 +97,7 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
 
     protected BrokerPool pool;
 
-    private Subject subject = null;
+    private Deque<Subject> subject = new ArrayDeque<>();
 
     private int referenceCount = 0;
 
@@ -108,16 +105,12 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
 
     protected IndexController indexController;
 
-    //TODO: remove after interface it
-    public DBBroker() {
-        //Nothing todo
-    }
-
-    public DBBroker(BrokerPool pool, Configuration config) {
+    public DBBroker(final BrokerPool pool, final Configuration config) {
         this.config = config;
         final Boolean temp = (Boolean) config.getProperty(NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE);
-        if (temp != null)
-            {caseSensitive = temp.booleanValue();}
+        if (temp != null) {
+            caseSensitive = temp.booleanValue();
+        }
         this.pool = pool;
         initIndexModules();
     }
@@ -125,55 +118,32 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
     public void initIndexModules() {
         indexController = new IndexController(this);
     }
-    
 
     /**
-     * Set the user that is currently using this DBBroker object.
+     * Change the subject that the broker performs actions as
      *
-     * @param user
-     * @deprecated use setSubject
+     * @param subject The new subject for the broker to perform actions as
      */
-    public void setUser(Subject user) {
-        this.subject = user;
-
-        /*
-        synchronized (this){ System.out.println("DBBroker.setUser(" +
-        user.getName() + ")"); Thread.dumpStack(); }
-         */
-        // debugging user escalation permissions problem - deliriumsky.
+    public void pushSubject(final Subject subject) {
+        this.subject.addFirst(subject);
     }
 
     /**
-     * @return The user that is currently using this DBBroker object
-     * @deprecated user getSubject
-     */
-    @Deprecated
-    public Subject getUser() {
-        return getSubject();
-    }
-
-    /**
-     * Set the subject that is currently using this DBBroker object.
+     * Restore the previous subject for the broker to perform actions as
      *
-     * @param subject
+     * @return The subject which has been popped
      */
-    //TODO: this should be done in connection with authenticate (SecurityManager)
-    public void setSubject(final Subject subject) {
-        this.subject = subject;
-        /*
-        synchronized (this){ System.out.println("DBBroker.setUser(" +
-            user.getName() + ")"); Thread.dumpStack(); }
-        */
-        // debugging user escalation permissions problem - deliriumsky.
+    public Subject popSubject() {
+        return this.subject.removeFirst();
     }
 
     /**
      * The subject that is currently using this DBBroker object
      * 
-     * @return Subject 
+     * @return The current subject that the broker is executing as
      */
-    public Subject getSubject() {
-        return subject;
+    public Subject getCurrentSubject() {
+        return subject.peekFirst();
     }
 
     public IndexController getIndexController() {
@@ -564,7 +534,7 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
     public abstract void readBinaryResource(final BinaryDocument blob,
         final OutputStream os) throws IOException;
 
-    public abstract File getBinaryFile(final BinaryDocument blob) throws IOException;
+    public abstract Path getBinaryFile(final BinaryDocument blob) throws IOException;
 
 	public abstract InputStream getBinaryResource(final BinaryDocument blob)
            throws IOException;
@@ -810,8 +780,11 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
     public void close() {
         pool.release(this);
     }
-    
-    @Deprecated //use close() method instead
+
+    /**
+     * @deprecated Use {@link DBBroker#close()}
+     */
+    @Deprecated
     public void release() {
         pool.release(this);
     }

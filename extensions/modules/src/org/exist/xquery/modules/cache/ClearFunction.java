@@ -81,7 +81,7 @@ public class ClearFunction extends BasicFunction {
 				if( logger.isDebugEnabled() ) {
 					logger.debug("Clearing cache [" + item.toJavaObject(Cache.class).toString() + "]");
 				}
-				((Cache)item.toJavaObject(Cache.class)).clear();
+				item.toJavaObject(Cache.class).clear();
 			}
 		}
 		if( logger.isDebugEnabled() ) {

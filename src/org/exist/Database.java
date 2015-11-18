@@ -19,8 +19,9 @@
  */
 package org.exist;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.util.Collection;
+import java.util.Optional;
 
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.triggers.CollectionTrigger;
@@ -91,18 +92,6 @@ public interface Database {
 	 */
     public void shutdown();
 
-    /**
-     * 
-     * @return Subject
-     */
-    public Subject getSubject();
-
-    /**
-     * 
-     * @param subject
-     */
-    public boolean setSubject(Subject subject);
-
     // TODO: remove 'throws EXistException'?
     public DBBroker getBroker() throws EXistException; 
 
@@ -123,11 +112,9 @@ public interface Database {
      *     database.release(broker);
      * }
      */
-    public DBBroker get(Subject subject) throws EXistException;
+    public DBBroker get(Optional<Subject> subject) throws EXistException;
 
     public DBBroker getActiveBroker(); // throws EXistException;
-
-    public void release(DBBroker broker);
 
     /**
      * Returns the number of brokers currently serving requests for the database
@@ -150,7 +137,7 @@ public interface Database {
 
     public NodeIdFactory getNodeFactory();
 
-    public File getStoragePlace();
+    public Path getStoragePlace();
 
     public CollectionConfigurationManager getConfigurationManager();
 

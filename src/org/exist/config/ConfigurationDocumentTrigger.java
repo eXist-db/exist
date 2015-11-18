@@ -235,19 +235,17 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
         //Nothing to do
     }
 
-	@Override
+    @Override
     public void beforeUpdateDocumentMetadata(final DBBroker broker, final Txn txn, final DocumentImpl document) {
-	}
+    }
 
-	@Override
-	public void afterUpdateDocumentMetadata(DBBroker broker, Txn txn, DocumentImpl document) {
-	}
+    @Override
+    public void afterUpdateDocumentMetadata(DBBroker broker, Txn txn, DocumentImpl document) {
+    }
 
-	@Override
-	public void configure(final DBBroker broker, final Collection parent,
-			final Map<String, List<? extends Object>> parameters)
-			throws TriggerException {
-	}
+    @Override
+    public void configure(DBBroker broker, Collection parent, Map<String, List<?>> parameters) throws TriggerException {
+    }
 
     @Override
     public void startElement(final String namespaceURI, final String localName, final String qname, final Attributes attributes) throws SAXException {
@@ -302,11 +300,12 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
             throw new SAXException("First element does not match ending '" + principalType.getElementName() + "' element");
         }
 
+        final SecurityManager sm = broker.getBrokerPool().getSecurityManager();
+
         //if needed, update old style id to new style id
-        final AttributesImpl attrs = new AttributesImpl(migrateIdAttribute(start.attributes, principalType));
+        final AttributesImpl attrs = new AttributesImpl(migrateIdAttribute(sm, start.attributes, principalType));
 
         //check if there is a name collision, i.e. another principal with the same name
-        final SecurityManager sm = broker.getBrokerPool().getSecurityManager();
         final String principalName = findName();
         // first check if the account or group exists before trying to retrieve it
         // otherwise the LDAP realm will create a new user, leading to an endless loop
@@ -365,9 +364,9 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
      *
      * @return The updated attributes containing the new id
      */
-    private Attributes migrateIdAttribute(final Attributes attrs, final PrincipalType principalType) {
+    private Attributes migrateIdAttribute(final SecurityManager sm, final Attributes attrs, final PrincipalType principalType) {
         final boolean aclPermissionInUse =
-            PermissionFactory.getDefaultResourcePermission() instanceof ACLPermission;
+            PermissionFactory.getDefaultResourcePermission(sm) instanceof ACLPermission;
 
         final Attributes newAttrs;
         final String strId = attrs.getValue(ID_ATTR);
@@ -396,17 +395,16 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
     private String findName() {
         boolean inName = false;
         final StringBuilder name = new StringBuilder();
-        for(final Iterator<SAXEvent> iterator = deferred.iterator(); iterator.hasNext(); ) {
-            final SAXEvent event = iterator.next();
-            if(event instanceof Element) {
-                final Element element = (Element)event;
-                if(element.namespaceURI != null && element.namespaceURI.equals(Configuration.NS) && element.localName.equals("name")) {
+        for (final SAXEvent event : deferred) {
+            if (event instanceof Element) {
+                final Element element = (Element) event;
+                if (element.namespaceURI != null && element.namespaceURI.equals(Configuration.NS) && element.localName.equals("name")) {
                     inName = !inName;
                 }
             }
 
-            if(inName && event instanceof Characters) {
-                name.append(((Characters)event).ch);
+            if (inName && event instanceof Characters) {
+                name.append(((Characters) event).ch);
             }
         }
 
@@ -494,9 +492,9 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
         /**
          * Check if a user or group already exists (by name)
          *
-         * @param sm
-         * @param name
-         * @return
+         * @param sm security manager
+         * @param name principal name
+         * @return true when exist
          */
         public boolean hasPrincipal(final SecurityManager sm, final String name) {
             switch (this) {
@@ -530,9 +528,9 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
         /**
          * Check if a user or group already exists (by id)
          *
-         * @param sm
-         * @param id
-         * @return
+         * @param sm security manager
+         * @param id principal id
+         * @return true when exist
          */
         public boolean hasPrincipal(final SecurityManager sm, final int id) {
             switch(this) {

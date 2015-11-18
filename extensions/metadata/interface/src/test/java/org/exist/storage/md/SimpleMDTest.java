@@ -21,10 +21,10 @@ package org.exist.storage.md;
 
 import static org.junit.Assert.*;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
+import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
@@ -247,7 +247,7 @@ public class SimpleMDTest {
     	
     	String docUUID = null;
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             Collection col = broker.getCollection(col1uri);
         	assertNotNull(col);
@@ -284,7 +284,7 @@ public class SimpleMDTest {
     	md = MetaData.get();
     	assertNotNull(md);
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             Collection root = broker.getCollection(col1uri);
         	assertNotNull(root);
@@ -329,7 +329,7 @@ public class SimpleMDTest {
     	//add first key-value
     	docMD.put(KEY1, VALUE1);
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             Collection col = broker.getCollection(col1uri);
         	assertNotNull(col);
@@ -372,7 +372,7 @@ public class SimpleMDTest {
     	//add first key-value
     	docMD.put(KEY1, VALUE1);
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             Collection col = broker.getCollection(col2uri);
         	assertNotNull(col);
@@ -412,7 +412,7 @@ public class SimpleMDTest {
     	//add first key-value
     	docMD.put(KEY1, VALUE1);
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             Collection parent = broker.getCollection(col3uri.removeLastSegment());
         	assertNotNull(parent);
@@ -473,7 +473,7 @@ public class SimpleMDTest {
         DocumentImpl doc3;
 
         final TransactionManager txnManager = pool.getTransactionManager();
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn txn = txnManager.beginTransaction()) {
             
             test2 = broker.getOrCreateCollection(txn, col2uri);
@@ -509,7 +509,7 @@ public class SimpleMDTest {
     	//add first key-value
     	docMD.put(KEY2, VALUE2);
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             Collection parent = broker.getCollection(col3uri.removeLastSegment());
         	assertNotNull(parent);
@@ -583,7 +583,7 @@ public class SimpleMDTest {
     	//add first key-value
     	docMD.put(KEY1, VALUE1);
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             Collection parent = broker.getCollection(col3uri.removeLastSegment());
         	assertNotNull(parent);
@@ -644,7 +644,7 @@ public class SimpleMDTest {
     	//add first key-value
     	docMD.put(KEY1, VALUE1);
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             Collection parent = broker.getCollection(col3uri.removeLastSegment());
         	assertNotNull(parent);
@@ -690,14 +690,14 @@ public class SimpleMDTest {
 	public void test_08() throws Exception {
 
         try {
-            final File confFile = ConfigurationHelper.lookup("conf.xml");
-            final Configuration config = new Configuration(confFile.getAbsolutePath());
+            final Path confFile = ConfigurationHelper.lookup("conf.xml");
+            final Configuration config = new Configuration(confFile.toAbsolutePath().toString());
             BrokerPool.configure(1, 5, config);
             pool = BrokerPool.getInstance();
         	pool.getPluginsManager().addPlugin("org.exist.storage.md.Plugin");
 
 
-            try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+            try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
                 final MetaData md = MetaData.get();
                 assertNotNull(md);
@@ -757,7 +757,9 @@ public class SimpleMDTest {
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());
-        }
+        } finally {
+			cleanup();
+		}
 	}
 
 //	private DocumentImpl getDoc(DBBroker broker, Collection col, XmldbURI uri) throws PermissionDeniedException {
@@ -778,8 +780,8 @@ public class SimpleMDTest {
 
 	//@BeforeClass
     public static void startDB() throws DatabaseConfigurationException, EXistException {
-        final File confFile = ConfigurationHelper.lookup("conf.xml");
-        final Configuration config = new Configuration(confFile.getAbsolutePath());
+        final Path confFile = ConfigurationHelper.lookup("conf.xml");
+        final Configuration config = new Configuration(confFile.toAbsolutePath().toString());
         BrokerPool.configure(1, 5, config);
         pool = BrokerPool.getInstance();
         assertNotNull(pool);
@@ -787,7 +789,7 @@ public class SimpleMDTest {
 
         final TransactionManager txnManager = pool.getTransactionManager();
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn txn = txnManager.beginTransaction()) {
             
             clean(broker, txn);
@@ -830,7 +832,7 @@ public class SimpleMDTest {
 
     private static void clean() throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final TransactionManager txnManager = pool.getTransactionManager();
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn txn = txnManager.beginTransaction()) {
             clean(broker, txn);
             txn.commit();

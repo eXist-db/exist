@@ -27,6 +27,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 import org.exist.EXistException;
 import org.exist.numbering.NodeId;
@@ -63,7 +64,7 @@ public class DOMFileRecoverTest {
 
         final NodeIdFactory idFact = pool.getNodeFactory();
 
-		try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+		try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 			//Add some random data and force db corruption
 
             broker.flush();
@@ -146,7 +147,7 @@ public class DOMFileRecoverTest {
 
     @Test
     public void get() throws EXistException, IOException, BTreeException {
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
         	//Recover and read the data
 
             assertNotNull(broker);

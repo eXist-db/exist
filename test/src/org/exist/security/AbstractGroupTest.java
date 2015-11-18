@@ -3,13 +3,14 @@ package org.exist.security;
 import org.exist.Database;
 import java.util.ArrayList;
 import java.util.List;
-import org.easymock.classextension.EasyMock;
-import static org.easymock.classextension.EasyMock.verify;
-import static org.easymock.classextension.EasyMock.replay;
-import static org.easymock.classextension.EasyMock.expect;
+import org.easymock.EasyMock;
+import static org.easymock.EasyMock.verify;
+import static org.easymock.EasyMock.replay;
+import static org.easymock.EasyMock.expect;
 import org.exist.config.ConfigurationException;
 import org.exist.config.Reference;
 import org.exist.config.ReferenceImpl;
+import org.exist.storage.DBBroker;
 import org.junit.Test;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
@@ -19,7 +20,7 @@ import static org.junit.Assert.assertFalse;
  * @author aretter
  */
 public class AbstractGroupTest {
-    
+
     @Test
     public void isManager_retuns_true_when_manager() throws ConfigurationException {
         
@@ -29,8 +30,8 @@ public class AbstractGroupTest {
         
         TestableGroupImpl group = new TestableGroupImpl(mockRealm);
         
-        final List<Reference<SecurityManager, Account>> managers = new ArrayList<Reference<SecurityManager, Account>>();
-        managers.add(new ReferenceImpl<SecurityManager, Account>(mockSecurityManager, mockAccount, "mockAccount"));
+        final List<Reference<SecurityManager, Account>> managers = new ArrayList<>();
+        managers.add(new ReferenceImpl<>(mockSecurityManager, mockAccount, "mockAccount"));
         group.setManagers(managers);
         
         
@@ -47,8 +48,8 @@ public class AbstractGroupTest {
 
         TestableGroupImpl group = new TestableGroupImpl(mockRealm);
 
-        final List<Reference<SecurityManager, Account>> managers = new ArrayList<Reference<SecurityManager, Account>>();
-        managers.add(new ReferenceImpl<SecurityManager, Account>(mockSecurityManager, mockAccount, "mockAccount"));
+        final List<Reference<SecurityManager, Account>> managers = new ArrayList<>();
+        managers.add(new ReferenceImpl<>(mockSecurityManager, mockAccount, "mockAccount"));
         group.setManagers(managers);
 
         final Account otherAccount = EasyMock.createMock(Account.class);
@@ -152,6 +153,7 @@ public class AbstractGroupTest {
         AbstractRealm mockRealm = EasyMock.createMock(AbstractRealm.class);
         Subject mockSubject = EasyMock.createMock(Subject.class);
         Database mockDatabase = EasyMock.createMock(Database.class);
+        DBBroker mockBroker = EasyMock.createMock(DBBroker.class);
         Group partialMockGroup = EasyMock.createMockBuilder(AbstractGroup.class)
                 .withConstructor(AbstractRealm.class, int.class, String.class, List.class)
                 .withArgs(mockRealm, 1, "testGroup", null)
@@ -161,15 +163,16 @@ public class AbstractGroupTest {
 
         //expectations
         expect(mockRealm.getDatabase()).andReturn(mockDatabase);
-        expect(mockDatabase.getSubject()).andReturn(mockSubject);
+        expect(mockDatabase.getActiveBroker()).andReturn(mockBroker);
+        expect(mockBroker.getCurrentSubject()).andReturn(mockSubject);
         partialMockGroup.assertCanModifyGroup(mockSubject);
 
-        replay(mockRealm, mockDatabase, partialMockGroup);
+        replay(mockRealm, mockDatabase, mockBroker, partialMockGroup);
 
         //test
         partialMockGroup.addManager((Account)null);
 
-        verify(mockRealm, mockDatabase, partialMockGroup);
+        verify(mockRealm, mockDatabase, mockBroker, partialMockGroup);
     }
 
     @Test
@@ -177,6 +180,7 @@ public class AbstractGroupTest {
         AbstractRealm mockRealm = EasyMock.createNiceMock(AbstractRealm.class);
         Subject mockSubject = EasyMock.createMock(Subject.class);
         Database mockDatabase = EasyMock.createMock(Database.class);
+        DBBroker mockBroker = EasyMock.createMock(DBBroker.class);
         AbstractGroup partialMockGroup = EasyMock.createMockBuilder(AbstractGroup.class)
                 .withConstructor(AbstractRealm.class, int.class, String.class, List.class)
                 .withArgs(mockRealm, 1, "testGroup", null)
@@ -186,15 +190,16 @@ public class AbstractGroupTest {
 
         //expectations
         expect(mockRealm.getDatabase()).andReturn(mockDatabase);
-        expect(mockDatabase.getSubject()).andReturn(mockSubject);
+        expect(mockDatabase.getActiveBroker()).andReturn(mockBroker);
+        expect(mockBroker.getCurrentSubject()).andReturn(mockSubject);
         partialMockGroup.assertCanModifyGroup(mockSubject);
 
-        replay(mockRealm, mockDatabase, partialMockGroup);
+        replay(mockRealm, mockDatabase, mockBroker, partialMockGroup);
 
         //test
         partialMockGroup.addManager((String)null);
 
-        verify(mockRealm, mockDatabase, partialMockGroup);
+        verify(mockRealm, mockDatabase, mockBroker, partialMockGroup);
     }
 
     @Test
@@ -202,6 +207,7 @@ public class AbstractGroupTest {
         AbstractRealm mockRealm = EasyMock.createMock(AbstractRealm.class);
         Subject mockSubject = EasyMock.createMock(Subject.class);
         Database mockDatabase = EasyMock.createMock(Database.class);
+        DBBroker mockBroker = EasyMock.createMock(DBBroker.class);
         Group partialMockGroup = EasyMock.createMockBuilder(AbstractGroup.class)
                 .withConstructor(AbstractRealm.class, int.class, String.class, List.class)
                 .withArgs(mockRealm, 1, "testGroup", null)
@@ -211,15 +217,16 @@ public class AbstractGroupTest {
 
         //expectations
         expect(mockRealm.getDatabase()).andReturn(mockDatabase);
-        expect(mockDatabase.getSubject()).andReturn(mockSubject);
+        expect(mockDatabase.getActiveBroker()).andReturn(mockBroker);
+        expect(mockBroker.getCurrentSubject()).andReturn(mockSubject);
         partialMockGroup.assertCanModifyGroup(mockSubject);
 
-        replay(mockRealm, mockDatabase, partialMockGroup);
+        replay(mockRealm, mockDatabase, mockBroker, partialMockGroup);
 
         //test
-        partialMockGroup.removeManager((Account)null);
+        partialMockGroup.removeManager(null);
 
-        verify(mockRealm, mockDatabase, partialMockGroup);
+        verify(mockRealm, mockDatabase, mockBroker, partialMockGroup);
     }
     
     public class TestableGroupImpl extends AbstractGroup {

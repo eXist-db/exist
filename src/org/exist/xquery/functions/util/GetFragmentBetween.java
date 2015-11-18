@@ -163,67 +163,70 @@ public class GetFragmentBetween extends Function {
     if (! (node2 == null))
       {node2NodeId = storedNode2.getNodeId().toString();}
     final DocumentImpl docImpl = (DocumentImpl) node1.getOwnerDocument();
-    BrokerPool brokerPool = null;
-    DBBroker dbBroker = null;
-    final StringBuilder resultFragment = new StringBuilder("");
+
+    final StringBuilder resultFragment = new StringBuilder();
     String actualNodeId = "-2";
     boolean getFragmentMode = false;
+
     try {
-      brokerPool = docImpl.getBrokerPool();
-      dbBroker = brokerPool.get(null);
-      IEmbeddedXMLStreamReader reader = null;
-      final NodeList children = docImpl.getChildNodes();
-      for (int i = 0; i < children.getLength(); i++) {
-        final StoredNode docChildStoredNode = (StoredNode) children.item(i);
-        final int docChildStoredNodeType = docChildStoredNode.getNodeType();
-        reader = dbBroker.getXMLStreamReader(docChildStoredNode, false);
-        while (reader.hasNext() && ! node2NodeId.equals(actualNodeId) && docChildStoredNodeType != Node.PROCESSING_INSTRUCTION_NODE && docChildStoredNodeType != Node.COMMENT_NODE) {
-          final int status = reader.next();
-          switch (status) {
-            case XMLStreamReader.START_DOCUMENT:
-            case XMLStreamReader.END_DOCUMENT:
-              break;
-            case XMLStreamReader.START_ELEMENT :
-              actualNodeId = reader.getNode().getNodeId().toString();
-              if (actualNodeId.equals(node1NodeId)) 
-                {getFragmentMode = true;}
-              if (actualNodeId.equals(node2NodeId)) 
-                {getFragmentMode = false;}
-              if (getFragmentMode) {
-                final String startElementTag = getStartElementTag(reader);
-                resultFragment.append(startElementTag);
-              }
-              break;
-            case XMLStreamReader.END_ELEMENT :
-              if (getFragmentMode) {
-                final String endElementTag = getEndElementTag(reader);
-                resultFragment.append(endElementTag);
-              }
-              break;
-            case XMLStreamReader.CHARACTERS :
-              if (getFragmentMode) {
-                final String characters = getCharacters(reader);
-                resultFragment.append(characters);
-              }
-              break;
-            case XMLStreamReader.CDATA :
-              if (getFragmentMode) {
-                final String cdata = getCDataTag(reader);
-                resultFragment.append(cdata);
-              }
-              break;
-            case XMLStreamReader.COMMENT :
-              if (getFragmentMode) {
-                final String comment = getCommentTag(reader);
-                resultFragment.append(comment);
-              }
-              break;
-            case XMLStreamReader.PROCESSING_INSTRUCTION :
-              if (getFragmentMode) {
-                final String piTag = getPITag(reader);
-                resultFragment.append(piTag);
-              }
-              break;
+      final BrokerPool brokerPool = docImpl.getBrokerPool();
+      try(final DBBroker dbBroker = brokerPool.getBroker()) {
+        IEmbeddedXMLStreamReader reader = null;
+        final NodeList children = docImpl.getChildNodes();
+        for (int i = 0; i < children.getLength(); i++) {
+          final StoredNode docChildStoredNode = (StoredNode) children.item(i);
+          final int docChildStoredNodeType = docChildStoredNode.getNodeType();
+          reader = dbBroker.getXMLStreamReader(docChildStoredNode, false);
+          while (reader.hasNext() && !node2NodeId.equals(actualNodeId) && docChildStoredNodeType != Node.PROCESSING_INSTRUCTION_NODE && docChildStoredNodeType != Node.COMMENT_NODE) {
+            final int status = reader.next();
+            switch (status) {
+              case XMLStreamReader.START_DOCUMENT:
+              case XMLStreamReader.END_DOCUMENT:
+                break;
+              case XMLStreamReader.START_ELEMENT:
+                actualNodeId = reader.getNode().getNodeId().toString();
+                if (actualNodeId.equals(node1NodeId)) {
+                  getFragmentMode = true;
+                }
+                if (actualNodeId.equals(node2NodeId)) {
+                  getFragmentMode = false;
+                }
+                if (getFragmentMode) {
+                  final String startElementTag = getStartElementTag(reader);
+                  resultFragment.append(startElementTag);
+                }
+                break;
+              case XMLStreamReader.END_ELEMENT:
+                if (getFragmentMode) {
+                  final String endElementTag = getEndElementTag(reader);
+                  resultFragment.append(endElementTag);
+                }
+                break;
+              case XMLStreamReader.CHARACTERS:
+                if (getFragmentMode) {
+                  final String characters = getCharacters(reader);
+                  resultFragment.append(characters);
+                }
+                break;
+              case XMLStreamReader.CDATA:
+                if (getFragmentMode) {
+                  final String cdata = getCDataTag(reader);
+                  resultFragment.append(cdata);
+                }
+                break;
+              case XMLStreamReader.COMMENT:
+                if (getFragmentMode) {
+                  final String comment = getCommentTag(reader);
+                  resultFragment.append(comment);
+                }
+                break;
+              case XMLStreamReader.PROCESSING_INSTRUCTION:
+                if (getFragmentMode) {
+                  final String piTag = getPITag(reader);
+                  resultFragment.append(piTag);
+                }
+                break;
+            }
           }
         }
       }
@@ -233,9 +236,6 @@ public class GetFragmentBetween extends Function {
       throw new XPathException(this, "An error occurred while getFragmentBetween: " + e.getMessage(), e);
     } catch (final IOException e) {
       throw new XPathException(this, "An error occurred while getFragmentBetween: " + e.getMessage(), e);
-    } finally {
-      if (brokerPool != null)
-        {brokerPool.release(dbBroker);}  
     }
     return resultFragment;
   }

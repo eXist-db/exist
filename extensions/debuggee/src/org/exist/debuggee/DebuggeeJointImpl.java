@@ -460,10 +460,9 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 	public String evalution(String script) throws Exception {
 		
 		Database db = compiledXQuery.getContext().getDatabase();
-		DBBroker broker = null;
-		try {
-			broker = db.getBroker(); //TODO: account required
 
+		//TODO: account required
+		try(final DBBroker broker = db.getBroker()) {
 			XQueryContext context = compiledXQuery.getContext().copyContext();
 			context.setDebuggeeJoint(null);
 			context.undeclareGlobalVariable(Debuggee.SESSION);
@@ -496,8 +495,6 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 	                SerializerPool.getInstance().returnObject(sax);
 	            }
 	        }
-		} finally {
-			db.release(broker);
 		}
 	}
 }

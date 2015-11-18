@@ -1010,9 +1010,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
                 break;
             case NodeImpl.REFERENCE_NODE:
                 if(expandRefs) {
-                    DBBroker broker = null;
-                    try {
-                        broker = getDatabase().get(null);
+                    try(final DBBroker broker = getDatabase().getBroker()) {
                         final Serializer serializer = broker.getSerializer();
                         serializer.reset();
                         serializer.setProperty(Serializer.GENERATE_DOC_EVENTS, "false");
@@ -1020,8 +1018,6 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
                         serializer.toReceiver(document.references[document.alpha[nr]], false, false);
                     } catch(final EXistException e) {
                         throw new SAXException(e);
-                    } finally {
-                        getDatabase().release(broker);
                     }
                 } else {
                     receiver.addReferenceNode(document.references[document.alpha[nr]]);

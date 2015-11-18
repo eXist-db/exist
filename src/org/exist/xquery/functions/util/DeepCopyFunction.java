@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-09 The eXist Project
+ *  Copyright (C) 2001-2015 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -16,10 +16,6 @@
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- *  $Id$
- *
- * Original package com.ocom.leaseman.modules.lease (Scott Warren)
  */
 package org.exist.xquery.functions.util;
 
@@ -52,18 +48,19 @@ public class DeepCopyFunction extends BasicFunction {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("deep-copy", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-			"Performs a Deep Clone of the passed in item.",
+			"Creates a new, entirely in-memory copy of the passed in item.",
 			new SequenceType[]
 			{
-				new FunctionParameterSequenceType("item", Type.ITEM, Cardinality.ZERO_OR_ONE, "The item to be cloned"),
+				new FunctionParameterSequenceType("item", Type.ITEM, Cardinality.ZERO_OR_ONE, "The item to be copied"),
 			},
-			new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE, "the item clone"));
+			new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE, "The copied item"));
 
-	public DeepCopyFunction(XQueryContext context, FunctionSignature signature) {
+	public DeepCopyFunction(final XQueryContext context, final FunctionSignature signature) {
 		super(context, signature);			
 	}
- 
-	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+
+    @Override
+	public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
 
         if (args[0].isEmpty()) {
             return Sequence.EMPTY_SEQUENCE;

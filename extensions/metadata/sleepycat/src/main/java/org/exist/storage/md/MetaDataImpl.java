@@ -19,7 +19,9 @@
  */
 package org.exist.storage.md;
 
-import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -60,21 +62,21 @@ public class MetaDataImpl extends MetaData {
     private SecondaryIndex<String, String, MetaImpl> keyToMeta;
     private SecondaryIndex<String, String, MetaImpl> valueToMeta;
 
-    public MetaDataImpl(Database db) {
+    public MetaDataImpl(Database db) throws IOException {
     	
     	LOG.debug("initializing metadata storage");
     	
-    	File folder = db.getStoragePlace();
+    	Path folder = db.getStoragePlace();
     	
-    	File dataDirectory = new File(folder, "metadata"); 
-		dataDirectory.mkdirs();
+    	Path dataDirectory = folder.resolve("metadata");
+		Files.createDirectories(dataDirectory);
 		
 		LOG.debug("folder created ... ");
 		
 		EnvironmentConfig envConfig = new EnvironmentConfig();
 		envConfig.setAllowCreate(true);
 		envConfig.setTransactional(false);
-		env = new Environment(dataDirectory, envConfig);
+		env = new Environment(dataDirectory.toFile(), envConfig);
 
 		LOG.debug("environment ... ");
 
@@ -110,12 +112,9 @@ public class MetaDataImpl extends MetaData {
 	public DocumentImpl getDocument(String uuid) throws EXistException, PermissionDeniedException {
 		MetasImpl ms = docByUUID.get(uuid);
 		if (ms == null) return null;
-		
-		BrokerPool db = null;
-		DBBroker broker = null;
-		try {
-			db = BrokerPool.getInstance();
-			broker = db.get(null);
+
+		final BrokerPool db = BrokerPool.getInstance();
+		try(final DBBroker broker = db.getBroker()) {
 			
 			XmldbURI uri = XmldbURI.create(ms.uri);
 			Collection col = broker.getCollection(uri.removeLastSegment());
@@ -124,9 +123,6 @@ public class MetaDataImpl extends MetaData {
 			}
 			
 			return null;
-		} finally {
-			if (db != null)
-				db.release(broker);
 		}
 	}
 
@@ -137,18 +133,11 @@ public class MetaDataImpl extends MetaData {
 	public Collection getCollection(String uuid) throws EXistException, PermissionDeniedException {
 		MetasImpl ms = docByUUID.get(uuid);
 		if (ms == null) return null;
-		
-		BrokerPool db = null;
-		DBBroker broker = null;
-		try {
-			db = BrokerPool.getInstance();
-			broker = db.get(null);
-			
+
+		final BrokerPool db = BrokerPool.getInstance();
+		try(final DBBroker broker = db.getBroker()) {
 			XmldbURI uri = XmldbURI.create(ms.uri);
 			return broker.getCollection(uri);
-		} finally {
-			if (db != null)
-				db.release(broker);
 		}
 	}
 

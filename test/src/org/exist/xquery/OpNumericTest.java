@@ -8,6 +8,8 @@ import org.exist.util.DatabaseConfigurationException;
 import org.exist.xquery.value.*;
 import org.junit.*;
 
+import java.util.Optional;
+
 import static org.junit.Assert.assertEquals;
 
 public class OpNumericTest {
@@ -29,7 +31,7 @@ public class OpNumericTest {
 
 		BrokerPool pool = BrokerPool.getInstance();
 
-		broker = pool.get(pool.getSecurityManager().getSystemSubject());
+		broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
 		context = new XQueryContext(broker.getBrokerPool(), AccessContext.TEST);
 
 		dtDuration = new DayTimeDurationValue("P1D");
@@ -43,7 +45,9 @@ public class OpNumericTest {
 
     @AfterClass
     public static void tearDown() throws EXistException {
-        BrokerPool.getInstance().release(broker);
+        if(broker != null) {
+			broker.close();
+		}
         BrokerPool.stopAll(false);
         broker = null;
         context = null;

@@ -32,6 +32,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -182,22 +183,24 @@ public class RewriteConfig {
     private void configure(String controllerConfig) throws ServletException {
         LOG.debug("Loading XQueryURLRewrite configuration from " + controllerConfig);
         if (controllerConfig.startsWith(XmldbURI.XMLDB_URI_PREFIX)) {
-            DBBroker broker = null;
-            DocumentImpl doc = null;
-            try {
-                broker = urlRewrite.pool.get(urlRewrite.defaultUser);
 
-                doc = broker.getXMLResource(XmldbURI.create(controllerConfig), Lock.READ_LOCK);
-                if (doc != null)
-                    {parse(doc);}
+
+            try(final DBBroker broker = urlRewrite.pool.get(Optional.ofNullable(urlRewrite.defaultUser))) {
+                DocumentImpl doc = null;
+                try {
+                    doc = broker.getXMLResource(XmldbURI.create(controllerConfig), Lock.READ_LOCK);
+                    if (doc != null) {
+                        parse(doc);
+                    }
+                } finally {
+                    if (doc != null) {
+                        doc.getUpdateLock().release(Lock.READ_LOCK);
+                    }
+                }
             } catch (final EXistException e) {
                 throw new ServletException("Failed to parse controller.xml: " + e.getMessage(), e);
             } catch (final PermissionDeniedException e) {
                 throw new ServletException("Failed to parse controller.xml: " + e.getMessage(), e);
-            } finally {
-                if (doc != null)
-                    {doc.getUpdateLock().release(Lock.READ_LOCK);}
-                urlRewrite.pool.release(broker);
             }
         } else {
             try {

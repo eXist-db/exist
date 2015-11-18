@@ -21,16 +21,16 @@
  */
 package org.exist.storage.dom;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Writer;
+import java.nio.file.Path;
 import java.text.NumberFormat;
 import java.util.ArrayList;
-
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -39,6 +39,7 @@ import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.ElementImpl;
 import org.exist.dom.persistent.IStoredNode;
 import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.StoredNode;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.exist.numbering.DLNBase;
 import org.exist.numbering.NodeId;
@@ -67,17 +68,11 @@ import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.ReentrantReadWriteLock;
 import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.Txn;
-import org.exist.util.ByteConversion;
-import org.exist.util.Configuration;
-import org.exist.util.Lockable;
-import org.exist.util.ReadOnlyException;
+import org.exist.util.*;
 import org.exist.util.hashtable.Object2LongIdentityHashMap;
 import org.exist.util.sanity.SanityCheck;
 import org.exist.xquery.TerminatedException;
 import org.w3c.dom.Node;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
-import org.exist.dom.persistent.StoredNode;
 
 /**
  * This is the main storage for XML nodes. Nodes are stored in document order.
@@ -150,20 +145,20 @@ public class DOMFile extends BTree implements Lockable {
 
     static {
         // register log entry types for this db file
-        LogEntryTypes.addEntryType(LOG_CREATE_PAGE, CreatePageLoggable.class);
-        LogEntryTypes.addEntryType(LOG_ADD_VALUE, AddValueLoggable.class);
-        LogEntryTypes.addEntryType(LOG_REMOVE_VALUE, RemoveValueLoggable.class);
-        LogEntryTypes.addEntryType(LOG_REMOVE_EMPTY_PAGE, RemoveEmptyPageLoggable.class);
-        LogEntryTypes.addEntryType(LOG_UPDATE_VALUE, UpdateValueLoggable.class);
-        LogEntryTypes.addEntryType(LOG_REMOVE_PAGE, RemovePageLoggable.class);
-        LogEntryTypes.addEntryType(LOG_WRITE_OVERFLOW, WriteOverflowPageLoggable.class);
-        LogEntryTypes.addEntryType(LOG_REMOVE_OVERFLOW, RemoveOverflowLoggable.class);
-        LogEntryTypes.addEntryType(LOG_INSERT_RECORD, InsertValueLoggable.class);
-        LogEntryTypes.addEntryType(LOG_SPLIT_PAGE, SplitPageLoggable.class);
-        LogEntryTypes.addEntryType(LOG_ADD_LINK, AddLinkLoggable.class);
-        LogEntryTypes.addEntryType(LOG_ADD_MOVED_REC, AddMovedValueLoggable.class);
-        LogEntryTypes.addEntryType(LOG_UPDATE_HEADER, UpdateHeaderLoggable.class);
-        LogEntryTypes.addEntryType(LOG_UPDATE_LINK, UpdateLinkLoggable.class);
+        LogEntryTypes.addEntryType(LOG_CREATE_PAGE, CreatePageLoggable::new);
+        LogEntryTypes.addEntryType(LOG_ADD_VALUE, AddValueLoggable::new);
+        LogEntryTypes.addEntryType(LOG_REMOVE_VALUE, RemoveValueLoggable::new);
+        LogEntryTypes.addEntryType(LOG_REMOVE_EMPTY_PAGE, RemoveEmptyPageLoggable::new);
+        LogEntryTypes.addEntryType(LOG_UPDATE_VALUE, UpdateValueLoggable::new);
+        LogEntryTypes.addEntryType(LOG_REMOVE_PAGE, RemovePageLoggable::new);
+        LogEntryTypes.addEntryType(LOG_WRITE_OVERFLOW, WriteOverflowPageLoggable::new);
+        LogEntryTypes.addEntryType(LOG_REMOVE_OVERFLOW, RemoveOverflowLoggable::new);
+        LogEntryTypes.addEntryType(LOG_INSERT_RECORD, InsertValueLoggable::new);
+        LogEntryTypes.addEntryType(LOG_SPLIT_PAGE, SplitPageLoggable::new);
+        LogEntryTypes.addEntryType(LOG_ADD_LINK, AddLinkLoggable::new);
+        LogEntryTypes.addEntryType(LOG_ADD_MOVED_REC, AddMovedValueLoggable::new);
+        LogEntryTypes.addEntryType(LOG_UPDATE_HEADER, UpdateHeaderLoggable::new);
+        LogEntryTypes.addEntryType(LOG_UPDATE_LINK, UpdateLinkLoggable::new);
     }
 
     public final static short FILE_FORMAT_VERSION_ID = 9;
@@ -184,13 +179,13 @@ public class DOMFile extends BTree implements Lockable {
 
     private Lock lock = null;
 
-    private final Object2LongIdentityHashMap<Object> pages = new Object2LongIdentityHashMap<Object>(64);
+    private final Object2LongIdentityHashMap<Object> pages = new Object2LongIdentityHashMap<>(64);
 
     private DocumentImpl currentDocument = null;
 
     private final AddValueLoggable addValueLog = new AddValueLoggable();
 
-    public DOMFile(BrokerPool pool, byte id, String dataDir, Configuration config) throws DBException {
+    public DOMFile(BrokerPool pool, byte id, Path dataDir, Configuration config) throws DBException {
         super(pool, id, true, pool.getCacheManager());
         lock = new ReentrantReadWriteLock(getFileName());
         fileHeader = (BTreeFileHeader)getFileHeader();
@@ -199,13 +194,14 @@ public class DOMFile extends BTree implements Lockable {
         dataCache = new LRUCache(256, 0.0, 1.0, CacheManager.DATA_CACHE);
         dataCache.setFileName(getFileName());
         cacheManager.registerCache(dataCache);
-        final File file = new File(dataDir + File.separatorChar + getFileName());
+        final Path file = dataDir.resolve(getFileName());
         setFile(file);
         if (exists()) {
             open();
         } else {
-            if (LOG.isDebugEnabled())
-                {LOG.debug("Creating data file: " + file.getName());}
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Creating data file: " + FileUtils.fileName(file));
+            }
             create();
         }
         config.setProperty(getConfigKeyForFile(), this);
@@ -1347,7 +1343,7 @@ public class DOMFile extends BTree implements Lockable {
         final NumberFormat nf1 = NumberFormat.getPercentInstance();
         final NumberFormat nf2 = NumberFormat.getInstance();
         final StringBuilder buf = new StringBuilder();
-        buf.append(getFile().getName()).append(" DATA ");
+        buf.append(FileUtils.fileName(getFile())).append(" DATA ");
         buf.append("Buffers occupation : ");
         if (dataCache.getBuffers() == 0 && dataCache.getUsedBuffers() == 0)
             {buf.append("N/A");}
@@ -1567,8 +1563,9 @@ public class DOMFile extends BTree implements Lockable {
 
     /**
      * Remove the link at the specified position from the file.
-     * 
-     * @param p
+     *
+     * @param transaction
+     * @param pointer
      */
     private void removeLink(Txn transaction, long pointer) {
         final RecordPos rec = findRecord(pointer, false);

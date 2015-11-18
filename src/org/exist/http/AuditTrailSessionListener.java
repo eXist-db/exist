@@ -43,6 +43,7 @@ import org.exist.xquery.value.Sequence;
 import javax.servlet.http.HttpSessionListener;
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSession;
+import java.util.Optional;
 import java.util.Properties;
 
 /**
@@ -96,9 +97,8 @@ public class AuditTrailSessionListener implements HttpSessionListener {
         if (xqueryResourcePath != null && xqueryResourcePath.length() > 0) {
             xqueryResourcePath = xqueryResourcePath.trim();
             BrokerPool pool = null;
-            DBBroker broker = null;
             Subject subject = null;
-
+            
             try {
                 DocumentImpl resource = null;
                 Source source = null;
@@ -106,68 +106,66 @@ public class AuditTrailSessionListener implements HttpSessionListener {
                 pool = BrokerPool.getInstance();
                 subject = pool.getSecurityManager().getSystemSubject();
 
-                broker = pool.get(subject);
-                if (broker == null) {
-                    LOG.error("Unable to retrieve DBBroker for " + subject.getName());
-                    return;
-                }
+                try(final DBBroker broker = pool.get(Optional.of(subject))) {
+                    if (broker == null) {
+                        LOG.error("Unable to retrieve DBBroker for " + subject.getName());
+                        return;
+                    }
 
-                final XmldbURI pathUri = XmldbURI.create(xqueryResourcePath);
-
-
-                resource = broker.getXMLResource(pathUri, Lock.READ_LOCK);
-
-                if(resource != null) {
-                    LOG.info("Resource [" + xqueryResourcePath + "] exists.");
-                    source = new DBSource(broker, (BinaryDocument)resource, true);
-                } else {
-                    LOG.error("Resource [" + xqueryResourcePath + "] does not exist.");
-                    return;
-                }
+                    final XmldbURI pathUri = XmldbURI.create(xqueryResourcePath);
 
 
-                final XQuery xquery = pool.getXQueryService();
+                    resource = broker.getXMLResource(pathUri, Lock.READ_LOCK);
 
-                if (xquery == null) {
-                    LOG.error("broker unable to retrieve XQueryService");
-                    return;
-                }
+                    if (resource != null) {
+                        LOG.info("Resource [" + xqueryResourcePath + "] exists.");
+                        source = new DBSource(broker, (BinaryDocument) resource, true);
+                    } else {
+                        LOG.error("Resource [" + xqueryResourcePath + "] does not exist.");
+                        return;
+                    }
 
-                final XQueryPool xqpool = pool.getXQueryPool();
-                CompiledXQuery compiled = xqpool.borrowCompiledXQuery(broker, source);
-                XQueryContext context;
-                if (compiled == null)
-                    {context = new XQueryContext(broker.getBrokerPool(), AccessContext.REST);}
-                else
-                    {context = compiled.getContext();}
-                context.setStaticallyKnownDocuments(new XmldbURI[] { pathUri });
-                context.setBaseURI(new AnyURIValue(pathUri.toString()));
 
-                if (compiled == null)
-                    {compiled = xquery.compile(broker, context, source);}
-                else {
-                    compiled.getContext().updateContext(context);
-                    context.getWatchDog().reset();
-                }
+                    final XQuery xquery = pool.getXQueryService();
 
-                final Properties outputProperties = new Properties();
-                Sequence result = null;
+                    if (xquery == null) {
+                        LOG.error("broker unable to retrieve XQueryService");
+                        return;
+                    }
 
-                try {
-                    final long startTime = System.currentTimeMillis();
-                    result = xquery.execute(broker, compiled, null, outputProperties);
-                    final long queryTime = System.currentTimeMillis() - startTime;
-                    LOG.info("XQuery execution results: " + result.toString()  + " in " + queryTime + "ms.");
-                } finally {
-                    xqpool.returnCompiledXQuery(source, compiled);
+                    final XQueryPool xqpool = pool.getXQueryPool();
+                    CompiledXQuery compiled = xqpool.borrowCompiledXQuery(broker, source);
+                    XQueryContext context;
+                    if (compiled == null) {
+                        context = new XQueryContext(broker.getBrokerPool(), AccessContext.REST);
+                    } else {
+                        context = compiled.getContext();
+                    }
+                    context.setStaticallyKnownDocuments(new XmldbURI[]{pathUri});
+                    context.setBaseURI(new AnyURIValue(pathUri.toString()));
+
+                    if (compiled == null) {
+                        compiled = xquery.compile(broker, context, source);
+                    } else {
+                        compiled.getContext().updateContext(context);
+                        context.getWatchDog().reset();
+                    }
+
+                    final Properties outputProperties = new Properties();
+                    Sequence result = null;
+
+                    try {
+                        final long startTime = System.currentTimeMillis();
+                        result = xquery.execute(broker, compiled, null, outputProperties);
+                        final long queryTime = System.currentTimeMillis() - startTime;
+                        LOG.info("XQuery execution results: " + result.toString() + " in " + queryTime + "ms.");
+                    } finally {
+                        xqpool.returnCompiledXQuery(source, compiled);
+                    }
                 }
 
             } catch (final Exception e) {
                 LOG.error("Exception while executing [" + xqueryResourcePath + "] script for " + subject.getName(), e);
-            }
-            finally {
-                if (pool != null)
-                    {pool.release(broker);}
             }
         }
     }

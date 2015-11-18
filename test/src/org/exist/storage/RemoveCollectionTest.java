@@ -46,6 +46,7 @@ import org.xml.sax.SAXException;
 import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.Optional;
 
 /**
  * @author wolf
@@ -96,7 +97,7 @@ public class RemoveCollectionTest {
         final BrokerPool pool = startDB();
         final TransactionManager transact = pool.getTransactionManager();
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             final Collection test = storeDocs(broker, transact);
 
             try(final Txn transaction = transact.beginTransaction()) {
@@ -114,7 +115,7 @@ public class RemoveCollectionTest {
         final BrokerPool pool = startDB();
         final TransactionManager transact = pool.getTransactionManager();
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             final Collection test = storeDocs(broker, transact);
 
@@ -137,7 +138,7 @@ public class RemoveCollectionTest {
         final BrokerPool pool = startDB();
         final TransactionManager transact = pool.getTransactionManager();
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             final Collection test = storeDocs(broker, transact);
 
             try(final Txn transaction = transact.beginTransaction()) {
@@ -204,7 +205,7 @@ public class RemoveCollectionTest {
         final BrokerPool pool = startDB();
         assertNotNull(pool);
         DocumentImpl doc = null;
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
             if (checkResource) {
                 doc = broker.getXMLResource(TestConstants.TEST_COLLECTION_URI.append("hamlet.xml"), Lock.READ_LOCK);
                 assertNull("Resource should have been removed", doc);

@@ -76,20 +76,18 @@ public class GZipFunction extends BasicFunction
             return Sequence.EMPTY_SEQUENCE;
 
         BinaryValue bin = (BinaryValue) args[0].itemAt(0);
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
         // gzip the data
-        try
-        {
-            GZIPOutputStream gzos = new GZIPOutputStream(baos);
-            bin.streamTo(gzos);
-            gzos.close();
-
+        try(final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                GZIPOutputStream gzos = new GZIPOutputStream(baos)) {
+            bin.streamBinaryTo(gzos);
+            
+            gzos.flush();
+            gzos.finish();
+            
             return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new ByteArrayInputStream(baos.toByteArray()));
-        }
-        catch(IOException ioe)
-        {
-            throw new XPathException(this, ioe.getMessage());
+        } catch(IOException ioe) {
+            throw new XPathException(this, ioe.getMessage(), ioe);
         }
     }
 }

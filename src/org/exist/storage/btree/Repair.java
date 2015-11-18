@@ -10,6 +10,9 @@ import org.exist.storage.lock.Lock;
 import org.exist.storage.structural.NativeStructuralIndexWorker;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
+import org.exist.util.FileUtils;
+
+import java.util.Optional;
 
 
 /**
@@ -25,9 +28,7 @@ public class Repair {
     }
 
     public void repair(String id) {
-        DBBroker broker = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             BTree btree = null;
             if ("collections".equals(id)) {
@@ -55,7 +56,7 @@ public class Repair {
             try {
                 lock.acquire(Lock.WRITE_LOCK);
 
-                System.console().printf("Rebuilding %15s ...", btree.getFile().getName());
+                System.console().printf("Rebuilding %15s ...", FileUtils.fileName(btree.getFile()));
                 btree.rebuild();
                 System.out.println("Done");
             } finally {
@@ -65,8 +66,6 @@ public class Repair {
         } catch (Exception e) {
             System.console().printf("An exception occurred during repair: %s\n", e.getMessage());
             e.printStackTrace();
-        } finally {
-            pool.release(broker);
         }
     }
 

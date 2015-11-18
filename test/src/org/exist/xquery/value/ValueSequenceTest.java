@@ -18,6 +18,10 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Optional;
+
 /**
  *
  * @author Adam Retter <adam.retter@googlemail.com>
@@ -42,7 +46,7 @@ public class ValueSequenceTest {
         memtree.endDocument();
 
         final Subject admin = pool.getSecurityManager().authenticate("admin", "");
-        try(final DBBroker broker = pool.get(admin)) {
+        try(final DBBroker broker = pool.get(Optional.of(admin))) {
 
             //persistent doc
             final Collection sysCollection = broker.getCollection(SecurityManager.SECURITY_COLLECTION_URI);
@@ -64,7 +68,7 @@ public class ValueSequenceTest {
     @BeforeClass
     public static void startDb() throws EXistException, DatabaseConfigurationException {
         final String conf = "conf.xml";
-        final String home = System.getProperty("exist.home", System.getProperty("user.dir"));
+        final Optional<Path> home = Optional.ofNullable(System.getProperty("exist.home", System.getProperty("user.dir"))).map(Paths::get);
         final Configuration config = new Configuration(conf, home);
         BrokerPool.configure(1, 5, config);
         pool = BrokerPool.getInstance();

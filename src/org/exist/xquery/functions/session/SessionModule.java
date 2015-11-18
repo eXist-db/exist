@@ -26,12 +26,7 @@ import java.util.Map;
 import org.exist.dom.QName;
 import org.exist.http.servlets.RequestWrapper;
 import org.exist.http.servlets.SessionWrapper;
-import org.exist.xquery.AbstractInternalModule;
-import org.exist.xquery.Function;
-import org.exist.xquery.FunctionDef;
-import org.exist.xquery.Variable;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.functions.request.RequestModule;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Type;
@@ -121,11 +116,11 @@ public class SessionModule extends AbstractInternalModule
 		final Variable var = myModule.resolveVariable( RequestModule.REQUEST_VAR );
 		
 		if( var == null || var.getValue() == null ) {
-			throw( new XPathException( fn, "No request object found in the current XQuery context." ) );
+			throw( new XPathException( fn, ErrorCodes.XPDY0002, "No request object found in the current XQuery context." ) );
 		}
 	
 		if( var.getValue().getItemType() != Type.JAVA_OBJECT ) {
-			throw( new XPathException( fn, "Variable $request is not bound to an Java object." ) );
+			throw( new XPathException( fn, ErrorCodes.XPDY0002, "Variable $request is not bound to an Java object." ) );
 		}
 
 		final JavaObjectValue value = (JavaObjectValue)var.getValue().itemAt( 0 );
@@ -137,7 +132,7 @@ public class SessionModule extends AbstractInternalModule
 			sessionModule.declareVariable( SessionModule.SESSION_VAR, session );
 			ret = (JavaObjectValue)sessionModule.resolveVariable( SessionModule.SESSION_VAR ).getValue().itemAt( 0 );
 		} else {
-			throw( new XPathException( fn, "Variable $request is not bound to a Request object." ) );
+			throw( new XPathException( fn, ErrorCodes.XPDY0002, "Variable $request is not bound to a Request object." ) );
 		}
 		
 		return( ret );

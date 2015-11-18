@@ -38,13 +38,7 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
-import org.exist.xquery.BasicFunction;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Option;
-import org.exist.xquery.Variable;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
@@ -103,14 +97,14 @@ public class Stream extends BasicFunction {
         final Variable respVar = myModule.resolveVariable(ResponseModule.RESPONSE_VAR);
         
         if(respVar == null)
-            {throw new XPathException(this, "No response object found in the current XQuery context.");}
+            {throw new XPathException(this, ErrorCodes.XPDY0002, "No response object found in the current XQuery context.");}
         
         if(respVar.getValue().getItemType() != Type.JAVA_OBJECT)
-            {throw new XPathException(this, "Variable $response is not bound to an Java object.");}
+            {throw new XPathException(this, ErrorCodes.XPDY0002, "Variable $response is not bound to an Java object.");}
         final JavaObjectValue respValue = (JavaObjectValue) respVar.getValue().itemAt(0);
         
         if (!"org.exist.http.servlets.HttpResponseWrapper".equals(respValue.getObject().getClass().getName()))
-            {throw new XPathException(this, signature.toString() + " can only be used within the EXistServlet or XQueryServlet");}
+            {throw new XPathException(this, ErrorCodes.XPDY0002, signature.toString() + " can only be used within the EXistServlet or XQueryServlet");}
         
         final ResponseWrapper response = (ResponseWrapper) respValue.getObject();
         
@@ -121,37 +115,34 @@ public class Stream extends BasicFunction {
         }
         
         Serializer serializer = null;
-        
-        BrokerPool db = null;
-        DBBroker broker = null;
+
         try {
-        	db = BrokerPool.getInstance();
-        	broker = db.get(null);
-        	
-            serializer = broker.getSerializer();
-            serializer.reset();
-            
-            final OutputStream sout = response.getOutputStream();
-            final PrintWriter output = new PrintWriter(new OutputStreamWriter(sout, encoding));
+        	final BrokerPool db = BrokerPool.getInstance();
+        	try(final DBBroker broker = db.getBroker();
+                    final PrintWriter output = new PrintWriter(new OutputStreamWriter(response.getOutputStream(), encoding))) {
 
-        	final SerializerPool serializerPool = SerializerPool.getInstance();
+                serializer = broker.getSerializer();
+                serializer.reset();
 
-        	final SAXSerializer sax = (SAXSerializer) serializerPool.borrowObject(SAXSerializer.class);
-        	try {
-        		sax.setOutput(output, serializeOptions);
+                final SerializerPool serializerPool = SerializerPool.getInstance();
 
-    	    	serializer.setProperties(serializeOptions);
-    	    	serializer.setSAXHandlers(sax, sax);
-            	serializer.toSAX(inputNode, 1, inputNode.getItemCount(), false, false);
-            	
-        	} catch (final SAXException e) {
-        		e.printStackTrace();
-        		throw new IOException(e);
-        	} finally {
-        		serializerPool.returnObject(sax);
-        	}
-        	output.flush();
-        	output.close();
+                final SAXSerializer sax = (SAXSerializer) serializerPool.borrowObject(SAXSerializer.class);
+                try {
+                    sax.setOutput(output, serializeOptions);
+
+                    serializer.setProperties(serializeOptions);
+                    serializer.setSAXHandlers(sax, sax);
+                    serializer.toSAX(inputNode, 1, inputNode.getItemCount(), false, false);
+
+                } catch (final SAXException e) {
+                    e.printStackTrace();
+                    throw new IOException(e);
+                } finally {
+                    serializerPool.returnObject(sax);
+                }
+
+                output.flush();
+            }
             
             //commit the response
             response.flushBuffer();
@@ -159,9 +150,6 @@ public class Stream extends BasicFunction {
             throw new XPathException(this, "IO exception while streaming node: " + e.getMessage(), e);
         } catch (final EXistException e) {
             throw new XPathException(this, "Exception while streaming node: " + e.getMessage(), e);
-		} finally {
-			if (db != null)
-				{db.release(broker);}
 		}
         return Sequence.EMPTY_SEQUENCE;
 	}

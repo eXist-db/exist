@@ -74,26 +74,21 @@ public class UnGZipFunction extends BasicFunction
         if(args[0].isEmpty())
             return Sequence.EMPTY_SEQUENCE;
 
-        BinaryValue bin = (BinaryValue) args[0].itemAt(0);
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        final BinaryValue bin = (BinaryValue) args[0].itemAt(0);
 
+        //TODO(AR) just pass the GZIPInputStream straight into BinaryValueFromInputStream.getInstance
         // ungzip the data
-        try
-        {
-            GZIPInputStream gzis = new GZIPInputStream(bin.getInputStream());
-            int size;
-            byte[] b = new byte[4096];
-            while ((size = gzis.read(b, 0, 4096)) != -1)
-            {
-                baos.write(b, 0, size);
+        try(final GZIPInputStream gzis = new GZIPInputStream(bin.getInputStream());
+                final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            int read = -1;
+            final byte[] b = new byte[4096];
+            while ((read = gzis.read(b)) != -1) {
+                baos.write(b, 0, read);
             }
-            baos.flush();
-            baos.close();
+
             return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new ByteArrayInputStream(baos.toByteArray()));
-        }
-        catch(IOException ioe)
-        {
-            throw new XPathException(this, ioe.getMessage());
+        } catch(final IOException ioe) {
+            throw new XPathException(this, ioe.getMessage(), ioe);
         }
     }
 }

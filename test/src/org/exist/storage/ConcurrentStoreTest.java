@@ -24,6 +24,7 @@ package org.exist.storage;
 import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.Optional;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
@@ -79,7 +80,7 @@ public class ConcurrentStoreTest {
         BrokerPool.FORCE_CORRUPTION = false;
         pool = startDB();
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             test = broker.getCollection(TEST_COLLECTION_URI.append("test1"));
             assertNotNull(test);
@@ -93,7 +94,7 @@ public class ConcurrentStoreTest {
     
     protected void setupCollections() throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final TransactionManager transact = pool.getTransactionManager();
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                 final Txn transaction = transact.beginTransaction();) {
 
             Collection root = broker.getOrCreateCollection(transaction, TEST_COLLECTION_URI);
@@ -124,7 +125,7 @@ public class ConcurrentStoreTest {
         @Override
         public void run() {
             final TransactionManager transact = pool.getTransactionManager();
-            try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                     final Txn transaction = transact.beginTransaction()) {
                 XMLFilenameFilter filter = new XMLFilenameFilter();
                 File files[] = dir.listFiles(filter);
@@ -161,7 +162,7 @@ public class ConcurrentStoreTest {
         @Override
         public void run() {
             final TransactionManager transact = pool.getTransactionManager();
-            try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                     final Txn transaction = transact.beginTransaction()) {
                 
                 Iterator<DocumentImpl> i = test.iterator(broker);

@@ -1,7 +1,10 @@
 package org.exist.util;
 
-import java.io.File;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Optional;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -23,9 +26,9 @@ public class ConfigurationHelper {
      *   <li>classpath entry : if exists, with a conf.xml file
      * </ol>
      *
-     * @return the file handle or <code>null</code>
+     * @return the path to exist home if known
      */
-    public static File getExistHome() {
+    public static Optional<Path> getExistHome() {
     	return getExistHome(DatabaseImpl.CONF_XML);
     }
 
@@ -41,21 +44,19 @@ public class ConfigurationHelper {
      *   <li>classpath entry : if exists, with a conf.xml file
      * </ol>
      *
-     * @return the file handle or <code>null</code>
+     * @return the path to exist home if known
      */
-    public static File getExistHome(String config) {
-    	File existHome = null;
-    	
+    public static Optional<Path> getExistHome(final String config) {
     	// If eXist was already configured, then return 
     	// the existHome of this instance.
     	try {
     		final BrokerPool broker = BrokerPool.getInstance();
     		if(broker != null) {
-    			existHome = broker.getConfiguration().getExistHome();
-			if(existHome!=null) {
-                        	LOG.debug("Got eXist home from broker: " + existHome);
-    				return existHome;
-			}
+    			final Optional<Path> existHome = broker.getConfiguration().getExistHome();
+                if(existHome.isPresent()) {
+                    LOG.debug("Got eXist home from broker: " + existHome);
+                    return existHome;
+                }
     		}
     	} catch(final Throwable e) {
             // Catch all potential problems
@@ -64,38 +65,37 @@ public class ConfigurationHelper {
     	
         // try exist.home
         if (System.getProperty("exist.home") != null) {
-            existHome = new File(ConfigurationHelper.decodeUserHome(System.getProperty("exist.home")));
-            if (existHome.isDirectory()) {
-                LOG.debug("Got eXist home from system property 'exist.home': " + existHome);
-                return existHome;
+            final Path existHome = ConfigurationHelper.decodeUserHome(System.getProperty("exist.home"));
+            if (Files.isDirectory(existHome)) {
+                LOG.debug("Got eXist home from system property 'exist.home': " + existHome.toAbsolutePath().toString());
+                return Optional.of(existHome);
             }
         }
         
         // try user.home
-        existHome = new File(System.getProperty("user.home"));
-        if (existHome.isDirectory() && new File(existHome, config).isFile()) {
-            LOG.debug("Got eXist home from system property 'user.home': " + existHome);
-            return existHome;
+        final Path userHome = Paths.get(System.getProperty("user.home"));
+        if (Files.isDirectory(userHome) && Files.isRegularFile(userHome.resolve(config))) {
+            LOG.debug("Got eXist home from system property 'user.home': " + userHome.toAbsolutePath().toString());
+            return Optional.of(userHome);
         }
         
         
         // try user.dir
-        existHome = new File(System.getProperty("user.dir"));
-        if (existHome.isDirectory() && new File(existHome, config).isFile()) {
-            LOG.debug("Got eXist home from system property 'user.dir': " + existHome);
-            return existHome;
+        final Path userDir = Paths.get(System.getProperty("user.dir"));
+        if (Files.isDirectory(userDir) && Files.isRegularFile(userDir.resolve(config))) {
+            LOG.debug("Got eXist home from system property 'user.dir': " + userDir.toAbsolutePath().toString());
+            return Optional.of(userDir);
         }
         
         // try classpath
         final URL configUrl = ConfigurationHelper.class.getClassLoader().getResource(config);
         if (configUrl != null) {
-            existHome = new File(configUrl.getPath()).getParentFile();
-            LOG.debug("Got eXist home from classpath: " + existHome);
-            return existHome;
+            final Path existHome = Paths.get(configUrl.getPath()).getParent();
+            LOG.debug("Got eXist home from classpath: " + existHome.toAbsolutePath().toString());
+            return Optional.of(existHome);
         }
         
-        existHome = null;
-        return existHome;
+        return Optional.empty();
     }
     
 	/**
@@ -108,8 +108,8 @@ public class ConfigurationHelper {
      * @param path the file path
      * @return the file handle
      */
-    public static File lookup(String path) {
-        return lookup(path, null);
+    public static Path lookup(final String path) {
+        return lookup(path, Optional.empty());
     }
     
     /**
@@ -124,17 +124,16 @@ public class ConfigurationHelper {
      * @param parent parent directory used to lookup <code>path</code>
      * @return the file handle
      */
-    public static File lookup(String path, String parent) {
+    public static Path lookup(final String path, final Optional<Path> parent) {
         // resolvePath is used for things like ~user/folder
-        final File f = new File(decodeUserHome(path));
-        if (f.isAbsolute()) {return f;}
-        if (parent == null) {
-            File home = getExistHome();
-            if (home == null)
-                {home = new File(System.getProperty("user.dir"));}
-            parent = home.getPath();
+        final Path p = decodeUserHome(path);
+        if (p.isAbsolute()) {
+            return p;
         }
-        return new File(parent, path);
+
+        return parent
+                .orElse(getExistHome().orElse(Paths.get(System.getProperty("user.dir"))))
+                .resolve(path);
     }
     
     
@@ -145,10 +144,11 @@ public class ConfigurationHelper {
      * @param path the path to resolve
      * @return the resolved path
      */
-    public static String decodeUserHome(String path) {
+    public static Path decodeUserHome(final String path) {
         if (path != null && path.startsWith("~") && path.length() > 1) {
-            path = System.getProperty("user.home") + path.substring(1);
+            return Paths.get(System.getProperty("user.home")).resolve(path.substring(1));
+        } else {
+            return Paths.get(path);
         }
-        return path;
     }
 }

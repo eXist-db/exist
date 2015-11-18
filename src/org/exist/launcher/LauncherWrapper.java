@@ -27,8 +27,10 @@ import org.apache.tools.ant.taskdefs.Java;
 import org.apache.tools.ant.types.Commandline;
 import org.exist.util.ConfigurationHelper;
 
-import java.awt.*;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.Map;
 import java.util.Properties;
 
@@ -51,7 +53,6 @@ public class LauncherWrapper {
     }
 
     protected String command;
-    protected File output;
 
     public LauncherWrapper(String command) {
         this.command = command;
@@ -74,6 +75,7 @@ public class LauncherWrapper {
         final Java java = new Java();
         java.setFork(true);
         java.setSpawn(spawn);
+        java.setJvmargs("-Dwrapper.java.library.path=" + home + "tools/wrapper/");
         //java.setClassname(org.exist.start.Main.class.getName());
         java.setProject(project);
         java.setJar(new File(home, "start.jar"));
@@ -134,21 +136,28 @@ public class LauncherWrapper {
 
     public static Properties getVMProperties() {
         final Properties vmProperties = new Properties();
-        final File propFile = ConfigurationHelper.lookup("vm.properties");
+        final java.nio.file.Path propFile = ConfigurationHelper.lookup("vm.properties");
         InputStream is = null;
         try {
-            if (propFile.canRead()) {
-                is = new FileInputStream(propFile);
+            if (Files.isReadable(propFile)) {
+                is = Files.newInputStream(propFile);
             }
             if (is == null) {
                 is = LauncherWrapper.class.getResourceAsStream("vm.properties");
             }
             if (is != null) {
                 vmProperties.load(is);
-                is.close();
             }
         } catch (final IOException e) {
             System.err.println("vm.properties not found");
+        } finally {
+            if(is != null) {
+                try {
+                    is.close();
+                } catch(final IOException ioe) {
+                    ioe.printStackTrace();
+                }
+            }
         }
         return vmProperties;
     }

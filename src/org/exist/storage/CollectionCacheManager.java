@@ -118,6 +118,11 @@ public class CollectionCacheManager implements CacheManager {
         return collectionCache.getRealSize();
     }
 
+    @Override
+    public int getDefaultInitialSize() {
+        return DEFAULT_CACHE_SIZE;
+    }
+
     private void registerMBean(String instanceName) {
         final Agent agent = AgentFactory.getInstance();
         try {
@@ -126,5 +131,5 @@ public class CollectionCacheManager implements CacheManager {
         } catch (final DatabaseConfigurationException e) {
             LOG.warn("Exception while registering cache mbean.", e);
         }
-        }
+    }
 }

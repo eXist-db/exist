@@ -22,6 +22,9 @@
 package org.exist.xquery.xqts;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Optional;
 
 import junit.framework.Assert;
 
@@ -36,10 +39,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
-import org.exist.util.Configuration;
-import org.exist.util.ConfigurationHelper;
-import org.exist.util.MimeTable;
-import org.exist.util.MimeType;
+import org.exist.util.*;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Sequence;
@@ -88,7 +88,7 @@ public class QT3TS_To_junit {
     public void init() throws EXistException, PermissionDeniedException, IOException, TriggerException {
 		db = BrokerPool.getInstance();
 		
-		broker = db.get(db.getSecurityManager().getSystemSubject());
+		broker = db.get(Optional.of(db.getSecurityManager().getSystemSubject()));
 		Assert.assertNotNull(broker);
 
         TransactionManager txnMgr = db.getTransactionManager();
@@ -101,7 +101,9 @@ public class QT3TS_To_junit {
     }
 
     public void release() throws Exception {
-    	db.release(broker);
+    	if(broker != null) {
+            broker.close();
+        }
     }
     	
     public void shutdown() throws Exception {
@@ -216,12 +218,11 @@ public class QT3TS_To_junit {
 		"return $catalog//qt:test-set";
 
     public void create() throws Exception {
-        File existHome = ConfigurationHelper.getExistHome();
-        File src = new File(existHome.getAbsolutePath()+sep+"test"+sep+"src"+sep+"org"+sep+"exist"+sep+"xquery"+sep+"xqts"+sep+"qt3"+sep);
-        if (!src.exists())
-        	src.mkdirs();
+        Optional<Path> existHome = ConfigurationHelper.getExistHome();
+        Path src = FileUtils.resolve(existHome, "test/src/org/exist/xquery/xqts/qt3");
+        Files.createDirectories(src);
         
-        if (!src.canRead()) {
+        if (!Files.isReadable(src)) {
             throw new IOException("QT3 junit tests folder unreadable.");
         }
 
@@ -238,7 +239,7 @@ public class QT3TS_To_junit {
         }
     }
 
-    private void processSet(File src, String name, String file) throws Exception {
+    private void processSet(Path src, String name, String file) throws Exception {
         String tsQuery = 
     		"declare namespace qt='http://www.w3.org/2010/09/qt-fots-catalog'; " +
     		"let $catalog := xmldb:document('/db/QT3/"+file+"') " +
@@ -262,10 +263,10 @@ public class QT3TS_To_junit {
 //   </all-of>
 //</result>
 //</test-case>
-    private void testCases(File src, String file, String group, Sequence results) throws Exception {
+    private void testCases(Path src, String file, String group, Sequence results) throws Exception {
     	String className = adoptString(group);
     	
-    	StringBuilder subPath = new StringBuilder(src.getAbsolutePath());
+    	StringBuilder subPath = new StringBuilder(src.toAbsolutePath().toString());
     	StringBuilder _package_ = new StringBuilder();//adoptString(group);
     	String[] strs = file.split("/");
     	for (int i = 0; i < strs.length - 1; i++) {

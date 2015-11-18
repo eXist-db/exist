@@ -42,11 +42,19 @@ public class XPathException extends Exception {
 
     private XACMLSource source = null;
 
+    /**
+     * @deprecated Use a constructor with errorCode
+     */
+    @Deprecated
     public XPathException(String message) {
         super();
         this.message = message;
     }
 
+    /**
+     * @deprecated Use a constructor with errorCode
+     */
+    @Deprecated
     public XPathException(int line, int column, String message) {
         super();
         this.message = message;
@@ -70,11 +78,12 @@ public class XPathException extends Exception {
     }
 
     /**
-     * Use constructor with errorCode and errorVal.
-     * 
      * @param expr XPath expression
      * @param message Exception message
+     *
+     * @deprecated Use a constructor with errorCode
      */
+    @Deprecated
     public XPathException(Expression expr, String message) {
         super();
         this.message = message;
@@ -112,7 +121,7 @@ public class XPathException extends Exception {
     }
 
     /**
-     * Use constructor with errorCode and errorVal
+     * @deprecated Use a constructor with errorCode
      */
     @Deprecated
     public XPathException(XQueryAST ast, String message) {
@@ -134,25 +143,35 @@ public class XPathException extends Exception {
         }
     }
 
+    /**
+     * @deprecated Use a constructor with errorCode
+     */
     @Deprecated
     public XPathException(Throwable cause) {
         super(cause);
     }
 
+    /**
+     * @deprecated Use a constructor with errorCode
+     */
     @Deprecated
     public XPathException(String message, Throwable cause) {
         super(cause);
         this.message = message;
     }
 
-
+    /**
+     * @deprecated Use a constructor with errorCode
+     */
+    @Deprecated
     public XPathException(Expression expr, Throwable cause) {
         this(expr, ErrorCodes.ERROR, cause.getMessage(), null, cause);
     }
 
     /**
-     * Use constructor with errorCode and errorVal
+     * @deprecated Use a constructor with errorCode
      */
+    @Deprecated
     public XPathException(Expression expr, String message, Throwable cause) {
         this(expr, ErrorCodes.ERROR, message, null, cause);
     }
@@ -201,6 +220,10 @@ public class XPathException extends Exception {
         }
     }
 
+    /**
+     * @deprecated Use a constructor with errorCode
+     */
+    @Deprecated
     protected XPathException(int line, int column, String message, Throwable cause) {
         super(cause);
         this.message = message;
@@ -208,6 +231,9 @@ public class XPathException extends Exception {
         this.column = column;
     }
 
+    /**
+     * @deprecated Use a constructor with errorCode
+     */
     @Deprecated
     public XPathException(int line, int column, Throwable cause) {
         super(cause);

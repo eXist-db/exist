@@ -27,10 +27,12 @@ import org.apache.logging.log4j.Logger;
 
 import com.bradmcevoy.http.Resource;
 import com.bradmcevoy.http.ResourceFactory;
-import java.io.File;
-import java.io.FileInputStream;
 
+import java.io.InputStream;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Optional;
 import java.util.Properties;
 import javax.xml.transform.OutputKeys;
 
@@ -41,6 +43,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.EXistOutputKeys;
+import org.exist.util.FileUtils;
 import org.exist.xmldb.XmldbURI;
 
 /**
@@ -92,14 +95,14 @@ public class ExistResourceFactory implements ResourceFactory {
         // load specific options
         try {
             // Find right file
-            File eXistHome = brokerPool.getConfiguration().getExistHome();
-            File config = new File(eXistHome, "webdav.properties");
+            final Optional<Path> eXistHome = brokerPool.getConfiguration().getExistHome();
+            final Path config = FileUtils.resolve(eXistHome, "webdav.properties");
             
             // Read from file if existent
-            if(config.canRead()){
-                LOG.info(String.format("Read WebDAV configuration from %s", config.getCanonicalPath()));
-                try (FileInputStream fis = new FileInputStream(config)) {
-                    webDavOptions.load(fis);
+            if(Files.isReadable(config)) {
+                LOG.info(String.format("Read WebDAV configuration from %s", config.toAbsolutePath().toString()));
+                try (final InputStream is = Files.newInputStream(config)) {
+                    webDavOptions.load(is);
                 }
                 
             } else {
@@ -181,7 +184,6 @@ public class ExistResourceFactory implements ResourceFactory {
      */
     private ResourceType getResourceType(BrokerPool brokerPool, XmldbURI xmldbUri) {
 
-        DBBroker broker = null;
         Collection collection = null;
         DocumentImpl document = null;
         ResourceType type = ResourceType.NOT_EXISTING;
@@ -199,16 +201,13 @@ public class ExistResourceFactory implements ResourceFactory {
             //return ResourceType.IGNORABLE;
         }
 
-        try {
+        // Try to read as system user. Note that the actual user is not know
+        // yet. In MiltonResource the actual authentication and authorization
+        // is performed.
+        try(final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()))) {
             if(LOG.isDebugEnabled()) {
                 LOG.debug(String.format("Path: %s", xmldbUri.toString()));
             }
-            
-            // Try to read as system user. Note that the actual user is not know
-            // yet. In MiltonResource the actual authentication and authorization
-            // is performed.
-            broker = brokerPool.get(brokerPool.getSecurityManager().getSystemSubject());
-
             
             // First check if resource is a collection
             collection = broker.openCollection(xmldbUri, Lock.READ_LOCK);
@@ -248,11 +247,6 @@ public class ExistResourceFactory implements ResourceFactory {
             // Clean-up, just in case
             if (document != null) {
                 document.getUpdateLock().release(Lock.READ_LOCK);
-            }
-
-            // Return broker to pool
-            if(broker != null) {
-                brokerPool.release(broker);
             }
         }
 

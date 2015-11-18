@@ -89,12 +89,15 @@ import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.Txn;
 import org.exist.util.ByteConversion;
+import org.exist.util.FileUtils;
 import org.exist.util.Lockable;
 import org.exist.xquery.TerminatedException;
 
 import java.io.*;
+import java.nio.file.Path;
 import java.text.NumberFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  *  A general purpose B+-tree which stores binary keys as instances of
@@ -137,13 +140,13 @@ public class BTree extends Paged implements Lockable {
 
     static {
         // register the log entry types used for the BTree
-        LogEntryTypes.addEntryType(LOG_INSERT_VALUE, InsertValueLoggable.class);
-        LogEntryTypes.addEntryType(LOG_UPDATE_VALUE, UpdateValueLoggable.class);
-        LogEntryTypes.addEntryType(LOG_REMOVE_VALUE, RemoveValueLoggable.class);
-        LogEntryTypes.addEntryType(LOG_CREATE_BNODE, CreateBTNodeLoggable.class);
-        LogEntryTypes.addEntryType(LOG_UPDATE_PAGE, UpdatePageLoggable.class);
-        LogEntryTypes.addEntryType(LOG_SET_PARENT, SetParentLoggable.class);
-        LogEntryTypes.addEntryType(LOG_SET_LINK, SetPageLinkLoggable.class);
+        LogEntryTypes.addEntryType(LOG_INSERT_VALUE, InsertValueLoggable::new);
+        LogEntryTypes.addEntryType(LOG_UPDATE_VALUE, UpdateValueLoggable::new);
+        LogEntryTypes.addEntryType(LOG_REMOVE_VALUE, RemoveValueLoggable::new);
+        LogEntryTypes.addEntryType(LOG_CREATE_BNODE, CreateBTNodeLoggable::new);
+        LogEntryTypes.addEntryType(LOG_UPDATE_PAGE, UpdatePageLoggable::new);
+        LogEntryTypes.addEntryType(LOG_SET_PARENT, SetParentLoggable::new);
+        LogEntryTypes.addEntryType(LOG_SET_LINK, SetPageLinkLoggable::new);
     }
 
     protected DefaultCacheManager cacheManager;
@@ -177,7 +180,7 @@ public class BTree extends Paged implements Lockable {
     }
 
     public BTree(BrokerPool pool, byte fileId, boolean transactional,
-            DefaultCacheManager cacheManager, File file)
+            DefaultCacheManager cacheManager, final Path file)
             throws DBException {
         this(pool, fileId, transactional, cacheManager);
         setFile(file);
@@ -193,7 +196,7 @@ public class BTree extends Paged implements Lockable {
             try {
                 createRootNode(null);
             } catch (final IOException e) {
-                LOG.warn("Can not create database file " + getFile().getPath(), e);
+                LOG.warn("Can not create database file " + getFile().toAbsolutePath().toString(), e);
                 return false;
             }
             fileHeader.setFixedKeyLen(fixedKeyLen);
@@ -232,7 +235,7 @@ public class BTree extends Paged implements Lockable {
     protected void initCache() {
         cache = new BTreeCache(cacheManager.getDefaultInitialSize(), 1.5,
             0, CacheManager.BTREE_CACHE);
-        cache.setFileName(getFile().getName());
+        cache.setFileName(FileUtils.fileName(getFile()));
         cacheManager.registerCache(cache);
     }
 
@@ -517,7 +520,7 @@ public class BTree extends Paged implements Lockable {
     }
 
     public TreeMetrics treeStatistics() throws IOException {
-        final TreeMetrics metrics = new TreeMetrics(getFile().getName());
+        final TreeMetrics metrics = new TreeMetrics(FileUtils.fileName(getFile()));
         final BTreeNode root = getRootNode();
         root.treeStatistics(metrics);
         return metrics;
@@ -622,10 +625,8 @@ public class BTree extends Paged implements Lockable {
         }
         pagePointers.removeAll(nextPages);
         if (pagePointers.size() > 1) {
-            for (long pointer: pagePointers) {
-                System.out.println("Start page: " + pointer);
-            }
-            throw new DBException("More than one start page found for btree");
+            LOG.error("Found multiple start pages: [" + pagePointers.stream().map(l -> Long.toString(l)).collect(Collectors.joining(", ")) + "]");
+            throw new DBException("More than one start page found for btree: " + FileUtils.fileName(getFile()));
         }
         if (removeBranches) {
             for (long p : branchPages) {
@@ -1569,7 +1570,7 @@ public class BTree extends Paged implements Lockable {
                 cache.add(parent);
                 setRootNode(parent);
                 if(rNode.mustSplit()) {
-                    LOG.debug(getFile().getName() + " right node requires second split: " + rNode.getDataLen());
+                    LOG.debug(FileUtils.fileName(getFile()) + " right node requires second split: " + rNode.getDataLen());
                     rNode.split(transaction);
                 }
                 cache.add(rNode);
@@ -1602,7 +1603,7 @@ public class BTree extends Paged implements Lockable {
                 }
                 rNode.recalculateDataLen();
                 if(rNode.mustSplit()) {
-                    LOG.debug(getFile().getName() + " right node requires second split: " + rNode.getDataLen());
+                    LOG.debug(FileUtils.fileName(getFile()) + " right node requires second split: " + rNode.getDataLen());
                     rNode.split(transaction);
                 }
                 cache.add(rNode);
@@ -1610,7 +1611,7 @@ public class BTree extends Paged implements Lockable {
             }
             cache.add(this);
             if (mustSplit()) {
-                LOG.debug(getFile().getName() + "left node requires second split: " + getDataLen());
+                LOG.debug(FileUtils.fileName(getFile()) + "left node requires second split: " + getDataLen());
                 split(transaction);
             }
         }
@@ -2524,7 +2525,7 @@ public class BTree extends Paged implements Lockable {
     public void printStatistics() {
         final NumberFormat nf = NumberFormat.getPercentInstance();
         final StringBuilder buf = new StringBuilder();
-        buf.append(getFile().getName()).append(" INDEX ");
+        buf.append(FileUtils.fileName(getFile())).append(" INDEX ");
         buf.append("Buffers occupation : ");
         if (cache.getBuffers() == 0 && cache.getUsedBuffers() == 0)
             {buf.append("N/A");}

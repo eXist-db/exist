@@ -36,6 +36,8 @@ import org.exist.xquery.TerminatedException;
 import java.io.File;
 
 import java.util.List;
+import java.util.Optional;
+
 import org.exist.security.PermissionDeniedException;
 
 
@@ -76,7 +78,7 @@ public class ExportMain
             if( configFile == null ) {
                 config = new Configuration();
             } else {
-                config = new Configuration( configFile, null );
+                config = new Configuration( configFile, Optional.empty() );
             }
             config.setProperty(BrokerPool.PROPERTY_EXPORT_ONLY, Boolean.TRUE);
             BrokerPool.configure( 1, 5, config );
@@ -177,10 +179,8 @@ public class ExportMain
             System.exit( 1 );
         }
         int      retval = 0; // return value
-        DBBroker broker = null;
 
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             List<ErrorReport> errors  = null;
             
             if(!nocheck) {
@@ -216,9 +216,7 @@ public class ExportMain
         catch(final PermissionDeniedException pde) {
             System.err.println( "ERROR: Failed to retrieve database data: " + pde.getMessage() );
             retval = 4;
-        }
-        finally {
-            pool.release( broker );
+        } finally {
             BrokerPool.stopAll( false );
         }
         System.exit( retval );

@@ -76,7 +76,7 @@ public class Shared {
     /**
      *  Get input stream for specified resource.
      */
-    public static InputStream getInputStream(Item s, XQueryContext context) throws XPathException, MalformedURLException, IOException {
+    public static InputStream getInputStream(Item s, XQueryContext context) throws XPathException, IOException {
         final StreamSource streamSource = getStreamSource(s, context);
         return streamSource.getInputStream();
     }
@@ -85,9 +85,9 @@ public class Shared {
      *  Get stream source for specified resource, containing InputStream and 
      * location. Used by @see Jaxv.
      */
-    public static StreamSource[] getStreamSource(Sequence s, XQueryContext context) throws XPathException, MalformedURLException, IOException {
+    public static StreamSource[] getStreamSource(Sequence s, XQueryContext context) throws XPathException, IOException {
 
-        final ArrayList<StreamSource> sources = new ArrayList<StreamSource>();
+        final ArrayList<StreamSource> sources = new ArrayList<>();
 
         final SequenceIterator i = s.iterate();
 
@@ -103,7 +103,7 @@ public class Shared {
         return returnSources;
     }
 
-    public static StreamSource getStreamSource(Item item, XQueryContext context) throws XPathException, MalformedURLException, IOException {
+    public static StreamSource getStreamSource(Item item, XQueryContext context) throws XPathException, IOException {
 
         final StreamSource streamSource = new StreamSource();
         if (item.getType() == Type.JAVA_OBJECT) {
@@ -156,7 +156,7 @@ public class Shared {
 
             final BinaryValue binary = (BinaryValue) item;
             
-            final byte[] data = (byte[]) binary.toJavaObject(byte[].class);
+            final byte[] data = binary.toJavaObject(byte[].class);
             final InputStream is = new ByteArrayInputStream(data);
             streamSource.setInputStream(is);
 
@@ -181,7 +181,7 @@ public class Shared {
      *  Get input source for specified resource, containing inputStream and 
      * location. Used by @see Jing.
      */
-    public static InputSource getInputSource(Item s, XQueryContext context) throws XPathException, MalformedURLException, IOException {
+    public static InputSource getInputSource(Item s, XQueryContext context) throws XPathException, IOException {
 
         final StreamSource streamSource = getStreamSource(s, context);
 
@@ -193,7 +193,7 @@ public class Shared {
 
     }
 
-    public static StreamSource getStreamSource(InputSource in) throws XPathException, MalformedURLException, IOException {
+    public static StreamSource getStreamSource(InputSource in) throws XPathException, IOException {
 
         final StreamSource streamSource = new StreamSource();
         streamSource.setInputStream(in.getByteStream());
@@ -241,7 +241,7 @@ public class Shared {
      */
     public static String[] getUrls(Sequence s) throws XPathException {
 
-        final ArrayList<String> urls = new ArrayList<String>();
+        final ArrayList<String> urls = new ArrayList<>();
 
         final SequenceIterator i = s.iterate();
 
@@ -324,10 +324,7 @@ public class Shared {
         final AttributesImpl attribs = new AttributesImpl();
 
         // iterate validation report items, write message
-        final List<ValidationReportItem> cr = report.getValidationReportItemList();
-        for (final Iterator<ValidationReportItem> iter = cr.iterator(); iter.hasNext();) {
-            final ValidationReportItem vri = iter.next();
-
+        for (final ValidationReportItem vri : report.getValidationReportItemList()) {
             // construct attributes
             attribs.addAttribute("", "level", "level", "CDATA", vri.getTypeText());
             attribs.addAttribute("", "line", "line", "CDATA", Integer.toString(vri.getLineNumber()));
@@ -350,7 +347,7 @@ public class Shared {
         builder.endElement();
 
         // return result
-        return ((DocumentImpl) builder.getDocument()).getNode(nodeNr);
+        return builder.getDocument().getNode(nodeNr);
 
     }
 

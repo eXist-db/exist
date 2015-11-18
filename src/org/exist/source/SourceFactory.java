@@ -34,6 +34,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
+import org.exist.util.FileUtils;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
 
@@ -100,7 +101,7 @@ public class SourceFactory {
              */
             File f5 = null;
             try {
-				f5 = new File(new File(BrokerPool.getInstance().getConfiguration().getExistHome().getCanonicalPath()), location);
+				f5 = FileUtils.resolve(BrokerPool.getInstance().getConfiguration().getExistHome(), location).toFile();
 				if(f5.canRead()){
 				    location = f5.toURI().toASCIIString();
 				    source = new FileSource(f5, "UTF-8", checkXQEncoding);

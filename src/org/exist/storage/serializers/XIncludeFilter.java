@@ -365,7 +365,7 @@ public class XIncludeFilter implements Receiver {
                             final XmldbURI parentUri = XmldbURI.create(moduleLoadPath);
                             docUri = parentUri.append(path);
                             doc = (DocumentImpl) serializer.broker.getXMLResource(docUri);
-                            if (doc != null && !doc.getPermissions().validate(serializer.broker.getSubject(), Permission.READ)) {
+                            if (doc != null && !doc.getPermissions().validate(serializer.broker.getCurrentSubject(), Permission.READ)) {
                                 throw new PermissionDeniedException("Permission denied to read XInclude'd resource");
                             }
                         } else {

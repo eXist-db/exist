@@ -68,16 +68,11 @@ public abstract class AbstractPrincipal implements Principal {
                 throw new ConfigurationException(e);
             } 
 
-            DBBroker broker = null;
-            try {
-                broker = database.get(null);
-
+            try(final DBBroker broker = database.getBroker()) {
                 final Configuration _config_ = Configurator.parse(this, broker, collection, XmldbURI.create(name + ".xml"));
                 configuration = Configurator.configure(this, _config_);
             } catch (final EXistException e) {
                 throw new ConfigurationException(e);
-            } finally {
-                database.release(broker);
             }
         }
     }
