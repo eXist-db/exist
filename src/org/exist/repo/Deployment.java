@@ -22,6 +22,7 @@ package org.exist.repo;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -652,7 +653,7 @@ public class Deployment {
         final boolean isResources = isResourcesDir || isResourceDir(target, resources);
 
         // the root dir is not allowed to be a resources directory
-        if (!inRootDir && isResourcesDir) {
+        if (!inRootDir && isResources) {
             try {
                 storeBinaryResources(directory, collection);
             } catch (Exception e) {
@@ -770,17 +771,19 @@ public class Deployment {
     private void storeBinaryResources(Path directory, Collection targetCollection) throws IOException, EXistException,
             PermissionDeniedException, LockException, TriggerException {
         final TransactionManager mgr = broker.getBrokerPool().getTransactionManager();
-        Files.newDirectoryStream(directory).forEach(file -> {
-            if (!Files.isDirectory(file)) {
-                final XmldbURI name = XmldbURI.create(FileUtils.fileName(file));
-                try(final Txn txn = mgr.beginTransaction()) {
-                    storeBinary(targetCollection, file, MimeType.BINARY_TYPE, name, txn);
-                    mgr.commit(txn);
-                } catch (final Exception e) {
-                    e.printStackTrace();
-                }
+        try(DirectoryStream<Path> stream = Files.newDirectoryStream(directory)) {
+            for (Path entry: stream) {
+                if (!Files.isDirectory(entry)) {
+                    final XmldbURI name = XmldbURI.create(FileUtils.fileName(entry));
+                    try(final Txn txn = mgr.beginTransaction()) {
+                        storeBinary(targetCollection, entry, MimeType.BINARY_TYPE, name, txn);
+                        mgr.commit(txn);
+                    } catch (final Exception e) {
+                        e.printStackTrace();
+                    }
+                }  
             }
-        });
+        }
     }
 
     /**
