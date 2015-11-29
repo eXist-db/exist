@@ -139,7 +139,7 @@ public class ExistCollection extends ExistResource {
     public List<XmldbURI> getCollectionURIs() {
         final List<XmldbURI> collectionURIs = new ArrayList<>();
 
-        try(final DBBroker broker = brokerPool.get(Optional.of(subject))) {
+        try(final DBBroker broker = brokerPool.get(Optional.ofNullable(subject))) {
             // Try to read as specified subject
             Collection collection = null;
             try {
@@ -170,7 +170,7 @@ public class ExistCollection extends ExistResource {
     public List<XmldbURI> getDocumentURIs() {
         final List<XmldbURI> documentURIs = new ArrayList<>();
 
-        try(final DBBroker broker = brokerPool.get(Optional.of(subject))) {
+        try(final DBBroker broker = brokerPool.get(Optional.ofNullable(subject))) {
             Collection collection = null;
             try {
                 // Try to read as specified subject
@@ -209,7 +209,7 @@ public class ExistCollection extends ExistResource {
 
         final TransactionManager txnManager = brokerPool.getTransactionManager();
 
-        try(final DBBroker broker = brokerPool.get(Optional.of(subject));
+        try(final DBBroker broker = brokerPool.get(Optional.ofNullable(subject));
             final Txn txn = txnManager.beginTransaction()) {
 
             // Open collection if possible, else abort
@@ -254,7 +254,7 @@ public class ExistCollection extends ExistResource {
 
         final TransactionManager txnManager = brokerPool.getTransactionManager();
 
-        try(final DBBroker broker = brokerPool.get(Optional.of(subject));
+        try(final DBBroker broker = brokerPool.get(Optional.ofNullable(subject));
             final Txn txn = txnManager.beginTransaction()) {
 
             // Check if collection exists. not likely to happen since availability is
@@ -348,7 +348,7 @@ public class ExistCollection extends ExistResource {
 
         final TransactionManager txnManager = brokerPool.getTransactionManager();
 
-        try(final DBBroker broker = brokerPool.get(Optional.of(subject));
+        try(final DBBroker broker = brokerPool.get(Optional.ofNullable(subject));
             final Txn txn = txnManager.beginTransaction()) {
 
             // Check if collection exists. not likely to happen since availability is checked
@@ -446,7 +446,7 @@ public class ExistCollection extends ExistResource {
 
         final TransactionManager txnManager = brokerPool.getTransactionManager();
 
-        try(final DBBroker broker = brokerPool.get(Optional.of(subject));
+        try(final DBBroker broker = brokerPool.get(Optional.ofNullable(subject));
             final Txn txn = txnManager.beginTransaction()) {
 
             // This class contains already the URI of the resource that shall be moved/copied

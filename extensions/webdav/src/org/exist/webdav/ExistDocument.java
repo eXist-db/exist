@@ -159,7 +159,7 @@ public class ExistDocument extends ExistResource {
 
         long startTime = System.currentTimeMillis();
 
-        try(final DBBroker broker = brokerPool.get(Optional.of(subject))) {
+        try(final DBBroker broker = brokerPool.get(Optional.ofNullable(subject))) {
 
             DocumentImpl document = null;
             try {
@@ -230,7 +230,7 @@ public class ExistDocument extends ExistResource {
 
         final TransactionManager txnManager = brokerPool.getTransactionManager();
 
-        try(final DBBroker broker = brokerPool.get(Optional.of(subject));
+        try(final DBBroker broker = brokerPool.get(Optional.ofNullable(subject));
             final Txn txn = txnManager.beginTransaction()) {
 
             // Need to split path into collection and document name
@@ -295,7 +295,7 @@ public class ExistDocument extends ExistResource {
 
         DocumentImpl document = null;
 
-        try(final DBBroker broker = brokerPool.get(Optional.of(subject))) {
+        try(final DBBroker broker = brokerPool.get(Optional.ofNullable(subject))) {
 
             // If it is not a collection, check if it is a document
             document = broker.getXMLResource(xmldbUri, Lock.READ_LOCK);
@@ -361,7 +361,7 @@ public class ExistDocument extends ExistResource {
 
         DocumentImpl document = null;
 
-        try(final DBBroker broker = brokerPool.get(Optional.of(subject))) {
+        try(final DBBroker broker = brokerPool.get(Optional.ofNullable(subject))) {
 
             // Try to get document (add catch?)
             document = broker.getXMLResource(xmldbUri, Lock.WRITE_LOCK);
@@ -459,7 +459,7 @@ public class ExistDocument extends ExistResource {
 
         final TransactionManager txnManager = brokerPool.getTransactionManager();
 
-        try(final DBBroker broker = brokerPool.get(Optional.of(subject));
+        try(final DBBroker broker = brokerPool.get(Optional.ofNullable(subject));
             final Txn txn = txnManager.beginTransaction()) {
 
 
@@ -538,7 +538,7 @@ public class ExistDocument extends ExistResource {
 
         final TransactionManager txnManager = brokerPool.getTransactionManager();
 
-        try(final DBBroker broker = brokerPool.get(Optional.of(subject));
+        try(final DBBroker broker = brokerPool.get(Optional.ofNullable(subject));
             final Txn txn = txnManager.beginTransaction()) {
 
             // Need to split path into collection and document name
@@ -630,7 +630,7 @@ public class ExistDocument extends ExistResource {
             throw new EXistException("token is null");
         }
 
-        try(final DBBroker broker = brokerPool.get(Optional.of(subject))) {
+        try(final DBBroker broker = brokerPool.get(Optional.ofNullable(subject))) {
 
             // Try to get document (add catch?)
             document = broker.getXMLResource(xmldbUri, Lock.WRITE_LOCK);
