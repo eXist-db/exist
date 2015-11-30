@@ -180,7 +180,8 @@ public class Deployment {
 
             if (packages != null && (!enforceDeps || pkgVersion.equals(packages.latest().getVersion()))) {
                 LOG.info("Application package " + name + " already installed. Skipping.");
-                return null;
+                final Package pkg = packages.latest();
+                return Optional.of(getTargetCollection(pkg, getPackageDir(pkg)));
             }
 
             InMemoryNodeSet deps;
@@ -309,8 +310,7 @@ public class Deployment {
                 if (target == null) {
                     // a library package does not have a target collection, but we still return
                     // the temporary location of the package in /db/system
-                    final String pkgColl = pkg.get().getAbbrev() + "-" + pkg.get().getVersion();
-                    return Optional.of(XmldbURI.SYSTEM.append("repo/" + pkgColl).getCollectionPath());
+                    return Optional.of(getTargetFallback(pkg.get()).getCollectionPath());
                 }
                 return Optional.ofNullable(target.getStringValue());
             } catch (final XPathException e) {
@@ -477,6 +477,38 @@ public class Deployment {
         }
     }
 
+    /**
+     * Get the target collection for the given package, which resides in pkgDir.
+     * Returns path to cached .xar for library packages.
+     *
+     * @param pkg
+     * @param pkgDir
+     * @return
+     * @throws PackageException
+     */
+    private String getTargetCollection(final Package pkg, final Path pkgDir) throws PackageException {
+        final DocumentImpl repoXML = getRepoXML(pkgDir);
+        if (repoXML != null) {
+            try {
+                final ElementImpl target = findElement(repoXML, TARGET_COLL_ELEMENT);
+                if (target == null) {
+                    return getTargetFallback(pkg).getCollectionPath();
+                }
+                final XmldbURI targetCollection = XmldbURI.create(getTargetCollection(target.getStringValue()));
+                return targetCollection.getCollectionPath();
+            } catch (XPathException e) {
+                throw new PackageException("Failed to determine target collection");
+            }
+        } else {
+            return getTargetFallback(pkg).getCollectionPath();
+        }
+    }
+
+    private XmldbURI getTargetFallback(final Package pkg) {
+        final String pkgColl = pkg.getAbbrev() + "-" + pkg.getVersion();
+        return XmldbURI.SYSTEM.append("repo/" + pkgColl);
+    }
+
     private String getTargetCollection(String targetFromRepo) {
         final String appRoot = (String) broker.getConfiguration().getProperty(PROPERTY_APP_ROOT);
         if (appRoot != null) {
@@ -505,8 +537,7 @@ public class Deployment {
         // determine target collection
         XmldbURI targetCollection;
         if (target == null || target.getStringValue().length() == 0) {
-            final String pkgColl = pkg.getAbbrev() + "-" + pkg.getVersion();
-            targetCollection = XmldbURI.SYSTEM.append("repo/" + pkgColl);
+            targetCollection = getTargetFallback(pkg);
         } else {
             final String targetPath = target.getStringValue();
             try {
