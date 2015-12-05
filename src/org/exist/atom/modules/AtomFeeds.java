@@ -115,7 +115,7 @@ public class AtomFeeds extends AtomModuleBase implements Atom {
 				final Collection collection = broker.getCollection(pathUri);
 				if (collection != null) {
 					if (!collection.getPermissionsNoLock().validate(
-							broker.getSubject(), Permission.READ)) {
+							broker.getCurrentSubject(), Permission.READ)) {
 						throw new PermissionDeniedException(
 								"Not allowed to read collection");
 					}
@@ -149,7 +149,7 @@ public class AtomFeeds extends AtomModuleBase implements Atom {
 
 			} else {
 				// Do we have permission to read the resource
-				if (!resource.getPermissions().validate(broker.getSubject(),
+				if (!resource.getPermissions().validate(broker.getCurrentSubject(),
 						Permission.READ)) {
 					throw new PermissionDeniedException(
 							"Not allowed to read resource");

@@ -278,9 +278,7 @@ public class MailModule extends AbstractInternalModule {
                         ModuleUtils.modifyContextMap(context, MailModule.MSGLISTS_CONTEXTVAR, new ContextMapModifier<Message[]>(){
                             @Override
                             public void modify(Map<Long, Message[]> map) {
-                                for(final Long msgListKey : folderMsgList.keySet()){
-                                    map.remove(msgListKey);
-                                }
+                                folderMsgList.keySet().forEach(map::remove);
                             }
                         });
                         
@@ -365,7 +363,7 @@ public class MailModule extends AbstractInternalModule {
             public void modify(Map<Long, Map<Long, Message[]>> map) {
                 Map<Long, Message[]> folderMsgList = map.get(folderHandle);
                 if(folderMsgList == null) {
-                    folderMsgList = new HashMap<Long, Message[]>();
+                    folderMsgList = new HashMap<>();
                     map.put(folderHandle, folderMsgList);
                 }
 

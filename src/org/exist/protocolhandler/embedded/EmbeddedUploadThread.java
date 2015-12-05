@@ -51,7 +51,7 @@ public class EmbeddedUploadThread extends Thread {
         
         try {
             BrokerPool pool = BrokerPool.getInstance(url.getInstanceName());
-            subject = pool.getSubject();
+            subject = pool.getActiveBroker().getCurrentSubject();
         } catch (Throwable e) {
             //e.printStackTrace();
         }

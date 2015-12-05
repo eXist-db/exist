@@ -112,12 +112,9 @@ public class MetaDataImpl extends MetaData {
 	public DocumentImpl getDocument(String uuid) throws EXistException, PermissionDeniedException {
 		MetasImpl ms = docByUUID.get(uuid);
 		if (ms == null) return null;
-		
-		BrokerPool db = null;
-		DBBroker broker = null;
-		try {
-			db = BrokerPool.getInstance();
-			broker = db.get(null);
+
+		final BrokerPool db = BrokerPool.getInstance();
+		try(final DBBroker broker = db.getBroker()) {
 			
 			XmldbURI uri = XmldbURI.create(ms.uri);
 			Collection col = broker.getCollection(uri.removeLastSegment());
@@ -126,9 +123,6 @@ public class MetaDataImpl extends MetaData {
 			}
 			
 			return null;
-		} finally {
-			if (db != null)
-				db.release(broker);
 		}
 	}
 
@@ -139,18 +133,11 @@ public class MetaDataImpl extends MetaData {
 	public Collection getCollection(String uuid) throws EXistException, PermissionDeniedException {
 		MetasImpl ms = docByUUID.get(uuid);
 		if (ms == null) return null;
-		
-		BrokerPool db = null;
-		DBBroker broker = null;
-		try {
-			db = BrokerPool.getInstance();
-			broker = db.get(null);
-			
+
+		final BrokerPool db = BrokerPool.getInstance();
+		try(final DBBroker broker = db.getBroker()) {
 			XmldbURI uri = XmldbURI.create(ms.uri);
 			return broker.getCollection(uri);
-		} finally {
-			if (db != null)
-				db.release(broker);
 		}
 	}
 

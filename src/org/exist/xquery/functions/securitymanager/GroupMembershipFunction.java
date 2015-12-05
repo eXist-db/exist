@@ -138,7 +138,7 @@ public class GroupMembershipFunction extends BasicFunction {
         Sequence result = Sequence.EMPTY_SEQUENCE;
 
         final DBBroker broker = getContext().getBroker();
-        final Subject currentUser = broker.getSubject();
+        final Subject currentUser = broker.getCurrentSubject();
         final SecurityManager securityManager = broker.getBrokerPool().getSecurityManager();
 
         try {
@@ -241,16 +241,15 @@ public class GroupMembershipFunction extends BasicFunction {
              * Consider Unix /etc/groups design!
              * See XMLDBCreateGroup and XMLDRemoveUserFromGroup
              */
-            final Subject currentSubject = context.getBroker().getSubject();
             try {
                 //escalate
-                context.getBroker().setSubject(securityManager.getSystemSubject());
+                context.getBroker().pushSubject(securityManager.getSystemSubject());
 
                 //perform action
                 account.addGroup(group);
                 securityManager.updateAccount(account);
             } finally {
-                context.getBroker().setSubject(currentSubject);
+                context.getBroker().popSubject();
             }
         }
     }
@@ -267,16 +266,15 @@ public class GroupMembershipFunction extends BasicFunction {
              * Consider Unix /etc/groups design!
              * See XMLDBCreateGroup and XMLDRemoveUserFromGroup
              */
-            final Subject currentSubject = context.getBroker().getSubject();
             try {
                 //escalate
-                context.getBroker().setSubject(securityManager.getSystemSubject());
+                context.getBroker().pushSubject(securityManager.getSystemSubject());
 
                 //perform action
                 account.remGroup(group.getName());
                 securityManager.updateAccount(account);
             } finally {
-                context.getBroker().setSubject(currentSubject);
+                context.getBroker().popSubject();
             }
         }
     }

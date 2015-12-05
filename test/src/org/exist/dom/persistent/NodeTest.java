@@ -54,7 +54,7 @@ public class NodeTest {
     @Test
     public void document() throws EXistException, LockException, PermissionDeniedException {
         DocumentImpl doc = null;
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             doc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"),Lock.READ_LOCK);
             NodeList children = doc.getChildNodes();
             for (int i = 0; i < children.getLength(); i++) {
@@ -72,7 +72,7 @@ public class NodeTest {
     @Test
 	public void childAxis() throws EXistException, LockException, PermissionDeniedException {
 		DocumentImpl doc = null;
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             doc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"),Lock.READ_LOCK);
             Element rootNode = doc.getDocumentElement();
             
@@ -113,7 +113,7 @@ public class NodeTest {
     @Test
     public void siblingAxis() throws EXistException, LockException, PermissionDeniedException {
         DocumentImpl doc = null;
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             
             doc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"),Lock.READ_LOCK);
             Element rootNode = doc.getDocumentElement();
@@ -149,7 +149,7 @@ public class NodeTest {
     @Test
 	public void attributeAxis() throws EXistException, LockException, PermissionDeniedException {
 		DocumentImpl doc = null;
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             doc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"),Lock.READ_LOCK);
             Element rootNode = doc.getDocumentElement();
             Element first = (Element) rootNode.getFirstChild();
@@ -196,7 +196,7 @@ public class NodeTest {
     public void visitor() throws EXistException, LockException, PermissionDeniedException {
 
         DocumentImpl doc = null;
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             
             doc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"));
             StoredNode rootNode = (StoredNode) doc.getDocumentElement();
@@ -221,7 +221,7 @@ public class NodeTest {
         pool = startDB();
         final TransactionManager transact = pool.getTransactionManager();
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn transaction = transact.beginTransaction()) {
             
             root = broker.getOrCreateCollection(transaction, XmldbURI.create(XmldbURI.ROOT_COLLECTION + "/test"));
@@ -250,7 +250,7 @@ public class NodeTest {
 
         final TransactionManager transact = pool.getTransactionManager();
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn transaction = transact.beginTransaction()) {
             
             root = broker.getOrCreateCollection(transaction, XmldbURI.create(XmldbURI.ROOT_COLLECTION + "/test"));

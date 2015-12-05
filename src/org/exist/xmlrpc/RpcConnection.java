@@ -3759,7 +3759,7 @@ public class RpcConnection implements RpcAPI {
      * @throws org.exist.security.PermissionDeniedException
      */
     private <R> R withDb(final Subject user, final XmlRpcFunction<R> dbOperation) throws EXistException, PermissionDeniedException {
-        try (final DBBroker broker = factory.getBrokerPool().get(user);
+        try (final DBBroker broker = factory.getBrokerPool().get(Optional.of(user));
              final Txn transaction = factory.getBrokerPool().getTransactionManager().beginTransaction()) {
             final R result = dbOperation.apply(broker, transaction);
             transaction.commit();

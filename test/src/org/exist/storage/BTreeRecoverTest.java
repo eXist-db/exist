@@ -24,6 +24,7 @@ package org.exist.storage;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.Optional;
 
 import org.exist.EXistException;
 import org.exist.numbering.NodeId;
@@ -61,7 +62,7 @@ public class BTreeRecoverTest {
         
         TransactionManager mgr = pool.getTransactionManager();
         NodeIdFactory idFact = pool.getNodeFactory();
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             broker.flush();
             DOMFile domDb = ((NativeBroker) broker).getDOMFile();
@@ -109,7 +110,7 @@ public class BTreeRecoverTest {
         @SuppressWarnings("unused")
 		TransactionManager mgr = pool.getTransactionManager();
         NodeIdFactory idFact = pool.getNodeFactory();
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             DOMFile domDb = ((NativeBroker) broker).getDOMFile();
             domDb.setOwnerObject(this);
             

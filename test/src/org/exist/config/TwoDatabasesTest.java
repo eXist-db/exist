@@ -25,6 +25,7 @@ import org.apache.commons.io.output.ByteArrayOutputStream;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Optional;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
@@ -91,25 +92,33 @@ public class TwoDatabasesTest {
         BrokerPool.configure("db1", 1, threads, config1);
         pool1 = BrokerPool.getInstance("db1");
         user1 = pool1.getSecurityManager().getSystemSubject();
-        DBBroker broker1 = pool1.get(user1);
-
+        try(final DBBroker broker1 = pool1.get(Optional.of(user1))) {
+            Collection top1 = null;
+            try {
+                top1 = broker1.getCollection(XmldbURI.create("xmldb:exist:///"));
+                assertTrue(top1 != null);
+            } finally {
+                if (top1 != null) {
+                    top1.getLock().release(Lock.READ_LOCK);
+                }
+            }
+        }
 
         Configuration config2 = new Configuration(config2File.getAbsolutePath());
         BrokerPool.configure("db2", 1, threads, config2);
         pool2 = BrokerPool.getInstance("db2");
-        user2 = pool1.getSecurityManager().getSystemSubject();
-        DBBroker broker2 = pool2.get(user2);
-
-        Collection top1 = broker1.getCollection(XmldbURI.create("xmldb:exist:///"));
-        assertTrue(top1 != null);
-        top1.getLock().release(Lock.READ_LOCK);
-        pool1.release(broker1);
-
-        Collection top2 = broker2.getCollection(XmldbURI.create("xmldb:exist:///"));
-        assertTrue(top2 != null);
-        top2.getLock().release(Lock.READ_LOCK);
-        pool2.release(broker2);
-
+        user2 = pool2.getSecurityManager().getSystemSubject();
+        try(final DBBroker broker2 = pool2.get(Optional.of(user2))) {
+            Collection top2 = null;
+            try {
+                top2 = broker2.getCollection(XmldbURI.create("xmldb:exist:///"));
+                assertTrue(top2 != null);
+            } finally {
+                if(top2 != null) {
+                    top2.getLock().release(Lock.READ_LOCK);
+                }
+            }
+        }
     }
 
     @After
@@ -125,27 +134,39 @@ public class TwoDatabasesTest {
     }
 
     private void put() throws EXistException, LockException, TriggerException, PermissionDeniedException, IOException {
-        try (final DBBroker broker1 = pool1.get(user1);
+        try (final DBBroker broker1 = pool1.get(Optional.of(user1));
              final Txn transaction1 = pool1.getTransactionManager().beginTransaction()) {
-            Collection top1 = storeBin(broker1, transaction1, "1");
-            pool1.getTransactionManager().commit(transaction1);
-            top1.release(Lock.READ_LOCK);
+            Collection top1 = null;
+            try {
+                top1 = storeBin(broker1, transaction1, "1");
+                pool1.getTransactionManager().commit(transaction1);
+            } finally {
+                if(top1 != null) {
+                    top1.release(Lock.READ_LOCK);
+                }
+            }
         }
 
-        try (final DBBroker broker2 = pool2.get(user1);
+        try (final DBBroker broker2 = pool2.get(Optional.of(user1));
              final Txn transaction2 = pool2.getTransactionManager().beginTransaction()) {
-            Collection top2 = storeBin(broker2, transaction2, "2");
-            pool2.getTransactionManager().commit(transaction2);
-            top2.release(Lock.READ_LOCK);
+            Collection top2 = null;
+            try {
+                top2 = storeBin(broker2, transaction2, "2");
+                pool2.getTransactionManager().commit(transaction2);
+            } finally {
+                if(top2 != null) {
+                    top2.release(Lock.READ_LOCK);
+                }
+            }
         }
     }
 
     private void get() throws EXistException, IOException, PermissionDeniedException {
-        try (final DBBroker broker1 = pool1.get(user1)) {
+        try (final DBBroker broker1 = pool1.get(Optional.of(user1))) {
             assertTrue(getBin(broker1, "1"));
         }
 
-        try (final DBBroker broker2 = pool2.get(user2)) {
+        try (final DBBroker broker2 = pool2.get(Optional.of(user2))) {
             assertTrue(getBin(broker2, "2"));
         }
     }

@@ -46,7 +46,7 @@ public class ValueSequenceTest {
         memtree.endDocument();
 
         final Subject admin = pool.getSecurityManager().authenticate("admin", "");
-        try(final DBBroker broker = pool.get(admin)) {
+        try(final DBBroker broker = pool.get(Optional.of(admin))) {
 
             //persistent doc
             final Collection sysCollection = broker.getCollection(SecurityManager.SECURITY_COLLECTION_URI);

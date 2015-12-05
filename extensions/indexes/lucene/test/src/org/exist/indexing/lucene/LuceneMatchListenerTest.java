@@ -23,11 +23,13 @@ import org.custommonkey.xmlunit.NamespaceContext;
 import org.custommonkey.xmlunit.SimpleNamespaceContext;
 import org.custommonkey.xmlunit.XMLAssert;
 import org.custommonkey.xmlunit.XMLUnit;
+import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.exist.EXistException;
 import org.exist.TestUtils;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.IndexInfo;
+import org.exist.security.PermissionDeniedException;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -51,9 +53,10 @@ import org.junit.Test;
 import org.xml.sax.SAXException;
 
 import javax.xml.transform.OutputKeys;
-import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.Optional;
 import java.util.Properties;
 
 public class LuceneMatchListenerTest {
@@ -118,12 +121,11 @@ public class LuceneMatchListenerTest {
      * &lt;create qname="a"/&gt;.
      */
     @Test
-    public void indexByQName() {
-        DBBroker broker = null;
-        try {
-            configureAndStore(CONF2, XML);
+    public void indexByQName() throws EXistException, PermissionDeniedException, XPathException, SAXException {
 
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        configureAndStore(CONF2, XML);
+
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
@@ -166,22 +168,13 @@ public class LuceneMatchListenerTest {
             XMLAssert.assertEquals("<hit><para>" + MATCH_START + "double" + MATCH_END + " " +
                     MATCH_START + "match" + MATCH_END + " " + MATCH_START + "double" + MATCH_END + " " +
                     MATCH_START + "match" + MATCH_END + "</para></hit>", result);
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } finally {
-            pool.release(broker);
         }
     }
 
     @Test
-    public void matchInAncestor() {
-        DBBroker broker = null;
-        try {
-            configureAndStore(CONF1, XML);
-
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-
+    public void matchInAncestor() throws EXistException, PermissionDeniedException, XPathException, SAXException, IOException, XpathException {
+        configureAndStore(CONF1, XML);
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
             Sequence seq = xquery.execute(broker, "//para[ft:query(., 'mixed')]/hi", null, AccessContext.TEST);
@@ -195,22 +188,13 @@ public class LuceneMatchListenerTest {
             assertEquals(1, seq.getItemCount());
             result = queryResult2String(broker, seq);
             XMLAssert.assertXpathEvaluatesTo("1", "count(//hi/exist:match)", result);
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } finally {
-            pool.release(broker);
         }
     }
 
     @Test
-    public void matchInDescendant() {
-        DBBroker broker = null;
-        try {
-            configureAndStore(CONF3, XML);
-
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-
+    public void matchInDescendant() throws EXistException, PermissionDeniedException, XPathException, SAXException, IOException, XpathException {
+        configureAndStore(CONF3, XML);
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
             Sequence seq = xquery.execute(broker, "//hi[ft:query(., 'mixed')]/ancestor::para", null, AccessContext.TEST);
@@ -224,22 +208,14 @@ public class LuceneMatchListenerTest {
             assertEquals(1, seq.getItemCount());
             result = queryResult2String(broker, seq);
             XMLAssert.assertXpathEvaluatesTo("1", "count(//hi/exist:match)", result);
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } finally {
-            pool.release(broker);
         }
     }
 
     @Test
-    public void inlineNodes() {
-        DBBroker broker = null;
-        try {
-            configureAndStore(CONF4, XML1);
+    public void inlineNodes() throws EXistException, PermissionDeniedException, XPathException, SAXException {
+        configureAndStore(CONF4, XML1);
 
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
             Sequence seq = xquery.execute(broker, "//p[ft:query(., 'mixed')]", null, AccessContext.TEST);
@@ -276,11 +252,6 @@ public class LuceneMatchListenerTest {
             result = queryResult2String(broker, seq);
             XMLAssert.assertEquals("<head>The <b>" + MATCH_START + "title" + MATCH_END + "</b>of it</head>",
                     result);
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } finally {
-            pool.release(broker);
         }
     }
 
@@ -292,7 +263,7 @@ public class LuceneMatchListenerTest {
         pool = BrokerPool.getInstance();
 
         final TransactionManager transact = pool.getTransactionManager();
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn transaction = transact.beginTransaction()) {
 
             Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
@@ -319,7 +290,7 @@ public class LuceneMatchListenerTest {
 
     private void configureAndStore(String config, String data) {
         final TransactionManager transact = pool.getTransactionManager();
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn transaction = transact.beginTransaction()) {
 
             Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);

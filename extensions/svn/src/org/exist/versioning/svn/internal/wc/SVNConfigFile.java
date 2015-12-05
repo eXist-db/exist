@@ -19,10 +19,10 @@ import java.io.InputStreamReader;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Optional;
 
 import org.exist.EXistException;
 import org.exist.security.Subject;
-import org.exist.security.internal.SecurityManagerImpl;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.util.io.Resource;
@@ -299,26 +299,21 @@ public class SVNConfigFile {
                 return;
             }
         }
-    	DBBroker broker = null;
-    	Subject subject = null;
-    	try {
-    		broker = BrokerPool.getInstance().getActiveBroker();
-    		subject = broker.getSubject();
-    		broker.setSubject(broker.getBrokerPool().getSecurityManager().getSystemSubject());
 
-		    Resource configFile = new Resource(configDir, "config");
-		    Resource serversFile = new Resource(configDir, "servers");
-		    Resource readmeFile = new Resource(configDir, "README.txt");
-		    
-		    writeFile("/org/tmatesoft/svn/core/internal/wc/config/config", configFile);
-		    writeFile("/org/tmatesoft/svn/core/internal/wc/config/servers", serversFile);
-		    writeFile("/org/tmatesoft/svn/core/internal/wc/config/README.txt", readmeFile);
+        try {
+            final BrokerPool pool = BrokerPool.getInstance();
+    	    try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+                Resource configFile = new Resource(configDir, "config");
+                Resource serversFile = new Resource(configDir, "servers");
+                Resource readmeFile = new Resource(configDir, "README.txt");
+
+                writeFile("/org/tmatesoft/svn/core/internal/wc/config/config", configFile);
+                writeFile("/org/tmatesoft/svn/core/internal/wc/config/servers", serversFile);
+                writeFile("/org/tmatesoft/svn/core/internal/wc/config/README.txt", readmeFile);
+            }
     	} catch (EXistException e) {
     		LOG.debug(e);
-		} finally {
-			if (broker != null && subject != null)
-				broker.setSubject(subject);
-    	}
+		}
     }
 
     private static void writeFile(String url, Resource configFile) {

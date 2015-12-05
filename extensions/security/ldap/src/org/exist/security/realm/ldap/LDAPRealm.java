@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
@@ -409,19 +410,9 @@ public class LDAPRealm extends AbstractRealm {
     }
     
     private <R> R executeAsSystemUser(final LdapContext ctx, final Unit<R> unit) throws EXistException, PermissionDeniedException, NamingException {
-        
-        DBBroker broker = null;
-        Subject currentSubject = getDatabase().getSubject();
-        try {
-            //elevate to system privs
-            broker = getDatabase().get(getSecurityManager().getSystemSubject());
-                    
+        try(final DBBroker broker = getDatabase().get(Optional.of(getSecurityManager().getSystemSubject()))) {
+            //perform as SYSTEM user
             return unit.execute(ctx, broker);
-        } finally {
-            if(broker != null) {
-                broker.setSubject(currentSubject);
-                getDatabase().release(broker);
-            }
         }
     }
     
@@ -461,7 +452,7 @@ public class LDAPRealm extends AbstractRealm {
         } else {
             LdapContext ctx = null;
             try {
-                ctx = getContext(getSecurityManager().getDatabase().getSubject());
+                ctx = getContext(getSecurityManager().getDatabase().getActiveBroker().getCurrentSubject());
                 return getAccount(ctx, name);
             } catch(final NamingException ne) {
             	LOG.debug(ne.getMessage(), ne);

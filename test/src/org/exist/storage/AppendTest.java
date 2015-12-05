@@ -44,6 +44,7 @@ import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.Optional;
 
 public class AppendTest extends AbstractUpdateTest {
 
@@ -53,7 +54,7 @@ public class AppendTest extends AbstractUpdateTest {
         final BrokerPool pool = startDB();
         final TransactionManager transact = pool.getTransactionManager();
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             final IndexInfo info = init(broker, transact);
             final MutableDocumentSet docs = new DefaultDocumentSet();
             docs.add(info.getDocument());

@@ -23,6 +23,7 @@ package org.exist.storage;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Optional;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
@@ -63,7 +64,7 @@ public class MoveResourceTest {
         final BrokerPool pool = startDB();
         final TransactionManager transact = pool.getTransactionManager();
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                 final Txn transaction = transact.beginTransaction()) {
 
             final Collection test = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
@@ -96,7 +97,7 @@ public class MoveResourceTest {
         BrokerPool.FORCE_CORRUPTION = false;
         final BrokerPool pool = startDB();
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             final Serializer serializer = broker.getSerializer();
             serializer.reset();
 
@@ -131,7 +132,7 @@ public class MoveResourceTest {
         final BrokerPool pool = startDB();
         final TransactionManager transact = pool.getTransactionManager();
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             try(final Txn transaction = transact.beginTransaction()) {
 
@@ -172,7 +173,7 @@ public class MoveResourceTest {
         BrokerPool.FORCE_CORRUPTION = false;
         final BrokerPool pool = startDB();
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             final Serializer serializer = broker.getSerializer();
             serializer.reset();
 

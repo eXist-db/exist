@@ -74,7 +74,7 @@ public class GetFunction extends CacheBasicFunction {
 				if( logger.isTraceEnabled() ) {
 					logger.trace("getting cache value [" + item.toJavaObject(Cache.class).toString() + ", " + key +"]");
 				}
-				return ((Cache)item.toJavaObject(Cache.class)).get(key);
+				return item.toJavaObject(Cache.class).get(key);
 			}
 		} catch (SAXException e) {
 			logger.error("Error getting cache value", e);

@@ -47,6 +47,7 @@ import org.junit.Test;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
+import java.util.Optional;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
@@ -63,7 +64,7 @@ public abstract class AbstractUpdateTest {
         BrokerPool.FORCE_CORRUPTION = false;
         final BrokerPool pool = startDB();
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
             final Serializer serializer = broker.getSerializer();
             serializer.reset();
             

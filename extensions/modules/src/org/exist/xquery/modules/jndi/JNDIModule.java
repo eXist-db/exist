@@ -123,7 +123,7 @@ public class JNDIModule extends AbstractInternalModule
 		HashMap contexts = (HashMap)context.getXQueryContextVar( JNDIModule.JNDICONTEXTS_VARIABLE );
 		
 		if( contexts != null ) {	
-		 	jndiContext = (Context)contexts.get( Long.valueOf( ctxID ) );
+		 	jndiContext = (Context)contexts.get(ctxID);
 		}
 		
 		return( jndiContext );
@@ -154,7 +154,7 @@ public class JNDIModule extends AbstractInternalModule
 		long ctxID = getID();
 
 		// place the connection in the connections map
-		contexts.put( Long.valueOf( ctxID ), jndiContext );
+		contexts.put(ctxID, jndiContext );
 
 		// store the updated connections map back in the context
 		context.setXQueryContextVar( JNDIModule.JNDICONTEXTS_VARIABLE, contexts );
@@ -195,7 +195,7 @@ public class JNDIModule extends AbstractInternalModule
 		Context ctx = null;
 
 		if( contexts != null ) {	
-			ctx = (Context)contexts.get( Long.valueOf( ctxID ) );
+			ctx = (Context)contexts.get(ctxID);
 			
 			if( ctx != null ) {
 				try {
@@ -227,11 +227,11 @@ public class JNDIModule extends AbstractInternalModule
 		if( contexts != null ) {
 			// iterate over each connection
 			Set keys = contexts.keySet();
-			for( Iterator itKeys = keys.iterator(); itKeys.hasNext(); ) {
+			for (Object key : keys) {
 				// get the connection
-				Long ctxID = (Long)itKeys.next();
-				
-				closeJNDIContext( xqueryContext, ctxID, contexts );
+				Long ctxID = (Long) key;
+
+				closeJNDIContext(xqueryContext, ctxID, contexts);
 			}
 
 			// update the context

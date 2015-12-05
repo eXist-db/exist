@@ -47,7 +47,6 @@ import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.AuthenticationException;
 import org.exist.security.Group;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.PermissionFactory;
 import org.exist.security.SecurityManager;
 import org.exist.security.Session;
 import org.exist.security.Subject;
@@ -137,8 +136,6 @@ public class SecurityManagerImpl implements SecurityManager {
 
         defaultRealm = new RealmImpl(this, null); //TODO: in-memory configuration???
         realms.add(defaultRealm);
-
-        PermissionFactory.sm = this;
 
         final Properties params = new Properties();
         params.put(getClass().getName(), this);
@@ -1065,7 +1062,7 @@ public class SecurityManagerImpl implements SecurityManager {
 
     @Override
     public Subject getCurrentSubject() {
-        return db.getSubject();
+        return db.getActiveBroker().getCurrentSubject();
     }
 
     @Override

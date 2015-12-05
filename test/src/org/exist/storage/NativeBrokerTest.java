@@ -51,14 +51,14 @@ public class NativeBrokerTest {
 
         final NativeBroker broker = EasyMock.createMockBuilder(NativeBroker.class)
             .addMockedMethod("getCollection")
-            .addMockedMethod("getSubject")
+            .addMockedMethod("getCurrentSubject")
             .createStrictMock();
 
         final Subject subject = EasyMock.createStrictMock(Subject.class);
 
         //grant EXECUTE and READ permissions on the src
         expect(srcCollection.getPermissionsNoLock()).andReturn(srcPermissions);
-        expect(broker.getSubject()).andReturn(subject);
+        expect(broker.getCurrentSubject()).andReturn(subject);
         expect(srcPermissions.validate(subject, Permission.EXECUTE | Permission.READ)).andReturn(true);
 
         //grant EXECUTE and WRITE permission on the dest
@@ -66,7 +66,7 @@ public class NativeBrokerTest {
         final Capture<XmldbURI> newDestURICapture = new Capture<XmldbURI>();
         expect(broker.getCollection(capture(newDestURICapture))).andReturn(newDestCollection);
         expect(destCollection.getPermissionsNoLock()).andReturn(destPermissions);
-        expect(broker.getSubject()).andReturn(subject);
+        expect(broker.getCurrentSubject()).andReturn(subject);
         expect(destPermissions.validate(subject, Permission.EXECUTE | Permission.WRITE)).andReturn(true);
 
         //no sub-documents
@@ -113,7 +113,7 @@ public class NativeBrokerTest {
 
         final NativeBroker broker = EasyMock.createMockBuilder(NativeBroker.class)
                 .addMockedMethod("getCollection")
-                .addMockedMethod("getSubject")
+                .addMockedMethod("getCurrentSubject")
                 .createStrictMock();
 
         final Subject subject = EasyMock.createStrictMock(Subject.class);
@@ -121,7 +121,7 @@ public class NativeBrokerTest {
 
         //grant EXECUTE and READ permissions on the src
         expect(srcCollection.getPermissionsNoLock()).andReturn(srcPermissions);
-        expect(broker.getSubject()).andReturn(subject);
+        expect(broker.getCurrentSubject()).andReturn(subject);
         expect(srcPermissions.validate(subject, Permission.EXECUTE | Permission.READ)).andReturn(true);
 
         //grant EXECUTE and WRITE permission on the dest
@@ -129,13 +129,13 @@ public class NativeBrokerTest {
         final Capture<XmldbURI> newDestURICapture = new Capture<XmldbURI>();
         expect(broker.getCollection(capture(newDestURICapture))).andReturn(newDestCollection);
         expect(destCollection.getPermissionsNoLock()).andReturn(destPermissions);
-        expect(broker.getSubject()).andReturn(subject);
+        expect(broker.getCurrentSubject()).andReturn(subject);
         expect(destPermissions.validate(subject, Permission.EXECUTE | Permission.WRITE)).andReturn(false);
 
         //expectations for exception that should be thrown
         expect(srcCollection.getURI()).andReturn(src);
         expect(destCollection.getURI()).andReturn(dest);
-        expect(broker.getSubject()).andReturn(subject);
+        expect(broker.getCurrentSubject()).andReturn(subject);
         expect(subject.getName()).andReturn("Fake user");
 
         //test below
@@ -178,14 +178,14 @@ public class NativeBrokerTest {
 
         final NativeBroker broker = EasyMock.createMockBuilder(NativeBroker.class)
                 .addMockedMethod("getCollection")
-                .addMockedMethod("getSubject")
+                .addMockedMethod("getCurrentSubject")
                 .createStrictMock();
 
         final Subject subject = EasyMock.createStrictMock(Subject.class);
 
         //grant EXECUTE and READ permissions on the src
         expect(srcCollection.getPermissionsNoLock()).andReturn(srcPermissions);
-        expect(broker.getSubject()).andReturn(subject);
+        expect(broker.getCurrentSubject()).andReturn(subject);
         expect(srcPermissions.validate(subject, Permission.EXECUTE | Permission.READ)).andReturn(true);
 
         //grant EXECUTE and WRITE permission on the dest
@@ -193,13 +193,13 @@ public class NativeBrokerTest {
         final Capture<XmldbURI> newDestURICapture = new Capture<XmldbURI>();
         expect(broker.getCollection(capture(newDestURICapture))).andReturn(newDestCollection);
         expect(destCollection.getPermissionsNoLock()).andReturn(destPermissions);
-        expect(broker.getSubject()).andReturn(subject);
+        expect(broker.getCurrentSubject()).andReturn(subject);
         expect(destPermissions.validate(subject, Permission.EXECUTE | Permission.WRITE)).andReturn(true);
 
         //one sub-document with READ permission
         expect(srcCollection.iterator(broker)).andReturn(new ArrayIterator<>(srcSubDocument));
         expect(srcSubDocument.getPermissions()).andReturn(srcSubDocumentPermissions);
-        expect(broker.getSubject()).andReturn(subject);
+        expect(broker.getCurrentSubject()).andReturn(subject);
         expect(srcSubDocumentPermissions.validate(subject, Permission.READ)).andReturn(true);
 
         //no sub-collections
@@ -250,14 +250,14 @@ public class NativeBrokerTest {
 
         final NativeBroker broker = EasyMock.createMockBuilder(NativeBroker.class)
                 .addMockedMethod("getCollection")
-                .addMockedMethod("getSubject")
+                .addMockedMethod("getCurrentSubject")
                 .createStrictMock();
 
         final Subject subject = EasyMock.createStrictMock(Subject.class);
 
         //grant EXECUTE and READ permissions on the src
         expect(srcCollection.getPermissionsNoLock()).andReturn(srcPermissions);
-        expect(broker.getSubject()).andReturn(subject);
+        expect(broker.getCurrentSubject()).andReturn(subject);
         expect(srcPermissions.validate(subject, Permission.EXECUTE | Permission.READ)).andReturn(true);
 
         //grant EXECUTE and WRITE permission on the dest
@@ -265,13 +265,13 @@ public class NativeBrokerTest {
         final Capture<XmldbURI> newDestURICapture = new Capture<XmldbURI>();
         expect(broker.getCollection(capture(newDestURICapture))).andReturn(newDestCollection);
         expect(destCollection.getPermissionsNoLock()).andReturn(destPermissions);
-        expect(broker.getSubject()).andReturn(subject);
+        expect(broker.getCurrentSubject()).andReturn(subject);
         expect(destPermissions.validate(subject, Permission.EXECUTE | Permission.WRITE)).andReturn(true);
 
         //one sub-document with READ permission
         expect(srcCollection.iterator(broker)).andReturn(new ArrayIterator<>(srcSubDocument));
         expect(srcSubDocument.getPermissions()).andReturn(srcSubDocumentPermissions);
-        expect(broker.getSubject()).andReturn(subject);
+        expect(broker.getCurrentSubject()).andReturn(subject);
         expect(srcSubDocumentPermissions.validate(subject, Permission.READ)).andReturn(true);
 
         //one sub-collection with READ and EXECUTE permission
@@ -283,7 +283,7 @@ public class NativeBrokerTest {
 
         /* we are now recursing on the sub-collection */
         expect(srcSubCollection.getPermissionsNoLock()).andReturn(srcSubCollectionPermissions);
-        expect(broker.getSubject()).andReturn(subject);
+        expect(broker.getCurrentSubject()).andReturn(subject);
         expect(srcSubCollectionPermissions.validate(subject, Permission.EXECUTE | Permission.READ)).andReturn(true);
         expect(broker.getCollection(dest.append(newName))).andReturn(null); //no such dest collection, so return null
         expect(broker.getCollection(dest.append(newName).append(srcSubCollectionName))).andReturn(null); //no such dest sub-collection, so return null
@@ -330,14 +330,14 @@ public class NativeBrokerTest {
 
         final NativeBroker broker = EasyMock.createMockBuilder(NativeBroker.class)
                 .addMockedMethod("getCollection")
-                .addMockedMethod("getSubject")
+                .addMockedMethod("getCurrentSubject")
                 .createStrictMock();
 
         final Subject subject = EasyMock.createStrictMock(Subject.class);
 
         //grant EXECUTE and READ permissions on the src
         expect(srcCollection.getPermissionsNoLock()).andReturn(srcPermissions);
-        expect(broker.getSubject()).andReturn(subject);
+        expect(broker.getCurrentSubject()).andReturn(subject);
         expect(srcPermissions.validate(subject, Permission.EXECUTE | Permission.READ)).andReturn(true);
 
         //grant EXECUTE and WRITE permission on the dest
@@ -345,10 +345,10 @@ public class NativeBrokerTest {
         final Capture<XmldbURI> newDestURICapture = new Capture<XmldbURI>();
         expect(broker.getCollection(capture(newDestURICapture))).andReturn(newDestCollection);
         expect(destCollection.getPermissionsNoLock()).andReturn(destPermissions);
-        expect(broker.getSubject()).andReturn(subject);
+        expect(broker.getCurrentSubject()).andReturn(subject);
         expect(destPermissions.validate(subject, Permission.EXECUTE | Permission.WRITE)).andReturn(true);
         expect(newDestCollection.getPermissionsNoLock()).andReturn(newDestPermissions);
-        expect(broker.getSubject()).andReturn(subject);
+        expect(broker.getCurrentSubject()).andReturn(subject);
         expect(newDestPermissions.validate(subject, Permission.EXECUTE | Permission.WRITE)).andReturn(true);
 
         //no sub-documents
@@ -394,14 +394,14 @@ public class NativeBrokerTest {
 
         final NativeBroker broker = EasyMock.createMockBuilder(NativeBroker.class)
                 .addMockedMethod("getCollection")
-                .addMockedMethod("getSubject")
+                .addMockedMethod("getCurrentSubject")
                 .createStrictMock();
 
         final Subject subject = EasyMock.createStrictMock(Subject.class);
 
         //grant EXECUTE and READ permissions on the src
         expect(srcCollection.getPermissionsNoLock()).andReturn(srcPermissions);
-        expect(broker.getSubject()).andReturn(subject);
+        expect(broker.getCurrentSubject()).andReturn(subject);
         expect(srcPermissions.validate(subject, Permission.EXECUTE | Permission.READ)).andReturn(true);
 
         //grant EXECUTE and WRITE permission on the dest
@@ -409,13 +409,13 @@ public class NativeBrokerTest {
         final Capture<XmldbURI> newDestURICapture = new Capture<XmldbURI>();
         expect(broker.getCollection(capture(newDestURICapture))).andReturn(newDestCollection);
         expect(destCollection.getPermissionsNoLock()).andReturn(destPermissions);
-        expect(broker.getSubject()).andReturn(subject);
+        expect(broker.getCurrentSubject()).andReturn(subject);
         expect(destPermissions.validate(subject, Permission.EXECUTE | Permission.WRITE)).andReturn(false);
 
         //expectations for exception that should be thrown
         expect(srcCollection.getURI()).andReturn(src);
         expect(destCollection.getURI()).andReturn(dest);
-        expect(broker.getSubject()).andReturn(subject);
+        expect(broker.getCurrentSubject()).andReturn(subject);
         expect(subject.getName()).andReturn("Fake user");
 
         //no sub-documents
@@ -462,14 +462,14 @@ public class NativeBrokerTest {
 
         final NativeBroker broker = EasyMock.createMockBuilder(NativeBroker.class)
                 .addMockedMethod("getCollection")
-                .addMockedMethod("getSubject")
+                .addMockedMethod("getCurrentSubject")
                 .createStrictMock();
 
         final Subject subject = EasyMock.createStrictMock(Subject.class);
 
         //grant EXECUTE and READ permissions on the src
         expect(srcCollection.getPermissionsNoLock()).andReturn(srcPermissions);
-        expect(broker.getSubject()).andReturn(subject);
+        expect(broker.getCurrentSubject()).andReturn(subject);
         expect(srcPermissions.validate(subject, Permission.EXECUTE | Permission.READ)).andReturn(true);
 
         //grant EXECUTE and WRITE permission on the dest
@@ -477,16 +477,16 @@ public class NativeBrokerTest {
         final Capture<XmldbURI> newDestURICapture = new Capture<XmldbURI>();
         expect(broker.getCollection(capture(newDestURICapture))).andReturn(newDestCollection);
         expect(destCollection.getPermissionsNoLock()).andReturn(destPermissions);
-        expect(broker.getSubject()).andReturn(subject);
+        expect(broker.getCurrentSubject()).andReturn(subject);
         expect(destPermissions.validate(subject, Permission.EXECUTE | Permission.WRITE)).andReturn(true);
         expect(newDestCollection.getPermissionsNoLock()).andReturn(newDestPermissions);
-        expect(broker.getSubject()).andReturn(subject);
+        expect(broker.getCurrentSubject()).andReturn(subject);
         expect(newDestPermissions.validate(subject, Permission.EXECUTE | Permission.WRITE)).andReturn(false);
 
         //expectations for exception that should be thrown
         expect(srcCollection.getURI()).andReturn(src);
         expect(newDestCollection.getURI()).andReturn(dest.append(newName));
-        expect(broker.getSubject()).andReturn(subject);
+        expect(broker.getCurrentSubject()).andReturn(subject);
         expect(subject.getName()).andReturn("Fake user");
 
         //no sub-documents
@@ -538,14 +538,14 @@ public class NativeBrokerTest {
 
         final NativeBroker broker = EasyMock.createMockBuilder(NativeBroker.class)
                 .addMockedMethod("getCollection")
-                .addMockedMethod("getSubject")
+                .addMockedMethod("getCurrentSubject")
                 .createStrictMock();
 
         final Subject subject = EasyMock.createStrictMock(Subject.class);
 
         //grant EXECUTE and READ permissions on the src
         expect(srcCollection.getPermissionsNoLock()).andReturn(srcPermissions);
-        expect(broker.getSubject()).andReturn(subject);
+        expect(broker.getCurrentSubject()).andReturn(subject);
         expect(srcPermissions.validate(subject, Permission.EXECUTE | Permission.READ)).andReturn(true);
 
         //grant EXECUTE and WRITE permission on the dest
@@ -553,16 +553,16 @@ public class NativeBrokerTest {
         final Capture<XmldbURI> newDestURICapture = new Capture<XmldbURI>();
         expect(broker.getCollection(capture(newDestURICapture))).andReturn(newDestCollection);
         expect(destCollection.getPermissionsNoLock()).andReturn(destPermissions);
-        expect(broker.getSubject()).andReturn(subject);
+        expect(broker.getCurrentSubject()).andReturn(subject);
         expect(destPermissions.validate(subject, Permission.EXECUTE | Permission.WRITE)).andReturn(true);
         expect(newDestCollection.getPermissionsNoLock()).andReturn(newDestPermissions);
-        expect(broker.getSubject()).andReturn(subject);
+        expect(broker.getCurrentSubject()).andReturn(subject);
         expect(newDestPermissions.validate(subject, Permission.EXECUTE | Permission.WRITE)).andReturn(true);
 
         //one sub-document with READ permission
         expect(srcCollection.iterator(broker)).andReturn(new ArrayIterator<>(srcSubDocument));
         expect(srcSubDocument.getPermissions()).andReturn(srcSubDocumentPermissions);
-        expect(broker.getSubject()).andReturn(subject);
+        expect(broker.getCurrentSubject()).andReturn(subject);
         expect(srcSubDocumentPermissions.validate(subject, Permission.READ)).andReturn(true);
         expect(newDestCollection.isEmpty(broker)).andReturn(true); //no documents in the dest collection
 
@@ -611,14 +611,14 @@ public class NativeBrokerTest {
 
         final NativeBroker broker = EasyMock.createMockBuilder(NativeBroker.class)
                 .addMockedMethod("getCollection")
-                .addMockedMethod("getSubject")
+                .addMockedMethod("getCurrentSubject")
                 .createStrictMock();
 
         final Subject subject = EasyMock.createStrictMock(Subject.class);
 
         //grant EXECUTE and READ permissions on the src
         expect(srcCollection.getPermissionsNoLock()).andReturn(srcPermissions);
-        expect(broker.getSubject()).andReturn(subject);
+        expect(broker.getCurrentSubject()).andReturn(subject);
         expect(srcPermissions.validate(subject, Permission.EXECUTE | Permission.READ)).andReturn(true);
 
         //grant EXECUTE and WRITE permission on the dest
@@ -626,22 +626,22 @@ public class NativeBrokerTest {
         final Capture<XmldbURI> newDestURICapture = new Capture<XmldbURI>();
         expect(broker.getCollection(capture(newDestURICapture))).andReturn(newDestCollection);
         expect(destCollection.getPermissionsNoLock()).andReturn(destPermissions);
-        expect(broker.getSubject()).andReturn(subject);
+        expect(broker.getCurrentSubject()).andReturn(subject);
         expect(destPermissions.validate(subject, Permission.EXECUTE | Permission.WRITE)).andReturn(true);
         expect(newDestCollection.getPermissionsNoLock()).andReturn(newDestPermissions);
-        expect(broker.getSubject()).andReturn(subject);
+        expect(broker.getCurrentSubject()).andReturn(subject);
         expect(newDestPermissions.validate(subject, Permission.EXECUTE | Permission.WRITE)).andReturn(true);
 
         //one sub-document with READ permission
         expect(srcCollection.iterator(broker)).andReturn(new ArrayIterator<>(srcSubDocument));
         expect(srcSubDocument.getPermissions()).andReturn(srcSubDocumentPermissions);
-        expect(broker.getSubject()).andReturn(subject);
+        expect(broker.getCurrentSubject()).andReturn(subject);
         expect(srcSubDocumentPermissions.validate(subject, Permission.READ)).andReturn(false);
 
         //expectations for exception that should be thrown
         expect(srcCollection.getURI()).andReturn(src);
         expect(srcSubDocument.getURI()).andReturn(src.append(newName).append("someSubDocument.xml"));
-        expect(broker.getSubject()).andReturn(subject);
+        expect(broker.getCurrentSubject()).andReturn(subject);
         expect(subject.getName()).andReturn("Fake user");
 
         //no sub-collections

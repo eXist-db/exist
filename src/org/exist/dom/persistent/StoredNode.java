@@ -266,9 +266,7 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
             return null;
         }
         if(parent.isDirty()) {
-            DBBroker broker = null;
-            try {
-                broker = ownerDocument.getBrokerPool().get(null);
+            try(final DBBroker broker = ownerDocument.getBrokerPool().getBroker()) {
                 final IEmbeddedXMLStreamReader reader = broker.getXMLStreamReader(parent, true);
                 final int level = nodeId.getTreeLevel();
                 IStoredNode last = null;
@@ -291,8 +289,6 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
             } catch(final EXistException e) {
                 LOG.error("Internal error while reading child nodes: " + e.getMessage(), e);
                 //TODO : throw exception -pb
-            } finally {
-                ownerDocument.getBrokerPool().release(broker);
             }
             return null;
         }
@@ -314,9 +310,7 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
             return null;
         }
         if(parent.isDirty()) {
-            DBBroker broker = null;
-            try {
-                broker = ownerDocument.getBrokerPool().get(null);
+            try(final DBBroker broker = ownerDocument.getBrokerPool().getBroker()) {
                 final IEmbeddedXMLStreamReader reader = broker.getXMLStreamReader(parent, true);
                 final int level = nodeId.getTreeLevel();
                 while(reader.hasNext()) {
@@ -337,8 +331,6 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
             } catch(final EXistException e) {
                 LOG.error("Internal error while reading child nodes: " + e.getMessage(), e);
                 //TODO : throw exception -pb
-            } finally {
-                ownerDocument.getBrokerPool().release(broker);
             }
             return null;
         }
@@ -350,9 +342,7 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
         if(!node.hasChildNodes()) {
             return node;
         }
-        DBBroker broker = null;
-        try {
-            broker = ownerDocument.getBrokerPool().get(null);
+        try(final DBBroker broker = ownerDocument.getBrokerPool().getBroker()) {
             final IEmbeddedXMLStreamReader reader = broker.getXMLStreamReader(node, true);
             while(reader.hasNext()) {
                 reader.next();
@@ -367,8 +357,6 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
         } catch(final EXistException e) {
             LOG.error("Internal error while reading child nodes: " + e.getMessage(), e);
             //TODO : throw exception -pb
-        } finally {
-            ownerDocument.getBrokerPool().release(broker);
         }
         return null;
     }
@@ -433,7 +421,7 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
     }
 
     public boolean accept(final NodeVisitor visitor) {
-        try(final DBBroker broker = ownerDocument.getBrokerPool().get(null);
+        try(final DBBroker broker = ownerDocument.getBrokerPool().getBroker();
                 final INodeIterator iterator = broker.getNodeIterator(this)) {
             iterator.next();
             return accept(iterator, visitor);

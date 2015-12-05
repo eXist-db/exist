@@ -2,6 +2,7 @@ package org.exist.storage;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Optional;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
@@ -58,7 +59,7 @@ public class ShutdownTest {
 		final BrokerPool pool = startDB();
         final TransactionManager transact = pool.getTransactionManager();
 
-		try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+		try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             Collection test;
 
             try(final Txn transaction = transact.beginTransaction()) {

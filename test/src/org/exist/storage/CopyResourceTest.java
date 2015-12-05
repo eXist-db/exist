@@ -23,11 +23,11 @@ package org.exist.storage;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Optional;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
-import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock;
@@ -42,7 +42,6 @@ import org.junit.After;
 import org.junit.Test;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -78,7 +77,7 @@ public class CopyResourceTest {
 		final BrokerPool pool = startDB();
 
         final TransactionManager transact = pool.getTransactionManager();
-		try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+		try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             Collection testCollection;
             IndexInfo info;
@@ -122,7 +121,7 @@ public class CopyResourceTest {
 		final BrokerPool pool = startDB();
 		assertNotNull(pool);
 
-		try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());) {
+		try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 			final Serializer serializer = broker.getSerializer();
 			serializer.reset();
 
@@ -147,7 +146,7 @@ public class CopyResourceTest {
         final BrokerPool pool = startDB();
 
         final TransactionManager transact = pool.getTransactionManager();
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             Collection testCollection;
             IndexInfo info;
@@ -192,7 +191,7 @@ public class CopyResourceTest {
 		final BrokerPool pool = startDB();
 		assertNotNull(pool);
 
-		try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());) {
+		try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 			final Serializer serializer = broker.getSerializer();
 			serializer.reset();
 

@@ -23,6 +23,7 @@ package org.exist.validation;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Optional;
 
 import org.exist.collections.Collection;
 import org.exist.storage.BrokerPool;
@@ -130,7 +131,7 @@ public class DatabaseInsertResources_NoValidation_Test {
         final BrokerPool pool = BrokerPool.getInstance();
         final TransactionManager transact = pool.getTransactionManager();
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().authenticate(ADMIN_UID, ADMIN_PWD));
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().authenticate(ADMIN_UID, ADMIN_PWD)));
                 final Txn txn = transact.beginTransaction()) {
 
             /** create nessecary collections if they dont exist */
@@ -159,7 +160,7 @@ public class DatabaseInsertResources_NoValidation_Test {
         final BrokerPool pool = BrokerPool.getInstance();
         final TransactionManager transact = pool.getTransactionManager();
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().authenticate(ADMIN_UID, ADMIN_PWD));
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().authenticate(ADMIN_UID, ADMIN_PWD)));
             final Txn txn = transact.beginTransaction()) {
 
             /** create necessary collections if they dont exist */

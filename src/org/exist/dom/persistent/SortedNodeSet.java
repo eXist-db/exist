@@ -48,6 +48,7 @@ import org.w3c.dom.NodeList;
 import java.io.StringReader;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 
 public class SortedNodeSet extends AbstractNodeSet {
@@ -93,9 +94,8 @@ public class SortedNodeSet extends AbstractNodeSet {
             docs.add(p.getOwnerDocument());
         }
         // TODO(pkaminsk2): why replicate XQuery.compile here?
-        DBBroker broker = null;
-        try {
-            broker = pool.get(user);
+        try(final DBBroker broker = pool.get(Optional.ofNullable(user))) {
+
             final XQueryContext context = new XQueryContext(pool, accessCtx);
             final XQueryLexer lexer = new XQueryLexer(context, new StringReader(sortExpr));
             final XQueryParser parser = new XQueryParser(lexer);
@@ -126,8 +126,6 @@ public class SortedNodeSet extends AbstractNodeSet {
             LOG.debug("Exception during sort", e); //TODO : throw exception ! -pb
         } catch(final XPathException e) {
             LOG.debug("Exception during sort", e); //TODO : throw exception ! -pb
-        } finally {
-            pool.release(broker);
         }
         LOG.debug("sort-expression found " + list.size() + " in "
             + (System.currentTimeMillis() - start) + "ms.");

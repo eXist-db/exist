@@ -85,7 +85,7 @@ class RestXqServiceSerializerImpl extends AbstractRestXqServiceSerializer {
 
     @Override
     protected void serializeNodeBody(final Sequence result, final HttpResponse response, final Map<SerializationProperty, String> serializationProperties) throws RestXqServiceException {
-        try(final DBBroker broker = getBrokerPool().get(brokerPool.getSubject());
+        try(final DBBroker broker = getBrokerPool().getBroker();
                 final Writer writer = new OutputStreamWriter(response.getOutputStream(), serializationProperties.get(SerializationProperty.ENCODING))) {
             final Properties outputProperties = serializationPropertiesToProperties(serializationProperties);
             final XQuerySerializer xqSerializer = new XQuerySerializer(broker, outputProperties, writer);

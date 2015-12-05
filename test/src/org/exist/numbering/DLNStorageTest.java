@@ -43,7 +43,7 @@ public class DLNStorageTest {
     @Test
     public void nodeStorage() throws Exception {
         BrokerPool pool = BrokerPool.getInstance();
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
             // test element ids
@@ -105,7 +105,7 @@ public class DLNStorageTest {
 
         BrokerPool pool = BrokerPool.getInstance();
         final TransactionManager transact = pool.getTransactionManager();
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn transaction = transact.beginTransaction()) {
 
             Collection test = broker.getOrCreateCollection(transaction, TEST_COLLECTION);

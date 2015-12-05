@@ -23,6 +23,7 @@ package org.exist.dom.memtree;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.Optional;
 import java.util.Properties;
 import javax.xml.transform.OutputKeys;
 
@@ -30,10 +31,8 @@ import org.exist.EXistException;
 
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
-import org.exist.collections.triggers.TriggerException;
 import org.exist.security.AuthenticationException;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.Subject;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -100,7 +99,7 @@ public class DOMIndexerTest {
     	final BrokerPool pool = BrokerPool.getInstance();
         final TransactionManager txnMgr = pool.getTransactionManager();
 
-    	try(final DBBroker broker = pool.get(pool.getSecurityManager().authenticate("admin", ""));
+    	try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().authenticate("admin", "")));
                 final Txn txn = txnMgr.beginTransaction()) {
 
             Collection collection = broker.getOrCreateCollection(txn, TestConstants.TEST_COLLECTION_URI);
@@ -117,11 +116,8 @@ public class DOMIndexerTest {
 
     @Test
     public void xQuery() throws EXistException, PermissionDeniedException, SAXException, XPathException {
-    	BrokerPool pool = null;
-    	DBBroker broker = null;  
-        try {
-            pool = BrokerPool.getInstance();
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        final BrokerPool pool = BrokerPool.getInstance();
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             XQuery xquery = broker.getBrokerPool().getXQueryService();
             Sequence result = xquery.execute(broker, XQUERY, null, AccessContext.TEST);
             int count = result.getItemCount();
@@ -130,14 +126,12 @@ public class DOMIndexerTest {
             props.setProperty(OutputKeys.INDENT, "yes");
             SAXSerializer serializer = new SAXSerializer(out, props);
             serializer.startDocument();
-            for(SequenceIterator i = result.iterate(); i.hasNext(); ) {
+            for (SequenceIterator i = result.iterate(); i.hasNext(); ) {
                 Item next = i.nextItem();
                 next.toSAX(broker, serializer, props);
             }
             serializer.endDocument();
             out.toString();
-        } finally {
-            pool.release(broker);
         }
     }
 

@@ -46,6 +46,7 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -109,17 +110,15 @@ public class XACMLUtil implements UpdateListener
 	}
 	protected void initializePolicyCollection()
 	{
-		DBBroker broker = null;
 		try {
-                    final BrokerPool pool = pdp.getBrokerPool();
-                    broker = pool.get(pool.getSecurityManager().getSystemSubject());
-                    initializePolicyCollection(broker);
+			final BrokerPool pool = pdp.getBrokerPool();
+			try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+				initializePolicyCollection(broker);
+			}
 		} catch(final PermissionDeniedException pde) {
                     LOG.error(pde.getMessage(), pde);
                 } catch(final EXistException ee) {
 			LOG.error("Could not get broker pool to initialize policy collection", ee);
-		} finally {
-			pdp.getBrokerPool().release(broker);
 		}
 	}
 	private void initializePolicyCollection(DBBroker broker) throws PermissionDeniedException

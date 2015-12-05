@@ -40,7 +40,7 @@ public class PersistentLogin {
 
     public final static int INVALIDATION_TIMEOUT = 20000;
 
-    private Map<String, LoginDetails> seriesMap = Collections.synchronizedMap(new HashMap<String, LoginDetails>());
+    private Map<String, LoginDetails> seriesMap = Collections.synchronizedMap(new HashMap<>());
 
     private SecureRandom random;
 
@@ -138,7 +138,7 @@ public class PersistentLogin {
         private long expires;
         private DurationValue timeToLive;
 
-        private Map<String, Long> invalidatedTokens = new HashMap<String, Long>();
+        private Map<String, Long> invalidatedTokens = new HashMap<>();
 
         public LoginDetails(String user, String password, DurationValue timeToLive, long expires) {
             this.userName = user;

@@ -34,7 +34,7 @@ public class SimpleACLPermissionTest {
         final Subject mockCurrentSubject = EasyMock.createMock(Subject.class);
         
         //expect(mockSecurityManager.getDatabase()).andReturn(mockDatabase);
-        //expect(mockDatabase.getSubject()).andReturn(mockCurrentSubject);
+        //expect(mockDatabase.getCurrentSubject()).andReturn(mockCurrentSubject);
         //expect(mockCurrentSubject.hasDbaRole()).andReturn(true);
 
         replay(mockSecurityManager, mockDatabase, mockCurrentSubject);
@@ -70,7 +70,7 @@ public class SimpleACLPermissionTest {
         final String mode = "rwx";
 
         //expect(mockSecurityManager.getDatabase()).andReturn(mockDatabase);
-        //expect(mockDatabase.getSubject()).andReturn(mockCurrentSubject);
+        //expect(mockDatabase.getCurrentSubject()).andReturn(mockCurrentSubject);
         //expect(mockCurrentSubject.hasDbaRole()).andReturn(true);
 
         expect(mockSecurityManager.getAccount(userName)).andReturn(mockAccount);
@@ -104,7 +104,7 @@ public class SimpleACLPermissionTest {
         final String mode = "rwx";
 
         //expect(mockSecurityManager.getDatabase()).andReturn(mockDatabase);
-        //expect(mockDatabase.getSubject()).andReturn(mockCurrentSubject);
+        //expect(mockDatabase.getCurrentSubject()).andReturn(mockCurrentSubject);
         //expect(mockCurrentSubject.hasDbaRole()).andReturn(true);
         
         expect(mockSecurityManager.getGroup(groupName)).andReturn(mockGroup);
@@ -131,7 +131,7 @@ public class SimpleACLPermissionTest {
         final Subject mockCurrentSubject = EasyMock.createMock(Subject.class);
 
         //expect(mockSecurityManager.getDatabase()).andReturn(mockDatabase);
-        //expect(mockDatabase.getSubject()).andReturn(mockCurrentSubject);
+        //expect(mockDatabase.getCurrentSubject()).andReturn(mockCurrentSubject);
         //expect(mockCurrentSubject.hasDbaRole()).andReturn(true);
         
         replay(mockSecurityManager, mockDatabase, mockCurrentSubject);
@@ -160,7 +160,7 @@ public class SimpleACLPermissionTest {
         final Subject mockCurrentSubject = EasyMock.createMock(Subject.class);
 
         //expect(mockSecurityManager.getDatabase()).andReturn(mockDatabase).times(2);
-        //expect(mockDatabase.getSubject()).andReturn(mockCurrentSubject).times(2);
+        //expect(mockDatabase.getCurrentSubject()).andReturn(mockCurrentSubject).times(2);
         //expect(mockCurrentSubject.hasDbaRole()).andReturn(true).times(2);
         
         replay(mockSecurityManager, mockDatabase, mockCurrentSubject);
@@ -198,7 +198,7 @@ public class SimpleACLPermissionTest {
         final Subject mockCurrentSubject = EasyMock.createMock(Subject.class);
 
         //expect(mockSecurityManager.getDatabase()).andReturn(mockDatabase).times(3);
-        //expect(mockDatabase.getSubject()).andReturn(mockCurrentSubject).times(3);
+        //expect(mockDatabase.getCurrentSubject()).andReturn(mockCurrentSubject).times(3);
         //expect(mockCurrentSubject.hasDbaRole()).andReturn(true).times(3);
         
         replay(mockSecurityManager, mockDatabase, mockCurrentSubject);
@@ -260,7 +260,7 @@ public class SimpleACLPermissionTest {
         final Subject mockCurrentSubject = EasyMock.createMock(Subject.class);
 
         //expect(mockSecurityManager.getDatabase()).andReturn(mockDatabase).times(2);
-        //expect(mockDatabase.getSubject()).andReturn(mockCurrentSubject).times(2);
+        //expect(mockDatabase.getCurrentSubject()).andReturn(mockCurrentSubject).times(2);
         //expect(mockCurrentSubject.hasDbaRole()).andReturn(true).times(2);
         
         replay(mockSecurityManager, mockDatabase, mockCurrentSubject);
@@ -293,7 +293,7 @@ public class SimpleACLPermissionTest {
         final Subject mockCurrentSubject = EasyMock.createMock(Subject.class);
 
         //expect(mockSecurityManager.getDatabase()).andReturn(mockDatabase).times(3);
-        //expect(mockDatabase.getSubject()).andReturn(mockCurrentSubject).times(3);
+        //expect(mockDatabase.getCurrentSubject()).andReturn(mockCurrentSubject).times(3);
         //expect(mockCurrentSubject.hasDbaRole()).andReturn(true).times(3);
         
         replay(mockSecurityManager, mockDatabase, mockCurrentSubject);
@@ -323,7 +323,7 @@ public class SimpleACLPermissionTest {
         final Subject mockCurrentSubject = EasyMock.createMock(Subject.class);
 
         //expect(mockSecurityManager.getDatabase()).andReturn(mockDatabase).times(4);
-        //expect(mockDatabase.getSubject()).andReturn(mockCurrentSubject).times(4);
+        //expect(mockDatabase.getCurrentSubject()).andReturn(mockCurrentSubject).times(4);
         //expect(mockCurrentSubject.hasDbaRole()).andReturn(true).times(4);
 
         replay(mockSecurityManager, mockDatabase, mockCurrentSubject);
@@ -354,7 +354,7 @@ public class SimpleACLPermissionTest {
         final Subject mockCurrentSubject = EasyMock.createMock(Subject.class);
 
         //expect(mockSecurityManager.getDatabase()).andReturn(mockDatabase).times(3);
-        //expect(mockDatabase.getSubject()).andReturn(mockCurrentSubject).times(3);
+        //expect(mockDatabase.getCurrentSubject()).andReturn(mockCurrentSubject).times(3);
         //expect(mockCurrentSubject.hasDbaRole()).andReturn(true).times(3);
 
         replay(mockSecurityManager, mockDatabase, mockCurrentSubject);
@@ -382,7 +382,7 @@ public class SimpleACLPermissionTest {
         final Subject mockCurrentSubject = EasyMock.createMock(Subject.class);
 
         //expect(mockSecurityManager.getDatabase()).andReturn(mockDatabase).times(3);
-        //expect(mockDatabase.getSubject()).andReturn(mockCurrentSubject).times(3);
+        //expect(mockDatabase.getCurrentSubject()).andReturn(mockCurrentSubject).times(3);
         //expect(mockCurrentSubject.hasDbaRole()).andReturn(true).times(3);
 
         replay(mockSecurityManager, mockDatabase, mockCurrentSubject);
@@ -428,7 +428,7 @@ public class SimpleACLPermissionTest {
         final Subject mockCurrentSubject = EasyMock.createMock(Subject.class);
 
         //expect(mockSecurityManager.getDatabase()).andReturn(mockDatabase).times(3);
-        //expect(mockDatabase.getSubject()).andReturn(mockCurrentSubject).times(3);
+        //expect(mockDatabase.getCurrentSubject()).andReturn(mockCurrentSubject).times(3);
         //expect(mockCurrentSubject.hasDbaRole()).andReturn(true).times(3);
 
         replay(mockSecurityManager, mockDatabase, mockCurrentSubject);
@@ -482,7 +482,7 @@ public class SimpleACLPermissionTest {
         final Subject mockCurrentSubject = EasyMock.createMock(Subject.class);
         
         //expect(mockSecurityManager.getDatabase()).andReturn(mockDatabase);
-        //expect(mockDatabase.getSubject()).andReturn(mockCurrentSubject);
+        //expect(mockDatabase.getCurrentSubject()).andReturn(mockCurrentSubject);
         //expect(mockCurrentSubject.hasDbaRole()).andReturn(true);
 
         final int ownerId = new Random().nextInt(SecurityManagerImpl.MAX_USER_ID);
@@ -516,7 +516,7 @@ public class SimpleACLPermissionTest {
         final Subject mockCurrentSubject = EasyMock.createMock(Subject.class);
         
         //expect(mockSecurityManager.getDatabase()).andReturn(mockDatabase).times(2);
-        //expect(mockDatabase.getSubject()).andReturn(mockCurrentSubject).times(2);
+        //expect(mockDatabase.getCurrentSubject()).andReturn(mockCurrentSubject).times(2);
         //expect(mockCurrentSubject.hasDbaRole()).andReturn(true).times(2);
 
         final int ownerId = new Random().nextInt(SecurityManagerImpl.MAX_USER_ID);
@@ -562,7 +562,7 @@ public class SimpleACLPermissionTest {
         final Subject mockCurrentSubject = EasyMock.createMock(Subject.class);
         
         //expect(mockSecurityManager.getDatabase()).andReturn(mockDatabase).times(2);
-        //expect(mockDatabase.getSubject()).andReturn(mockCurrentSubject).times(2);
+        //expect(mockDatabase.getCurrentSubject()).andReturn(mockCurrentSubject).times(2);
         //expect(mockCurrentSubject.hasDbaRole()).andReturn(true).times(2);
 
         final int ownerId = new Random().nextInt(SecurityManagerImpl.MAX_USER_ID);

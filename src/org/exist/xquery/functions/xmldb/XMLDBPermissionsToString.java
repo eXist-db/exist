@@ -86,15 +86,12 @@ public class XMLDBPermissionsToString extends BasicFunction {
         super(context, signature);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
-     */
     @Override
-    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+    public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
 
         if(isCalledAs("permissions-to-string")) {
             final int mode = ((IntegerValue)args[0].itemAt(0)).getInt();
-            final Permission perm = PermissionFactory.getPermission(mode);
+            final Permission perm = PermissionFactory.getPermission(context.getBroker().getBrokerPool().getSecurityManager(), mode);
             return new StringValue(perm.toString());
         } else {
             final String permissionsString = args[0].itemAt(0).getStringValue();

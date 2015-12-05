@@ -29,6 +29,7 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
+import java.util.Optional;
 import java.util.StringTokenizer;
 
 import javax.xml.transform.Templates;
@@ -77,12 +78,11 @@ public class XSLTS_case extends TestCase {
 //                "declare variable $xslt external;\n" +
 //                "transform:transform($xml, $xslt, ())\n";
         
-		DBBroker broker = null;
-		try {
+
+		try(final DBBroker broker = db.get(Optional.of(db.getSecurityManager().getSystemSubject()))) {
 			XQueryContext context;
 //			XQuery xquery;
-//			
-			broker = db.get(db.getSecurityManager().getSystemSubject());
+//
 //				xquery = broker.getXQueryService();
 //
 //				broker.getConfiguration().setProperty( XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, true);
@@ -160,8 +160,6 @@ public class XSLTS_case extends TestCase {
 				e.printStackTrace();
 				Assert.fail("expected error is "+expectedError+", get "+error+" ["+e.getMessage()+"]");
 			}
-		} finally {
-			db.release(broker);
 		}
 
 //        StringBuilder content = new StringBuilder();
