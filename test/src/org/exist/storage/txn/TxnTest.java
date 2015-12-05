@@ -1,5 +1,6 @@
 package org.exist.storage.txn;
 
+import org.easymock.EasyMockSupport;
 import org.exist.EXistException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.NativeBroker;
@@ -13,7 +14,10 @@ import static org.junit.Assert.assertEquals;
 /**
  * @author Adam Retter <adam.retter@googlemail.com>
  */
-public class TxnTest {
+public class TxnTest extends EasyMockSupport {
+
+    private BrokerPool mockBrokerPool;
+    private NativeBroker mockBroker;
 
     @Test
     public void commitTransaction() throws NoSuchFieldException, IllegalAccessException, EXistException {
@@ -30,6 +34,8 @@ public class TxnTest {
 
         assertEquals(1, listener.getCommit());
         assertEquals(0, listener.getAbort());
+
+        verify(mockBrokerPool, mockBroker);
     }
 
     @Test
@@ -48,6 +54,8 @@ public class TxnTest {
 
         assertEquals(1, listener.getCommit());
         assertEquals(0, listener.getAbort());
+
+        verify(mockBrokerPool, mockBroker);
     }
 
     @Test
@@ -65,6 +73,8 @@ public class TxnTest {
 
         assertEquals(0, listener.getCommit());
         assertEquals(1, listener.getAbort());
+
+        verify(mockBrokerPool, mockBroker);
     }
 
     @Test
@@ -83,6 +93,8 @@ public class TxnTest {
 
         assertEquals(0, listener.getCommit());
         assertEquals(1, listener.getAbort());
+
+        verify(mockBrokerPool, mockBroker);
     }
 
     @Test
@@ -103,6 +115,8 @@ public class TxnTest {
 
         assertEquals(0, listener.getCommit());
         assertEquals(1, listener.getAbort());
+
+        verify(mockBrokerPool, mockBroker);
     }
 
     @Test
@@ -120,6 +134,8 @@ public class TxnTest {
 
         assertEquals(0, listener.getCommit());
         assertEquals(1, listener.getAbort());
+
+        verify(mockBrokerPool, mockBroker);
     }
 
     @Test
@@ -140,6 +156,8 @@ public class TxnTest {
 
         assertEquals(0, listener.getCommit());
         assertEquals(1, listener.getAbort());
+
+        verify(mockBrokerPool, mockBroker);
     }
 
     private class CountingTxnListener implements TxnListener {
@@ -167,17 +185,16 @@ public class TxnTest {
     }
 
     private TransactionManager createTestableTransactionManager() throws NoSuchFieldException, IllegalAccessException, EXistException {
-        final BrokerPool mockBrokerPool = createMock(BrokerPool.class);
-        final NativeBroker mockBroker = createMock(NativeBroker.class);
-        expect(mockBrokerPool.get(null)).andReturn(mockBroker).anyTimes();
-        mockBrokerPool.release(mockBroker);
-        expectLastCall().anyTimes();
-        expect(mockBrokerPool.getBroker()).andReturn(mockBroker).anyTimes();
+        mockBrokerPool = createMock(BrokerPool.class);
+        mockBroker = createMock(NativeBroker.class);
+        expect(mockBrokerPool.getBroker()).andReturn(mockBroker).atLeastOnce();
+        mockBroker.close();
+        expectLastCall().atLeastOnce();
 
         final Journal mockJournal = createMock(Journal.class);
         final SystemTaskManager mockTaskManager = createMock(SystemTaskManager.class);
 
-        replay(mockBrokerPool);
+        replay(mockBrokerPool, mockBroker);
 
         return new TransactionManager(mockBrokerPool, true, mockJournal, false, false, mockTaskManager);
     }

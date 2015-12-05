@@ -22,15 +22,16 @@ package org.exist.repo;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.exist.SystemProperties;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.memtree.DocumentBuilderReceiver;
 import org.exist.dom.memtree.InMemoryNodeSet;
 import org.exist.dom.memtree.DocumentImpl;
@@ -54,10 +55,7 @@ import org.exist.source.FileSource;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
-import org.exist.util.FileUtils;
-import org.exist.util.MimeTable;
-import org.exist.util.MimeType;
-import org.exist.util.SyntaxException;
+import org.exist.util.*;
 import org.exist.util.serializer.AttrList;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
@@ -98,6 +96,8 @@ public class Deployment {
     private static final QName CLEANUP_ELEMENT = new QName("cleanup", REPO_NAMESPACE);
     private static final QName DEPLOYED_ELEMENT = new QName("deployed", REPO_NAMESPACE);
     private static final QName DEPENDENCY_ELEMENT = new QName("dependency", PKG_NAMESPACE);
+    private static final QName RESOURCES_ELEMENT = new QName("resources", REPO_NAMESPACE);
+    private static final String RESOURCES_PATH_ATTRIBUTE = "path";
 
     private final DBBroker broker;
 
@@ -180,7 +180,8 @@ public class Deployment {
 
             if (packages != null && (!enforceDeps || pkgVersion.equals(packages.latest().getVersion()))) {
                 LOG.info("Application package " + name + " already installed. Skipping.");
-                return null;
+                final Package pkg = packages.latest();
+                return Optional.of(getTargetCollection(pkg, getPackageDir(pkg)));
             }
 
             InMemoryNodeSet deps;
@@ -306,6 +307,11 @@ public class Deployment {
                 if (pkg.isPresent()) {
                     uninstall(pkg.get(), target);
                 }
+                if (target == null) {
+                    // a library package does not have a target collection, but we still return
+                    // the temporary location of the package in /db/system
+                    return Optional.of(getTargetFallback(pkg.get()).getCollectionPath());
+                }
                 return Optional.ofNullable(target.getStringValue());
             } catch (final XPathException e) {
                 throw new PackageException("Error found while processing repo.xml: " + e.getMessage(), e);
@@ -399,8 +405,10 @@ public class Deployment {
                 // check for invalid users now.
                 checkUserSettings();
 
+                final InMemoryNodeSet resources = findElements(repoXML,RESOURCES_ELEMENT);
+
                 // install
-                scanDirectory(packageDir, targetCollection, true);
+                scanDirectory(packageDir, targetCollection, resources, true, false);
 
                 // run the post-setup query if present
                 final ElementImpl postSetup = findElement(repoXML, POST_SETUP_ELEMENT);
@@ -469,6 +477,38 @@ public class Deployment {
         }
     }
 
+    /**
+     * Get the target collection for the given package, which resides in pkgDir.
+     * Returns path to cached .xar for library packages.
+     *
+     * @param pkg
+     * @param pkgDir
+     * @return
+     * @throws PackageException
+     */
+    private String getTargetCollection(final Package pkg, final Path pkgDir) throws PackageException {
+        final DocumentImpl repoXML = getRepoXML(pkgDir);
+        if (repoXML != null) {
+            try {
+                final ElementImpl target = findElement(repoXML, TARGET_COLL_ELEMENT);
+                if (target == null) {
+                    return getTargetFallback(pkg).getCollectionPath();
+                }
+                final XmldbURI targetCollection = XmldbURI.create(getTargetCollection(target.getStringValue()));
+                return targetCollection.getCollectionPath();
+            } catch (XPathException e) {
+                throw new PackageException("Failed to determine target collection");
+            }
+        } else {
+            return getTargetFallback(pkg).getCollectionPath();
+        }
+    }
+
+    private XmldbURI getTargetFallback(final Package pkg) {
+        final String pkgColl = pkg.getAbbrev() + "-" + pkg.getVersion();
+        return XmldbURI.SYSTEM.append("repo/" + pkgColl);
+    }
+
     private String getTargetCollection(String targetFromRepo) {
         final String appRoot = (String) broker.getConfiguration().getProperty(PROPERTY_APP_ROOT);
         if (appRoot != null) {
@@ -497,8 +537,7 @@ public class Deployment {
         // determine target collection
         XmldbURI targetCollection;
         if (target == null || target.getStringValue().length() == 0) {
-            final String pkgColl = pkg.getAbbrev() + "-" + pkg.getVersion();
-            targetCollection = XmldbURI.SYSTEM.append("repo/" + pkgColl);
+            targetCollection = getTargetFallback(pkg);
         } else {
             final String targetPath = target.getStringValue();
             try {
@@ -629,7 +668,8 @@ public class Deployment {
      * @param directory
      * @param target
      */
-    private void scanDirectory(final Path directory, final XmldbURI target, final boolean inRootDir) {
+    private void scanDirectory(final Path directory, final XmldbURI target, final InMemoryNodeSet resources,
+                               final boolean inRootDir, final boolean isResourcesDir) {
         final TransactionManager mgr = broker.getBrokerPool().getTransactionManager();
         Collection collection = null;
         try(final Txn txn = mgr.beginTransaction()) {
@@ -641,14 +681,42 @@ public class Deployment {
             LOG.warn(e);
         }
 
-        storeFiles(directory, collection, inRootDir);
+        final boolean isResources = isResourcesDir || isResourceDir(target, resources);
+
+        // the root dir is not allowed to be a resources directory
+        if (!inRootDir && isResources) {
+            try {
+                storeBinaryResources(directory, collection);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+            storeFiles(directory, collection, inRootDir);
+        }
 
         // scan sub directories
         try(final Stream<Path> subDirs = Files.find(directory, 1, (path, attrs) -> (!path.equals(directory)) && attrs.isDirectory())) {
-            subDirs.forEach(path -> scanDirectory(path, target.append(FileUtils.fileName(path)), false));
+            subDirs.forEach(path -> scanDirectory(path, target.append(FileUtils.fileName(path)), resources, false,
+                    isResources));
         } catch(final IOException ioe) {
             LOG.warn("Unable to scan sub-directories", ioe);
         }
+    }
+
+    private boolean isResourceDir(XmldbURI target, InMemoryNodeSet resources) {
+        // iterate here or pass into scandirectory directly or even save as class property???
+        try {
+            for (final SequenceIterator i = resources.iterate(); i.hasNext(); ) {
+                final ElementImpl child = (ElementImpl) i.nextItem();
+                final String resourcePath = child.getAttribute(RESOURCES_PATH_ATTRIBUTE);
+                if (target.toString().endsWith(resourcePath)) {
+                    return true;
+                }
+            }
+        } catch (XPathException e) {
+            LOG.warn("Caught exception while reading resource list in repo.xml: " + e.getMessage(), e);
+        }
+        return false;
     }
 
     /**
@@ -682,13 +750,21 @@ public class Deployment {
 
                 try(final Txn txn = mgr.beginTransaction()) {
                     if (mime.isXMLType()) {
-                        final InputSource is = new InputSource(file.toUri().toASCIIString());
-                        final IndexInfo info = targetCollection.validateXMLResource(txn, broker, name, is);
-                        info.getDocument().getMetadata().setMimeType(mime.getName());
-                        final Permission permission = info.getDocument().getPermissions();
-                        setPermissions(false, mime, permission);
+                        try {
+                            final InputSource is = new InputSource(file.toUri().toASCIIString());
+                            final IndexInfo info = targetCollection.validateXMLResource(txn, broker, name, is);
+                            info.getDocument().getMetadata().setMimeType(mime.getName());
+                            final Permission permission = info.getDocument().getPermissions();
+                            setPermissions(false, mime, permission);
 
-                        targetCollection.store(txn, broker, info, is, false);
+                            targetCollection.store(txn, broker, info, is, false);
+                        } catch (Exception e) {
+                            //check for .html ending
+                            if(mime.getName().equals(MimeType.HTML_TYPE.getName())){
+                                //store it
+                                storeBinary(targetCollection, file, mime, name, txn);
+                            }
+                        }
                     } else {
                         final long size = Files.size(file);
                         try(final InputStream is = Files.newInputStream(file)) {
@@ -705,6 +781,38 @@ public class Deployment {
                 } catch (final Exception e) {
                     e.printStackTrace();
                 }
+            }
+        }
+    }
+
+    private void storeBinary(Collection targetCollection, Path file, MimeType mime, XmldbURI name, Txn txn) throws
+            IOException, EXistException, PermissionDeniedException, LockException, TriggerException {
+        final long size = Files.size(file);
+        try (final InputStream is = Files.newInputStream(file)) {
+            final BinaryDocument doc =
+                    targetCollection.addBinaryResource(txn, broker, name, is, mime.getName(), size);
+
+            final Permission permission = doc.getPermissions();
+            setPermissions(false, mime, permission);
+            doc.getMetadata().setMimeType(mime.getName());
+            broker.storeXMLResource(txn, doc);
+        }
+    }
+
+    private void storeBinaryResources(Path directory, Collection targetCollection) throws IOException, EXistException,
+            PermissionDeniedException, LockException, TriggerException {
+        final TransactionManager mgr = broker.getBrokerPool().getTransactionManager();
+        try(DirectoryStream<Path> stream = Files.newDirectoryStream(directory)) {
+            for (Path entry: stream) {
+                if (!Files.isDirectory(entry)) {
+                    final XmldbURI name = XmldbURI.create(FileUtils.fileName(entry));
+                    try(final Txn txn = mgr.beginTransaction()) {
+                        storeBinary(targetCollection, entry, MimeType.BINARY_TYPE, name, txn);
+                        mgr.commit(txn);
+                    } catch (final Exception e) {
+                        e.printStackTrace();
+                    }
+                }  
             }
         }
     }

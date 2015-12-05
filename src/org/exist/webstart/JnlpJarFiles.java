@@ -17,7 +17,6 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
-
 package org.exist.webstart;
 
 import java.io.File;
@@ -30,17 +29,17 @@ import org.apache.logging.log4j.Logger;
 import org.exist.start.LatestFileResolver;
 
 /**
- *  Class for managing webstart jar files.
+ * Class for managing webstart jar files.
  *
  * @author Dannes Wessels
  */
 public class JnlpJarFiles {
-    
+
     private static final Logger LOGGER = LogManager.getLogger(JnlpJarFiles.class);
-    
+
     private final Map<String, File> allFiles = new HashMap<>();
     private final File mainJar;
-    
+
     // Names of core jar files sans ".jar" extension.
     // Use %latest% token in place of a version string.
     private final String allJarNames[] = new String[]{
@@ -60,31 +59,31 @@ public class JnlpJarFiles {
         "slf4j-api-%latest%",
         "sunxacml-%latest%"
     };
-    
+
     // Resolves jar file patterns from jars[].
     private final LatestFileResolver jarFileResolver = new LatestFileResolver();
-    
+
     /**
      * Get jar file specified by file pattern.
-     * @param folder  Directory containing the jars.
-     * @param jarFileBaseName  Name of jar file, including %latest% token if
+     *
+     * @param folder Directory containing the jars.
+     * @param jarFileBaseName Name of jar file, including %latest% token if
      * necessary sans .jar file extension.
      * @return File object of jar file, null if not found.
      */
-    private File getJarFromLocation(File folder, String jarFileBaseName){
+    private File getJarFromLocation(File folder, String jarFileBaseName) {
         final String fileToFind = folder.getAbsolutePath() + File.separatorChar + jarFileBaseName + ".jar";
-        final String resolvedFile = jarFileResolver.getResolvedFileName( fileToFind );
+        final String resolvedFile = jarFileResolver.getResolvedFileName(fileToFind);
         final File jar = new File(resolvedFile);
         if (jar.exists()) {
             LOGGER.debug(String.format("Found match: %s for file pattern: %s", resolvedFile, fileToFind));
             return jar;
-            
+
         } else {
             LOGGER.warn(String.format("Could not resolve file pattern: %s", fileToFind));
             return null;
         }
     }
-
 
     // Copy jars from map to list
     private void addToJars(File jar) {
@@ -96,10 +95,10 @@ public class JnlpJarFiles {
             if (pkgz != null) {
                 allFiles.put(pkgz.getName(), pkgz);
             }
-            
+
         }
     }
-    
+
     /**
      * Creates a new instance of JnlpJarFiles
      *
@@ -109,45 +108,39 @@ public class JnlpJarFiles {
         LOGGER.info("Initializing jar files Webstart");
 
         LOGGER.debug(String.format("Number of webstart jars=%s", allJarNames.length));
-        
+
         // Setup CORE jars
-        for(final String jarname : allJarNames){
+        for (final String jarname : allJarNames) {
             final File jar = getJarFromLocation(jnlpHelper.getCoreJarsFolder(), jarname);
             addToJars(jar);
-         }
-        
+        }
+
         // Setup exist.jar
-        mainJar=new File(jnlpHelper.getExistJarFolder(), "exist.jar");
+        mainJar = new File(jnlpHelper.getExistJarFolder(), "exist.jar");
         addToJars(mainJar);
     }
-    
 
     /**
-     *  Get All jar file as list.
+     * Get All jar file as list.
      *
      * @return list of jar files.
      */
-    public List<File> getAllWebstartJars(){
+    public List<File> getAllWebstartJars() {
         final List<File> corejars = new ArrayList<>();
 
-        for(final File file: allFiles.values()){
-            if(file.getName().endsWith(".jar")){
-                corejars.add(file);
-            }
-        }
+        allFiles.values().stream().filter((file) -> (file.getName().endsWith(".jar"))).forEach(corejars::add);
 
         return corejars;
     }
-    
 
     /**
      * Get file reference for JAR file.
+     *
      * @param key
      * @return Reference to the jar file, NULL if not existent.
      */
     public File getJarFile(String key) {
-        final File retVal = allFiles.get(key);
-        return retVal;
+        return allFiles.get(key);
     }
 
     private File getJarPackGz(File jarName) {
@@ -160,13 +153,12 @@ public class JnlpJarFiles {
 
         return null;
     }
-    
+
     /**
-     *  Get last modified of main JAR file 
+     * Get last modified of main JAR file
      */
-    public long getLastModified(){
-        return (mainJar==null) ? -1 : mainJar.lastModified();
+    public long getLastModified() {
+        return (mainJar == null) ? -1 : mainJar.lastModified();
     }
-    
+
 }
-;

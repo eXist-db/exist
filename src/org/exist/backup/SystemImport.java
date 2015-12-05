@@ -65,11 +65,10 @@ public class SystemImport {
     	this.db = db;
 	}
 
-    public void restore(RestoreListener listener, String username, Object credentials, String newCredentials, final Path f, String uri) throws XMLDBException, FileNotFoundException, IOException, SAXException, ParserConfigurationException, URISyntaxException, AuthenticationException, ConfigurationException, PermissionDeniedException {
+    public void restore(RestoreListener listener, String username, Object credentials, String newCredentials, final Path f, String uri) throws XMLDBException, IOException, SAXException, ParserConfigurationException, URISyntaxException, AuthenticationException, ConfigurationException, PermissionDeniedException {
         
         //login
-        final DBBroker broker = db.authenticate(username, credentials);
-        try {
+        try(final DBBroker broker = db.authenticate(username, credentials)) {
         	//set the new password
 	        setAdminCredentials(broker, newCredentials);
 	
@@ -98,8 +97,6 @@ public class SystemImport {
 	        } finally {
 	            listener.restoreFinished();
 	        }
-        } finally {
-        	db.release(broker);
         }
     }
     
@@ -158,7 +155,7 @@ public class SystemImport {
     }
     
     private void setAdminCredentials(DBBroker broker, String newCredentials) throws ConfigurationException, PermissionDeniedException {
-    	final Subject subject = broker.getSubject();
+    	final Subject subject = broker.getCurrentSubject();
     	subject.setPassword(newCredentials);
     	subject.save(broker);
     }

@@ -50,6 +50,7 @@ import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.Optional;
 
 public class RemoveTest extends AbstractUpdateTest {
     
@@ -59,7 +60,7 @@ public class RemoveTest extends AbstractUpdateTest {
         final BrokerPool pool = startDB();
         final TransactionManager mgr = pool.getTransactionManager();
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             final IndexInfo info = init(broker, mgr);
             assertNotNull(info);
             final MutableDocumentSet docs = new DefaultDocumentSet();

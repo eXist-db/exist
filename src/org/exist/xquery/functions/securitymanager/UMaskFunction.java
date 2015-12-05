@@ -74,7 +74,7 @@ public class UMaskFunction extends BasicFunction {
     @Override
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
         final DBBroker broker = getContext().getBroker();
-        final Subject currentUser = broker.getSubject();
+        final Subject currentUser = broker.getCurrentSubject();
         if(currentUser.getName().equals(SecurityManager.GUEST_USER)) {
             throw new XPathException("You must be an authenticated user");
         }

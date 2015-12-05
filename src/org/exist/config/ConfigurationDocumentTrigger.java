@@ -300,11 +300,12 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
             throw new SAXException("First element does not match ending '" + principalType.getElementName() + "' element");
         }
 
+        final SecurityManager sm = broker.getBrokerPool().getSecurityManager();
+
         //if needed, update old style id to new style id
-        final AttributesImpl attrs = new AttributesImpl(migrateIdAttribute(start.attributes, principalType));
+        final AttributesImpl attrs = new AttributesImpl(migrateIdAttribute(sm, start.attributes, principalType));
 
         //check if there is a name collision, i.e. another principal with the same name
-        final SecurityManager sm = broker.getBrokerPool().getSecurityManager();
         final String principalName = findName();
         // first check if the account or group exists before trying to retrieve it
         // otherwise the LDAP realm will create a new user, leading to an endless loop
@@ -363,9 +364,9 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
      *
      * @return The updated attributes containing the new id
      */
-    private Attributes migrateIdAttribute(final Attributes attrs, final PrincipalType principalType) {
+    private Attributes migrateIdAttribute(final SecurityManager sm, final Attributes attrs, final PrincipalType principalType) {
         final boolean aclPermissionInUse =
-            PermissionFactory.getDefaultResourcePermission() instanceof ACLPermission;
+            PermissionFactory.getDefaultResourcePermission(sm) instanceof ACLPermission;
 
         final Attributes newAttrs;
         final String strId = attrs.getValue(ID_ATTR);

@@ -87,14 +87,13 @@ public class AsUser extends Function {
             throw exception;
         }
 
-        final Subject oldUser = context.getEffectiveUser();
+        logger.info("Setting the effective user to: [" + username + "]");
         try {
-            logger.info("Setting the effective user to: [" + username + "]");
-            broker.setSubject(user);
+            broker.pushSubject(user);
             return getArgument(2).eval(contextSequence, contextItem);
         } finally {
-            logger.info("Returning the effective user to: [" + oldUser.getName() + "]");
-            broker.setSubject(oldUser);
+            broker.popSubject();
+            logger.info("Returned the effective user to: [" + broker.getCurrentSubject() + "]");
         }
     }
 

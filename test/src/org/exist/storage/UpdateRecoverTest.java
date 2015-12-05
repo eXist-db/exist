@@ -56,6 +56,7 @@ import org.xmldb.api.modules.XUpdateQueryService;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.Optional;
 
 /**
  * Tests recovery of XUpdate operations.
@@ -93,7 +94,7 @@ public class UpdateRecoverTest {
         final BrokerPool pool = startDB();
         final TransactionManager transact = pool.getTransactionManager();
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             IndexInfo info;
 
@@ -278,7 +279,7 @@ public class UpdateRecoverTest {
         final BrokerPool pool = startDB();
         assertNotNull(pool);
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
             final Serializer serializer = broker.getSerializer();
             assertNotNull(serializer);
             serializer.reset();

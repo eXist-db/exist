@@ -25,7 +25,6 @@ import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.SecureRandom;
@@ -194,7 +193,7 @@ public class Resource extends File {
             return false;
         }
 
-		try(final DBBroker broker = db.get(null);) {
+		try(final DBBroker broker = db.getBroker()) {
 	
 	        final Collection collection = broker.getCollection(uri.toCollectionPathURI());
 	        if (collection != null) {return true;}
@@ -231,7 +230,7 @@ public class Resource extends File {
             return false;
         }
 
-		try(final DBBroker broker = db.get(null)) {
+		try(final DBBroker broker = db.getBroker()) {
 
 	        final Collection collection = broker.getCollection(uri.toCollectionPathURI());
 	        if (collection != null) {return true;}
@@ -303,7 +302,7 @@ public class Resource extends File {
         org.exist.collections.Collection source = null;
         XmldbURI newName;
 
-        try(final DBBroker broker = db.get(null);) {
+        try(final DBBroker broker = db.getBroker()) {
             source = broker.openCollection(uri.removeLastSegment(), Lock.WRITE_LOCK);
             if(source == null) {
                 return false;
@@ -347,7 +346,7 @@ public class Resource extends File {
             return false;
         }
 
-        try(final DBBroker broker = db.get(null);) {
+        try(final DBBroker broker = db.getBroker()) {
     
             org.exist.collections.Collection destination = null;
             org.exist.collections.Collection source = null;
@@ -400,7 +399,7 @@ public class Resource extends File {
     		
     	try {
 			final Serializer serializer = broker.getSerializer();
-			serializer.setUser(broker.getSubject());
+			serializer.setUser(broker.getCurrentSubject());
 			serializer.setProperties(XML_OUTPUT_PROPERTIES);
 			
             file = Files.createTempFile("eXist-resource-", ".xml");
@@ -445,8 +444,8 @@ public class Resource extends File {
         }
 
         final TransactionManager tm = db.getTransactionManager();
-        try(final DBBroker broker = db.get(null);
-                final Txn txn = tm.beginTransaction();) {
+        try(final DBBroker broker = db.getBroker();
+                final Txn txn = tm.beginTransaction()) {
 
             FileInputSource is = new FileInputSource(file.toFile());
 	        
@@ -510,7 +509,7 @@ public class Resource extends File {
                 //convert XML to BINARY
                 // xml file
                 final Serializer serializer = broker.getSerializer();
-                serializer.setUser(broker.getSubject());
+                serializer.setUser(broker.getCurrentSubject());
                 serializer.setProperties(XML_OUTPUT_PROPERTIES);
                 
                 File tempFile = null;
@@ -560,7 +559,7 @@ public class Resource extends File {
             return false;
         }
 
-		try(final DBBroker broker = db.get(null)) {
+		try(final DBBroker broker = db.getBroker()) {
 
             collection = broker.openCollection(uri.removeLastSegment(), Lock.NO_LOCK);
             if (collection == null) {
@@ -599,7 +598,7 @@ public class Resource extends File {
             throw new IOException(e);
         }
 
-		try(final DBBroker broker = db.get(null)) {
+		try(final DBBroker broker = db.getBroker()) {
 			
 //			if (!uri.startsWith("/db"))
 //				uri = XmldbURI.DB.append(uri);
@@ -695,50 +694,42 @@ public class Resource extends File {
     		resource = null;
     		initialized = false;
 		}
-    	
-    	DBBroker broker = null; 
-		BrokerPool db = null;
 
 		try {
-			try {
-				db = BrokerPool.getInstance();
-				broker = db.get(null);
-			} catch (final EXistException e) {
-				throw new IOException(e);
-			}
-	
-			try {
-				//collection
-				if (uri.endsWith("/")) {
-					collection = broker.getCollection(uri);
-					if (collection == null)
-						{throw new IOException("Resource not found: "+uri);}
-					
-				//resource
-				} else {
-					resource = broker.getXMLResource(uri, Lock.READ_LOCK);
-					if (resource == null) {
-						//may be, it's collection ... checking ...
-						collection = broker.getCollection(uri);
-						if (collection == null) {
-							throw new IOException("Resource not found: "+uri);
-						}
-					} else {
-						collection = resource.getCollection();
-					}
-				}
-			} catch (final IOException e) {
-				throw e;
-			} catch (final Exception e) {
-				throw new IOException(e);
-			} finally {
-				if (resource != null)
-					{resource.getUpdateLock().release(Lock.READ_LOCK);}
-			}
-		} finally {
-			if (db != null)
-				{db.release(broker);}
-		}
+            final BrokerPool db = BrokerPool.getInstance();
+			try(final DBBroker broker = db.getBroker()) {
+                //collection
+                if (uri.endsWith("/")) {
+                    collection = broker.getCollection(uri);
+                    if (collection == null) {
+                        throw new IOException("Resource not found: " + uri);
+                    }
+
+                    //resource
+                } else {
+                    try {
+                        resource = broker.getXMLResource(uri, Lock.READ_LOCK);
+                        if (resource == null) {
+                            //may be, it's collection ... checking ...
+                            collection = broker.getCollection(uri);
+                            if (collection == null) {
+                                throw new IOException("Resource not found: " + uri);
+                            }
+                        } else {
+                            collection = resource.getCollection();
+                        }
+                    } finally {
+                        if (resource != null) {
+                            resource.getUpdateLock().release(Lock.READ_LOCK);
+                        }
+                    }
+                }
+            }
+        } catch (final IOException e) {
+            throw e;
+        } catch (final Exception e) {
+            throw new IOException(e);
+        }
 		
 		initialized = true;
     }
@@ -754,19 +745,13 @@ public class Resource extends File {
     }
     
     private Subject getBrokerUser() throws IOException {
-    	DBBroker broker = null; 
-		BrokerPool db = null;
-
 		try {
-			db = BrokerPool.getInstance();
-			broker = db.get(null);
-			
-			return broker.getSubject();
+			final BrokerPool db = BrokerPool.getInstance();
+            try(final DBBroker broker = db.getBroker()) {
+                return broker.getCurrentSubject();
+            }
 		} catch (final EXistException e) {
 			throw new IOException(e);
-		} finally {
-			if (db != null)
-				{db.release(broker);}
 		}
     }
     
@@ -784,27 +769,23 @@ public class Resource extends File {
     
     private URLConnection getConnection() throws IOException {
     	if (connection == null) {
-			BrokerPool db = null;
-			DBBroker broker = null;
 			try {
-				db = BrokerPool.getInstance();
-				broker = db.get(null);
-				final Subject subject = broker.getSubject();
-				
-				final URL url = new URL("xmldb:exist://jsessionid:"+subject.getSessionId()+"@"+ uri.toString());
-				connection = url.openConnection();
+				final BrokerPool db = BrokerPool.getInstance();
+                try(final DBBroker broker = db.getBroker()) {
+                    final Subject subject = broker.getCurrentSubject();
+
+                    final URL url = new URL("xmldb:exist://jsessionid:" + subject.getSessionId() + "@" + uri.toString());
+                    connection = url.openConnection();
+                }
 			} catch (final IllegalArgumentException e) {
 				throw new IOException(e); 
 			} catch (final MalformedURLException e) {
 				throw new IOException(e); 
 			} catch (final EXistException e) {
 				throw new IOException(e); 
-			} finally {
-				if (db != null)
-					{db.release(broker);}
 			}
     	}
-    	return connection;
+        return connection;
     }
 
     public InputStream getInputStream() throws IOException {
@@ -835,36 +816,26 @@ public class Resource extends File {
 
 	public Collection getCollection() throws IOException {
 		if (!initialized) {
-	    	DBBroker broker = null; 
-			BrokerPool db = null;
-
 			try {
-				try {
-					db = BrokerPool.getInstance();
-					broker = db.get(null);
-				} catch (final EXistException e) {
-					throw new IOException(e);
-				}
-	
-				try {
-					if (uri.endsWith("/")) {
-						collection = broker.getCollection(uri);
-					} else {
-						collection = broker.getCollection(uri);
-						if (collection == null)
-							{collection = broker.getCollection(uri.removeLastSegment());}
-					}
-					if (collection == null)
-						{throw new IOException("Collection not found: "+uri);}
-					
-					return collection;
-				} catch (final Exception e) {
-					throw new IOException(e);
-				}
-			} finally {
-				if (db != null)
-					{db.release(broker);}
-			}
+                final BrokerPool db = BrokerPool.getInstance();
+                try (final DBBroker broker = db.getBroker()) {
+                    if (uri.endsWith("/")) {
+                        collection = broker.getCollection(uri);
+                    } else {
+                        collection = broker.getCollection(uri);
+                        if (collection == null) {
+                            collection = broker.getCollection(uri.removeLastSegment());
+                        }
+                    }
+                    if (collection == null) {
+                        throw new IOException("Collection not found: " + uri);
+                    }
+
+                    return collection;
+                }
+            } catch (final Exception e) {
+                throw new IOException(e);
+            }
 		}
 
 		if (resource == null)
@@ -876,32 +847,20 @@ public class Resource extends File {
     public String[] list() {
     	
     	if (isDirectory()) {
-    		
-        	DBBroker broker = null; 
-    		BrokerPool db = null;
-
     		try {
-    			try {
-    				db = BrokerPool.getInstance();
-    				broker = db.get(null);
-    			} catch (final EXistException e) {
-                	return new String[0];
-    			}
+                final BrokerPool db = BrokerPool.getInstance();
+    			try(final DBBroker broker = db.getBroker()) {
 
-    	    	final List<String> list = new ArrayList<String>();
-    			for (final CollectionEntry entry : collection.getEntries(broker)) {
-    				list.add(entry.getUri().lastSegment().toString());
-    			}
-    	    
-    			return list.toArray(new String[list.size()]);
+                    final List<String> list = new ArrayList<String>();
+                    for (final CollectionEntry entry : collection.getEntries(broker)) {
+                        list.add(entry.getUri().lastSegment().toString());
+                    }
 
-    		} catch (final PermissionDeniedException e) {
+                    return list.toArray(new String[list.size()]);
+                }
+    		} catch (final PermissionDeniedException | EXistException e) {
             	return new String[0];
-
-			} finally {
-            	if (db != null)
-            		{db.release( broker );}
-            }
+			}
     	}
     	
     	return new String[0];
@@ -917,19 +876,10 @@ public class Resource extends File {
     	
     	if (collection == null)
     		{return null;}
-    	
-    	DBBroker broker = null; 
-		BrokerPool db = null;
 
 		try {
-			try {
-				db = BrokerPool.getInstance();
-				broker = db.get(null);
-			} catch (final EXistException e) {
-				return null;
-			}
-	
-	    	try {
+            final BrokerPool db = BrokerPool.getInstance();
+			try(final DBBroker broker = db.getBroker()) {
 	        	collection.getLock().acquire(Lock.READ_LOCK);
 	
 	        	final File[] children = new File[collection.getChildCollectionCount(broker) + 
@@ -974,10 +924,7 @@ public class Resource extends File {
 		} catch (final Exception e) {
 			return null;
 			
-		} finally {
-	    	if (db != null)
-	    		{db.release(broker);}
-	    }
+		}
     }
     
     public File[] listFiles(FilenameFilter filter) {
@@ -1046,32 +993,20 @@ public class Resource extends File {
 		} catch (final IOException e) {
 			throw new FileNotFoundException(e.getMessage());
 		}
-		
-    	DBBroker broker = null; 
-		BrokerPool db = null;
 
 		try {
-			try {
-				db = BrokerPool.getInstance();
-				broker = db.get(null);
-			} catch (final EXistException e) {
-				throw new FileNotFoundException(e.getMessage());
-			}
-	
-			if (doc instanceof BinaryDocument) {
-				return broker.getBinaryFile(((BinaryDocument)doc));
-				
-			} else {
-				return serialize(broker, doc);
-			}
+            final BrokerPool db = BrokerPool.getInstance();
+			try(final DBBroker broker = db.getBroker()) {
+                if (doc instanceof BinaryDocument) {
+                    return broker.getBinaryFile(((BinaryDocument) doc));
 
+                } else {
+                    return serialize(broker, doc);
+                }
+            }
 		} catch (final Exception e) {
 			throw new FileNotFoundException(e.getMessage());
-			
-		} finally {
-	    	if (db != null)
-	    		{db.release(broker);}
-	    }
+		}
 //		throw new FileNotFoundException("unsupported operation for "+doc.getClass()+".");
 	}
 	
@@ -1216,7 +1151,7 @@ public class Resource extends File {
             throw new IOException(e);
         }
 
-		try(final DBBroker broker = db.get(null)) {
+		try(final DBBroker broker = db.getBroker()) {
 
 			final TransactionManager tm = db.getTransactionManager();
 			

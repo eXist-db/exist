@@ -27,6 +27,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package org.exist.extensions.exquery.restxq.impl;
 
 import java.io.IOException;
+import java.util.Optional;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -69,7 +70,7 @@ public class RestXqServlet extends AbstractExistHttpServlet {
             return;
         }
 
-        try(final DBBroker broker = getPool().get(user)) {
+        try(final DBBroker broker = getPool().get(Optional.of(user))) {
             final Configuration configuration = broker.getConfiguration();
 
             final HttpRequest requestAdapter = new HttpServletRequestAdapter(

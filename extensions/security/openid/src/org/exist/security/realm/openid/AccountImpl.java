@@ -123,7 +123,7 @@ public class AccountImpl extends SubjectAccreditedImpl {
 //            return null;
 //        }
 //
-//        Account user = getDatabase().getSubject();
+//        Account user = getDatabase().getCurrentSubject();
 //
 //
 //        if(!((user != null && user.hasDbaRole()) || ((GroupImpl)group).isMembersManager(user))){

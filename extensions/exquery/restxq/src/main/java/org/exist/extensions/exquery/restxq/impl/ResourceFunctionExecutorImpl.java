@@ -122,7 +122,7 @@ public class ResourceFunctionExecutorImpl implements ResourceFunctionExecuter {
         CompiledXQuery xquery = null;
         ProcessMonitor processMonitor = null;
 
-        try(final DBBroker broker = getBrokerPool().get(getBrokerPool().getSubject())) {
+        try(final DBBroker broker = getBrokerPool().getBroker()) {
             //ensure we can execute the function before going any further
             checkSecurity(broker, resourceFunction.getXQueryLocation());
             

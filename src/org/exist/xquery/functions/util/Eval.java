@@ -27,6 +27,7 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Date;
+import java.util.Optional;
 import java.util.SimpleTimeZone;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -244,23 +245,16 @@ public class Eval extends BasicFunction {
         public Sequence call() throws XPathException {
         	
         	BrokerPool db = null;
-            DBBroker broker = null;
             
             try {
 				db = BrokerPool.getInstance();
-			} catch (final EXistException e) {
-                throw new XPathException("Unable to get new broker: " + e.getMessage(), e);
-			}
-            
-            try {
-                final XQueryContext context = callersContext.copyContext(); //make a copy
-                broker = db.get(subject); //get a new broker
 
-                return doEval(context, contextSequence, args);
+                final XQueryContext context = callersContext.copyContext(); //make a copy
+                try(final DBBroker broker = db.get(Optional.ofNullable(subject))) {
+                    return doEval(context, contextSequence, args);
+                }
             } catch(final EXistException ex) {
                 throw new XPathException("Unable to get new broker: " + ex.getMessage(), ex);
-            } finally {
-            	db.release(broker); //release the broker
             }
         }
 

@@ -39,6 +39,7 @@ import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Sequence;
 
+import java.util.Optional;
 import java.util.Properties;
 import org.exist.security.AXSchemaType;
 
@@ -88,7 +89,6 @@ public class OpenIDUtility {
         LOG.info("org.exist.security.openid.verify_logging_script = \"" + xqueryResourcePath + "\"");
         
         BrokerPool pool = null;
-        DBBroker broker = null;
 
         try {
             DocumentImpl resource = null;
@@ -96,50 +96,46 @@ public class OpenIDUtility {
 
             pool = BrokerPool.getInstance();
 
-            broker = pool.get(principal);
-            if (broker == null) {
-                LOG.error("Unable to retrieve DBBroker for " + principal.getMetadataValue(AXSchemaType.ALIAS_USERNAME));
-                return false;
+            try(final DBBroker broker = pool.get(Optional.of(principal))) {
+                if (broker == null) {
+                    LOG.error("Unable to retrieve DBBroker for " + principal.getMetadataValue(AXSchemaType.ALIAS_USERNAME));
+                    return false;
+                }
+
+                XmldbURI pathUri = XmldbURI.create(xqueryResourcePath);
+
+
+                resource = broker.getXMLResource(pathUri, Lock.READ_LOCK);
+
+                if (resource != null) {
+                    LOG.info("Resource " + xqueryResourcePath + " exists.");
+                    source = new DBSource(broker, (BinaryDocument) resource, true);
+                } else {
+                    LOG.info("Resource " + xqueryResourcePath + " does not exist.");
+                    LOG.info("pathURI " + pathUri);
+                    return true;
+                }
+
+
+                XQuery xquery = pool.getXQueryService();
+
+                if (xquery == null) {
+                    LOG.error("broker unable to retrieve XQueryService");
+                    return false;
+                }
+
+                XQueryContext context = new XQueryContext(broker.getBrokerPool(), AccessContext.REST);
+
+                CompiledXQuery compiled = xquery.compile(broker, context, source);
+
+                Properties outputProperties = new Properties();
+
+                Sequence result = xquery.execute(broker, compiled, null, outputProperties);
+                LOG.info("XQuery execution results: " + result.toString());
             }
-
-            XmldbURI pathUri = XmldbURI.create(xqueryResourcePath);
-
-
-            resource = broker.getXMLResource(pathUri, Lock.READ_LOCK);
-
-            if(resource != null) {
-                LOG.info("Resource " + xqueryResourcePath + " exists.");
-                source = new DBSource(broker, (BinaryDocument)resource, true);
-            } else {
-                LOG.info("Resource " + xqueryResourcePath + " does not exist.");
-                LOG.info("pathURI " + pathUri );
-                return true;
-            }
-
-
-            XQuery xquery = pool.getXQueryService();
-
-            if (xquery == null) {
-                LOG.error("broker unable to retrieve XQueryService");
-                return false;
-            }
-
-            XQueryContext context = new XQueryContext(broker.getBrokerPool(), AccessContext.REST);
-
-            CompiledXQuery compiled = xquery.compile(broker, context, source);
-
-            Properties outputProperties = new Properties();
-
-            Sequence result = xquery.execute(broker, compiled, null, outputProperties);
-            LOG.info("XQuery execution results: " + result.toString());
-
         } catch (Exception e) {
             LOG.error("Exception while executing OpenID registration script for " + principal.getMetadataValue(AXSchemaType.ALIAS_USERNAME), e);
             return false;
-        }
-        finally {
-            if (pool != null)
-                pool.release(broker);
         }
         return true;
     }

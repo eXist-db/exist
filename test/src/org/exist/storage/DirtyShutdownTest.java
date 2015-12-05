@@ -16,6 +16,7 @@ import org.junit.Test;
 import org.xml.sax.InputSource;
 
 import java.io.File;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -48,7 +49,7 @@ public class DirtyShutdownTest {
 
     public void storeRepeatedly() {
         final TransactionManager transact = pool.getTransactionManager();
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             Collection root;
 
@@ -78,7 +79,7 @@ public class DirtyShutdownTest {
     }
     public void storeAndWait() {
         final TransactionManager transact = pool.getTransactionManager();
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             try(final Txn transaction = transact.beginTransaction()) {
                 Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);

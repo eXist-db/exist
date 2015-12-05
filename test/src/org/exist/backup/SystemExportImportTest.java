@@ -21,10 +21,10 @@ package org.exist.backup;
 
 import static org.junit.Assert.*;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.Properties;
 
 import javax.xml.transform.OutputKeys;
@@ -116,7 +116,7 @@ public class SystemExportImportTest {
     public void exportImport() throws Exception {
         Path file;
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             final Collection test = broker.getCollection(TEST_COLLECTION_URI);
             assertNotNull(test);
@@ -131,7 +131,7 @@ public class SystemExportImportTest {
         final RestoreListener listener = new LogRestoreListener();
         restore.restore(listener, "admin", "", "", file, "xmldb:exist://");
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             final Collection test = broker.getCollection(TEST_COLLECTION_URI);
             assertNotNull(test);
@@ -162,7 +162,7 @@ public class SystemExportImportTest {
 	
 	private String serializer(final DBBroker broker, final DocumentImpl document) throws SAXException, IOException {
 		final Serializer serializer = broker.getSerializer();
-		serializer.setUser(broker.getSubject());
+		serializer.setUser(broker.getCurrentSubject());
 		serializer.setProperties(contentsOutputProps);
 		return serializer.serialize(document);
 	}
@@ -177,7 +177,7 @@ public class SystemExportImportTest {
         assertNotNull(pool);
         pool.getPluginsManager().addPlugin("org.exist.storage.md.Plugin");
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                 final Txn transaction = pool.getTransactionManager().beginTransaction()) {
 
             final Collection test = broker.getOrCreateCollection(transaction, TEST_COLLECTION_URI);
@@ -223,7 +223,7 @@ public class SystemExportImportTest {
     }
 
     private void clean() throws PermissionDeniedException, IOException, TriggerException, EXistException {
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                 final Txn transaction = pool.getTransactionManager().beginTransaction()) {
 
             final Collection test = broker.getCollection(TEST_COLLECTION_URI);

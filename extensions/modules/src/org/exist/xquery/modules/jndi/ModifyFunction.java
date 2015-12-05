@@ -150,7 +150,7 @@ public class ModifyFunction extends BasicFunction
 	
 	private ModificationItem[] parseAttributes( Sequence arg ) throws XPathException
 	{
-		ArrayList<ModificationItem> items = new ArrayList<ModificationItem>();
+		ArrayList<ModificationItem> items = new ArrayList<>();
 		
 		ModificationItem[] mi = new ModificationItem[1];
 		
@@ -195,7 +195,7 @@ public class ModifyFunction extends BasicFunction
 						// This basically collapses nearby identically named attributes that have the same opCode into one, except for removes
 						
 						for( int j = items.size() - 1; j >= 0; j-- ) {
-							ModificationItem item  = (ModificationItem)items.get( j );
+							ModificationItem item  = items.get( j );
 							
 							if( name.equals( item.getAttribute().getID() ) ) {
 								if( item.getModificationOp() == opCode && opCode != 3 ) {

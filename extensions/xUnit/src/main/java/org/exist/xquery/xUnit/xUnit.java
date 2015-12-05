@@ -24,6 +24,7 @@ package org.exist.xquery.xUnit;
 import static org.junit.Assert.fail;
 
 import java.util.Iterator;
+import java.util.Optional;
 
 import org.exist.Database;
 import org.exist.security.xacml.AccessContext;
@@ -55,40 +56,37 @@ public class xUnit {
 	Collection rootCollection;
 
     public void test(String source) {
-    	Database db = null;
-    	DBBroker broker = null;
         try {
-        	db = BrokerPool.getInstance();
-        	broker = db.get(db.getSecurityManager().getGuestSubject());
-        	
-        	XQuery xquery = broker.getBrokerPool().getXQueryService();
-        	
-        	XQueryContext context = new XQueryContext(broker.getBrokerPool(), AccessContext.TEST);
-        	//context.setModuleLoadPath();
-        	
-            Source query = new ClassLoaderSource(source);
-            
-            CompiledXQuery compiledQuery = xquery.compile(broker, context, query);
-            
-			for(Iterator<UserDefinedFunction> i = context.localFunctions(); i.hasNext(); ) {
-				UserDefinedFunction func = i.next();
-				FunctionSignature sig = func.getSignature();
-				
-				for (Annotation ann : sig.getAnnotations()) {
-					if ("http://exist-db.org/xquery/xUnit".equals( ann.getName().getNamespaceURI())) {
-//						System.out.println(ann.getName().getLocalPart());
-						
-						FunctionCall call = new FunctionCall(context, func);
-						call.eval(Sequence.EMPTY_SEQUENCE);
-					}
-				}
-            }
+            final Database db = BrokerPool.getInstance();
 
+            try(final DBBroker broker = db.get(Optional.of(db.getSecurityManager().getGuestSubject()))) {
+
+                XQuery xquery = broker.getBrokerPool().getXQueryService();
+
+                XQueryContext context = new XQueryContext(broker.getBrokerPool(), AccessContext.TEST);
+                //context.setModuleLoadPath();
+
+                Source query = new ClassLoaderSource(source);
+
+                CompiledXQuery compiledQuery = xquery.compile(broker, context, query);
+
+                for (Iterator<UserDefinedFunction> i = context.localFunctions(); i.hasNext(); ) {
+                    UserDefinedFunction func = i.next();
+                    FunctionSignature sig = func.getSignature();
+
+                    for (Annotation ann : sig.getAnnotations()) {
+                        if ("http://exist-db.org/xquery/xUnit".equals(ann.getName().getNamespaceURI())) {
+    //						System.out.println(ann.getName().getLocalPart());
+
+                            FunctionCall call = new FunctionCall(context, func);
+                            call.eval(Sequence.EMPTY_SEQUENCE);
+                        }
+                    }
+                }
+            }
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());
-        } finally {
-        	if (db != null) db.release(broker);
         }
     }
 

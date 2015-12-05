@@ -35,6 +35,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.Optional;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -49,7 +50,7 @@ public class BFileOverflowTest {
     @Test
     public void add() throws EXistException, IOException {
         TransactionManager mgr = pool.getTransactionManager();
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             broker.flush();
             broker.sync(Sync.MAJOR_SYNC);
@@ -92,7 +93,7 @@ public class BFileOverflowTest {
     @Test
     public void read() throws EXistException {
         BrokerPool.FORCE_CORRUPTION = false;
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             BFile collectionsDb = (BFile)((NativeBroker)broker).getStorage(NativeBroker.COLLECTIONS_DBX_ID);
             
             Value key = new Value("test".getBytes());

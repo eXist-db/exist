@@ -88,7 +88,7 @@ public class QT3TS_To_junit {
     public void init() throws EXistException, PermissionDeniedException, IOException, TriggerException {
 		db = BrokerPool.getInstance();
 		
-		broker = db.get(db.getSecurityManager().getSystemSubject());
+		broker = db.get(Optional.of(db.getSecurityManager().getSystemSubject()));
 		Assert.assertNotNull(broker);
 
         TransactionManager txnMgr = db.getTransactionManager();
@@ -101,7 +101,9 @@ public class QT3TS_To_junit {
     }
 
     public void release() throws Exception {
-    	db.release(broker);
+    	if(broker != null) {
+            broker.close();
+        }
     }
     	
     public void shutdown() throws Exception {

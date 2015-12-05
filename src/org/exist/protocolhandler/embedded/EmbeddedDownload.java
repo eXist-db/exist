@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.util.Optional;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -85,10 +86,6 @@ public class EmbeddedDownload {
     public void stream(XmldbURL xmldbURL, OutputStream os, Subject user) throws IOException {
         LOG.debug("Begin document download");
         
-        DocumentImpl resource = null;
-        Collection collection = null;
-        DBBroker broker = null;
-        
         try {
             final XmldbURI path = XmldbURI.create(xmldbURL.getPath());
 
@@ -107,35 +104,49 @@ public class EmbeddedDownload {
                     user=EmbeddedUser.getUserGuest(pool);
                 }
             }
-            broker = pool.get(user);
-            
-            resource = broker.getXMLResource(path, Lock.READ_LOCK);
-            
-            if(resource == null) {
-                // Test for collection
-                collection = broker.openCollection(path, Lock.READ_LOCK);
-                if(collection == null){
-                    // No collection, no document
-                    throw new IOException("Resource "+xmldbURL.getPath()+" not found.");
-                    
-                } else {
-                    // Collection
-                    throw new IOException("Resource "+xmldbURL.getPath()+" is a collection.");
-                }
-                
-            } else {
-                if(resource.getResourceType() == DocumentImpl.XML_FILE) {
-                    final Serializer serializer = broker.getSerializer();
-                    serializer.reset();
-                    
-                    // Preserve doctype
-                    serializer.setProperty(EXistOutputKeys.OUTPUT_DOCTYPE, "yes");
-                    final Writer w = new OutputStreamWriter(os,"UTF-8");
-                    serializer.serialize(resource,w);
-                    w.close();
-                    
-                } else {
-                    broker.readBinaryResource((BinaryDocument) resource, os);
+
+            try(final DBBroker broker = pool.get(Optional.of(user))) {
+
+                DocumentImpl resource = null;
+                Collection collection = null;
+                try {
+                    resource = broker.getXMLResource(path, Lock.READ_LOCK);
+                    if (resource == null) {
+                        // Test for collection
+                        collection = broker.openCollection(path, Lock.READ_LOCK);
+                        if (collection == null) {
+                            // No collection, no document
+                            throw new IOException("Resource " + xmldbURL.getPath() + " not found.");
+
+                        } else {
+                            // Collection
+                            throw new IOException("Resource " + xmldbURL.getPath() + " is a collection.");
+                        }
+
+                    } else {
+                        if (resource.getResourceType() == DocumentImpl.XML_FILE) {
+                            final Serializer serializer = broker.getSerializer();
+                            serializer.reset();
+
+                            // Preserve doctype
+                            serializer.setProperty(EXistOutputKeys.OUTPUT_DOCTYPE, "yes");
+                            final Writer w = new OutputStreamWriter(os, "UTF-8");
+                            serializer.serialize(resource, w);
+                            w.close();
+
+                        } else {
+                            broker.readBinaryResource((BinaryDocument) resource, os);
+                        }
+                    }
+                } finally {
+                    if(resource != null){
+                        resource.getUpdateLock().release(Lock.READ_LOCK);
+                    }
+
+                    if(collection != null){
+                        collection.release(Lock.READ_LOCK);
+                    }
+                    LOG.debug("End document download");
                 }
             }
         } catch (final IOException ex) {
@@ -147,19 +158,7 @@ public class EmbeddedDownload {
             //ex.printStackTrace();
             LOG.error(ex);
             throw new IOException(ex.getMessage(), ex);
-            
-        } finally {
-            if(resource != null){
-                resource.getUpdateLock().release(Lock.READ_LOCK);
-            }
-            
-            if(collection != null){
-                collection.release(Lock.READ_LOCK);
-            }
-            
-            pool.release(broker);
-            
-            LOG.debug("End document download");
+
         }
     }
 }

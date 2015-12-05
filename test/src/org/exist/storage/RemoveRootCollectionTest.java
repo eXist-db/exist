@@ -3,6 +3,7 @@ package org.exist.storage;
 import static org.junit.Assert.*;
 
 import java.io.File;
+import java.util.Optional;
 
 import org.exist.collections.*;
 import org.exist.storage.txn.*;
@@ -53,13 +54,15 @@ public class RemoveRootCollectionTest {
 		Configuration config = new Configuration();
 		BrokerPool.configure(1, 1, config);
 		pool = BrokerPool.getInstance();  assertNotNull(pool);
-		broker = pool.get(pool.getSecurityManager().getSystemSubject());  assertNotNull(broker);
+		broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));  assertNotNull(broker);
 		transact = pool.getTransactionManager();  assertNotNull(transact);
 		root = broker.getCollection(XmldbURI.ROOT_COLLECTION_URI);  assertNotNull(root);
 	}
 
 	@After public void stopDB() {
-		pool.release(broker);
+		if(broker != null) {
+			broker.close();
+		}
 		BrokerPool.stopAll(false);
 	}
 	

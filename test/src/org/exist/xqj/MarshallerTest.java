@@ -22,6 +22,7 @@
 package org.exist.xqj;
 
 import org.exist.EXistException;
+import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
@@ -29,6 +30,7 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.serializer.SAXSerializer;
+import org.exist.xquery.XPathException;
 import org.exist.xquery.value.*;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
@@ -42,9 +44,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import org.w3c.dom.Node;
+import org.xml.sax.SAXException;
 
+import javax.xml.stream.XMLStreamException;
 import java.io.StringWriter;
 import java.io.StringReader;
+import java.util.Optional;
 import java.util.Properties;
 
 /**
@@ -75,11 +80,8 @@ public class MarshallerTest {
     
     
     @Test
-    public void atomicValues() {
-        DBBroker broker = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-
+    public void atomicValues() throws EXistException, XPathException, SAXException, XMLStreamException {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             ValueSequence values = new ValueSequence(3);
             values.add(new StringValue("foo"));
             values.add(new IntegerValue(2000, Type.INTEGER));
@@ -98,21 +100,14 @@ public class MarshallerTest {
             assertEquals(seq.itemAt(2).getStringValue(), "1000");
             assertEquals(seq.itemAt(3).getStringValue(), "false");
             assertEquals(seq.itemAt(4).getStringValue(), "1000.1");
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } finally {
-            pool.release(broker);
         }
     }
     
     
 
     @Test
-    public void nodes() {
-        DBBroker broker = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+    public void nodes() throws EXistException, PermissionDeniedException, SAXException, XPathException, XMLStreamException {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             DocumentImpl doc = (DocumentImpl) broker.getXMLResource(TEST_COLLECTION_URI.append("test.xml"));
             NodeProxy p = new NodeProxy(doc, pool.getNodeFactory().createFromString("1.1"));
 
@@ -129,29 +124,18 @@ public class MarshallerTest {
             serializer.reset();
             serializer.setOutput(writer, new Properties());
             n.toSAX(broker, serializer, new Properties());
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } finally {
-            pool.release(broker);
         }
     }
     
     @Test
-    public void streamToNodeTest() {
-       
-        try {
-        	 Node n = Marshaller.streamToNode(TEST_DOC);
-            StringWriter writer = new StringWriter();
+    public void streamToNodeTest() throws XMLStreamException {
+        Node n = Marshaller.streamToNode(TEST_DOC);
+        StringWriter writer = new StringWriter();
 //            SAXSerializer serializer = 
-            		new SAXSerializer(writer, new Properties());
-            //n.toSAX(null, serializer, new Properties());
-            
-            assertEquals("test",n.getLocalName());
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } 
+                new SAXSerializer(writer, new Properties());
+        //n.toSAX(null, serializer, new Properties());
+
+        assertEquals("test",n.getLocalName());
     }
 
     @BeforeClass
@@ -162,7 +146,7 @@ public class MarshallerTest {
 
         final TransactionManager transact = pool.getTransactionManager();
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                 final Txn transaction = transact.beginTransaction()) {
 
             final Collection root = broker.getOrCreateCollection(transaction, TEST_COLLECTION_URI);
@@ -180,7 +164,7 @@ public class MarshallerTest {
     @AfterClass
     public static void shutdown() {
         final TransactionManager transact = pool.getTransactionManager();
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                 final Txn transaction = transact.beginTransaction()) {
             Collection root = broker.getOrCreateCollection(transaction, TEST_COLLECTION_URI);
             broker.removeCollection(transaction, root);

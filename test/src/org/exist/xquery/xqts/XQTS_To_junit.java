@@ -84,7 +84,7 @@ public class XQTS_To_junit {
     public void init() throws Exception {
         db = BrokerPool.getInstance();
         
-        broker = db.get(db.getSecurityManager().getSystemSubject());
+        broker = db.get(Optional.of(db.getSecurityManager().getSystemSubject()));
         Assert.assertNotNull(broker);
         
         collection = broker.getOrCreateCollection(null, XQTS_case.XQTS_URI);
@@ -93,7 +93,9 @@ public class XQTS_To_junit {
     }
 
     public void release() throws Exception {
-        db.release(broker);
+        if(broker != null) {
+            broker.close();
+        }
     }
         
     public void shutdown() throws Exception {

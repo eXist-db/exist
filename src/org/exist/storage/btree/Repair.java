@@ -12,6 +12,8 @@ import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.FileUtils;
 
+import java.util.Optional;
+
 
 /**
  * Utility to rebuild any of the b+-tree based index files. Scans through all leaf pages to
@@ -26,9 +28,7 @@ public class Repair {
     }
 
     public void repair(String id) {
-        DBBroker broker = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             BTree btree = null;
             if ("collections".equals(id)) {
@@ -66,8 +66,6 @@ public class Repair {
         } catch (Exception e) {
             System.console().printf("An exception occurred during repair: %s\n", e.getMessage());
             e.printStackTrace();
-        } finally {
-            pool.release(broker);
         }
     }
 

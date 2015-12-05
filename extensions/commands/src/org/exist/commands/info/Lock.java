@@ -45,40 +45,33 @@ public class Lock extends AbstractCommand {
 	 */
 	@Override
 	public void process(XmldbURI collectionURI, String[] commandData) throws CommandException {
-
-		Database db = null;
-		DBBroker broker = null;
 		try {
+			final Database db = BrokerPool.getInstance();
 			
-			db = BrokerPool.getInstance();
-			
-			broker = db.getBroker();
-			
-			Collection collection = broker.getCollection(collectionURI);
-			
-			out().println("Collection lock:");
-			collection.getLock().debug(out());
-			
-			if (commandData.length == 0) return;
-			
-			DocumentImpl doc = collection.getDocument(broker, XmldbURI.create(commandData[0]) );
-			
-			if (doc == null) {
-				err().println("Resource '"+commandData[0]+"' not found.");
-				return;
-			}
-			
-			out().println("Locked by "+doc.getUserLock());
-			out().println("Lock token: "+doc.getMetadata().getLockToken());
-			
-			out().println("Update lock: ");
-			doc.getUpdateLock().debug(out());
+			try(final DBBroker broker = db.getBroker()) {
 
+				Collection collection = broker.getCollection(collectionURI);
+
+				out().println("Collection lock:");
+				collection.getLock().debug(out());
+
+				if (commandData.length == 0) return;
+
+				DocumentImpl doc = collection.getDocument(broker, XmldbURI.create(commandData[0]));
+
+				if (doc == null) {
+					err().println("Resource '" + commandData[0] + "' not found.");
+					return;
+				}
+
+				out().println("Locked by " + doc.getUserLock());
+				out().println("Lock token: " + doc.getMetadata().getLockToken());
+
+				out().println("Update lock: ");
+				doc.getUpdateLock().debug(out());
+			}
 		} catch (Exception e) {
 			throw new CommandException(e);
-		} finally {
-			if (db != null)
-				db.release(broker);
 		}
 	}
 

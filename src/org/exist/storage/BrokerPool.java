@@ -889,8 +889,7 @@ public class BrokerPool implements Database {
                         // at this stage, the database is still single-threaded, so reusing the broker later is not a problem.
                         //DBBroker broker = inactiveBrokers.peek();
                         // dmitriy: Security issue: better to use proper get()/release() way, because of sub-processes (SecurityManager as example)
-                        final DBBroker broker = get(securityManager.getSystemSubject());
-                        try {
+                        try(final DBBroker broker = get(Optional.of(securityManager.getSystemSubject()))) {
 
                             if(isReadOnly()) {
                                 transactionManager.setEnabled(false);
@@ -1007,8 +1006,6 @@ public class BrokerPool implements Database {
                             instances.put(instanceName, this);
 
                             callStartupTriggers((List<StartupTriggerConfig>) conf.getProperty(BrokerPool.PROPERTY_STARTUP_TRIGGERS), broker);
-                        } finally {
-                            release(broker);
                         }
 
                         //Create a default configuration file for the root collection
@@ -1473,46 +1470,6 @@ public class BrokerPool implements Database {
         return broker;
     }
 
-    //Seems dangerous and redundant as you myst acquire a broker yourself first, just use broker.setUser()
-    public boolean setSubject(final Subject subject) {
-        //synchronized(this) {
-        //Try to get an active broker
-        final DBBroker broker = activeBrokers.get(Thread.currentThread());
-        if(broker != null) {
-            broker.setSubject(subject);
-            return true;
-        }
-        //}
-
-        return false;
-    }
-
-    /*
-     * Seems dangerous and redundant as you must acquire a broker yourself first, just use broker.getUser()
-     * 
-     * yes, you have to authenticate before any action
-     * try {
-     * 	broker = db.authenticate(...);
-     * 
-     * 	...actions...
-     * 
-     *  broker = db.getBroker();
-     * } finally {
-     *  db.release();
-     * }
-     */
-    public Subject getSubject() {
-        //synchronized(this) {
-        //Try to get an active broker
-        final DBBroker broker = activeBrokers.get(Thread.currentThread());
-        if(broker != null) {
-            return broker.getSubject();
-        }
-        //}
-
-        return securityManager.getGuestSubject();
-    }
-
     /**
      * Get active broker for current thread
      *
@@ -1548,24 +1505,35 @@ public class BrokerPool implements Database {
         final Subject subject = getSecurityManager().authenticate(username, credentials);
 
         try {
-            return get(subject);
+            return get(Optional.ofNullable(subject));
         } catch(final Exception e) {
             throw new AuthenticationException(AuthenticationException.UNNOWN_EXCEPTION, e);
         }
     }
 
+    /**
+     * Returns an active broker for the database instance.
+     *
+     * The current user will be inherited by this broker
+     *
+     * @return The broker
+     */
     public DBBroker getBroker() throws EXistException {
-        return get(null);
+        return get(Optional.empty());
     }
 
     /**
      * Returns an active broker for the database instance.
      *
+     * @param subject Optionally a subject to set on the broker, if a user is not provided then the
+     *                current user assigned to the broker will be re-used
      * @return The broker
      * @throws EXistException If the instance is not available (stopped or not configured)
      */
     //TODO : rename as getBroker ? getInstance (when refactored) ?
-    public DBBroker get(final Subject user) throws EXistException {
+    public DBBroker get(final Optional<Subject> subject) throws EXistException {
+        Objects.requireNonNull(subject, "Subject cannot be null, use BrokerPool#getBroker() instead");
+
         if(!isInstanceConfigured()) {
             throw new EXistException("database instance '" + instanceName + "' is not available");
         }
@@ -1581,9 +1549,8 @@ public class BrokerPool implements Database {
         if(broker != null) {
             //increase its number of uses
             broker.incReferenceCount();
-            if(user != null) {
-                broker.setSubject(user);
-            }
+            broker.pushSubject(subject.orElseGet(broker::getCurrentSubject));
+
             return broker;
             //TODO : share the code with what is below (including notifyAll) ?
             // WM: notifyAll is not necessary if we don't have to wait for a broker.
@@ -1591,7 +1558,7 @@ public class BrokerPool implements Database {
 
         //No active broker : get one ASAP
 
-        while(serviceModeUser != null && user != null && !user.equals(serviceModeUser)) {
+        while(serviceModeUser != null && subject.isPresent() && !subject.equals(Optional.ofNullable(serviceModeUser))) {
             try {
                 LOG.debug("Db instance is in service mode. Waiting for db to become available again ...");
                 wait();
@@ -1631,11 +1598,9 @@ public class BrokerPool implements Database {
             }
 
             broker.incReferenceCount();
-            if(user != null) {
-                broker.setSubject(user);
-            } else {
-                broker.setSubject(securityManager.getGuestSubject());
-            }
+
+            broker.pushSubject(subject.orElseGet(securityManager::getGuestSubject));
+
             //Inform the other threads that we have a new-comer
             // TODO: do they really need to be informed here???????
             this.notifyAll();
@@ -1672,10 +1637,13 @@ public class BrokerPool implements Database {
      * If there are pending system maintenance tasks,
      * the method will block until these tasks have finished.
      *
+     * NOTE - this is intentionally package-private, it is only meant to be
+     * called internally and from {@link DBBroker#close()}
+     *
      * @param broker The broker to be released
      */
     //TODO : rename as releaseBroker ? releaseInstance (when refactored) ?
-    public void release(final DBBroker broker) {
+    void release(final DBBroker broker) {
 
         // might be null as release() is often called within a finally block
         if(broker == null) {
@@ -1685,6 +1653,7 @@ public class BrokerPool implements Database {
         //first check that the broker is active ! If not, return immediately.
         broker.decReferenceCount();
         if(broker.getReferenceCount() > 0) {
+            broker.popSubject();
             //it is still in use and thus can't be marked as inactive
             return;
         }
@@ -1715,8 +1684,16 @@ public class BrokerPool implements Database {
                 }
             }
             
-            final Subject lastUser = broker.getSubject();
-            broker.setSubject(securityManager.getGuestSubject());
+            Subject lastUser = broker.popSubject();
+
+            //guard to ensure that the broker has popped all its subjects
+            if(lastUser == null || broker.getCurrentSubject() != null) {
+                LOG.warn("Broker was returned with extraneous Subjects, cleaning...", new IllegalStateException("DBBroker pushSubject/popSubject mismatch").fillInStackTrace());
+                while(broker.getCurrentSubject() != null) {
+                    lastUser = broker.popSubject();
+                }
+            }
+
             inactiveBrokers.push(broker);
             if(watchdog != null) {
                 watchdog.remove(broker);
@@ -1806,37 +1783,38 @@ public class BrokerPool implements Database {
     //TODO : make it protected ?
     public void sync(final DBBroker broker, final int syncEvent) {
         broker.sync(syncEvent);
-        final Subject user = broker.getSubject();
+
         //TODO : strange that it is set *after* the sunc method has been called.
-        broker.setSubject(securityManager.getSystemSubject());
-        if(syncEvent == Sync.MAJOR_SYNC) {
-            LOG.debug("Major sync");
-            try {
-                if(!FORCE_CORRUPTION) {
-                    transactionManager.checkpoint(checkpoint);
+        try {
+            broker.pushSubject(securityManager.getSystemSubject());
+
+            if (syncEvent == Sync.MAJOR_SYNC) {
+                LOG.debug("Major sync");
+                try {
+                    if (!FORCE_CORRUPTION) {
+                        transactionManager.checkpoint(checkpoint);
+                    }
+                } catch (final TransactionException e) {
+                    LOG.warn(e.getMessage(), e);
                 }
-            } catch(final TransactionException e) {
-                LOG.warn(e.getMessage(), e);
-            }
-            cacheManager.checkCaches();
+                cacheManager.checkCaches();
 
-            if(pluginManager != null) {
-                pluginManager.sync(broker);
-            }
+                if (pluginManager != null) {
+                    pluginManager.sync(broker);
+                }
 
-            lastMajorSync = System.currentTimeMillis();
-            if(LOG.isDebugEnabled()) {
-                notificationService.debug();
-            }
-        } else {
-            cacheManager.checkDistribution();
+                lastMajorSync = System.currentTimeMillis();
+                if (LOG.isDebugEnabled()) {
+                    notificationService.debug();
+                }
+            } else {
+                cacheManager.checkDistribution();
 //            LOG.debug("Minor sync");
+            }
+            //TODO : touch this.syncEvent and syncRequired ?
+        } finally {
+            broker.popSubject();
         }
-        //TODO : touch this.syncEvent and syncRequired ?
-
-        //After setting the SYSTEM_USER above we must change back to the DEFAULT User to prevent a security problem
-        //broker.setUser(User.DEFAULT);
-        broker.setSubject(user);
     }
 
     /**
@@ -2021,7 +1999,7 @@ public class BrokerPool implements Database {
                 //TOUNDERSTAND (pb) : shutdown() is called on only *one* broker ?
                 // WM: yes, the database files are shared, so only one broker is needed to close them for all
                 if(broker != null) {
-                    broker.setSubject(securityManager.getSystemSubject());
+                    broker.pushSubject(securityManager.getSystemSubject());
                     broker.shutdown();
                 }
                 collectionCacheMgr.deregisterCache(collectionCache);

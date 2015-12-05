@@ -118,79 +118,76 @@ public class DebuggeeImpl implements Debuggee {
 	@Override
 	public String start(String uri) throws Exception {
 		Database db = null;
-		DBBroker broker = null;
 		ScriptRunner runner = null;
 		
 		try {
 			db = BrokerPool.getInstance();
 			
-			broker = db.get(null);
-			
-	        // Try to find the XQuery
-	        Source source = SourceFactory.getSource(broker, "", uri, true);
-	
-	        if (source == null) return null;
-	
-	        XQuery xquery = broker.getBrokerPool().getXQueryService();
-			
-	        XQueryContext queryContext = new XQueryContext(broker.getBrokerPool(), AccessContext.REST);
-	
-			// Find correct script load path
-			queryContext.setModuleLoadPath(XmldbURI.create(uri).removeLastSegment().toString());
-	
-			CompiledXQuery compiled;
-			try {
-				compiled = xquery.compile(broker, queryContext, source);
-			} catch (IOException e) {
-				e.printStackTrace();
-				return null;
-			}
-	        
-			String sessionId = String.valueOf(queryContext.hashCode());
-			
-			//link debugger session & script
-			DebuggeeJointImpl joint = new DebuggeeJointImpl();
-			SessionImpl session = new SessionImpl();
+			try(final DBBroker broker = db.getBroker()) {
 
-			joint.setCompiledScript(compiled);
-			queryContext.setDebuggeeJoint(joint);
-			joint.continuation(new Init(session, sessionId, "eXist"));
+				// Try to find the XQuery
+				Source source = SourceFactory.getSource(broker, "", uri, true);
 
-			runner = new ScriptRunner(session, compiled);
-			runner.start();
-			
-			int count = 0;
-			while (joint.firstExpression == null && runner.exception == null && count < 10) {
+				if (source == null) return null;
+
+				XQuery xquery = broker.getBrokerPool().getXQueryService();
+
+				XQueryContext queryContext = new XQueryContext(broker.getBrokerPool(), AccessContext.REST);
+
+				// Find correct script load path
+				queryContext.setModuleLoadPath(XmldbURI.create(uri).removeLastSegment().toString());
+
+				CompiledXQuery compiled;
 				try {
-					Thread.sleep(100);
-				} catch (InterruptedException e) {
+					compiled = xquery.compile(broker, queryContext, source);
+				} catch (IOException e) {
+					e.printStackTrace();
+					return null;
 				}
-				count++;
-			}
-			
-			if (runner.exception != null) {
-				throw runner.exception;
-			}
-			
-			if (joint.firstExpression == null) {
-				throw new XPathException("Can't run debug session.");
-			}
 
-			//queryContext.declareVariable(Debuggee.SESSION, sessionId);
-			
-			//XXX: make sure that it started up
-			sessions.put(sessionId, session);
-			
-			return sessionId;
+				String sessionId = String.valueOf(queryContext.hashCode());
+
+				//link debugger session & script
+				DebuggeeJointImpl joint = new DebuggeeJointImpl();
+				SessionImpl session = new SessionImpl();
+
+				joint.setCompiledScript(compiled);
+				queryContext.setDebuggeeJoint(joint);
+				joint.continuation(new Init(session, sessionId, "eXist"));
+
+				runner = new ScriptRunner(session, compiled);
+				runner.start();
+
+				int count = 0;
+				while (joint.firstExpression == null && runner.exception == null && count < 10) {
+					try {
+						Thread.sleep(100);
+					} catch (InterruptedException e) {
+					}
+					count++;
+				}
+
+				if (runner.exception != null) {
+					throw runner.exception;
+				}
+
+				if (joint.firstExpression == null) {
+					throw new XPathException("Can't run debug session.");
+				}
+
+				//queryContext.declareVariable(Debuggee.SESSION, sessionId);
+
+				//XXX: make sure that it started up
+				sessions.put(sessionId, session);
+
+				return sessionId;
+			}
 
 		} catch (Exception e) {
 			if (runner != null)
 				runner.stop();
 			
 			throw e;
-		} finally {
-			if (db != null)
-				db.release(broker);
 		}
 	}
 

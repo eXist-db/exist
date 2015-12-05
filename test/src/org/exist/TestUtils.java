@@ -18,6 +18,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.Iterator;
+import java.util.Optional;
 
 /**
  * Created by IntelliJ IDEA.
@@ -33,7 +34,7 @@ public class TestUtils {
         try {
             BrokerPool pool = BrokerPool.getInstance();
             assertNotNull(pool);
-            try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                 final Txn transaction = pool.getTransactionManager().beginTransaction()) {
 
                 // Remove all collections below the /db root, except /db/system

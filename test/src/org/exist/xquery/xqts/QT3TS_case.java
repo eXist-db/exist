@@ -76,12 +76,8 @@ public class QT3TS_case extends TestCase {
     }
 
     private Sequence enviroment(String file) throws Exception {
-        DBBroker broker = null;
-        XQuery xquery = null;
-
-        try {
-            broker = db.get(db.getSecurityManager().getSystemSubject());
-            xquery = broker.getBrokerPool().getXQueryService();
+        try(final DBBroker broker = db.get(Optional.of(db.getSecurityManager().getSystemSubject()))) {
+            final XQuery xquery = broker.getBrokerPool().getXQueryService();
 
             broker.getConfiguration().setProperty(XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, true);
 
@@ -89,17 +85,13 @@ public class QT3TS_case extends TestCase {
 
             return xquery.execute(broker, query, null, AccessContext.TEST);
 
-        } finally {
-            db.release(broker);
         }
     }
 
     private HashMap<String, Sequence> enviroments(String file) {
         HashMap<String, Sequence> enviroments = new HashMap<String, Sequence>();
 
-        DBBroker broker = null;
-        try {
-            broker = db.get(db.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = db.get(Optional.of(db.getSecurityManager().getSystemSubject()))) {
             XQuery xquery = broker.getBrokerPool().getXQueryService();
 
             broker.getConfiguration().setProperty(XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, true);
@@ -137,8 +129,6 @@ public class QT3TS_case extends TestCase {
             }
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            db.release(broker);
         }
         return enviroments;
     }
@@ -146,9 +136,7 @@ public class QT3TS_case extends TestCase {
     private String getEnviroment(String file, String name) {
         String enviroment = null;
 
-        DBBroker broker = null;
-        try {
-            broker = db.get(db.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = db.get(Optional.of(db.getSecurityManager().getSystemSubject()))) {
             XQuery xquery = broker.getBrokerPool().getXQueryService();
 
             broker.getConfiguration().setProperty(XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, true);
@@ -188,8 +176,6 @@ public class QT3TS_case extends TestCase {
             }
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            db.release(broker);
         }
         return enviroment;
     }
@@ -197,14 +183,12 @@ public class QT3TS_case extends TestCase {
     protected void testCase(String file, String tcName) {
         System.out.println("test " + tcName);
 
-        DBBroker broker = null;
         Sequence result = null;
         XQuery xquery = null;
 
         // try {
         Set<String> extectedError = new HashSet<String>();
-        try {
-            broker = db.get(db.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = db.get(Optional.of(db.getSecurityManager().getSystemSubject()))) {
             xquery = broker.getBrokerPool().getXQueryService();
 
             final XQueryContext context = new XQueryContext(db, AccessContext.TEST);
@@ -347,8 +331,6 @@ public class QT3TS_case extends TestCase {
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());
-        } finally {
-            db.release(broker);
         }
         // } catch (XMLDBException e) {
         // Assert.fail(e.toString());

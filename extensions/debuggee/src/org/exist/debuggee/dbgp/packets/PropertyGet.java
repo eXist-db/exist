@@ -132,12 +132,10 @@ public class PropertyGet extends Command {
 
 	protected static StringBuilder getPropertyString(Variable variable, XQueryContext context) {
         Sequence value = variable.getValue();
-        
-        DBBroker broker = null;
 
         Database db = context.getDatabase();
-        try {
-        	broker = db.getBroker();
+        try(final DBBroker broker = db.getBroker()) {
+
 	        Serializer serializer = broker.getSerializer();
 	        serializer.reset();
 	
@@ -192,9 +190,7 @@ public class PropertyGet extends Command {
 	        }
         } catch (EXistException e) {
 			e.printStackTrace();
-		} finally {
-        	db.release(broker);
-        }
+		}
         return null;
     }
 	

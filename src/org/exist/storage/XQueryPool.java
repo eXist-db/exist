@@ -207,7 +207,7 @@ public class XQueryPool extends Object2ObjectHashMap {
 			return null;
 		
 		//check execution permission
-		source.validate(broker.getSubject(), Permission.EXECUTE);
+		source.validate(broker.getCurrentSubject(), Permission.EXECUTE);
 		
 		// now check if the compiled expression is valid
 		// it might become invalid if an imported module has changed.

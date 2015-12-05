@@ -456,7 +456,7 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
     }
 
     protected Subject getCurrentSubject() {
-        return sm.getDatabase().getSubject();
+        return sm.getDatabase().getActiveBroker().getCurrentSubject();
     }
 
     @Override

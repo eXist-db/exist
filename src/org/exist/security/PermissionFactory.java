@@ -22,6 +22,7 @@
 package org.exist.security;
 
 import java.io.IOException;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.collections.Collection;
@@ -32,6 +33,7 @@ import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.util.function.ConsumerE;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 
@@ -44,17 +46,15 @@ public class PermissionFactory {
 
     private final static Logger LOG = LogManager.getLogger(PermissionFactory.class);
 
-    public static SecurityManager sm = null;        //TODO The way this gets set is nasty AR
-
     /**
      * Get the Default Resource permissions for the current Subject
      * this includes incorporating their umask
      */
-    public static Permission getDefaultResourcePermission() {
+    public static Permission getDefaultResourcePermission(final SecurityManager sm) {
         
         //TODO consider loading Permission.DEFAULT_PERM from conf.xml instead
-       
-        final Subject currentSubject = sm.getDatabase().getSubject();
+
+        final Subject currentSubject = sm.getDatabase().getActiveBroker().getCurrentSubject();
         final int mode = Permission.DEFAULT_RESOURCE_PERM & ~ currentSubject.getUserMask();
         
         return new SimpleACLPermission(sm, currentSubject.getId(), currentSubject.getDefaultGroup().getId(), mode);
@@ -64,11 +64,11 @@ public class PermissionFactory {
      * Get the Default Collection permissions for the current Subject
      * this includes incorporating their umask
      */
-    public static Permission getDefaultCollectionPermission() {
+    public static Permission getDefaultCollectionPermission(final SecurityManager sm) {
         
         //TODO consider loading Permission.DEFAULT_PERM from conf.xml instead
         
-        final Subject currentSubject = sm.getDatabase().getSubject();
+        final Subject currentSubject = sm.getDatabase().getActiveBroker().getCurrentSubject();
         final int mode = Permission.DEFAULT_COLLECTION_PERM & ~ currentSubject.getUserMask();
         
         return new SimpleACLPermission(sm, currentSubject.getId(), currentSubject.getDefaultGroup().getId(), mode);
@@ -77,19 +77,19 @@ public class PermissionFactory {
     /**
      * Get permissions for the current Subject
      */
-    public static Permission getPermission(int mode) {
-        final Subject currentSubject = sm.getDatabase().getSubject();
+    public static Permission getPermission(final SecurityManager sm, final int mode) {
+        final Subject currentSubject = sm.getDatabase().getActiveBroker().getCurrentSubject();
         return new SimpleACLPermission(sm, currentSubject.getId(), currentSubject.getDefaultGroup().getId(), mode);
     }
     
     /**
      * Get permissions for the user, group and mode
      */
-    public static Permission getPermission(int userId, int groupId, int mode) {
+    public static Permission getPermission(final SecurityManager sm, final int userId, final int groupId, final int mode) {
         return new SimpleACLPermission(sm, userId, groupId, mode);
     }
 
-    public static Permission getPermission(String userName, String groupName, int mode) {
+    public static Permission getPermission(final SecurityManager sm, final String userName, final String groupName, final int mode) {
         Permission permission = null;
         try {
             final Account owner = sm.getAccount(userName);
@@ -99,7 +99,7 @@ public class PermissionFactory {
 
             final Group group = sm.getGroup(groupName);
             if(group == null) {
-        	throw new IllegalArgumentException("Group was not found '" + (userName == null ? "" : groupName) + "'");
+        	    throw new IllegalArgumentException("Group was not found '" + (userName == null ? "" : groupName) + "'");
             }
 
             permission = new SimpleACLPermission(sm, owner.getId(), group.getId(), mode);
@@ -109,11 +109,7 @@ public class PermissionFactory {
         return permission;
     }
 
-    public interface PermissionModifier {
-        public void modify(Permission permission) throws PermissionDeniedException;
-    }
-
-    public static void updatePermissions(DBBroker broker, XmldbURI pathUri, PermissionModifier permissionModifier) throws PermissionDeniedException {
+    public static void updatePermissions(final DBBroker broker, final XmldbURI pathUri, final ConsumerE<Permission, PermissionDeniedException> permissionModifier) throws PermissionDeniedException {
         DocumentImpl doc = null;
         final TransactionManager transact = broker.getBrokerPool().getTransactionManager();
         try(final Txn transaction = transact.beginTransaction()) {
@@ -126,7 +122,7 @@ public class PermissionFactory {
                 }
 
                 final Permission permissions = doc.getPermissions();
-                permissionModifier.modify(permissions);
+                permissionModifier.accept(permissions);
 
                 broker.storeXMLResource(transaction, doc);
                 transact.commit(transaction);
@@ -136,14 +132,14 @@ public class PermissionFactory {
                 transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);
 
                 final Permission permissions = collection.getPermissionsNoLock();
-                permissionModifier.modify(permissions);
+                permissionModifier.accept(permissions);
 
                 broker.saveCollection(transaction, collection);
                 transact.commit(transaction);
                 broker.flush();
             }
         } catch(final XPathException | PermissionDeniedException | IOException | TriggerException | TransactionException e) {
-            throw new PermissionDeniedException("Permission to modify permissions is denied for user '" + broker.getSubject().getName() + "' on '" + pathUri.toString() + "': " + e.getMessage(), e);
+            throw new PermissionDeniedException("Permission to modify permissions is denied for user '" + broker.getCurrentSubject().getName() + "' on '" + pathUri.toString() + "': " + e.getMessage(), e);
         } finally {
             if(doc != null) {
                 doc.getUpdateLock().release(Lock.WRITE_LOCK);

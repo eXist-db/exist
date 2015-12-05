@@ -103,7 +103,7 @@ public class XMLDBCreateGroup extends BasicFunction {
 		Group group = new GroupAider(groupName);
 
 		final DBBroker broker = context.getBroker();
-		final Subject currentUser = broker.getSubject();
+		final Subject currentUser = broker.getCurrentSubject();
 
 		try {
 
@@ -136,10 +136,9 @@ public class XMLDBCreateGroup extends BasicFunction {
             //they do not show up as group members automatically - this is a design problem because group
             //membership is managed on the user and not the group, this needs to be fixed!
             //see XMLDBAddUserToGroup and XMLDBRemoveUserFromGroup also
-            final Subject currentSubject = context.getBroker().getSubject();
             try {
                 //escalate
-                context.getBroker().setSubject(sm.getSystemSubject());
+                context.getBroker().pushSubject(sm.getSystemSubject());
 
                 //perform action
                 for(final Account manager : group.getManagers()) {
@@ -147,7 +146,7 @@ public class XMLDBCreateGroup extends BasicFunction {
                     sm.updateAccount(manager);
                 }
             } finally {
-                context.getBroker().setSubject(currentSubject);
+                context.getBroker().popSubject();
             }
             //END TEMP
 

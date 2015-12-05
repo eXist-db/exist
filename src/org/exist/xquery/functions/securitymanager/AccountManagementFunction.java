@@ -133,7 +133,7 @@ public class AccountManagementFunction extends BasicFunction {
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
 
         final DBBroker broker = getContext().getBroker();
-        final Subject currentUser = broker.getSubject();
+        final Subject currentUser = broker.getCurrentSubject();
         final SecurityManager securityManager = broker.getBrokerPool().getSecurityManager();
 
         final String username = args[0].getStringValue();

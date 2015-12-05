@@ -1,26 +1,30 @@
-/* eXist Native XML Database
- * Copyright (C) 2000-03,  Wolfgang M. Meier (wolfgang@exist-db.org)
+/*
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2000-2015 The eXist-db Project
+ * http://exist-db.org
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Library General Public License
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
  *
- * This library is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Library General Public License for more details.
+ * GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- * 
- * $Id$
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
  */
+
 package org.exist.util.serializer;
 
 import java.io.Writer;
 import java.util.Properties;
+import java.util.Stack;
+
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerException;
 import org.exist.dom.QName;
@@ -34,6 +38,8 @@ public class IndentingXMLWriter extends XMLWriter {
     private int level = 0;
     private boolean afterTag = false;
     private boolean sameline = false;
+    private boolean whitespacePreserve;
+    private Stack<Integer> whitespacePreserveStack = new Stack<Integer>();
 
     public IndentingXMLWriter() {
         super();
@@ -55,6 +61,7 @@ public class IndentingXMLWriter extends XMLWriter {
         level = 0;
         afterTag = false;
         sameline = false;
+        whitespacePreserveStack.clear();
     }
 
     /* (non-Javadoc)
@@ -92,6 +99,7 @@ public class IndentingXMLWriter extends XMLWriter {
     public void endElement(final String namespaceURI, final String localName, final String qname) throws TransformerException {
         endIndent(namespaceURI, localName);
         super.endElement(namespaceURI, localName, qname);
+        popWhitespacePreserve(); // apply ancestor's xml:space value _after_ end element
         sameline = false;
         afterTag = true;
     }
@@ -103,6 +111,7 @@ public class IndentingXMLWriter extends XMLWriter {
     public void endElement(final QName qname) throws TransformerException {
         endIndent(qname.getNamespaceURI(), qname.getLocalPart());
         super.endElement(qname);
+        popWhitespacePreserve(); // apply ancestor's xml:space value _after_ end element
         sameline = false;
         afterTag = true;
     }
@@ -176,12 +185,58 @@ public class IndentingXMLWriter extends XMLWriter {
         indent = "yes".equals(outputProperties.getProperty(OutputKeys.INDENT, "no"));
     }
 
+
+    /* (non-Javadoc)
+     * @see org.exist.util.serializer.XMLWriter#setOutputProperties(java.util.Properties)
+     */
+    @Override
+	public void attribute(String qname, String value)
+			throws TransformerException {
+        if ("xml:space".equals(qname)) {
+            pushWhitespacePreserve(value);
+        }
+	super.attribute(qname, value);
+    }
+
+    /* (non-Javadoc)
+     * @see org.exist.util.serializer.XMLWriter#setOutputProperties(java.util.Properties)
+     */
+    @Override
+    public void attribute(QName qname, String value)
+	throws TransformerException {
+	if ("xml".equals(qname.getPrefix()) && "space".equals(qname.getLocalPart())) {
+	    pushWhitespacePreserve(value);
+	}
+	super.attribute(qname, value);
+    }
+
+    protected void pushWhitespacePreserve(String value) {
+	if (value.equals("preserve")) {
+	    whitespacePreserve = true;
+	    whitespacePreserveStack.push(-level);
+	} else if (value.equals("default")) {
+	    whitespacePreserve = false;
+	    whitespacePreserveStack.push(level);
+	}
+    }
+
+    protected void popWhitespacePreserve(){
+	if (!whitespacePreserveStack.isEmpty() && Math.abs(whitespacePreserveStack.peek()) > level) {
+	    whitespacePreserveStack.pop();
+	    if (whitespacePreserveStack.isEmpty() || whitespacePreserveStack.peek() >= 0) {
+		whitespacePreserve = false;
+	    } else {
+		whitespacePreserve = true;
+	    }
+        }
+    }
+
     protected boolean isInlineTag(final String namespaceURI, final String localName) {
     	return false;
     }
     
     protected void indent() throws TransformerException {
-        if(!indent) {
+        if(!indent || whitespacePreserve) {
             return;
         }
         final int spaces = indentAmount * level;

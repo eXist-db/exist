@@ -92,7 +92,7 @@ public class DateRangeFunctions extends BasicFunction {
     @Override
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
     {
-        Item item = (Item)args[0].itemAt(0);
+        Item item = args[0].itemAt(0);
 
         if(!(item instanceof AbstractDateTimeValue))
           throw new XPathException("Function requires one of xs:dateTime, xs:date, or xs:time as first parameter.");

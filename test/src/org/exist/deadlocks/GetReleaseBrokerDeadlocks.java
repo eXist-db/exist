@@ -24,6 +24,7 @@ package org.exist.deadlocks;
 import static org.junit.Assert.*;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
 
 import org.exist.Database;
@@ -54,16 +55,10 @@ public class GetReleaseBrokerDeadlocks {
 	        Database db = BrokerPool.getInstance();
 	        
 	        Thread thread = new Thread(new EnterServiceMode());
-	        
-	        DBBroker broker = null;
-	        try {
-	        	broker = db.get(null);
-	        	
+
+	        try(final DBBroker broker = db.getBroker()) {
 	        	thread.start();
 		        Thread.sleep(1000);
-	        	
-	        } finally {
-	        	db.release(broker);
 	        }
 	        
 	        Thread.sleep(1000);
@@ -168,27 +163,19 @@ public class GetReleaseBrokerDeadlocks {
 		public void run() {
 	        try {
 	        	BrokerPool db = BrokerPool.getInstance();
-				
-	        	Subject subject = db.getSecurityManager().getSystemSubject();
-	        	
-	        	DBBroker broker = null;
-				try {
-					broker = db.get(subject);
+
+				try(final DBBroker broker = db.get(Optional.of(db.getSecurityManager().getSystemSubject()))) {
+
 					
 					//do something
 					Thread.sleep(rd.nextInt(5000));
 					
-					try {
-						assertEquals(broker, db.get(null));
+					try(final DBBroker currentBroker = db.getBroker()) {
+						assertEquals(broker, currentBroker);
 	
 						//do something
 						Thread.sleep(rd.nextInt(5000));
-					} finally {
-						db.release(broker);
 					}
-
-				} finally {
-					db.release(broker);
 				}
 				
 			} catch (Throwable e) {

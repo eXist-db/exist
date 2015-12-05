@@ -21,11 +21,7 @@
  */
 package org.exist.management.impl;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 import javax.management.AttributeChangeNotification;
 import javax.management.MBeanNotificationInfo;
@@ -191,12 +187,10 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
     	lastActionInfo = "Ping";
     	
     	taskstatus.setStatus(TaskStatus.Status.PING_WAIT);
-    	
-    	DBBroker broker = null;
-    	try {
-    		// try to acquire a broker. If the db is deadlocked or not responsive,
-    		// this will block forever.
-    		broker = pool.get(pool.getSecurityManager().getGuestSubject());
+
+        // try to acquire a broker. If the db is deadlocked or not responsive,
+        // this will block forever.
+    	try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getGuestSubject()))) {
     		
     		if (checkQueryEngine) {
     			final XQuery xquery = pool.getXQueryService();
@@ -220,8 +214,6 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
             changeStatus(taskstatus);
 
 		} finally {
-    		pool.release(broker);
-    		
     		lastPingRespTime = System.currentTimeMillis() - start;
     		taskstatus.setStatus(TaskStatus.Status.PING_OK);
 			taskstatus.setStatusChangeTime();

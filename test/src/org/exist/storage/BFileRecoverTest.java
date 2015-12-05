@@ -24,6 +24,7 @@ package org.exist.storage;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.Optional;
 
 import org.exist.EXistException;
 import org.exist.storage.btree.BTreeException;
@@ -52,7 +53,7 @@ public class BFileRecoverTest {
     @Test
     public void add() throws EXistException, IOException, BTreeException {
         TransactionManager mgr = pool.getTransactionManager();
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             broker.flush();
             broker.sync(Sync.MAJOR_SYNC);
 
@@ -84,7 +85,7 @@ public class BFileRecoverTest {
     @Test
     public void read() throws EXistException, IOException, BTreeException {
         BrokerPool.FORCE_CORRUPTION = false;
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             BFile collectionsDb = (BFile)((NativeBroker)broker).getStorage(NativeBroker.COLLECTIONS_DBX_ID);
             Writer writer = new StringWriter();
             collectionsDb.dump(writer);

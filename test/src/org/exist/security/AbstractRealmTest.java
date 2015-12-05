@@ -46,7 +46,7 @@ public class AbstractRealmTest {
 
         //expectations
         expect(mockRealm.getDatabase()).andReturn(mockDatabase);
-        expect(mockDatabase.getSubject()).andReturn(mockSubject);
+        expect(mockDatabase.getCurrentSubject()).andReturn(mockSubject);
         mockAccount.assertCanModifyAccount(mockSubject);
         expect(mockAccount.getName()).andReturn(accountName);
         expect(mockRealm.getAccount(null, accountName)).andReturn(mockUpdatingAccount);
@@ -66,6 +66,7 @@ public class AbstractRealmTest {
         SecurityManager mockSecurityManager = EasyMock.createMock(SecurityManager.class);
         Configuration mockConfiguration = EasyMock.createMock(Configuration.class);
         Database mockDatabase = EasyMock.createMock(Database.class);
+        DBBroker mockBroker = EasyMock.createMock(DBBroker.class);
         Subject mockSubject = EasyMock.createMock(Subject.class);
 
         Group mockGroup = EasyMock.createMockBuilder(AbstractGroup.class)
@@ -88,7 +89,8 @@ public class AbstractRealmTest {
 
         //expectations
         expect(mockRealm.getDatabase()).andReturn(mockDatabase);
-        expect(mockDatabase.getSubject()).andReturn(mockSubject);
+        expect(mockDatabase.getActiveBroker()).andReturn(mockBroker);
+        expect(mockBroker.getCurrentSubject()).andReturn(mockSubject);
         mockGroup.assertCanModifyGroup(mockSubject);
         expect(mockGroup.getName()).andReturn(groupName);
         expect(mockRealm.getGroup(groupName)).andReturn(mockUpdatingGroup);
@@ -97,10 +99,10 @@ public class AbstractRealmTest {
         expect(mockGroup.getMetadataKeys()).andReturn(Collections.emptySet());
         mockGroup.save();
 
-        replay(mockRealm, mockDatabase, mockGroup, mockSubject, mockUpdatingGroup);
+        replay(mockRealm, mockDatabase, mockBroker, mockGroup, mockSubject, mockUpdatingGroup);
 
         mockRealm.updateGroup(mockGroup);
 
-        verify(mockRealm, mockDatabase, mockGroup, mockSubject, mockUpdatingGroup);
+        verify(mockRealm, mockDatabase, mockBroker, mockGroup, mockSubject, mockUpdatingGroup);
     }
 }

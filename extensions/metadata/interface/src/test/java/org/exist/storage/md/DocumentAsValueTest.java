@@ -23,6 +23,7 @@ import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Optional;
 import java.util.Properties;
 
 import javax.xml.transform.OutputKeys;
@@ -92,11 +93,8 @@ public class DocumentAsValueTest {
     	
     	Metas docMD = MetaData.get().getMetas(doc1uri);
     	assertNotNull(docMD);
-    	
-        DBBroker broker = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);
+
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             
 	    	//add first key-value
 	    	docMD.put(KEY1, doc2);
@@ -105,9 +103,6 @@ public class DocumentAsValueTest {
 	    	assertNotNull(meta);
 	
 	    	assertEquals(serializer(broker, doc2), serializer(broker, (DocumentImpl)meta.getValue()));
-
-        } finally {
-        	pool.release(broker);
         }
     }
 
@@ -118,7 +113,7 @@ public class DocumentAsValueTest {
     }
     private String serializer(DBBroker broker, DocumentImpl document) throws SAXException {
 		Serializer serializer = broker.getSerializer();
-		serializer.setUser(broker.getSubject());
+		serializer.setUser(broker.getCurrentSubject());
 		serializer.setProperties(contentsOutputProps);
 		return serializer.serialize(document);
 	}
@@ -135,7 +130,7 @@ public class DocumentAsValueTest {
 
         final TransactionManager txnManager = pool.getTransactionManager();
 
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn txn = txnManager.beginTransaction()) {
 
             clean(broker, txn);
@@ -169,7 +164,7 @@ public class DocumentAsValueTest {
     //@AfterClass
     public static void cleanup() {
         final TransactionManager txnManager = pool.getTransactionManager();
-        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn txn = txnManager.beginTransaction()) {
 
             clean(broker, txn);

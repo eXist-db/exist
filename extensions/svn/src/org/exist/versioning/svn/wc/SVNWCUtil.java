@@ -16,8 +16,6 @@ import java.lang.reflect.Method;
 import java.util.logging.Level;
 
 import org.exist.EXistException;
-import org.exist.security.Subject;
-import org.exist.storage.BrokerPool;
 import org.exist.util.io.Resource;
 import org.exist.versioning.svn.internal.wc.DefaultSVNAuthenticationManager;
 import org.exist.versioning.svn.internal.wc.DefaultSVNOptions;
@@ -62,14 +60,6 @@ public class SVNWCUtil {
      *         run-time configuration area location
      */
     public static File getDefaultConfigurationDirectory() {
-    	try {
-			Subject subject = BrokerPool.getInstance().getSubject();
-			XmldbURI home = null;//subject.getHome();
-			if (home != null)
-				return new Resource(home.append(".subversion"));
-		} catch (EXistException e) {
-			//XXX: log?
-		}
         return new Resource("/system/etc/subversion");
     }
 

@@ -23,6 +23,7 @@ package org.exist.security.realm.activedirectory;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
@@ -143,25 +144,13 @@ public class ActiveDirectoryRealm extends LDAPRealm {
 		if (ldapUser) {
 			AbstractAccount account = (AbstractAccount) getAccount(username);
 			if (account == null) {
-				Subject currentSubject = getDatabase().getSubject();
-                DBBroker broker = null;
-				try {
-                    broker = getDatabase().get(null);
-
-                    //elevate to system privs
-					broker.setSubject(getSecurityManager().getSystemSubject());
-
-//                    account = getSecurityManager().addAccount(instantiateAccount(this, username));
+				try(final DBBroker broker = getDatabase().get(Optional.of(getSecurityManager().getSystemSubject()))) {
+					//perform as SYSTEM user
 					account = (AbstractAccount) getSecurityManager().addAccount(new UserAider(ID, username));
 				} catch (Exception e) {
 					throw new AuthenticationException(
 							AuthenticationException.UNNOWN_EXCEPTION,
 							e.getMessage(), e);
-				} finally {
-					if(broker != null) {
-						broker.setSubject(currentSubject);
-						getDatabase().release(broker);
-					}
 				}
 			}
 

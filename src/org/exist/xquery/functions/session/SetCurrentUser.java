@@ -45,73 +45,66 @@ import org.exist.xquery.value.Type;
  * @author Wolfgang Meier
  * @author Loren Cahlander
  */
-public class SetCurrentUser extends BasicFunction {
+public class SetCurrentUser extends UserSwitchingBasicFunction {
 
-	private static final Logger logger = LogManager.getLogger(SetCurrentUser.class);
-	
-	public final static FunctionSignature signature =
-		new FunctionSignature(
-			new QName("set-current-user", SessionModule.NAMESPACE_URI, SessionModule.PREFIX),
-			"Change the user identity for the current HTTP session. Subsequent XQueries in the session will run with the " +
-			"new user identity.",
-			new SequenceType[] {
-				new FunctionParameterSequenceType("user-name", Type.STRING, Cardinality.EXACTLY_ONE, "The user name"),
-				new FunctionParameterSequenceType("password", Type.STRING, Cardinality.EXACTLY_ONE, "The password")
-			},
-			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE, "true if the user name and password represent a valid user"));
-	
-	public SetCurrentUser(XQueryContext context) {
-		super(context, signature);
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
-	 */
-	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
-	{
-		
-		final RequestModule myModule = (RequestModule)context.getModule(RequestModule.NAMESPACE_URI);
-		
-		// request object is read from global variable $session
-		final Variable var = myModule.resolveVariable(RequestModule.REQUEST_VAR);
-		if(var == null || var.getValue() == null)
-			{throw new XPathException(this, ErrorCodes.XPDY0002, "No request object found in the current XQuery context.");}
-		if (var.getValue().getItemType() != Type.JAVA_OBJECT)
-			{throw new XPathException(this, ErrorCodes.XPDY0002, "Variable $request is not bound to an Java object.");}
-		final JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
-		
-		if(value.getObject() instanceof RequestWrapper)
-		{
-			final RequestWrapper request = (RequestWrapper)value.getObject();
-		
-			//get the username and password parameters
-			final String userName = args[0].getStringValue();
-			final String passwd = args[1].getStringValue();
-			
-			//try and validate the user and password
-			final SecurityManager security = context.getBroker().getBrokerPool().getSecurityManager();
-			Subject user;
-			try {
-				user = security.authenticate(userName, passwd);
-			} catch (final AuthenticationException e) {
-				logger.warn("Could not validate user " + userName + " ["+ e.getMessage() + "]");
-				return BooleanValue.FALSE;
-			}
-//			why it was empty if user wasn't found??? -shabanovd
-//			if (user == null)
-//				return Sequence.EMPTY_SEQUENCE;
+    private static final Logger logger = LogManager.getLogger(SetCurrentUser.class);
 
-			//validated user, store in session
-			context.getBroker().setUser(user);
-			final SessionWrapper session = request.getSession(true);
-			session.setAttribute("user", userName);
-			session.setAttribute("password", new StringValue(passwd));
-			return BooleanValue.TRUE;
-		}
-		else
-		{
-			throw new XPathException(this, ErrorCodes.XPDY0002, "Variable $request is not bound to a Request object.");
-		}
-	}
+    public final static FunctionSignature signature =
+            new FunctionSignature(
+                    new QName("set-current-user", SessionModule.NAMESPACE_URI, SessionModule.PREFIX),
+                    "Change the user identity for the current HTTP session. Subsequent XQueries in the session will run with the " +
+                            "new user identity.",
+                    new SequenceType[]{
+                            new FunctionParameterSequenceType("user-name", Type.STRING, Cardinality.EXACTLY_ONE, "The user name"),
+                            new FunctionParameterSequenceType("password", Type.STRING, Cardinality.EXACTLY_ONE, "The password")
+                    },
+                    new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE, "true if the user name and password represent a valid user"));
 
+    public SetCurrentUser(final XQueryContext context) {
+        super(context, signature);
+    }
+
+    @Override
+    public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
+        final RequestModule myModule = (RequestModule) context.getModule(RequestModule.NAMESPACE_URI);
+
+        // request object is read from global variable $session
+        final Variable var = myModule.resolveVariable(RequestModule.REQUEST_VAR);
+        if (var == null || var.getValue() == null) {
+            throw new XPathException(this, ErrorCodes.XPDY0002, "No request object found in the current XQuery context.");
+        }
+        if (var.getValue().getItemType() != Type.JAVA_OBJECT) {
+            throw new XPathException(this, ErrorCodes.XPDY0002, "Variable $request is not bound to an Java object.");
+        }
+        final JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
+
+        if (value.getObject() instanceof RequestWrapper) {
+            final RequestWrapper request = (RequestWrapper) value.getObject();
+
+            //get the username and password parameters
+            final String userName = args[0].getStringValue();
+            final String passwd = args[1].getStringValue();
+
+            //try and validate the user and password
+            final SecurityManager security = context.getBroker().getBrokerPool().getSecurityManager();
+            final Subject user;
+            try {
+                user = security.authenticate(userName, passwd);
+            } catch (final AuthenticationException e) {
+                logger.warn("Could not validate user " + userName + " [" + e.getMessage() + "]");
+                return BooleanValue.FALSE;
+            }
+
+            //switch the user of the current broker
+            switchUser(user);
+
+            //validated user, store in session
+            final SessionWrapper session = request.getSession(true);
+            session.setAttribute("user", userName);
+            session.setAttribute("password", new StringValue(passwd));
+            return BooleanValue.TRUE;
+        } else {
+            throw new XPathException(this, ErrorCodes.XPDY0002, "Variable $request is not bound to a Request object.");
+        }
+    }
 }

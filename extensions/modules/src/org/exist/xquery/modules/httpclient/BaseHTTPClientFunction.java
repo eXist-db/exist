@@ -482,8 +482,8 @@ public abstract class BaseHTTPClientFunction extends BasicFunction {
 
     protected FeaturesAndProperties getParserFeaturesAndProperties(final Node options) throws XPathException {
 
-        final Map<String, Boolean> features = new HashMap<String, Boolean>();
-        final Map<String, String> properties = new HashMap<String, String>();
+        final Map<String, Boolean> features = new HashMap<>();
+        final Map<String, String> properties = new HashMap<>();
 
         if ((options.getNodeType() == Node.ELEMENT_NODE) && options.getLocalName().equals("options")) {
             NodeList optionList = options.getChildNodes();
