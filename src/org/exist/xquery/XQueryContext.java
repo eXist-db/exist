@@ -327,7 +327,7 @@ public class XQueryContext implements BinaryValueManager, Context
      */
     private boolean pushedUserFromHttpSession = false;
 
-    public synchronized Optional<ExistRepository> getRepository()
+    public Optional<ExistRepository> getRepository()
     throws XPathException {
         return getBroker().getBrokerPool().getExpathRepo();
     }
@@ -3575,7 +3575,7 @@ public class XQueryContext implements BinaryValueManager, Context
 
         public void addListener( UpdateListener listener )
         {
-			synchronized( listeners ) { // TODO field must be final?
+			synchronized( listeners ) {
            		listeners.add( listener );
 			}
         }
@@ -3583,43 +3583,59 @@ public class XQueryContext implements BinaryValueManager, Context
 
         public void documentUpdated( DocumentImpl document, int event )
         {
-			synchronized( listeners ) { // TODO field must be final?
-	            for( final UpdateListener listener : listeners ) {
-	
-	                if( listener != null ) {
-	                    listener.documentUpdated( document, event );
-	                }
-	            }
-			}
+            List<UpdateListener> copyOfListeners = null;
+            synchronized( this ) {
+                copyOfListeners = new ArrayList(listeners);
+            }
+            for( final UpdateListener listener : copyOfListeners ) {
+
+                if( listener != null ) {
+                    listener.documentUpdated( document, event );
+                }
+            }
         }
 
 
         public void unsubscribe()
         {
-			synchronized( listeners ) { // TODO field must be final?
-	            for( final UpdateListener listener : listeners ) {
-	
-	                if( listener != null ) {
-	                    listener.unsubscribe();
-	                }
-	            }
-	            listeners.clear();
-			}
-        }
+            List<UpdateListener> copyOfListeners = null;
+            synchronized( this ) {
+                copyOfListeners = new ArrayList(listeners);
+                listeners = new ArrayList<>();
+            }
+            for( final UpdateListener listener : copyOfListeners ) {
 
-
-        @Override
-        public void nodeMoved(NodeId oldNodeId, NodeHandle newNode) {
-            for(final UpdateListener listener : listeners) {
-                listener.nodeMoved(oldNodeId, newNode);
+                if( listener != null ) {
+                    listener.unsubscribe();
+                }
             }
         }
 
+
+        public void nodeMoved( NodeId oldNodeId, NodeHandle newNode )
+        {
+            List<UpdateListener> copyOfListeners = null;
+            synchronized( this ) {
+                copyOfListeners = new ArrayList(listeners);
+            }
+            for (UpdateListener listener1 : copyOfListeners) {
+                final UpdateListener listener = (UpdateListener) listener1;
+
+                if (listener != null) {
+                    listener.nodeMoved(oldNodeId, newNode);
+                }
+            }
+        }
+
+
         public void debug() {
-            
-            LOG.debug(String.format("XQueryContext: %s document update listeners", listeners.size()));
-            for (int i = 0; i < listeners.size(); i++) {
-                ((UpdateListener) listeners.get(i)).debug();
+            List<UpdateListener> copyOfListeners = null;
+            synchronized( this ) {
+                copyOfListeners = new ArrayList(listeners);
+            }
+            LOG.debug(String.format("XQueryContext: %s document update listeners", copyOfListeners.size()));
+            for (UpdateListener listener : copyOfListeners) {
+                ((UpdateListener) listener).debug();
             }
         }
 
