@@ -244,7 +244,7 @@ public class CSVExtractingTrigger extends FilteringTrigger {
         return separator;
     }
 
-    private class NodePath {
+    private static class NodePath {
         private Stack<QName> pathSegments = new Stack<QName>();
 
         public void add(String namespaceUri, String localName) {
@@ -275,7 +275,7 @@ public class CSVExtractingTrigger extends FilteringTrigger {
     }
 
     /*** configuration data classes ***/
-    private class Extraction {
+    private static class Extraction {
 
         private List<ExtractEntry> extractEntries = new ArrayList<ExtractEntry>();
 
@@ -307,7 +307,7 @@ public class CSVExtractingTrigger extends FilteringTrigger {
         }
     }
 
-    private class ExtractEntry implements Comparable<ExtractEntry> {
+    private static class ExtractEntry implements Comparable<ExtractEntry> {
         private final int index;
         private final String elementName;
 
@@ -334,7 +334,7 @@ public class CSVExtractingTrigger extends FilteringTrigger {
         }
     }
 
-    private class EmptyAttributes implements Attributes {
+    private static class EmptyAttributes implements Attributes {
 
         @Override
         public int getLength() {

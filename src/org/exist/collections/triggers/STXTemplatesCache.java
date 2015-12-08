@@ -92,7 +92,7 @@ public class STXTemplatesCache {
         return thandler.getTemplates();
     }
 
-    private class CachedTemplate {
+    private static class CachedTemplate {
 
         private final Templates templates;
         private final long lastUpdated;

@@ -120,9 +120,8 @@ public class Configuration implements ErrorHandler
 
 
     public Configuration(String configFilename, String existHomeDirname) throws DatabaseConfigurationException {
+        InputStream is = null;
         try {
-            InputStream is = null;
-
             if(configFilename == null) {
                 // Default file name
                 configFilename = DatabaseImpl.CONF_XML;
@@ -268,16 +267,23 @@ public class Configuration implements ErrorHandler
 
         }
         catch(final SAXException e) {
-            LOG.warn("error while reading config file: " + configFilename, e);
+            LOG.error("error while reading config file: " + configFilename, e);
             throw new DatabaseConfigurationException(e.getMessage());
         }
         catch(final ParserConfigurationException cfg) {
-            LOG.warn("error while reading config file: " + configFilename, cfg);
+            LOG.error("error while reading config file: " + configFilename, cfg);
             throw new DatabaseConfigurationException(cfg.getMessage());
         }
         catch(final IOException io) {
-            LOG.warn("error while reading config file: " + configFilename, io);
+            LOG.error("error while reading config file: " + configFilename, io);
             throw new DatabaseConfigurationException(io.getMessage());
+        }
+        finally {
+            if (is != null) try {
+                is.close();
+            } catch (IOException e) {
+                LOG.error("error while closing config file: " + configFilename, e);
+            }
         }
     }
 
@@ -536,10 +542,9 @@ public class Configuration implements ErrorHandler
 
                     try {
                         attributes.put( name, Integer.valueOf( value ) );
-
                     }
                     catch( final NumberFormatException nfe ) {
-                        LOG.warn( "Discarded invalid attribute for TransformerFactory: '" + className + "', name: " + name + ", value not integer: " + value );
+                        LOG.error("Discarded invalid attribute for TransformerFactory: '" + className + "', name: " + name + ", value not integer: " + value, nfe);
                     }
 
                 } else {
@@ -720,7 +725,7 @@ public class Configuration implements ErrorHandler
 
                 LOG.debug("Configured scheduled '" + jobType + "' job '" + jobResource + ((jobSchedule == null) ? "" : ("' with trigger '" + jobSchedule)) + ((jobDelay == null) ? "" : ("' with delay '" + jobDelay)) + ((jobRepeat == null) ? "" : ("' repetitions '" + jobRepeat)) + "'");
             } catch(final JobException je) {
-                LOG.warn(je);
+                LOG.error(je);
             }
         }
 
@@ -782,7 +787,7 @@ public class Configuration implements ErrorHandler
                 LOG.debug( DefaultCacheManager.PROPERTY_CACHE_SIZE + ": " + config.get( DefaultCacheManager.PROPERTY_CACHE_SIZE ) + "m" );
             }
             catch( final NumberFormatException nfe ) {
-                LOG.warn( nfe );
+                LOG.error("Cannot convert " + DefaultCacheManager.PROPERTY_CACHE_SIZE + " value to integer: " + cacheMem, nfe);
             }
         }
         
@@ -803,16 +808,14 @@ public class Configuration implements ErrorHandler
             cacheShrinkThreshold = DefaultCacheManager.DEFAULT_SHRINK_THRESHOLD_STRING;
         }
 
-        if( cacheShrinkThreshold != null ) {
-
-            try {
-                config.put( DefaultCacheManager.SHRINK_THRESHOLD_PROPERTY, Integer.valueOf(cacheShrinkThreshold) );
-                LOG.debug( DefaultCacheManager.SHRINK_THRESHOLD_PROPERTY + ": " + config.get( DefaultCacheManager.SHRINK_THRESHOLD_PROPERTY ) );
-            }
-            catch( final NumberFormatException nfe ) {
-                LOG.warn( nfe );
-            }
+        try {
+            config.put( DefaultCacheManager.SHRINK_THRESHOLD_PROPERTY, Integer.valueOf(cacheShrinkThreshold) );
+            LOG.debug( DefaultCacheManager.SHRINK_THRESHOLD_PROPERTY + ": " + config.get( DefaultCacheManager.SHRINK_THRESHOLD_PROPERTY ) );
         }
+        catch( final NumberFormatException nfe ) {
+            LOG.error("Cannot convert " + DefaultCacheManager.SHRINK_THRESHOLD_PROPERTY + " value to integer: " + cacheShrinkThreshold, nfe);
+        }
+
 
         String collectionCache = getConfigAttributeValue( con, CollectionCacheManager.CACHE_SIZE_ATTRIBUTE );
 
@@ -827,7 +830,7 @@ public class Configuration implements ErrorHandler
                 LOG.debug( CollectionCacheManager.PROPERTY_CACHE_SIZE + ": " + config.get( CollectionCacheManager.PROPERTY_CACHE_SIZE ) + "m" );
             }
             catch( final NumberFormatException nfe ) {
-                LOG.warn( nfe );
+                LOG.error("Cannot convert " + CollectionCacheManager.PROPERTY_CACHE_SIZE + " value to integer: " + collectionCache, nfe);
             }
         }
 
@@ -840,7 +843,7 @@ public class Configuration implements ErrorHandler
                 LOG.debug( BrokerPool.PROPERTY_PAGE_SIZE + ": " + config.get( BrokerPool.PROPERTY_PAGE_SIZE ) );
             }
             catch( final NumberFormatException nfe ) {
-                LOG.warn( nfe );
+                LOG.error("Cannot convert " + BrokerPool.PROPERTY_PAGE_SIZE + " value to integer: " + pageSize, nfe);
             }
         }
 
@@ -854,7 +857,7 @@ public class Configuration implements ErrorHandler
                 LOG.debug( BrokerPool.PROPERTY_COLLECTION_CACHE_SIZE + ": " + config.get( BrokerPool.PROPERTY_COLLECTION_CACHE_SIZE ) );
             }
             catch( final NumberFormatException nfe ) {
-                LOG.warn( nfe );
+                LOG.error("Cannot convert " + BrokerPool.PROPERTY_COLLECTION_CACHE_SIZE + " value to integer: " + collCacheSize, nfe);
             }
         }
 
@@ -868,7 +871,7 @@ public class Configuration implements ErrorHandler
 
             }
             catch( final NumberFormatException nfe ) {
-                LOG.warn( nfe );
+                LOG.error("Cannot convert " + BrokerPool.PROPERTY_NODES_BUFFER + " value to integer: " + nodesBuffer, nfe);
             }
         }
 
@@ -888,7 +891,7 @@ public class Configuration implements ErrorHandler
 
             }
             catch( final NumberFormatException nfe ) {
-                LOG.warn( nfe );
+                LOG.error("Cannot convert " + "db-connection.buffers" + " value to integer: " + buffers, nfe);
             }
         }
 
@@ -903,7 +906,7 @@ public class Configuration implements ErrorHandler
 
             }
             catch( final NumberFormatException nfe ) {
-                LOG.warn( nfe );
+                LOG.error("Cannot convert " + "db-connection.collections.buffers" + " value to integer: " + collBuffers, nfe);
             }
         }
 
@@ -918,7 +921,7 @@ public class Configuration implements ErrorHandler
 
             }
             catch( final NumberFormatException nfe ) {
-                LOG.warn( nfe );
+                LOG.error("Cannot convert " + "db-connection.words.buffers" + " value to integer: " + wordBuffers, nfe);
             }
         }
 
@@ -933,7 +936,7 @@ public class Configuration implements ErrorHandler
 
             }
             catch( final NumberFormatException nfe ) {
-                LOG.warn( nfe );
+                LOG.error("Cannot convert " + "db-connection.elements.buffers" + " value to integer: " + elementBuffers, nfe);
             }
         }
 
@@ -949,7 +952,7 @@ public class Configuration implements ErrorHandler
                 config.put(BrokerPool.DISK_SPACE_MIN_PROPERTY, Integer.valueOf(diskSpace));
             }
             catch( final NumberFormatException nfe ) {
-                LOG.warn( nfe );
+                LOG.error("Cannot convert " + BrokerPool.DISK_SPACE_MIN_PROPERTY + " value to integer: " + diskSpace, nfe);
             }
         }
 
@@ -1107,7 +1110,7 @@ public class Configuration implements ErrorHandler
                 LOG.debug( XQueryWatchDog.PROPERTY_QUERY_TIMEOUT + ": " + config.get( XQueryWatchDog.PROPERTY_QUERY_TIMEOUT ) );
             }
             catch( final NumberFormatException e ) {
-                LOG.warn( e );
+                LOG.error(e);
             }
         }
 
@@ -1120,7 +1123,7 @@ public class Configuration implements ErrorHandler
                 LOG.debug( XQueryWatchDog.PROPERTY_OUTPUT_SIZE_LIMIT + ": " + config.get( XQueryWatchDog.PROPERTY_OUTPUT_SIZE_LIMIT ) );
             }
             catch( final NumberFormatException e ) {
-                LOG.warn( e );
+                LOG.error(e);
             }
         }
     }
@@ -1142,7 +1145,7 @@ public class Configuration implements ErrorHandler
                 LOG.debug( XQueryPool.PROPERTY_MAX_STACK_SIZE + ": " + config.get( XQueryPool.PROPERTY_MAX_STACK_SIZE ) );
             }
             catch( final NumberFormatException e ) {
-                LOG.warn( e );
+                LOG.error(e);
             }
         }
 
@@ -1155,7 +1158,7 @@ public class Configuration implements ErrorHandler
                 LOG.debug( XQueryPool.PROPERTY_POOL_SIZE + ": " + config.get( XQueryPool.PROPERTY_POOL_SIZE ) );
             }
             catch( final NumberFormatException e ) {
-                LOG.warn( e );
+                LOG.error(e);
             }
         }
 
@@ -1168,7 +1171,7 @@ public class Configuration implements ErrorHandler
                 LOG.debug( XQueryPool.PROPERTY_TIMEOUT + ": " + config.get( XQueryPool.PROPERTY_TIMEOUT ) );
             }
             catch( final NumberFormatException e ) {
-                LOG.warn( e );
+                LOG.error(e);
             }
         }
 
@@ -1181,7 +1184,7 @@ public class Configuration implements ErrorHandler
                 LOG.debug( XQueryPool.PROPERTY_TIMEOUT_CHECK_INTERVAL + ": " + config.get( XQueryPool.PROPERTY_TIMEOUT_CHECK_INTERVAL ) );
             }
             catch( final NumberFormatException e ) {
-                LOG.warn( e );
+                LOG.error(e);
             }
         }
     }
@@ -1286,7 +1289,7 @@ public class Configuration implements ErrorHandler
                 LOG.debug( BrokerPool.PROPERTY_MIN_CONNECTIONS + ": " + config.get( BrokerPool.PROPERTY_MIN_CONNECTIONS ) );
             }
             catch( final NumberFormatException e ) {
-                LOG.warn( e );
+                LOG.error(e);
             }
         }
 
@@ -1299,7 +1302,7 @@ public class Configuration implements ErrorHandler
                 LOG.debug( BrokerPool.PROPERTY_MAX_CONNECTIONS + ": " + config.get( BrokerPool.PROPERTY_MAX_CONNECTIONS ) );
             }
             catch( final NumberFormatException e ) {
-                LOG.warn( e );
+                LOG.error(e);
             }
         }
 
@@ -1312,7 +1315,7 @@ public class Configuration implements ErrorHandler
                 LOG.debug( BrokerPool.PROPERTY_SYNC_PERIOD + ": " + config.get( BrokerPool.PROPERTY_SYNC_PERIOD ) );
             }
             catch( final NumberFormatException e ) {
-                LOG.warn( e );
+                LOG.error(e);
             }
         }
 
@@ -1325,7 +1328,7 @@ public class Configuration implements ErrorHandler
                 LOG.debug( BrokerPool.PROPERTY_SHUTDOWN_DELAY + ": " + config.get( BrokerPool.PROPERTY_SHUTDOWN_DELAY ) );
             }
             catch( final NumberFormatException e ) {
-                LOG.warn( e );
+                LOG.error(e);
             }
         }
     }
@@ -1397,7 +1400,7 @@ public class Configuration implements ErrorHandler
                 LOG.debug( NativeBroker.PROPERTY_INDEX_DEPTH + ": " + config.get( NativeBroker.PROPERTY_INDEX_DEPTH ) );
             }
             catch( final NumberFormatException e ) {
-                LOG.warn( e );
+                LOG.error(e);
             }
         }
 

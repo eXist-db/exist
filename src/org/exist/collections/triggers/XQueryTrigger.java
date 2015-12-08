@@ -179,40 +179,34 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
 
             final List<String> strQueries = (List<String>) parameters.get("query");
  			strQuery = strQueries != null ? strQueries.get(0) : null;
- 			
- 			for(final Iterator itParamName = parameters.keySet().iterator(); itParamName.hasNext();)
- 			{
- 				final String paramName = (String)itParamName.next();
- 				
- 				//get the binding prefix (if any)
- 				if("bindingPrefix".equals(paramName))
- 				{
- 					final String bindingPrefix = (String)parameters.get("bindingPrefix").get(0);
- 					if(bindingPrefix != null && !"".equals(bindingPrefix.trim()))
- 					{
- 						this.bindingPrefix = bindingPrefix.trim() + ":";
- 					}
- 				}
- 				
- 				//get the URL of the query (if any)
- 				else if("url".equals(paramName))
- 				{
- 					urlQuery = (String)parameters.get("url").get(0);
- 				}
- 				
- 				//get the query (if any)
- 				else if("query".equals(paramName))
- 				{
- 					strQuery = (String)parameters.get("query").get(0);
- 				}
- 				
- 				//make any other parameters available as external variables for the query
- 				else
- 				{
-                    //TODO could be enhanced to setup a sequence etc
- 					userDefinedVariables.put(paramName, parameters.get(paramName).get(0));
- 				}
- 			}
+
+			for (Map.Entry<String, List<?>> entry : parameters.entrySet()) {
+				//get the binding prefix (if any)
+				String paramName = entry.getKey();
+				Object paramValue = entry.getValue().get(0);
+				if ("bindingPrefix".equals(paramName)) {
+					String bindingPrefix = (String) paramValue;
+					if (bindingPrefix != null && !"".equals(bindingPrefix.trim())) {
+						this.bindingPrefix = bindingPrefix.trim() + ":";
+					}
+				}
+
+				//get the URL of the query (if any)
+				else if ("url".equals(paramName)) {
+					urlQuery = (String) paramValue;
+				}
+
+				//get the query (if any)
+				else if ("query".equals(paramName)) {
+					strQuery = (String) paramValue;
+				}
+
+				//make any other parameters available as external variables for the query
+				else {
+					//TODO could be enhanced to setup a sequence etc
+					userDefinedVariables.put(paramName, paramValue);
+				}
+			}
  			
  			//set a default binding prefix if none was specified
  			if(this.bindingPrefix == null)

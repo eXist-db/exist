@@ -244,9 +244,9 @@ public class MimeTable {
     private void load(File f) {
         boolean loaded = false;
         if (f.canRead()) {
-            try {
+            try (FileInputStream stream = new FileInputStream(f);){
                 System.out.println("Loading mime table from file " + f.getAbsolutePath());
-                loadMimeTypes(new FileInputStream(f));
+                loadMimeTypes(stream);
                 loaded = true;
                 this.src=f.toURI().toString();
             } catch (final FileNotFoundException e) {

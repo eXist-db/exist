@@ -1517,7 +1517,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         return protectedInputSource;
     }
     
-    private class CloseShieldReader extends Reader {
+    private static class CloseShieldReader extends Reader {
         private final Reader reader;
         public CloseShieldReader(final Reader reader) {
             this.reader = reader;
