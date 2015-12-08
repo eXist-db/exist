@@ -109,7 +109,7 @@ public class BackupSystemTask implements SystemTask {
             try {
                 zipFilesMax = Integer.parseInt(filesMaxStr);
             } catch (final NumberFormatException e) {
-                LOG.debug("zip-files-max property error", e);
+                LOG.error("zip-files-max property error", e);
             }
         }
     }
@@ -123,7 +123,7 @@ public class BackupSystemTask implements SystemTask {
         try {
             backup.backup(false, null);
         } catch (final XMLDBException | SAXException | IOException e) {
-            LOG.debug(e.getMessage(), e);
+            LOG.error(e.getMessage(), e);
             throw new EXistException(e.getMessage(), e);
         }
 

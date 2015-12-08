@@ -259,14 +259,14 @@ public class Configuration implements ErrorHandler
 
         }
         catch(final SAXException | IOException | ParserConfigurationException e) {
-            LOG.warn("error while reading config file: " + configFilename, e);
+            LOG.error("error while reading config file: " + configFilename, e);
             throw new DatabaseConfigurationException(e.getMessage(), e);
         } finally {
             if(is != null) {
                 try {
                     is.close();
                 } catch(final IOException ioe) {
-                    LOG.warn(ioe);
+                    LOG.error(ioe);
                 }
             }
         }
@@ -514,10 +514,9 @@ public class Configuration implements ErrorHandler
 
                     try {
                         attributes.put( name, Integer.valueOf( value ) );
-
                     }
                     catch( final NumberFormatException nfe ) {
-                        LOG.warn( "Discarded invalid attribute for TransformerFactory: '" + className + "', name: " + name + ", value not integer: " + value );
+                        LOG.warn("Discarded invalid attribute for TransformerFactory: '" + className + "', name: " + name + ", value not integer: " + value, nfe);
                     }
 
                 } else {
@@ -743,7 +742,7 @@ public class Configuration implements ErrorHandler
 
                 LOG.debug("Configured scheduled '" + jobType + "' job '" + jobResource + ((jobSchedule == null) ? "" : ("' with trigger '" + jobSchedule)) + ((jobDelay == null) ? "" : ("' with delay '" + jobDelay)) + ((jobRepeat == null) ? "" : ("' repetitions '" + jobRepeat)) + "'");
             } catch(final JobException je) {
-                LOG.warn(je);
+                LOG.error(je);
             }
         }
 
@@ -875,7 +874,7 @@ public class Configuration implements ErrorHandler
                 LOG.debug( BrokerPool.PROPERTY_PAGE_SIZE + ": " + config.get( BrokerPool.PROPERTY_PAGE_SIZE ) );
             }
             catch( final NumberFormatException nfe ) {
-                LOG.warn("Cannot convert " + BrokerPool.PROPERTY_PAGE_SIZE + " value to integer: " + collectionCache, nfe);
+                LOG.warn("Cannot convert " + BrokerPool.PROPERTY_PAGE_SIZE + " value to integer: " + pageSize, nfe);
             }
         }
 
