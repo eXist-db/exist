@@ -3518,23 +3518,22 @@ public class XQueryContext implements BinaryValueManager, Context
     public void registerBinaryValueInstance(final BinaryValue binaryValue) {
         if(binaryValueInstances == null) {
              binaryValueInstances = new ArrayList<BinaryValue>();
-             
-             cleanupTasks.add(new CleanupTask() {
-                 
-                 @Override
-                 public void cleanup(final XQueryContext context) {
-                    if(context.binaryValueInstances != null) {
-                       for(final BinaryValue bv : context.binaryValueInstances) {
-                           try {
-                               bv.close();
-                           } catch (final IOException ioe) {
-                               LOG.error("Unable to close binary value: " + ioe.getMessage(), ioe);
-                           }
-                       }
-                       context.binaryValueInstances.clear();
-                   }
-                 }
-             });
+            CleanupTask cleanupTask = new CleanupTask() {
+                @Override
+                public void cleanup(final XQueryContext context) {
+                    if (context.binaryValueInstances != null) {
+                        for (final BinaryValue bv : context.binaryValueInstances) {
+                            try {
+                                bv.close();
+                            } catch (final IOException ioe) {
+                                LOG.error("Unable to close binary value: " + ioe.getMessage(), ioe);
+                            }
+                        }
+                        context.binaryValueInstances.clear();
+                    }
+                }
+            };
+            registerCleanupTask(cleanupTask);
         }
         
         binaryValueInstances.add(binaryValue);
@@ -3585,7 +3584,7 @@ public class XQueryContext implements BinaryValueManager, Context
 
         public void addListener( UpdateListener listener )
         {
-			synchronized( listeners ) {
+			synchronized( this ) {
            		listeners.add( listener );
 			}
         }
@@ -3654,7 +3653,9 @@ public class XQueryContext implements BinaryValueManager, Context
     private List<CleanupTask> cleanupTasks = new ArrayList<CleanupTask>();
     
     public void registerCleanupTask(final CleanupTask cleanupTask) {
-        cleanupTasks.add(cleanupTask);
+        synchronized (cleanupTasks) {
+            cleanupTasks.add(cleanupTask);
+        }
     }
     
     public interface CleanupTask {
@@ -3663,7 +3664,11 @@ public class XQueryContext implements BinaryValueManager, Context
     
     @Override
     public void runCleanupTasks() {
-        for(final CleanupTask cleanupTask : cleanupTasks) {
+        List<CleanupTask> copyCleanupTasks = null;
+        synchronized (cleanupTasks){
+            copyCleanupTasks = new ArrayList<>(cleanupTasks);
+        }
+        for(final CleanupTask cleanupTask : copyCleanupTasks) {
             try {
                 cleanupTask.cleanup(this);
             } catch(final Throwable t) {

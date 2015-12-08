@@ -21,6 +21,7 @@
  */
 package org.expath.exist;
 
+import java.lang.Override;
 import java.net.URI;
 import java.net.URISyntaxException;
 import org.apache.log4j.Logger;
@@ -187,7 +188,7 @@ public class SendRequestFunction extends BasicFunction {
                     try {
                         conn.disconnect();
                     } catch(final HttpClientException hcee) {
-                        logger.warn(hcee.getMessage(), hcee);
+                        logger.error(hcee.getMessage(), hcee);
                     }
                 }
                 throw hce;
@@ -209,7 +210,7 @@ public class SendRequestFunction extends BasicFunction {
                 try {
                     conn.disconnect();
                 } catch(final HttpClientException hcee) {
-                    logger.warn(hcee.getMessage(), hcee);
+                    logger.error(hcee.getMessage(), hcee);
                 }
             }
             throw hce;
@@ -219,15 +220,16 @@ public class SendRequestFunction extends BasicFunction {
     }
     
     private void registerConnectionWithContext(final HttpConnection conn) {
-        context.registerCleanupTask(new XQueryContext.CleanupTask() {
+        XQueryContext.CleanupTask cleanupTask = new XQueryContext.CleanupTask() {
             @Override
             public void cleanup(final XQueryContext context) {
                 try {
                     conn.disconnect();
-                } catch(final HttpClientException hce) {
-                    logger.warn(hce.getMessage(), hce);
+                } catch (final HttpClientException hce) {
+                    logger.error(hce.getMessage(), hce);
                 }
             }
-        });
+        };
+        context.registerCleanupTask(cleanupTask);
     }
 }
