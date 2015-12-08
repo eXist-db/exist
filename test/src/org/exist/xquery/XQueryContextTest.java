@@ -28,6 +28,7 @@ import org.easymock.EasyMock;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.List;
+import java.util.function.Consumer;
 
 import static org.easymock.EasyMock.*;
 import static org.junit.Assert.assertEquals;
@@ -172,7 +173,7 @@ public class XQueryContextTest {
     private int countCleanupTasks(final XQueryContext context) throws NoSuchFieldException, IllegalAccessException {
         final Field fldCleanupTasks = context.getClass().getDeclaredField("cleanupTasks");
         fldCleanupTasks.setAccessible(true);
-        final List<XQueryContext.CleanupTask> cleanupTasks = (List<XQueryContext.CleanupTask>)fldCleanupTasks.get(context);
+        final List<Consumer<XQueryContext>> cleanupTasks = (List<Consumer<XQueryContext>>)fldCleanupTasks.get(context);
         return cleanupTasks.size();
     }
 }

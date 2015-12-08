@@ -97,6 +97,7 @@ import antlr.TokenStreamException;
 import antlr.collections.AST;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.function.Consumer;
 
 /**
  * The current XQuery execution context. Contains the static as well as the dynamic
@@ -3499,36 +3500,23 @@ public class XQueryContext implements BinaryValueManager, Context
     
     @Override
     public void registerBinaryValueInstance(final BinaryValue binaryValue) {
-        if(binaryValueInstances == null) {
-             binaryValueInstances = new ArrayList<>();
-        }
-
-        if(cleanupTasks.isEmpty() || !cleanupTasks.stream().filter(ct -> ct instanceof BinaryValueCleanupTask).findFirst().isPresent()) {
-            cleanupTasks.add(new BinaryValueCleanupTask());
-        }
-
-        binaryValueInstances.add(binaryValue);
-    }
-
-    /**
-     * Cleanup Task which is responsible for relasing the streams
-     * of any {@link BinaryValue} which have been used during
-     * query execution
-     */
-    private static class BinaryValueCleanupTask implements CleanupTask {
-        @Override
-        public void cleanup(final XQueryContext context) {
-            if (context.binaryValueInstances != null) {
-                for (final BinaryValue bv : context.binaryValueInstances) {
-                    try {
-                        bv.close();
-                    } catch (final IOException ioe) {
-                        LOG.error("Unable to close binary value: " + ioe.getMessage(), ioe);
+        if(this.binaryValueInstances == null) {
+             this.binaryValueInstances = new ArrayList<>();
+            registerCleanupTask(context -> {
+                if (context.binaryValueInstances != null) {
+                    for (final BinaryValue bv : context.binaryValueInstances) {
+                        try {
+                            bv.close();
+                        } catch (final IOException ioe) {
+                            LOG.error("Unable to close binary value: " + ioe.getMessage(), ioe);
+                        }
                     }
+                    context.binaryValueInstances.clear();
                 }
-                context.binaryValueInstances.clear();
-            }
+            });
         }
+        
+        this.binaryValueInstances.add(binaryValue);
     }
 
     @Override
@@ -3609,21 +3597,17 @@ public class XQueryContext implements BinaryValueManager, Context
 
     }
     
-    private final List<CleanupTask> cleanupTasks = new ArrayList<>();
+    private List<Consumer<XQueryContext>> cleanupTasks = new CopyOnWriteArrayList<>();
     
-    public void registerCleanupTask(final CleanupTask cleanupTask) {
+    public void registerCleanupTask(final Consumer<XQueryContext> cleanupTask) {
         cleanupTasks.add(cleanupTask);
     }
-    
-    public interface CleanupTask {
-        void cleanup(final XQueryContext context);
-    }
-    
+
     @Override
     public void runCleanupTasks() {
-        for(final CleanupTask cleanupTask : cleanupTasks) {
+        for(final Consumer<XQueryContext> cleanupTask : cleanupTasks) {
             try {
-                cleanupTask.cleanup(this);
+                cleanupTask.accept(this);
             } catch(final Throwable t) {
                 LOG.error("Cleaning up XQueryContext: Ignoring: " + t.getMessage(), t);
             }

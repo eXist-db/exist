@@ -220,14 +220,11 @@ public class SendRequestFunction extends BasicFunction {
     }
     
     private void registerConnectionWithContext(final HttpConnection conn) {
-        context.registerCleanupTask(new XQueryContext.CleanupTask() {
-            @Override
-            public void cleanup(final XQueryContext context) {
-                try {
-                    conn.disconnect();
-                } catch(final HttpClientException hce) {
-                    logger.error(hce.getMessage(), hce);
-                }
+        context.registerCleanupTask(context -> {
+            try {
+                conn.disconnect();
+            } catch(final HttpClientException hce) {
+                logger.error(hce.getMessage(), hce);
             }
         });
     }
