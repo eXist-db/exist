@@ -1099,7 +1099,7 @@ public class BrokerPool implements Database {
             } catch(final ClassNotFoundException | IllegalAccessException | InstantiationException e) {
                 LOG.error("Could not call StartupTrigger class: " + startupTriggerConfig + ". SKIPPING! " + e.getMessage(), e);
             } catch(final RuntimeException re) {
-                LOG.warn("StartupTrigger threw RuntimeException: " + re.getMessage() + ". IGNORING!", re);
+                LOG.error("StartupTrigger threw RuntimeException: " + re.getMessage() + ". IGNORING class " + startupTriggerConfig.getClazz(), re);
             }
         }
         // trigger a checkpoint after processing all startup triggers
@@ -1121,15 +1121,14 @@ public class BrokerPool implements Database {
             try(final Txn txn = transact.beginTransaction()) {
                 collection = sysBroker.getOrCreateCollection(txn, sysCollectionUri);
                 if(collection == null) {
-                    throw new IOException("Could not create system collection: " + sysCollectionUri);
+                    throw new IOException("Could not open/create system collection: " + sysCollectionUri);
                 }
                 collection.setPermissions(permissions);
                 sysBroker.saveCollection(txn, collection);
 
                 transact.commit(txn);
             } catch(final Exception e) {
-                e.printStackTrace();
-                final String msg = "Initialisation of system collections failed: " + e.getMessage();
+                final String msg = "Initialisation of system collection failed: " + sysCollectionUri;
                 LOG.error(msg, e);
                 throw new EXistException(msg, e);
             }
