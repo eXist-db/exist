@@ -38,8 +38,12 @@ public class Checkpoint extends AbstractLoggable {
 	private long timestamp;
 	private long storedLsn;
 	
-	private final static DateFormat df = 
-		DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM);
+	private final static DateFormat df = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM);
+    private String formatDateTimeToString(Date date){
+        synchronized (df){
+            return df.format(date);
+        }
+    }
 	
     public Checkpoint(long transactionId) {
         this(null, transactionId);
@@ -78,10 +82,10 @@ public class Checkpoint extends AbstractLoggable {
     }
 	
     public String getDateString() {
-    	return df.format(new Date(timestamp));
+    	return formatDateTimeToString(new Date(timestamp));
     }
     
 	public String dump() {
-		return super.dump() + " - checkpoint at " + df.format(new Date(timestamp));
+		return super.dump() + " - checkpoint at " + formatDateTimeToString(new Date(timestamp));
 	}
 }

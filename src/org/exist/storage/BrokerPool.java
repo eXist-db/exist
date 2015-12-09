@@ -1099,7 +1099,7 @@ public class BrokerPool implements Database {
             } catch(final ClassNotFoundException | IllegalAccessException | InstantiationException e) {
                 LOG.error("Could not call StartupTrigger class: " + startupTriggerConfig + ". SKIPPING! " + e.getMessage(), e);
             } catch(final RuntimeException re) {
-                LOG.warn("StartupTrigger threw RuntimeException: " + re.getMessage() + ". IGNORING!", re);
+                LOG.error("StartupTrigger threw RuntimeException: " + re.getMessage() + ". IGNORING class " + startupTriggerConfig.getClazz(), re);
             }
         }
         // trigger a checkpoint after processing all startup triggers
@@ -1122,7 +1122,7 @@ public class BrokerPool implements Database {
             try {
                 collection = sysBroker.getOrCreateCollection(txn, sysCollectionUri);
                 if(collection == null) {
-                    throw new IOException("Could not create system collection: " + sysCollectionUri);
+                    throw new IOException("Could not open/create system collection " + sysCollectionUri);
                 }
                 collection.setPermissions(permissions);
                 sysBroker.saveCollection(txn, collection);
@@ -1130,8 +1130,7 @@ public class BrokerPool implements Database {
                 transact.commit(txn);
             } catch(final Exception e) {
                 transact.abort(txn);
-                e.printStackTrace();
-                final String msg = "Initialisation of system collections failed: " + e.getMessage();
+                final String msg = "Initialisation of system collection " + sysCollectionUri;
                 LOG.error(msg, e);
                 throw new EXistException(msg, e);
             } finally {
@@ -1602,7 +1601,10 @@ public class BrokerPool implements Database {
             try {
                 LOG.debug("Db instance is in service mode. Waiting for db to become available again ...");
                 wait();
-            } catch(final InterruptedException e) {
+            }
+            catch(final InterruptedException e) {
+                Thread.currentThread().interrupt();
+                LOG.error("Interrupt detected");
             }
         }
 
@@ -2122,7 +2124,7 @@ public class BrokerPool implements Database {
         System.err.println(s);
     }
 
-    private class StatusReporter extends Observable implements Runnable {
+    private static class StatusReporter extends Observable implements Runnable {
 
         private String status;
         private volatile boolean terminate = false;

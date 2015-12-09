@@ -193,7 +193,8 @@ public abstract class Serializer implements XMLReader {
     protected Subject user = null;
     
     protected HttpContext httpContext = null;
-    public class HttpContext
+
+    public static class HttpContext
     {
     	private RequestWrapper request = null;
     	private ResponseWrapper response = null;
@@ -1261,7 +1262,7 @@ public abstract class Serializer implements XMLReader {
     /**
      * An error listener that just rethrows the exception
      */
-    private class ErrorListener implements javax.xml.transform.ErrorListener {
+    private static class ErrorListener implements javax.xml.transform.ErrorListener {
 
         public void warning(TransformerException exception) throws TransformerException {
             LOG.warn("Warning while applying stylesheet: " + exception.getMessage(), exception);

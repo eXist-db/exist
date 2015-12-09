@@ -95,27 +95,21 @@ public class BackupSystemTask implements SystemTask {
         if (null != filesMaxStr)
             try
             {
-                zipFilesMax = new Integer(filesMaxStr).intValue();
+                zipFilesMax = Integer.valueOf(filesMaxStr);
             }
-            catch (final NumberFormatException e) {LOG.debug("zip-files-max property error", e);}
+            catch (final NumberFormatException e) {LOG.error("zip-files-max property error", e);}
     }
 
 
     public void execute(DBBroker broker) throws EXistException {
-        final String dateTime = DataBackup.creationDateFormat.format(Calendar.getInstance().getTime());
+        final String dateTime = DataBackup.formatDateTimeToString(Calendar.getInstance().getTime());
         final String dest = directory.getAbsolutePath() + File.separatorChar + prefix + dateTime + suffix;
 
         final Backup backup = new Backup(user, password, dest, collection);
         try {
             backup.backup(false, null);
-        } catch (final XMLDBException e) {
-            LOG.debug(e.getMessage(), e);
-            throw new EXistException(e.getMessage(), e);
-        } catch (final IOException e) {
-            LOG.debug(e.getMessage(), e);
-            throw new EXistException(e.getMessage(), e);
-        } catch (final SAXException e) {
-            LOG.debug(e.getMessage(), e);
+        } catch (Exception e) {
+            LOG.error("Cannot create backup for " + dest, e);
             throw new EXistException(e.getMessage(), e);
         }
 
@@ -130,15 +124,13 @@ public class BackupSystemTask implements SystemTask {
         // get all files in target directory
         final File[] files = directory.listFiles();
 
-        if (files.length > 0)
+        if (files != null && files.length > 0)
         {
             final Map<String, File> sorted = new TreeMap<String, File>();
-            for (int i=0; i < files.length; i++)
-            {
+            for (File file : files) {
                 //check for prefix and suffix match
-                if (files[i].getName().startsWith(prefix) && files[i].getName().endsWith(suffix))
-                {
-                    sorted.put(Long.toString(files[i].lastModified()), files[i]);
+                if (file.getName().startsWith(prefix) && file.getName().endsWith(suffix)) {
+                    sorted.put(Long.toString(file.lastModified()), file);
                 }
             }
             if (sorted.size() > zipFilesMax)

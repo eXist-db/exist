@@ -356,7 +356,7 @@ public class BFile extends BTree {
         }
     }
 
-    private class RemoveCallback implements BTreeCallback {
+    private static class RemoveCallback implements BTreeCallback {
         long[] pointers = new long[128];
         int count = 0;
         
@@ -2183,8 +2183,7 @@ public class BFile extends BTree {
      * 
      * @author wolf
      */
-    private final class SimplePageInput extends VariableByteArrayInput
-            implements PageInputStream {
+    private static final class SimplePageInput extends VariableByteArrayInput implements PageInputStream {
 
         private long address = 0L;
         

@@ -45,6 +45,12 @@ public class DataBackup implements SystemTask {
     private final static Logger LOG = Logger.getLogger(DataBackup.class);
     
     public final static SimpleDateFormat creationDateFormat = new SimpleDateFormat("yyyyMMddHHmmssS");
+
+    public static String formatDateTimeToString(Date date){
+        synchronized (creationDateFormat){
+            return creationDateFormat.format(date);
+        }
+    }
     
 	private String dest;
 	
@@ -88,7 +94,7 @@ public class DataBackup implements SystemTask {
 		
 		LOG.debug("Backing up data files ...");
 		
-		final String creationDate = creationDateFormat.format(Calendar.getInstance().getTime());
+		final String creationDate = formatDateTimeToString(Calendar.getInstance().getTime());
         final String outFilename = dest + File.separatorChar + creationDate + ".zip";
         
         // Create the ZIP file
@@ -106,7 +112,7 @@ public class DataBackup implements SystemTask {
 		}
 	}
 
-    private class Callback implements RawDataBackup {
+    private static class Callback implements RawDataBackup {
 
         private ZipOutputStream zout;
 

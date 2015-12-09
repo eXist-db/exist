@@ -91,42 +91,43 @@ public class ParseException extends Exception {
 		if (!specialConstructor) {
 			return super.getMessage();
 		}
-		String expected = "";
+		StringBuilder expected = new StringBuilder(128);
 		int maxSize = 0;
 		for (int i = 0; i < expectedTokenSequences.length; i++) {
 			if (maxSize < expectedTokenSequences[i].length) {
 				maxSize = expectedTokenSequences[i].length;
 			}
 			for (int j = 0; j < expectedTokenSequences[i].length; j++) {
-				expected += tokenImage[expectedTokenSequences[i][j]] + " ";
+				expected.append(tokenImage[expectedTokenSequences[i][j]] + " ");
 			}
 			if (expectedTokenSequences[i][expectedTokenSequences[i].length - 1] != 0) {
-				expected += "...";
+				expected.append("...");
 			}
-			expected += eol + "    ";
+			expected.append(eol + "    ");
 		}
-		String retval = "Encountered \"";
+		StringBuilder retval = new StringBuilder(128);
+		retval.append("Encountered \"");
 		Token tok = currentToken.next;
 		for (int i = 0; i < maxSize; i++) {
-			if (i != 0)
-				{retval += " ";}
+			if (i != 0) {
+				retval.append(" ");
+			}
 			if (tok.kind == 0) {
-				retval += tokenImage[0];
+				retval.append(tokenImage[0]);
 				break;
 			}
-			retval += add_escapes(tok.image);
+			retval.append(add_escapes(tok.image));
 			tok = tok.next;
 		}
-		retval += "\" at line " + currentToken.next.beginLine + ", column "
-				+ currentToken.next.beginColumn;
-		retval += "." + eol;
+		retval.append("\" at line " + currentToken.next.beginLine + ", column "	+ currentToken.next.beginColumn);
+		retval.append("." + eol);
 		if (expectedTokenSequences.length == 1) {
-			retval += "Was expecting:" + eol + "    ";
+			retval.append("Was expecting:" + eol + "    ");
 		} else {
-			retval += "Was expecting one of:" + eol + "    ";
+			retval.append("Was expecting one of:" + eol + "    ");
 		}
-		retval += expected;
-		return retval;
+		retval.append(expected.toString());
+		return retval.toString();
 	}
 
 	/**
@@ -139,7 +140,7 @@ public class ParseException extends Exception {
 	 * version cannot be used as part of an ASCII string literal.
 	 */
 	protected String add_escapes(String str) {
-		final StringBuilder retval = new StringBuilder();
+		final StringBuilder retval = new StringBuilder(128);
 		char ch;
 		for (int i = 0; i < str.length(); i++) {
 			switch (str.charAt(i)) {
@@ -172,12 +173,10 @@ public class ParseException extends Exception {
 			default:
 				if ((ch = str.charAt(i)) < 0x20 || ch > 0x7e) {
 					final String s = "0000" + Integer.toString(ch, 16);
-					retval.append("\\u"
-							+ s.substring(s.length() - 4, s.length()));
+					retval.append("\\u").append(s.substring(s.length() - 4, s.length()));
 				} else {
 					retval.append(ch);
 				}
-				continue;
 			}
 		}
 		return retval.toString();

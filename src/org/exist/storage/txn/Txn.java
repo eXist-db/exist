@@ -101,7 +101,7 @@ public class Txn implements Transaction {
         }
     }
 
-    private class LockInfo {
+    private static class LockInfo {
         Lock lock;
         int lockMode;
         

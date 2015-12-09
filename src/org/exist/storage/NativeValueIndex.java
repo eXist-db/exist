@@ -1376,7 +1376,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
     //*
     //***************************************************************************/
 
-    private class ExactMatcher implements TermMatcher
+    private static class ExactMatcher implements TermMatcher
     {
         private String expr;
 
@@ -1387,12 +1387,12 @@ public class NativeValueIndex implements ContentLoadingObserver {
 
         public boolean matches( CharSequence term )
         {
-            return( term.toString() == expr );
+            return (term!=null && term.toString().equals(expr) );
         }
     }
 
 
-    private class ContainsMatcher implements TermMatcher
+    private static class ContainsMatcher implements TermMatcher
     {
         private String expr;
 
@@ -1403,12 +1403,12 @@ public class NativeValueIndex implements ContentLoadingObserver {
 
         public boolean matches( CharSequence term )
         {
-            return( term.toString().contains( expr ) );
+            return (term != null && term.toString().contains( expr ) );
         }
     }
 
 
-    private class StartsWithMatcher implements TermMatcher
+    private static class StartsWithMatcher implements TermMatcher
     {
         private String expr;
 
@@ -1419,12 +1419,12 @@ public class NativeValueIndex implements ContentLoadingObserver {
 
         public boolean matches( CharSequence term )
         {
-            return( term.toString().startsWith( expr ) );
+            return (term != null && term.toString().startsWith( expr ) );
         }
     }
 
 
-    private class EndsWithMatcher implements TermMatcher
+    private static class EndsWithMatcher implements TermMatcher
     {
         private String expr;
 
@@ -1435,12 +1435,12 @@ public class NativeValueIndex implements ContentLoadingObserver {
 
         public boolean matches( CharSequence term )
         {
-            return( term.toString().endsWith( expr ) );
+            return (term != null && term.toString().endsWith( expr ) );
         }
     }
 
 
-    private class CollatorMatcher implements TermMatcher
+    private static class CollatorMatcher implements TermMatcher
     {
         private String   expr;
         private int      truncation;

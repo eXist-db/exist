@@ -1,13 +1,10 @@
 package org.exist.storage;
 
 import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.text.DateFormat;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
@@ -15,10 +12,8 @@ import org.exist.EXistException;
 public class BrokerWatchdog {
 
 	private final static Logger LOG = Logger.getLogger(BrokerWatchdog.class);
-	
-	private final static DateFormat df = DateFormat.getDateTimeInstance();
-	
-	private class WatchedBroker {
+
+	private static class WatchedBroker {
 		
 		DBBroker broker;
 		StringBuilder trace;
@@ -81,7 +76,7 @@ public class BrokerWatchdog {
 		writer.println("Active brokers:");
 		for (final WatchedBroker broker: watched.values()) {
 			writer.format("%20s: %s\n", "Broker", broker.broker.getId());
-			writer.format("%20s: %s\n", "Active since", df.format(new Date(broker.timeAdded)));
+			writer.format("%20s: %s\n", "Active since", DateFormat.getDateTimeInstance().format(new Date(broker.timeAdded)));
 			writer.println("\nStack:");
 			writer.println(broker.trace);
 			writer.println("----------------------------------------------------------------");

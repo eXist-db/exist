@@ -161,7 +161,7 @@ public class ProcessMonitor {
      * Oldest items are removed when new items are added
      * if the max size is exceeded
      */
-    public class FixedSizeLinkedHashMap<K,V> extends LinkedHashMap<K,V> {
+    public static class FixedSizeLinkedHashMap<K,V> extends LinkedHashMap<K,V> {
 
         private final int maxSize;
 
@@ -177,7 +177,7 @@ public class ProcessMonitor {
      }
 
 
-    public class QueryHistory {
+    public static class QueryHistory {
 
         private final String source;
         private long mostRecentExecutionTime;

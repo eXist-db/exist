@@ -495,20 +495,27 @@ public class NativeBroker extends DBBroker {
     private void backupBinary(final RawDataBackup backup, final File file, String path) throws IOException {
         path = path + "/" + file.getName();
         if(file.isDirectory()) {
-            for(final File f : file.listFiles()) {
+            File[] files = file.listFiles();
+            if (files == null) return;
+            for(final File f : files) {
                 backupBinary(backup, f, path);
             }
-        } else {
-            final OutputStream os = backup.newEntry(path);
-            final InputStream is = new FileInputStream(file);
+            return;
+        }
+        OutputStream os = backup.newEntry(path);
+        InputStream is = null;
+        try {
+            is = new FileInputStream(file);
             final byte[] buf = new byte[4096];
             int len;
-            while((len = is.read(buf)) > 0) {
+            while ((len = is.read(buf)) > 0) {
                 os.write(buf, 0, len);
             }
-            is.close();
-            backup.closeEntry();
         }
+        finally {
+            if (is != null) is.close();
+        }
+        backup.closeEntry();
     }
 
     @Override
