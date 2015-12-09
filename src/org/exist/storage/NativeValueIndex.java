@@ -1156,7 +1156,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
 
         @Override
         public boolean matches(final CharSequence term) {
-            return term.toString().equals(expr);
+            return term != null && term.toString().equals(expr);
         }
     }
 
@@ -1170,7 +1170,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
 
         @Override
         public boolean matches(final CharSequence term) {
-            return term.toString().contains(expr);
+            return term != null && term.toString().contains(expr);
         }
     }
 
@@ -1184,7 +1184,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
 
         @Override
         public boolean matches(final CharSequence term) {
-            return (term.toString().startsWith(expr));
+            return term != null && term.toString().startsWith(expr);
         }
     }
 
@@ -1197,7 +1197,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
 
         @Override
         public boolean matches(final CharSequence term) {
-            return term.toString().endsWith(expr);
+            return term != null && term.toString().endsWith(expr);
         }
     }
 

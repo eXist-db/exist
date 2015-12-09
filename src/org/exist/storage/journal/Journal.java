@@ -71,7 +71,7 @@ import org.exist.util.sanity.SanityCheck;
  */
 @ConfigurationClass("journal")
 //TODO: conf.xml refactoring <recovery> => <recovery><journal/></recovery>
-public class Journal {
+public final class Journal {
     /**
      * Logger for this class
      */
@@ -167,7 +167,7 @@ public class Journal {
         currentBuffer = ByteBuffer.allocateDirect(1024 * 1024);
 
         syncThread = new FileSyncThread(latch);
-        syncThread.start();
+        syncThread.start(); //this makes us to use class as a final only - no inheritance allowed
 
         this.syncOnCommit = pool.getConfiguration().getProperty(PROPERTY_RECOVERY_SYNC_ON_COMMIT, DEFAULT_SYNC_ON_COMMIT);
         if (LOG.isDebugEnabled()) {

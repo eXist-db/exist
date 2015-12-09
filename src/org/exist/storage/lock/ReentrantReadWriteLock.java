@@ -195,7 +195,7 @@ public class ReentrantReadWriteLock implements Lock {
     }
 
     public synchronized void wakeUp() {
-        notify();
+        notifyAll();
     }
 
     public boolean attempt(int mode) {

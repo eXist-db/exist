@@ -41,7 +41,7 @@ public class FileSyncThread extends Thread {
 
 	// guarded by latch
     private FileChannel endOfLog;
-    private Object latch;
+    private final Object latch;
     
     // guarded by this
     private boolean syncTriggered = false;
