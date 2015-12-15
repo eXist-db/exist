@@ -1427,6 +1427,9 @@ public class RpcConnection implements RpcAPI {
                 } catch (final IOException ioe) {
                     throw new EXistException("Error preparing virtual temp file for parsing");
                 }
+                finally {
+                    source.close();
+                }
 
                 final MimeType mime = Optional.ofNullable(MimeTable.getInstance().getContentType(mimeType)).orElse(MimeType.BINARY_TYPE);
                 final boolean treatAsXML = (isXML != null && isXML) || (isXML == null && mime.isXMLType());

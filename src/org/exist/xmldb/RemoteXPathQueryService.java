@@ -266,13 +266,18 @@ public class RemoteXPathQueryService extends AbstractRemote implements XPathQuer
     @Override
     public ResourceSet queryResource(final String resource, final String query) throws XMLDBException {
         final Resource res = collection.getResource(resource);
-        if (res == null) {
-            throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "Resource " + resource + " not found");
+        try {
+            if (res == null) {
+                throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "Resource " + resource + " not found");
+            }
+            if (!"XMLResource".equals(res.getResourceType())) {
+                throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "Resource " + resource + " is not an XML resource");
+            }
+            return query((XMLResource) res, query);
         }
-        if (!"XMLResource".equals(res.getResourceType())) {
-            throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "Resource " + resource + " is not an XML resource");
+        finally {
+            if (res!=null && res instanceof AbstractRemoteResource) ((AbstractRemoteResource)res).freeResources();
         }
-        return query((XMLResource) res, query);
     }
 
     @Override

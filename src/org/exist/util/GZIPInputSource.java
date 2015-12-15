@@ -110,9 +110,11 @@ public final class GZIPInputSource extends EXistInputSource {
 					retval+=readed;
 				}
 				streamLength = retval;
-				close();
 			} catch(final IOException ioe) {
 				// DoNothing(R)
+			}
+			finally {
+				close();
 			}
 		}
 
@@ -124,9 +126,13 @@ public final class GZIPInputSource extends EXistInputSource {
 		return file.getAbsolutePath();
 	}
 	
-	protected void finalize()
-		throws Throwable
-	{
-		close();
+	protected void finalize() throws Throwable {
+		try {
+			close();
+		}
+		finally {
+			super.finalize();
+		}
+
 	}
 }

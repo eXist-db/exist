@@ -15,9 +15,13 @@ public class ServiceDaemon {
     public ServiceDaemon() {
     }
 
-    protected void finalize() {
-        System.err.println("ServiceDaemon: instance "+this.hashCode()+
-                           " garbage collected");
+    protected void finalize() throws Throwable {
+        try {
+            System.err.println("ServiceDaemon: instance " + this.hashCode() + " garbage collected");
+        }
+        finally {
+            super.finalize();
+        }
     }
 
     public void init(String[] arguments)

@@ -163,10 +163,13 @@ public class VirtualTempFileInputSource
 			{file=null;}
 	}
 	
-	protected void finalize()
-		throws Throwable
-	{
-		free();
+	protected void finalize() throws Throwable {
+		try {
+			free();
+		}
+		finally {
+			super.finalize();
+		}
 	}
 
 	@Override
@@ -176,6 +179,6 @@ public class VirtualTempFileInputSource
 
 	@Override
 	public void close() {
-		// TODO Auto-generated method stub
+		free();
 	}
 }
