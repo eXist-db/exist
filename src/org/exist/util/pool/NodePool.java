@@ -53,7 +53,7 @@ public class NodePool {
         }
     }
 
-    private static ThreadLocal<NodePool> pools = new PoolThreadLocal();
+    private static final ThreadLocal<NodePool> pools = new PoolThreadLocal();
     
 
     private int maxActive;
