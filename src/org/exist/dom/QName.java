@@ -277,29 +277,33 @@ public class QName implements Comparable<QName> {
     public static QName parse(final Context context, final String qname, final String defaultNS)
             throws XPathException {
 
-        final Matcher clarkNotation = ptnClarkNotation.matcher(qname);
+        // quick test if qname is in clark notation
+        if (qname.length() > 0 && qname.charAt(0) == '{') {
+            final Matcher clarkNotation = ptnClarkNotation.matcher(qname);
 
-        if(clarkNotation.matches()) {
-            //parse as clark notation
-            final String ns = clarkNotation.group(1);
-            final String localPart = clarkNotation.group(2);
-            return new QName(localPart, ns);
-        } else {
-            final String prefix = extractPrefix(qname);
-            String namespaceURI;
-            if (prefix != null) {
-                namespaceURI = context.getURIForPrefix(prefix);
-                if (namespaceURI == null) {
-                    throw new XPathException(ErrorCodes.XPST0081, "No namespace defined for prefix " + prefix);
-                }
-            } else {
-                namespaceURI = defaultNS;
+            // more expensive check
+            if (clarkNotation.matches()) {
+                //parse as clark notation
+                final String ns = clarkNotation.group(1);
+                final String localPart = clarkNotation.group(2);
+                return new QName(localPart, ns);
             }
-            if (namespaceURI == null) {
-                namespaceURI = XMLConstants.NULL_NS_URI;
-            }
-            return new QName(extractLocalName(qname), namespaceURI, prefix);
         }
+
+        final String prefix = extractPrefix(qname);
+        String namespaceURI;
+        if (prefix != null) {
+            namespaceURI = context.getURIForPrefix(prefix);
+            if (namespaceURI == null) {
+                throw new XPathException(ErrorCodes.XPST0081, "No namespace defined for prefix " + prefix);
+            }
+        } else {
+            namespaceURI = defaultNS;
+        }
+        if (namespaceURI == null) {
+            namespaceURI = XMLConstants.NULL_NS_URI;
+        }
+        return new QName(extractLocalName(qname), namespaceURI, prefix);
     }
 
     /**
