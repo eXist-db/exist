@@ -47,6 +47,9 @@ import javax.xml.datatype.Duration;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.stream.XMLStreamException;
 
+import net.sf.cglib.proxy.Callback;
+import net.sf.cglib.proxy.Enhancer;
+import net.sf.cglib.proxy.MethodInterceptor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Database;
@@ -86,6 +89,7 @@ import org.exist.util.Configuration;
 import org.exist.util.LockException;
 import org.exist.util.hashtable.NamePool;
 import org.exist.xmldb.XmldbURI;
+import org.exist.xpdl.XpdlExtensionModuleBridge;
 import org.exist.xquery.functions.request.RequestModule;
 import org.exist.xquery.parser.*;
 import org.exist.xquery.pragmas.*;
@@ -95,8 +99,11 @@ import org.exist.xquery.value.*;
 import antlr.RecognitionException;
 import antlr.TokenStreamException;
 import antlr.collections.AST;
+import org.exist.xquery.value.Item;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Iterator;
 
 /**
  * The current XQuery execution context. Contains the static as well as the dynamic
@@ -1351,13 +1358,13 @@ public class XQueryContext implements BinaryValueManager, Context
         if( modifiedDocuments == null ) {
             modifiedDocuments = new DefaultDocumentSet();
         }
-        modifiedDocuments.add( document );
+        modifiedDocuments.add(document);
     }
 
 
     public void reset()
     {
-        reset( false );
+        reset(false);
     }
 
 
@@ -1561,13 +1568,13 @@ public class XQueryContext implements BinaryValueManager, Context
      */
     public Module getModule( String namespaceURI )
     {
-        return( modules.get( namespaceURI ) );
+        return( modules.get(namespaceURI) );
     }
 
 
     public Module getRootModule( String namespaceURI )
     {
-        return( allModules.get( namespaceURI ) );
+        return( allModules.get(namespaceURI) );
     }
 
 
@@ -1576,9 +1583,9 @@ public class XQueryContext implements BinaryValueManager, Context
         if( module == null ) {
             modules.remove( namespaceURI ); // unbind the module
         } else {
-            modules.put( namespaceURI, module );
+            modules.put(namespaceURI, module);
         }
-        setRootModule( namespaceURI, module );
+        setRootModule(namespaceURI, module);
     }
 
 
@@ -1592,7 +1599,7 @@ public class XQueryContext implements BinaryValueManager, Context
         if( allModules.get( namespaceURI ) != module ) {
             setModulesChanged();
         }
-        allModules.put( namespaceURI, module );
+        allModules.put(namespaceURI, module);
     }
 
 
@@ -1635,7 +1642,7 @@ public class XQueryContext implements BinaryValueManager, Context
 
         if( optimizationsEnabled() ) {
             final Optimizer optimizer = new Optimizer( this );
-            expr.accept( optimizer );
+            expr.accept(optimizer);
 
             if( optimizer.hasOptimized() ) {
                 reset( true );
@@ -1682,7 +1689,7 @@ public class XQueryContext implements BinaryValueManager, Context
             final Class<?> mClass = Class.forName( moduleClass );
 
             if( !( Module.class.isAssignableFrom( mClass ) ) ) {
-                LOG.info( "failed to load module. " + moduleClass + " is not an instance of org.exist.xquery.Module." );
+                LOG.info("failed to load module. " + moduleClass + " is not an instance of org.exist.xquery.Module.");
                 return( null );
             }
             //instantiateModule( namespaceURI, (Class<Module>)mClass );
@@ -1691,47 +1698,67 @@ public class XQueryContext implements BinaryValueManager, Context
             //LOG.debug("module " + module.getNamespaceURI() + " loaded successfully.");
         }
         catch( final ClassNotFoundException e ) {
-            LOG.warn( "module class " + moduleClass + " not found. Skipping..." );
+            LOG.warn("module class " + moduleClass + " not found. Skipping...");
         }
         return( module );
     }
 
 
-    protected Module instantiateModule( String namespaceURI, Class<Module> mClass, Map<String, Map<String, List<? extends Object>>> moduleParameters) {
-        Module module = null;
+    protected Module instantiateModule( String namespaceURI, Class mClass, Map<String, Map<String, List<? extends Object>>> moduleParameters) {
 
-        try {
-
-            final Constructor<Module> cnstr = mClass.getConstructor(Map.class);
-            
-            module = cnstr.newInstance(moduleParameters.get(namespaceURI));
-
-            if(namespaceURI != null && !module.getNamespaceURI().equals(namespaceURI)) {
-                LOG.warn( "the module declares a different namespace URI. Expected: " + namespaceURI + " found: " + module.getNamespaceURI() );
-                return( null );
-            }
-
-            if((getPrefixForURI( module.getNamespaceURI() ) == null) && (module.getDefaultPrefix().length() > 0)) {
-                declareNamespace( module.getDefaultPrefix(), module.getNamespaceURI() );
-            }
-
-            modules.put(module.getNamespaceURI(), module);
-            allModules.put(module.getNamespaceURI(), module);
-        } catch(final InstantiationException ie) {
-            LOG.warn("error while instantiating module class " + mClass.getName(), ie);
-        } catch(final IllegalAccessException iae) {
-            LOG.warn("error while instantiating module class " + mClass.getName(), iae);
-        } catch(final XPathException xpe) {
-            LOG.warn("error while instantiating module class " + mClass.getName(), xpe);
-        } catch(final NoSuchMethodException nsme) {
-            LOG.warn("error while instantiating module class " + mClass.getName(), nsme);
-        } catch(final InvocationTargetException ite) {
-            LOG.warn("error while instantiating module class " + mClass.getName(), ite);
+        final Optional<Module> maybeModule;
+        if(Module.class.isAssignableFrom(mClass)) {
+            maybeModule = instantiateNativeModule(mClass, moduleParameters.get(namespaceURI));
+        } else if(xpdl.extension.Module.class.isAssignableFrom(mClass)) {
+            maybeModule = instantiateXpdlExtensionModule(mClass, moduleParameters.get(namespaceURI));
+        } else {
+            maybeModule = Optional.empty();
         }
-        
-        return module;
+
+        if(maybeModule.isPresent()) {
+            final Module module = maybeModule.get();
+            try {
+                if (namespaceURI != null && !module.getNamespaceURI().equals(namespaceURI)) {
+                    LOG.warn("the module declares a different namespace URI. Expected: " + namespaceURI + " found: " + module.getNamespaceURI());
+                    return (null);
+                }
+
+                if ((getPrefixForURI(module.getNamespaceURI()) == null) && (module.getDefaultPrefix().length() > 0)) {
+                    declareNamespace(module.getDefaultPrefix(), module.getNamespaceURI());
+                }
+
+                modules.put(module.getNamespaceURI(), module);
+                allModules.put(module.getNamespaceURI(), module);
+
+                return module;
+            } catch (final XPathException xpe) {
+                LOG.warn("error while instantiating module class " + mClass.getName(), xpe);
+                return null;
+            }
+        } else {
+            return null;
+        }
     }
 
+    private Optional<Module> instantiateNativeModule(final Class mClass, final Map<String, List<? extends Object>> parameters) {
+        try {
+            final Constructor<Module> cnstr = mClass.getConstructor(Map.class);
+            return Optional.of(cnstr.newInstance(parameters));
+        } catch(final InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+            LOG.error("error while instantiating module class " + mClass.getName(), e);
+            return Optional.empty();
+        }
+    }
+
+    private Optional<Module> instantiateXpdlExtensionModule(final Class mClass, final Map<String, List<? extends Object>> parameters) {
+        try {
+            final xpdl.extension.Module module = (xpdl.extension.Module)mClass.newInstance();
+            return Optional.of(XpdlExtensionModuleBridge.from(module, parameters));
+        } catch(final InstantiationException | IllegalAccessException e) {
+            LOG.error("error while instantiating XPDL extension module class " + mClass.getName(), e);
+            return Optional.empty();
+        }
+    }
 
     /**
      * Convenience method that returns the XACML Policy Decision Point for this database instance. If XACML has not been enabled, this returns null.
@@ -3363,16 +3390,16 @@ public class XQueryContext implements BinaryValueManager, Context
         raiseErrorOnFailedRetrieval = ( option != null ) && option.booleanValue();
 
         // Get map of built-in modules
-        final Map<String, Class<Module>> builtInModules = (Map)config.getProperty( PROPERTY_BUILT_IN_MODULES );
+        final Map<String, Class> builtInModules = (Map)config.getProperty( PROPERTY_BUILT_IN_MODULES );
 
         if( builtInModules != null ) {
 
             // Iterate on all map entries
-            for( final Map.Entry<String, Class<Module>> entry : builtInModules.entrySet() ) {
+            for( final Map.Entry<String, Class> entry : builtInModules.entrySet() ) {
 
                 // Get URI and class
                 final String        namespaceURI = entry.getKey();
-                final Class<Module> moduleClass  = entry.getValue();
+                final Class moduleClass  = entry.getValue();
                 
                 // first check if the module has already been loaded in the parent context
                 final Module        module       = getModule( namespaceURI );
