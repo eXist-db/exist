@@ -258,7 +258,7 @@ public class XQueryContext implements BinaryValueManager, Context
     private boolean                                    backwardsCompatible           = false;
 
     /** Should whitespace inside node constructors be stripped? */
-    private boolean                                    stripWhitespace               = false;
+    private boolean                                    stripWhitespace               = true;
 
     /** Should empty order greatest or least? */
     private boolean                                    orderEmptyGreatest            = true;
