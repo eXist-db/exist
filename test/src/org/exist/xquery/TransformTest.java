@@ -18,6 +18,7 @@ import org.xmldb.api.modules.XQueryService;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 
 public class TransformTest {
@@ -36,22 +37,51 @@ public class TransformTest {
 		String imports = 
     		"import module namespace transform='http://exist-db.org/xquery/transform';\n";
 
-        String query =
-            "import module namespace transform='http://exist-db.org/xquery/transform';\n" +
-            "let $xml := <empty />,\n" +
-            "	$xsl := 'xmldb:exist:///db/"+TEST_COLLECTION_NAME+"/xsl1/1.xsl'\n" +
-            "return transform:transform($xml, $xsl, ())";
-        String result = execQuery(query);
-        assertEquals(result, "<doc>" +
-                "<p>Start Template 1</p>" +
-                "<p>Start Template 2</p>" +
-                "<p>Template 3</p>" +
-                "<p>End Template 2</p>" +
-                "<p>Template 3</p>" +
-                "<p>End Template 1</p>" +
-                "</doc>");
+    String query =
+        "import module namespace transform='http://exist-db.org/xquery/transform';\n" +
+        "let $xml := <empty />,\n" +
+        "	$xsl := 'xmldb:exist:///db/"+TEST_COLLECTION_NAME+"/xsl1/1.xsl'\n" +
+        "return transform:transform($xml, $xsl, ())";
+    String result = execQuery(query);
+    assertEquals(result, "<doc>" +
+            "<p>Start Template 1</p>" +
+            "<p>Start Template 2</p>" +
+            "<p>Template 3</p>" +
+            "<p>End Template 2</p>" +
+            "<p>Template 3</p>" +
+            "<p>End Template 1</p>" +
+            "</doc>");
     }
     
+	@Test
+	public void transform_onespace() throws XMLDBException {
+    String	doc = "<?xml version='1.0' encoding='UTF-8'?>\n" +
+    "<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform' version='1.0'>\n"+
+    "<xsl:template match=\"node\">\n"+
+        "<txt-out><xsl:value-of xml:space=\"preserve\" select=\"text()\"/></txt-out>\n"+
+    "</xsl:template>\n" +
+    "</xsl:stylesheet>";
+  	Resource r = testCollection.createResource("xsl-space.xsl", XMLResource.RESOURCE_TYPE);
+  	r.setContent(doc);
+//  	((EXistResource) r).setMimeType("application/xml");
+  	testCollection.storeResource(r);
+  	
+		@SuppressWarnings("unused")
+		String imports = "import module namespace transform='http://exist-db.org/xquery/transform';\n";
+		String query =
+        "import module namespace transform='http://exist-db.org/xquery/transform';\n" +
+        "let $xml := <node> </node>,\n" +
+        " $xsl := 'xmldb:exist:///db/"+TEST_COLLECTION_NAME+"/xsl-space.xsl'\n"+
+        "return <txt-out> </txt-out>\n"+
+        "(: return <txt-out xml:space=\"preserve\"> </txt-out> :)\n"+
+				"(: return transform:transform($xml, $xsl, ()) :)";
+    System.out.println("query:"+query);
+
+    String result = execQuery(query);
+    System.out.println("result:"+result);
+    
+    assertEquals(result, "<txt-out> </txt-out>");
+	}
     
     private String execQuery(String query) throws XMLDBException {
     	XQueryService service = (XQueryService) testCollection.getService("XQueryService", "1.0");
