@@ -258,7 +258,7 @@ public class XQueryContext implements BinaryValueManager, Context
     private boolean                                    backwardsCompatible           = false;
 
     /** Should whitespace inside node constructors be stripped? */
-    private boolean                                    stripWhitespace               = true;
+    private boolean                                    stripWhitespace               = false;
 
     /** Should empty order greatest or least? */
     private boolean                                    orderEmptyGreatest            = true;
@@ -1466,6 +1466,7 @@ public class XQueryContext implements BinaryValueManager, Context
 
     public void setStripWhitespace( boolean strip )
     {
+    	System.out.println("setStripWhitespace called with:"+strip);
         this.stripWhitespace = strip;
     }
 

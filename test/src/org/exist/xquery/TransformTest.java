@@ -72,9 +72,8 @@ public class TransformTest {
         "import module namespace transform='http://exist-db.org/xquery/transform';\n" +
         "let $xml := <node> </node>,\n" +
         " $xsl := 'xmldb:exist:///db/"+TEST_COLLECTION_NAME+"/xsl-space.xsl'\n"+
-        "return <txt-out> </txt-out>\n"+
-        "(: return <txt-out xml:space=\"preserve\"> </txt-out> :)\n"+
-				"(: return transform:transform($xml, $xsl, ()) :)";
+        "(:return <txt-out> </txt-out>:)\n"+
+				"return transform:transform($xml, $xsl, ())";
     System.out.println("query:"+query);
 
     String result = execQuery(query);
