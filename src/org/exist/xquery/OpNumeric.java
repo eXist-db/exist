@@ -70,8 +70,13 @@ public class OpNumeric extends BinaryOp {
             if (Type.subTypeOf(ltype, Type.NUMBER)) {ltype = Type.NUMBER;}
             if (Type.subTypeOf(rtype, Type.NUMBER)) {rtype = Type.NUMBER;}
             final OpEntry entry = OP_TYPES.get(new OpEntry(operator, ltype, rtype));
-            if (entry != null)
-                {returnType = entry.typeResult;}
+            if (entry != null) {
+                returnType = entry.typeResult;
+            } else if (ltype == Type.NUMBER || rtype == Type.NUMBER) {
+                // if one of both operands returns a number, we can safely assume
+                // the return type of the whole expression will be a number
+                returnType = Type.NUMBER;
+            }
         }
         add(left);
         add(right);
@@ -79,7 +84,7 @@ public class OpNumeric extends BinaryOp {
 
     @Override
     public int getDependencies() {
-        return Dependency.CONTEXT_SET + Dependency.CONTEXT_ITEM;
+        return getLeft().getDependencies() | getRight().getDependencies();
     }
 
     public int returnsType() {

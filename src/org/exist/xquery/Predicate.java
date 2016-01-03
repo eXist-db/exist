@@ -337,7 +337,11 @@ public class Predicate extends PathExpr {
                         Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION CHOICE", "Positional evaluation");}
                 // In case it hasn't been evaluated above
                 if (innerSeq == null) {
-                    innerSeq = inner.eval(contextSequence);
+                    // for a positional predicate, check if it depends on the context item
+                    // if not, do not pass the context sequence to avoid cardinality errors
+                    context.setContextSequencePosition(0, contextSequence);
+                    innerSeq = inner.eval(Dependency.dependsOn(inner.getDependencies(), Dependency.CONTEXT_ITEM)
+                            ? contextSequence : null);
                 }
                 result = selectByPosition(outerSequence, contextSequence, mode, innerSeq);
                 break;
