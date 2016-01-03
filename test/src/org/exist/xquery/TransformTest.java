@@ -18,7 +18,6 @@ import org.xmldb.api.modules.XQueryService;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 
 public class TransformTest {
@@ -58,12 +57,12 @@ public class TransformTest {
     String	doc = "<?xml version='1.0' encoding='UTF-8'?>\n" +
     "<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform' version='1.0'>\n"+
     "<xsl:template match=\"node\">\n"+
-        "<txt-out><xsl:value-of xml:space=\"preserve\" select=\"text()\"/></txt-out>\n"+
+        "<txt-out xml:space=\"preserve\"> <xsl:value-of select=\"text()\"/></txt-out>\n"+
     "</xsl:template>\n" +
     "</xsl:stylesheet>";
   	Resource r = testCollection.createResource("xsl-space.xsl", XMLResource.RESOURCE_TYPE);
   	r.setContent(doc);
-//  	((EXistResource) r).setMimeType("application/xml");
+  	((EXistResource) r).setMimeType("application/xml");
   	testCollection.storeResource(r);
   	
 		@SuppressWarnings("unused")
@@ -73,13 +72,13 @@ public class TransformTest {
         "let $xml := <node> </node>,\n" +
         " $xsl := 'xmldb:exist:///db/"+TEST_COLLECTION_NAME+"/xsl-space.xsl'\n"+
         "(:return <txt-out> </txt-out>:)\n"+
-				"return transform:transform($xml, $xsl, ())";
+		"return transform:transform($xml, $xsl, ())";
     System.out.println("query:"+query);
 
     String result = execQuery(query);
     System.out.println("result:"+result);
     
-    assertEquals(result, "<txt-out> </txt-out>");
+    assertEquals(result, "<txt-out xml:space=\"preserve\"> </txt-out>");
 	}
     
     private String execQuery(String query) throws XMLDBException {

@@ -191,7 +191,32 @@ public class ConstructedNodesTest {
         // Restore indent property to ensure test atomicity
         service.setProperty(OutputKeys.INDENT, oki);
 	}
-
+	/**
+	 * Test constructed (text) nodes
+	 */
+    @Test
+	public void constructedOneSpaceTextNodes() throws XMLDBException {
+		String xquery =
+			"declare variable $space := <a>{ \" \" }</a>;\n" +
+			"declare variable $space-preserve := <a xml:space=\"preserve\">{ \" \" }</a>;\n" +
+			"($space, $space-preserve)";
+		
+		String expectedResults [] = { 
+				"<a> </a>",
+				"<a xml:space=\"preserve\"> </a>"
+				};
+        String oki = service.getProperty(OutputKeys.INDENT);
+        service.setProperty(OutputKeys.INDENT, "no");
+        
+        ResourceSet result = service.query(xquery);
+        assertEquals(expectedResults.length, result.getSize());
+        
+        for(int i = 0; i < result.getSize(); i++) {
+            assertEquals(expectedResults[i], result.getResource(i).getContent());
+        }
+        // Restore indent property to ensure test atomicity
+        service.setProperty(OutputKeys.INDENT, oki);
+	}
     @Before
 	public void setUp() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
 		// initialize driver
