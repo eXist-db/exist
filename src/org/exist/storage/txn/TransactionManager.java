@@ -161,12 +161,14 @@ public class TransactionManager {
 
 			public Txn execute() {
 				final long txnId = nextTxnId++;
-                LOG.debug("Starting new transaction: " + txnId);
+                if(LOG.isDebugEnabled()) {
+                    LOG.debug("Starting new transaction: " + txnId);
+                }
                 final Txn txn = new Txn(TransactionManager.this, txnId);
 	            try {
 	                journal.writeToLog(new TxnStart(txnId));
 	            } catch (final TransactionException e) {
-	                LOG.warn("Failed to create transaction. Error writing to log file.", e);
+                    LOG.error("Failed to create transaction. Error writing to log file.", e);
 	            }
                 transactions.put(txn.getId(), new TxnCounter());
                 return txn;
@@ -194,7 +196,7 @@ public class TransactionManager {
                     try {
 						journal.writeToLog(new TxnCommit(txn.getId()));
 					} catch (final TransactionException e) {
-						LOG.error("transaction manager caught exception while committing", e);
+						LOG.error("Transaction manager caught exception while committing", e);
 					}
                     if (!groupCommit)
                         {journal.flushToLog(true);}
@@ -203,7 +205,9 @@ public class TransactionManager {
                 txn.releaseAll();
                 transactions.remove(txn.getId());
                 processSystemTasks();
-                LOG.debug("Committed transaction: " + txn.getId());
+                if(LOG.isDebugEnabled()) {
+                    LOG.debug("Committed transaction: " + txn.getId());
+                }
                 return null;
         	}
         }.run();
@@ -222,7 +226,7 @@ public class TransactionManager {
                 try {
                     journal.writeToLog(new TxnAbort(txn.getId()));
                 } catch (final TransactionException e) {
-                    LOG.warn("Failed to write abort record to journal: " + e.getMessage());
+                    LOG.error("Failed to write abort record to journal: " + e.getMessage());
                 }
                 if (!groupCommit)
                     {journal.flushToLog(true);}
@@ -249,9 +253,7 @@ public class TransactionManager {
         try {
             //if the transaction is started, then we should auto-abort the uncommitted transaction
             if (txn.getState() == Txn.State.STARTED) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Transaction was not committed or aborted, auto aborting!");
-                }
+                LOG.warn("Transaction was not committed or aborted, auto aborting!");
                 abort(txn);
             }
         } finally {
@@ -309,14 +311,16 @@ public class TransactionManager {
         try {
             broker.reindexCollection(XmldbURI.ROOT_COLLECTION_URI);
         } catch (final PermissionDeniedException e) {
-            LOG.warn("Exception during reindex: " + e.getMessage(), e);
+            LOG.error("Exception during reindex: " + e.getMessage(), e);
         } finally {
         	broker.popSubject();
         }
     }
 
     public void shutdown() {
-        LOG.debug("Shutting down transaction manager. Uncommitted transactions: " + transactions.size());
+        if(LOG.isDebugEnabled()) {
+            LOG.debug("Shutting down transaction manager. Uncommitted transactions: " + transactions.size());
+        }
         final int uncommitted = uncommittedTransaction();
         shutdown(uncommitted == 0);
     }
@@ -335,8 +339,7 @@ public class TransactionManager {
             {return count;}
         for (final Map.Entry<Long, TxnCounter> entry : transactions.entrySet()) {
             if (entry.getValue().counter > 0) {
-                LOG.warn("Found an uncommitted transaction with id " + entry.getKey() + ". Pending operations: " +
-                    entry.getValue().counter);
+                LOG.warn("Found an uncommitted transaction with id " + entry.getKey() + ". Pending operations: " + entry.getValue().counter);
                 count++;
             }
         }
@@ -391,7 +394,7 @@ public class TransactionManager {
     				lock.unlock();
     			}
     		} catch (final EXistException e) {
-				LOG.warn("Transaction manager failed to acquire broker for running system tasks");
+				LOG.error("Transaction manager failed to acquire broker for running system tasks");
 				return null;
 			}
     	}
