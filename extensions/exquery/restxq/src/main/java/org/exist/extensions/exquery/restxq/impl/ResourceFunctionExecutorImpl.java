@@ -31,6 +31,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
@@ -39,8 +41,11 @@ import org.exist.extensions.exquery.restxq.RestXqServiceCompiledXQueryCache;
 import org.exist.extensions.exquery.restxq.impl.adapters.SequenceAdapter;
 import org.exist.extensions.exquery.restxq.impl.adapters.TypeAdapter;
 import org.exist.dom.memtree.DocumentImpl;
+import org.exist.security.EffectiveSubject;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
+import org.exist.source.DBSource;
+import org.exist.source.Source;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.ProcessMonitor;
@@ -128,7 +133,7 @@ public class ResourceFunctionExecutorImpl implements ResourceFunctionExecuter {
             
             //get a compiled query service from the cache
             xquery = cache.getCompiledQuery(broker, resourceFunction.getXQueryLocation());
-            
+
             //find the function that we will execute
             final UserDefinedFunction fn = findFunction(xquery, resourceFunction.getFunctionSignature());
             
@@ -163,9 +168,21 @@ public class ResourceFunctionExecutorImpl implements ResourceFunctionExecuter {
             
             //execute the function call
             fnRef.analyze(new AnalyzeContextInfo());
-            final org.exist.xquery.value.Sequence result = fnRef.evalFunction(null, null, fnArgs);
-            
-            return new SequenceAdapter(result);
+
+            //if setUid/setGid, determine the effectiveSubject to use for execution
+            final Optional<EffectiveSubject> effectiveSubject = getEffectiveSubject(xquery);
+
+            try {
+                effectiveSubject.ifPresent(broker::pushSubject);  //switch to effective user if setUid/setGid
+                final org.exist.xquery.value.Sequence result = fnRef.evalFunction(null, null, fnArgs);
+                return new SequenceAdapter(result);
+            } finally {
+                //switch back from effective user if setUid/setGid
+                if(effectiveSubject.isPresent()) {
+                    broker.popSubject();
+                }
+            }
+
         } catch(final URISyntaxException | EXistException | XPathException | PermissionDeniedException use) {
             throw new RestXqServiceException(use.getMessage(), use);
         } finally {
@@ -182,7 +199,44 @@ public class ResourceFunctionExecutorImpl implements ResourceFunctionExecuter {
             }
         }
     }
-    
+
+    /**
+     * If the compiled xquery is setUid and/or setGid
+     * we return the EffectiveSubject that should be used
+     * for execution
+     *
+     * @param xquery The XQuery to determine the effective subject for
+     * @return Maybe an effective subject or empty if there is no setUid or setGid bits
+     */
+    private Optional<EffectiveSubject> getEffectiveSubject(final CompiledXQuery xquery) {
+        final Optional<EffectiveSubject> effectiveSubject;
+
+        final Source src = xquery.getContext().getSource();
+        if(src instanceof DBSource) {
+            final DBSource dbSrc = (DBSource)src;
+            final Permission perm = dbSrc.getPermissions();
+
+            if(perm.isSetUid()) {
+                if(perm.isSetGid()) {
+                    //setUid and SetGid
+                    effectiveSubject = Optional.of(new EffectiveSubject(perm.getOwner(), perm.getGroup()));
+                } else {
+                    //just setUid
+                    effectiveSubject = Optional.of(new EffectiveSubject(perm.getOwner()));
+                }
+            } else if(perm.isSetGid()) {
+                //just setGid, so we use the current user as the effective user
+                effectiveSubject = Optional.of(new EffectiveSubject(xquery.getContext().getBroker().getCurrentSubject(), perm.getGroup()));
+            } else {
+                effectiveSubject = Optional.empty();
+            }
+        } else {
+            effectiveSubject = Optional.empty();
+        }
+
+        return effectiveSubject;
+    }
+
     private void declareVariables(final XQueryContext xqueryContext) throws XPathException {
         xqueryContext.declareVariable(XQ_VAR_BASE_URI, baseUri);
         xqueryContext.declareVariable(XQ_VAR_URI, uri);
