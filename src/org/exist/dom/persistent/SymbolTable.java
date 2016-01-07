@@ -354,7 +354,6 @@ public class SymbolTable implements BrokerPoolService, Closeable {
     private void saveSymbols() throws EXistException {
         try(final VariableByteOutputStream os = new VariableByteOutputStream(256);
                 final OutputStream fos =  Files.newOutputStream(getFile())) {
-
             writeAll(os);
             fos.write(os.toByteArray());
         } catch(final FileNotFoundException e) {
@@ -421,7 +420,9 @@ public class SymbolTable implements BrokerPoolService, Closeable {
         return os;
     }
 
+    @Override
     public void close() throws IOException {
+        outBuffer.close();
         if(os != null) {
             os.close();
         }

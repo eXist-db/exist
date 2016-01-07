@@ -34,7 +34,7 @@ import java.nio.file.Path;
  * to configure, open and close the index. These methods will be called by the main
  * database instance during startup/shutdown. They don't need to be synchronized.
  */
-public interface Index {
+public interface Index extends AutoCloseable {
    
     /**
      * Returns an id which uniquely identifies this index.  This is usually the class name. 
@@ -81,6 +81,7 @@ public interface Index {
      *
      * @throws DBException
      */
+    @Override
     void close() throws DBException;
 
     /**
