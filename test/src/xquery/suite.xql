@@ -10,5 +10,6 @@ test:suite((
     inspect:module-functions(xs:anyURI("count.xql")),
     inspect:module-functions(xs:anyURI("serializer.xql")),
     inspect:module-functions(xs:anyURI("comments.xql")),
-    inspect:module-functions(xs:anyURI("fn.xql"))
+    inspect:module-functions(xs:anyURI("fn.xql")),
+    inspect:module-functions(xs:anyURI("errors.xql"))
 ))
