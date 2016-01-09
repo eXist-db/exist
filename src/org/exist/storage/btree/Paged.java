@@ -79,7 +79,11 @@ import org.exist.util.ByteConversion;
 import org.exist.util.FileUtils;
 import org.exist.xquery.Constants;
 
-import java.io.*;
+import java.lang.AutoCloseable;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.channels.NonWritableChannelException;
@@ -331,19 +335,22 @@ public abstract class Paged implements AutoCloseable {
         return true;
     }
 
-    public boolean open(final short expectedVersion) throws DBException {
+    /**
+     * @param requiredVersion The required version of the file
+     */
+    public boolean open(final short requiredVersion) throws DBException {
         try {
             if (exists()) {
                 fileHeader.read();
-                if(fileHeader.getVersion() != expectedVersion) {
+                if(fileHeader.getVersion() != requiredVersion) {
                     throw new DBException("Database file " +
                         FileUtils.fileName(getFile()) + " has a storage format incompatible with this " +
-                        "version of eXist. You need to upgrade your database by creating a backup," +
-                        "cleaning your data directory and restoring the data. In some cases," +
+                        "version of eXist. You need to upgrade your database by creating a backup, " +
+                        "cleaning your data directory and restoring the data. In some cases, " +
                         "a reindex may be sufficient. " +
-                        "Please follow the instructions for the version you installed." + 
-                        "File version is: " + expectedVersion +
-                        "; db expects version " + fileHeader.getVersion());
+                        "Please follow the instructions for the version you installed. " +
+                        "File version is: " + fileHeader.getVersion() +
+                        "; db requires version: " + requiredVersion);
                 }
                 return true;
             } else {
