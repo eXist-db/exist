@@ -36,29 +36,18 @@ public class MapFunction extends BasicFunction {
         QN_SIZE,
         "Returns the number of entries in the supplied map.",
         new SequenceType[] {
-                new FunctionParameterSequenceType("input", Type.MAP, Cardinality.EXACTLY_ONE, "Any map to determine the size of.")
+            new FunctionParameterSequenceType("input", Type.MAP, Cardinality.EXACTLY_ONE, "Any map to determine the size of.")
         },
         new SequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE)
     );
 
-    public final static FunctionSignature FNS_ENTRY = new FunctionSignature(
-        QN_ENTRY,
-        "Creates a map that contains a single entry (a key-value pair).",
-        new SequenceType[] {
-            new FunctionParameterSequenceType("key", Type.ATOMIC, Cardinality.EXACTLY_ONE, "The key"),
-            new FunctionParameterSequenceType("value", Type.ITEM, Cardinality.ZERO_OR_MORE, "The associated value")
+    public final static FunctionSignature FNS_KEYS = new FunctionSignature(
+        QN_KEYS,
+        "Returns a sequence containing all the key values present in a map.",
+        new SequenceType[]{
+            new FunctionParameterSequenceType(MapModule.PREFIX, Type.MAP, Cardinality.EXACTLY_ONE, "The map")
         },
-        new SequenceType(Type.MAP, Cardinality.EXACTLY_ONE)
-    );
-
-    public final static FunctionSignature FNS_GET = new FunctionSignature(
-        QN_GET,
-        "Returns the value associated with a supplied key in a given map.",
-        new SequenceType[] {
-            new FunctionParameterSequenceType(MapModule.PREFIX, Type.MAP, Cardinality.EXACTLY_ONE, "The map"),
-            new FunctionParameterSequenceType("key", Type.ATOMIC, Cardinality.EXACTLY_ONE, "The key to look up")
-        },
-        new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
+        new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_MORE)
     );
 
     public final static FunctionSignature FNS_CONTAINS = new FunctionSignature(
@@ -71,11 +60,24 @@ public class MapFunction extends BasicFunction {
         new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)
     );
 
-    public final static FunctionSignature FNS_KEYS = new FunctionSignature(
-        QN_KEYS,
-        "Returns a sequence containing all the key values present in a map.",
-        new SequenceType[]{new FunctionParameterSequenceType(MapModule.PREFIX, Type.MAP, Cardinality.EXACTLY_ONE, "The map")},
-        new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_MORE)
+    public final static FunctionSignature FNS_GET = new FunctionSignature(
+        QN_GET,
+        "Returns the value associated with a supplied key in a given map.",
+        new SequenceType[] {
+            new FunctionParameterSequenceType(MapModule.PREFIX, Type.MAP, Cardinality.EXACTLY_ONE, "The map"),
+            new FunctionParameterSequenceType("key", Type.ATOMIC, Cardinality.EXACTLY_ONE, "The key to look up")
+        },
+        new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
+    );
+
+    public final static FunctionSignature FNS_ENTRY = new FunctionSignature(
+        QN_ENTRY,
+        "Creates a map that contains a single entry (a key-value pair).",
+        new SequenceType[] {
+            new FunctionParameterSequenceType("key", Type.ATOMIC, Cardinality.EXACTLY_ONE, "The key"),
+            new FunctionParameterSequenceType("value", Type.ITEM, Cardinality.ZERO_OR_MORE, "The associated value")
+        },
+        new SequenceType(Type.MAP, Cardinality.EXACTLY_ONE)
     );
 
     public final static FunctionSignature FNS_REMOVE = new FunctionSignature(
@@ -166,14 +168,14 @@ public class MapFunction extends BasicFunction {
             return merge(args);
         } else if (isCalledAs(QN_SIZE.getLocalPart())) {
             return size(args);
-        } else if (isCalledAs(QN_ENTRY.getLocalPart())) {
-            return entry(args);
-        } else if (isCalledAs(QN_GET.getLocalPart())) {
-            return get(args);
-        } else if (isCalledAs(QN_CONTAINS.getLocalPart())) {
-            return contains(args);
         } else if (isCalledAs(QN_KEYS.getLocalPart())) {
             return keys(args);
+        } else if (isCalledAs(QN_CONTAINS.getLocalPart())) {
+            return contains(args);
+        } else if (isCalledAs(QN_GET.getLocalPart())) {
+            return get(args);
+        } else if (isCalledAs(QN_ENTRY.getLocalPart())) {
+            return entry(args);
         } else if (isCalledAs(QN_REMOVE.getLocalPart())) {
             return remove(args);
         } else if (isCalledAs(QN_FOR_EACH.getLocalPart()) || isCalledAs(QN_FOR_EACH_ENTRY.getLocalPart())) {

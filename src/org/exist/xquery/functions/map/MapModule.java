@@ -19,10 +19,10 @@ public class MapModule extends AbstractInternalModule {
     private static final FunctionDef[] functions = {
             new FunctionDef(MapFunction.FNS_MERGE, MapFunction.class),
             new FunctionDef(MapFunction.FNS_SIZE, MapFunction.class),
-            new FunctionDef(MapFunction.FNS_ENTRY, MapFunction.class),
-            new FunctionDef(MapFunction.FNS_GET, MapFunction.class),
-            new FunctionDef(MapFunction.FNS_CONTAINS, MapFunction.class),
             new FunctionDef(MapFunction.FNS_KEYS, MapFunction.class),
+            new FunctionDef(MapFunction.FNS_CONTAINS, MapFunction.class),
+            new FunctionDef(MapFunction.FNS_GET, MapFunction.class),
+            new FunctionDef(MapFunction.FNS_ENTRY, MapFunction.class),
             new FunctionDef(MapFunction.FNS_REMOVE, MapFunction.class),
             new FunctionDef(MapFunction.FNS_FOR_EACH, MapFunction.class),
 
