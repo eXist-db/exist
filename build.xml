@@ -29,5 +29,4 @@
     <!-- Additional scripts -->   
     <import file="build/scripts/junit.xml"/>
     <import file="build/scripts/performance.xml"/>
-    <import file="build/scripts/quality.xml"/>
 </project>
