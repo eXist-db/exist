@@ -55,6 +55,27 @@ function mt:createFromTwoMaps() {
         map:keys($map)
 };
 
+declare
+    %test:assertEquals(0)
+function mt:size-empty() {
+    let $m := map {}
+    return
+      map:size($m)
+};
+
+declare
+    %test:assertEquals(4)
+function mt:size() {
+    let $m := map {
+      "Cats" : "Good",
+      "Dogs" : "Bad",
+      1 : "Chicken",
+      2 : "Duck"
+    }
+    return
+      map:size($m)
+};
+
 declare 
     %test:assertEquals("Sonntag", "Dienstag", "Donnerstag", "Samstag")
 function mt:for-each() {

@@ -12,6 +12,7 @@ import java.util.Map;
 public class MapFunction extends BasicFunction {
 
     private static final QName QN_MERGE = new QName("merge", MapModule.NAMESPACE_URI, MapModule.PREFIX);
+    private static final QName QN_SIZE = new QName("size", MapModule.NAMESPACE_URI, MapModule.PREFIX);
     private static final QName QN_ENTRY = new QName("entry", MapModule.NAMESPACE_URI, MapModule.PREFIX);
     private static final QName QN_GET = new QName("get", MapModule.NAMESPACE_URI, MapModule.PREFIX);
     private static final QName QN_CONTAINS = new QName("contains", MapModule.NAMESPACE_URI, MapModule.PREFIX);
@@ -29,6 +30,15 @@ public class MapFunction extends BasicFunction {
             new FunctionParameterSequenceType("maps", Type.MAP, Cardinality.ZERO_OR_MORE, "Existing maps to merge to create a new map.")
         },
         new SequenceType(Type.MAP, Cardinality.EXACTLY_ONE)
+    );
+
+    public final static FunctionSignature FNS_SIZE = new FunctionSignature(
+        QN_SIZE,
+        "Returns the number of entries in the supplied map.",
+        new SequenceType[] {
+                new FunctionParameterSequenceType("input", Type.MAP, Cardinality.EXACTLY_ONE, "Any map to determine the size of.")
+        },
+        new SequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE)
     );
 
     public final static FunctionSignature FNS_ENTRY = new FunctionSignature(
@@ -154,6 +164,8 @@ public class MapFunction extends BasicFunction {
             return newMap(args);
         } else if (isCalledAs(QN_MERGE.getLocalPart())) {
             return merge(args);
+        } else if (isCalledAs(QN_SIZE.getLocalPart())) {
+            return size(args);
         } else if (isCalledAs(QN_ENTRY.getLocalPart())) {
             return entry(args);
         } else if (isCalledAs(QN_GET.getLocalPart())) {
@@ -193,6 +205,11 @@ public class MapFunction extends BasicFunction {
     private Sequence entry(final Sequence[] args) throws XPathException {
         final AtomicValue key = (AtomicValue) args[0].itemAt(0);
         return new SingleKeyMapType(this.context, null, key, args[1]);
+    }
+
+    private Sequence size(final Sequence[] args) throws XPathException {
+        final AbstractMapType map = (AbstractMapType) args[0].itemAt(0);
+        return new IntegerValue(map.size(), Type.INTEGER);
     }
 
     private Sequence merge(final Sequence[] args) throws XPathException {
