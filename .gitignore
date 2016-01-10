@@ -66,3 +66,4 @@ webapp/WEB-INF/logs/*.log.*
 webapp/WEB-INF/web.xml
 webapp/xqts/config.xml
 .exist_query_history
+.idea/workspace.xml
