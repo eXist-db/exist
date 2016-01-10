@@ -57,10 +57,10 @@ function mt:createFromTwoMaps() {
 
 declare 
     %test:assertEquals("Sonntag", "Dienstag", "Donnerstag", "Samstag")
-function mt:for-each-entry() {
+function mt:for-each() {
     let $week := map{0: "Sonntag", 1: "Montag", 2: "Dienstag", 3: "Mittwoch", 4: "Donnerstag", 5: "Freitag", 6: "Samstag"}
     return
-        map:for-each-entry($week, function($key, $value) {
+        map:for-each($week, function($key, $value) {
             if ($key mod 2 = 0) then
                 $value
             else
@@ -70,8 +70,8 @@ function mt:for-each-entry() {
 
 declare 
     %test:assertEquals(3)
-function mt:for-each-entry2() {
-    let $nm := map:new(map:for-each-entry(map{"a":1, "b":2}, function($k, $v){map:entry($k, $v+1)}))
+function mt:for-each2() {
+    let $nm := map:new(map:for-each(map{"a":1, "b":2}, function($k, $v){map:entry($k, $v+1)}))
     return
         $nm?b
 };
