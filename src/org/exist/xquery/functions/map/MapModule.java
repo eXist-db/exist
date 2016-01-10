@@ -17,9 +17,7 @@ public class MapModule extends AbstractInternalModule {
     public static final String PREFIX = "map";
 
     private static final FunctionDef[] functions = {
-            new FunctionDef(MapFunction.FNS_NEW_0, MapFunction.class),
-            new FunctionDef(MapFunction.FNS_NEW_N, MapFunction.class),
-            new FunctionDef(MapFunction.FNS_NEW_N_COLLATION, MapFunction.class),
+            new FunctionDef(MapFunction.FNS_MERGE, MapFunction.class),
             new FunctionDef(MapFunction.FNS_ENTRY, MapFunction.class),
             new FunctionDef(MapFunction.FNS_GET, MapFunction.class),
             new FunctionDef(MapFunction.FNS_CONTAINS, MapFunction.class),
@@ -29,7 +27,9 @@ public class MapModule extends AbstractInternalModule {
 
 
             /* Deprecated below */
-
+            new FunctionDef(MapFunction.FNS_NEW_0, MapFunction.class),
+            new FunctionDef(MapFunction.FNS_NEW_N, MapFunction.class),
+            new FunctionDef(MapFunction.FNS_NEW_N_COLLATION, MapFunction.class),
             new FunctionDef(MapFunction.FNS_FOR_EACH_ENTRY, MapFunction.class)
     };
 

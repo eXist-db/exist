@@ -603,9 +603,9 @@ declare %private function test:assertXPath($annotation as element(annotation), $
             $output
     let $prolog :=
         if ($result instance of element()*) then
-            let $namespaces := fold-left($result/descendant-or-self::*, map:new(),
+            let $namespaces := fold-left($result/descendant-or-self::*, map {},
                 function ($namespaces as map(*), $xml as element()) {
-                    map:new(($namespaces,
+                    map:merge(($namespaces,
                 	    for $prefix in in-scope-prefixes($xml)
                 	    where $prefix != "" and $prefix != "xml"
                 	    return
