@@ -175,17 +175,17 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
         }
         finally
         {
-            if(collectionNeedsClose && collection != null)
-            {
-                try
-            	{
-                	collection.close();
-            	}
-            	catch(final Exception e)
-            	{
-            		throw new XPathException(this, "Unable to close collection", e);
-        		}
-            }
+//            if(collectionNeedsClose && collection != null)
+//            {
+//                try
+//            	{
+//                	collection.close();
+//            	}
+//            	catch(final Exception e)
+//            	{
+//            		throw new XPathException(this, "Unable to close collection", e);
+//        		}
+//            }
         }
         return s;
 	}

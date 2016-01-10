@@ -68,7 +68,6 @@ public class PersistentLoginFunctions extends UserSwitchingBasicFunction {
         this.cachedContextInfo = new AnalyzeContextInfo(contextInfo);
     }
 
-    @Override
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
         if (isCalledAs("register")) {
             final String user = args[0].getStringValue();

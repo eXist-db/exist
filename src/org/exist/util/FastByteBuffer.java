@@ -210,8 +210,8 @@ public class FastByteBuffer implements ByteArray {
      */
     public FastByteBuffer( int initChunkBits, int maxChunkBits,
                            int rebundleBits ) {
-        if ( DEBUG_FORCE_INIT_BITS != 0 )
-            {initChunkBits = DEBUG_FORCE_INIT_BITS;}
+//        if ( DEBUG_FORCE_INIT_BITS != 0 )
+//            {initChunkBits = DEBUG_FORCE_INIT_BITS;}
 
         // %REVIEW%
         // Should this force to larger value, or smaller? Smaller less efficient, but if

@@ -64,7 +64,6 @@ public class SetCurrentUser extends UserSwitchingBasicFunction {
         super(context, signature);
     }
 
-    @Override
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
         final RequestModule myModule = (RequestModule) context.getModule(RequestModule.NAMESPACE_URI);
 

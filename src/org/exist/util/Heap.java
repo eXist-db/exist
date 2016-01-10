@@ -32,14 +32,14 @@ import java.util.Comparator;
 public class Heap  {
   protected Object[] nodes_;  // the tree nodes, packed into an array
   protected int count_ = 0;   // number of used slots
-  protected final Comparator cmp_;  // for ordering
+  protected final Comparator<Object> cmp_;  // for ordering
 
   /**
    * Create a Heap with the given initial capacity and comparator
    * @exception IllegalArgumentException if capacity less or equal to zero
    **/
 
-  public Heap(int capacity, Comparator cmp) 
+  public Heap(int capacity, Comparator<Object> cmp) 
    throws IllegalArgumentException {
     if (capacity <= 0) {throw new IllegalArgumentException();}
     nodes_ = new Object[capacity];
@@ -56,10 +56,10 @@ public class Heap  {
   }
 
 
-  /** perform element comaprisons using comparator or natural ordering **/
+  /** perform element comparisons using comparator or natural ordering **/
   protected int compare(Object a, Object b) {
     if (cmp_ == null) 
-      {return ((Comparable)a).compareTo(b);}
+      {return ((Comparable<Object>)a).compareTo(b);}
     else
       {return cmp_.compare(a, b);}
   }

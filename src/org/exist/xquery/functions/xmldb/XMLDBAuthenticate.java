@@ -120,7 +120,6 @@ public class XMLDBAuthenticate extends UserSwitchingBasicFunction {
         super(context, signature);
     }
 
-    @Override
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
         if (args[1].isEmpty()) {
             return BooleanValue.FALSE;
