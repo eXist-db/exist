@@ -11,21 +11,30 @@
       <sourceFolder url="file://$MODULE_DIR$/extensions/indexes/ngram/test/src" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/modules/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/xqdoc/src" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/samples" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/test/src" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/tools/ircbot/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/tools/izpack/src" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/tools/requestlog/src" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/tools/wrapper/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/indexes/range/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/xslt/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/xslt/test/src" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/samples/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/webdav/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/expath/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/exquery/restxq/src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/exquery/restxq/src/test/java" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/exquery/modules/request/src" isTestSource="false" />
+      <excludeFolder url="file://$MODULE_DIR$/autodeploy" />
+      <excludeFolder url="file://$MODULE_DIR$/backup" />
+      <excludeFolder url="file://$MODULE_DIR$/build" />
+      <excludeFolder url="file://$MODULE_DIR$/extensions/exquery/modules/request/build" />
+      <excludeFolder url="file://$MODULE_DIR$/extensions/exquery/restxq/build" />
       <excludeFolder url="file://$MODULE_DIR$/extensions/modules/src/org/exist/xquery/modules/cqlparser" />
       <excludeFolder url="file://$MODULE_DIR$/extensions/modules/src/org/exist/xquery/modules/memcached" />
       <excludeFolder url="file://$MODULE_DIR$/extensions/modules/src/org/exist/xquery/modules/oracle" />
       <excludeFolder url="file://$MODULE_DIR$/extensions/modules/src/org/exist/xquery/modules/xmpp" />
       <excludeFolder url="file://$MODULE_DIR$/extensions/modules/src/org/exist/xquery/modules/xslfo" />
+      <excludeFolder url="file://$MODULE_DIR$/extensions/webdav/build" />
       <excludeFolder url="file://$MODULE_DIR$/tools/jetty/logs" />
       <excludeFolder url="file://$MODULE_DIR$/tools/jetty/work" />
       <excludeFolder url="file://$MODULE_DIR$/webapp/WEB-INF/data" />
@@ -33,27 +42,17 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" exported="" name="tools" level="project" />
     <orderEntry type="library" exported="" name="core" level="project" />
+    <orderEntry type="library" exported="" name="endorsed" level="project" />
+    <orderEntry type="library" exported="" name="extensions" level="project" />
     <orderEntry type="library" exported="" name="optional" level="project" />
     <orderEntry type="library" exported="" name="user" level="project" />
-    <orderEntry type="library" exported="" name="endorsed" level="project" />
-    <orderEntry type="library" exported="" name="ant" level="project" />
     <orderEntry type="library" exported="" name="test" level="project" />
-    <orderEntry type="library" exported="" name="extensions" level="project" />
-    <orderEntry type="library" exported="" name="main" level="project" />
-    <orderEntry type="module-library" exported="">
-      <library>
-        <CLASSES>
-          <root url="file://$MODULE_DIR$/lib/test" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-        <jarDirectory url="file://$MODULE_DIR$/lib/test" recursive="false" />
-      </library>
-    </orderEntry>
+    <orderEntry type="library" exported="" name="ant" level="project" />
+    <orderEntry type="library" exported="" name="tools" level="project" />
     <orderEntry type="library" name="exquery-restxq" level="project" />
     <orderEntry type="library" name="exquery-core" level="project" />
+    <orderEntry type="library" name="expath" level="project" />
   </component>
   <component name="org.twodividedbyzero.idea.findbugs">
     <option name="_basePreferences">
