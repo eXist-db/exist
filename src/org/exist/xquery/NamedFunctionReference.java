@@ -48,14 +48,17 @@ public class NamedFunctionReference extends AbstractExpression {
             return null;
         }
         if (fun instanceof FunctionCall) {
+            // clear line and column as it will be misleading. should be set later to point
+            // to the location from where the function is called.
+            fun.setLocation(-1, -1);
             return (FunctionCall) fun;
         } else if (fun instanceof Function) {
         	final InternalFunctionCall funcCall = new InternalFunctionCall((Function)fun);
-	        funcCall.setLocation(self.getLine(), self.getColumn());
+            funcCall.setLocation(-1, -1);
 	        return FunctionFactory.wrap(context, funcCall);
         } else if (fun instanceof CastExpression) {
             final InternalFunctionCall funcCall = new InternalFunctionCall(((CastExpression)fun).toFunction());
-            funcCall.setLocation(self.getLine(), self.getColumn());
+            funcCall.setLocation(-1, -1);
             return FunctionFactory.wrap(context, funcCall);
         } else
         	{throw new XPathException(self, ErrorCodes.XPST0017, "Named function reference should point to a function; found: " +

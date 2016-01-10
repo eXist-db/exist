@@ -18,7 +18,7 @@ public class DynamicFunctionCall extends AbstractExpression {
 
     public DynamicFunctionCall(XQueryContext context, Expression fun, List<Expression> args, boolean partial) {
         super(context);
-
+        setLocation(fun.getLine(), fun.getColumn());
         this.functionExpr = fun;
         this.arguments = args;
         this.isPartial = partial;
@@ -72,9 +72,16 @@ public class DynamicFunctionCall extends AbstractExpression {
             // cachedContextInfo will stay in memory
 	        ref.analyze(new AnalyzeContextInfo(cachedContextInfo));
 	        // Evaluate the function
-	        final Sequence result = ref.eval(contextSequence);
-            ref.resetState(false);
-            return result;
+            try {
+                final Sequence result = ref.eval(contextSequence);
+                ref.resetState(false);
+                return result;
+            } catch (XPathException e) {
+                if (e.getLine() <= 0) {
+                    e.setLocation(getLine(), getColumn(), getSource());
+                }
+                throw e;
+            }
         }
     }
 

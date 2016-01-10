@@ -349,7 +349,7 @@ public class FunctionCall extends Function {
             } catch(final XPathException e) {
                 // append location of the function call to the exception message:
                 if(e.getLine() <= 0) {
-                    e.setLocation(line, column);
+                    e.setLocation(expression.getLine(), expression.getColumn());
                 }
     			
                 e.addFunctionCall(functionDef, this);
