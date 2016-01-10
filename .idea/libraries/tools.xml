@@ -1,0 +1,16 @@
+<component name="libraryTable">
+  <library name="tools">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/tools/ant/lib" />
+      <root url="file://$PROJECT_DIR$/tools/wrapper/lib" />
+      <root url="file://$PROJECT_DIR$/tools/jetty/lib" />
+      <root url="file://$PROJECT_DIR$/tools/aspectj/lib" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+    <jarDirectory url="file://$PROJECT_DIR$/tools/ant/lib" recursive="false" />
+    <jarDirectory url="file://$PROJECT_DIR$/tools/aspectj/lib" recursive="false" />
+    <jarDirectory url="file://$PROJECT_DIR$/tools/jetty/lib" recursive="false" />
+    <jarDirectory url="file://$PROJECT_DIR$/tools/wrapper/lib" recursive="false" />
+  </library>
+</component>
