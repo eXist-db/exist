@@ -15,6 +15,7 @@ public class MapFunction extends BasicFunction {
     private static final QName QN_SIZE = new QName("size", MapModule.NAMESPACE_URI, MapModule.PREFIX);
     private static final QName QN_ENTRY = new QName("entry", MapModule.NAMESPACE_URI, MapModule.PREFIX);
     private static final QName QN_GET = new QName("get", MapModule.NAMESPACE_URI, MapModule.PREFIX);
+    private static final QName QN_PUT = new QName("put", MapModule.NAMESPACE_URI, MapModule.PREFIX);
     private static final QName QN_CONTAINS = new QName("contains", MapModule.NAMESPACE_URI, MapModule.PREFIX);
     private static final QName QN_KEYS = new QName("keys", MapModule.NAMESPACE_URI, MapModule.PREFIX);
     private static final QName QN_REMOVE = new QName("remove", MapModule.NAMESPACE_URI, MapModule.PREFIX);
@@ -68,6 +69,17 @@ public class MapFunction extends BasicFunction {
             new FunctionParameterSequenceType("key", Type.ATOMIC, Cardinality.EXACTLY_ONE, "The key to look up")
         },
         new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
+    );
+
+    public final static FunctionSignature FNS_PUT = new FunctionSignature(
+        QN_PUT,
+        "Returns a map containing all the contents of the supplied map, but with an additional entry, which replaces any existing entry for the same key.",
+        new SequenceType[] {
+            new FunctionParameterSequenceType(MapModule.PREFIX, Type.MAP, Cardinality.EXACTLY_ONE, "The map"),
+            new FunctionParameterSequenceType("key", Type.ATOMIC, Cardinality.EXACTLY_ONE, "The key for the entry to insert"),
+            new FunctionParameterSequenceType("value", Type.ITEM, Cardinality.ZERO_OR_MORE, "The value for the entry to insert")
+        },
+        new SequenceType(Type.MAP, Cardinality.EXACTLY_ONE)
     );
 
     public final static FunctionSignature FNS_ENTRY = new FunctionSignature(
@@ -174,6 +186,8 @@ public class MapFunction extends BasicFunction {
             return contains(args);
         } else if (isCalledAs(QN_GET.getLocalPart())) {
             return get(args);
+        } else if (isCalledAs(QN_PUT.getLocalPart())) {
+            return put(args);
         } else if (isCalledAs(QN_ENTRY.getLocalPart())) {
             return entry(args);
         } else if (isCalledAs(QN_REMOVE.getLocalPart())) {
@@ -202,6 +216,11 @@ public class MapFunction extends BasicFunction {
     private Sequence get(final Sequence[] args) {
         final AbstractMapType map = (AbstractMapType) args[0].itemAt(0);
         return map.get((AtomicValue) args[1].itemAt(0));
+    }
+
+    private Sequence put(final Sequence[] args) throws XPathException {
+        final AbstractMapType map = (AbstractMapType) args[0].itemAt(0);
+        return map.put((AtomicValue) args[1].itemAt(0), args[2]);
     }
 
     private Sequence entry(final Sequence[] args) throws XPathException {

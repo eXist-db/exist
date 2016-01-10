@@ -64,6 +64,36 @@ function mt:size-empty() {
 };
 
 declare
+    %test:assertEquals("Good")
+function mt:put-empty() {
+    let $m := map {}
+    return
+      map:put($m, "Cats", "Good")("Cats")
+};
+
+declare
+    %test:assertEquals("Bad")
+function mt:put-single() {
+    let $m := map {
+        "Cats" : "Good"
+    }
+    return
+      map:put($m, "Dogs", "Bad")("Dogs")
+};
+
+declare
+    %test:assertEquals("Duck")
+function mt:put() {
+    let $m := map {
+        "Cats" : "Good",
+        "Dogs" : "Bad",
+        1 : "Chicken"
+    }
+    return
+      map:put($m, 2, "Duck")(2)
+};
+
+declare
     %test:assertEquals(4)
 function mt:size() {
     let $m := map {
