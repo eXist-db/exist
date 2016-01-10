@@ -19,7 +19,6 @@
     
     <!-- Core build scripts -->
     <import file="build/scripts/build-impl.xml"/>
-    <import file="build/scripts/soap.xml"/>
     <import file="build/scripts/jarsigner.xml"/>
     <import file="build/scripts/installer.xml"/>
     <import file="build/scripts/dist.xml"/>
@@ -30,6 +29,4 @@
     <!-- Additional scripts -->   
     <import file="build/scripts/junit.xml"/>
     <import file="build/scripts/performance.xml"/>
-    <import file="build/scripts/quality.xml"/>
-    <import file="build/scripts/static-docs.xml"/>
 </project>
