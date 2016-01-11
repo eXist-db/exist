@@ -105,11 +105,27 @@ public class TryCatchExpression extends AbstractExpression {
 
     @Override
     public void analyze(final AnalyzeContextInfo contextInfo) throws XPathException {
-        contextInfo.setFlags(contextInfo.getFlags() & (~IN_PREDICATE));
-        contextInfo.setParent(this);
-        tryTargetExpr.analyze(contextInfo);
-        for (final CatchClause catchClause : catchClauses) {
-            catchClause.getCatchExpr().analyze(contextInfo);
+        final LocalVariable mark = context.markLocalVariables(false);
+        try {
+            contextInfo.setFlags(contextInfo.getFlags() & (~IN_PREDICATE));
+            contextInfo.setParent(this);
+            context.declareVariableBinding(new LocalVariable(QN_ADDITIONAL));
+            context.declareVariableBinding(new LocalVariable(QN_COLUMN_NUM));
+            context.declareVariableBinding(new LocalVariable(QN_LINE_NUM));
+            context.declareVariableBinding(new LocalVariable(QN_CODE));
+            context.declareVariableBinding(new LocalVariable(QN_DESCRIPTION));
+            context.declareVariableBinding(new LocalVariable(QN_MODULE));
+            context.declareVariableBinding(new LocalVariable(QN_VALUE));
+            context.declareVariableBinding(new LocalVariable(QN_JAVA_STACK_TRACE));
+            context.declareVariableBinding(new LocalVariable(QN_XQUERY_STACK_TRACE));
+
+            tryTargetExpr.analyze(contextInfo);
+            for (final CatchClause catchClause : catchClauses) {
+                catchClause.getCatchExpr().analyze(contextInfo);
+            }
+        } finally {
+            // restore the local variable stack
+            context.popLocalVariables(mark);
         }
     }
 

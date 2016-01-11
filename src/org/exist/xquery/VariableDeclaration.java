@@ -37,7 +37,7 @@ import org.exist.xquery.value.SequenceType;
  */
 public class VariableDeclaration extends AbstractExpression implements RewritableExpression {
 
-	String qname;
+	QName qname;
 	SequenceType sequenceType = null;
 	Expression expression;
     boolean analyzeDone = false;
@@ -45,13 +45,13 @@ public class VariableDeclaration extends AbstractExpression implements Rewritabl
     /**
 	 * @param context
 	 */
-	public VariableDeclaration(XQueryContext context, String qname, Expression expr) {
+	public VariableDeclaration(XQueryContext context, QName qname, Expression expr) {
 		super(context);
 		this.qname = qname;
 		this.expression = expr;
 	}
 
-    public String getName() {
+    public QName getName() {
         return qname;
     }
 
@@ -73,11 +73,10 @@ public class VariableDeclaration extends AbstractExpression implements Rewritabl
      */
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
     	contextInfo.setParent(this);
-        final QName qn = QName.parse(context, qname, null);
-        final Variable var = new VariableImpl(qn);
+        final Variable var = new VariableImpl(qname);
         var.setIsInitialized(false);
         if (!analyzeDone) {
-            final Module myModule = context.getModule(qn.getNamespaceURI());
+            final Module myModule = context.getModule(qname.getNamespaceURI());
             if(myModule != null) {
 // WM: duplicate var declaration is now caught in the XQuery tree parser
 //                if (myModule.isVarDeclared(qn))
@@ -111,8 +110,7 @@ public class VariableDeclaration extends AbstractExpression implements Rewritabl
 
         context.pushInScopeNamespaces(false);
         try {
-            final QName qn = QName.parse(context, qname, null);
-            final Module myModule = context.getRootModule(qn.getNamespaceURI());
+            final Module myModule = context.getRootModule(qname.getNamespaceURI());
 
             context.pushDocumentContext();
             try {
@@ -121,11 +119,11 @@ public class VariableDeclaration extends AbstractExpression implements Rewritabl
                 final Sequence seq = expression.eval(null, null);
                 final Variable var;
                 if (myModule != null) {
-                    var = myModule.declareVariable(qn, seq);
+                    var = myModule.declareVariable(qname, seq);
                     var.setSequenceType(sequenceType);
                     var.checkType();
                 } else {
-                    var = new VariableImpl(qn);
+                    var = new VariableImpl(qname);
                     var.setValue(seq);
                     var.setSequenceType(sequenceType);
                     var.checkType();
@@ -150,7 +148,7 @@ public class VariableDeclaration extends AbstractExpression implements Rewritabl
      * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)
      */
     public void dump(ExpressionDumper dumper) {
-        dumper.nl().display("declare variable $").display(qname, line);
+        dumper.nl().display("declare variable $").display(qname.toString(), line);
         if(sequenceType != null) {
             dumper.display(" as ").display(sequenceType.toString());
         }

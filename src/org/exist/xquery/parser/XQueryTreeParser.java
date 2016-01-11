@@ -2005,7 +2005,7 @@ public XQueryTreeParser() {
 							}
 							}
 							
-							String groupKeyVar = groupVarName.getText();
+							QName groupKeyVar = QName.parse(staticContext, groupVarName.getText(), null);
 							
 							GroupSpec groupSpec= new GroupSpec(context, groupSpecExpr, groupKeyVar);
 							clause.groupSpecs.add(groupSpec);
@@ -4618,7 +4618,7 @@ public XQueryTreeParser() {
 					step=expr(_t,enclosed);
 					_t = _retTree;
 					
-										VariableDeclaration decl= new VariableDeclaration(context, qname.getText(), enclosed);
+										final VariableDeclaration decl= new VariableDeclaration(context, qn, enclosed);
 										decl.setSequenceType(type);
 										decl.setASTNode(e);
 										path.add(decl);
@@ -6980,7 +6980,8 @@ public XQueryTreeParser() {
 			match(_t,VARIABLE_REF);
 			_t = _t.getNextSibling();
 			
-			step= new VariableReference(context, v.getText());
+				    final QName vrqn = QName.parse(staticContext, v.getText(), null);
+			step= new VariableReference(context, vrqn);
 			step.setASTNode(v);
 			
 			step=postfixExpr(_t,step);

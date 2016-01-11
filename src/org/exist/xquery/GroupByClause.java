@@ -57,7 +57,7 @@ public class GroupByClause extends AbstractFLWORClause {
             final AtomicValue groupingValue = groupingSeq.isEmpty() ? AtomicValue.EMPTY_VALUE : groupingSeq.itemAt(0)
                     .atomize();
             if (init) {
-                final LocalVariable groupingVar = new LocalVariable(QName.parse(context, spec.getKeyVarName(), null));
+                final LocalVariable groupingVar = new LocalVariable(spec.getKeyVarName());
                 groupingVar.setSequenceType(new SequenceType(Type.ATOMIC, groupingValue.isEmpty() ? Cardinality
                         .EMPTY : Cardinality.EXACTLY_ONE));
                 groupingVar.setStaticType(groupingValue.getType());
@@ -147,7 +147,7 @@ public class GroupByClause extends AbstractFLWORClause {
         try {
             if (groupSpecs != null) {
                 for (final GroupSpec spec : groupSpecs) {
-                    final LocalVariable groupKeyVar = new LocalVariable(QName.parse(context, spec.getKeyVarName()));
+                    final LocalVariable groupKeyVar = new LocalVariable(spec.getKeyVarName());
                     context.declareVariableBinding(groupKeyVar);
                 }
             }

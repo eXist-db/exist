@@ -22,6 +22,7 @@
  */ 
 package org.exist.xquery; 
  
+import org.exist.dom.QName;
 import org.exist.xquery.util.ExpressionDumper;
 
 import java.text.Collator;
@@ -41,10 +42,10 @@ public class GroupSpec {
     @SuppressWarnings("unused")
 	private final XQueryContext context; 
     private Expression expression;
-    private String keyVarName = null;
+    private QName keyVarName = null;
     private Collator collator;
      
-    public GroupSpec(XQueryContext context, Expression groupExpr, String keyVarName) {
+    public GroupSpec(XQueryContext context, Expression groupExpr, QName keyVarName) {
         if (groupExpr == null) {
             // Spec: "If the GroupingSpec does not contain an ExprSingle, an implicit
             // expression is created, consisting of a variable reference with the
@@ -73,7 +74,7 @@ public class GroupSpec {
         return expression; 
     } 
      
-    public String getKeyVarName(){ 
+    public QName getKeyVarName(){
         return this.keyVarName; 
     } 
      

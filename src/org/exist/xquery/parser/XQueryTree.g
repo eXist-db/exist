@@ -488,7 +488,7 @@ throws PermissionDeniedException, EXistException, XPathException
 			(
 				step=e:expr [enclosed]
 				{
-					VariableDeclaration decl= new VariableDeclaration(context, qname.getText(), enclosed);
+					final VariableDeclaration decl= new VariableDeclaration(context, qn, enclosed);
 					decl.setSequenceType(type);
 					decl.setASTNode(e);
 					path.add(decl);
@@ -1454,7 +1454,7 @@ throws PermissionDeniedException, EXistException, XPathException
                       step=expr [groupSpecExpr]
                   )?
                   {
-                      String groupKeyVar = groupVarName.getText();
+                      QName groupKeyVar = QName.parse(staticContext, groupVarName.getText(), null);
 
                       GroupSpec groupSpec= new GroupSpec(context, groupSpecExpr, groupKeyVar);
                       clause.groupSpecs.add(groupSpec);
@@ -1945,7 +1945,8 @@ throws PermissionDeniedException, EXistException, XPathException
 	|
 	v:VARIABLE_REF
 	{
-        step= new VariableReference(context, v.getText());
+	    final QName vrqn = QName.parse(staticContext, v.getText(), null);
+        step= new VariableReference(context, vrqn);
         step.setASTNode(v);
     }
 	step=postfixExpr [step]

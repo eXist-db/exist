@@ -22,6 +22,7 @@
  */
 package org.exist.xquery;
 
+import org.exist.dom.QName;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
@@ -35,14 +36,15 @@ import org.exist.xquery.value.Type;
  */
 public class VariableReference extends AbstractExpression {
 
-    private final String qname;
+    private final QName qname;
+    private Expression parent;
 
-    public VariableReference(XQueryContext context, String qname) {
+    public VariableReference(XQueryContext context, QName qname) {
         super(context);
         this.qname = qname;
     }
 
-    public String getName() {
+    public QName getName() {
         return qname;
     }
 
@@ -50,6 +52,7 @@ public class VariableReference extends AbstractExpression {
      * @see org.exist.xquery.Expression#analyze(org.exist.xquery.AnalyzeContextInfo)
      */
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+        this.parent = contextInfo.getParent();
         Variable var = null;
         try {
             var = getVariable();
@@ -187,5 +190,10 @@ public class VariableReference extends AbstractExpression {
     @Override
     public boolean allowMixedNodesInReturn() {
         return true;
+    }
+
+    @Override
+    public Expression getParent() {
+        return parent;
     }
 }
