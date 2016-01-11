@@ -46,6 +46,7 @@ import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 import org.exist.util.LockException;
+import org.exist.util.Stacktrace;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.TerminatedException;
 import org.w3c.dom.Document;
@@ -125,6 +126,9 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
      * @param subject The new subject for the broker to perform actions as
      */
     public void pushSubject(final Subject subject) {
+        if(LOG.isTraceEnabled()) {
+            LOG.trace(String.format("%s: pushSubject(%s) from: %s %s", getId(), subject.getName(), Thread.currentThread(), Stacktrace.top(Thread.currentThread().getStackTrace(), 10)));
+        }
         this.subject.addFirst(subject);
     }
 
@@ -134,6 +138,9 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
      * @return The subject which has been popped
      */
     public Subject popSubject() {
+        if(LOG.isTraceEnabled()) {
+            LOG.trace(String.format("%s: popSubject(%s) from: %s %s", getId(), getCurrentSubject(), Thread.currentThread(), Stacktrace.top(Thread.currentThread().getStackTrace(), 10)));
+        }
         return this.subject.removeFirst();
     }
 

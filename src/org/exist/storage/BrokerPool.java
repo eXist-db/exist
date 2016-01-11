@@ -1473,6 +1473,11 @@ public class BrokerPool implements Database {
     /**
      * Get active broker for current thread
      *
+     * Note - If you call getActiveBroker() you must not call
+     * release on both the returned active broker and the original
+     * lease from {@link BrokerPool#getBroker()} or {@link BrokerPool#get(Optional)}
+     * otherwise release will have been called more than get!
+     *
      * @return Database broker
      * @throws RuntimeException NO broker available for current thread.
      */
@@ -1590,9 +1595,9 @@ public class BrokerPool implements Database {
             activeBrokers.put(Thread.currentThread(), broker);
 
             if(LOG.isTraceEnabled()) {
-                LOG.trace("+++ " + Thread.currentThread() + stackTop(Thread.currentThread().getStackTrace(), 10));
+                LOG.trace("+++ " + Thread.currentThread() + Stacktrace.top(Thread.currentThread().getStackTrace(), 10));
             }
-            
+
             if(watchdog != null) {
                 watchdog.add(broker);
             }
@@ -1607,30 +1612,6 @@ public class BrokerPool implements Database {
             return broker;
         }
     }
-    
-    /**
-     * Gets the top N frames from the stack returns
-     * them as a string
-     * 
-     * Excludes the callee and self stack frames
-     * 
-     * @param stack The stack
-     * @param top The number of frames to examine
-     *
-     * @return String representation of the top frames of the stack
-     */
-    private String stackTop(final StackTraceElement[] stack, final int top) {
-        final StringBuilder builder = new StringBuilder();
-        final int start = 2;
-        
-        for(int i = start; i < start + top && i < stack.length; i++) {
-            builder
-                    .append(" <- ")
-                    .append(stack[i]);
-        }
-        
-        return builder.toString();
-    }
 
     /**
      * Releases a broker for the database instance. If it is no more used, make if invactive.
@@ -1644,11 +1625,7 @@ public class BrokerPool implements Database {
      */
     //TODO : rename as releaseBroker ? releaseInstance (when refactored) ?
     void release(final DBBroker broker) {
-
-        // might be null as release() is often called within a finally block
-        if(broker == null) {
-            return;
-        }
+        Objects.requireNonNull(broker, "Cannot release nothing");
 
         //first check that the broker is active ! If not, return immediately.
         broker.decReferenceCount();
@@ -1680,7 +1657,7 @@ public class BrokerPool implements Database {
                 }
             } else {
                 if(LOG.isTraceEnabled()) {
-                    LOG.trace("--- " + Thread.currentThread() + stackTop(Thread.currentThread().getStackTrace(), 10));
+                    LOG.trace("--- " + Thread.currentThread() + Stacktrace.top(Thread.currentThread().getStackTrace(), 10));
                 }
             }
             
