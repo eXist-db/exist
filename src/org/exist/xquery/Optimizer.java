@@ -19,13 +19,15 @@
  */
 package org.exist.xquery;
 
+import org.exist.dom.QName;
+import org.exist.xquery.functions.array.ArrayConstructor;
 import org.exist.xquery.pragmas.Optimize;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.xquery.util.ExpressionDumper;
+import org.exist.xquery.value.AtomicValue;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Analyzes the query and marks optimizable expressions for the query engine.
@@ -318,6 +320,40 @@ public class Optimizer extends DefaultExpressionVisitor {
         --predicates;
     }
 
+    /**
+     * Check if a global variable can be inlined, usually if it
+     * references a literal value or sequence thereof.
+     *
+     * @param ref the variable reference
+     */
+    @Override
+    public void visitVariableReference(VariableReference ref) {
+        final String ns = ref.getName().getNamespaceURI();
+        if (ns != null && ns.length() > 0) {
+            final Module module = context.getModule(ns);
+            if (module != null && !module.isInternalModule()) {
+                final Collection<VariableDeclaration> vars = ((ExternalModule) module).getVariableDeclarations();
+                for (VariableDeclaration var: vars) {
+                    if (var.getName().equals(ref.getName())) {
+                        var.getExpression().accept(this);
+                        final Expression expression = simplifyPath(var.getExpression());
+                        final InlineableVisitor visitor = new InlineableVisitor();
+                        expression.accept(visitor);
+                        if (visitor.isInlineable()) {
+                            final Expression parent = ref.getParent();
+                            if (parent instanceof RewritableExpression) {
+//                                System.out.println(ref.getSource().toString() + " line " + ref.getLine() + ": " +
+//                                        "inlining " +
+//                                        "variable "+ ref.getName());
+                                ((RewritableExpression) parent).replace(ref, expression);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     private boolean canOptimize(List<Optimizable> list) {
         for (final Optimizable optimizable : list) {
             final int axis = optimizable.getOptimizeAxis();
@@ -384,6 +420,178 @@ public class Optimizer extends DefaultExpressionVisitor {
             if (function instanceof Optimizable) {
                 optimizables.add((Optimizable) function);
             }
+        }
+    }
+
+    /**
+     * Traverses an expression subtree to check if it could be inlined.
+     */
+    static class InlineableVisitor extends DefaultExpressionVisitor {
+
+        private boolean inlineable = true;
+
+        public boolean isInlineable() {
+            return inlineable;
+        }
+
+        @Override
+        public void visit(Expression expr) {
+            if (expr instanceof LiteralValue) {
+                return;
+            }
+            if (expr instanceof Atomize ||
+                expr instanceof DynamicCardinalityCheck ||
+                expr instanceof DynamicNameCheck ||
+                expr instanceof DynamicTypeCheck ||
+                expr instanceof UntypedValueCheck ||
+                expr instanceof ConcatExpr ||
+                expr instanceof ArrayConstructor) {
+                expr.accept(this);
+            } else {
+                inlineable = false;
+            }
+        }
+
+        @Override
+        public void visitPathExpr(PathExpr expr) {
+            // continue to check for numeric operators and other simple constructs,
+            // abort for all other path expressions with length > 1
+            if (expr instanceof OpNumeric ||
+                expr instanceof SequenceConstructor ||
+                expr.getLength() == 1) {
+                super.visitPathExpr(expr);
+            } else {
+                inlineable = false;
+            }
+        }
+
+        @Override
+        public void visitUserFunction(UserDefinedFunction function) {
+            inlineable = false;
+        }
+
+        @Override
+        public void visitBuiltinFunction(Function function) {
+            inlineable = false;
+        }
+
+        @Override
+        public void visitFunctionCall(FunctionCall call) {
+            inlineable = false;
+        }
+
+        @Override
+        public void visitForExpression(ForExpr forExpr) {
+            inlineable = false;
+        }
+
+        @Override
+        public void visitLetExpression(LetExpr letExpr) {
+            inlineable = false;
+        }
+
+        @Override
+        public void visitOrderByClause(OrderByClause orderBy) {
+            inlineable = false;
+        }
+
+        @Override
+        public void visitGroupByClause(GroupByClause groupBy) {
+            inlineable = false;
+        }
+
+        @Override
+        public void visitWhereClause(WhereClause where) {
+            inlineable = false;
+        }
+
+        @Override
+        public void visitConditional(ConditionalExpression conditional) {
+            inlineable = false;
+        }
+
+        @Override
+        public void visitLocationStep(LocationStep locationStep) {
+        }
+
+        @Override
+        public void visitPredicate(Predicate predicate) {
+            super.visitPredicate(predicate);
+        }
+
+        @Override
+        public void visitDocumentConstructor(DocumentConstructor constructor) {
+            inlineable = false;
+        }
+
+        @Override
+        public void visitElementConstructor(ElementConstructor constructor) {
+            inlineable = false;
+        }
+
+        @Override
+        public void visitTextConstructor(DynamicTextConstructor constructor) {
+            inlineable = false;
+        }
+
+        @Override
+        public void visitAttribConstructor(AttributeConstructor constructor) {
+            inlineable = false;
+        }
+
+        @Override
+        public void visitAttribConstructor(DynamicAttributeConstructor constructor) {
+            inlineable = false;
+        }
+
+        @Override
+        public void visitUnionExpr(Union union) {
+            inlineable = false;
+        }
+
+        @Override
+        public void visitIntersectionExpr(Intersect intersect) {
+            inlineable = false;
+        }
+
+        @Override
+        public void visitVariableDeclaration(VariableDeclaration decl) {
+            inlineable = false;
+        }
+
+        @Override
+        public void visitTryCatch(TryCatchExpression tryCatch) {
+            inlineable = false;
+        }
+
+        @Override
+        public void visitCastExpr(CastExpression expression) {
+            inlineable = false;
+        }
+
+        @Override
+        public void visitGeneralComparison(GeneralComparison comparison) {
+            inlineable = false;
+        }
+
+        @Override
+        public void visitAndExpr(OpAnd and) {
+            inlineable = false;
+        }
+
+        @Override
+        public void visitOrExpr(OpOr or) {
+            inlineable = false;
+        }
+
+        @Override
+        public void visitFilteredExpr(FilteredExpression filtered) {
+            inlineable = false;
+        }
+
+        @Override
+        public void visitVariableReference(VariableReference ref) {
+            inlineable = false;
         }
     }
 }

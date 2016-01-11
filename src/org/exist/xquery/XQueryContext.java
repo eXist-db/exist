@@ -3414,9 +3414,11 @@ public class XQueryContext implements BinaryValueManager, Context
             declareNamespace( "xdt", Namespaces.XPATH_DATATYPES_NS );
             declareNamespace( "fn", Namespaces.XPATH_FUNCTIONS_NS );
             declareNamespace( "local", Namespaces.XQUERY_LOCAL_NS );
+            declareNamespace( Namespaces.W3C_XQUERY_XPATH_ERROR_PREFIX, Namespaces.W3C_XQUERY_XPATH_ERROR_NS );
 
             //*not* as standard NS
             declareNamespace( "exist", Namespaces.EXIST_NS );
+            declareNamespace( Namespaces.EXIST_XQUERY_XPATH_ERROR_PREFIX, Namespaces.EXIST_XQUERY_XPATH_ERROR_NS );
 
             //TODO : include "err" namespace ?
             declareNamespace( "dbgp", Debuggee.NAMESPACE_URI );
