@@ -1620,11 +1620,7 @@ public class BrokerPool implements Database {
      */
     //TODO : rename as releaseBroker ? releaseInstance (when refactored) ?
     void release(final DBBroker broker) {
-
-        // might be null as release() is often called within a finally block
-        if(broker == null) {
-            return;
-        }
+        Objects.requireNonNull(broker, "Cannot release nothing");
 
         //first check that the broker is active ! If not, return immediately.
         broker.decReferenceCount();
