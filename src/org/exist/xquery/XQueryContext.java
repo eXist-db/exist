@@ -1443,6 +1443,8 @@ public class XQueryContext implements BinaryValueManager, Context
 
         clearUpdateListeners();
 
+        cleanupTasks.clear();
+
         profiler.reset();
         
         analyzed = false;
