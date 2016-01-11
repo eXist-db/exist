@@ -76,7 +76,7 @@ public class PartialFunctionApplication extends AbstractExpression {
 				final QName varName = new QName("vp" + i);
 				variables.add(varName);
 				// the argument to the inner call is a variable ref
-				final VariableReference ref = new VariableReference(context, varName.toString());
+				final VariableReference ref = new VariableReference(context, varName);
 				callArgs.add(ref);
 			} else {
 				// fixed argument: just compute the argument value

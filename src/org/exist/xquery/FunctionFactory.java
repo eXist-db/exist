@@ -392,7 +392,7 @@ public class FunctionFactory {
 			wrapperArgs.add(param);
 			QName varName = new QName("vp" + i);
 			variables[i] = varName;
-			final VariableReference ref = new VariableReference(context, varName.toString());
+			final VariableReference ref = new VariableReference(context, varName);
 			innerArgs.add(ref);
 			
 			// copy parameter sequence types
