@@ -30,6 +30,7 @@ public class ArrayConstructor extends AbstractExpression {
 
     @Override
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+        contextInfo.setParent(this);
         for (Expression expr: arguments) {
             expr.analyze(contextInfo);
         }

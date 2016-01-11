@@ -27,6 +27,7 @@ public class MapExpr extends AbstractExpression {
     }
 
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+        contextInfo.setParent(this);
         for (final Mapping mapping : this.mappings) {
             mapping.key.analyze(contextInfo);
             mapping.value.analyze(contextInfo);
