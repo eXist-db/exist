@@ -1473,6 +1473,11 @@ public class BrokerPool implements Database {
     /**
      * Get active broker for current thread
      *
+     * Note - If you call getActiveBroker() you must not call
+     * release on both the returned active broker and the original
+     * lease from {@link BrokerPool#getBroker()} or {@link BrokerPool#get(Optional)}
+     * otherwise release will have been called more than get!
+     *
      * @return Database broker
      * @throws RuntimeException NO broker available for current thread.
      */
