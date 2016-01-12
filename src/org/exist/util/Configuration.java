@@ -805,7 +805,7 @@ public class Configuration implements ErrorHandler
                 LOG.debug( DefaultCacheManager.PROPERTY_CACHE_SIZE + ": " + config.get( DefaultCacheManager.PROPERTY_CACHE_SIZE ) + "m" );
             }
             catch( final NumberFormatException nfe ) {
-                LOG.warn( nfe );
+                LOG.warn("Cannot convert " + DefaultCacheManager.PROPERTY_CACHE_SIZE + " value to integer: " + cacheMem, nfe);
             }
         }
         
@@ -826,15 +826,11 @@ public class Configuration implements ErrorHandler
             cacheShrinkThreshold = DefaultCacheManager.DEFAULT_SHRINK_THRESHOLD_STRING;
         }
 
-        if( cacheShrinkThreshold != null ) {
-
-            try {
-                config.put( DefaultCacheManager.SHRINK_THRESHOLD_PROPERTY, Integer.valueOf(cacheShrinkThreshold) );
-                LOG.debug( DefaultCacheManager.SHRINK_THRESHOLD_PROPERTY + ": " + config.get( DefaultCacheManager.SHRINK_THRESHOLD_PROPERTY ) );
-            }
-            catch( final NumberFormatException nfe ) {
-                LOG.warn( nfe );
-            }
+        try {
+            config.put(DefaultCacheManager.SHRINK_THRESHOLD_PROPERTY, Integer.valueOf(cacheShrinkThreshold));
+            LOG.debug(DefaultCacheManager.SHRINK_THRESHOLD_PROPERTY + ": " + config.get(DefaultCacheManager.SHRINK_THRESHOLD_PROPERTY));
+        } catch(final NumberFormatException nfe) {
+            LOG.warn("Cannot convert " + DefaultCacheManager.SHRINK_THRESHOLD_PROPERTY + " value to integer: " + cacheShrinkThreshold, nfe);
         }
 
         String collectionCache = getConfigAttributeValue( con, CollectionCacheManager.CACHE_SIZE_ATTRIBUTE );
@@ -850,7 +846,7 @@ public class Configuration implements ErrorHandler
                 LOG.debug( CollectionCacheManager.PROPERTY_CACHE_SIZE + ": " + config.get( CollectionCacheManager.PROPERTY_CACHE_SIZE ) + "m" );
             }
             catch( final NumberFormatException nfe ) {
-                LOG.warn( nfe );
+                LOG.warn("Cannot convert " + CollectionCacheManager.PROPERTY_CACHE_SIZE + " value to integer: " + collectionCache, nfe);
             }
         }
 
@@ -863,7 +859,7 @@ public class Configuration implements ErrorHandler
                 LOG.debug( BrokerPool.PROPERTY_PAGE_SIZE + ": " + config.get( BrokerPool.PROPERTY_PAGE_SIZE ) );
             }
             catch( final NumberFormatException nfe ) {
-                LOG.warn( nfe );
+                LOG.warn("Cannot convert " + BrokerPool.PROPERTY_PAGE_SIZE + " value to integer: " + collectionCache, nfe);
             }
         }
 
@@ -877,7 +873,7 @@ public class Configuration implements ErrorHandler
                 LOG.debug( BrokerPool.PROPERTY_COLLECTION_CACHE_SIZE + ": " + config.get( BrokerPool.PROPERTY_COLLECTION_CACHE_SIZE ) );
             }
             catch( final NumberFormatException nfe ) {
-                LOG.warn( nfe );
+                LOG.warn("Cannot convert " + BrokerPool.PROPERTY_COLLECTION_CACHE_SIZE + " value to integer: " + collCacheSize, nfe);
             }
         }
 
@@ -891,7 +887,7 @@ public class Configuration implements ErrorHandler
 
             }
             catch( final NumberFormatException nfe ) {
-                LOG.warn( nfe );
+                LOG.warn("Cannot convert " + BrokerPool.PROPERTY_NODES_BUFFER + " value to integer: " + nodesBuffer, nfe);
             }
         }
 
@@ -911,7 +907,7 @@ public class Configuration implements ErrorHandler
 
             }
             catch( final NumberFormatException nfe ) {
-                LOG.warn( nfe );
+                LOG.warn("Cannot convert " + "db-connection.buffers" + " value to integer: " + buffers, nfe);
             }
         }
 
@@ -926,7 +922,7 @@ public class Configuration implements ErrorHandler
 
             }
             catch( final NumberFormatException nfe ) {
-                LOG.warn( nfe );
+                LOG.warn("Cannot convert " + "db-connection.collections.buffers" + " value to integer: " + collBuffers, nfe);
             }
         }
 
@@ -941,7 +937,7 @@ public class Configuration implements ErrorHandler
 
             }
             catch( final NumberFormatException nfe ) {
-                LOG.warn( nfe );
+                LOG.warn("Cannot convert " + "db-connection.words.buffers" + " value to integer: " + wordBuffers, nfe);
             }
         }
 
@@ -956,7 +952,7 @@ public class Configuration implements ErrorHandler
 
             }
             catch( final NumberFormatException nfe ) {
-                LOG.warn( nfe );
+                LOG.warn("Cannot convert " + "db-connection.elements.buffers" + " value to integer: " + elementBuffers, nfe);
             }
         }
 
@@ -972,7 +968,7 @@ public class Configuration implements ErrorHandler
                 config.put(BrokerPool.DISK_SPACE_MIN_PROPERTY, Short.valueOf(diskSpace));
             }
             catch( final NumberFormatException nfe ) {
-                LOG.warn( nfe );
+                LOG.warn("Cannot convert " + BrokerPool.DISK_SPACE_MIN_PROPERTY + " value to integer: " + diskSpace, nfe);
             }
         }
 

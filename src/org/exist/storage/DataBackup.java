@@ -47,16 +47,16 @@ public class DataBackup implements SystemTask {
 
     public static final String DATE_FORMAT_PICTURE = "yyyyMMddHHmmssS";
     private final SimpleDateFormat creationDateFormat = new SimpleDateFormat(DATE_FORMAT_PICTURE);
-    
+
 	private Path dest;
-	
+
     public DataBackup() {
     }
-    
+
     public DataBackup(final Path destination) {
         dest = destination;
     }
-    
+
     @Override
     public boolean afterCheckpoint() {
     	return true;

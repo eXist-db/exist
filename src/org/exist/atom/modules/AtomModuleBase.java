@@ -22,10 +22,11 @@
 package org.exist.atom.modules;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import org.exist.EXistException;
 import org.exist.atom.AtomModule;
@@ -125,23 +126,20 @@ public class AtomModuleBase implements AtomModule {
 				+ " is not supported by this module.");
 	}
 
-	protected File storeInTemporaryFile(InputStream is, long len) throws IOException {
-		
-		final File tempFile = File.createTempFile("atom", ".tmp");
-
-		try(final OutputStream os = new FileOutputStream(tempFile)) {
-            final byte[] buffer = new byte[4096];
-            int count = 0;
-            long l = 0;
-            do {
-                count = is.read(buffer);
-                if (count > 0) {
-                    os.write(buffer, 0, count);
-                }
-                l += count;
-            } while ((len < 0 && count >= 0) || l < len);
-        }
-
-		return tempFile;
+	protected File storeInTemporaryFile(final InputStream is, final long len) throws IOException {
+		final Path tmpFile = Files.createTempFile("atom", ".tmp");
+		try(final OutputStream os = Files.newOutputStream(tmpFile)) {
+			final byte[] buffer = new byte[4096];
+			int count = 0;
+			long l = 0;
+			do {
+				count = is.read(buffer);
+				if (count > 0) {
+					os.write(buffer, 0, count);
+				}
+				l += count;
+			} while ((len < 0 && count >= 0) || l < len);
+		}
+		return tmpFile.toFile();
 	}
 }
