@@ -40,6 +40,7 @@ import java.util.SimpleTimeZone;
 import java.util.Stack;
 import java.util.TimeZone;
 import java.util.TreeMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
@@ -3571,71 +3572,38 @@ public class XQueryContext implements BinaryValueManager, Context
     
     private static class ContextUpdateListener implements UpdateListener {
 
-        private List<UpdateListener> listeners = new ArrayList<UpdateListener>();
+        private CopyOnWriteArrayList<UpdateListener> listeners = new CopyOnWriteArrayList<>();
 
-        public void addListener( UpdateListener listener )
-        {
-			synchronized( listeners ) {
-           		listeners.add( listener );
-			}
+        public void addListener(final UpdateListener listener) {
+            listeners.add(listener);
         }
 
-
-        public void documentUpdated( DocumentImpl document, int event )
-        {
-            List<UpdateListener> copyOfListeners = null;
-            synchronized( this ) {
-                copyOfListeners = new ArrayList(listeners);
-            }
-            for( final UpdateListener listener : copyOfListeners ) {
-
-                if( listener != null ) {
-                    listener.documentUpdated( document, event );
-                }
+        public void documentUpdated(final DocumentImpl document, final int event) {
+            for(final UpdateListener listener : listeners) {
+                listener.documentUpdated(document, event);
             }
         }
 
-
-        public void unsubscribe()
-        {
-            List<UpdateListener> copyOfListeners = null;
-            synchronized( this ) {
-                copyOfListeners = new ArrayList(listeners);
-                listeners = new ArrayList<>();
-            }
-            for( final UpdateListener listener : copyOfListeners ) {
-
-                if( listener != null ) {
-                    listener.unsubscribe();
-                }
+        public void unsubscribe() {
+            for(final UpdateListener listener : listeners) {
+                listener.unsubscribe();
+                listeners.remove(listener);
             }
         }
 
-
-        public void nodeMoved( NodeId oldNodeId, NodeHandle newNode )
-        {
-            List<UpdateListener> copyOfListeners = null;
-            synchronized( this ) {
-                copyOfListeners = new ArrayList(listeners);
-            }
-            for (UpdateListener listener1 : copyOfListeners) {
-                final UpdateListener listener = (UpdateListener) listener1;
-
-                if (listener != null) {
-                    listener.nodeMoved(oldNodeId, newNode);
-                }
+        public void nodeMoved(final NodeId oldNodeId, final NodeHandle newNode) {
+            for(final UpdateListener listener : listeners) {
+                listener.nodeMoved(oldNodeId, newNode);
             }
         }
-
 
         public void debug() {
-            List<UpdateListener> copyOfListeners = null;
-            synchronized( this ) {
-                copyOfListeners = new ArrayList(listeners);
-            }
-            LOG.debug(String.format("XQueryContext: %s document update listeners", copyOfListeners.size()));
-            for (UpdateListener listener : copyOfListeners) {
-                ((UpdateListener) listener).debug();
+            //we make a stable copy as we want to perform two separate operations
+            final List<UpdateListener> stable = (CopyOnWriteArrayList<UpdateListener>)listeners.clone();
+
+            LOG.debug(String.format("XQueryContext: %s document update listeners", stable.size()));
+            for (final UpdateListener listener : stable) {
+                listener.debug();
             }
         }
 
