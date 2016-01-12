@@ -420,7 +420,7 @@ public class Resource extends File {
         }
     }
 
-    protected void freeFile() throws IOException {
+    protected synchronized void freeFile() throws IOException {
 
         if (isXML()) {
             if (file == null) {
