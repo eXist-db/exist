@@ -1278,11 +1278,11 @@ public class Collection extends Observable implements Resource, Comparable<Colle
             
             broker.getBrokerPool().getNotificationService().notifyUpdate(doc, UpdateListener.REMOVE);
         } finally {
-            broker.getBrokerPool().getProcessMonitor().endJob();
             if(doc != null) {
                 doc.getUpdateLock().release(Lock.WRITE_LOCK);
             }
             getLock().release(Lock.WRITE_LOCK);
+            broker.getBrokerPool().getProcessMonitor().endJob();
         }
     }
 
@@ -1351,9 +1351,9 @@ public class Collection extends Observable implements Resource, Comparable<Colle
             trigger.afterDeleteDocument(broker, transaction, doc.getURI());
 
         } finally {
-            broker.getBrokerPool().getProcessMonitor().endJob();
             doc.getUpdateLock().release(Lock.WRITE_LOCK);
             getLock().release(Lock.WRITE_LOCK);
+            broker.getBrokerPool().getProcessMonitor().endJob();
         }
     }
 
@@ -1491,12 +1491,16 @@ public class Collection extends Observable implements Resource, Comparable<Colle
      * @throws SAXException
      */
     private void storeXMLInternal(final Txn transaction, final DBBroker broker, final IndexInfo info, final boolean privileged, final StoreBlock doParse) throws EXistException, SAXException, PermissionDeniedException {
-        
-        final DocumentImpl document = info.getIndexer().getDocument();
-        
+
         final Database db = broker.getBrokerPool();
-        
+        DocumentImpl document = null;
+
         try {
+
+            db.getProcessMonitor().startJob(ProcessMonitor.ACTION_STORE_DOC, document.getFileURI());
+
+            document = info.getIndexer().getDocument();
+
             /* TODO
              * 
              * These security checks are temporarily disabled because throwing an exception
@@ -1546,8 +1550,7 @@ public class Collection extends Observable implements Resource, Comparable<Colle
             if(!document.getUpdateLock().isLockedForWrite()) {
                 LOG.warn("document is not locked for write !");
             }
-            
-            db.getProcessMonitor().startJob(ProcessMonitor.ACTION_STORE_DOC, document.getFileURI());
+
             doParse.run();
             broker.storeXMLResource(transaction, document);
             broker.flush();
@@ -1556,9 +1559,12 @@ public class Collection extends Observable implements Resource, Comparable<Colle
             LOG.debug("document stored.");
         } finally {
             //This lock has been acquired in validateXMLResourceInternal()
-            document.getUpdateLock().release(Lock.WRITE_LOCK);
+            if(document != null) {
+                document.getUpdateLock().release(Lock.WRITE_LOCK);
+            }
             broker.getBrokerPool().getProcessMonitor().endJob();
         }
+
         setCollectionConfigEnabled(true);
         broker.deleteObservers();
         
@@ -2103,8 +2109,8 @@ public class Collection extends Observable implements Resource, Comparable<Colle
 
             blob.getUpdateLock().acquire(Lock.READ_LOCK);
         } finally {
-            broker.getBrokerPool().getProcessMonitor().endJob();
             getLock().release(Lock.WRITE_LOCK);
+            broker.getBrokerPool().getProcessMonitor().endJob();
         }
         try {
             if (oldDoc == null) {
