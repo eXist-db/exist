@@ -84,7 +84,7 @@
         
         <taskdef name="fetch" classname="nl.ow.dilemma.ant.fetch.FetchTask">
             <classpath>
-                <pathelement location="tools/ant/lib/asocat-exist.jar"/>
+                <pathelement location="${asocat-exist.jar}"/>
             </classpath>
         </taskdef>
         <fetch dest="${apps.dir}" url="${apps.repo}/pkg.zip?abbrev=${xar}&amp;zip=yes"

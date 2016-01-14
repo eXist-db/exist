@@ -30,7 +30,7 @@
     <target name="install-appbundler" unless="appbundler.available">
         <taskdef name="fetch" classname="nl.ow.dilemma.ant.fetch.FetchTask">
             <classpath>
-                <pathelement location="${tools.ant}/lib/asocat-exist.jar"/>
+                <pathelement location="${asocat-exist.jar}"/>
             </classpath>
         </taskdef>
         
