@@ -82,6 +82,11 @@ public class MapType extends AbstractMapType {
         return e == null ? Sequence.EMPTY_SEQUENCE : e.getValue();
     }
 
+    @Override
+    public AbstractMapType put(AtomicValue key, final Sequence value) throws XPathException {
+        return new MapType(this.context, this.map.assoc(key, value), type);
+    }
+
     public boolean contains(AtomicValue key) {
         key = convert(key);
         if (key == null)
@@ -125,9 +130,17 @@ public class MapType extends AbstractMapType {
 
     @Override
     public Sequence getValue() {
-        if (map.count() == 0)
-            {return null;}
-        final Iterator<Map.Entry<AtomicValue,Sequence>> iter = this.map.iterator();
+        return mapToSequence(this.map);
+    }
+
+    /**
+     * Get a Sequence from an internal map representation
+     */
+    private Sequence mapToSequence(final IPersistentMap<AtomicValue, Sequence> map) {
+        if (map.count() == 0) {
+            return null;
+        }
+        final Iterator<Map.Entry<AtomicValue,Sequence>> iter = map.iterator();
         return iter.next().getValue();
     }
 
@@ -150,7 +163,7 @@ public class MapType extends AbstractMapType {
     }
 
     private AtomicValue convert(AtomicValue key) {
-        if (type != Type.ITEM) {
+        if (type != Type.ANY_TYPE && type != Type.ITEM) {
             try {
                 return key.convertTo(type);
             } catch (final XPathException e) {

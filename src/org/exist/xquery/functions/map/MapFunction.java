@@ -10,140 +10,250 @@ import java.util.Map;
  * Implements all functions of the map module.
  */
 public class MapFunction extends BasicFunction {
-    
-    public static final FunctionSignature[] signatures = {
-        new FunctionSignature(
-            new QName("new", MapModule.NAMESPACE_URI, MapModule.PREFIX),
-            "Constructs and returns an empty map whose collation is the default collation in the static context.",
-            null,
-            new SequenceType(Type.MAP, Cardinality.EXACTLY_ONE)),
-        new FunctionSignature(
-            new QName("new", MapModule.NAMESPACE_URI, MapModule.PREFIX),
-            "Constructs and returns an empty map whose collation is the default collation in the static context.",
-            new SequenceType[] {
+
+    private static final QName QN_MERGE = new QName("merge", MapModule.NAMESPACE_URI, MapModule.PREFIX);
+    private static final QName QN_SIZE = new QName("size", MapModule.NAMESPACE_URI, MapModule.PREFIX);
+    private static final QName QN_ENTRY = new QName("entry", MapModule.NAMESPACE_URI, MapModule.PREFIX);
+    private static final QName QN_GET = new QName("get", MapModule.NAMESPACE_URI, MapModule.PREFIX);
+    private static final QName QN_PUT = new QName("put", MapModule.NAMESPACE_URI, MapModule.PREFIX);
+    private static final QName QN_CONTAINS = new QName("contains", MapModule.NAMESPACE_URI, MapModule.PREFIX);
+    private static final QName QN_KEYS = new QName("keys", MapModule.NAMESPACE_URI, MapModule.PREFIX);
+    private static final QName QN_REMOVE = new QName("remove", MapModule.NAMESPACE_URI, MapModule.PREFIX);
+    private static final QName QN_FOR_EACH = new QName("for-each", MapModule.NAMESPACE_URI, MapModule.PREFIX);
+
+    @Deprecated private static final QName QN_NEW = new QName("new", MapModule.NAMESPACE_URI, MapModule.PREFIX);
+	@Deprecated private static final QName QN_FOR_EACH_ENTRY = new QName("for-each-entry", MapModule.NAMESPACE_URI, MapModule.PREFIX);
+
+    public final static FunctionSignature FNS_MERGE = new FunctionSignature(
+        QN_MERGE,
+        "Returns a map that combines the entries from a number of existing maps.",
+        new SequenceType[] {
+            new FunctionParameterSequenceType("maps", Type.MAP, Cardinality.ZERO_OR_MORE, "Existing maps to merge to create a new map.")
+        },
+        new SequenceType(Type.MAP, Cardinality.EXACTLY_ONE)
+    );
+
+    public final static FunctionSignature FNS_SIZE = new FunctionSignature(
+        QN_SIZE,
+        "Returns the number of entries in the supplied map.",
+        new SequenceType[] {
+            new FunctionParameterSequenceType("input", Type.MAP, Cardinality.EXACTLY_ONE, "Any map to determine the size of.")
+        },
+        new SequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE)
+    );
+
+    public final static FunctionSignature FNS_KEYS = new FunctionSignature(
+        QN_KEYS,
+        "Returns a sequence containing all the key values present in a map.",
+        new SequenceType[]{
+            new FunctionParameterSequenceType(MapModule.PREFIX, Type.MAP, Cardinality.EXACTLY_ONE, "The map")
+        },
+        new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_MORE)
+    );
+
+    public final static FunctionSignature FNS_CONTAINS = new FunctionSignature(
+        QN_CONTAINS,
+        "Tests whether a supplied map contains an entry for a given key.",
+        new SequenceType[] {
+            new FunctionParameterSequenceType(MapModule.PREFIX, Type.MAP, Cardinality.EXACTLY_ONE, "The map"),
+            new FunctionParameterSequenceType("key", Type.ATOMIC, Cardinality.EXACTLY_ONE, "The key to look up")
+        },
+        new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)
+    );
+
+    public final static FunctionSignature FNS_GET = new FunctionSignature(
+        QN_GET,
+        "Returns the value associated with a supplied key in a given map.",
+        new SequenceType[] {
+            new FunctionParameterSequenceType(MapModule.PREFIX, Type.MAP, Cardinality.EXACTLY_ONE, "The map"),
+            new FunctionParameterSequenceType("key", Type.ATOMIC, Cardinality.EXACTLY_ONE, "The key to look up")
+        },
+        new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
+    );
+
+    public final static FunctionSignature FNS_PUT = new FunctionSignature(
+        QN_PUT,
+        "Returns a map containing all the contents of the supplied map, but with an additional entry, which replaces any existing entry for the same key.",
+        new SequenceType[] {
+            new FunctionParameterSequenceType(MapModule.PREFIX, Type.MAP, Cardinality.EXACTLY_ONE, "The map"),
+            new FunctionParameterSequenceType("key", Type.ATOMIC, Cardinality.EXACTLY_ONE, "The key for the entry to insert"),
+            new FunctionParameterSequenceType("value", Type.ITEM, Cardinality.ZERO_OR_MORE, "The value for the entry to insert")
+        },
+        new SequenceType(Type.MAP, Cardinality.EXACTLY_ONE)
+    );
+
+    public final static FunctionSignature FNS_ENTRY = new FunctionSignature(
+        QN_ENTRY,
+        "Creates a map that contains a single entry (a key-value pair).",
+        new SequenceType[] {
+            new FunctionParameterSequenceType("key", Type.ATOMIC, Cardinality.EXACTLY_ONE, "The key"),
+            new FunctionParameterSequenceType("value", Type.ITEM, Cardinality.ZERO_OR_MORE, "The associated value")
+        },
+        new SequenceType(Type.MAP, Cardinality.EXACTLY_ONE)
+    );
+
+    public final static FunctionSignature FNS_REMOVE = new FunctionSignature(
+        QN_REMOVE,
+        "Constructs a new map by removing an entry from an existing map.",
+        new SequenceType[] {
+            new FunctionParameterSequenceType(MapModule.PREFIX, Type.MAP, Cardinality.EXACTLY_ONE, "The map"),
+            new FunctionParameterSequenceType("key", Type.STRING, Cardinality.EXACTLY_ONE, "The key to remove")
+        },
+        new SequenceType(Type.MAP, Cardinality.EXACTLY_ONE)
+    );
+
+    public final static FunctionSignature FNS_FOR_EACH = new FunctionSignature(
+        QN_FOR_EACH,
+        "takes any map as its $input argument and applies the supplied function to each entry in the map, in implementation-dependent order; the result is the sequence obtained by concatenating the results of these function calls. " +
+        "The function supplied as $action takes two arguments. It is called supplying the key of the map entry as the first argument, and the associated value as the second argument.",
+        new SequenceType[] {
+            new FunctionParameterSequenceType("input", Type.MAP, Cardinality.EXACTLY_ONE, "The map"),
+            new FunctionParameterSequenceType("action", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "The function to be called for each entry")
+        },
+        new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
+    );
+
+
+	/* Deprecated below */
+
+    @Deprecated
+    public final static FunctionSignature FNS_NEW_0 = new FunctionSignature(
+        QN_NEW,
+        "Constructs and returns an empty map whose collation is the default collation in the static context.",
+        null,
+        new SequenceType(Type.MAP, Cardinality.EXACTLY_ONE),
+        "Use the computer map constructor `map {}` instead."
+    );
+
+    @Deprecated
+    public final static FunctionSignature FNS_NEW_N = new FunctionSignature(
+        QN_NEW,
+        "Constructs and returns an empty map whose collation is the default collation in the static context.",
+        new SequenceType[] {
                 new FunctionParameterSequenceType("maps", Type.MAP, Cardinality.ZERO_OR_MORE, "Existing maps to combine into the new map.")
-            },
-            new SequenceType(Type.MAP, Cardinality.EXACTLY_ONE)),
-        new FunctionSignature(
-            new QName("new", MapModule.NAMESPACE_URI, MapModule.PREFIX),
-            "Constructs and returns an empty map whose collation is given in the second argument.",
-            new SequenceType[] {
+        },
+        new SequenceType(Type.MAP, Cardinality.EXACTLY_ONE),
+        FNS_MERGE
+    );
+
+    @Deprecated
+    public final static FunctionSignature FNS_NEW_N_COLLATION = new FunctionSignature(
+        QN_NEW,
+        "Constructs and returns an empty map whose collation is given in the second argument.",
+        new SequenceType[] {
                 new FunctionParameterSequenceType("maps", Type.MAP, Cardinality.ZERO_OR_MORE, "Existing maps to combine into the new map."),
                 new FunctionParameterSequenceType("collation", Type.STRING, Cardinality.EXACTLY_ONE, "The collation to use for the new map.")
-            },
-            new SequenceType(Type.MAP, Cardinality.EXACTLY_ONE)),
-        new FunctionSignature(
-            new QName("entry", MapModule.NAMESPACE_URI, MapModule.PREFIX),
-            "Creates a map that contains a single entry (a key-value pair).",
-            new SequenceType[] {
-                new FunctionParameterSequenceType("key", Type.ATOMIC, Cardinality.EXACTLY_ONE, "The key"),
-                new FunctionParameterSequenceType("value", Type.ITEM, Cardinality.ZERO_OR_MORE, "The associated value")
-            },
-            new SequenceType(Type.MAP, Cardinality.EXACTLY_ONE)),
-        new FunctionSignature(
-            new QName("get", MapModule.NAMESPACE_URI, MapModule.PREFIX),
-            "Returns the value associated with a supplied key in a given map.",
-            new SequenceType[] {
-                new FunctionParameterSequenceType(MapModule.PREFIX, Type.MAP, Cardinality.EXACTLY_ONE, "The map"),
-                new FunctionParameterSequenceType("key", Type.ATOMIC, Cardinality.EXACTLY_ONE, "The key to look up")
-            },
-            new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)),
-        new FunctionSignature(
-            new QName("contains", MapModule.NAMESPACE_URI, MapModule.PREFIX),
-            "Tests whether a supplied map contains an entry for a given key.",
-            new SequenceType[] {
-                new FunctionParameterSequenceType(MapModule.PREFIX, Type.MAP, Cardinality.EXACTLY_ONE, "The map"),
-                new FunctionParameterSequenceType("key", Type.ATOMIC, Cardinality.EXACTLY_ONE, "The key to look up")
-            },
-            new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)),
-        new FunctionSignature(
-            new QName("keys", MapModule.NAMESPACE_URI, MapModule.PREFIX),
-            "Returns a sequence containing all the key values present in a map.",
-            new SequenceType[]{new FunctionParameterSequenceType(MapModule.PREFIX, Type.MAP, Cardinality.EXACTLY_ONE, "The map")},
-            new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_MORE)),
-        new FunctionSignature(
-            new QName("remove", MapModule.NAMESPACE_URI, MapModule.PREFIX),
-            "Constructs a new map by removing an entry from an existing map.",
-            new SequenceType[] {
-                new FunctionParameterSequenceType(MapModule.PREFIX, Type.MAP, Cardinality.EXACTLY_ONE, "The map"),
-                new FunctionParameterSequenceType("key", Type.STRING, Cardinality.EXACTLY_ONE, "The key to remove")
-            },
-            new SequenceType(Type.MAP, Cardinality.EXACTLY_ONE)),
-        new FunctionSignature(
-            new QName("for-each-entry", MapModule.NAMESPACE_URI, MapModule.PREFIX),
-            "takes any map as its $input argument and applies the supplied function to each entry in the map, in implementation-dependent order; the result is the sequence obtained by concatenating the results of these function calls. " +
-            "The function supplied as $action takes two arguments. It is called supplying the key of the map entry as the first argument, and the associated value as the second argument.",
-            new SequenceType[] {
-                new FunctionParameterSequenceType("input", Type.MAP, Cardinality.EXACTLY_ONE, "The map"),
-                new FunctionParameterSequenceType("action", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "The function to be called for each entry")
-            },
-            new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
-        )
-    };
+        },
+        new SequenceType(Type.MAP, Cardinality.EXACTLY_ONE),
+        FNS_MERGE
+    );
+
+	@Deprecated
+    public final static FunctionSignature FNS_FOR_EACH_ENTRY = new FunctionSignature(
+        QN_FOR_EACH_ENTRY,
+        "takes any map as its $input argument and applies the supplied function to each entry in the map, in implementation-dependent order; the result is the sequence obtained by concatenating the results of these function calls. " +
+        "The function supplied as $action takes two arguments. It is called supplying the key of the map entry as the first argument, and the associated value as the second argument.",
+        new SequenceType[] {
+            new FunctionParameterSequenceType("input", Type.MAP, Cardinality.EXACTLY_ONE, "The map"),
+            new FunctionParameterSequenceType("action", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "The function to be called for each entry")
+        },
+        new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE),
+		FNS_FOR_EACH
+    );
 
     private AnalyzeContextInfo cachedContextInfo;
 
-    public MapFunction(XQueryContext context, FunctionSignature signature) {
+    public MapFunction(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
 
     @Override
-    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+    public void analyze(final AnalyzeContextInfo contextInfo) throws XPathException {
         cachedContextInfo = new AnalyzeContextInfo(contextInfo);
         super.analyze(contextInfo);
     }
 
-    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-        if (isCalledAs("new"))
-            {return newMap(args);}
-        if (isCalledAs("entry"))
-            {return entry(args);}
-        if (isCalledAs("get"))
-            {return get(args);}
-        if (isCalledAs("contains"))
-            {return contains(args);}
-        if (isCalledAs("keys"))
-            {return keys(args);}
-        if (isCalledAs("remove"))
-            {return remove(args);}
-        if (isCalledAs("for-each-entry")) {
-            return forEachEntry(args);
+    public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
+        if (isCalledAs(QN_NEW.getLocalPart())) {
+            return newMap(args);
+        } else if (isCalledAs(QN_MERGE.getLocalPart())) {
+            return merge(args);
+        } else if (isCalledAs(QN_SIZE.getLocalPart())) {
+            return size(args);
+        } else if (isCalledAs(QN_KEYS.getLocalPart())) {
+            return keys(args);
+        } else if (isCalledAs(QN_CONTAINS.getLocalPart())) {
+            return contains(args);
+        } else if (isCalledAs(QN_GET.getLocalPart())) {
+            return get(args);
+        } else if (isCalledAs(QN_PUT.getLocalPart())) {
+            return put(args);
+        } else if (isCalledAs(QN_ENTRY.getLocalPart())) {
+            return entry(args);
+        } else if (isCalledAs(QN_REMOVE.getLocalPart())) {
+            return remove(args);
+        } else if (isCalledAs(QN_FOR_EACH.getLocalPart()) || isCalledAs(QN_FOR_EACH_ENTRY.getLocalPart())) {
+            return forEach(args);
         }
         return null;
     }
 
-    private Sequence remove(Sequence[] args) {
+    private Sequence remove(final Sequence[] args) {
         final AbstractMapType map = (AbstractMapType) args[0].itemAt(0);
         return map.remove((AtomicValue) args[1].itemAt(0));
     }
 
-    private Sequence keys(Sequence[] args) {
+    private Sequence keys(final Sequence[] args) {
         final AbstractMapType map = (AbstractMapType) args[0].itemAt(0);
         return map.keys();
     }
 
-    private Sequence contains(Sequence[] args) {
+    private Sequence contains(final Sequence[] args) {
         final AbstractMapType map = (AbstractMapType) args[0].itemAt(0);
         return BooleanValue.valueOf(map.contains((AtomicValue) args[1].itemAt(0)));
     }
 
-    private Sequence get(Sequence[] args) {
+    private Sequence get(final Sequence[] args) {
         final AbstractMapType map = (AbstractMapType) args[0].itemAt(0);
         return map.get((AtomicValue) args[1].itemAt(0));
     }
 
-    private Sequence entry(Sequence[] args) throws XPathException {
+    private Sequence put(final Sequence[] args) throws XPathException {
+        final AbstractMapType map = (AbstractMapType) args[0].itemAt(0);
+        return map.put((AtomicValue) args[1].itemAt(0), args[2]);
+    }
+
+    private Sequence entry(final Sequence[] args) throws XPathException {
         final AtomicValue key = (AtomicValue) args[0].itemAt(0);
         return new SingleKeyMapType(this.context, null, key, args[1]);
     }
 
-    private Sequence newMap(Sequence[] args) throws XPathException {
+    private Sequence size(final Sequence[] args) throws XPathException {
+        final AbstractMapType map = (AbstractMapType) args[0].itemAt(0);
+        return new IntegerValue(map.size(), Type.INTEGER);
+    }
+
+    private Sequence merge(final Sequence[] args) throws XPathException {
+        if (args.length == 0) {
+            return new MapType(this.context);
+        }
+        final MapType map = new MapType(this.context, null);
+        for (final SequenceIterator i = args[0].unorderedIterator(); i.hasNext(); ) {
+            final AbstractMapType m = (AbstractMapType) i.nextItem();
+            map.add(m);
+        }
+        return map;
+    }
+
+    @Deprecated
+    private Sequence newMap(final Sequence[] args) throws XPathException {
         if (args.length == 0) {
             return new MapType(this.context);
         }
         String collation = null;
-        if (args.length == 2)
-            {collation = args[1].getStringValue();}
+        if (args.length == 2) {
+            collation = args[1].getStringValue();
+        }
         final MapType map = new MapType(this.context, collation);
         for (final SequenceIterator i = args[0].unorderedIterator(); i.hasNext(); ) {
             final AbstractMapType m = (AbstractMapType) i.nextItem();
@@ -152,16 +262,13 @@ public class MapFunction extends BasicFunction {
         return map;
     }
 
-    private Sequence forEachEntry(Sequence[] args) throws XPathException {
+    private Sequence forEach(final Sequence[] args) throws XPathException {
         final AbstractMapType map = (AbstractMapType) args[0].itemAt(0);
         final FunctionReference ref = (FunctionReference) args[1].itemAt(0);
         ref.analyze(cachedContextInfo);
         final ValueSequence result = new ValueSequence();
-        final Sequence fargs[] = new Sequence[2];
-        for (Map.Entry<AtomicValue, Sequence> entry: map) {
-            fargs[0] = entry.getKey();
-            fargs[1] = entry.getValue();
-            final Sequence s = ref.evalFunction(null, null, fargs);
+        for (final Map.Entry<AtomicValue, Sequence> entry : map) {
+            final Sequence s = ref.evalFunction(null, null, new Sequence[] { entry.getKey(), entry.getValue() });
             result.addAll(s);
         }
         return result;

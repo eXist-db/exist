@@ -36,6 +36,13 @@ public class SingleKeyMapType extends AbstractMapType {
     }
 
     @Override
+    public AbstractMapType put(final AtomicValue key, final Sequence value) throws XPathException {
+        final MapType map = new MapType(context);
+        map.add(this);
+        return map.put(key, value);
+    }
+
+    @Override
     public boolean contains(AtomicValue key) {
         return (comparator.compare(this.key, key) == Constants.EQUAL);
     }

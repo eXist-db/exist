@@ -17,15 +17,22 @@ public class MapModule extends AbstractInternalModule {
     public static final String PREFIX = "map";
 
     private static final FunctionDef[] functions = {
-            new FunctionDef(MapFunction.signatures[0], MapFunction.class),
-            new FunctionDef(MapFunction.signatures[1], MapFunction.class),
-            new FunctionDef(MapFunction.signatures[2], MapFunction.class),
-            new FunctionDef(MapFunction.signatures[3], MapFunction.class),
-            new FunctionDef(MapFunction.signatures[4], MapFunction.class),
-            new FunctionDef(MapFunction.signatures[5], MapFunction.class),
-            new FunctionDef(MapFunction.signatures[6], MapFunction.class),
-            new FunctionDef(MapFunction.signatures[7], MapFunction.class),
-            new FunctionDef(MapFunction.signatures[8], MapFunction.class)
+            new FunctionDef(MapFunction.FNS_MERGE, MapFunction.class),
+            new FunctionDef(MapFunction.FNS_SIZE, MapFunction.class),
+            new FunctionDef(MapFunction.FNS_KEYS, MapFunction.class),
+            new FunctionDef(MapFunction.FNS_CONTAINS, MapFunction.class),
+            new FunctionDef(MapFunction.FNS_GET, MapFunction.class),
+            new FunctionDef(MapFunction.FNS_PUT, MapFunction.class),
+            new FunctionDef(MapFunction.FNS_ENTRY, MapFunction.class),
+            new FunctionDef(MapFunction.FNS_REMOVE, MapFunction.class),
+            new FunctionDef(MapFunction.FNS_FOR_EACH, MapFunction.class),
+
+
+            /* Deprecated below */
+            new FunctionDef(MapFunction.FNS_NEW_0, MapFunction.class),
+            new FunctionDef(MapFunction.FNS_NEW_N, MapFunction.class),
+            new FunctionDef(MapFunction.FNS_NEW_N_COLLATION, MapFunction.class),
+            new FunctionDef(MapFunction.FNS_FOR_EACH_ENTRY, MapFunction.class)
     };
 
     public MapModule(Map<String, List<? extends Object>> parameters) {
