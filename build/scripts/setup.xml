@@ -7,8 +7,10 @@
 <!-- $Id$ -->
 
 <project basedir="../.." name="Setup" default="setup">
-
   <description>Package setup tasks</description>
+
+  <!-- import common targets -->
+  <import file="../../build.xml"/>
   
   <!-- Additional task defs  -->
   <taskdef resource="net/sf/antcontrib/antcontrib.properties">
@@ -60,7 +62,7 @@
       
     <taskdef name="fetch" classname="nl.ow.dilemma.ant.fetch.FetchTask">
         <classpath>
-          <pathelement location="tools/ant/lib/asocat-exist.jar"/>
+          <pathelement location="${asocat-exist.jar}"/>
         </classpath>
     </taskdef>
     <fetch dest="${autostart-dir}" url="${autodeploy.repo}/pkg.zip?abbrev=${xar}&amp;zip=yes"
