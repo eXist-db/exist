@@ -139,7 +139,7 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
      */
     public Subject popSubject() {
         if(LOG.isTraceEnabled()) {
-            LOG.trace(String.format("%s: popSubject(%s) from: %s %s", getId(), getCurrentSubject(), Thread.currentThread(), Stacktrace.top(Thread.currentThread().getStackTrace(), 10)));
+            LOG.trace(String.format("%s: popSubject(%s) from: %s %s", getId(), getCurrentSubject().getName(), Thread.currentThread(), Stacktrace.top(Thread.currentThread().getStackTrace(), 10)));
         }
         return this.subject.removeFirst();
     }
