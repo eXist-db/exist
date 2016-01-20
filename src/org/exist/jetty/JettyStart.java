@@ -231,6 +231,13 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
                 logger.warn("Could not find OAuthServlet extension. OAuth will be disabled!");
 			}
             
+            Class<?> iprange = null;
+            try {
+            	iprange = Class.forName("org.exist.security.realm.iprange.IPRangeServlet");
+            } catch (final NoClassDefFoundError | ClassNotFoundException e) {
+                logger.warn("Could not find IPRangeServlet extension. IPRange will be disabled!");
+			}
+            
             //*************************************************************
 
             logger.info("-----------------------------------------------------");
@@ -273,6 +280,22 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
                             suffix = "oauth";
                         } else {
                             suffix = "/oauth";
+                        }
+
+                        logger.info("'" + contextHandler.getContextPath() + suffix + "'");
+                    }
+                }
+                
+                if (iprange != null) {
+                    if (handler instanceof ServletContextHandler) {
+                        final ServletContextHandler contextHandler = (ServletContextHandler) handler;
+                        contextHandler.addServlet(new ServletHolder((Class<? extends Servlet>) iprange), "/iprange");
+
+                        String suffix;
+                        if (contextHandler.getContextPath().endsWith("/")) {
+                            suffix = "iprange";
+                        } else {
+                            suffix = "/iprange";
                         }
 
                         logger.info("'" + contextHandler.getContextPath() + suffix + "'");
