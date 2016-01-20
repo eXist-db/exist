@@ -111,9 +111,8 @@ public class IPRangeRealm extends AbstractRealm {
 	
 	@Override
 	public Subject authenticate(final String ip, Object credentials) throws AuthenticationException {
-		final Subject sysUser = getSecurityManager().getSystemSubject();
 		//elevate to system privs
-		try(final DBBroker broker = BrokerPool.getInstance().get(Optional.of(sysUser))) {
+		try(final DBBroker broker = BrokerPool.getInstance().get(Optional.of(getSecurityManager().getSystemSubject()))) {
 			long ipToTest = ipToLong(InetAddress.getByName(ip));
 			
 			XQuery xquery = broker.getBrokerPool().getXQueryService();
