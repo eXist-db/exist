@@ -14,7 +14,7 @@
     <!-- XMLRPC servlet -->
 	<forward pattern="/xmlrpc" servlet="org.exist.xmlrpc.RpcServlet"/>
     <!-- WebDAV interface -->
-	<forward pattern="/webdav/" servlet="WebDAVServlet"/>
+	<forward pattern="/webdav/" servlet="milton"/>
     <!-- Atom Publishing Protocol -->
     <forward pattern="/atom/" servlet="AtomServlet"/>
     
