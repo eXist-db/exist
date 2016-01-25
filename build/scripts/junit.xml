@@ -73,6 +73,10 @@
             file="${junit.reports}/src/org/exist/performance/log2html.xql"/>
         <copy todir="${junit.reports}/classes/org/exist/config/mapping"
             file="${junit.reports}/src/org/exist/config/mapping/Mapping.xml"/>
+        <copy todir="${junit.reports}/classes/org/exist/source"
+              file="${junit.reports}/src/org/exist/source/main.xq"/>
+        <copy todir="${junit.reports}/classes/org/exist/source"
+              file="${junit.reports}/src/org/exist/source/library.xqm"/>
        <!-- <ant antfile="build.xml" dir="extensions/indexes" target="compile-tests"/>
         <ant antfile="build.xml" dir="extensions/xqdoc" target="compile-tests"/>
         <ant antfile="build.xml" dir="extensions/xslt" target="compile-tests"/>  -->

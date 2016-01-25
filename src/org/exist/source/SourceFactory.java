@@ -25,8 +25,12 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
@@ -46,6 +50,8 @@ import org.exist.xquery.Constants;
  */
 public class SourceFactory {
 
+    private final static Logger LOG = LogManager.getLogger(SourceFactory.class);
+
     /**
      * Create a {@link Source} object for the given URL.
      * 
@@ -58,19 +64,26 @@ public class SourceFactory {
      * @throws MalformedURLException
      * @throws IOException
      */
-    public static final Source getSource(DBBroker broker, String contextPath, String location, boolean checkXQEncoding) throws MalformedURLException, IOException, PermissionDeniedException
-    {
+    public static final Source getSource(DBBroker broker, String contextPath, String location, boolean checkXQEncoding) throws IOException, PermissionDeniedException {
         Source source = null;
-        
+
+        /* resource: */
+        if(location.startsWith(ClassLoaderSource.PROTOCOL)) {
+            source = new ClassLoaderSource(location);
+        } else if(contextPath != null && contextPath.startsWith(ClassLoaderSource.PROTOCOL)) {
+            // Pretend it is a file on the local system so we can resolve it easily with URL() class.
+            final String conPathNoProtocol = contextPath.replace(ClassLoaderSource.PROTOCOL, "file://");
+            String resolvedURL = new URL(new URL(conPathNoProtocol), location).toString();
+            resolvedURL = resolvedURL.replaceFirst("file://", ClassLoaderSource.PROTOCOL);
+            source = new ClassLoaderSource(resolvedURL);
+        }
         /* file:// or location without scheme is assumed to be a file */
-        if(location.startsWith("file:") || location.indexOf(':') == Constants.STRING_NOT_FOUND)
+        else if(location.startsWith("file:") || location.indexOf(':') == Constants.STRING_NOT_FOUND)
         {
             location = location.replaceAll("^(file:)?/*(.*)$", "$2");
 
-            final File f = new File(contextPath + File.separatorChar + location);
-            if(f.canRead())
-            {
-
+            final File f = new File(contextPath, location);
+            if(f.canRead()) {
                 location = f.toURI().toASCIIString();
                 source = new FileSource(f, "UTF-8", checkXQEncoding);
             }
@@ -97,31 +110,48 @@ public class SourceFactory {
             }
 
             /*
+             * Try to load from the folder of the contextPath
+             */
+            final File f5 = new File(new File(contextPath).getParentFile(), location);
+            if(f5.canRead()) {
+                location = f5.toURI().toASCIIString();
+                source = new FileSource(f5, "UTF-8", checkXQEncoding);
+            }
+
+            /*
+             * Try to load from the folder of the contextPath URL
+             */
+            final File f6 = new File(new File(contextPath.replaceFirst("^file:/*(/.*)$", "$1")).getParentFile(), location);
+            if(f6.canRead()) {
+                location = f6.toURI().toASCIIString();
+                //f6 = new File(contextPath.substring(0, contextPath.lastIndexOf('/')) + location);
+                source = new FileSource(f6, "UTF-8", checkXQEncoding);
+            }
+
+            /*
              * Lastly we try to load it using EXIST_HOME as the reference point
              */
-            File f5 = null;
+            File f7 = null;
             try {
-				f5 = FileUtils.resolve(BrokerPool.getInstance().getConfiguration().getExistHome(), location).toFile();
-				if(f5.canRead()){
-				    location = f5.toURI().toASCIIString();
-				    source = new FileSource(f5, "UTF-8", checkXQEncoding);
+				f7 = FileUtils.resolve(BrokerPool.getInstance().getConfiguration().getExistHome(), location).toFile();
+				if(f7.canRead()){
+				    location = f7.toURI().toASCIIString();
+				    source = new FileSource(f7, "UTF-8", checkXQEncoding);
 				}
 			} catch (final EXistException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				LOG.warn(e);
 			}
             
-            if(source == null){
-            	
+            if(source == null) {
                 	throw new FileNotFoundException(
                             "cannot read module source from file at " + location 
                             + ". \nTried " + f.getAbsolutePath() + "\n"
                             + " and " + f2.getAbsolutePath() + "\n" 
                             + " and " + f3.getAbsolutePath() + "\n" 
-                            + " and " + f4.getAbsolutePath() + "\n" 
-                            + " and " + f5.getAbsolutePath() 
-                            
-                			);
+                            + " and " + f4.getAbsolutePath() + "\n"
+                            + " and " + f5.getAbsolutePath() + "\n"
+                            + " and " + f6.getAbsolutePath() + "\n"
+                            + " and " + f7.getAbsolutePath());
             }
         }
         
