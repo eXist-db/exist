@@ -26,6 +26,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -205,7 +207,7 @@ public class XQTS_case extends TestCase {
             Sequence result = null;
 
             //compile & evaluate
-            File caseScript = new File(XQTS_folder+"Queries/XQuery/"+folder, script+".xq");
+            Path caseScript = Paths.get(XQTS_folder+"Queries/XQuery/"+folder, script+".xq");
             try {
                 XQueryContext context;
 
@@ -251,7 +253,7 @@ public class XQTS_case extends TestCase {
                 if ("runtime-error".equals(scenario)) {
                 	try {
                         //compile
-                        CompiledXQuery compiled = xquery.compile(broker, context, new FileSource(caseScript, "UTF8", true));
+                        CompiledXQuery compiled = xquery.compile(broker, context, new FileSource(caseScript, true));
 
                         //execute
                         result = xquery.execute(broker, compiled, contextSequence);
@@ -285,7 +287,7 @@ public class XQTS_case extends TestCase {
                     }
                 } else {
                     //compile
-                    CompiledXQuery compiled = xquery.compile(broker, context, new FileSource(caseScript, "UTF8", true));
+                    CompiledXQuery compiled = xquery.compile(broker, context, new FileSource(caseScript, true));
 
                     //execute
                     result = xquery.execute(broker, compiled, contextSequence);

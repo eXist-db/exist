@@ -23,7 +23,9 @@ package xquery;
 
 import static org.junit.Assert.fail;
 
-import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -101,10 +103,10 @@ public class TestRunnerMain {
 		try {
 			StringBuilder results = new StringBuilder();
 			XQueryService xqs = (XQueryService) rootCollection.getService("XQueryService", "1.0");
-			Source query = new FileSource(new File("test/src/xquery/runTests.xql"), "UTF-8", false);
+			Source query = new FileSource(Paths.get("test/src/xquery/runTests.xql"), false);
 			for (String fileName : files) {
-				File file = new File(fileName);
-				if (!file.canRead()) {
+				final Path file = Paths.get(fileName);
+				if (!Files.isReadable(file)) {
 					System.console().printf("Test file not found: %s\n", fileName);
 					return;
 				}

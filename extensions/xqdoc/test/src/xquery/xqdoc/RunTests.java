@@ -3,10 +3,13 @@ package xquery.xqdoc;
 
 import static org.junit.Assert.fail;
 
-import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
 
 import org.exist.source.FileSource;
 import org.exist.source.Source;
+import org.exist.util.FileUtils;
 import org.exist.util.XMLFilenameFilter;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.XQueryService;
@@ -31,16 +34,16 @@ public class RunTests {
 
     private final static String TEST_QUERY = TEST_DIR + "/runTests.xql";
 
-	private static File[] files;
+	private static List<Path> files;
 	private static Collection testCollection;
 
 	@Test
 	public void run() {
 		try {
 			XQueryService xqs = (XQueryService) testCollection.getService("XQueryService", "1.0");
-			Source query = new FileSource(new File(TEST_QUERY), "UTF-8", false);
-			for (File file : files) {
-				xqs.declareVariable("doc", file.getName());
+			Source query = new FileSource(Paths.get(TEST_QUERY), false);
+			for (Path file : files) {
+				xqs.declareVariable("doc", FileUtils.fileName(file));
 				ResourceSet result = xqs.execute(query);
 				XMLResource resource = (XMLResource) result.getResource(0);
 				Element root = (Element) resource.getContentAsDOM();
@@ -75,11 +78,11 @@ public class RunTests {
 		testCollection = service.createCollection("test");
 		Assert.assertNotNull(testCollection);
         
-		File dir = new File(TEST_DIR);
-		files = dir.listFiles(new XMLFilenameFilter());
-		for (File file : files) {
-			XMLResource resource = (XMLResource) testCollection.createResource(file.getName(), "XMLResource");
-			resource.setContent(file);
+		Path dir = Paths.get(TEST_DIR);
+		files = FileUtils.list(dir, XMLFilenameFilter.asPredicate());
+		for (Path file : files) {
+			XMLResource resource = (XMLResource) testCollection.createResource(FileUtils.fileName(file), "XMLResource");
+			resource.setContent(file.toFile());
 			testCollection.storeResource(resource);
 		}
 	}
