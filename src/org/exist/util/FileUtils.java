@@ -28,6 +28,7 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -171,10 +172,25 @@ public class FileUtils {
     /**
      * A list of the entries in the directory. The listing is not recursive.
      *
+     * @param directory The directory to list the entries for
+     *
      * @return The list of entries
      */
     public static List<Path> list(final Path directory) throws IOException {
         try(final Stream<Path> entries = Files.list(directory)) {
+            return entries.collect(Collectors.toList());
+        }
+    }
+
+    /**
+     * A list of the entries in the directory. The listing is not recursive.
+     *
+     * @param directory The directory to list the entries for
+     * @param filter A filter to be applied to the list
+     * @return The list of entries
+     */
+    public static List<Path> list(final Path directory, final Predicate<Path> filter) throws IOException {
+        try(final Stream<Path> entries = Files.list(directory).filter(filter)) {
             return entries.collect(Collectors.toList());
         }
     }

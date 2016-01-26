@@ -654,7 +654,7 @@ public class Deployment {
 
         CompiledXQuery compiled;
         try {
-            compiled = xqs.compile(broker, ctx, new FileSource(xquery.toFile(), "UTF-8", false));
+            compiled = xqs.compile(broker, ctx, new FileSource(xquery, false));
             return xqs.execute(broker, compiled, null);
         } catch (final PermissionDeniedException e) {
             throw new PackageException(e.getMessage(), e);

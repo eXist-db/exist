@@ -2677,7 +2677,7 @@ public class BFile extends BTree {
 
         @Override
         public void write() throws IOException {
-            //LOG.debug(getFile().getName() + " writing page " + getPageNum());
+            //LOG.debug(getPath().getName() + " writing page " + getPageNum());
             writeValue(page, new Value(data));
             setDirty(false);
         }

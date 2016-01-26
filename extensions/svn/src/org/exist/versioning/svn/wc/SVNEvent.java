@@ -64,7 +64,7 @@ import org.tmatesoft.svn.core.SVNURL;
  *             <span class="javacomment">//get the item's relative path</span>
  *             String path = event.getPath();
  *             <span class="javacomment">//or in a java.io.File representation</span>
- *             File fsEntry = event.getFile(); 
+ *             File fsEntry = event.getPath();
  *             
  *             <span class="javacomment">//get update revision</span>
  *             long revision = event.getRevision(); 

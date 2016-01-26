@@ -236,7 +236,7 @@ public abstract class Paged {
     }
 
     /**
-     *  getFile returns the file object for this Paged.
+     *  getPath returns the file object for this Paged.
      *
      *@return    The File
      */

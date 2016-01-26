@@ -21,13 +21,13 @@
  */
 package org.exist.source;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -40,7 +40,6 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
 import org.exist.util.FileUtils;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.Constants;
 
 /**
  * Factory to create a {@link org.exist.source.Source} object for a given
@@ -78,65 +77,66 @@ public class SourceFactory {
             source = new ClassLoaderSource(resolvedURL);
         }
         /* file:// or location without scheme is assumed to be a file */
-        else if(location.startsWith("file:") || location.indexOf(':') == Constants.STRING_NOT_FOUND)
+        else if(location.startsWith("file:") || !location.contains(":"))
         {
             location = location.replaceAll("^(file:)?/*(.*)$", "$2");
 
-            final File f = new File(contextPath, location);
-            if(f.canRead()) {
-                location = f.toURI().toASCIIString();
-                source = new FileSource(f, "UTF-8", checkXQEncoding);
+            final Path p = Paths.get(contextPath, location);
+            if(Files.isReadable(p)) {
+                location = p.toUri().toASCIIString();
+                source = new FileSource(p, checkXQEncoding);
             }
             
-            final File f2 = new File(location);
-            if(f2.canRead()){
-                location = f2.toURI().toASCIIString();
-                source = new FileSource(f2, "UTF-8", checkXQEncoding);
+            final Path p2 = Paths.get(location);
+            if(Files.isReadable(p2)){
+                location = p2.toUri().toASCIIString();
+                source = new FileSource(p2, checkXQEncoding);
             }
 
-            final File f3 = new File(new File(contextPath).getAbsolutePath(), location);
-            if(f3.canRead()){
-                location = f3.toURI().toASCIIString();
-                source = new FileSource(f3, "UTF-8", checkXQEncoding);
+            final Path p3 = Paths.get(contextPath).toAbsolutePath().resolve(location);
+            if(Files.isReadable(p3)){
+                location = p3.toUri().toASCIIString();
+                source = new FileSource(p3, checkXQEncoding);
             }
 
             /*
              * Try to load as an absolute path
              */
-            final File f4 = new File("/" + location);
-            if(f4.canRead()){
-                location = f4.toURI().toASCIIString();
-                source = new FileSource(f4, "UTF-8", checkXQEncoding);
+            final Path p4 = Paths.get("/" + location);
+            if(Files.isReadable(p4)){
+                location = p4.toUri().toASCIIString();
+                source = new FileSource(p4, checkXQEncoding);
             }
 
             /*
              * Try to load from the folder of the contextPath
              */
-            final File f5 = new File(new File(contextPath).getParentFile(), location);
-            if(f5.canRead()) {
-                location = f5.toURI().toASCIIString();
-                source = new FileSource(f5, "UTF-8", checkXQEncoding);
+
+            final Path p5 = Paths.get(contextPath).resolveSibling(location);
+            if(Files.isReadable(p5)) {
+                location = p5.toUri().toASCIIString();
+                source = new FileSource(p5, checkXQEncoding);
             }
 
             /*
              * Try to load from the folder of the contextPath URL
              */
-            final File f6 = new File(new File(contextPath.replaceFirst("^file:/*(/.*)$", "$1")).getParentFile(), location);
-            if(f6.canRead()) {
-                location = f6.toURI().toASCIIString();
+            final Path p6 = Paths.get(contextPath.replaceFirst("^file:/*(/.*)$", "$1")).resolveSibling(location);
+            if(Files.isReadable(p6)) {
+                location = p6.toUri().toASCIIString();
                 //f6 = new File(contextPath.substring(0, contextPath.lastIndexOf('/')) + location);
-                source = new FileSource(f6, "UTF-8", checkXQEncoding);
+                source = new FileSource(p6, checkXQEncoding);
             }
 
             /*
              * Lastly we try to load it using EXIST_HOME as the reference point
              */
-            File f7 = null;
+            Path p7 = null;
             try {
-				f7 = FileUtils.resolve(BrokerPool.getInstance().getConfiguration().getExistHome(), location).toFile();
-				if(f7.canRead()){
-				    location = f7.toURI().toASCIIString();
-				    source = new FileSource(f7, "UTF-8", checkXQEncoding);
+				p7 = FileUtils.resolve(BrokerPool.getInstance().getConfiguration().getExistHome(), location);
+				if(Files.isReadable(p7)){
+				    location = p7.toUri().toASCIIString();
+				    source = new FileSource(p7, checkXQEncoding);
 				}
 			} catch (final EXistException e) {
 				LOG.warn(e);
@@ -145,13 +145,13 @@ public class SourceFactory {
             if(source == null) {
                 	throw new FileNotFoundException(
                             "cannot read module source from file at " + location 
-                            + ". \nTried " + f.getAbsolutePath() + "\n"
-                            + " and " + f2.getAbsolutePath() + "\n" 
-                            + " and " + f3.getAbsolutePath() + "\n" 
-                            + " and " + f4.getAbsolutePath() + "\n"
-                            + " and " + f5.getAbsolutePath() + "\n"
-                            + " and " + f6.getAbsolutePath() + "\n"
-                            + " and " + f7.getAbsolutePath());
+                            + ". \nTried " + p.toAbsolutePath() + "\n"
+                            + " and " + p2.toAbsolutePath() + "\n"
+                            + " and " + p3.toAbsolutePath() + "\n"
+                            + " and " + p4.toAbsolutePath() + "\n"
+                            + " and " + p5.toAbsolutePath() + "\n"
+                            + " and " + p6.toAbsolutePath() + "\n"
+                            + " and " + p7.toAbsolutePath());
             }
         }
         

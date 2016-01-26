@@ -23,6 +23,7 @@ import org.exist.Namespaces;
 import org.exist.dom.memtree.SAXAdapter;
 import org.exist.source.FileSource;
 import org.exist.source.Source;
+import org.exist.util.FileUtils;
 import org.exist.util.XMLFilenameFilter;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.XQueryService;
@@ -43,8 +44,12 @@ import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
 
-import java.io.*;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -63,24 +68,23 @@ public abstract class TestRunner {
 
     @Test
     public void runXMLBasedTests() throws TransformerException, XMLDBException, ParserConfigurationException, SAXException, IOException {
-    	final XMLFilenameFilter filter = new XMLFilenameFilter();
-    	
-        final File dir = new File(getDirectory());
-        final File[] files;
-        if (dir.isDirectory()) {
-            files = dir.listFiles(filter);
-        } else if(filter.accept(dir.getParentFile(), dir.getName())) {
-            files = new File[]{ dir };
-        }  else {
+        final Path dir = Paths.get(getDirectory());
+
+        final List<Path> files;
+        if(Files.isDirectory(dir)) {
+            files = FileUtils.list(dir, XMLFilenameFilter.asPredicate());
+        } else if(new XMLFilenameFilter().accept(dir.getParent().toFile(), FileUtils.fileName(dir))) {
+            files = Arrays.asList(dir);
+        } else {
             return;
         }
 
         final List<TestSuite> all = new ArrayList<>();
         final XQueryService xqs = (XQueryService) rootCollection.getService("XQueryService", "1.0");
-        final Source query = new FileSource(new File("test/src/xquery/runTests.xql"), "UTF-8", false);
+        final Source query = new FileSource(Paths.get("test/src/xquery/runTests.xql"), false);
 
         if(files != null) {
-            for (final File file : files) {
+            for (final Path file : files) {
                 try {
                     final Document doc = parse(file);
 
@@ -103,17 +107,20 @@ public abstract class TestRunner {
     }
 
     @Test
-    public void runXQueryBasedTests() throws XMLDBException {
-        final File dir = new File(getDirectory());
-        final File[] suites = dir.listFiles(file -> (file.canRead() && file.getName().startsWith("suite") && file.getName().endsWith(".xql")));
+    public void runXQueryBasedTests() throws XMLDBException, IOException {
+        final Path dir = Paths.get(getDirectory());
+        final List<Path> suites = FileUtils.list(dir, path -> {
+            final String name = FileUtils.fileName(path);
+            return (!Files.isDirectory(path)) && Files.isReadable(path) && name.startsWith("suite") && name.endsWith(".xql");
+        });
 
         final List<TestSuite> all = new ArrayList<>();
 
         if(suites != null) {
-            for (final File suite : suites) {
+            for (final Path suite : suites) {
                 final XQueryService xqs = (XQueryService) rootCollection.getService("XQueryService", "1.0");
                 xqs.setModuleLoadPath(getDirectory());
-                final Source query = new FileSource(suite, "UTF-8", false);
+                final Source query = new FileSource(suite, false);
 
                 final ResourceSet result = xqs.execute(query);
                 final XMLResource resource = (XMLResource) result.getResource(0);
@@ -162,7 +169,7 @@ public abstract class TestRunner {
     /**
      * Parses the output of eXist's XML based XQuery test suite
      *
-     * @param The XML element <testset> from the test suite output
+     * @param testset The XML element <testset> from the test suite output
      * @return The results of the tests
      */
     private List<TestSuite> parseXmlResults(final Element testset) {
@@ -195,7 +202,7 @@ public abstract class TestRunner {
     /**
      * Parses the output of eXist's XQuery based XQuery test suite
      *
-     * @param The XML element <testsuites> from the test suite output
+     * @param testsuites The XML element <testsuites> from the test suite output
      * @return The results of the tests
      */
     private List<TestSuite> parseXQueryResults(final Element testsuites) {
@@ -375,10 +382,10 @@ public abstract class TestRunner {
         rootCollection = null;
     }
 
-    protected static Document parse(File file) throws IOException, SAXException, ParserConfigurationException {
+    protected static Document parse(final Path file) throws IOException, SAXException, ParserConfigurationException {
         SAXParserFactory factory = SAXParserFactory.newInstance();
         factory.setNamespaceAware(true);
-        InputSource src = new InputSource(file.toURI().toASCIIString());
+        InputSource src = new InputSource(file.toUri().toASCIIString());
         SAXParser parser = factory.newSAXParser();
         XMLReader xr = parser.getXMLReader();
 

@@ -340,7 +340,7 @@ public class LocalXPathQueryService extends AbstractLocalService implements XPat
             if (source instanceof DBSource) {
                 modulePath = ((DBSource) source).getDocumentPath().removeLastSegment().toString();
             } else if (source instanceof FileSource) {
-                modulePath = ((FileSource) source).getFile().getParent();
+                modulePath = ((FileSource) source).getPath().getParent().toString();
             }
 
             if (modulePath != null) {

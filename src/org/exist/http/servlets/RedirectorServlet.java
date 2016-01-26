@@ -48,9 +48,11 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 /**
@@ -165,10 +167,11 @@ public class RedirectorServlet extends HttpServlet {
             }
         // Try to find the XQuery
         final String qpath = getServletContext().getRealPath(query);
-        final File f = new File(qpath);
-        if (!(f.canRead() && f.isFile()))
-            {throw new ServletException("Cannot read XQuery source from " + f.getAbsolutePath());}
-        final FileSource source = new FileSource(f, "UTF-8", true);
+        final Path p = Paths.get(qpath);
+        if(!(Files.isReadable(p) && Files.isRegularFile(p))) {
+            throw new ServletException("Cannot read XQuery source from " + p.toAbsolutePath());
+        }
+        final FileSource source = new FileSource(p, true);
 
         try {
             // Prepare and execute the XQuery

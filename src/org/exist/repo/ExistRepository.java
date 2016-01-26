@@ -9,7 +9,6 @@
 
 package org.exist.repo;
 
-import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -137,7 +136,7 @@ public class ExistRepository extends Observable {
         }
     }
 
-    public File resolveXQueryModule(String namespace) throws XPathException {
+    public Path resolveXQueryModule(String namespace) throws XPathException {
         // the URI
         URI uri;
         try {
@@ -153,7 +152,7 @@ public class ExistRepository extends Observable {
             if (info != null) {
                 final String f = info.getXQuery(uri);
                 if (f != null) {
-                    return resolver.resolveComponentAsFile(f);
+                    return resolver.resolveComponentAsFile(f).toPath();
                 }
             }
             String sysid = null; // declared here to be used in catch
@@ -161,7 +160,7 @@ public class ExistRepository extends Observable {
                 final StreamSource src = pkg.resolve(namespace, URISpace.XQUERY);
                 if (src != null) {
                     sysid = src.getSystemId();
-                    return new File(new URI(sysid));
+                    return Paths.get(new URI(sysid));
                 }
             } catch (final URISyntaxException ex) {
                 throw new XPathException("Error parsing the URI of the query library: " + sysid, ex);

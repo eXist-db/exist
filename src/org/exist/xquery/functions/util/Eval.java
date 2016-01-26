@@ -32,7 +32,6 @@ import java.util.SimpleTimeZone;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 
 import javax.xml.datatype.Duration;
@@ -344,7 +343,7 @@ public class Eval extends BasicFunction {
 //          } else if (key instanceof URL) {
 //              TODO: uri = ((URL) key).getParent()
             } else if (key instanceof String && querySource instanceof FileSource) {
-                uri = ((FileSource) querySource).getFile().getParent();
+                uri = ((FileSource) querySource).getPath().getParent().toString();
             }
         	
             if (uri != null) {
