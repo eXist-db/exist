@@ -646,11 +646,11 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
 	}
 
 	@Override
-	public void afterCopyCollection(DBBroker broker, Txn txn, Collection collection, XmldbURI newUri) throws TriggerException {
+	public void afterCopyCollection(DBBroker broker, Txn txn, Collection collection, XmldbURI oldUri) throws TriggerException {
 		if (events.contains(TriggerEvents.EVENTS.COPY_COLLECTION)) {
-			finish(5, broker, txn, collection.getURI(), newUri, true);
+			finish(5, broker, txn, oldUri, collection.getURI(), true);
 		} else {
-		    execute(false, broker, txn, afterCopyCollection, collection.getURI(), newUri);
+		    execute(false, broker, txn, afterCopyCollection, oldUri, collection.getURI());
 	    }
 	}
 
@@ -731,16 +731,16 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
 		if (events.contains(TriggerEvents.EVENTS.COPY_DOCUMENT)) {
 			prepare(4, broker, txn, document.getURI(), newUri, false);
 		} else {
-		    execute(true, broker, txn, beforeCopyDocument, document.getURI());
+		    execute(true, broker, txn, beforeCopyDocument, document.getURI(), newUri);
 	    }
 	}
 
 	@Override
-	public void afterCopyDocument(DBBroker broker, Txn txn, DocumentImpl document, XmldbURI newUri) throws TriggerException {
+	public void afterCopyDocument(DBBroker broker, Txn txn, DocumentImpl document, XmldbURI oldUri) throws TriggerException {
 		if (events.contains(TriggerEvents.EVENTS.COPY_DOCUMENT)) {
-			finish(4, broker, txn, document.getURI(), newUri, false);
+			finish(4, broker, txn, document.getURI(), oldUri, false);
 		} else {
-		    execute(false, broker, txn, afterCopyDocument, document.getURI());
+		    execute(false, broker, txn, afterCopyDocument, oldUri, document.getURI());
 	    }
 	}
 
@@ -749,7 +749,7 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
 		if (events.contains(TriggerEvents.EVENTS.MOVE_DOCUMENT)) {
 			prepare(6, broker, txn, document.getURI(), newUri, false);
 		} else {
-		    execute(true, broker, txn, beforeMoveDocument, document.getURI());
+		    execute(true, broker, txn, beforeMoveDocument, document.getURI(), newUri);
 	    }
 	}
 
@@ -758,7 +758,7 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
 		if (events.contains(TriggerEvents.EVENTS.MOVE_DOCUMENT)) {
 			finish(6, broker, txn, oldUri, document.getURI(), false);
 		} else {
-		    execute(false, broker, txn, afterMoveDocument, oldUri);
+		    execute(false, broker, txn, afterMoveDocument, oldUri, document.getURI());
 	    }
 	}
 
