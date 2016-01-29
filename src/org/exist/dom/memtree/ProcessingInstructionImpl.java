@@ -136,23 +136,19 @@ public class ProcessingInstructionImpl extends NodeImpl implements ProcessingIns
 
     @Override
     public void selectAttributes(final NodeTest test, final Sequence result)
-        throws XPathException {
-        throw new UnsupportedOperationException("selectAttributes is not yet implemented!");
-
+            throws XPathException {
+        //do nothing, which will return an empty sequence
     }
 
     @Override
     public void selectChildren(final NodeTest test, final Sequence result)
-        throws XPathException {
-        throw new UnsupportedOperationException("selectChildren is not yet implemented!");
-
+            throws XPathException {
+        //do nothing, which will return an empty sequence
     }
 
     @Override
     public void selectDescendantAttributes(final NodeTest test, final Sequence result)
-        throws XPathException {
-        throw new UnsupportedOperationException("selectDescendantAttributes is not yet implemented!");
-
+            throws XPathException {
+        //do nothing, which will return an empty sequence
     }
-
 }
