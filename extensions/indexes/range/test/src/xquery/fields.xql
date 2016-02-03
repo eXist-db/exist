@@ -19,6 +19,10 @@ declare variable $rt:COLLECTION_CONFIG :=
                     <field name="stage" match="tei:stage" type="xs:string"/>
                     <field name="head" match="tei:head" type="xs:string"/>
                 </create>
+                <create match="//tei:sp">
+                    <field name="sp-who" match="@who" type="xs:string"/>
+                    <field name="sp-line-n" match="tei:l/@n" type="xs:int"/>
+                </create>
             </range>
         </index>
     </collection>;
@@ -173,4 +177,16 @@ declare
     %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
 function rt:field-head-ends-with-optimize($head as xs:string) {
     count(collection($rt:COLLECTION)//tei:div[ends-with(tei:head, $head)])
+};
+
+declare
+    %test:assertEquals(2)
+function rt:field-multi-values-lookup() {
+    count(collection($rt:COLLECTION)//tei:sp[@who = ("mac-first-witch.", "mac-sec.-witch.")])
+};
+
+declare
+    %test:assertEquals(2)
+function rt:field-multi-values-lookup-int() {
+    count(collection($rt:COLLECTION)//tei:sp[tei:l/@n = ("1", 3)])
 };
