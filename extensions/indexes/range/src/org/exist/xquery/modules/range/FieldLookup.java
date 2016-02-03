@@ -294,8 +294,16 @@ public class FieldLookup extends Function implements Optimizable {
                     String field = fieldIter.nextItem().getStringValue();
                     targetType = getType(contextSequence, field);
                 }
-                if (targetType != Type.ITEM) {
-                    keys[i -j] = keys[i - j].convertTo(targetType);
+                if (targetType != Type.ITEM && !Type.subTypeOf(keys[i -j].getItemType(), targetType)) {
+                    if (keys[i - j].hasMany()) {
+                        final Sequence temp = new ValueSequence(keys[i -j].getItemCount());
+                        for (final SequenceIterator iterator = keys[i - j].unorderedIterator(); iterator.hasNext(); ) {
+                            temp.add(iterator.nextItem().convertTo(targetType));
+                        }
+                        keys[i - j] = temp;
+                    } else {
+                        keys[i - j] = keys[i - j].convertTo(targetType);
+                    }
                 }
             }
 
