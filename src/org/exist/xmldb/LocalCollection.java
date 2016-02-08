@@ -19,6 +19,7 @@
  */
 package org.exist.xmldb;
 
+import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -541,7 +542,9 @@ public class LocalCollection extends AbstractLocal implements CollectionImpl {
             try {
                 final long conLength = res.getStreamLength();
                 if (conLength != -1) {
-                    collection.addBinaryResource(transaction, broker, resURI, res.getStreamContent(), res.getMimeType(), conLength, res.datecreated, res.datemodified);
+                    try (InputStream is = res.getStreamContent()) {
+                        collection.addBinaryResource(transaction, broker, resURI, is, res.getMimeType(), conLength, res.datecreated, res.datemodified);
+                    }
                 } else {
                     collection.addBinaryResource(transaction, broker, resURI, (byte[]) res.getContent(), res.getMimeType(), res.datecreated, res.datemodified);
                 }
