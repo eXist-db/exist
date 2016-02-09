@@ -128,19 +128,20 @@ public class AtomModuleBase implements AtomModule {
 	protected File storeInTemporaryFile(InputStream is, long len) throws IOException {
 		
 		final File tempFile = File.createTempFile("atom", ".tmp");
-		final OutputStream os = new FileOutputStream(tempFile);
-		final byte[] buffer = new byte[4096];
-		int count = 0;
-		long l = 0;
-		do {
-			count = is.read(buffer);
-			if (count > 0) {
-				os.write(buffer, 0, count);
-			}
-			l += count;
-		} while ((len < 0 && count >= 0) || l < len);
 
-		os.close();
+		try(final OutputStream os = new FileOutputStream(tempFile)) {
+            final byte[] buffer = new byte[4096];
+            int count = 0;
+            long l = 0;
+            do {
+                count = is.read(buffer);
+                if (count > 0) {
+                    os.write(buffer, 0, count);
+                }
+                l += count;
+            } while ((len < 0 && count >= 0) || l < len);
+        }
+
 		return tempFile;
 	}
 }
