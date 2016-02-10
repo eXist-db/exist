@@ -701,6 +701,9 @@ public class NativeBroker extends DBBroker {
                     saveCollection(transaction, current);
                     created = true;
 
+                    //adding to make it available @ afterCreateCollection
+                    collectionsCache.add(current);
+
                     trigger.afterCreateCollection(this, transaction, current);
 
                     //import an initial collection configuration
@@ -775,6 +778,9 @@ public class NativeBroker extends DBBroker {
                         current.addCollection(this, sub, true);
                         saveCollection(transaction, current);
                         created = true;
+
+                        //adding to make it available @ afterCreateCollection
+                        collectionsCache.add(sub);
 
                         trigger.afterCreateCollection(this, transaction, sub);
 
@@ -924,10 +930,9 @@ public class NativeBroker extends DBBroker {
                     }
                     collection = new Collection(this, uri);
                     collection.read(this, is);
-                    //TODO : manage this from within the cache -pb
-                    if(!pool.isInitializing()) {
-                        collectionsCache.add(collection);
-                    }
+
+                    collectionsCache.add(collection);
+
                     //TODO : rethrow exceptions ? -pb
                 } catch(final UnsupportedEncodingException e) {
                     LOG.error("Unable to encode '" + uri + "' in UTF-8");
@@ -1649,10 +1654,7 @@ public class NativeBroker extends DBBroker {
             throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
         }
 
-        if(!pool.isInitializing()) {
-            // don't cache the collection during initialization: SecurityManager is not yet online
-            pool.getCollectionsCache().add(collection);
-        }
+        pool.getCollectionsCache().add(collection);
 
         final Lock lock = collectionsDb.getLock();
         try {

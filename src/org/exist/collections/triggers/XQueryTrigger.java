@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2010-2012 The eXist Project
+ *  Copyright (C) 2001-2016 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -16,8 +16,6 @@
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- *  $Id$
  */
 package org.exist.collections.triggers;
 
@@ -36,7 +34,6 @@ import org.exist.collections.Collection;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.QName;
-import org.exist.dom.memtree.SAXAdapter;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.xacml.AccessContext;
 import org.exist.source.DBSource;
@@ -59,8 +56,6 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.StringValue;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.SAXException;
 
 /**
  * A trigger that executes a user XQuery statement when invoked.
@@ -84,7 +79,7 @@ import org.xml.sax.SAXException;
 */
 public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, CollectionTrigger {
 
-        protected Logger LOG = LogManager.getLogger(getClass());
+    protected Logger LOG = LogManager.getLogger(getClass());
     
 	private final static String NAMESPACE = "http://exist-db.org/xquery/trigger";
 
@@ -146,9 +141,8 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
 	/** Namespace prefix associated to trigger */
 	private String bindingPrefix = null;
 	private XQuery service;
-	private ContentHandler originalOutputHandler;
 
-    public final static String PEPARE_EXCEIPTION_MESSAGE = "Error during trigger prepare";
+    public final static String PREPARE_EXCEPTION_MESSAGE = "Error during trigger prepare";
 
 	
 	public XQueryTrigger()
@@ -167,7 +161,7 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
  		//one parameter to specify the XQuery
  		if(parameters != null)
  		{
- 			events = new HashSet<TriggerEvents.EVENTS>();
+ 			events = new HashSet<>();
  			final List<String> paramEvents = (List<String>) parameters.get("event");
  			if (paramEvents != null)
 	 			for (final String event : paramEvents) {
@@ -316,19 +310,11 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
         		context.declareVariable(bindingPrefix + varName, new StringValue(varValue));
         	}
         	
-        } catch(final XPathException e) {
+        } catch(final XPathException | IOException | PermissionDeniedException e) {
     		TriggerStatePerThread.setTriggerRunningState(TriggerStatePerThread.NO_TRIGGER_RUNNING, this, null);
     		TriggerStatePerThread.setTransaction(null);
-        	throw new TriggerException(PEPARE_EXCEIPTION_MESSAGE, e);
-	    } catch(final IOException e) {
-    		TriggerStatePerThread.setTriggerRunningState(TriggerStatePerThread.NO_TRIGGER_RUNNING, this, null);
-    		TriggerStatePerThread.setTransaction(null);
-        	throw new TriggerException(PEPARE_EXCEIPTION_MESSAGE, e);
-	    } catch (final PermissionDeniedException e) {
-    		TriggerStatePerThread.setTriggerRunningState(TriggerStatePerThread.NO_TRIGGER_RUNNING, this, null);
-    		TriggerStatePerThread.setTransaction(null);
-        	throw new TriggerException(PEPARE_EXCEIPTION_MESSAGE, e);
-		}
+        	throw new TriggerException(PREPARE_EXCEPTION_MESSAGE, e);
+	    }
 
         //execute the XQuery
         try {
@@ -337,14 +323,10 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
 			service.execute(broker, compiledQuery, contextSet);
 			//TODO : should we have a special processing ?
 			LOG.debug("Trigger fired for prepare");
-        } catch(final XPathException e) {
+        } catch(final XPathException | PermissionDeniedException e) {
     		TriggerStatePerThread.setTriggerRunningState(TriggerStatePerThread.NO_TRIGGER_RUNNING, this, null);
     		TriggerStatePerThread.setTransaction(null);
-        	throw new TriggerException(PEPARE_EXCEIPTION_MESSAGE, e);
-        } catch (final PermissionDeniedException e) {
-    		TriggerStatePerThread.setTriggerRunningState(TriggerStatePerThread.NO_TRIGGER_RUNNING, this, null);
-    		TriggerStatePerThread.setTransaction(null);
-        	throw new TriggerException(PEPARE_EXCEIPTION_MESSAGE, e);
+        	throw new TriggerException(PREPARE_EXCEPTION_MESSAGE, e);
         }
     }
     
@@ -399,18 +381,12 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
         		context.declareVariable(bindingPrefix + varName, new StringValue(varValue));
         	}
         	
-        } catch(final XPathException e) {
+        } catch(final XPathException | IOException | PermissionDeniedException e) {
         	//Should never be reached
         	LOG.error(e);
-	    } catch(final IOException e) {
-	    	//Should never be reached
-        	LOG.error(e);
-	    } catch (final PermissionDeniedException e) {
-        	//Should never be reached
-        	LOG.error(e);
-		}
+	    }
 
-	    //execute the XQuery
+        //execute the XQuery
         try {
         	//TODO : should we provide another contextSet ?
 	        final NodeSet contextSet = NodeSet.EMPTY_SET;	        
@@ -472,25 +448,15 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
             context.prepareForExecution();
 
         	return compiledQuery;
-        } catch(final XPathException e) {
-            LOG.warn(e.getMessage());
-    		TriggerStatePerThread.setTriggerRunningState(TriggerStatePerThread.NO_TRIGGER_RUNNING, this, null);
-    		TriggerStatePerThread.setTransaction(null);
-        	throw new TriggerException(PEPARE_EXCEIPTION_MESSAGE, e);
-	    } catch(final IOException e) {
+        } catch(final XPathException | IOException | PermissionDeniedException e) {
             LOG.warn(e.getMessage(), e);
     		TriggerStatePerThread.setTriggerRunningState(TriggerStatePerThread.NO_TRIGGER_RUNNING, this, null);
     		TriggerStatePerThread.setTransaction(null);
-        	throw new TriggerException(PEPARE_EXCEIPTION_MESSAGE, e);
-	    } catch (final PermissionDeniedException e) {
-    		TriggerStatePerThread.setTriggerRunningState(TriggerStatePerThread.NO_TRIGGER_RUNNING, this, null);
-    		TriggerStatePerThread.setTransaction(null);
-        	throw new TriggerException(PEPARE_EXCEIPTION_MESSAGE, e);
-		}
-	}
+        	throw new TriggerException(PREPARE_EXCEPTION_MESSAGE, e);
+	    }
+    }
 	
-	private void execute(boolean isBefore, DBBroker broker, Txn transaction, QName functionName, XmldbURI ... urls) throws TriggerException {
-		final XmldbURI src = urls[0];
+	private void execute(boolean isBefore, DBBroker broker, Txn transaction, QName functionName, XmldbURI src, XmldbURI dst) throws TriggerException {
 		final CompiledXQuery compiledQuery = getScript(isBefore, broker, transaction, src);
 		
 		if (compiledQuery == null) {return;}
@@ -500,13 +466,23 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
 		final XQueryContext context = compiledQuery.getContext();
         //execute the XQuery
         try {
-        	
-    		final UserDefinedFunction function = context.resolveFunction(functionName, urls.length);
-    		if (function != null) {
-    			final List<Expression> args = new ArrayList<Expression>(urls.length);
-    			for (int i = 0; i < urls.length; i++)
-    				args.add(new LiteralValue(context, new AnyURIValue(urls[i])));
-    			
+            int nParams = 1;
+            if (dst != null)
+                nParams = 2;
+
+            final UserDefinedFunction function = context.resolveFunction(functionName, nParams);
+            if (function != null) {
+                final List<Expression> args = new ArrayList<>(nParams);
+                if (isBefore) {
+                    args.add(new LiteralValue(context, new AnyURIValue(src)));
+                    if (dst != null)
+                        args.add(new LiteralValue(context, new AnyURIValue(dst)));
+                } else {
+                    if (dst != null)
+                        args.add(new LiteralValue(context, new AnyURIValue(dst)));
+                    args.add(new LiteralValue(context, new AnyURIValue(src)));
+                }
+
 	    		pm = broker.getBrokerPool().getProcessMonitor();
 	    		
 	            context.getProfiler().traceQueryStart();
@@ -520,7 +496,7 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
         } catch(final XPathException e) {
     		TriggerStatePerThread.setTriggerRunningState(TriggerStatePerThread.NO_TRIGGER_RUNNING, this, null);
     		TriggerStatePerThread.setTransaction(null);
-        	throw new TriggerException(PEPARE_EXCEIPTION_MESSAGE, e);
+        	throw new TriggerException(PREPARE_EXCEPTION_MESSAGE, e);
         } finally {
         	if (pm != null) {
         		context.getProfiler().traceQueryEnd(context);
@@ -620,18 +596,18 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
 	@Override
 	public void beforeCreateCollection(DBBroker broker, Txn txn, XmldbURI uri) throws TriggerException {
 		if (events.contains(TriggerEvents.EVENTS.CREATE_COLLECTION)) {
-			prepare(1, broker, txn, uri, (XmldbURI) null, true);
+			prepare(1, broker, txn, uri, null, true);
 		} else {
-		    execute(true, broker, txn, beforeCreateCollection, uri);
+            execute(true, broker, txn, beforeCreateCollection, uri, null);
 	    }
 	}
 
 	@Override
 	public void afterCreateCollection(DBBroker broker, Txn txn, Collection collection) throws TriggerException {
 		if (events.contains(TriggerEvents.EVENTS.CREATE_COLLECTION)) {
-			finish(1, broker, txn, collection.getURI(), (XmldbURI) null, true);
+			finish(1, broker, txn, collection.getURI(), null, true);
 		} else {
-		    execute(false, broker, txn, afterCreateCollection, collection.getURI());
+            execute(false, broker, txn, afterCreateCollection, collection.getURI(), null);
 	    }
 
 	}
@@ -646,11 +622,11 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
 	}
 
 	@Override
-	public void afterCopyCollection(DBBroker broker, Txn txn, Collection collection, XmldbURI newUri) throws TriggerException {
+	public void afterCopyCollection(DBBroker broker, Txn txn, Collection collection, XmldbURI oldUri) throws TriggerException {
 		if (events.contains(TriggerEvents.EVENTS.COPY_COLLECTION)) {
-			finish(5, broker, txn, collection.getURI(), newUri, true);
+			finish(5, broker, txn, collection.getURI(), oldUri, true);
 		} else {
-		    execute(false, broker, txn, afterCopyCollection, collection.getURI(), newUri);
+            execute(false, broker, txn, afterCopyCollection, oldUri, collection.getURI());
 	    }
 	}
 
@@ -675,54 +651,54 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
 	@Override
 	public void beforeDeleteCollection(DBBroker broker, Txn txn, Collection collection) throws TriggerException {
 		if (events.contains(TriggerEvents.EVENTS.DELETE_COLLECTION)) {
-			prepare(9, broker, txn, collection.getURI(), (XmldbURI) null, true);
+			prepare(9, broker, txn, collection.getURI(), null, true);
 		} else {
-		    execute(true, broker, txn, beforeDeleteCollection, collection.getURI());
+            execute(true, broker, txn, beforeDeleteCollection, collection.getURI(), null);
 	    }
 	}
 
 	@Override
 	public void afterDeleteCollection(DBBroker broker, Txn txn, XmldbURI uri) throws TriggerException {
 		if (events.contains(TriggerEvents.EVENTS.DELETE_COLLECTION)) {
-			finish(9, broker, txn, collection.getURI(), (XmldbURI) null, true);
+			finish(9, broker, txn, collection.getURI(), null, true);
 		} else {
-		    execute(false, broker, txn, afterDeleteCollection, uri);
+            execute(false, broker, txn, afterDeleteCollection, uri, null);
 	    }
 	}
 
 	@Override
 	public void beforeCreateDocument(DBBroker broker, Txn txn, XmldbURI uri) throws TriggerException {
 		if (events.contains(TriggerEvents.EVENTS.CREATE_DOCUMENT)) {
-			prepare(0, broker, txn, uri, (XmldbURI) null, false);
+			prepare(0, broker, txn, uri, null, false);
 		} else {
-		    execute(true, broker, txn, beforeCreateDocument, uri);
+            execute(true, broker, txn, beforeCreateDocument, uri, null);
 	    }
 	}
 
 	@Override
 	public void afterCreateDocument(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
 		if (events.contains(TriggerEvents.EVENTS.CREATE_DOCUMENT)) {
-			finish(0, broker, txn, document.getURI(), (XmldbURI) null, false);
+			finish(0, broker, txn, document.getURI(), null, false);
 		} else {
-		    execute(false, broker, txn, afterCreateDocument, document.getURI());
+            execute(false, broker, txn, afterCreateDocument, document.getURI(), null);
 	    }
 	}
 
 	@Override
 	public void beforeUpdateDocument(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
 		if (events.contains(TriggerEvents.EVENTS.UPDATE_DOCUMENT)) {
-			prepare(2, broker, txn, document.getURI(), (XmldbURI) null, false);
+			prepare(2, broker, txn, document.getURI(), null, false);
 		} else {
-		    execute(true, broker, txn, beforeUpdateDocument, document.getURI());
+            execute(true, broker, txn, beforeUpdateDocument, document.getURI(), null);
 	    }
 	}
 
 	@Override
 	public void afterUpdateDocument(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
 		if (events.contains(TriggerEvents.EVENTS.UPDATE_DOCUMENT)) {
-			finish(2, broker, txn, document.getURI(), (XmldbURI) null, false);
+			finish(2, broker, txn, document.getURI(), null, false);
 		} else {
-		    execute(false, broker, txn, afterUpdateDocument, document.getURI());
+            execute(false, broker, txn, afterUpdateDocument, document.getURI(), null);
 	    }
 	}
 
@@ -731,16 +707,16 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
 		if (events.contains(TriggerEvents.EVENTS.COPY_DOCUMENT)) {
 			prepare(4, broker, txn, document.getURI(), newUri, false);
 		} else {
-		    execute(true, broker, txn, beforeCopyDocument, document.getURI());
+            execute(true, broker, txn, beforeCopyDocument, document.getURI(), newUri);
 	    }
 	}
 
 	@Override
-	public void afterCopyDocument(DBBroker broker, Txn txn, DocumentImpl document, XmldbURI newUri) throws TriggerException {
+    public void afterCopyDocument(DBBroker broker, Txn txn, DocumentImpl document, XmldbURI oldUri) throws TriggerException {
 		if (events.contains(TriggerEvents.EVENTS.COPY_DOCUMENT)) {
-			finish(4, broker, txn, document.getURI(), newUri, false);
+			finish(4, broker, txn, document.getURI(), oldUri, false);
 		} else {
-		    execute(false, broker, txn, afterCopyDocument, document.getURI());
+            execute(false, broker, txn, afterCopyDocument, oldUri, document.getURI());
 	    }
 	}
 
@@ -749,7 +725,7 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
 		if (events.contains(TriggerEvents.EVENTS.MOVE_DOCUMENT)) {
 			prepare(6, broker, txn, document.getURI(), newUri, false);
 		} else {
-		    execute(true, broker, txn, beforeMoveDocument, document.getURI());
+            execute(true, broker, txn, beforeMoveDocument, document.getURI(), newUri);
 	    }
 	}
 
@@ -758,25 +734,25 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
 		if (events.contains(TriggerEvents.EVENTS.MOVE_DOCUMENT)) {
 			finish(6, broker, txn, oldUri, document.getURI(), false);
 		} else {
-		    execute(false, broker, txn, afterMoveDocument, oldUri);
+            execute(false, broker, txn, afterMoveDocument, oldUri, document.getURI());
 	    }
 	}
 
 	@Override
 	public void beforeDeleteDocument(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
 		if (events.contains(TriggerEvents.EVENTS.DELETE_DOCUMENT)) {
-			prepare(8, broker, txn, document.getURI(), (XmldbURI) null, false);
+			prepare(8, broker, txn, document.getURI(), null, false);
 		} else {
-		    execute(true, broker, txn, beforeDeleteDocument, document.getURI());
+            execute(true, broker, txn, beforeDeleteDocument, document.getURI(), null);
 	    }
 	}
 
 	@Override
 	public void afterDeleteDocument(DBBroker broker, Txn txn, XmldbURI uri) throws TriggerException {
 		if (events.contains(TriggerEvents.EVENTS.DELETE_DOCUMENT)) {
-			finish(8, broker, txn, uri, (XmldbURI) null, false);
+			finish(8, broker, txn, uri, null, false);
 		} else {
-		    execute(false, broker, txn, afterDeleteDocument, uri);
+            execute(false, broker, txn, afterDeleteDocument, uri, null);
 	    }
 	}
 
