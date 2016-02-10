@@ -51,7 +51,7 @@ public class ApacheFopProcessorAdapter implements ProcessorAdapter {
             // Obtain FOP's DefaultHandler
             return fop.getDefaultHandler();
         } catch(final URISyntaxException e) {
-            throw new SAXException("Unable to parse baseURI");
+            throw new SAXException("Unable to parse baseURI", e);
         }
     }
 
@@ -68,15 +68,15 @@ public class ApacheFopProcessorAdapter implements ProcessorAdapter {
      * @return FOUserAgent The generated FOUserAgent to include any parameters
      *         passed in
      */
-    private FOUserAgent setupFOUserAgent(FOUserAgent foUserAgent, Properties parameters) {
+    private FOUserAgent setupFOUserAgent(final FOUserAgent foUserAgent, final Properties parameters) {
 
         // setup the foUserAgent as per the parameters given
         foUserAgent.setProducer("eXist-db with Apache FOP");
 
         if(parameters != null) {
-            for(Entry paramEntry : parameters.entrySet()) {
-                String key = (String)paramEntry.getKey();
-                String value = (String)paramEntry.getValue();
+            for(final Entry paramEntry : parameters.entrySet()) {
+                final String key = (String)paramEntry.getKey();
+                final String value = (String)paramEntry.getValue();
 
                 if(key.equals("FOPauthor")) {
                     foUserAgent.setAuthor(value);
@@ -87,7 +87,7 @@ public class ApacheFopProcessorAdapter implements ProcessorAdapter {
                 } else if(key.equals("FOPdpi")) {
                     try {
                         foUserAgent.setTargetResolution(Integer.parseInt(value));
-                    } catch(NumberFormatException nfe) {
+                    } catch(final NumberFormatException nfe) {
                         LOG.warn("Unable to set DPI to: " + value);
                     }
                 }
@@ -103,21 +103,21 @@ public class ApacheFopProcessorAdapter implements ProcessorAdapter {
      */
     private class FopConfigurationBuilder extends org.apache.avalon.framework.configuration.DefaultConfigurationBuilder {
 
-        DBBroker broker = null;
+        private DBBroker broker = null;
 
-        public FopConfigurationBuilder(DBBroker broker) {
+        public FopConfigurationBuilder(final DBBroker broker) {
             super();
             this.broker = broker;
         }
 
         @SuppressWarnings("unused")
-        public FopConfigurationBuilder(DBBroker broker, final boolean enableNamespaces) {
+        public FopConfigurationBuilder(final DBBroker broker, final boolean enableNamespaces) {
             super(enableNamespaces);
             this.broker = broker;
         }
 
-        public Configuration buildFromNode(NodeValue configFile) throws SAXException {
-            SAXConfigurationHandler handler = getHandler();
+        public Configuration buildFromNode(final NodeValue configFile) throws SAXException {
+            final SAXConfigurationHandler handler = getHandler();
             handler.clear();
             configFile.toSAX(broker, handler, new Properties());
             return handler.getConfiguration();
