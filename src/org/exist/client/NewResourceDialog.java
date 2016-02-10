@@ -123,25 +123,22 @@ public class NewResourceDialog extends JFrame {
         //final JComboBox cmbResourceTypes = new JComboBox<ResourceType>(ResourceType.values());
         final JComboBox cmbResourceTypes = new JComboBox(ResourceType.values());
         cmbResourceTypes.setSelectedIndex(0);
-        cmbResourceTypes.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(final ActionEvent e) {
-                final Object src = e.getSource();
-                if(src.equals(cmbResourceTypes)) {
-                    final boolean visible;
-                    switch((ResourceType)cmbResourceTypes.getSelectedItem()) {
-                        case XQUERY_LIBRARY:
-                            visible = true;
-                            break;
-                        
-                        default:
-                            visible = false;
-                    }
-                    
-                    lblLibModule.setVisible(visible);
-                    panLibModule.setVisible(visible);
-                    pack();
+        cmbResourceTypes.addActionListener(e -> {
+            final Object src = e.getSource();
+            if(src.equals(cmbResourceTypes)) {
+                final boolean visible1;
+                switch((ResourceType)cmbResourceTypes.getSelectedItem()) {
+                    case XQUERY_LIBRARY:
+                        visible1 = true;
+                        break;
+
+                    default:
+                        visible1 = false;
                 }
+
+                lblLibModule.setVisible(visible1);
+                panLibModule.setVisible(visible1);
+                pack();
             }
         });
         
@@ -236,12 +233,9 @@ public class NewResourceDialog extends JFrame {
         
         
         final JButton btnCancel = new JButton("Cancel");
-        btnCancel.addActionListener(new ActionListener(){
-            @Override
-            public void actionPerformed(final ActionEvent e) {
-                setVisible(false);
-                dispose();
-            }
+        btnCancel.addActionListener(e -> {
+            setVisible(false);
+            dispose();
         });
         c.gridx = 0;
         c.gridy = 5;
@@ -252,14 +246,11 @@ public class NewResourceDialog extends JFrame {
         getContentPane().add(btnCancel);
                 
         final JButton btnCreate = new JButton("Create Resource");
-        btnCreate.addActionListener(new ActionListener(){
-            @Override
-            public void actionPerformed(final ActionEvent e) {
-                createResource((ResourceType)cmbResourceTypes.getSelectedItem(), txtFilename.getText(), txtLibModuleNamespace.getText(), txtLibModulePrefix.getText());
-                        
-                setVisible(false);
-                dispose();
-            }
+        btnCreate.addActionListener(e -> {
+            createResource((ResourceType)cmbResourceTypes.getSelectedItem(), txtFilename.getText(), txtLibModuleNamespace.getText(), txtLibModulePrefix.getText());
+
+            setVisible(false);
+            dispose();
         });
         c.gridx = 1;
         c.gridy = 5;

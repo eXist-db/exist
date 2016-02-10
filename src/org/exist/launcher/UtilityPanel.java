@@ -74,42 +74,22 @@ public class UtilityPanel extends JFrame implements Observer {
             if (desktop.isSupported(Desktop.Action.BROWSE)) {
                 dashboardButton = createButton(toolbar, "dashboard.png", "Dashboard");
                 dashboardButton.setEnabled(false);
-                dashboardButton.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent actionEvent) {
-                        launcher.dashboard(desktop);
-                    }
-                });
+                dashboardButton.addActionListener(actionEvent -> launcher.dashboard(desktop));
                 toolbar.add(dashboardButton);
 
                 eXideButton = createButton(toolbar, "exide.png", "eXide");
                 eXideButton.setEnabled(false);
-                eXideButton.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent actionEvent) {
-                        launcher.eXide(desktop);
-                    }
-                });
+                eXideButton.addActionListener(actionEvent -> launcher.eXide(desktop));
                 toolbar.add(eXideButton);
             }
         }
 
         button = createButton(toolbar, "browsing.png", "Java Client");
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                launcher.client();
-            }
-        });
+        button.addActionListener(actionEvent -> launcher.client());
         toolbar.add(button);
 
         button = createButton(toolbar, "shutdown.png", "Quit");
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                launcher.shutdown(false);
-            }
-        });
+        button.addActionListener(actionEvent -> launcher.shutdown(false));
         toolbar.add(button);
 
         c.gridx = 0;
@@ -132,17 +112,14 @@ public class UtilityPanel extends JFrame implements Observer {
         final JCheckBox showMessages = new JCheckBox("Show console messages");
         showMessages.setHorizontalAlignment(SwingConstants.LEFT);
         showMessages.setOpaque(false);
-        showMessages.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent itemEvent) {
-                final boolean showMessages = itemEvent.getStateChange() == ItemEvent.SELECTED;
-                if (showMessages) {
-                    messages.setVisible(true);
-                } else {
-                    messages.setVisible(false);
-                }
-                UtilityPanel.this.pack();
+        showMessages.addItemListener(itemEvent -> {
+            final boolean showMessages1 = itemEvent.getStateChange() == ItemEvent.SELECTED;
+            if (showMessages1) {
+                messages.setVisible(true);
+            } else {
+                messages.setVisible(false);
             }
+            UtilityPanel.this.pack();
         });
         c.gridy = 2;
         getContentPane().add(showMessages, c);
@@ -197,12 +174,7 @@ public class UtilityPanel extends JFrame implements Observer {
     }
 
     protected void setStatus(final String message) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                statusLabel.setText(message);
-            }
-        });
+        SwingUtilities.invokeLater(() -> statusLabel.setText(message));
     }
 
     @Override
@@ -215,12 +187,7 @@ public class UtilityPanel extends JFrame implements Observer {
                 eXideButton.setEnabled(notification.getAction() == ExistRepository.Action.INSTALL);
             }
         } else {
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    messages.append(o.toString());
-                }
-            });
+            SwingUtilities.invokeLater(() -> messages.append(o.toString()));
         }
     }
 }

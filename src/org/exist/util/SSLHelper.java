@@ -83,13 +83,7 @@ public class SSLHelper {
         if (dummyHostnameVerifier == null) {
             
             // Create dummy HostnameVerifier
-            dummyHostnameVerifier = new HostnameVerifier() {
-
-                @Override
-                public boolean verify(String hostname, SSLSession session) {
-                    return true;
-                }
-            };
+            dummyHostnameVerifier = (hostname, session) -> true;
         }
     }
 

@@ -223,11 +223,9 @@ class DocumentView extends JFrame {
         item = new JMenuItem(Messages.getString("DocumentView.17"), KeyEvent.VK_S); //$NON-NLS-1$
         item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S,
         		Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-        item.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-            	System.out.println("SAVE");
-                save();
-            }
+        item.addActionListener(e -> {
+            System.out.println("SAVE");
+            save();
         });
         fileMenu.add(item);
         /*
@@ -259,11 +257,7 @@ class DocumentView extends JFrame {
 		saveButton = new JButton(new ImageIcon(url));
 		saveButton
 				.setToolTipText(Messages.getString("DocumentView.20")); //$NON-NLS-1$
-		saveButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				save();
-			}
-		});
+		saveButton.addActionListener(e -> save());
 		toolbar.add(saveButton);
 		
 		//Save As button
@@ -271,26 +265,20 @@ class DocumentView extends JFrame {
 		saveAsButton = new JButton(new ImageIcon(url));
 		saveAsButton
 				.setToolTipText(Messages.getString("DocumentView.22")); //$NON-NLS-1$
-		saveAsButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				saveAs();
-			}
-		});
+		saveAsButton.addActionListener(e -> saveAs());
 		toolbar.add(saveAsButton);
 		
 		//Export button
 		url = getClass().getResource("icons/Export24.gif"); //$NON-NLS-1$
 		JButton button = new JButton(new ImageIcon(url));
 		button.setToolTipText(Messages.getString("DocumentView.24")); //$NON-NLS-1$
-		button.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e)  {
-			try {
-				export() ;
-			} catch (final XMLDBException u) {
-				u.printStackTrace();
-			}
-			}
-		});
+		button.addActionListener(e -> {
+        try {
+            export() ;
+        } catch (final XMLDBException u) {
+            u.printStackTrace();
+        }
+        });
 		toolbar.add(button);
 		
 		toolbar.addSeparator();
@@ -299,33 +287,21 @@ class DocumentView extends JFrame {
 		url = getClass().getResource("icons/Copy24.gif"); //$NON-NLS-1$
 		button = new JButton(new ImageIcon(url));
 		button.setToolTipText(Messages.getString("DocumentView.26")); //$NON-NLS-1$
-		button.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                text.copy();
-            }
-        });
+		button.addActionListener(e -> text.copy());
 		toolbar.add(button);
 		
 		//Cut button
 		url = getClass().getResource("icons/Cut24.gif"); //$NON-NLS-1$
 		button = new JButton(new ImageIcon(url));
 		button.setToolTipText(Messages.getString("DocumentView.28")); //$NON-NLS-1$
-		button.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                text.cut();
-            }
-        });
+		button.addActionListener(e -> text.cut());
 		toolbar.add(button);
 		
 		//Paste button
 		url = getClass().getResource("icons/Paste24.gif"); //$NON-NLS-1$
 		button = new JButton(new ImageIcon(url));
 		button.setToolTipText(Messages.getString("DocumentView.30")); //$NON-NLS-1$
-		button.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                text.paste();
-            }
-        });
+		button.addActionListener(e -> text.paste());
 		toolbar.add(button);
 		
 		toolbar.addSeparator();
@@ -334,13 +310,11 @@ class DocumentView extends JFrame {
 		url = getClass().getResource("icons/Refresh24.gif"); //$NON-NLS-1$
 		button = new JButton(new ImageIcon(url));
 		button.setToolTipText(Messages.getString("DocumentView.32")); //$NON-NLS-1$
-		button.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    refresh();
-                } catch (final XMLDBException u) {
-                    u.printStackTrace();
-                }
+		button.addActionListener(e -> {
+            try {
+                refresh();
+            } catch (final XMLDBException u) {
+                u.printStackTrace();
             }
         });
 		toolbar.add(button);

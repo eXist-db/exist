@@ -223,55 +223,31 @@ public class UserManagerDialog extends javax.swing.JFrame {
         btnClose = new javax.swing.JButton();
 
         miNewUser.setText("New User...");
-        miNewUser.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                miNewUserActionPerformed(evt);
-            }
-        });
+        miNewUser.addActionListener(evt -> miNewUserActionPerformed(evt));
         pmUsers.add(miNewUser);
         miNewUser.getAccessibleContext().setAccessibleName("New User");
 
         miEditUser.setText("Edit User...");
-        miEditUser.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                miEditUserActionPerformed(evt);
-            }
-        });
+        miEditUser.addActionListener(evt -> miEditUserActionPerformed(evt));
         pmUsers.add(miEditUser);
         miEditUser.getAccessibleContext().setAccessibleName("Edit User");
 
         miRemoveUser.setText("Remove User");
-        miRemoveUser.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                miRemoveUserActionPerformed(evt);
-            }
-        });
+        miRemoveUser.addActionListener(evt -> miRemoveUserActionPerformed(evt));
         pmUsers.add(miRemoveUser);
 
         miNewGroup.setText("New Group...");
-        miNewGroup.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                miNewGroupActionPerformed(evt);
-            }
-        });
+        miNewGroup.addActionListener(evt -> miNewGroupActionPerformed(evt));
         pmGroups.add(miNewGroup);
         miNewGroup.getAccessibleContext().setAccessibleName("New Group");
 
         miEditGroup.setText("Edit Group...");
-        miEditGroup.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                miEditGroupActionPerformed(evt);
-            }
-        });
+        miEditGroup.addActionListener(evt -> miEditGroupActionPerformed(evt));
         pmGroups.add(miEditGroup);
         miEditGroup.getAccessibleContext().setAccessibleName("Edit Group");
 
         miRemoveGroup.setText("Remove Group");
-        miRemoveGroup.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                miRemoveGroupActionPerformed(evt);
-            }
-        });
+        miRemoveGroup.addActionListener(evt -> miRemoveGroupActionPerformed(evt));
         pmGroups.add(miRemoveGroup);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
@@ -305,18 +281,10 @@ public class UserManagerDialog extends javax.swing.JFrame {
         spGroups.getAccessibleContext().setAccessibleName("Groups");
 
         btnCreate.setText("Create");
-        btnCreate.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnCreateActionPerformed(evt);
-            }
-        });
+        btnCreate.addActionListener(evt -> btnCreateActionPerformed(evt));
 
         btnClose.setText("Close");
-        btnClose.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnCloseActionPerformed(evt);
-            }
-        });
+        btnClose.addActionListener(evt -> btnCloseActionPerformed(evt));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -412,17 +380,14 @@ public class UserManagerDialog extends javax.swing.JFrame {
         
         final UserManagerDialog that = this;
         
-        final DialogCompleteWithResponse<String> callback = new DialogCompleteWithResponse<String>(){
-            @Override
-            public void complete(final String response) {
-                //get client to reconnect with edited users new password
-                try {
-                    System.out.println("Detected logged-in user password change, reconnecting to server...");
-                    that.userManagementService = reconnectClientAndUserManager(response);
-                    System.out.println("Reconnected.");
-                } catch(final XMLDBException xmldbe) {
-                    JOptionPane.showMessageDialog(that, "Could not edit user '" + getSelectedUsername() + "': " + xmldbe.getMessage(), "User Manager Error", JOptionPane.ERROR_MESSAGE);
-                }
+        final DialogCompleteWithResponse<String> callback = response -> {
+            //get client to reconnect with edited users new password
+            try {
+                System.out.println("Detected logged-in user password change, reconnecting to server...");
+                that.userManagementService = reconnectClientAndUserManager(response);
+                System.out.println("Reconnected.");
+            } catch(final XMLDBException xmldbe) {
+                JOptionPane.showMessageDialog(that, "Could not edit user '" + getSelectedUsername() + "': " + xmldbe.getMessage(), "User Manager Error", JOptionPane.ERROR_MESSAGE);
             }
         };
 

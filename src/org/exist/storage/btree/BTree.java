@@ -655,12 +655,7 @@ public class BTree extends Paged implements Lockable {
     public void scanSequential() throws TerminatedException, IOException, DBException {
         TreeInfo info = scanTree(false);
         System.out.println("Sequential scan...");
-        scanSequential(info.firstPage, new BTreeCallback() {
-            @Override
-            public boolean indexInfo(Value value, long pointer) throws TerminatedException {
-                return true;
-            }
-        });
+        scanSequential(info.firstPage, (value, pointer) -> true);
     }
 
     /**
