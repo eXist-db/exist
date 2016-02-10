@@ -118,16 +118,16 @@ public class GroupDialog extends javax.swing.JFrame {
         btnAddMember = new javax.swing.JButton();
 
         miAddGroupMember.setText("Add Group Member...");
-        miAddGroupMember.addActionListener(evt -> miAddGroupMemberActionPerformed(evt));
+        miAddGroupMember.addActionListener(this::miAddGroupMemberActionPerformed);
         pmGroupMembers.add(miAddGroupMember);
 
         micbGroupMemberManager.setSelected(true);
         micbGroupMemberManager.setText("Group Manager");
-        micbGroupMemberManager.addActionListener(evt -> micbGroupMemberManagerActionPerformed(evt));
+        micbGroupMemberManager.addActionListener(this::micbGroupMemberManagerActionPerformed);
         pmGroupMembers.add(micbGroupMemberManager);
 
         miRemoveGroupMember.setText("Remove Group Member");
-        miRemoveGroupMember.addActionListener(evt -> miRemoveGroupMemberActionPerformed(evt));
+        miRemoveGroupMember.addActionListener(this::miRemoveGroupMemberActionPerformed);
         pmGroupMembers.add(miRemoveGroupMember);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
@@ -153,13 +153,13 @@ public class GroupDialog extends javax.swing.JFrame {
         lblGroupMembers.setText("Group Members:");
 
         btnCreate.setText("Create");
-        btnCreate.addActionListener(evt -> btnCreateActionPerformed(evt));
+        btnCreate.addActionListener(this::btnCreateActionPerformed);
 
         btnClose.setText("Close");
-        btnClose.addActionListener(evt -> btnCloseActionPerformed(evt));
+        btnClose.addActionListener(this::btnCloseActionPerformed);
 
         btnAddMember.setText("Add Group Member...");
-        btnAddMember.addActionListener(evt -> btnAddMemberActionPerformed(evt));
+        btnAddMember.addActionListener(this::btnAddMemberActionPerformed);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);

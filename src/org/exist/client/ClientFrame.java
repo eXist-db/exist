@@ -207,7 +207,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         URL url = getClass().getResource("icons/Up24.gif"); //$NON-NLS-1$
         JButton button = new JButton(new ImageIcon(url));
         button.setToolTipText(Messages.getString("ClientFrame.5")); //$NON-NLS-1$
-        button.addActionListener(e -> goUpAction(e));
+        button.addActionListener(this::goUpAction);
         toolbar.add(button);
         
         url = getClass().getResource("icons/Refresh24.gif"); //$NON-NLS-1$
@@ -226,19 +226,19 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         url = getClass().getResource("icons/New24.gif"); //$NON-NLS-1$
         button = new JButton(new ImageIcon(url));
         button.setToolTipText(Messages.getString("ClientFrame.9")); //$NON-NLS-1$
-        button.addActionListener(e -> newCollectionAction(e));
+        button.addActionListener(this::newCollectionAction);
         toolbar.add(button);
         
         url = getClass().getResource("icons/Add24.gif"); //$NON-NLS-1$
         button = new JButton(new ImageIcon(url));
         button.setToolTipText(Messages.getString("ClientFrame.11")); //$NON-NLS-1$
-        button.addActionListener(e -> uploadAction(e));
+        button.addActionListener(this::uploadAction);
         toolbar.add(button);
         
         url = getClass().getResource("icons/Delete24.gif"); //$NON-NLS-1$
         button = new JButton(new ImageIcon(url));
         button.setToolTipText(Messages.getString("ClientFrame.13")); //$NON-NLS-1$
-        button.addActionListener(e -> removeAction(e));
+        button.addActionListener(this::removeAction);
         toolbar.add(button);
         
         url = getClass().getResource(Messages.getString("ClientFrame.14")); //$NON-NLS-1$
@@ -257,26 +257,26 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         url = getClass().getResource("icons/Export24.gif"); //$NON-NLS-1$
         button = new JButton(new ImageIcon(url));
         button.setToolTipText(Messages.getString("ClientFrame.17")); //$NON-NLS-1$
-        button.addActionListener(e -> backupAction(e));
+        button.addActionListener(this::backupAction);
         toolbar.add(button);
         
         url = getClass().getResource("icons/Import24.gif"); //$NON-NLS-1$
         button = new JButton(new ImageIcon(url));
         button.setToolTipText(Messages.getString("ClientFrame.19")); //$NON-NLS-1$
-        button.addActionListener(e -> restoreAction(e));
+        button.addActionListener(this::restoreAction);
         toolbar.add(button);
         
         toolbar.addSeparator();
         url = getClass().getResource(Messages.getString("ClientFrame.20")); //$NON-NLS-1$
         button = new JButton(new ImageIcon(url));
         button.setToolTipText(Messages.getString("ClientFrame.21")); //$NON-NLS-1$
-        button.addActionListener(e -> editUsersAction(e));
+        button.addActionListener(this::editUsersAction);
         toolbar.add(button);
         
         url = getClass().getResource("icons/Find24.gif"); //$NON-NLS-1$
         button = new JButton(new ImageIcon(url));
         button.setToolTipText(Messages.getString("ClientFrame.23")); //$NON-NLS-1$
-        button.addActionListener(e -> findAction(e));
+        button.addActionListener(this::findAction);
         toolbar.add(button);
         
         // the split pane separates the resource view table from the shell
@@ -337,50 +337,50 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         JMenuItem item = new JMenuItem(Messages.getString("ClientFrame.32"), KeyEvent.VK_S); //$NON-NLS-1$
         item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S,
         		Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-        item.addActionListener(e -> uploadAction(e));
+        item.addActionListener(this::uploadAction);
         fileMenu.add(item);
         
         item = new JMenuItem(Messages.getString("ClientFrame.34"), KeyEvent.VK_N); //$NON-NLS-1$
         item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N,
         		Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-        item.addActionListener(e -> newCollectionAction(e));
+        item.addActionListener(this::newCollectionAction);
         fileMenu.add(item);
         
         item = new JMenuItem(Messages.getString("ClientFrame.36"), KeyEvent.VK_B); //$NON-NLS-1$
         item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_B,
         		Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-        item.addActionListener(e -> newBlankDocument(e));
+        item.addActionListener(this::newBlankDocument);
         fileMenu.add(item);
         fileMenu.addSeparator();
         
         item = new JMenuItem(Messages.getString("ClientFrame.40")); //$NON-NLS-1$
         item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D,
         		Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-        item.addActionListener(e -> removeAction(e));
+        item.addActionListener(this::removeAction);
         fileMenu.add(item);
         
         item = new JMenuItem(Messages.getString("ClientFrame.42"), KeyEvent.VK_C); //$NON-NLS-1$
         item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C,
         		Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-        item.addActionListener(e -> copyAction(e));
+        item.addActionListener(this::copyAction);
         fileMenu.add(item);
         
         item = new JMenuItem(Messages.getString("ClientFrame.44"), KeyEvent.VK_M); //$NON-NLS-1$
         item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_M,
         		Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-        item.addActionListener(e -> moveAction(e));
+        item.addActionListener(this::moveAction);
         fileMenu.add(item);
         
         item = new JMenuItem(Messages.getString("ClientFrame.46"), KeyEvent.VK_R); //$NON-NLS-1$
         item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R,
         		Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-        item.addActionListener(e -> renameAction(e));
+        item.addActionListener(this::renameAction);
 		fileMenu.add(item);
         
         item = new JMenuItem(Messages.getString("ClientFrame.47"), KeyEvent.VK_E);
         item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E,
         		Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-        item.addActionListener(e -> exportAction(e));
+        item.addActionListener(this::exportAction);
         fileMenu.add(item);
         
         fileMenu.addSeparator();
@@ -388,7 +388,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         item = new JMenuItem(Messages.getString("ClientFrame.48"), KeyEvent.VK_I); //$NON-NLS-1$
         item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_I,
         		Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-        item.addActionListener(e -> reindexAction(e));
+        item.addActionListener(this::reindexAction);
         fileMenu.add(item);
         
         item = new JMenuItem(Messages.getString("ClientFrame.50")); //$NON-NLS-1$
@@ -417,7 +417,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         item = new JMenuItem(Messages.getString("ClientFrame.55"), KeyEvent.VK_F); //$NON-NLS-1$
         item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F,
         		Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-        item.addActionListener(e -> findAction(e));
+        item.addActionListener(this::findAction);
         toolsMenu.add(item);
         
         toolsMenu.addSeparator();
@@ -425,7 +425,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         item = new JMenuItem(Messages.getString("ClientFrame.57"), KeyEvent.VK_U); //$NON-NLS-1$
         item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_U,
         		Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-        item.addActionListener(e -> editUsersAction(e));
+        item.addActionListener(this::editUsersAction);
         toolsMenu.add(item);
 
         // Disable "Edit Indexes" menu item.
@@ -442,7 +442,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         item = new JMenuItem(Messages.getString("ClientFrame.60"), KeyEvent.VK_T);
         item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_T,
         		Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-        item.addActionListener(e -> editTriggersAction(e));
+        item.addActionListener(this::editTriggersAction);
         toolsMenu.add(item);
         
         item = new JMenuItem(Messages.getString("ClientFrame.61"), KeyEvent.VK_O); //$NON-NLS-1$
@@ -478,11 +478,11 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         toolsMenu.addSeparator();
         
         item = new JMenuItem(Messages.getString("ClientFrame.63"), KeyEvent.VK_B); //$NON-NLS-1$
-        item.addActionListener(e -> backupAction(e));
+        item.addActionListener(this::backupAction);
         toolsMenu.add(item);
         
         item = new JMenuItem(Messages.getString("ClientFrame.64"), KeyEvent.VK_R); //$NON-NLS-1$
-        item.addActionListener(e -> restoreAction(e));
+        item.addActionListener(this::restoreAction);
         toolsMenu.add(item);
         
         final JMenu connectMenu = new JMenu(Messages.getString("ClientFrame.65")); //$NON-NLS-1$

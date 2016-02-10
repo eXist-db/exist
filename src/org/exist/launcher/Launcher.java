@@ -298,11 +298,11 @@ public class Launcher extends Observable implements Observer {
         if (SystemUtils.IS_OS_WINDOWS) {
             installServiceItem = new MenuItem("Install as service");
             popup.add(installServiceItem);
-            installServiceItem.addActionListener(e -> SwingUtilities.invokeLater(() -> installAsService()));
+            installServiceItem.addActionListener(e -> SwingUtilities.invokeLater(this::installAsService));
 
             uninstallServiceItem = new MenuItem("Uninstall service");
             popup.add(uninstallServiceItem);
-            uninstallServiceItem.addActionListener(e -> SwingUtilities.invokeLater(() -> uninstallService()));
+            uninstallServiceItem.addActionListener(e -> SwingUtilities.invokeLater(this::uninstallService));
         }
 
         popup.addSeparator();

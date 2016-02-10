@@ -79,14 +79,14 @@ public class FindGroupForm extends javax.swing.JFrame implements DialogWithRespo
 
         btnOk.setText("Ok");
         btnOk.setEnabled(false);
-        btnOk.addActionListener(evt -> btnOkActionPerformed(evt));
+        btnOk.addActionListener(this::btnOkActionPerformed);
 
         btnCancel.setText("Cancel");
-        btnCancel.addActionListener(evt -> btnCancelActionPerformed(evt));
+        btnCancel.addActionListener(this::btnCancelActionPerformed);
 
         cmbGroupName.setEditable(true);
         cmbGroupName.setModel(getGroupNameModel());
-        cmbGroupName.addActionListener(evt -> cmbGroupNameActionPerformed(evt));
+        cmbGroupName.addActionListener(this::cmbGroupNameActionPerformed);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);

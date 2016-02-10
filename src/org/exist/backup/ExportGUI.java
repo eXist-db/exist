@@ -229,14 +229,14 @@ public class ExportGUI extends javax.swing.JFrame
         startBtn.setFocusable( false );
         startBtn.setHorizontalTextPosition( javax.swing.SwingConstants.CENTER );
         startBtn.setVerticalTextPosition( javax.swing.SwingConstants.BOTTOM );
-        startBtn.addActionListener(evt -> startBtncheck( evt ));
+        startBtn.addActionListener(this::startBtncheck);
         jToolBar1.add( startBtn );
 
         exportBtn.setText( "Check & Export" );
         exportBtn.setFocusable( false );
         exportBtn.setHorizontalTextPosition( javax.swing.SwingConstants.CENTER );
         exportBtn.setVerticalTextPosition( javax.swing.SwingConstants.BOTTOM );
-        exportBtn.addActionListener(evt -> exportBtnActionPerformed( evt ));
+        exportBtn.addActionListener(this::exportBtnActionPerformed);
         jToolBar1.add( exportBtn );
 
         jToolBar1.add( incrementalBtn );
@@ -269,7 +269,7 @@ public class ExportGUI extends javax.swing.JFrame
         getContentPane().add( jLabel1, gridBagConstraints );
 
         btnChangeDir.setText( "Change" );
-        btnChangeDir.addActionListener(evt -> btnChangeDirActionPerformed( evt ));
+        btnChangeDir.addActionListener(this::btnChangeDirActionPerformed);
         gridBagConstraints        = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx  = 2;
         gridBagConstraints.gridy  = 2;
@@ -296,7 +296,7 @@ public class ExportGUI extends javax.swing.JFrame
         btnConfSelect.setMaximumSize( new java.awt.Dimension( 75, 24 ) );
         btnConfSelect.setMinimumSize( new java.awt.Dimension( 75, 24 ) );
         btnConfSelect.setPreferredSize( new java.awt.Dimension( 75, 24 ) );
-        btnConfSelect.addActionListener(evt -> btnConfSelectActionPerformed( evt ));
+        btnConfSelect.addActionListener(this::btnConfSelectActionPerformed);
         gridBagConstraints        = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx  = 2;
         gridBagConstraints.gridy  = 1;
@@ -308,7 +308,7 @@ public class ExportGUI extends javax.swing.JFrame
 
         menuQuit.setAccelerator( javax.swing.KeyStroke.getKeyStroke( java.awt.event.KeyEvent.VK_Q, java.awt.event.InputEvent.CTRL_MASK ) );
         menuQuit.setText( "Quit" );
-        menuQuit.addActionListener(evt -> menuQuitActionPerformed( evt ));
+        menuQuit.addActionListener(this::menuQuitActionPerformed);
         jMenu1.add( menuQuit );
 
         jMenuBar1.add( jMenu1 );

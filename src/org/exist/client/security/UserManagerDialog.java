@@ -223,31 +223,31 @@ public class UserManagerDialog extends javax.swing.JFrame {
         btnClose = new javax.swing.JButton();
 
         miNewUser.setText("New User...");
-        miNewUser.addActionListener(evt -> miNewUserActionPerformed(evt));
+        miNewUser.addActionListener(this::miNewUserActionPerformed);
         pmUsers.add(miNewUser);
         miNewUser.getAccessibleContext().setAccessibleName("New User");
 
         miEditUser.setText("Edit User...");
-        miEditUser.addActionListener(evt -> miEditUserActionPerformed(evt));
+        miEditUser.addActionListener(this::miEditUserActionPerformed);
         pmUsers.add(miEditUser);
         miEditUser.getAccessibleContext().setAccessibleName("Edit User");
 
         miRemoveUser.setText("Remove User");
-        miRemoveUser.addActionListener(evt -> miRemoveUserActionPerformed(evt));
+        miRemoveUser.addActionListener(this::miRemoveUserActionPerformed);
         pmUsers.add(miRemoveUser);
 
         miNewGroup.setText("New Group...");
-        miNewGroup.addActionListener(evt -> miNewGroupActionPerformed(evt));
+        miNewGroup.addActionListener(this::miNewGroupActionPerformed);
         pmGroups.add(miNewGroup);
         miNewGroup.getAccessibleContext().setAccessibleName("New Group");
 
         miEditGroup.setText("Edit Group...");
-        miEditGroup.addActionListener(evt -> miEditGroupActionPerformed(evt));
+        miEditGroup.addActionListener(this::miEditGroupActionPerformed);
         pmGroups.add(miEditGroup);
         miEditGroup.getAccessibleContext().setAccessibleName("Edit Group");
 
         miRemoveGroup.setText("Remove Group");
-        miRemoveGroup.addActionListener(evt -> miRemoveGroupActionPerformed(evt));
+        miRemoveGroup.addActionListener(this::miRemoveGroupActionPerformed);
         pmGroups.add(miRemoveGroup);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
@@ -281,10 +281,10 @@ public class UserManagerDialog extends javax.swing.JFrame {
         spGroups.getAccessibleContext().setAccessibleName("Groups");
 
         btnCreate.setText("Create");
-        btnCreate.addActionListener(evt -> btnCreateActionPerformed(evt));
+        btnCreate.addActionListener(this::btnCreateActionPerformed);
 
         btnClose.setText("Close");
-        btnClose.addActionListener(evt -> btnCloseActionPerformed(evt));
+        btnClose.addActionListener(this::btnCloseActionPerformed);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);

@@ -153,7 +153,7 @@ public class ConfigurationDialog extends JDialog {
         getContentPane().add(jLabel1, gridBagConstraints);
 
         minMemory.setModel(new javax.swing.SpinnerNumberModel(64, 64, 256, 64));
-        minMemory.addChangeListener(evt -> minMemoryStateChanged(evt));
+        minMemory.addChangeListener(this::minMemoryStateChanged);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 4;
@@ -171,7 +171,7 @@ public class ConfigurationDialog extends JDialog {
         getContentPane().add(jLabel2, gridBagConstraints);
 
         maxMemory.setModel(new javax.swing.SpinnerNumberModel(Integer.valueOf(1024), Integer.valueOf(512), null, Integer.valueOf(64)));
-        maxMemory.addChangeListener(evt -> maxMemoryChanged(evt));
+        maxMemory.addChangeListener(this::maxMemoryChanged);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 5;
@@ -208,7 +208,7 @@ public class ConfigurationDialog extends JDialog {
         getContentPane().add(jLabel5, gridBagConstraints);
 
         cacheSize.setModel(new javax.swing.SpinnerNumberModel(128, 48, 256, 16));
-        cacheSize.addChangeListener(evt -> cacheSizeStateChanged(evt));
+        cacheSize.addChangeListener(this::cacheSizeStateChanged);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 7;
@@ -226,7 +226,7 @@ public class ConfigurationDialog extends JDialog {
         getContentPane().add(jLabel7, gridBagConstraints);
 
         collectionCache.setModel(new javax.swing.SpinnerNumberModel(48, 48, 256, 16));
-        collectionCache.addChangeListener(evt -> collectionCacheStateChanged(evt));
+        collectionCache.addChangeListener(this::collectionCacheStateChanged);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 8;
@@ -292,7 +292,7 @@ public class ConfigurationDialog extends JDialog {
 
         dataDir.setMinimumSize(new java.awt.Dimension(180, 28));
         dataDir.setPreferredSize(new java.awt.Dimension(180, 28));
-        dataDir.addActionListener(evt -> dataDirActionPerformed(evt));
+        dataDir.addActionListener(this::dataDirActionPerformed);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 10;
@@ -317,11 +317,11 @@ public class ConfigurationDialog extends JDialog {
         btnPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT));
 
         btnCancel.setText("Cancel");
-        btnCancel.addActionListener(evt -> btnCancelActionPerformed(evt));
+        btnCancel.addActionListener(this::btnCancelActionPerformed);
         btnPanel.add(btnCancel);
 
         btnSave.setText("Save");
-        btnSave.addActionListener(evt -> saveConfig(evt));
+        btnSave.addActionListener(this::saveConfig);
         btnPanel.add(btnSave);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -335,7 +335,7 @@ public class ConfigurationDialog extends JDialog {
         getContentPane().add(btnPanel, gridBagConstraints);
 
         btnSelectDir.setText("Select");
-        btnSelectDir.addActionListener(evt -> btnSelectDirActionPerformed(evt));
+        btnSelectDir.addActionListener(this::btnSelectDirActionPerformed);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 10;

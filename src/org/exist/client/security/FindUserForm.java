@@ -80,14 +80,14 @@ public class FindUserForm extends javax.swing.JFrame implements DialogWithRespon
 
         btnOk.setText("Ok");
         btnOk.setEnabled(false);
-        btnOk.addActionListener(evt -> btnOkActionPerformed(evt));
+        btnOk.addActionListener(this::btnOkActionPerformed);
 
         btnCancel.setText("Cancel");
-        btnCancel.addActionListener(evt -> btnCancelActionPerformed(evt));
+        btnCancel.addActionListener(this::btnCancelActionPerformed);
 
         cmbUsername.setEditable(true);
         cmbUsername.setModel(getUsernameModel());
-        cmbUsername.addActionListener(evt -> cmbUsernameActionPerformed(evt));
+        cmbUsername.addActionListener(this::cmbUsernameActionPerformed);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);

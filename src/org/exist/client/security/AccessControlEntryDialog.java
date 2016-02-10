@@ -160,20 +160,20 @@ public class AccessControlEntryDialog extends javax.swing.JFrame implements Dial
         lblTarget.setText("Target:");
 
         cmbTarget.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "USER", "GROUP" }));
-        cmbTarget.addActionListener(evt -> cmbTargetActionPerformed(evt));
+        cmbTarget.addActionListener(this::cmbTargetActionPerformed);
 
         lblUsername.setText("Username:");
 
         cmbUsername.setEditable(true);
         cmbUsername.setModel(getUsernameModel());
-        cmbUsername.addActionListener(evt -> cmbUsernameActionPerformed(evt));
+        cmbUsername.addActionListener(this::cmbUsernameActionPerformed);
 
         lblGroupName.setText("Group:");
 
         cmbGroupName.setEditable(true);
         cmbGroupName.setModel(getGroupNameModel());
         cmbGroupName.setEnabled(false);
-        cmbGroupName.addActionListener(evt -> cmbGroupNameActionPerformed(evt));
+        cmbGroupName.addActionListener(this::cmbGroupNameActionPerformed);
 
         lblAccess.setText("Access:");
 
@@ -186,10 +186,10 @@ public class AccessControlEntryDialog extends javax.swing.JFrame implements Dial
         jScrollPane1.setViewportView(tblPermission);
 
         btnCreate.setText("Create");
-        btnCreate.addActionListener(evt -> btnCreateActionPerformed(evt));
+        btnCreate.addActionListener(this::btnCreateActionPerformed);
 
         btnClose.setText("Close");
-        btnClose.addActionListener(evt -> btnCloseActionPerformed(evt));
+        btnClose.addActionListener(this::btnCloseActionPerformed);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
