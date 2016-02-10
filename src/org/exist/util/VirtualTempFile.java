@@ -170,13 +170,10 @@ public class VirtualTempFile
 		        
 		        tempFile.deleteOnExit();
 		        LOG.debug("Writing to temporary file: " + tempFile.getName());
-		        
-		        final OutputStream tmpBuffer = new FileOutputStream(tempFile);
-		        try {
-		        	tmpBuffer.write(theBlock);
-		        } finally {
-		        	tmpBuffer.close();
-		        }
+
+				try (final OutputStream tmpBuffer = new FileOutputStream(tempFile)) {
+					tmpBuffer.write(theBlock);
+				}
 			} catch(final IOException ioe) {
 				// Do Nothing(R)
 			}

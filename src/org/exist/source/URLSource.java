@@ -181,11 +181,8 @@ public class URLSource extends AbstractSource {
 
     @Override
     public QName isModule() throws IOException {
-        final InputStream is = getInputStream();
-        try {
-            return getModuleDecl(is);
-        } finally {
-            is.close();
-        }
+		try (final InputStream is = getInputStream()) {
+			return getModuleDecl(is);
+		}
     }
 }

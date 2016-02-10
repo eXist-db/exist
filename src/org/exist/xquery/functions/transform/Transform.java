@@ -574,12 +574,9 @@ public class Transform extends BasicFunction {
 				long modified = connection.getLastModified();
 				if(!caching || (templates == null || modified > lastModified || modified == 0)) {
 					LOG.debug("compiling stylesheet " + url.toString());
-                    final InputStream is = connection.getInputStream();
-                    try {
-                        templates = factory.newTemplates(new StreamSource(is));
-                    } finally {
-                        is.close();
-                    }
+					try (final InputStream is = connection.getInputStream()) {
+						templates = factory.newTemplates(new StreamSource(is));
+					}
 				}
 				lastModified = modified;
 			}

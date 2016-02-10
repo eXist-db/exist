@@ -79,17 +79,14 @@ public class EmbeddedUpload {
         File tmp =null;
         try{
             tmp = File.createTempFile("EMBEDDED", "tmp");
-            final FileOutputStream fos = new FileOutputStream(tmp);
-            
-            try{
+
+            try (final FileOutputStream fos = new FileOutputStream(tmp)) {
                 // Transfer bytes from in to out
                 final byte[] buf = new byte[1024];
                 int len;
                 while ((len = is.read(buf)) > 0) {
                     fos.write(buf, 0, len);
                 }
-            } finally {
-                fos.close();
             }
             
             // Let database read file

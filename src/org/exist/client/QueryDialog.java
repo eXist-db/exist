@@ -397,29 +397,23 @@ public class QueryDialog extends JFrame {
 		chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 		chooser.addChoosableFileFilter(new MimeTypeFileFilter("application/xquery"));
 		
-		if (chooser.showDialog(this, Messages.getString("QueryDialog.opendialog"))
-			== JFileChooser.APPROVE_OPTION) {
+		if (chooser.showDialog(this, Messages.getString("QueryDialog.opendialog")) == JFileChooser.APPROVE_OPTION) {
 			final File selectedDir = chooser.getCurrentDirectory();
 			properties.setProperty("working-dir", selectedDir.getAbsolutePath());
 			final File file = chooser.getSelectedFile();
 			if(!file.canRead())
 				{JOptionPane.showInternalMessageDialog(this, Messages.getString("QueryDialog.cannotreadmessage")+" "+ file.getAbsolutePath(),
 					Messages.getString("QueryDialog.Error"), JOptionPane.ERROR_MESSAGE);}
-			try {
-				final BufferedReader reader = new BufferedReader(new FileReader(file));
-				try {
-					final StringBuilder buf = new StringBuilder();
-					String line;
-					while((line = reader.readLine()) != null) {
-						buf.append(line);
-						buf.append('\n');
-					}
-					query.setText(buf.toString());
-				} finally {
-					reader.close();
+
+			try (final BufferedReader reader = new BufferedReader(new FileReader(file))) {
+				final StringBuilder buf = new StringBuilder();
+				String line;
+				while ((line = reader.readLine()) != null) {
+					buf.append(line);
+					buf.append('\n');
 				}
-			} catch (final FileNotFoundException e) {
-				ClientFrame.showErrorMessage(e.getMessage(), e);
+				query.setText(buf.toString());
+
 			} catch (final IOException e) {
 				ClientFrame.showErrorMessage(e.getMessage(), e);
 			}

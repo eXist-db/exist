@@ -128,14 +128,11 @@ public class ClasspathHelper {
 
             final File cp = new File(exist, "classpath.txt");
             if (cp.exists()) {
-                final BufferedReader reader = new BufferedReader(new FileReader(cp));
-                try {
+                try (final BufferedReader reader = new BufferedReader(new FileReader(cp))) {
                     String line;
-                    while((line = reader.readLine()) != null) {
+                    while ((line = reader.readLine()) != null) {
                         classpath.addComponent(line);
                     }
-                } finally {
-                    reader.close();
                 }
             }
         }
