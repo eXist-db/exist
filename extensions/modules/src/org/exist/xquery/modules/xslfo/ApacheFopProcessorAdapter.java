@@ -1,13 +1,13 @@
 package org.exist.xquery.modules.xslfo;
 
 import java.io.OutputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Map.Entry;
 import java.util.Properties;
 import org.apache.avalon.framework.configuration.Configuration;
 import org.apache.avalon.framework.configuration.SAXConfigurationHandler;
-import org.apache.fop.apps.FOUserAgent;
-import org.apache.fop.apps.Fop;
-import org.apache.fop.apps.FopFactory;
+import org.apache.fop.apps.*;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.exist.storage.DBBroker;
@@ -22,28 +22,37 @@ public class ApacheFopProcessorAdapter implements ProcessorAdapter {
 
     private static final Logger LOG = LogManager.getLogger(ApacheFopProcessorAdapter.class);
 
-    private final FopFactory fopFactory = FopFactory.newInstance();
-
     @Override
-    public ContentHandler getContentHandler(DBBroker broker, NodeValue configFile, Properties parameters, String mimeType, OutputStream os) throws SAXException {
+    public ContentHandler getContentHandler(final DBBroker broker, final NodeValue configFile, final Properties parameters, final String mimeType, final OutputStream os) throws SAXException {
 
         // setup the FopFactory
-        if(configFile != null) {
-            FopConfigurationBuilder cfgBuilder = new FopConfigurationBuilder(broker);
-            Configuration cfg = cfgBuilder.buildFromNode(configFile);
-            fopFactory.setUserConfig(cfg);
+        final FopFactoryBuilder builder;
+        try {
+            if (configFile != null) {
+                final FopConfigurationBuilder cfgBuilder = new FopConfigurationBuilder(broker);
+                final Configuration cfg = cfgBuilder.buildFromNode(configFile);
+                final URI defaultBaseURI = new URI(configFile.getOwnerDocument().getBaseURI());
+                final EnvironmentProfile environment = EnvironmentalProfileFactory.createDefault(defaultBaseURI, null);
+                builder = new FopFactoryBuilder(environment).setConfiguration(cfg);
+            } else {
+                builder = new FopFactoryBuilder(new URI("xmldb:exist:///db"));
+            }
+
+            final FopFactory fopFactory = builder.build();
+
+            // setup the foUserAgent, using given parameters held in the
+            // transformer handler
+            final FOUserAgent foUserAgent = setupFOUserAgent(fopFactory.newFOUserAgent(), parameters);
+
+            // create new instance of FOP using the mimetype, the created user
+            // agent, and the output stream
+            final Fop fop = fopFactory.newFop(mimeType, foUserAgent, os);
+
+            // Obtain FOP's DefaultHandler
+            return fop.getDefaultHandler();
+        } catch(final URISyntaxException e) {
+            throw new SAXException("Unable to parse baseURI", e);
         }
-
-        // setup the foUserAgent, using given parameters held in the
-        // transformer handler
-        FOUserAgent foUserAgent = setupFOUserAgent(fopFactory.newFOUserAgent(), parameters);
-
-        // create new instance of FOP using the mimetype, the created user
-        // agent, and the output stream
-        Fop fop = fopFactory.newFop(mimeType, foUserAgent, os);
-        
-        // Obtain FOP's DefaultHandler
-        return fop.getDefaultHandler();
     }
 
     @Override
@@ -53,23 +62,21 @@ public class ApacheFopProcessorAdapter implements ProcessorAdapter {
     /**
      * Setup the UserAgent for FOP, from given parameters *
      *
-     * @param transformer
-     *            Created based on the XSLT, so containing any parameters to the
-     *            XSL-FO specified in the XQuery
+     * @param foUserAgent The user agent to set parameters for
      * @param parameters
      *            any user defined parameters to the XSL-FO process
      * @return FOUserAgent The generated FOUserAgent to include any parameters
      *         passed in
      */
-    private FOUserAgent setupFOUserAgent(FOUserAgent foUserAgent, Properties parameters) {
+    private FOUserAgent setupFOUserAgent(final FOUserAgent foUserAgent, final Properties parameters) {
 
         // setup the foUserAgent as per the parameters given
         foUserAgent.setProducer("eXist-db with Apache FOP");
 
         if(parameters != null) {
-            for(Entry paramEntry : parameters.entrySet()) {
-                String key = (String)paramEntry.getKey();
-                String value = (String)paramEntry.getValue();
+            for(final Entry paramEntry : parameters.entrySet()) {
+                final String key = (String)paramEntry.getKey();
+                final String value = (String)paramEntry.getValue();
 
                 if(key.equals("FOPauthor")) {
                     foUserAgent.setAuthor(value);
@@ -80,7 +87,7 @@ public class ApacheFopProcessorAdapter implements ProcessorAdapter {
                 } else if(key.equals("FOPdpi")) {
                     try {
                         foUserAgent.setTargetResolution(Integer.parseInt(value));
-                    } catch(NumberFormatException nfe) {
+                    } catch(final NumberFormatException nfe) {
                         LOG.warn("Unable to set DPI to: " + value);
                     }
                 }
@@ -96,21 +103,21 @@ public class ApacheFopProcessorAdapter implements ProcessorAdapter {
      */
     private class FopConfigurationBuilder extends org.apache.avalon.framework.configuration.DefaultConfigurationBuilder {
 
-        DBBroker broker = null;
+        private DBBroker broker = null;
 
-        public FopConfigurationBuilder(DBBroker broker) {
+        public FopConfigurationBuilder(final DBBroker broker) {
             super();
             this.broker = broker;
         }
 
         @SuppressWarnings("unused")
-        public FopConfigurationBuilder(DBBroker broker, final boolean enableNamespaces) {
+        public FopConfigurationBuilder(final DBBroker broker, final boolean enableNamespaces) {
             super(enableNamespaces);
             this.broker = broker;
         }
 
-        public Configuration buildFromNode(NodeValue configFile) throws SAXException {
-            SAXConfigurationHandler handler = getHandler();
+        public Configuration buildFromNode(final NodeValue configFile) throws SAXException {
+            final SAXConfigurationHandler handler = getHandler();
             handler.clear();
             configFile.toSAX(broker, handler, new Properties());
             return handler.getConfiguration();

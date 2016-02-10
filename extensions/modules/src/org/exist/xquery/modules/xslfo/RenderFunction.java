@@ -136,7 +136,6 @@ public class RenderFunction extends BasicFunction {
 
             NodeValue configFile = args.length == 4 ? (NodeValue)args[3].itemAt(0) : null;
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-
             ContentHandler contentHandler = adapter.getContentHandler(context.getBroker(), configFile, parameters, mimeType, baos);
 
             // process the XSL-FO

@@ -69,10 +69,12 @@
     <target name="check-xslfo-libs-available"> 
       <condition property="libs.available.xslfo">
         <and>
-          <available file="${modules.lib}/fop.jar"/>
-          <available file="${modules.lib}/batik-all-1.7.jar"/>
-          <available file="${modules.lib}/xmlgraphics-commons-1.5.jar"/>
-          <available file="${modules.lib}/avalon-framework-4.2.0.jar"/>
+          <available file="${modules.lib}/fop-2.1.jar"/>
+          <available file="${modules.lib}/batik-all-1.8.jar"/>
+          <available file="${modules.lib}/xmlgraphics-commons-2.1.jar"/>
+          <available file="${modules.lib}/avalon-framework-api-4.3.1.jar"/>
+          <available file="${modules.lib}/avalon-framework-impl-4.3.1.jar"/>
+          <available file="${modules.lib}/fontbox-1.8.5.jar"/>
         </and>
       </condition>
     </target>
@@ -89,9 +91,10 @@
                 <include name="**/batik-all-*.jar"/>
                 <include name="**/xmlgraphics-commons-*.jar"/>
                 <include name="**/avalon-framework-*.jar"/>
+                <include name="**/fontbox-*.jar"/>
             </patternset>
-        </fetch>        
-
+        </fetch>
+        <move file="${modules.lib}/fop.jar" tofile="${modules.lib}/fop-2.1.jar"/>
     </target>
 
     <!-- 
