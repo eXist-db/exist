@@ -270,7 +270,7 @@ public class XQueryTriggerTest {
 
     @AfterClass
     public static void shutdownDB() throws XMLDBException {
-        //TestUtils.cleanupDB();
+        TestUtils.cleanupDB();
         final Collection root = DatabaseManager.getCollection("xmldb:exist://" + XmldbURI.ROOT_COLLECTION, "admin", "");
         final DatabaseInstanceManager mgr = (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
         mgr.shutdown();
