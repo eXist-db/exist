@@ -119,7 +119,7 @@ public class SAXAdapter implements ContentHandler, LexicalHandler {
 
         if(namespaces != null) {
             for(final Map.Entry<String, String> entry : namespaces.entrySet()) {
-                builder.namespaceNode(entry.getKey().toString(), entry.getValue().toString());
+                builder.namespaceNode(entry.getKey(), entry.getValue());
             }
         }
 

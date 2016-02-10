@@ -243,7 +243,7 @@ public class DeadlockDetection {
         
         final Map<String, LockInfo> threads = getWaitingThreads();
         for (final Map.Entry<String, LockInfo> entry : threads.entrySet()) {
-            debug(writer, entry.getKey().toString(), entry.getValue());
+            debug(writer, entry.getKey(), entry.getValue());
         }
     }
 }

@@ -103,7 +103,7 @@ public class CDATAConstructor extends NodeConstructor {
     }
     
     public String toString() {
-        return "<![CDATA[" + cdata.toString() + "]]>";
+        return "<![CDATA[" + cdata + "]]>";
     }
     
 }

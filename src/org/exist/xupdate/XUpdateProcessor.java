@@ -745,7 +745,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 			Map.Entry<String, Object> entry;
 			for (final Iterator<Map.Entry<String, Object>> i = variables.entrySet().iterator(); i.hasNext(); ) {
 				entry = (Map.Entry<String, Object>) i.next();
-				context.declareVariable(entry.getKey().toString(), entry.getValue());
+				context.declareVariable(entry.getKey(), entry.getValue());
 			}
 			// TODO(pkaminsk2): why replicate XQuery.compile here?
 			final XQueryLexer lexer = new XQueryLexer(context, new StringReader(select));

@@ -193,7 +193,7 @@ public abstract class Modification {
 	protected void declareVariables(XQueryContext context) throws XPathException {
 		for (final Iterator<Map.Entry<String, Object>> i = variables.entrySet().iterator(); i.hasNext(); ) {
 			final Map.Entry<String, Object> entry = (Map.Entry<String, Object>) i.next();
-			context.declareVariable(entry.getKey().toString(), entry.getValue());
+			context.declareVariable(entry.getKey(), entry.getValue());
 		}
 	}
 

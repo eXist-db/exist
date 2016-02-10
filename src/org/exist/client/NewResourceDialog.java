@@ -311,7 +311,7 @@ public class NewResourceDialog extends JFrame {
             final Collection collection = client.current;
             
             final Resource resource = collection.createResource(resName, resType);
-            resource.setContent(resourceContent.toString());
+            resource.setContent(resourceContent);
             ((EXistResource)resource).setMimeType(resourceType.getMimeType());
             collection.storeResource(resource);
             collection.close();
