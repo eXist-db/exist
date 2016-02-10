@@ -425,7 +425,7 @@ public class GetFragmentBetween extends Function {
       if (parentNodeType == Node.DOCUMENT_NODE) {
         final String nsUri = n.getNamespaceURI();
         if (nsUri != null) {
-          xpath.append("[@" + "xmlns" + " eq \"" + nsUri + "\"]");
+          xpath.append("[@" + "xmlns" + " eq \"").append(nsUri).append("\"]");
         }
       }
     }
@@ -435,7 +435,8 @@ public class GetFragmentBetween extends Function {
       final String fullNodeName = getFullNodeName(attr);
       final String attrNodeValue = attr.getNodeValue();
       if (!"".equals(fullNodeName) && (! (fullNodeName == null)))
-        {xpath.append("[@" + fullNodeName + " eq \"" + attrNodeValue + "\"]");}
+        {
+          xpath.append("[@").append(fullNodeName).append(" eq \"").append(attrNodeValue).append("\"]");}
     }
     return xpath;
   }

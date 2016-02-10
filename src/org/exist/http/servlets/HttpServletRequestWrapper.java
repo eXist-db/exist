@@ -980,8 +980,7 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 				}
 			}
 
-			buf.append(	System.getProperty("line.separator") +
-						System.getProperty("line.separator") );
+			buf.append(System.getProperty("line.separator")).append(System.getProperty("line.separator"));
 
 			return buf.toString();
 
@@ -997,8 +996,7 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 				ioe.printStackTrace();
 			}
 			
-			buf.append(	System.getProperty("line.separator") +
-						System.getProperty("line.separator") );
+			buf.append(System.getProperty("line.separator")).append(System.getProperty("line.separator"));
 			return buf.toString();
 
 		} else {

@@ -106,7 +106,7 @@ public class LauncherWrapper {
         opts.append('"').append(home).append('"');
 
         opts.append(" -Djava.endorsed.dirs=");
-        opts.append('"').append(home + "/lib/endorsed").append('"');
+        opts.append('"').append(home).append("/lib/endorsed").append('"');
 
         return opts.toString();
     }

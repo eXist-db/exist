@@ -465,7 +465,7 @@ public class CollectionXConf
 				xconf.append(" ");
 				final String namespaceLocalName = entry.getKey();
 				final String namespaceURL = entry.getValue();
-				xconf.append("xmlns:" + namespaceLocalName + "=\"" + namespaceURL + "\"");
+				xconf.append("xmlns:").append(namespaceLocalName).append("=\"").append(namespaceURL).append("\"");
 			}
 		}
 		xconf.append(">");

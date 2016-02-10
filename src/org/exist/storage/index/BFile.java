@@ -420,7 +420,7 @@ public class BFile extends BTree {
             {buf.append("N/A");}
         else
             {buf.append(nf.format(dataCache.getUsedBuffers()/(float)dataCache.getBuffers()));}
-        buf.append(" (" + dataCache.getUsedBuffers() + " out of " + dataCache.getBuffers() + ")");
+        buf.append(" (").append(dataCache.getUsedBuffers()).append(" out of ").append(dataCache.getBuffers()).append(")");
         //buf.append(dataCache.getBuffers()).append(" / ");
         //buf.append(dataCache.getUsedBuffers()).append(" / ");
         buf.append(" Cache efficiency : ");

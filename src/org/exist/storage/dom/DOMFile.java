@@ -1041,11 +1041,11 @@ public class DOMFile extends BTree implements Lockable {
 
     public String debugPageContents(DOMPage page) {
         final StringBuilder buf = new StringBuilder();
-        buf.append("Page " + page.getPageNum() + ": ");
+        buf.append("Page ").append(page.getPageNum()).append(": ");
         short count = 0;
         final int dataLength = page.getPageHeader().getDataLength();
         for (int pos = 0; pos < dataLength; count++) {
-            buf.append(pos + "/");
+            buf.append(pos).append("/");
             final short tupleID = ByteConversion.byteToShort(page.data, pos);
             pos += LENGTH_TID;
             buf.append(ItemId.getId(tupleID));
@@ -1063,7 +1063,7 @@ public class DOMFile extends BTree implements Lockable {
                 pos += LENGTH_DATA_LENGTH;
                 if (valueLength < 0) {
                     LOG.warn("Illegal length: " + valueLength);
-                    return buf.append("[Illegal length : " + valueLength + "] ").toString();
+                    return buf.append("[Illegal length : ").append(valueLength).append("] ").toString();
                     //Probably unable to continue...
                 } else if (ItemId.isRelocated(tupleID)) {
                     //TODO : output to buffer ?
@@ -1088,14 +1088,14 @@ public class DOMFile extends BTree implements Lockable {
                                 final NodeId nodeId = ((NativeBroker)owner).getBrokerPool()
                                     .getNodeFactory().createFromData(dlnLen, page.data, readOffset);
                                 readOffset += nodeId.size();
-                                buf.append("(" + nodeId.toString() + ")");
+                                buf.append("(").append(nodeId.toString()).append(")");
                                 final short attributes = ByteConversion.byteToShort(page.data, readOffset);
-                                buf.append(" children: " + children);
-                                buf.append(" attributes: " + attributes);
+                                buf.append(" children: ").append(children);
+                                buf.append(" attributes: ").append(attributes);
                             } catch (final Exception e) {
                                 //TODO : more friendly message. Provide the array of bytes ?
-                                buf.append("(Unable to read the node ID at: " + readOffset);
-                                buf.append(" children : " + children);
+                                buf.append("(Unable to read the node ID at: ").append(readOffset);
+                                buf.append(" children : ").append(children);
                                 //Probably a wrong offset so... don't read it
                                 buf.append(" attributes : unknown");
                             }
@@ -1121,7 +1121,7 @@ public class DOMFile extends BTree implements Lockable {
                                 final NodeId nodeId = ((NativeBroker)owner).getBrokerPool()
                                     .getNodeFactory().createFromData(dlnLen, page.data, readOffset);
                                 readOffset += nodeId.size();
-                                buf.append("(" + nodeId.toString() + ")");
+                                buf.append("(").append(nodeId.toString()).append(")");
                                 final ByteArrayOutputStream os = new ByteArrayOutputStream();
                                 os.write(page.data, readOffset, valueLength - (readOffset - pos));
 
@@ -1130,10 +1130,10 @@ public class DOMFile extends BTree implements Lockable {
                                     value = value.substring(0,8) + "..." + value.substring(value.length() - 8);
                                 }
 
-                                buf.append(":'" + value + "'");
+                                buf.append(":'").append(value).append("'");
                             } catch (final Exception e) {
                                 //TODO : more friendly message. Provide the array of bytes ?
-                                buf.append("(unable to read the node ID at : " + readOffset);
+                                buf.append("(unable to read the node ID at : ").append(readOffset);
                             }
                         }
                         break;
@@ -1156,7 +1156,7 @@ public class DOMFile extends BTree implements Lockable {
                                 final NodeId nodeId = ((NativeBroker)owner).getBrokerPool()
                                     .getNodeFactory().createFromData(dlnLen, page.data, readOffset);
                                 readOffset += nodeId.size();
-                                buf.append("(" + nodeId.toString() + ")");
+                                buf.append("(").append(nodeId.toString()).append(")");
                                 readOffset += Signatures.getLength(idSizeType);
                                 if (hasNamespace) {
                                     //Untested
@@ -1170,7 +1170,7 @@ public class DOMFile extends BTree implements Lockable {
 
                                     final String NsURI = ((NativeBroker)owner).getBrokerPool()
                                         .getSymbols().getNamespace(NSId);
-                                    buf.append(prefix + "{" + NsURI + "}");
+                                    buf.append(prefix).append("{").append(NsURI).append("}");
                                 }
                                 final ByteArrayOutputStream os = new ByteArrayOutputStream();
                                 os.write(page.data, readOffset, valueLength - (readOffset - pos));
@@ -1180,10 +1180,10 @@ public class DOMFile extends BTree implements Lockable {
                                     value = value.substring(0,8) + "..." + value.substring(value.length() - 8);
                                 }
 
-                                buf.append(":'" + value + "'");
+                                buf.append(":'").append(value).append("'");
                             } catch (final Exception e) {
                                 //TODO : more friendly message. Provide the array of bytes ?
-                                buf.append("(unable to read the node ID at : " + readOffset);
+                                buf.append("(unable to read the node ID at : ").append(readOffset);
                             }
                         }
                             buf.append("] ");
@@ -1197,13 +1197,12 @@ public class DOMFile extends BTree implements Lockable {
                 pos += valueLength;
             }
         }
-        buf.append("; records in page: " + count +
-            " (header says: " + page.getPageHeader().getRecordCount() + ")");
-        buf.append("; currentTupleID: " + page.getPageHeader().getCurrentTupleID());
-        buf.append("; data length: " + page.getPageHeader().getDataLength());
+        buf.append("; records in page: ").append(count).append(" (header says: ").append(page.getPageHeader().getRecordCount()).append(")");
+        buf.append("; currentTupleID: ").append(page.getPageHeader().getCurrentTupleID());
+        buf.append("; data length: ").append(page.getPageHeader().getDataLength());
         for (int i = page.data.length ; i > 0 ; i--) {
             if (page.data[i - 1] != 0) {
-                buf.append(" (last non-zero byte: " + i + ")");
+                buf.append(" (last non-zero byte: ").append(i).append(")");
                 break;
             }
         }
@@ -1349,7 +1348,7 @@ public class DOMFile extends BTree implements Lockable {
             {buf.append("N/A");}
         else
             {buf.append(nf1.format(dataCache.getUsedBuffers()/(float)dataCache.getBuffers()));}
-        buf.append(" (" + nf2.format(dataCache.getUsedBuffers()) + " out of " + nf2.format(dataCache.getBuffers()) + ")");
+        buf.append(" (").append(nf2.format(dataCache.getUsedBuffers())).append(" out of ").append(nf2.format(dataCache.getBuffers())).append(")");
         buf.append(" Cache efficiency : ");
         if (dataCache.getHits() == 0 && dataCache.getFails() == 0)
         {buf.append("N/A");}

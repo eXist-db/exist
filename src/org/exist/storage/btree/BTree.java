@@ -2531,7 +2531,7 @@ public class BTree extends Paged implements Lockable {
             {buf.append("N/A");}
         else
             {buf.append(nf.format(cache.getUsedBuffers()/(float)cache.getBuffers()));}
-        buf.append(" (" + cache.getUsedBuffers() + " out of " + cache.getBuffers() + ")");
+        buf.append(" (").append(cache.getUsedBuffers()).append(" out of ").append(cache.getBuffers()).append(")");
         buf.append(" Cache efficiency : ");
         if (cache.getHits() == 0 && cache.getFails() == 0)
             {buf.append("N/A");}

@@ -104,7 +104,7 @@ public class DumpFilter implements Filter {
         while (names.hasMoreElements()) {
             final String name = (String) names.nextElement();
             buffer = new StringBuffer();
-            buffer.append("         parameter=" + name + "=");
+            buffer.append("         parameter=").append(name).append("=");
             final String values[] = request.getParameterValues(name);
             for (int i = 0; i < values.length; i++) {
                 if (i > 0)
