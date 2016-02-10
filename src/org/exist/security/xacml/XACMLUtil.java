@@ -399,12 +399,14 @@ public class XACMLUtil implements UpdateListener
 		final Element root = policyDoc.getDocumentElement();
 		final String name = root.getTagName();
 
-		if(name.equals(XACMLConstants.POLICY_SET_ELEMENT_LOCAL_NAME))
-			{return PolicySet.getInstance(root, pdp.getPDPConfig().getPolicyFinder());}
-		else if(name.equals(XACMLConstants.POLICY_ELEMENT_LOCAL_NAME))
-			{return Policy.getInstance(root);}
-		else
-			{throw new ParsingException("The root element of the policy document must be '" + XACMLConstants.POLICY_SET_ID_LOCAL_NAME + "' or '" + XACMLConstants.POLICY_SET_ID_LOCAL_NAME + "', was: '" + name + "'");}
+		switch (name) {
+			case XACMLConstants.POLICY_SET_ELEMENT_LOCAL_NAME:
+				return PolicySet.getInstance(root, pdp.getPDPConfig().getPolicyFinder());
+			case XACMLConstants.POLICY_ELEMENT_LOCAL_NAME:
+				return Policy.getInstance(root);
+			default:
+				throw new ParsingException("The root element of the policy document must be '" + XACMLConstants.POLICY_SET_ID_LOCAL_NAME + "' or '" + XACMLConstants.POLICY_SET_ID_LOCAL_NAME + "', was: '" + name + "'");
+		}
 	}
 	
 	/**
