@@ -48,11 +48,7 @@ public class HttpAccount {
                         }
                     }
                 }
-            } catch(final SecurityException e) {
-            } catch(final IllegalArgumentException e) {
-            } catch(final IllegalAccessException e) {
-            } catch(final NoSuchMethodException e) {
-            } catch(final InvocationTargetException e) {
+            } catch(final SecurityException | InvocationTargetException | NoSuchMethodException | IllegalAccessException | IllegalArgumentException e) {
             }
         }
         return null;

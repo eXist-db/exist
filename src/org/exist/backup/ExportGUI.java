@@ -558,13 +558,9 @@ public class ExportGUI extends javax.swing.JFrame
             progress.setString( "" );
             return( errors );
         }
-        catch( final EXistException e ) {
+        catch( final EXistException | PermissionDeniedException e ) {
             System.err.println( "ERROR: Failed to retrieve database broker: " + e.getMessage() );
-        }
-        catch (final PermissionDeniedException pde) {
-            System.err.println( "ERROR: Failed to retrieve database broker: " + pde.getMessage() );
-        }
-        catch( final TerminatedException e ) {
+        } catch( final TerminatedException e ) {
             System.err.println( "WARN: Check terminated by db." );
         }
         finally {

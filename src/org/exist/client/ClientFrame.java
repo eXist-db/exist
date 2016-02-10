@@ -1948,18 +1948,9 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
                 if(files != null) {
                     uploadFiles(files.toArray(new File[files.size()]));
                 }
-            } catch(final URISyntaxException use) {
+            } catch(final URISyntaxException | IOException | UnsupportedFlavorException | ClassNotFoundException use) {
                 System.err.println("An exception occurred while dragging and dropping files: " + use.getMessage());
                 use.printStackTrace();
-            } catch(final ClassNotFoundException cnfe) {
-                System.err.println("An exception occurred while dragging and dropping files: " + cnfe.getMessage());
-                cnfe.printStackTrace();
-            } catch(final UnsupportedFlavorException ufe) {
-                System.err.println("An exception occurred while dragging and dropping files: " + ufe.getMessage());
-                ufe.printStackTrace();
-            } catch(final IOException ioe) {
-                System.err.println("An exception occurred while dragging and dropping files: " + ioe.getMessage());
-                ioe.printStackTrace();
             }
         }
 

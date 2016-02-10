@@ -798,9 +798,7 @@ public class BTree extends Paged implements Lockable {
     protected void undoInsertValue(InsertValueLoggable loggable) throws LogException {
         try {
             removeValue(null, loggable.key);
-        } catch (final BTreeException e) {
-            LOG.error("Failed to undo: " + loggable.dump(), e);
-        } catch (final IOException e) {
+        } catch (final BTreeException | IOException e) {
             LOG.error("Failed to undo: " + loggable.dump(), e);
         }
     }
@@ -830,9 +828,7 @@ public class BTree extends Paged implements Lockable {
     protected void undoUpdateValue(UpdateValueLoggable loggable) throws LogException {
         try {
             addValue(null, loggable.key, loggable.oldPointer);
-        } catch (final BTreeException e) {
-            LOG.error("Failed to undo: " + loggable.dump(), e);
-        } catch (final IOException e) {
+        } catch (final BTreeException | IOException e) {
             LOG.error("Failed to undo: " + loggable.dump(), e);
         }
     }
@@ -850,9 +846,7 @@ public class BTree extends Paged implements Lockable {
     protected void undoRemoveValue(RemoveValueLoggable loggable) throws LogException {
         try {
             addValue(null, loggable.oldValue, loggable.oldPointer);
-        } catch (final BTreeException e) {
-            LOG.error("Failed to undo: " + loggable.dump(), e);
-        } catch (final IOException e) {
+        } catch (final BTreeException | IOException e) {
             LOG.error("Failed to undo: " + loggable.dump(), e);
         }
     }

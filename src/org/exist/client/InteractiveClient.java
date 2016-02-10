@@ -1045,8 +1045,6 @@ public class InteractiveClient {
                         }
                         command.append(lastLine);
                     }
-                } catch (final EOFException e) {
-                    //TODO report error?
                 } catch (final IOException e) {
                     //TODO report error?
                 }
@@ -1201,8 +1199,6 @@ public class InteractiveClient {
                 thread.join();
             } catch (final InterruptedException e) {
             }
-        } catch (final FileNotFoundException e) {
-            System.err.println("ERROR: " + e);
         } catch (final IOException e) {
             System.err.println("ERROR: " + e);
         }
@@ -2595,8 +2591,6 @@ public class InteractiveClient {
                 
             } catch (final EOFException e) {
                 break;
-            } catch (final IOException ioe) {
-                System.err.println(ioe);
             } catch (final Exception e) {
                 System.err.println(e);
             }
