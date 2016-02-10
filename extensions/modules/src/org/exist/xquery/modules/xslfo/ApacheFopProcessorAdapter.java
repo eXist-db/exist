@@ -35,7 +35,7 @@ public class ApacheFopProcessorAdapter implements ProcessorAdapter {
                 final EnvironmentProfile environment = EnvironmentalProfileFactory.createDefault(defaultBaseURI, null);
                 builder = new FopFactoryBuilder(environment).setConfiguration(cfg);
             } else {
-                builder = new FopFactoryBuilder(new URI("/db"));
+                builder = new FopFactoryBuilder(new URI("xmldb:exist:///db"));
             }
 
             final FopFactory fopFactory = builder.build();
