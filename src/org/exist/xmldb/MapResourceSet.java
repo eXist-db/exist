@@ -49,9 +49,7 @@ public class MapResourceSet implements ResourceSet
 
     public MapResourceSet(final Map<String, Resource> resources) {
         this.resources = resources;
-        final Iterator<Resource> iter = resources.values().iterator();
-        while (iter.hasNext()) {
-            final Resource res = iter.next();
+        for (Resource res : resources.values()) {
             resourcesVector.add(res);
         }
     }
