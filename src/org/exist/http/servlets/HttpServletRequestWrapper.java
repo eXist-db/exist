@@ -961,7 +961,7 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 			
 			// Also return the content parameters, these are not part 
 			// of the standard HttpServletRequest.toString() output
-			final StringBuffer buf = new StringBuffer( request.toString());
+			final StringBuilder buf = new StringBuilder( request.toString());
 
 			final Set<Map.Entry<String, Vector<RequestParamater>>> setParams = params.entrySet();
 

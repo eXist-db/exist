@@ -146,7 +146,7 @@ public class DatabaseInterface
 			}
 			catch (final XMLDBException e)
 			{
-				final StringBuffer message = new StringBuffer();
+				final StringBuilder message = new StringBuilder();
 				message.append("Error saving policy '");
 				message.append(node.getId());
 				message.append("' ");

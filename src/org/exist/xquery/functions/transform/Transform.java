@@ -676,7 +676,7 @@ public class Transform extends BasicFunction {
 			
 			if (numSimplifiedComponents == 0) {return "/";}
 			
-			final StringBuffer	b = new StringBuffer(path.length());
+			final StringBuilder b = new StringBuilder(path.length());
 			for(int x = 0; x < numSimplifiedComponents; x++) {
 				b.append("/").append(simplifiedComponents[x]);
 			}

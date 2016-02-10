@@ -175,7 +175,7 @@ public class DumpFilter implements Filter {
 
         if (filterConfig == null)
             {return ("RequestDumperFilter()");}
-        final StringBuffer sb = new StringBuffer("RequestDumperFilter(");
+        final StringBuilder sb = new StringBuilder("RequestDumperFilter(");
         sb.append(filterConfig);
         sb.append(")");
         return (sb.toString());

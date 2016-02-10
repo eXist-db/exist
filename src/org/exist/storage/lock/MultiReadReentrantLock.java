@@ -199,7 +199,7 @@ public class MultiReadReentrantLock implements Lock {
             if (thisThread != writeLockedThread) {
                 while (thisThread != writeLockedThread && deadlockedThreads == null) {
                     if (LockOwner.DEBUG) {
-                        final StringBuffer buf = new StringBuffer("Waiting for write: ");
+                        final StringBuilder buf = new StringBuilder("Waiting for write: ");
                         for (int i = 0; i < waitingForWriteLock.size(); i++) {
                             buf.append(' ');
                             buf.append((waitingForWriteLock.get(i)).getThread().getName());
