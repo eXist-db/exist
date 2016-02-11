@@ -416,17 +416,8 @@ public class RpcConnection implements RpcAPI {
     }
 
     protected String formatErrorMsg(final String type, final String message) {
-        final StringBuilder buf = new StringBuilder();
-        buf.append("<exist:result xmlns:exist=\"" + Namespaces.EXIST_NS + "\" ");
-        buf.append("hitCount=\"0\">");
-        buf.append('<');
-        buf.append(type);
-        buf.append('>');
-        buf.append(message);
-        buf.append("</");
-        buf.append(type);
-        buf.append("></exist:result>");
-        return buf.toString();
+        return ("<exist:result xmlns:exist=\"" + Namespaces.EXIST_NS + "\" ") + "hitCount=\"0\">" +
+                '<' + type + '>' +  message + "</" + type + "></exist:result>";
     }
 
     @Override

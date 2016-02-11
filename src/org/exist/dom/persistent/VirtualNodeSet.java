@@ -700,8 +700,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
         if(realSet == null) {
             return "Virtual#unknown";
         }
-        final StringBuilder result = new StringBuilder();
         //result.append("Virtual#").append(super.toString());
-        return result.toString();
+        return "";
     }
 }

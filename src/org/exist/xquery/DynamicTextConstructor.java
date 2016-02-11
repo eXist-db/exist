@@ -127,11 +127,7 @@ public class DynamicTextConstructor extends NodeConstructor {
     }
     
     public String toString() {
-    	final StringBuilder result = new StringBuilder();
-    	result.append("text {");        
-    	result.append(content.toString());        
-    	result.append("}");
-    	return result.toString();
+        return "text {" + content.toString() + "}";
     }    
 
     public void resetState(boolean postOptimization) {

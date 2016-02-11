@@ -208,11 +208,6 @@ public class Replace extends Modification {
 	}
 	
 	public String toString() {
-		final StringBuilder result = new StringBuilder();
-		result.append("update replace ");		
-		result.append(select.toString());
-		result.append(" with ");
-		result.append(value.toString());
-		return result.toString();
-	}	
+        return "update replace " + select.toString() + " with " + value.toString();
+	}
 }

@@ -167,14 +167,7 @@ public class AttrImpl extends NodeImpl implements Attr {
 
     @Override
     public String toString() {
-        final StringBuilder result = new StringBuilder();
-        result.append("in-memory#");
-        result.append("attribute {");
-        result.append(getQName().getStringValue());
-        result.append("} {");
-        result.append(getValue());
-        result.append("} ");
-        return result.toString();
+        return "in-memory#attribute {" + getQName().getStringValue() + "} {" + getValue() + "} ";
     }
 
     @Override

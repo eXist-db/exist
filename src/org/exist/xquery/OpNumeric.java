@@ -210,11 +210,7 @@ public class OpNumeric extends BinaryOp {
     }
 
     public String toString() {
-        final StringBuilder result = new StringBuilder();
-        result.append(getLeft().toString());
-        result.append(' ').append(Constants.OPS[operator]).append(' ');
-        result.append(getRight());
-        return result.toString();
+        return getLeft().toString() + ' ' + Constants.OPS[operator] + ' ' + getRight();
     }
 
     // excerpt from operator mapping table in XQuery 1.0 section B.2

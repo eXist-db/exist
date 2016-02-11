@@ -336,16 +336,7 @@ public abstract class Modification {
 	}
 	
 	public String toString() {
-		final StringBuilder buf = new StringBuilder();
-		buf.append("<xu:");
-		buf.append(getName());
-		buf.append(" select=\"");
-		buf.append(selectStmt);
-		buf.append("\">");
-//		buf.append(XMLUtil.dump(content));
-		buf.append("</xu:");
-		buf.append(getName());
-		buf.append(">");
-		return buf.toString();
+		//		buf.append(XMLUtil.dump(content));
+		return "<xu:" + getName() + " select=\"" + selectStmt + "\">" + "</xu:" +	getName() +	">";
 	}
 }

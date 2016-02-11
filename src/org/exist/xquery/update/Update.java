@@ -221,11 +221,6 @@ public class Update extends Modification {
 	}
 	
 	public String toString() {
-		final StringBuilder result = new StringBuilder();
-		result.append("update value" );		
-		result.append(select.toString());
-		result.append(" with ");
-		result.append(value.toString());
-		return result.toString();
+        return "update value" + select.toString() + " with " + value.toString();
 	}	
 }

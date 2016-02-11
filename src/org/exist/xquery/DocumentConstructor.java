@@ -158,12 +158,8 @@ public class DocumentConstructor extends NodeConstructor {
     }
 
     public String toString() {
-        final StringBuilder result = new StringBuilder();
-        result.append("document {");
         //TODO : is this the required syntax ?
-        result.append(content.toString());
-        result.append("} ");
-        return result.toString();
+        return "document {" +  content.toString() + "} ";
     }
 
     public void resetState(boolean postOptimization) {

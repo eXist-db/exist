@@ -121,15 +121,7 @@ public class NamespaceNode extends NodeImpl implements Attr {
 
     @Override
     public String toString() {
-        final StringBuilder result = new StringBuilder();
-        result.append("in-memory#");
-        result.append("namespace {");
-        result.append(getPrefix());
-        result.append("}");
-        result.append("{");
-        result.append(getValue());
-        result.append("} ");
-        return result.toString();
+        return "in-memory#namespace {" + getPrefix() + "}{" + getValue() + "} ";
     }
 
     @Override

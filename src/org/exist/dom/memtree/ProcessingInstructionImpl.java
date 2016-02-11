@@ -124,14 +124,7 @@ public class ProcessingInstructionImpl extends NodeImpl implements ProcessingIns
 
     @Override
     public String toString() {
-        final StringBuilder result = new StringBuilder();
-        result.append("in-memory#");
-        result.append("processing-instruction {");
-        result.append(getTarget());
-        result.append("} {");
-        result.append(getData());
-        result.append("} ");
-        return result.toString();
+        return "in-memory#processing-instruction {" + getTarget() + "} {" + getData() + "} ";
     }
 
     @Override

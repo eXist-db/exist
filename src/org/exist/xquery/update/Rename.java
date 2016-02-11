@@ -207,12 +207,7 @@ public class Rename extends Modification {
 	}
 	
 	public String toString() {
-		final StringBuilder result = new StringBuilder();
-		result.append("update rename ");		
-		result.append(select.toString());		
-		result.append(" as ");		
-		result.append(value.toString());
-		return result.toString();
-	}	
+        return "update rename " + select.toString() + " as " + value.toString();
+	}
 
 }

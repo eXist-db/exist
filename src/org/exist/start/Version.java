@@ -65,14 +65,7 @@ public class Version {
      * @return string representation of this version
      */
     public String toString() {
-        final StringBuilder sb = new StringBuilder(10);
-        sb.append(_version);
-        sb.append('.');
-        sb.append(_revision);
-        sb.append('.');
-        sb.append(_subrevision);
-        sb.append(_suffix);
-        return sb.toString();
+        return String.valueOf(_version) + '.' + _revision + '.' + _subrevision + _suffix;
     }
     
     // java.lang.Comparable is Java 1.2! Cannot use it

@@ -66,12 +66,10 @@ public class GeneralRangeIndexSpec extends RangeIndexSpec {
     }
     
     public String toString() {
-		final StringBuilder result = new StringBuilder("General range index\n");
-		result.append("\ttype : ").append(Type.getTypeName(this.type)).append('\n');
-		result.append("\tpath : ").append(path.toString()).append('\n');
-		result.append("\thas Qname index : ").append(hasQNameIndex(this.type)).append('\n');
-		result.append("\thas Qname or value index : ").append(hasQNameOrValueIndex(this.type)).append('\n');
-		result.append("\thas range index : ").append(hasRangeIndex(this.type)).append('\n');			
-  	 	return result.toString();
-    }    
+        return "General range index\n" + "\ttype : " + Type.getTypeName(this.type) + '\n' +
+                "\tpath : " + path.toString() + '\n' +
+                "\thas Qname index : " + hasQNameIndex(this.type) + '\n' +
+                "\thas Qname or value index : " + hasQNameOrValueIndex(this.type) + '\n' +
+                "\thas range index : " + hasRangeIndex(this.type) + '\n';
+    }
 }

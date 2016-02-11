@@ -155,11 +155,7 @@ public class EnclosedExpr extends PathExpr {
     }
 
     public String toString() {
-        final StringBuilder result = new StringBuilder();
-        result.append("{");
-        result.append(super.toString());
-        result.append("}");
-        return result.toString();
+        return "{" + super.toString() + "}";
     }
 
     public void accept(ExpressionVisitor visitor) {

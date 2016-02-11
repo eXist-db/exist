@@ -539,14 +539,7 @@ public class DLNBase {
     }
 
     public String debug() {
-        final StringBuilder buf = new StringBuilder();
-        buf.append(toString());
-        buf.append(" = ");
-        buf.append(toBitString());
-        buf.append(" [");
-        buf.append(bitIndex + 1);
-        buf.append(']');
-        return buf.toString();
+        return toString() + " = " + toBitString() + " [" +  (bitIndex + 1) + ']';
     }
 
     @Override
