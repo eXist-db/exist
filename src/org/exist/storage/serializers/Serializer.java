@@ -320,6 +320,7 @@ public abstract class Serializer implements XMLReader {
 				outputProperties.put(prop, value);
 				break;
 		}
+
 	}
 
 	public String getProperty(String key, String defaultValue) {

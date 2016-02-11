@@ -219,11 +219,9 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, LifeCyc
 			final URL url = e.nextElement();
 			try (final InputStream is = url.openStream() ;
 				final BufferedReader r = new BufferedReader(new InputStreamReader(is, "UTF-8")) ){
-				while (true) {
-					String line = r.readLine();
-					if (line == null) {
-						break;
-					}
+				String line;
+				while ((line = r.readLine()) != null) {
+
 					final int comment = line.indexOf('#');
 					if (comment >= 0) {
 						line = line.substring(0, comment);
