@@ -184,23 +184,23 @@ public class CreateBackupDialog extends JPanel {
         final String[] childCollections = collection.listChildCollections();
         Collection child = null;
 
-        for(int i = 0; i < childCollections.length; i++ ) {
+        for (String childCollection : childCollections) {
             try {
-                child = collection.getChildCollection(childCollections[i]);
-            } catch(final XMLDBException xmldbe) {
-                if(xmldbe.getCause() instanceof PermissionDeniedException) {
+                child = collection.getChildCollection(childCollection);
+            } catch (final XMLDBException xmldbe) {
+                if (xmldbe.getCause() instanceof PermissionDeniedException) {
                     continue;
                 } else {
                     throw xmldbe;
                 }
             } catch (Exception npe) {
-		System.out.println("Corrupted resource/collection skipped: " + child != null ? child.getName() != null ? child.getName() : "unknown" : "unknown");
+                System.out.println("Corrupted resource/collection skipped: " + child != null ? child.getName() != null ? child.getName() : "unknown" : "unknown");
                 continue;
             }
             try {
                 getAllCollections(child, collections);
             } catch (Exception ee) {
-		System.out.println("Corrupted resource/collection skipped: " + child != null ? child.getName() != null ? child.getName() : "unknown" : "unknown");
+                System.out.println("Corrupted resource/collection skipped: " + child != null ? child.getName() != null ? child.getName() : "unknown" : "unknown");
                 continue;
             }
         }

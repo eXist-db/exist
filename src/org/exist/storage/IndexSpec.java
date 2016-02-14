@@ -51,6 +51,7 @@ import java.util.stream.Collectors;
  *  
  * @author wolf
  */
+@SuppressWarnings("ForLoopReplaceableByForEach")
 public class IndexSpec {
 
     private static final String TYPE_ATTRIB = "type";
@@ -125,9 +126,10 @@ public class IndexSpec {
      */
     public GeneralRangeIndexSpec getIndexByPath(NodePath path) {
         if(specs != null) {
-            for (int i = 0; i < specs.length; i++) {
-                if(specs[i].matches(path))
-                    {return specs[i];}
+            for (GeneralRangeIndexSpec spec : specs) {
+                if (spec.matches(path)) {
+                    return spec;
+                }
             }
         }
         return null;

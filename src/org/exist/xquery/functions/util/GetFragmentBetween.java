@@ -353,15 +353,17 @@ public class GetFragmentBetween extends Function {
     String result = "";
     final ArrayList<String> elements = pathName2ElementsWithAttributes(pathName);
     if ("open".equals(mode)) {
-      for (int i=0; i < elements.size(); i++) {
-        String element = elements.get(i);
-        element = element.replaceAll("\\[", " ");  // opening element: replace open bracket with space
-        element = element.replaceAll(" eq ", "=");  // opening element: remove @ character 
-        element = element.replaceAll("@", "");  // opening element: remove @ character 
-        element = element.replaceAll("\\]", "");  // opening element: remove closing bracket
-        if (! (element.length() == 0))
-          {result += "<" + element + ">\n";}
-      }
+
+        for (String element : elements) {
+            element = element.replaceAll("\\[", " ");  // opening element: replace open bracket with space
+            element = element.replaceAll(" eq ", "=");  // opening element: remove @ character
+            element = element.replaceAll("@", "");  // opening element: remove @ character
+            element = element.replaceAll("\\]", "");  // opening element: remove closing bracket
+            if (!(element.length() == 0)) {
+                result += "<" + element + ">\n";
+            }
+        }
+
     } else if ("close".equals(mode)) {
       for (int i=elements.size()-1; i >= 0; i--) {
         String element = elements.get(i);

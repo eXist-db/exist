@@ -529,12 +529,12 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         
         if(recursive && uris != null) {
             //Process the child collections
-            for(int i = 0; i < uris.length; i++) {
+            for (XmldbURI uri : uris) {
                 //TODO : resolve URI !
                 try {
-                    final Collection child = broker.openCollection(uris[i], Lock.NO_LOCK);
+                    final Collection child = broker.openCollection(uri, Lock.NO_LOCK);
                     // a collection may have been removed in the meantime, so check first
-                    if(child != null) {
+                    if (child != null) {
                         child.allDocs(broker, docs, recursive, lockMap, lockType);
                     }
                 } catch (final PermissionDeniedException pde) {
@@ -1731,9 +1731,9 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
     private void addObserversToIndexer(final DBBroker broker, final Indexer indexer) {
         broker.deleteObservers();
         if(observers != null) {
-            for(int i = 0; i < observers.length; i++) {
-                indexer.addObserver(observers[i]);
-                broker.addObserver(observers[i]);
+            for (Observer observer : observers) {
+                indexer.addObserver(observer);
+                broker.addObserver(observer);
             }
         }
     }
@@ -2127,8 +2127,8 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         if(observers == null) {
             return false;
         }
-        for(int i = 0; i < observers.length; i++) {
-            if(observers[i] == o) {
+        for (Observer observer : observers) {
+            if (observer == o) {
                 return true;
             }
         }

@@ -191,15 +191,17 @@ public abstract class Function extends PathExpr {
      * @throws XPathException
      */
     public void setArguments(List<Expression> arguments) throws XPathException {
-        if ((!mySignature.isOverloaded()) && arguments.size() != mySignature.getArgumentCount())
-            {throw new XPathException(this, ErrorCodes.XPST0017, 
-                "Number of arguments of function " + getName() +
-                " doesn't match function signature (expected " +
-                mySignature.getArgumentCount() + ", got " + arguments.size() + ')');}
-        steps = new ArrayList<Expression>(arguments.size());
-        for (int i = 0; i < arguments.size(); i++) {
-            steps.add(arguments.get(i).simplify());
+        if ((!mySignature.isOverloaded()) && arguments.size() != mySignature.getArgumentCount()) {
+            throw new XPathException(this, ErrorCodes.XPST0017,
+                    "Number of arguments of function " + getName() + " doesn't match function signature (expected " +
+                            mySignature.getArgumentCount() + ", got " + arguments.size() + ')');
         }
+        steps = new ArrayList<Expression>(arguments.size());
+
+        for (Expression argument : arguments) {
+            steps.add(argument.simplify());
+        }
+
         argumentsChecked = false;
     }
 

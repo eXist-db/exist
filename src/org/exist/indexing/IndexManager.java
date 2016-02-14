@@ -67,13 +67,13 @@ public class IndexManager {
      */
     public IndexManager(BrokerPool pool, Configuration config) throws DatabaseConfigurationException {
         this.pool = pool;
-        final Configuration.IndexModuleConfig modConf[] = (Configuration.IndexModuleConfig[])
+        final Configuration.IndexModuleConfig modConfigs[] = (Configuration.IndexModuleConfig[])
                 config.getProperty(PROPERTY_INDEXER_MODULES);
         final Path dataDir = (Path) config.getProperty(BrokerPool.PROPERTY_DATA_DIR);
-        if (modConf != null) {
-            for (int i = 0; i < modConf.length; i++) {
-                final String className = modConf[i].getClassName();
-                initIndex(pool, modConf[i].getId(), modConf[i].getConfig(), dataDir, className);
+        if (modConfigs != null) {
+            for (Configuration.IndexModuleConfig modConfig : modConfigs) {
+                final String className = modConfig.getClassName();
+                initIndex(pool, modConfig.getId(), modConfig.getConfig(), dataDir, className);
             }
         }
         // check if a structural index was configured. If not, create one based on default settings.
@@ -167,11 +167,11 @@ public class IndexManager {
      */
     protected synchronized List<IndexWorker> getWorkers(DBBroker broker) {
         final List<IndexWorker> workerList = new ArrayList<IndexWorker>(indexers.size());
-        for (final Iterator<Index> i = indexers.values().iterator(); i.hasNext(); ) {
-            final Index index = i.next();
+        for (final Index index : indexers.values()) {
             final IndexWorker worker = index.getWorker(broker);
-            if (worker != null)
-                {workerList.add(worker);}
+            if (worker != null) {
+                workerList.add(worker);
+            }
         }
         return workerList;
     }

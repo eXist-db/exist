@@ -126,8 +126,8 @@ public class BuiltinFunctions extends BasicFunction {
 		final Set<QName> set = new TreeSet<QName>();
 		final FunctionSignature signatures[] = module.listFunctions();
 		// add to set to remove duplicate QName's
-		for(int j = 0; j < signatures.length; j++) {
-			final QName qname = signatures[j].getName();
+		for (FunctionSignature signature : signatures) {
+			final QName qname = signature.getName();
 			set.add(qname);
 		}
 		for(final QName qname : set) {
