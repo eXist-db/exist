@@ -1381,7 +1381,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
 
         public boolean matches( CharSequence term )
         {
-            return( term.toString() == expr );
+            return( term.toString().equals(expr) );
         }
     }
 
