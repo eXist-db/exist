@@ -80,10 +80,9 @@ public class GetCookieNames extends BasicFunction {
 				if(cookies.length != 0)
 				{
 					final ValueSequence names = new ValueSequence();
-				
-					for(int c = 0; c < cookies.length; c++)
-					{
-						names.add(new StringValue(cookies[c].getName()));
+
+					for (Cookie cookie : cookies) {
+						names.add(new StringValue(cookie.getName()));
 					}
 					
 					return names;

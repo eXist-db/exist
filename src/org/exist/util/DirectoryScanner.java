@@ -46,20 +46,22 @@ public class DirectoryScanner {
 	}
 	
 	private final static void scanDir(ArrayList<File> list, File dir, String vpath, String pattern) {
-		final String files[] = dir.list();
-		if (files == null) {
+		final String fileNames[] = dir.list();
+		if (fileNames == null) {
 			return;
 		}
+
 		File file;
 		String name;
-		for(int i = 0; i < files.length; i++) {
-			file = new File(dir, files[i]);
-			name = vpath + files[i];
-			if(file.isDirectory() && matchStart(pattern, name)) {
-				scanDir(list, file, name + File.separator, pattern);
-			} else if(match(pattern, name))
-				{list.add(file);}
-		}
+        for (String fileName : fileNames) {
+            file = new File(dir, fileName);
+            name = vpath + fileName;
+            if (file.isDirectory() && matchStart(pattern, name)) {
+                scanDir(list, file, name + File.separator, pattern);
+            } else if (match(pattern, name)) {
+                list.add(file);
+            }
+        }
 	}
 				
 	public final static boolean match(String pattern, String name) {

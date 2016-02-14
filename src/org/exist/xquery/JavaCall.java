@@ -119,21 +119,21 @@ public class JavaCall extends Function {
 	 */
 	public void setArguments(List<Expression> arguments) throws XPathException {
 		final int argCount = arguments.size();
-		for (int i = 0; i < argCount; i++)
-		    steps.add(arguments.get(i));
+
+        for (final Expression argument : arguments) steps.add(argument);
 
 		// search for candidate methods matching the given number of arguments
 		if ("new".equals(name)) {
 			final Constructor<?>[] constructors = myClass.getConstructors();
-			for (int i = 0; i < constructors.length; i++) {
-				if (Modifier.isPublic(constructors[i].getModifiers())) {
-					final Class<?> paramTypes[] = constructors[i].getParameterTypes();
-					if (paramTypes.length == argCount) {
-						LOG.debug("Found constructor " + constructors[i].toString());
-						candidateMethods.add(constructors[i]);
-					}
-				}
-			}
+            for (final Constructor<?> constructor : constructors) {
+                if (Modifier.isPublic(constructor.getModifiers())) {
+                    final Class<?> paramTypes[] = constructor.getParameterTypes();
+                    if (paramTypes.length == argCount) {
+                        LOG.debug("Found constructor " + constructor.toString());
+                        candidateMethods.add(constructor);
+                    }
+                }
+            }
 			if (candidateMethods.size() == 0) {
 				final String message = "no constructor found with " + argCount + " arguments"; 
 				throw new XPathException(this,
@@ -142,23 +142,23 @@ public class JavaCall extends Function {
 			}
 		} else {
 			final Method[] methods = myClass.getMethods();
-			for (int i = 0; i < methods.length; i++) {
-				if (Modifier.isPublic(methods[i].getModifiers())
-					&& methods[i].getName().equals(name)) {
-					final Class<?> paramTypes[] = methods[i].getParameterTypes();
-					if (Modifier.isStatic(methods[i].getModifiers())) {
-						if (paramTypes.length == argCount) {
-							LOG.debug("Found static method " + methods[i].toString());
-							candidateMethods.add(methods[i]);
-						}
-					} else {
-						if (paramTypes.length == argCount - 1) {
-							LOG.debug("Found method " + methods[i].toString());
-							candidateMethods.add(methods[i]);
-						}
-					}
-				}
-			}
+            for (final Method method : methods) {
+                if (Modifier.isPublic(method.getModifiers())
+                        && method.getName().equals(name)) {
+                    final Class<?> paramTypes[] = method.getParameterTypes();
+                    if (Modifier.isStatic(method.getModifiers())) {
+                        if (paramTypes.length == argCount) {
+                            LOG.debug("Found static method " + method.toString());
+                            candidateMethods.add(method);
+                        }
+                    } else {
+                        if (paramTypes.length == argCount - 1) {
+                            LOG.debug("Found method " + method.toString());
+                            candidateMethods.add(method);
+                        }
+                    }
+                }
+            }
 			if (candidateMethods.size() == 0) {
 				final String message = "no method matches " + name + " with " + argCount + " arguments"; 
 				throw new XPathException(this,

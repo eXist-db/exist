@@ -94,8 +94,8 @@ public class GetScheduledJobs extends BasicFunction {
                     }
                 }
                 if( executingJobsInfo != null ) {
-                    for( int i = 0; i < executingJobsInfo.length; i++ ) {
-                    	addRow( executingJobsInfo[i], builder, true );
+                    for (ScheduledJobInfo jobInfo : executingJobsInfo) {
+                        addRow(jobInfo, builder, true);
                     }
                 }
             }

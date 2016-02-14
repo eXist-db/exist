@@ -117,8 +117,11 @@ public class FunTokenize extends FunMatches {
                     }
                     final String[] tokens = pat.split(string, -1);
                     result = new ValueSequence();
-        			for (int i = 0; i < tokens.length; i++)
-                        result.add(new StringValue(tokens[i]));        			
+
+					for (String token : tokens) {
+                        result.add(new StringValue(token));
+                    }
+
         		} catch (final PatternSyntaxException e) {
         			throw new XPathException(this, ErrorCodes.FORX0001, "Invalid regular expression: " + e.getMessage(), new StringValue(pattern), e);
         		}

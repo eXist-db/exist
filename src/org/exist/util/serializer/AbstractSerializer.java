@@ -96,8 +96,8 @@ public abstract class AbstractSerializer {
     }
 
     public void reset() {
-        for (int i = 0; i < writers.length; i++) {
-            writers[i].reset();
+        for (XMLWriter writer : writers) {
+            writer.reset();
         }
     }
 }
