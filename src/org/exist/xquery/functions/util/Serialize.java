@@ -205,7 +205,7 @@ public class Serialize extends BasicFunction {
         final SAXSerializer sax = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
         outputProperties.setProperty(Serializer.GENERATE_DOC_EVENTS, "false");
         final String encoding = outputProperties.getProperty(OutputKeys.ENCODING, "UTF-8");
-        try(final Writer writer = new OutputStreamWriter(os, encoding);)
+        try(final Writer writer = new OutputStreamWriter(os, encoding))
         {
             sax.setOutput(writer, outputProperties);
             final Serializer serializer = context.getBroker().getSerializer();

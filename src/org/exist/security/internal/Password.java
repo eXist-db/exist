@@ -39,7 +39,7 @@ public class Password implements Credential {
     
     public enum Hash {
         MD5,
-        RIPEMD160;
+        RIPEMD160
     }
     
 

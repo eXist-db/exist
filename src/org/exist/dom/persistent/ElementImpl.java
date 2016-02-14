@@ -1177,7 +1177,7 @@ public class ElementImpl extends NamedNode implements Element {
         final TransactionManager transact = ownerDocument.getBrokerPool().getTransactionManager();
 
         try(final DBBroker broker = ownerDocument.getBrokerPool().getBroker();
-                final Txn transaction = transact.beginTransaction();) {
+                final Txn transaction = transact.beginTransaction()) {
             insertBefore(transaction, nl, refChild);
             broker.storeXMLResource(transaction, getOwnerDocument());
             transact.commit(transaction);

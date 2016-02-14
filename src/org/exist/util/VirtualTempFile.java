@@ -34,7 +34,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import org.apache.commons.io.output.ByteArrayOutputStream;;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 
 /**
  * 

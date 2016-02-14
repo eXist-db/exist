@@ -110,7 +110,7 @@ public abstract class AbstractHashSet<K> {
 	}
 	
 
-	protected static enum IteratorType {KEYS, VALUES};
+	protected static enum IteratorType {KEYS, VALUES}
 
 	protected abstract class HashtableIterator<T> implements Iterator<T> {	
 		

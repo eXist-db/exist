@@ -331,7 +331,6 @@ public class LocationStep extends Step {
 //		case Constants.PARENT_AXIS:
 //		case Constants.ATTRIBUTE_AXIS:
 		default:
-			;
 		}
 
 		// TODO : log somewhere ?

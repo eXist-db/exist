@@ -39,7 +39,7 @@ public class ScheduledJobInfo {
         NORMAL,
         PAUSED,
         BLOCKED,
-        COMPLETE;
+        COMPLETE
     }
     
     private final Scheduler scheduler;

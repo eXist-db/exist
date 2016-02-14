@@ -52,7 +52,7 @@ public abstract class AbstractInternalModule implements InternalModule {
         public int compare(FunctionDef o1, FunctionDef o2) {
             return o1.getSignature().getFunctionId().compareTo(o2.getSignature().getFunctionId());
         }
-    };
+    }
 
     protected final FunctionDef[] mFunctions;
     protected final boolean ordered;
