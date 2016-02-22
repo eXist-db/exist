@@ -29,8 +29,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Properties;
 import javax.xml.transform.OutputKeys;
-import static java.nio.file.StandardOpenOption.APPEND;
-import static java.nio.file.StandardOpenOption.CREATE;
+import java.nio.file.StandardOpenOption;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -207,7 +206,7 @@ public class SerializeToFile extends BasicFunction {
         final Serializer serializer = context.getBroker().getSerializer();
         serializer.reset();
 
-        try(final OutputStream os = Files.newOutputStream(file, doAppend ? APPEND : CREATE);
+        try(final OutputStream os = Files.newOutputStream(file, doAppend ? StandardOpenOption.APPEND : StandardOpenOption.CREATE,StandardOpenOption.TRUNCATE_EXISTING);
                 final Writer writer = new OutputStreamWriter(os)) {
 
             serializer.setProperties(outputProperties);
@@ -222,7 +221,7 @@ public class SerializeToFile extends BasicFunction {
 	}
 
     private void serializeBinary(final BinaryValue binary, final Path file, final boolean doAppend) throws XPathException {
-        try(final OutputStream os = Files.newOutputStream(file, doAppend ? APPEND : CREATE)) {
+        try(final OutputStream os = Files.newOutputStream(file, doAppend ? StandardOpenOption.APPEND : StandardOpenOption.CREATE,StandardOpenOption.TRUNCATE_EXISTING)) {
             binary.streamBinaryTo(os);
         } catch(final IOException ioe) {
             throw new XPathException(this, "Cannot serialize file. A problem occurred while serializing the binary data: " + ioe.getMessage(), ioe);
