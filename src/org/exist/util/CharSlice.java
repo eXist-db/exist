@@ -139,7 +139,7 @@ public final class CharSlice implements CharSequence, Serializable {
         for (int i = offset; i < end; i++) {
             if (array[i] == c) {
                 return i-offset;
-            };
+            }
         }
         return -1;
     }

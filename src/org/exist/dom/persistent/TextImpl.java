@@ -118,17 +118,9 @@ public class TextImpl extends AbstractCharacterData implements Text {
     @Override
     public String toString(final boolean top) {
         if(top) {
-            final StringBuilder result = new StringBuilder();
-            result.append("<exist:text ");
-            result.append("xmlns:exist=\"").append(Namespaces.EXIST_NS).append("\" ");
-            result.append("exist:id=\"");
-            result.append(getNodeId());
-            result.append("\" exist:source=\"");
-            result.append(getOwnerDocument().getFileURI());
-            result.append("\">");
-            result.append(getData());
-            result.append("</exist:text>");
-            return result.toString();
+            return "<exist:text " + "xmlns:exist=\"" + Namespaces.EXIST_NS + "\" " + "exist:id=\"" +
+                    getNodeId() + "\" exist:source=\"" + getOwnerDocument().getFileURI() + "\">" +
+                    getData() + "</exist:text>";
         } else {
             return toString();
         }

@@ -95,7 +95,7 @@ public class NodeXPath extends Function
 		for(int i = 0; i < attrs.getLength(); i++)
 		{
 			final Node attr = attrs.item(i);
-			xpath.append("[@" + getFullNodeName(attr) + " eq \"" + attr.getNodeValue() + "\"]");
+			xpath.append("[@").append(getFullNodeName(attr)).append(" eq \"").append(attr.getNodeValue()).append("\"]");
 		}
 		
 		return xpath;

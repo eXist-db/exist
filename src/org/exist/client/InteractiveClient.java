@@ -1045,8 +1045,6 @@ public class InteractiveClient {
                         }
                         command.append(lastLine);
                     }
-                } catch (final EOFException e) {
-                    //TODO report error?
                 } catch (final IOException e) {
                     //TODO report error?
                 }
@@ -1201,8 +1199,6 @@ public class InteractiveClient {
                 thread.join();
             } catch (final InterruptedException e) {
             }
-        } catch (final FileNotFoundException e) {
-            System.err.println("ERROR: " + e);
         } catch (final IOException e) {
             System.err.println("ERROR: " + e);
         }
@@ -2199,23 +2195,20 @@ public class InteractiveClient {
             }
         } else if (cOpt.optionXpath != null || cOpt.optionQueryFile != null) {
             if (cOpt.optionQueryFile != null) {
-                final BufferedReader reader = new BufferedReader(new FileReader(cOpt.optionQueryFile));
-                try {
+                try (final BufferedReader reader = new BufferedReader(new FileReader(cOpt.optionQueryFile))) {
                     final StringBuilder buf = new StringBuilder();
                     String line;
                     while ((line = reader.readLine()) != null) {
-                            buf.append(line);
-                            buf.append(EOL);
+                        buf.append(line);
+                        buf.append(EOL);
                     }
                     cOpt.optionXpath = buf.toString();
-                } finally {
-                    reader.close();
                 }
             }
             // if no argument has been found, read query from stdin
             if ("stdin".equals(cOpt.optionXpath)) {
-                try {
-                    final BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in));
+                try (final BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in))){
+
                     final StringBuilder buf = new StringBuilder();
                     String line;
                     while ((line = stdin.readLine()) != null) {
@@ -2598,8 +2591,6 @@ public class InteractiveClient {
                 
             } catch (final EOFException e) {
                 break;
-            } catch (final IOException ioe) {
-                System.err.println(ioe);
             } catch (final Exception e) {
                 System.err.println(e);
             }

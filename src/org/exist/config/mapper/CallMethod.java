@@ -62,23 +62,23 @@ public class CallMethod {
         }
 
         final Method[] methods = obj.getClass().getMethods();
-        for (int k = 0; k < methods.length; k++) {
-            if (methods[k].getName().equals(name)) {
-                final Class<?>[] types = methods[k].getParameterTypes();
+        for (Method method : methods) {
+            if (method.getName().equals(name)) {
+                final Class<?>[] types = method.getParameterTypes();
                 if (types.length == 1) {
                     final String typeName = types[0].getName();
                     if (element != null) {
                         if (typeName.equals(value.getClass().getName())) {
-                            methods[k].invoke(obj, value);
+                            method.invoke(obj, value);
                             return true;
                         }
                     } else {
                         if ("java.lang.String".equals(typeName)) {
-                            methods[k].invoke(obj, conf.getElement().getAttribute(attribute));
+                            method.invoke(obj, conf.getElement().getAttribute(attribute));
                             return true;
 
                         } else if ("int".equals(typeName) || "java.lang.Integer".equals(typeName)) {
-                            methods[k].invoke(obj, Integer.valueOf(conf.getElement().getAttribute(attribute)));
+                            method.invoke(obj, Integer.valueOf(conf.getElement().getAttribute(attribute)));
                             return true;
                         }
                     }

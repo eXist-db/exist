@@ -303,18 +303,24 @@ public abstract class Serializer implements XMLReader {
 	
 	public void setProperty(String prop, Object value)
 		throws SAXNotRecognizedException, SAXNotSupportedException {
-		if (prop.equals(Namespaces.SAX_LEXICAL_HANDLER)) {
-			lexicalHandler = (LexicalHandler) value;
-        } else if (EXistOutputKeys.ADD_EXIST_ID.equals(prop)) {
-            if ("element".equals(value))
-                {showId = EXIST_ID_ELEMENT;}
-            else if ("all".equals(value))
-                {showId = EXIST_ID_ALL;}
-            else
-                {showId = EXIST_ID_NONE;}
-        } else {
-			outputProperties.put(prop, value);
+		switch (prop) {
+			case Namespaces.SAX_LEXICAL_HANDLER:
+				lexicalHandler = (LexicalHandler) value;
+				break;
+			case EXistOutputKeys.ADD_EXIST_ID:
+				if ("element".equals(value)) {
+					showId = EXIST_ID_ELEMENT;
+				} else if ("all".equals(value)) {
+					showId = EXIST_ID_ALL;
+				} else {
+					showId = EXIST_ID_NONE;
+				}
+				break;
+			default:
+				outputProperties.put(prop, value);
+				break;
 		}
+
 	}
 
 	public String getProperty(String key, String defaultValue) {

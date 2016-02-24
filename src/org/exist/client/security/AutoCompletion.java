@@ -34,23 +34,17 @@ public class AutoCompletion extends PlainDocument {
     public AutoCompletion(final JComboBox comboBox) {
         this.comboBox = comboBox;
         model = comboBox.getModel();
-        comboBox.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (!selecting){
-                    highlightCompletedText(0);
-                }
+        comboBox.addActionListener(e -> {
+            if (!selecting){
+                highlightCompletedText(0);
             }
         });
-        comboBox.addPropertyChangeListener(new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent e) {
-                if ("editor".equals(e.getPropertyName())){
-                    configureEditor((ComboBoxEditor) e.getNewValue());
-                }
-                if ("model".equals(e.getPropertyName())){
-                    model = (ComboBoxModel) e.getNewValue();
-                }
+        comboBox.addPropertyChangeListener(e -> {
+            if ("editor".equals(e.getPropertyName())){
+                configureEditor((ComboBoxEditor) e.getNewValue());
+            }
+            if ("model".equals(e.getPropertyName())){
+                model = (ComboBoxModel) e.getNewValue();
             }
         });
         editorKeyListener = new KeyAdapter() {

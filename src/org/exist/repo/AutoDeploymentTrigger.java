@@ -62,12 +62,9 @@ public class AutoDeploymentTrigger implements StartupTrigger {
                 }
             }
 
-            final PackageLoader loader = new PackageLoader() {
-                @Override
-                public Path load(String name, PackageLoader.Version version) {
-                    // TODO: enforce version check
-                    return packages.get(name);
-                }
+            final PackageLoader loader = (name, version) -> {
+                // TODO: enforce version check
+                return packages.get(name);
             };
 
             for (final Path xar : xars) {

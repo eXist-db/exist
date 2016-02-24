@@ -221,22 +221,20 @@ public class Main {
                         if (subject.endsWith("/*")) {
                             // directory of JAR files
                             final File extdir = new File(file.substring(0, file.length() - 1));
-                            final File[] jars = extdir.listFiles(new FilenameFilter() {
-                                public boolean accept(File dir, String name) {
-                                    String namelc = name.toLowerCase();
-                                    return namelc.endsWith(".jar") || name.endsWith(".zip");
-                                }
+                            final File[] jars = extdir.listFiles((dir, name) -> {
+                                String namelc = name.toLowerCase();
+                                return namelc.endsWith(".jar") || namelc.endsWith(".zip");
                             });
 
                             if (jars != null) {
-                                for (int i = 0; i < jars.length; i++) {
+                                for (File jarFile : jars) {
 
-                                    final String jar = jars[i].getCanonicalPath();
-                                    if (!done.containsKey(jar)) {
+                                    final String canonicalPath = jarFile.getCanonicalPath();
+                                    if (!done.containsKey(canonicalPath)) {
                                         if (include_subject) {
-                                            done.put(jar, jar);
-                                            if (classpath.addComponent(jar) && _debug) {
-                                                System.err.println("Adding JAR from directory: " + jar);
+                                            done.put(canonicalPath, canonicalPath);
+                                            if (classpath.addComponent(canonicalPath) && _debug) {
+                                                System.err.println("Adding JAR from directory: " + canonicalPath);
                                             }
                                         }
                                     }

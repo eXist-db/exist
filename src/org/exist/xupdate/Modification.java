@@ -193,7 +193,7 @@ public abstract class Modification {
 	protected void declareVariables(XQueryContext context) throws XPathException {
 		for (final Iterator<Map.Entry<String, Object>> i = variables.entrySet().iterator(); i.hasNext(); ) {
 			final Map.Entry<String, Object> entry = (Map.Entry<String, Object>) i.next();
-			context.declareVariable(entry.getKey().toString(), entry.getValue());
+			context.declareVariable(entry.getKey(), entry.getValue());
 		}
 	}
 
@@ -336,16 +336,7 @@ public abstract class Modification {
 	}
 	
 	public String toString() {
-		final StringBuilder buf = new StringBuilder();
-		buf.append("<xu:");
-		buf.append(getName());
-		buf.append(" select=\"");
-		buf.append(selectStmt);
-		buf.append("\">");
-//		buf.append(XMLUtil.dump(content));
-		buf.append("</xu:");
-		buf.append(getName());
-		buf.append(">");
-		return buf.toString();
+		//		buf.append(XMLUtil.dump(content));
+		return "<xu:" + getName() + " select=\"" + selectStmt + "\">" + "</xu:" +	getName() +	">";
 	}
 }

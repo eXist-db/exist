@@ -439,11 +439,7 @@ public class XPathException extends Exception {
 
         @Override
         public String toString() {
-            final StringBuilder buf = new StringBuilder();
-            buf.append(function).append(" [");
-            buf.append(line).append(":");
-            buf.append(column).append(":").append(file).append(']');
-            return buf.toString();
+            return function + " [" + line + ":" + column + ":" + file + ']';
         }
     }
 }

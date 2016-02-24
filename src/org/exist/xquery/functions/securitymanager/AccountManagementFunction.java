@@ -214,8 +214,8 @@ public class AccountManagementFunction extends BasicFunction {
                         subGroups = getGroups(args[3]);
                     }
 
-                    for(int i = 0; i <  subGroups.length; i++) {
-                        user.addGroup(subGroups[i]);
+                    for (String subGroup : subGroups) {
+                        user.addGroup(subGroup);
                     }
 
                     //create the account

@@ -157,73 +157,44 @@ public class QueryDialog extends JFrame {
 		URL url= getClass().getResource("icons/Open24.gif");
 		JButton button= new JButton(new ImageIcon(url));
 		button.setToolTipText(Messages.getString("QueryDialog.opentooltip"));
-		button.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                open();
-            }
-        });
+		button.addActionListener(e -> open());
 		toolbar.add(button);
 		
                 if(loadedFromDb) {
                     url= getClass().getResource("icons/SaveAs23.gif");
                     button= new JButton(new ImageIcon(url));
                     button.setToolTipText("Save to database");
-                    button.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            saveToDb(query.getText());
-                        }
-                    });
+                    button.addActionListener(e -> saveToDb(query.getText()));
                     toolbar.add(button);
                 }
                 
 		url= getClass().getResource("icons/SaveAs24.gif");
 		button= new JButton(new ImageIcon(url));
 		button.setToolTipText(Messages.getString("QueryDialog.saveastooltip"));
-		button.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                save(query.getText(), "query");
-            }
-        });
+		button.addActionListener(e -> save(query.getText(), "query"));
 		toolbar.add(button);
 
 		url= getClass().getResource("icons/SaveAs25.gif");
 		button= new JButton(new ImageIcon(url));
 		button.setToolTipText(Messages.getString("QueryDialog.saveresultstooltip"));
-		button.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                save(resultDisplay.getText(), "result");
-            }
-        });
+		button.addActionListener(e -> save(resultDisplay.getText(), "result"));
 		toolbar.add(button);
 		
 		toolbar.addSeparator();
 		url = getClass().getResource("icons/Copy24.gif");
 		button = new JButton(new ImageIcon(url));
 		button.setToolTipText(Messages.getString("QueryDialog.copytooltip"));
-		button.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                query.copy();
-            }
-        });
+		button.addActionListener(e -> query.copy());
 		toolbar.add(button);
 		url = getClass().getResource("icons/Cut24.gif");
 		button = new JButton(new ImageIcon(url));
 		button.setToolTipText(Messages.getString("QueryDialog.cuttooltip"));
-		button.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                query.cut();
-            }
-        });
+		button.addActionListener(e -> query.cut());
 		toolbar.add(button);
 		url = getClass().getResource("icons/Paste24.gif");
 		button = new JButton(new ImageIcon(url));
 		button.setToolTipText(Messages.getString("QueryDialog.pastetooltip"));
-		button.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                query.paste();
-            }
-        });
+		button.addActionListener(e -> query.paste());
 		toolbar.add(button);
 		
 		toolbar.addSeparator();
@@ -231,11 +202,7 @@ public class QueryDialog extends JFrame {
 		url= getClass().getResource("icons/Find24.gif");
 		button= new JButton(new ImageIcon(url));
 		button.setToolTipText(Messages.getString("QueryDialog.compiletooltip"));
-		button.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                compileQuery();
-            }
-        });
+		button.addActionListener(e -> compileQuery());
 		toolbar.add(button);
 		
 		toolbar.addSeparator();
@@ -243,14 +210,12 @@ public class QueryDialog extends JFrame {
 		submitButton= new JButton(Messages.getString("QueryDialog.submitbutton"), new ImageIcon(url));
 		submitButton.setToolTipText(Messages.getString("QueryDialog.submittooltip"));
 		toolbar.add(submitButton);
-		submitButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                submitButton.setEnabled(false);
-                if (collection instanceof LocalCollection) {
-                    killButton.setEnabled(true);
-                }
-                q = doQuery();
+		submitButton.addActionListener(e -> {
+            submitButton.setEnabled(false);
+            if (collection instanceof LocalCollection) {
+                killButton.setEnabled(true);
             }
+            q = doQuery();
         });
 		
 		toolbar.addSeparator();
@@ -259,14 +224,12 @@ public class QueryDialog extends JFrame {
 		killButton.setToolTipText(Messages.getString("QueryDialog.killtooltip"));
 		toolbar.add(killButton);
 		killButton.setEnabled(false);
-		killButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                if (q != null) {
-                    q.killQuery();
-                    killButton.setEnabled(false);
+		killButton.addActionListener(e -> {
+            if (q != null) {
+                q.killQuery();
+                killButton.setEnabled(false);
 
-                    q = null;
-                }
+                q = null;
             }
         });
 		
@@ -347,11 +310,9 @@ public class QueryDialog extends JFrame {
 		for(final String query : client.queryHistory) {
 			addQuery(query);
         }
-        historyList.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                final String item = (String) client.queryHistory.get(historyList.getSelectedIndex());
-                query.setText(item);
-            }
+        historyList.addActionListener(e -> {
+            final String item = (String) client.queryHistory.get(historyList.getSelectedIndex());
+            query.setText(item);
         });
 		historyBox.add(historyList);
         inputVBox.add(historyBox, BorderLayout.NORTH);
@@ -377,17 +338,14 @@ public class QueryDialog extends JFrame {
 					Messages.getString("QueryDialog.collectionretrievalerrormessage")+".", e);
 		}
 		collections= new JComboBox(new java.util.Vector(data));
-		collections.addActionListener(new ActionListener() {
-                    @Override
-			public void actionPerformed(ActionEvent e) {
-				final int p = collections.getSelectedIndex();
-				final String context = data.get(p);
-				try {
-					collection = client.getCollection(context);
-				} catch (final XMLDBException e1) {
-				}
-			}
-		});
+		collections.addActionListener(e -> {
+    final int p = collections.getSelectedIndex();
+    final String context = data.get(p);
+    try {
+        collection = client.getCollection(context);
+    } catch (final XMLDBException e1) {
+    }
+});
         optionsPanel.add(collections);
 
 		label= new JLabel(Messages.getString("QueryDialog.maxlabel"));
@@ -439,29 +397,23 @@ public class QueryDialog extends JFrame {
 		chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 		chooser.addChoosableFileFilter(new MimeTypeFileFilter("application/xquery"));
 		
-		if (chooser.showDialog(this, Messages.getString("QueryDialog.opendialog"))
-			== JFileChooser.APPROVE_OPTION) {
+		if (chooser.showDialog(this, Messages.getString("QueryDialog.opendialog")) == JFileChooser.APPROVE_OPTION) {
 			final File selectedDir = chooser.getCurrentDirectory();
 			properties.setProperty("working-dir", selectedDir.getAbsolutePath());
 			final File file = chooser.getSelectedFile();
 			if(!file.canRead())
 				{JOptionPane.showInternalMessageDialog(this, Messages.getString("QueryDialog.cannotreadmessage")+" "+ file.getAbsolutePath(),
 					Messages.getString("QueryDialog.Error"), JOptionPane.ERROR_MESSAGE);}
-			try {
-				final BufferedReader reader = new BufferedReader(new FileReader(file));
-				try {
-					final StringBuilder buf = new StringBuilder();
-					String line;
-					while((line = reader.readLine()) != null) {
-						buf.append(line);
-						buf.append('\n');
-					}
-					query.setText(buf.toString());
-				} finally {
-					reader.close();
+
+			try (final BufferedReader reader = new BufferedReader(new FileReader(file))) {
+				final StringBuilder buf = new StringBuilder();
+				String line;
+				while ((line = reader.readLine()) != null) {
+					buf.append(line);
+					buf.append('\n');
 				}
-			} catch (final FileNotFoundException e) {
-				ClientFrame.showErrorMessage(e.getMessage(), e);
+				query.setText(buf.toString());
+
 			} catch (final IOException e) {
 				ClientFrame.showErrorMessage(e.getMessage(), e);
 			}

@@ -85,11 +85,9 @@ public class GetCookieValue extends BasicFunction {
 			final Cookie[] cookies = ((RequestWrapper)value.getObject()).getCookies();
 			if(cookies != null)
 			{
-				for(int c = 0; c < cookies.length; c++)
-				{
-					if(cookies[c].getName().equals(cookieName))
-					{
-						return new StringValue(decode(cookies[c].getValue()));
+				for (Cookie cookie : cookies) {
+					if (cookie.getName().equals(cookieName)) {
+						return new StringValue(decode(cookie.getValue()));
 					}
 				}
 			}

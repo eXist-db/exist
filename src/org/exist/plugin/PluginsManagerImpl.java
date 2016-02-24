@@ -217,25 +217,23 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, LifeCyc
 		final Set<Class<? extends S>> services = new HashSet<Class<? extends S>>();
 		while (e.hasMoreElements()) {
 			final URL url = e.nextElement();
-			final InputStream is = url.openStream();
-			try {
-				final BufferedReader r = new BufferedReader(new InputStreamReader(is, "UTF-8"));
-				while (true) {
-					String line = r.readLine();
-					if (line == null)
-						{break;}
+			try (final InputStream is = url.openStream() ;
+				final BufferedReader r = new BufferedReader(new InputStreamReader(is, "UTF-8")) ){
+				String line;
+				while ((line = r.readLine()) != null) {
+
 					final int comment = line.indexOf('#');
-					if (comment >= 0)
-						{line = line.substring(0, comment);}
+					if (comment >= 0) {
+						line = line.substring(0, comment);
+					}
 					final String name = line.trim();
-					if (name.length() == 0)
-						{continue;}
+					if (name.length() == 0) {
+						continue;
+					}
 					final Class<?> clz = Class.forName(name, true, ldr);
 					final Class<? extends S> impl = clz.asSubclass(ifc);
 					services.add(impl);
 				}
-			} finally {
-				is.close();
 			}
 		}
 		return services;

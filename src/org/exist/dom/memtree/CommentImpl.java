@@ -64,11 +64,6 @@ public class CommentImpl extends AbstractCharacterData implements Comment {
     }
 
     public String toString() {
-        final StringBuilder result = new StringBuilder();
-        result.append("in-memory#");
-        result.append("comment {");
-        result.append(getData());
-        result.append("} ");
-        return result.toString();
+        return "in-memory#comment {" + getData() + "} ";
     }
 }

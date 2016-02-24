@@ -113,8 +113,8 @@ public class DataGuide {
         root.dump(new StringBuilder(), paths);
 
         final StringBuilder buf = new StringBuilder();
-        for (int i = 0; i < paths.size(); i++) {
-            buf.append(paths.get(i));
+        for (StringBuilder path : paths) {
+            buf.append(path);
             buf.append('\n');
         }
         return buf.toString();
@@ -150,8 +150,8 @@ public class DataGuide {
                 {buffer.putInt(0);}
             else {
                 buffer.putInt(children.length);
-                for (int i = 0; i < children.length; i++) {
-                    children[i].write(buffer, symbols);
+                for (NodeStats child : children) {
+                    child.write(buffer, symbols);
                 }
             }
         }
@@ -170,8 +170,8 @@ public class DataGuide {
         public void toSAX(ContentHandler handler) throws SAXException {
             handler.startElement(Namespaces.EXIST_NS, "distribution", "distribution", new AttributesImpl());
             if (children != null) {
-                for (int i = 0; i < children.length; i++) {
-                    children[i].toSAX(handler);
+                for (NodeStats child : children) {
+                    child.toSAX(handler);
                 }
             }
             handler.endElement(Namespaces.EXIST_NS, "distribution", "distribution");

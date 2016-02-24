@@ -21,6 +21,8 @@
 package org.exist.repo;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Optional;
 
@@ -120,22 +122,19 @@ public class ClasspathHelper {
     }
 
     private static void scanPackageDir(Classpath classpath, File module) throws IOException {
-        final File exist = new File(module, ".exist");
-        if (exist.exists()) {
-            if (!exist.isDirectory()) {
-                throw new IOException("The .exist config dir is not a dir: " + exist);
+        final Path dotExist =  module.toPath().resolve(".exist");
+        if (Files.exists(dotExist)) {
+            if (!Files.isDirectory(dotExist)) {
+                throw new IOException("The .exist config dir is not a dir: " + dotExist);
             }
 
-            final File cp = new File(exist, "classpath.txt");
-            if (cp.exists()) {
-                final BufferedReader reader = new BufferedReader(new FileReader(cp));
-                try {
+            final Path cp = dotExist.resolve("classpath.txt");
+            if (Files.exists(cp)) {
+                try (final BufferedReader reader = Files.newBufferedReader(cp)) {
                     String line;
-                    while((line = reader.readLine()) != null) {
+                    while ((line = reader.readLine()) != null) {
                         classpath.addComponent(line);
                     }
-                } finally {
-                    reader.close();
                 }
             }
         }

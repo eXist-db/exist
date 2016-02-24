@@ -84,7 +84,7 @@ public class XQueryParser extends antlr.LLkParser       implements XQueryTokenTy
 	}
 
 	public String getErrorMessage() {
-		StringBuffer buf= new StringBuffer();
+		StringBuilder buf= new StringBuilder();
 		for (Iterator i= exceptions.iterator(); i.hasNext();) {
 			buf.append(((Exception) i.next()).toString());
 			buf.append('\n');
@@ -15022,9 +15022,9 @@ inputState.guessing--;
 	
 	protected void buildTokenTypeASTClassMap() {
 		tokenTypeToASTClassMap=null;
-	};
-	
-	private static final long[] mk_tokenSet_0() {
+	}
+
+	 private static final long[] mk_tokenSet_0() {
 		long[] data = new long[8];
 		data[0]=2L;
 		data[1]=-144603764359749L;

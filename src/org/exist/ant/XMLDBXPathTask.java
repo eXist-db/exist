@@ -151,7 +151,7 @@ public class XMLDBXPathTask extends AbstractXMLDBTask
                     } else {
                         final ResourceIterator iter   = results.getIterator();
                         XMLResource      res    = null;
-                        final StringBuffer     result = new StringBuffer();
+                        final StringBuilder result = new StringBuilder();
 
                         while( iter.hasMoreResources() ) {
                             res = (XMLResource)iter.nextResource();

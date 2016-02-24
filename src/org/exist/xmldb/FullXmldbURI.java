@@ -153,7 +153,7 @@ public class FullXmldbURI extends XmldbURI {
         }
 
         if (getPort() != NO_PORT) {
-            buf.append(":" + getPort());
+            buf.append(":").append(getPort());
         }
 
         if (context != null) {

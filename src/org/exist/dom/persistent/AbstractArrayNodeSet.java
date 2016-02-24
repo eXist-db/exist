@@ -261,9 +261,7 @@ public abstract class AbstractArrayNodeSet extends AbstractNodeSet implements Do
 
     @Override
     public String toString() {
-        final StringBuilder result = new StringBuilder();
-        result.append("ArrayNodeSet#").append(super.toString());
-        return result.toString();
+        return "ArrayNodeSet#" + super.toString();
     }
 }
 

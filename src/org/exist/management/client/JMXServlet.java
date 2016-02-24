@@ -152,13 +152,7 @@ public class JMXServlet extends HttpServlet {
                 }
             } catch (InstanceNotFoundException e) {
                 throw new ServletException("mbean " + mbean + " not found: " + e.getMessage(), e);
-            } catch (MalformedObjectNameException e) {
-                throw new ServletException(e.getMessage(), e);
-            } catch (MBeanException e) {
-                throw new ServletException(e.getMessage(), e);
-            } catch (ReflectionException e) {
-                throw new ServletException(e.getMessage(), e);
-            } catch (IntrospectionException e) {
+            } catch (MalformedObjectNameException | IntrospectionException | ReflectionException | MBeanException e) {
                 throw new ServletException(e.getMessage(), e);
             }
         } else {

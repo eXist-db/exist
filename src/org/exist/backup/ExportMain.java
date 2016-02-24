@@ -84,10 +84,7 @@ public class ExportMain
             BrokerPool.configure( 1, 5, config );
             return( BrokerPool.getInstance() );
         }
-        catch( final DatabaseConfigurationException e ) {
-            System.err.println( "ERROR: Failed to open database: " + e.getMessage() );
-        }
-        catch( final EXistException e ) {
+        catch( final DatabaseConfigurationException | EXistException e ) {
             System.err.println( "ERROR: Failed to open database: " + e.getMessage() );
         }
         return( null );

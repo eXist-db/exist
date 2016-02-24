@@ -30,13 +30,7 @@ public class BinaryValueFromInputStream extends BinaryValue {
 
         try {
 
-            this.cache = FilterInputStreamCacheFactory.getCacheInstance(new FilterInputStreamCacheConfiguration() {
-
-                @Override
-                public String getCacheClass() {
-                    return manager.getCacheClass();
-                }
-            }, is);
+            this.cache = FilterInputStreamCacheFactory.getCacheInstance(() -> manager.getCacheClass(), is);
             this.is = new CachingFilterInputStream(cache);
 
         } catch (final IOException ioe) {

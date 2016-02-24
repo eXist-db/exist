@@ -60,11 +60,7 @@ public class CommentImpl extends AbstractCharacterData implements Comment {
 
     @Override
     public String toString() {
-        final StringBuilder buf = new StringBuilder();
-        buf.append("<!-- ");
-        buf.append(cdata.toString());
-        buf.append(" -->");
-        return buf.toString();
+        return "<!-- " + cdata.toString() + " -->";
     }
 
     /**

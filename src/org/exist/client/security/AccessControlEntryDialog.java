@@ -160,32 +160,20 @@ public class AccessControlEntryDialog extends javax.swing.JFrame implements Dial
         lblTarget.setText("Target:");
 
         cmbTarget.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "USER", "GROUP" }));
-        cmbTarget.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cmbTargetActionPerformed(evt);
-            }
-        });
+        cmbTarget.addActionListener(this::cmbTargetActionPerformed);
 
         lblUsername.setText("Username:");
 
         cmbUsername.setEditable(true);
         cmbUsername.setModel(getUsernameModel());
-        cmbUsername.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cmbUsernameActionPerformed(evt);
-            }
-        });
+        cmbUsername.addActionListener(this::cmbUsernameActionPerformed);
 
         lblGroupName.setText("Group:");
 
         cmbGroupName.setEditable(true);
         cmbGroupName.setModel(getGroupNameModel());
         cmbGroupName.setEnabled(false);
-        cmbGroupName.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cmbGroupNameActionPerformed(evt);
-            }
-        });
+        cmbGroupName.addActionListener(this::cmbGroupNameActionPerformed);
 
         lblAccess.setText("Access:");
 
@@ -198,18 +186,10 @@ public class AccessControlEntryDialog extends javax.swing.JFrame implements Dial
         jScrollPane1.setViewportView(tblPermission);
 
         btnCreate.setText("Create");
-        btnCreate.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnCreateActionPerformed(evt);
-            }
-        });
+        btnCreate.addActionListener(this::btnCreateActionPerformed);
 
         btnClose.setText("Close");
-        btnClose.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnCloseActionPerformed(evt);
-            }
-        });
+        btnClose.addActionListener(this::btnCloseActionPerformed);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);

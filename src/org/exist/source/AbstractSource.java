@@ -94,11 +94,7 @@ public abstract class AbstractSource implements Source {
         final DeclScanner scanner = new DeclScanner(lexer);
         try {
             scanner.versionDecl();
-        } catch (final RecognitionException e) {
-            //Nothing to do
-        } catch (final TokenStreamException e) {
-            //Nothing to do
-        } catch (final XPathException e) {
+        } catch (final RecognitionException | XPathException | TokenStreamException e) {
             //Nothing to do
         }
         return scanner.getEncoding();
@@ -117,11 +113,7 @@ public abstract class AbstractSource implements Source {
         final DeclScanner scanner = new DeclScanner(lexer);
         try {
             scanner.versionDecl();
-        } catch (final RecognitionException e) {
-            //Nothing to do
-        } catch (final TokenStreamException e) {
-            //Nothing to do
-        } catch (final XPathException e) {
+        } catch (final RecognitionException | XPathException | TokenStreamException e) {
             //Nothing to do
         }
         if (scanner.getNamespace() != null) {

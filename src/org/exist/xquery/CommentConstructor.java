@@ -72,7 +72,7 @@ public class CommentConstructor extends NodeConstructor {
     }
     
     public String toString() {
-        return "comment {" + data.toString() + "}";
+        return "comment {" + data + "}";
     }
     
 }

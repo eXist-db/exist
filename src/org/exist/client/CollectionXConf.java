@@ -86,12 +86,12 @@ public class CollectionXConf
 		
 		//get the resource from the db
         final String[] resources = collection.listResources();
-        for (int i = 0; i < resources.length; i++) {
-            if (resources[i].endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX)) {
-                resConfig = collection.getResource(resources[i]);
-                break;
-            }
-        }
+		for (String resource : resources) {
+			if (resource.endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX)) {
+				resConfig = collection.getResource(resource);
+				break;
+			}
+		}
 		
 		if(resConfig == null) //if, no config file exists for that collection
 			{return;}
@@ -465,7 +465,7 @@ public class CollectionXConf
 				xconf.append(" ");
 				final String namespaceLocalName = entry.getKey();
 				final String namespaceURL = entry.getValue();
-				xconf.append("xmlns:" + namespaceLocalName + "=\"" + namespaceURL + "\"");
+				xconf.append("xmlns:").append(namespaceLocalName).append("=\"").append(namespaceURL).append("\"");
 			}
 		}
 		xconf.append(">");
@@ -481,10 +481,9 @@ public class CollectionXConf
 			//range indexes
 			if(rangeIndexes != null)
 			{
-				for(int r = 0; r < rangeIndexes.length; r ++)
-				{
+				for (RangeIndex rangeIndex : rangeIndexes) {
 					xconf.append("\t\t\t");
-					xconf.append(rangeIndexes[r].toXMLString());
+					xconf.append(rangeIndex.toXMLString());
 					xconf.append(System.getProperty("line.separator"));
 				}
 			}
@@ -499,11 +498,10 @@ public class CollectionXConf
 		{
 			xconf.append('\t');
 			xconf.append("<triggers>");
-			
-			for(int t = 0; t < triggers.length; t ++)
-			{
+
+			for (Trigger trigger : triggers) {
 				xconf.append("\t\t\t");
-				xconf.append(triggers[t].toXMLString());
+				xconf.append(trigger.toXMLString());
 				xconf.append(System.getProperty("line.separator"));
 			}
 			

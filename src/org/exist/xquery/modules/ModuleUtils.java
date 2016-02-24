@@ -75,12 +75,9 @@ public class ModuleUtils {
 	 * @return The NodeValue of XML
 	 */
 	public static NodeValue stringToXML(XQueryContext context, String str) throws SAXException, IOException {
-            final Reader reader = new StringReader(str);
-            try {
-                return inputSourceToXML(context, new InputSource(reader));
-            } finally {
-                reader.close();
-            }
+        try (final Reader reader = new StringReader(str)) {
+            return inputSourceToXML(context, new InputSource(reader));
+        }
 	}
 	
 	

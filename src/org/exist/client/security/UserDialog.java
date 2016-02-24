@@ -103,11 +103,7 @@ public class UserDialog extends javax.swing.JFrame {
 
         cbmiPrimaryGroup.setSelected(true);
         cbmiPrimaryGroup.setText("Primary Group");
-        cbmiPrimaryGroup.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cbmiPrimaryGroupActionPerformed(evt);
-            }
-        });
+        cbmiPrimaryGroup.addActionListener(this::cbmiPrimaryGroupActionPerformed);
         pmMemberOfGroups.add(cbmiPrimaryGroup);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
@@ -138,18 +134,10 @@ public class UserDialog extends javax.swing.JFrame {
         lblUmask.setText("umask:");
 
         btnClose.setText("Close");
-        btnClose.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnCloseActionPerformed(evt);
-            }
-        });
+        btnClose.addActionListener(this::btnCloseActionPerformed);
 
         btnCreate.setText("Create");
-        btnCreate.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnCreateActionPerformed(evt);
-            }
-        });
+        btnCreate.addActionListener(this::btnCreateActionPerformed);
 
         cbPersonalGroup.setSelected(true);
         cbPersonalGroup.setText("Create personal user group");
@@ -173,19 +161,11 @@ public class UserDialog extends javax.swing.JFrame {
 
         btnAddGroup.setText("->");
         btnAddGroup.setToolTipText("Add to Group");
-        btnAddGroup.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnAddGroupActionPerformed(evt);
-            }
-        });
+        btnAddGroup.addActionListener(this::btnAddGroupActionPerformed);
 
         btnRemoveGroup.setText("<-");
         btnRemoveGroup.setToolTipText("Remove from Group");
-        btnRemoveGroup.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnRemoveGroupActionPerformed(evt);
-            }
-        });
+        btnRemoveGroup.addActionListener(this::btnRemoveGroupActionPerformed);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);

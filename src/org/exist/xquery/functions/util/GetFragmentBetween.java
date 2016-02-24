@@ -353,15 +353,17 @@ public class GetFragmentBetween extends Function {
     String result = "";
     final ArrayList<String> elements = pathName2ElementsWithAttributes(pathName);
     if ("open".equals(mode)) {
-      for (int i=0; i < elements.size(); i++) {
-        String element = elements.get(i);
-        element = element.replaceAll("\\[", " ");  // opening element: replace open bracket with space
-        element = element.replaceAll(" eq ", "=");  // opening element: remove @ character 
-        element = element.replaceAll("@", "");  // opening element: remove @ character 
-        element = element.replaceAll("\\]", "");  // opening element: remove closing bracket
-        if (! (element.length() == 0))
-          {result += "<" + element + ">\n";}
-      }
+
+        for (String element : elements) {
+            element = element.replaceAll("\\[", " ");  // opening element: replace open bracket with space
+            element = element.replaceAll(" eq ", "=");  // opening element: remove @ character
+            element = element.replaceAll("@", "");  // opening element: remove @ character
+            element = element.replaceAll("\\]", "");  // opening element: remove closing bracket
+            if (!(element.length() == 0)) {
+                result += "<" + element + ">\n";
+            }
+        }
+
     } else if ("close".equals(mode)) {
       for (int i=elements.size()-1; i >= 0; i--) {
         String element = elements.get(i);
@@ -425,7 +427,7 @@ public class GetFragmentBetween extends Function {
       if (parentNodeType == Node.DOCUMENT_NODE) {
         final String nsUri = n.getNamespaceURI();
         if (nsUri != null) {
-          xpath.append("[@" + "xmlns" + " eq \"" + nsUri + "\"]");
+          xpath.append("[@" + "xmlns" + " eq \"").append(nsUri).append("\"]");
         }
       }
     }
@@ -435,7 +437,8 @@ public class GetFragmentBetween extends Function {
       final String fullNodeName = getFullNodeName(attr);
       final String attrNodeValue = attr.getNodeValue();
       if (!"".equals(fullNodeName) && (! (fullNodeName == null)))
-        {xpath.append("[@" + fullNodeName + " eq \"" + attrNodeValue + "\"]");}
+        {
+          xpath.append("[@").append(fullNodeName).append(" eq \"").append(attrNodeValue).append("\"]");}
     }
     return xpath;
   }

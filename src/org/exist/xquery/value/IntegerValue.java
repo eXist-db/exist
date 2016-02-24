@@ -222,8 +222,8 @@ public class IntegerValue extends NumericValue {
 
 	public boolean hasFractionalPart() {
 		return false;
-	};
-	
+	}
+
 	public Item itemAt(int pos) {
 		return pos == 0 ? this : null;
 	}
@@ -255,9 +255,9 @@ public class IntegerValue extends NumericValue {
 	public boolean isZero() {
 		return value.signum() == 0;
 		//return value.compareTo(ZERO_BIGINTEGER) == Constants.EQUAL;
-	};	
-    
-    public boolean isNegative() {
+	}
+
+	public boolean isNegative() {
         return value.signum()<0;
     }
 

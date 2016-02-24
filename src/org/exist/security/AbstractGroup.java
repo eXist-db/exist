@@ -93,11 +93,11 @@ public abstract class AbstractGroup extends AbstractPrincipal implements Compara
         buf.append("\">");
         try {
             for(final Account manager : getManagers()) {
-                buf.append("<manager name=\"" + manager.getUsername() + "\"/>");
+                buf.append("<manager name=\"").append(manager.getUsername()).append("\"/>");
             }
         } catch(final Throwable e) {
             e.printStackTrace();
-            buf.append("<manager error=\"" + e.getMessage() + "\"/>");
+            buf.append("<manager error=\"").append(e.getMessage()).append("\"/>");
         }
         buf.append("</group>");
         

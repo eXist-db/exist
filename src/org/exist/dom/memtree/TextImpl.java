@@ -71,12 +71,7 @@ public class TextImpl extends AbstractCharacterData implements Text {
 
     @Override
     public String toString() {
-        final StringBuilder result = new StringBuilder();
-        result.append("in-memory#");
-        result.append("text {");
-        result.append(getData());
-        result.append("} ");
-        return (result.toString());
+        return "in-memory#text {" + getData() + "} ";
     }
 
 }

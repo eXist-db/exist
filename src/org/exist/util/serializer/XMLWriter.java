@@ -164,7 +164,7 @@ public class XMLWriter {
         }
         
         if(!doctypeWritten) {
-            writeDoctype(qname.toString());
+            writeDoctype(qname);
         }
         
         try {
@@ -348,7 +348,7 @@ public class XMLWriter {
             writer.write(target);
             if(data != null && data.length() > 0) {
                 writer.write(' ');
-                writer.write(data.toString());
+                writer.write(data);
             }
             writer.write("?>");
         } catch(final IOException ioe) {

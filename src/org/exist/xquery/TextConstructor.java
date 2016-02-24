@@ -82,11 +82,7 @@ public class TextConstructor extends NodeConstructor {
     }
 
     public String toString() {
-        final StringBuilder result = new StringBuilder();
-        result.append("text {");
-        result.append(text.toString());
-        result.append("}");
-        return result.toString();
+        return "text {" + text + "}";
     }
 
     protected final static boolean isWhiteSpace(char ch) {

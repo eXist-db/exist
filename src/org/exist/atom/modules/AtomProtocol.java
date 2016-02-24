@@ -160,7 +160,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
 			if ("feed".equals(root.getLocalName())) {
 				DocumentImpl feedDoc = null;
 				final TransactionManager transact = broker.getBrokerPool().getTransactionManager();
-				try(final Txn transaction = transact.beginTransaction();) {
+				try(final Txn transaction = transact.beginTransaction()) {
 					if (collection != null) {
 						feedDoc = collection.getDocument(broker, FEED_DOCUMENT_URI);
 						if (feedDoc != null) {

@@ -33,7 +33,7 @@ public interface User extends Principal {
      * @return The group the user was added to
      * @throws org.exist.security.PermissionDeniedException
      */
-    public Group addGroup(String group) throws PermissionDeniedException;;
+    public Group addGroup(String group) throws PermissionDeniedException;
 
     /**
      * Add the user to a group
@@ -42,7 +42,7 @@ public interface User extends Principal {
      * @return The group the user was added to
      * @throws org.exist.security.PermissionDeniedException
      */
-    public Group addGroup(Group group) throws PermissionDeniedException;;
+    public Group addGroup(Group group) throws PermissionDeniedException;
 
     /**
      * Remove the user to a group

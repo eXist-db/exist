@@ -45,59 +45,34 @@ public class GuiRestoreListener extends AbstractRestoreListener {
     
     @Override
     public void info(final String message) {
-        SwingUtilities.invokeLater(new Runnable(){
-            @Override
-            public void run() {
-                dialog.displayMessage(message);
-            }
-        });
+        SwingUtilities.invokeLater(() -> dialog.displayMessage(message));
     }
 
     @Override
     public void warn(final String message) {
         super.warn(message);
 
-        SwingUtilities.invokeLater(new Runnable(){
-            @Override
-            public void run() {
-                dialog.displayMessage(message);
-            }
-        });
+        SwingUtilities.invokeLater(() -> dialog.displayMessage(message));
     }
 
     @Override
     public void error(final String message) {
         super.error(message);
      
-        SwingUtilities.invokeLater(new Runnable(){
-            @Override
-            public void run() {
-                dialog.displayMessage(message);
-            }
-        });
+        SwingUtilities.invokeLater(() -> dialog.displayMessage(message));
     }
 
     @Override
     public void observe(final Observable observable) {
         
-        SwingUtilities.invokeLater(new Runnable(){
-            @Override
-            public void run() {
-                observable.addObserver(dialog.getObserver());
-            }
-        });
+        SwingUtilities.invokeLater(() -> observable.addObserver(dialog.getObserver()));
     }
 
     @Override
     public void setCurrentBackup(final String currentBackup) {
         super.setCurrentBackup(currentBackup);
         
-        SwingUtilities.invokeLater(new Runnable(){
-            @Override
-            public void run() {
-                dialog.setBackup(currentBackup);
-            }
-        });
+        SwingUtilities.invokeLater(() -> dialog.setBackup(currentBackup));
     }
     
     
@@ -106,24 +81,14 @@ public class GuiRestoreListener extends AbstractRestoreListener {
     public void setCurrentCollection(final String currentCollectionName) {
         super.setCurrentCollection(currentCollectionName);
         
-        SwingUtilities.invokeLater(new Runnable(){
-            @Override
-            public void run() {
-                dialog.setCollection(currentCollectionName);
-            }
-        });
+        SwingUtilities.invokeLater(() -> dialog.setCollection(currentCollectionName));
     }
     
     @Override
     public void setCurrentResource(final String currentResourceName) {
         super.setCurrentResource(currentResourceName);
 
-        SwingUtilities.invokeLater(new Runnable(){
-            @Override
-            public void run() {
-                dialog.setResource(currentResourceName);
-            }
-        });
+        SwingUtilities.invokeLater(() -> dialog.setResource(currentResourceName));
     }
     
     public void hideDialog() {

@@ -216,28 +216,16 @@ public class ConnectionDialog extends javax.swing.JDialog implements DialogWithR
         jSeparator1 = new javax.swing.JSeparator();
 
         miRemoveFavourite.setText("Remove");
-        miRemoveFavourite.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                miRemoveFavouriteActionPerformed(evt);
-            }
-        });
+        miRemoveFavourite.addActionListener(this::miRemoveFavouriteActionPerformed);
         pmFavourites.add(miRemoveFavourite);
         pmFavourites.add(jSeparator2);
 
         miImportFavourites.setText("Import Favourites...");
-        miImportFavourites.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                miImportFavouritesActionPerformed(evt);
-            }
-        });
+        miImportFavourites.addActionListener(this::miImportFavouritesActionPerformed);
         pmFavourites.add(miImportFavourites);
 
         miExportFavourites.setText("Export Favourites...");
-        miExportFavourites.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                miExportFavouritesActionPerformed(evt);
-            }
-        });
+        miExportFavourites.addActionListener(this::miExportFavouritesActionPerformed);
         pmFavourites.add(miExportFavourites);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
@@ -252,11 +240,7 @@ public class ConnectionDialog extends javax.swing.JDialog implements DialogWithR
         lblConnectionType.setText(getLabelText("LoginPanel.4"));
 
         cmbConnectionType.setModel(getConnectionTypeModel());
-        cmbConnectionType.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cmbConnectionTypeActionPerformed(evt);
-            }
-        });
+        cmbConnectionType.addActionListener(this::cmbConnectionTypeActionPerformed);
 
         txtUsername.setText(getDefaultConnectionSettings().getUsername());
 
@@ -304,11 +288,7 @@ public class ConnectionDialog extends javax.swing.JDialog implements DialogWithR
 
         btnSelectConfiguration.setText("...");
         btnSelectConfiguration.setToolTipText(getLabel("LoginPanel.11"));
-        btnSelectConfiguration.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnSelectConfigurationActionPerformed(evt);
-            }
-        });
+        btnSelectConfiguration.addActionListener(this::btnSelectConfigurationActionPerformed);
 
         javax.swing.GroupLayout panEmbeddedLayout = new javax.swing.GroupLayout(panEmbedded);
         panEmbedded.setLayout(panEmbeddedLayout);
@@ -348,11 +328,7 @@ public class ConnectionDialog extends javax.swing.JDialog implements DialogWithR
         jScrollPane1.setViewportView(lstFavourites);
 
         btnSaveToFavourites.setText(getLabel("LoginPanel.17"));
-        btnSaveToFavourites.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnSaveToFavouritesActionPerformed(evt);
-            }
-        });
+        btnSaveToFavourites.addActionListener(this::btnSaveToFavouritesActionPerformed);
 
         javax.swing.GroupLayout panFavouritesLayout = new javax.swing.GroupLayout(panFavourites);
         panFavourites.setLayout(panFavouritesLayout);
@@ -377,19 +353,11 @@ public class ConnectionDialog extends javax.swing.JDialog implements DialogWithR
         );
 
         btnClose.setText(getLabel("LoginPanel.51"));
-        btnClose.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnCloseActionPerformed(evt);
-            }
-        });
+        btnClose.addActionListener(this::btnCloseActionPerformed);
 
         btnConnect.setText(getLabel("LoginPanel.50"));
         btnConnect.addKeyListener(new EnterKeyAdapter());
-        btnConnect.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnConnectActionPerformed(evt);
-            }
-        });
+        btnConnect.addActionListener(this::btnConnectActionPerformed);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);

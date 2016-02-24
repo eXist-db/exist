@@ -401,16 +401,16 @@ public class Backup
         // write subcollections
         final String[] collections = current.listChildCollections();
 
-        for( int i = 0; i < collections.length; i++ ) {
+        for (String collection : collections) {
 
-            if( current.getName().equals( XmldbURI.SYSTEM_COLLECTION ) && "temp".equals(collections[i]) ) {
+            if (current.getName().equals(XmldbURI.SYSTEM_COLLECTION) && "temp".equals(collection)) {
                 continue;
             }
             attr.clear();
-            attr.addAttribute( Namespaces.EXIST_NS, "name", "name", "CDATA", collections[i] );
-            attr.addAttribute( Namespaces.EXIST_NS, "filename", "filename", "CDATA", encode( URIUtils.urlDecodeUtf8( collections[i] ) ) );
-            serializer.startElement( Namespaces.EXIST_NS, "subcollection", "subcollection", attr );
-            serializer.endElement( Namespaces.EXIST_NS, "subcollection", "subcollection" );
+            attr.addAttribute(Namespaces.EXIST_NS, "name", "name", "CDATA", collection);
+            attr.addAttribute(Namespaces.EXIST_NS, "filename", "filename", "CDATA", encode(URIUtils.urlDecodeUtf8(collection)));
+            serializer.startElement(Namespaces.EXIST_NS, "subcollection", "subcollection", attr);
+            serializer.endElement(Namespaces.EXIST_NS, "subcollection", "subcollection");
         }
 
         // close <collection>
@@ -424,14 +424,14 @@ public class Backup
         // descend into subcollections
         Collection child;
 
-        for( int i = 0; i < collections.length; i++ ) {
-            child = current.getChildCollection( collections[i] );
+        for (String collection : collections) {
+            child = current.getChildCollection(collection);
 
-            if( child.getName().equals( XmldbURI.TEMP_COLLECTION ) ) {
+            if (child.getName().equals(XmldbURI.TEMP_COLLECTION)) {
                 continue;
             }
-            output.newCollection( encode( URIUtils.urlDecodeUtf8( collections[i] ) ) );
-            backup( child, output, dialog );
+            output.newCollection(encode(URIUtils.urlDecodeUtf8(collection)));
+            backup(child, output, dialog);
             output.closeCollection();
         }
     }

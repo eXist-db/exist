@@ -32,7 +32,7 @@ import org.exist.util.LockException;
  */
 public class Txn implements Transaction {
 
-    public enum State { STARTED, ABORTED, COMMITTED, CLOSED };
+    public enum State { STARTED, ABORTED, COMMITTED, CLOSED }
 
     private long id;
 

@@ -56,9 +56,7 @@ public abstract class AbstractBackupDescriptor implements BackupDescriptor
                     date = dtv.getDate();
                 }
             }
-            catch( final IOException e ) {
-            }
-            catch( final XPathException e ) {
+            catch( final IOException | XPathException e ) {
             }
 
             if( date == null ) {

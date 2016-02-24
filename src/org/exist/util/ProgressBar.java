@@ -46,7 +46,7 @@ public class ProgressBar {
 		int pos = percent / 2;
 		if(pos == mPosition)
 			{return;}
-		final StringBuffer buf = new StringBuffer();
+		final StringBuilder buf = new StringBuilder();
 		buf.append(mMessage);
 		buf.append(" [");
 		int i = 0;

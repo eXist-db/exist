@@ -794,8 +794,8 @@ public class ElementImpl extends NamedNode implements Element {
             for(final Iterator<Map.Entry<String, String>> i =
                     namespaceMappings.entrySet().iterator(); i.hasNext(); ) {
                 final Map.Entry<String, String> entry = i.next();
-                final String prefix = entry.getKey().toString();
-                final String ns = entry.getValue().toString();
+                final String prefix = entry.getKey();
+                final String ns = entry.getValue();
                 final QName attrName = new QName(prefix, Namespaces.XMLNS_NS, XMLConstants.XMLNS_ATTRIBUTE);
                 final AttrImpl attr = new AttrImpl(attrName, ns, null);
                 attr.setOwnerDocument(ownerDocument);
@@ -1177,7 +1177,7 @@ public class ElementImpl extends NamedNode implements Element {
         final TransactionManager transact = ownerDocument.getBrokerPool().getTransactionManager();
 
         try(final DBBroker broker = ownerDocument.getBrokerPool().getBroker();
-                final Txn transaction = transact.beginTransaction();) {
+                final Txn transaction = transact.beginTransaction()) {
             insertBefore(transaction, nl, refChild);
             broker.storeXMLResource(transaction, getOwnerDocument());
             transact.commit(transaction);

@@ -377,15 +377,15 @@ public class DatabaseImpl implements Database {
                 break;
 
             case SSL_ENABLE:
-                value = Boolean.valueOf(ssl_enable).toString();
+                value = ssl_enable.toString();
                 break;
 
             case SSL_ALLOW_SELF_SIGNED:
-                value = Boolean.valueOf(ssl_allow_self_signed).toString();
+                value = ssl_allow_self_signed.toString();
                 break;
 
             case SSL_VERIFY_HOSTNAME:
-                value = Boolean.valueOf(ssl_verify_hostname).toString();
+                value = ssl_verify_hostname.toString();
                 break;
 
             default:

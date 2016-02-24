@@ -34,7 +34,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import org.apache.commons.io.output.ByteArrayOutputStream;;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 
 /**
  * 
@@ -170,13 +170,10 @@ public class VirtualTempFile
 		        
 		        tempFile.deleteOnExit();
 		        LOG.debug("Writing to temporary file: " + tempFile.getName());
-		        
-		        final OutputStream tmpBuffer = new FileOutputStream(tempFile);
-		        try {
-		        	tmpBuffer.write(theBlock);
-		        } finally {
-		        	tmpBuffer.close();
-		        }
+
+				try (final OutputStream tmpBuffer = new FileOutputStream(tempFile)) {
+					tmpBuffer.write(theBlock);
+				}
 			} catch(final IOException ioe) {
 				// Do Nothing(R)
 			}

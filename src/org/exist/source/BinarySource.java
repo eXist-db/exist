@@ -46,13 +46,11 @@ public class BinarySource extends AbstractSource {
 
     private void checkEncoding() throws IOException {
         if (checkEncoding) {
-            final InputStream is = getInputStream();
-            try {
+            try (final InputStream is = getInputStream()) {
                 String checkedEnc = guessXQueryEncoding(is);
-                if (checkedEnc != null)
-                    {encoding = checkedEnc;}
-            } finally {
-                is.close();
+                if (checkedEnc != null) {
+                    encoding = checkedEnc;
+                }
             }
         }
     }

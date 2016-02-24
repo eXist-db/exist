@@ -38,16 +38,8 @@ public abstract class BinaryValueType<T extends FilterOutputStream> {
             final Constructor<T> c = coder.getConstructor(OutputStream.class, boolean.class);
             final T f = c.newInstance(stream, encoder);
             return f;
-        } catch(final NoSuchMethodException nsme) {
+        } catch(final NoSuchMethodException | InvocationTargetException | IllegalAccessException | IllegalArgumentException | InstantiationException nsme) {
             throw new IOException("Unable to get binary coder '" + coder.getName() +  "': " + nsme.getMessage(), nsme);
-        } catch(final InstantiationException ie) {
-            throw new IOException("Unable to get binary coder '" + coder.getName() +  "': " + ie.getMessage(), ie);
-        } catch(final IllegalArgumentException iae) {
-            throw new IOException("Unable to get binary coder '" + coder.getName() +  "': " + iae.getMessage(), iae);
-        } catch(final IllegalAccessException iae) {
-            throw new IOException("Unable to get binary coder '" + coder.getName() +  "': " + iae.getMessage(), iae);
-        } catch(final InvocationTargetException ite) {
-            throw new IOException("Unable to get binary coder '" + coder.getName() +  "': " + ite.getMessage(), ite);
         }
     }
 

@@ -539,14 +539,7 @@ public class DLNBase {
     }
 
     public String debug() {
-        final StringBuilder buf = new StringBuilder();
-        buf.append(toString());
-        buf.append(" = ");
-        buf.append(toBitString());
-        buf.append(" [");
-        buf.append(bitIndex + 1);
-        buf.append(']');
-        return buf.toString();
+        return toString() + " = " + toBitString() + " [" +  (bitIndex + 1) + ']';
     }
 
     @Override
@@ -571,8 +564,8 @@ public class DLNBase {
     public String toBitString() {
         final StringBuilder buf = new StringBuilder();
         final int len = bits.length;
-        for (int i = 0; i < len; i++) {
-            buf.append(toBitString(bits[i]));
+        for (byte bit : bits) {
+            buf.append(toBitString(bit));
         }
         return buf.toString();
     }

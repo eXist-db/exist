@@ -574,12 +574,9 @@ public class Transform extends BasicFunction {
 				long modified = connection.getLastModified();
 				if(!caching || (templates == null || modified > lastModified || modified == 0)) {
 					LOG.debug("compiling stylesheet " + url.toString());
-                    final InputStream is = connection.getInputStream();
-                    try {
-                        templates = factory.newTemplates(new StreamSource(is));
-                    } finally {
-                        is.close();
-                    }
+					try (final InputStream is = connection.getInputStream()) {
+						templates = factory.newTemplates(new StreamSource(is));
+					}
 				}
 				lastModified = modified;
 			}
@@ -676,7 +673,7 @@ public class Transform extends BasicFunction {
 			
 			if (numSimplifiedComponents == 0) {return "/";}
 			
-			final StringBuffer	b = new StringBuffer(path.length());
+			final StringBuilder b = new StringBuilder(path.length());
 			for(int x = 0; x < numSimplifiedComponents; x++) {
 				b.append("/").append(simplifiedComponents[x]);
 			}

@@ -82,22 +82,22 @@ public class DiskUsage implements DiskUsageMBean {
 
     @Override
     public long getDataDirectoryTotalSpace() {
-        return measureFileStore(dataDir, fs -> fs.getTotalSpace());
+        return measureFileStore(dataDir, FileStore::getTotalSpace);
     }
 
     @Override
     public long getDataDirectoryUsableSpace() {
-        return measureFileStore(dataDir, fs -> fs.getUsableSpace());
+        return measureFileStore(dataDir, FileStore::getUsableSpace);
     }
 
     @Override
     public long getJournalDirectoryTotalSpace() {
-        return measureFileStore(journalDir, fs -> fs.getTotalSpace());
+        return measureFileStore(journalDir, FileStore::getTotalSpace);
     }
 
     @Override
     public long getJournalDirectoryUsableSpace() {
-        return measureFileStore(journalDir, fs -> fs.getUsableSpace());
+        return measureFileStore(journalDir, FileStore::getUsableSpace);
     }
 
     @Override

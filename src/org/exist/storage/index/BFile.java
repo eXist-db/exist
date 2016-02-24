@@ -284,9 +284,7 @@ public class BFile extends BTree {
     public boolean containsKey(Value key) {
         try {
             return findValue(key) != KEY_NOT_FOUND;
-        } catch (final BTreeException e) {
-            LOG.warn(e.getMessage());
-        } catch (final IOException e) {
+        } catch (final BTreeException | IOException e) {
             LOG.warn(e.getMessage());
         }
         return false;
@@ -420,7 +418,7 @@ public class BFile extends BTree {
             {buf.append("N/A");}
         else
             {buf.append(nf.format(dataCache.getUsedBuffers()/(float)dataCache.getBuffers()));}
-        buf.append(" (" + dataCache.getUsedBuffers() + " out of " + dataCache.getBuffers() + ")");
+        buf.append(" (").append(dataCache.getUsedBuffers()).append(" out of ").append(dataCache.getBuffers()).append(")");
         //buf.append(dataCache.getBuffers()).append(" / ");
         //buf.append(dataCache.getUsedBuffers()).append(" / ");
         buf.append(" Cache efficiency : ");
@@ -725,10 +723,8 @@ public class BFile extends BTree {
             final DataPage page = getDataPage(pos);
             remove(transaction, page, p);
             removeValue(transaction, key);
-        } catch (final BTreeException bte) {
+        } catch (final BTreeException | IOException bte) {
             LOG.debug(bte);
-        } catch (final IOException ioe) {
-            LOG.debug(ioe);
         }
     }
 
@@ -904,10 +900,8 @@ public class BFile extends BTree {
             final long p = findValue(key);
             if (p == KEY_NOT_FOUND) {return UNKNOWN_ADDRESS;}
             return update(p, key, value);
-        } catch (final BTreeException bte) {
+        } catch (final BTreeException | IOException bte) {
             LOG.debug(bte);
-        } catch (final IOException ioe) {
-            LOG.debug(ioe);
         }
         return UNKNOWN_ADDRESS;
     }

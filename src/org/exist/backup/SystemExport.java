@@ -216,7 +216,7 @@ public class SystemExport
             if(zip) {
                 fWriter = p -> new ZipWriter(p, XmldbURI.ROOT_COLLECTION );
             } else {
-                fWriter = p -> new FileSystemWriter(p);
+                fWriter = FileSystemWriter::new;
             }
 
             try(final BackupWriter output = fWriter.apply(backupFile)) {

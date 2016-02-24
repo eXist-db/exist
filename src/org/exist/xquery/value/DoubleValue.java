@@ -89,7 +89,7 @@ public class DoubleValue extends NumericValue {
 		if (isInfinite())
 			{return false;}
 		return new DecimalValue(new BigDecimal(value)).hasFractionalPart();
-	};	
+	}
 
 	public Item itemAt(int pos) {
 		return pos == 0 ? this : null;

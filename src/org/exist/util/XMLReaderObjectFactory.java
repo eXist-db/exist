@@ -52,7 +52,7 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory {
 
     public static enum VALIDATION_SETTING {
         UNKNOWN, ENABLED, AUTO, DISABLED
-    };
+    }
 
     public final static String CONFIGURATION_ENTITY_RESOLVER_ELEMENT_NAME = "entity-resolver";
     public final static String CONFIGURATION_CATALOG_ELEMENT_NAME = "catalog";

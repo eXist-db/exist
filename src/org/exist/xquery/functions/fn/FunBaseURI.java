@@ -151,12 +151,12 @@ public class FunBaseURI extends BasicFunction {
             //The base-uri property of the node is empty. 
             //The parent property of the node is empty.
             if (type != Node.DOCUMENT_NODE && domNode.getParentNode() == null)
-                {;}
+                {
+                }
             else if ((type == Node.PROCESSING_INSTRUCTION_NODE ||
                 type == Node.COMMENT_NODE) && (domNode.getParentNode() != null
                 && domNode.getParentNode().getNodeType() == Node.DOCUMENT_NODE)) {
                 //Nothing to do
-                ;
             } else if (type == Node.ATTRIBUTE_NODE ||
                     type == Node.ELEMENT_NODE || type == Node.DOCUMENT_NODE ||
                     type == Node.PROCESSING_INSTRUCTION_NODE || type == Node.COMMENT_NODE) {

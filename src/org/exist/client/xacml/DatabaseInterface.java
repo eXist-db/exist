@@ -146,7 +146,7 @@ public class DatabaseInterface
 			}
 			catch (final XMLDBException e)
 			{
-				final StringBuffer message = new StringBuffer();
+				final StringBuilder message = new StringBuilder();
 				message.append("Error saving policy '");
 				message.append(node.getId());
 				message.append("' ");
@@ -187,12 +187,11 @@ public class DatabaseInterface
 		try
 		{
 			final String[] resourceIds = policyCollection.listResources();
-			for(int i = 0; i < resourceIds.length; ++i)
-			{
-				final String resourceId = resourceIds[i];
+			for (final String resourceId : resourceIds) {
 				final Resource resource = policyCollection.getResource(resourceId);
-				if(resource != null && resource instanceof XMLResource)
-					{handleResource((XMLResource)resource, root);}
+				if (resource != null && resource instanceof XMLResource) {
+					handleResource((XMLResource) resource, root);
+				}
 			}
 		}
 		catch (final XMLDBException xe)

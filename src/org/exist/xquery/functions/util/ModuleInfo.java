@@ -168,7 +168,7 @@ public class ModuleInfo extends BasicFunction {
         } else if ("mapped-modules".equals(getSignature().getName().getLocalPart())) {
             final ValueSequence resultSeq = new ValueSequence();
             for (final Iterator<String> i = context.getMappedModuleURIs(); i.hasNext();) {
-                resultSeq.add(new StringValue(i.next().toString()));
+                resultSeq.add(new StringValue(i.next()));
             }
             return resultSeq;
 		} else if ("is-module-mapped".equals(getSignature().getName().getLocalPart())) {

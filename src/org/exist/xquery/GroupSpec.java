@@ -78,11 +78,8 @@ public class GroupSpec {
         return this.keyVarName; 
     } 
      
-    public String toString() { 
-        final StringBuilder buf = new StringBuilder();
-        buf.append('$').append(keyVarName).append(" := ");
-        buf.append(ExpressionDumper.dump(expression)); 
-        return buf.toString(); 
+    public String toString() {
+        return "$" + keyVarName + " := " + ExpressionDumper.dump(expression);
     } 
      
     public void resetState(boolean postOptimization) {

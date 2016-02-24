@@ -961,7 +961,7 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 			
 			// Also return the content parameters, these are not part 
 			// of the standard HttpServletRequest.toString() output
-			final StringBuffer buf = new StringBuffer( request.toString());
+			final StringBuilder buf = new StringBuilder( request.toString());
 
 			final Set<Map.Entry<String, Vector<RequestParamater>>> setParams = params.entrySet();
 
@@ -980,8 +980,7 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 				}
 			}
 
-			buf.append(	System.getProperty("line.separator") +
-						System.getProperty("line.separator") );
+			buf.append(System.getProperty("line.separator")).append(System.getProperty("line.separator"));
 
 			return buf.toString();
 
@@ -997,8 +996,7 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 				ioe.printStackTrace();
 			}
 			
-			buf.append(	System.getProperty("line.separator") +
-						System.getProperty("line.separator") );
+			buf.append(System.getProperty("line.separator")).append(System.getProperty("line.separator"));
 			return buf.toString();
 
 		} else {
