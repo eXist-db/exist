@@ -34,19 +34,13 @@ import org.exist.xquery.XPathException;
 public class HexBinaryValueType extends BinaryValueType<HexOutputStream> {
 
     private final static Pattern hexPattern = Pattern.compile("[A-Fa-f0-9]*");
-    private Matcher matcher;
 
     public HexBinaryValueType() {
         super(Type.HEX_BINARY, HexOutputStream.class);
     }
 
-    private Matcher getMatcher(String toMatch) {
-        if(matcher == null) {
-            matcher = hexPattern.matcher(toMatch);
-        } else {
-            matcher = matcher.reset(toMatch);
-        }
-        return matcher;
+    private Matcher getMatcher(final String toMatch) {
+        return hexPattern.matcher(toMatch);
     }
 
     @Override

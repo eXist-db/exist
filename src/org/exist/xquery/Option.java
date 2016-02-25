@@ -47,7 +47,6 @@ public class Option {
 		"\\s*([\\w\\.-]+)\\s*=\\s*('[^']*'|\"[^\"]*\"|[^\"\'\\s][^\\s]*)";
 	
 	private final static Pattern pattern = Pattern.compile(paramPattern);
-	private final static Matcher matcher = pattern.matcher("");
     
 	private final QName qname;
 	private final String contents;
@@ -83,11 +82,12 @@ public class Option {
     }
 
     public static synchronized String[] parseKeyValuePair(String s) {
-        matcher.reset(s);
+        final Matcher matcher = pattern.matcher(s);
 		if(matcher.matches()) {
 			String value = matcher.group(2);
-			if(value.charAt(0) == '\'' || value.charAt(0) == '"')
-				{value = value.substring(1, value.length() - 1);}
+			if(value.charAt(0) == '\'' || value.charAt(0) == '"') {
+				value = value.substring(1, value.length() - 1);
+			}
 			return new String[] { matcher.group(1), value };
 		}
 		return null;

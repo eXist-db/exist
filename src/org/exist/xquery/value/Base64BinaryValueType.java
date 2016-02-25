@@ -17,19 +17,12 @@ public class Base64BinaryValueType extends BinaryValueType<Base64OutputStream> {
     //private final static Pattern base64Pattern = Pattern.compile("^((?:(?:\\s*[A-Za-z0-9+/]){4})*(?:(?:\\s*[A-Za-z0-9+/]){1}(?:\\s*[AQgw]){1}\\s*=\\s*=|(?:\\s*[A-Za-z0-9+/]){3}\\s*=)?)$");
     private final static Pattern base64Pattern = Pattern.compile("^((?>(?>\\s*[A-Za-z0-9+/]){4})*(?>(?>\\s*[A-Za-z0-9+/]){1}(?>\\s*[AQgw]){1}\\s*=\\s*=|(?>\\s*[A-Za-z0-9+/]){3}\\s*=)?)$");
 
-    private Matcher matcher;
-
     public Base64BinaryValueType() {
         super(Type.BASE64_BINARY, Base64OutputStream.class);
     }
 
-    private Matcher getMatcher(String toMatch) {
-        if(matcher == null) {
-            matcher = base64Pattern.matcher(toMatch);
-        } else {
-            matcher = matcher.reset(toMatch);
-        }
-        return matcher;
+    private Matcher getMatcher(final String toMatch) {
+        return base64Pattern.matcher(toMatch);
     }
 
     @Override
