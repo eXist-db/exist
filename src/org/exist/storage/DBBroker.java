@@ -423,12 +423,12 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
      * 
      */
     public void removeXMLResource(Txn transaction, DocumentImpl document)
-            throws PermissionDeniedException {
+            throws PermissionDeniedException, IOException {
         removeXMLResource(transaction, document, true);
     }
 
     public abstract void removeXMLResource(Txn transaction,
-        DocumentImpl document, boolean freeDocId) throws PermissionDeniedException;
+        DocumentImpl document, boolean freeDocId) throws PermissionDeniedException, IOException;
 
     /**
      * Reindex a collection.
@@ -440,7 +440,7 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
      * PermissionDeniedException;
      */
     public abstract void reindexCollection(XmldbURI collectionName)
-        throws PermissionDeniedException;
+            throws PermissionDeniedException, IOException;
 
     /**
      * Repair indexes. Should delete all secondary indexes and rebuild them.
@@ -448,7 +448,7 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
      *
      * @throws PermissionDeniedException
      */
-    public abstract void repair() throws PermissionDeniedException;
+    public abstract void repair() throws PermissionDeniedException, IOException;
 
     /**
      * Repair core indexes (dom, collections ...). This method is called immediately
@@ -638,7 +638,7 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
 	 */
 	public abstract void copyResource(Txn transaction, DocumentImpl doc,
 			Collection destination, XmldbURI newName)
-			throws PermissionDeniedException, LockException, EXistException;
+            throws PermissionDeniedException, LockException, EXistException, IOException;
 
 	/**
 	 * Defragment pages of this document. This will minimize the number of split

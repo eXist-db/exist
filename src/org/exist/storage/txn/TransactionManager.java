@@ -37,6 +37,7 @@ import org.exist.storage.recovery.RecoveryManager;
 import org.exist.util.ReadOnlyException;
 import org.exist.xmldb.XmldbURI;
 
+import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -306,7 +307,7 @@ public class TransactionManager {
      * @Deprecated This mixes concerns and should not be here.
      */
     @Deprecated
-    public void reindex(final DBBroker broker) {
+    public void reindex(final DBBroker broker) throws IOException {
         broker.pushSubject(broker.getBrokerPool().getSecurityManager().getSystemSubject());
         try {
             broker.reindexCollection(XmldbURI.ROOT_COLLECTION_URI);

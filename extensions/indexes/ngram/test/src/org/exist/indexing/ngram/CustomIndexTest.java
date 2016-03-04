@@ -450,7 +450,7 @@ public class CustomIndexTest {
     }
  
     @Test
-    public void reindex() throws PermissionDeniedException, XPathException, URISyntaxException, EXistException {
+    public void reindex() throws PermissionDeniedException, XPathException, URISyntaxException, EXistException, IOException {
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             	final Txn transaction = transact.beginTransaction()) {
@@ -480,7 +480,7 @@ public class CustomIndexTest {
     }
 
     @Test
-    public void dropIndex() throws EXistException, PermissionDeniedException, XPathException, LockException, TriggerException {
+    public void dropIndex() throws EXistException, PermissionDeniedException, XPathException, LockException, TriggerException, IOException {
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn transaction = transact.beginTransaction()) {

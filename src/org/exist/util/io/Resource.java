@@ -584,7 +584,8 @@ public class Resource extends File {
 
                 return true;
 	        }
-        } catch (final EXistException | PermissionDeniedException | LockException | TriggerException e) {
+        } catch (final EXistException | IOException | PermissionDeniedException | LockException | TriggerException e) {
+            LOG.error(e);
             return false;
         }
     }
