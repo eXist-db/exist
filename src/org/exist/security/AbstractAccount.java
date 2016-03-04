@@ -246,20 +246,18 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
 
     @Override
     public boolean equals(final Object obj) {
-        final AbstractAccount other;
-        if (obj instanceof AbstractSubject) {
-            other = ((AbstractSubject) obj).account;
-        } else if (obj instanceof AbstractAccount) {
-            other = (AbstractAccount) obj;
-        } else {
-            other = null;
-        }
-
-        if (other != null){
-            return (getRealm() == other.getRealm() && name.equals(other.name));
-        } //id == other.id;
-
-        return false;
+        return Optional
+                .ofNullable(obj)
+                .flatMap(other -> {
+                    if(other instanceof AbstractSubject) {
+                        return Optional.of(((AbstractSubject)other).account);
+                    } else if(other instanceof AbstractAccount) {
+                        return Optional.of((AbstractAccount)other);
+                    } else {
+                        return Optional.empty();
+                    }
+                }).map(otherAccount -> getRealm().equals(otherAccount.getRealm()) && name.equals(otherAccount.name))
+                .orElse(false);
     }
 
     @Override

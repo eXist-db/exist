@@ -19,6 +19,7 @@
  */
 package org.exist.security;
 
+import java.util.Optional;
 import java.util.Set;
 
 import org.exist.config.Configuration;
@@ -176,7 +177,11 @@ public abstract class AbstractSubject implements Subject {
 
     @Override
     public boolean equals(final Object obj) {
-        return account.equals(obj);
+       return Optional
+               .ofNullable(obj)
+               .flatMap(other -> other instanceof Account ? Optional.of((Account)other) : Optional.empty())
+               .map(otherAccount -> account.equals(otherAccount))
+               .orElse(false);
     }
 
     @Override
