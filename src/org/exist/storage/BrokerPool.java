@@ -20,6 +20,7 @@
  */
 package org.exist.storage;
 
+import net.jcip.annotations.GuardedBy;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Database;
@@ -78,6 +79,7 @@ import java.text.NumberFormat;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * This class controls all available instances of the database.
@@ -494,11 +496,9 @@ public class BrokerPool implements Database {
     private boolean checkpoint = false;
 
     /**
-     * <code>true</code> if the database instance is running in read-only mode.
+     * Indicates whether the database is operating in read-only mode
      */
-    //TODO : this should be computed by the DBrokers depending of their configuration/capabilities
-    //TODO : for now, this member is used for recovery management
-    private boolean readOnly;
+    @GuardedBy("itself") private Boolean readOnly = Boolean.FALSE;
 
     @ConfigurationFieldAsAttribute("pageSize")
     private int pageSize;
@@ -722,8 +722,10 @@ public class BrokerPool implements Database {
             initialize();
         } catch(final Throwable e) {
             // remove that file lock we may have acquired in canReadDataDir
-            if(dataLock != null && !readOnly) {
-                dataLock.release();
+            synchronized(readOnly) {
+                if (dataLock != null && !readOnly) {
+                    dataLock.release();
+                }
             }
 
             if(!instances.containsKey(instanceName)) {
@@ -1316,24 +1318,30 @@ public class BrokerPool implements Database {
      */
     public boolean isTransactional() {
         //TODO : confusion between dataDir and a so-called "journalDir" !
-        return !readOnly && transactionsEnabled;
+        synchronized(readOnly) {
+            return !readOnly && transactionsEnabled;
+        }
     }
 
     @Override
     public boolean isReadOnly() {
-        final long freeSpace = dataLock.getFile().toFile().getUsableSpace();
-        if (freeSpace < diskSpaceMin) {
-            LOG.fatal("Partition containing DATA_DIR: " + dataLock.getFile().toAbsolutePath().toString() + " is running out of disk space. " +
-                "Switching eXist-db to read only to prevent data loss!");
-            setReadOnly();
-        }
+        synchronized(readOnly) {
+            final long freeSpace = dataLock.getFile().toFile().getUsableSpace();
+            if (freeSpace < diskSpaceMin) {
+                LOG.fatal("Partition containing DATA_DIR: " + dataLock.getFile().toAbsolutePath().toString() + " is running out of disk space. " +
+                        "Switching eXist-db to read only to prevent data loss!");
+                setReadOnly();
+            }
 
-        return readOnly;
+            return readOnly;
+        }
     }
 
     public void setReadOnly() {
         LOG.warn("Switching database into read-only mode!");
-        readOnly = true;
+        synchronized (readOnly) {
+            readOnly = true;
+        }
     }
 
     public boolean isInServiceMode() {
@@ -1998,10 +2006,11 @@ public class BrokerPool implements Database {
                 //Clear the living instances container
                 instances.remove(instanceName);
 
-                if(!readOnly)
-                // release the lock on the data directory
-                {
-                    dataLock.release();
+                synchronized (readOnly) {
+                    if (!readOnly) {
+                        // release the lock on the data directory
+                        dataLock.release();
+                    }
                 }
 
                 LOG.info("shutdown complete !");
