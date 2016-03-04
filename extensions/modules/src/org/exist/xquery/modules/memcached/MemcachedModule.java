@@ -21,6 +21,7 @@ package org.exist.xquery.modules.memcached;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 
 import net.spy.memcached.MemcachedClient;
 
@@ -49,7 +50,7 @@ public class MemcachedModule extends AbstractInternalModule
     public final static String INCLUSION_DATE = "2010-08-01";
     public final static String RELEASED_IN_VERSION = "eXist-2.0 (spymemcached-based)";
     
-    private static HashMap<Long, MemcachedClient> clients = new HashMap<Long, MemcachedClient>();
+    private static final Map<Long, MemcachedClient> clients = new HashMap<>();
 	
 	private final static FunctionDef[] functions = {
 		
@@ -66,7 +67,7 @@ public class MemcachedModule extends AbstractInternalModule
 	
 	public final static String CLIENTS_CONTEXTVAR		= "_eXist_memcached_clients";
 
-	private static long currentSessionHandle = System.currentTimeMillis();
+	private static AtomicLong currentSessionHandle = new AtomicLong(System.currentTimeMillis());
 	
 	
 	public MemcachedModule(Map<String, List<? extends Object>> parameters)
@@ -97,29 +98,28 @@ public class MemcachedModule extends AbstractInternalModule
     }
 
 	
-	final static MemcachedClient retrieveClient( long clientHandle ) 
+	final static synchronized MemcachedClient retrieveClient(final long clientHandle)
 	{
-		return ( clients.get( Long.valueOf( clientHandle ) ) );
+		return clients.get(Long.valueOf(clientHandle));
 	}
 
 
-	final static synchronized long storeClient(MemcachedClient client ) 
+	final static synchronized long storeClient(final MemcachedClient client)
 	{
-		long clientHandle = getHandle();
-		clients.put( Long.valueOf( clientHandle ), client );
-		return( clientHandle );
+		final long clientHandle = getHandle();
+		clients.put(Long.valueOf(clientHandle), client);
+		return clientHandle;
 	}
 
-	final static synchronized  void shutdownClient( long clientHandle ) 
+	final static synchronized  void shutdownClient( final long clientHandle )
 	{
-		MemcachedClient client = clients.get( clientHandle );
+		final MemcachedClient client = clients.remove(Long.valueOf(clientHandle));
 		client.shutdown();
-		clients.remove( Long.valueOf( clientHandle ) ) ;
 	}
 	
-	protected static synchronized long getHandle() 
+	protected static long getHandle()
 	{
-		return( currentSessionHandle++ );
+		return currentSessionHandle.incrementAndGet();
 	}
 	
 }
