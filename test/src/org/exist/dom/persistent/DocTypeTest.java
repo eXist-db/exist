@@ -74,7 +74,7 @@ public class DocTypeTest {
 			final Path testFile = FileUtils.resolve(existHome, "test/src/org/exist/dom/persistent/test_content.xml");
 			assertTrue(Files.isReadable(testFile));
 			
-			final InputSource is = new FileInputSource(testFile.toFile());
+			final InputSource is = new FileInputSource(testFile);
 
 			try(final Txn transaction = transact.beginTransaction()) {
                 final IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("test2.xml"), is);

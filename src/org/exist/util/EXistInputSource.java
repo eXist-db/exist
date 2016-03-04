@@ -2,7 +2,9 @@ package org.exist.util;
 
 import org.xml.sax.InputSource;
 
-public abstract class EXistInputSource extends InputSource {
+import java.io.Closeable;
+
+public abstract class EXistInputSource extends InputSource implements Closeable {
 	public EXistInputSource() {
 		super();
 	}
@@ -11,5 +13,6 @@ public abstract class EXistInputSource extends InputSource {
 	
 	public abstract String getSymbolicPath();
 
+	@Override
     public abstract void close();
 }

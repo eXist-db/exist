@@ -20,6 +20,7 @@
 package org.exist.util.function;
 
 import java.util.NoSuchElementException;
+import java.util.function.Function;
 
 /**
  * A disjoint union, more basic than but similar to {@link scala.util.Either}
@@ -52,18 +53,43 @@ public abstract class Either<L, R> {
     public final RightProjection<L, R> right() {
         return new RightProjection(this);
     }
-    
+
+    /**
+     * Catamorphism. Run the first given function if left,
+     * otherwise the second given function
+     *
+     *
+     * @param <T> The result type from performing the fold
+     * @param lf A function that may be applied to the left-hand-side
+     * @param rf A function that may be applied to the right-hand-side
+     */
+    public final <T> T fold(final Function<L, T> lf, final Function<R, T> rf) {
+        if(isLeft) {
+            return lf.apply(((Left<L, R>)this).value);
+        } else {
+            return rf.apply(((Right<L, R>)this).value);
+        }
+    }
+
+    public final static <L, R> Either<L, R> Left(final L value) {
+        return new Left<>(value);
+    }
+
+    public final static <L, R> Either<L, R> Right(final R value) {
+        return new Right<>(value);
+    }
+
     public final static class Left<L, R> extends Either<L, R> {
         final L value;
-        public Left(final L value) {
+        private Left(final L value) {
             super(true);
             this.value = value;
         }
     }
-    
+
     public final static class Right<L, R> extends Either<L, R> {
         final R value;
-        public Right(final R value) {
+        private Right(final R value) {
             super(false);
             this.value = value;
         }
