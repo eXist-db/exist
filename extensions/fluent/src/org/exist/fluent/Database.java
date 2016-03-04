@@ -531,7 +531,7 @@ public class Database {
 		public void sync() {}
 		public void printStatistics() {}
 		
-		public boolean close() {return true;}
+		public void close() {}
 		public void remove() {}
 		public void closeAndRemove() {
 			// TODO:  do nothing OK here?  indexes just got wiped and recreated, and this listener

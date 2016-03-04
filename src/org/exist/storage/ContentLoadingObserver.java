@@ -35,7 +35,7 @@ import org.exist.util.ReadOnlyException;
  * startElement() and endElement() bear the same names as the corresponding SAX events.  
  * However storeXXX() have no corresponding method in SAX.
  */
-public interface ContentLoadingObserver {
+public interface ContentLoadingObserver extends AutoCloseable {
 
 	/** store and index given attribute */
 	//TODO : remove the RangeIndexSpec dependency ASAP
@@ -79,7 +79,8 @@ public interface ContentLoadingObserver {
 	 sync() is called from time to time by the background sync daemon. */
 	public void sync();
 
-	public boolean close() throws DBException;
+	@Override
+	public void close() throws DBException;
 	
 	public void closeAndRemove();
 	
