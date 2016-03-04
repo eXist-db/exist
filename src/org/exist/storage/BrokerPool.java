@@ -498,7 +498,7 @@ public class BrokerPool implements Database {
      */
     //TODO : this should be computed by the DBrokers depending of their configuration/capabilities
     //TODO : for now, this member is used for recovery management
-    private boolean isReadOnly;
+    private boolean readOnly;
 
     @ConfigurationFieldAsAttribute("pageSize")
     private int pageSize;
@@ -722,7 +722,7 @@ public class BrokerPool implements Database {
             initialize();
         } catch(final Throwable e) {
             // remove that file lock we may have acquired in canReadDataDir
-            if(dataLock != null && !isReadOnly) {
+            if(dataLock != null && !readOnly) {
                 dataLock.release();
             }
 
@@ -1316,23 +1316,24 @@ public class BrokerPool implements Database {
      */
     public boolean isTransactional() {
         //TODO : confusion between dataDir and a so-called "journalDir" !
-        return !isReadOnly && transactionsEnabled;
+        return !readOnly && transactionsEnabled;
     }
 
+    @Override
     public boolean isReadOnly() {
         final long freeSpace = dataLock.getFile().toFile().getUsableSpace();
-        if(freeSpace < diskSpaceMin) {
+        if (freeSpace < diskSpaceMin) {
             LOG.fatal("Partition containing DATA_DIR: " + dataLock.getFile().toAbsolutePath().toString() + " is running out of disk space. " +
                 "Switching eXist-db to read only to prevent data loss!");
             setReadOnly();
         }
 
-        return isReadOnly;
+        return readOnly;
     }
 
     public void setReadOnly() {
         LOG.warn("Switching database into read-only mode!");
-        isReadOnly = true;
+        readOnly = true;
     }
 
     public boolean isInServiceMode() {
@@ -1997,7 +1998,7 @@ public class BrokerPool implements Database {
                 //Clear the living instances container
                 instances.remove(instanceName);
 
-                if(!isReadOnly)
+                if(!readOnly)
                 // release the lock on the data directory
                 {
                     dataLock.release();
