@@ -38,6 +38,7 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -1249,7 +1250,7 @@ public class Configurator {
         }
     }
     
-    protected static final Set<FullXmldbURI> saving = new HashSet<>();
+    protected static final Set<FullXmldbURI> saving = new ConcurrentSkipListSet<>();
 
     public static DocumentImpl save(final Configurable instance, final DBBroker broker, final Collection collection, final XmldbURI uri) throws IOException, ConfigurationException {
         
