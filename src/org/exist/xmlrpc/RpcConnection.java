@@ -106,6 +106,8 @@ import java.io.*;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.zip.DeflaterOutputStream;
@@ -1418,14 +1420,17 @@ public class RpcConnection implements RpcAPI {
                 } catch (final NumberFormatException nfe) {
                     // As this file can be a non-temporal one, we should not
                     // blindly erase it!
-                    final File file = new File(localFile);
-                    if (!file.canRead()) {
-                        throw new EXistException("unable to read file " + file.getAbsolutePath());
+                    final Path file = Paths.get(localFile);
+                    if (!Files.isReadable(file)) {
+                        throw new EXistException("unable to read file " + file.toAbsolutePath().toString());
                     }
 
                     source = new VirtualTempFileInputSource(file);
                 } catch (final IOException ioe) {
                     throw new EXistException("Error preparing virtual temp file for parsing");
+                }
+                finally {
+                    source.close();
                 }
 
                 final MimeType mime = Optional.ofNullable(MimeTable.getInstance().getContentType(mimeType)).orElse(MimeType.BINARY_TYPE);
@@ -1456,7 +1461,7 @@ public class RpcConnection implements RpcAPI {
             } finally {
                 if (source != null) {
                     // DWES there are situations the file is not cleaned up
-                    source.free();
+                    source.close();
                 }
             }
         });

@@ -96,10 +96,13 @@ public abstract class AbstractRemoteResource extends AbstractRemote
     }
 
     @Override
-    protected void finalize()
-            throws Throwable {
-        freeResources();
-        super.finalize();
+    protected void finalize() throws Throwable {
+        try {
+            freeResources();
+        }
+        finally {
+            super.finalize();
+        }
     }
 
     @Override

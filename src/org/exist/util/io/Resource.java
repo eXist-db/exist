@@ -447,12 +447,12 @@ public class Resource extends File {
         try(final DBBroker broker = db.getBroker();
                 final Txn txn = tm.beginTransaction()) {
 
-            FileInputSource is = new FileInputSource(file.toFile());
+            FileInputSource is = new FileInputSource(file);
 	        
             final IndexInfo info = collection.validateXMLResource(txn, broker, uri.lastSegment(), is);
 //	        info.getDocument().getMetadata().setMimeType(mimeType.getName());
 	
-	        is = new FileInputSource(file.toFile());
+	        is = new FileInputSource(file);
 	        collection.store(txn, broker, info, is, false);
 
             tm.commit(txn);
@@ -488,12 +488,12 @@ public class Resource extends File {
                 
                 final Path file = broker.getBinaryFile((BinaryDocument) doc);
 
-                FileInputSource is = new FileInputSource(file.toFile());
+                FileInputSource is = new FileInputSource(file);
                 
                 final IndexInfo info = destination.validateXMLResource(txn, broker, newName, is);
                 info.getDocument().getMetadata().setMimeType(mimeType.getName());
 
-                is = new FileInputSource(file.toFile());
+                is = new FileInputSource(file);
                 destination.store(txn, broker, info, is, false);
                 
                 source.removeBinaryResource(txn, broker, doc);

@@ -306,13 +306,13 @@ public class LocalXPathQueryService extends AbstractLocalService implements XPat
             if(LOG.isDebugEnabled()) {
                 LOG.debug("compilation took " + (System.currentTimeMillis() - start));
             }
-            return new Either.Right(expr);
+            return Either.Right(expr);
         } catch (final PermissionDeniedException e) {
             throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e.getMessage(), e);
         } catch(final IllegalArgumentException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         } catch(final XPathException e) {
-            return new Either.Left(e);
+            return Either.Left(e);
         }
     }
 

@@ -154,12 +154,16 @@ public class TemporaryFileManager {
 
     @Override
     protected void finalize() throws Throwable {
-        super.finalize();
+        try {
 
-        //remove references to available files
-        available.clear();
+            //remove references to available files
+            available.clear();
 
-        //try and remove our temporary folder
-        FileUtils.deleteQuietly(tmpFolder);
+            //try and remove our temporary folder
+            FileUtils.deleteQuietly(tmpFolder);
+        }
+        finally {
+            super.finalize();
+        }
     }
 }
