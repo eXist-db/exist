@@ -1326,13 +1326,14 @@ public class BrokerPool implements Database {
     @Override
     public boolean isReadOnly() {
         synchronized(readOnly) {
-            final long freeSpace = FileUtils.measureFileStore(dataLock.getFile(), FileStore::getUsableSpace);
-            if (freeSpace < diskSpaceMin) {
-                LOG.fatal("Partition containing DATA_DIR: " + dataLock.getFile().toAbsolutePath().toString() + " is running out of disk space. " +
-                        "Switching eXist-db to read only to prevent data loss!");
-                setReadOnly();
+            if(!readOnly) {
+                final long freeSpace = FileUtils.measureFileStore(dataLock.getFile(), FileStore::getUsableSpace);
+                if (freeSpace < diskSpaceMin) {
+                    LOG.fatal("Partition containing DATA_DIR: " + dataLock.getFile().toAbsolutePath().toString() + " is running out of disk space. " +
+                            "Switching eXist-db to read only to prevent data loss!");
+                    setReadOnly();
+                }
             }
-
             return readOnly;
         }
     }
