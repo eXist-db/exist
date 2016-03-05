@@ -21,6 +21,7 @@ package org.exist.util;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exist.util.function.FunctionE;
 
 import java.io.File;
 import java.io.IOException;
@@ -129,6 +130,23 @@ public class FileUtils {
         } catch(final IOException ioe) {
             LOG.error("Unable to determine size of: " + path.toString(), ioe);
             return -1;
+        }
+    }
+
+    /**
+     * Make a measurement of the FileStore for a particular path
+     *
+     * @param path The path for which the FileStore should be measured
+     * @param measurer A function which provided with a FileStore makes a measurement
+     *
+     * @return The measured value or -1 if an error occurred whilst accessing the FileStore
+     */
+    public static long measureFileStore(final Path path, final FunctionE<FileStore, Long, IOException> measurer) {
+        try {
+            return measurer.apply(Files.getFileStore(path));
+        } catch(final IOException ioe) {
+            LOG.error(ioe);
+            return -1l;
         }
     }
 

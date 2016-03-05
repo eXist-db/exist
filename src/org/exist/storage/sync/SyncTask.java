@@ -21,8 +21,7 @@
  */
 package org.exist.storage.sync;
 
-import java.io.IOException;
-import java.nio.file.Files;
+import java.nio.file.FileStore;
 import java.nio.file.Path;
 import java.util.Properties;
 
@@ -32,6 +31,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.SystemTask;
 import org.exist.util.Configuration;
+import org.exist.util.FileUtils;
 
 public class SyncTask implements SystemTask {
 
@@ -65,17 +65,8 @@ public class SyncTask implements SystemTask {
         dataDir = (Path) config.getProperty(BrokerPool.PROPERTY_DATA_DIR);
         LOG.info("Using DATA_DIR: " + dataDir.toAbsolutePath().toString() + ". Minimal disk space required for database " +
                  "to continue operations: " + (diskSpaceMin / 1024 / 1024) + "mb");
-        final long space = getUsableSpace(dataDir);
+        final long space = FileUtils.measureFileStore(dataDir, FileStore::getUsableSpace);
         LOG.info("Usable space on partition containing DATA_DIR: " + dataDir.toAbsolutePath().toString() + ": " + (space / 1024 / 1024) + "mb");
-    }
-
-    private long getUsableSpace(final Path path) {
-        try {
-            return Files.getFileStore(path).getUsableSpace();
-        } catch(final IOException ioe) {
-            LOG.error(ioe);
-            return -1;
-        }
     }
 
     @Override
@@ -95,7 +86,7 @@ public class SyncTask implements SystemTask {
     }
 
     private boolean checkDiskSpace() {
-        final long space = getUsableSpace(dataDir);
+        final long space = FileUtils.measureFileStore(dataDir, FileStore::getUsableSpace);
         //LOG.info("Usable space on partition containing DATA_DIR: " + dataDir.getAbsolutePath() + ": " + (space / 1024 / 1024) + "mb");
         return space > diskSpaceMin;
     }

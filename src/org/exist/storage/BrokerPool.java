@@ -72,6 +72,7 @@ import org.expath.pkg.repo.PackageException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.nio.file.FileStore;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -79,7 +80,6 @@ import java.text.NumberFormat;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * This class controls all available instances of the database.
@@ -1326,7 +1326,7 @@ public class BrokerPool implements Database {
     @Override
     public boolean isReadOnly() {
         synchronized(readOnly) {
-            final long freeSpace = dataLock.getFile().toFile().getUsableSpace();
+            final long freeSpace = FileUtils.measureFileStore(dataLock.getFile(), FileStore::getUsableSpace);
             if (freeSpace < diskSpaceMin) {
                 LOG.fatal("Partition containing DATA_DIR: " + dataLock.getFile().toAbsolutePath().toString() + " is running out of disk space. " +
                         "Switching eXist-db to read only to prevent data loss!");
