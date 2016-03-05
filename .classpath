@@ -133,4 +133,5 @@
 	<classpathentry kind="lib" path="lib/user/nekohtml-1.9.21.jar"/>
 	<classpathentry kind="lib" path="tools/ant/lib/xmlunit-1.6.jar"/>
 	<classpathentry kind="output" path="test/classes"/>
+	<classpathentry kind="lib" path="lib/core/jcip-annotations-1.0.jar"/>
 </classpath>

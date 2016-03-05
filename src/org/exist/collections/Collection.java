@@ -1075,7 +1075,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
      * @param  broker
      * @param  docUri
      */
-    public void removeXMLResource(final Txn transaction, final DBBroker broker, final XmldbURI docUri) throws PermissionDeniedException, TriggerException, LockException {
+    public void removeXMLResource(final Txn transaction, final DBBroker broker, final XmldbURI docUri) throws PermissionDeniedException, TriggerException, LockException, IOException {
         
         if(!getPermissionsNoLock().validate(broker.getCurrentSubject(), Permission.WRITE)) {
             throw new PermissionDeniedException("Permission denied to write collection: " + path);
@@ -1592,7 +1592,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         final Database db = broker.getBrokerPool();
         
         if (db.isReadOnly()) {
-            throw new PermissionDeniedException("Database is read-only");
+            throw new IOException("Database is read-only");
         }
         
         DocumentImpl oldDoc = null;
@@ -1877,7 +1877,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
     public BinaryDocument addBinaryResource(final Txn transaction, final DBBroker broker, final BinaryDocument blob, final InputStream is, final String mimeType, final long size, final Date created, final Date modified) throws EXistException, PermissionDeniedException, LockException, TriggerException, IOException {
         final Database db = broker.getBrokerPool();
         if (db.isReadOnly()) {
-            throw new PermissionDeniedException("Database is read-only");
+            throw new IOException("Database is read-only");
         }
         final XmldbURI docUri = blob.getFileURI();
         //TODO : move later, i.e. after the collection lock is acquired ?

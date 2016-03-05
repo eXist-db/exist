@@ -267,9 +267,9 @@ public class ExistDocument extends ExistResource {
                 LOG.debug("Document deleted sucessfully");
             }
 
-        } catch (LockException e) {
+        } catch (final LockException e) {
             LOG.error("Resource is locked.", e);
-        } catch (EXistException | TriggerException | PermissionDeniedException e) {
+        } catch (final EXistException | IOException | TriggerException | PermissionDeniedException e) {
             LOG.error(e);
         } finally {
 

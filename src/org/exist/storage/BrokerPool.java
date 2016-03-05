@@ -20,6 +20,7 @@
  */
 package org.exist.storage;
 
+import net.jcip.annotations.GuardedBy;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Database;
@@ -71,6 +72,7 @@ import org.expath.pkg.repo.PackageException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.nio.file.FileStore;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -494,11 +496,9 @@ public class BrokerPool implements Database {
     private boolean checkpoint = false;
 
     /**
-     * <code>true</code> if the database instance is running in read-only mode.
+     * Indicates whether the database is operating in read-only mode
      */
-    //TODO : this should be computed by the DBrokers depending of their configuration/capabilities
-    //TODO : for now, this member is used for recovery management
-    private boolean isReadOnly;
+    @GuardedBy("itself") private Boolean readOnly = Boolean.FALSE;
 
     @ConfigurationFieldAsAttribute("pageSize")
     private int pageSize;
@@ -710,9 +710,10 @@ public class BrokerPool implements Database {
         //TODO : move this to initialize ? (cant as we need it for FileLockHeartBeat)
         scheduler = new QuartzSchedulerImpl(this, conf);
 
-        //TODO : since we need one :-( (see above)
-        this.isReadOnly = !canReadDataDir(conf);
-        LOG.debug("isReadOnly: " + isReadOnly);
+        if(!canReadDataDir(conf)) {
+            setReadOnly();
+        }
+
         //Configuration is valid, save it
         this.conf = conf;
 
@@ -721,8 +722,11 @@ public class BrokerPool implements Database {
             initialize();
         } catch(final Throwable e) {
             // remove that file lock we may have acquired in canReadDataDir
-            if(dataLock != null && !isReadOnly)
-                dataLock.release();
+            synchronized(readOnly) {
+                if (dataLock != null && !readOnly) {
+                    dataLock.release();
+                }
+            }
 
             if(!instances.containsKey(instanceName)) {
                 instancesInitializtionException.put(instanceName, e);
@@ -765,16 +769,14 @@ public class BrokerPool implements Database {
                 LOG.info("Data directory '" + dataDir.toAbsolutePath().toString() + "' does not exist. Creating one ...");
                 Files.createDirectories(dataDir);
             } catch(final SecurityException | IOException e) {
-                LOG.info("Cannot create data directory '" + dataDir.toAbsolutePath().toString() + "'. Switching to read-only mode.");
-                return false;
+                throw new EXistException("Cannot create data directory '" + dataDir.toAbsolutePath().toString() + "'", e);
             }
         }
 
         //Save it for further use.
-        //TODO : "data-dir" has sense for *native* brokers
         conf.setProperty(PROPERTY_DATA_DIR, dataDir);
         if(!Files.isWritable(dataDir)) {
-            LOG.info("Cannot write to data directory: " + dataDir.toAbsolutePath().toString() + ". Switching to read-only mode.");
+            LOG.warn("Cannot write to data directory: " + dataDir.toAbsolutePath().toString());
             return false;
         }
 
@@ -788,9 +790,10 @@ public class BrokerPool implements Database {
                     "database instance. Found a valid lock file: " + dataLock.getFile());
             }
         } catch(final ReadOnlyException e) {
-            LOG.info(e.getMessage() + ". Switching to read-only mode!!!");
+            LOG.warn(e);
             return false;
         }
+
         return true;
     }
 
@@ -860,14 +863,17 @@ public class BrokerPool implements Database {
                     try {
                         transactionManager.initialize();
                     } catch(final ReadOnlyException e) {
-                        LOG.warn(e.getMessage() + ". Switching to read-only mode!!!");
-                        isReadOnly = true;
+                        LOG.warn(e);
+                        setReadOnly();
                     }
                     // If the initialization fails after transactionManager has been created this method better cleans up
                     // or the FileSyncThread for the journal can/will hang.
                     try {
                         symbols = new SymbolTable(conf);
-                        isReadOnly = isReadOnly || !Files.isWritable(symbols.getFile());
+                        if(!Files.isWritable(symbols.getFile())) {
+                            LOG.warn("Symbols table is not writable: " + symbols.getFile().toAbsolutePath().toString());
+                            setReadOnly();
+                        }
 
                         try {
                             // initialize EXPath repository so indexManager and
@@ -1312,23 +1318,31 @@ public class BrokerPool implements Database {
      */
     public boolean isTransactional() {
         //TODO : confusion between dataDir and a so-called "journalDir" !
-        return !isReadOnly && transactionsEnabled;
+        synchronized(readOnly) {
+            return !readOnly && transactionsEnabled;
+        }
     }
 
+    @Override
     public boolean isReadOnly() {
-        final long freeSpace = dataLock.getFile().toFile().getUsableSpace();
-        if(freeSpace < diskSpaceMin) {
-            LOG.fatal("Partition containing DATA_DIR: " + dataLock.getFile().toAbsolutePath().toString() + " is running out of disk space. " +
-                "Switching eXist-db to read only to prevent data loss!");
-            setReadOnly();
+        synchronized(readOnly) {
+            if(!readOnly) {
+                final long freeSpace = FileUtils.measureFileStore(dataLock.getFile(), FileStore::getUsableSpace);
+                if (freeSpace < diskSpaceMin) {
+                    LOG.fatal("Partition containing DATA_DIR: " + dataLock.getFile().toAbsolutePath().toString() + " is running out of disk space. " +
+                            "Switching eXist-db to read only to prevent data loss!");
+                    setReadOnly();
+                }
+            }
+            return readOnly;
         }
-
-        return isReadOnly;
     }
 
     public void setReadOnly() {
-        LOG.info("Switching to read-only mode!!!");
-        isReadOnly = true;
+        LOG.warn("Switching database into read-only mode!");
+        synchronized (readOnly) {
+            readOnly = true;
+        }
     }
 
     public boolean isInServiceMode() {
@@ -1993,10 +2007,11 @@ public class BrokerPool implements Database {
                 //Clear the living instances container
                 instances.remove(instanceName);
 
-                if(!isReadOnly)
-                // release the lock on the data directory
-                {
-                    dataLock.release();
+                synchronized (readOnly) {
+                    if (!readOnly) {
+                        // release the lock on the data directory
+                        dataLock.release();
+                    }
                 }
 
                 LOG.info("shutdown complete !");

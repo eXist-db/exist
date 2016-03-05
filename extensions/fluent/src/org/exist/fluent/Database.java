@@ -24,6 +24,7 @@ import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.*;
@@ -113,9 +114,7 @@ public class Database {
 			} finally {
 				db.releaseBroker(broker);
 			}
-		} catch (PermissionDeniedException e) {
-			throw new DatabaseException(e);
-		} catch (CollectionConfigurationException e) {
+		} catch (final PermissionDeniedException | IOException | CollectionConfigurationException e) {
 			throw new DatabaseException(e);
 		} finally {
 			tx.abortIfIncomplete();
@@ -531,7 +530,7 @@ public class Database {
 		public void sync() {}
 		public void printStatistics() {}
 		
-		public boolean close() {return true;}
+		public void close() {}
 		public void remove() {}
 		public void closeAndRemove() {
 			// TODO:  do nothing OK here?  indexes just got wiped and recreated, and this listener
