@@ -1,6 +1,5 @@
 package org.exist.xquery;
 
-import org.apache.xerces.impl.xpath.XPath;
 import org.exist.dom.QName;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.*;
