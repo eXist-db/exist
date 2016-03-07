@@ -5,7 +5,10 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.OrderedValueSequence;
 import org.exist.xquery.value.Sequence;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.List;
+import java.util.Stack;
 
 /**
  * Represents an "order by" clause within a FLWOR expression.
@@ -13,7 +16,10 @@ import java.util.List;
 public class OrderByClause extends AbstractFLWORClause {
 
     protected OrderSpec[] orderSpecs = null;
-    protected OrderedValueSequence orderedResult = null;
+
+    /*  OrderByClause needs to keep state between calls to eval and postEval. We thus need
+        to track state in a stack to avoid overwrites if we're called recursively. */
+    private final Deque<OrderedValueSequence> stack = new ArrayDeque<>();
 
     public OrderByClause(XQueryContext context, List<OrderSpec> orderSpecs) {
         super(context);
@@ -45,25 +51,28 @@ public class OrderByClause extends AbstractFLWORClause {
 
     @Override
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
-        if (orderedResult == null) {
+        final OrderedValueSequence orderedResult;
+        if (stack.isEmpty()) {
             orderedResult = new OrderedValueSequence(orderSpecs, 100);
+        } else {
+            orderedResult = stack.pop();
         }
         final Sequence result = getReturnExpression().eval(contextSequence, contextItem);
         if (result != null) {
             orderedResult.addAll(result);
         }
+        stack.push(orderedResult);
         return result;
     }
 
     @Override
     public Sequence postEval(Sequence seq) throws XPathException {
-        if (orderedResult == null) {
+        if (stack.isEmpty()) {
             return seq;
         }
+        final OrderedValueSequence orderedResult = stack.pop();
         orderedResult.sort();
         Sequence result = orderedResult;
-        // reset to prepare for next iteration of outer loop
-        orderedResult = null;
 
         if (getReturnExpression() instanceof FLWORClause) {
             result = ((FLWORClause) getReturnExpression()).postEval(result);
@@ -90,6 +99,6 @@ public class OrderByClause extends AbstractFLWORClause {
     @Override
     public void resetState(boolean postOptimization) {
         super.resetState(postOptimization);
-        orderedResult = null;
+        stack.clear();
     }
 }
