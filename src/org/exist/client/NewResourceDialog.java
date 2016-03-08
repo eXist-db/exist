@@ -267,10 +267,8 @@ public class NewResourceDialog extends JFrame {
     private void createResource(final ResourceType resourceType, final String filename, final String moduleNamespace, final String moduleNamespacePrefix) {
         
         final StringBuilder resourceContentBuilder = new StringBuilder();
-        Reader reader = null;
-        try {
-            final InputStream is = getClass().getResourceAsStream(resourceType.getTemplatePath());
-            reader = new InputStreamReader(is);
+        try(final InputStream is = getClass().getResourceAsStream(resourceType.getTemplatePath());
+                final Reader reader = new InputStreamReader(is)) {
             final char buf[] = new char[1024];
             int read = -1;
             while((read = reader.read(buf)) > -1) {
@@ -278,14 +276,6 @@ public class NewResourceDialog extends JFrame {
             }
         } catch(final IOException ioe) {
             ClientFrame.showErrorMessage(ioe.getMessage(), ioe);
-        } finally {
-            if(reader != null) {
-                try {
-                    reader.close();
-                } catch(final IOException ioe) {
-                    ClientFrame.showErrorMessage(ioe.getMessage(), ioe);
-                }
-            }
         }
         
         final String resourceContent;

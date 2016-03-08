@@ -1,9 +1,9 @@
 package org.exist.start;
 
-import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Path;
 
 /**
  * Root class loader when eXist is started via the bootstrap loader. Extends
@@ -13,14 +13,14 @@ import java.net.URLClassLoader;
  */
 public class EXistClassLoader extends URLClassLoader {
 
-    public EXistClassLoader(URL[] urls, ClassLoader classLoader) {
+    public EXistClassLoader(final URL[] urls, final ClassLoader classLoader) {
         super(urls, classLoader);
     }
 
-    public void addURLs(Classpath cp) {
-        for (final File file : cp) {
+    public void addURLs(final Classpath cp) {
+        for (final Path path : cp) {
             try {
-                addURL(file.toURI().toURL());
+                addURL(path.toUri().toURL());
             } catch (final MalformedURLException e) {
             }
         }

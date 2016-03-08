@@ -22,8 +22,8 @@
  */
 package org.exist.wrapper;
 
-import java.io.File;
 import java.lang.reflect.Method;
+import java.nio.file.Path;
 import java.util.Observer;
 import java.util.Observable;
 
@@ -71,7 +71,7 @@ public class Main implements WrapperListener, Observer {
 			// use the bootstrap loader to autodetect EXIST_HOME and
 			// construct a correct classpath
 			org.exist.start.Main loader = new org.exist.start.Main(args[0]);
-			File homeDir = loader.detectHome();
+			Path homeDir = loader.detectHome();
 			Classpath classpath = loader.constructClasspath(homeDir, args);
 			ClassLoader cl = classpath.getClassLoader(null);
 			Thread.currentThread().setContextClassLoader(cl);
