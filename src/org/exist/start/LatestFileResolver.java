@@ -78,13 +78,10 @@ public class LatestFileResolver {
 
         final Path containerDir = Paths.get(containerDirName);
 
-        // 0-9 . - and _ are valid chars that can occur where the %latest% token
-        // was (maybe allow letters too?).
-        final String patternString = uptoToken.substring(
-            uptoToken.lastIndexOf(File.separatorChar) + 1
-        ) + "([\\d\\.\\-_]+)" + fileinfo[1];
-        final Pattern pattern = Pattern.compile("^" + patternString + "$");
-
+        final String artifactId = Pattern.quote(uptoToken.substring(uptoToken.lastIndexOf(File.separatorChar) + 1));
+        final String suffix = Pattern.quote(fileinfo[1]);
+        final String patternString = '^' + artifactId + "(?:(?:[0-9]+(?:\\.[0-9]+)*)(?:-SNAPSHOT)?(?:-[0-9a-f]{7})?)" + suffix + '$';
+        final Pattern pattern = Pattern.compile(patternString);
         final Matcher matcher = pattern.matcher("");
 
         List<Path> jars;
