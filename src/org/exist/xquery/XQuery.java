@@ -79,20 +79,11 @@ public class XQuery {
 
         context.setSource(source);
         context.setXacmlSource(XACMLSource.getInstance(source));
-		
-        Reader reader;
-        try {
-            reader = source.getReader();
+
+        try(final Reader reader = source.getReader()) {
+            return compile(broker, context, reader, xpointer);
         } catch(final UnsupportedEncodingException e) {
             throw new XPathException(ErrorCodes.XQST0087, "unsupported encoding " + e.getMessage());
-        }
-        
-        try {
-            return compile(broker, context, reader, xpointer);
-        } finally {
-            if(reader != null) {
-                reader.close();
-            }
         }
     }
     

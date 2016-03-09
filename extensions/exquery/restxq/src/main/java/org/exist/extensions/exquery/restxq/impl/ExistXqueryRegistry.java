@@ -288,10 +288,11 @@ public class ExistXqueryRegistry {
                     LOG.info("Missing dependency '" + compiledModuleUri +"' has been added to the database, re-examining '" + dependant + "'...");
                     
                     final List<RestXqService> services = findServices(broker, dependantModule);
+                    LOG.info("Discovered " + services.size() + " resource functions for " + dependant);
                     registerServices(broker, services);
                 } else {
                     LOG.info("Dependant '" + compiledModuleUri + "' has been resolved. Dependency on: " + dependant + " was removed");
-                    
+
                     //we need to remove dependant from the dependenciesTree of dependant
                     removeDependency(dependant, compiledModuleUri);
                 }
@@ -333,7 +334,7 @@ public class ExistXqueryRegistry {
         }
     }
 
-    private class MissingModuleHint {
+    private static class MissingModuleHint {
         public String moduleHint = null;
         public String dependantModule = null;
     }
