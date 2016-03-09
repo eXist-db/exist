@@ -27,10 +27,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package org.exist.extensions.exquery.restxq.impl.xquery.exist;
 
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
+
+import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.QName;
 import org.exist.extensions.exquery.restxq.impl.ExistXqueryRegistry;
@@ -43,16 +42,11 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.BooleanValue;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 import org.exquery.ExQueryException;
 import org.exquery.restxq.RestXqService;
 import org.exquery.restxq.RestXqServiceRegistry;
+import org.xml.sax.helpers.AttributesImpl;
 
 /**
  *
@@ -65,6 +59,9 @@ public class RegistryFunctions extends BasicFunction {
     private final static QName qnDeregisterModule = new QName("deregister-module", ExistRestXqModule.NAMESPACE_URI, ExistRestXqModule.PREFIX);
     private final static QName qnRegisterResourceFunction = new QName("register-resource-function", ExistRestXqModule.NAMESPACE_URI, ExistRestXqModule.PREFIX);
     private final static QName qnDeregisterResourceFunction = new QName("deregister-resource-function", ExistRestXqModule.NAMESPACE_URI, ExistRestXqModule.PREFIX);
+    private final static QName qnInvalidModules = new QName("invalid-modules", ExistRestXqModule.NAMESPACE_URI, ExistRestXqModule.PREFIX);
+    private final static QName qnMissingDependencies = new QName("missing-dependencies", ExistRestXqModule.NAMESPACE_URI, ExistRestXqModule.PREFIX);
+    private final static QName qnDependencies = new QName("dependencies", ExistRestXqModule.NAMESPACE_URI, ExistRestXqModule.PREFIX);
     
     private final static SequenceType PARAM_MODULE = new FunctionParameterSequenceType("module", Type.ANY_URI, Cardinality.EXACTLY_ONE, "A URI pointing to an XQuery module.");
     private final static SequenceType PARAM_RESOURCE_FUNCTION = new FunctionParameterSequenceType("function-signature", Type.STRING, Cardinality.EXACTLY_ONE, "A signature identifying a resource function. Takes the format {namespace}local-name#arity e.g. {http://somenamespace}some-function#2");
@@ -115,15 +112,42 @@ public class RegistryFunctions extends BasicFunction {
         },
         new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ONE, "true if the function was deregistered, false otherwise.")
     );
-    
+
+    public final static FunctionSignature FNS_INVALID_MODULES = new FunctionSignature(
+            qnInvalidModules,
+        "Gets a list of all the invalid XQuery modules discovered by RESTXQ in the process of discovering resource functions.",
+        FunctionSignature.NO_ARGS,
+        new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "The list of invalid XQuery modules.")
+    );
+
+    public final static FunctionSignature FNS_MISSING_DEPENDENCIES = new FunctionSignature(
+        qnMissingDependencies,
+        "Gets a list of all the missing dependencies for XQuery modules discovered by RESTXQ in the process of discovering resource functions.",
+        FunctionSignature.NO_ARGS,
+        new FunctionReturnSequenceType(Type.DOCUMENT, Cardinality.ONE, "The list of missing dependencies.")
+    );
+
+    public final static FunctionSignature FNS_DEPENDENCIES = new FunctionSignature(
+        qnDependencies,
+        "Gets a list of all the dependencies of compiled XQuery modules discovered by RESTXQ in the process of discovering resource functions.",
+        FunctionSignature.NO_ARGS,
+        new FunctionReturnSequenceType(Type.DOCUMENT, Cardinality.ONE, "The list of dependencies.")
+    );
+
+    private final static QName MISSING_DEPENDENCIES = new QName("missing-dependencies", ExistRestXqModule.NAMESPACE_URI, ExistRestXqModule.PREFIX);
+    private final static QName MISSING_DEPENDENCY = new QName("missing-dependency", ExistRestXqModule.NAMESPACE_URI, ExistRestXqModule.PREFIX);
+    private final static QName REQUIRED_BY = new QName("required-by", ExistRestXqModule.NAMESPACE_URI, ExistRestXqModule.PREFIX);
+    private final static QName DEPENDENCIES = new QName("dependencies", ExistRestXqModule.NAMESPACE_URI, ExistRestXqModule.PREFIX);
+    private final static QName MODULE = new QName("module", ExistRestXqModule.NAMESPACE_URI, ExistRestXqModule.PREFIX);
+    private final static QName REQUIRES = new QName("requires", ExistRestXqModule.NAMESPACE_URI, ExistRestXqModule.PREFIX);
+    private final static String XQUERY_URI = "xquery-uri";
+
     public RegistryFunctions(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
 
     @Override
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
-        
-        final XmldbURI moduleUri = args[0].toJavaObject(XmldbURI.class);
         final ExistXqueryRegistry xqueryRegistry = ExistXqueryRegistry.getInstance();
         final RestXqServiceRegistry registry = RestXqServiceRegistryManager.getRegistry(getContext().getBroker().getBrokerPool());
                 
@@ -131,6 +155,7 @@ public class RegistryFunctions extends BasicFunction {
                 
         try {
             if(isCalledAs(qnRegisterModule.getLocalPart())) {
+                final XmldbURI moduleUri = args[0].toJavaObject(XmldbURI.class);
                 final DocumentImpl module = getContext().getBroker().getResource(moduleUri, Permission.READ);
                 if(xqueryRegistry.isXquery(module)) {
                     try {
@@ -145,6 +170,7 @@ public class RegistryFunctions extends BasicFunction {
                    result = Sequence.EMPTY_SEQUENCE; 
                 }
             } else if(isCalledAs(qnDeregisterModule.getLocalPart())) {
+                final XmldbURI moduleUri = args[0].toJavaObject(XmldbURI.class);
                 final DocumentImpl module = getContext().getBroker().getResource(moduleUri, Permission.READ);
                 if(xqueryRegistry.isXquery(module)) {                
                     final List<RestXqService> deregisteringServices = new ArrayList<>();
@@ -159,6 +185,7 @@ public class RegistryFunctions extends BasicFunction {
                    result = Sequence.EMPTY_SEQUENCE; 
                 }
             } else if(isCalledAs(qnFindResourceFunctions.getLocalPart())) {
+               final XmldbURI moduleUri = args[0].toJavaObject(XmldbURI.class);
                final DocumentImpl module = getContext().getBroker().getResource(moduleUri, Permission.READ);
                if(xqueryRegistry.isXquery(module)) {                
                     try {
@@ -173,6 +200,7 @@ public class RegistryFunctions extends BasicFunction {
                    result = Sequence.EMPTY_SEQUENCE; 
                 }
             } else if(isCalledAs(qnRegisterResourceFunction.getLocalPart())) {
+               final XmldbURI moduleUri = args[0].toJavaObject(XmldbURI.class);
                final String resourceFunctionIdentifier = args[1].getStringValue();
                final DocumentImpl module = getContext().getBroker().getResource(moduleUri, Permission.READ);
                if(xqueryRegistry.isXquery(module)) {
@@ -212,13 +240,93 @@ public class RegistryFunctions extends BasicFunction {
                 } else {
                   result = BooleanValue.FALSE;  
                 }
+            } else if(isCalledAs(qnInvalidModules.getLocalPart())) {
+                result = serializeInvalidQueries(xqueryRegistry.getInvalidQueries());
+            } else if(isCalledAs(qnMissingDependencies.getLocalPart())) {
+                result = serializeMissingDependencies(xqueryRegistry.getMissingDependencies());
+            } else if(isCalledAs(qnDependencies.getLocalPart())) {
+                result = serializeDependenciesTree(xqueryRegistry.getDependenciesTree());
             }
             return result;
         } catch(final PermissionDeniedException pde) {
             throw new XPathException(this, pde.getMessage(), pde);
         }
     }
-    
+
+    private Sequence serializeDependenciesTree(final Map<String, Set<String>> dependenciesTree) {
+        final MemTreeBuilder builder = getContext().getDocumentBuilder();
+
+        builder.startDocument();
+        builder.startElement(DEPENDENCIES, null);
+
+        for(final Map.Entry<String, Set<String>> dependencyTree : dependenciesTree.entrySet()) {
+            serializeDependencyTree(builder, dependencyTree);
+        }
+
+        builder.endElement();
+        builder.endDocument();
+
+        return builder.getDocument();
+    }
+
+    private void serializeDependencyTree(final MemTreeBuilder builder, final Map.Entry<String, Set<String>> dependencyTree) {
+        AttributesImpl attrs = new AttributesImpl();
+        attrs.addAttribute(null, XQUERY_URI, "", "string", dependencyTree.getKey());
+
+        builder.startElement(MODULE, attrs);
+
+        for(final String dependency : dependencyTree.getValue()) {
+            attrs = new AttributesImpl();
+            attrs.addAttribute(null, XQUERY_URI, "", "string", dependency);
+
+            builder.startElement(REQUIRES, attrs);
+            builder.endElement();
+        }
+
+        builder.endElement();
+    }
+
+    private Sequence serializeMissingDependencies(final Map<String, Set<String>> missingDependencies) {
+        final MemTreeBuilder builder = getContext().getDocumentBuilder();
+
+        builder.startDocument();
+        builder.startElement(MISSING_DEPENDENCIES, null);
+
+        for(final Map.Entry<String, Set<String>> missingDependency : missingDependencies.entrySet()) {
+            serializeMissingDependency(builder, missingDependency);
+        }
+
+        builder.endElement();
+        builder.endDocument();
+
+        return builder.getDocument();
+    }
+
+    private void serializeMissingDependency(final MemTreeBuilder builder, final Map.Entry<String, Set<String>> missingDependency) {
+        AttributesImpl attrs = new AttributesImpl();
+        attrs.addAttribute(null, XQUERY_URI, "", "string", missingDependency.getKey());
+
+        builder.startElement(MISSING_DEPENDENCY, attrs);
+
+        for(final String dependent : missingDependency.getValue()) {
+            attrs = new AttributesImpl();
+            attrs.addAttribute(null, XQUERY_URI, "", "string", dependent);
+
+            builder.startElement(REQUIRED_BY, attrs);
+            builder.endElement();
+        }
+
+        builder.endElement();
+    }
+
+    private Sequence serializeInvalidQueries(final Set<String> invalidQueries) throws XPathException {
+        final Sequence result = new ValueSequence();
+        for(final String invalidQuery : invalidQueries) {
+            result.add(new StringValue(invalidQuery));
+        }
+        return result;
+    }
+
     private RestXqService findService(final Iterator<RestXqService> services, final SignatureDetail signatureDetail) {
         RestXqService result = null;
         if(services != null) {

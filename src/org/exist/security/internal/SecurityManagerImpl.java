@@ -170,9 +170,8 @@ public class SecurityManagerImpl implements SecurityManager {
 
                 systemCollection.setPermissions(Permission.DEFAULT_SYSTEM_COLLECTION_PERM);
                 broker.saveCollection(txn, systemCollection);
-
-                transaction.commit(txn);
             }
+            transaction.commit(txn);
         } catch (final Exception e) {
             e.printStackTrace();
             LOG.debug("loading acl failed: " + e.getMessage());
