@@ -227,6 +227,7 @@ public class ExistXqueryRegistry {
                 } else {
                     //avoids wrong missing dependency dependant being recorded for a complex module tree
                     try {
+                        recordMissingDependency(missingModuleHint.dependantModule, document.getURI());
                         recordMissingDependency(missingModuleHint.moduleHint, XmldbURI.xmldbUriFor(missingModuleHint.dependantModule));
                     } catch(final URISyntaxException use) {
                         recordInvalidQuery(document.getURI());
