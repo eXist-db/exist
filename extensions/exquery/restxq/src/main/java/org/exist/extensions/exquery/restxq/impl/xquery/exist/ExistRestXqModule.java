@@ -47,7 +47,10 @@ public class ExistRestXqModule extends AbstractInternalModule {
         new FunctionDef(RegistryFunctions.FNS_DEREGISTER_MODULE, RegistryFunctions.class),
         new FunctionDef(RegistryFunctions.FNS_FIND_RESOURCE_FUNCTIONS, RegistryFunctions.class),
         new FunctionDef(RegistryFunctions.FNS_REGISTER_RESOURCE_FUNCTION, RegistryFunctions.class),
-        new FunctionDef(RegistryFunctions.FNS_DEREGISTER_RESOURCE_FUNCTION, RegistryFunctions.class)
+        new FunctionDef(RegistryFunctions.FNS_DEREGISTER_RESOURCE_FUNCTION, RegistryFunctions.class),
+        new FunctionDef(RegistryFunctions.FNS_INVALID_MODULES, RegistryFunctions.class),
+        new FunctionDef(RegistryFunctions.FNS_MISSING_DEPENDENCIES, RegistryFunctions.class),
+        new FunctionDef(RegistryFunctions.FNS_DEPENDENCIES, RegistryFunctions.class)
     };
     
     public ExistRestXqModule(final Map<String, List<?>> parameters) {

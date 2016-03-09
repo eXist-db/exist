@@ -76,19 +76,48 @@ public class ExistXqueryRegistry {
      * Value is set of XQuery Module URIs on which the Module indicated by the Key depends on
      */
     private final static Map<String, Set<String>> dependenciesTree = new HashMap<>();
-    
+
+    /**
+     * Returns a copy of the known dependency tree
+     */
+    public Map<String, Set<String>> getDependenciesTree() {
+        final Map<String, Set<String>> copy = new HashMap<>();
+        for(final Map.Entry<String, Set<String>> dependencyTree : dependenciesTree.entrySet()) {
+            copy.put(dependencyTree.getKey(), new HashSet<>(dependencyTree.getValue()));
+        }
+        return copy;
+    }
+
     /**
      * Key is the missing Module URI
      * Value is the Set of XQuery Module URIs that require the missing Module indicated by the Key
      */
     private final static Map<String, Set<String>> missingDependencies = new HashMap<>();
-    
+
+    /**
+     * Returns a copy of the current known missing dependencies
+     */
+    public Map<String, Set<String>> getMissingDependencies() {
+        final Map<String, Set<String>> copy = new HashMap<>();
+        for(final Map.Entry<String, Set<String>> missingDependency : missingDependencies.entrySet()) {
+            copy.put(missingDependency.getKey(), new HashSet<>(missingDependency.getValue()));
+        }
+        return copy;
+    }
+
     /**
      * The list of XQuerys that could not be compiled
      * for reasons other than missing dependencies
      */
     private final static Set<String> invalidQueries = new HashSet<>();
-    
+
+    /**
+     * Returns a copy of the current known invalid queries
+     */
+    public Set<String> getInvalidQueries() {
+        return new HashSet<>(invalidQueries);
+    }
+
     public boolean isXquery(final DocumentImpl document) {
          return document instanceof BinaryDocument && document.getMetadata().getMimeType().equals(XQueryCompiler.XQUERY_MIME_TYPE);
     }
