@@ -154,13 +154,6 @@ public class FunctionCall extends Function {
 			context.functionEnd();
 		}
 
-        context.functionStart(functionDef.getSignature());
-        try {
-            expression.analyze(newContextInfo);
-        } finally {
-            context.functionEnd();
-        }
-
         varDeps = new VariableReference[getArgumentCount()];
         for(int i = 0; i < getArgumentCount(); i++) {
             final Expression arg = getArgument(i);

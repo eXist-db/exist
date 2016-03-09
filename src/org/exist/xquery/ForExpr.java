@@ -23,7 +23,6 @@
 package org.exist.xquery;
 
 import org.exist.dom.QName;
-import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.*;
@@ -37,6 +36,7 @@ public class ForExpr extends BindingExpression {
 
     private String positionalVariable = null;
     private boolean allowEmpty = false;
+    private boolean isOuterFor = true;
 
     public ForExpr(XQueryContext context, boolean allowingEmpty) {
         super(context);
@@ -152,7 +152,7 @@ public class ForExpr extends BindingExpression {
             // calling the where expression for each item in the input sequence)
             // This is possible if the input sequence is a node set and has no
             // dependencies on the current context item.
-            if (at == null && returnExpr instanceof FLWORClause) {
+            if (at == null && returnExpr instanceof FLWORClause && isOuterFor) {
                 in = ((FLWORClause)returnExpr).preEval(in);
             }
 
@@ -169,6 +169,7 @@ public class ForExpr extends BindingExpression {
                     ". Expected " + Cardinality.getDescription(sequenceType.getCardinality()) + 
                     ", got " + Cardinality.getDescription(in.getCardinality()));
             }
+
             // Loop through each variable binding
             int p = 0;
             if (in.isEmpty() && allowEmpty) {
@@ -259,9 +260,9 @@ public class ForExpr extends BindingExpression {
 
     @Override
     public Sequence preEval(Sequence seq) throws XPathException {
-        // do not call subsequent clauses, just return the input sequence
-        // this for clause will later call preEval itself
-        return seq;
+        // if preEval gets called, we know we're inside another FOR
+        isOuterFor = false;
+        return super.preEval(seq);
     }
 
     /* (non-Javadoc)
