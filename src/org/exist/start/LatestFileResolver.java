@@ -23,7 +23,11 @@
 package org.exist.start;
 
 import java.io.File;
-import java.io.FilenameFilter;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -58,7 +62,7 @@ public class LatestFileResolver {
      * @param filename Path relative to exist home dir of
      * a jar file that should be added to the classpath.
      */
-    public String getResolvedFileName(String filename) {
+    public String getResolvedFileName(final String filename) {
         final Matcher matches = latestVersionPattern.matcher(filename);
         if (!matches.find()) {
             return filename;
@@ -72,27 +76,28 @@ public class LatestFileResolver {
             0, uptoToken.lastIndexOf(File.separatorChar)
         );
 
-        final File containerDir = new File(containerDirName);
+        final Path containerDir = Paths.get(containerDirName);
 
-        // 0-9 . - and _ are valid chars that can occur where the %latest% token
-        // was (maybe allow letters too?).
-        final String patternString = uptoToken.substring(
-            uptoToken.lastIndexOf(File.separatorChar) + 1
-        ) + "([\\d\\.\\-_]+)" + fileinfo[1];
-        final Pattern pattern = Pattern.compile("^" + patternString + "$");
+        final String artifactId = Pattern.quote(uptoToken.substring(uptoToken.lastIndexOf(File.separatorChar) + 1));
+        final String suffix = Pattern.quote(fileinfo[1]);
+        final String patternString = '^' + artifactId + "(?:(?:[0-9]+(?:\\.[0-9]+)*)(?:-SNAPSHOT)?(?:-[0-9a-f]{7})?)" + suffix + '$';
+        final Pattern pattern = Pattern.compile(patternString);
+        final Matcher matcher = pattern.matcher("");
 
-        final File[] jars = containerDir.listFiles(new FilenameFilter() {
-            public boolean accept(File dir, String name) {
-                Matcher matches = pattern.matcher(name);
-                return matches.find();
-            }
-        });
-        
-        if(jars==null){
-            System.err.println("ERROR: No jars found in "+containerDir.getAbsolutePath());
-            
-        } else if (jars.length > 0) {
-            final String actualFileName = jars[0].getAbsolutePath();
+        List<Path> jars;
+        try {
+             jars = Main.list(containerDir, p -> {
+                matcher.reset(Main.fileName(p));
+                return matcher.find();
+            });
+        } catch (final IOException e) {
+            System.err.println("ERROR: No jars found in " + containerDir.toAbsolutePath());
+            e.printStackTrace();
+            jars = Collections.emptyList();
+        }
+
+        if (!jars.isEmpty()) {
+            final String actualFileName = jars.get(0).toAbsolutePath().toString();
             if (_debug) {
                 System.err.println(
                     "Found match: " + actualFileName

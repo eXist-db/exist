@@ -3,73 +3,73 @@
 // $Id$
 // ========================================================================
 
+//Modified for eXist-db
+
 package org.exist.start;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.Iterator;
-import java.util.StringTokenizer;
-import java.util.Vector;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.function.Supplier;
 
 
 /**
  * Class to handle CLASSPATH construction
  * @author Jan Hlavat�
  */
-public class Classpath implements Iterable<File> {
+public class Classpath implements Iterable<Path> {
 
-    Vector<File> _elements = new Vector<File>();    
+    final List<Path> _elements = new ArrayList<>();
 
-    public Classpath()
-    {}    
+    public Classpath() {}
 
-    public Classpath(String initial)
+    public Classpath(final String initial)
     {
         addClasspath(initial);
     }
         
-    public boolean addComponent(String component)
-    {
-        if ((component != null)&&(component.length()>0)) {
+    public boolean addComponent(final String component) {
+        if (component != null && component.length() > 0) {
             try {
-                final File f = new File(component);
-                if (f.exists())
+                final Path p = Paths.get(component);
+                if (Files.exists(p))
                 {
-                    final File key = f.getCanonicalFile();
+                    final Path key = p.toAbsolutePath();
                     if (!_elements.contains(key))
                     {
                         _elements.add(key);
                         return true;
                     }
                 }
-            } catch (final IOException e) {}
+            } catch (final InvalidPathException e) {
+            }
         }
         return false;
     }
     
-    public boolean addComponent(File component)
-    {
+    public boolean addComponent(final Path component) {
         if (component != null) {
             try {
-                if (component.exists()) {
-                    final File key = component.getCanonicalFile();
+                if (Files.exists(component)) {
+                    final Path key = component.toAbsolutePath();
                     if (!_elements.contains(key)) {
                         _elements.add(key);
                         return true;
                     }
                 }
-            } catch (final IOException e) {}
+            } catch (final InvalidPathException e) {
+            }
         }
         return false;
     }
 
-    public void addClasspath(String s)
-    {
-        if (s != null)
-        {
+    public void addClasspath(final String s) {
+        if (s != null) {
             final StringTokenizer t = new StringTokenizer(s, File.pathSeparator);
             while (t.hasMoreTokens())
             {
@@ -77,43 +77,62 @@ public class Classpath implements Iterable<File> {
             }
         }
     }    
-    
-    public String toString()
-    {
+
+    @Override
+    public String toString() {
         final StringBuilder cp = new StringBuilder(1024);
         final int cnt = _elements.size();
         if (cnt >= 1) {
-            cp.append( ((File)(_elements.elementAt(0))).getPath() );
+            cp.append(_elements.get(0));
         }
         for (int i=1; i < cnt; i++) {
             cp.append(File.pathSeparatorChar);
-            cp.append( ((File)(_elements.elementAt(i))).getPath() );
+            cp.append(_elements.get(i));
         }
         return cp.toString();
     }
 
     public EXistClassLoader getClassLoader(ClassLoader parent) {
-        final int cnt = _elements.size();
-        final URL[] urls = new URL[cnt];
-        for (int i=0; i < cnt; i++) {
-            try {
-                urls[i] = _elements.elementAt(i).toURI().toURL();
-            } catch (final MalformedURLException e) {}
-        }
-        
-        if (parent == null)
-        	{parent = Thread.currentThread().getContextClassLoader();}
-        if (parent == null) {
-            parent = Classpath.class.getClassLoader();
-        }
-        if (parent == null) {
-            parent = ClassLoader.getSystemClassLoader();
-        }
+        final URL urls[] = _elements
+                .stream()
+                .map(Path::toUri)
+                .map(u -> {
+                    try {
+                        return Optional.of(u.toURL());
+                    } catch(final MalformedURLException e) {
+                        return Optional.<URL>empty();
+                    }
+                }).filter(ou -> ou.isPresent())
+                .map(Optional::get)
+                .toArray(sz -> new URL[sz]);
+
+        // try and ensure we have a classloader
+        parent = or(
+            or(
+                or(Optional.ofNullable(parent), () -> Optional.ofNullable(Thread.currentThread().getContextClassLoader())),
+                () -> Optional.ofNullable(Classpath.class.getClassLoader())
+            ),
+            () -> Optional.ofNullable(ClassLoader.getSystemClassLoader())
+        ).orElse(null);
+
         return new EXistClassLoader(urls, parent);
     }
 
     @Override
-    public Iterator<File> iterator() {
+    public Iterator<Path> iterator() {
         return _elements.iterator();
+    }
+
+    /**
+     * Copied from {@link org.exist.util.function.OptionalUtil#or(Optional, Supplier)}
+     * as org.exist.start is compiled into a separate Jar and doesn't have
+     * the rest of eXist available on the classpath
+     */
+    private static <T> Optional<T> or(final Optional<T> left, final Supplier<Optional<T>> right) {
+        if(left.isPresent()) {
+            return left;
+        } else {
+            return right.get();
+        }
     }
 }
