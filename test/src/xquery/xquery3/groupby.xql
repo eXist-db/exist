@@ -216,6 +216,28 @@ declare variable $groupby:addresses :=
         </address>
     </addresses>;
 
+declare variable $groupby:collections :=
+    <collection name="db" size="2">
+        <collection name="test" size="3">
+            <collection name="test2" size="2"/>
+            <collection name="test1" size="1"/>
+            <collection name="test3" size="4"/>
+        </collection>
+        <collection name="system" size="2">
+            <collection name="security" size="2"/>
+            <collection name="config" size="2"/>
+        </collection>
+    </collection>;
+
+declare variable $groupby:values-recursive :=
+    <t>
+        <v n="1">
+            <v n="2"/>
+            <v n="3"/>
+            <v n="2"/>
+        </v>
+    </t>;
+    
 declare
     %test:assertEqualsPermutation(
         "1 11 21 31 41 51 61 71 81 91", "2 12 22 32 42 52 62 72 82 92", "3 13 23 33 43 53 63 73 83 93",
@@ -543,4 +565,37 @@ function groupby:multi-for-groupby-bug2() {
             $title ! <play>{ . }</play>
          }
         </character>
+};
+
+declare %private function groupby:list-ordered($collections as element()*) {
+    for $collection in $collections
+    where $collection/@size > 1
+    order by $collection/@name ascending
+    return
+        <col>
+        { $collection/@name, groupby:list-ordered($collection/*) }
+        </col>
+};
+
+declare 
+    %test:assertEquals(
+        '<col name="db"><col name="system"><col name="config"/><col name="security"/></col><col name="test"><col name="test2"/><col name="test3"/></col></col>')
+function groupby:recursive-orderby() {
+    groupby:list-ordered($groupby:collections)
+};
+
+declare %private function groupby:recursive-groupby($values as element()*) {
+    for $value in $values
+    group by $key := $value/@n
+    return
+        <g n="{$key}" c="{count($value)}">
+        { for $v in $value return groupby:recursive-groupby($v/v) }
+        </g>
+};
+
+declare
+    %test:assertEquals(
+        '<g n="1" c="1"><g n="2" c="2"/><g n="3" c="1"/></g>')
+function groupby:recursive-groupby() {
+    groupby:recursive-groupby($groupby:values-recursive/v)
 };
