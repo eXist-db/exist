@@ -62,7 +62,7 @@ public class RenderFunction extends BasicFunction {
             + "Parameters are specified with the structure: "
             + "<parameters><param name=\"param-name1\" value=\"param-value1\"/>"
             + "</parameters>. "
-            + "Recognised rendering parameters are: author, title, keywords and dpi.",
+            + "Recognised rendering parameters are: author, title, keywords and dpi. URL's in the FO can be resolved from: http, https, file and exist URI schemes. If you wish to access a resource in the local database then the URI 'exist://localhost/db' refers to the root collection.",
             new SequenceType[]{
                 new FunctionParameterSequenceType("document", Type.NODE, Cardinality.EXACTLY_ONE, "FO document"),
                 new FunctionParameterSequenceType("mime-type", Type.STRING, Cardinality.EXACTLY_ONE, ""),
@@ -78,7 +78,7 @@ public class RenderFunction extends BasicFunction {
             + "Parameters are specified with the structure: "
             + "<parameters><param name=\"param-name1\" value=\"param-value1\"/>"
             + "</parameters>. "
-            + "Recognised rendering parameters are: author, title, keywords and dpi.",
+            + "Recognised rendering parameters are: author, title, keywords and dpi. URL's in the FO can be resolved from: http, https, file and exist URI schemes. If you wish to access a resource in the local database then the URI 'exist://localhost/db' refers to the root collection.",
             new SequenceType[]{
                 new FunctionParameterSequenceType("document", Type.NODE, Cardinality.EXACTLY_ONE, "FO document"),
                 new FunctionParameterSequenceType("mime-type", Type.STRING, Cardinality.EXACTLY_ONE, ""),

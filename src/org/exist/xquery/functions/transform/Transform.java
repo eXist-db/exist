@@ -23,7 +23,6 @@ package org.exist.xquery.functions.transform;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.InputStream;
@@ -65,6 +64,7 @@ import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.numbering.NodeId;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
+import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.serializers.XIncludeFilter;
@@ -375,7 +375,7 @@ public class Transform extends BasicFunction {
                     {
 						//as this is a persistent node (e.g. a stylesheet stored in the db)
 						//set the URI Resolver as a DatabaseResolver
-						factory.setURIResolver(new EXistURIResolver(root.getOwnerDocument().getCollection().getURI().toString()));
+						factory.setURIResolver(new EXistURIResolver(context.getBroker(), root.getOwnerDocument().getCollection().getURI().toString()));
 					
 						final String uri = XmldbURI.XMLDB_URI_PREFIX + context.getBroker().getBrokerPool().getId() + "://" + root.getOwnerDocument().getURI();
 						templates = getSource(factory, uri);
@@ -392,7 +392,7 @@ public class Transform extends BasicFunction {
 						 */
 						if(uri != null){
 							uri = uri.substring(0, uri.lastIndexOf('/'));
-							factory.setURIResolver(new EXistURIResolver(uri));
+							factory.setURIResolver(new EXistURIResolver(context.getBroker(), uri));
 						}
 					}
 					templates = getSource(factory, stylesheetNode);
@@ -409,7 +409,7 @@ public class Transform extends BasicFunction {
 					 */
 					if(uri != null){
 						uri = uri.substring(0, uri.lastIndexOf('/'));
-						factory.setURIResolver(new EXistURIResolver(uri));
+						factory.setURIResolver(new EXistURIResolver(context.getBroker(), uri));
 					}
 				}
 
@@ -585,7 +585,7 @@ public class Transform extends BasicFunction {
 		
 		private Templates getSource(DocumentImpl stylesheet)
 		throws XPathException, TransformerConfigurationException {
-			factory.setURIResolver(new EXistURIResolver(stylesheet.getCollection().getURI().toString()));
+			factory.setURIResolver(new EXistURIResolver(context.getBroker(), stylesheet.getCollection().getURI().toString()));
             final TransformErrorListener errorListener = new TransformErrorListener();
             factory.setErrorListener(errorListener);
 			final TemplatesHandler handler = factory.newTemplatesHandler();
@@ -609,59 +609,53 @@ public class Transform extends BasicFunction {
 		}
 	}
 	
-	private static class ExternalResolver implements URIResolver {
+	public static class ExternalResolver implements URIResolver {
+		private final String baseURI;
 		
-		private String baseURI;
-		
-		public ExternalResolver(String base) {
+		public ExternalResolver(final String base) {
 			this.baseURI = base;
 		}
 		
-		/* (non-Javadoc)
-		 * @see javax.xml.transform.URIResolver#resolve(java.lang.String, java.lang.String)
-		 */
-		public Source resolve(String href, String base)
-				throws TransformerException {
-			URL url;
+		@Override
+		public Source resolve(final String href, final String base) throws TransformerException {
 			try {
                 //TODO : use dedicated function in XmldbURI
-				url = new URL(baseURI + "/"  + href);
+				final URL url = new URL(baseURI + "/"  + href);
 				final URLConnection connection = url.openConnection();
 				return new StreamSource(connection.getInputStream());
-			} catch (final MalformedURLException e) {
-				return null;
 			} catch (final IOException e) {
+				LOG.warn(e);
 				return null;
 			}
 		}
 	}
 	
-	private class EXistURIResolver implements URIResolver {
+	public static class EXistURIResolver implements URIResolver {
+		final DBBroker broker;
+		final String basePath;
 		
-		// Base path
-		String  	basePath;
-		
-		public EXistURIResolver(String docPath) {
-			basePath = docPath;
-			
+		public EXistURIResolver(final DBBroker broker, final String docPath) {
+			this.broker = broker;
+			this.basePath = docPath;
 			LOG.debug("Database Resolver base path set to " + basePath);
 		}
 		
 		/** Simplify a path removing any "." and ".." path elements.
 		 * Assumes an absolute path is given.
 		 */
-		private String normalizePath(String path) {
-			if (!path.startsWith("/"))
-                {throw new IllegalArgumentException("normalizePath may only be applied to an absolute path; " +
-                    "argument was: " + path + "; base: " + basePath);}
+		private String normalizePath(final String path) {
+			if (!path.startsWith("/")) {
+				throw new IllegalArgumentException("normalizePath may only be applied to an absolute path; " +
+                    "argument was: " + path + "; base: " + basePath);
+			}
 
-			final String[]	pathComponents = path.substring(1).split("/");
+			final String[] pathComponents = path.substring(1).split("/");
 				
-			final int			numPathComponents  = Array.getLength(pathComponents);
-			final String[]	simplifiedComponents = new String[numPathComponents];
-			int 		numSimplifiedComponents = 0;
+			final int numPathComponents = Array.getLength(pathComponents);
+			final String[] simplifiedComponents = new String[numPathComponents];
+			int numSimplifiedComponents = 0;
 			
-			for(String s : pathComponents) {
+			for(final String s : pathComponents) {
 				if (s.length() == 0) {continue;}		// Remove empty elements ("//")
 				if (".".equals(s)) {continue;}		// Remove identity elements ("/./")
 				if ("..".equals(s)) {				// Remove parent elements ("/../") unless at the root
@@ -671,24 +665,24 @@ public class Transform extends BasicFunction {
 				simplifiedComponents[numSimplifiedComponents++] = s;
 			}
 			
-			if (numSimplifiedComponents == 0) {return "/";}
+			if (numSimplifiedComponents == 0) {
+				return "/";
+			}
 			
 			final StringBuilder b = new StringBuilder(path.length());
 			for(int x = 0; x < numSimplifiedComponents; x++) {
 				b.append("/").append(simplifiedComponents[x]);
 			}
 			
-			if (path.endsWith("/"))
-				{b.append("/");}
+			if (path.endsWith("/")) {
+				b.append("/");
+			}
 			
 			return b.toString();
 		}
-		
-		/* (non-Javadoc)
-		 * @see javax.xml.transform.URIResolver#resolve(java.lang.String, java.lang.String)
-		 */
-		public Source resolve(String href, String base)
-			throws TransformerException {
+
+		@Override
+		public Source resolve(final String href, String base) throws TransformerException {
 			String path;
 			
 			if (href.isEmpty()) {
@@ -699,14 +693,14 @@ public class Transform extends BasicFunction {
 					hrefURI = new URI(href);
 				} catch (final URISyntaxException e) {
 				}
-				if (hrefURI != null && hrefURI.isAbsolute())
-					{path = href;}
-				else {
-					if (href.startsWith("/"))
-						{path = href;}
-					else if (href.startsWith(XmldbURI.EMBEDDED_SERVER_URI_PREFIX))
-						{path = href.substring(XmldbURI.EMBEDDED_SERVER_URI_PREFIX.length());}
-					else if (base == null || base.length() == 0) {
+				if (hrefURI != null && hrefURI.isAbsolute()) {
+					path = href;
+				} else {
+					if (href.startsWith("/")) {
+						path = href;
+					} else if (href.startsWith(XmldbURI.EMBEDDED_SERVER_URI_PREFIX)) {
+						path = href.substring(XmldbURI.EMBEDDED_SERVER_URI_PREFIX.length());
+					} else if (base == null || base.length() == 0) {
 						path = basePath + "/" + href;
 					} else {
 						// Maybe base never contains this prefix?  Check to be sure.
@@ -727,26 +721,21 @@ public class Transform extends BasicFunction {
 			}
 		}
 		
-		private Source urlSource(String path) throws TransformerException {
+		private Source urlSource(final String path) throws TransformerException {
 			try {
 				final URL url = new URL(path);
 				return new StreamSource(url.openStream());
-			
-			} catch (final FileNotFoundException e) {
-				throw new TransformerException(e.getMessage(), e);
-			} catch (final MalformedURLException e) {
-				throw new TransformerException(e.getMessage(), e);
 			} catch (final IOException e) {
 				throw new TransformerException(e.getMessage(), e);
 			}
 		}
 
-		private Source databaseSource(String path) throws TransformerException {
+		private Source databaseSource(final String path) throws TransformerException {
 			final XmldbURI uri = XmldbURI.create(path);
 			
 			DocumentImpl xslDoc;
 			try {
-				xslDoc = context.getBroker().getResource(uri, Permission.READ);
+				xslDoc = broker.getResource(uri, Permission.READ);
 			} catch (final PermissionDeniedException e) {
 				throw new TransformerException(e.getMessage(), e);
 			}

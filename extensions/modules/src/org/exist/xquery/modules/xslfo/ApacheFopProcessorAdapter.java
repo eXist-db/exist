@@ -8,12 +8,21 @@ import java.util.Properties;
 import org.apache.avalon.framework.configuration.Configuration;
 import org.apache.avalon.framework.configuration.SAXConfigurationHandler;
 import org.apache.fop.apps.*;
+import org.apache.fop.apps.io.ResourceResolverFactory;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.apache.xmlgraphics.io.ResourceResolver;
+import org.apache.xmlgraphics.io.URIResolverAdapter;
 import org.exist.storage.DBBroker;
+import org.exist.xquery.functions.transform.Transform;
 import org.exist.xquery.value.NodeValue;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
+
+import javax.xml.transform.Source;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.URIResolver;
+
 
 /**
  * @author Adam Retter <adam@exist-db.org>
@@ -21,6 +30,7 @@ import org.xml.sax.SAXException;
 public class ApacheFopProcessorAdapter implements ProcessorAdapter {
 
     private static final Logger LOG = LogManager.getLogger(ApacheFopProcessorAdapter.class);
+    private static final String DEFAULT_BASE_URI = "exist://localhost/db/";
 
     @Override
     public ContentHandler getContentHandler(final DBBroker broker, final NodeValue configFile, final Properties parameters, final String mimeType, final OutputStream os) throws SAXException {
@@ -31,11 +41,19 @@ public class ApacheFopProcessorAdapter implements ProcessorAdapter {
             if (configFile != null) {
                 final FopConfigurationBuilder cfgBuilder = new FopConfigurationBuilder(broker);
                 final Configuration cfg = cfgBuilder.buildFromNode(configFile);
-                final URI defaultBaseURI = new URI(configFile.getOwnerDocument().getBaseURI());
-                final EnvironmentProfile environment = EnvironmentalProfileFactory.createDefault(defaultBaseURI, null);
+                final URI defaultBaseURI;
+                if(configFile instanceof org.exist.dom.memtree.NodeImpl) {
+                    //in-memory documents don't have a BaseURI
+                    defaultBaseURI = new URI(DEFAULT_BASE_URI);
+                } else {
+                    defaultBaseURI = new URI(configFile.getOwnerDocument().getBaseURI());
+                }
+                final EnvironmentProfile environment = EnvironmentalProfileFactory.createDefault(defaultBaseURI, getResourceResolver(broker, defaultBaseURI.toString()));
                 builder = new FopFactoryBuilder(environment).setConfiguration(cfg);
             } else {
-                builder = new FopFactoryBuilder(new URI("file:///db"));
+                final URI defaultBaseURI = new URI(DEFAULT_BASE_URI);
+                final EnvironmentProfile environment = EnvironmentalProfileFactory.createDefault(defaultBaseURI, getResourceResolver(broker, defaultBaseURI.toString()));
+                builder = new FopFactoryBuilder(environment);
             }
 
             final FopFactory fopFactory = builder.build();
@@ -98,12 +116,62 @@ public class ApacheFopProcessorAdapter implements ProcessorAdapter {
     }
 
     /**
+     * Returns a scheme aware ResourceResolver which supports:
+     *   file://
+     *   exist:// (which will be translated to xmldb:exist://)
+     *   http://
+     *   https://
+     *
+     * @return The resource resolver
+     */
+    private ResourceResolver getResourceResolver(final DBBroker broker, final String baseUri) {
+        final ResourceResolverFactory.SchemeAwareResourceResolverBuilder builder = ResourceResolverFactory.createSchemeAwareResourceResolverBuilder(ResourceResolverFactory.createDefaultResourceResolver());
+        final URIResolverAdapter uriResolver = new URIResolverAdapter(new ExistSchemeRewriter(new Transform.EXistURIResolver(broker, baseUri)));
+        builder.registerResourceResolverForScheme("exist", uriResolver);
+        builder.registerResourceResolverForScheme("http", uriResolver);
+        builder.registerResourceResolverForScheme("https", uriResolver);
+        return builder.build();
+    }
+
+    /**
+     * Rewrites URLs like:
+     *  exist://localhost/db -> /db
+     */
+    private static class ExistSchemeRewriter implements URIResolver {
+        private final Transform.EXistURIResolver eXistURIResolver;
+
+        public ExistSchemeRewriter(final Transform.EXistURIResolver eXistURIResolver) {
+            this.eXistURIResolver = eXistURIResolver;
+        }
+
+        @Override
+        public Source resolve(final String href, final String base) throws TransformerException {
+            return eXistURIResolver.resolve(
+                    rewriteScheme(href),
+                    rewriteScheme(base)
+            );
+        }
+
+        private String rewriteScheme(String uri) {
+            if(uri != null) {
+                if (uri.startsWith("exist://localhost")) {
+                    uri = uri.replace("exist://localhost/db", "/db");
+                } else if (uri.startsWith("exist://")) {
+                    uri = uri.replace("exist://", "xmldb:exist://");
+                }
+            }
+
+            return uri;
+        }
+    }
+
+    /**
      * Extension of the Apache Avalon DefaultConfigurationBuilder Allows better
      * integration with Nodes passed in from eXist as Configuration files
      */
     private class FopConfigurationBuilder extends org.apache.avalon.framework.configuration.DefaultConfigurationBuilder {
 
-        private DBBroker broker = null;
+        private final DBBroker broker;
 
         public FopConfigurationBuilder(final DBBroker broker) {
             super();
