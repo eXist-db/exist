@@ -599,6 +599,11 @@ public class NativeBroker extends DBBroker {
         return new NativeSerializer(this, getConfiguration());
     }
 
+    @Override
+    public Serializer newSerializer(List<String> chainOfReceivers) {
+        return new NativeSerializer(this, getConfiguration(), chainOfReceivers);
+    }
+
     public XmldbURI prepend(final XmldbURI uri) {
         switch(prepend) {
             case PREPEND_DB_ALWAYS:
