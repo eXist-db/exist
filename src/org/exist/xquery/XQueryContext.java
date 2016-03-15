@@ -3537,27 +3537,35 @@ public class XQueryContext implements BinaryValueManager, Context
     @Override
     public void registerBinaryValueInstance(final BinaryValue binaryValue) {
         if(binaryValueInstances == null) {
-             binaryValueInstances = new ArrayList<BinaryValue>();
-             
-             cleanupTasks.add(new CleanupTask() {
-                 
-                 @Override
-                 public void cleanup(final XQueryContext context) {
-                    if(context.binaryValueInstances != null) {
-                       for(final BinaryValue bv : context.binaryValueInstances) {
-                           try {
-                               bv.close();
-                           } catch (final IOException ioe) {
-                               LOG.error("Unable to close binary value: " + ioe.getMessage(), ioe);
-                           }
-                       }
-                       context.binaryValueInstances.clear();
-                   }
-                 }
-             });
+             binaryValueInstances = new ArrayList<>();
         }
-        
+
+        if(cleanupTasks.isEmpty() || !cleanupTasks.stream().filter(ct -> ct instanceof BinaryValueCleanupTask).findFirst().isPresent()) {
+            cleanupTasks.add(new BinaryValueCleanupTask());
+        }
+
         binaryValueInstances.add(binaryValue);
+    }
+
+    /**
+     * Cleanup Task which is responsible for relasing the streams
+     * of any {@link BinaryValue} which have been used during
+     * query execution
+     */
+    private static class BinaryValueCleanupTask implements CleanupTask {
+        @Override
+        public void cleanup(final XQueryContext context) {
+            if (context.binaryValueInstances != null) {
+                for (final BinaryValue bv : context.binaryValueInstances) {
+                    try {
+                        bv.close();
+                    } catch (final IOException ioe) {
+                        LOG.error("Unable to close binary value: " + ioe.getMessage(), ioe);
+                    }
+                }
+                context.binaryValueInstances.clear();
+            }
+        }
     }
 
     @Override
@@ -3655,14 +3663,14 @@ public class XQueryContext implements BinaryValueManager, Context
 
     }
     
-    private List<CleanupTask> cleanupTasks = new ArrayList<CleanupTask>();
+    private final List<CleanupTask> cleanupTasks = new ArrayList<>();
     
     public void registerCleanupTask(final CleanupTask cleanupTask) {
         cleanupTasks.add(cleanupTask);
     }
     
     public interface CleanupTask {
-        public void cleanup(final XQueryContext context);
+        void cleanup(final XQueryContext context);
     }
     
     @Override
