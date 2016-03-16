@@ -42,10 +42,15 @@ public class FileInputSource extends EXistInputSource {
 	 * the uncompressed stream of data
 	 *
 	 * @param file The Path object pointing to the file.
+	 *
+	 * @throws IllegalStateException if the InputSource was previously closed
 	 */
 	public void setFile(final Path file) {
+		assertOpen();
+
 		close();
 		this.file = Optional.of(file);
+		reOpen();
 
 		// Remember: super.setSystemId must be used instead of local implementation
 		super.setSystemId(this.file.map(f -> f.toUri().toASCIIString()).orElse(null));
@@ -57,15 +62,20 @@ public class FileInputSource extends EXistInputSource {
 	 *
 	 * @return If the file was set, and it could be opened, an InputStream object.
 	 * null, otherwise.
+	 *
+	 * @throws IllegalStateException if the InputSource was previously closed
 	 */
 	@Override
 	public InputStream getByteStream() {
+		assertOpen();
+
         // close any open stream first
 		close();
 
 		if(file.isPresent()) {
 			try {
 				this.inputStream = Optional.of(new BufferedInputStream(Files.newInputStream(file.get())));
+				reOpen();
 				return inputStream.get();
 			} catch(final IOException e) {
 				LOG.error(e);
@@ -75,47 +85,50 @@ public class FileInputSource extends EXistInputSource {
 		return null;
 	}
 
-	@Override
-    public void close() {
-        if(inputStream.isPresent()) {
-            try {
-                inputStream.get().close();
-            } catch (final IOException e) {
-                LOG.warn(e);
-            }
-	        inputStream = Optional.empty();
-        }
-    }
-
     /**
 	 * This method now does nothing, so collateral
-	 * effects from superclass with this one are avoided 
+	 * effects from superclass with this one are avoided
+	 *
+	 * @throws IllegalStateException if the InputSource was previously closed
 	 */
 	@Override
 	public void setByteStream(final InputStream is) {
+		assertOpen();
 		// Nothing, so collateral effects are avoided!
 	}
 	
 	/**
 	 * This method now does nothing, so collateral
-	 * effects from superclass with this one are avoided 
+	 * effects from superclass with this one are avoided
+	 *
+	 * @throws IllegalStateException if the InputSource was previously closed
 	 */
 	@Override
 	public void setCharacterStream(final Reader r) {
+		assertOpen();
 		// Nothing, so collateral effects are avoided!
 	}
 
 	/**
 	 * This method now does nothing, so collateral
-	 * effects from superclass with this one are avoided 
+	 * effects from superclass with this one are avoided
+	 *
+	 * @throws IllegalStateException if the InputSource was previously closed
 	 */
 	@Override
 	public void setSystemId(final String systemId) {
+		assertOpen();
 		// Nothing, so collateral effects are avoided!
 	}
 
+	/**
+	 * @see EXistInputSource#getByteStreamLength()
+	 *
+	 * @throws IllegalStateException if the InputSource was previously closed
+	 */
 	@Override
 	public long getByteStreamLength() {
+		assertOpen();
 		if(file.isPresent()) {
 			try {
 				return Files.size(file.get());
@@ -127,8 +140,32 @@ public class FileInputSource extends EXistInputSource {
 		return -1;
 	}
 
+	/**
+	 * @see EXistInputSource#getSymbolicPath()
+	 *
+	 * @throws IllegalStateException if the InputSource was previously closed
+	 */
 	@Override
 	public String getSymbolicPath() {
+		assertOpen();
 		return file.map(Path::toAbsolutePath).map(Path::toString).orElse(null);
+	}
+
+	@Override
+	public void close() {
+		if(!isClosed()) {
+			try {
+				if (inputStream.isPresent()) {
+					try {
+						inputStream.get().close();
+					} catch (final IOException e) {
+						LOG.warn(e);
+					}
+					inputStream = Optional.empty();
+				}
+			} finally {
+				super.close();
+			}
+		}
 	}
 }

@@ -23,6 +23,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.util.function.Either;
 import org.exist.util.function.SupplierE;
+import org.xml.sax.InputSource;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -82,8 +83,14 @@ public class VirtualTempFileInputSource extends EXistInputSource {
 		}
 	}
 
+	/**
+	 * @see InputSource#getByteStream()
+	 *
+	 * @throws IllegalStateException if the InputSource was previously closed
+	 */
 	@Override
 	public InputStream getByteStream() {
+		assertOpen();
 		return file
 				.flatMap(f -> f.fold(this::newInputStream, this::vtfByteStream))
 				.orElse(null);
@@ -102,36 +109,75 @@ public class VirtualTempFileInputSource extends EXistInputSource {
 				}));
 	}
 
+	/**
+	 * @see InputSource#getCharacterStream()
+	 *
+	 * @throws IllegalStateException if the InputSource was previously closed
+	 */
 	@Override
 	public Reader getCharacterStream() {
+		assertOpen();
 		return inputStreamReader(getByteStream(), getEncoding()).orElse(null);
 	}
 	
     /**
 	 * This method now does nothing, so collateral
-	 * effects from superclass with this one are avoided 
+	 * effects from superclass with this one are avoided
+	 *
+	 * @throws IllegalStateException if the InputSource was previously closed
 	 */
 	@Override
 	public void setByteStream(final InputStream is) {
+		assertOpen();
 		// Nothing, so collateral effects are avoided!
 	}
 	
 	/**
 	 * This method now does nothing, so collateral
-	 * effects from superclass with this one are avoided 
+	 * effects from superclass with this one are avoided
+	 *
+	 * @throws IllegalStateException if the InputSource was previously closed
 	 */
 	@Override
 	public void setCharacterStream(final Reader r) {
+		assertOpen();
 		// Nothing, so collateral effects are avoided!
 	}
 
 	/**
 	 * This method now does nothing, so collateral
-	 * effects from superclass with this one are avoided 
+	 * effects from superclass with this one are avoided
+	 *
+	 * @throws IllegalStateException if the InputSource was previously closed
 	 */
 	@Override
 	public void setSystemId(final String systemId) {
+		assertOpen();
 		// Nothing, so collateral effects are avoided!
+	}
+
+	/**
+	 * @see EXistInputSource#getSymbolicPath()
+	 *
+	 * @throws IllegalStateException if the InputSource was previously closed
+	 */
+	@Override
+	public String getSymbolicPath() {
+		assertOpen();
+		return file
+				.flatMap(f -> f.fold(l -> Optional.of(l.toAbsolutePath().toString()), r -> Optional.ofNullable(r.tempFile).map(File::getAbsolutePath)))
+				.orElse(null);
+	}
+
+	/**
+	 * @see EXistInputSource#getByteStreamLength()
+	 *
+	 * @throws IllegalStateException if the InputSource was previously closed
+	 */
+	@Override
+	public long getByteStreamLength() {
+		assertOpen();
+		return file.flatMap(f -> f.fold(this::fileSize, this::vtfSize)).orElse(-1l);
 	}
 
 	@Override
@@ -144,21 +190,15 @@ public class VirtualTempFileInputSource extends EXistInputSource {
 	}
 
 	@Override
-	public String getSymbolicPath() {
-		return file
-				.flatMap(f -> f.fold(l -> Optional.of(l.toAbsolutePath().toString()), r -> Optional.ofNullable(r.tempFile).map(File::getAbsolutePath)))
-				.orElse(null);
-	}
-
-	@Override
 	public void close() {
-		file.ifPresent(f -> f.fold(l -> true, VirtualTempFile::delete));
-		file = Optional.empty();
-	}
-
-	@Override
-	public long getByteStreamLength() {
-		return file.flatMap(f -> f.fold(this::fileSize, this::vtfSize)).orElse(-1l);
+		if(!isClosed()) {
+			try {
+				file.ifPresent(f -> f.fold(l -> true, VirtualTempFile::delete));
+				file = Optional.empty();
+			} finally {
+				super.close();
+			}
+		}
 	}
 
 	private Optional<InputStream> newInputStream(final Path path) {

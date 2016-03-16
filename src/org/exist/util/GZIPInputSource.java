@@ -44,9 +44,12 @@ public final class GZIPInputSource extends EXistInputSource {
 	 * If the gzipFile was set, and it could be opened, and it was
 	 * a correct gzip gzipFile, a GZIPInputStream object.
 	 * null, otherwise.
+	 *
+	 * @throws IllegalStateException If the InputSource was previously closed
 	 */
 	@Override
 	public InputStream getByteStream() {
+		assertOpen();
 		try {
 			final InputStream is = new BufferedInputStream(Files.newInputStream(gzipFile));
 			this.inputStream = Optional.of(new GZIPInputStream(is));
@@ -56,49 +59,51 @@ public final class GZIPInputSource extends EXistInputSource {
 		
 		return inputStream.orElse(null);
 	}
-
-	@Override
-    public void close() {
-        if (inputStream.isPresent()) {
-            try {
-                inputStream.get().close();
-            } catch (final IOException e) {
-                LOG.warn(e);
-            } finally {
-               this.inputStream = Optional.empty();
-            }
-        }
-    }
     
 	/**
 	 * This method now does nothing, so collateral
-	 * effects from superclass with this one are avoided 
+	 * effects from superclass with this one are avoided
+	 *
+	 * @throws IllegalStateException If the InputSource was previously closed
 	 */
 	@Override
 	public void setByteStream(final InputStream is) {
+		assertOpen();
 		// Nothing, so collateral effects are avoided!
 	}
 	
 	/**
 	 * This method now does nothing, so collateral
-	 * effects from superclass with this one are avoided 
+	 * effects from superclass with this one are avoided
+	 *
+	 * @throws IllegalStateException If the InputSource was previously closed
 	 */
 	@Override
 	public void setCharacterStream(final Reader r) {
+		assertOpen();
 		// Nothing, so collateral effects are avoided!
 	}
 	
 	/**
 	 * This method now does nothing, so collateral
-	 * effects from superclass with this one are avoided 
+	 * effects from superclass with this one are avoided
+	 *
+	 * @throws IllegalStateException If the InputSource was previously closed
 	 */
 	@Override
 	public void setSystemId(final String systemId) {
+		assertOpen();
 		// Nothing, so collateral effects are avoided!
 	}
 
+	/**
+	 * @see EXistInputSource#getByteStreamLength()
+	 *
+	 * @throws IllegalStateException If the InputSource was previously closed
+	 */
 	@Override
 	public long getByteStreamLength() {
+		assertOpen();
 		try {
 			return Files.size(gzipFile);
 		} catch (final IOException e) {
@@ -107,8 +112,14 @@ public final class GZIPInputSource extends EXistInputSource {
 		}
 	}
 
+	/**
+	 * @see EXistInputSource#getSymbolicPath()
+	 *
+	 * @throws IllegalStateException If the InputSource was previously closed
+	 */
 	@Override
 	public String getSymbolicPath() {
+		assertOpen();
 		return gzipFile.toAbsolutePath().toString();
 	}
 
@@ -118,6 +129,25 @@ public final class GZIPInputSource extends EXistInputSource {
 			close();
 		} finally {
 			super.finalize();
+		}
+	}
+
+	@Override
+	public void close() {
+		if(!isClosed()) {
+			try {
+				if (inputStream.isPresent()) {
+					try {
+						inputStream.get().close();
+					} catch (final IOException e) {
+						LOG.warn(e);
+					} finally {
+						this.inputStream = Optional.empty();
+					}
+				}
+			} finally {
+				super.close();
+			}
 		}
 	}
 }
