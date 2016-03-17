@@ -83,6 +83,7 @@ import org.exist.util.VirtualTempFile;
 import org.exist.util.VirtualTempFileInputSource;
 import org.exist.util.function.Function2E;
 import org.exist.util.function.Function3E;
+import org.exist.util.function.SupplierE;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
 import org.exist.validation.ValidationReport;
@@ -1403,36 +1404,36 @@ public class RpcConnection implements RpcAPI {
                 }
             }
 
-            VirtualTempFileInputSource source = null;
+
+            // get the source for parsing
+            SupplierE<VirtualTempFileInputSource, IOException> sourceSupplier;
             try {
-                try {
-                    final int handle = Integer.parseInt(localFile);
-                    final SerializedResult sr = factory.resultSets.getSerializedResult(handle);
-                    if (sr == null) {
-                        throw new EXistException("Invalid handle specified");
-                    }
+                final int handle = Integer.parseInt(localFile);
+                final SerializedResult sr = factory.resultSets.getSerializedResult(handle);
+                if (sr == null) {
+                    throw new EXistException("Invalid handle specified");
+                }
 
-                    source = new VirtualTempFileInputSource(sr.result);
-
-                    // Unlinking the VirtualTempFile from the SerializeResult
-                    sr.result = null;
+                sourceSupplier = () -> {
+                    final VirtualTempFileInputSource source = new VirtualTempFileInputSource(sr.result);
+                    sr.result = null; // de-reference the VirtualTempFile in the SerializeResult
                     factory.resultSets.remove(handle);
-                } catch (final NumberFormatException nfe) {
-                    // As this file can be a non-temporal one, we should not
-                    // blindly erase it!
-                    final Path file = Paths.get(localFile);
-                    if (!Files.isReadable(file)) {
-                        throw new EXistException("unable to read file " + file.toAbsolutePath().toString());
-                    }
+                    return source;
+                };
+            } catch (final NumberFormatException nfe) {
 
-                    source = new VirtualTempFileInputSource(file);
-                } catch (final IOException ioe) {
-                    throw new EXistException("Error preparing virtual temp file for parsing");
-                }
-                finally {
-                    source.close();
+                // As this file can be a non-temporal one, we should not
+                // blindly erase it!
+                final Path path = Paths.get(localFile);
+                if (!Files.isReadable(path)) {
+                    throw new EXistException("unable to read file " + path.toAbsolutePath().toString());
                 }
 
+                sourceSupplier = () -> new VirtualTempFileInputSource(path);
+            }
+
+            // parse the source
+            try(final VirtualTempFileInputSource source = sourceSupplier.get()) {
                 final MimeType mime = Optional.ofNullable(MimeTable.getInstance().getContentType(mimeType)).orElse(MimeType.BINARY_TYPE);
                 final boolean treatAsXML = (isXML != null && isXML) || (isXML == null && mime.isXMLType());
 
@@ -1458,11 +1459,6 @@ public class RpcConnection implements RpcAPI {
                 }
 
                 return true;
-            } finally {
-                if (source != null) {
-                    // DWES there are situations the file is not cleaned up
-                    source.close();
-                }
             }
         });
     }
