@@ -1643,6 +1643,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("removing old document " + oldDoc.getFileURI());
                 }
+                updateModificationTime(document);
                 oldDoc.getUpdateLock().acquire(Lock.WRITE_LOCK);
                 oldDocLocked = true;
                 if (oldDoc.getResourceType() == DocumentImpl.BINARY_FILE) {
@@ -1748,7 +1749,6 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         if (oldDoc != null) {
             metadata = oldDoc.getMetadata();
             metadata.setCreated(oldDoc.getMetadata().getCreated());
-            metadata.setLastModified(System.currentTimeMillis());
             document.setPermissions(oldDoc.getPermissions());
         } else {
         	//Account user = broker.getCurrentSubject();
@@ -1774,6 +1774,17 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         document.setMetadata(metadata);
     }
 
+     /** Update the modification time of a document
+     * @param document
+     */
+    
+    private void updateModificationTime(final DocumentImpl document) {
+        DocumentMetadata metadata = new DocumentMetadata();
+        metadata = document.getMetadata();
+        metadata.setLastModified(System.currentTimeMillis());
+        document.setMetadata(metadata);
+    }
+    
     /**
      * Check Permissions about user and document when a document is added to the databse, and throw exceptions if necessary.
      *
@@ -1907,6 +1918,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
 
             if (oldDoc != null) {
                 LOG.debug("removing old document " + oldDoc.getFileURI());
+                updateModificationTime(blob);
                 if (oldDoc instanceof BinaryDocument) {
                     broker.removeBinaryResource(transaction, (BinaryDocument) oldDoc);
                 } else {
