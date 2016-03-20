@@ -16,6 +16,7 @@ import org.exist.xmldb.XmldbURI;
 import org.exist.test.TestConstants;
 import org.exist.collections.Collection;
 import org.exist.Database;
+import static org.exist.TestUtils.cleanupDataDir;
 import org.exist.start.Main;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
@@ -23,6 +24,7 @@ import org.exist.util.FileUtils;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.exist.util.ConfigurationHelper;
+import org.exist.util.DatabaseConfigurationException;
 
 /**
  *
@@ -31,15 +33,8 @@ import org.exist.util.ConfigurationHelper;
 public class StoreBinaryTest {
 
     @BeforeClass
-    public static void ensureCleanDatabase() throws IOException {
-        final Optional<Path> home = ConfigurationHelper.getExistHome();
-        final Path data = FileUtils.resolve(home, "webapp/WEB-INF/data");
-
-        try(final Stream<Path> dataFiles  = Files.list(data)) {
-            dataFiles
-                    .filter(path -> !(FileUtils.fileName(path).equals("RECOVERY") || FileUtils.fileName(path).equals("README") || FileUtils.fileName(path).equals(".DO_NOT_DELETE")))
-                    .forEach(FileUtils::deleteQuietly);
-        }
+    public static void setup() throws IOException, DatabaseConfigurationException {
+        cleanupDataDir();
     }
 
     @Test
