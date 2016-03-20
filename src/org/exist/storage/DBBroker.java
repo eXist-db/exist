@@ -47,6 +47,8 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 import org.exist.util.LockException;
 import org.exist.util.Stacktrace;
+import org.exist.util.function.Either;
+import org.exist.util.function.Tuple2;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.TerminatedException;
 import org.w3c.dom.Document;
@@ -98,7 +100,33 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
 
     protected BrokerPool pool;
 
-    private Deque<Subject> subject = new ArrayDeque<>();
+    /**
+     * Either a TraceableSubjectChange when logging is set to TRACE level or
+     * just a Subject
+     */
+    private Deque<Either<TraceableSubjectChange, Subject>> subject = new ArrayDeque<>();
+
+    private static class TraceableSubjectChange {
+        private static int STACK_TOP = 10;
+        private final StackTraceElement trace[];
+        private final Subject subject;
+
+        private TraceableSubjectChange(final Subject subject) {
+            final StackTraceElement trace[] = Thread.currentThread().getStackTrace();
+            final int from = 2;
+            final int to = trace.length - from  < STACK_TOP ? trace.length - 2 : from + STACK_TOP;
+            this.trace = Arrays.copyOfRange(trace, from, to);
+            this.subject = subject;
+        }
+
+        public Subject getSubject() {
+            return subject;
+        }
+    }
+
+    private Subject asSubject(final Either<TraceableSubjectChange, Subject> traceableSubjectOrSubject) {
+        return traceableSubjectOrSubject.fold(TraceableSubjectChange::getSubject, s -> s);
+    }
 
     private int referenceCount = 0;
 
@@ -128,8 +156,10 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
     public void pushSubject(final Subject subject) {
         if(LOG.isTraceEnabled()) {
             LOG.trace(String.format("%s: pushSubject(%s) from: %s %s", getId(), subject.getName(), Thread.currentThread(), Stacktrace.top(Thread.currentThread().getStackTrace(), 10)));
+            this.subject.addFirst(Either.Left(new TraceableSubjectChange(subject)));
+        } else {
+            this.subject.addFirst(Either.Right(subject));
         }
-        this.subject.addFirst(subject);
     }
 
     /**
@@ -141,7 +171,7 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
         if(LOG.isTraceEnabled()) {
             LOG.trace(String.format("%s: popSubject(%s) from: %s %s", getId(), getCurrentSubject().getName(), Thread.currentThread(), Stacktrace.top(Thread.currentThread().getStackTrace(), 10)));
         }
-        return this.subject.removeFirst();
+        return asSubject(this.subject.removeFirst());
     }
 
     /**
@@ -150,7 +180,7 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
      * @return The current subject that the broker is executing as
      */
     public Subject getCurrentSubject() {
-        return subject.peekFirst();
+        return Optional.ofNullable(subject.peekFirst()).map(this::asSubject).orElse(null);
     }
 
     public IndexController getIndexController() {
