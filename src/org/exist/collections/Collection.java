@@ -1779,8 +1779,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
      */
     
     private void updateModificationTime(final DocumentImpl document) {
-        DocumentMetadata metadata = new DocumentMetadata();
-        metadata = document.getMetadata();
+        final DocumentMetadata metadata = document.getMetadata();
         metadata.setLastModified(System.currentTimeMillis());
         document.setMetadata(metadata);
     }
