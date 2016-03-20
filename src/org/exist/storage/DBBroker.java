@@ -44,10 +44,7 @@ import org.exist.storage.btree.BTreeCallback;
 import org.exist.storage.dom.INodeIterator;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.Txn;
-import org.exist.util.Configuration;
-import org.exist.util.LockException;
-import org.exist.util.Stacktrace;
-import org.exist.util.function.Either;
+import org.exist.util.*;
 import org.exist.util.function.Tuple2;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.TerminatedException;
@@ -100,33 +97,17 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
 
     protected BrokerPool pool;
 
+    private Deque<Subject> subject = new ArrayDeque<>();
+
     /**
-     * Either a TraceableSubjectChange when logging is set to TRACE level or
-     * just a Subject
+     * Used when TRACE level logging is enabled
+     * to provide a history of {@link Subject} state
+     * changes
+     *
+     * This can be written to a log file by calling
+     * {@link DBBroker#traceSubjectChanges()}
      */
-    private Deque<Either<TraceableSubjectChange, Subject>> subject = new ArrayDeque<>();
-
-    private static class TraceableSubjectChange {
-        private static int STACK_TOP = 10;
-        private final StackTraceElement trace[];
-        private final Subject subject;
-
-        private TraceableSubjectChange(final Subject subject) {
-            final StackTraceElement trace[] = Thread.currentThread().getStackTrace();
-            final int from = 2;
-            final int to = trace.length - from  < STACK_TOP ? trace.length - 2 : from + STACK_TOP;
-            this.trace = Arrays.copyOfRange(trace, from, to);
-            this.subject = subject;
-        }
-
-        public Subject getSubject() {
-            return subject;
-        }
-    }
-
-    private Subject asSubject(final Either<TraceableSubjectChange, Subject> traceableSubjectOrSubject) {
-        return traceableSubjectOrSubject.fold(TraceableSubjectChange::getSubject, s -> s);
-    }
+    private TraceableStateChanges<Subject, TraceableSubjectChange.Change> subjectChangeTrace = LOG.isTraceEnabled() ? new TraceableStateChanges<>() : null;
 
     private int referenceCount = 0;
 
@@ -149,38 +130,65 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
     }
 
     /**
-     * Change the subject that the broker performs actions as
+     * Change the state that the broker performs actions as
      *
-     * @param subject The new subject for the broker to perform actions as
+     * @param subject The new state for the broker to perform actions as
      */
     public void pushSubject(final Subject subject) {
         if(LOG.isTraceEnabled()) {
-            LOG.trace(String.format("%s: pushSubject(%s) from: %s %s", getId(), subject.getName(), Thread.currentThread(), Stacktrace.top(Thread.currentThread().getStackTrace(), 10)));
-            this.subject.addFirst(Either.Left(new TraceableSubjectChange(subject)));
-        } else {
-            this.subject.addFirst(Either.Right(subject));
+            subjectChangeTrace.add(TraceableSubjectChange.push(subject, getId()));
         }
+        this.subject.addFirst(subject);
     }
 
     /**
-     * Restore the previous subject for the broker to perform actions as
+     * Restore the previous state for the broker to perform actions as
      *
-     * @return The subject which has been popped
+     * @return The state which has been popped
      */
     public Subject popSubject() {
+        final Subject subject = this.subject.removeFirst();
         if(LOG.isTraceEnabled()) {
-            LOG.trace(String.format("%s: popSubject(%s) from: %s %s", getId(), getCurrentSubject().getName(), Thread.currentThread(), Stacktrace.top(Thread.currentThread().getStackTrace(), 10)));
+            subjectChangeTrace.add(TraceableSubjectChange.pop(subject, getId()));
         }
-        return asSubject(this.subject.removeFirst());
+        return subject;
     }
 
     /**
-     * The subject that is currently using this DBBroker object
+     * The state that is currently using this DBBroker object
      * 
-     * @return The current subject that the broker is executing as
+     * @return The current state that the broker is executing as
      */
     public Subject getCurrentSubject() {
-        return Optional.ofNullable(subject.peekFirst()).map(this::asSubject).orElse(null);
+        return subject.peekFirst();
+    }
+
+    /**
+     * Logs the details of all state changes
+     *
+     * Used for tracing privilege escalation/de-escalation
+     * during the lifetime of an active broker
+     *
+     * @throws IllegalStateException if TRACE level logging is not enabled
+     */
+    public void traceSubjectChanges() {
+        subjectChangeTrace.logTrace(LOG);
+    }
+
+    /**
+     * Clears the details of all state changes
+     *
+     * Used for tracing privilege escalation/de-escalation
+     * during the lifetime of an active broker
+     *
+     * @throws IllegalStateException if TRACE level logging is not enabled
+     */
+    public void clearSubjectChangesTrace() {
+        if(!LOG.isTraceEnabled()) {
+            throw new IllegalStateException("This is only enabled at TRACE level logging");
+        }
+
+        subjectChangeTrace.clear();
     }
 
     public IndexController getIndexController() {
@@ -827,8 +835,47 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
     public void release() {
         pool.release(this);
     }
-    
+
     public Txn beginTx() {
         return getDatabase().getTransactionManager().beginTransaction();
     }
+
+    /**
+     * Represents a {@link Subject} change
+     * made to a broker
+     *
+     * Used for tracing subject changes
+     */
+    private static class TraceableSubjectChange extends TraceableStateChange<Subject, TraceableSubjectChange.Change> {
+        private final String id;
+
+        public enum Change {
+            PUSH,
+            POP
+        }
+
+        private TraceableSubjectChange(final Change change, final Subject subject, final String id) {
+            super(change, subject);
+            this.id = id;
+        }
+
+        @Override
+        public String getId() {
+            return id;
+        }
+
+        @Override
+        public String describeState() {
+            return getState().getName();
+        }
+
+        final static TraceableSubjectChange push(final Subject subject, final String id) {
+            return new TraceableSubjectChange(Change.PUSH, subject, id);
+        }
+
+        final static TraceableSubjectChange pop(final Subject subject, final String id) {
+            return new TraceableSubjectChange(Change.POP, subject, id);
+        }
+    }
 }
+

@@ -479,6 +479,14 @@ public class BrokerPool implements Database {
      */
     private final Map<Thread, DBBroker> activeBrokers = new ConcurrentHashMap<>();
 
+
+    /**
+     * Used when TRACE level logging is enabled
+     * to provide a history of broker leases
+     */
+    private Map<String, TraceableStateChanges<TraceableBrokerLeaseChange.BrokerInfo, TraceableBrokerLeaseChange.Change>> brokerLeaseChangeTrace = LOG.isTraceEnabled() ? new HashMap<>() : null;
+    private Map<String, List<TraceableStateChanges<TraceableBrokerLeaseChange.BrokerInfo, TraceableBrokerLeaseChange.Change>>> brokerLeaseChangeTraceHistory = LOG.isTraceEnabled() ? new HashMap<>() : null;
+
     /**
      * The configuration object for the database instance
      */
@@ -1574,6 +1582,13 @@ public class BrokerPool implements Database {
             broker.incReferenceCount();
             broker.pushSubject(subject.orElseGet(broker::getCurrentSubject));
 
+            if(LOG.isTraceEnabled()) {
+                if(!brokerLeaseChangeTrace.containsKey(broker.getId())) {
+                    brokerLeaseChangeTrace.put(broker.getId(), new TraceableStateChanges<>());
+                }
+                brokerLeaseChangeTrace.get(broker.getId()).add(TraceableBrokerLeaseChange.get(new TraceableBrokerLeaseChange.BrokerInfo(broker.getId(), broker.getReferenceCount())));
+            }
+
             return broker;
             //TODO : share the code with what is below (including notifyAll) ?
             // WM: notifyAll is not necessary if we don't have to wait for a broker.
@@ -1613,7 +1628,7 @@ public class BrokerPool implements Database {
             activeBrokers.put(Thread.currentThread(), broker);
 
             if(LOG.isTraceEnabled()) {
-                LOG.trace("+++ " + Thread.currentThread() + Stacktrace.top(Thread.currentThread().getStackTrace(), 10));
+                LOG.trace("+++ " + Thread.currentThread() + Stacktrace.top(Thread.currentThread().getStackTrace(), Stacktrace.DEFAULT_STACK_TOP));
             }
 
             if(watchdog != null) {
@@ -1623,6 +1638,13 @@ public class BrokerPool implements Database {
             broker.incReferenceCount();
 
             broker.pushSubject(subject.orElseGet(securityManager::getGuestSubject));
+
+            if(LOG.isTraceEnabled()) {
+                if(!brokerLeaseChangeTrace.containsKey(broker.getId())) {
+                    brokerLeaseChangeTrace.put(broker.getId(), new TraceableStateChanges<>());
+                }
+                brokerLeaseChangeTrace.get(broker.getId()).add(TraceableBrokerLeaseChange.get(new TraceableBrokerLeaseChange.BrokerInfo(broker.getId(), broker.getReferenceCount())));
+            }
 
             //Inform the other threads that we have a new-comer
             // TODO: do they really need to be informed here???????
@@ -1645,6 +1667,13 @@ public class BrokerPool implements Database {
     void release(final DBBroker broker) {
         Objects.requireNonNull(broker, "Cannot release nothing");
 
+        if(LOG.isTraceEnabled()) {
+            if(!brokerLeaseChangeTrace.containsKey(broker.getId())) {
+                brokerLeaseChangeTrace.put(broker.getId(), new TraceableStateChanges<>());
+            }
+            brokerLeaseChangeTrace.get(broker.getId()).add(TraceableBrokerLeaseChange.release(new TraceableBrokerLeaseChange.BrokerInfo(broker.getId(), broker.getReferenceCount())));
+        }
+
         //first check that the broker is active ! If not, return immediately.
         broker.decReferenceCount();
         if(broker.getReferenceCount() > 0) {
@@ -1657,7 +1686,7 @@ public class BrokerPool implements Database {
             //Broker is no more used : inactivate it
             for(final DBBroker inactiveBroker : inactiveBrokers) {
                 if(broker == inactiveBroker) {
-                    LOG.error("Broker is already in the inactive list!!!");
+                    LOG.error("Broker " + broker.getId() + " is already in the inactive list!!!");
                     return;
                 }
             }
@@ -1675,7 +1704,7 @@ public class BrokerPool implements Database {
                 }
             } else {
                 if(LOG.isTraceEnabled()) {
-                    LOG.trace("--- " + Thread.currentThread() + Stacktrace.top(Thread.currentThread().getStackTrace(), 10));
+                    LOG.trace("--- " + Thread.currentThread() + Stacktrace.top(Thread.currentThread().getStackTrace(), Stacktrace.DEFAULT_STACK_TOP));
                 }
             }
             
@@ -1683,7 +1712,12 @@ public class BrokerPool implements Database {
 
             //guard to ensure that the broker has popped all its subjects
             if(lastUser == null || broker.getCurrentSubject() != null) {
-                LOG.warn("Broker was returned with extraneous Subjects, cleaning...", new IllegalStateException("DBBroker pushSubject/popSubject mismatch").fillInStackTrace());
+                LOG.warn("Broker " + broker.getId() + " was returned with extraneous Subjects, cleaning...", new IllegalStateException("DBBroker pushSubject/popSubject mismatch").fillInStackTrace());
+                if(LOG.isTraceEnabled()) {
+                    broker.traceSubjectChanges();
+                }
+
+                //cleanup any remaining erroneous subjects
                 while(broker.getCurrentSubject() != null) {
                     lastUser = broker.popSubject();
                 }
@@ -1692,6 +1726,20 @@ public class BrokerPool implements Database {
             inactiveBrokers.push(broker);
             if(watchdog != null) {
                 watchdog.remove(broker);
+            }
+
+            if(LOG.isTraceEnabled()) {
+                if(!brokerLeaseChangeTraceHistory.containsKey(broker.getId())) {
+                    brokerLeaseChangeTraceHistory.put(broker.getId(), new ArrayList<>());
+                }
+                try {
+                    brokerLeaseChangeTraceHistory.get(broker.getId()).add((TraceableStateChanges<TraceableBrokerLeaseChange.BrokerInfo, TraceableBrokerLeaseChange.Change>) brokerLeaseChangeTrace.get(broker.getId()).clone());
+                    brokerLeaseChangeTrace.get(broker.getId()).clear();
+                } catch(final CloneNotSupportedException e) {
+                    LOG.error(e);
+                }
+
+                broker.clearSubjectChangesTrace();
             }
 
             //If the database is now idle, do some useful stuff
@@ -2227,4 +2275,50 @@ public class BrokerPool implements Database {
     public MetaStorage getMetaStorage() {
         return metaStorage;
     }
+
+    /**
+     * Represents a change involving {@link BrokerPool#inactiveBrokers}
+     * or {@link BrokerPool#activeBrokers} or {@link DBBroker#referenceCount}
+     *
+     * Used for tracing broker leases
+     */
+    private static class TraceableBrokerLeaseChange extends TraceableStateChange<TraceableBrokerLeaseChange.BrokerInfo, TraceableBrokerLeaseChange.Change> {
+        public enum Change {
+            GET,
+            RELEASE
+        }
+
+        public static class BrokerInfo {
+            final String id;
+            final int referenceCount;
+
+            public BrokerInfo(final String id, final int referenceCount) {
+                this.id = id;
+                this.referenceCount = referenceCount;
+            }
+        }
+
+        private TraceableBrokerLeaseChange(final Change change, final BrokerInfo brokerInfo) {
+            super(change, brokerInfo);
+        }
+
+        @Override
+        public String getId() {
+            return getState().id;
+        }
+
+        @Override
+        public String describeState() {
+            return Integer.toString(getState().referenceCount);
+        }
+
+        final static TraceableBrokerLeaseChange get(final BrokerInfo brokerInfo) {
+            return new TraceableBrokerLeaseChange(Change.GET, brokerInfo);
+        }
+
+        final static TraceableBrokerLeaseChange release(final BrokerInfo brokerInfo) {
+            return new TraceableBrokerLeaseChange(Change.RELEASE, brokerInfo);
+        }
+    }
 }
+
