@@ -477,8 +477,30 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
     }
 
     public void updateNoSort() {
-        updateDocs();
-        isSorted = true;
+        if (needsSort()) {
+            sort(false);
+        } else {
+            updateDocs();
+            isSorted = true;
+        }
+    }
+
+
+    /**
+     * Check if this node set is sorted in document order
+     *
+     * @return true if sorted
+     */
+    private boolean needsSort() {
+        if (hasOne) {
+            return false;
+        }
+        for(int i = 1; i < size; i++) {
+            if (nodes[i].compareTo(nodes[i - 1]) < 0) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void updateDocs() {
