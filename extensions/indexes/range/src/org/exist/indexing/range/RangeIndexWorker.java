@@ -512,7 +512,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     public NodeSet query(int contextId, DocumentSet docs, NodeSet contextSet, List<QName> qnames, AtomicValue[] keys, RangeIndex.Operator operator, int axis) throws IOException, XPathException {
         return index.withSearcher(searcher -> {
             List<QName> definedIndexes = getDefinedIndexes(qnames);
-            NodeSet resultSet = NodeSet.EMPTY_SET;
+            NodeSet resultSet = new NewArrayNodeSet();
             for (QName qname : definedIndexes) {
                 Query query;
                 String field = LuceneUtil.encodeQName(qname, index.getBrokerPool().getSymbols());
@@ -530,9 +530,9 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     NodesFilter filter = new NodesFilter(contextSet);
                     filter.init(searcher.getIndexReader());
                     FilteredQuery filtered = new FilteredQuery(query, filter, FilteredQuery.LEAP_FROG_FILTER_FIRST_STRATEGY);
-                    resultSet = doQuery(contextId, docs, contextSet, axis, searcher, null, filtered, null);
+                    resultSet.addAll(doQuery(contextId, docs, contextSet, axis, searcher, null, filtered, null));
                 } else {
-                    resultSet = doQuery(contextId, docs, contextSet, axis, searcher, null, query, null);
+                    resultSet.addAll(doQuery(contextId, docs, contextSet, axis, searcher, null, query, null));
                 }
             }
             return resultSet;
@@ -564,14 +564,14 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             if (clauses.length == 1) {
                 qu = clauses[0].getQuery();
             }
-            NodeSet resultSet = NodeSet.EMPTY_SET;
+            NodeSet resultSet = new NewArrayNodeSet();
             if (contextSet != null && contextSet.hasOne() && contextSet.getItemType() != Type.DOCUMENT) {
                 NodesFilter filter = new NodesFilter(contextSet);
                 filter.init(searcher.getIndexReader());
                 FilteredQuery filtered = new FilteredQuery(qu, filter, FilteredQuery.LEAP_FROG_FILTER_FIRST_STRATEGY);
-                resultSet = doQuery(contextId, docs, contextSet, axis, searcher, null, filtered, null);
+                resultSet.addAll(doQuery(contextId, docs, contextSet, axis, searcher, null, filtered, null));
             } else {
-                resultSet = doQuery(contextId, docs, contextSet, axis, searcher, null, qu, null);
+                resultSet.addAll(doQuery(contextId, docs, contextSet, axis, searcher, null, qu, null));
             }
             return resultSet;
         });
