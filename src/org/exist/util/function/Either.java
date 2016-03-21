@@ -55,6 +55,45 @@ public abstract class Either<L, R> {
     }
 
     /**
+     * Map on the right-hand-side of the disjunction
+     *
+     * @param f The function to map with
+     */
+    public final <T> Either<L, T> map(final Function<R, T> f) {
+        if(isLeft()) {
+            return (Left<L, T>)this;
+        } else {
+            return Right(f.apply(((Right<L, R>)this).value));
+        }
+    }
+
+    /**
+     * Bind through on the right-hand-side of this disjunction
+     *
+     * @param f the function to bind through
+     */
+    public final <LL extends L, T> Either<LL, T> flatMap(final Function<R, Either<LL, T>> f) {
+        if(isLeft) {
+            return (Left<LL, T>)this;
+        } else {
+            return f.apply(((Right<L, R>)this).value);
+        }
+    }
+
+    /**
+     * Map on the left-hand-side of the disjunction
+     *
+     * @param f The function to map with
+     */
+    public final <T> Either<T, R> leftMap(final Function<L, T> f) {
+        if(isLeft) {
+            return Left(f.apply(((Left<L, R>)this).value));
+        } else {
+            return (Right<T, R>)this;
+        }
+    }
+
+    /**
      * Catamorphism. Run the first given function if left,
      * otherwise the second given function
      *
