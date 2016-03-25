@@ -2816,7 +2816,8 @@ public class NativeBroker extends DBBroker {
      * descendant nodes of the passed node, or all nodes below some level of
      * the document if node is null.
      */
-    private void reindexXMLResource(final Txn transaction, final DocumentImpl doc, final int mode) {
+    @Override
+    public void reindexXMLResource(final Txn transaction, final DocumentImpl doc, final int mode) {
         if(doc.isCollectionConfig()) {
             doc.getCollection().setCollectionConfigEnabled(false);
         }

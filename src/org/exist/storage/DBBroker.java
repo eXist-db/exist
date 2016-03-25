@@ -482,6 +482,8 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
     public abstract void reindexCollection(XmldbURI collectionName)
             throws PermissionDeniedException, IOException;
 
+    public abstract void reindexXMLResource(final Txn transaction, final DocumentImpl doc, final int mode);
+
     /**
      * Repair indexes. Should delete all secondary indexes and rebuild them.
      * This method will be called after the recovery run has completed.
