@@ -41,9 +41,7 @@
 </xsl:text>
         <servlet>
             <servlet-name>Flux</servlet-name>
-            <servlet-class>
-                org.directwebremoting.servlet.DwrServlet
-            </servlet-class>
+            <servlet-class>org.directwebremoting.servlet.DwrServlet</servlet-class>
             <init-param>
                 <param-name>debug</param-name>
                 <param-value>true</param-value>
@@ -51,27 +49,23 @@
         </servlet>
         <servlet>
             <servlet-name>XFormsPostServlet</servlet-name>
-            <servlet-class>
-                de.betterform.agent.web.servlet.XFormsPostServlet
-            </servlet-class>
+            <servlet-class>de.betterform.agent.web.servlet.XFormsPostServlet</servlet-class>
         </servlet>
         <servlet>
             <servlet-name>FormsServlet</servlet-name>
-            <servlet-class>
-                de.betterform.agent.web.servlet.FormsServlet
-            </servlet-class>
+            <servlet-class>de.betterform.agent.web.servlet.FormsServlet</servlet-class>
         </servlet>
         <servlet>
             <servlet-name>inspector</servlet-name>
-            <servlet-class>
-                de.betterform.agent.web.servlet.XFormsInspectorServlet
-            </servlet-class>
+            <servlet-class>de.betterform.agent.web.servlet.XFormsInspectorServlet</servlet-class>
         </servlet>
         <servlet>
             <servlet-name>ResourceServlet</servlet-name>
-            <servlet-class>
-                de.betterform.agent.web.resources.ResourceServlet
-            </servlet-class>
+            <servlet-class>de.betterform.agent.web.resources.ResourceServlet</servlet-class>
+            <init-param>
+                <param-name>caching</param-name>
+                <param-value>true</param-value>
+            </init-param>
         </servlet>
         <servlet>
             <servlet-name>error</servlet-name>
@@ -106,10 +100,6 @@
         <servlet-mapping>
             <servlet-name>ResourceServlet</servlet-name>
             <url-pattern>/bfResources/*</url-pattern>
-            <init-param>
-                <param-name>caching</param-name>
-                <param-value>true</param-value>
-            </init-param>
         </servlet-mapping>
         <servlet-mapping>
             <servlet-name>error</servlet-name>
@@ -123,9 +113,7 @@
 </xsl:text>
         <filter>
             <filter-name>XFormsFilter</filter-name>
-            <filter-class>
-                de.betterform.agent.web.filter.XFormsFilter
-            </filter-class>
+            <filter-class>de.betterform.agent.web.filter.XFormsFilter</filter-class>
         </filter>
         <xsl:text>
 </xsl:text>
