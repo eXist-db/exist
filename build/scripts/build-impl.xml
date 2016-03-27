@@ -78,6 +78,10 @@
         <fileset dir="tools/wrapper/lib">
             <include name="*.jar"/>
         </fileset>
+        <pathelement path="tools/yajsw/wrapper.jar"/>
+	<fileset dir="tools/yajsw/lib/core/commons">
+	    <include name="commons-configuration*.jar"/>
+	</fileset>
     </path>
 
     <!-- setup class path -->
@@ -674,6 +678,7 @@
 
     <target name="wrapper" depends="jar">
         <ant antfile="build.xml" dir="tools/wrapper" inheritall="false"/>
+        <ant antfile="build.xml" dir="tools/yajsw" inheritall="false"/>
     </target>
 
     <target name="extension-betterform" depends="jar">
