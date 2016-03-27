@@ -441,6 +441,7 @@ public class ConfigurationDialog extends JDialog {
                 if (r == JOptionPane.YES_OPTION) {
                     changed = false;
                     dataDirChanged = false;
+                    setVisible(false);
                     this.launcher.shutdown(true);
                 }
             }

@@ -70,6 +70,7 @@ public class Launcher extends Observable implements Observer {
     private MenuItem monexItem;
     private MenuItem installServiceItem;
     private MenuItem uninstallServiceItem;
+    private MenuItem showServices;
     private MenuItem quitItem;
 
     public final static String PACKAGE_DASHBOARD = "http://exist-db.org/apps/dashboard";
@@ -307,6 +308,11 @@ public class Launcher extends Observable implements Observer {
         uninstallServiceItem.setEnabled(canUseServices);
         uninstallServiceItem.addActionListener(e -> SwingUtilities.invokeLater(this::uninstallService));
 
+        if (SystemUtils.IS_OS_WINDOWS) {
+            showServices = new MenuItem("Show services console");
+            popup.add(showServices);
+            showServices.addActionListener(e -> SwingUtilities.invokeLater(this::showServicesConsole));
+        }
         popup.addSeparator();
 
         final MenuItem toolbar = new MenuItem("Show tool window");
@@ -443,6 +449,15 @@ public class Launcher extends Observable implements Observer {
         });
     }
 
+    private void showServicesConsole() {
+        final List<String> args = new ArrayList<>(2);
+        args.add("cmd");
+        args.add("/c");
+        args.add("services.msc");
+
+        run(args, null);
+    }
+
     protected static void run(List<String> args, BiConsumer<Integer, String> consumer) {
         final ProcessBuilder pb = new ProcessBuilder(args);
         final Optional<Path> home = ConfigurationHelper.getExistHome();
@@ -451,16 +466,19 @@ public class Launcher extends Observable implements Observer {
         }
         pb.redirectErrorStream(true);
         try {
-            Process process = pb.start();
-            StringBuilder output = new StringBuilder();
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), "UTF-8"))) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    output.append('\n').append(line);
+            final Process process = pb.start();
+            if (consumer != null) {
+                final StringBuilder output = new StringBuilder();
+                try (final BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(),
+                        "UTF-8"))) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        output.append('\n').append(line);
+                    }
                 }
+                final int exitValue = process.waitFor();
+                consumer.accept(exitValue, output.toString());
             }
-            int exitValue = process.waitFor();
-            consumer.accept(exitValue, output.toString());
         } catch (IOException | InterruptedException e) {
             JOptionPane.showMessageDialog(null, e.getMessage(), "Error Running Process", JOptionPane.ERROR_MESSAGE);
         }
@@ -472,8 +490,19 @@ public class Launcher extends Observable implements Observer {
             if (restart && runningAsService.isPresent()) {
                 final WrappedService service = runningAsService.get();
                 if (service.isRunning() || service.isStarting()) {
-                    service.stop();
-                    service.start();
+                    if (service.stop()) {
+                        while (true) {
+                            try {
+                                wait(500);
+                            } catch (InterruptedException e) {
+                                // continue
+                            }
+                            if (!service.isRunning()) {
+                                service.start();
+                                break;
+                            }
+                        }
+                    }
                 }
             } else {
                 if (tray != null) {
