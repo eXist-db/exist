@@ -11,6 +11,7 @@ import org.exist.indexing.IndexController;
 import org.exist.indexing.IndexWorker;
 import org.exist.indexing.MatchListener;
 import org.exist.indexing.StreamListener;
+import org.exist.indexing.StreamListener.ReindexMode;
 import org.exist.storage.DBBroker;
 import org.exist.storage.NodePath;
 import org.exist.storage.btree.BTreeCallback;
@@ -31,7 +32,7 @@ import java.util.Map;
 
 public class SortIndexWorker implements IndexWorker {
 
-    private int mode = 0;
+    private ReindexMode mode = ReindexMode.STORE;
     private DocumentImpl document = null;
     private SortIndex index;
 
@@ -39,12 +40,12 @@ public class SortIndexWorker implements IndexWorker {
         this.index = index;
     }
 
-    public void setDocument(DocumentImpl doc, int mode) {
+    public void setDocument(DocumentImpl doc, ReindexMode mode) {
         this.document = doc;
         this.mode = mode;
     }
 
-    public void setMode(int mode) {
+    public void setMode(ReindexMode mode) {
         this.mode = mode;
     }
 
@@ -61,9 +62,10 @@ public class SortIndexWorker implements IndexWorker {
         return null;
     }
 
+    @Override
     public void flush() {
         switch (mode) {
-            case StreamListener.REMOVE_ALL_NODES:
+            case REMOVE_ALL_NODES:
                 remove(document);
                 break;
         }
@@ -362,7 +364,8 @@ public class SortIndexWorker implements IndexWorker {
         return document;
     }
 
-    public int getMode() {
+    @Override
+    public ReindexMode getMode() {
         return mode;
     }
 

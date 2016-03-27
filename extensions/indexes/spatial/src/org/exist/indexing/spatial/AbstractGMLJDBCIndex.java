@@ -23,6 +23,7 @@
  */
 package org.exist.indexing.spatial;
 
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -32,7 +33,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.indexing.AbstractIndex;
 import org.exist.indexing.IndexWorker;
-import org.exist.indexing.StreamListener;
+import org.exist.indexing.StreamListener.ReindexMode;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.btree.DBException;
@@ -86,7 +87,7 @@ public abstract class AbstractGMLJDBCIndex extends AbstractIndex {
     }
 
     @Override
-    public void configure(BrokerPool pool, String dataDir, Element config) throws DatabaseConfigurationException {        
+    public void configure(BrokerPool pool, Path dataDir, Element config) throws DatabaseConfigurationException {
         super.configure(pool, dataDir, config);
         try {
             checkDatabase();
@@ -114,7 +115,7 @@ public abstract class AbstractGMLJDBCIndex extends AbstractIndex {
             //Flush any pending stuff 
             worker.flush();
             //Reset state
-            worker.setDocument(null, StreamListener.UNKNOWN);
+            worker.setDocument(null, ReindexMode.UNKNOWN);
         }
         shutdownDatabase();
     }
@@ -141,7 +142,7 @@ public abstract class AbstractGMLJDBCIndex extends AbstractIndex {
             //Flush any pending stuff
             worker.flush();
             //Reset state
-            worker.setDocument(null, StreamListener.UNKNOWN);
+            worker.setDocument(null, ReindexMode.UNKNOWN);
         }
         removeIndexContent();
         shutdownDatabase();

@@ -39,6 +39,7 @@ import org.exist.dom.QName;
 import org.exist.dom.persistent.StoredNode;
 import org.exist.dom.persistent.TextImpl;
 import org.exist.indexing.StreamListener;
+import org.exist.indexing.StreamListener.ReindexMode;
 import org.exist.storage.DBBroker;
 import org.exist.storage.IndexSpec;
 import org.exist.storage.NodePath;
@@ -196,7 +197,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
         this.validate = validate;
         if (!validate) {
             broker.getIndexController().setDocument(document,
-                    StreamListener.STORE);
+                    ReindexMode.STORE);
             this.indexListener = broker.getIndexController()
                 .getStreamListener();
         }
