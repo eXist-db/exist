@@ -2,17 +2,22 @@
 <ivy-module version="2.0">
 	<info organisation="org.exist" module="tika" />
 	<dependencies>
-		<dependency org="org.apache.tika" name="tika-parsers" rev="1.8" conf="*->*,!sources,!javadoc">
-            <!-- <exclude module="poi" />
+		<dependency org="org.apache.tika" name="tika-parsers" rev="1.12" conf="*->*,!sources,!javadoc">
+            <!-- 
+            <exclude module="poi" />
             <exclude module="poi-scratchpad" />
-            <exclude module="poi-ooxml" />     -->		
+            <exclude module="poi-ooxml" />    
+             -->		
 		</dependency>
         
-        <!-- <dependency org="org.apache.poi" name="poi" rev="3.10-FINAL" conf="*->*,!sources,!javadoc"/>
+        <!-- 
+        <dependency org="org.apache.poi" name="poi" rev="3.10-FINAL" conf="*->*,!sources,!javadoc"/>
         <dependency org="org.apache.poi" name="poi-scratchpad" rev="3.10-FINAL" conf="*->*,!sources,!javadoc" />
         <dependency org="org.apache.poi" name="poi-ooxml" rev="3.10-FINAL" conf="*->*,!sources,!javadoc"/>
-        <dependency org="org.tukaani" name="xz" rev="1.5" conf="*->*,!sources,!javadoc" /> -->
+        <dependency org="org.tukaani" name="xz" rev="1.5" conf="*->*,!sources,!javadoc" /> 
+        -->
         
+        <!-- identified as provided by eXist-db -->
 		<exclude module="asm-all" />
 		<exclude module="asm-debug-all" />
 		<exclude module="aspectjrt" />
@@ -30,15 +35,21 @@
 		<exclude module="stax-api" />
 		<exclude module="xercesImpl" />
 		<exclude module="xml-apis" />
-        
-        <exclude org="org.apache.httpcomponents" />
+        <exclude module="commons-logging-api" />
         <exclude module="ehcache-core" />
         <exclude module="quartz" />
-        <exclude module="sqlite-jdbc" />
-        <exclude module="commons-logging-api" />
-        
-        
-        
+        <exclude org="org.apache.httpcomponents" />
+        <exclude org="org.apache.lucene" />
+
+        <!-- identified as not needed for pure parsing -->
+        <exclude module="junit" />
+        <exclude module="sqlite-jdbc" />      
+        <exclude org="javax.annotation" />
+        <exclude org="javax.ws.rs" />
+        <exclude org="org.apache.cxf" />
+        <exclude org="org.apache.felix" />
+        <exclude org="org.apache.maven.scm" />      
+        <exclude org="org.osgi" /> 
 
 	</dependencies>
 </ivy-module>
