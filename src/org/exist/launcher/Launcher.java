@@ -445,7 +445,7 @@ public class Launcher extends Observable implements Observer {
         args.add("id");
         args.add("-u");
         run(args, (code, output) -> {
-            consumer.accept("0".equals(output));
+            consumer.accept("0".equals(output.trim()));
         });
     }
 
@@ -491,16 +491,17 @@ public class Launcher extends Observable implements Observer {
                 final WrappedService service = runningAsService.get();
                 if (service.isRunning() || service.isStarting()) {
                     if (service.stop()) {
-                        while (true) {
+                        while (service.isRunning()) {
                             try {
                                 wait(500);
                             } catch (InterruptedException e) {
-                                // continue
-                            }
-                            if (!service.isRunning()) {
-                                service.start();
                                 break;
                             }
+                        }
+                        if (!service.isRunning() && service.start()) {
+                            trayIcon.displayMessage(null, "Database restarted", TrayIcon.MessageType.INFO);
+                        } else {
+                            trayIcon.displayMessage(null, "Failed to restart. Please start service manually.", TrayIcon.MessageType.INFO);
                         }
                     }
                 }
