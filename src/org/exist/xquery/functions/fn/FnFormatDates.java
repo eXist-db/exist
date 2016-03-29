@@ -63,71 +63,75 @@ public class FnFormatDates extends BasicFunction {
 		new FunctionReturnSequenceType(
 			Type.STRING, Cardinality.EXACTLY_ONE, "The formatted date");
 
-    public final static FunctionSignature signatures[] = {
-            new FunctionSignature(
-                    new QName("format-dateTime", Function.BUILTIN_FUNCTION_NS),
-                    "Returns a string containing an xs:date value formatted for display.",
-                    new SequenceType[] {
-                		DATETIME,
-                        PICTURE
-                    },
-                    RETURN
-            ),
-            new FunctionSignature(
-                    new QName("format-dateTime", Function.BUILTIN_FUNCTION_NS),
-                    "Returns a string containing an xs:date value formatted for display.",
-                    new SequenceType[] {
-                		DATETIME,
-                        PICTURE,
-                        LANGUAGE,
-                        CALENDAR,
-                        PLACE
-                    },
-                    RETURN
-            ),
-            new FunctionSignature(
-                    new QName("format-date", Function.BUILTIN_FUNCTION_NS),
-                    "Returns a string containing an xs:date value formatted for display.",
-                    new SequenceType[] {
-                    	DATE,
-                        PICTURE
-                    },
-                    RETURN
-            ),
-            new FunctionSignature(
-                    new QName("format-date", Function.BUILTIN_FUNCTION_NS),
-                    "Returns a string containing an xs:date value formatted for display.",
-                    new SequenceType[] {
-                    	DATE,
-                        PICTURE,
-                        LANGUAGE,
-                        CALENDAR,
-                        PLACE
-                    },
-                    RETURN
-            ),
-            new FunctionSignature(
-                    new QName("format-time", Function.BUILTIN_FUNCTION_NS),
-                    "Returns a string containing an xs:time value formatted for display.",
-                    new SequenceType[] {
-                        TIME,
-                        PICTURE
-                    },
-                    RETURN
-            ),
-            new FunctionSignature(
-                    new QName("format-time", Function.BUILTIN_FUNCTION_NS),
-                    "Returns a string containing an xs:time value formatted for display.",
-                    new SequenceType[] {
-                        TIME,
-                        PICTURE,
-                        LANGUAGE,
-                        CALENDAR,
-                        PLACE
-                    },
-                    RETURN
-            )
-    };
+
+    public final static FunctionSignature FNS_FORMAT_DATETIME_2 = new FunctionSignature(
+        new QName("format-dateTime", Function.BUILTIN_FUNCTION_NS),
+        "Returns a string containing an xs:date value formatted for display.",
+        new SequenceType[] {
+            DATETIME,
+            PICTURE
+        },
+        RETURN
+    );
+
+    public final static FunctionSignature FNS_FORMAT_DATETIME_5 = new FunctionSignature(
+        new QName("format-dateTime", Function.BUILTIN_FUNCTION_NS),
+        "Returns a string containing an xs:date value formatted for display.",
+        new SequenceType[] {
+            DATETIME,
+            PICTURE,
+            LANGUAGE,
+            CALENDAR,
+            PLACE
+        },
+        RETURN
+    );
+
+    public final static FunctionSignature FNS_FORMAT_DATE_2 = new FunctionSignature(
+        new QName("format-date", Function.BUILTIN_FUNCTION_NS),
+        "Returns a string containing an xs:date value formatted for display.",
+        new SequenceType[] {
+            DATE,
+            PICTURE
+        },
+        RETURN
+    );
+
+    public final static FunctionSignature FNS_FORMAT_DATE_5 = new FunctionSignature(
+        new QName("format-date", Function.BUILTIN_FUNCTION_NS),
+        "Returns a string containing an xs:date value formatted for display.",
+        new SequenceType[] {
+            DATE,
+            PICTURE,
+            LANGUAGE,
+            CALENDAR,
+            PLACE
+        },
+        RETURN
+    );
+
+    public final static FunctionSignature FNS_FORMAT_TIME_2 = new FunctionSignature(
+        new QName("format-time", Function.BUILTIN_FUNCTION_NS),
+        "Returns a string containing an xs:time value formatted for display.",
+        new SequenceType[] {
+            TIME,
+            PICTURE
+        },
+        RETURN
+    );
+
+    public final static FunctionSignature FNS_FORMAT_TIME_5 = new FunctionSignature(
+        new QName("format-time", Function.BUILTIN_FUNCTION_NS),
+        "Returns a string containing an xs:time value formatted for display.",
+        new SequenceType[] {
+            TIME,
+            PICTURE,
+            LANGUAGE,
+            CALENDAR,
+            PLACE
+        },
+        RETURN
+    );
 
     private static Pattern componentPattern = Pattern.compile("([YMDdWwFHhmsfZzPCE])\\s*(.*)");
 
