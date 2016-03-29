@@ -22,6 +22,7 @@ package org.exist.xquery.modules.lucene;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.QName;
 import org.exist.indexing.StreamListener;
+import org.exist.indexing.StreamListener.ReindexMode;
 import org.exist.indexing.lucene.LuceneIndex;
 import org.exist.indexing.lucene.LuceneIndexWorker;
 import org.exist.storage.lock.Lock;
@@ -78,7 +79,7 @@ public class RemoveIndex extends BasicFunction {
                     .getIndexController().getWorkerByIndexId(LuceneIndex.ID);
 
             // Note: code order is important here,
-            index.setDocument(doc, StreamListener.REMOVE_BINARY);
+            index.setDocument(doc, ReindexMode.REMOVE_BINARY);
 
             index.flush();
 

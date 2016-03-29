@@ -32,7 +32,7 @@ import org.exist.indexing.IndexController;
 import org.exist.indexing.IndexWorker;
 import org.exist.indexing.MatchListener;
 import org.exist.indexing.StreamListener;
-import org.exist.stax.EmbeddedXMLStreamReader;
+import org.exist.indexing.StreamListener.ReindexMode;
 import org.exist.stax.ExtendedXMLStreamReader;
 import org.exist.storage.DBBroker;
 import org.exist.storage.NativeBroker;
@@ -63,7 +63,7 @@ public class IndexStatisticsWorker implements IndexWorker {
 
     private DataGuide perDocGuide = null;
 
-    private int mode = 0;
+    private ReindexMode mode = ReindexMode.STORE;
     private DocumentImpl currentDoc = null;
 
     private StatisticsListener listener = new StatisticsListener();
@@ -89,17 +89,20 @@ public class IndexStatisticsWorker implements IndexWorker {
         return null;
     }
 
+    @Override
     public void setDocument(DocumentImpl doc) {
-        setDocument(doc, StreamListener.UNKNOWN);
+        setDocument(doc, ReindexMode.UNKNOWN);
     }
 
-    public void setDocument(DocumentImpl doc, int mode) {
+    @Override
+    public void setDocument(DocumentImpl doc, ReindexMode mode) {
         perDocGuide = new DataGuide();
         this.currentDoc = doc;
         this.mode = mode;
     }
 
-    public void setMode(int mode) {
+    @Override
+    public void setMode(ReindexMode mode) {
         perDocGuide = new DataGuide();
         this.mode = mode;
     }
@@ -108,7 +111,8 @@ public class IndexStatisticsWorker implements IndexWorker {
         return currentDoc;
     }
 
-    public int getMode() {
+    @Override
+    public ReindexMode getMode() {
         return mode;
     }
 
@@ -116,8 +120,9 @@ public class IndexStatisticsWorker implements IndexWorker {
         return null;
     }
 
+    @Override
     public StreamListener getListener() {
-        if (mode == StreamListener.STORE)
+        if (mode == ReindexMode.STORE)
             {return listener;}
         return null;
     }

@@ -3092,6 +3092,24 @@ public class RpcConnection implements RpcAPI {
     }
 
     @Override
+    public boolean reindexDocument(final String docUri) throws EXistException, PermissionDeniedException {
+        withDb((broker, transaction) -> {
+            DocumentImpl doc = null;
+            try {
+                doc = broker.getXMLResource(XmldbURI.create(docUri), Lock.READ_LOCK);
+                broker.reindexXMLResource(transaction, doc, DBBroker.IndexMode.STORE);
+                LOG.debug("document " + docUri + " reindexed");
+                return null;
+            } finally {
+                if(doc != null) {
+                    doc.getUpdateLock().release(Lock.READ_LOCK);
+                }
+            }
+        });
+        return true;
+    }
+
+    @Override
     public boolean backup(final String userbackup, final String password,
             final String destcollection, final String collection) throws EXistException, PermissionDeniedException {
         try {

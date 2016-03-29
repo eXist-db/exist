@@ -25,6 +25,7 @@ import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.IStoredNode;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.NodeSet;
+import org.exist.indexing.StreamListener.ReindexMode;
 import org.exist.storage.DBBroker;
 import org.exist.storage.NodePath;
 import org.exist.util.DatabaseConfigurationException;
@@ -92,22 +93,22 @@ public interface IndexWorker {
 
     /**
      * Notify this worker to operate on the specified document, using the mode
-     * given. Mode will be one of {@link StreamListener#UNKNOWN}, {@link StreamListener#STORE}, 
-     * {@link StreamListener#REMOVE_SOME_NODES} or {@link StreamListener#REMOVE_ALL_NODES}.
+     * given. Mode will be one of {@link ReindexMode#UNKNOWN}, {@link ReindexMode#STORE},
+     * {@link ReindexMode#REMOVE_SOME_NODES} or {@link ReindexMode#REMOVE_ALL_NODES}.
      *
      * @param doc the document which is processed
      * @param mode the current operation mode
      */
-    void setDocument(DocumentImpl doc, int mode);
+    void setDocument(DocumentImpl doc, ReindexMode mode);
 
     /**
      * Notify this worker to operate using the mode
-     * given. Mode will be one of {@link StreamListener#UNKNOWN}, {@link StreamListener#STORE},
-     * {@link StreamListener#REMOVE_SOME_NODES} or {@link StreamListener#REMOVE_ALL_NODES}.
+     * given. Mode will be one of {@link ReindexMode#UNKNOWN}, {@link ReindexMode#STORE},
+     * {@link ReindexMode#REMOVE_SOME_NODES} or {@link ReindexMode#REMOVE_ALL_NODES}.
      *
      * @param mode the current operation mode
      */
-    void setMode(int mode);
+    void setMode(final ReindexMode mode);
 
     /**
      * Returns the document for the next operation.
@@ -121,7 +122,7 @@ public interface IndexWorker {
      * 
      * @return the document
      */
-    int getMode();
+    ReindexMode getMode();
 
     /**
      * When adding or removing nodes to or from the document tree, it might become

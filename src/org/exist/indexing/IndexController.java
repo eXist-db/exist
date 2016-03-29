@@ -27,6 +27,7 @@ import org.exist.dom.persistent.ElementImpl;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.IStoredNode;
 import org.exist.collections.Collection;
+import org.exist.indexing.StreamListener.ReindexMode;
 import org.exist.storage.DBBroker;
 import org.exist.storage.MetaStorage;
 import org.exist.storage.MetaStreamListener;
@@ -57,7 +58,7 @@ public class IndexController {
     protected DBBroker broker;
     protected StreamListener listener = null;    
     protected DocumentImpl currentDoc = null;
-    protected int currentMode = StreamListener.UNKNOWN;
+    protected ReindexMode currentMode = ReindexMode.UNKNOWN;
     private boolean isReindexing;
 
     public IndexController(DBBroker broker) {
@@ -133,10 +134,10 @@ public class IndexController {
     /**
      * Sets the the mode for the next operation.
      * 
-     * @param mode the mode, one of {@link StreamListener#UNKNOWN}, {@link StreamListener#STORE}, 
-     * {@link StreamListener#REMOVE_SOME_NODES} or {@link StreamListener#REMOVE_ALL_NODES}.
+     * @param mode the mode, one of {@link ReindexMode#UNKNOWN}, {@link ReindexMode#STORE},
+     * {@link ReindexMode#REMOVE_SOME_NODES} or {@link ReindexMode#REMOVE_ALL_NODES}.
      */
-    public void setMode(int mode) {
+    public void setMode(final ReindexMode mode) {
         if (currentMode != mode)
             //Reset listener
             {listener = null;}
@@ -160,7 +161,7 @@ public class IndexController {
      * 
      * @return the document
      */
-    public int getMode() {
+    public ReindexMode getMode() {
         return currentMode;
     }
 
@@ -168,10 +169,10 @@ public class IndexController {
      * Sets the document and the mode for the next operation.
      * 
      * @param doc the document
-     * @param mode the mode, one of {@link StreamListener#UNKNOWN}, {@link StreamListener#STORE}, 
-     * {@link StreamListener#REMOVE_SOME_NODES} or {@link StreamListener#REMOVE_ALL_NODES}.
+     * @param mode the mode, one of {@link ReindexMode#UNKNOWN}, {@link ReindexMode#STORE},
+     * {@link ReindexMode#REMOVE_SOME_NODES} or {@link ReindexMode#REMOVE_ALL_NODES}.
      */
-    public void setDocument(DocumentImpl doc, int mode) {
+    public void setDocument(DocumentImpl doc, ReindexMode mode) {
         setDocument(doc);
         setMode(mode);
     }
@@ -203,10 +204,10 @@ public class IndexController {
      *
      * @param transaction the current transaction
      * @param reindexRoot the node from which reindexing should occur
-     * @param mode the mode, one of {@link StreamListener#UNKNOWN}, {@link StreamListener#STORE},
-     * {@link StreamListener#REMOVE_SOME_NODES} or {@link StreamListener#REMOVE_ALL_NODES}.
+     * @param mode the mode, one of {@link ReindexMode#UNKNOWN}, {@link ReindexMode#STORE},
+     * {@link ReindexMode#REMOVE_SOME_NODES} or {@link ReindexMode#REMOVE_ALL_NODES}.
      */
-    public void reindex(Txn transaction, IStoredNode<? extends IStoredNode> reindexRoot, int mode) {
+    public void reindex(Txn transaction, IStoredNode<? extends IStoredNode> reindexRoot, ReindexMode mode) {
         if (reindexRoot == null)
             {return;}
         setReindexing(true);

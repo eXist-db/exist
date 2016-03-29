@@ -25,7 +25,7 @@ import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.QName;
 
-import org.exist.indexing.StreamListener;
+import org.exist.indexing.StreamListener.ReindexMode;
 import org.exist.indexing.lucene.LuceneIndex;
 import org.exist.indexing.lucene.LuceneIndexWorker;
 
@@ -119,8 +119,8 @@ public class Index extends BasicFunction {
 	            boolean flush = args.length == 2 || args[2].effectiveBooleanValue();
 	
 	            // Note: code order is important here,
-	            index.setDocument(doc, StreamListener.STORE);
-	            index.setMode(StreamListener.STORE);
+	            index.setDocument(doc, ReindexMode.STORE);
+	            index.setMode(ReindexMode.STORE);
 	
 	            // Get 'solr' node from second parameter
 	            NodeValue descriptor = (NodeValue) args[1].itemAt(0);

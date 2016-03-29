@@ -470,6 +470,12 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
     public abstract void removeXMLResource(Txn transaction,
         DocumentImpl document, boolean freeDocId) throws PermissionDeniedException, IOException;
 
+    public enum IndexMode {
+        STORE,
+        REPAIR,
+        REMOVE
+    }
+
     /**
      * Reindex a collection.
      * 
@@ -481,6 +487,8 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
      */
     public abstract void reindexCollection(XmldbURI collectionName)
             throws PermissionDeniedException, IOException;
+
+    public abstract void reindexXMLResource(final Txn transaction, final DocumentImpl doc, final IndexMode mode);
 
     /**
      * Repair indexes. Should delete all secondary indexes and rebuild them.

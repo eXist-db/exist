@@ -40,6 +40,7 @@ import org.apache.lucene.search.*;
 import org.apache.lucene.util.*;
 import org.exist.collections.Collection;
 import org.exist.indexing.*;
+import org.exist.indexing.StreamListener.ReindexMode;
 import org.exist.indexing.lucene.PlainTextHighlighter.Offset;
 import org.exist.indexing.lucene.PlainTextIndexConfig.PlainTextDoc;
 import org.exist.indexing.lucene.PlainTextIndexConfig.PlainTextField;
@@ -113,7 +114,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     private DBBroker broker;
 
     private DocumentImpl currentDoc = null;
-    private int mode = 0;
+    private ReindexMode mode = ReindexMode.STORE;
     
     private LuceneConfig config;
     private Stack<TextExtractor> contentStack = null;
@@ -160,26 +161,28 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     public void flush() {
         switch (mode) {
-            case StreamListener.STORE:
+            case STORE:
                 write();
                 break;
-            case StreamListener.REMOVE_ALL_NODES:
+            case REMOVE_ALL_NODES:
                 removeDocument(currentDoc.getDocId());
                 break;
-            case StreamListener.REMOVE_SOME_NODES:
+            case REMOVE_SOME_NODES:
                 removeNodes();
                 break;
-            case StreamListener.REMOVE_BINARY:
+            case REMOVE_BINARY:
             	removePlainTextIndexes();
             	break;
         }
     }
 
+    @Override
     public void setDocument(DocumentImpl document) {
-        setDocument(document, StreamListener.UNKNOWN);
+        setDocument(document, ReindexMode.UNKNOWN);
     }
 
-    public void setDocument(DocumentImpl document, int newMode) {
+    @Override
+    public void setDocument(DocumentImpl document, ReindexMode newMode) {
         currentDoc = document;
         //config = null;
         contentStack = null;
@@ -194,30 +197,34 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         mode = newMode;
     }
 
-    public void setMode(int mode) {
+    @Override
+    public void setMode(ReindexMode mode) {
         this.mode = mode;
         switch (mode) {
-            case StreamListener.STORE:
+            case STORE:
                 if (nodesToWrite == null)
                     nodesToWrite = new ArrayList<>();
                 else
                     nodesToWrite.clear();
                 cachedNodesSize = 0;
                 break;
-            case StreamListener.REMOVE_SOME_NODES:
+            case REMOVE_SOME_NODES:
                 nodesToRemove = new TreeSet<>();
                 break;
         }
     }
 
+    @Override
     public DocumentImpl getDocument() {
         return currentDoc;
     }
 
-    public int getMode() {
+    @Override
+    public ReindexMode getMode() {
         return this.mode;
     }
 
+    @Override
     public <T extends IStoredNode> IStoredNode getReindexRoot(IStoredNode<T> node, NodePath path, boolean insert, boolean includeSelf) {
         if (config == null) {
             return null;
@@ -281,10 +288,12 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     private StreamListener listener = new LuceneStreamListener();
 
+    @Override
     public StreamListener getListener() {
         return listener;
     }
 
+    @Override
     public MatchListener getMatchListener(DBBroker broker, NodeProxy proxy) {
         boolean needToFilter = false;
         Match nextMatch = proxy.getMatches();
@@ -316,7 +325,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             LOG.warn("Error while removing lucene index: " + e.getMessage(), e);
         } finally {
             index.releaseWriter(writer);
-            mode = StreamListener.STORE;
+            mode = ReindexMode.STORE;
         }
     }
 
@@ -331,10 +340,11 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             LOG.warn("Error while removing lucene index: " + e.getMessage(), e);
         } finally {
             index.releaseWriter(writer);
-            mode = StreamListener.STORE;
+            mode = ReindexMode.STORE;
         }
     }
-    
+
+    @Override
     public void removeCollection(Collection collection, DBBroker broker, boolean reindex) {
         if (LOG.isDebugEnabled())
             LOG.debug("Removing collection " + collection.getURI());
@@ -359,7 +369,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     LOG.warn("Exception during reindex: " + e.getMessage(), e);
                 }
             }
-            mode = StreamListener.STORE;
+            mode = ReindexMode.STORE;
         }
         if (LOG.isDebugEnabled())
             LOG.debug("Collection removed.");
@@ -367,7 +377,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     /**
      * Remove specific nodes from the index. This method is used for node updates
-     * and called from flush() if the worker is in {@link StreamListener#REMOVE_SOME_NODES}
+     * and called from flush() if the worker is in {@link ReindexMode#REMOVE_SOME_NODES}
      * mode.
      */
     protected void removeNodes() {
@@ -1338,7 +1348,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             }
             currentElement = element;
 
-            if (mode == STORE && config != null) {
+            if (mode == ReindexMode.STORE && config != null) {
                 if (contentStack != null && !contentStack.isEmpty()) {
                     for (TextExtractor extractor : contentStack) {
                         extractor.startElement(element.getQName());
@@ -1366,14 +1376,14 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         @Override
         public void endElement(Txn transaction, ElementImpl element, NodePath path) {
             if (config != null) {
-                if (mode == STORE && contentStack != null && !contentStack.isEmpty()) {
+                if (mode == ReindexMode.STORE && contentStack != null && !contentStack.isEmpty()) {
                     for (TextExtractor extractor : contentStack) {
                         extractor.endElement(element.getQName());
                     }
                 }
                 Iterator<LuceneIndexConfig> configIter = config.getConfig(path);
-                if (mode != REMOVE_ALL_NODES && configIter != null) {
-                    if (mode == REMOVE_SOME_NODES) {
+                if (mode != ReindexMode.REMOVE_ALL_NODES && configIter != null) {
+                    if (mode == ReindexMode.REMOVE_SOME_NODES) {
                         nodesToRemove.add(element.getNodeId());
                     } else {
                         while (configIter.hasNext()) {
@@ -1419,7 +1429,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             path.addComponent(attrib.getQName());
 
             AttrImpl attribCopy = null;
-            if (mode == STORE && currentElement != null) {
+            if (mode == ReindexMode.STORE && currentElement != null) {
                 attribCopy = (AttrImpl) NodePool.getInstance().borrowNode(Node.ATTRIBUTE_NODE);
                 attribCopy.setValue(attrib.getValue());
                 attribCopy.setNodeId(attrib.getNodeId());
@@ -1430,8 +1440,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             Iterator<LuceneIndexConfig> configIter = null;
             if (config != null)
                 configIter = config.getConfig(path);
-            if (mode != REMOVE_ALL_NODES && configIter != null) {
-                if (mode == REMOVE_SOME_NODES) {
+            if (mode != ReindexMode.REMOVE_ALL_NODES && configIter != null) {
+                if (mode == ReindexMode.REMOVE_SOME_NODES) {
                     nodesToRemove.add(attrib.getNodeId());
                 } else {
                     while (configIter.hasNext()) {
@@ -1484,7 +1494,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 	 */
 	private void indexPendingAttrs() {
             try {
-                if (mode == STORE && config != null) {
+                if (mode == ReindexMode.STORE && config != null) {
                     for (PendingAttr pending : pendingAttrs) {
                         AttrImpl attr = pending.attr;
                         indexText(attributes, attr.getNodeId(), attr.getQName(), pending.path, pending.conf, attr.getValue());
