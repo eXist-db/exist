@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2015 The eXist Project
+ *  Copyright (C) 2001-2016 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -117,7 +117,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
     protected String ignorePrefix = null;
     protected ProgressIndicator progress;
 
-    protected boolean suppressWSmixed = false;
+    protected boolean preserveWSmixed = false;
 
     protected int docSize = 0;
 
@@ -188,8 +188,9 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
         }
         Boolean temp;
         if ((temp = (Boolean) config
-                .getProperty(PROPERTY_PRESERVE_WS_MIXED_CONTENT)) != null)
-            {suppressWSmixed = temp.booleanValue();}
+	     .getProperty(PROPERTY_PRESERVE_WS_MIXED_CONTENT)) != null) {
+            preserveWSmixed = temp.booleanValue();
+	}
     }
 
     public void setValidating(boolean validate) {
@@ -316,56 +317,78 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
     }
 
     private void processText(ElementImpl last) {
-        //keep for reference until sure that it's not required
-//        if (charBuf != null && charBuf.length() > 0) {
-//            // remove whitespace if the node has just a single text child,
-//            // keep whitespace for mixed content.
-//            final XMLString normalized;
-//            if ((charBuf.isWhitespaceOnly() && suppressWSmixed) || last.preserveSpace()) {
-//                normalized = charBuf;
-//            } else {
-//                if (last.getChildCount() == 0) {
-//                    normalized = charBuf.normalize(normalize);
-//                } else {
-//                    normalized = charBuf.isWhitespaceOnly() ? null : charBuf;
-//                }
-//            }
-//            if (normalized != null && normalized.length() > 0) {
-//                text.setData(normalized);
-//                text.setOwnerDocument(document);
-//                last.appendChildInternal(prevNode, text);
-//                if (!validate) storeText();
-//                setPrevious(text);
-//            }
-//            charBuf.reset();
-//        }
+	// if (charBuf != null && charBuf.length() > 0) {
+        //    // remove whitespace if the node has just a single text child,
+        //    // keep whitespace for mixed content.
+	//     final XMLString normalized;
+	//     if ((charBuf.isWhitespaceOnly() && preserveWSmixed) || last.preserveSpace()) {
+	// 	normalized = charBuf;
+	//     } else {
+	// 	if (last.getChildCount() == 0) {
+        //            normalized = charBuf.normalize(normalize);
+	// 	} else {
+	// 	    normalized = charBuf.isWhitespaceOnly() ? null : charBuf;
+	// 	}
+	//     }
+	//     if (normalized != null && normalized.length() > 0) {
+	// 	text.setData(normalized);
+	// 	text.setOwnerDocument(document);
+	// 	last.appendChildInternal(prevNode, text);
+	// 	if (!validate) storeText();
+	// 	setPrevious(text);
+	//     }
+	//     charBuf.reset();
+	// }
 
-        //from startElement method
-        if (charBuf != null && charBuf.length() > 0) {
-            XMLString normalized = null;
-            if (charBuf.isWhitespaceOnly()) {
+	//from startElement method
+	if (charBuf != null && charBuf.length() > 0) {
+	    XMLString normalized = null;
+	    if (charBuf.isWhitespaceOnly()) {
+		if (last.preserveSpace()) {
+		    normalized = charBuf;
+		} else if (last.getChildCount() == 0) {
+                    //normalized = charBuf.normalize(XMLString.COLLAPSE_WS);
+		    normalized = charBuf.normalize(normalize);
+		} else if (preserveWSmixed) {
+		    if (!(last.getChildCount() == 0 && (normalize & XMLString.SUPPRESS_LEADING_WS) != 0)) {
+			normalized = charBuf;
+		    }
+                } else {
+                    normalized = charBuf.normalize(normalize);
+                }
+	    } else {
+		//normalized = charBuf;
                 if (last.preserveSpace()) {
                     normalized = charBuf;
-                } else if (suppressWSmixed) {
-                    if (!(last.getChildCount() == 0 && (normalize & XMLString.SUPPRESS_LEADING_WS) != 0)) {
+                } else if (last.getChildCount() == 0) {
+                    normalized = charBuf.normalize(normalize);
+                } else {
+                    // mixed element content: don't normalize the text node,
+                    // just check if there is any text at all
+                    if (preserveWSmixed) {
                         normalized = charBuf;
+                    } else {
+                        if ((normalize & XMLString.SUPPRESS_LEADING_WS) != 0) {
+                            normalized = charBuf.normalize(XMLString.SUPPRESS_LEADING_WS | XMLString.COLLAPSE_WS);
+                        } else if ((normalize & XMLString.SUPPRESS_TRAILING_WS) != 0) {
+                            normalized = charBuf.normalize(XMLString.SUPPRESS_TRAILING_WS | XMLString.COLLAPSE_WS);
+                        } else {
+                            //normalized = charBuf.normalize(XMLString.COLLAPSE_WS);
+                            normalized = charBuf.normalize(normalize);
+                        }
                     }
                 }
-            } else {
-                // mixed element content: don't normalize the text node,
-                // just check if there is any text at all
-                normalized = charBuf;
             }
 
-            if (normalized != null) {
-                text.setData(normalized);
-                text.setOwnerDocument(document);
-                last.appendChildInternal(prevNode, text);
-                if (!validate) storeText();
-                setPrevious(text);
-            }
-            charBuf.reset();
-        }
+	    if (normalized != null) {
+		text.setData(normalized);
+		text.setOwnerDocument(document);
+		last.appendChildInternal(prevNode, text);
+		if (!validate) storeText();
+		setPrevious(text);
+	    }
+	    charBuf.reset();
+	}
     }
 
     public void endElement(String namespace, String name, String qname) {

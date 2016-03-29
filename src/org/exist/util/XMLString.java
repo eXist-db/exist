@@ -1,21 +1,22 @@
-/* eXist Native XML Database
- * Copyright (C) 2000-03,  Wolfgang M. Meier (wolfgang@exist-db.org)
+/*
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2016 The eXist-db Project
+ * http://exist-db.org
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Library General Public License
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
  *
- * This library is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Library General Public License for more details.
+ * GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- * 
- * $Id$
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
  */
 package org.exist.util;
 
@@ -106,30 +107,31 @@ public final class XMLString implements CharSequence, Comparable<CharSequence> {
 	}
 	
 	public final XMLString normalize(int mode) {
-		if(length_ == 0)
-			{return this;}
-		if ((mode & SUPPRESS_LEADING_WS) != 0) {
-			while (length_ > 0 && isWhiteSpace(value_[start_])) {
-				--length_;
-				if(length_ > 0)
-					{++start_;}
-			}
-		}
-		if ((mode & SUPPRESS_TRAILING_WS) != 0) {
-			while (length_ > 0 && isWhiteSpace(value_[start_ + length_ - 1])) {
-				--length_;
-			}
-		}
-        if ((mode & COLLAPSE_WS) != 0) {
-            XMLString copy = new XMLString(length_);
-            boolean inWhitespace = true;
-            for (int i = start_; i < start_ + length_; i++) {
-                switch (value_[i]) {
-                    case '\n':
-                    case '\r':
-                    case '\t':
+            if(length_ == 0)
+            {return this;}
+            if ((mode & SUPPRESS_LEADING_WS) != 0) {
+                while (length_ > 1 && isWhiteSpace(value_[start_])) {
+                    --length_;
+                    if(length_ > 0) {
+                        ++start_;
+                    }
+                }
+            }
+            if ((mode & SUPPRESS_TRAILING_WS) != 0) {
+                while (length_ > 1 && isWhiteSpace(value_[start_ + length_ - 1])) {
+                    --length_;
+                }
+            }
+            if ((mode & COLLAPSE_WS) != 0) {
+                XMLString copy = new XMLString(length_);
+                boolean inWhitespace = true;
+                for (int i = start_; i < start_ + length_; i++) {
+                    switch (value_[i]) {
+                        case '\n':
+                        case '\r':
+                        case '\t':
                     case ' ':
-                        if (inWhitespace) {
+                        if (inWhitespace && i != start_ + length_ - 1) {
                             // remove the whitespace
                         } else {
                             copy.append(' ');
@@ -140,12 +142,12 @@ public final class XMLString implements CharSequence, Comparable<CharSequence> {
                         copy.append(value_[i]);
                         inWhitespace = false;
                         break;
+                    }
                 }
+                return copy;
             }
-            return copy;
+            return this;
         }
-		return this;
-	}
 
 	public final boolean isWhitespaceOnly() {
 		if(length_ == 0)
