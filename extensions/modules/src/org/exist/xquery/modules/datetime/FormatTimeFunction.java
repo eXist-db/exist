@@ -29,6 +29,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.functions.fn.FnFormatDates;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.TimeValue;
@@ -55,7 +56,9 @@ public class FormatTimeFunction extends BasicFunction
                         new FunctionParameterSequenceType("time", Type.TIME, Cardinality.EXACTLY_ONE, "The time to to be formatted."),
                         new FunctionParameterSequenceType("simple-date-format", Type.STRING, Cardinality.EXACTLY_ONE, "The format string according to the Java java.text.SimpleDateFormat class")
                 },      
-                new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the formatted time string"));
+                new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the formatted time string"),
+                FnFormatDates.FNS_FORMAT_TIME_2
+    );
 
 
     public FormatTimeFunction(XQueryContext context)
