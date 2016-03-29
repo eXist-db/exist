@@ -40,6 +40,16 @@ public interface IndexQueryService extends Service {
      * @throws XMLDBException
      */
     public void reindexCollection() throws XMLDBException;
+
+    /**
+     * Reindex the documemy in the current collection, i.e. the collection from which
+     * this service has been retrieved.
+     *
+     * @param name The name of the document
+     *
+     * @throws XMLDBException
+     */
+    void reindexDocument(final String name) throws XMLDBException;
     
     /**
      * Reindex the collection specified by its path.

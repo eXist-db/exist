@@ -867,6 +867,8 @@ public interface RpcAPI {
     boolean reindexCollection(String name)
             throws EXistException, PermissionDeniedException, URISyntaxException;
 
+    public boolean reindexDocument(String docUri) throws EXistException, PermissionDeniedException;
+
     boolean backup(String userbackup, String password, String destcollection, String collection)
             throws EXistException, PermissionDeniedException;
 

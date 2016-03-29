@@ -83,6 +83,19 @@ public class RemoteIndexQueryService extends AbstractRemote implements IndexQuer
     }
 
     @Override
+    public void reindexDocument(final String name) throws XMLDBException {
+        final XmldbURI collectionPath = resolve(collection.getPathURI());
+        final XmldbURI documentPath = collectionPath.append(name);
+        final List<Object> params = new ArrayList<>();
+        params.add(documentPath.toString());
+        try {
+            client.execute("reindexDocument", params);
+        } catch (final XmlRpcException e) {
+            throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, "xmlrpc error while doing reindexDocument: ", e);
+        }
+    }
+
+    @Override
     public Occurrences[] getIndexedElements(final boolean inclusive) throws XMLDBException {
         try {
             final List<Object> params = new ArrayList<>();
