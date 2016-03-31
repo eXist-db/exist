@@ -25,24 +25,24 @@ public class GetIndex extends BasicFunction {
         new FunctionReturnSequenceType(Type.LONG, Cardinality.ZERO_OR_ONE, "A number &gt; 0 or the empty " +
             "sequence if the $node argument was empty or the node could not be found in the index."));
 
-    public GetIndex(XQueryContext context) {
+    public GetIndex(final XQueryContext context) {
         super(context, signature);
     }
 
     @Override
-    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+    public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
         if (args[1].isEmpty())
             return Sequence.EMPTY_SEQUENCE;
-        String id = args[0].getStringValue();
-        NodeProxy node = (NodeProxy) args[1].itemAt(0);
-        SortIndexWorker index = (SortIndexWorker)
+        final String id = args[0].getStringValue();
+        final NodeProxy node = (NodeProxy) args[1].itemAt(0);
+        final SortIndexWorker index = (SortIndexWorker)
             context.getBroker().getIndexController().getWorkerByIndexId(SortIndex.ID);
         long pos = 0;
         try {
             pos = index.getIndex(id, node);
-        } catch (EXistException e) {
+        } catch (final EXistException e) {
             throw new XPathException(this, e.getMessage(), e);
-        } catch (LockException e) {
+        } catch (final LockException e) {
             throw new XPathException(this, "Caught lock error while searching index. Giving up.", e);
         }
         return pos < 0 ? Sequence.EMPTY_SEQUENCE : new IntegerValue(pos, Type.LONG);

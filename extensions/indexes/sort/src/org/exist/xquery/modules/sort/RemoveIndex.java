@@ -32,29 +32,29 @@ public class RemoveIndex extends BasicFunction {
             new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "")),
     };
 
-    public RemoveIndex(XQueryContext context, FunctionSignature signature) {
+    public RemoveIndex(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
 
     @Override
-    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-        SortIndexWorker index = (SortIndexWorker)
+    public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
+        final SortIndexWorker index = (SortIndexWorker)
             context.getBroker().getIndexController().getWorkerByIndexId(SortIndex.ID);
-        String id = args[0].getStringValue();
+        final String id = args[0].getStringValue();
         try {
             if (getArgumentCount() == 2) {
-                NodeValue nv = (NodeValue) args[1].itemAt(0);
+                final NodeValue nv = (NodeValue) args[1].itemAt(0);
                 if (nv.getImplementationType() == NodeValue.IN_MEMORY_NODE)
                     throw new XPathException(this, "Second argument to remove should be a persistent node, not " +
                         "an in-memory node.");
-                NodeProxy proxy = (NodeProxy) nv;
+                final NodeProxy proxy = (NodeProxy) nv;
                 index.remove(id, proxy.getOwnerDocument());
             } else {
                 index.remove(id);
             }
-        } catch (EXistException e) {
+        } catch (final EXistException e) {
             throw new XPathException(this, e.getMessage(), e);
-        } catch (LockException e) {
+        } catch (final LockException e) {
             throw new XPathException(this, "Caught lock error while removing index. Giving up.", e);
         }
 

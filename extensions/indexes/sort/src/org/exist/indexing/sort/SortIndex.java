@@ -14,7 +14,6 @@ import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
 import org.exist.util.FileUtils;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Path;
@@ -46,12 +45,12 @@ public class SortIndex extends AbstractIndex implements RawBackupSupport {
 
     @Override
     public void open() throws DatabaseConfigurationException {
-        Path file = getDataDir().resolve(FILE_NAME);
+        final Path file = getDataDir().resolve(FILE_NAME);
         LOG.debug("Creating '" + FileUtils.fileName(file) + "'...");
         try {
             btree = new BTreeStore(pool, SORT_INDEX_ID, false,
                     file, pool.getCacheManager());
-        } catch (DBException e) {
+        } catch (final DBException e) {
             LOG.error("Failed to initialize structural index: " + e.getMessage(), e);
             throw new DatabaseConfigurationException(e.getMessage(), e);
         }
@@ -71,10 +70,10 @@ public class SortIndex extends AbstractIndex implements RawBackupSupport {
         try {
             lock.acquire(Lock.WRITE_LOCK);
             btree.flush();
-        } catch (LockException e) {
+        } catch (final LockException e) {
             LOG.warn("Failed to acquire lock for '" + FileUtils.fileName(btree.getFile()) + "'", e);
             //TODO : throw an exception ? -pb
-        } catch (DBException e) {
+        } catch (final DBException e) {
             LOG.error(e.getMessage(), e);
             //TODO : throw an exception ? -pb
         } finally {
@@ -88,17 +87,17 @@ public class SortIndex extends AbstractIndex implements RawBackupSupport {
     }
 
     @Override
-    public IndexWorker getWorker(DBBroker broker) {
+    public IndexWorker getWorker(final DBBroker broker) {
         return new SortIndexWorker(this);
     }
 
     @Override
-    public boolean checkIndex(DBBroker broker) {
+    public boolean checkIndex(final DBBroker broker) {
         return false;
     }
 
 	@Override
-	public void backupToArchive(RawDataBackup backup) throws IOException {
+	public void backupToArchive(final RawDataBackup backup) throws IOException {
         try(final OutputStream os = backup.newEntry(FileUtils.fileName(btree.getFile()))) {
             btree.backupToStream(os);
         } finally {

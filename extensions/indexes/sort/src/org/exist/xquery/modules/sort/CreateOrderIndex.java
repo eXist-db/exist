@@ -61,15 +61,15 @@ public class CreateOrderIndex extends BasicFunction {
     private boolean descending = false;
     private boolean emptyLeast = false;
 
-    public CreateOrderIndex(XQueryContext context, FunctionSignature signature) {
+    public CreateOrderIndex(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
 
     @Override
-    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+    public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
         if (args[1].isEmpty())
             return Sequence.EMPTY_SEQUENCE;
-        String id = args[0].getStringValue();
+        final String id = args[0].getStringValue();
         // check how the function was called and prepare callback
         FunctionReference call = null;
         if (isCalledAs("create-index-callback")) {
@@ -79,8 +79,8 @@ public class CreateOrderIndex extends BasicFunction {
 
         // options
         if (args[3].getItemCount() > 0) {
-            NodeValue optionValue = (NodeValue) args[3].itemAt(0);
-            Element options = (Element) optionValue.getNode();
+            final NodeValue optionValue = (NodeValue) args[3].itemAt(0);
+            final Element options = (Element) optionValue.getNode();
             String option = options.getAttribute("order");
             if (option != null) {
                 descending = option.equalsIgnoreCase("descending");
@@ -92,22 +92,22 @@ public class CreateOrderIndex extends BasicFunction {
         }
         
         // create the input list to be sorted below
-        List<SortItem> items = new ArrayList<SortItem>(args[1].getItemCount());
-        Sequence params[] = new Sequence[1];
+        final List<SortItem> items = new ArrayList<>(args[1].getItemCount());
+        final Sequence[] params = new Sequence[1];
         SequenceIterator valuesIter = null;
         if (call == null)
             valuesIter = args[2].iterate();
 	    int c = 0;
-        int len = args[1].getItemCount();
+        final int len = args[1].getItemCount();
         
-        int logChunk = 1 + (len / 20);
+        final int logChunk = 1 + (len / 20);
         
-        for (SequenceIterator nodesIter = args[1].iterate(); nodesIter.hasNext(); ) {
-            NodeValue nv = (NodeValue) nodesIter.nextItem();
+        for (final SequenceIterator nodesIter = args[1].iterate(); nodesIter.hasNext(); ) {
+            final NodeValue nv = (NodeValue) nodesIter.nextItem();
             if (nv.getImplementationType() == NodeValue.IN_MEMORY_NODE)
                 throw new XPathException(this, "Cannot create order-index on an in-memory node");
-            NodeProxy node = (NodeProxy) nv;
-            SortItem si = new SortItemImpl(node);
+            final NodeProxy node = (NodeProxy) nv;
+            final SortItem si = new SortItemImpl(node);
 	        
             
             
@@ -118,7 +118,7 @@ public class CreateOrderIndex extends BasicFunction {
             if (call != null) {
                 // call the callback function to get value
                 params[0] = node;
-                Sequence r = call.evalFunction(contextSequence, null, params);
+                final Sequence r = call.evalFunction(contextSequence, null, params);
                 if (!r.isEmpty()) {
                     AtomicValue v = r.itemAt(0).atomize();
                     if (v.getType() == Type.UNTYPED_ATOMIC)
@@ -137,13 +137,13 @@ public class CreateOrderIndex extends BasicFunction {
         // sort the set
         FastQSort.sort(items, 0, items.size() - 1);
         // create the index
-        SortIndexWorker index = (SortIndexWorker)
+        final SortIndexWorker index = (SortIndexWorker)
             context.getBroker().getIndexController().getWorkerByIndexId(SortIndex.ID);
         try {
             index.createIndex(id, items);
-        } catch (EXistException e) {
+        } catch (final EXistException e) {
             throw new XPathException(this, e.getMessage(), e);
-        } catch (LockException e) {
+        } catch (final LockException e) {
             throw new XPathException(this, "Caught lock error while creating index. Giving up.", e);
         }
 
@@ -155,7 +155,7 @@ public class CreateOrderIndex extends BasicFunction {
         NodeProxy node;
         AtomicValue value = AtomicValue.EMPTY_VALUE;
 
-        public SortItemImpl(NodeProxy node) {
+        public SortItemImpl(final NodeProxy node) {
             this.node = node;
         }
 
@@ -163,7 +163,7 @@ public class CreateOrderIndex extends BasicFunction {
             return node;
         }
 
-        public void setValue(AtomicValue value) {
+        public void setValue(final AtomicValue value) {
             if (value.hasOne())
                 this.value = value;
         }
@@ -172,12 +172,12 @@ public class CreateOrderIndex extends BasicFunction {
             return value;
         }
 
-        public int compareTo(SortItem other) {
+        public int compareTo(final SortItem other) {
             int cmp = 0;
-            AtomicValue a = this.value;
-            AtomicValue b = other.getValue();
-            boolean aIsEmpty = (a.isEmpty() || (Type.subTypeOf(a.getType(), Type.NUMBER) && ((NumericValue) a).isNaN()));
-            boolean bIsEmpty = (b.isEmpty() || (Type.subTypeOf(b.getType(), Type.NUMBER) && ((NumericValue) b).isNaN()));
+            final AtomicValue a = this.value;
+            final AtomicValue b = other.getValue();
+            final boolean aIsEmpty = (a.isEmpty() || (Type.subTypeOf(a.getType(), Type.NUMBER) && ((NumericValue) a).isNaN()));
+            final boolean bIsEmpty = (b.isEmpty() || (Type.subTypeOf(b.getType(), Type.NUMBER) && ((NumericValue) b).isNaN()));
             if (aIsEmpty) {
                 if (bIsEmpty)
                     // both values are empty
