@@ -1,8 +1,10 @@
 package org.exist.xquery.modules.sort;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
-import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.QName;
+import org.exist.dom.persistent.NodeProxy;
 import org.exist.indexing.sort.SortIndex;
 import org.exist.indexing.sort.SortIndexWorker;
 import org.exist.indexing.sort.SortItem;
@@ -11,8 +13,6 @@ import org.exist.util.LockException;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 import org.w3c.dom.Element;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,40 +20,40 @@ import java.util.List;
 public class CreateOrderIndex extends BasicFunction {
 
     public final static FunctionSignature[] signatures = {
-        new FunctionSignature(
-                new QName("create-index", SortModule.NAMESPACE_URI, SortModule.PREFIX),
-                "Create a sort index to be used within an 'order by' expression.",
-                new SequenceType[] {
-                    new FunctionParameterSequenceType("id", Type.STRING, Cardinality.EXACTLY_ONE,
-                        "The id by which the index will be known and distinguished from other indexes " +
-                        "on the same nodes."),
-                    new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE,
-                        "The node set to be indexed."),
-                    new FunctionParameterSequenceType("values", Type.ATOMIC, Cardinality.ZERO_OR_MORE,
-                        "The values to be indexed. There should be one value for each node in $nodes. " +
-                        "$values thus needs to contain as many items as $nodes. If not, a dynamic error " +
-                        "is triggered."),
-                    new FunctionParameterSequenceType("options", Type.ELEMENT, Cardinality.ZERO_OR_ONE,
-                        "<options order='ascending|descending' empty='least|greatest'/>")
-                 },
-            new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "")),
-        new FunctionSignature(
-                new QName("create-index-callback", SortModule.NAMESPACE_URI, SortModule.PREFIX),
-                "Create a sort index to be used within an 'order by' expression.",
-                new SequenceType[] {
-                    new FunctionParameterSequenceType("id", Type.STRING, Cardinality.EXACTLY_ONE,
-                        "The id by which the index will be known and distinguished from other indexes " +
-                        "on the same nodes."),
-                    new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE,
-                        "The node set to be indexed."),
-                    new FunctionParameterSequenceType("callback",Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE,
-                        "A callback function which will be called for every node in the $nodes input set. " +
-                        "The function receives the current node as single argument and should return " +
-                        "an atomic value by which the node will be sorted."),
-                    new FunctionParameterSequenceType("options", Type.ELEMENT, Cardinality.ZERO_OR_ONE,
-                        "<options order='ascending|descending' empty='least|greatest'/>")
-                 },
-            new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, ""))
+            new FunctionSignature(
+                    new QName("create-index", SortModule.NAMESPACE_URI, SortModule.PREFIX),
+                    "Create a sort index to be used within an 'order by' expression.",
+                    new SequenceType[]{
+                            new FunctionParameterSequenceType("id", Type.STRING, Cardinality.EXACTLY_ONE,
+                                    "The id by which the index will be known and distinguished from other indexes " +
+                                            "on the same nodes."),
+                            new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE,
+                                    "The node set to be indexed."),
+                            new FunctionParameterSequenceType("values", Type.ATOMIC, Cardinality.ZERO_OR_MORE,
+                                    "The values to be indexed. There should be one value for each node in $nodes. " +
+                                            "$values thus needs to contain as many items as $nodes. If not, a dynamic error " +
+                                            "is triggered."),
+                            new FunctionParameterSequenceType("options", Type.ELEMENT, Cardinality.ZERO_OR_ONE,
+                                    "<options order='ascending|descending' empty='least|greatest'/>")
+                    },
+                    new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "")),
+            new FunctionSignature(
+                    new QName("create-index-callback", SortModule.NAMESPACE_URI, SortModule.PREFIX),
+                    "Create a sort index to be used within an 'order by' expression.",
+                    new SequenceType[]{
+                            new FunctionParameterSequenceType("id", Type.STRING, Cardinality.EXACTLY_ONE,
+                                    "The id by which the index will be known and distinguished from other indexes " +
+                                            "on the same nodes."),
+                            new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE,
+                                    "The node set to be indexed."),
+                            new FunctionParameterSequenceType("callback", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE,
+                                    "A callback function which will be called for every node in the $nodes input set. " +
+                                            "The function receives the current node as single argument and should return " +
+                                            "an atomic value by which the node will be sorted."),
+                            new FunctionParameterSequenceType("options", Type.ELEMENT, Cardinality.ZERO_OR_ONE,
+                                    "<options order='ascending|descending' empty='least|greatest'/>")
+                    },
+                    new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, ""))
     };
 
     protected static final Logger LOG = LogManager.getLogger(CreateOrderIndex.class);
@@ -90,31 +90,30 @@ public class CreateOrderIndex extends BasicFunction {
                 emptyLeast = option.equalsIgnoreCase("least");
             }
         }
-        
+
         // create the input list to be sorted below
         final List<SortItem> items = new ArrayList<>(args[1].getItemCount());
         final Sequence[] params = new Sequence[1];
         SequenceIterator valuesIter = null;
         if (call == null)
             valuesIter = args[2].iterate();
-	    int c = 0;
+        int c = 0;
         final int len = args[1].getItemCount();
-        
+
         final int logChunk = 1 + (len / 20);
-        
+
         for (final SequenceIterator nodesIter = args[1].iterate(); nodesIter.hasNext(); ) {
             final NodeValue nv = (NodeValue) nodesIter.nextItem();
             if (nv.getImplementationType() == NodeValue.IN_MEMORY_NODE)
                 throw new XPathException(this, "Cannot create order-index on an in-memory node");
             final NodeProxy node = (NodeProxy) nv;
             final SortItem si = new SortItemImpl(node);
-	        
-            
-            
+
+
             if (LOG.isDebugEnabled() && ++c % logChunk == 0) {
-		        LOG.debug("Storing item " + c + " out of " + len + " to sort index.");
+                LOG.debug("Storing item " + c + " out of " + len + " to sort index.");
             }
-            
+
             if (call != null) {
                 // call the callback function to get value
                 params[0] = node;
@@ -138,7 +137,7 @@ public class CreateOrderIndex extends BasicFunction {
         FastQSort.sort(items, 0, items.size() - 1);
         // create the index
         final SortIndexWorker index = (SortIndexWorker)
-            context.getBroker().getIndexController().getWorkerByIndexId(SortIndex.ID);
+                context.getBroker().getIndexController().getWorkerByIndexId(SortIndex.ID);
         try {
             index.createIndex(id, items);
         } catch (final EXistException e) {
@@ -163,13 +162,13 @@ public class CreateOrderIndex extends BasicFunction {
             return node;
         }
 
+        public AtomicValue getValue() {
+            return value;
+        }
+
         public void setValue(final AtomicValue value) {
             if (value.hasOne())
                 this.value = value;
-        }
-
-        public AtomicValue getValue() {
-            return value;
         }
 
         public int compareTo(final SortItem other) {
@@ -193,18 +192,18 @@ public class CreateOrderIndex extends BasicFunction {
                 else
                     cmp = Constants.INFERIOR;
             } else if (a == AtomicValue.EMPTY_VALUE && b != AtomicValue.EMPTY_VALUE) {
-                if(emptyLeast)
+                if (emptyLeast)
                     cmp = Constants.INFERIOR;
                 else
                     cmp = Constants.SUPERIOR;
             } else if (b == AtomicValue.EMPTY_VALUE && a != AtomicValue.EMPTY_VALUE) {
-                if(emptyLeast)
+                if (emptyLeast)
                     cmp = Constants.SUPERIOR;
                 else
                     cmp = Constants.INFERIOR;
             } else
                 cmp = a.compareTo(b);
-            if(descending)
+            if (descending)
                 cmp = cmp * -1;
             return cmp;
         }

@@ -1,12 +1,8 @@
 package org.exist.indexing.sort;
 
-import org.exist.dom.persistent.NodeProxy;
-import org.exist.dom.persistent.NodeSet;
-import org.exist.dom.persistent.IStoredNode;
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.DocumentSet;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
+import org.exist.dom.persistent.*;
 import org.exist.indexing.IndexController;
 import org.exist.indexing.IndexWorker;
 import org.exist.indexing.MatchListener;
@@ -45,10 +41,6 @@ public class SortIndexWorker implements IndexWorker {
         this.mode = mode;
     }
 
-    public void setMode(final ReindexMode mode) {
-        this.mode = mode;
-    }
-
     public String getIndexId() {
         return SortIndex.ID;
     }
@@ -75,9 +67,8 @@ public class SortIndexWorker implements IndexWorker {
      * Create a new sort index identified by a name. The method iterates through all items in
      * the items list and adds the nodes to the index. It assumes that the list is already ordered.
      *
-     * @param name the name by which the index will be identified
+     * @param name  the name by which the index will be identified
      * @param items ordered list of items to store
-     *
      * @throws EXistException
      * @throws LockException
      */
@@ -102,11 +93,12 @@ public class SortIndexWorker implements IndexWorker {
     public boolean hasIndex(final String name) throws EXistException, LockException {
         return getId(name) > 0;
     }
+
     /**
      * Looks up the given node in the specified index and returns its original position
      * in the ordered set as a long integer.
      *
-     * @param name the name of the index
+     * @param name  the name of the index
      * @param proxy the node
      * @return the original position of the node in the ordered set
      * @throws EXistException
@@ -130,7 +122,6 @@ public class SortIndexWorker implements IndexWorker {
      * Completely remove the index identified by its name.
      *
      * @param name the name of the index
-     *
      * @throws EXistException
      * @throws LockException
      */
@@ -175,8 +166,8 @@ public class SortIndexWorker implements IndexWorker {
     public void remove(final DocumentImpl doc) {
         if (index.btree == null)
             return;
-        final byte[] fromKey = new byte[] { 1 };
-        final byte[] endKey = new byte[] { 2 };
+        final byte[] fromKey = new byte[]{1};
+        final byte[] endKey = new byte[]{2};
 
         final Lock lock = index.btree.getLock();
         try {
@@ -201,22 +192,21 @@ public class SortIndexWorker implements IndexWorker {
      *
      * @param name the name of the index
      * @return a unique id to be used for the index entries
-     *
      * @throws EXistException
      * @throws LockException
      */
     private short getOrRegisterId(final String name) throws EXistException, LockException {
         short id = getId(name);
         if (id < 0) {
-            final byte[] fromKey = { 1 };
-            final byte[] endKey = { 2 };
+            final byte[] fromKey = {1};
+            final byte[] endKey = {2};
             final IndexQuery query = new IndexQuery(IndexQuery.RANGE, new Value(fromKey), new Value(endKey));
             final Lock lock = index.btree.getLock();
             try {
                 lock.acquire(Lock.READ_LOCK);
                 final FindIdCallback callback = new FindIdCallback(false);
                 index.btree.query(query, callback);
-                id = (short)(callback.max + 1);
+                id = (short) (callback.max + 1);
                 registerId(id, name);
             } catch (final IOException | TerminatedException | BTreeException e) {
                 throw new EXistException("Exception caught while reading sort index: " + e.getMessage(), e);
@@ -225,24 +215,6 @@ public class SortIndexWorker implements IndexWorker {
             }
         }
         return id;
-    }
-
-    private final static class FindIdCallback implements BTreeCallback {
-        long max = 0;
-        List<Long> allIds = null;
-
-        private FindIdCallback(final boolean findIds) {
-            if (findIds)
-                allIds = new ArrayList<>(10);
-        }
-
-        public boolean indexInfo(final Value value, final long pointer) throws TerminatedException {
-            max = Math.max(max, pointer);
-            if (allIds != null) {
-                allIds.add(pointer);
-            }
-            return true;
-        }
     }
 
     private void registerId(final short id, final String name) throws EXistException {
@@ -318,17 +290,21 @@ public class SortIndexWorker implements IndexWorker {
         return null;
     }
 
-    public void setDocument(final DocumentImpl doc) {
-        this.document = doc;
-    }
-
     public DocumentImpl getDocument() {
         return document;
+    }
+
+    public void setDocument(final DocumentImpl doc) {
+        this.document = doc;
     }
 
     @Override
     public ReindexMode getMode() {
         return mode;
+    }
+
+    public void setMode(final ReindexMode mode) {
+        this.mode = mode;
     }
 
     public IStoredNode getReindexRoot(final IStoredNode node, final NodePath path, final boolean insert, final boolean includeSelf) {
@@ -352,5 +328,23 @@ public class SortIndexWorker implements IndexWorker {
 
     public Occurrences[] scanIndex(final XQueryContext context, final DocumentSet docs, final NodeSet contextSet, final Map hints) {
         return new Occurrences[0];
+    }
+
+    private final static class FindIdCallback implements BTreeCallback {
+        long max = 0;
+        List<Long> allIds = null;
+
+        private FindIdCallback(final boolean findIds) {
+            if (findIds)
+                allIds = new ArrayList<>(10);
+        }
+
+        public boolean indexInfo(final Value value, final long pointer) throws TerminatedException {
+            max = Math.max(max, pointer);
+            if (allIds != null) {
+                allIds.add(pointer);
+            }
+            return true;
+        }
     }
 }

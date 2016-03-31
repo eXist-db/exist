@@ -32,13 +32,13 @@ import org.exist.xquery.value.*;
 public class HasIndex extends BasicFunction {
 
     public final static FunctionSignature signature =
-        new FunctionSignature(
-            new QName("has-index", SortModule.NAMESPACE_URI, SortModule.PREFIX),
-            "Check if the sort index, $id, exists.",
-            new SequenceType[] {
-                new FunctionParameterSequenceType("id", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the index.")
-             },
-        new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if the sort index, $id, exists, false() otherwise."));
+            new FunctionSignature(
+                    new QName("has-index", SortModule.NAMESPACE_URI, SortModule.PREFIX),
+                    "Check if the sort index, $id, exists.",
+                    new SequenceType[]{
+                            new FunctionParameterSequenceType("id", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the index.")
+                    },
+                    new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if the sort index, $id, exists, false() otherwise."));
 
     public HasIndex(final XQueryContext context) {
         super(context, signature);
@@ -48,7 +48,7 @@ public class HasIndex extends BasicFunction {
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
         final String id = args[0].getStringValue();
         final SortIndexWorker index = (SortIndexWorker)
-            context.getBroker().getIndexController().getWorkerByIndexId(SortIndex.ID);
+                context.getBroker().getIndexController().getWorkerByIndexId(SortIndex.ID);
         try {
             return BooleanValue.valueOf(index.hasIndex(id));
         } catch (final EXistException e) {

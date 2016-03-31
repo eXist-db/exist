@@ -11,8 +11,8 @@ import org.exist.storage.btree.DBException;
 import org.exist.storage.index.BTreeStore;
 import org.exist.storage.lock.Lock;
 import org.exist.util.DatabaseConfigurationException;
-import org.exist.util.LockException;
 import org.exist.util.FileUtils;
+import org.exist.util.LockException;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -22,24 +22,21 @@ import java.nio.file.Path;
  * SortIndex helps to improve the performance of 'order by' expressions in XQuery.
  * The index simply maps node ids to an integer index, which corresponds to the position
  * of the node in the pre-ordered set.
- *
+ * <p>
  * The creation and maintenance of the index is handled by the user. XQuery functions
  * are provided to create, delete and query an index.
- *
+ * <p>
  * Every sort index has an id by which it is identified and distinguished from other indexes
  * on the same node set.
- *
  */
 public class SortIndex extends AbstractIndex implements RawBackupSupport {
-
-    protected static final Logger LOG = LogManager.getLogger(SortIndex.class);
 
     public static final String ID = SortIndex.class.getName();
     public static final String FILE_NAME = "sort.dbx";
     public static final byte SORT_INDEX_ID = 0x10;
-
+    protected static final Logger LOG = LogManager.getLogger(SortIndex.class);
     protected BTreeStore btree;
-    
+
     public SortIndex() {
     }
 
@@ -96,13 +93,13 @@ public class SortIndex extends AbstractIndex implements RawBackupSupport {
         return false;
     }
 
-	@Override
-	public void backupToArchive(final RawDataBackup backup) throws IOException {
-        try(final OutputStream os = backup.newEntry(FileUtils.fileName(btree.getFile()))) {
+    @Override
+    public void backupToArchive(final RawDataBackup backup) throws IOException {
+        try (final OutputStream os = backup.newEntry(FileUtils.fileName(btree.getFile()))) {
             btree.backupToStream(os);
         } finally {
             backup.closeEntry();
         }
-	}
-	
+    }
+
 }
