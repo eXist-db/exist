@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -12,6 +13,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.swing.*;
+import javax.xml.stream.XMLStreamException;
 import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang3.SystemUtils;
@@ -34,6 +36,7 @@ public class ConfigurationDialog extends JDialog {
     private final Launcher launcher;
     private boolean changed = false;
     private boolean dataDirChanged = false;
+    private boolean jettyConfigChanged = false;
     private boolean beforeStart = false;
 
     /**
@@ -63,9 +66,17 @@ public class ConfigurationDialog extends JDialog {
 
             final Path dir = (Path)existConfig.getProperty(BrokerPool.PROPERTY_DATA_DIR);
             dataDir.setText(dir.toAbsolutePath().toString());
+
+            final Map<String, Integer> ports = ConfigurationUtility.getJettyPorts();
+            if (ports.containsKey("jetty.port")) {
+                httpPort.setValue(ports.get("jetty.port"));
+            }
+            if (ports.containsKey("jetty.port.ssl")) {
+                sslPort.setValue(ports.get("jetty.port.ssl"));
+            }
         } catch (DatabaseConfigurationException ex) {
             Logger.getLogger(ConfigurationDialog.class.getName()).log(Level.SEVERE, null, ex);
-        }      
+        }
         
         checkCacheBoundaries();
 
@@ -132,6 +143,13 @@ public class ConfigurationDialog extends JDialog {
         btnSave = new javax.swing.JButton();
         btnSelectDir = new javax.swing.JButton();
         lbStartupWarn = new javax.swing.JLabel();
+        jLabel11 = new javax.swing.JLabel();
+        jLabel12 = new javax.swing.JLabel();
+        jLabel13 = new javax.swing.JLabel();
+        jLabel14 = new javax.swing.JLabel();
+        jLabel15 = new javax.swing.JLabel();
+        httpPort = new javax.swing.JSpinner();
+        sslPort = new javax.swing.JSpinner();
 
         setTitle("eXist-db Configuration");
         getContentPane().setLayout(new java.awt.GridBagLayout());
@@ -326,7 +344,7 @@ public class ConfigurationDialog extends JDialog {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 11;
+        gridBagConstraints.gridy = 14;
         gridBagConstraints.gridwidth = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHEAST;
@@ -352,6 +370,66 @@ public class ConfigurationDialog extends JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 22, 12, 22);
         getContentPane().add(lbStartupWarn, gridBagConstraints);
+
+        jLabel12.setText("Jetty Ports");
+        jLabel12.setFont(jLabel12.getFont().deriveFont(jLabel12.getFont().getStyle() | java.awt.Font.BOLD));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 11;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(26, 22, 16, 0);
+        getContentPane().add(jLabel12, gridBagConstraints);
+
+        jLabel13.setText("HTTP Port");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 12;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 22, 0, 0);
+        getContentPane().add(jLabel13, gridBagConstraints);
+
+        httpPort.setModel(new javax.swing.SpinnerNumberModel(8080, 80, 100000, 1));
+        httpPort.setEditor(new JSpinner.NumberEditor(httpPort, "#"));
+        httpPort.addChangeListener(this::jettyConfigChanged);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 12;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.ipadx = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        getContentPane().add(httpPort, gridBagConstraints);
+
+        jLabel14.setText("SSL Port");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 13;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 22, 0, 0);
+        getContentPane().add(jLabel14, gridBagConstraints);
+
+        sslPort.setModel(new javax.swing.SpinnerNumberModel(8443, 80, 100000, 1));
+        sslPort.setEditor(new JSpinner.NumberEditor(sslPort, "#"));
+        sslPort.addChangeListener(this::jettyConfigChanged);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 13;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.ipadx = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        getContentPane().add(sslPort, gridBagConstraints);
+
+        jLabel15.setText("<html><p>Set the ports used by the integrated web server. Please make sure " +
+                "those ports are not used by other processes.</p></html>");
+        jLabel15.setPreferredSize(new java.awt.Dimension(280, 48));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 12;
+        gridBagConstraints.gridheight = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 13, 0, 22);
+        getContentPane().add(jLabel15, gridBagConstraints);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -413,7 +491,7 @@ public class ConfigurationDialog extends JDialog {
     }
 
     private void saveConfig(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveConfig
-        if (!beforeStart && !changed && !dataDirChanged) {
+        if (!beforeStart && !changed && !dataDirChanged && !jettyConfigChanged) {
             setVisible(false);
             return;
         }
@@ -429,13 +507,20 @@ public class ConfigurationDialog extends JDialog {
             properties.setProperty("cacheSize", cacheSize.getValue().toString());
             properties.setProperty("collectionCache", collectionCache.getValue().toString());
             properties.setProperty("dataDir", dataDir.getText());
-            ConfigurationUtility.saveConfiguration(properties);
+            ConfigurationUtility.saveConfiguration("conf.xml", "conf.xsl", properties);
+
+            if (jettyConfigChanged) {
+                properties.clear();
+                properties.setProperty("port", httpPort.getValue().toString());
+                properties.setProperty("port.ssl", sslPort.getValue().toString());
+                ConfigurationUtility.saveConfiguration("tools/jetty/etc/jetty.xml", "jetty.xsl", properties);
+            }
             if (beforeStart) {
                 beforeStart = false;
                 btnCancel.setVisible(true);
                 setVisible(false);
                 this.launcher.shutdown(true);
-            } else if (changed || dataDirChanged) {
+            } else if (changed || dataDirChanged || jettyConfigChanged) {
                 int r = JOptionPane.showConfirmDialog(this, "Database needs to be restarted to apply the " +
                             "new settings.", "Confirm restart", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
                 if (r == JOptionPane.YES_OPTION) {
@@ -473,6 +558,10 @@ public class ConfigurationDialog extends JDialog {
     private void dataDirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dataDirActionPerformed
         dataDirChanged = true;
     }//GEN-LAST:event_dataDirActionPerformed
+
+    private void jettyConfigChanged(javax.swing.event.ChangeEvent evt) {
+        jettyConfigChanged = true;
+    }
 
     private void btnSelectDirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSelectDirActionPerformed
         final Optional<Path> currentDir = Optional.ofNullable(dataDir.getText())
@@ -527,8 +616,6 @@ public class ConfigurationDialog extends JDialog {
     private javax.swing.JSpinner collectionCache;
     private javax.swing.JTextField dataDir;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel10;
-    private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -536,12 +623,20 @@ public class ConfigurationDialog extends JDialog {
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
+    private javax.swing.JLabel jLabel10;
+    private javax.swing.JLabel jLabel11;
+    private javax.swing.JLabel jLabel12;
+    private javax.swing.JLabel jLabel13;
+    private javax.swing.JLabel jLabel14;
+    private javax.swing.JLabel jLabel15;
     private javax.swing.JLabel lbCurrentUsage;
     private javax.swing.JLabel lbExistLogo;
     private javax.swing.JLabel lbStartupMsg;
     private javax.swing.JLabel lbStartupWarn;
     private javax.swing.JSpinner maxMemory;
     private javax.swing.JSpinner minMemory;
+    private javax.swing.JSpinner httpPort;
+    private javax.swing.JSpinner sslPort;
     // End of variables declaration//GEN-END:variables
 
 }

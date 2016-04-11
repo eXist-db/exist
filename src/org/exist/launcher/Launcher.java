@@ -144,7 +144,7 @@ public class Launcher extends Observable implements Observer {
             public void windowOpened(WindowEvent windowEvent) {
                 setServiceState();
                 if (runningAsService.isPresent()) {
-                    splash.setStatus("eXist-db is already installed as service!");
+                    splash.setStatus("eXist-db is already installed as service! Attaching to it ...");
                     final Timer timer = new Timer(3000, (event) -> splash.setVisible(false));
                     timer.setRepeats(false);
                     timer.start();
@@ -254,7 +254,7 @@ public class Launcher extends Observable implements Observer {
                     }
                     setServiceState();
                 });
-            } else {
+            } else if (runningAsService.isPresent()){
                 showTrayMessage("Starting the eXistdb service. Please wait...", TrayIcon.MessageType.INFO);
                 if (runningAsService.get().start()) {
                     showTrayMessage("eXistdb service started", TrayIcon.MessageType.INFO);
@@ -272,7 +272,7 @@ public class Launcher extends Observable implements Observer {
                 jetty.get().shutdown();
                 setServiceState();
                 showTrayMessage("eXist-db stopped", TrayIcon.MessageType.INFO);
-            } else {
+            } else if (runningAsService.isPresent()) {
                 if (runningAsService.get().stop()) {
                     showTrayMessage("eXistdb service stopped", TrayIcon.MessageType.INFO);
                 } else {
