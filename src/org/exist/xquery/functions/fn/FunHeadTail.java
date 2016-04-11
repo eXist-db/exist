@@ -61,15 +61,6 @@ public class FunHeadTail extends BasicFunction {
 		} else if (isCalledAs("head")) {
 			tmp = seq.itemAt(0).toSequence();
 		} else {
-            if (seq instanceof NodeSet) {
-                tmp = new ExtArrayNodeSet();
-                ((ExtArrayNodeSet)tmp).keepUnOrdered(unordered);
-            } else {
-                tmp = new ValueSequence();
-                ((ValueSequence)tmp).keepUnOrdered(unordered);
-            }
-            
-            
             tmp = seq.tail();
 		}
 		return tmp;
