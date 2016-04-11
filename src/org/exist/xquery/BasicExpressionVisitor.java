@@ -230,6 +230,11 @@ public class BasicExpressionVisitor implements ExpressionVisitor {
         //Nothing to do
     }
 
+    @Override
+    public void visitSimpleMapOperator(OpSimpleMap simpleMap) {
+        // Nothing to do
+    }
+
     public static class FirstStepVisitor extends BasicExpressionVisitor {
 
         private LocationStep firstStep = null;

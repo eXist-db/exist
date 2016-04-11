@@ -363,6 +363,7 @@ public class FunctionCall extends Function {
     @Override
     public void resetState(boolean postOptimization) {
         super.resetState(postOptimization);
+        setRecursive(false);
         if(expression.needsReset() || postOptimization) {
             expression.resetState(postOptimization);
         }

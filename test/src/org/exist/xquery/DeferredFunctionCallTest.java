@@ -78,6 +78,8 @@ public class DeferredFunctionCallTest {
         
         expect(mockExpression.eval(mockContextSequence, mockContextItem)).andReturn(Sequence.EMPTY_SEQUENCE);
 
+        mockExpression.resetState(true);
+
         mockContext.stackLeave((Expression)anyObject());
         mockContext.functionEnd();
         mockContext.popDocumentContext();
@@ -98,6 +100,7 @@ public class DeferredFunctionCallTest {
         
         // 1) Call reset, this should set current arguments to null
         functionCall.resetState(true);
+        functionCall.setRecursive(true); //ensure DeferredFunction
         
         // 2) check UserDefinedFunction.currentArguments == null
         assertNull(userDefinedFunction.getCurrentArguments());
