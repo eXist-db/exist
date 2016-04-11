@@ -22,9 +22,8 @@ public class OpSimpleMap extends AbstractExpression {
 
     @Override
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
-        final AnalyzeContextInfo contextCopy = new AnalyzeContextInfo(contextInfo);
-        left.analyze(contextCopy);
-        right.analyze(contextCopy);
+        left.analyze(new AnalyzeContextInfo(contextInfo));
+        right.analyze(new AnalyzeContextInfo(contextInfo));
     }
 
     @Override
@@ -60,5 +59,25 @@ public class OpSimpleMap extends AbstractExpression {
         left.dump(dumper);
         dumper.display(" ! ");
         right.dump(dumper);
+    }
+
+    public Expression getLeft() {
+        return left;
+    }
+
+    public PathExpr getRight() {
+        return right;
+    }
+
+    @Override
+    public void accept(ExpressionVisitor visitor) {
+        visitor.visitSimpleMapOperator(this);
+    }
+
+    @Override
+    public void resetState(boolean postOptimization) {
+        super.resetState(postOptimization);
+        left.resetState(postOptimization);
+        right.resetState(postOptimization);
     }
 }

@@ -91,4 +91,6 @@ public interface ExpressionVisitor {
     void visitVariableReference(VariableReference ref);
 
     void visitVariableDeclaration(VariableDeclaration decl);
+
+    void visitSimpleMapOperator(OpSimpleMap simpleMap);
 }
