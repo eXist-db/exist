@@ -1323,7 +1323,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 atomic = new StringValue( value ).convertTo( xpathType );
             }
             catch( final XPathException e ) {
-                LOG.warn( "Node value '" + value + "' cannot be converted to " + Type.getTypeName( xpathType ) );
+                LOG.debug( "Node value '" + value + "' cannot be converted to " + Type.getTypeName( xpathType ) );
                 return( null );
             }
         }

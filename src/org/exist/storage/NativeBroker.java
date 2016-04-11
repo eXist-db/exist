@@ -3640,14 +3640,7 @@ public class NativeBroker extends DBBroker {
         if(nodesCountThreshold <= 0) {
             if(nodesCount > DEFAULT_NODES_BEFORE_MEMORY_CHECK) {
                 if(run.totalMemory() >= run.maxMemory() && run.freeMemory() < pool.getReservedMem()) {
-                    final NumberFormat nf = NumberFormat.getNumberInstance();
-                    LOG.info("total memory: " + nf.format(run.totalMemory()) +
-                        "; max: " + nf.format(run.maxMemory()) +
-                        "; free: " + nf.format(run.freeMemory()) +
-                        "; reserved: " + nf.format(pool.getReservedMem()) +
-                        "; used: " + nf.format(pool.getCacheManager().getCurrentSize()));
                     flush();
-                    System.gc();
                 }
                 nodesCount = 0;
             }
@@ -3874,10 +3867,7 @@ public class NativeBroker extends DBBroker {
         private void checkAvailableMemory() {
             if(indexMode != IndexMode.REMOVE && nodesCount > DEFAULT_NODES_BEFORE_MEMORY_CHECK) {
                 if(run.totalMemory() >= run.maxMemory() && run.freeMemory() < pool.getReservedMem()) {
-                    //LOG.info("total memory: " + run.totalMemory() + "; free: " + run.freeMemory());
                     flush();
-                    System.gc();
-                    LOG.info("total memory: " + run.totalMemory() + "; free: " + run.freeMemory());
                 }
                 nodesCount = 0;
             }
