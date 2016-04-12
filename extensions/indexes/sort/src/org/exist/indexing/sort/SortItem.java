@@ -5,11 +5,11 @@ import org.exist.xquery.value.AtomicValue;
 
 public interface SortItem extends Comparable<SortItem> {
 
-    public void setValue(AtomicValue value);
+    AtomicValue getValue();
 
-    public AtomicValue getValue();
+    void setValue(AtomicValue value);
 
-    public NodeProxy getNode();
-    
-    public int compareTo(SortItem sortItem);
+    NodeProxy getNode();
+
+    int compareTo(SortItem sortItem);
 }

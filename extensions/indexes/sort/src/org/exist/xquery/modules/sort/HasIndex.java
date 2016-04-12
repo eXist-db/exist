@@ -32,28 +32,28 @@ import org.exist.xquery.value.*;
 public class HasIndex extends BasicFunction {
 
     public final static FunctionSignature signature =
-        new FunctionSignature(
-            new QName("has-index", SortModule.NAMESPACE_URI, SortModule.PREFIX),
-            "Check if the sort index, $id, exists.",
-            new SequenceType[] {
-                new FunctionParameterSequenceType("id", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the index.")
-             },
-        new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if the sort index, $id, exists, false() otherwise."));
+            new FunctionSignature(
+                    new QName("has-index", SortModule.NAMESPACE_URI, SortModule.PREFIX),
+                    "Check if the sort index, $id, exists.",
+                    new SequenceType[]{
+                            new FunctionParameterSequenceType("id", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the index.")
+                    },
+                    new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if the sort index, $id, exists, false() otherwise."));
 
-    public HasIndex(XQueryContext context) {
+    public HasIndex(final XQueryContext context) {
         super(context, signature);
     }
 
     @Override
-    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-        String id = args[0].getStringValue();
-        SortIndexWorker index = (SortIndexWorker)
-            context.getBroker().getIndexController().getWorkerByIndexId(SortIndex.ID);
+    public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
+        final String id = args[0].getStringValue();
+        final SortIndexWorker index = (SortIndexWorker)
+                context.getBroker().getIndexController().getWorkerByIndexId(SortIndex.ID);
         try {
             return BooleanValue.valueOf(index.hasIndex(id));
-        } catch (EXistException e) {
+        } catch (final EXistException e) {
             throw new XPathException(this, e.getMessage(), e);
-        } catch (LockException e) {
+        } catch (final LockException e) {
             throw new XPathException(this, "Caught lock error while searching index. Giving up.", e);
         }
     }
