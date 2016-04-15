@@ -110,6 +110,8 @@ public class ContentFunctions extends BasicFunction {
         }
 
         DocumentBuilderReceiver builder = new DocumentBuilderReceiver();
+        builder.setRedirectIgnorableWhitespace(true);
+
         ContentExtraction ce = new ContentExtraction();
 
         if (isCalledAs("stream-content")) {
