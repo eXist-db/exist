@@ -48,11 +48,11 @@ public class FnExport extends BasicFunction {
 		new QName("export", SystemModule.NAMESPACE_URI, SystemModule.PREFIX);
 	
 	protected final static String DESCRIPTION =
-		"Restore the database or a section of the database (admin user only).";
+		"Export a backup of the database (admin user only).";
 
 	protected final static FunctionParameterSequenceType DIRorFILE = 
-		new FunctionParameterSequenceType("dir-or-file", Type.STRING, Cardinality.EXACTLY_ONE,
-		"This is either a backup directory with the backup descriptor (__contents__.xml) or a backup ZIP file.");
+		new FunctionParameterSequenceType("dir", Type.STRING, Cardinality.EXACTLY_ONE,
+		"This is an absolute path to where the backup will be written. Must be writeable by the eXist process.");
 
 	protected final static FunctionParameterSequenceType INCREMENTAL = 
 		new FunctionParameterSequenceType("incremental", Type.BOOLEAN, Cardinality.ZERO_OR_ONE,
@@ -119,7 +119,7 @@ public class FnExport extends BasicFunction {
         	final SystemExport export = new SystemExport(context.getBroker(), new Callback(builder), null, true);
             export.export(dirOrFile, incremental, zip, null);
         } catch (final Exception e) {
-            throw new XPathException(this, "restore failed with exception: " + e.getMessage(), e);
+            throw new XPathException(this, "export failed with exception: " + e.getMessage(), e);
         }
         if (builder == null) {
         	return Sequence.EMPTY_SEQUENCE;
