@@ -53,7 +53,7 @@ public class Stream extends BasicFunction {
 	public final static FunctionSignature signature =
         new FunctionSignature(
             new QName("stream", ResponseModule.NAMESPACE_URI, ResponseModule.PREFIX),
-            "Stream can only be used within a servlet context. Itt directly streams its input to the servlet's output stream. " +
+            "Stream can only be used within a servlet context. It directly streams its input to the servlet's output stream. " +
             "It should thus be the last statement in the XQuery.",
             new SequenceType[] {
 				new FunctionParameterSequenceType("content", Type.ITEM, Cardinality.ZERO_OR_MORE, "The source sequence"),
@@ -132,7 +132,7 @@ public class Stream extends BasicFunction {
 
                     serializer.setProperties(serializeOptions);
                     serializer.setSAXHandlers(sax, sax);
-                    serializer.toSAX(inputNode, 1, inputNode.getItemCount(), false, false);
+                    serializer.toSAX(inputNode, 1, inputNode.getItemCount(), false, false, 0, 0);
 
                 } catch (final SAXException e) {
                     e.printStackTrace();

@@ -32,15 +32,15 @@ public class XQuerySerializer {
         this.writer = writer;
     }
 
-    public void serialize(Sequence sequence) throws SAXException, XPathException {
-        serialize(sequence, 1, sequence.getItemCount(), false, false);
+    public void serialize(final Sequence sequence) throws SAXException, XPathException {
+        serialize(sequence, 1, sequence.getItemCount(), false, false, 0, 0);
     }
 
-    public void serialize(Sequence sequence, int start, int howmany, boolean wrap, boolean typed) throws SAXException, XPathException {
+    public void serialize(final Sequence sequence, final int start, final int howmany, final boolean wrap, final boolean typed, final long compilationTime, final long executionTime) throws SAXException, XPathException {
         if (isJSON()) {
-            serializeJSON(sequence);
+            serializeJSON(sequence, compilationTime, executionTime);
         } else {
-            serializeXML(sequence, start, howmany, wrap, typed);
+            serializeXML(sequence, start, howmany, wrap, typed, compilationTime, executionTime);
         }
     }
 
@@ -48,7 +48,7 @@ public class XQuerySerializer {
         return "json".equals(outputProperties.getProperty(OutputKeys.METHOD, "xml"));
     }
 
-    private void serializeXML(Sequence sequence, int start, int howmany, boolean wrap, boolean typed) throws SAXException, XPathException {
+    private void serializeXML(final Sequence sequence, final int start, final int howmany, final boolean wrap, final boolean typed, final long compilationTime, final long executionTime) throws SAXException, XPathException {
         final Serializer serializer = broker.getSerializer();
         serializer.reset();
         SAXSerializer sax = null;
@@ -58,7 +58,7 @@ public class XQuerySerializer {
             sax.setOutput(writer, outputProperties);
             serializer.setProperties(outputProperties);
             serializer.setSAXHandlers(sax, sax);
-            serializer.toSAX(sequence, start, howmany, wrap, typed);
+            serializer.toSAX(sequence, start, howmany, wrap, typed, compilationTime, executionTime);
         } catch (SAXNotSupportedException | SAXNotRecognizedException e) {
             throw new SAXException(e.getMessage(), e);
         } finally {
@@ -68,11 +68,11 @@ public class XQuerySerializer {
         }
     }
 
-    private void serializeJSON(Sequence sequence) throws SAXException, XPathException {
+    private void serializeJSON(final Sequence sequence, final long compilationTime, final long executionTime) throws SAXException, XPathException {
         // backwards compatibility: if the sequence contains a single element, we assume
         // it should be transformed to JSON following the rules of the old JSON writer
         if (sequence.hasOne() && Type.subTypeOf(sequence.getItemType(), Type.ELEMENT)) {
-            serializeXML(sequence, 1, sequence.getItemCount(), false, false);
+            serializeXML(sequence, 1, sequence.getItemCount(), false, false, compilationTime, executionTime);
         } else {
             JSONSerializer serializer = new JSONSerializer(broker, outputProperties);
             serializer.serialize(sequence, writer);
