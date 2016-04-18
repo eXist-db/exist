@@ -1256,7 +1256,7 @@ public class RESTServer {
                     final Sequence cached = sessionManager.get(query, sessionId);
                     if (cached != null) {
                         LOG.debug("Returning cached query result");
-                        writeResults(response, broker, cached, howmany, start, typed, outputProperties, wrap);
+                        writeResults(response, broker, cached, howmany, start, typed, outputProperties, wrap, 0, 0);
 
                     } else {
                         LOG.debug("Cached query result not found. Probably timed out. Repeating query.");
@@ -1288,20 +1288,24 @@ public class RESTServer {
             declareNamespaces(context, namespaces);
             declareVariables(context, variables, request, response);
 
+            final long compilationTime;
             if (compiled == null) {
+                final long compilationStart = System.currentTimeMillis();
                 compiled = xquery.compile(broker, context, source);
+                compilationTime = System.currentTimeMillis() - compilationStart;
             } else {
                 compiled.getContext().updateContext(context);
                 context.getWatchDog().reset();
+                compilationTime = 0;
             }
 
             try {
-                final long startTime = System.currentTimeMillis();
+                final long executeStart = System.currentTimeMillis();
                 final Sequence resultSequence = xquery.execute(broker, compiled, null, outputProperties);
-                final long queryTime = System.currentTimeMillis() - startTime;
+                final long executionTime = System.currentTimeMillis() - executeStart;
 
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("Found " + resultSequence.getItemCount() + " in " + queryTime + "ms.");
+                    LOG.debug("Found " + resultSequence.getItemCount() + " in " + executionTime + "ms.");
                 }
 
                 if (cache) {
@@ -1312,7 +1316,7 @@ public class RESTServer {
                     }
                 }
 
-                writeResults(response, broker, resultSequence, howmany, start, typed, outputProperties, wrap);
+                writeResults(response, broker, resultSequence, howmany, start, typed, outputProperties, wrap, compilationTime, executionTime);
 
             } finally {
                 pool.returnCompiledXQuery(source, compiled);
@@ -1480,12 +1484,17 @@ public class RESTServer {
         reqw.setServletPath(servletPath);
         reqw.setPathInfo(pathInfo);
 
+        final long compilationTime;
         if (compiled == null) {
             try {
+                final long compilationStart = System.currentTimeMillis();
                 compiled = xquery.compile(broker, context, source);
+                compilationTime = System.currentTimeMillis() - compilationStart;
             } catch (final IOException e) {
                 throw new BadRequestException("Failed to read query from " + resource.getURI(), e);
             }
+        } else {
+            compilationTime = 0;
         }
 
         DebuggeeFactory.checkForDebugRequest(request, context);
@@ -1494,8 +1503,9 @@ public class RESTServer {
                 && "yes".equals(outputProperties.getProperty("_wrap"));
 
         try {
+            final long executeStart = System.currentTimeMillis();
             final Sequence result = xquery.execute(broker, compiled, null, outputProperties);
-            writeResults(response, broker, result, -1, 1, false, outputProperties, wrap);
+            writeResults(response, broker, result, -1, 1, false, outputProperties, wrap, compilationTime, System.currentTimeMillis() - executeStart);
 
         } finally {
             context.runCleanupTasks();
@@ -1552,18 +1562,25 @@ public class RESTServer {
         final HttpRequestWrapper reqw = declareVariables(context, null, request, response);
         reqw.setServletPath(servletPath);
         reqw.setPathInfo(pathInfo);
+
+        final long compilationTime;
         if (compiled == null) {
             try {
+                final long compilationStart = System.currentTimeMillis();
                 compiled = xquery.compile(broker, context, source);
+                compilationTime = System.currentTimeMillis() - compilationStart;
             } catch (final IOException e) {
                 throw new BadRequestException("Failed to read query from "
                         + source.getURL(), e);
             }
+        } else {
+            compilationTime = 0;
         }
 
         try {
+            final long executeStart = System.currentTimeMillis();
             final Sequence result = xquery.execute(broker, compiled, null, outputProperties);
-            writeResults(response, broker, result, -1, 1, false, outputProperties, false);
+            writeResults(response, broker, result, -1, 1, false, outputProperties, false, compilationTime, System.currentTimeMillis() - executeStart);
         } finally {
             pool.returnCompiledXQuery(source, compiled);
         }
@@ -1990,7 +2007,7 @@ public class RESTServer {
 
     protected void writeResults(final HttpServletResponse response, final DBBroker broker,
             final Sequence results, int howmany, final int start, final boolean typed,
-            final Properties outputProperties, final boolean wrap)
+            final Properties outputProperties, final boolean wrap, final long compilationTime, final long executionTime)
             throws BadRequestException {
 
         // some xquery functions can write directly to the output stream
@@ -2016,9 +2033,9 @@ public class RESTServer {
         final String method = outputProperties.getProperty(SERIALIZATION_METHOD_PROPERTY, "xml");
 
         if ("json".equals(method)) {
-            writeResultJSON(response, broker, results, howmany, start, outputProperties, wrap);
+            writeResultJSON(response, broker, results, howmany, start, outputProperties, wrap, compilationTime, executionTime);
         } else {
-            writeResultXML(response, broker, results, howmany, start, typed, outputProperties, wrap);
+            writeResultXML(response, broker, results, howmany, start, typed, outputProperties, wrap, compilationTime, executionTime);
         }
 
     }
@@ -2026,7 +2043,7 @@ public class RESTServer {
     private void writeResultXML(final HttpServletResponse response,
         final DBBroker broker, final Sequence results, final int howmany,
         final int start, final boolean typed, final Properties outputProperties,
-        final boolean wrap) throws BadRequestException {
+        final boolean wrap, final long compilationTime, final long executionTime) throws BadRequestException {
         
         // serialize the results to the response output stream
         outputProperties.setProperty(Serializer.GENERATE_DOC_EVENTS, "false");
@@ -2054,7 +2071,7 @@ public class RESTServer {
             final XQuerySerializer serializer = new XQuerySerializer(broker, outputProperties, writer);
 
             //Marshaller.marshall(broker, results, start, howmany, serializer.getContentHandler());
-            serializer.serialize(results, start, howmany, wrap, typed);
+            serializer.serialize(results, start, howmany, wrap, typed, compilationTime, executionTime);
 
             writer.flush();
             writer.close();
@@ -2072,7 +2089,7 @@ public class RESTServer {
 
     private void writeResultJSON(final HttpServletResponse response,
         final DBBroker broker, final Sequence results, int howmany,
-        int start, final Properties outputProperties, final boolean wrap)
+        int start, final Properties outputProperties, final boolean wrap, final long compilationTime, final long executionTime)
             throws BadRequestException {
         
         // calculate number of results to return
@@ -2103,6 +2120,8 @@ public class RESTServer {
                 root.addObject(new JSONSimpleProperty("session",
                         outputProperties.getProperty(Serializer.PROPERTY_SESSION_ID)));
             }
+            root.addObject(new JSONSimpleProperty("compilationTime", Long.toString(compilationTime), true));
+            root.addObject(new JSONSimpleProperty("executionTime", Long.toString(executionTime), true));
 
             final JSONObject data = new JSONObject("data");
             root.addObject(data);

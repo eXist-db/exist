@@ -251,7 +251,7 @@ public class Transform extends BasicFunction {
                         {xipath = context.getModuleLoadPath();}
                     serializer.getXIncludeFilter().setModuleLoadPath(xipath);
                 }
-    			serializer.toSAX(inputNode, 1, inputNode.getItemCount(), false, false);
+    			serializer.toSAX(inputNode, 1, inputNode.getItemCount(), false, false, 0, 0);
     		} catch (final Exception e) {
     			throw new XPathException(this, "Exception while transforming node: " + e.getMessage(), e);
     		}
@@ -321,7 +321,7 @@ public class Transform extends BasicFunction {
                         receiver = xinclude;
                     }
                     serializer.setReceiver(receiver);
-                    serializer.toSAX(inputNode, 1, inputNode.getItemCount(), false, false);
+                    serializer.toSAX(inputNode);
                 } catch (final Exception e) {
                     throw new XPathException(this, "Exception while transforming node: " + e.getMessage(), e);
                 }

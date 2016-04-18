@@ -44,47 +44,43 @@ public class GetHeaderTest extends RESTTest {
 	}
 
 	private void testGetHeader(String headerValue) {
-		GetMethod get = new GetMethod(COLLECTION_ROOT_URL);
+		final GetMethod get = new GetMethod(COLLECTION_ROOT_URL);
 
-		NameValuePair qsParams[] = { new NameValuePair("_query", xquery),
-				new NameValuePair("_indent", "no") };
+		final NameValuePair qsParams[] = {
+				new NameValuePair("_query", xquery),
+				new NameValuePair("_indent", "no"),
+				new NameValuePair("_wrap", "no")
+		};
 
-		StringBuilder xmlExpectedResponse = new StringBuilder(
-				"<exist:result xmlns:exist=\"http://exist.sourceforge.net/NS/exist\" exist:hits=\"1\" exist:start=\"1\" exist:count=\"1\"><request-header name=\""
-						+ HTTP_HEADER_NAME + "\">");
-
+		final StringBuilder xmlExpectedResponse = new StringBuilder("<request-header name=\"" + HTTP_HEADER_NAME + "\">");
 		if (headerValue != null) {
 			get.setRequestHeader(HTTP_HEADER_NAME, headerValue);
 
 			xmlExpectedResponse.append(headerValue);
 		}
-
-		xmlExpectedResponse.append("</request-header></exist:result>");
+		xmlExpectedResponse.append("</request-header>");
 
 		get.setQueryString(qsParams);
 
 		try {
 			int httpResult = client.executeMethod(get);
 
-			byte buf[] = new byte[1024];
-			int read = -1;
-			StringBuilder xmlActualResponse = new StringBuilder();
-			InputStream is = get.getResponseBodyAsStream();
-			while ((read = is.read(buf)) > -1) {
-				xmlActualResponse.append(new String(buf, 0, read));
+			final StringBuilder xmlActualResponse = new StringBuilder();
+			try (final InputStream is = get.getResponseBodyAsStream()) {
+				byte buf[] = new byte[4096];
+				int read = -1;
+				while ((read = is.read(buf)) > -1) {
+					xmlActualResponse.append(new String(buf, 0, read));
+				}
 			}
 
 			assertEquals(httpResult, HttpStatus.SC_OK);
 
-			assertXMLEqual(xmlActualResponse.toString(), xmlExpectedResponse
-					.toString());
+			assertXMLEqual(xmlExpectedResponse
+					.toString(), xmlActualResponse.toString());
 
-		} catch (HttpException he) {
-			fail(he.getMessage());
-		} catch (IOException ioe) {
+		} catch (final IOException | SAXException ioe) {
 			fail(ioe.getMessage());
-		} catch (SAXException sae) {
-			fail(sae.getMessage());
 		} finally {
 			get.releaseConnection();
 		}
