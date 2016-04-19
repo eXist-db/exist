@@ -34,9 +34,15 @@ public class SAXToReceiver implements ContentHandler, LexicalHandler {
 
     private Receiver receiver;
     private boolean inCDATASection = false;
+    private boolean sendWStoCharacters = false;
 
     public SAXToReceiver(Receiver receiver) {
+        this(receiver, false);
+    }
+
+    public SAXToReceiver(Receiver receiver, boolean sendWStoCharacters) {
         this.receiver = receiver;
+        this.sendWStoCharacters = sendWStoCharacters;
     }
 
     public void setDocumentLocator(Locator locator) {
@@ -100,6 +106,9 @@ public class SAXToReceiver implements ContentHandler, LexicalHandler {
     }
 
     public void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {
+        if (sendWStoCharacters) {
+            receiver.characters(new XMLString(ch, start, length));
+        }
     }
 
     public void processingInstruction(String target, String data) throws SAXException {
