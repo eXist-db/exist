@@ -131,7 +131,7 @@ public class ContentFunctions extends BasicFunction {
 
             try {
                 DocumentBuilderReceiver builder = new DocumentBuilderReceiver();
-                builder.setRedirectIgnorableWhitespace(true);
+                builder.setSuppressWhitespace(false);
 
                 if (isCalledAs("get-metadata")) {
                     ce.extractMetadata((BinaryValue) args[0].itemAt(0), builder);
