@@ -517,21 +517,26 @@ public class XIncludeFilter implements Receiver {
         return Optional.empty();
     }
 
-	/** Executes the given compiled XQuery in a separate thread, using a separate DBBroker.
-	 * @param compiled the query to execute
-	 * @param contextSeq the context sequence for the query
+	/**
+	 * Executes the given compiled XQuery in a separate thread, using a separate
+	 * DBBroker.
+	 * 
+	 * @param compiled
+	 *            the query to execute
+	 * @param contextSeq
+	 *            the context sequence for the query
 	 * @return
 	 * @throws InterruptedException
 	 * @throws ExecutionException
 	 */
 	private Sequence executeXQueryInSeparateThread(final CompiledXQuery compiled, final Sequence contextSeq)
-			throws InterruptedException, ExecutionException {
+	        throws InterruptedException, ExecutionException {
 		final Callable<Sequence> toExecute = new Callable<Sequence>() {
-			public Sequence call() throws Exception {
+			public Sequence call() throws EXistException, XPathException, PermissionDeniedException {
 				final XQuery xquery = serializer.broker.getBrokerPool().getXQueryService();
-		        try(final DBBroker newBroker = serializer.broker.getBrokerPool().getBroker()) {
-		        	return xquery.execute(newBroker, compiled, contextSeq);
-		        }
+				try (final DBBroker newBroker = serializer.broker.getBrokerPool().getBroker()) {
+					return xquery.execute(newBroker, compiled, contextSeq);
+				}
 			}
 		};
 		ExecutorService executor = null;
@@ -541,7 +546,7 @@ public class XIncludeFilter implements Receiver {
 			// wait synchronously
 			return taskHandle.get();
 		} finally {
-			if(executor != null)
+			if (executor != null)
 				executor.shutdown();
 		}
 	}
