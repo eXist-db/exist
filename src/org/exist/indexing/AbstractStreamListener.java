@@ -49,6 +49,13 @@ public abstract class AbstractStreamListener implements StreamListener {
     }
 
     @Override
+    public void startIndexDocument(final Txn transaction) {
+        if (next != null) {
+            next.startIndexDocument(transaction);
+        }
+    }
+
+    @Override
     public void startElement(final Txn transaction, final ElementImpl element, final NodePath path) {
         if (next != null) {
             next.startElement(transaction, element, path);
@@ -73,6 +80,13 @@ public abstract class AbstractStreamListener implements StreamListener {
     public void characters(final Txn transaction, final AbstractCharacterData text, final NodePath path) {
         if (next != null) {
             next.characters(transaction, text, path);
+        }
+    }
+
+    @Override
+    public void endIndexDocument(final Txn transaction) {
+        if (next != null) {
+            next.endIndexDocument(transaction);
         }
     }
 }

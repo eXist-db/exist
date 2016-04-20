@@ -331,6 +331,18 @@ public class IndexController {
     }
 
     /**
+     * Helper method: indexing is starting for a document
+     *
+     * @param transaction the current transaction
+     * @param listener the StreamListener which receives the index events
+     */
+    public void startIndexDocument(final Txn transaction, final StreamListener listener) {
+        if (listener != null) {
+            listener.startIndexDocument(transaction);
+        }
+    }
+
+    /**
      * Helper method: index a single element node which has been added during an XUpdate or XQuery update expression.
      *
      * @param transaction the current transaction
@@ -383,6 +395,18 @@ public class IndexController {
     public void characters(final Txn transaction, final TextImpl node, final NodePath path, final StreamListener listener) {
         if (listener != null) {
             listener.characters(transaction, node, path);
+        }
+    }
+
+    /**
+     * Helper method: indexing has finished for a document
+     *
+     * @param transaction the current transaction
+     * @param listener the StreamListener which receives the index events
+     */
+    public void endIndexDocument(final Txn transaction, final StreamListener listener) {
+        if (listener != null) {
+            listener.endIndexDocument(transaction);
         }
     }
 

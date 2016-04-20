@@ -305,6 +305,9 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
     @Override
     public void endDocument() {
         if (!validate) {
+            if(indexListener != null) {
+                indexListener.endIndexDocument(transaction);
+            }
             progress.finish();
             setChanged();
             notifyObservers(progress);
@@ -495,6 +498,9 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
             progress = new ProgressIndicator(currentLine, 100);
             document.setChildCount(0);
             elementCnt = 0;
+            if(indexListener != null) {
+                indexListener.startIndexDocument(transaction);
+            }
         }
         docSize = 0;
 

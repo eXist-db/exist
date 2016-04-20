@@ -82,6 +82,13 @@ public interface StreamListener {
     StreamListener getNextInChain();
 
     /**
+     * Starting to index a document
+     *
+     * @param transaction the current transaction
+     */
+    void startIndexDocument(Txn transaction);
+
+    /**
      * Processed the opening tag of an element.
      *
      * @param transaction the current transaction
@@ -115,4 +122,11 @@ public interface StreamListener {
      * @param path the current node path
      */
     void endElement(Txn transaction, ElementImpl element, NodePath path);
+
+    /**
+     * Finishing storing a document
+     *
+     * @param transaction the current transaction
+     */
+    void endIndexDocument(Txn transaction);
 }
