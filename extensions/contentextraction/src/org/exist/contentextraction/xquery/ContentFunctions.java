@@ -109,7 +109,6 @@ public class ContentFunctions extends BasicFunction {
             return Sequence.EMPTY_SEQUENCE;
         }
 
-        DocumentBuilderReceiver builder = new DocumentBuilderReceiver();
         ContentExtraction ce = new ContentExtraction();
 
         if (isCalledAs("stream-content")) {
@@ -131,8 +130,11 @@ public class ContentFunctions extends BasicFunction {
         } else {
 
             try {
+                DocumentBuilderReceiver builder = new DocumentBuilderReceiver();
+                builder.setSuppressWhitespace(false);
+
                 if (isCalledAs("get-metadata")) {
-                    ce.extractMetadata((BinaryValue) args[0].itemAt(0), (ContentHandler) builder);
+                    ce.extractMetadata((BinaryValue) args[0].itemAt(0), builder);
 
                 } else {
                     ce.extractContentAndMetadata((BinaryValue) args[0].itemAt(0), (ContentHandler) builder);

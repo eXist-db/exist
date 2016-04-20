@@ -63,7 +63,7 @@ public class ContentExtraction {
     public void extractContentAndMetadata(BinaryValue binaryValue, Receiver receiver) 
             throws IOException, SAXException, ContentExtractionException {
         
-        extractContentAndMetadata(binaryValue, new SAXToReceiver(receiver));
+        extractContentAndMetadata(binaryValue, new SAXToReceiver(receiver, false));
     }
 
     public void extractMetadata(BinaryValue binaryValue, ContentHandler contentHandler) throws IOException, SAXException, ContentExtractionException {
