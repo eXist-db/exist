@@ -19,10 +19,7 @@
  */
 package org.exist;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Observable;
-import java.util.Stack;
+import java.util.*;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -68,7 +65,6 @@ import org.xml.sax.ext.LexicalHandler;
  * index-creation.
  * 
  * @author wolf
- * 
  */
 public class Indexer extends Observable implements ContentHandler, LexicalHandler, ErrorHandler {
 
@@ -89,36 +85,36 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
     public final static String PROPERTY_SUPPRESS_WHITESPACE = "indexer.suppress-whitespace";
     public static final String PROPERTY_PRESERVE_WS_MIXED_CONTENT = "indexer.preserve-whitespace-mixed-content";
 
-    protected DBBroker broker = null;
-    protected Txn transaction;
+    private final DBBroker broker;
+    private final Txn transaction;
 
-    protected StreamListener indexListener;
+    private StreamListener indexListener;
 
-    protected XMLString charBuf = new XMLString();
-    protected boolean inCDATASection = false;
-    protected int currentLine = 0;
-    protected NodePath currentPath = new NodePath();
+    private XMLString charBuf = new XMLString();
+    private boolean inCDATASection = false;
+    private int currentLine = 0;
+    private final NodePath currentPath = new NodePath();
 
-    protected DocumentImpl document = null;
-    protected IndexSpec indexSpec = null;
+    private DocumentImpl document = null;
+    private IndexSpec indexSpec = null;
 
-    protected boolean insideDTD = false;
-    protected boolean validate = false;
-    protected int level = 0;
-    protected Locator locator = null;
-    protected int normalize = XMLString.SUPPRESS_BOTH;
-    protected Map<String, String> nsMappings = new HashMap<>();
-    protected Element rootNode;
+    private boolean insideDTD = false;
+    private boolean validate = false;
+    private int level = 0;
+    private Locator locator = null;
+    private int normalize = XMLString.SUPPRESS_BOTH;
+    private final Map<String, String> nsMappings = new HashMap<>();
+    private Element rootNode;
 
-    protected Stack<ElementImpl> stack = new Stack<>();
-    protected Stack<XMLString> nodeContentStack = new Stack<>();
+    private final Deque<ElementImpl> stack = new ArrayDeque<>();
+    private final Deque<XMLString> nodeContentStack = new ArrayDeque<>();
 
-    protected StoredNode prevNode = null;
+    private StoredNode prevNode = null;
 
-    protected String ignorePrefix = null;
-    protected ProgressIndicator progress;
+    private String ignorePrefix = null;
+    private ProgressIndicator progress;
 
-    protected boolean suppressWSmixed = false;
+    private boolean suppressWSmixed = false;
 
     protected int docSize = 0;
 
@@ -136,41 +132,28 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
     private int nodeFactoryInstanceCnt = 0;
 
     // reusable fields
-    private TextImpl text = new TextImpl();
-    private Stack<ElementImpl> usedElements = new Stack<>();
+    private final TextImpl text = new TextImpl();
+    private final Deque<ElementImpl> usedElements = new ArrayDeque<>();
 
     // when storing the document data, validation will be switched off, so
     // entities will not be reported. We thus have to cache all needed entities
     // during the validation run.
     private Map<String, String> entityMap = null;
     private String currentEntityName = null;
-    private XMLString currentEntityValue = new XMLString();
-
-    /**
-     * Create a new parser using the given database broker and user to store the
-     * document.
-     * 
-     *@param broker
-     *@exception EXistException
-     */
-    public Indexer(DBBroker broker, Txn transaction) throws EXistException {
-    	this(broker, transaction, false);
-    }
+    private final XMLString currentEntityValue = new XMLString();
     
     /**
      * Create a new parser using the given database broker and user to store the
      * document.
      * 
-     *@param broker
+     * @param broker
      *            The database broker to use.
-     *@param transaction
+     * @param transaction
      *            The transaction to use for indexing
-     *@param priv
-     *            used by the security manager to indicate that it needs
      *            privileged access to the db.
-     *@exception EXistException
+     * @@throws EXistException
      */
-    public Indexer(DBBroker broker, Txn transaction, boolean priv)
+    public Indexer(final DBBroker broker, final Txn transaction)
             throws EXistException {
         this.broker = broker;
         this.transaction = transaction;
@@ -180,20 +163,22 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
         final String suppressWS = (String) config
             .getProperty(PROPERTY_SUPPRESS_WHITESPACE);
         if (suppressWS != null) {
-            if ("leading".equals(suppressWS))
-                {normalize = XMLString.SUPPRESS_LEADING_WS;}
-            else if ("trailing".equals(suppressWS))
-                {normalize = XMLString.SUPPRESS_TRAILING_WS;}
-            else if ("none".equals(suppressWS))
-                {normalize = 0;}
+            if ("leading".equals(suppressWS)) {
+                normalize = XMLString.SUPPRESS_LEADING_WS;
+            } else if ("trailing".equals(suppressWS)) {
+                normalize = XMLString.SUPPRESS_TRAILING_WS;
+            } else if ("none".equals(suppressWS)) {
+                normalize = 0;
+            }
         }
         Boolean temp;
         if ((temp = (Boolean) config
-                .getProperty(PROPERTY_PRESERVE_WS_MIXED_CONTENT)) != null)
-            {suppressWSmixed = temp.booleanValue();}
+                .getProperty(PROPERTY_PRESERVE_WS_MIXED_CONTENT)) != null) {
+            suppressWSmixed = temp;
+        }
     }
 
-    public void setValidating(boolean validate) {
+    public void setValidating(final boolean validate) {
         this.validate = validate;
         if (!validate) {
             broker.getIndexController().setDocument(document,
@@ -207,17 +192,19 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
      * Prepare the indexer for parsing a new document. This will reset the
      * internal state of the Indexer object.
      * 
-     * @param doc
+     * @param doc The document
+     * @param collectionConfig The configuration of the collection holding the document
      */
-    public void setDocument(DocumentImpl doc,
-            CollectionConfiguration collectionConfig) {
+    public void setDocument(final DocumentImpl doc,
+            final CollectionConfiguration collectionConfig) {
         document = doc;
-        if (collectionConfig != null)
-            {indexSpec = collectionConfig.getIndexConfiguration();}
+        if (collectionConfig != null) {
+            indexSpec = collectionConfig.getIndexConfiguration();
+        }
         // reset internal fields
         level = 0;
         currentPath.reset();
-        stack = new Stack<>();
+        stack.clear();
         docSize = 0;
         nsMappings.clear();
         indexListener = null;
@@ -229,9 +216,9 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
      * Set the document object to be used by this Indexer. This method doesn't
      * reset the internal state.
      * 
-     * @param doc
+     * @param doc The document
      */
-    public void setDocumentObject(DocumentImpl doc) {
+    public void setDocumentObject(final DocumentImpl doc) {
         document = doc;
     }
 
@@ -243,24 +230,30 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
         return docSize;
     }
 
-    public void characters(char[] ch, int start, int length) {
-        if (length <= 0)
-            {return;}
+    @Override
+    public void characters(final char[] ch, final int start, final int length) {
+        if (length <= 0) {
+            return;
+        }
+
         if (charBuf != null) {
             charBuf.append(ch, start, length);
         } else {
             charBuf = new XMLString(ch, start, length);
         }
-        if (currentEntityName != null)
-            {currentEntityValue.append(ch, start, length);}
+        if (currentEntityName != null) {
+            currentEntityValue.append(ch, start, length);
+        }
     }
 
-    public void comment(char[] ch, int start, int length) {
-        if (insideDTD)
-            {return;}
+    @Override
+    public void comment(final char[] ch, final int start, final int length) {
+        if (insideDTD) {
+            return;
+        }
         final CommentImpl comment = new CommentImpl(ch, start, length);
         comment.setOwnerDocument(document);
-        if (stack.empty()) {
+        if (stack.isEmpty()) {
             comment.setNodeId(broker.getBrokerPool().getNodeFactory()
                     .createInstance(nodeFactoryInstanceCnt++));
             if (!validate) {
@@ -278,6 +271,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
         }
     }
 
+    @Override
     public void endCDATA() {
         if (!stack.isEmpty()) {
             final ElementImpl last = stack.peek();
@@ -303,10 +297,12 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
         inCDATASection = false;
     }
 
+    @Override
     public void endDTD() {
         insideDTD = false;
     }
 
+    @Override
     public void endDocument() {
         if (!validate) {
             progress.finish();
@@ -316,7 +312,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
         //LOG.debug("elementCnt = " + childCnt.length);
     }
 
-    private void processText(ElementImpl last) {
+    private void processText(final ElementImpl last) {
         //keep for reference until sure that it's not required
 //        if (charBuf != null && charBuf.length() > 0) {
 //            // remove whitespace if the node has just a single text child,
@@ -362,14 +358,17 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
                 text.setData(normalized);
                 text.setOwnerDocument(document);
                 last.appendChildInternal(prevNode, text);
-                if (!validate) storeText();
+                if (!validate) {
+                    storeText();
+                }
                 setPrevious(text);
             }
             charBuf.reset();
         }
     }
 
-    public void endElement(String namespace, String name, String qname) {
+    @Override
+    public void endElement(final String namespace, final String name, final String qname) {
         final ElementImpl last = stack.peek();
         if (last.getNodeName().equals(qname)) {
             processText(last);
@@ -382,15 +381,19 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
                 final String content = elemContent == null ? null : elemContent.toString();
                 broker.endElement(last, currentPath, content);
 
-                if (indexListener != null) indexListener.endElement(transaction, last, currentPath);
+                if (indexListener != null) {
+                    indexListener.endElement(transaction, last, currentPath);
+                }
             }
             currentPath.removeLastComponent();
             if (validate) {
-                if (childCnt != null) setChildCount(last);
+                if (childCnt != null) {
+                    setChildCount(last);
+                }
             } else {
                 document.setOwnerDocument(document);
-                if ((childCnt == null && last.getChildCount() > 0)
-                    || (childCnt != null && childCnt[last.getPosition()] != last.getChildCount())) {
+                if (childCnt == null && last.getChildCount() > 0
+                        || (childCnt != null && childCnt[last.getPosition()] != last.getChildCount())) {
                     broker.updateNode(transaction, last, false);
                 }
             }
@@ -400,7 +403,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
     }
 
     /**
-     * @param last
+     * @param last The last element
      */
     private void setChildCount(final ElementImpl last) {
         if (last.getPosition() >= childCnt.length) {
@@ -408,14 +411,15 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
                 childCnt = null;
                 return;
             }
-            int n[] = new int[childCnt.length * 2];
+            final int[] n = new int[childCnt.length * 2];
             System.arraycopy(childCnt, 0, n, 0, childCnt.length);
             childCnt = n;
         }
         childCnt[last.getPosition()] = last.getChildCount();
     }
 
-    public void endPrefixMapping(String prefix) {
+    @Override
+    public void endPrefixMapping(final String prefix) {
         if (ignorePrefix != null && prefix.equals(ignorePrefix)) {
             ignorePrefix = null;
         } else {
@@ -423,23 +427,27 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
         }
     }
 
-    public void error(SAXParseException e) throws SAXException {
+    @Override
+    public void error(final SAXParseException e) throws SAXException {
         final String msg = "error at (" + e.getLineNumber() + "," + e.getColumnNumber() + ") : " + e.getMessage();
         LOG.debug(msg);
         throw new SAXException(msg, e);
     }
 
-    public void fatalError(SAXParseException e) throws SAXException {
+    @Override
+    public void fatalError(final SAXParseException e) throws SAXException {
         final String msg = "fatal error at (" + e.getLineNumber() + "," + e.getColumnNumber() + ") : " + e.getMessage();
         LOG.debug(msg);
         throw new SAXException(msg, e);
     }
 
-    public void ignorableWhitespace(char[] ch, int start, int length) {
+    @Override
+    public void ignorableWhitespace(final char[] ch, final int start, final int length) {
         //Nothing to do
     }
 
-    public void processingInstruction(String target, String data) {
+    @Override
+    public void processingInstruction(final String target, final String data) {
         final ProcessingInstructionImpl pi = new ProcessingInstructionImpl(target, data);
         pi.setOwnerDocument(document);
         if (stack.isEmpty()) {
@@ -458,10 +466,12 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
         }
     }
 
-    public void setDocumentLocator(Locator locator) {
+    @Override
+    public void setDocumentLocator(final Locator locator) {
         this.locator = locator;
     }
 
+    @Override
     public void startCDATA() {
         if (!stack.isEmpty()) {
             processText(stack.peek());
@@ -472,12 +482,14 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
     // Methods of interface LexicalHandler
     // used to determine Doctype
 
-    public void startDTD(String name, String publicId, String systemId) {
+    @Override
+    public void startDTD(final String name, final String publicId, final String systemId) {
         final DocumentTypeImpl docType = new DocumentTypeImpl(name, publicId, systemId);
         document.setDocumentType(docType);
         insideDTD = true;
     }
 
+    @Override
     public void startDocument() {
         if (!validate) {
             progress = new ProgressIndicator(currentLine, 100);
@@ -495,27 +507,26 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
         nodeFactoryInstanceCnt = 1;
     }
 
-    public void startElement(String namespace, String name, String qname, Attributes attributes) throws SAXException {
-
+    @Override
+    public void startElement(final String namespace, final String name, final String qname, final Attributes attributes) throws SAXException {
         // calculate number of real attributes:
         // don't store namespace declarations
         int attrLength = attributes.getLength();
-        String attrQName;
-        String attrNS;
         for (int i = 0; i < attributes.getLength(); i++) {
-            attrNS = attributes.getURI(i);
-            attrQName = attributes.getQName(i);
+            final String attrNS = attributes.getURI(i);
+            final String attrQName = attributes.getQName(i);
             if (attrQName.startsWith("xmlns")
-                    || attrNS.equals(Namespaces.EXIST_NS))
-                {--attrLength;}
+                    || attrNS.equals(Namespaces.EXIST_NS)) {
+                --attrLength;
+            }
         }
-        ElementImpl last;
+
         ElementImpl node;
         int p = qname.indexOf(':');
         final String prefix = (p != Constants.STRING_NOT_FOUND) ? qname.substring(0, p) : "";
         final QName qn = broker.getBrokerPool().getSymbols().getQName(Node.ELEMENT_NODE, namespace, name, prefix);
-        if (!stack.empty()) {
-            last = stack.peek();
+        if (!stack.isEmpty()) {
+            final ElementImpl last = stack.peek();
             processText(last);
             try {
                 if (!usedElements.isEmpty()) {
@@ -524,7 +535,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
                 } else {
                     node = new ElementImpl(qn, broker.getBrokerPool().getSymbols());
                 }
-            } catch (DOMException e) {
+            } catch (final DOMException e) {
                 throw new SAXException(e.getMessage(), e);
             }
             // copy xml:space setting
@@ -543,13 +554,15 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
             currentPath.addComponent(qn);
             node.setPosition(elementCnt++);
             if (!validate) {
-                if (childCnt != null) node.setChildCount(childCnt[node.getPosition()]);
+                if (childCnt != null) {
+                    node.setChildCount(childCnt[node.getPosition()]);
+                }
                 storeElement(node);
             }
         } else {
             try {
                 node = new ElementImpl(qn, broker.getBrokerPool().getSymbols());
-            } catch (DOMException e) {
+            } catch (final DOMException e) {
                 throw new SAXException(e.getMessage(), e);
             }
             rootNode = node;
@@ -565,29 +578,30 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
             currentPath.addComponent(qn);
             node.setPosition(elementCnt++);
             if (!validate) {
-                if (childCnt != null) node.setChildCount(childCnt[node.getPosition()]);
+                if (childCnt != null) {
+                    node.setChildCount(childCnt[node.getPosition()]);
+                }
                 storeElement(node);
             }
             document.appendChild((NodeHandle)node);
         }
         level++;
 
-        String attrPrefix;
-        String attrLocalName;
         for (int i = 0; i < attributes.getLength(); i++) {
-            attrNS = attributes.getURI(i);
-            attrLocalName = attributes.getLocalName(i);
-            attrQName = attributes.getQName(i);
+            final String attrNS = attributes.getURI(i);
+            final String attrLocalName = attributes.getLocalName(i);
+            final String attrQName = attributes.getQName(i);
             // skip xmlns-attributes and attributes in eXist's namespace
-            if (attrQName.startsWith("xmlns") || attrNS.equals(Namespaces.EXIST_NS)) --attrLength;
-            else {
+            if (attrQName.startsWith("xmlns") || attrNS.equals(Namespaces.EXIST_NS)) {
+                --attrLength;
+            } else {
                 p = attrQName.indexOf(':');
-                attrPrefix = (p != Constants.STRING_NOT_FOUND) ? attrQName.substring(0, p) : null;
+                final String attrPrefix = (p != Constants.STRING_NOT_FOUND) ? attrQName.substring(0, p) : null;
                 final AttrImpl attr = (AttrImpl) NodePool.getInstance().borrowNode(Node.ATTRIBUTE_NODE);
                 final QName attrQN = broker.getBrokerPool().getSymbols().getQName(Node.ATTRIBUTE_NODE, attrNS, attrLocalName, attrPrefix);
                 try {
                     attr.setNodeName(attrQN, broker.getBrokerPool().getSymbols());
-                } catch (DOMException e) {
+                } catch (final DOMException e) {
                     throw new SAXException(e.getMessage(), e);
                 }
                 attr.setValue(attributes.getValue(i));
@@ -603,9 +617,9 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
                     // type to ID
                     attr.setValue(StringValue.trimWhitespace(StringValue.collapseWhitespace(attr.getValue())));
 
-                    if (!XMLChar.isValidNCName(attr.getValue()))
-                        throw new SAXException(
-                            "Value of xml:id attribute is not a valid NCName: " + attr.getValue());
+                    if (!XMLChar.isValidNCName(attr.getValue())) {
+                        throw new SAXException("Value of xml:id attribute is not a valid NCName: " + attr.getValue());
+                    }
 
                     attr.setType(AttrImpl.ID);
                 } else if (attr.getQName().equals(Namespaces.XML_SPACE_QNAME)) {
@@ -616,11 +630,15 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
                 if (!validate) {
                     broker.storeNode(transaction, attr, currentPath, indexSpec);
 
-                    if (indexListener != null) indexListener.attribute(transaction, attr, currentPath);
+                    if (indexListener != null) {
+                        indexListener.attribute(transaction, attr, currentPath);
+                    }
                 }
             }
         }
-        if (attrLength > 0) node.setAttributes((short) attrLength);
+        if (attrLength > 0) {
+            node.setAttributes((short) attrLength);
+        }
 
         // notify observers about progress every 100 lines
         if (locator != null) {
@@ -633,7 +651,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
                 }
             }
         }
-        ++docSize;
+        docSize++;
     }
 
     private void storeText() {
@@ -644,13 +662,17 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
         }
         broker.storeNode(transaction, text, currentPath, indexSpec);
 
-        if (indexListener != null) indexListener.characters(transaction, text, currentPath);
+        if (indexListener != null) {
+            indexListener.characters(transaction, text, currentPath);
+        }
     }
 
-    private void storeElement(ElementImpl node) {
+    private void storeElement(final ElementImpl node) {
         broker.storeNode(transaction, node, currentPath, indexSpec);
 
-        if (indexListener != null) indexListener.startElement(transaction, node, currentPath);
+        if (indexListener != null) {
+            indexListener.startElement(transaction, node, currentPath);
+        }
 
         node.setChildCount(0);
         if (RangeIndexSpec.hasQNameOrValueIndex(node.getIndexType())) {
@@ -659,16 +681,20 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
         }
     }
 
-    public void startEntity(String name) {
+    @Override
+    public void startEntity(final String name) {
         // while validating, all entities are put into a map
         // to cache them for later use
         if (validate) {
-            if (entityMap == null) entityMap = new HashMap<>();
+            if (entityMap == null) {
+                entityMap = new HashMap<>();
+            }
             currentEntityName = name;
         }
     }
 
-    public void endEntity(String name) {
+    @Override
+    public void endEntity(final String name) {
         // store the entity into a map for later
         if (validate && currentEntityValue != null) {
             entityMap.put(currentEntityName, currentEntityValue.toString());
@@ -677,15 +703,19 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
         }
     }
 
-    public void skippedEntity(String name) {
+    @Override
+    public void skippedEntity(final String name) {
         if (!validate && entityMap != null) {
             final String value = entityMap.get(name);
 
-            if (value != null) characters(value.toCharArray(), 0, value.length());
+            if (value != null) {
+                characters(value.toCharArray(), 0, value.length());
+            }
         }
     }
 
-    public void startPrefixMapping(String prefix, String uri) {
+    @Override
+    public void startPrefixMapping(final String prefix, final String uri) {
         // skip the eXist namespace
         // if (uri.equals(Namespaces.EXIST_NS)) {
         // ignorePrefix = prefix;
@@ -694,12 +724,13 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
         nsMappings.put(prefix, uri);
     }
 
-    public void warning(SAXParseException e) throws SAXException {
+    @Override
+    public void warning(final SAXParseException e) throws SAXException {
         final String msg = "warning at (" + e.getLineNumber() + "," + e.getColumnNumber() + ") : " + e.getMessage();
         throw new SAXException(msg, e);
     }
 
-    private void setPrevious(StoredNode previous) {
+    private void setPrevious(final StoredNode previous) {
         if (prevNode != null) {
             switch (prevNode.getNodeType()) {
             case Node.ATTRIBUTE_NODE:
