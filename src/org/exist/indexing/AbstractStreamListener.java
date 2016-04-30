@@ -39,7 +39,7 @@ public abstract class AbstractStreamListener implements StreamListener {
     private StreamListener next = null;
 
     @Override
-    public void setNextInChain(StreamListener listener) {
+    public void setNextInChain(final StreamListener listener) {
         this.next = listener;
     }
 
@@ -49,32 +49,44 @@ public abstract class AbstractStreamListener implements StreamListener {
     }
 
     @Override
-    public void startElement(Txn transaction, ElementImpl element, NodePath path) {
-        if (next != null)
-            {next.startElement(transaction, element, path);}
+    public void startIndexDocument(final Txn transaction) {
+        if (next != null) {
+            next.startIndexDocument(transaction);
+        }
     }
 
     @Override
-    public void attribute(Txn transaction, AttrImpl attrib, NodePath path) {
+    public void startElement(final Txn transaction, final ElementImpl element, final NodePath path) {
+        if (next != null) {
+            next.startElement(transaction, element, path);
+        }
+    }
+
+    @Override
+    public void attribute(final Txn transaction, final AttrImpl attrib, final NodePath path) {
         if (next != null) {
             next.attribute(transaction, attrib, path);
         }
     }
 
     @Override
-    public void endElement(Txn transaction, ElementImpl element, NodePath path) {
+    public void endElement(final Txn transaction, final ElementImpl element, final NodePath path) {
         if (next != null) {
             next.endElement(transaction, element, path);
         }
     }
 
     @Override
-    public void characters(Txn transaction, AbstractCharacterData text, NodePath path) {
+    public void characters(final Txn transaction, final AbstractCharacterData text, final NodePath path) {
         if (next != null) {
             next.characters(transaction, text, path);
         }
     }
 
     @Override
-    public abstract IndexWorker getWorker();
+    public void endIndexDocument(final Txn transaction) {
+        if (next != null) {
+            next.endIndexDocument(transaction);
+        }
+    }
 }

@@ -42,6 +42,8 @@ import org.exist.Database;
 import org.exist.EXistException;
 import org.exist.Indexer;
 import org.exist.collections.triggers.*;
+import org.exist.indexing.IndexController;
+import org.exist.indexing.StreamListener;
 import org.exist.security.Account;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
@@ -1173,14 +1175,20 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
 
             trigger.beforeDeleteDocument(broker, transaction, doc);
 
+            final IndexController indexController = broker.getIndexController();
+            indexController.setDocument(doc, StreamListener.ReindexMode.REMOVE_BINARY);
+            final StreamListener listener = indexController.getStreamListener();
+            indexController.startIndexDocument(transaction, listener);
+
             try {
                broker.removeBinaryResource(transaction, (BinaryDocument) doc);
             } catch (final IOException ex) {
                throw new PermissionDeniedException("Cannot delete file: " + doc.getURI().toString() + ": " + ex.getMessage(), ex);
             }
-            
             documents.remove(doc.getFileURI().getRawCollectionPath());
-            
+
+            indexController.endIndexDocument(transaction, listener);
+
             trigger.afterDeleteDocument(broker, transaction, doc.getURI());
 
         } finally {
@@ -1924,9 +1932,18 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
                     broker.removeXMLResource(transaction, oldDoc);
                 }
             }
+
             broker.storeBinaryResource(transaction, blob, is);
             addDocument(transaction, broker, blob, oldDoc);
+
+            final IndexController indexController = broker.getIndexController();
+            indexController.setDocument(blob, StreamListener.ReindexMode.STORE);
+            final StreamListener listener = indexController.getStreamListener();
+            indexController.startIndexDocument(transaction, listener);
+
             broker.storeXMLResource(transaction, blob);
+
+            indexController.endIndexDocument(transaction, listener);
 
             blob.getUpdateLock().acquire(Lock.READ_LOCK);
         } finally {
