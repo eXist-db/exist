@@ -161,7 +161,7 @@ public class CopyCollectionTest {
             broker.copyCollection(transaction, test2, dest, XmldbURI.create("test3"));
 
 //DO NOT COMMIT TRANSACTION
-            transact.getJournal().flushToLog(true);
+            pool.getJournalManager().get().flush(true, false);
         }
     }
 

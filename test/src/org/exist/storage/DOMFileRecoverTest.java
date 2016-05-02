@@ -138,7 +138,7 @@ public class DOMFileRecoverTest {
                 // Don't commit...
                 mgr.commit(txn);
             }
-            mgr.getJournal().flushToLog(true);
+            pool.getJournalManager().get().flush(true, false);
 
             Writer writer = new StringWriter();
             domDb.dump(writer);

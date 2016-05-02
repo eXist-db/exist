@@ -28,17 +28,13 @@ import org.exist.EXistException;
  *
  */
 public class TransactionException extends EXistException {
-
-    /**
-     * 
-     */
     private static final long serialVersionUID = 3617572708582437173L;
 
-    public TransactionException(String message) {
+    public TransactionException(final String message) {
         super(message);
     }
     
-    public TransactionException(String message, Throwable cause) {
+    public TransactionException(final String message, final Throwable cause) {
         super(message, cause);
     }
 }

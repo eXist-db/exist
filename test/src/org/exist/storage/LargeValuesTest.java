@@ -106,7 +106,7 @@ public class LargeValuesTest {
                 transact.commit(transaction);
             }
 
-            transact.getJournal().flushToLog(true);
+            pool.getJournalManager().get().flush(true, false);
 
             BrokerPool.FORCE_CORRUPTION = true;
 
@@ -121,7 +121,7 @@ public class LargeValuesTest {
                 transact.commit(transaction);
             }
 
-            transact.getJournal().flushToLog(true);
+            pool.getJournalManager().get().flush(true, false);
             file.delete();
         }
     }

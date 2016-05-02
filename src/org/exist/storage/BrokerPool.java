@@ -52,10 +52,12 @@ import org.exist.security.*;
 import org.exist.security.SecurityManager;
 import org.exist.security.internal.SecurityManagerImpl;
 import org.exist.storage.btree.DBException;
+import org.exist.storage.journal.JournalManager;
 import org.exist.storage.lock.DeadlockDetection;
 import org.exist.storage.lock.FileLock;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.ReentrantReadWriteLock;
+import org.exist.storage.recovery.RecoveryManager;
 import org.exist.storage.sync.Sync;
 import org.exist.storage.sync.SyncTask;
 import org.exist.storage.txn.TransactionException;
@@ -159,6 +161,12 @@ public class BrokerPool implements Database {
     public final static String PROPERTY_SYSTEM_TASK_CONFIG = "db-connection.system-task-config";
     public final static String PROPERTY_NODES_BUFFER = "db-connection.nodes-buffer";
     public final static String PROPERTY_EXPORT_ONLY = "db-connection.emergency";
+
+    public final static String PROPERTY_RECOVERY_GROUP_COMMIT = "db-connection.recovery.group-commit";
+    public final static String RECOVERY_GROUP_COMMIT_ATTRIBUTE = "group-commit";
+    public final static String PROPERTY_RECOVERY_FORCE_RESTART = "db-connection.recovery.force-restart";
+    public final static String RECOVERY_FORCE_RESTART_ATTRIBUTE = "force-restart";
+
 
     public static final String DOC_ID_MODE_ATTRIBUTE = "doc-ids";
 
@@ -431,9 +439,9 @@ public class BrokerPool implements Database {
     public static final int DEFAULT_PAGE_SIZE = 4096;
 
     /**
-     * <code>true</code> if the database instance is able to handle transactions.
+     * <code>true</code> if the database instance is able to perform recovery.
      */
-    private final boolean transactionsEnabled;
+    private final boolean recoveryEnabled;
 
     /**
      * The name of the database instance
@@ -516,6 +524,11 @@ public class BrokerPool implements Database {
     private final int pageSize;
 
     private FileLock dataLock;
+
+    /**
+     * The journal manager of the database instance.
+     */
+    private Optional<JournalManager> journalManager = Optional.empty();
 
     /**
      * The transaction manager of the database instance.
@@ -662,8 +675,8 @@ public class BrokerPool implements Database {
         this.maxShutdownWait = conf.getProperty(BrokerPool.PROPERTY_SHUTDOWN_DELAY, DEFAULT_MAX_SHUTDOWN_WAIT);
         LOG.info("database instance '" + instanceName + "' will wait  " + nf.format(this.maxShutdownWait) + " ms during shutdown");
 
-        this.transactionsEnabled = conf.getProperty(PROPERTY_RECOVERY_ENABLED, true);
-        LOG.info("database instance '" + instanceName + "' is enabled for transactions : " + this.transactionsEnabled);
+        this.recoveryEnabled = conf.getProperty(PROPERTY_RECOVERY_ENABLED, true);
+        LOG.info("database instance '" + instanceName + "' is enabled for recovery : " + this.recoveryEnabled);
 
         this.minBrokers = conf.getProperty(PROPERTY_MIN_CONNECTIONS, minBrokers);
         this.maxBrokers = conf.getProperty(PROPERTY_MAX_CONNECTIONS, maxBrokers);
@@ -835,13 +848,23 @@ public class BrokerPool implements Database {
 
                     //REFACTOR : construct then... configure
                     //TODO : journal directory *may* be different from BrokerPool.PROPERTY_DATA_DIR
-                    transactionManager = new TransactionManager(this, (Path)conf.getProperty(BrokerPool.PROPERTY_DATA_DIR), isTransactional());
-                    try {
-                        transactionManager.initialize();
-                    } catch(final ReadOnlyException e) {
-                        LOG.warn(e);
-                        setReadOnly();
+                    journalManager = recoveryEnabled ? Optional.of(new JournalManager(
+                            this,
+                            (Path)conf.getProperty(BrokerPool.PROPERTY_DATA_DIR),
+                            conf.getProperty(PROPERTY_RECOVERY_GROUP_COMMIT, false)
+                    )) : Optional.empty();
+                    if(journalManager.isPresent()) {
+                        try {
+                            journalManager.get().initialize();
+                        } catch (final ReadOnlyException e) {
+                            LOG.warn(e);
+                            setReadOnly();
+                        }
                     }
+
+                    transactionManager = new TransactionManager(this, journalManager);
+                    transactionManager.initialize();
+
                     // If the initialization fails after transactionManager has been created this method better cleans up
                     // or the FileSyncThread for the journal can/will hang.
                     try {
@@ -874,14 +897,14 @@ public class BrokerPool implements Database {
                         try(final DBBroker broker = get(Optional.of(securityManager.getSystemSubject()))) {
 
                             if(isReadOnly()) {
-                                transactionManager.setEnabled(false);
+                                journalManager.ifPresent(JournalManager::disableJournalling);
                             }
 
                             //Run the recovery process
                             //TODO : assume
                             boolean recovered = false;
-                            if(isTransactional()) {
-                                recovered = transactionManager.runRecovery(broker);
+                            if(isRecoveryEnabled()) {
+                                recovered = runRecovery(broker);
                                 //TODO : extract the following from this block ? What if we ware not transactional ? -pb
                                 if(!recovered) {
                                     try {
@@ -936,7 +959,7 @@ public class BrokerPool implements Database {
                             //If necessary, launch a task to repair the DB
                             //TODO : merge this with the recovery process ?
                             //XXX: don't do if READONLY mode
-                            if(recovered) {
+                            if(isRecoveryEnabled() && recovered) {
                                 if(!exportOnly) {
                                     reportStatus("Reindexing database files...");
                                     try {
@@ -1024,9 +1047,7 @@ public class BrokerPool implements Database {
 
                         statusReporter.setStatus(SIGNAL_STARTED);
                     } catch(final Throwable t) {
-                        if(isTransactional() && transactionManager != null) {
-                            transactionManager.shutdown();
-                        }
+                        transactionManager.shutdown();
                         throw t;
                     }
                 } catch(final EXistException | DatabaseConfigurationException e) {
@@ -1133,6 +1154,26 @@ public class BrokerPool implements Database {
 
             final DocumentTriggerProxy triggerProxy = new DocumentTriggerProxy(ConfigurationDocumentTrigger.class); //, collection.getURI());
             collConf.documentTriggers().add(triggerProxy);
+        }
+    }
+
+    /**
+     * Run a database recovery if required. This method is called once during
+     * startup from {@link org.exist.storage.BrokerPool}.
+     *
+     * @param broker
+     * @throws EXistException
+     */
+    public boolean runRecovery(final DBBroker broker) throws EXistException {
+        final boolean forceRestart = conf.getProperty(PROPERTY_RECOVERY_FORCE_RESTART, false);
+        if(LOG.isDebugEnabled()) {
+            LOG.debug("ForceRestart = " + forceRestart);
+        }
+        if(journalManager.isPresent()) {
+            final RecoveryManager recovery = new RecoveryManager(broker, journalManager.get(), forceRestart);
+            return recovery.recover();
+        } else {
+            throw new IllegalStateException("Cannot run recovery without a JournalManager");
         }
     }
 
@@ -1286,10 +1327,9 @@ public class BrokerPool implements Database {
      *
      * @return <code>true</code> if transactions can be handled
      */
-    public boolean isTransactional() {
-        //TODO : confusion between dataDir and a so-called "journalDir" !
+    public boolean isRecoveryEnabled() {
         synchronized(readOnly) {
-            return !readOnly && transactionsEnabled;
+            return !readOnly && recoveryEnabled;
         }
     }
 
@@ -1317,6 +1357,10 @@ public class BrokerPool implements Database {
 
     public boolean isInServiceMode() {
         return inServiceMode;
+    }
+
+    public Optional<JournalManager> getJournalManager() {
+        return journalManager;
     }
 
     public TransactionManager getTransactionManager() {
@@ -1936,8 +1980,8 @@ public class BrokerPool implements Database {
                 //collectionCache.something();
                 //xmlReaderPool.close();
 
-                if(isTransactional()) {
-                    transactionManager.getJournal().flushToLog(true, true);
+                if(isRecoveryEnabled()) {
+                    journalManager.ifPresent(jm -> jm.flush(true, true));
                 }
 
                 final long waitStart = System.currentTimeMillis();

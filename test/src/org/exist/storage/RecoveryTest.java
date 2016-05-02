@@ -154,7 +154,7 @@ public class RecoveryTest {
             test2.removeBinaryResource(transaction, broker, doc);
             
 //DO NOT COMMIT TRANSACTION
-            transact.getJournal().flushToLog(true);
+            pool.getJournalManager().get().flush(true, false);
 
             //DOMFile domDb = ((NativeBroker)broker).getDOMFile();
             //assertNotNull(domDb);

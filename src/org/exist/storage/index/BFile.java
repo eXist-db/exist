@@ -41,12 +41,12 @@ import org.exist.storage.cache.LRUCache;
 import org.exist.storage.io.VariableByteArrayInput;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
+import org.exist.storage.journal.JournalException;
 import org.exist.storage.journal.LogEntryTypes;
 import org.exist.storage.journal.Loggable;
 import org.exist.storage.journal.Lsn;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.ReentrantReadWriteLock;
-import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.Txn;
 import org.exist.util.*;
 import org.exist.util.sanity.SanityCheck;
@@ -143,9 +143,9 @@ public class BFile extends BTree {
     protected final int maxValueSize;
 
 
-    public BFile(BrokerPool pool, byte fileId, boolean transactional, final Path file, DefaultCacheManager cacheManager,
-            double cacheGrowth, double thresholdData) throws DBException {
-        super(pool, fileId, transactional, cacheManager, file);
+    public BFile(final BrokerPool pool, final byte fileId, final boolean recoveryEnabled, final Path file, final DefaultCacheManager cacheManager,
+            final double cacheGrowth, final double thresholdData) throws DBException {
+        super(pool, fileId, recoveryEnabled, cacheManager, file);
         fileHeader = (BFileHeader) getFileHeader();
         dataCache = new LRUCache(64, cacheGrowth, thresholdData, CacheManager.DATA_CACHE);
         dataCache.setFileName(FileUtils.fileName(file));
@@ -377,8 +377,8 @@ public class BFile extends BTree {
     public boolean flush() throws DBException {
         boolean flushed = false;
         //TODO : consider log operation as a flush ?
-        if (isTransactional) {
-            logManager.flushToLog(true);
+        if (isRecoveryEnabled()) {
+            logManager.get().flush(true, false);
         }
         flushed = flushed | dataCache.flush();
         flushed = flushed | super.flush();
@@ -749,7 +749,7 @@ public class BFile extends BTree {
             return;
         }
         final int l = ByteConversion.byteToInt(data, offset);
-        if (isTransactional && transaction != null) {
+        if (transaction != null && isRecoveryEnabled()) {
             final Loggable loggable = new RemoveValueLoggable(transaction, fileId, page.getPageNum(), tid, data, offset + 4, l);
             writeToLog(loggable, page);
         }
@@ -765,7 +765,7 @@ public class BFile extends BTree {
         page.setDirty(true);
         // if this page is empty, remove it
         if (len == 0) {
-            if (isTransactional && transaction != null) {
+            if (transaction != null && isRecoveryEnabled()) {
                 final Loggable loggable = new RemoveEmptyPageLoggable(transaction, fileId, page.getPageNum());
                 writeToLog(loggable, page);
             }
@@ -821,7 +821,7 @@ public class BFile extends BTree {
             free = fileHeader.findFreeSpace(vlen + 6);
             if (free == null) {
                 page = createDataPage();
-                if (isTransactional && transaction != null) {
+                if (transaction != null && isRecoveryEnabled()) {
                     final Loggable loggable = new CreatePageLoggable(transaction, fileId, page.getPageNum());
                     writeToLog(loggable, page);
                 }
@@ -853,7 +853,7 @@ public class BFile extends BTree {
                 fileHeader.removeFreeSpace(free);
             }
         }
-        if (isTransactional && transaction != null) {
+        if (transaction != null && isRecoveryEnabled()) {
             final Loggable loggable = new StoreValueLoggable(transaction, fileId, page.getPageNum(), tid, value);
             writeToLog(loggable, page);
         }
@@ -980,11 +980,13 @@ public class BFile extends BTree {
      * Write loggable to the journal and update the LSN in the page header.
      */
     private void writeToLog(final Loggable loggable, final DataPage page) {
-        try {
-            logManager.writeToLog(loggable);
-            page.getPageHeader().setLsn(loggable.getLsn());
-        } catch (final TransactionException e) {
-            LOG.warn(e.getMessage(), e);
+        if(logManager.isPresent()) {
+            try {
+                logManager.get().journal(loggable);
+                page.getPageHeader().setLsn(loggable.getLsn());
+            } catch (final JournalException e) {
+                LOG.warn(e.getMessage(), e);
+            }
         }
     }
 
@@ -1637,8 +1639,8 @@ public class BFile extends BTree {
             if (isDirty()) {
                 try {
                     write();
-                    if (isTransactional && syncJournal && logManager.lastWrittenLsn() < getPageHeader().getLsn()) {
-                        logManager.flushToLog(true);
+                    if (isRecoveryEnabled() && syncJournal && logManager.get().lastWrittenLsn() < getPageHeader().getLsn()) {
+                        logManager.get().flush(true, false);
                     }
                     return true;
                 } catch (final IOException e) {
@@ -1808,7 +1810,7 @@ public class BFile extends BTree {
 
         public OverflowPage(final Txn transaction) throws IOException {
             firstPage = new SinglePage(false);
-            if (isTransactional && transaction != null) {
+            if (transaction != null && isRecoveryEnabled()) {
                 final Loggable loggable = new OverflowCreateLoggable(fileId, transaction, firstPage.getPageNum());
                 writeToLog(loggable, firstPage);
             }
@@ -1854,7 +1856,7 @@ public class BFile extends BTree {
             final int chunkLen = chunk.size();
             if (chunkLen < chunkSize) {chunkSize = chunkLen;}
             // fill last page
-            if (isTransactional && transaction != null) {
+            if (transaction != null && isRecoveryEnabled()) {
                 final Loggable loggable = 
                     new OverflowAppendLoggable(fileId, transaction, page.getPageNum(), chunk, 0, chunkSize);
                 writeToLog(loggable, page);
@@ -1877,7 +1879,7 @@ public class BFile extends BTree {
                     
                     // add a new page to the chain
                     nextPage = createDataPage();
-                    if (isTransactional && transaction != null) {
+                    if (transaction != null && isRecoveryEnabled()) {
                         Loggable loggable = new OverflowCreatePageLoggable(transaction, fileId, nextPage.getPageNum(),
                                 page.getPageNum());
                         writeToLog(loggable, nextPage);
@@ -1902,7 +1904,7 @@ public class BFile extends BTree {
                 }
             }
             ph = firstPage.getPageHeader();
-            if (isTransactional && transaction != null) {
+            if (transaction != null && isRecoveryEnabled()) {
                 final Loggable loggable = new OverflowModifiedLoggable(fileId, transaction, firstPage.getPageNum(), 
                         ph.getDataLength() + chunkLen, ph.getDataLength(), page == firstPage ? 0 : page.getPageNum());
                 writeToLog(loggable, page);
@@ -1933,7 +1935,7 @@ public class BFile extends BTree {
             SinglePage page = firstPage;
             do {
                 next = page.ph.getNextInChain();
-                if (isTransactional && transaction != null) {
+                if (transaction != null && isRecoveryEnabled()) {
                     int dataLen = page.ph.getDataLength();
                     if (dataLen > fileHeader.getWorkSize()) {
                         dataLen = fileHeader.getWorkSize();
@@ -2053,7 +2055,7 @@ public class BFile extends BTree {
                 }
                 page.clear();
                 // copy next chunk of data to the page
-                if (isTransactional && transaction != null) {
+                if (transaction != null && isRecoveryEnabled()) {
                     final Loggable loggable = new OverflowStoreLoggable(fileId, transaction, page.getPageNum(), prevPageNum,
                             data, current, chunkSize);
                     writeToLog(loggable, page);
@@ -2076,7 +2078,7 @@ public class BFile extends BTree {
                     } else {
                         // add a new page to the chain
                         nextPage = createDataPage();
-                        if (isTransactional && transaction != null) {
+                        if (transaction != null && isRecoveryEnabled()) {
                             final Loggable loggable = new CreatePageLoggable(transaction, fileId, nextPage.getPageNum());
                             writeToLog(loggable, nextPage);
                         }
@@ -2110,7 +2112,7 @@ public class BFile extends BTree {
                     
                     next = nextPage.getPageHeader().getNextInChain();
                     
-                    if (isTransactional && transaction != null) {
+                    if (transaction != null && isRecoveryEnabled()) {
                         final Loggable loggable = new OverflowRemoveLoggable(fileId, transaction, 
                                 nextPage.getPageHeader().getStatus(), nextPage.getPageNum(),
                                 nextPage.getData(), nextPage.getPageHeader().getDataLength(), 

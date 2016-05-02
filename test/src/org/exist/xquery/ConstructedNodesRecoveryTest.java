@@ -227,8 +227,8 @@ public class ConstructedNodesRecoveryTest {
 	        //test the child collections exist
 	        testTempChildCollectionExists(broker, transact, "testchild1");
 	        testTempChildCollectionExists(broker, transact, "testchild2");
-	        
-	        transact.getJournal().flushToLog(true);
+
+			pool.getJournalManager().get().flush(true, false);
 	    }
 	}
 	

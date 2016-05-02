@@ -62,9 +62,7 @@ import org.exist.storage.index.BFile;
 import org.exist.storage.index.CollectionStore;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
-import org.exist.storage.journal.Journal;
-import org.exist.storage.journal.LogEntryTypes;
-import org.exist.storage.journal.Loggable;
+import org.exist.storage.journal.*;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.NativeSerializer;
 import org.exist.storage.serializers.Serializer;
@@ -202,14 +200,14 @@ public class NativeBroker extends DBBroker {
 
     private IEmbeddedXMLStreamReader streamReader = null;
 
-    protected Journal logManager;
+    private final Optional<JournalManager> logManager;
 
     protected boolean incrementalDocIds = false;
 
     /** initialize database; read configuration, etc. */
     public NativeBroker(final BrokerPool pool, final Configuration config) throws EXistException {
         super(pool, config);
-        this.logManager = pool.getTransactionManager().getJournal();
+        this.logManager = pool.getJournalManager();
         LOG.debug("Initializing broker " + hashCode());
 
         final String prependDB = (String) config.getProperty("db-connection.prepend-db");
@@ -1292,20 +1290,26 @@ public class NativeBroker extends DBBroker {
                 final Path targetDelDir = getCollectionFile(fsBackupDir, transaction, destination.getURI().append(newName), true);
                 Files.createDirectories(targetDelDir);
                 Files.move(targetDir, targetDelDir, StandardCopyOption.ATOMIC_MOVE);
-                final Loggable loggable = new RenameBinaryLoggable(this, transaction, targetDir, targetDelDir);
-                try {
-                    logManager.writeToLog(loggable);
-                } catch(final TransactionException e) {
-                    LOG.warn(e.getMessage(), e);
+
+                if(logManager.isPresent()) {
+                    final Loggable loggable = new RenameBinaryLoggable(this, transaction, targetDir, targetDelDir);
+                    try {
+                        logManager.get().journal(loggable);
+                    } catch (final JournalException e) {
+                        LOG.warn(e.getMessage(), e);
+                    }
                 }
             }
             Files.createDirectories(targetDir.getParent());
             Files.move(sourceDir, targetDir, StandardCopyOption.ATOMIC_MOVE);
-            final Loggable loggable = new RenameBinaryLoggable(this, transaction, sourceDir, targetDir);
-            try {
-                logManager.writeToLog(loggable);
-            } catch(final TransactionException e) {
-                LOG.warn(e.getMessage(), e);
+
+            if(logManager.isPresent()) {
+                final Loggable loggable = new RenameBinaryLoggable(this, transaction, sourceDir, targetDir);
+                try {
+                    logManager.get().journal(loggable);
+                } catch (final JournalException e) {
+                    LOG.warn(e.getMessage(), e);
+                }
             }
         }
     }
@@ -1616,11 +1620,14 @@ public class NativeBroker extends DBBroker {
                     //TODO(DS) log first, rename second ???
                     //TODO(DW) not sure a Fatal is required here. Copy and delete maybe?
                     Files.move(fsSourceDir, fsTargetDir, StandardCopyOption.ATOMIC_MOVE);
-                    final Loggable loggable = new RenameBinaryLoggable(this, transaction, fsSourceDir, fsTargetDir);
-                    try {
-                        logManager.writeToLog(loggable);
-                    } catch(final TransactionException e) {
-                        LOG.warn(e.getMessage(), e);
+
+                    if(logManager.isPresent()) {
+                        final Loggable loggable = new RenameBinaryLoggable(this, transaction, fsSourceDir, fsTargetDir);
+                        try {
+                            logManager.get().journal(loggable);
+                        } catch (final JournalException e) {
+                            LOG.warn(e.getMessage(), e);
+                        }
                     }
                 }
 
@@ -2099,11 +2106,13 @@ public class NativeBroker extends DBBroker {
 
         fWriteData.accept(binFile);
 
-        final Loggable loggable = fLoggable.apply(binFile);
-        try {
-            logManager.writeToLog(loggable);
-        } catch(final TransactionException e) {
-            LOG.warn(e.getMessage(), e);
+        if(logManager.isPresent()) {
+            final Loggable loggable = fLoggable.apply(binFile);
+            try {
+                logManager.get().journal(loggable);
+            } catch (final JournalException e) {
+                LOG.warn(e.getMessage(), e);
+            }
         }
     }
 
@@ -2622,11 +2631,14 @@ public class NativeBroker extends DBBroker {
 
                 /* Rename original file to new location */
                 Files.move(fsOriginalDocument, binFile, StandardCopyOption.ATOMIC_MOVE);
-                final Loggable loggable = new RenameBinaryLoggable(this, transaction, sourceFile, binFile);
-                try {
-                    logManager.writeToLog(loggable);
-                } catch(final TransactionException e) {
-                    LOG.warn(e.getMessage(), e);
+
+                if(logManager.isPresent()) {
+                    final Loggable loggable = new RenameBinaryLoggable(this, transaction, sourceFile, binFile);
+                    try {
+                        logManager.get().journal(loggable);
+                    } catch (final JournalException e) {
+                        LOG.warn(e.getMessage(), e);
+                    }
                 }
             }
             storeXMLResource(transaction, doc);
@@ -2738,10 +2750,12 @@ public class NativeBroker extends DBBroker {
 
             Files.move(binFile, binBackupFile, StandardCopyOption.ATOMIC_MOVE);
 
-            try {
-                logManager.writeToLog(loggable);
-            } catch(final TransactionException e) {
-                LOG.warn(e.getMessage(), e);
+            if(logManager.isPresent()) {
+                try {
+                    logManager.get().journal(loggable);
+                } catch (final JournalException e) {
+                    LOG.warn(e.getMessage(), e);
+                }
             }
         }
         removeResourceMetadata(transaction, blob);

@@ -164,7 +164,7 @@ public class MoveResourceTest {
 
             //NOTE: do not commit the transaction
 
-            pool.getTransactionManager().getJournal().flushToLog(true);
+            pool.getJournalManager().get().flush(true, false);
         }
     }
 

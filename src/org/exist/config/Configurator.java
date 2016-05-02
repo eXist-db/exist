@@ -1291,7 +1291,6 @@ public class Configurator {
             collection.store(txn, broker, info, data, false);
             broker.saveCollection(txn, doc.getCollection());
             transact.commit(txn);
-            txn = null;
             saving.remove(fullURI);
             broker.flush();
             broker.sync(Sync.MAJOR);

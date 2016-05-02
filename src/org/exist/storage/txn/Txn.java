@@ -46,7 +46,7 @@ public class Txn implements Transaction {
     
     private TransactionManager tm;
 
-    public Txn(TransactionManager tm, long transactionId) {
+    public Txn(final TransactionManager tm, final long transactionId) {
         this.tm = tm;
         this.id = transactionId;
         this.state = State.STARTED;

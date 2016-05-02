@@ -1007,9 +1007,9 @@ public class Configuration implements ErrorHandler
         setProperty( Journal.PROPERTY_RECOVERY_SYNC_ON_COMMIT, parseBoolean( option, true ) );
         LOG.debug( Journal.PROPERTY_RECOVERY_SYNC_ON_COMMIT + ": " + config.get( Journal.PROPERTY_RECOVERY_SYNC_ON_COMMIT ) );
 
-        option = getConfigAttributeValue( recovery, TransactionManager.RECOVERY_GROUP_COMMIT_ATTRIBUTE );
-        setProperty( TransactionManager.PROPERTY_RECOVERY_GROUP_COMMIT, parseBoolean( option, false ) );
-        LOG.debug( TransactionManager.PROPERTY_RECOVERY_GROUP_COMMIT + ": " + config.get( TransactionManager.PROPERTY_RECOVERY_GROUP_COMMIT ) );
+        option = getConfigAttributeValue( recovery, BrokerPool.RECOVERY_GROUP_COMMIT_ATTRIBUTE );
+        setProperty( BrokerPool.PROPERTY_RECOVERY_GROUP_COMMIT, parseBoolean( option, false ) );
+        LOG.debug( BrokerPool.PROPERTY_RECOVERY_GROUP_COMMIT + ": " + config.get( BrokerPool.PROPERTY_RECOVERY_GROUP_COMMIT ) );
 
         option = getConfigAttributeValue( recovery, Journal.RECOVERY_JOURNAL_DIR_ATTRIBUTE );
 
@@ -1042,14 +1042,14 @@ public class Configuration implements ErrorHandler
             }
         }
 
-        option = getConfigAttributeValue( recovery, TransactionManager.RECOVERY_FORCE_RESTART_ATTRIBUTE );
+        option = getConfigAttributeValue( recovery, BrokerPool.RECOVERY_FORCE_RESTART_ATTRIBUTE );
         boolean value = false;
 
         if( option != null ) {
             value = "yes".equals(option);
         }
-        setProperty( TransactionManager.PROPERTY_RECOVERY_FORCE_RESTART, Boolean.valueOf( value ) );
-        LOG.debug( TransactionManager.PROPERTY_RECOVERY_FORCE_RESTART + ": " + config.get( TransactionManager.PROPERTY_RECOVERY_FORCE_RESTART ) );
+        setProperty( BrokerPool.PROPERTY_RECOVERY_FORCE_RESTART, Boolean.valueOf( value ) );
+        LOG.debug( BrokerPool.PROPERTY_RECOVERY_FORCE_RESTART + ": " + config.get( BrokerPool.PROPERTY_RECOVERY_FORCE_RESTART ) );
 
         option = getConfigAttributeValue( recovery, BrokerPool.RECOVERY_POST_RECOVERY_CHECK );
         value  = false;

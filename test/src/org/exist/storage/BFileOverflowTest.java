@@ -84,8 +84,8 @@ public class BFileOverflowTest {
             }
        
             collectionsDb.remove(txn, key);
-            
-            mgr.getJournal().flushToLog(true);
+
+            pool.getJournalManager().get().flush(true, false);
 
         }
     }

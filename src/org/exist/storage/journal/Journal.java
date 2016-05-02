@@ -40,7 +40,6 @@ import org.exist.config.annotation.ConfigurationFieldAsAttribute;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.lock.FileLock;
 import org.exist.storage.txn.Checkpoint;
-import org.exist.storage.txn.TransactionException;
 import org.exist.util.FileUtils;
 import org.exist.util.ReadOnlyException;
 import org.exist.util.sanity.SanityCheck;
@@ -123,7 +122,7 @@ public class Journal {
     private Object latch = new Object();
 
     /** the data directory where journal files are written to */
-    @ConfigurationFieldAsAttribute("journal-dir") 
+    @ConfigurationFieldAsAttribute("journal-dir")
     //TODO: conf.xml refactoring <recovery journal-dir=""> => <journal dir="">
     private Path dir;
 
@@ -233,11 +232,12 @@ public class Journal {
      * Write a log entry to the journalling log.
      * 
      * @param loggable
-     * @throws TransactionException
+     * @throws JournalException
      */
-    public synchronized void writeToLog(Loggable loggable) throws TransactionException {
-        if (currentBuffer == null)
-            {throw new TransactionException("Database is shut down.");}
+    public synchronized void writeToLog(final Loggable loggable) throws JournalException {
+        if (currentBuffer == null) {
+            throw new JournalException("Database is shut down.");
+        }
         SanityCheck.ASSERT(!inRecovery, "Write to log during recovery. Should not happen!");
         final int size = loggable.getLogSize();
         final int required = size + LOG_ENTRY_BASE_LEN;
@@ -252,7 +252,7 @@ public class Journal {
             loggable.write(currentBuffer);
             currentBuffer.putShort((short) (size + LOG_ENTRY_HEADER_LEN));
         } catch (final BufferOverflowException e) {
-            throw new TransactionException("Buffer overflow while writing log record: " + loggable.dump(), e);
+            throw new JournalException("Buffer overflow while writing log record: " + loggable.dump(), e);
         }
         pool.getTransactionManager().trackOperation(loggable.getTransactionId());
     }
@@ -330,11 +330,11 @@ public class Journal {
      * a new journal will be started, but only if the file is larger than
      * {@link #MIN_REPLACE}. The old log is removed.
      *
-     * @param txnId
-     * @param switchLogFiles
-     * @throws TransactionException
+     * @param txnId The transaction id
+     * @param switchLogFiles Indicates whether a new journal file should be started
+     * @throws JournalException
      */
-    public void checkpoint(long txnId, boolean switchLogFiles) throws TransactionException {
+    public void checkpoint(final long txnId, final boolean switchLogFiles) throws JournalException {
         LOG.debug("Checkpoint reached");
         writeToLog(new Checkpoint(txnId));
         if (switchLogFiles)
@@ -370,15 +370,17 @@ public class Journal {
     }
 
     public void clearBackupFiles() {
-        try(final Stream<Path> backupFiles = Files.list(fsJournalDir)) {
-            backupFiles.forEach(p -> {
-                LOG.info("Checkpoint deleting: " + p.toAbsolutePath().toString());
-                if (!FileUtils.deleteQuietly(p)) {
-                    LOG.fatal("Cannot delete file '" + p.toAbsolutePath().toString() + "' from backup journal.");
-                }
-            });
-        } catch(final IOException ioe) {
-            LOG.fatal("Could not clear journal backup files", ioe);
+        if(Files.exists(fsJournalDir)) {
+            try (final Stream<Path> backupFiles = Files.list(fsJournalDir)) {
+                backupFiles.forEach(p -> {
+                    LOG.info("Checkpoint deleting: " + p.toAbsolutePath().toString());
+                    if (!FileUtils.deleteQuietly(p)) {
+                        LOG.fatal("Cannot delete file '" + p.toAbsolutePath().toString() + "' from backup journal.");
+                    }
+                });
+            } catch (final IOException ioe) {
+                LOG.error("Could not clear fs.journal backup files", ioe);
+            }
         }
     }
 
@@ -503,7 +505,7 @@ public class Journal {
                 LOG.info("Transaction journal cleanly shutting down with checkpoint...");
                 try {
                     writeToLog(new Checkpoint(txnId));
-                } catch (final TransactionException e) {
+                } catch (final JournalException e) {
                     LOG.error("An error occurred while closing the journal file: " + e.getMessage(), e);
                 }
             }
