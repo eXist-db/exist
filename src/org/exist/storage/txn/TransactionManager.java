@@ -21,6 +21,7 @@
  */
 package org.exist.storage.txn;
 
+import net.jcip.annotations.GuardedBy;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
@@ -41,6 +42,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * This is the central entry point to the transaction management service.
@@ -100,26 +103,24 @@ public class TransactionManager {
      * be logged to disk immediately. 
      */
     public Txn beginTransaction() {
-        return new RunWithLock<Txn>() {
-			public Txn execute() {
-				final long txnId = nextTxnId++;
-                if(LOG.isDebugEnabled()) {
-                    LOG.debug("Starting new transaction: " + txnId);
-                }
+        return withLock(broker -> {
+            final long txnId = nextTxnId++;
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("Starting new transaction: " + txnId);
+            }
 
-                if(journalManager.isPresent()) {
-                    try {
-                        journalManager.get().journal(new TxnStart(txnId));
-                    } catch(final JournalException e) {
-                        LOG.error("Failed to create transaction. Error writing to log file.", e);
-                    }
+            if(journalManager.isPresent()) {
+                try {
+                    journalManager.get().journal(new TxnStart(txnId));
+                } catch(final JournalException e) {
+                    LOG.error("Failed to create transaction. Error writing to log file.", e);
                 }
+            }
 
-                final Txn txn = new Txn(TransactionManager.this, txnId);
-                transactions.put(txn.getId(), new TxnCounter());
-                return txn;
-			}
-        }.run();
+            final Txn txn = new Txn(TransactionManager.this, txnId);
+            transactions.put(txn.getId(), new TxnCounter());
+            return txn;
+        });
     }
     
     /**
@@ -135,27 +136,23 @@ public class TransactionManager {
             return;
         }
 
-        new RunWithLock<Object>() {
-        	public Object execute() {
-
-                if(journalManager.isPresent()) {
-                    try {
-                        journalManager.get().journalGroup(new TxnCommit(txn.getId()));
-                    } catch(final JournalException e) {
-                        LOG.error("Failed to write commit record to journal: " + e.getMessage());
-                    }
+        withLock(broker -> {
+            if(journalManager.isPresent()) {
+                try {
+                    journalManager.get().journalGroup(new TxnCommit(txn.getId()));
+                } catch(final JournalException e) {
+                    LOG.error("Failed to write commit record to journal: " + e.getMessage());
                 }
+            }
 
-                txn.signalCommit();
-                txn.releaseAll();
-                transactions.remove(txn.getId());
-                processSystemTasks();
-                if(LOG.isDebugEnabled()) {
-                    LOG.debug("Committed transaction: " + txn.getId());
-                }
-                return null;
-        	}
-        }.run();
+            txn.signalCommit();
+            txn.releaseAll();
+            transactions.remove(txn.getId());
+            processSystemTasks();
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("Committed transaction: " + txn.getId());
+            }
+        });
     }
 	
     public void abort(final Txn txn) {
@@ -166,24 +163,21 @@ public class TransactionManager {
             return;
         }
 
-        new RunWithLock<Object>() {
-        	public Object execute() {
-                transactions.remove(txn.getId());
+        withLock(broker -> {
+            transactions.remove(txn.getId());
 
-                if(journalManager.isPresent()) {
-                    try {
-                        journalManager.get().journalGroup(new TxnAbort(txn.getId()));
-                    } catch(final JournalException e) {
-                        LOG.error("Failed to write abort record to journal: " + e.getMessage());
-                    }
+            if(journalManager.isPresent()) {
+                try {
+                    journalManager.get().journalGroup(new TxnAbort(txn.getId()));
+                } catch(final JournalException e) {
+                    LOG.error("Failed to write abort record to journal: " + e.getMessage());
                 }
+            }
 
-                txn.signalAbort();
-                txn.releaseAll();
-                processSystemTasks();
-                return null;
-        	}
-        }.run();
+            txn.signalAbort();
+            txn.releaseAll();
+            processSystemTasks();
+        });
     }
 
     /**
@@ -300,22 +294,17 @@ public class TransactionManager {
     }
 
     public void triggerSystemTask(final SystemTask task) {
-    	new RunWithLock<Object>() {
-			public Object execute() {
-				taskManager.triggerSystemTask(task);
-				return null;
-			}
-    	}.run();
+        withLock(broker -> {
+            taskManager.triggerSystemTask(task);
+    	});
     }
 
     public void processSystemTasks() {
-    	new RunWithLock<Object>() {
-    		public Object execute() {
-    			if (transactions.isEmpty())
-                    {taskManager.processTasks();}
-    			return null;
-    		}
-    	}.run();
+        withLock(broker -> {
+           if(transactions.isEmpty()) {
+               taskManager.processTasks();
+           }
+        });
     }
 
 	public void debug(final PrintStream out) {
@@ -323,33 +312,44 @@ public class TransactionManager {
 	}
 
     /**
-     * Run code block with a lock on the transaction manager.
+     * Run a consumer within a lock on the transaction manager.
      * Make sure locks are acquired in the right order.
-     * 
-     * @author wolf
      *
+     * @param lockedCn A consumer that must be run exclusively
+     *                 with respect to the TransactionManager
+     *                 instance
      */
-    private abstract class RunWithLock<T> {
-    	
-    	public T run() {
+    @GuardedBy("lock")
+    private void withLock(final Consumer<DBBroker> lockedCn) {
+        withLock(broker -> {
+            lockedCn.accept(broker);
+            return null;
+        });
+    }
 
-            // we first need to get a broker for the current thread
-            // before we acquire the transaction manager lock. Otherwise
-            // a deadlock may occur.
-    		try(final DBBroker broker = pool.getBroker()) {
-    			try {
-    				lock.lock();
-    				return execute();
-    			} finally {
-    				lock.unlock();
-    			}
-    		} catch (final EXistException e) {
-				LOG.error("Transaction manager failed to acquire broker for running system tasks");
-				return null;
-			}
-    	}
-    	
-    	public abstract T execute();
+    /**
+     * Run a function within a lock on the transaction manager.
+     * Make sure locks are acquired in the right order.
+     *
+     * @param lockedFn A function that must be run exclusively
+     *                 with respect to the TransactionManager
+     *                 instance
+     *
+     * @return The result of lockedFn
+     */
+    @GuardedBy("lock")
+    private <T> T withLock(final Function<DBBroker, T> lockedFn) {
+        try(final DBBroker broker = pool.getBroker()) {
+            try {
+                lock.lock();
+                return lockedFn.apply(broker);
+            } finally {
+                lock.unlock();
+            }
+        } catch (final EXistException e) {
+            LOG.error("Transaction manager failed to acquire broker for running system tasks");
+            return null;
+        }
     }
 
     /**
