@@ -61,7 +61,7 @@ public class SystemTaskManager {
                 while (!waitingSystemTasks.isEmpty()) {
                 	final SystemTask task = waitingSystemTasks.pop();
                 	if (task.afterCheckpoint()) {
-                        pool.sync(broker, Sync.MAJOR_SYNC);
+                        pool.sync(broker, Sync.MAJOR);
                     }
                     runSystemTask(task, broker);
                 }

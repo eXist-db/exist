@@ -3590,7 +3590,7 @@ public class NativeBroker extends DBBroker {
     long nextReportTS = System.currentTimeMillis();
 
     @Override
-    public void sync(final int syncEvent) {
+    public void sync(final Sync syncEvent) {
         if(isReadOnly()) {
             return;
         }
@@ -3606,7 +3606,7 @@ public class NativeBroker extends DBBroker {
                     return null;
                 }
             }.run();
-            if(syncEvent == Sync.MAJOR_SYNC) {
+            if(syncEvent == Sync.MAJOR) {
                 final Lock lock = collectionsDb.getLock();
                 try {
                     lock.acquire(Lock.WRITE_LOCK);
@@ -3641,7 +3641,7 @@ public class NativeBroker extends DBBroker {
     public void shutdown() {
         try {
             flush();
-            sync(Sync.MAJOR_SYNC);
+            sync(Sync.MAJOR);
             domDb.close();
             collectionsDb.close();
             notifyClose();

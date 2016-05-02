@@ -1294,7 +1294,7 @@ public class Configurator {
             txn = null;
             saving.remove(fullURI);
             broker.flush();
-            broker.sync(Sync.MAJOR_SYNC);
+            broker.sync(Sync.MAJOR);
             return collection.getDocument(broker, uri.lastSegment());
             
         } catch (final Exception e) {

@@ -183,7 +183,7 @@ public class RecoveryManager {
                 cleanDirectory(files.stream());
                 if (recoveryRun) {
                     broker.repairPrimary();
-                    broker.sync(Sync.MAJOR_SYNC);
+                    broker.sync(Sync.MAJOR);
                 }
             }
 		}
@@ -291,7 +291,7 @@ public class RecoveryManager {
                 }
             }
         } finally {
-            broker.sync(Sync.MAJOR_SYNC);
+            broker.sync(Sync.MAJOR);
             logManager.setInRecovery(false);
         }
     }
