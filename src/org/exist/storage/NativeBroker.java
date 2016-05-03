@@ -146,8 +146,6 @@ public class NativeBroker extends DBBroker {
         COLLECTIONS_DBX_ID, VALUES_DBX_ID, DOM_DBX_ID
     };
 
-    //private static final String TEMP_FRAGMENT_REMOVE_ERROR = "Could not remove temporary fragment";
-    // private static final String TEMP_STORE_ERROR = "An error occurred while storing temporary data: ";
     private static final String EXCEPTION_DURING_REINDEX = "exception during reindex";
     private static final String DATABASE_IS_READ_ONLY = "Database is read-only";
 
@@ -184,7 +182,7 @@ public class NativeBroker extends DBBroker {
 
     private final Path dataDir;
     private final Path fsDir;
-    private final Path fsJournalDir;
+    private final Optional<Path> fsJournalDir;
     private int pageSize;
 
     private final byte prepend;
@@ -223,11 +221,15 @@ public class NativeBroker extends DBBroker {
             throw new EXistException("Cannot make collection filesystem directory: " + fs.toAbsolutePath().toString(), ioe);
         }
 
-        final Path fsJournal = dataDir.resolve("fs.journal");
-        try {
-            this.fsJournalDir = Files.createDirectories(fsJournal);
-        } catch(final IOException ioe) {
-            throw new EXistException("Cannot make collection filesystem directory: " + fsJournal.toAbsolutePath().toString(), ioe);
+        if(pool.isRecoveryEnabled()) {
+            final Path fsJournal = dataDir.resolve("fs.journal");
+            try {
+                this.fsJournalDir = Optional.of(Files.createDirectories(fsJournal));
+            } catch(final IOException ioe) {
+                throw new EXistException("Cannot make collection filesystem directory: " + fsJournal.toAbsolutePath().toString(), ioe);
+            }
+        } else {
+            this.fsJournalDir = Optional.empty();
         }
 
         nodesCountThreshold = config.getInteger(BrokerPool.PROPERTY_NODES_BUFFER);
@@ -1283,17 +1285,22 @@ public class NativeBroker extends DBBroker {
         final Path targetDir = getCollectionFile(getFsDir(), destination.getURI().append(newName), false);
         if(Files.exists(sourceDir)) {
             if(Files.exists(targetDir)) {
-                final Path targetDelDir = getCollectionFile(fsJournalDir, transaction, destination.getURI().append(newName), true);
-                Files.createDirectories(targetDelDir);
-                Files.move(targetDir, targetDelDir, StandardCopyOption.ATOMIC_MOVE);
 
-                if(logManager.isPresent()) {
-                    final Loggable loggable = new RenameBinaryLoggable(this, transaction, targetDir, targetDelDir);
-                    try {
-                        logManager.get().journal(loggable);
-                    } catch (final JournalException e) {
-                        LOG.warn(e.getMessage(), e);
+                if(fsJournalDir.isPresent()) {
+                    final Path targetDelDir = getCollectionFile(fsJournalDir.get(), transaction, destination.getURI().append(newName), true);
+                    Files.createDirectories(targetDelDir);
+                    Files.move(targetDir, targetDelDir, StandardCopyOption.ATOMIC_MOVE);
+
+                    if(logManager.isPresent()) {
+                        final Loggable loggable = new RenameBinaryLoggable(this, transaction, targetDir, targetDelDir);
+                        try {
+                            logManager.get().journal(loggable);
+                        } catch (final JournalException e) {
+                            LOG.warn(e.getMessage(), e);
+                        }
                     }
+                } else {
+                    FileUtils.delete(targetDir);
                 }
             }
             Files.createDirectories(targetDir.getParent());
@@ -1607,24 +1614,28 @@ public class NativeBroker extends DBBroker {
 
                 //now that the database has been updated, update the binary collections on disk
                 final Path fsSourceDir = getCollectionFile(getFsDir(), collection.getURI(), false);
-                final Path fsTargetDir = getCollectionFile(fsJournalDir, transaction, collection.getURI(), true);
+                if(fsJournalDir.isPresent()) {
+                    final Path fsTargetDir = getCollectionFile(fsJournalDir.get(), transaction, collection.getURI(), true);
 
-                // remove child binary collections
-                if(Files.exists(fsSourceDir)) {
-                    Files.createDirectories(fsTargetDir.getParent());
+                    // remove child binary collections
+                    if (Files.exists(fsSourceDir)) {
+                        Files.createDirectories(fsTargetDir.getParent());
 
-                    //TODO(DS) log first, rename second ???
-                    //TODO(DW) not sure a Fatal is required here. Copy and delete maybe?
-                    Files.move(fsSourceDir, fsTargetDir, StandardCopyOption.ATOMIC_MOVE);
+                        //TODO(DS) log first, rename second ???
+                        //TODO(DW) not sure a Fatal is required here. Copy and delete maybe?
+                        Files.move(fsSourceDir, fsTargetDir, StandardCopyOption.ATOMIC_MOVE);
 
-                    if(logManager.isPresent()) {
-                        final Loggable loggable = new RenameBinaryLoggable(this, transaction, fsSourceDir, fsTargetDir);
-                        try {
-                            logManager.get().journal(loggable);
-                        } catch (final JournalException e) {
-                            LOG.warn(e.getMessage(), e);
+                        if (logManager.isPresent()) {
+                            final Loggable loggable = new RenameBinaryLoggable(this, transaction, fsSourceDir, fsTargetDir);
+                            try {
+                                logManager.get().journal(loggable);
+                            } catch (final JournalException e) {
+                                LOG.warn(e.getMessage(), e);
+                            }
                         }
                     }
+                } else {
+                    FileUtils.delete(fsSourceDir);
                 }
 
 
@@ -2091,19 +2102,24 @@ public class NativeBroker extends DBBroker {
         final Path binFile = getCollectionFile(getFsDir(), blob.getURI(), true);
         final boolean exists = Files.exists(binFile);
 
-        final Function<Path, Loggable> fLoggable;
-        if(exists) {
-            final Path backupFile = getCollectionFile(fsJournalDir, transaction, blob.getURI(), true);
-            Files.move(binFile, backupFile, StandardCopyOption.ATOMIC_MOVE);
-            fLoggable = original -> new UpdateBinaryLoggable(this, transaction, original, backupFile);
+        final Optional<Function<Path, Loggable>> fLoggable;
+        if(fsJournalDir.isPresent()) {
+            if (exists) {
+                final Path backupFile = getCollectionFile(fsJournalDir.get(), transaction, blob.getURI(), true);
+                Files.move(binFile, backupFile, StandardCopyOption.ATOMIC_MOVE);
+                fLoggable = Optional.of(original -> new UpdateBinaryLoggable(this, transaction, original, backupFile));
+            } else {
+                fLoggable = Optional.of(original -> new CreateBinaryLoggable(this, transaction, original));
+            }
         } else {
-            fLoggable = original -> new CreateBinaryLoggable(this, transaction, original);
+            Files.deleteIfExists(binFile);
+            fLoggable = Optional.empty();
         }
 
         fWriteData.accept(binFile);
 
-        if(logManager.isPresent()) {
-            final Loggable loggable = fLoggable.apply(binFile);
+        if(logManager.isPresent() && fLoggable.isPresent()) {
+            final Loggable loggable = fLoggable.get().apply(binFile);
             try {
                 logManager.get().journal(loggable);
             } catch (final JournalException e) {
@@ -2741,17 +2757,20 @@ public class NativeBroker extends DBBroker {
 
         final Path binFile = getCollectionFile(getFsDir(), blob.getURI(), false);
         if(Files.exists(binFile)) {
-            final Path binBackupFile = getCollectionFile(fsJournalDir, transaction, blob.getURI(), true);
+            if(fsJournalDir.isPresent()) {
+	            final Path binBackupFile = getCollectionFile(fsJournalDir.get(), transaction, blob.getURI(), true);
+    	        Files.move(binFile, binBackupFile, StandardCopyOption.ATOMIC_MOVE);
 
-            Files.move(binFile, binBackupFile, StandardCopyOption.ATOMIC_MOVE);
-
-            if(logManager.isPresent()) {
-                final Loggable loggable = new RenameBinaryLoggable(this, transaction, binFile, binBackupFile);
-                try {
-                    logManager.get().journal(loggable);
-                } catch (final JournalException e) {
-                    LOG.warn(e.getMessage(), e);
+                if (logManager.isPresent()) {
+                    final Loggable loggable = new RenameBinaryLoggable(this, transaction, binFile, binBackupFile);
+                    try {
+                        logManager.get().journal(loggable);
+                    } catch (final JournalException e) {
+                        LOG.warn(e.getMessage(), e);
+                    }
                 }
+            } else {
+                Files.delete(binFile);
             }
         }
         removeResourceMetadata(transaction, blob);
