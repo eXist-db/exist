@@ -327,7 +327,6 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 					}
 					select = atts.getValue("test");
 					final Conditional cond = new Conditional(broker, documentSet, select, namespaces, variables);
-					cond.setAccessContext(accessCtx);
 					conditionals.push(cond);
 					return;
 				case VALUE_OF:

@@ -72,7 +72,7 @@ public class XQueryContextTest {
      */
     @Test
     public void cleanUp_BinaryValueInstances() throws NoSuchFieldException, IllegalAccessException, IOException {
-        final XQueryContext context = new XQueryContext(AccessContext.TEST);
+        final XQueryContext context = new XQueryContext();
         final XQueryWatchDog mockWatchdog = createMock(XQueryWatchDog.class);
         context.setWatchDog(mockWatchdog);
 
