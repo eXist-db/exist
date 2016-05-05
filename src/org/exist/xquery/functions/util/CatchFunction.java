@@ -25,20 +25,8 @@ package org.exist.xquery.functions.util;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.Function;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.LocalVariable;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.*;
+import org.exist.xquery.value.*;
 
 /**
  * @author wolf
@@ -58,7 +46,9 @@ public class CatchFunction extends Function {
                             + "A value of \"*\" in $java-classnames will catch all java exceptions. "
                             + "Inside the catch code block, the variable $util:exception will be bound to the "
                             + "java class name of the exception, "
-                            + "and $util:exception-message will be bound to the message produced by the exception.",
+                            + "$util:exception-message will be bound to the message produced by the exception, "
+                            + "and $util:error-code will be bound to the xs:QName error code.",
+
                 new SequenceType[]{
                     new FunctionParameterSequenceType("java-classnames", Type.STRING, Cardinality.ONE_OR_MORE, "The list of one or more fully qualified Java class names.  An entry of '*' will catch all java exceptions."),
                     new FunctionParameterSequenceType("try-code-blocks", Type.ITEM, Cardinality.ZERO_OR_MORE, "The code blocks that will be put inside of a the try part of the try-catch statement."),
@@ -71,15 +61,12 @@ public class CatchFunction extends Function {
     /**
      * @param context
      */
-    public CatchFunction(XQueryContext context) {
+    public CatchFunction(final XQueryContext context) {
         super(context, signature);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.Function#eval(org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
-     */
     @Override
-    public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+    public Sequence eval(final Sequence contextSequence, final Item contextItem) throws XPathException {
 
         // Get exception classes
         final Sequence exceptionClasses = getArgument(0).eval(contextSequence, contextItem);
@@ -114,7 +101,7 @@ public class CatchFunction extends Function {
             for (final SequenceIterator i = exceptionClasses.iterate(); i.hasNext();) {
                 final Item currentItem = i.nextItem();
                 try {
-                    // Get value of execption argument
+                    // Get value of exception argument
                     final String exClassName = currentItem.getStringValue();
                     Class<?> exClass = null;
 
@@ -137,6 +124,13 @@ public class CatchFunction extends Function {
                                                  new StringValue(expException.getClass().getName()));
                         myModule.declareVariable(UtilModule.EXCEPTION_MESSAGE_QNAME, 
                                                  new StringValue(expException.getMessage()));
+                        final QName errorCode;
+                        if(expException instanceof XPathException) {
+                            errorCode = ((XPathException)expException).getErrorCode().getErrorQName();
+                        } else {
+                            errorCode = ErrorCodes.ERROR.getErrorQName();
+                        }
+                        myModule.declareVariable(UtilModule.ERROR_CODE_QNAME, new QNameValue(context, errorCode));
 
                         // Execute catch-code
                         return getArgument(2).eval(contextSequence, contextItem);
@@ -161,16 +155,12 @@ public class CatchFunction extends Function {
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.Function#returnsType()
-     */
+    @Override
     public int returnsType() {
         return getArgument(1).returnsType();
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.Function#getCardinality()
-     */
+    @Override
     public int getCardinality() {
         return getArgument(1).getCardinality();
     }
