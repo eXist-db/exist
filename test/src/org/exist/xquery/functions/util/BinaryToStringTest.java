@@ -1,6 +1,5 @@
 package org.exist.xquery.functions.util;
 
-import org.exist.security.xacml.AccessContext;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
@@ -46,7 +45,7 @@ public class BinaryToStringTest {
 
     public class MockXQueryContext extends XQueryContext {
         public MockXQueryContext() {
-            super(AccessContext.TEST);
+            super();
         }
         
         public String getCacheClass() {

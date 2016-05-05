@@ -26,8 +26,6 @@ import antlr.collections.AST;
 import org.exist.EXistException;
 import org.exist.numbering.NodeId;
 import org.exist.security.Subject;
-import org.exist.security.xacml.AccessContext;
-import org.exist.security.xacml.NullAccessContextException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.util.OrderedLinkedList;
@@ -58,16 +56,11 @@ public class SortedNodeSet extends AbstractNodeSet {
     private final String sortExpr;
     private final BrokerPool pool;
     private final Subject user;
-    private final AccessContext accessCtx;
 
-    public SortedNodeSet(final BrokerPool pool, final Subject user, final String sortExpr, final AccessContext accessCtx) {
+    public SortedNodeSet(final BrokerPool pool, final Subject user, final String sortExpr) {
         this.sortExpr = sortExpr;
         this.pool = pool;
         this.user = user;
-        if(accessCtx == null) {
-            throw new NullAccessContextException();
-        }
-        this.accessCtx = accessCtx;
     }
 
     @Override
@@ -96,7 +89,7 @@ public class SortedNodeSet extends AbstractNodeSet {
         // TODO(pkaminsk2): why replicate XQuery.compile here?
         try(final DBBroker broker = pool.get(Optional.ofNullable(user))) {
 
-            final XQueryContext context = new XQueryContext(pool, accessCtx);
+            final XQueryContext context = new XQueryContext(pool);
             final XQueryLexer lexer = new XQueryLexer(context, new StringReader(sortExpr));
             final XQueryParser parser = new XQueryParser(lexer);
             final XQueryTreeParser treeParser = new XQueryTreeParser(context);

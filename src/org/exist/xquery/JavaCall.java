@@ -29,14 +29,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.exist.dom.QName;
-import org.exist.security.PermissionDeniedException;
-import org.exist.security.xacml.ExistPDP;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
-
-import com.sun.xacml.ctx.RequestCtx;
 
 /**
  * A special function call to a Java method or constructor.
@@ -188,17 +184,6 @@ public class JavaCall extends Function {
                 {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }
 
-		//check access to the method
-		try {
-			final ExistPDP pdp = context.getPDP();
-			if(pdp != null) {
-				final RequestCtx request = pdp.getRequestHelper().createReflectionRequest(context, null, myClass.getName(), name);
-				pdp.evaluate(request);
-			}
-		} catch (final PermissionDeniedException pde) {
-			throw new XPathException(this, "Access to method '" + name + "' in class '" + myClass.getName() + "' denied.", pde);
-		}
-        
 		// get the actual arguments
 		final Sequence args[] = getArguments(contextSequence, contextItem);
 

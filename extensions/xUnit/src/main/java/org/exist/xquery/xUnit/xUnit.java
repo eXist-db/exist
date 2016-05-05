@@ -27,7 +27,6 @@ import java.util.Iterator;
 import java.util.Optional;
 
 import org.exist.Database;
-import org.exist.security.xacml.AccessContext;
 import org.exist.source.ClassLoaderSource;
 import org.exist.source.Source;
 import org.exist.storage.BrokerPool;
@@ -63,7 +62,7 @@ public class xUnit {
 
                 XQuery xquery = broker.getBrokerPool().getXQueryService();
 
-                XQueryContext context = new XQueryContext(broker.getBrokerPool(), AccessContext.TEST);
+                XQueryContext context = new XQueryContext(broker.getBrokerPool());
                 //context.setModuleLoadPath();
 
                 Source query = new ClassLoaderSource(source);

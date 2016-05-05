@@ -66,8 +66,7 @@ public class DeferredFunctionCallTest {
         
         //expectations for functionCall.evalFunction
         expect(mockContext.isProfilingEnabled()).andReturn(false);
-        expect(mockContext.getPDP()).andReturn(null);
-        
+
         //expectations for DeferredFunctionCall.execute
         mockContext.pushDocumentContext();
         mockContext.functionStart(mockFunctionSignature);

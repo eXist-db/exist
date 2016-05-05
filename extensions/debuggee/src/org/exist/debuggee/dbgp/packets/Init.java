@@ -22,7 +22,6 @@
 package org.exist.debuggee.dbgp.packets;
 
 import org.apache.mina.core.session.IoSession;
-import org.exist.security.xacml.XACMLSource;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -30,7 +29,7 @@ import org.exist.security.xacml.XACMLSource;
  */
 public class Init extends AbstractCommandContinuation {
 
-	private XACMLSource fileuri;
+	private org.exist.source.Source fileuri;
 	private String idekey = "1";
 	private String idesession = "1";
 	
@@ -44,7 +43,7 @@ public class Init extends AbstractCommandContinuation {
 		this.idesession = idesession;
 	}
 
-	public void setFileURI(XACMLSource source){
+	public void setFileURI(org.exist.source.Source source){
 		fileuri = source;
 
 		if (!session.isClosing())

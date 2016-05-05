@@ -32,7 +32,6 @@ import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
-import org.exist.security.xacml.AccessContext;
 import org.exist.source.Source;
 import org.exist.source.SourceFactory;
 import org.exist.storage.DBBroker;
@@ -265,7 +264,7 @@ public class XQueryStartupTrigger implements StartupTrigger {
             } else {
                 // Setup xquery service
                 XQuery service = broker.getBrokerPool().getXQueryService();
-                context = new XQueryContext(broker.getBrokerPool(), AccessContext.TRIGGER);
+                context = new XQueryContext(broker.getBrokerPool());
 
                 // Allow use of modules with relative paths
                 String moduleLoadPath = StringUtils.substringBeforeLast(path, "/");

@@ -1,7 +1,6 @@
 package org.exist.xquery.functions.inspect;
 
 import org.exist.dom.QName;
-import org.exist.security.xacml.AccessContext;
 import org.exist.xquery.*;
 import org.exist.xquery.functions.fn.FunOnFunctions;
 import org.exist.xquery.parser.XQueryAST;
@@ -54,7 +53,7 @@ public class ModuleFunctions extends BasicFunction {
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
         final ValueSequence list = new ValueSequence();
         if (getArgumentCount() == 1) {
-            final XQueryContext tempContext = new XQueryContext(context.getBroker().getBrokerPool(), AccessContext.XMLDB);
+            final XQueryContext tempContext = new XQueryContext(context.getBroker().getBrokerPool());
             tempContext.setModuleLoadPath(context.getModuleLoadPath());
 
             Module module = null;

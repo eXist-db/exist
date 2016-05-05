@@ -36,8 +36,6 @@ import org.exist.Namespaces;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.NodeListImpl;
 import org.exist.dom.persistent.NodeSetHelper;
-import org.exist.security.xacml.AccessContext;
-import org.exist.security.xacml.NullAccessContextException;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
 import org.exist.util.FastStringBuffer;
@@ -193,16 +191,11 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
      */
     private Stack<Conditional> conditionals = new Stack<Conditional>();
 
-	private AccessContext accessCtx;
-	
 	/**
 	 * Constructor for XUpdateProcessor.
 	 */
-	public XUpdateProcessor(DBBroker broker, DocumentSet docs, AccessContext accessCtx)
+	public XUpdateProcessor(DBBroker broker, DocumentSet docs)
 		throws ParserConfigurationException {
-		if(accessCtx == null)
-			{throw new NullAccessContextException();}
-		this.accessCtx = accessCtx;
 		final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		factory.setNamespaceAware(true);
 		factory.setValidating(false);
@@ -603,7 +596,6 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 				|| localName.equals(INSERT_AFTER)) {
 				inModification = false;
 				modification.setContent(contents);
-				modification.setAccessContext(accessCtx);
 				if(!conditionals.isEmpty()) {
 					final Conditional cond = conditionals.peek();
 					cond.addModification(modification);
@@ -742,7 +734,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 	private Sequence processQuery(String select) throws SAXException {
         XQueryContext context = null;
         try {
-			context = new XQueryContext(broker.getBrokerPool(), accessCtx);
+			context = new XQueryContext(broker.getBrokerPool());
 			context.setStaticallyKnownDocuments(documentSet);
 			Map.Entry<String, String> namespaceEntry;
 			for (final Iterator<Map.Entry<String, String>> i = namespaces.entrySet().iterator(); i.hasNext();) {

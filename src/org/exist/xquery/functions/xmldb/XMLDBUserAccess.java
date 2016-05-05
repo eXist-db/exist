@@ -114,7 +114,7 @@ public class XMLDBUserAccess extends BasicFunction {
 
         Collection collection = null;
         try {
-            collection = new LocalCollection(context.getSubject(), context.getBroker().getBrokerPool(), XmldbURI.ROOT_COLLECTION_URI, context.getAccessContext());
+            collection = new LocalCollection(context.getSubject(), context.getBroker().getBrokerPool(), XmldbURI.ROOT_COLLECTION_URI);
             final UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
             final Account user = ums.getAccount(userName);
 

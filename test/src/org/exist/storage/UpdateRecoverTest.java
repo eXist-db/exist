@@ -28,7 +28,6 @@ import org.exist.dom.persistent.DefaultDocumentSet;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.MutableDocumentSet;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.xacml.AccessContext;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
@@ -121,7 +120,7 @@ public class UpdateRecoverTest {
 
                 final MutableDocumentSet docs = new DefaultDocumentSet();
                 docs.add(info.getDocument());
-                final XUpdateProcessor proc = new XUpdateProcessor(broker, docs, AccessContext.TEST);
+                final XUpdateProcessor proc = new XUpdateProcessor(broker, docs);
                 assertNotNull(proc);
                 // insert some nodes
                 for (int i = 1; i <= 200; i++) {

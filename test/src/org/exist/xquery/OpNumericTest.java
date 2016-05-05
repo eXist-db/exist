@@ -1,7 +1,6 @@
 package org.exist.xquery;
 
 import org.exist.EXistException;
-import org.exist.security.xacml.AccessContext;
 import org.exist.storage.*;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
@@ -32,7 +31,7 @@ public class OpNumericTest {
 		BrokerPool pool = BrokerPool.getInstance();
 
 		broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
-		context = new XQueryContext(broker.getBrokerPool(), AccessContext.TEST);
+		context = new XQueryContext(broker.getBrokerPool());
 
 		dtDuration = new DayTimeDurationValue("P1D");
 		ymDuration = new YearMonthDurationValue("P1Y");

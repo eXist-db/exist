@@ -28,7 +28,6 @@ import org.exist.EXistException;
 import org.exist.security.AuthenticationException;
 import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
-import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.util.Configuration;
 import org.exist.util.SSLHelper;
@@ -186,7 +185,7 @@ public class DatabaseImpl implements Database {
         try {
             final BrokerPool pool = BrokerPool.getInstance(xmldbURI.getInstanceName());
             final Subject u = getUser(user, password, pool);
-            return new LocalCollection(u, pool, xmldbURI.toCollectionPathURI(), AccessContext.XMLDB);
+            return new LocalCollection(u, pool, xmldbURI.toCollectionPathURI());
         } catch (final EXistException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "Can not access to local database instance", e);
         } catch (final XMLDBException e) {

@@ -31,7 +31,6 @@ import java.util.*;
 import junit.framework.Assert;
 
 import org.custommonkey.xmlunit.Diff;
-import org.exist.security.xacml.AccessContext;
 import org.exist.storage.DBBroker;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.w3c.tests.TestCase;
@@ -83,7 +82,7 @@ public class QT3TS_case extends TestCase {
 
             String query = "xmldb:document('" + file + "')";
 
-            return xquery.execute(broker, query, null, AccessContext.TEST);
+            return xquery.execute(broker, query, null);
 
         }
     }
@@ -99,7 +98,7 @@ public class QT3TS_case extends TestCase {
             String query = "declare namespace qt='" + QT_NS + "';\n" + "let $testCases := xmldb:document('/db/QT3/" + file + "')\n"
                     + "let $tc := $testCases//qt:environment\n" + "return $tc";
 
-            Sequence result = xquery.execute(broker, query, null, AccessContext.TEST);
+            Sequence result = xquery.execute(broker, query, null);
 
             String col = XmldbURI.create("/db/QT3/" + file).removeLastSegment().toString();
 
@@ -145,7 +144,7 @@ public class QT3TS_case extends TestCase {
                     + "let $tc := $testCases//qt:environment[@name eq '" + name + "']\n" + "let $catalog := xmldb:document('/db/QT3/catalog.xml')\n"
                     + "let $cat := $catalog//qt:environment[@name eq '" + name + "']\n" + "return ($tc, $cat)";
 
-            Sequence result = xquery.execute(broker, query, null, AccessContext.TEST);
+            Sequence result = xquery.execute(broker, query, null);
 
             String col = XmldbURI.create("/db/QT3/" + file).removeLastSegment().toString();
 
@@ -191,7 +190,7 @@ public class QT3TS_case extends TestCase {
         try(final DBBroker broker = db.get(Optional.of(db.getSecurityManager().getSystemSubject()))) {
             xquery = broker.getBrokerPool().getXQueryService();
 
-            final XQueryContext context = new XQueryContext(db, AccessContext.TEST);
+            final XQueryContext context = new XQueryContext(db);
 
             broker.getConfiguration().setProperty(XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, true);
 
@@ -200,7 +199,7 @@ public class QT3TS_case extends TestCase {
 
             XQuery xqs = broker.getBrokerPool().getXQueryService();
 
-            Sequence results = xqs.execute(broker, query, null, AccessContext.TEST);
+            Sequence results = xqs.execute(broker, query, null);
 
             Assert.assertFalse("", results.isEmpty());
 
@@ -253,19 +252,19 @@ public class QT3TS_case extends TestCase {
                                         if ("xs:date".equals(type)) {
                                             var.setStaticType(Type.DATE);
 
-                                            Sequence res = xquery.execute(broker, el.getAttribute("select"), null, AccessContext.TEST);
+                                            Sequence res = xquery.execute(broker, el.getAttribute("select"), null);
                                             Assert.assertEquals(1, res.getItemCount());
                                             var.setValue(res);
                                         } else if ("xs:dateTime".equals(type)) {
                                             var.setStaticType(Type.DATE_TIME);
 
-                                            Sequence res = xquery.execute(broker, el.getAttribute("select"), null, AccessContext.TEST);
+                                            Sequence res = xquery.execute(broker, el.getAttribute("select"), null);
                                             Assert.assertEquals(1, res.getItemCount());
                                             var.setValue(res);
                                         } else if ("xs:string".equals(type)) {
                                             var.setStaticType(Type.STRING);
 
-                                            Sequence res = xquery.execute(broker, el.getAttribute("select"), null, AccessContext.TEST);
+                                            Sequence res = xquery.execute(broker, el.getAttribute("select"), null);
                                             Assert.assertEquals(1, res.getItemCount());
                                             var.setValue(res);
                                         } else {

@@ -30,7 +30,6 @@ import org.apache.mina.core.session.IoSession;
 import org.exist.debuggee.DebuggeeJoint;
 import org.exist.debuggee.Packet;
 import org.exist.debuggee.dbgp.Errors;
-import org.exist.security.xacml.XACMLSource;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -194,16 +193,16 @@ public abstract class Command implements Packet {
 		return new Error(command, session, args);
 	}
 
-	public static String getFileuri(XACMLSource fileuri) {
+	public static String getFileuri(org.exist.source.Source fileuri) {
 //		System.out.println("getFileuri dbgp:"+fileuri.getType()+"://"+fileuri.getKey());
-		if (fileuri.getType().toLowerCase().equals("file")) {
+		if (fileuri.type().toLowerCase().equals("file")) {
 			try {
-				return new File(fileuri.getKey()).toURI().toURL().toString();
+				return new File(fileuri.path()).toURI().toURL().toString();
 			} catch (MalformedURLException e) {
-				return "dbgp://"+fileuri.getType().toLowerCase()+"/"+fileuri.getKey();
+				return "dbgp://"+fileuri.type().toLowerCase()+"/"+fileuri.getKey();
 			}
 		} else
-			return "dbgp://"+fileuri.getType().toLowerCase()+fileuri.getKey();
+			return "dbgp://"+fileuri.type().toLowerCase()+fileuri.getKey();
 		// jetty.port.jetty
 //		return "http://localhost:" + System.getProperty("jetty.port") + "/eXist/admin/admin.xql";
 	}

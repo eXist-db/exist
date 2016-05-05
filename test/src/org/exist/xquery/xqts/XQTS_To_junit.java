@@ -33,7 +33,6 @@ import junit.framework.Assert;
 
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
-import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
@@ -204,7 +203,7 @@ public class XQTS_To_junit {
 
         XQuery xqs = db.getXQueryService();
         
-        Sequence results = xqs.execute(broker, query, null, AccessContext.TEST);
+        Sequence results = xqs.execute(broker, query, null);
 
         if (! results.isEmpty()) {
             String catalog = (String) results.itemAt(0).getStringValue();
@@ -256,7 +255,7 @@ public class XQTS_To_junit {
         query += "\treturn xs:string($testGroup/@name)";
 
         XQuery xqs = db.getXQueryService();
-        Sequence results = xqs.execute(broker, query, null, AccessContext.TEST);
+        Sequence results = xqs.execute(broker, query, null);
 
         if (!results.isEmpty()) {
             Path subfolder;
@@ -334,7 +333,7 @@ public class XQTS_To_junit {
             "\treturn xs:string($testGroup/@name)";
 
         XQuery xqs = db.getXQueryService();
-        Sequence results = xqs.execute(broker, query, null, AccessContext.TEST);
+        Sequence results = xqs.execute(broker, query, null);
 
         if (!results.isEmpty()) {
             Files.createDirectories(folder);

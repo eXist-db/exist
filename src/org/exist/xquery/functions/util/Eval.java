@@ -323,7 +323,7 @@ public class Eval extends BasicFunction {
         final XQueryContext innerContext;
         if (contextInit != null) {
             // eval-with-context: initialize a new context
-            innerContext = new XQueryContext(context.getBroker().getBrokerPool(), evalContext.getAccessContext());
+            innerContext = new XQueryContext(context.getBroker().getBrokerPool());
             initContextSequence = initContext(contextInit.getNode(), innerContext);
         } else {
             // use the existing outer context

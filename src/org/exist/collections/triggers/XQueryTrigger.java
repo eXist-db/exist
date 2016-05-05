@@ -35,7 +35,6 @@ import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.xacml.AccessContext;
 import org.exist.source.DBSource;
 import org.exist.source.Source;
 import org.exist.source.SourceFactory;
@@ -267,7 +266,7 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
 		}
 		TriggerStatePerThread.setTransaction(transaction);
 		
-		final XQueryContext context = new XQueryContext(broker.getBrokerPool(), AccessContext.TRIGGER);
+		final XQueryContext context = new XQueryContext(broker.getBrokerPool());
          //TODO : further initialisations ?
         CompiledXQuery compiledQuery;
         try
@@ -341,7 +340,7 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
 		if(!TriggerStatePerThread.verifyUniqueTriggerPerThreadBeforeFinish(this, src))
 			{return;}
 		
-        final XQueryContext context = new XQueryContext(broker.getBrokerPool(), AccessContext.TRIGGER);
+        final XQueryContext context = new XQueryContext(broker.getBrokerPool());
         CompiledXQuery compiledQuery = null;
         try {
         	//compile the XQuery
@@ -421,7 +420,7 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
 		}
 		TriggerStatePerThread.setTransaction(transaction);
 		
-		final XQueryContext context = new XQueryContext(broker.getBrokerPool(), AccessContext.TRIGGER);
+		final XQueryContext context = new XQueryContext(broker.getBrokerPool());
         if (query instanceof DBSource) {
             context.setModuleLoadPath(XmldbURI.EMBEDDED_SERVER_URI_PREFIX + ((DBSource)query).getDocumentPath().removeLastSegment().toString());
         }

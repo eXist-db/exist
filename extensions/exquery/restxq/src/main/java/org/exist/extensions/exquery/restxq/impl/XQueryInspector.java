@@ -84,7 +84,7 @@ class XQueryInspector {
                 }
 
                 if(functionRestAnnotations != null) {
-                    final ResourceFunction resourceFunction = ResourceFunctionFactory.create(new URI(compiled.getSource().getKey()), functionRestAnnotations);
+                    final ResourceFunction resourceFunction = ResourceFunctionFactory.create(new URI(compiled.getSource().path()), functionRestAnnotations);
                     final RestXqService service = new RestXqServiceImpl(resourceFunction, compiled.getContext().getBroker().getBrokerPool());
 
                     //record the xquerylocation

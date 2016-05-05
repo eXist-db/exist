@@ -56,7 +56,6 @@ import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.xmldb.XmldbURI;
 import org.exist.security.*;
-import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.XQueryPool;
@@ -674,7 +673,7 @@ public class XQueryURLRewrite extends HttpServlet {
         }
         XQueryContext queryContext;
         if (compiled == null) {
-			queryContext = new XQueryContext(broker.getBrokerPool(), AccessContext.REST);
+			queryContext = new XQueryContext(broker.getBrokerPool());
 		} else {
 			queryContext = compiled.getContext();
 		}

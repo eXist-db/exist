@@ -91,7 +91,7 @@ public class LocalXUpdateQueryService extends AbstractLocalService implements XU
 
             try {
                 if (processor == null) {
-                    processor = new XUpdateProcessor(broker, docs, collection.getAccessContext());
+                    processor = new XUpdateProcessor(broker, docs);
                 } else {
                     processor.setBroker(broker);
                     processor.setDocumentSet(docs);

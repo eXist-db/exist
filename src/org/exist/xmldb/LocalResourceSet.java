@@ -68,7 +68,7 @@ public class LocalResourceSet extends AbstractLocal implements ResourceSet {
 
         final Sequence seq;
         if(Type.subTypeOf(val.getItemType(), Type.NODE) && sortExpr != null) {
-            final SortedNodeSet sorted = new SortedNodeSet(brokerPool, user, sortExpr, collection.getAccessContext());
+            final SortedNodeSet sorted = new SortedNodeSet(brokerPool, user, sortExpr);
             try {
                     sorted.addAll(val);
             } catch (final XPathException e) {
@@ -180,7 +180,7 @@ public class LocalResourceSet extends AbstractLocal implements ResourceSet {
             // generated: adjust if necessary.
             LocalCollection coll = collection;
             if (p.getOwnerDocument().getCollection() == null || !coll.getPathURI().toCollectionPathURI().equals(p.getOwnerDocument().getCollection().getURI())) {
-                    coll = new LocalCollection(user, brokerPool, null, p.getOwnerDocument().getCollection().getURI(), coll.getAccessContext());
+                    coll = new LocalCollection(user, brokerPool, null, p.getOwnerDocument().getCollection().getURI());
                     coll.setProperties(outputProperties);
             }
             res = new LocalXMLResource(user, brokerPool, coll, p);

@@ -115,7 +115,6 @@ import org.exist.backup.Restore;
 import org.exist.backup.restore.listener.GuiRestoreListener;
 import org.exist.client.security.EditPropertiesDialog;
 import org.exist.client.security.UserManagerDialog;
-import org.exist.client.xacml.XACMLEditor;
 import org.exist.security.ACLPermission;
 import org.exist.security.Account;
 import org.exist.security.Permission;
@@ -443,12 +442,6 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_T,
         		Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         item.addActionListener(this::editTriggersAction);
-        toolsMenu.add(item);
-        
-        item = new JMenuItem(Messages.getString("ClientFrame.61"), KeyEvent.VK_O); //$NON-NLS-1$
-        item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O,
-        		Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-        item.addActionListener(e -> editPolicies());
         toolsMenu.add(item);
 
         toolsMenu.addSeparator();
@@ -1298,31 +1291,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         final TriggersDialog dialog = new TriggersDialog("Edit Triggers", client);
         dialog.setVisible(true);
     }
-    
-    private void editPolicies() {
-        final Collection systemCollection;
-        try {
-            systemCollection = client.getCollection(XmldbURI.SYSTEM_COLLECTION);
-        } catch (final XMLDBException e) {
-            showErrorMessage(Messages.getString("ClientFrame.187"), e); //$NON-NLS-1$
-            return;
-        }
-        
-        try {
-            final DatabaseInstanceManager dim = (DatabaseInstanceManager)systemCollection.getService("DatabaseInstanceManager", "1.0"); //$NON-NLS-1$ //$NON-NLS-2$
-            if(!dim.isXACMLEnabled()) {
-                showErrorMessage(Messages.getString("ClientFrame.190"), null); //$NON-NLS-1$
-                return;
-            }
-        } catch (final XMLDBException e) {
-            showErrorMessage(Messages.getString("ClientFrame.191"), e); //$NON-NLS-1$
-            return;
-        }
-        
-        final XACMLEditor editor = new XACMLEditor(systemCollection);
-        editor.setVisible(true);
-    }
-    
+
     private void findAction(final ActionEvent ev) {
         final Collection collection = client.getCollection();
         final QueryDialog dialog = new QueryDialog(client, collection, properties);

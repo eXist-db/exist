@@ -5,14 +5,10 @@ import java.util.List;
 
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.QName;
-import org.exist.security.PermissionDeniedException;
-import org.exist.security.xacml.ExistPDP;
 import org.exist.xquery.parser.XQueryAST;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
-
-import com.sun.xacml.ctx.RequestCtx;
 
 /**
 * Wrapper for internal modules in order to
@@ -35,18 +31,7 @@ public class InternalFunctionCall extends Function
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException
 	{
         context.proceed(this);
-		final QName functionName = function.getName();
-		//check access to the method
-		try {
-			final ExistPDP pdp = getContext().getPDP();
-			if(pdp != null) {
-				final RequestCtx request = pdp.getRequestHelper().createFunctionRequest(context, null, functionName);
-				if(request != null)
-					{pdp.evaluate(request);}
-			}
-		} catch (final PermissionDeniedException pde) {
-			throw new XPathException(function, "Access to function '" + functionName + "'  denied.", pde);
-		}
+
         final long start = System.currentTimeMillis();
         if (context.getProfiler().traceFunctions())
             {context.getProfiler().traceFunctionStart(this);}

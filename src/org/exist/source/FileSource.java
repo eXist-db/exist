@@ -65,7 +65,17 @@ public class FileSource extends AbstractSource {
         this.filePath = path.toAbsolutePath().toString();
         this.lastModified = lastModifiedSafe(path);
     }
-    
+
+    @Override
+    public String path() {
+        return getFilePath();
+    }
+
+    @Override
+    public String type() {
+        return "File";
+    }
+
     @Override
     public Object getKey() {
         return filePath;

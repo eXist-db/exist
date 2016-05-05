@@ -41,7 +41,6 @@ import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.backup.ErrorReport;
 import org.exist.management.TaskStatus;
-import org.exist.security.xacml.AccessContext;
 import org.exist.source.StringSource;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.ConsistencyCheckTask;
@@ -197,7 +196,7 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
     			final XQueryPool xqPool = pool.getXQueryPool();
     			CompiledXQuery compiled = xqPool.borrowCompiledXQuery(broker, TEST_XQUERY);
     			if (compiled == null) {
-    				final XQueryContext context = new XQueryContext(pool, AccessContext.TEST);
+    				final XQueryContext context = new XQueryContext(pool);
     				compiled = xquery.compile(broker, context, TEST_XQUERY);
     			}
 				try {

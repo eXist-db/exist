@@ -50,9 +50,19 @@ public class StringSource extends AbstractSource {
         this.data = content;
     }
 
+    @Override
+    public String path() {
+        return type();
+    }
+
+    @Override
+    public String type() {
+        return "String";
+    }
+
     /* (non-Javadoc)
-     * @see org.exist.source.Source#getKey()
-     */
+             * @see org.exist.source.Source#getKey()
+             */
     public Object getKey() {
         return data;
     }

@@ -26,7 +26,6 @@ import java.util.Map;
 
 import org.exist.Database;
 import org.exist.interpreter.ContextAtExist;
-import org.exist.security.xacml.AccessContext;
 import org.exist.util.Configuration;
 import org.exist.xquery.Module;
 import org.exist.xquery.XPathException;
@@ -47,7 +46,7 @@ public class XSLContext extends XQueryContext implements ContextAtExist {
 	private XSLStylesheet xslStylesheet;
 
     public XSLContext(Database db) {
-    	super(db, AccessContext.XSLT);
+    	super(db);
 
     	init();
     }

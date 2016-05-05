@@ -15,7 +15,6 @@ import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
@@ -81,7 +80,7 @@ public class LexerTest {
 			}
 
             // parse the query into the internal syntax tree
-            XQueryContext context = new XQueryContext(broker.getBrokerPool(), AccessContext.TEST);
+            XQueryContext context = new XQueryContext(broker.getBrokerPool());
             XQueryLexer lexer = new XQueryLexer(context, new StringReader(query));
             XQueryParser xparser = new XQueryParser(lexer);
             XQueryTreeParser treeParser = new XQueryTreeParser(context);

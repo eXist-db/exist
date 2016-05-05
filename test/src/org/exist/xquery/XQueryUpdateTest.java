@@ -10,7 +10,6 @@ import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
@@ -59,23 +58,23 @@ public class XQueryUpdateTest {
             	"			<stock>{$i * 10}</stock>\n" +
             	"		</product>\n" +
             	"	into /products";
-            XQueryContext context = new XQueryContext(pool, AccessContext.TEST);
+            XQueryContext context = new XQueryContext(pool);
             CompiledXQuery compiled = xquery.compile(broker, context, query);
             for (int i = 0; i < ITEMS_TO_APPEND; i++) {
                 context.declareVariable("i", Integer.valueOf(i));
                 xquery.execute(broker, compiled, null);
             }
 
-            Sequence seq = xquery.execute(broker, "/products", null, AccessContext.TEST);
+            Sequence seq = xquery.execute(broker, "/products", null);
             assertEquals(seq.getItemCount(), 1);
 
             Serializer serializer = broker.getSerializer();
             serializer.serialize((NodeValue) seq.itemAt(0));
 
-            seq = xquery.execute(broker, "//product", null, AccessContext.TEST);
+            seq = xquery.execute(broker, "//product", null);
             assertEquals(ITEMS_TO_APPEND, seq.getItemCount());
 
-            seq = xquery.execute(broker, "//product[price > 0.0]", null, AccessContext.TEST);
+            seq = xquery.execute(broker, "//product[price > 0.0]", null);
             assertEquals(ITEMS_TO_APPEND, seq.getItemCount());
         }
     }
@@ -93,32 +92,32 @@ public class XQueryUpdateTest {
             	"	update insert\n" +
             	"		attribute name { concat('n', $i) }\n" +
             	"	into //product[@num = $i]";
-            XQueryContext context = new XQueryContext(pool, AccessContext.TEST);
+            XQueryContext context = new XQueryContext(pool);
             CompiledXQuery compiled = xquery.compile(broker, context, query);
             for (int i = 0; i < ITEMS_TO_APPEND; i++) {
                 context.declareVariable("i", Integer.valueOf(i));
                 xquery.execute(broker, compiled, null);
             }
 
-            Sequence seq = xquery.execute(broker, "/products", null, AccessContext.TEST);
+            Sequence seq = xquery.execute(broker, "/products", null);
             assertEquals(seq.getItemCount(), 1);
 
             Serializer serializer = broker.getSerializer();
             serializer.serialize((NodeValue) seq.itemAt(0));
 
-            seq = xquery.execute(broker, "//product", null, AccessContext.TEST);
+            seq = xquery.execute(broker, "//product", null);
             assertEquals(ITEMS_TO_APPEND, seq.getItemCount());
 
-            seq = xquery.execute(broker, "//product[@name = 'n20']", null, AccessContext.TEST);
+            seq = xquery.execute(broker, "//product[@name = 'n20']", null);
             assertEquals(1, seq.getItemCount());
 
             store(broker, "attribs.xml", "<test attr1='aaa' attr2='bbb'>ccc</test>");
             query = "update insert attribute attr1 { 'eee' } into /test";
 
             //testing duplicate attribute ...
-            xquery.execute(broker, query, null, AccessContext.TEST);
+            xquery.execute(broker, query, null);
 
-            seq = xquery.execute(broker, "xmldb:document('" + TEST_COLLECTION + "/attribs.xml')/test[@attr1 = 'eee']", null, AccessContext.TEST);
+            seq = xquery.execute(broker, "xmldb:document('" + TEST_COLLECTION + "/attribs.xml')/test[@attr1 = 'eee']", null);
             assertEquals(1, seq.getItemCount());
             serializer.serialize((NodeValue) seq.itemAt(0));
         }
@@ -138,7 +137,7 @@ public class XQueryUpdateTest {
                             "   into /products";
 
             XQuery xquery = pool.getXQueryService();
-            xquery.execute(broker, query, null, AccessContext.TEST);
+            xquery.execute(broker, query, null);
 
             query =
                 "   declare variable $i external;\n" +
@@ -149,23 +148,23 @@ public class XQueryUpdateTest {
                 "           <stock>{$i * 10}</stock>\n" +
                 "       </product>\n" +
                 "   preceding /products/product[1]";
-            XQueryContext context = new XQueryContext(pool, AccessContext.TEST);
+            XQueryContext context = new XQueryContext(pool);
             CompiledXQuery compiled = xquery.compile(broker, context, query);
             for (int i = 0; i < ITEMS_TO_APPEND; i++) {
                 context.declareVariable("i", Integer.valueOf(i));
                 xquery.execute(broker, compiled, null);
             }
 
-            Sequence seq = xquery.execute(broker, "/products", null, AccessContext.TEST);
+            Sequence seq = xquery.execute(broker, "/products", null);
             assertEquals(seq.getItemCount(), 1);
 
             Serializer serializer = broker.getSerializer();
             serializer.serialize((NodeValue) seq.itemAt(0));
 
-            seq = xquery.execute(broker, "//product", null, AccessContext.TEST);
+            seq = xquery.execute(broker, "//product", null);
             assertEquals(ITEMS_TO_APPEND + 1, seq.getItemCount());
 
-            seq = xquery.execute(broker, "//product[price > 0.0]", null, AccessContext.TEST);
+            seq = xquery.execute(broker, "//product[price > 0.0]", null);
             assertEquals(ITEMS_TO_APPEND, seq.getItemCount());
         }
     }
@@ -184,7 +183,7 @@ public class XQueryUpdateTest {
                             "   into /products";
 
             XQuery xquery = pool.getXQueryService();
-            xquery.execute(broker, query, null, AccessContext.TEST);
+            xquery.execute(broker, query, null);
 
             query =
                 "   declare variable $i external;\n" +
@@ -195,23 +194,23 @@ public class XQueryUpdateTest {
                 "           <stock>{$i * 10}</stock>\n" +
                 "       </product>\n" +
                 "   following /products/product[1]";
-            XQueryContext context = new XQueryContext(pool, AccessContext.TEST);
+            XQueryContext context = new XQueryContext(pool);
             CompiledXQuery compiled = xquery.compile(broker, context, query);
             for (int i = 0; i < ITEMS_TO_APPEND; i++) {
                 context.declareVariable("i", Integer.valueOf(i));
                 xquery.execute(broker, compiled, null);
             }
 
-            Sequence seq = xquery.execute(broker, "/products", null, AccessContext.TEST);
+            Sequence seq = xquery.execute(broker, "/products", null);
             assertEquals(seq.getItemCount(), 1);
 
             Serializer serializer = broker.getSerializer();
             serializer.serialize((NodeValue) seq.itemAt(0));
 
-            seq = xquery.execute(broker, "//product", null, AccessContext.TEST);
+            seq = xquery.execute(broker, "//product", null);
             assertEquals(ITEMS_TO_APPEND + 1, seq.getItemCount());
 
-            seq = xquery.execute(broker, "//product[price > 0.0]", null, AccessContext.TEST);
+            seq = xquery.execute(broker, "//product[price > 0.0]", null);
             assertEquals(ITEMS_TO_APPEND, seq.getItemCount());
         }
     }
@@ -230,20 +229,20 @@ public class XQueryUpdateTest {
             	"for $prod at $i in //product return\n" +
                 "	update value $prod/description\n" +
                 "	with concat('Updated Description', $i)";
-            Sequence seq = xquery.execute(broker, query, null, AccessContext.TEST);
+            Sequence seq = xquery.execute(broker, query, null);
 
-            seq = xquery.execute(broker, "//product[starts-with(description, 'Updated')]", null, AccessContext.TEST);
+            seq = xquery.execute(broker, "//product[starts-with(description, 'Updated')]", null);
             assertEquals(seq.getItemCount(), ITEMS_TO_APPEND);
 
             Serializer serializer = broker.getSerializer();
             serializer.serialize((NodeValue) seq.itemAt(0));
 
             for (int i = 1; i <= ITEMS_TO_APPEND; i++) {
-                seq = xquery.execute(broker, "//product[description &= 'Description" + i + "']", null, AccessContext.TEST);
+                seq = xquery.execute(broker, "//product[description &= 'Description" + i + "']", null);
                 assertEquals(1, seq.getItemCount());
                 serializer.serialize((NodeValue) seq.itemAt(0));
             }
-            seq = xquery.execute(broker, "//product[description &= 'Updated']", null, AccessContext.TEST);
+            seq = xquery.execute(broker, "//product[description &= 'Updated']", null);
             assertEquals(seq.getItemCount(), ITEMS_TO_APPEND);
 
             serializer.serialize((NodeValue) seq.itemAt(0));
@@ -253,11 +252,11 @@ public class XQueryUpdateTest {
             	"for $prod at $count in //product return\n" +
                 "	update value $prod/stock/text()\n" +
                 "	with (400 + $count)";
-            seq = xquery.execute(broker, query, null, AccessContext.TEST);
+            seq = xquery.execute(broker, query, null);
 
-            seq = xquery.execute(broker, "//product[stock > 400]", null, AccessContext.TEST);
+            seq = xquery.execute(broker, "//product[stock > 400]", null);
             assertEquals(seq.getItemCount(), ITEMS_TO_APPEND);
-            seq = xquery.execute(broker, "//product[stock &= '401']", null, AccessContext.TEST);
+            seq = xquery.execute(broker, "//product[stock &= '401']", null);
             assertEquals(seq.getItemCount(), 1);
 
             serializer.serialize((NodeValue) seq.itemAt(0));
@@ -267,12 +266,12 @@ public class XQueryUpdateTest {
             	"for $prod in //product return\n" +
                 "	update value $prod/@num\n" +
                 "	with xs:int($prod/@num) * 3";
-            seq = xquery.execute(broker, query, null, AccessContext.TEST);
+            seq = xquery.execute(broker, query, null);
 
-            seq = xquery.execute(broker, "/products", null, AccessContext.TEST);
+            seq = xquery.execute(broker, "/products", null);
             assertEquals(seq.getItemCount(), 1);
 
-            seq = xquery.execute(broker, "//product[@num = 3]", null, AccessContext.TEST);
+            seq = xquery.execute(broker, "//product[@num = 3]", null);
             assertEquals(seq.getItemCount(), 1);
 
             serializer.serialize((NodeValue) seq.itemAt(0));
@@ -282,12 +281,12 @@ public class XQueryUpdateTest {
             	"for $prod in //product return\n" +
                 "	update value $prod/stock\n" +
                 "	with (<local>10</local>,<external>1</external>)";
-            seq = xquery.execute(broker, query, null, AccessContext.TEST);
+            seq = xquery.execute(broker, query, null);
 
-            seq = xquery.execute(broker, "/products", null, AccessContext.TEST);
+            seq = xquery.execute(broker, "/products", null);
             assertEquals(seq.getItemCount(), 1);
 
-            seq = xquery.execute(broker, "//product/stock/external[. = 1]", null, AccessContext.TEST);
+            seq = xquery.execute(broker, "//product/stock/external[. = 1]", null);
             assertEquals(seq.getItemCount(), ITEMS_TO_APPEND);
         }
     }
@@ -303,9 +302,9 @@ public class XQueryUpdateTest {
         	String query =
         		"for $prod in //product return\n" +
         		"	update delete $prod\n";
-        	Sequence seq = xquery.execute(broker, query, null, AccessContext.TEST);
+        	Sequence seq = xquery.execute(broker, query, null);
 
-        	seq = xquery.execute(broker, "//product", null, AccessContext.TEST);
+        	seq = xquery.execute(broker, "//product", null);
         	assertEquals(seq.getItemCount(), 0);
 
         }
@@ -323,17 +322,17 @@ public class XQueryUpdateTest {
             String query =
             	"for $prod in //product return\n" +
             	"	update rename $prod/description as 'desc'\n";
-            Sequence seq = xquery.execute(broker, query, null, AccessContext.TEST);
+            Sequence seq = xquery.execute(broker, query, null);
 
-            seq = xquery.execute(broker, "//product/desc", null, AccessContext.TEST);
+            seq = xquery.execute(broker, "//product/desc", null);
             assertEquals(seq.getItemCount(), ITEMS_TO_APPEND);
 
             query =
             	"for $prod in //product return\n" +
             	"	update rename $prod/@num as 'count'\n";
-            seq = xquery.execute(broker, query, null, AccessContext.TEST);
+            seq = xquery.execute(broker, query, null);
 
-            seq = xquery.execute(broker, "//product/@count", null, AccessContext.TEST);
+            seq = xquery.execute(broker, "//product/@count", null);
             assertEquals(seq.getItemCount(), ITEMS_TO_APPEND);
 
         }
@@ -351,25 +350,25 @@ public class XQueryUpdateTest {
             String query =
             	"for $prod in //product return\n" +
             	"	update replace $prod/description with <desc>An updated description.</desc>\n";
-            Sequence seq = xquery.execute(broker, query, null, AccessContext.TEST);
+            Sequence seq = xquery.execute(broker, query, null);
 
-            seq = xquery.execute(broker, "//product/desc", null, AccessContext.TEST);
+            seq = xquery.execute(broker, "//product/desc", null);
             assertEquals(seq.getItemCount(), ITEMS_TO_APPEND);
 
             query =
             	"for $prod in //product return\n" +
             	"	update replace $prod/@num with '1'\n";
-            seq = xquery.execute(broker, query, null, AccessContext.TEST);
+            seq = xquery.execute(broker, query, null);
 
-            seq = xquery.execute(broker, "//product/@num", null, AccessContext.TEST);
+            seq = xquery.execute(broker, "//product/@num", null);
             assertEquals(seq.getItemCount(), ITEMS_TO_APPEND);
 
             query =
             	"for $prod in //product return\n" +
             	"	update replace $prod/desc/text() with 'A new update'\n";
-            seq = xquery.execute(broker, query, null, AccessContext.TEST);
+            seq = xquery.execute(broker, query, null);
 
-            seq = xquery.execute(broker, "//product[starts-with(desc, 'A new')]", null, AccessContext.TEST);
+            seq = xquery.execute(broker, "//product[starts-with(desc, 'A new')]", null);
             assertEquals(seq.getItemCount(), ITEMS_TO_APPEND);
         }
     }
@@ -389,7 +388,7 @@ public class XQueryUpdateTest {
                     ")";
             XQuery xquery = pool.getXQueryService();
             @SuppressWarnings("unused")
-			Sequence result = xquery.execute(broker, query, null, AccessContext.TEST);
+			Sequence result = xquery.execute(broker, query, null);
         }
     }
 
@@ -405,19 +404,19 @@ public class XQueryUpdateTest {
             	"			<description><![CDATA[me & you <>]]></description>\n" +
             	"		</product>\n" +
             	"	into /products";
-            XQueryContext context = new XQueryContext(pool, AccessContext.TEST);
+            XQueryContext context = new XQueryContext(pool);
             CompiledXQuery compiled = xquery.compile(broker, context, query);
             for (int i = 0; i < ITEMS_TO_APPEND; i++) {
                 xquery.execute(broker, compiled, null);
             }
 
-            Sequence seq = xquery.execute(broker, "/products", null, AccessContext.TEST);
+            Sequence seq = xquery.execute(broker, "/products", null);
             assertEquals(seq.getItemCount(), 1);
 
             Serializer serializer = broker.getSerializer();
             serializer.serialize((NodeValue) seq.itemAt(0));
 
-            seq = xquery.execute(broker, "//product", null, AccessContext.TEST);
+            seq = xquery.execute(broker, "//product", null);
             assertEquals(ITEMS_TO_APPEND, seq.getItemCount());
         }
     }
@@ -435,7 +434,7 @@ public class XQueryUpdateTest {
 
             XQuery xquery = pool.getXQueryService();
             @SuppressWarnings("unused")
-			Sequence result = xquery.execute(broker, query, null, AccessContext.TEST);
+			Sequence result = xquery.execute(broker, query, null);
         }
     }
 

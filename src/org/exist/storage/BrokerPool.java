@@ -969,12 +969,6 @@ public class BrokerPool implements Database {
                             //wake-up the security manager
                             securityManager.attach(broker);
 
-                            //have to do this after initializing = false
-                            // so that the policies collection is saved
-                            if(securityManager.isXACMLEnabled()) {
-                                securityManager.getPDP().initializePolicyCollection();
-                            }
-
                             //If necessary, launch a task to repair the DB
                             //TODO : merge this with the recovery process ?
                             //XXX: don't do if READONLY mode

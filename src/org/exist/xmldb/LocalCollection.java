@@ -38,8 +38,6 @@ import org.exist.dom.persistent.LockToken;
 import org.exist.security.Account;
 import org.exist.security.Permission;
 import org.exist.security.Subject;
-import org.exist.security.xacml.AccessContext;
-import org.exist.security.xacml.NullAccessContextException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.EXistOutputKeys;
@@ -92,7 +90,6 @@ public class LocalCollection extends AbstractLocal implements CollectionImpl {
     private final XmldbURI path;
     private Properties properties = new Properties(defaultProperties);
     private boolean needsSync = false;
-    private final AccessContext accessCtx;
     private XMLReader userReader = null;
 
     /**
@@ -103,8 +100,8 @@ public class LocalCollection extends AbstractLocal implements CollectionImpl {
      * @param collection
      * @throws XMLDBException
      */
-    public LocalCollection(final Subject user, final BrokerPool brokerPool, final XmldbURI collection, final AccessContext accessCtx) throws XMLDBException {
-        this(user, brokerPool, null, collection, accessCtx);
+    public LocalCollection(final Subject user, final BrokerPool brokerPool, final XmldbURI collection) throws XMLDBException {
+        this(user, brokerPool, null, collection);
     }
 
     /**
@@ -116,13 +113,8 @@ public class LocalCollection extends AbstractLocal implements CollectionImpl {
      * @param name
      * @throws XMLDBException
      */
-    public LocalCollection(Subject user, final BrokerPool brokerPool, final LocalCollection parent, final XmldbURI name, final AccessContext accessCtx) throws XMLDBException {
+    public LocalCollection(Subject user, final BrokerPool brokerPool, final LocalCollection parent, final XmldbURI name) throws XMLDBException {
         super(user, brokerPool, parent);
-
-        if(accessCtx == null) {
-            throw new NullAccessContextException();
-        }
-        this.accessCtx = accessCtx;
 
         if(name == null) {
             this.path = XmldbURI.ROOT_COLLECTION_URI.toCollectionPathURI();
@@ -135,10 +127,6 @@ public class LocalCollection extends AbstractLocal implements CollectionImpl {
                will throw an XMLDBException if they cannot */
             return null;
         });
-    }
-
-    public AccessContext getAccessContext() {
-        return accessCtx;
     }
 
     protected boolean checkOwner(final Collection collection, final Account account) throws XMLDBException {
@@ -245,7 +233,7 @@ public class LocalCollection extends AbstractLocal implements CollectionImpl {
         });
 
         if(nameUri != null) {
-            return new LocalCollection(user, brokerPool, this, nameUri, accessCtx);
+            return new LocalCollection(user, brokerPool, this, nameUri);
         } else {
             return null;
         }
@@ -275,7 +263,7 @@ public class LocalCollection extends AbstractLocal implements CollectionImpl {
         
         if(collection == null) {
             final XmldbURI parentUri = this.<XmldbURI>read().apply((collection, broker, transaction) -> collection.getParentURI());
-            this.collection = new LocalCollection(user, brokerPool, null, parentUri, accessCtx);
+            this.collection = new LocalCollection(user, brokerPool, null, parentUri);
         }
         return collection;
     }
@@ -344,12 +332,12 @@ public class LocalCollection extends AbstractLocal implements CollectionImpl {
         switch(name) {
             case "XPathQueryService":
             case "XQueryService":
-                service = new LocalXPathQueryService(user, brokerPool, this, accessCtx);
+                service = new LocalXPathQueryService(user, brokerPool, this);
                 break;
 
             case "CollectionManagementService":
             case "CollectionManager":
-                service = new LocalCollectionManagementService(user, brokerPool, this, accessCtx);
+                service = new LocalCollectionManagementService(user, brokerPool, this);
                 break;
 
             case "UserManagementService":
@@ -377,8 +365,8 @@ public class LocalCollection extends AbstractLocal implements CollectionImpl {
     @Override
     public Service[] getServices() throws XMLDBException {
         final Service[] services = {
-                new LocalXPathQueryService(user, brokerPool, this, accessCtx),
-                new LocalCollectionManagementService(user, brokerPool, this, accessCtx),
+                new LocalXPathQueryService(user, brokerPool, this),
+                new LocalCollectionManagementService(user, brokerPool, this),
                 new LocalUserManagementService(user, brokerPool, this),
                 new LocalDatabaseInstanceManager(user, brokerPool),
                 new LocalXUpdateQueryService(user, brokerPool, this),

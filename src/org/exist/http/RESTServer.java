@@ -71,7 +71,6 @@ import org.exist.dom.memtree.NodeImpl;
 import org.exist.dom.memtree.SAXAdapter;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.xacml.AccessContext;
 import org.exist.source.DBSource;
 import org.exist.source.Source;
 import org.exist.source.StringSource;
@@ -876,7 +875,7 @@ public class RESTServer {
                         }
                     }
 
-                    final XUpdateProcessor processor = new XUpdateProcessor(broker, docs, AccessContext.REST);
+                    final XUpdateProcessor processor = new XUpdateProcessor(broker, docs);
                     final Modification modifications[] = processor.parse(new InputSource(new StringReader(content)));
                     long mods = 0;
                     for (int i = 0; i < modifications.length; i++) {
@@ -1277,7 +1276,7 @@ public class RESTServer {
 
             XQueryContext context;
             if (compiled == null) {
-                context = new XQueryContext(broker.getBrokerPool(), AccessContext.REST);
+                context = new XQueryContext(broker.getBrokerPool());
             } else {
                 context = compiled.getContext();
             }
@@ -1465,7 +1464,7 @@ public class RESTServer {
             // special header to indicate that the query is not returned from
             // cache
             response.setHeader("X-XQuery-Cached", "false");
-            context = new XQueryContext(broker.getBrokerPool(), AccessContext.REST);
+            context = new XQueryContext(broker.getBrokerPool());
 
         } else {
             response.setHeader("X-XQuery-Cached", "true");
@@ -1529,7 +1528,7 @@ public class RESTServer {
         XQueryContext context;
         CompiledXQuery compiled = pool.borrowCompiledXQuery(broker, source);
         if (compiled == null) {
-            context = new XQueryContext(broker.getBrokerPool(), AccessContext.REST);
+            context = new XQueryContext(broker.getBrokerPool());
         } else {
             context = compiled.getContext();
         }

@@ -30,7 +30,6 @@ import org.exist.dom.QName;
 import org.exist.dom.memtree.SAXAdapter;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.xacml.AccessContext;
 import org.exist.source.DBSource;
 import org.exist.source.Source;
 import org.exist.source.StringSource;
@@ -421,7 +420,7 @@ public class XIncludeFilter implements Receiver {
                 if (compiled != null)
                     {context = compiled.getContext();}
                 else
-                    {context = new XQueryContext(serializer.broker.getBrokerPool(), AccessContext.XINCLUDE);}
+                    {context = new XQueryContext(serializer.broker.getBrokerPool());}
                 context.declareNamespaces(namespaces);
                 context.declareNamespace("xinclude", XINCLUDE_NS);
                 

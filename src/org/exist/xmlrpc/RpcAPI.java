@@ -90,13 +90,6 @@ public interface RpcAPI {
     public boolean sync();
 
     /**
-     * Returns true if XACML is enabled for the current database instance
-     *
-     * @return if XACML is enabled
-     */
-    public boolean isXACMLEnabled();
-
-    /**
      * Retrieve document by name. XML content is indented if prettyPrint is set
      * to >=0. Use supplied encoding for output.
      *

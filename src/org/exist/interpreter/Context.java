@@ -10,24 +10,17 @@ import java.util.TimeZone;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.stream.XMLStreamException;
 
-import org.exist.Database;
-import org.exist.collections.triggers.TriggerException;
 import org.exist.debuggee.DebuggeeJoint;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.security.Subject;
-import org.exist.security.xacml.AccessContext;
-import org.exist.security.xacml.ExistPDP;
-import org.exist.security.xacml.XACMLSource;
 import org.exist.source.Source;
 import org.exist.stax.ExtendedXMLStreamReader;
 import org.exist.storage.DBBroker;
 import org.exist.storage.UpdateListener;
 import org.exist.storage.lock.LockedDocumentMap;
-import org.exist.storage.txn.TransactionException;
-import org.exist.storage.txn.Txn;
 import org.exist.util.hashtable.NamePool;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Expression;
@@ -36,7 +29,6 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.LocalVariable;
 import org.exist.xquery.Module;
 import org.exist.xquery.Option;
-import org.exist.xquery.PathExpr;
 import org.exist.xquery.Pragma;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.TerminatedException;
@@ -74,8 +66,6 @@ public interface Context {
 	 * Prepares the current context before xquery execution.
 	 */
 	public void prepareForExecution();
-
-	public AccessContext getAccessContext();
 
 	/**
 	 * Is profiling enabled?
@@ -115,12 +105,8 @@ public interface Context {
 	public int getExpressionCount();
         
         public void setSource(Source source);
-        
-        public Source getSource();
 
-	public void setXacmlSource(XACMLSource xacmlSource);
-        
-	public XACMLSource getXacmlSource();
+        public Source getSource();
 
 	/**
 	 * Declare a user-defined static prefix/namespace mapping.
@@ -395,13 +381,6 @@ public interface Context {
 	 * @param   moduleClass 
 	 */
 	public Module loadBuiltInModule(String namespaceURI, String moduleClass);
-
-	/**
-	 * Convenience method that returns the XACML Policy Decision Point for this database instance. If XACML has not been enabled, this returns null.
-	 *
-	 * @return  the PDP for this database instance, or null if XACML is disabled
-	 */
-	public ExistPDP getPDP();
 
 	/**
 	 * Declare a user-defined function. All user-defined functions are kept in a single hash map.
