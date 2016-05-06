@@ -4,7 +4,6 @@ import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.persistent.NodeHandle;
 import org.exist.dom.persistent.NodeProxy;
-import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.StorageAddress;
@@ -48,7 +47,7 @@ public class DLNStorageTest {
             assertNotNull(xquery);
             // test element ids
             Sequence seq = xquery.execute(broker, "doc('/db/test/test_string.xml')/test/para",
-                    null, AccessContext.TEST);
+                    null);
             assertEquals(3, seq.getItemCount());
             NodeProxy comment = (NodeProxy) seq.itemAt(0);
             assertEquals(comment.getNodeId().toString(), "1.1");
@@ -58,14 +57,14 @@ public class DLNStorageTest {
             assertEquals(comment.getNodeId().toString(), "1.5");
 
             seq = xquery.execute(broker, "doc('/db/test/test_string.xml')/test//a",
-                    null, AccessContext.TEST);
+                    null);
             assertEquals(1, seq.getItemCount());
             NodeProxy a = (NodeProxy) seq.itemAt(0);
             assertEquals("1.3.2", a.getNodeId().toString());
 
             // test attribute id
             seq = xquery.execute(broker, "doc('/db/test/test_string.xml')/test//a/@href",
-                    null, AccessContext.TEST);
+                    null);
             assertEquals(1, seq.getItemCount());
             NodeProxy href = (NodeProxy) seq.itemAt(0);
             StorageAddress.toString(href);
@@ -82,7 +81,7 @@ public class DLNStorageTest {
 
             // test text node
             seq = xquery.execute(broker, "doc('/db/test/test_string.xml')/test//b/text()",
-                    null, AccessContext.TEST);
+                    null);
             assertEquals(1, seq.getItemCount());
             NodeProxy text = (NodeProxy) seq.itemAt(0);
             assertEquals("1.5.2.1", text.getNodeId().toString());

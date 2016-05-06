@@ -23,7 +23,6 @@ import org.exist.collections.IndexInfo;
 import org.exist.dom.persistent.DefaultDocumentSet;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.MutableDocumentSet;
-import org.exist.security.xacml.AccessContext;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
@@ -88,7 +87,7 @@ public class TestTrigger extends SAXTrigger implements DocumentTrigger {
             // We would end up in infinite recursion if we don't do that
             getCollection().setTriggersEnabled(false);
             // create the XUpdate processor
-            XUpdateProcessor processor = new XUpdateProcessor(broker, docs, AccessContext.TRIGGER);
+            XUpdateProcessor processor = new XUpdateProcessor(broker, docs);
             // process the XUpdate
             Modification modifications[] = processor.parse(new InputSource(new StringReader(xupdate)));
             for (int i = 0; i < modifications.length; i++) {

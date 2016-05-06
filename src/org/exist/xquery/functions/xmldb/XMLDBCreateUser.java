@@ -136,8 +136,7 @@ public class XMLDBCreateUser extends BasicFunction {
 			collection = new LocalCollection(
 					context.getSubject(), 
 					context.getBroker().getBrokerPool(), 
-					XmldbURI.ROOT_COLLECTION_URI,
-					context.getAccessContext());
+					XmldbURI.ROOT_COLLECTION_URI);
 			final UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
 			ums.addAccount(userObj);
 

@@ -29,7 +29,6 @@ import org.junit.BeforeClass;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
-import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.ElementValue;
@@ -407,7 +406,7 @@ public class BasicNodeSetTest {
     
     private static Sequence executeQuery(DBBroker broker, String query, int expected, String expectedResult) throws XPathException, SAXException, PermissionDeniedException {
         XQuery xquery = broker.getBrokerPool().getXQueryService();
-        Sequence seq = xquery.execute(broker, query, null, AccessContext.TEST);
+        Sequence seq = xquery.execute(broker, query, null);
         assertEquals(expected, seq.getItemCount());
         
         if (expectedResult != null) {

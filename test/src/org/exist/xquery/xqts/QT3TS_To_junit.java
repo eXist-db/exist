@@ -34,7 +34,6 @@ import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
@@ -228,7 +227,7 @@ public class QT3TS_To_junit {
 
         XQuery xqs = db.getXQueryService();
         
-        Sequence results = xqs.execute(broker, tsQuery, null, AccessContext.TEST);
+        Sequence results = xqs.execute(broker, tsQuery, null);
         
         for (NodeProxy p : results.toNodeSet()) {
         	NamedNodeMap attrs = p.getNode().getAttributes();
@@ -246,7 +245,7 @@ public class QT3TS_To_junit {
     		"return $catalog//qt:test-case";
 
         XQuery xqs = db.getXQueryService();
-        Sequence results = xqs.execute(broker, tsQuery, null, AccessContext.TEST);
+        Sequence results = xqs.execute(broker, tsQuery, null);
         
         testCases(src, file, name, results);
 	}

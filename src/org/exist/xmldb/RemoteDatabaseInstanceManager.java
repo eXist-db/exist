@@ -112,19 +112,4 @@ public class RemoteDatabaseInstanceManager implements DatabaseInstanceManager {
     public DatabaseStatus getStatus() throws XMLDBException {
         throw new XMLDBException(ErrorCodes.NOT_IMPLEMENTED, "this method is not available for remote connections");
     }
-
-    @Override
-    public boolean isXACMLEnabled() throws XMLDBException {
-        final List<Object> params = new ArrayList<>();
-        try {
-            final Object result = client.execute("isXACMLEnabled", params);
-            if (result instanceof Boolean) {
-                return (Boolean)result;
-            } else {
-                throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "Invalid return type for remote invocation of 'isXACMLEnabled'");
-            }
-        } catch (final XmlRpcException e) {
-            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "Error determining if XACML is enabled: " + e.getMessage(), e);
-        }
-    }
 }

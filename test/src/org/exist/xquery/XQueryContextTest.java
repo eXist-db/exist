@@ -24,7 +24,6 @@ import org.exist.security.Subject;
 import org.exist.xquery.value.BinaryValue;
 import org.junit.Test;
 import org.easymock.EasyMock;
-import org.exist.security.xacml.AccessContext;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -43,8 +42,8 @@ public class XQueryContextTest {
 
         //partial mock context
         XQueryContext context = EasyMock.createMockBuilder(XQueryContext.class)
-                .withConstructor(AccessContext.class)
-                .withArgs(AccessContext.TEST)
+                .withConstructor()
+                .withArgs()
                 .addMockedMethod("getUserFromHttpSession")
                 .addMockedMethod("getBroker")
                 .createMock();
@@ -73,7 +72,7 @@ public class XQueryContextTest {
      */
     @Test
     public void cleanUp_BinaryValueInstances() throws NoSuchFieldException, IllegalAccessException, IOException {
-        final XQueryContext context = new XQueryContext(AccessContext.TEST);
+        final XQueryContext context = new XQueryContext();
         final XQueryWatchDog mockWatchdog = createMock(XQueryWatchDog.class);
         context.setWatchDog(mockWatchdog);
 

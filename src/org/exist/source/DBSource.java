@@ -61,10 +61,20 @@ public class DBSource extends AbstractSource {
         this.lastModified = doc.getMetadata().getLastModified();
         this.checkEncoding = checkXQEncoding;
     }
-    
+
+    @Override
+    public String path() {
+        return getDocumentPath().toString();
+    }
+
+    @Override
+    public String type() {
+        return "DB";
+    }
+
     /* (non-Javadoc)
-     * @see org.exist.source.Source#getKey()
-     */
+             * @see org.exist.source.Source#getKey()
+             */
     @Override
     public Object getKey() {
         return key;

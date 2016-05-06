@@ -38,7 +38,6 @@ import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
-import org.exist.security.xacml.AccessContext;
 import org.exist.source.DBSource;
 import org.exist.source.Source;
 import org.exist.source.StringSource;
@@ -109,7 +108,7 @@ public class SMEvents implements Configurable {
             if(source == null) {return;}
 
             final XQuery xquery = broker.getBrokerPool().getXQueryService();
-            final XQueryContext context = new XQueryContext(broker.getBrokerPool(), AccessContext.XMLDB);
+            final XQueryContext context = new XQueryContext(broker.getBrokerPool());
 
             final CompiledXQuery compiled = xquery.compile(broker, context, source);
 

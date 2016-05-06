@@ -303,11 +303,6 @@
                 <include name="**.xq"/>
             </fileset>
         </copy>
-        <copy todir="${build.classes}/org/exist/security/xacml/policies">
-            <fileset dir="${src}/org/exist/security/xacml/policies">
-                <include name="*.xml"/>
-            </fileset>
-        </copy>
         <copy file="${src}/org/exist/xquery/util/messages.properties"
             todir="${build.classes}/org/exist/xquery/util"/>
         <copy file="${src}/org/exist/ant/antlib.xml" todir="${build.classes}/org/exist/ant"/>
@@ -477,7 +472,6 @@
             <link href="http://www.slf4j.org/api/"/>
             <link href="http://nekohtml.sourceforge.net/javadoc/"/>
             <link href="http://www.quartz-scheduler.org/api/1.8.5/"/>
-            <link href="http://sunxacml.sourceforge.net/javadoc/"/>
             <link href="http://ws.apache.org/xmlrpc/apidocs/"/>
             <link href="http://www.antlr2.org/javadoc/"/>
             <link href="http://xerces.apache.org/xerces2-j/javadocs/api/"/>
@@ -548,7 +542,6 @@
             <link href="http://logging.apache.org/log4j/2.x/log4j-api/apidocs/"/>
             <link href="http://nekohtml.sourceforge.net/javadoc/"/>
             <link href="http://www.quartz-scheduler.org/docs/api/"/>
-            <link href="http://sunxacml.sourceforge.net/javadoc/"/>
             <link href="http://ws.apache.org/xmlrpc/apidocs/"/>
             <link href="http://www.antlr2.org/javadoc/"/>
             <link href="http://www.jgroups.org/javagroupsnew/docs/javadoc/"/>

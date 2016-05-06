@@ -20,7 +20,6 @@
  */
 package org.exist.xquery;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
 import java.net.MalformedURLException;
@@ -75,7 +74,6 @@ import org.exist.security.AuthenticationException;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
-import org.exist.security.xacml.*;
 import org.exist.source.*;
 import org.exist.stax.ExtendedXMLStreamReader;
 import org.exist.storage.DBBroker;
@@ -295,8 +293,6 @@ public class XQueryContext implements BinaryValueManager, Context
     
     //For holding the environment variables
     Map<String,String> envs;
-    
-    private AccessContext                              accessCtx;
 
     private ContextUpdateListener                      updateListener                = null;
 
@@ -308,8 +304,6 @@ public class XQueryContext implements BinaryValueManager, Context
 
     private Source source = null;
     
-    private XACMLSource                                xacmlSource                        = null;
-
     private DebuggeeJoint                              debuggeeJoint                 = null;
 
     private int                                        xqueryVersion                 = 31;
@@ -366,19 +360,15 @@ public class XQueryContext implements BinaryValueManager, Context
     // TODO: end of expath repo manager, may change
 
 
-    protected XQueryContext( AccessContext accessCtx )
+    protected XQueryContext( )
     {
-        if( accessCtx == null ) {
-            throw( new NullAccessContextException() );
-        }
-        this.accessCtx = accessCtx;
         profiler = new Profiler( null );
     }
 
 
-    public XQueryContext( Database db, AccessContext accessCtx )
+    public XQueryContext( Database db )
     {
-        this( accessCtx );
+        this( );
         this.db = db;
         loadDefaults( db.getConfiguration() );
         this.profiler = new Profiler( db );
@@ -387,7 +377,7 @@ public class XQueryContext implements BinaryValueManager, Context
 
     public XQueryContext( XQueryContext copyFrom )
     {
-        this( copyFrom.getAccessContext() );
+        this( );
         this.db = copyFrom.db;
         loadDefaultNS();
         final Iterator<String> prefixes = copyFrom.staticNamespaces.keySet().iterator();
@@ -548,13 +538,6 @@ public class XQueryContext implements BinaryValueManager, Context
         //Note that, for some reasons, an XQueryContext might be used without calling this method
     }
 
-
-    public AccessContext getAccessContext()
-    {
-        return( accessCtx );
-    }
-
-
     /**
      * Is profiling enabled?
      *
@@ -625,18 +608,6 @@ public class XQueryContext implements BinaryValueManager, Context
     public int getExpressionCount()
     {
         return( expressionCounter );
-    }
-
-
-    @Override
-    public void setXacmlSource(final XACMLSource xacmlSource) {
-        this.xacmlSource = xacmlSource;
-    }
-
-
-    @Override
-    public XACMLSource getXacmlSource() {
-        return xacmlSource;
     }
 
     /**
@@ -1734,17 +1705,6 @@ public class XQueryContext implements BinaryValueManager, Context
         
         return module;
     }
-
-
-    /**
-     * Convenience method that returns the XACML Policy Decision Point for this database instance. If XACML has not been enabled, this returns null.
-     *
-     * @return  the PDP for this database instance, or null if XACML is disabled
-     */
-    public ExistPDP getPDP() {
-    	return db.getSecurityManager().getPDP();
-    }
-
 
     /**
      * Declare a user-defined function. All user-defined functions are kept in a single hash map.
@@ -2930,7 +2890,6 @@ public class XQueryContext implements BinaryValueManager, Context
 
             // Set source information on module context
 //            String sourceClassName = source.getClass().getName();
-            modContext.setXacmlSource( XACMLSource.getInstance( source ) );
 //            modContext.setSourceKey(source.getKey().toString());
             // Extract the source type from the classname by removing the package prefix and the "Source" suffix
 //            modContext.setSourceType( sourceClassName.substring( 17, sourceClassName.length() - 6 ) );

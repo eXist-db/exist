@@ -50,4 +50,15 @@ public class ClassLoaderSource extends URLSource {
             {throw new IOException("Source not found: " + source);}
         setURL(url);
     }
+
+    @Override
+    public String type() {
+        final String protocol = url.getProtocol();
+        final String host = url.getHost();
+        if(protocol.equals("file") && (host == null || host.length() == 0 || "localhost".equals(host) || "127.0.0.1".equals(host)))
+        {
+            return "File";
+        }
+        return "Classloader";
+    }
 }

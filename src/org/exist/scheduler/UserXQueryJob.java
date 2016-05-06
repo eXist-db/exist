@@ -30,7 +30,6 @@ import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
-import org.exist.security.xacml.AccessContext;
 import org.exist.source.DBSource;
 import org.exist.source.Source;
 import org.exist.source.SourceFactory;
@@ -176,7 +175,7 @@ public class UserXQueryJob extends UserJob {
                 compiled = xqPool.borrowCompiledXQuery(broker, source);
 
                 if(compiled == null) {
-                    context = new XQueryContext(pool, AccessContext.REST); //TODO should probably have its own AccessContext.SCHEDULER
+                    context = new XQueryContext(pool);
                 } else {
                     context = compiled.getContext();
                 }

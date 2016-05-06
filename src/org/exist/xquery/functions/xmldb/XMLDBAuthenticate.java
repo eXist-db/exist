@@ -176,7 +176,7 @@ public class XMLDBAuthenticate extends UserSwitchingBasicFunction {
     }
 
     private String getLocation() {
-        return "@ " + getContext().getXacmlSource().getKey() + " [" + getLine() + ":" + getColumn() + "]";
+        return "@ " + getContext().getSource().path() + " [" + getLine() + ":" + getColumn() + "]";
     }
 
     /**

@@ -50,7 +50,6 @@ import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.security.internal.web.HttpAccount;
-import org.exist.security.xacml.AccessContext;
 import org.exist.source.FileSource;
 import org.exist.source.Source;
 import org.exist.source.SourceFactory;
@@ -433,7 +432,7 @@ public class XQueryServlet extends AbstractExistHttpServlet {
 
             XQueryContext context;
             if (query==null) {
-               context = new XQueryContext(getPool(), AccessContext.REST);
+               context = new XQueryContext(getPool());
                context.setModuleLoadPath(moduleLoadPath);
                try {
             	   query = xquery.compile(broker, context, source);

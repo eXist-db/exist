@@ -33,7 +33,6 @@ import org.apache.logging.log4j.Logger;
 import org.exist.Namespaces;
 import org.exist.dom.QName;
 
-import org.exist.security.xacml.XACMLSource;
 import org.exist.xquery.ErrorCodes.ErrorCode;
 import org.exist.xquery.ErrorCodes.JavaErrorCode;
 import org.exist.xquery.util.ExpressionDumper;
@@ -304,8 +303,8 @@ public class TryCatchExpression extends AbstractExpression {
         err_module.setSequenceType(new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE));
 
         final Sequence module;
-        if (t != null && t instanceof XPathException && ((XPathException)t).getXACMLSource() != null) {
-            module = new StringValue(((XPathException)t).getXACMLSource().getKey());
+        if (t != null && t instanceof XPathException && ((XPathException)t).getSource() != null) {
+            module = new StringValue(((XPathException)t).getSource().path());
         } else {
             module = Sequence.EMPTY_SEQUENCE;
         }

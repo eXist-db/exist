@@ -2,7 +2,6 @@ package org.exist.storage;
 
 import org.exist.EXistException;
 import org.exist.security.Subject;
-import org.exist.security.xacml.AccessContext;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.xmldb.LocalCollection;
@@ -90,7 +89,7 @@ public class BrokerPoolTest {
 
             //perform an XML:DB operation as the SYSTEM user
             final Subject sysUser = pool.getSecurityManager().getSystemSubject();
-            new LocalCollection(sysUser, pool, XmldbURI.ROOT_COLLECTION_URI, AccessContext.TEST);
+            new LocalCollection(sysUser, pool, XmldbURI.ROOT_COLLECTION_URI);
 
             //ensure that after releasing the broker, the user has been returned to the guest user
             assertEquals("Expected `guest` user, but was: " + broker1.getCurrentSubject().getName(), guestUser.getId(), broker1.getCurrentSubject().getId());

@@ -18,6 +18,15 @@ public class BinarySource extends AbstractSource {
         this.checkEncoding = checkXQEncoding;
     }
 
+    public String path() {
+        return type();
+    }
+
+    @Override
+    public String type() {
+        return "Binary";
+    }
+
     public Object getKey() {
         return data;
     }

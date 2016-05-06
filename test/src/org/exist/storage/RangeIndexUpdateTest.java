@@ -32,7 +32,6 @@ import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.MutableDocumentSet;
 import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.xacml.AccessContext;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.test.TestConstants;
@@ -104,11 +103,11 @@ public class RangeIndexUpdateTest {
 
             final XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
-            final Sequence seq = xquery.execute(broker, "//item[. = 'Chair']", null, AccessContext.TEST);
+            final Sequence seq = xquery.execute(broker, "//item[. = 'Chair']", null);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
 
-            final XUpdateProcessor proc = new XUpdateProcessor(broker, docs, AccessContext.TEST);
+            final XUpdateProcessor proc = new XUpdateProcessor(broker, docs);
             assertNotNull(proc);
             proc.setBroker(broker);
             proc.setDocumentSet(docs);

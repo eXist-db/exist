@@ -6,7 +6,6 @@ import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.xacml.AccessContext;
 import org.exist.source.StringSource;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -206,7 +205,7 @@ public class ConstructedNodesRecoveryTest {
 	        XQuery service = pool.getXQueryService();
 	        assertNotNull(service);
 	        
-	        CompiledXQuery compiled = service.compile(broker, new XQueryContext(pool, AccessContext.TEST), new StringSource(xquery));
+	        CompiledXQuery compiled = service.compile(broker, new XQueryContext(pool), new StringSource(xquery));
 	        assertNotNull(compiled);
 	        
 	        Sequence result = service.execute(broker, compiled, null);

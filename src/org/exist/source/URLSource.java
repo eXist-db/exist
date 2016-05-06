@@ -44,7 +44,7 @@ public class URLSource extends AbstractSource {
 
 	private final static Logger LOG = LogManager.getLogger(URLSource.class);
 	
-	private URL url;
+	protected URL url;
 	private URLConnection connection = null;
 	private long lastModified = 0;
     private int responseCode = HttpURLConnection.HTTP_OK;
@@ -55,8 +55,30 @@ public class URLSource extends AbstractSource {
 	public URLSource(URL url) {
 		this.url = url;
 	}
-	
-    protected void setURL(URL url) {
+
+	@Override
+	public String path() {
+		final String protocol = url.getProtocol();
+		final String host = url.getHost();
+		if(protocol.equals("file") && (host == null || host.length() == 0 || "localhost".equals(host) || "127.0.0.1".equals(host)))
+		{
+			return url.getFile();
+		}
+		return url.toExternalForm();
+	}
+
+	@Override
+	public String type() {
+		final String protocol = url.getProtocol();
+		final String host = url.getHost();
+		if(protocol.equals("file") && (host == null || host.length() == 0 || "localhost".equals(host) || "127.0.0.1".equals(host)))
+		{
+			return "File";
+		}
+		return "URL";
+	}
+
+	protected void setURL(URL url) {
         this.url = url;
     }
     

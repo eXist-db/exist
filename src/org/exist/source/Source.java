@@ -44,7 +44,11 @@ public interface Source {
     public final static int VALID = 1;
     public final static int INVALID = -1;
     public final static int UNKNOWN = 0;
-    
+
+    String path();
+
+    String type();
+
     /**
      * Returns a unique key to identify the source, usually
      * an URI.

@@ -30,6 +30,16 @@ public class StringSourceWithMapKey extends AbstractSource {
 		this.map.put("<query>", content);
 	}
 
+	@Override
+	public String path() {
+		return type();
+	}
+
+	@Override
+	public String type() {
+		return "StringWithMapKey";
+	}
+
 	public Object getKey() {return map;}
 	public int isValid(DBBroker broker) {return Source.VALID;}
 	public int isValid(Source other) {return Source.VALID;}

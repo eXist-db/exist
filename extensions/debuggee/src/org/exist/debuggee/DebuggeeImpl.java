@@ -30,7 +30,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.mina.core.session.IoSession;
 import org.exist.Database;
 import org.exist.debuggee.dbgp.packets.Init;
-import org.exist.security.xacml.AccessContext;
 import org.exist.source.Source;
 import org.exist.source.SourceFactory;
 import org.exist.storage.BrokerPool;
@@ -132,7 +131,7 @@ public class DebuggeeImpl implements Debuggee {
 
 				XQuery xquery = broker.getBrokerPool().getXQueryService();
 
-				XQueryContext queryContext = new XQueryContext(broker.getBrokerPool(), AccessContext.REST);
+				XQueryContext queryContext = new XQueryContext(broker.getBrokerPool());
 
 				// Find correct script load path
 				queryContext.setModuleLoadPath(XmldbURI.create(uri).removeLastSegment().toString());

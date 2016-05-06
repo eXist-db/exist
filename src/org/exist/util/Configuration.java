@@ -41,7 +41,6 @@ import org.exist.dom.memtree.SAXAdapter;
 import org.exist.scheduler.JobConfig;
 import org.exist.scheduler.JobException;
 import org.exist.security.internal.RealmImpl;
-import org.exist.security.xacml.XACMLConstants;
 import org.exist.storage.BrokerFactory;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.CollectionCacheManager;
@@ -243,13 +242,6 @@ public class Configuration implements ErrorHandler
             final NodeList xquery = doc.getElementsByTagName(XQUERY_CONFIGURATION_ELEMENT_NAME);
             if(xquery.getLength() > 0) {
                 configureXQuery((Element)xquery.item(0));
-            }
-
-            //XACML settings
-            final NodeList xacml = doc.getElementsByTagName(XACMLConstants.CONFIGURATION_ELEMENT_NAME);
-            //TODO : check that we have only one element
-            if(xacml.getLength() > 0) {
-                configureXACML((Element)xacml.item(0));
             }
 
             //Validation
@@ -457,19 +449,6 @@ public class Configuration implements ErrorHandler
 
         return mClass;
     }
-
-
-    public void configureXACML( Element xacml )
-    {
-        final String enable = getConfigAttributeValue( xacml, XACMLConstants.ENABLE_XACML_ATTRIBUTE );
-        config.put( XACMLConstants.ENABLE_XACML_PROPERTY, Configuration.parseBoolean( enable, XACMLConstants.ENABLE_XACML_BY_DEFAULT ) );
-        LOG.debug( XACMLConstants.ENABLE_XACML_PROPERTY + ": " + config.get( XACMLConstants.ENABLE_XACML_PROPERTY ) );
-
-        final String loadDefaults = getConfigAttributeValue( xacml, XACMLConstants.LOAD_DEFAULT_POLICIES_ATTRIBUTE );
-        config.put( XACMLConstants.LOAD_DEFAULT_POLICIES_PROPERTY, Configuration.parseBoolean( loadDefaults, true ) );
-        LOG.debug( XACMLConstants.LOAD_DEFAULT_POLICIES_PROPERTY + ": " + config.get( XACMLConstants.LOAD_DEFAULT_POLICIES_PROPERTY ) );
-    }
-
 
     /**
      * DOCUMENT ME!

@@ -25,7 +25,6 @@ import org.exist.EXistException;
 import org.exist.config.Configurable;
 import org.exist.config.ConfigurationException;
 import org.exist.dom.persistent.DocumentImpl;
-import org.exist.security.xacml.ExistPDP;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.XmldbURI;
@@ -56,10 +55,6 @@ public interface SecurityManager extends Configurable {
    
    Database getDatabase();
    Database database();
-
-   boolean isXACMLEnabled();
-   
-   ExistPDP getPDP();
 
    Account getAccount(int id);
 

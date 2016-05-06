@@ -24,7 +24,6 @@ package org.exist.interpreter;
 import java.io.IOException;
 import java.util.Properties;
 
-import org.exist.security.xacml.AccessContext;
 import org.exist.source.Source;
 import org.exist.storage.XQueryPool;
 import org.exist.xquery.XPathException;
@@ -32,7 +31,7 @@ import org.exist.xquery.value.Sequence;
 
 public interface Compiler {
 
-	public Context newContext(AccessContext accessCtx);
+	public Context newContext();
 
 	public XQueryPool getXQueryPool();
 
@@ -50,6 +49,6 @@ public interface Compiler {
 
 	public Sequence execute(Compiled expression, Sequence contextSequence, Properties outputProperties, boolean resetContext) throws XPathException;
 
-	public Sequence execute(String expression, Sequence contextSequence, AccessContext accessCtx) throws XPathException;
+	public Sequence execute(String expression, Sequence contextSequence) throws XPathException;
 
 }

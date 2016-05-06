@@ -104,9 +104,4 @@ public class LocalDatabaseInstanceManager extends AbstractLocalService implement
     @Override
     public void setProperty(final String name, final String value) throws XMLDBException {
     }
-
-    @Override
-    public boolean isXACMLEnabled() throws XMLDBException {
-        return brokerPool.getSecurityManager().isXACMLEnabled();
-    }
 }

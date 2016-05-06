@@ -33,7 +33,6 @@ import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.security.AuthenticationException;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
@@ -119,7 +118,7 @@ public class DOMIndexerTest {
         final BrokerPool pool = BrokerPool.getInstance();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             XQuery xquery = broker.getBrokerPool().getXQueryService();
-            Sequence result = xquery.execute(broker, XQUERY, null, AccessContext.TEST);
+            Sequence result = xquery.execute(broker, XQUERY, null);
             int count = result.getItemCount();
             StringWriter out = new StringWriter();
             Properties props = new Properties();

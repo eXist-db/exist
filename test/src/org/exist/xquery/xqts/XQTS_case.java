@@ -38,7 +38,6 @@ import junit.framework.Assert;
 import org.exist.dom.persistent.ElementImpl;
 import org.exist.dom.NodeListImpl;
 import org.exist.dom.persistent.NodeProxy;
-import org.exist.security.xacml.AccessContext;
 import org.exist.source.FileSource;
 import org.exist.storage.DBBroker;
 import org.exist.w3c.tests.TestCase;
@@ -96,7 +95,7 @@ public class XQTS_case extends TestCase {
             "let $XQTSCatalog := xmldb:document('/db/XQTS/XQTSCatalog.xml') "+
             "return $XQTSCatalog//catalog:sources//catalog:source";
 
-            Sequence results = xquery.execute(broker, query, null, AccessContext.TEST);
+            Sequence results = xquery.execute(broker, query, null);
 
             for (NodeProxy node : results.toNodeSet()) {
                 ElementImpl source = (ElementImpl) node.getNode();
@@ -110,7 +109,7 @@ public class XQTS_case extends TestCase {
                 "let $XQTSCatalog := xmldb:document('/db/XQTS/XQTSCatalog.xml') "+
                 "return $XQTSCatalog//catalog:sources//catalog:module";
 
-            Sequence results = xquery.execute(broker, query, null, AccessContext.TEST);
+            Sequence results = xquery.execute(broker, query, null);
 
             for (NodeProxy node : results.toNodeSet()) {
                 ElementImpl source = (ElementImpl) node.getNode();
@@ -151,7 +150,7 @@ public class XQTS_case extends TestCase {
             "let $tc := $XQTSCatalog/catalog:test-suite//catalog:test-group[@name eq \""+testGroup+"\"]/catalog:test-case[@name eq \""+testCase+"\"]\n"+
             "return $tc";
 
-            Sequence results = xquery.execute(broker, query, null, AccessContext.TEST);
+            Sequence results = xquery.execute(broker, query, null);
             
             Assert.assertFalse("", !results.hasOne());
 
@@ -211,7 +210,7 @@ public class XQTS_case extends TestCase {
             try {
                 XQueryContext context;
 
-                context = new XQueryContext(broker.getBrokerPool(), AccessContext.TEST);
+                context = new XQueryContext(broker.getBrokerPool());
 
                 //map modules' namespaces to location 
                 Map<String, String> moduleMap = (Map<String, String>)broker.getConfiguration().getProperty(XQueryContext.PROPERTY_STATIC_MODULE_MAP);

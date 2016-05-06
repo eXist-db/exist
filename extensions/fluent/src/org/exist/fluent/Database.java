@@ -14,7 +14,6 @@ import org.exist.dom.persistent.MutableDocumentSet;
 import org.exist.dom.persistent.NodeHandle;
 import org.exist.dom.persistent.TextImpl;
 import org.exist.security.*;
-import org.exist.security.xacml.AccessContext;
 import org.exist.storage.*;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.sync.Sync;
@@ -347,7 +346,7 @@ public class Database {
 	private Sequence adoptInternal(Object o) {
 		DBBroker broker = acquireBroker();
 		try {
-			XQueryContext context = new XQueryContext(broker.getBrokerPool(), AccessContext.INTERNAL_PREFIX_LOOKUP);
+			XQueryContext context = new XQueryContext(broker.getBrokerPool());
 			context.declareNamespaces(namespaceBindings.getCombinedMap());
 			context.setBackwardsCompatibility(false);
 			context.setStaticallyKnownDocuments(DocumentSet.EMPTY_DOCUMENT_SET);

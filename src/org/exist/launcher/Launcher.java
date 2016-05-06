@@ -26,7 +26,6 @@ import org.exist.EXistException;
 import org.exist.jetty.JettyStart;
 import org.exist.repo.ExistRepository;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.util.ConfigurationHelper;
@@ -557,7 +556,7 @@ public class Launcher extends Observable implements Observer {
             try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
                 final XQuery xquery = pool.getXQueryService();
-                final Sequence pkgs = xquery.execute(broker, "repo:list()", null, AccessContext.INITIALIZE);
+                final Sequence pkgs = xquery.execute(broker, "repo:list()", null);
                 for (final SequenceIterator i = pkgs.iterate(); i.hasNext(); ) {
                     final ExistRepository.Notification notification = new ExistRepository.Notification(ExistRepository.Action.INSTALL, i.nextItem().getStringValue());
                     Optional<ExistRepository> expathRepo = pool.getExpathRepo();
