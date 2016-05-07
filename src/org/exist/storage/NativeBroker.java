@@ -738,7 +738,7 @@ public class NativeBroker extends DBBroker {
                     if(current.hasSubcollectionNoLock(this, temp)) {
                         current = getCollection(path);
                         if(current == null) {
-                            LOG.debug("Collection '" + path + "' not found!");
+                            LOG.error("Collection '" + path + "' found in subCollections set but is missing from collections.dbx!");
                         }
                     } else {
 
