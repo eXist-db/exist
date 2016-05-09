@@ -24,12 +24,14 @@ package org.exist.util.hashtable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import net.jcip.annotations.ThreadSafe;
 import org.exist.dom.QName;
 import org.exist.xquery.Constants;
 
 /**
  * @author Pieter Deelen
  */
+@ThreadSafe
 public class NamePool {
 
     private final ConcurrentMap<WrappedQName, QName> pool;

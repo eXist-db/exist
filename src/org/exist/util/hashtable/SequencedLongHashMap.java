@@ -29,8 +29,11 @@ package org.exist.util.hashtable;
  * map thus implements a "Last Recently Used" (LRU) behaviour.
  */
 
+import net.jcip.annotations.NotThreadSafe;
+
 import java.util.Iterator;
 
+@NotThreadSafe
 public class SequencedLongHashMap<V> extends AbstractHashtable<Long, V> {
 
     /**

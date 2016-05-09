@@ -21,12 +21,15 @@
  */
 package org.exist.util.hashtable;
 
+import net.jcip.annotations.NotThreadSafe;
+
 import java.util.Iterator;
 
 
 /**
  * @author wolf
  */
+@NotThreadSafe
 public class Object2ObjectHashMap<K, V> extends AbstractHashtable<K, V> {
     protected K[] keys;
     protected V[] values;

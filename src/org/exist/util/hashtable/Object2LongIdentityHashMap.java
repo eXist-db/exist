@@ -21,6 +21,8 @@
  */
 package org.exist.util.hashtable;
 
+import net.jcip.annotations.NotThreadSafe;
+
 /**
  * A hashtable which maps object keys to long values.
  *
@@ -30,6 +32,7 @@ package org.exist.util.hashtable;
  * @author Stephan Körnig
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
+@NotThreadSafe
 public class Object2LongIdentityHashMap<K> extends Object2LongHashMap<K> {
 
     Object2LongIdentityHashMap() {

@@ -21,11 +21,14 @@
  */
 package org.exist.util.hashtable;
 
+import net.jcip.annotations.NotThreadSafe;
+
 import java.util.Iterator;
 
 /**
  * Abstract base class for all hashset implementations.
  */
+@NotThreadSafe
 public abstract class AbstractHashSet<K> implements Iterable<K> {
 
     private static final int DEFAULT_SIZE = 1031; // must be a prime number

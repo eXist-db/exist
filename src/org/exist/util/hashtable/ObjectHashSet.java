@@ -21,6 +21,8 @@
  */
 package org.exist.util.hashtable;
 
+import net.jcip.annotations.NotThreadSafe;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -34,6 +36,7 @@ import java.util.List;
  *
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
+@NotThreadSafe
 public class ObjectHashSet<K> extends AbstractHashSet<K> {
     protected K[] keys;
 

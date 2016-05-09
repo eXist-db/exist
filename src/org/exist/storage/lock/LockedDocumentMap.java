@@ -21,6 +21,7 @@
  */
 package org.exist.storage.lock;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.exist.collections.Collection;
 import org.exist.dom.persistent.DefaultDocumentSet;
 import org.exist.dom.persistent.DocumentImpl;
@@ -32,6 +33,7 @@ import org.exist.util.hashtable.Int2ObjectHashMap;
  * This map is used by the XQuery engine to track how many read locks were
  * acquired for a document during query execution.
  */
+@NotThreadSafe
 public class LockedDocumentMap extends Int2ObjectHashMap<Object> {
 
     private final static int DEFAULT_SIZE = 29;

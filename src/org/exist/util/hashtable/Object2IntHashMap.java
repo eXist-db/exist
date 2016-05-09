@@ -21,6 +21,8 @@
  */
 package org.exist.util.hashtable;
 
+import net.jcip.annotations.NotThreadSafe;
+
 import java.util.Iterator;
 
 /**
@@ -32,6 +34,7 @@ import java.util.Iterator;
  * @author Stephan Körnig
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
+@NotThreadSafe
 public class Object2IntHashMap<K> extends AbstractHashtable<K, Integer> {
 
     public static final int UNKNOWN_KEY = -1;

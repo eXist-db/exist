@@ -21,6 +21,8 @@
  */
 package org.exist.util.hashtable;
 
+import net.jcip.annotations.NotThreadSafe;
+
 import java.util.Iterator;
 
 /**
@@ -29,6 +31,7 @@ import java.util.Iterator;
  * @author Stephan Körnig
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
+@NotThreadSafe
 public class Long2ObjectHashMap<V> extends AbstractHashtable<Long, V> {
     private long[] keys;
     private V[] values;

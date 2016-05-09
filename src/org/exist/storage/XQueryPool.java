@@ -25,6 +25,7 @@ package org.exist.storage;
 import java.text.NumberFormat;
 import java.util.*;
 
+import net.jcip.annotations.ThreadSafe;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.config.annotation.ConfigurationClass;
@@ -47,6 +48,7 @@ import org.exist.xquery.*;
  * @author wolf
  */
 @ConfigurationClass("query-pool")
+@ThreadSafe
 public class XQueryPool extends Object2ObjectHashMap {
 
     private final static int MAX_POOL_SIZE = 128;

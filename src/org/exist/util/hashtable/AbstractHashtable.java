@@ -21,6 +21,8 @@
  */
 package org.exist.util.hashtable;
 
+import net.jcip.annotations.NotThreadSafe;
+
 import java.util.Iterator;
 
 /**
@@ -29,6 +31,7 @@ import java.util.Iterator;
  * @author Stephan Körnig
  * @author Wolfgang Meier
  */
+@NotThreadSafe
 abstract class AbstractHashtable<K, V> extends AbstractHashSet<K> {
 
     /**

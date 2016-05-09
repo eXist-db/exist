@@ -21,6 +21,8 @@
  */
 package org.exist.util.hashtable;
 
+import net.jcip.annotations.NotThreadSafe;
+
 import java.util.Iterator;
 
 /**
@@ -29,6 +31,7 @@ import java.util.Iterator;
  * @author Stephan Körnig
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
+@NotThreadSafe
 public class Int2ObjectHashMap<V> extends AbstractHashtable<Integer, V> {
     private final static double DEFAULT_GROWTH_FACTOR = 1.5;
 

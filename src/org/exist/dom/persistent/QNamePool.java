@@ -22,6 +22,7 @@
  */
 package org.exist.dom.persistent;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.exist.dom.QName;
 import org.exist.util.hashtable.AbstractHashSet;
 
@@ -35,6 +36,7 @@ import java.util.Objects;
  *
  * @author wolf
  */
+@NotThreadSafe
 public class QNamePool extends AbstractHashSet<QName> {
 
     private static final int DEFAULT_POOL_SIZE = 512;

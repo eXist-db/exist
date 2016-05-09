@@ -21,6 +21,7 @@
  */
 package org.exist.dom.persistent;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.exist.collections.Collection;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
@@ -45,6 +46,7 @@ import java.util.TreeSet;
  *
  * @author wolf
  */
+@NotThreadSafe
 public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocumentSet {
 
     private final static int DEFAULT_SIZE = 29;
