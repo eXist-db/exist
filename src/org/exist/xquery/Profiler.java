@@ -181,13 +181,8 @@ public class Profiler {
 
     public final void traceFunctionEnd(Function function, long elapsed) {
         if (stats.isEnabled()) {
-            String source;
-            if (function instanceof InternalFunctionCall) {
-                source = ((InternalFunctionCall) function).getFunction().getClass().getName();
-            } else {
-                source = function.getContext().getSource().path();
-            }
-            source = String.format("%s [%d:%d]", source, function.getLine(), function.getColumn());
+            final String source = String.format("%s [%d:%d]", function.getContext().getXacmlSource().getKey(), function
+                    .getLine(), function.getColumn());
             stats.recordFunctionCall(function.getSignature().getName(), source, elapsed);
         }
         if (isLogEnabled()) {
