@@ -1926,11 +1926,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             if (oldDoc != null) {
                 LOG.debug("removing old document " + oldDoc.getFileURI());
                 updateModificationTime(blob);
-                if (oldDoc instanceof BinaryDocument) {
-                    broker.removeBinaryResource(transaction, (BinaryDocument) oldDoc);
-                } else {
-                    broker.removeXMLResource(transaction, oldDoc);
-                }
+                broker.removeResource(transaction, oldDoc);
             }
 
             broker.storeBinaryResource(transaction, blob, is);
