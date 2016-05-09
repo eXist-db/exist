@@ -181,7 +181,8 @@ public class Profiler {
 
     public final void traceFunctionEnd(Function function, long elapsed) {
         if (stats.isEnabled()) {
-            final String source = String.format("%s [%d:%d]", function.getContext().getXacmlSource().getKey(), function
+            final String source = String.format("%s [%d:%d]", function.getContext().getSource().getKey(),
+                    function
                     .getLine(), function.getColumn());
             stats.recordFunctionCall(function.getSignature().getName(), source, elapsed);
         }
