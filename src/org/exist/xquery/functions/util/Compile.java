@@ -153,6 +153,7 @@ public class Compile extends BasicFunction {
 			error = e.getMessage();
 		} finally {
 			context.popNamespaceContext();
+            pContext.reset(false);
 		}
 		
 		if (isCalledAs("compile")) {
