@@ -247,7 +247,7 @@ try{
         <expected>
             <result>
                 <code>java:org.xmldb.api.base.XMLDBException</code>
-                <desc>Collection /db/foobaar not found</desc>
+                <desc>Collection /db/foobaar not found. Could not locate collection: /db/foobaar/</desc>
             </result>
         </expected>
     </test>

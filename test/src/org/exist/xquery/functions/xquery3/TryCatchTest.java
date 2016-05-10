@@ -120,7 +120,7 @@ public class TryCatchTest extends EmbeddedExistTester {
         assertEquals(ErrorCodes.XPDY0002.getErrorQName().getStringValue(), r1);
 
         final String r2 = (String) results.getResource(1).getContent();
-        assertEquals(ErrorCodes.XPDY0002.getDescription(), r2);
+        assertEquals(ErrorCodes.XPDY0002.getDescription() + " Undefined context sequence for 'child::{}a'", r2);
     }
 
     @Test
@@ -257,7 +257,7 @@ public class TryCatchTest extends EmbeddedExistTester {
         assertEquals(ErrorCodes.XPDY0002.getErrorQName().getStringValue(), r1);
 
         final String r2 = (String) results.getResource(1).getContent();
-        assertEquals(ErrorCodes.XPDY0002.getDescription(), r2);
+        assertEquals(ErrorCodes.XPDY0002.getDescription() + " Undefined context sequence for 'child::{}a'", r2);
 
         final String r3 = (String) results.getResource(2).getContent();
         assertEquals("true", r3);
