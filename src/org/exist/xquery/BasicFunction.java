@@ -60,9 +60,12 @@ public abstract class BasicFunction extends Function {
             try {
                 args[i] = getArgument(i).eval(contextSequence, contextItem);
             } catch (final XPathException e) {
-                e.prependMessage(
-                    ErrorCodes.XPTY0004, 
-                    "checking function parameter " + (i + 1) + " in call " + ExpressionDumper.dump(this) + ": ");
+				if(e.getErrorCode() == null || e.getErrorCode() == ErrorCodes.ERROR) {
+					e.prependMessage(
+							ErrorCodes.XPTY0004,
+							"checking function parameter " + (i + 1) + " in call " + ExpressionDumper.dump(this) + ": ");
+				}
+
                 throw e;
             }
         }
