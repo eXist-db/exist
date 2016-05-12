@@ -29,6 +29,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.storage.DBBroker;
 import org.exist.storage.StartupTrigger;
+import org.exist.storage.txn.Txn;
 import org.exist.util.FileUtils;
 import org.expath.pkg.repo.*;
 
@@ -45,7 +46,7 @@ public class AutoDeploymentTrigger implements StartupTrigger {
     public final static String AUTODEPLOY_PROPERTY = "exist.autodeploy";
 
     @Override
-    public void execute(final DBBroker sysBroker, final Map<String, List<? extends Object>> params) {
+    public void execute(final DBBroker sysBroker, final Txn transaction, final Map<String, List<? extends Object>> params) {
         // do not process if the system property exist.autodeploy=off
         final String property = System.getProperty(AUTODEPLOY_PROPERTY, "on");
         if (property.equalsIgnoreCase("off")) {

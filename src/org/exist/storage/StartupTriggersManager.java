@@ -56,7 +56,7 @@ public class StartupTriggersManager implements BrokerPoolService {
             try {
                 final Class<StartupTrigger> clazz = (Class<StartupTrigger>) Class.forName(startupTriggerConfig.getClazz());
                 final StartupTrigger startupTrigger = clazz.newInstance();
-                startupTrigger.execute(systemBroker, startupTriggerConfig.getParams());
+                startupTrigger.execute(systemBroker, transaction, startupTriggerConfig.getParams());
             } catch(final ClassNotFoundException | IllegalAccessException | InstantiationException e) {
                 LOG.error("Could not call StartupTrigger class: " + startupTriggerConfig + ". SKIPPING! " + e.getMessage(), e);
             } catch(final RuntimeException re) {
