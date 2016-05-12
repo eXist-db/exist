@@ -123,11 +123,24 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
             this.path = name.toCollectionPathURI();
         }
 
-        read(ErrorCodes.NO_SUCH_COLLECTION).apply((collection, broker, transaction) -> {
-            /* no-op, used to make sure the current user can open the collection!
-               will throw an XMLDBException if they cannot */
-            return null;
+        /*
+        no-op, used to make sure the current user can open the collection!
+        will throw an XMLDBException if they cannot
+        we are careful to throw the exception outside of the transaction operation
+        so that it does not immediately close the current transaction and unwind the stack,
+        this is because not being able to open a collection is a valid operation e.g. xmldb:collection-available
+        */
+        final Optional<XMLDBException> openException = withDb((broker, transaction) -> {
+            try {
+                return this.<Optional<XMLDBException>>read(broker, transaction, ErrorCodes.NO_SUCH_COLLECTION).apply((collection, broker1, transaction1) -> Optional.empty());
+            } catch(final XMLDBException e) {
+                return Optional.of(e);
+            }
         });
+
+        if(openException.isPresent()) {
+            throw openException.get();
+        }
     }
 
     protected boolean checkOwner(final Collection collection, final Account account) throws XMLDBException {
@@ -766,6 +779,25 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
      */
     private <R> FunctionE<LocalXmldbCollectionFunction<R>, R, XMLDBException> read(final DBBroker broker, final Txn transaction) throws XMLDBException {
         return readOp -> this.<R>read(broker, transaction, path).apply((collection, broker1, transaction1) -> {
+            collection.setReader(userReader);
+            return readOp.apply(collection, broker1, transaction1);
+        });
+    }
+
+    /**
+     * Higher-order-function for performing read-only operations against this collection
+     *
+     * NOTE this read will occur using the database user set on the collection
+     *
+     * @param broker The broker to use for the operation
+     * @param transaction The transaction to use for the operation
+     * @param errorCode The error code to use in the XMLDBException if the collection does not exist, see {@link ErrorCodes}
+     * @return A function to receive a read-only operation to perform against the collection
+     *
+     * @throws XMLDBException if the collection could not be read
+     */
+    private <R> FunctionE<LocalXmldbCollectionFunction<R>, R, XMLDBException> read(final DBBroker broker, final Txn transaction, final int errorCode) throws XMLDBException {
+        return readOp -> this.<R>read(broker, transaction, path, errorCode).apply((collection, broker1, transaction1) -> {
             collection.setReader(userReader);
             return readOp.apply(collection, broker1, transaction1);
         });
