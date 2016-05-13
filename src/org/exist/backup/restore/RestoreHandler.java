@@ -33,18 +33,23 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exist.EXistException;
 import org.exist.Namespaces;
 import org.exist.backup.BackupDescriptor;
 import org.exist.backup.restore.listener.RestoreListener;
 import org.exist.dom.persistent.DocumentTypeImpl;
 import org.exist.security.ACLPermission.ACE_ACCESS_TYPE;
 import org.exist.security.ACLPermission.ACE_TARGET;
+import org.exist.security.AuthenticationException;
 import org.exist.security.SecurityManager;
+import org.exist.security.Subject;
+import org.exist.storage.BrokerPool;
 import org.exist.util.EXistInputSource;
 import org.exist.xmldb.EXistCollection;
 import org.exist.xmldb.EXistCollectionManagementService;
 import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.XmldbURI;
+import org.exist.xmldb.txn.bridge.InTxnLocalCollection;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.util.URIUtils;
 import org.exist.xquery.value.DateTimeValue;
@@ -55,6 +60,7 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
@@ -510,11 +516,40 @@ public class RestoreHandler extends DefaultHandler {
         for(final XmldbURI segment : segments) {
             p = p.append(segment);
             final XmldbURI xmldbURI = dbUri.resolveCollectionPath(p);
-            EXistCollection c = (EXistCollection)DatabaseManager.getCollection(xmldbURI.toString(), dbUsername, dbPassword);
+            EXistCollection c = null;
+
+            final boolean localConnection = xmldbURI.startsWith(XmldbURI.EMBEDDED_SERVER_URI) || xmldbURI.startsWith("xmldb:exist:///");
+
+            if(localConnection) {
+                //short-cut to an XMLDB Collection that can be used with the current transaction
+                try {
+                    final BrokerPool pool = BrokerPool.getInstance();
+                    final SecurityManager securityManager = pool.getSecurityManager();
+                    final Subject subject = securityManager.authenticate(dbUsername, dbPassword);
+                    try {
+                        c = new InTxnLocalCollection(subject, pool, null, xmldbURI);
+                    } catch(final XMLDBException e) {
+                        if(e.errorCode == ErrorCodes.NO_SUCH_COLLECTION) {
+                            c = null; //no such collection, will be created below
+                        } else {
+                            throw e;
+                        }
+                    }
+                } catch(final AuthenticationException e) {
+                    throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e.getMessage(), e);
+                } catch(final EXistException e) {
+                    throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+                }
+            } else {
+                c = (EXistCollection)DatabaseManager.getCollection(xmldbURI.toString(), dbUsername, dbPassword);
+            }
+
             if(c == null) {
             	current.setTriggersEnabled(false);
+
                 final EXistCollectionManagementService mgtService = (EXistCollectionManagementService)current.getService("CollectionManagementService", "1.0");
                 c = (EXistCollection)mgtService.createCollection(segment, created);
+
                 current.setTriggersEnabled(true);
             }
             current = c;
