@@ -67,13 +67,13 @@ public class AutoDeploymentTrigger implements StartupTrigger {
 
             LOG.info("Scanning autodeploy directory. Found " + xars.size() + " app packages.");
 
-            final Deployment deployment = new Deployment(sysBroker);
+            final Deployment deployment = new Deployment();
 
             // build a map with uri -> file so we can resolve dependencies
             final Map<String, Path> packages = new HashMap<>();
             for (final Path xar : xars) {
                 try {
-                    final Optional<String> name = deployment.getNameFromDescriptor(xar);
+                    final Optional<String> name = deployment.getNameFromDescriptor(sysBroker, xar);
                     if(name.isPresent()) {
                         packages.put(name.get(), xar);
                     } else {
@@ -91,7 +91,7 @@ public class AutoDeploymentTrigger implements StartupTrigger {
 
             for (final Path xar : xars) {
                 try {
-                    deployment.installAndDeploy(xar, loader, false);
+                    deployment.installAndDeploy(sysBroker, transaction, xar, loader, false);
                 } catch (final PackageException | IOException e) {
                     LOG.warn("Exception during deployment of app " + FileUtils.fileName(xar) + ": " + e.getMessage(), e);
                     sysBroker.getBrokerPool().reportStatus("An error occurred during app deployment: " + e.getMessage());
