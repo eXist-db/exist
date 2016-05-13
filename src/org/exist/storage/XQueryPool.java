@@ -25,6 +25,7 @@ package org.exist.storage;
 import java.text.NumberFormat;
 import java.util.*;
 
+import net.jcip.annotations.ThreadSafe;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.config.annotation.ConfigurationClass;
@@ -43,123 +44,125 @@ import org.exist.xquery.*;
  * {@link #MAX_STACK_SIZE} compiled expressions are kept in the pool. An XQuery
  * expression will be removed from the pool if it has not been used for a
  * pre-defined timeout. These settings can be configured in conf.xml.
- * 
+ *
  * @author wolf
  */
 @ConfigurationClass("query-pool")
+@ThreadSafe
 public class XQueryPool extends Object2ObjectHashMap {
 
-	public final static int MAX_POOL_SIZE = 128;
+    private final static int MAX_POOL_SIZE = 128;
+    private final static int MAX_STACK_SIZE = 5;
+    private final static long TIMEOUT = 120000L;
+    private final static long TIMEOUT_CHECK_INTERVAL = 30000L;
 
-	public final static int MAX_STACK_SIZE = 5;
+    private final static Logger LOG = LogManager.getLogger(XQueryPool.class);
 
-	public final static long TIMEOUT = 120000L;
+    private long lastTimeOutCheck;
+    private long lastTimeOfCleanup;
 
-	public final static long TIMEOUT_CHECK_INTERVAL = 30000L;
+    @ConfigurationFieldAsAttribute("size")
+    private final int maxPoolSize;
 
-	private final static Logger LOG = LogManager.getLogger(XQueryPool.class);
+    @ConfigurationFieldAsAttribute("max-stack-size")
+    private final int maxStackSize;
 
-	private long lastTimeOutCheck;
-	private long lastTimeOfCleanup;
+    @ConfigurationFieldAsAttribute("timeout")
+    private final long timeout;
 
-	@ConfigurationFieldAsAttribute("size")
-	private int maxPoolSize;
+    @ConfigurationFieldAsAttribute("timeout-check-interval")
+    private final long timeoutCheckInterval;
 
-	@ConfigurationFieldAsAttribute("max-stack-size")
-	private int maxStackSize;
+    public static final String CONFIGURATION_ELEMENT_NAME = "query-pool";
+    public static final String MAX_STACK_SIZE_ATTRIBUTE = "max-stack-size";
+    public static final String POOL_SIZE_ATTTRIBUTE = "size";
+    public static final String TIMEOUT_ATTRIBUTE = "timeout";
+    public static final String TIMEOUT_CHECK_INTERVAL_ATTRIBUTE = "timeout-check-interval";
 
-	@ConfigurationFieldAsAttribute("timeout")
-	private long timeout;
+    public static final String PROPERTY_MAX_STACK_SIZE = "db-connection.query-pool.max-stack-size";
+    public static final String PROPERTY_POOL_SIZE = "db-connection.query-pool.size";
+    public static final String PROPERTY_TIMEOUT = "db-connection.query-pool.timeout";
+    public static final String PROPERTY_TIMEOUT_CHECK_INTERVAL = "db-connection.query-pool.timeout-check-interval";
 
-	@ConfigurationFieldAsAttribute("timeout-check-interval")
-	private long timeoutCheckInterval;
+    private final static int DEFAULT_SIZE = 27;
 
-	public static final String CONFIGURATION_ELEMENT_NAME = "query-pool";
-	public static final String MAX_STACK_SIZE_ATTRIBUTE = "max-stack-size";
-	public static final String POOL_SIZE_ATTTRIBUTE = "size";
-	public static final String TIMEOUT_ATTRIBUTE = "timeout";
-	public static final String TIMEOUT_CHECK_INTERVAL_ATTRIBUTE = "timeout-check-interval";
+    /**
+     * @param conf The configuration
+     */
+    public XQueryPool(final Configuration conf) {
+        super(DEFAULT_SIZE);
+        lastTimeOutCheck = lastTimeOfCleanup = System.currentTimeMillis();
 
-	public static final String PROPERTY_MAX_STACK_SIZE = "db-connection.query-pool.max-stack-size";
-	public static final String PROPERTY_POOL_SIZE = "db-connection.query-pool.size";
-	public static final String PROPERTY_TIMEOUT = "db-connection.query-pool.timeout";
-	public static final String PROPERTY_TIMEOUT_CHECK_INTERVAL = "db-connection.query-pool.timeout-check-interval";
+        final Integer maxStSz = (Integer) conf.getProperty(PROPERTY_MAX_STACK_SIZE);
+        final Integer maxPoolSz = (Integer) conf.getProperty(PROPERTY_POOL_SIZE);
+        final Long t = (Long) conf.getProperty(PROPERTY_TIMEOUT);
+        final Long tci = (Long) conf.getProperty(PROPERTY_TIMEOUT_CHECK_INTERVAL);
+        final NumberFormat nf = NumberFormat.getNumberInstance();
 
-	/**
-	 * @param conf
-	 */
-	public XQueryPool(Configuration conf) {
-		super(27);
-		lastTimeOutCheck = lastTimeOfCleanup = System.currentTimeMillis();
+        if (maxPoolSz != null) {
+            maxPoolSize = maxPoolSz;
+        } else {
+            maxPoolSize = MAX_POOL_SIZE;
+        }
 
-		final Integer maxStSz = (Integer) conf.getProperty(PROPERTY_MAX_STACK_SIZE);
-		final Integer maxPoolSz = (Integer) conf.getProperty(PROPERTY_POOL_SIZE);
-		final Long t = (Long) conf.getProperty(PROPERTY_TIMEOUT);
-		final Long tci = (Long) conf.getProperty(PROPERTY_TIMEOUT_CHECK_INTERVAL);
-		final NumberFormat nf = NumberFormat.getNumberInstance();
+        if (maxStSz != null) {
+            maxStackSize = maxStSz;
+        } else {
+            maxStackSize = MAX_STACK_SIZE;
+        }
 
-		if (maxPoolSz != null)
-			maxPoolSize = maxPoolSz.intValue();
-		else
-			maxPoolSize = MAX_POOL_SIZE;
+        if (t != null) {
+            timeout = t;
+        } else {
+            timeout = TIMEOUT;
+        }
 
-		if (maxStSz != null)
-			maxStackSize = maxStSz.intValue();
-		else
-			maxStackSize = MAX_STACK_SIZE;
+        if (tci != null) {
+            timeoutCheckInterval = tci;
+        } else {
+            timeoutCheckInterval = TIMEOUT_CHECK_INTERVAL;
+        }
 
-		if (t != null)
-			timeout = t.longValue();
-		else
-			timeout = TIMEOUT;
+        LOG.info("QueryPool: " +
+                "size = " + nf.format(maxPoolSize) + "; " +
+                "maxStackSize = " + nf.format(maxStackSize) + "; " +
+                "timeout = " + nf.format(timeout) + "; " +
+                "timeoutCheckInterval = " + nf.format(timeoutCheckInterval));
+    }
 
-		if (tci != null)
-			timeoutCheckInterval = tci.longValue();
-		else
-			timeoutCheckInterval = TIMEOUT_CHECK_INTERVAL;
+    public void returnCompiledXQuery(final Source source, final CompiledXQuery xquery) {
+        returnObject(source, xquery);
+    }
 
-		LOG.info("QueryPool: " +
-			"size = " + nf.format(maxPoolSize) + "; " +
-			"maxStackSize = " + nf.format(maxStackSize) + "; " +
-			"timeout = " + nf.format(timeout) + "; " +
-			"timeoutCheckInterval = " + nf.format(timeoutCheckInterval));
-	}
+    private synchronized void returnObject(final Source source, final CompiledXQuery xquery) {
+        final long ts = source.getCacheTimestamp();
+        if (ts == 0 || ts > lastTimeOfCleanup) {
+            if (size() >= maxPoolSize) {
+                timeoutCheck();
+            }
 
-	public void returnCompiledXQuery(Source source, CompiledXQuery xquery) {
-		returnObject(source, xquery);
-	}
+            if (size() < maxPoolSize) {
+                Deque<CompiledXQuery> stack = (Deque<CompiledXQuery>)get(source);
+                if (stack == null) {
+                    stack = new ArrayDeque<>();
+                    source.setCacheTimestamp(System.currentTimeMillis());
+                    put(source, stack);
+                }
 
-	private synchronized void returnObject(Source source, Object o) {
-		long ts = source.getCacheTimestamp();
-		if (ts == 0 || ts > lastTimeOfCleanup) {
-			if (size() >= maxPoolSize)
-				timeoutCheck();
+                if (stack.size() < maxStackSize) {
+                    // check if the query is already in pool before adding,
+                    // may happen for modules, don't add it a second time!
+                    if(!stack.contains(xquery)) {
+                        stack.push(xquery);
+                    }
+                }
+            }
+        }
+    }
 
-			if (size() < maxPoolSize) {
-				Stack stack = (Stack) get(source);
-				if (stack == null) {
-					stack = new Stack();
-					source.setCacheTimestamp(System.currentTimeMillis());
-					put(source, stack);
-				}
-				if (stack.size() < maxStackSize) {
-					for (int i = 0; i < stack.size(); i++) {
-						if (stack.get(i) == o)
-							// query already in pool. may happen for modules.
-							// don't add it a second time.
-							return;
-					}
-					stack.push(o);
-				}
-			}
-		}
-	}
-
-	private Object borrowObject(DBBroker broker, Source source) {
-
-        CompiledXQuery query = null;
-        Source key = null;
-
+    private Object borrowObject(final DBBroker broker, final Source source) {
+        final Source key;
+        final CompiledXQuery query;
         synchronized (this) {
             final int idx = getIndex(source);
             if (idx < 0) {
@@ -167,8 +170,9 @@ public class XQueryPool extends Object2ObjectHashMap {
             }
             key = (Source) keys[idx];
             int validity = key.isValid(broker);
-            if (validity == Source.UNKNOWN)
+            if (validity == Source.UNKNOWN) {
                 validity = key.isValid(source);
+            }
 
             if (validity == Source.INVALID || validity == Source.UNKNOWN) {
                 keys[idx] = REMOVED;
@@ -176,13 +180,14 @@ public class XQueryPool extends Object2ObjectHashMap {
                 LOG.debug(source.getKey() + " is invalid");
                 return null;
             }
-            final Stack stack = (Stack) values[idx];
-            if (stack == null || stack.isEmpty())
+            final Deque<CompiledXQuery> stack = (Deque<CompiledXQuery>)values[idx];
+            if (stack == null || stack.isEmpty()) {
                 return null;
+            }
 
             // now check if the compiled expression is valid
             // it might become invalid if an imported module has changed.
-            query = (CompiledXQuery) stack.pop();
+            query = stack.pop();
             final XQueryContext context = query.getContext();
             //context.setBroker(broker);
         }
@@ -192,55 +197,60 @@ public class XQueryPool extends Object2ObjectHashMap {
         // deadlocks with concurrent queries holding that lock while borrowing
         // we must not hold onto the XQueryPool while calling isValid().
 
-		if (!query.isValid()) synchronized (this) {
-			// the compiled query is no longer valid: one of the imported
-			// modules may have changed
-			remove(key);
-			return null;
-		} else
-			return query;
-	}
+        if (!query.isValid()) {
+            synchronized (this) {
+                // the compiled query is no longer valid: one of the imported
+                // modules may have changed
+                remove(key);
+                return null;
+            }
+        } else {
+            return query;
+        }
+    }
 
-	public synchronized CompiledXQuery borrowCompiledXQuery(DBBroker broker, Source source) throws PermissionDeniedException {
-		final CompiledXQuery query = (CompiledXQuery) borrowObject(broker, source);
-		if (query == null)
-			return null;
-		
-		//check execution permission
-		source.validate(broker.getCurrentSubject(), Permission.EXECUTE);
-		
-		// now check if the compiled expression is valid
-		// it might become invalid if an imported module has changed.
-		//final XQueryContext context = query.getContext();
-		//context.setBroker(broker);
-		return query;
-	}
+    public synchronized CompiledXQuery borrowCompiledXQuery(final DBBroker broker, final Source source) throws PermissionDeniedException {
+        final CompiledXQuery query = (CompiledXQuery) borrowObject(broker, source);
+        if (query == null) {
+            return null;
+        }
+
+        //check execution permission
+        source.validate(broker.getCurrentSubject(), Permission.EXECUTE);
+
+        // now check if the compiled expression is valid
+        // it might become invalid if an imported module has changed.
+        //final XQueryContext context = query.getContext();
+        //context.setBroker(broker);
+        return query;
+    }
 
     public synchronized void clear() {
-    	lastTimeOfCleanup = System.currentTimeMillis();
-        
-        for (final Iterator i = iterator(); i.hasNext();) {
+        lastTimeOfCleanup = System.currentTimeMillis();
+
+        for (final Iterator i = iterator(); i.hasNext(); ) {
             final Source next = (Source) i.next();
             remove(next);
         }
     }
 
-	private void timeoutCheck() {
-		if (timeoutCheckInterval < 0L)
-			return;
+    private void timeoutCheck() {
+        if (timeoutCheckInterval < 0L) {
+            return;
+        }
 
-		final long currentTime = System.currentTimeMillis();
+        final long currentTime = System.currentTimeMillis();
+        if (currentTime - lastTimeOutCheck < timeoutCheckInterval) {
+            return;
+        }
 
-		if (currentTime - lastTimeOutCheck < timeoutCheckInterval)
-			return;
+        for (final Iterator i = iterator(); i.hasNext(); ) {
+            final Source next = (Source) i.next();
+            if (currentTime - next.getCacheTimestamp() > timeout) {
+                remove(next);
+            }
+        }
 
-		for (final Iterator i = iterator(); i.hasNext();) {
-			final Source next = (Source) i.next();
-			if (currentTime - next.getCacheTimestamp() > timeout) {
-				remove(next);
-			}
-		}
-		
-		lastTimeOutCheck = currentTime;
-	}
+        lastTimeOutCheck = currentTime;
+    }
 }

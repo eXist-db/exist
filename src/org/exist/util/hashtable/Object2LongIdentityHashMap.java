@@ -21,144 +21,159 @@
  */
 package org.exist.util.hashtable;
 
+import net.jcip.annotations.NotThreadSafe;
+
 /**
  * A hashtable which maps object keys to long values.
- * 
+ *
  * Keys are compared by their object identity, i.e. two objects are equal
  * if object1 == object2.
- * 
+ *
  * @author Stephan Körnig
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
+@NotThreadSafe
 public class Object2LongIdentityHashMap<K> extends Object2LongHashMap<K> {
 
-	public Object2LongIdentityHashMap() {
-		super();
-	}
+    Object2LongIdentityHashMap() {
+        super();
+    }
 
-	public Object2LongIdentityHashMap(int iSize) {
-		super(iSize);
-	}
+    public Object2LongIdentityHashMap(final int iSize) {
+        super(iSize);
+    }
 
-	public long get(K key) {
-		int idx = hash(key) % tabSize;
-		if (idx < 0)
-			{idx *= -1;}
-		if (keys[idx] == null)
-			{return -1;} // key does not exist
-		else if (keys[idx] == key) {
-			return values[idx];
-		}
-		final int rehashVal = rehash(idx);
-		for (int i = 0; i < tabSize; i++) {
-			idx = (idx + rehashVal) % tabSize;
-			if (keys[idx] == null) {
-				return -1; // key not found
-			} else if (keys[idx] == key) {
-				return values[idx];
-			}
-		}
-		return -1;
-	}
+    @Override
+    public long get(final K key) {
+        int idx = hash(key) % tabSize;
+        if (idx < 0) {
+            idx *= -1;
+        }
+        if (keys[idx] == null) {
+            return -1; // key does not exist
+        }
+        else if (keys[idx] == key) {
+            return values[idx];
+        }
+        final int rehashVal = rehash(idx);
+        for (int i = 0; i < tabSize; i++) {
+            idx = (idx + rehashVal) % tabSize;
+            if (keys[idx] == null) {
+                return -1; // key not found
+            } else if (keys[idx] == key) {
+                return values[idx];
+            }
+        }
+        return -1;
+    }
 
-	public boolean containsKey(K key) {
-		int idx = hash(key) % tabSize;
-		if (idx < 0)
-			{idx *= -1;}
-		if (keys[idx] == null)
-			{return false;} // key does not exist
-		else if (keys[idx] == key) {
-			return true;
-		}
-		final int rehashVal = rehash(idx);
-		for (int i = 0; i < tabSize; i++) {
-			idx = (idx + rehashVal) % tabSize;
-			if (keys[idx] == null) {
-				return false; // key not found
-			} else if (keys[idx] == key) {
-				return true;
-			}
-		}
-		return false;
-	}
+    @Override
+    public boolean containsKey(final K key) {
+        int idx = hash(key) % tabSize;
+        if (idx < 0) {
+            idx *= -1;
+        }
+        if (keys[idx] == null) {
+            return false; // key does not exist
+        }
+        else if (keys[idx] == key) {
+            return true;
+        }
+        final int rehashVal = rehash(idx);
+        for (int i = 0; i < tabSize; i++) {
+            idx = (idx + rehashVal) % tabSize;
+            if (keys[idx] == null) {
+                return false; // key not found
+            } else if (keys[idx] == key) {
+                return true;
+            }
+        }
+        return false;
+    }
 
-	public long remove(K key) {
-		int idx = hash(key) % tabSize;
-		if (idx < 0)
-			{idx *= -1;}
-		if (keys[idx] == null) {
-			return -1; // key does not exist
-		} else if (keys[idx] == key) {
-			keys[idx] = (K) REMOVED;
-			--items;
-			return values[idx];
-		}
-		final int rehashVal = rehash(idx);
-		for (int i = 0; i < tabSize; i++) {
-			idx = (idx + rehashVal) % tabSize;
-			if (keys[idx] == null) {
-				return -1; // key not found
-			} else if (keys[idx] == key) {
-				keys[idx] = (K) REMOVED;
-				--items;
-				return values[idx];
-			}
-		}
-		return -1;
-	}
+    @SuppressWarnings("unchecked")
+    @Override
+    public long remove(final K key) {
+        int idx = hash(key) % tabSize;
+        if (idx < 0) {
+            idx *= -1;
+        }
+        if (keys[idx] == null) {
+            return -1; // key does not exist
+        } else if (keys[idx] == key) {
+            keys[idx] = (K) REMOVED;
+            --items;
+            return values[idx];
+        }
+        final int rehashVal = rehash(idx);
+        for (int i = 0; i < tabSize; i++) {
+            idx = (idx + rehashVal) % tabSize;
+            if (keys[idx] == null) {
+                return -1; // key not found
+            } else if (keys[idx] == key) {
+                keys[idx] = (K) REMOVED;
+                --items;
+                return values[idx];
+            }
+        }
+        return -1;
+    }
 
-	protected void insert(K key, long value) throws HashtableOverflowException {
-		if (key == null)
-			{throw new IllegalArgumentException("Illegal value: null");}
-		int idx = hash(key) % tabSize;
-		if (idx < 0)
-			{idx *= -1;}
-		int bucket = -1;
-		// look for an empty bucket
-		if (keys[idx] == null) {
-			keys[idx] = key;
-			values[idx] = value;
-			++items;
-			return;
-		} else if (keys[idx] == REMOVED) {
-			// remember the bucket, but continue to check
-			// for duplicate keys
-			bucket = idx;
-		} else if (keys[idx] == key) {
-			// duplicate value
-			values[idx] = value;
-			return;
-		}
-		final int rehashVal = rehash(idx);
-		int rehashCnt = 1;
-		for (int i = 0; i < tabSize; i++) {
-			idx = (idx + rehashVal) % tabSize;
-			if (keys[idx] == REMOVED) {
-				bucket = idx;
-			} else if (keys[idx] == null) {
-				if (bucket > -1) {
-					// store key into the empty bucket first found
-					idx = bucket;
-				}
-				keys[idx] = key;
-				values[idx] = value;
-				++items;
-				return;
-			} else if (keys[idx] == key) {
-				// duplicate value
-				values[idx] = value;
-				return;
-			}
-			++rehashCnt;
-		}
-		// should never happen, but just to be sure:
-		// if the key has not been inserted yet, do it now
-		if (bucket > -1) {
-			keys[bucket] = key;
-			values[bucket] = value;
-			++items;
-			return;
-		}
-		throw new HashtableOverflowException();
-	}
+    @Override
+    protected void insert(final K key, final long value) throws HashSetOverflowException {
+        if (key == null) {
+            throw new IllegalArgumentException("Illegal value: null");
+        }
+        int idx = hash(key) % tabSize;
+        if (idx < 0) {
+            idx *= -1;
+        }
+        int bucket = -1;
+        // look for an empty bucket
+        if (keys[idx] == null) {
+            keys[idx] = key;
+            values[idx] = value;
+            ++items;
+            return;
+        } else if (keys[idx] == REMOVED) {
+            // remember the bucket, but continue to check
+            // for duplicate keys
+            bucket = idx;
+        } else if (keys[idx] == key) {
+            // duplicate value
+            values[idx] = value;
+            return;
+        }
+        final int rehashVal = rehash(idx);
+        int rehashCnt = 1;
+        for (int i = 0; i < tabSize; i++) {
+            idx = (idx + rehashVal) % tabSize;
+            if (keys[idx] == REMOVED) {
+                bucket = idx;
+            } else if (keys[idx] == null) {
+                if (bucket > -1) {
+                    // store key into the empty bucket first found
+                    idx = bucket;
+                }
+                keys[idx] = key;
+                values[idx] = value;
+                ++items;
+                return;
+            } else if (keys[idx] == key) {
+                // duplicate value
+                values[idx] = value;
+                return;
+            }
+            ++rehashCnt;
+        }
+        // should never happen, but just to be sure:
+        // if the key has not been inserted yet, do it now
+        if (bucket > -1) {
+            keys[bucket] = key;
+            values[bucket] = value;
+            ++items;
+            return;
+        }
+        throw new HashSetOverflowException();
+    }
 }

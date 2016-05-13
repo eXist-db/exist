@@ -21,34 +21,37 @@
  */
 package org.exist.util.hashtable;
 
+import net.jcip.annotations.NotThreadSafe;
+
 import java.util.Iterator;
 
 /**
  * Abstract base class for all hashtable implementations.
- * 
+ *
  * @author Stephan Körnig
  * @author Wolfgang Meier
  */
-public abstract class AbstractHashtable<K,V> extends AbstractHashSet<K> {
+@NotThreadSafe
+abstract class AbstractHashtable<K, V> extends AbstractHashSet<K> {
 
-	/**
-	 * Create a new hashtable with default size (1031).
-	 */
-	protected AbstractHashtable() {
-		super();
-	}
+    /**
+     * Create a new hashtable with default size (1031).
+     */
+    AbstractHashtable() {
+        super();
+    }
 
-	/**
-	 * Create a new hashtable using the specified size.
-	 * 
-	 * The actual size will be next prime number following
-	 * iSize * 1.5.
-	 * 
-	 * @param iSize
-	 */
-	protected AbstractHashtable(int iSize) {
-		super(iSize);
-	}
+    /**
+     * Create a new hashtable using the specified size.
+     *
+     * The actual size will be next prime number following
+     * iSize * 1.5.
+     *
+     * @param iSize The initial size of the hash table
+     */
+    AbstractHashtable(final int iSize) {
+        super(iSize);
+    }
 
-	public abstract Iterator<V> valueIterator();
+    public abstract Iterator<V> valueIterator();
 }

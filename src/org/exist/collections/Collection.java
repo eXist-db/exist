@@ -101,13 +101,13 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
     private int collectionId = UNKNOWN_COLLECTION_ID;
     
     // the documents contained in this collection
-    private Map<String, DocumentImpl> documents = new TreeMap<String, DocumentImpl>();
+    private final Map<String, DocumentImpl> documents = new TreeMap<>();
     
     // the path of this collection
     private XmldbURI path;
     
     // stores child-collections with their storage address
-    private ObjectHashSet<XmldbURI> subCollections = new ObjectHashSet<XmldbURI>(19);
+    private ObjectHashSet<XmldbURI> subCollections = new ObjectHashSet<>(19);
     
     // Storage address of the collection in the BFile
     private long address = BFile.UNKNOWN_ADDRESS;
@@ -413,7 +413,12 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
      * via the iterator have no effect.
      *
      * @return An iterator over the collections
+     *
+     * @deprecated The creation of the stable iterator may
+     * throw an {@link java.lang.IndexOutOfBoundsException},
+     * use {@link #collectionIterator(DBBroker)} instead
      */
+    @Deprecated
     public Iterator<XmldbURI> collectionIteratorNoLock(final DBBroker broker) throws PermissionDeniedException {
         if(!getPermissionsNoLock().validate(broker.getCurrentSubject(), Permission.READ)) {
             throw new PermissionDeniedException("Permission to list sub-collections denied on " + this.getURI());
@@ -572,6 +577,13 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         return docs;
     }
 
+    /**
+     * @deprecated This is not an atomic operation and
+     * so there are no guarantees about which docs will be added to
+     * the document set. Use {@link #getDocuments(DBBroker, MutableDocumentSet)}
+     * instead
+     */
+    @Deprecated
     public DocumentSet getDocumentsNoLock(final DBBroker broker, final MutableDocumentSet docs) {
         docs.addCollection(this);
         addDocumentsToSet(broker, docs);
@@ -804,6 +816,10 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         }
     }
 
+    /**
+     * @deprecated Use {@link #getDocument(DBBroker, XmldbURI)} instead
+     */
+    @Deprecated
     public DocumentImpl getDocumentNoLock(final DBBroker broker, final String rawPath) throws PermissionDeniedException {
         final DocumentImpl doc = documents.get(rawPath);
         if(doc != null) {
@@ -816,7 +832,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
 
     /**
      * Release any locks held on the document.
-     * @deprecated Use releaseDocument(DocumentImpl doc, int mode)
+     * @deprecated Use {@link #releaseDocument(DocumentImpl, int)} instead
      * @param doc
      */
     @Deprecated
@@ -840,7 +856,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
     /**
      * Returns the number of documents in this collection.
      *
-     * @return The documentCount value
+     * @return The documentCount value, or -1 if the collection could not be locked
      */
     public int getDocumentCount(final DBBroker broker) throws PermissionDeniedException {
         if(!getPermissionsNoLock().validate(broker.getCurrentSubject(), Permission.READ)) {
@@ -852,7 +868,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             return documents.size();
         } catch(final LockException e) {
             LOG.warn(e.getMessage(), e);
-            return 0;
+            return -1;
         } finally {
             getLock().release(Lock.READ_LOCK);
         }
@@ -954,6 +970,10 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         }
     }
 
+    /**
+     * @deprecated Use {@link #hasSubcollection(DBBroker, XmldbURI)} instead
+     */
+    @Deprecated
     public boolean hasSubcollectionNoLock(final DBBroker broker, final XmldbURI name) throws PermissionDeniedException {
         if(!getPermissionsNoLock().validate(broker.getCurrentSubject(), Permission.READ)) {
             throw new PermissionDeniedException("Permission denied to read collection: " + path);
@@ -975,6 +995,12 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         return getDocuments(broker, new DefaultDocumentSet()).getDocumentIterator();
     }
 
+    /**
+     * @deprecated This is not an atomic operation and
+     * so there are no guarantees about which docs will be available to
+     * the iterator. Use {@link #iterator(DBBroker)} instead
+     */
+    @Deprecated
     public Iterator<DocumentImpl> iteratorNoLock(final DBBroker broker) throws PermissionDeniedException {
         if(!getPermissionsNoLock().validate(broker.getCurrentSubject(), Permission.READ)) {
             throw new PermissionDeniedException("Permission denied to read collection: " + path);
