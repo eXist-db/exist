@@ -106,7 +106,7 @@ public class MatchDocumentsTest {
 	    	doc1Metadata.put(KEY1, doc2);
 	    	doc1Metadata.put(KEY2, VALUE1);
 
-	    	//add metas for binaty document
+	    	//add metas for binary document
 	    	doc3Metadata.put(KEY1, VALUE2);
 	    	doc3Metadata.put(KEY2, doc2);
 
@@ -166,7 +166,7 @@ public class MatchDocumentsTest {
 	    	doc1Metadata.put(KEY1, doc2);
 	    	doc1Metadata.put(KEY2, VALUE1);
 
-	    	//add metas for binaty document
+	    	//add metas for binary document
 	    	doc3metadata.put(KEY1, VALUE2);
 	    	doc3metadata.put(KEY2, doc2);
 
@@ -302,14 +302,6 @@ public class MatchDocumentsTest {
         }
     }
 
-    /*
-     * Set to @Ignore because even though it seems to delete
-     * the XML document /db/test/test_string1.xml
-     * when @After/clean() function is called
-     * it causes an error: As it thinks the document is
-     * still present but then cannot delete it?!?
-     */
-    @Ignore
     @Test
 	public void deleteXMLResource() throws Exception {
     	final MetaData md = MetaData.get();
@@ -334,13 +326,10 @@ public class MatchDocumentsTest {
             assertEquals(1, matching.size());
             assertEquals(doc1uri, matching.get(0).getURI());
 
+            try(final Txn txn = broker.beginTx()) {
+                col1.removeXMLResource(txn, broker, doc1uri.lastSegment());
 
-            final TransactionManager txnManager = pool.getTransactionManager();
-            try(final Txn txn = txnManager.beginTransaction()) {
-                DocumentImpl doc1 = col1.getDocument(broker, doc1uri.lastSegment());
-                broker.removeXMLResource(txn, doc1);
-                broker.saveCollection(txn, col1);
-                txnManager.commit(txn);
+                txn.success();
             } catch(Exception e) {
                 e.printStackTrace();
                 fail(e.getMessage());
