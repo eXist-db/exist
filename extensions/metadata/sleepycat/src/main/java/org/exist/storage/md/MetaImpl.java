@@ -74,12 +74,6 @@ public class MetaImpl implements Meta {
     }
 
     public Object getValue() {
-//		try {
-//			DocumentImpl doc = MetaData._.getDocument(value);
-//			if (doc != null) return doc;
-//		} catch (Exception e) {
-//			//LOG
-//		}
         return value;
     }
 
