@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2015 The eXist Project
+ *  Copyright (C) 2001-2016 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -25,13 +25,13 @@ package org.exist.storage.md;
  */
 public interface Meta {
 
-	public String getUUID();
+    String getUUID();
 
-	public String getKey();
+    String getKey();
 
-	public Object getValue();
+    Object getValue();
 
-	public String getObject();
-	
-	public void delete();
+    String getObject();
+
+    void delete();
 }

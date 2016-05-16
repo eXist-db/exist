@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2015 The eXist Project
+ *  Copyright (C) 2001-2016 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -27,17 +27,17 @@ import java.util.List;
  */
 public interface Metas {
 
-	public String getUUID();
+    String getUUID();
 
-    public String getURI();
+    String getURI();
 
-    public Meta get(String key);
+    Meta get(String key);
 
-	public Meta put(String key, Object value);
+    Meta put(String key, Object value);
 
-    public void delete(String key);
+    void delete(String key);
 
-    public List<Meta> metas();
+    List<Meta> metas();
 
-    public void delete();
+    void delete();
 }
