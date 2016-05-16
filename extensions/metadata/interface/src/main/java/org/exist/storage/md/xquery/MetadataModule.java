@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2015 The eXist Project
+ *  Copyright (C) 2001-2016 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -22,7 +22,8 @@ package org.exist.storage.md.xquery;
 import java.util.List;
 import java.util.Map;
 
-import org.exist.storage.md.MDStorageManager;
+import org.exist.storage.md.MetaData;
+import org.exist.storage.md.RestoreFromBackup;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 import org.exist.xquery.XPathException;
@@ -36,11 +37,14 @@ public class MetadataModule extends AbstractInternalModule {
     public final static String INCLUSION_DATE = "2012-04-01";
     public final static String RELEASED_IN_VERSION = "eXist-2.0";
 
+    public final static String DEPRECATED_AFTER_2_2 = "it will removed after 2.2";
+
 	public static final FunctionDef[] functions = {
-		new FunctionDef( Reindex.signature, Reindex.class ),
+		new FunctionDef( Check.signature, Check.class ),
 
 		new FunctionDef( DocumentByPair.signatures[0], DocumentByPair.class ),
 		new FunctionDef( DocumentByUUID.signatures[0], DocumentByUUID.class ),
+
 		new FunctionDef( Keys.signatures[0], Keys.class ),
 		new FunctionDef( Keys.signatures[1], Keys.class ),
 		
@@ -57,8 +61,9 @@ public class MetadataModule extends AbstractInternalModule {
         new FunctionDef( UUID.signatures[0], UUID.class ),
 		new FunctionDef( UUID.signatures[1], UUID.class ),
 
-		new FunctionDef( Search.signatures[0], Search.class ),
-        new FunctionDef( Search.signatures[1], Search.class )
+        new FunctionDef( Reindex.signatures[0], Reindex.class ),
+
+		new FunctionDef( RestoreFromBackup.signatures[0], RestoreFromBackup.class )
 	};
 	
 	public MetadataModule(Map<String, List<? extends Object>> parameters) throws XPathException {
@@ -76,14 +81,14 @@ public class MetadataModule extends AbstractInternalModule {
 	 * @see org.exist.xquery.Module#getNamespaceURI()
 	 */
 	public String getNamespaceURI() {
-		return MDStorageManager.NAMESPACE_URI;
+		return MetaData.NAMESPACE_URI;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Module#getDefaultPrefix()
 	 */
 	public String getDefaultPrefix() {
-		return MDStorageManager.PREFIX;
+		return MetaData.PREFIX;
 	}
 
     public String getReleaseVersion() {

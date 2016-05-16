@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2015 The eXist Project
+ *  Copyright (C) 2001-2016 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -19,6 +19,7 @@
  */
 package org.exist.storage.md.xquery;
 
+import org.exist.Resource;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.QName;
@@ -30,7 +31,9 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.*;
 
-import static org.exist.storage.md.MDStorageManager.*;
+import java.util.function.Consumer;
+
+import static org.exist.storage.md.MetaData.*;
 
 /**
  * 
@@ -39,20 +42,36 @@ import static org.exist.storage.md.MDStorageManager.*;
  */
 public class DocumentByPair extends BasicFunction {
 	
-	private static final QName NAME = new QName("document-by-pair", NAMESPACE_URI, PREFIX);
-	private static final String DESCRIPTION = "Get the documents by match key/value pair.";
-	private static final FunctionReturnSequenceType RETURN = new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "Resources which have this key/value pair in their metadata");
+	private static final QName RES = new QName("resource-by-pair", NAMESPACE_URI, PREFIX);
+    private static final QName COL = new QName("collection-by-pair", NAMESPACE_URI, PREFIX);
+    private static final QName DOC = new QName("document-by-pair", NAMESPACE_URI, PREFIX);
+
+    private static final SequenceType[] PARAMS = new SequenceType[] {
+        new FunctionParameterSequenceType("key", Type.STRING, Cardinality.EXACTLY_ONE, "The key to match"),
+        new FunctionParameterSequenceType("value", Type.STRING, Cardinality.EXACTLY_ONE, "The value to match")
+    };
+
+    private static final FunctionReturnSequenceType RETURN = new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "Resources which have this key/value pair in their metadata");
 	
     public final static FunctionSignature signatures[] = {
-		new FunctionSignature(
-			NAME,
-			DESCRIPTION,
-			new SequenceType[] { 
-				 new FunctionParameterSequenceType("key", Type.STRING, Cardinality.EXACTLY_ONE, "The key to match"),
-				 new FunctionParameterSequenceType("value", Type.STRING, Cardinality.EXACTLY_ONE, "The value to match")
-			}, 
-			RETURN
-		)
+//		new FunctionSignature(
+//			RES,
+//            "Get the resources by match key/value pair.",
+//            PARAMS,
+//			RETURN
+//		),
+//        new FunctionSignature(
+//            COL,
+//            "Get the collections by match key/value pair.",
+//            PARAMS,
+//            RETURN
+//        ),
+        new FunctionSignature(
+            DOC,
+            "Get the documents by match key/value pair.",
+            PARAMS,
+            RETURN
+        )
 	};
 
 	/**
@@ -66,13 +85,27 @@ public class DocumentByPair extends BasicFunction {
 	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+
+        MetaData md = MetaData.get();
 		
-		ValueSequence returnSeq = new ValueSequence();
+		final ValueSequence returnSeq = new ValueSequence();
 
 		try {
-			for (DocumentImpl doc : MetaData.get().matchDocuments(args[0].getStringValue(), args[1].getStringValue())) {
-				returnSeq.add(new NodeProxy(doc));
-			}
+
+            md.resources(
+                args[0].getStringValue(),
+                args[1].getStringValue(),
+
+                new Consumer<Resource>() {
+                    @Override
+                    public void accept(Resource resource) {
+                        if (resource instanceof DocumentImpl) {
+                            returnSeq.add(new NodeProxy((DocumentImpl)resource));
+                        }
+                    }
+                }
+            );
+
 		} catch (Exception e) {
 			throw new XPathException(this, e);
 		}

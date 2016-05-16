@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2015 The eXist Project
+ *  Copyright (C) 2001-2016 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -19,54 +19,45 @@
  */
 package org.exist.storage.md.xquery;
 
-import java.io.IOException;
-import java.util.Iterator;
-import java.util.Optional;
-
-import org.exist.collections.Collection;
-import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.persistent.DefaultDocumentSet;
 import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.MutableDocumentSet;
 import org.exist.dom.QName;
-import org.exist.security.PermissionDeniedException;
-import org.exist.security.Subject;
-import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.storage.lock.Lock;
-import org.exist.storage.lock.LockedDocumentMap;
-import org.exist.storage.md.MetaData;
-import org.exist.storage.md.Metas;
-import org.exist.util.LockException;
+import org.exist.storage.btree.DBException;
+import org.exist.storage.txn.Txn;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.BasicFunction;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.*;
+import org.exist.xquery.value.*;
 
-import static org.exist.storage.md.MDStorageManager.*;
+import static org.exist.storage.md.MetaData.NAMESPACE_URI;
+import static org.exist.storage.md.MetaData.PREFIX;
+import static org.exist.storage.lock.Lock.READ_LOCK;
 
 /**
+ * 
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
- *
+ * @author Casey Jordan <casey.jordan@jorsek.com>
  */
 public class Reindex extends BasicFunction {
-	
-	public final static FunctionSignature signature =
+
+	private static final QName NAME = new QName("reindex", NAMESPACE_URI, PREFIX);
+	private static final String DESCRIPTION = "Reindex collection or document.";
+    private static final SequenceType RETURN = new SequenceType(Type.EMPTY, Cardinality.ZERO);
+
+    public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
-			new QName("reindex", NAMESPACE_URI, PREFIX),
-			"",
-			null,
-			new SequenceType(Type.STRING, Cardinality.EMPTY));
+			NAME,
+			DESCRIPTION,
+			new SequenceType[] {
+				 new FunctionParameterSequenceType("resource-url", Type.STRING, Cardinality.ONE_OR_MORE, "The resource's urls.")
+			},
+			RETURN
+		)
+	};
 
 	/**
 	 * @param context
 	 */
-	public Reindex(XQueryContext context) {
+	public Reindex(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
 
@@ -74,44 +65,41 @@ public class Reindex extends BasicFunction {
 	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-		try {
-			final BrokerPool db = BrokerPool.getInstance();
-			try(final DBBroker broker = db.get(Optional.of(db.getSecurityManager().getSystemSubject()))) {
-    			Collection col = broker.getCollection(XmldbURI.ROOT_COLLECTION_URI);
-    			
-    			final MetaData md = MetaData.get();
-    			
-    			checkSub(broker, md, col);
-			}
-		} catch (Exception e) {
-			throw new XPathException(this, e);
-		}
-		
-		return Sequence.EMPTY_SEQUENCE;
-	}
-	
-	private void checkSub(DBBroker broker, MetaData md, Collection col) throws PermissionDeniedException, IOException, LockException, TriggerException {
-		
-        for (Iterator<XmldbURI> i = col.collectionIterator(broker); i.hasNext(); ) {
-            XmldbURI childName = i.next();
-            Collection childColl = broker.getOrCreateCollection(null, XmldbURI.ROOT_COLLECTION_URI.append(childName));
-            
-            checkSub(broker, md, childColl);
+
+        DBBroker broker = getContext().getBroker();
+
+        try (Txn txn = broker.beginTx()) {
+            Item next;
+            for (final SequenceIterator i = args[0].unorderedIterator(); i.hasNext(); ) {
+                next = i.nextItem();
+
+                XmldbURI uri = XmldbURI.create(next.getStringValue());
+
+                DocumentImpl doc = broker.getXMLResource(uri, READ_LOCK);
+
+                try {
+
+                    broker.reindexXMLResource(txn, doc, DBBroker.IndexMode.STORE);
+
+                } finally {
+                    if (doc != null) {
+                        doc.getUpdateLock().release(READ_LOCK);
+                    }
+                }
+
+            }
+
+            txn.success();
+        } catch (Exception e) {
+            throw new XPathException(this, e);
         }
-		
-		MutableDocumentSet childDocs = new DefaultDocumentSet();
-		LockedDocumentMap lockedDocuments = new LockedDocumentMap();
-		col.getDocuments(broker, childDocs, lockedDocuments, Lock.WRITE_LOCK);
-		
-		for (Iterator<DocumentImpl> itChildDocs = childDocs.getDocumentIterator(); itChildDocs.hasNext();) {
-			DocumentImpl childDoc = itChildDocs.next();
-			
-			Metas metas = md.addMetas(childDoc);
-			
-			if (metas != null) {
-			    //XXX: md.indexMetas(metas);
-			    ;
-			}
-		}
+
+        try {
+            broker.getDatabase().getIndexManager().sync();
+        } catch (DBException e) {
+            throw new XPathException(this, e);
+        }
+
+        return Sequence.EMPTY_SEQUENCE;
 	}
 }

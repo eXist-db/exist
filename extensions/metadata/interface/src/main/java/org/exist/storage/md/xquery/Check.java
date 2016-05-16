@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2015 The eXist Project
+ *  Copyright (C) 2001-2016 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -21,7 +21,6 @@ package org.exist.storage.md.xquery;
 
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.Optional;
 
 import org.exist.collections.Collection;
 import org.exist.collections.triggers.TriggerException;
@@ -30,12 +29,10 @@ import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.MutableDocumentSet;
 import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
-import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.LockedDocumentMap;
 import org.exist.storage.md.MetaData;
-import org.exist.storage.md.MDStorageManager;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
@@ -55,8 +52,11 @@ public class Check extends BasicFunction {
 	
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("create", MDStorageManager.NAMESPACE_URI, MDStorageManager.PREFIX),
-			"",
+			new QName("check", MetaData.NAMESPACE_URI, MetaData.PREFIX),
+			"Scans the database and creates IDs and empty metadata sets \n" +
+            "for each resource found. It can run for a long time and will block the \n" +
+            "rest of the database while it runs. Stopping the database while it \n" +
+            "runs will leave the database in an inconsistent state.",
 			null,
 			new SequenceType(Type.STRING, Cardinality.EMPTY));
 
@@ -71,25 +71,33 @@ public class Check extends BasicFunction {
 	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+		
+		if (!context.getSubject().hasDbaRole())
+			throw new XPathException(this, "only DBA can call md:check function.");
+		
+		DBBroker broker = context.getBroker();
 		try {
-			final BrokerPool db = BrokerPool.getInstance();
 
-			try(final DBBroker broker = db.get(Optional.of(context.getSubject()))) {
-
-				Collection col = broker.getCollection(XmldbURI.ROOT_COLLECTION_URI);
-
-				checkSub(broker, col);
-			}
+			Collection col = broker.getCollection(XmldbURI.ROOT_COLLECTION_URI);
+			
+			checkSub(broker, col);
+			
 		} catch (Exception e) {
-		    //e.printStackTrace();
+            LOG.info("md:check finish with error", e);
 			throw new XPathException(this, e);
 		}
+
+        LOG.info("md:check finish");
 		
 		return Sequence.EMPTY_SEQUENCE;
 	}
 	
 	private void checkSub(DBBroker broker, Collection col) throws PermissionDeniedException, IOException, LockException, TriggerException {
-		
+
+        LOG.info("md:check processing "+col.getURI());
+
+        MetaData.get().addMetas(col);
+
         for (Iterator<XmldbURI> i = col.collectionIterator(broker); i.hasNext(); ) {
             XmldbURI childName = i.next();
             Collection childColl = broker.getCollection(col.getURI().append(childName));
@@ -102,11 +110,15 @@ public class Check extends BasicFunction {
 		MutableDocumentSet childDocs = new DefaultDocumentSet();
 		LockedDocumentMap lockedDocuments = new LockedDocumentMap();
 		col.getDocuments(broker, childDocs, lockedDocuments, Lock.WRITE_LOCK);
-		
-		for (Iterator<DocumentImpl> itChildDocs = childDocs.getDocumentIterator(); itChildDocs.hasNext();) {
-			DocumentImpl childDoc = itChildDocs.next();
-			
-			MetaData.get().addMetas(childDoc);
-		} 
+
+        try {
+            for (Iterator<DocumentImpl> itChildDocs = childDocs.getDocumentIterator(); itChildDocs.hasNext(); ) {
+                DocumentImpl childDoc = itChildDocs.next();
+
+                MetaData.get().addMetas(childDoc);
+            }
+        } finally {
+            lockedDocuments.unlock();
+        }
 	}
 }

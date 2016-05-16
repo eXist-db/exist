@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2015 The eXist Project
+ *  Copyright (C) 2001-2016 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -32,7 +32,6 @@ import com.sleepycat.persist.model.DeleteAction;
 import com.sleepycat.persist.model.Entity;
 import com.sleepycat.persist.model.PrimaryKey;
 import com.sleepycat.persist.model.SecondaryKey;
-import org.w3c.dom.Document;
 
 import static com.sleepycat.persist.model.Relationship.ONE_TO_ONE;
 
@@ -52,13 +51,14 @@ public class MetasImpl implements Metas {
 	@SuppressWarnings("unused")
 	private MetasImpl() {}
 
-	protected MetasImpl(Document doc) {
-		update(doc);
-		uuid = (new UUID()).toString();
+	protected MetasImpl(DocumentImpl doc) {
+		setURL(doc.getURI().toString());
+		
+        uuid = (new UUID()).toString();
 	}
 	
 	protected MetasImpl(Collection col) {
-		update(col);
+		setURL(col.getURI().toString());
 		uuid = (new UUID()).toString();
 	}
 
@@ -83,38 +83,34 @@ public class MetasImpl implements Metas {
     public Meta put(String key, Object value) {
 		MetaImpl m = (MetaImpl)get(key);
 		if (m == null)
-			return MetaDataImpl.inst.addMeta(this, key, value);
+			return MetaDataImpl.instance.addMeta(this, key, value);
 		
 		else {
 			m.setValue(value);
 
-			MetaDataImpl.inst.addMeta(m);
+			MetaDataImpl.instance.addMeta(m);
 		}
-		MetaDataImpl.inst.indexMetas(this);
+//		MetaDataImpl.instance.indexMetas(this);
 		
 		return m;
 	}
 
 	public Meta get(String key) {
-		return MetaDataImpl.inst.getMeta(this, key);
+		return MetaDataImpl.instance.getMeta(this, key);
 	}
 
     public void delete(String key) {
-        MetaDataImpl.inst.delMeta(uuid, key);
+        MetaDataImpl.instance.delMetaByKey(uuid, key);
     }
 
-    protected void update(Document doc) {
-		uri = doc instanceof DocumentImpl ? ((DocumentImpl)doc).getURI().toString() : null;
-	}
-	
-	protected void update(Collection col) {
-		uri = col.getURI().toString();
+    protected void setURL(String url) {
+		this.uri = url;
 	}
 
 	public List<Meta> metas() {
-		List<Meta> metas = new ArrayList<Meta>();
+		List<Meta> metas = new ArrayList<>();
 		
-		EntityCursor<MetaImpl> sub = MetaDataImpl.inst.getMetaKeys(this);
+		EntityCursor<MetaImpl> sub = MetaDataImpl.instance.getMetaKeys(this);
 		try {
 			
 			for (MetaImpl m : sub) {
@@ -129,14 +125,14 @@ public class MetasImpl implements Metas {
 	}
 
 //	public EntityCursor<MetaImpl> keys() {
-//		return MetaDataImpl.inst.getMetaKeys(this);
+//		return MetaDataImpl._.getMetaKeys(this);
 //	}
 
 	public void delete() {
-	    MetaDataImpl.inst.delMetas(this);
+	    MetaDataImpl.instance.delMetas(this);
 	}
 
 	public void restore(String uuid, String key, String value) {
-		MetaDataImpl.inst._addMeta(this, uuid, key, value);
+		MetaDataImpl.instance._addMeta(this, uuid, key, value);
 	}
 }

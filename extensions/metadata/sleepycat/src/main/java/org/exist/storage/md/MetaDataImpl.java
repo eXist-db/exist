@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2015 The eXist Project
+ *  Copyright (C) 2001-2016 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -23,13 +23,15 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.function.Consumer;
 
 import org.exist.Database;
 import org.exist.EXistException;
+import org.exist.Resource;
 import org.exist.collections.Collection;
 import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -39,7 +41,6 @@ import org.exist.xmldb.XmldbURI;
 import com.sleepycat.je.Environment;
 import com.sleepycat.je.EnvironmentConfig;
 import com.sleepycat.persist.*;
-import org.w3c.dom.Document;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -47,7 +48,7 @@ import org.w3c.dom.Document;
  */
 public class MetaDataImpl extends MetaData {
 	
-	protected static MetaDataImpl inst = null;
+	protected static MetaDataImpl instance = null;
 
 	private Environment env;
     private EntityStore store;
@@ -99,14 +100,14 @@ public class MetaDataImpl extends MetaData {
 
 		LOG.debug("ready ... ");
 
-		MetaDataImpl.inst = this;
-		MetaData.inst = this;
+		MetaDataImpl.instance = this;
+		MetaData.instance = this;
 
 		LOG.debug("done.");
     }
     
     public String getId() {
-        return MDStorageManager.PREFIX;
+        return MetaData.PREFIX;
     }
 	
 	public DocumentImpl getDocument(String uuid) throws EXistException, PermissionDeniedException {
@@ -126,7 +127,7 @@ public class MetaDataImpl extends MetaData {
 		}
 	}
 
-    private Metas getMetas(String uuid) {
+    public Metas getMetas(String uuid) {
         return docByUUID.get(uuid);
     }
 
@@ -140,14 +141,23 @@ public class MetaDataImpl extends MetaData {
 			return broker.getCollection(uri);
 		}
 	}
+	
+    public Metas _addMetas(XmldbURI url) {
+		MetasImpl d = new MetasImpl(url);
+		docByUUID.put(d);
+		
+		if (LOG.isDebugEnabled())
+			LOG.debug("addMetas "+d.getUUID()+" "+url);
 
-	private Metas _addMetas(Document doc) {
+		return d;
+	}
+
+	private Metas _addMetas(DocumentImpl doc) {
 		MetasImpl d = new MetasImpl(doc);
 		docByUUID.put(d);
 		
-		if (LOG.isDebugEnabled()) {
-			LOG.debug("addMetas " + d.getUUID() + " " + (doc instanceof DocumentImpl ? ((DocumentImpl)doc).getURI() : ""));
-		}
+		if (LOG.isDebugEnabled())
+			LOG.debug("addMetas "+d.getUUID()+" "+doc.getURI());
 
 		return d;
 	}
@@ -173,21 +183,32 @@ public class MetaDataImpl extends MetaData {
 	}
 
     public Metas replaceMetas(XmldbURI uri, String uuid) {
-    	Metas metas = getMetas(uri, false);
-    	if (metas != null)
-    		delMetas(metas);
-    	
-		MetasImpl d = new MetasImpl(uri.toString(), uuid);
-		docByUUID.put(d);
-		
-		if (LOG.isDebugEnabled())
-			LOG.debug("addMetas "+uuid+" "+uri);
+        Metas metas = getMetas(uri, false);
+        if (metas != null) {
+            if (metas.getUUID().equals(uuid)) return metas;
+            delMetas(metas);
+        }
 
-		return d;
+        MetasImpl d = new MetasImpl(uri.toString(), uuid);
+        docByUUID.put(d);
+
+        if (LOG.isDebugEnabled())
+            LOG.debug("addMetas "+uuid+" "+uri);
+
+        return d;
+    }
+
+	public Metas addMetas(XmldbURI uri) {
+		Metas _d = getMetas(uri, false);
+
+		if (_d != null)
+			return _d;
+
+		return _addMetas(uri);
 	}
 
-    public Metas addMetas(Document doc) {
-    	Metas _d = getMetas(doc instanceof DocumentImpl ? ((DocumentImpl)doc).getURI() : null, false);
+    public Metas addMetas(DocumentImpl doc) {
+    	Metas _d = getMetas(doc.getURI(), false);
     	
     	if (_d != null)
     		return _d;
@@ -195,17 +216,17 @@ public class MetaDataImpl extends MetaData {
 		return _addMetas(doc);
 	}
 
-    public Metas addMetas(Collection col) {
-    	Metas _c = getMetas(col.getURI(), false);
+    public Metas addMetas(Collection doc) {
+    	Metas _d = getMetas(doc.getURI(), false);
     	
-    	if (_c != null)
-    		return _c;
+    	if (_d != null)
+    		return _d;
     	
-		return _addMetas(col);
+		return _addMetas(doc);
 	}
 
-    public Metas getMetas(Document doc) {
-    	return getMetas(doc instanceof DocumentImpl ? ((DocumentImpl) doc).getURI() : null, true);
+    public Metas getMetas(DocumentImpl doc) {
+    	return getMetas(doc.getURI(), true);
     }
 
     public Metas getMetas(XmldbURI uri) {
@@ -296,14 +317,14 @@ public class MetaDataImpl extends MetaData {
 
 		docByUUID.delete(d.getUUID());
 		
-        indexRemoveMetas(d);
+//        indexRemoveMetas(d);
 	}
 
     protected MetaImpl addMeta(Metas doc, String key, Object value) {
 		MetaImpl m = new MetaImpl(doc.getUUID(), key, value);
 		metadataByUUID.put(m);
 		
-        indexMetas(doc);
+//        indexMetas(doc);
 
         return m;
 	}
@@ -312,7 +333,7 @@ public class MetaDataImpl extends MetaData {
 		MetaImpl m = new MetaImpl(doc.getUUID(), uuid, key, value);
 		metadataByUUID.put(m);
 		
-		indexMetas(doc);
+//		indexMetas(doc);
 		
 		return m;
 	}
@@ -345,16 +366,27 @@ public class MetaDataImpl extends MetaData {
 		return null;
 	}
 
-    public void streamMetas(DocumentImpl doc, MetaStreamListener listener) {
-        Metas metas = getMetas(doc);
+    public void streamMetas(XmldbURI uri, MetaStreamListener listener) {
+        Metas metas = getMetas(uri);
         if (metas == null)
             return;
+
+        HashSet<String> check = new HashSet<>();
         
         EntityCursor<MetaImpl> sub = metadata.subIndex(metas.getUUID()).entities();
         try {
-            for (MetaImpl m : sub)
-                listener.metadata(new QName(m.getKey(), MDStorageManager.NAMESPACE_URI, MDStorageManager.PREFIX) , m.getValue());
+            for (MetaImpl m : sub) {
 
+                String key = m.getKey();
+
+                if (check.contains(key)) {
+                    LOG.error("ignore duplicated metadata pair "+key+" = "+m.getValue()+" ["+m.getUUID()+"] @ "+uri);
+                    continue;
+                }
+                check.add(key);
+
+                listener.metadata(m.getUUID(), key, m.getValue());
+            }
         } finally {
             sub.close();
         }
@@ -364,82 +396,144 @@ public class MetaDataImpl extends MetaData {
 		return metadataByUUID.get(uuid);
 	}
 
-    protected void delMeta(String docUUID, String key) {
+    protected void delMeta(String docUUID, String uuid) {
         //System.out.println("key = "+key);
 
         EntityCursor<MetaImpl> sub = metadata.subIndex(docUUID).entities();
         try {
-            for (MetaImpl m : sub)
-                if (m.getKey().equals(key)) {
-                    sub.delete();
-                }
-
+            for (MetaImpl m : sub) {
+				if (m.getUUID().equals(uuid)) {
+					sub.delete();
+				}
+			}
         } finally {
             sub.close();
         }
         
-        indexMetas(getMetas(docUUID));
+//        indexMetas(getMetas(docUUID));
     }
 
-    public List<DocumentImpl> matchDocuments(String key, String value) throws EXistException {
-		
-		EntityJoin<String, MetaImpl> join = new EntityJoin<String, MetaImpl>(metadataByUUID);
-		join.addCondition(keyToMeta, key);
-		join.addCondition(valueToMeta, value);
-		
-		ForwardCursor<MetaImpl> entities = join.entities();
-		try { 
-			List<DocumentImpl> list = new ArrayList<DocumentImpl>();
-			for (MetaImpl entity : entities) {
-				try {
-					list.add(getDocument(entity.getObject()));
-				} catch (PermissionDeniedException ex) {
-					//ignore
+	protected void delMetaByKey(String docUUID, String key) {
+		//System.out.println("key = "+key);
+
+		EntityCursor<MetaImpl> sub = metadata.subIndex(docUUID).entities();
+		try {
+			for (MetaImpl m : sub) {
+				if (m.getKey().equals(key)) {
+					sub.delete();
 				}
 			}
-			return list;
 		} finally {
-			entities.close();
+			sub.close();
 		}
+
+//		indexMetas(getMetas(docUUID));
 	}
-	
-    public List<DocumentImpl> matchDocumentsByKey(String key) throws EXistException {
-        
-        EntityJoin<String, MetaImpl> join = new EntityJoin<String, MetaImpl>(metadataByUUID);
+
+    @Deprecated //use void resources(String key, String value, Consumer<Resource> consumer)
+    public List<DocumentImpl> matchDocuments(String key, String value) throws EXistException {
+
+        final List<DocumentImpl> list = new ArrayList<>();
+
+        resources(key, value, new Consumer<Resource>() {
+            @Override
+            public void accept(Resource resource) {
+                if (resource instanceof DocumentImpl) {
+                    list.add((DocumentImpl)resource);
+                }
+            }
+        });
+
+        return list;
+	}
+
+    public void resources(String key, String value, Consumer<Resource> consumer) throws EXistException {
+
+        EntityJoin<String, MetaImpl> join = new EntityJoin<>(metadataByUUID);
         join.addCondition(keyToMeta, key);
-        
+        join.addCondition(valueToMeta, value);
+
         ForwardCursor<MetaImpl> entities = join.entities();
-        try { 
-            List<DocumentImpl> list = new ArrayList<DocumentImpl>();
+        try {
             for (MetaImpl entity : entities) {
                 try {
-                    list.add(getDocument(entity.getObject()));
+                    consumer.accept(getDocument(entity.getObject()));
                 } catch (PermissionDeniedException ex) {
                     //ignore
                 }
             }
-            return list;
+        } finally {
+            entities.close();
+        }
+    }
+	
+    @Deprecated //use void resourcesByKey(String key, Consumer<Resource> consumer)
+    public List<DocumentImpl> matchDocumentsByKey(String key) throws EXistException {
+
+        final List<DocumentImpl> list = new ArrayList<>();
+
+        resourcesByKey(key, new Consumer<Resource>() {
+            @Override
+            public void accept(Resource resource) {
+                if (resource instanceof DocumentImpl) {
+                    list.add((DocumentImpl)resource);
+                }
+            }
+        });
+
+        return list;
+    }
+
+    public void resourcesByKey(String key, Consumer<Resource> consumer) throws EXistException {
+
+        EntityJoin<String, MetaImpl> join = new EntityJoin<>(metadataByUUID);
+        join.addCondition(keyToMeta, key);
+
+        ForwardCursor<MetaImpl> entities = join.entities();
+        try {
+            for (MetaImpl entity : entities) {
+                try {
+                    consumer.accept(getDocument(entity.getObject()));
+                } catch (PermissionDeniedException ex) {
+                    //ignore
+                }
+            }
         } finally {
             entities.close();
         }
     }
 
+    @Deprecated //use void resourcesByValue(String value, Consumer<Resource> consumer)
     public List<DocumentImpl> matchDocumentsByValue(String value) throws EXistException {
-        
-        EntityJoin<String, MetaImpl> join = new EntityJoin<String, MetaImpl>(metadataByUUID);
+
+        final List<DocumentImpl> list = new ArrayList<>();
+
+        resourcesByValue(value, new Consumer<Resource>() {
+            @Override
+            public void accept(Resource resource) {
+                if (resource instanceof DocumentImpl) {
+                    list.add((DocumentImpl)resource);
+                }
+            }
+        });
+
+        return list;
+    }
+
+    public void resourcesByValue(String value, Consumer<Resource> consumer) throws EXistException {
+
+        EntityJoin<String, MetaImpl> join = new EntityJoin<>(metadataByUUID);
         join.addCondition(valueToMeta, value);
-        
+
         ForwardCursor<MetaImpl> entities = join.entities();
-        try { 
-            List<DocumentImpl> list = new ArrayList<DocumentImpl>();
+        try {
             for (MetaImpl entity : entities) {
                 try {
-                    list.add(getDocument(entity.getObject()));
+                    consumer.accept(getDocument(entity.getObject()));
                 } catch (PermissionDeniedException ex) {
                     //ignore
                 }
             }
-            return list;
         } finally {
             entities.close();
         }
@@ -475,7 +569,8 @@ public class MetaDataImpl extends MetaData {
 			
 			docByUUID.put(ms);
 
-			ms = (MetasImpl)getMetas(oldUri);
+//			ms = (MetasImpl)getMetas(oldUri);
+//			System.out.println(ms);
 		} else {
 			throw new RuntimeException("Metas NULL: " + oldUri + " in moveMetas");
 			//LOG.warn("Metas NULL for document: " + doc.getURI() + " in moveMetas");
@@ -523,6 +618,23 @@ public class MetaDataImpl extends MetaData {
 		}
 	}
 
+	public void copyMetas(XmldbURI oldURI, XmldbURI newURI) {
+		MetasImpl ms = (MetasImpl)getMetas(oldURI);
+
+		MetasImpl newMs = (MetasImpl) addMetas(newURI);
+
+		if (ms != null) {
+			EntityCursor<MetaImpl> sub = metadata.subIndex(ms.getUUID()).entities();
+			try {
+				for (MetaImpl m : sub)
+					newMs.put(m.getKey(), m.getValue());
+
+			} finally {
+				sub.close();
+			}
+		}
+	}
+
 	public void copyMetas(XmldbURI oldDoc, Collection newCol) {
 		MetasImpl ms = (MetasImpl)getMetas(oldDoc);
 		
@@ -560,25 +672,4 @@ public class MetaDataImpl extends MetaData {
 		
 		return d.getUUID();
 	}
-	
-	//lucene index methods
-    public void indexMetas(Metas metas) {
-        //XXX: update lucene!!!
-//        PlugToLucene plug = new PlugToLucene(this);
-//        plug.addMetas(metas);
-    }
-
-    private void indexRemoveMetas(Metas metas) {
-        //XXX: update lucene!!!
-//        PlugToLucene plug = new PlugToLucene(this);
-//        plug.removeMetas(metas);
-    }
-    
-//    public NodeImpl search(String queryText, List<String> toBeMatchedURIs) throws XPathException {
-//        return (new PlugToLucene(this)).search(queryText, toBeMatchedURIs);
-//    }
-//
-//    public List<String> searchDocuments(String queryText, List<String> toBeMatchedURIs) throws XPathException {
-//        return (new PlugToLucene(this)).searchDocuments(queryText, toBeMatchedURIs);
-//    }
 }

@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2015 The eXist Project
+ *  Copyright (C) 2001-2016 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -32,7 +32,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.*;
 
-import static org.exist.storage.md.MDStorageManager.*;
+import static org.exist.storage.md.MetaData.*;
 
 /**
  * 
@@ -42,14 +42,14 @@ public class PairDelete extends BasicFunction {
 	
 	private static final QName NAME = new QName("delete", NAMESPACE_URI, PREFIX);
 	private static final String DESCRIPTION = "Delete document's key/value pair.";
-	private static final FunctionReturnSequenceType RETURN = new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ONE, "Key/value pair UUID");
+	private static final SequenceType RETURN = new SequenceType(Type.EMPTY, Cardinality.ZERO);
 	
     public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			NAME,
 			DESCRIPTION,
 			new SequenceType[] { 
-				 new FunctionParameterSequenceType("document", Type.ITEM, Cardinality.EXACTLY_ONE, "The document."),
+				 new FunctionParameterSequenceType("resource", Type.ITEM, Cardinality.EXACTLY_ONE, "The resource or resource's url."),
 				 new FunctionParameterSequenceType("key", Type.STRING, Cardinality.EXACTLY_ONE, "The key. '*' mean delete all."),
 			}, 
 			RETURN
@@ -58,7 +58,7 @@ public class PairDelete extends BasicFunction {
             NAME,
             DESCRIPTION,
             new SequenceType[] { 
-                 new FunctionParameterSequenceType("uuid", Type.STRING, Cardinality.EXACTLY_ONE, "The meta UUID.")
+                 new FunctionParameterSequenceType("uuid", Type.STRING, Cardinality.EXACTLY_ONE, "The key-value pair ID.")
             }, 
             RETURN
         )
@@ -84,7 +84,10 @@ public class PairDelete extends BasicFunction {
         
         } else if (args[0] instanceof DocumentImpl) {
 			metas = MetaData.get().getMetas((DocumentImpl)args[0]);
-		
+
+        } else if (args[0] instanceof XmldbURI) {
+            metas = MetaData.get().getMetas((XmldbURI)args[0]);
+
         } else {
             metas = MetaData.get().getMetas(XmldbURI.create( args[0].getStringValue() ));
 

@@ -39,24 +39,14 @@ import org.apache.lucene.queryparser.flexible.standard.CommonQueryParserConfigur
 import org.apache.lucene.search.*;
 import org.apache.lucene.util.*;
 import org.exist.collections.Collection;
+import org.exist.dom.persistent.*;
 import org.exist.indexing.*;
 import org.exist.indexing.StreamListener.ReindexMode;
 import org.exist.indexing.lucene.PlainTextHighlighter.Offset;
-import org.exist.indexing.lucene.PlainTextIndexConfig.PlainTextDoc;
 import org.exist.indexing.lucene.PlainTextIndexConfig.PlainTextField;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.memtree.NodeImpl;
-import org.exist.dom.persistent.Match;
-import org.exist.dom.persistent.ElementImpl;
-import org.exist.dom.persistent.IStoredNode;
-import org.exist.dom.persistent.NodeProxy;
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.NewArrayNodeSet;
-import org.exist.dom.persistent.DocumentSet;
-import org.exist.dom.persistent.AbstractCharacterData;
-import org.exist.dom.persistent.NodeSet;
-import org.exist.dom.persistent.AttrImpl;
 import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.*;
@@ -675,7 +665,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      */
     public NodeImpl search(final XQueryContext context, final List<String> toBeMatchedURIs, String queryText, String[] fieldsToGet) throws XPathException, IOException {
 
-        return index.withSearcher(searcher -> {
+        return index.<NodeImpl>withSearcher(searcher -> {
             // Get analyzer : to be retrieved from configuration
             final Analyzer searchAnalyzer = new StandardAnalyzer(Version.LUCENE_43);
 
@@ -1238,10 +1228,12 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             final List<CategoryPath> paths = new ArrayList<>();
 
             broker.getIndexController().streamMetas(new MetaStreamListener() {
-                @Override
-                public void metadata(QName key, Object value) {
+                public void metadata(String uuid, String key, Object value) {
+                    if (value == null)
+                        return;
+
                     if (value instanceof String) {
-                        String name = key.getLocalPart();//LuceneUtil.encodeQName(key, index.getBrokerPool().getSymbols());
+                        String name = key;//LuceneUtil.encodeQName(key, index.getBrokerPool().getSymbols());
                         Field fld = new Field(name, value.toString(), Field.Store.NO, Field.Index.ANALYZED, Field.TermVector.YES);
                         metas.add(fld);
                         //System.out.println(" "+name+" = "+value.toString());

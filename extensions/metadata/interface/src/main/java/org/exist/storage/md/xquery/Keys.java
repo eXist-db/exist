@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2015 The eXist Project
+ *  Copyright (C) 2001-2016 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -19,6 +19,7 @@
  */
 package org.exist.storage.md.xquery;
 
+import org.exist.collections.Collection;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.QName;
 import org.exist.storage.md.Meta;
@@ -32,7 +33,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.*;
 
-import static org.exist.storage.md.MDStorageManager.*;
+import static org.exist.storage.md.MetaData.*;
 
 /**
  * 
@@ -52,7 +53,7 @@ public class Keys extends BasicFunction {
 			NAME,
 			DESCRIPTION,
 			new SequenceType[] { 
-				 new FunctionParameterSequenceType("resource", Type.ITEM, Cardinality.EXACTLY_ONE, "Document")
+				 new FunctionParameterSequenceType("resource", Type.ITEM, Cardinality.EXACTLY_ONE, "The resource or resource's url.")
 			}, 
 			RETURN
 		),
@@ -60,9 +61,10 @@ public class Keys extends BasicFunction {
 			NAME_URL,
 			DESCRIPTION,
 			new SequenceType[] { 
-				 new FunctionParameterSequenceType("resource", Type.STRING, Cardinality.EXACTLY_ONE, "Document's URL")
+				 new FunctionParameterSequenceType("resource-uri", Type.STRING, Cardinality.EXACTLY_ONE, "Resource's URL")
 			}, 
-			RETURN
+			RETURN,
+            MetadataModule.DEPRECATED_AFTER_2_2
 		)
 //		,
 //		new FunctionSignature(
@@ -91,7 +93,13 @@ public class Keys extends BasicFunction {
 		
 		if (getSignature().getName().equals(NAME))
 			if (args[0] instanceof DocumentImpl) {
-				metas = MetaData.get().getMetas(((DocumentImpl)args[0]));
+                metas = MetaData.get().getMetas(((DocumentImpl) args[0]));
+
+            } else if (args[0] instanceof Collection) {
+                metas = MetaData.get().getMetas( ((Collection)args[0]).getURI() );
+
+            } else if (args[0] instanceof XmldbURI) {
+                metas = MetaData.get().getMetas( (XmldbURI)args[0] );
 				
 			} else
 				throw new XPathException(this, "Unsupported type "+args[0].getItemType());
