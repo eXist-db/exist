@@ -43,6 +43,7 @@ import org.exist.storage.NotificationService;
 import org.exist.storage.ProcessMonitor;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.util.Configuration;
+import org.exist.util.XMLReaderPool;
 import org.exist.xquery.PerformanceStats;
 
 /**
@@ -55,47 +56,47 @@ public interface Database {
 
     // TODO: javadocs
 
-    public String getId();
+    String getId();
 
     /**
-     * 
+     *
      * @return SecurityManager
      */
-    public SecurityManager getSecurityManager();
+    SecurityManager getSecurityManager();
 
     /**
-     * 
+     *
      * @return IndexManager
      */
-    public IndexManager getIndexManager();
+    IndexManager getIndexManager();
 
     /**
-     * 
+     *
      * @return TransactionManager
      */
-    public TransactionManager getTransactionManager();
+    TransactionManager getTransactionManager();
 
     /**
-     * 
+     *
      * @return CacheManager
      */
-    public CacheManager getCacheManager();
+    CacheManager getCacheManager();
 
     /**
-     * 
+     *
      * @return Scheduler
      */
-    public Scheduler getScheduler();
+    Scheduler getScheduler();
 
     /**
-	 * 
-	 */
-    public void shutdown();
+     *
+     */
+    void shutdown();
 
     // TODO: remove 'throws EXistException'?
-    public DBBroker getBroker() throws EXistException; 
+    DBBroker getBroker() throws EXistException;
 
-    public DBBroker authenticate(String username, Object credentials) throws AuthenticationException;
+    DBBroker authenticate(String username, Object credentials) throws AuthenticationException;
 
     /*
      * @Deprecated ? 
@@ -112,62 +113,64 @@ public interface Database {
      *     database.release(broker);
      * }
      */
-    public DBBroker get(Optional<Subject> subject) throws EXistException;
+    DBBroker get(Optional<Subject> subject) throws EXistException;
 
-    public DBBroker getActiveBroker(); // throws EXistException;
+    DBBroker getActiveBroker(); // throws EXistException;
 
     /**
      * Returns the number of brokers currently serving requests for the database
      * instance.
-     * 
+     *
      * @return The brokers count
      */
-    public int countActiveBrokers();
+    int countActiveBrokers();
 
     /**
-     * 
+     *
      * @return Debuggee
      */
-    public Debuggee getDebuggee();
+    Debuggee getDebuggee();
 
-    public PerformanceStats getPerformanceStats();
+    PerformanceStats getPerformanceStats();
 
     // old configuration
-    public Configuration getConfiguration();
+    Configuration getConfiguration();
 
-    public NodeIdFactory getNodeFactory();
+    NodeIdFactory getNodeFactory();
 
-    public Path getStoragePlace();
+    Path getStoragePlace();
 
-    public CollectionConfigurationManager getConfigurationManager();
+    CollectionConfigurationManager getConfigurationManager();
 
     /**
      * Master document triggers.
      */
-    public Collection<TriggerProxy<? extends DocumentTrigger>> getDocumentTriggers();
-
-    // public DocumentTrigger getDocumentTrigger();
+    Collection<TriggerProxy<? extends DocumentTrigger>> getDocumentTriggers();
 
     /**
      * Master Collection triggers.
      */
-    public Collection<TriggerProxy<? extends CollectionTrigger>> getCollectionTriggers();
+    Collection<TriggerProxy<? extends CollectionTrigger>> getCollectionTriggers();
 
-    // public CollectionTrigger getCollectionTrigger();
+    void registerDocumentTrigger(Class<? extends DocumentTrigger> clazz);
 
-    public void registerDocumentTrigger(Class<? extends DocumentTrigger> clazz);
+    void registerCollectionTrigger(Class<? extends CollectionTrigger> clazz);
 
-    public void registerCollectionTrigger(Class<? extends CollectionTrigger> clazz);
+    ProcessMonitor getProcessMonitor();
 
-    public ProcessMonitor getProcessMonitor();
+    boolean isReadOnly();
 
-    public boolean isReadOnly();
+    NotificationService getNotificationService();
 
-    public NotificationService getNotificationService();
+    PluginsManager getPluginsManager();
 
-    public PluginsManager getPluginsManager();
+    SymbolTable getSymbols();
 
-    public SymbolTable getSymbols();
+    MetaStorage getMetaStorage();
 
-    public MetaStorage getMetaStorage();
+    int getPageSize();
+
+    boolean isTransactional();
+
+    XMLReaderPool getParserPool();
 }
