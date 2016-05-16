@@ -1,23 +1,21 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2010-2011 The eXist Project
+ *  Copyright (C) 2001-2016 The eXist Project
  *  http://exist-db.org
- *  
+ *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
  *  as published by the Free Software Foundation; either version 2
  *  of the License, or (at your option) any later version.
- *  
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *  
- *  $Id$
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.plugin;
 
@@ -30,22 +28,25 @@ import org.apache.logging.log4j.Logger;
 import org.exist.Database;
 import org.exist.EXistException;
 import org.exist.LifeCycle;
+import org.exist.Resource;
 import org.exist.backup.BackupHandler;
 import org.exist.backup.RestoreHandler;
 import org.exist.collections.Collection;
 import org.exist.config.*;
 import org.exist.config.annotation.*;
+import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.Permission;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.xmldb.XmldbURI;
-import org.w3c.dom.Document;
 import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
+
+import javax.xml.stream.XMLStreamWriter;
 
 /**
  * Plugins manager. 
@@ -88,6 +89,7 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, LifeCyc
 		addPlugin("org.exist.scheduler.SchedulerManager");
 		addPlugin("org.exist.storage.md.MDStorageManager");
 		addPlugin("org.exist.monitoring.MonitoringManager");
+        addPlugin("org.exist.revisions.RCSManager");
 	}
 
 	@Override
@@ -149,11 +151,9 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, LifeCyc
 //			//LOG?
 //		}
 		
-		for (final Plug jack : jacks.values()) {
-			if (jack instanceof LifeCycle) {
-				((LifeCycle) jack).start(broker);
-			}
-		}
+        for (Plug jack : jacks.values()) {
+            jack.start(broker);
+        }
 	}
 	
 	@Override
@@ -162,7 +162,7 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, LifeCyc
 			try {
 				plugin.sync(broker);
 			} catch (final Throwable e) {
-				LOG.error(e);
+				LOG.error(e.getMessage(), e);
 			}
 		}
 	}
@@ -173,7 +173,7 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, LifeCyc
 			try {
 				plugin.stop(broker);
 			} catch (final Throwable e) {
-				LOG.error(e);
+				LOG.error(e.getMessage(), e);
 			}
 		}
 	}
@@ -261,7 +261,20 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, LifeCyc
 			LOG = logger;
 		}
 
-		@Override
+        @Override
+        public void backup(Resource resource, XMLStreamWriter writer) throws IOException {
+            for (final Plug plugin : jacks.values()) {
+                if (plugin instanceof BackupHandler) {
+                    try {
+                        ((BackupHandler) plugin).backup(resource, writer);
+                    } catch (final Exception e) {
+                        LOG.error(e.getMessage(), e);
+                    }
+                }
+            }
+        }
+
+        @Override
 		public void backup(Collection colection, AttributesImpl attrs) {
 			for (final Plug plugin : jacks.values()) {
 				if (plugin instanceof BackupHandler) {
@@ -288,7 +301,7 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, LifeCyc
 		}
 
 		@Override
-		public void backup(Document document, AttributesImpl attrs) {
+		public void backup(DocumentImpl document, AttributesImpl attrs) {
 			for (final Plug plugin : jacks.values()) {
 				if (plugin instanceof BackupHandler) {
 					try {
@@ -301,7 +314,7 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, LifeCyc
 		}
 
 		@Override
-		public void backup(Document document, SAXSerializer serializer) throws SAXException {
+		public void backup(DocumentImpl document, SAXSerializer serializer) throws SAXException {
 			for (final Plug plugin : jacks.values()) {
 				if (plugin instanceof BackupHandler) {
 					try {
@@ -422,38 +435,27 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, LifeCyc
 			}
 		}
 
-		@Override
-		public void startCollectionRestore(Collection colection, Attributes atts) {
+        public void startRestore(Resource resource, Attributes atts) {
+            for (final Plug plugin : jacks.values()) {
+                if (plugin instanceof RestoreHandler) {
+                    ((RestoreHandler) plugin).startRestore(resource, atts);
+                }
+            }
+        }
+
+		public void startRestore(Resource resource, String uuid) {
 			for (final Plug plugin : jacks.values()) {
 				if (plugin instanceof RestoreHandler) {
-					((RestoreHandler) plugin).startCollectionRestore(colection, atts);
+					((RestoreHandler) plugin).startRestore(resource, uuid);
 				}
 			}
 		}
 
 		@Override
-		public void endCollectionRestore(Collection colection) {
+		public void endRestore(Resource resource) {
 			for (final Plug plugin : jacks.values()) {
 				if (plugin instanceof RestoreHandler) {
-					((RestoreHandler) plugin).endCollectionRestore(colection);
-				}
-			}
-		}
-
-		@Override
-		public void startDocumentRestore(Document document, Attributes atts) {
-			for (final Plug plugin : jacks.values()) {
-				if (plugin instanceof RestoreHandler) {
-					((RestoreHandler) plugin).startDocumentRestore(document, atts);
-				}
-			}
-		}
-
-		@Override
-		public void endDocumentRestore(Document document) {
-			for (final Plug plugin : jacks.values()) {
-				if (plugin instanceof RestoreHandler) {
-					((RestoreHandler) plugin).endDocumentRestore(document);
+					((RestoreHandler) plugin).endRestore(resource);
 				}
 			}
 		}
