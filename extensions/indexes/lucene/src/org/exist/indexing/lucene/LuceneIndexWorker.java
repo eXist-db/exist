@@ -1227,19 +1227,17 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             final List<Field> metas = new ArrayList<>();
             final List<CategoryPath> paths = new ArrayList<>();
 
-            broker.getIndexController().streamMetas(new MetaStreamListener() {
-                public void metadata(String uuid, String key, Object value) {
-                    if (value == null)
-                        return;
+            broker.getIndexController().streamMetas((uuid, key, value) -> {
+                if (value == null)
+                    return;
 
-                    if (value instanceof String) {
-                        String name = key;//LuceneUtil.encodeQName(key, index.getBrokerPool().getSymbols());
-                        Field fld = new Field(name, value.toString(), Field.Store.NO, Field.Index.ANALYZED, Field.TermVector.YES);
-                        metas.add(fld);
-                        //System.out.println(" "+name+" = "+value.toString());
-                        
-                        paths.add(new CategoryPath(name, value.toString()));
-                    }
+                if (value instanceof String) {
+                    String name = key;//LuceneUtil.encodeQName(key, index.getBrokerPool().getSymbols());
+                    Field fld = new Field(name, value.toString(), Field.Store.NO, Field.Index.ANALYZED, Field.TermVector.YES);
+                    metas.add(fld);
+                    //System.out.println(" "+name+" = "+value.toString());
+
+                    paths.add(new CategoryPath(name, value.toString()));
                 }
             });
             
