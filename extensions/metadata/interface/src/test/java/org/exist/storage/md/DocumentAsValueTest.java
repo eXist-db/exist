@@ -155,7 +155,7 @@ public class DocumentAsValueTest {
 
             root.addBinaryResource(txn, broker, doc3uri.lastSegment(), BINARY.getBytes(), null);
 
-            txn.success();
+            txn.commit();
         }
     }
 
@@ -166,7 +166,7 @@ public class DocumentAsValueTest {
 
             clean(broker, txn);
 
-            txn.success();
+            txn.commit();
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());

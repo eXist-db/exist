@@ -248,7 +248,7 @@ public class SearchTest {
 
             root.addBinaryResource(txn, broker, doc5uri.lastSegment(), BINARY.getBytes(), null);
 
-            txn.success();
+            txn.commit();
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());
@@ -260,7 +260,7 @@ public class SearchTest {
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn txn = broker.beginTx()) {
             clean(broker, txn);
-            txn.success();
+            txn.commit();
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());

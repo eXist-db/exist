@@ -89,7 +89,7 @@ public class Reindex extends BasicFunction {
 
             }
 
-            txn.success();
+            txn.commit();
         } catch (Exception e) {
             throw new XPathException(this, e);
         }

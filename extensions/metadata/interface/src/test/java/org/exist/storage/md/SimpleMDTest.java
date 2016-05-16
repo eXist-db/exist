@@ -268,7 +268,7 @@ public class SimpleMDTest {
                 col.store(txn, broker, info, XML1, false);
 
                 //XXX: need to simulate unfinished transaction & crash
-                txn.success();
+                txn.commit();
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -294,7 +294,7 @@ public class SimpleMDTest {
                 assertNotNull(info);
                 root.store(txn, broker, info, XML1, false);
 
-                txn.success();
+                txn.commit();
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -336,7 +336,7 @@ public class SimpleMDTest {
 
                 broker.moveResource(txn, doc1, col, doc2uri.lastSegment());
 
-                txn.success();
+                txn.commit();
             } catch (Exception e) {
                 e.printStackTrace();
                 fail(e.getMessage());
@@ -376,7 +376,7 @@ public class SimpleMDTest {
 
             try(final Txn txn = broker.beginTx()) {
                 broker.moveResource(txn, doc1, col, doc3uri.lastSegment());
-                txn.success();
+                txn.commit();
             } catch (Exception e) {
                 e.printStackTrace();
                 fail(e.getMessage());
@@ -420,7 +420,7 @@ public class SimpleMDTest {
 
                 broker.moveCollection(txn, col, parent, col3uri.lastSegment());
 
-                txn.success();
+                txn.commit();
             } catch (Exception e) {
                 e.printStackTrace();
                 fail(e.getMessage());
@@ -441,7 +441,7 @@ public class SimpleMDTest {
                 assertNotNull(nCol);
                 broker.saveCollection(txn, nCol);
 
-                txn.success();
+                txn.commit();
             } catch (Exception e) {
                 e.printStackTrace();
                 fail(e.getMessage());
@@ -477,7 +477,7 @@ public class SimpleMDTest {
             doc3 = storeDocument(txn, broker, test2, doc3uri, XML1);
             assertNotNull(doc3);
 
-            txn.success();
+            txn.commit();
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());
@@ -515,7 +515,7 @@ public class SimpleMDTest {
 
                 broker.moveCollection(txn, col, parent, col3uri.lastSegment());
 
-                txn.success();
+                txn.commit();
             } catch (Exception e) {
                 e.printStackTrace();
                 fail(e.getMessage());
@@ -543,7 +543,7 @@ public class SimpleMDTest {
                 assertNotNull(nCol);
                 broker.saveCollection(txn, nCol);
 
-                txn.success();
+                txn.commit();
             } catch (Exception e) {
                 e.printStackTrace();
                 fail(e.getMessage());
@@ -589,7 +589,7 @@ public class SimpleMDTest {
 
                 broker.copyCollection(txn, col, parent, col3uri.lastSegment());
 
-                txn.success();
+                txn.commit();
             } catch (Exception e) {
                 e.printStackTrace();
                 fail(e.getMessage());
@@ -649,7 +649,7 @@ public class SimpleMDTest {
 
                 broker.removeCollection(txn, col);
 
-                txn.success();
+                txn.commit();
             } catch (Exception e) {
                 e.printStackTrace();
                 fail(e.getMessage());
@@ -707,7 +707,7 @@ public class SimpleMDTest {
                     assertNotNull(info);
                     root.store(txn, broker, info, XML1, false);
 
-                    txn.success();
+                    txn.commit();
                 } catch (Exception e) {
                     e.printStackTrace();
                     fail(e.getMessage());
@@ -731,7 +731,7 @@ public class SimpleMDTest {
                     assertNotNull(info);
                     root.store(txn, broker, info, wrongXML, false);
 
-                    txn.success();
+                    txn.commit();
                 } catch (Exception e) {
                     e.printStackTrace();
                     //txnManager.abort(txn);
@@ -797,7 +797,7 @@ public class SimpleMDTest {
             doc2 = storeDocument(txn, broker, root, doc2uri, XML2);
             root.addBinaryResource(txn, broker, doc5uri.lastSegment(), BINARY.getBytes(), null);
 
-            txn.success();
+            txn.commit();
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());
@@ -822,7 +822,7 @@ public class SimpleMDTest {
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn txn = broker.beginTx()) {
             clean(broker, txn);
-            txn.success();
+            txn.commit();
         }
     }
 

@@ -233,7 +233,7 @@ public class BackupRestoreMDTest extends TestCase {
             BinaryDocument doc = root.addBinaryResource(txn, broker, doc2uri.lastSegment(), BINARY.getBytes(), null);
             assertNotNull(doc);
 
-            txn.success();
+            txn.commit();
         }
 
         rundb();
@@ -266,7 +266,7 @@ public class BackupRestoreMDTest extends TestCase {
             assertNotNull(root);
             broker.removeCollection(txn, root);
 
-            txn.success();
+            txn.commit();
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());

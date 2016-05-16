@@ -122,7 +122,7 @@ public class MatchDocumentsTest {
             try(final Txn txn = broker.beginTx()) {
                 broker.removeCollection(txn, col1);
 
-                txn.success();
+                txn.commit();
             } catch (Exception e) {
                 e.printStackTrace();
                 fail(e.getMessage());
@@ -181,7 +181,7 @@ public class MatchDocumentsTest {
             try(final Txn txn = broker.beginTx()) {
                 broker.moveCollection(txn, col1, parentCol, col2uri.lastSegment());
 
-                txn.success();
+                txn.commit();
             } catch (Exception e) {
                 e.printStackTrace();
                 fail(e.getMessage());
@@ -232,7 +232,7 @@ public class MatchDocumentsTest {
                 final DocumentImpl doc1 = col1.getDocument(broker, doc1uri.lastSegment());
                 broker.moveResource(txn, doc1, col, doc2uri.lastSegment());
 
-                txn.success();
+                txn.commit();
             } catch (Exception e) {
                 e.printStackTrace();
                 fail(e.getMessage());
@@ -280,7 +280,7 @@ public class MatchDocumentsTest {
                 DocumentImpl doc1 = col1.getDocument(broker, doc1uri.lastSegment());
                 broker.moveResource(txn, doc1, col2, doc4uri.lastSegment());
 
-                txn.success();
+                txn.commit();
             } catch (Exception e) {
                 e.printStackTrace();
                 fail(e.getMessage());
@@ -326,7 +326,7 @@ public class MatchDocumentsTest {
                 col1.removeXMLResource(txn, broker, doc1uri.lastSegment());
                 broker.saveCollection(txn, col1);
 
-                txn.success();
+                txn.commit();
             } catch(Exception e) {
                 e.printStackTrace();
                 fail(e.getMessage());
@@ -370,7 +370,7 @@ public class MatchDocumentsTest {
 
                 broker.moveResource(txn, doc3, col1, doc6uri.lastSegment());
 
-                txn.success();
+                txn.commit();
             } catch (Exception e) {
                 e.printStackTrace();
                 fail(e.getMessage());
@@ -418,7 +418,7 @@ public class MatchDocumentsTest {
                 DocumentImpl doc3 = col1.getDocument(broker, doc3uri.lastSegment());
                 broker.moveResource(txn, doc3, col2, doc5uri.lastSegment());
 
-                txn.success();
+                txn.commit();
             } catch (Exception e) {
                 e.printStackTrace();
                 fail(e.getMessage());
@@ -465,7 +465,7 @@ public class MatchDocumentsTest {
 
                 broker.saveCollection(txn, col1);
 
-                txn.success();
+                txn.commit();
             } catch (Exception e) {
                 e.printStackTrace();
                 fail(e.getMessage());
@@ -506,7 +506,7 @@ public class MatchDocumentsTest {
             root.store(txn, broker, info, XML2, false);
             root.addBinaryResource(txn, broker, doc3uri.lastSegment(), BINARY.getBytes(), null);
 
-            txn.success();
+            txn.commit();
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());
@@ -541,7 +541,7 @@ public class MatchDocumentsTest {
                 broker.removeCollection(txn, col2);
             }
 
-            txn.success();
+            txn.commit();
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());
