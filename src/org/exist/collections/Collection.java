@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2015 The eXist Project
+ *  Copyright (C) 2001-2016 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -19,6 +19,7 @@
  */
 package org.exist.collections;
 
+import org.exist.*;
 import org.exist.dom.QName;
 import org.exist.dom.persistent.DocumentMetadata;
 import org.exist.dom.persistent.DocumentSet;
@@ -38,9 +39,6 @@ import java.util.TreeMap;
 import org.apache.commons.io.input.CloseShieldInputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.exist.Database;
-import org.exist.EXistException;
-import org.exist.Indexer;
 import org.exist.collections.triggers.*;
 import org.exist.indexing.IndexController;
 import org.exist.indexing.StreamListener;
@@ -83,7 +81,7 @@ import org.xml.sax.XMLReader;
  *
  * @author wolf
  */
-public class Collection extends Observable implements Comparable<Collection>, Cacheable {
+public class Collection extends Observable implements Resource, Comparable<Collection>, Cacheable {
 
     public static final int LENGTH_COLLECTION_ID = 4; //sizeof int
 
@@ -2305,4 +2303,32 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         final IndexSpec idxSpec = getIndexConfiguration(broker);
         return (idxSpec == null) ? null : idxSpec.getIndexByQName(qname);
     }
+
+    @Override
+    public ResourceMetadata getMetadata() {
+        return new CollectionMetadata();
+    }
+
+    class CollectionMetadata implements ResourceMetadata {
+
+        @Override
+        public String getMimeType() {
+            return "collection";
+        }
+
+        @Override
+        public long getCreated() {
+            return Collection.this.getCreationTime();
+        }
+
+        @Override
+        public long getLastModified() {
+            return getCreated();
+        }
+    }
+
+    public boolean isFolder() {
+        return true;
+    }
+
 }
