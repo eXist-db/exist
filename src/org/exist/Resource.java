@@ -48,6 +48,6 @@ public interface Resource {
     
     ResourceMetadata getMetadata();
 
-    boolean isFolder();
+    boolean isCollection();
 
 }

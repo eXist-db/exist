@@ -350,13 +350,13 @@ public class MDStorageManager implements Plug, BackupHandler, RestoreHandler {
         if (resource == null) return;
 
         if (uuid != null) {
-            if (resource.isFolder()) {
+            if (resource.isCollection()) {
                 collectionMetas = md.replaceMetas(resource.getURI(), uuid);
             } else {
                 currentMetas = md.replaceMetas(resource.getURI(), uuid);
             }
         } else {
-            if (resource.isFolder()) {
+            if (resource.isCollection()) {
                 collectionMetas = md.addMetas(resource.getURI());
             } else {
                 currentMetas = md.addMetas(resource.getURI());
@@ -367,7 +367,7 @@ public class MDStorageManager implements Plug, BackupHandler, RestoreHandler {
     @Override
     public void endRestore(Resource resource) {
         String type;
-        if (resource.isFolder()) type = "collection";
+        if (resource.isCollection()) type = "collection";
         else type = "resource";
 
         endElement(null, type, null);

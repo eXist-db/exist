@@ -2327,7 +2327,7 @@ public class Collection extends Observable implements Resource, Comparable<Colle
         }
     }
 
-    public boolean isFolder() {
+    public boolean isCollection() {
         return true;
     }
 

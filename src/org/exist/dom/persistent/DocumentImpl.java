@@ -1124,7 +1124,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document, Re
         return null;
     }
 
-    public boolean isFolder() {
+    public boolean isCollection() {
         return false;
     }
 }
