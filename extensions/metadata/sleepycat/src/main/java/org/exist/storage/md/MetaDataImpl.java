@@ -369,22 +369,19 @@ public class MetaDataImpl extends MetaData {
 
         HashSet<String> check = new HashSet<>();
 
-        EntityCursor<MetaImpl> sub = metadata.subIndex(metas.getUUID()).entities();
-        try {
+        try (EntityCursor<MetaImpl> sub = metadata.subIndex(metas.getUUID()).entities()) {
             for (MetaImpl m : sub) {
 
                 String key = m.getKey();
 
                 if (check.contains(key)) {
-                    LOG.error("ignore duplicated metadata pair "+key+" = "+m.getValue()+" ["+m.getUUID()+"] @ "+uri);
+                    LOG.error("ignore duplicated metadata pair " + key + " = " + m.getValue() + " [" + m.getUUID() + "] @ " + uri);
                     continue;
                 }
                 check.add(key);
 
                 listener.metadata(m.getUUID(), key, m.getValue());
             }
-        } finally {
-            sub.close();
         }
     }
 
@@ -395,15 +392,12 @@ public class MetaDataImpl extends MetaData {
     protected void delMeta(String docUUID, String uuid) {
         //System.out.println("key = "+key);
 
-        EntityCursor<MetaImpl> sub = metadata.subIndex(docUUID).entities();
-        try {
+        try (EntityCursor<MetaImpl> sub = metadata.subIndex(docUUID).entities()) {
             for (MetaImpl m : sub) {
                 if (m.getUUID().equals(uuid)) {
                     sub.delete();
                 }
             }
-        } finally {
-            sub.close();
         }
 
         //indexMetas(getMetas(docUUID));
@@ -412,15 +406,12 @@ public class MetaDataImpl extends MetaData {
     protected void delMetaByKey(String docUUID, String key) {
         //System.out.println("key = "+key);
 
-        EntityCursor<MetaImpl> sub = metadata.subIndex(docUUID).entities();
-        try {
+        try (EntityCursor<MetaImpl> sub = metadata.subIndex(docUUID).entities()) {
             for (MetaImpl m : sub) {
                 if (m.getKey().equals(key)) {
                     sub.delete();
                 }
             }
-        } finally {
-            sub.close();
         }
 
         //indexMetas(getMetas(docUUID));
@@ -446,8 +437,7 @@ public class MetaDataImpl extends MetaData {
         join.addCondition(keyToMeta, key);
         join.addCondition(valueToMeta, value);
 
-        ForwardCursor<MetaImpl> entities = join.entities();
-        try {
+        try (ForwardCursor<MetaImpl> entities = join.entities()) {
             for (MetaImpl entity : entities) {
                 try {
                     consumer.accept(getDocument(entity.getObject()));
@@ -455,8 +445,6 @@ public class MetaDataImpl extends MetaData {
                     //ignore
                 }
             }
-        } finally {
-            entities.close();
         }
     }
 
@@ -479,8 +467,7 @@ public class MetaDataImpl extends MetaData {
         EntityJoin<String, MetaImpl> join = new EntityJoin<>(metadataByUUID);
         join.addCondition(keyToMeta, key);
 
-        ForwardCursor<MetaImpl> entities = join.entities();
-        try {
+        try (ForwardCursor<MetaImpl> entities = join.entities()) {
             for (MetaImpl entity : entities) {
                 try {
                     consumer.accept(getDocument(entity.getObject()));
@@ -488,8 +475,6 @@ public class MetaDataImpl extends MetaData {
                     //ignore
                 }
             }
-        } finally {
-            entities.close();
         }
     }
 
@@ -512,8 +497,7 @@ public class MetaDataImpl extends MetaData {
         EntityJoin<String, MetaImpl> join = new EntityJoin<>(metadataByUUID);
         join.addCondition(valueToMeta, value);
 
-        ForwardCursor<MetaImpl> entities = join.entities();
-        try {
+        try (ForwardCursor<MetaImpl> entities = join.entities()) {
             for (MetaImpl entity : entities) {
                 try {
                     consumer.accept(getDocument(entity.getObject()));
@@ -521,8 +505,6 @@ public class MetaDataImpl extends MetaData {
                     //ignore
                 }
             }
-        } finally {
-            entities.close();
         }
     }
 
@@ -547,7 +529,6 @@ public class MetaDataImpl extends MetaData {
             throw new RuntimeException("Metas NULL: " + oldUri + " in moveMetas");
             //LOG.warn("Metas NULL for document: " + doc.getURI() + " in moveMetas");
         }
-        return;
     }
 
     public void copyMetas(XmldbURI oldDoc, DocumentImpl newDoc) {
