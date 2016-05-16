@@ -100,7 +100,7 @@ public class SystemImport {
         }
     }
     
-    private Stack<BackupDescriptor> getBackupDescriptors(Path contents) throws XMLDBException, IOException {
+    public static Stack<BackupDescriptor> getBackupDescriptors(Path contents) throws XMLDBException, IOException {
         
         final Stack<BackupDescriptor> descriptors = new Stack<>();
         
@@ -142,7 +142,7 @@ public class SystemImport {
         return descriptors;
     }
     
-    private BackupDescriptor getBackupDescriptor(final Path f) throws IOException {
+    private static BackupDescriptor getBackupDescriptor(final Path f) throws IOException {
         final BackupDescriptor bd;
         if(Files.isDirectory(f)) {
             bd = new FileSystemBackupDescriptor(f.resolve("db").resolve(BackupDescriptor.COLLECTION_DESCRIPTOR));
