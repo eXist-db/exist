@@ -168,9 +168,5 @@ public interface Database {
 
     MetaStorage getMetaStorage();
 
-    int getPageSize();
-
-    boolean isTransactional();
-
     XMLReaderPool getParserPool();
 }
