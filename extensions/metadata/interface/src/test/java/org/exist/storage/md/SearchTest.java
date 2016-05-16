@@ -129,81 +129,8 @@ public class SearchTest {
 
             assertEquals(VALUE1, meta.getValue());
 
-            List<String> dbRoot = new ArrayList<String>();
+            List<String> dbRoot = new ArrayList<>();
             dbRoot.add("/db");
-
-//        	assertEquals(
-//                "in-memory#element {results} {in-memory#element {search} {in-memory#attribute {uri} {/db/test/test_string.xml}  in-memory#attribute {score} {0.30685282} } } ",
-//                md.search("value1", dbRoot).toString()
-//            );
-//
-//        	assertEquals(
-//    	        "in-memory#element {results} {in-memory#element {search} {in-memory#attribute {uri} {/db/test/test_string.xml}  in-memory#attribute {score} {0.30685282} in-memory#element {field} {in-memory#attribute {name} {key1} in-memory#element {exist:match} {in-memory#text {value1} } } } } ",
-//    	        md.search("key1:value1", dbRoot).toString()
-//	        );
-//
-//            assertEquals(
-//                "in-memory#element {results} {in-memory#element {search} {in-memory#attribute {uri} {/db/test/test_string.xml}  in-memory#attribute {score} {0.30685282} in-memory#element {field} {in-memory#attribute {name} {key1} in-memory#element {exist:match} {in-memory#text {value1} } } } } ",
-//                md.search("key1:value*", dbRoot).toString()
-//            );
-//
-//            assertEquals(
-//                "in-memory#element {results} {} ",
-//                md.search("key1:value2", dbRoot).toString()
-//            );
-
-//    	//add second key-value
-//    	docMD.put(KEY2, VALUE2);
-//
-//    	meta = docMD.get(KEY2);
-//    	assertNotNull(meta);
-//
-//    	assertEquals(VALUE2, meta.getValue());
-//
-//    	//replace first key-value
-//    	docMD.put(KEY1, VALUE2);
-//
-//    	meta = docMD.get(KEY1);
-//    	assertNotNull(meta);
-//
-//    	assertEquals(VALUE2, meta.getValue());
-//
-//    	//second document
-//    	docMD = MetaData.get().getMetas(doc2uri);
-//
-//    	assertNotNull(docMD);
-//
-//    	uuid = docMD.getUUID();
-//    	assertNotNull(uuid);
-//
-//    	doc = MetaData.get().getDocument(uuid);
-//    	assertNotNull(doc);
-//    	assertTrue(doc2.equals(doc));
-//
-//    	//add first key-value
-//    	docMD.put(KEY1, VALUE2);
-//
-//    	meta = docMD.get(KEY1);
-//    	assertNotNull(meta);
-//
-//    	assertEquals(VALUE2, meta.getValue());
-//
-//    	//add second key-value
-//    	docMD.put(KEY2, VALUE1);
-//
-//    	meta = docMD.get(KEY2);
-//    	assertNotNull(meta);
-//
-//    	assertEquals(VALUE1, meta.getValue());
-//
-//    	//replace first key-value
-//    	docMD.put(KEY1, VALUE1);
-//
-//    	meta = docMD.get(KEY1);
-//    	assertNotNull(meta);
-//
-//    	assertEquals(VALUE1, meta.getValue());
-
         }
 
         cleanup();

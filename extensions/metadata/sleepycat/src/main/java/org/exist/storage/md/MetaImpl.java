@@ -35,67 +35,67 @@ import static com.sleepycat.persist.model.Relationship.MANY_TO_ONE;
  */
 @Entity//(version=1)
 public class MetaImpl implements Meta {
-	
-	@PrimaryKey private String uuid;
-	
-	@SecondaryKey(relate=MANY_TO_ONE,
-				  onRelatedEntityDelete=DeleteAction.CASCADE)
-	private String object;
-	
-	@SecondaryKey(relate=MANY_TO_ONE,
-				  onRelatedEntityDelete=DeleteAction.CASCADE)
-	private String key;
-	
-	@SecondaryKey(relate=MANY_TO_ONE,
-			  onRelatedEntityDelete=DeleteAction.CASCADE)
-	protected String value;
-	
-	@SuppressWarnings("unused")
-	private MetaImpl() {}
 
-	protected MetaImpl(String objectUUID, String k, Object v) {
-		this(objectUUID, (new UUID()).toString(), k, v);
-	}
-	
-	protected MetaImpl(String objectUUID, String uuid, String k, Object v) {
-		this.uuid = uuid;
-		object = objectUUID;
-		
-		key = k;
-		setValue(v);
-	}
+    @PrimaryKey private String uuid;
 
-	public String getUUID() {
-		return uuid;
-	}
+    @SecondaryKey(relate=MANY_TO_ONE,
+                  onRelatedEntityDelete=DeleteAction.CASCADE)
+    private String object;
 
-	public String getKey() {
-		return key;
-	}
+    @SecondaryKey(relate=MANY_TO_ONE,
+                  onRelatedEntityDelete=DeleteAction.CASCADE)
+    private String key;
 
-	public Object getValue() {
+    @SecondaryKey(relate=MANY_TO_ONE,
+              onRelatedEntityDelete=DeleteAction.CASCADE)
+    protected String value;
+
+    @SuppressWarnings("unused")
+    private MetaImpl() {}
+
+    protected MetaImpl(String objectUUID, String k, Object v) {
+        this(objectUUID, (new UUID()).toString(), k, v);
+    }
+
+    protected MetaImpl(String objectUUID, String uuid, String k, Object v) {
+        this.uuid = uuid;
+        object = objectUUID;
+
+        key = k;
+        setValue(v);
+    }
+
+    public String getUUID() {
+        return uuid;
+    }
+
+    public String getKey() {
+        return key;
+    }
+
+    public Object getValue() {
 //		try {
 //			DocumentImpl doc = MetaData._.getDocument(value);
 //			if (doc != null) return doc;
 //		} catch (Exception e) {
 //			//LOG
 //		}
-		return value;
-	}
-	
-	public void setValue(Object value) {
-		if (value instanceof DocumentImpl) {
-			this.value = MetaData.get().getMetas((DocumentImpl) value).getUUID();
-			//TODO: set link to master doc?
-		} else
-			this.value = value.toString(); 
-	}
+        return value;
+    }
 
-	public String getObject() {
-		return object;
-	}
-	
-	public void delete() {
+    public void setValue(Object value) {
+        if (value instanceof DocumentImpl) {
+            this.value = MetaData.get().getMetas((DocumentImpl) value).getUUID();
+            //TODO: set link to master doc?
+        } else
+            this.value = value.toString();
+    }
+
+    public String getObject() {
+        return object;
+    }
+
+    public void delete() {
 	    MetaDataImpl.instance.delMeta(object, uuid);
 	}
 }

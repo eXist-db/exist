@@ -41,98 +41,98 @@ import static com.sleepycat.persist.model.Relationship.ONE_TO_ONE;
  */
 @Entity//(version=1) //http://docs.oracle.com/cd/E17076_02/html/java/com/sleepycat/persist/evolve/Conversion.html
 public class MetasImpl implements Metas {
-	
-	@PrimaryKey private String uuid;
-	
-	@SecondaryKey(relate=ONE_TO_ONE,
-				  onRelatedEntityDelete=DeleteAction.CASCADE) 
-	protected String uri;
 
-	@SuppressWarnings("unused")
-	private MetasImpl() {}
+    @PrimaryKey private String uuid;
 
-	protected MetasImpl(DocumentImpl doc) {
-		setURL(doc.getURI().toString());
-		
+    @SecondaryKey(relate=ONE_TO_ONE,
+                  onRelatedEntityDelete=DeleteAction.CASCADE)
+    protected String uri;
+
+    @SuppressWarnings("unused")
+    private MetasImpl() {}
+
+    protected MetasImpl(DocumentImpl doc) {
+        setURL(doc.getURI().toString());
+
         uuid = (new UUID()).toString();
-	}
-	
-	protected MetasImpl(Collection col) {
-		setURL(col.getURI().toString());
-		uuid = (new UUID()).toString();
-	}
+    }
 
-	protected MetasImpl(XmldbURI uri) {
-		this.uri = uri.toString();
-		uuid = (new UUID()).toString();
-	}
+    protected MetasImpl(Collection col) {
+        setURL(col.getURI().toString());
+        uuid = (new UUID()).toString();
+    }
 
-	protected MetasImpl(String uri, String uuid) {
-		this.uri = uri;
-		this.uuid = uuid;
-	}
+    protected MetasImpl(XmldbURI uri) {
+        this.uri = uri.toString();
+        uuid = (new UUID()).toString();
+    }
 
-	public String getUUID() {
-		return uuid;
-	}
+    protected MetasImpl(String uri, String uuid) {
+        this.uri = uri;
+        this.uuid = uuid;
+    }
+
+    public String getUUID() {
+        return uuid;
+    }
 
     public String getURI() {
         return uri;
     }
 
     public Meta put(String key, Object value) {
-		MetaImpl m = (MetaImpl)get(key);
-		if (m == null)
-			return MetaDataImpl.instance.addMeta(this, key, value);
-		
-		else {
-			m.setValue(value);
+        MetaImpl m = (MetaImpl)get(key);
+        if (m == null)
+            return MetaDataImpl.instance.addMeta(this, key, value);
 
-			MetaDataImpl.instance.addMeta(m);
-		}
-//		MetaDataImpl.instance.indexMetas(this);
-		
-		return m;
-	}
+        else {
+            m.setValue(value);
 
-	public Meta get(String key) {
-		return MetaDataImpl.instance.getMeta(this, key);
-	}
+            MetaDataImpl.instance.addMeta(m);
+        }
+        //MetaDataImpl.instance.indexMetas(this);
+
+        return m;
+    }
+
+    public Meta get(String key) {
+        return MetaDataImpl.instance.getMeta(this, key);
+    }
 
     public void delete(String key) {
         MetaDataImpl.instance.delMetaByKey(uuid, key);
     }
 
     protected void setURL(String url) {
-		this.uri = url;
-	}
+        this.uri = url;
+    }
 
-	public List<Meta> metas() {
-		List<Meta> metas = new ArrayList<>();
-		
-		EntityCursor<MetaImpl> sub = MetaDataImpl.instance.getMetaKeys(this);
-		try {
-			
-			for (MetaImpl m : sub) {
-				metas.add(m);
-			}
+    public List<Meta> metas() {
+        List<Meta> metas = new ArrayList<>();
 
-		} finally {
-			sub.close();
-		}
-		
-		return metas;
-	}
+        EntityCursor<MetaImpl> sub = MetaDataImpl.instance.getMetaKeys(this);
+        try {
+
+            for (MetaImpl m : sub) {
+                metas.add(m);
+            }
+
+        } finally {
+            sub.close();
+        }
+
+        return metas;
+    }
 
 //	public EntityCursor<MetaImpl> keys() {
 //		return MetaDataImpl._.getMetaKeys(this);
 //	}
 
-	public void delete() {
-	    MetaDataImpl.instance.delMetas(this);
-	}
+    public void delete() {
+        MetaDataImpl.instance.delMetas(this);
+    }
 
-	public void restore(String uuid, String key, String value) {
-		MetaDataImpl.instance._addMeta(this, uuid, key, value);
-	}
+    public void restore(String uuid, String key, String value) {
+        MetaDataImpl.instance._addMeta(this, uuid, key, value);
+    }
 }

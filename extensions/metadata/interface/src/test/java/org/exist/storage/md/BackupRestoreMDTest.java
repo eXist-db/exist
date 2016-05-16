@@ -201,13 +201,6 @@ public class BackupRestoreMDTest extends TestCase {
         }
     }
 
-//	private DocumentImpl getDoc(DBBroker broker, Collection col, XmldbURI uri) throws PermissionDeniedException {
-//        DocumentImpl doc = col.getDocument(broker, uri);
-//    	assertNotNull(doc);
-//		
-//    	return doc;
-//	}
-    
     //@BeforeClass
     public static void startDB() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, SAXException, CollectionConfigurationException, LockException {
         final Path confFile = ConfigurationHelper.lookup("conf.xml");
