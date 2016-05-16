@@ -306,13 +306,10 @@ public class MetaDataImpl extends MetaData {
     }
 
     protected void delMetas(Metas d) {
-        EntityCursor<MetaImpl> sub = metadata.subIndex(d.getUUID()).entities();
-        try {
-            for (MetaImpl m : sub)
+        try (EntityCursor<MetaImpl> sub = metadata.subIndex(d.getUUID()).entities()) {
+            for (MetaImpl m : sub) {
                 metadataByUUID.delete(m.getUUID());
-
-        } finally {
-            sub.close();
+            }
         }
 
         docByUUID.delete(d.getUUID());
@@ -355,17 +352,20 @@ public class MetaDataImpl extends MetaData {
         //System.out.println("key = "+key);
 
         try (EntityCursor<MetaImpl> sub = metadata.subIndex(doc.getUUID()).entities()) {
-            for (MetaImpl m : sub)
-                if (m.getKey().equals(key))
+            for (MetaImpl m : sub) {
+                if (m.getKey().equals(key)) {
                     return m;
+                }
+            }
         }
         return null;
     }
 
     public void streamMetas(XmldbURI uri, MetaStreamListener listener) {
         Metas metas = getMetas(uri);
-        if (metas == null)
+        if (metas == null) {
             return;
+        }
 
         HashSet<String> check = new HashSet<>();
 
@@ -538,8 +538,9 @@ public class MetaDataImpl extends MetaData {
 
         if (ms != null) {
             try (EntityCursor<MetaImpl> sub = metadata.subIndex(ms.getUUID()).entities()) {
-                for (MetaImpl m : sub)
+                for (MetaImpl m : sub) {
                     newMs.put(m.getKey(), m.getValue());
+                }
             }
         }
     }
@@ -551,8 +552,9 @@ public class MetaDataImpl extends MetaData {
 
         if (ms != null) {
             try (EntityCursor<MetaImpl> sub = metadata.subIndex(ms.getUUID()).entities()) {
-                for (MetaImpl m : sub)
+                for (MetaImpl m : sub) {
                     newMs.put(m.getKey(), m.getValue());
+                }
             }
         }
     }
