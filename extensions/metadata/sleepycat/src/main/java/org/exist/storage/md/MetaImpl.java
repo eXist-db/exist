@@ -96,6 +96,6 @@ public class MetaImpl implements Meta {
     }
 
     public void delete() {
-	    MetaDataImpl.instance.delMeta(object, uuid);
-	}
+        MetaDataImpl.storage().delMeta(object, uuid);
+    }
 }

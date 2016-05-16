@@ -54,17 +54,17 @@ public class MetasImpl implements Metas {
     protected MetasImpl(DocumentImpl doc) {
         setURL(doc.getURI().toString());
 
-        uuid = (new UUID()).toString();
+        uuid = new UUID().toString();
     }
 
     protected MetasImpl(Collection col) {
         setURL(col.getURI().toString());
-        uuid = (new UUID()).toString();
+        uuid = new UUID().toString();
     }
 
     protected MetasImpl(XmldbURI uri) {
         this.uri = uri.toString();
-        uuid = (new UUID()).toString();
+        uuid = new UUID().toString();
     }
 
     protected MetasImpl(String uri, String uuid) {
@@ -83,12 +83,12 @@ public class MetasImpl implements Metas {
     public Meta put(String key, Object value) {
         MetaImpl m = (MetaImpl)get(key);
         if (m == null)
-            return MetaDataImpl.instance.addMeta(this, key, value);
+            return MetaDataImpl.storage().addMeta(this, key, value);
 
         else {
             m.setValue(value);
 
-            MetaDataImpl.instance.addMeta(m);
+            MetaDataImpl.storage().addMeta(m);
         }
         //MetaDataImpl.instance.indexMetas(this);
 
@@ -96,11 +96,11 @@ public class MetasImpl implements Metas {
     }
 
     public Meta get(String key) {
-        return MetaDataImpl.instance.getMeta(this, key);
+        return MetaDataImpl.storage().getMeta(this, key);
     }
 
     public void delete(String key) {
-        MetaDataImpl.instance.delMetaByKey(uuid, key);
+        MetaDataImpl.storage().delMetaByKey(uuid, key);
     }
 
     protected void setURL(String url) {
@@ -110,29 +110,21 @@ public class MetasImpl implements Metas {
     public List<Meta> metas() {
         List<Meta> metas = new ArrayList<>();
 
-        EntityCursor<MetaImpl> sub = MetaDataImpl.instance.getMetaKeys(this);
-        try {
+        try (EntityCursor<MetaImpl> sub = MetaDataImpl.storage().getMetaKeys(this)) {
 
             for (MetaImpl m : sub) {
                 metas.add(m);
             }
-
-        } finally {
-            sub.close();
         }
 
         return metas;
     }
 
-//	public EntityCursor<MetaImpl> keys() {
-//		return MetaDataImpl._.getMetaKeys(this);
-//	}
-
     public void delete() {
-        MetaDataImpl.instance.delMetas(this);
+        MetaDataImpl.storage().delMetas(this);
     }
 
     public void restore(String uuid, String key, String value) {
-        MetaDataImpl.instance._addMeta(this, uuid, key, value);
+        MetaDataImpl.storage()._addMeta(this, uuid, key, value);
     }
 }

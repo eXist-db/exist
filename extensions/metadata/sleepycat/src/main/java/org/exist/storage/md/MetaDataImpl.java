@@ -49,6 +49,9 @@ import com.sleepycat.persist.*;
 public class MetaDataImpl extends MetaData {
 
     protected static MetaDataImpl instance = null;
+    static MetaDataImpl storage() {
+        return instance;
+    }
 
     private Environment env;
     private EntityStore store;
