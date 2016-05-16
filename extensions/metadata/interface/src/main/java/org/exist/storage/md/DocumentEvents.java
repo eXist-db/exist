@@ -43,7 +43,7 @@ public class DocumentEvents extends SAXTrigger {
     @Override
     public void beforeCreateDocument(DBBroker broker, Txn txn, XmldbURI uri) throws TriggerException {
         try {
-            MDStorageManager.get().md.addMetas(uri);
+            MDStorageManager.storage().addMetas(uri);
         } catch (Throwable e) {
             MDStorageManager.LOG.fatal(e,e);
         }
@@ -72,7 +72,7 @@ public class DocumentEvents extends SAXTrigger {
     public void beforeCopyDocument(DBBroker broker, Txn txn, DocumentImpl document, XmldbURI newUri) throws TriggerException {
         // System.out.println("afterCopyDocument "+document.getURI());
         try {
-            MDStorageManager.get().md.copyMetas(document.getURI(), newUri);
+            MDStorageManager.storage().copyMetas(document.getURI(), newUri);
         } catch (Throwable e) {
             MDStorageManager.LOG.fatal(e,e);
         }
@@ -86,7 +86,7 @@ public class DocumentEvents extends SAXTrigger {
     public void beforeMoveDocument(DBBroker broker, Txn txn, DocumentImpl document, XmldbURI newUri) throws TriggerException {
         // System.out.println("afterMoveDocument "+oldUri+" to "+document.getURI());
         try {
-            MDStorageManager.get().md.moveMetas(document.getURI(), newUri);
+            MDStorageManager.storage().moveMetas(document.getURI(), newUri);
         } catch (Throwable e) {
             MDStorageManager.LOG.fatal(e,e);
         }
@@ -104,7 +104,7 @@ public class DocumentEvents extends SAXTrigger {
     public void afterDeleteDocument(DBBroker broker, Txn txn, XmldbURI uri) throws TriggerException {
         // System.out.println("afterDeleteDocument "+uri);
         try {
-            MDStorageManager.get().md.delMetas(uri);
+            MDStorageManager.storage().delMetas(uri);
         } catch (Throwable e) {
             MDStorageManager.LOG.fatal(e,e);
         }

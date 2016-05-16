@@ -51,7 +51,7 @@ public class CollectionEvents implements CollectionTrigger {
     public void afterCreateCollection(DBBroker broker, Txn txn, Collection collection) {
         // System.out.println("afterCreateCollection "+collection.getURI());
         try {
-            MDStorageManager.get().md.addMetas(collection);
+            MDStorageManager.storage().addMetas(collection);
         } catch (Throwable e) {
             MDStorageManager.LOG.fatal(e,e);
         }
@@ -67,7 +67,7 @@ public class CollectionEvents implements CollectionTrigger {
     public void afterCopyCollection(DBBroker broker, Txn txn, Collection collection, XmldbURI oldUri) {
         // System.out.println("afterCopyCollection "+collection.getURI());
         try {
-            MDStorageManager.get().md.copyMetas(oldUri, collection);
+            MDStorageManager.storage().copyMetas(oldUri, collection);
         } catch (Throwable e) {
             MDStorageManager.LOG.fatal(e,e);
         }
@@ -82,7 +82,7 @@ public class CollectionEvents implements CollectionTrigger {
             for (Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext();) {
                 DocumentImpl doc = i.next();
                 try {
-                    MDStorageManager.get().md.moveMetas(collection.getURI().append(doc.getFileURI()), newUri.append(doc.getFileURI()));
+                    MDStorageManager.storage().moveMetas(collection.getURI().append(doc.getFileURI()), newUri.append(doc.getFileURI()));
                 } catch (Throwable e) {
                     MDStorageManager.LOG.fatal(e,e);
                 }
@@ -96,18 +96,17 @@ public class CollectionEvents implements CollectionTrigger {
     public void afterMoveCollection(DBBroker broker, Txn txn, Collection collection, XmldbURI oldUri) {
         // System.out.println("afterMoveCollection "+oldUri+" to "+collection.getURI());
         try {
-            MDStorageManager.get().md.moveMetas(oldUri, collection.getURI());
+            MDStorageManager.storage().moveMetas(oldUri, collection.getURI());
         } catch (Throwable e) {
             MDStorageManager.LOG.fatal(e,e);
         }
 
-        // removeBinary(oldUri);
 //        index(collection);
     }
 
     private void deleteCollectionRecursive(DBBroker broker, Collection collection) throws PermissionDeniedException {
 
-        MetaData md = MDStorageManager.get().md;
+        MetaData md = MDStorageManager.storage();
 
         for (Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext();) {
             DocumentImpl doc = i.next();
@@ -119,20 +118,6 @@ public class CollectionEvents implements CollectionTrigger {
         }
 
         md.delMetas(collection.getURI());
-
-//        final XmldbURI uri = collection.getURI();
-
-//        for (Iterator<XmldbURI> i = collection.collectionIterator(broker); i.hasNext();) {
-//            final XmldbURI childName = i.next();
-//            // TODO : resolve URIs !!! name.resolve(childName)
-//            final Collection child = broker.openCollection(uri.append(childName), Lock.NO_LOCK);
-//            if (child == null) {
-//                // LOG.warn("Child collection " + childName + " not found");
-//            } else {
-//                deleteCollectionRecursive(broker, child);
-//            }
-//        }
-        // removeBinary(collection.getURI());
     }
 
     @Override
@@ -149,7 +134,7 @@ public class CollectionEvents implements CollectionTrigger {
     public void afterDeleteCollection(DBBroker broker, Txn txn, XmldbURI uri) {
         // System.out.println("afterDeleteCollection "+uri);
         try {
-            MDStorageManager.get().md.delMetas(uri);
+            MDStorageManager.storage().delMetas(uri);
         } catch (Throwable e) {
             MDStorageManager.LOG.fatal(e,e);
         }
