@@ -447,10 +447,11 @@ public class IndexController {
     public void streamMetas(MetaStreamListener listener) {
         MetaStorage ms = broker.getDatabase().getMetaStorage();
         if (ms != null) {
-            if (currentDoc != null)
+            if (currentDoc != null) {
                 ms.streamMetas(currentDoc.getURI(), listener);
-            else if (currentURL != null)
+            } else if (currentURL != null) {
                 ms.streamMetas(currentURL, listener);
+            }
         }
     }
 }
