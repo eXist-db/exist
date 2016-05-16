@@ -77,7 +77,7 @@ public abstract class MetaData implements MetaStorage {
     public abstract Meta getMeta(String uuid);
 
     // low level
-    public abstract Metas _addMetas(XmldbURI url);
+    protected abstract Metas _addMetas(XmldbURI url);
 
     protected abstract Meta _addMeta(Metas metas, String uuid, String key, String value);
 
@@ -108,11 +108,4 @@ public abstract class MetaData implements MetaStorage {
     public abstract XmldbURI UUIDtoURI(String uuid);
 
     public abstract String URItoUUID(XmldbURI uri);
-
-    // public abstract void indexMetas(Metas metas);
-
-    // public abstract NodeImpl search(String queryText, List<String>
-    // toBeMatchedURIs) throws XPathException;
-    // public abstract List<String> searchDocuments(String queryText,
-    // List<String> toBeMatchedURIs) throws XPathException;
 }
