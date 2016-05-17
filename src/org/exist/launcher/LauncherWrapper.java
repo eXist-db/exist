@@ -62,10 +62,6 @@ public class LauncherWrapper {
     }
 
     public void launch() {
-        launch(true);
-    }
-
-    public void launch(boolean spawn) {
         final String home = System.getProperty("exist.home", ".");
         final Properties vmProperties = getVMProperties();
 
@@ -73,17 +69,12 @@ public class LauncherWrapper {
         final ProcessManager pm = os.processManagerInstance();
         final Process process = pm.createProcess();
         final String cmdLine = getJavaCmd() + getJavaOpts(home, vmProperties) + " -jar start.jar " + command;
-        System.out.println("exec: " + cmdLine);
         process.setVisible(false);
         process.setPipeStreams(false, false);
         process.setCommand(cmdLine);
 
         if (process instanceof WindowsXPProcess) {
-            final boolean result = ((WindowsXPProcess)process).startElevated();
-//            if (result) {
-//                process.waitFor();
-//                process.destroy();
-//            }
+            ((WindowsXPProcess)process).startElevated();
         } else {
             process.start();
         }

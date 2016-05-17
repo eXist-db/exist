@@ -14,10 +14,6 @@ import java.util.Observer;
 public class Main implements Observer {
 
     public static final int WAIT_HINT_UPDATE = 10000;
-    public static final int WAIT_HINT_STOP = 60000;
-
-    private Class<?> klazz;
-    private Object app;
 
     public Main() {
     }
@@ -27,26 +23,26 @@ public class Main implements Observer {
         try {
             // use the bootstrap loader to autodetect EXIST_HOME and
             // construct a correct classpath
-            org.exist.start.Main loader = new org.exist.start.Main(args[0]);
-            Path homeDir = loader.detectHome();
-            Classpath classpath = loader.constructClasspath(homeDir, args);
-            ClassLoader cl = classpath.getClassLoader(null);
+            final org.exist.start.Main loader = new org.exist.start.Main(args[0]);
+            final Path homeDir = loader.detectHome();
+            final Classpath classpath = loader.constructClasspath(homeDir, args);
+            final ClassLoader cl = classpath.getClassLoader(null);
             Thread.currentThread().setContextClassLoader(cl);
 
-            klazz = cl.loadClass("org.exist.jetty.JettyStart");
+            final Class<?> klazz = cl.loadClass("org.exist.jetty.JettyStart");
 
             // find the run() method in the class
-            Class<?>[] methodParamTypes = new Class[2];
+            final Class<?>[] methodParamTypes = new Class[2];
             methodParamTypes[0] = args.getClass();
             methodParamTypes[1] = Observer.class;
-            Method method = klazz.getDeclaredMethod("run", methodParamTypes);
+            final Method method = klazz.getDeclaredMethod("run", methodParamTypes);
 
             // create a new instance and invoke the run() method
-            app = klazz.newInstance();
-            String[] myArgs = new String[args.length - 1];
+            final Object app = klazz.newInstance();
+            final String[] myArgs = new String[args.length - 1];
             for (int i = 1; i < args.length; i++)
                 myArgs[i - 1] = args[i];
-            Object[] params = new Object[2];
+            final Object[] params = new Object[2];
             params[0] = myArgs;
             params[1] = this;
             method.invoke(app, params);
