@@ -2819,7 +2819,8 @@ public class NativeBroker extends DBBroker {
         return nextDocId;
     }
 
-    public void reindexXMLResource(Txn txn, DocumentImpl doc) {
+    @Override
+    public void reindexXMLResource(final Txn txn, final DocumentImpl doc) {
         reindexXMLResource(txn, doc, IndexMode.REPAIR);
     }
 
