@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2015 The eXist Project
+ *  Copyright (C) 2001-2016 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -29,113 +29,127 @@ import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
-import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.Txn;
 import org.exist.xmldb.XmldbURI;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
- *
+ * 
  */
 public class CollectionEvents implements CollectionTrigger {
 
-	@Override
-	public void configure(DBBroker broker, Collection parent, Map<String, List<? extends Object>> parameters) throws TriggerException {
-	}
+    @Override
+    public void configure(DBBroker broker, Collection parent, Map<String, List<? extends Object>> parameters) throws TriggerException {
+    }
 
-	@Override
-	public void beforeCreateCollection(DBBroker broker, Txn txn, XmldbURI uri) throws TriggerException {
-//		System.out.println("beforeCreateCollection "+uri);
-	}
+    @Override
+    public void beforeCreateCollection(DBBroker broker, Txn txn, XmldbURI uri) throws TriggerException {
+        // System.out.println("beforeCreateCollection "+uri);
+    }
 
-	@Override
-	public void afterCreateCollection(DBBroker broker, Txn txn, Collection collection) throws TriggerException {
-//		System.out.println("afterCreateCollection "+collection.getURI());
-		try {
-			MDStorageManager.inst.md.addMetas(collection);
-		} catch (Throwable e) {
-			MDStorageManager.LOG.fatal(e);
-		}
-	}
-
-	@Override
-	public void beforeCopyCollection(DBBroker broker, Txn txn, Collection collection, XmldbURI newUri) throws TriggerException {
-	}
-
-	@Override
-	public void afterCopyCollection(DBBroker broker, Txn txn, Collection collection, XmldbURI oldUri) throws TriggerException {
-//		System.out.println("afterCopyCollection "+collection.getURI());
-		try {
-			MDStorageManager.inst.md.copyMetas(oldUri, collection);
-		} catch (Throwable e) {
-			MDStorageManager.LOG.fatal(e);
-		}
-	}
-
-	@Override
-	public void beforeMoveCollection(DBBroker broker, Txn txn, Collection collection, XmldbURI newUri) throws TriggerException {
-//		System.out.println("beforeMoveCollection "+collection.getURI());
-		try {
-	        for(Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
-	            DocumentImpl doc = i.next();
-	            MDStorageManager.inst.md.moveMetas(
-            		collection.getURI().append(doc.getFileURI()), 
-            		newUri.append(doc.getFileURI())
-        		);
-	        }
-		} catch (PermissionDeniedException e) {
-			throw new TriggerException(e);
-		}
-	}
-
-	@Override
-	public void afterMoveCollection(DBBroker broker, Txn txn, Collection collection, XmldbURI oldUri) throws TriggerException {
-//		System.out.println("afterMoveCollection "+oldUri+" to "+collection.getURI());
-		MDStorageManager.inst.md.moveMetas(oldUri, collection.getURI());
-	}
-	
-	private void deleteCollectionRecursive(DBBroker broker, Collection collection) throws PermissionDeniedException {
-        for(Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
-            DocumentImpl doc = i.next();
-            MDStorageManager.inst.md.delMetas(doc.getURI());
+    @Override
+    public void afterCreateCollection(DBBroker broker, Txn txn, Collection collection) {
+        // System.out.println("afterCreateCollection "+collection.getURI());
+        try {
+            MDStorageManager.storage().addMetas(collection);
+        } catch (Throwable e) {
+            MDStorageManager.LOG.fatal(e,e);
         }
 
-		final XmldbURI uri = collection.getURI();
+//        index(collection);
+    }
 
-		for(Iterator<XmldbURI> i = collection.collectionIterator(broker); i.hasNext(); ) {
-            final XmldbURI childName = i.next();
-            //TODO : resolve URIs !!! name.resolve(childName)
-            final Collection child = broker.openCollection(uri.append(childName), Lock.NO_LOCK);
-            if(child == null) {
-//                LOG.warn("Child collection " + childName + " not found");
-            } else {
+    @Override
+    public void beforeCopyCollection(DBBroker broker, Txn txn, Collection collection, XmldbURI newUri) throws TriggerException {
+    }
+
+    @Override
+    public void afterCopyCollection(DBBroker broker, Txn txn, Collection collection, XmldbURI oldUri) {
+        // System.out.println("afterCopyCollection "+collection.getURI());
+        try {
+            MDStorageManager.storage().copyMetas(oldUri, collection);
+        } catch (Throwable e) {
+            MDStorageManager.LOG.fatal(e,e);
+        }
+
+//        index(collection);
+    }
+
+    @Override
+    public void beforeMoveCollection(DBBroker broker, Txn txn, Collection collection, XmldbURI newUri) throws TriggerException {
+        // System.out.println("beforeMoveCollection "+collection.getURI());
+        try {
+            for (Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext();) {
+                DocumentImpl doc = i.next();
                 try {
-                	deleteCollectionRecursive(broker, child);
-                } finally {
-                    child.release(Lock.NO_LOCK);
+                    MDStorageManager.storage().moveMetas(collection.getURI().append(doc.getFileURI()), newUri.append(doc.getFileURI()));
+                } catch (Throwable e) {
+                    MDStorageManager.LOG.fatal(e,e);
                 }
+            }
+        } catch (PermissionDeniedException e) {
+            throw new TriggerException(e);
+        }
+    }
+
+    @Override
+    public void afterMoveCollection(DBBroker broker, Txn txn, Collection collection, XmldbURI oldUri) {
+        // System.out.println("afterMoveCollection "+oldUri+" to "+collection.getURI());
+        try {
+            MDStorageManager.storage().moveMetas(oldUri, collection.getURI());
+        } catch (Throwable e) {
+            MDStorageManager.LOG.fatal(e,e);
+        }
+
+//        index(collection);
+    }
+
+    private void deleteCollectionRecursive(DBBroker broker, Collection collection) throws PermissionDeniedException {
+
+        MetaData md = MDStorageManager.storage();
+
+        for (Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext();) {
+            DocumentImpl doc = i.next();
+            try {
+                md.delMetas(doc.getURI());
+            } catch (Throwable e) {
+                MDStorageManager.LOG.fatal(e,e);
             }
         }
 
-	}
+        md.delMetas(collection.getURI());
+    }
 
-	@Override
-	public void beforeDeleteCollection(DBBroker broker, Txn txn, Collection collection) throws TriggerException {
-//		System.out.println("beforeDeleteCollection "+collection.getURI());
-		try {
-			deleteCollectionRecursive(broker, collection);
-		} catch (PermissionDeniedException e) {
-			throw new TriggerException(e);
-		}
-	}
+    @Override
+    public void beforeDeleteCollection(DBBroker broker, Txn txn, Collection collection) throws TriggerException {
+        // System.out.println("beforeDeleteCollection "+collection.getURI());
+        try {
+            deleteCollectionRecursive(broker, collection);
+        } catch (PermissionDeniedException e) {
+            throw new TriggerException(e);
+        }
+    }
 
-	@Override
-	public void afterDeleteCollection(DBBroker broker, Txn txn, XmldbURI uri) throws TriggerException {
-//		System.out.println("afterDeleteCollection "+uri);
-		try {
-			MDStorageManager.inst.md.delMetas(uri);
-		} catch (Throwable e) {
-			MDStorageManager.LOG.fatal(e);
-		}
-	}
+    @Override
+    public void afterDeleteCollection(DBBroker broker, Txn txn, XmldbURI uri) {
+        // System.out.println("afterDeleteCollection "+uri);
+        try {
+            MDStorageManager.storage().delMetas(uri);
+        } catch (Throwable e) {
+            MDStorageManager.LOG.fatal(e,e);
+        }
+    }
+
+//    private void index(Collection col) {
+//        try {
+//            if (db != null) {
+//                IndexWorker worker = db.getActiveBroker().getIndexController().getWorkerByIndexId(MDStorageManager.LUCENE_ID);
+//                if (worker != null) {
+//                    worker.indexCollection(col);
+//                }
+//            }
+//        } catch (Throwable e) {
+//            MDStorageManager.LOG.fatal(e,e);
+//        }
+//    }
 }

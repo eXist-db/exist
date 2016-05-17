@@ -19,13 +19,7 @@
  */
 package org.exist.indexing;
 
-import org.exist.dom.persistent.AttrImpl;
-import org.exist.dom.persistent.NodeProxy;
-import org.exist.dom.persistent.TextImpl;
-import org.exist.dom.persistent.AbstractCharacterData;
-import org.exist.dom.persistent.ElementImpl;
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.IStoredNode;
+import org.exist.dom.persistent.*;
 import org.exist.collections.Collection;
 import org.exist.indexing.StreamListener.ReindexMode;
 import org.exist.storage.DBBroker;
@@ -34,6 +28,7 @@ import org.exist.storage.MetaStreamListener;
 import org.exist.storage.NodePath;
 import org.exist.storage.txn.Txn;
 import org.exist.util.DatabaseConfigurationException;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.QueryRewriter;
 import org.exist.xquery.XQueryContext;
 import org.w3c.dom.Node;
@@ -58,6 +53,7 @@ public class IndexController {
     private StreamListener listener = null;
     private DocumentImpl currentDoc = null;
     private ReindexMode currentMode = ReindexMode.UNKNOWN;
+    protected XmldbURI currentURL = null;
     private boolean reindexing;
 
     public IndexController(final DBBroker broker) {
@@ -177,6 +173,10 @@ public class IndexController {
     public void setDocument(final DocumentImpl doc, final ReindexMode mode) {
         setDocument(doc);
         setMode(mode);
+    }
+
+    public void setURL(XmldbURI uri) {
+        currentURL = uri;
     }
 
     /**
@@ -443,11 +443,15 @@ public class IndexController {
         }
         return rewriters;
     }
-    
-    public void streamMetas(final MetaStreamListener listener) {
-        final MetaStorage ms = broker.getDatabase().getMetaStorage();
+
+    public void streamMetas(MetaStreamListener listener) {
+        MetaStorage ms = broker.getDatabase().getMetaStorage();
         if (ms != null) {
-            ms.streamMetas(currentDoc, listener);
+            if (currentDoc != null) {
+                ms.streamMetas(currentDoc.getURI(), listener);
+            } else if (currentURL != null) {
+                ms.streamMetas(currentURL, listener);
+            }
         }
     }
 }

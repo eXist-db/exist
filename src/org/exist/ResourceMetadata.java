@@ -17,21 +17,17 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
-package org.exist.storage.md;
+package org.exist;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public interface Meta {
+public interface ResourceMetadata {
 
-    String getUUID();
-
-    String getKey();
-
-    Object getValue();
-
-    String getObject();
-
-    void delete();
+    String getMimeType();
+    
+    long getCreated();
+    
+    long getLastModified();
 }

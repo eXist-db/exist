@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2015 The eXist Project
+ *  Copyright (C) 2001-2016 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -19,7 +19,7 @@
  */
 package org.exist.storage;
 
-import org.exist.dom.persistent.DocumentImpl;
+import org.exist.xmldb.XmldbURI;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -27,8 +27,8 @@ import org.exist.dom.persistent.DocumentImpl;
  */
 public interface MetaStorage {
 
-    public String getId();
+    String getId();
 
-    public void streamMetas(DocumentImpl doc, MetaStreamListener listener);
+    void streamMetas(XmldbURI uri, MetaStreamListener listener);
 
 }

@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2015 The eXist Project
+ *  Copyright (C) 2001-2016 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -59,9 +59,9 @@ public class DocumentAsValueTest {
 
     private static String COLLECTION_CONFIG =
             "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
-        	"	<index>" +
-            "	</index>" +
-        	"</collection>";
+            "    <index>" +
+            "    </index>" +
+            "</collection>";
 
     /** /db/test **/
     private static XmldbURI col1uri = TestConstants.TEST_COLLECTION_URI;
@@ -85,24 +85,24 @@ public class DocumentAsValueTest {
     private static DocumentImpl doc2 = null;
 
     @Test
-	public void test_00() throws Exception {
-    	startDB();
-    	
-    	MetaData md = MetaData.get();
-    	assertNotNull(md);
-    	
-    	Metas docMD = MetaData.get().getMetas(doc1uri);
-    	assertNotNull(docMD);
+    public void test_00() throws Exception {
+        startDB();
+
+        MetaData md = MetaData.get();
+        assertNotNull(md);
+
+        Metas docMD = MetaData.get().getMetas(doc1uri);
+        assertNotNull(docMD);
 
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-            
-	    	//add first key-value
-	    	docMD.put(KEY1, doc2);
-	    	
-	    	Meta meta = docMD.get(KEY1);
-	    	assertNotNull(meta);
-	
-	    	assertEquals(serializer(broker, doc2), serializer(broker, (DocumentImpl)meta.getValue()));
+
+            //add first key-value
+            docMD.put(KEY1, doc2);
+
+            Meta meta = docMD.get(KEY1);
+            assertNotNull(meta);
+
+            assertEquals(serializer(broker, doc2), serializer(broker, (DocumentImpl)meta.getValue()));
         }
     }
 
@@ -112,13 +112,13 @@ public class DocumentAsValueTest {
         contentsOutputProps.setProperty( EXistOutputKeys.OUTPUT_DOCTYPE, "yes" );
     }
     private String serializer(DBBroker broker, DocumentImpl document) throws SAXException {
-		Serializer serializer = broker.getSerializer();
-		serializer.setUser(broker.getCurrentSubject());
-		serializer.setProperties(contentsOutputProps);
-		return serializer.serialize(document);
-	}
+        Serializer serializer = broker.getSerializer();
+        serializer.setUser(broker.getCurrentSubject());
+        serializer.setProperties(contentsOutputProps);
+        return serializer.serialize(document);
+    }
 
-	//@BeforeClass
+    //@BeforeClass
     public static void startDB() throws EXistException, DatabaseConfigurationException, PermissionDeniedException, IOException, SAXException, CollectionConfigurationException, LockException {
 
         final Path confFile = ConfigurationHelper.lookup("conf.xml");
@@ -128,10 +128,8 @@ public class DocumentAsValueTest {
         assertNotNull(pool);
         pool.getPluginsManager().addPlugin("org.exist.storage.md.Plugin");
 
-        final TransactionManager txnManager = pool.getTransactionManager();
-
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
-            final Txn txn = txnManager.beginTransaction()) {
+            final Txn txn = broker.beginTx()) {
 
             clean(broker, txn);
 
@@ -157,25 +155,24 @@ public class DocumentAsValueTest {
 
             root.addBinaryResource(txn, broker, doc3uri.lastSegment(), BINARY.getBytes(), null);
 
-            txnManager.commit(txn);
+            txn.commit();
         }
     }
 
     //@AfterClass
     public static void cleanup() {
-        final TransactionManager txnManager = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
-            final Txn txn = txnManager.beginTransaction()) {
+            final Txn txn = broker.beginTx()) {
 
             clean(broker, txn);
 
-            txnManager.commit(txn);
+            txn.commit();
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());
         }
 
-    	shutdown();
+        shutdown();
     }
 
     //@AfterClass

@@ -202,8 +202,8 @@ public class SystemImportHandler extends DefaultHandler {
         	final TransactionManager txnManager = broker.getDatabase().getTransactionManager();
         	try(final Txn txn = txnManager.beginTransaction()) {
         		currentCollection = broker.getOrCreateCollection(txn, collUri);
-        		
-        		rh.startCollectionRestore(currentCollection, atts);
+
+                rh.startRestore(currentCollection, atts);
         		
                 broker.saveCollection(txn, currentCollection);
 
@@ -228,7 +228,8 @@ public class SystemImportHandler extends DefaultHandler {
                 deferredPermission = new CollectionDeferredPermission(listener, currentCollection, owner, group, Integer.parseInt(mode, 8));
             }
 
-            rh.endCollectionRestore(currentCollection);
+            //called by rh.endElement
+            //rh.endRestore(currentCollection);
             
             return deferredPermission;
             
@@ -390,15 +391,15 @@ public class SystemImportHandler extends DefaultHandler {
 	                	meta.setDocType(docType);
 	                }
 
-					rh.startDocumentRestore(resource, atts);
+                    rh.startRestore(resource, atts);
 
 					currentCollection.store(txn, broker, info, is, false);
 	
 				} else {
 					// store as binary resource
 					resource = currentCollection.validateBinaryResource(txn, broker, docUri, is.getByteStream(), mimetype, is.getByteStreamLength() , date_created, date_modified);
-					
-					rh.startDocumentRestore(resource, atts);
+
+                    rh.startRestore(resource, atts);
 
 					resource = currentCollection.addBinaryResource(txn, broker, (BinaryDocument)resource, is.getByteStream(), mimetype, is.getByteStreamLength() , date_created, date_modified);
 				}
@@ -412,8 +413,9 @@ public class SystemImportHandler extends DefaultHandler {
                 } else {
                     deferredPermission = new ResourceDeferredPermission(listener, resource, owner, group, Integer.parseInt(perms, 8));
                 }
-                
-                rh.endDocumentRestore(resource);
+
+                //called by rh.endElement
+                //rh.endRestore(resource);
 
                 listener.restored(name);
                 

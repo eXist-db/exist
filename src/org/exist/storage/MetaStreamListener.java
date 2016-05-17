@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2015 The eXist Project
+ *  Copyright (C) 2001-2016 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -19,8 +19,6 @@
  */
 package org.exist.storage;
 
-import org.exist.dom.QName;
-
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
@@ -30,8 +28,9 @@ public interface MetaStreamListener {
     /**
      * Processed none xml data associated with document.
      *
+     * @param uuid
      * @param key
      * @param value
      */
-    void metadata(QName key, Object value);
+    void metadata(String uuid, String key, Object value);
 }

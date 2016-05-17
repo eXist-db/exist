@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2015 The eXist Project
+ *  Copyright (C) 2001-2016 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -55,9 +55,9 @@ public class SearchTest {
 
     private static String COLLECTION_CONFIG =
             "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
-        	"	<index>" +
-            "	</index>" +
-        	"</collection>";
+            "    <index>" +
+            "    </index>" +
+            "</collection>";
 
     /** /db/test **/
     private static XmldbURI col1uri = TestConstants.TEST_COLLECTION_URI;
@@ -97,140 +97,65 @@ public class SearchTest {
     private static DocumentImpl doc2 = null;
 
     @Test
-	public void test_00() throws Exception {
-    	
-    	startDB();
+    public void test_00() throws Exception {
+
+        startDB();
 
 
         BrokerPool db = BrokerPool.getInstance();
 
         try (final DBBroker broker = db.get(Optional.of(db.getSecurityManager().getSystemSubject()))) {
-            
-        	MetaData md = MetaData.get();
-        	
-        	assertNotNull(md);
-        	
-        	Metas docMD = MetaData.get().getMetas(doc1uri);
-        	
-        	assertNotNull(docMD);
-        	
-        	String uuid = docMD.getUUID();
-        	assertNotNull(uuid);
-        	
-        	DocumentImpl doc = MetaData.get().getDocument(uuid);
-        	assertNotNull(doc);
-        	assertTrue(doc1.equals(doc));
-    
-        	//add first key-value
-        	docMD.put(KEY1, VALUE1);
-        	
-        	Meta meta = docMD.get(KEY1);
-        	assertNotNull(meta);
-    
-        	assertEquals(VALUE1, meta.getValue());
-        	
-        	List<String> dbRoot = new ArrayList<String>();
-        	dbRoot.add("/db");
 
-//        	assertEquals(
-//                "in-memory#element {results} {in-memory#element {search} {in-memory#attribute {uri} {/db/test/test_string.xml}  in-memory#attribute {score} {0.30685282} } } ",
-//                md.search("value1", dbRoot).toString()
-//            );
-//
-//        	assertEquals(
-//    	        "in-memory#element {results} {in-memory#element {search} {in-memory#attribute {uri} {/db/test/test_string.xml}  in-memory#attribute {score} {0.30685282} in-memory#element {field} {in-memory#attribute {name} {key1} in-memory#element {exist:match} {in-memory#text {value1} } } } } ",
-//    	        md.search("key1:value1", dbRoot).toString()
-//	        );
-//
-//            assertEquals(
-//                "in-memory#element {results} {in-memory#element {search} {in-memory#attribute {uri} {/db/test/test_string.xml}  in-memory#attribute {score} {0.30685282} in-memory#element {field} {in-memory#attribute {name} {key1} in-memory#element {exist:match} {in-memory#text {value1} } } } } ",
-//                md.search("key1:value*", dbRoot).toString()
-//            );
-//
-//            assertEquals(
-//                "in-memory#element {results} {} ",
-//                md.search("key1:value2", dbRoot).toString()
-//            );
+            MetaData md = MetaData.get();
 
-//    	//add second key-value
-//    	docMD.put(KEY2, VALUE2);
-//    	
-//    	meta = docMD.get(KEY2);
-//    	assertNotNull(meta);
-//
-//    	assertEquals(VALUE2, meta.getValue());
-//
-//    	//replace first key-value
-//    	docMD.put(KEY1, VALUE2);
-//    	
-//    	meta = docMD.get(KEY1);
-//    	assertNotNull(meta);
-//
-//    	assertEquals(VALUE2, meta.getValue());
-//    	
-//    	//second document
-//    	docMD = MetaData.get().getMetas(doc2uri);
-//    	
-//    	assertNotNull(docMD);
-//    	
-//    	uuid = docMD.getUUID();
-//    	assertNotNull(uuid);
-//    	
-//    	doc = MetaData.get().getDocument(uuid);
-//    	assertNotNull(doc);
-//    	assertTrue(doc2.equals(doc));
-//
-//    	//add first key-value
-//    	docMD.put(KEY1, VALUE2);
-//    	
-//    	meta = docMD.get(KEY1);
-//    	assertNotNull(meta);
-//
-//    	assertEquals(VALUE2, meta.getValue());
-//
-//    	//add second key-value
-//    	docMD.put(KEY2, VALUE1);
-//    	
-//    	meta = docMD.get(KEY2);
-//    	assertNotNull(meta);
-//
-//    	assertEquals(VALUE1, meta.getValue());
-//
-//    	//replace first key-value
-//    	docMD.put(KEY1, VALUE1);
-//    	
-//    	meta = docMD.get(KEY1);
-//    	assertNotNull(meta);
-//
-//    	assertEquals(VALUE1, meta.getValue());
+            assertNotNull(md);
 
+            Metas docMD = MetaData.get().getMetas(doc1uri);
+
+            assertNotNull(docMD);
+
+            String uuid = docMD.getUUID();
+            assertNotNull(uuid);
+
+            DocumentImpl doc = MetaData.get().getDocument(uuid);
+            assertNotNull(doc);
+            assertTrue(doc1.equals(doc));
+
+            //add first key-value
+            docMD.put(KEY1, VALUE1);
+
+            Meta meta = docMD.get(KEY1);
+            assertNotNull(meta);
+
+            assertEquals(VALUE1, meta.getValue());
+
+            List<String> dbRoot = new ArrayList<>();
+            dbRoot.add("/db");
         }
 
-    	cleanup();
+        cleanup();
     }
     
-	private static DocumentImpl storeDocument(Txn txn, DBBroker broker, Collection col, XmldbURI uri, String data) throws TriggerException, EXistException, PermissionDeniedException, SAXException, LockException, IOException {
+    private static DocumentImpl storeDocument(Txn txn, DBBroker broker, Collection col, XmldbURI uri, String data) throws TriggerException, EXistException, PermissionDeniedException, SAXException, LockException, IOException {
         IndexInfo info = col.validateXMLResource(txn, broker, uri.lastSegment(), data);
         assertNotNull(info);
         col.store(txn, broker, info, data, false);
         assertNotNull(info.getDocument());
 
         return info.getDocument();
-	}
+    }
 
-	//@BeforeClass
+    //@BeforeClass
     public static void startDB() throws DatabaseConfigurationException, EXistException {
         final Path confFile = ConfigurationHelper.lookup("conf.xml");
         final Configuration config = new Configuration(confFile.toAbsolutePath().toString());
         BrokerPool.configure(1, 5, config);
         pool = BrokerPool.getInstance();
         assertNotNull(pool);
-        pool.getPluginsManager().addPlugin("org.exist.storage.md.MDStorageManager");
-
-        final TransactionManager txnManager = pool.getTransactionManager();
+//        pool.getPluginsManager().addPlugin("org.exist.storage.md.MDStorageManager");
 
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
-            final Txn txn = txnManager.beginTransaction()) {
+            final Txn txn = broker.beginTx()) {
             
             clean(broker, txn);
 
@@ -250,7 +175,7 @@ public class SearchTest {
 
             root.addBinaryResource(txn, broker, doc5uri.lastSegment(), BINARY.getBytes(), null);
 
-            txnManager.commit(txn);
+            txn.commit();
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());
@@ -259,17 +184,16 @@ public class SearchTest {
 
     //@AfterClass
     public static void cleanup() {
-        final TransactionManager txnManager = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
-            final Txn txn = txnManager.beginTransaction()) {
+            final Txn txn = broker.beginTx()) {
             clean(broker, txn);
-            txnManager.commit(txn);
+            txn.commit();
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());
         }
 
-    	shutdown();
+        shutdown();
     }
 
     //@AfterClass

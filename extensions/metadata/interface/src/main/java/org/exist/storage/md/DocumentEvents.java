@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2015 The eXist Project
+ *  Copyright (C) 2001-2016 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.exist.collections.Collection;
-import org.exist.collections.triggers.FilteringTrigger;
+import org.exist.collections.triggers.SAXTrigger;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.storage.DBBroker;
@@ -32,80 +32,89 @@ import org.exist.xmldb.XmldbURI;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
- *
+ * 
  */
-public class DocumentEvents extends FilteringTrigger {
+public class DocumentEvents extends SAXTrigger {
 
-	@Override
-	public void beforeCreateDocument(DBBroker broker, Txn txn, XmldbURI uri) throws TriggerException {
-	}
+    @Override
+    public void configure(DBBroker broker, Collection parent, Map<String, List<?>> parameters) throws TriggerException {
+    }
 
-	@Override
-	public void afterCreateDocument(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
-//		System.out.println("afterCreateDocument "+document.getURI());
-		try {
-			MDStorageManager.inst.md.addMetas(document);
-		} catch (Throwable e) {
-			MDStorageManager.LOG.fatal(e);
-		}
-	}
+    @Override
+    public void beforeCreateDocument(DBBroker broker, Txn txn, XmldbURI uri) throws TriggerException {
+        try {
+            MDStorageManager.storage().addMetas(uri);
+        } catch (Throwable e) {
+            MDStorageManager.LOG.fatal(e,e);
+        }
+    }
 
-	@Override
-	public void beforeUpdateDocument(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
-	}
+    @Override
+    public void afterCreateDocument(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
+        // System.out.println("afterCreateDocument "+document.getURI());
+//        try {
+//            MDStorageManager.get().md.addMetas(document);
+//        } catch (Throwable e) {
+//            MDStorageManager.LOG.fatal(e,e);
+//        }
+    }
 
-	@Override
-	public void afterUpdateDocument(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
-//		System.out.println("afterUpdateDocument "+document.getURI());
-	}
+    @Override
+    public void beforeUpdateDocument(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
+    }
 
-	@Override
-	public void beforeCopyDocument(DBBroker broker, Txn txn, DocumentImpl document, XmldbURI newUri) throws TriggerException {
-	}
+    @Override
+    public void afterUpdateDocument(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
+        // System.out.println("afterUpdateDocument "+document.getURI());
+    }
 
-	@Override
-	public void afterCopyDocument(DBBroker broker, Txn txn, DocumentImpl document, XmldbURI oldUri) throws TriggerException {
-//		System.out.println("afterCopyDocument "+document.getURI());
-		MDStorageManager.inst.md.copyMetas(oldUri, document);
-	}
+    @Override
+    public void beforeCopyDocument(DBBroker broker, Txn txn, DocumentImpl document, XmldbURI newUri) throws TriggerException {
+        // System.out.println("afterCopyDocument "+document.getURI());
+        try {
+            MDStorageManager.storage().copyMetas(document.getURI(), newUri);
+        } catch (Throwable e) {
+            MDStorageManager.LOG.fatal(e,e);
+        }
+    }
 
-	@Override
-	public void beforeMoveDocument(DBBroker broker, Txn txn, DocumentImpl document, XmldbURI newUri) throws TriggerException {
-	}
+    @Override
+    public void afterCopyDocument(DBBroker broker, Txn txn, DocumentImpl document, XmldbURI oldUri) throws TriggerException {
+    }
 
-	@Override
-	public void afterMoveDocument(DBBroker broker, Txn txn, DocumentImpl document, XmldbURI oldUri) throws TriggerException {
-//		System.out.println("afterMoveDocument "+oldUri+" to "+document.getURI());
-		try {
-			MDStorageManager.inst.md.moveMetas(oldUri, document.getURI());
-		} catch (Throwable e) {
-			MDStorageManager.LOG.fatal(e);
-		}
-	}
+    @Override
+    public void beforeMoveDocument(DBBroker broker, Txn txn, DocumentImpl document, XmldbURI newUri) throws TriggerException {
+        // System.out.println("afterMoveDocument "+oldUri+" to "+document.getURI());
+        try {
+            MDStorageManager.storage().moveMetas(document.getURI(), newUri);
+        } catch (Throwable e) {
+            MDStorageManager.LOG.fatal(e,e);
+        }
+    }
 
-	@Override
-	public void beforeDeleteDocument(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
-	}
+    @Override
+    public void afterMoveDocument(DBBroker broker, Txn txn, DocumentImpl document, XmldbURI oldUri) throws TriggerException {
+    }
 
-	@Override
-	public void afterDeleteDocument(DBBroker broker, Txn txn, XmldbURI uri) throws TriggerException {
-//		System.out.println("afterDeleteDocument "+uri);
-		try {
-			MDStorageManager.inst.md.delMetas(uri);
-		} catch (Throwable e) {
-			MDStorageManager.LOG.fatal(e);
-		}
-	}
+    @Override
+    public void beforeDeleteDocument(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
+    }
 
-	@Override
-	public void beforeUpdateDocumentMetadata(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
-	}
+    @Override
+    public void afterDeleteDocument(DBBroker broker, Txn txn, XmldbURI uri) throws TriggerException {
+        // System.out.println("afterDeleteDocument "+uri);
+        try {
+            MDStorageManager.storage().delMetas(uri);
+        } catch (Throwable e) {
+            MDStorageManager.LOG.fatal(e,e);
+        }
+    }
 
-	@Override
-	public void afterUpdateDocumentMetadata(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
-	}
+    @Override
+    public void beforeUpdateDocumentMetadata(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
+    }
 
-	@Override
-	public void configure(DBBroker broker, Collection parent, Map<String, List<? extends Object>> parameters) throws TriggerException {
-	}
+    @Override
+    public void afterUpdateDocumentMetadata(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
+    }
 }

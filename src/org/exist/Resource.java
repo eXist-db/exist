@@ -17,21 +17,37 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
-package org.exist.storage.md;
+package org.exist;
+
+import org.exist.security.Permission;
+import org.exist.xmldb.XmldbURI;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public interface Meta {
+public interface Resource {
 
-    String getUUID();
+    String COLLECTION_ID = "eXist-collection-id";
 
-    String getKey();
+    String NAME = "eXist:file-name";
 
-    Object getValue();
+    String PATH = "eXist:file-path";
 
-    String getObject();
+    String OWNER = "eXist:owner";
 
-    void delete();
+    String TYPE = "eXist:meta-type";
+
+    String CREATED = "eXist:created";
+
+    String LAST_MODIFIED = "eXist:last-modified";
+    
+    XmldbURI getURI();
+    
+    Permission getPermissions();
+    
+    ResourceMetadata getMetadata();
+
+    boolean isCollection();
+
 }

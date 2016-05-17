@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2015 The eXist Project
+ *  Copyright (C) 2001-2016 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -28,11 +28,10 @@ import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.QName;
 
 import org.exist.dom.memtree.NodeImpl;
-import org.exist.storage.md.MetaData;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 
-import static org.exist.storage.md.MDStorageManager.*;
+import static org.exist.storage.md.MetaData.*;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
