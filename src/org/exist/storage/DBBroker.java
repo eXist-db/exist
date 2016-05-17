@@ -494,6 +494,8 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
     public abstract void reindexCollection(XmldbURI collectionName)
             throws PermissionDeniedException, IOException;
 
+    public abstract void reindexXMLResource(Txn txn, DocumentImpl doc);
+
     public abstract void reindexXMLResource(final Txn transaction, final DocumentImpl doc, final IndexMode mode);
 
     /**
