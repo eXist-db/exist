@@ -69,7 +69,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 
     private NodeProxy proxy = null;
 
-    private Properties outputProperties = null;
+    private Properties outputProperties;
     private LexicalHandler lexicalHandler = null;
 
     // those are the different types of content this resource
@@ -82,11 +82,13 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 
     public LocalXMLResource(final Subject user, final BrokerPool brokerPool, final LocalCollection parent, final XmldbURI did) throws XMLDBException {
         super(user, brokerPool, parent, did, MimeType.XML_TYPE.getName());
+        this.outputProperties = parent != null ? parent.getProperties() : null;
     }
 
     public LocalXMLResource(final Subject user, final BrokerPool brokerPool, final LocalCollection parent, final NodeProxy p) throws XMLDBException {
         this(user, brokerPool, parent, p.getOwnerDocument().getFileURI());
         this.proxy = p;
+        this.outputProperties = parent != null ? parent.getProperties() : null;
     }
 
     @Override
@@ -391,12 +393,12 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
         this.lexicalHandler = lexicalHandler;
     }
 
-    protected void setProperties(final Properties properties) {
+    public void setProperties(final Properties properties) {
         this.outputProperties = properties;
     }
 
-    private Properties getProperties() {
-        return outputProperties == null ? collection.getProperties(): outputProperties;
+    public Properties getProperties() {
+        return outputProperties;
     }
 
     public NodeProxy getNode() throws XMLDBException {
