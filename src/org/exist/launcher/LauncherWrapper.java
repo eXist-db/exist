@@ -21,6 +21,8 @@
  */
 package org.exist.launcher;
 
+import org.apache.commons.configuration2.PropertiesConfiguration;
+import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.commons.lang3.SystemUtils;
 import org.exist.util.ConfigurationHelper;
 import org.rzo.yajsw.os.OperatingSystem;
@@ -31,9 +33,11 @@ import org.rzo.yajsw.os.ms.win.w32.WindowsXPProcess;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
@@ -63,7 +67,7 @@ public class LauncherWrapper {
 
     public void launch() {
         final String home = System.getProperty("exist.home", ".");
-        final Properties vmProperties = getVMProperties();
+        final PropertiesConfiguration vmProperties = getVMProperties();
 
         final OperatingSystem os = OperatingSystem.instance();
         final ProcessManager pm = os.processManagerInstance();
@@ -102,7 +106,7 @@ public class LauncherWrapper {
         return "java";
     }
 
-    protected String getJavaOpts(String home, Properties vmProperties) {
+    protected String getJavaOpts(String home, PropertiesConfiguration vmProperties) {
         final StringBuilder opts = new StringBuilder();
 
         opts.append(getVMOpts(vmProperties));
@@ -119,30 +123,30 @@ public class LauncherWrapper {
         return opts.toString();
     }
 
-    protected String getVMOpts(Properties vmProperties) {
+    protected String getVMOpts(PropertiesConfiguration vmProperties) {
         final StringBuilder opts = new StringBuilder();
-        for (final Map.Entry<Object, Object> entry : vmProperties.entrySet())  {
-            final String key = entry.getKey().toString();
+        for (final Iterator<String> i = vmProperties.getKeys(); i.hasNext(); ) {
+            final String key = i.next();
             if (key.startsWith("memory.")) {
                 if ("memory.max".equals(key)) {
-                    opts.append(" -Xmx").append(entry.getValue()).append('m');
+                    opts.append(" -Xmx").append(vmProperties.getString(key)).append('m');
                 } else if ("memory.min".equals(key)) {
-                    opts.append(" -Xms").append(entry.getValue()).append('m');
+                    opts.append(" -Xms").append(vmProperties.getString(key)).append('m');
                 }
             } else if ("vmoptions".equals(key)) {
-                opts.append(' ').append(entry.getValue());
+                opts.append(' ').append(vmProperties.getString(key));
             } else if (key.startsWith("vmoptions.")) {
                 final String os = key.substring("vmoptions.".length()).toLowerCase();
                 if (OS.contains(os)) {
-                    opts.append(' ').append(entry.getValue());
+                    opts.append(' ').append(vmProperties.getString(key));
                 }
             }
         }
         return opts.toString();
     }
 
-    public static Properties getVMProperties() {
-        final Properties vmProperties = new Properties();
+    public static PropertiesConfiguration getVMProperties() {
+        final PropertiesConfiguration vmProperties = new PropertiesConfiguration();
         final java.nio.file.Path propFile = ConfigurationHelper.lookup("vm.properties");
         InputStream is = null;
         try {
@@ -153,10 +157,12 @@ public class LauncherWrapper {
                 is = LauncherWrapper.class.getResourceAsStream("vm.properties");
             }
             if (is != null) {
-                vmProperties.load(is);
+                vmProperties.read(new InputStreamReader(is, "UTF-8"));
             }
         } catch (final IOException e) {
             System.err.println("vm.properties not found");
+        } catch (ConfigurationException e) {
+            System.err.println("exception reading vm.properties: " + e.getMessage());
         } finally {
             if(is != null) {
                 try {

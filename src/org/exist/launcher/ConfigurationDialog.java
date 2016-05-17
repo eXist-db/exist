@@ -16,6 +16,8 @@ import javax.swing.*;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.transform.TransformerException;
 
+import org.apache.commons.configuration2.PropertiesConfiguration;
+import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.commons.lang3.SystemUtils;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.CollectionCacheManager;
@@ -50,11 +52,11 @@ public class ConfigurationDialog extends JDialog {
 
         this.launcher = launcher;
         
-        final Properties vmProperties = LauncherWrapper.getVMProperties();
-        final String maxMemProp = vmProperties.getProperty("memory.max", "1024");
-        maxMemory.setValue(Integer.valueOf(maxMemProp));
-        final String minMemProp = vmProperties.getProperty("memory.min", "64");
-        minMemory.setValue(Integer.valueOf(minMemProp));
+        final PropertiesConfiguration vmProperties = LauncherWrapper.getVMProperties();
+        final int maxMemProp = vmProperties.getInt("memory.max", 1024);
+        maxMemory.setValue(maxMemProp);
+        final int minMemProp = vmProperties.getInt("memory.min", 64);
+        minMemory.setValue(minMemProp);
         
         try {
             Configuration existConfig = new Configuration();
@@ -502,6 +504,7 @@ public class ConfigurationDialog extends JDialog {
             properties.setProperty("memory.max", maxMemory.getValue().toString());
             properties.setProperty("memory.min", minMemory.getValue().toString());
             ConfigurationUtility.saveProperties(properties);
+            ConfigurationUtility.saveWrapperProperties(properties);
 
             properties.clear();
             properties.setProperty("cacheSize", cacheSize.getValue().toString());
@@ -530,7 +533,7 @@ public class ConfigurationDialog extends JDialog {
                     this.launcher.shutdown(true);
                 }
             }
-        } catch (IOException e) {
+        } catch (IOException | ConfigurationException e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(this, "Failed to save Java settings: " + e.getMessage(),
                     "Save Error", JOptionPane.ERROR_MESSAGE);

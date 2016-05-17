@@ -1,5 +1,7 @@
 package org.exist.launcher;
 
+import org.apache.commons.configuration2.PropertiesConfiguration;
+import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.exist.util.ConfigurationHelper;
 import org.exist.util.DatabaseConfigurationException;
 import org.xml.sax.InputSource;
@@ -16,9 +18,9 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
+import java.io.Reader;
+import java.io.Writer;
+import java.nio.file.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,21 +63,38 @@ public class ConfigurationUtility {
         return ports;
     }
 
-    public static void saveProperties(Properties properties) throws IOException {
+    public static void saveProperties(Properties properties) throws ConfigurationException, IOException {
         final Path propFile = ConfigurationHelper.lookup("vm.properties");
-        final Properties vmProperties = LauncherWrapper.getVMProperties();
+        final PropertiesConfiguration vmProperties = LauncherWrapper.getVMProperties();
         System.out.println("system properties: " + vmProperties.toString());
-        for (Map.Entry entry : vmProperties.entrySet()) {
-            String userProperty = properties.getProperty(entry.getKey().toString());
-            if (userProperty == null) {
-                properties.setProperty(entry.getKey().toString(), entry.getValue().toString());
-            }
+        for (Map.Entry entry: properties.entrySet()) {
+            vmProperties.setProperty(entry.getKey().toString(), entry.getValue());
         }
+        try (final Writer writer = Files.newBufferedWriter(propFile)) {
+            vmProperties.write(writer);
+        }
+    }
 
-        try(final OutputStream os = Files.newOutputStream(propFile)) {
-            properties.store(os, "This file contains a list of VM parameters to be passed to Java\n" +
-                    "when eXist is started by double clicking on start.jar (or calling\n" +
-                    "\"java -jar start.jar\" without parameters on the shell).");
+    public static void saveWrapperProperties(Properties properties) throws ConfigurationException, IOException {
+        final Path propFile = ConfigurationHelper.lookup("tools/yajsw/conf/wrapper.conf");
+        saveOrig(propFile);
+        final PropertiesConfiguration wrapperConf = new PropertiesConfiguration();
+        try (final Reader reader = Files.newBufferedReader(propFile)) {
+            wrapperConf.read(reader);
+        }
+        wrapperConf.setProperty("wrapper.java.maxmemory",
+                properties.getProperty("memory.max", wrapperConf.getString("wrapper.java.maxmemory")));
+        wrapperConf.setProperty("wrapper.java.initmemory",
+                properties.getProperty("memory.min", wrapperConf.getString("wrapper.java.initmemory")));
+        try (final Writer writer = Files.newBufferedWriter(propFile)) {
+            wrapperConf.write(writer);
+        }
+    }
+
+    private static void saveOrig(Path propFile) throws IOException {
+        final Path bakFile = propFile.resolveSibling(propFile.getFileName() + ".orig");
+        if (!Files.exists(bakFile)) {
+            Files.copy(propFile, bakFile, StandardCopyOption.REPLACE_EXISTING);
         }
     }
 
@@ -87,10 +106,7 @@ public class ConfigurationUtility {
 
     private static void applyXSL(Properties properties, Path config, String xsl) throws IOException,
             TransformerException {
-        final Path bakFile = config.resolveSibling(config.getFileName() + ".orig");
-        if (!Files.exists(bakFile)) {
-            Files.copy(config, bakFile, StandardCopyOption.REPLACE_EXISTING);
-        }
+        saveOrig(config);
         final TransformerFactory factory = TransformerFactory.newInstance();
         final StreamSource xslSource = new StreamSource(ConfigurationUtility.class.getResourceAsStream(xsl));
         final Transformer transformer = factory.newTransformer(xslSource);
