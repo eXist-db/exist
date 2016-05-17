@@ -20,6 +20,7 @@
 package org.exist.collections;
 
 import net.jcip.annotations.GuardedBy;
+import org.exist.Resource;
 import org.exist.dom.QName;
 import org.exist.dom.persistent.DocumentMetadata;
 import org.exist.dom.persistent.DocumentSet;
@@ -78,7 +79,7 @@ import org.xml.sax.XMLReader;
  *
  * @author wolf
  */
-public class Collection extends Observable implements Comparable<Collection>, Cacheable {
+public class Collection extends Observable implements Resource, Comparable<Collection>, Cacheable {
 
     public static final int LENGTH_COLLECTION_ID = 4; //sizeof int
 
@@ -131,12 +132,15 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
 
     private Permission permissions;
 
+    private final CollectionMetadata collectionMetadata;
+
     public Collection(final DBBroker broker, final XmldbURI path) {
         //The permissions assigned to this collection
         permissions = PermissionFactory.getDefaultCollectionPermission(broker.getBrokerPool().getSecurityManager());
 
         setPath(path);
         lock = new ReentrantReadWriteLock(path);
+        this.collectionMetadata = new CollectionMetadata(this);
     }
 
     public boolean isTriggersEnabled() {
@@ -208,7 +212,11 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         public XmldbURI getUri() {
             return uri;
         }
-        
+
+        /**
+         * @deprecated Use {@link #getMetadata()} {@link CollectionMetadata#getCreated()}
+         */
+        @Deprecated
         public long getCreated() {
             return created;
         }
@@ -977,11 +985,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         return collectionId;
     }
 
-    /**
-     * Get the name of this collection.
-     *
-     * @return    The name value
-     */
+    @Override
     public XmldbURI getURI() {
         return path;
     }
@@ -999,11 +1003,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
          return path.removeLastSegment();
     }
 
-    /**
-     * Gets the permissions attribute of the Collection object
-     *
-     * @return The permissions value
-     */
+    @Override
     final public Permission getPermissions() {
         try {
             getLock().acquire(Lock.READ_LOCK);
@@ -1018,6 +1018,11 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
 
     public Permission getPermissionsNoLock() {
         return permissions;
+    }
+
+    @Override
+    public CollectionMetadata getMetadata() {
+        return collectionMetadata;
     }
 
     /**

@@ -24,12 +24,13 @@ package org.exist.dom.persistent;
 
 import java.io.IOException;
 
+import org.exist.ResourceMetadata;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.util.MimeType;
 import org.w3c.dom.DocumentType;
 
-public class DocumentMetadata {
+public class DocumentMetadata implements ResourceMetadata {
 
     public static final byte NO_DOCTYPE = 0;
     public static final byte HAS_DOCTYPE = 1;
@@ -96,6 +97,7 @@ public class DocumentMetadata {
         setDocType(other.getDocType());
     }
 
+    @Override
     public long getCreated() {
         return created;
     }
