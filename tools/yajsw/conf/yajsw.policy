@@ -1,4 +1,4 @@
-grant codebase "file:tools/yajsw/-"
+grant codebase "file:-"
 {
 permission java.security.AllPermission;
 };

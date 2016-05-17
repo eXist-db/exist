@@ -304,8 +304,8 @@
             </fileset>
         </chmod>
         <chmod perm="+x">
-            <fileset dir="${dist.dir}/tools/wrapper/bin">
-                <include name="wrapper"/>
+            <fileset dir="${dist.dir}/yajsw/bin">
+                <include name="*.sh"/>
             </fileset>
         </chmod>
     </target>

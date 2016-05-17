@@ -69,9 +69,11 @@ public class LauncherWrapper {
         final ProcessManager pm = os.processManagerInstance();
         final Process process = pm.createProcess();
         final String cmdLine = getJavaCmd() + getJavaOpts(home, vmProperties) + " -jar start.jar " + command;
+        process.setWorkingDir(home);
         process.setVisible(false);
         process.setPipeStreams(false, false);
         process.setCommand(cmdLine);
+        System.out.println(cmdLine);
 
         if (process instanceof WindowsXPProcess) {
             ((WindowsXPProcess)process).startElevated();

@@ -180,7 +180,6 @@
             </fileset>
             <fileset targetdir="$INSTALL_PATH/tools" dir="tools">
                 <include name="**/*.jar"/>
-                <include name="wrapper/**"/>
                 <include name="yajsw/**"/>
                 <exclude name="yajsw/log/*"/>
                 <exclude name="yajsw/tmp/*"/>
@@ -307,10 +306,6 @@
 
             <parsable type="plain" targetfile="$INSTALL_PATH/vm.properties"/>
 
-            <singlefile src="tools/wrapper/conf/wrapper.conf.install"
-                target="$INSTALL_PATH/tools/wrapper/conf/wrapper.conf" override="true"/>
-            <parsable targetfile="$INSTALL_PATH/tools/wrapper/conf/wrapper.conf"/>
-
             <singlefile src="tools/yajsw/conf/wrapper.conf.install"
                 target="$INSTALL_PATH/tools/yajsw/conf/wrapper.conf" override="true"/>
             <parsable targetfile="$INSTALL_PATH/tools/yajsw/conf/wrapper.conf">
@@ -348,36 +343,6 @@
                 <os family="unix"/>
             </executable>
             <executable targetfile="$INSTALL_PATH/build.sh" stage="never">
-                <os family="unix"/>
-            </executable>
-            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-linux-ia-64" stage="never">
-                <os family="unix"/>
-            </executable>
-            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-linux-x86-32" stage="never">
-                <os family="unix"/>
-            </executable>
-            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-linux-x86-64" stage="never">
-                <os family="unix"/>
-            </executable>
-            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-macosx-universal-32" stage="never">
-                <os family="unix"/>
-            </executable>
-            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-macosx-universal-64" stage="never">
-                <os family="unix"/>
-            </executable>
-            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-solaris-sparc-32" stage="never">
-                <os family="unix"/>
-            </executable>
-            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-solaris-sparc-64" stage="never">
-                <os family="unix"/>
-            </executable>
-            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-solaris-x86-32" stage="never">
-                <os family="unix"/>
-            </executable>
-            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-solaris-x86-64" stage="never">
-                <os family="unix"/>
-            </executable>
-            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/exist.sh" stage="never">
                 <os family="unix"/>
             </executable>
             <executable targetfile="$INSTALL_PATH/tools/yajsw/bin/installDaemon.sh" stage="never">
