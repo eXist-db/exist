@@ -91,11 +91,12 @@ public class ConfigurationUtility {
         }
     }
 
-    private static void saveOrig(Path propFile) throws IOException {
+    private static Path saveOrig(Path propFile) throws IOException {
         final Path bakFile = propFile.resolveSibling(propFile.getFileName() + ".orig");
         if (!Files.exists(bakFile)) {
             Files.copy(propFile, bakFile, StandardCopyOption.REPLACE_EXISTING);
         }
+        return bakFile;
     }
 
     public static void saveConfiguration(String path, String xsl, Properties properties) throws IOException,
@@ -106,11 +107,11 @@ public class ConfigurationUtility {
 
     private static void applyXSL(Properties properties, Path config, String xsl) throws IOException,
             TransformerException {
-        saveOrig(config);
+        final Path orig = saveOrig(config);
         final TransformerFactory factory = TransformerFactory.newInstance();
         final StreamSource xslSource = new StreamSource(ConfigurationUtility.class.getResourceAsStream(xsl));
         final Transformer transformer = factory.newTransformer(xslSource);
-        final StreamSource xmlSource = new StreamSource(config.toFile());
+        final StreamSource xmlSource = new StreamSource(orig.toFile());
         final StreamResult output = new StreamResult(config.toFile());
 
         transformer.setErrorListener(new ErrorListener() {

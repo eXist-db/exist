@@ -1,6 +1,7 @@
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     
-    <xsl:output indent="no"/>
+    <xsl:output indent="no" doctype-public="-//Jetty//Configure//EN" doctype-system="http://www.eclipse.org/jetty/configure.dtd"/>
+
     <xsl:preserve-space elements="*"/>
     <xsl:strip-space elements="Set"/>
     
