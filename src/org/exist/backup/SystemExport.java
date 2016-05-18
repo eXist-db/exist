@@ -49,6 +49,7 @@ import org.exist.storage.index.CollectionStore;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.FileUtils;
+import org.exist.util.LockException;
 import org.exist.util.UTF8;
 import org.exist.util.function.FunctionE;
 import org.exist.util.serializer.AttrList;
@@ -918,8 +919,8 @@ public class SystemExport
                             serializer.endElement( Namespaces.EXIST_NS, "deleted", "deleted" );
                         }
                     }
-                } catch(final PermissionDeniedException pde) {
-                    throw new SAXException("Unable to process :" + qName + ": " + pde.getMessage(), pde);
+                } catch(final LockException | PermissionDeniedException e) {
+                    throw new SAXException("Unable to process :" + qName + ": " + e.getMessage(), e);
                 }
             }
         }

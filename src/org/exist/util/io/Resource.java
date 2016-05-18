@@ -852,14 +852,15 @@ public class Resource extends File {
                 final BrokerPool db = BrokerPool.getInstance();
     			try(final DBBroker broker = db.getBroker()) {
 
-                    final List<String> list = new ArrayList<String>();
+                    final List<String> list = new ArrayList<>();
                     for (final CollectionEntry entry : collection.getEntries(broker)) {
                         list.add(entry.getUri().lastSegment().toString());
                     }
 
                     return list.toArray(new String[list.size()]);
                 }
-    		} catch (final PermissionDeniedException | EXistException e) {
+    		} catch (final LockException | PermissionDeniedException | EXistException e) {
+                LOG.error(e);
             	return new String[0];
 			}
     	}
