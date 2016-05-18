@@ -298,12 +298,20 @@ public class Launcher extends Observable implements Observer {
             isRoot((root) -> canUseServices = root);
         }
 
-        installServiceItem = new MenuItem("Install as service");
+        final String requiresRootMsg;
+        if (canUseServices) {
+            requiresRootMsg = "";
+        } else {
+            requiresRootMsg = " (requires root)";
+        }
+
+        installServiceItem = new MenuItem("Install as service" + requiresRootMsg);
+
         popup.add(installServiceItem);
         installServiceItem.setEnabled(canUseServices);
         installServiceItem.addActionListener(e -> SwingUtilities.invokeLater(this::installAsService));
 
-        uninstallServiceItem = new MenuItem("Uninstall service");
+        uninstallServiceItem = new MenuItem("Uninstall service" + requiresRootMsg);
         popup.add(uninstallServiceItem);
         uninstallServiceItem.setEnabled(canUseServices);
         uninstallServiceItem.addActionListener(e -> SwingUtilities.invokeLater(this::uninstallService));
