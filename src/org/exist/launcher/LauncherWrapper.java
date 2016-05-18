@@ -21,16 +21,23 @@
  */
 package org.exist.launcher;
 
-import org.apache.tools.ant.DefaultLogger;
-import org.apache.tools.ant.Project;
-import org.apache.tools.ant.taskdefs.Java;
-import org.apache.tools.ant.types.Commandline;
+import org.apache.commons.configuration2.PropertiesConfiguration;
+import org.apache.commons.configuration2.ex.ConfigurationException;
+import org.apache.commons.lang3.SystemUtils;
 import org.exist.util.ConfigurationHelper;
+import org.rzo.yajsw.os.OperatingSystem;
+import org.rzo.yajsw.os.Process;
+import org.rzo.yajsw.os.ProcessManager;
+import org.rzo.yajsw.os.ms.win.w32.WindowsXPProcess;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
@@ -59,45 +66,50 @@ public class LauncherWrapper {
     }
 
     public void launch() {
-        launch(true);
-    }
-
-    public void launch(boolean spawn) {
         final String home = System.getProperty("exist.home", ".");
-        final Project project = new Project();
-        project.setBasedir(home);
-        final DefaultLogger logger = new DefaultLogger();
-        logger.setOutputPrintStream(System.out);
-        logger.setErrorPrintStream(System.err);
-        logger.setMessageOutputLevel(Project.MSG_DEBUG);
-        project.addBuildListener(logger);
+        final PropertiesConfiguration vmProperties = getVMProperties();
 
-        final Java java = new Java();
-        java.setFork(true);
-        java.setSpawn(spawn);
-        java.setJvmargs("-Dwrapper.java.library.path=" + home + "tools/wrapper/");
-        //java.setClassname(org.exist.start.Main.class.getName());
-        java.setProject(project);
-        java.setJar(new File(home, "start.jar"));
-        //Path path = java.createClasspath();
-        //path.setPath("start.jar");
+        final OperatingSystem os = OperatingSystem.instance();
+        final ProcessManager pm = os.processManagerInstance();
+        final Process process = pm.createProcess();
+        final String cmdLine = getJavaCmd() + getJavaOpts(home, vmProperties) + " -jar start.jar " + command;
+        process.setWorkingDir(home);
+        process.setVisible(false);
+        process.setPipeStreams(false, false);
+        process.setCommand(cmdLine);
+        System.out.println(cmdLine);
 
-        final Commandline.Argument jvmArgs = java.createJvmarg();
-        final String javaOpts = getJavaOpts(home);
-        jvmArgs.setLine(javaOpts);
-        System.out.println("Java opts: " + javaOpts);
-
-        final Commandline.Argument args = java.createArg();
-        args.setLine(command);
-
-        java.init();
-        java.execute();
+        if (process instanceof WindowsXPProcess) {
+            ((WindowsXPProcess)process).startElevated();
+        } else {
+            process.start();
+        }
     }
 
-    protected String getJavaOpts(String home) {
+    protected String getJavaCmd() {
+        final File javaHome = SystemUtils.getJavaHome();
+        if (SystemUtils.IS_OS_WINDOWS) {
+            Path javaBin = Paths.get(javaHome.getAbsolutePath(), "bin", "javaw.exe");
+            if (Files.isExecutable(javaBin)) {
+                return '"' + javaBin.toString() + '"';
+            }
+            javaBin = Paths.get(javaHome.getAbsolutePath(), "bin", "java.exe");
+            if (Files.isExecutable(javaBin)) {
+                return '"' + javaBin.toString() + '"';
+            }
+        } else {
+            Path javaBin = Paths.get(javaHome.getAbsolutePath(), "bin", "java");
+            if (Files.isExecutable(javaBin)) {
+                return javaBin.toString();
+            }
+        }
+        return "java";
+    }
+
+    protected String getJavaOpts(String home, PropertiesConfiguration vmProperties) {
         final StringBuilder opts = new StringBuilder();
 
-        opts.append(getVMOpts());
+        opts.append(getVMOpts(vmProperties));
 
         if (command.equals(LAUNCHER) && "mac os x".equals(OS)) {
             opts.append(" -Dapple.awt.UIElement=true");
@@ -111,31 +123,30 @@ public class LauncherWrapper {
         return opts.toString();
     }
 
-    protected String getVMOpts() {
+    protected String getVMOpts(PropertiesConfiguration vmProperties) {
         final StringBuilder opts = new StringBuilder();
-        Properties vmProperties = getVMProperties();
-        for (final Map.Entry<Object, Object> entry : vmProperties.entrySet())  {
-            final String key = entry.getKey().toString();
+        for (final Iterator<String> i = vmProperties.getKeys(); i.hasNext(); ) {
+            final String key = i.next();
             if (key.startsWith("memory.")) {
                 if ("memory.max".equals(key)) {
-                    opts.append(" -Xmx").append(entry.getValue()).append('m');
+                    opts.append(" -Xmx").append(vmProperties.getString(key)).append('m');
                 } else if ("memory.min".equals(key)) {
-                    opts.append(" -Xms").append(entry.getValue()).append('m');
+                    opts.append(" -Xms").append(vmProperties.getString(key)).append('m');
                 }
             } else if ("vmoptions".equals(key)) {
-                opts.append(' ').append(entry.getValue());
+                opts.append(' ').append(vmProperties.getString(key));
             } else if (key.startsWith("vmoptions.")) {
                 final String os = key.substring("vmoptions.".length()).toLowerCase();
                 if (OS.contains(os)) {
-                    opts.append(' ').append(entry.getValue());
+                    opts.append(' ').append(vmProperties.getString(key));
                 }
             }
         }
         return opts.toString();
     }
 
-    public static Properties getVMProperties() {
-        final Properties vmProperties = new Properties();
+    public static PropertiesConfiguration getVMProperties() {
+        final PropertiesConfiguration vmProperties = new PropertiesConfiguration();
         final java.nio.file.Path propFile = ConfigurationHelper.lookup("vm.properties");
         InputStream is = null;
         try {
@@ -146,10 +157,12 @@ public class LauncherWrapper {
                 is = LauncherWrapper.class.getResourceAsStream("vm.properties");
             }
             if (is != null) {
-                vmProperties.load(is);
+                vmProperties.read(new InputStreamReader(is, "UTF-8"));
             }
         } catch (final IOException e) {
             System.err.println("vm.properties not found");
+        } catch (ConfigurationException e) {
+            System.err.println("exception reading vm.properties: " + e.getMessage());
         } finally {
             if(is != null) {
                 try {

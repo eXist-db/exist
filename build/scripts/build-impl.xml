@@ -75,9 +75,10 @@
         <fileset dir="${tools.ant}/lib">
             <include name="*.jar"/>
         </fileset>
-        <fileset dir="tools/wrapper/lib">
-            <include name="*.jar"/>
-        </fileset>
+        <pathelement path="tools/yajsw/wrapper.jar"/>
+	<fileset dir="tools/yajsw/lib/core/commons">
+	    <include name="commons-configuration*.jar"/>
+	</fileset>
     </path>
 
     <!-- setup class path -->
@@ -604,7 +605,7 @@
         <ant antfile="build.xml" dir="extensions/modules" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/security/activedirectory"  target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/xprocxq" target="clean" inheritall="false"/>
-        <ant antfile="build.xml" dir="tools/wrapper" target="clean" inheritall="false"/>
+        <ant antfile="build.xml" dir="tools/yajsw" target="clean" inheritall="false"/>
 
         <ant antfile="${build.scripts}/extensions-build.xml" target="clean" inheritAll="false"/>
 
@@ -673,7 +674,7 @@
     </target>
 
     <target name="wrapper" depends="jar">
-        <ant antfile="build.xml" dir="tools/wrapper" inheritall="false"/>
+        <ant antfile="build.xml" dir="tools/yajsw" inheritall="false"/>
     </target>
 
     <target name="extension-betterform" depends="jar">

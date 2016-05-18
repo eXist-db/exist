@@ -5,7 +5,7 @@
         <url>http://exist-db.org</url>
         <javaversion>1.6</javaversion>
 		<requiresjdk>no</requiresjdk>
-        <run-privileged condition="izpack.windowsinstall.vista|izpack.windowsinstall.7"/>
+        <run-privileged condition="izpack.windowsinstall"/>
 		<uninstaller name="uninstall.jar" path="$INSTALL_PATH"/>
         <!--pack200/-->
     </info>
@@ -52,7 +52,7 @@
         <variable name="dataDir" value="webapp/WEB-INF/data"/>
         <variable name="ShowCreateDirectoryMessage" value="false"/>
     </variables>
-    
+
     <!-- Determine suggested data directory -->
     <dynamicvariables>
         <variable name="DATA_DIR" value="$INSTALL_PATH/webapp/WEB-INF/data"/>
@@ -180,7 +180,10 @@
             </fileset>
             <fileset targetdir="$INSTALL_PATH/tools" dir="tools">
                 <include name="**/*.jar"/>
-                <include name="wrapper/**"/>
+                <include name="yajsw/**"/>
+                <exclude name="yajsw/log/*"/>
+                <exclude name="yajsw/tmp/*"/>
+                <exclude name="yajsw/work/*"/>
                 <include name="requestlog/**"/>
                 <include name="rulesets/**"/>
                 <include name="ant/**"/>
@@ -206,6 +209,7 @@
                 <exclude name="**/.svn/"/>
                 <exclude name="**/*~"/>
                 <exclude name="WEB-INF/logs/**"/>
+                <exclude name="WEB-INF/data/sanity/**"/>
                 <exclude name="WEB-INF/data/export/**"/>
                 <exclude name="WEB-INF/data/fs/**"/>
                 <exclude name="WEB-INF/data/fs.journal/**"/>
@@ -302,9 +306,11 @@
 
             <parsable type="plain" targetfile="$INSTALL_PATH/vm.properties"/>
 
-            <singlefile src="tools/wrapper/conf/wrapper.conf.install"
-                target="$INSTALL_PATH/tools/wrapper/conf/wrapper.conf" override="true"/>
-            <parsable targetfile="$INSTALL_PATH/tools/wrapper/conf/wrapper.conf"/>
+            <singlefile src="tools/yajsw/conf/wrapper.conf.install"
+                target="$INSTALL_PATH/tools/yajsw/conf/wrapper.conf" override="true"/>
+            <parsable targetfile="$INSTALL_PATH/tools/yajsw/conf/wrapper.conf">
+                <os family="windows"/>
+            </parsable>
 
             <executable targetfile="$INSTALL_PATH/start.jar" stage="never">
                 <os family="unix"/>
@@ -339,36 +345,23 @@
             <executable targetfile="$INSTALL_PATH/build.sh" stage="never">
                 <os family="unix"/>
             </executable>
-            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-linux-ia-64" stage="never">
+            <executable targetfile="$INSTALL_PATH/tools/yajsw/bin/installDaemon.sh" stage="never">
                 <os family="unix"/>
             </executable>
-            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-linux-x86-32" stage="never">
+            <executable targetfile="$INSTALL_PATH/tools/yajsw/bin/installDaemonNoPriv.sh" stage="never">
                 <os family="unix"/>
             </executable>
-            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-linux-x86-64" stage="never">
-                <os family="unix"/>
-            </executable>
-            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-macosx-universal-32" stage="never">
-                <os family="unix"/>
-            </executable>
-            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-macosx-universal-64" stage="never">
-                <os family="unix"/>
-            </executable>
-            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-solaris-sparc-32" stage="never">
-                <os family="unix"/>
-            </executable>
-            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-solaris-sparc-64" stage="never">
-                <os family="unix"/>
-            </executable>
-            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-solaris-x86-32" stage="never">
-                <os family="unix"/>
-            </executable>
-            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-solaris-x86-64" stage="never">
-                <os family="unix"/>
-            </executable>
-            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/exist.sh" stage="never">
-                <os family="unix"/>
-            </executable>
+            <executable targetfile="$INSTALL_PATH/tools/yajsw/bin/queryDaemon.sh" stage="never"><os family="unix"/></executable>
+            <executable targetfile="$INSTALL_PATH/tools/yajsw/bin/queryDaemonNoPriv.sh" stage="never"><os family="unix"/></executable>
+            <executable targetfile="$INSTALL_PATH/tools/yajsw/bin/runConsole.sh" stage="never"><os family="unix"/></executable>
+            <executable targetfile="$INSTALL_PATH/tools/yajsw/bin/setenv.sh" stage="never"><os family="unix"/></executable>
+            <executable targetfile="$INSTALL_PATH/tools/yajsw/bin/startDaemon.sh" stage="never"><os family="unix"/></executable>
+            <executable targetfile="$INSTALL_PATH/tools/yajsw/bin/startDaemonNoPriv.sh" stage="never"><os family="unix"/></executable>
+            <executable targetfile="$INSTALL_PATH/tools/yajsw/bin/stopDaemon.sh" stage="never"><os family="unix"/></executable>
+            <executable targetfile="$INSTALL_PATH/tools/yajsw/bin/stopDaemonNoPriv.sh" stage="never"><os family="unix"/></executable>
+            <executable targetfile="$INSTALL_PATH/tools/yajsw/bin/uninstallDaemon.sh" stage="never"><os family="unix"/></executable>
+            <executable targetfile="$INSTALL_PATH/tools/yajsw/bin/uninstallDaemonNoPriv.sh" stage="never"><os family="unix"/></executable>
+            <executable targetfile="$INSTALL_PATH/tools/yajsw/bin/wrapper.sh" stage="never"><os family="unix"/></executable>
         </pack>
 
         <!--pack name="Javadoc" required="no">
@@ -377,7 +370,7 @@
                 <exclude name="**/CVS/"/>
             </fileset>
         </pack-->
-        
+
         <pack name="Apps" required="no" installGroups="Group2">
             <description>Application Packages: additional applications for XQuery development, database management, documentation, examples and more. You should at least install the dashboard and the "shared" package to be able to add more applications later.</description>
         </pack>
