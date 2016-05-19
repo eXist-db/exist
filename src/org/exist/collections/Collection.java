@@ -213,10 +213,6 @@ public class Collection extends Observable implements Resource, Comparable<Colle
             return uri;
         }
 
-        /**
-         * @deprecated Use {@link #getMetadata()} {@link CollectionMetadata#getCreated()}
-         */
-        @Deprecated
         public long getCreated() {
             return created;
         }
@@ -2206,6 +2202,10 @@ public class Collection extends Observable implements Resource, Comparable<Colle
         created = ms;
     }
 
+    /**
+     * @deprecated Use {@link #getMetadata()} {@link CollectionMetadata#getCreated()}
+     */
+    @Deprecated
     public long getCreationTime() {
         return created;
     }
