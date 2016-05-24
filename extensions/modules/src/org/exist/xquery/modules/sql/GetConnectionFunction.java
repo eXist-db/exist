@@ -26,12 +26,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import org.exist.dom.QName;
+import org.exist.util.ParametersExtractor;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.modules.ModuleUtils;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.IntegerValue;
@@ -142,7 +142,7 @@ public class GetConnectionFunction extends BasicFunction
             } else if( args.length == 3 ) {
 
                 // try and get the connection
-                Properties props = ModuleUtils.parseProperties( ( (NodeValue)args[2].itemAt( 0 ) ).getNode() );
+                Properties props = ParametersExtractor.parseProperties( ( (NodeValue)args[2].itemAt( 0 ) ).getNode() );
                 con = DriverManager.getConnection( dbURL, props );
             } else if( args.length == 4 ) {
                 String dbUser     = args[2].getStringValue();

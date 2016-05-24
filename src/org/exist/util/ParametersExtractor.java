@@ -32,7 +32,7 @@ public class ParametersExtractor {
         final Map<String, List<? extends Object>> result;
 
         if(parameters == null || !parameters.getLocalName().equals(PARAMETERS_ELEMENT_NAME)) {
-            result = new HashMap<String, List<? extends Object>>(0);
+            result = new HashMap<>(0);
         } else {
 
             final String namespace = parameters.getNamespaceURI();
@@ -52,7 +52,7 @@ public class ParametersExtractor {
         final Map<String, List<? extends Object>> result;
 
         if(nlParameter == null || nlParameter.getLength() == 0) {
-            result = new HashMap<String, List<? extends Object>>(0);
+            result = new HashMap<>(0);
         } else {
             result = extractParameters(nlParameter);
         }
@@ -101,7 +101,7 @@ public class ParametersExtractor {
 
     private static Map<String, List> getParameterChildParameters(final Element parameter) {
 
-        final Map<String, List> results = new HashMap<String, List>();
+        final Map<String, List> results = new HashMap<>();
 
         final NodeList childParameters = parameter.getChildNodes();
         for(int i = 0; i < childParameters.getLength(); i++) {
@@ -113,7 +113,7 @@ public class ParametersExtractor {
                 if(childParameter.getAttributes().getLength() > 0){
                     List<Properties> childParameterProperties = (List<Properties>)results.get(name);
                     if(childParameterProperties == null) {
-                        childParameterProperties = new ArrayList<Properties>();
+                        childParameterProperties = new ArrayList<>();
                     }
 
                     final NamedNodeMap attrs = childParameter.getAttributes();
@@ -128,7 +128,7 @@ public class ParametersExtractor {
                 } else {
                     List<String> strings = (List<String>)results.get(name);
                     if(strings == null) {
-                        strings = new ArrayList<String>();
+                        strings = new ArrayList<>();
                     }
                     strings.add(childParameter.getNodeValue());
                     results.put(name, strings);
@@ -137,5 +137,81 @@ public class ParametersExtractor {
         }
 
         return results;
+    }
+
+    /**
+     * Parses a structure like <parameters><param name="a" value="1"/><param
+     * name="b" value="2"/></parameters> into a set of Properties
+     *
+     * @param nParameters
+     *            The parameters Node
+     * @return a set of name value properties for representing the XML
+     *         parameters
+     */
+    public static Properties parseParameters(final Node nParameters){
+        return parseProperties(nParameters, "param");
+    }
+
+    /**
+     * Parses a structure like <properties><property name="a" value="1"/><property
+     * name="b" value="2"/></properties> into a set of Properties
+     *
+     * @param nProperties
+     *            The properties Node
+     * @return a set of name value properties for representing the XML
+     *         properties
+     */
+    public static Properties parseProperties(final Node nProperties) {
+        return parseProperties(nProperties, "property");
+    }
+
+    /**
+     * Parses a structure like <features><feature name="a" value="1"/><feature
+     * name="b" value="2"/></features> into a set of Properties
+     *
+     * @param nFeatures
+     *            The features Node
+     * @return a set of name value properties for representing the XML
+     *         features
+     */
+    public static Properties parseFeatures(final Node nFeatures) {
+        return parseProperties(nFeatures, "feature");
+    }
+
+    /**
+     * Parses a structure like <properties><property name="a" value="1"/><property
+     * name="b" value="2"/></properties> into a set of Properties
+     *
+     * @param container
+     *            The container of the properties
+     * @param elementName
+     *            The name of the property element
+     * @return a set of name value properties for representing the XML
+     *         properties
+     */
+    private static Properties parseProperties(final Node container, final String elementName) throws IllegalArgumentException {
+        final Properties properties = new Properties();
+
+        if(container != null && container.getNodeType() == Node.ELEMENT_NODE) {
+            final NodeList params = ((Element) container).getElementsByTagName(elementName);
+            for(int i = 0; i < params.getLength(); i++) {
+                final Element param = ((Element) params.item(i));
+
+                final String name = param.getAttribute("name");
+                final String value = param.getAttribute("value");
+
+                if(name != null && value != null) {
+                    properties.setProperty(name, value);
+                } else {
+                    if(name == null) {
+                        throw new IllegalArgumentException("'name' attribute missing for " + elementName);
+                    } else {
+                        throw new IllegalArgumentException("'value' attribute missing for " + elementName);
+                    }
+                }
+            }
+        }
+
+        return properties;
     }
 }

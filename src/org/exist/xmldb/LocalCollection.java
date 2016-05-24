@@ -21,12 +21,7 @@ package org.exist.xmldb;
 
 import java.io.InputStream;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-import java.util.Random;
+import java.util.*;
 import javax.xml.transform.OutputKeys;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -43,6 +38,8 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.Txn;
+import org.exist.util.HtmlToXmlParser;
+import org.exist.util.function.Either;
 import org.exist.util.function.FunctionE;
 import org.exist.xmldb.function.LocalXmldbCollectionFunction;
 import org.xml.sax.InputSource;
@@ -603,21 +600,25 @@ public class LocalCollection extends AbstractLocal implements CollectionImpl {
         if((normalize.equalsIgnoreCase("yes") || normalize.equalsIgnoreCase("true")) &&
                 ("text/html".equals(res.getMimeType()) || res.getId().endsWith(".htm") ||
                     res.getId().endsWith(".html"))) {
-            try {
-                if(LOG.isDebugEnabled()) {
-                    LOG.debug("Converting HTML to XML using NekoHTML parser.");
+
+          final Optional<Either<Throwable, XMLReader>> maybeReaderInst = HtmlToXmlParser.getHtmlToXmlParser(brokerPool.getConfiguration());
+
+            if(maybeReaderInst.isPresent()) {
+                final Either<Throwable, XMLReader> readerInst = maybeReaderInst.get();
+                if (readerInst.isLeft()) {
+                    final String msg = "Unable to parse HTML to XML please ensure the parser is configured in conf.xml and is present on the classpath";
+                    final Throwable t = readerInst.left().get();
+                    LOG.error(msg, t);
+                    throw new XMLDBException(ErrorCodes.VENDOR_ERROR, msg, t);
+                } else {
+                    final XMLReader htmlReader = readerInst.right().get();
+                    if(LOG.isDebugEnabled()) {
+                        LOG.debug("Converting HTML to XML using: " + htmlReader.getClass().getName());
+                    }
+                    collection.setReader(htmlReader);
                 }
-                final Class<?> clazz = Class.forName("org.cyberneko.html.parsers.SAXParser");
-                final XMLReader htmlReader = (XMLReader) clazz.newInstance();
-                //do not modify the case of elements and attributes
-                htmlReader.setProperty("http://cyberneko.org/html/properties/names/elems", "match");
-                htmlReader.setProperty("http://cyberneko.org/html/properties/names/attrs", "no-change");
-                collection.setReader(htmlReader);
-            } catch(final Exception e) {
-                LOG.error("Error while involing NekoHTML parser. (" + e.getMessage()
-                    + "). If you want to parse non-wellformed HTML files, put "
-                    + "nekohtml.jar into directory 'lib/optional'.");
-                throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "NekoHTML parser error", e);
+            } else {
+                throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "There is no HTML to XML parser configured in conf.xml");
             }
         }
     }

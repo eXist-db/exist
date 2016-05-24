@@ -28,12 +28,12 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 import org.exist.dom.QName;
+import org.exist.util.ParametersExtractor;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.modules.ModuleUtils;
 import org.exist.xquery.value.Base64BinaryValueType;
 import org.exist.xquery.value.BinaryValueFromInputStream;
 import org.exist.xquery.value.FunctionParameterSequenceType;
@@ -127,7 +127,7 @@ public class RenderFunction extends BasicFunction {
         // get parameters
         Properties parameters = new Properties();
         if(!args[2].isEmpty()) {
-            parameters = ModuleUtils.parseParameters(((NodeValue) args[2].itemAt(0)).getNode());
+            parameters = ParametersExtractor.parseParameters(((NodeValue) args[2].itemAt(0)).getNode());
         }
 
         ProcessorAdapter adapter = null;
