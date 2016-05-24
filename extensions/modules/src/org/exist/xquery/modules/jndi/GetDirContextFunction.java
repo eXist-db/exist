@@ -32,12 +32,12 @@ import javax.naming.directory.InitialDirContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
+import org.exist.util.ParametersExtractor;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.modules.ModuleUtils;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.IntegerValue;
@@ -109,7 +109,7 @@ public class GetDirContextFunction extends BasicFunction
 		try {
 			DirContext dirCtx = null;
 
-			Properties env = ModuleUtils.parseProperties( ( (NodeValue)args[0].itemAt( 0 ) ).getNode() );
+			Properties env = ParametersExtractor.parseProperties( ( (NodeValue)args[0].itemAt( 0 ) ).getNode() );
 			
 			dirCtx = new InitialDirContext( env );
 

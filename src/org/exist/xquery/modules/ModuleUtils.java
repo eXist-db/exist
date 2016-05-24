@@ -45,9 +45,6 @@ import org.exist.util.function.Either;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.NodeValue;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.xml.sax.*;
 
 /**
@@ -286,78 +283,6 @@ public class ModuleUtils {
         }
     }
 
-	/**
-	 * Parses a structure like <parameters><param name="a" value="1"/><param
-	 * name="b" value="2"/></parameters> into a set of Properties
-	 * 
-	 * @param nParameters
-	 *            The parameters Node
-	 * @return a set of name value properties for representing the XML
-	 *         parameters
-	 */
-	public static Properties parseParameters(final Node nParameters){
-            return parseProperties(nParameters, "param");
-	}
-
-	/**
-	 * Parses a structure like <properties><property name="a" value="1"/><property
-	 * name="b" value="2"/></properties> into a set of Properties
-	 * 
-	 * @param nProperties
-	 *            The properties Node
-	 * @return a set of name value properties for representing the XML
-	 *         properties
-	 */
-	public static Properties parseProperties(final Node nProperties) {
-            return parseProperties(nProperties, "property");
-	}
-
-    /**
-     * Parses a structure like <features><feature name="a" value="1"/><feature
-     * name="b" value="2"/></features> into a set of Properties
-     *
-     * @param nFeatures
-     *            The features Node
-     * @return a set of name value properties for representing the XML
-     *         features
-     */
-    public static Properties parseFeatures(final Node nFeatures) {
-        return parseProperties(nFeatures, "feature");
-    }
-
-	/**
-	 * Parses a structure like <properties><property name="a" value="1"/><property
-	 * name="b" value="2"/></properties> into a set of Properties
-	 * 
-	 * @param container
-	 *            The container of the properties
-	 * @param elementName
-	 *            The name of the property element
-	 * @return a set of name value properties for representing the XML
-	 *         properties
-	 */
-	private static Properties parseProperties(final Node container, final String elementName) {
-            final Properties properties = new Properties();
-
-            if(container != null && container.getNodeType() == Node.ELEMENT_NODE) {
-                final NodeList params = ((Element) container).getElementsByTagName(elementName);
-                for(int i = 0; i < params.getLength(); i++) {
-                    final Element param = ((Element) params.item(i));
-
-                    final String name = param.getAttribute("name");
-                    final String value = param.getAttribute("value");
-
-                    if(name != null && value != null) {
-                        properties.setProperty(name, value);
-                    } else {
-                        LOG.warn("Name or value attribute missing for " + elementName);
-                    }
-                }
-            }
-            return properties;
-	}
-    
-        
     private static class ContextMapLocks {
         private final Map<String, ReentrantReadWriteLock> locks = new HashMap<String, ReentrantReadWriteLock>();
         

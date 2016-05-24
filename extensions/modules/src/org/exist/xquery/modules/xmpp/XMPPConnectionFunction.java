@@ -27,12 +27,12 @@ import org.jivesoftware.smack.ConnectionConfiguration;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.exist.dom.QName;
+import org.exist.util.ParametersExtractor;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.modules.ModuleUtils;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.IntegerValue;
@@ -65,7 +65,7 @@ public class XMPPConnectionFunction extends BasicFunction
 
 	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException
 	{
-		Properties props = ModuleUtils.parseProperties( ((NodeValue) args[0].itemAt(0)).getNode() );
+		Properties props = ParametersExtractor.parseProperties( ((NodeValue) args[0].itemAt(0)).getNode() );
 		
 		ProxyInfo proxy; 
 		ConnectionConfiguration config;

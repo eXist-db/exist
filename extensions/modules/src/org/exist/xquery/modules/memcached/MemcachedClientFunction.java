@@ -31,12 +31,12 @@ import net.spy.memcached.MemcachedClient;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.exist.dom.QName;
+import org.exist.util.ParametersExtractor;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.modules.ModuleUtils;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.IntegerValue;
@@ -77,7 +77,7 @@ public class MemcachedClientFunction extends BasicFunction
 		List <InetSocketAddress> ialist = new ArrayList <InetSocketAddress>(); 
 		SequenceIterator i = args[0].iterate();
 		do {
-			Properties props = ModuleUtils.parseProperties( ((NodeValue) i.nextItem()).getNode() );
+			Properties props = ParametersExtractor.parseProperties( ((NodeValue) i.nextItem()).getNode() );
 			String host = props.getProperty("host");
 			String tmp	= props.getProperty("port");
 			int    port	= tmp == null ? 11211 : new Integer(tmp).intValue();   
