@@ -20,6 +20,7 @@
             indexer
             scheduler
                 job
+            parser
             serializer
             transformer
             validation
@@ -561,6 +562,56 @@
         -->
         
     </scheduler>
+
+    <!--
+        Default settings for parsing structured documents:
+
+        - html-to-xml (optional)
+
+            - class
+                The Java classname of a parser which implements org.xml.sax.XMLReader
+                and is capable of parsing HTML and emitting an XML Sax Stream.
+
+                Whichever library you use for this, it must be present on the classpath
+                perhaps the best way to do this is to place it into $EXIST_HOME/lib/user
+
+                Examples include:
+                    - org.cyberneko.html.parsers.SAXParser
+                        The Cyber NekoHTML parser from https://sourceforge.net/projects/nekohtml/
+
+                    - org.ccil.cowan.tagsoup.Parser
+                        The TagSoup parser from http://home.ccil.org/~cowan/XML/tagsoup/
+
+            - properties
+                Any default SAX2 properties to set on the Parser
+
+                    - property
+                        - name
+                            the name of the property
+                        - value
+                            the value of the property
+
+
+            - features
+                Any default SAX2 feature flags to set on the parser
+
+                    - feature
+                        - name
+                            the name of the feature flag
+                        - value
+                            the value of the feature flag
+    -->
+    <parser>
+        <html-to-xml class="org.ccil.cowan.tagsoup.Parser"/>
+
+        <!-- html-to-xml class="org.cyberneko.html.parsers.SAXParser">
+            <properties>
+                <property name="http://cyberneko.org/html/properties/names/elems" value="match"/>
+                <property name="http://cyberneko.org/html/properties/names/attrs" value="no-change"/>
+            </properties>
+        </html-to-xml -->
+
+    </parser>
 
     <!-- 
         Default settings for the serializer. Most of these can be changed

@@ -315,7 +315,7 @@ public class MessageFunctions extends BasicFunction {
                Additionally, the namespace binding is dropped - so this throws an error when the content is parsed.
              */
 
-            DocumentImpl html = ModuleUtils.htmlToXHtml(context, "alternative", new StreamSource(part.getInputStream()), null, null);
+            DocumentImpl html = ModuleUtils.htmlToXHtml(context, new StreamSource(part.getInputStream()), null, null);
             ElementImpl rootElem = (ElementImpl)html.getDocumentElement();
             html.copyTo(rootElem,receiver);
             builder.endElement();

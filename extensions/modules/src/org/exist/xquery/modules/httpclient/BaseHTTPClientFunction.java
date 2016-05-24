@@ -358,7 +358,7 @@ public abstract class BaseHTTPClientFunction extends BasicFunction {
                             //we have to use CloseShieldInputStream otherwise the parser closes the stream and we cant later reread
                             final InputStream shieldedInputStream = new CloseShieldInputStream(cfis);
 
-                            responseNode = (NodeImpl) ModuleUtils.htmlToXHtml(context, method.getURI().toString(), new InputSource(shieldedInputStream), parserFeatures, parserProperties).getDocumentElement();
+                            responseNode = (NodeImpl) ModuleUtils.htmlToXHtml(context, new InputSource(shieldedInputStream), parserFeatures, parserProperties).getDocumentElement();
                             builder.addAttribute(new QName("type", null, null), "xhtml");
                             responseNode.copyTo(null, new DocumentBuilderReceiver(builder));
                         } catch (final URIException ue) {

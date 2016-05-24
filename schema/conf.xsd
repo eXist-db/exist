@@ -233,6 +233,43 @@
                         </xs:sequence>
                     </xs:complexType>
                 </xs:element>
+                <xs:element name="parser">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="html-to-xml" minOccurs="0">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="properties" minOccurs="0">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element name="property" maxOccurs="unbounded">
+                                                        <xs:complexType>
+                                                            <xs:attribute name="name" use="required" type="xs:string"/>
+                                                            <xs:attribute name="value" use="required" type="xs:string"/>
+                                                        </xs:complexType>
+                                                    </xs:element>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
+                                        <xs:element name="features" minOccurs="0">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element name="feature" maxOccurs="unbounded">
+                                                        <xs:complexType>
+                                                            <xs:attribute name="name" use="required" type="xs:string"/>
+                                                            <xs:attribute name="value" use="required" type="xs:boolean"/>
+                                                        </xs:complexType>
+                                                    </xs:element>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                    <xs:attribute name="class" use="required" type="xs:string"/>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
                 <xs:element name="serializer">
                     <xs:complexType>
                         <xs:sequence>

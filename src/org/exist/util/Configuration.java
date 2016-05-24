@@ -24,6 +24,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.exist.repo.Deployment;
 
+import org.exist.xquery.modules.ModuleUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -224,6 +225,12 @@ public class Configuration implements ErrorHandler
             final NodeList transformers = doc.getElementsByTagName(TransformerFactoryAllocator.CONFIGURATION_ELEMENT_NAME);
             if( transformers.getLength() > 0 ) {
                 configureTransformer((Element)transformers.item(0));
+            }
+
+            //parser settings
+            final NodeList parsers = doc.getElementsByTagName(HtmlToXmlParser.PARSER_ELEMENT_NAME);
+            if(parsers.getLength() > 0) {
+                configureParser((Element)parsers.item(0));
             }
 
             //serializer settings
@@ -531,6 +538,34 @@ public class Configuration implements ErrorHandler
         }
     }
 
+    private void configureParser(final Element parser) {
+        final NodeList nlHtmlToXml = parser.getElementsByTagName(HtmlToXmlParser.HTML_TO_XML_PARSER_ELEMENT);
+        if(nlHtmlToXml.getLength() > 0) {
+            final Element htmlToXml = (Element)nlHtmlToXml.item(0);
+            final String htmlToXmlParserClass = getConfigAttributeValue(htmlToXml, HtmlToXmlParser.HTML_TO_XML_PARSER_CLASS_ATTRIBUTE);
+            config.put(HtmlToXmlParser.HTML_TO_XML_PARSER_PROPERTY, htmlToXmlParserClass);
+
+            final NodeList nlProperties = htmlToXml.getElementsByTagName(HtmlToXmlParser.HTML_TO_XML_PARSER_PROPERTIES_ELEMENT);
+            if(nlProperties.getLength() > 0) {
+                final Properties pProperties = ModuleUtils.parseProperties(nlProperties.item(0));
+                if(pProperties != null) {
+                    final Map<String, Object> properties = new HashMap<>();
+                    pProperties.forEach((k,v) -> properties.put(k.toString(), v));
+                    config.put(HtmlToXmlParser.HTML_TO_XML_PARSER_PROPERTIES_PROPERTY, properties);
+                }
+            }
+
+            final NodeList nlFeatures = htmlToXml.getElementsByTagName(HtmlToXmlParser.HTML_TO_XML_PARSER_FEATURES_ELEMENT);
+            if(nlFeatures.getLength() > 0) {
+                final Properties pFeatures = ModuleUtils.parseFeatures(nlFeatures.item(0));
+                if(pFeatures != null) {
+                    final Map<String, Boolean> features = new HashMap<>();
+                    pFeatures.forEach((k,v) -> features.put(k.toString(), Boolean.valueOf(v.toString())));
+                    config.put(HtmlToXmlParser.HTML_TO_XML_PARSER_FEATURES_PROPERTY, features);
+                }
+            }
+        }
+    }
 
     /**
      * DOCUMENT ME!
