@@ -2589,25 +2589,30 @@ public class NativeBroker extends DBBroker {
 
             trigger.beforeMoveDocument(this, transaction, doc, newURI);
 
-            collection.unlinkDocument(this, doc);
-            removeResourceMetadata(transaction, doc);
-            doc.setFileURI(newName);
             if(doc.getResourceType() == DocumentImpl.XML_FILE) {
-                if(!renameOnly) {
-                    //XXX: BUG: doc have new uri here!
+                if (!renameOnly) {
                     dropIndex(transaction, doc);
-                    saveCollection(transaction, collection);
                 }
-                doc.setCollection(destination);
-                destination.addDocument(transaction, this, doc);
+            }
+
+            collection.unlinkDocument(this, doc);
+            if(!renameOnly) {
+                saveCollection(transaction, collection);
+            }
+
+            removeResourceMetadata(transaction, doc);
+
+            doc.setFileURI(newName);
+            doc.setCollection(destination);
+            destination.addDocument(transaction, this, doc);
+
+            if(doc.getResourceType() == DocumentImpl.XML_FILE) {
                 if(!renameOnly) {
                     // reindexing
                     reindexXMLResource(transaction, doc, IndexMode.REPAIR);
                 }
             } else {
                 // binary resource
-                doc.setCollection(destination);
-                destination.addDocument(transaction, this, doc);
                 final Path colDir = getCollectionFile(getFsDir(), destination.getURI(), true);
                 final Path binFile = colDir.resolve(newName.lastSegment().toString());
                 final Path sourceFile = getCollectionFile(getFsDir(), doc.getURI(), false);

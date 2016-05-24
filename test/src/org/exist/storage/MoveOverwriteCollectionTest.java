@@ -24,56 +24,69 @@ import org.exist.EXistException;
 import org.exist.TestUtils;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.QName;
 import org.exist.dom.persistent.*;
 import org.exist.indexing.StructuralIndex;
+import org.exist.security.PermissionDeniedException;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
+import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.NodeSelector;
 import org.junit.After;
 import org.junit.Test;
+import org.xml.sax.SAXException;
 
+import java.io.IOException;
 import java.util.Optional;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
-public class MoveTest {
+import static org.exist.storage.ElementValue.ELEMENT;
+
+public class MoveOverwriteCollectionTest {
 
     private final static String XML1 =
             "<?xml version=\"1.0\"?>" +
-                    "<test1>" +
-                    "  <title>Hello</title>" +
-                    "  <para>Hello World!</para>" +
-                    "</test1>";
+            "<test1>" +
+            "  <title>Hello1</title>" +
+            "</test1>";
 
     private final static String XML2 =
             "<?xml version=\"1.0\"?>" +
-                    "<test2>" +
-                    "  <title>Hello</title>" +
-                    "  <para>Hello World!</para>" +
-                    "</test2>";
+            "<test2>" +
+            "  <title>Hello2</title>" +
+            "</test2>";
+
+    private final static String XML3 =
+        "<?xml version=\"1.0\"?>" +
+            "<test3>" +
+            "  <title>Hello3</title>" +
+            "</test3>";
 
     private final static XmldbURI TEST_COLLECTION_URI = XmldbURI.ROOT_COLLECTION_URI.append("test");
     private final static XmldbURI SUB_TEST_COLLECTION_URI = TEST_COLLECTION_URI.append("test2");
 
+    private final static XmldbURI TEST3_COLLECTION_URI = XmldbURI.ROOT_COLLECTION_URI.append("test3");
+
     private final static XmldbURI doc1Name = XmldbURI.create("doc1.xml");
     private final static XmldbURI doc2Name = XmldbURI.create("doc2.xml");
+    private final static XmldbURI doc3Name = XmldbURI.create("doc3.xml");
 
     private static Collection test1;
     private static Collection test2;
+    private static Collection test3;
 
     /**
-     * This test ensures that when moving an
-     * XML resource over the top of an existing
-     * XML resource, the overwritten resource
-     * is completely removed from the database; i.e.
-     * its nodes are no longer present in the structural
-     * index
+     * This test ensures that when moving an Collection over the top of an existing Collection,
+     * the overwritten resource is completely removed from the database;
+     * i.e. its nodes are no longer present in the structural index
      */
     @Test
-    public void moveAndOverwriteXML() throws Exception  {
+    public void moveAndOverwriteCollection() throws Exception  {
         final Database db = startDB();
 
         try (final DBBroker broker = db.get(Optional.of(db.getSecurityManager().getSystemSubject()))) {
@@ -82,52 +95,65 @@ public class MoveTest {
             final DefaultDocumentSet docs = new DefaultDocumentSet();
             docs.add(test1.getDocument(broker, doc1Name));
             docs.add(test2.getDocument(broker, doc2Name));
+            docs.add(test3.getDocument(broker, doc3Name));
 
             move(broker);
 
-            docs.add(test2.getDocument(broker, doc2Name));
+            Collection col = broker.getCollection(TEST_COLLECTION_URI);
+
+            docs.add(col.getDocument(broker, doc3Name));
 
             checkIndex(broker, docs);
         }
     }
 
     private void store(final DBBroker broker) throws Exception {
-        try(final Txn transaction = broker.beginTx()) {
+        try(Txn txn = broker.beginTx()) {
 
-            test1 = broker.getOrCreateCollection(transaction, TEST_COLLECTION_URI);
-            broker.saveCollection(transaction, test1);
+            test1 = createCollection(txn, broker, TEST_COLLECTION_URI);
+            test2 = createCollection(txn, broker, SUB_TEST_COLLECTION_URI);
+            test3 = createCollection(txn, broker, TEST3_COLLECTION_URI);
 
-            test2 = broker.getOrCreateCollection(transaction, SUB_TEST_COLLECTION_URI);
-            broker.saveCollection(transaction, test2);
+            store(txn, broker, test1, doc1Name, XML1);
+            store(txn, broker, test2, doc2Name, XML2);
+            store(txn, broker, test3, doc3Name, XML3);
 
-            IndexInfo info = test1.validateXMLResource(transaction, broker, doc1Name, XML1);
-            test1.store(transaction, broker, info, XML1, false);
-
-            info = test2.validateXMLResource(transaction, broker, doc2Name, XML2);
-            test2.store(transaction, broker, info, XML2, false);
-
-            transaction.commit();
+            txn.commit();
         }
     }
 
+    private Collection createCollection(Txn txn, DBBroker broker, XmldbURI uri) throws PermissionDeniedException, IOException, TriggerException {
+        Collection col = broker.getOrCreateCollection(txn, uri);
+        broker.saveCollection(txn, col);
+        return col;
+    }
+
+    private void store(Txn txn, DBBroker broker, Collection col, XmldbURI name, String data) throws LockException, SAXException, PermissionDeniedException, EXistException, IOException {
+        IndexInfo info = col.validateXMLResource(txn, broker, name, data);
+        col.store(txn, broker, info, data, false);
+    }
+
     private void move(final DBBroker broker) throws Exception {
-        try(final Txn transaction = broker.beginTx()) {
-            final DocumentImpl doc = test1.getDocument(broker, doc1Name);
-            broker.moveResource(transaction, doc, test2, doc2Name);
-            transaction.commit();
+        try (Txn txn = broker.beginTx()) {
+            Collection root = broker.getCollection(XmldbURI.ROOT_COLLECTION_URI);
+            broker.moveCollection(txn, test3, root, XmldbURI.create("test"));
+            txn.commit();
         }
     }
 
     private void checkIndex(final DBBroker broker, final DocumentSet docs) throws Exception {
         final StructuralIndex index = broker.getStructuralIndex();
-        final NodeSelector selector = (doc, nodeId) -> new NodeProxy(doc, nodeId);
+        final NodeSelector selector = NodeProxy::new;
 
-        QName qn = new QName("test2");
-        NodeSet nodes = index.findElementsByTagName(ElementValue.ELEMENT, docs, qn, selector);
+        NodeSet nodes;
+
+        nodes = index.findElementsByTagName(ELEMENT, docs, new QName("test2"), selector);
         assertTrue(nodes.isEmpty());
 
-        qn = new QName("test1");
-        nodes = index.findElementsByTagName(ElementValue.ELEMENT, docs, qn, selector);
+        nodes = index.findElementsByTagName(ELEMENT, docs, new QName("test1"), selector);
+        assertTrue(nodes.isEmpty());
+
+        nodes = index.findElementsByTagName(ELEMENT, docs, new QName("test3"), selector);
         assertFalse(nodes.isEmpty());
     }
 
