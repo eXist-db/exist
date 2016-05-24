@@ -852,10 +852,6 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
         pool.release(this);
     }
 
-    public Txn beginTx() {
-        return getDatabase().getTransactionManager().beginTransaction();
-    }
-
     /**
      * Represents a {@link Subject} change
      * made to a broker
