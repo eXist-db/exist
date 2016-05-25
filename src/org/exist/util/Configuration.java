@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2015 The eXist Project
+ *  Copyright (C) 2001-2016 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -22,6 +22,7 @@ package org.exist.util;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import org.exist.backup.SystemExport;
 import org.exist.repo.Deployment;
 
 import org.w3c.dom.Document;
@@ -624,24 +625,41 @@ public class Configuration implements ErrorHandler
 
         final NodeList nlFilters = serializer.getElementsByTagName( CustomMatchListenerFactory.CONFIGURATION_ELEMENT );
 
-        if( nlFilters == null ) {
-            return;
-        }
+        if( nlFilters != null ) {
+            final List<String> filters = new ArrayList<>(nlFilters.getLength());
 
-        final List<String> filters = new ArrayList<String>( nlFilters.getLength() );
+            for (int i = 0; i < nlFilters.getLength(); i++) {
+                final Element filterElem = (Element) nlFilters.item(i);
+                final String filterClass = filterElem.getAttribute(CustomMatchListenerFactory.CONFIGURATION_ATTR_CLASS);
 
-        for( int i = 0; i < nlFilters.getLength(); i++ ) {
-            final Element filterElem  = (Element)nlFilters.item( i );
-            final String  filterClass = filterElem.getAttribute( CustomMatchListenerFactory.CONFIGURATION_ATTR_CLASS );
-
-            if( filterClass != null ) {
-                filters.add( filterClass );
-                LOG.debug( CustomMatchListenerFactory.CONFIG_MATCH_LISTENERS + ": " + filterClass );
-            } else {
-                LOG.warn( "Configuration element " + CustomMatchListenerFactory.CONFIGURATION_ELEMENT + " needs an attribute 'class'" );
+                if (filterClass != null) {
+                    filters.add(filterClass);
+                    LOG.debug(CustomMatchListenerFactory.CONFIG_MATCH_LISTENERS + ": " + filterClass);
+                } else {
+                    LOG.warn("Configuration element " + CustomMatchListenerFactory.CONFIGURATION_ELEMENT + " needs an attribute 'class'");
+                }
             }
+            config.put(CustomMatchListenerFactory.CONFIG_MATCH_LISTENERS, filters);
         }
-        config.put( CustomMatchListenerFactory.CONFIG_MATCH_LISTENERS, filters );
+
+        final NodeList backupFilters = serializer.getElementsByTagName( SystemExport.CONFIGURATION_ELEMENT );
+
+        if( backupFilters != null ) {
+            final List<String> filters = new ArrayList<>(backupFilters.getLength());
+
+            for (int i = 0; i < backupFilters.getLength(); i++) {
+                final Element filterElem = (Element) backupFilters.item(i);
+                final String filterClass = filterElem.getAttribute(CustomMatchListenerFactory.CONFIGURATION_ATTR_CLASS);
+
+                if (filterClass != null) {
+                    filters.add(filterClass);
+                    LOG.debug(CustomMatchListenerFactory.CONFIG_MATCH_LISTENERS + ": " + filterClass);
+                } else {
+                    LOG.warn("Configuration element " + SystemExport.CONFIGURATION_ELEMENT + " needs an attribute 'class'");
+                }
+            }
+            if (!filters.isEmpty()) config.put(SystemExport.CONFIG_FILTERS, filters);
+        }
     }
 
 

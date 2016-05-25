@@ -666,7 +666,15 @@
             <custom-filter class="org.exist.FirstFilter"/>
             <custom-filter class="org.exist.SecondFilter"/>
         -->
-        
+
+        <!--
+            Custom filters can be used during backup serialize document.
+            You may add as many backup-filters as you want, they will be executed
+            in the order you specify them. Thus:
+
+            <backup-filter class="org.exist.FirstFilter"/>
+            <backup-filter class="org.exist.SecondFilter"/>
+        -->
     </serializer>
 
     <!--
