@@ -26,7 +26,7 @@ import org.xml.sax.SAXException;
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  */
-public class FilterTest extends AbstractChainOfReceivers {
+public class FilterForBackup extends AbstractChainOfReceivers {
 
     @Override
     public void endElement(QName qname) throws SAXException {

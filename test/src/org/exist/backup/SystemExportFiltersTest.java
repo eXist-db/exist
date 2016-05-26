@@ -102,7 +102,7 @@ public class SystemExportFiltersTest {
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             List<String> filters = new ArrayList<>();
-            filters.add("org.exist.backup.FilterTest");
+            filters.add(FilterForBackup.class.getName());
 
             broker.getConfiguration().setProperty(SystemExport.CONFIG_FILTERS, filters);
 
