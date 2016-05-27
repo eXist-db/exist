@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2010 The eXist Project
+ *  Copyright (C) 2001-2016 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -16,8 +16,6 @@
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- *  $Id$
  */
 package org.exist.xquery.update;
 
@@ -56,43 +54,47 @@ import org.w3c.dom.NodeList;
  */
 public class Insert extends Modification {
 
-	public final static int INSERT_BEFORE = 0;
+    public final static int INSERT_BEFORE = 0;
 
     public final static int INSERT_AFTER = 1;
 
-	public final static int INSERT_APPEND = 2;
-	
-    private int mode = INSERT_BEFORE;
-	
-	/**
-	 * @param context
-	 * @param select
-	 * @param value
-	 */
-	public Insert(XQueryContext context, Expression select, Expression value, int mode) {
-		super(context, select, value);
-		this.mode = mode;
-	}
+    public final static int INSERT_APPEND = 2;
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.AbstractExpression#eval(org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
-	 */
-	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+    private int mode = INSERT_BEFORE;
+
+    /**
+     * @param context
+     * @param select
+     * @param value
+     */
+    public Insert(XQueryContext context, Expression select, Expression value, int mode) {
+        super(context, select, value);
+        this.mode = mode;
+    }
+
+    /* (non-Javadoc)
+     * @see org.exist.xquery.AbstractExpression#eval(org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
+     */
+    public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {
-            context.getProfiler().start(this);       
+            context.getProfiler().start(this);
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
-            if (contextSequence != null)
-                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
-            if (contextItem != null)
-                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
+            if (contextSequence != null) {
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+            }
+            if (contextItem != null) {
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+            }
         }
-        
-		if (contextItem != null)
-			{contextSequence = contextItem.toSequence();}
-		
-		Sequence contentSeq = value.eval(contextSequence);
-		if (contentSeq.isEmpty())
-			{throw new XPathException(this, Messages.getMessage(Error.UPDATE_EMPTY_CONTENT));}
+
+        if (contextItem != null) {
+            contextSequence = contextItem.toSequence();
+        }
+
+        Sequence contentSeq = value.eval(contextSequence);
+        if (contentSeq.isEmpty()) {
+            throw new XPathException(this, Messages.getMessage(Error.UPDATE_EMPTY_CONTENT));
+        }
         
         final Sequence inSeq = select.eval(contextSequence);      
         
@@ -103,63 +105,60 @@ public class Insert extends Modification {
          * TODO: This trapping could be expanded further - basically where XPathException is thrown from thiss class
          * TODO: Maybe we could provide more detailed messages in the trap, e.g. couldnt insert node `xyz` into `abc` becuase... this would be nicer for the end user of the xquery application 
          */
-        if (!Type.subTypeOf(inSeq.getItemType(), Type.NODE)) 
-        {
-        	//Indicate the failure to perform this update by adding it to the sequence in the context variable XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR
-        	ValueSequence prevUpdateErrors = null;
-        	
-        	final XPathException xpe = new XPathException(this, Messages.getMessage(Error.UPDATE_SELECT_TYPE));
-        	final Object ctxVarObj = context.getXQueryContextVar(XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR);
-        	if(ctxVarObj == null)
-        	{
-        		prevUpdateErrors = new ValueSequence();
-        	}
-        	else
-        	{
-        		prevUpdateErrors = (ValueSequence)XPathUtil.javaObjectToXPath(ctxVarObj, context);
-        	}
-        	prevUpdateErrors.add(new StringValue(xpe.getMessage()));
-			context.setXQueryContextVar(XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR, prevUpdateErrors);
-			
-        	if(!inSeq.isEmpty())
-        		{throw xpe;}	//TODO: should we trap this instead of throwing an exception - deliriumsky?
+        if (!Type.subTypeOf(inSeq.getItemType(), Type.NODE)) {
+            //Indicate the failure to perform this update by adding it to the sequence in the context variable XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR
+            ValueSequence prevUpdateErrors = null;
+
+            final XPathException xpe = new XPathException(this, Messages.getMessage(Error.UPDATE_SELECT_TYPE));
+            final Object ctxVarObj = context.getXQueryContextVar(XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR);
+            if(ctxVarObj == null) {
+                prevUpdateErrors = new ValueSequence();
+            } else {
+                prevUpdateErrors = (ValueSequence)XPathUtil.javaObjectToXPath(ctxVarObj, context);
+            }
+            prevUpdateErrors.add(new StringValue(xpe.getMessage()));
+            context.setXQueryContextVar(XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR, prevUpdateErrors);
+
+            if(!inSeq.isEmpty()) {
+                //TODO: should we trap this instead of throwing an exception - deliriumsky?
+                throw xpe;
+            }
         }
         //END trap Insert failure
         
         if (!inSeq.isEmpty()) {
-        	if (LOG.isDebugEnabled())
-        		{LOG.debug("Found: " + inSeq.getItemCount() + " nodes");}   
-            
-        	context.pushInScopeNamespaces();
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Found: " + inSeq.getItemCount() + " nodes");
+            }
+
+            context.pushInScopeNamespaces();
             contentSeq = deepCopy(contentSeq);
 
             //start a transaction
-            final Txn transaction = getTransaction();
-            try {
+            try (final Txn transaction = getTransaction()) {
                 final StoredNode[] ql = selectAndLock(transaction, inSeq);
                 final NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
                 final NodeList contentList = seq2nodeList(contentSeq);
-                for (int i = 0; i < ql.length; i++) {
-                    final StoredNode node = ql[i];
+                for (final StoredNode node : ql) {
                     final DocumentImpl doc = node.getOwnerDocument();
-                    if (!doc.getPermissions().validate(context.getUser(), Permission.WRITE)) {
+                    if (!doc.getPermissions().validate(context.getSubject(), Permission.WRITE)) {
                         throw new PermissionDeniedException("User '" + context.getSubject().getName() + "' does not have permission to write to the document '" + doc.getDocumentURI() + "'!");
                     }
-                    
+
                     //update the document
-    				if (mode == INSERT_APPEND) {
-    					node.appendChildren(transaction, contentList, -1);
-    				} else {
-    					final NodeImpl parent = (NodeImpl) node.getParentNode();
-    	                switch (mode) {
-    	                    case INSERT_BEFORE:
-    	                        parent.insertBefore(transaction, contentList, node);
-    	                        break;
-    	                    case INSERT_AFTER:
-    	                        parent.insertAfter(transaction, contentList, node);
-    	                        break;
-    	                }
-    				}
+                    if (mode == INSERT_APPEND) {
+                        node.appendChildren(transaction, contentList, -1);
+                    } else {
+                        final NodeImpl parent = (NodeImpl) node.getParentNode();
+                        switch (mode) {
+                            case INSERT_BEFORE:
+                                parent.insertBefore(transaction, contentList, node);
+                                break;
+                            case INSERT_AFTER:
+                                parent.insertAfter(transaction, contentList, node);
+                                break;
+                        }
+                    }
                     doc.getMetadata().setLastModified(System.currentTimeMillis());
                     modifiedDocuments.add(doc);
                     context.getBroker().storeXMLResource(transaction, doc);
@@ -167,34 +166,23 @@ public class Insert extends Modification {
                 }
                 finishTriggers(transaction);
                 //commit the transaction
-                commitTransaction(transaction);
-            } catch (final PermissionDeniedException e) {
-                abortTransaction(transaction);
-    			throw new XPathException(this, e.getMessage(), e);
-    		} catch (final EXistException e) {
-                abortTransaction(transaction);
+                transaction.commit();
+            } catch (final PermissionDeniedException | EXistException | LockException | TriggerException e) {
                 throw new XPathException(this, e.getMessage(), e);
-    		} catch (final LockException e) {
-                abortTransaction(transaction);
-                throw new XPathException(this, e.getMessage(), e);
-    		} catch (final TriggerException e) {
-                abortTransaction(transaction);
-                throw new XPathException(this, e.getMessage(), e);
-			} finally {
+            } finally {
                 unlockDocuments();
-                closeTransaction(transaction);
                 context.popInScopeNamespaces();
             }
         }
 
-        if (context.getProfiler().isEnabled()) 
-            {context.getProfiler().end(this, "", Sequence.EMPTY_SEQUENCE);}
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().end(this, "", Sequence.EMPTY_SEQUENCE);
+        }
         
         return Sequence.EMPTY_SEQUENCE;
-        
-	}
+    }
 
-	private NodeList seq2nodeList(Sequence contentSeq) throws XPathException {
+    private NodeList seq2nodeList(Sequence contentSeq) throws XPathException {
         final NodeListImpl nl = new NodeListImpl();
         for (final SequenceIterator i = contentSeq.iterate(); i.hasNext(); ) {
             final Item item = i.nextItem();
@@ -207,9 +195,9 @@ public class Insert extends Modification {
     }
 
     /* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)
-	 */
-	public void dump(ExpressionDumper dumper) {
+     * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)
+     */
+    public void dump(ExpressionDumper dumper) {
         dumper.display("update insert").nl();
         dumper.startIndent();
         value.dump(dumper);
@@ -228,24 +216,24 @@ public class Insert extends Modification {
         dumper.startIndent();
         select.dump(dumper);
         dumper.nl().endIndent();
-	}
-	
-	public String toString() {
-		final StringBuilder result = new StringBuilder();
-		result.append("update insert ");        
-		result.append(value.toString());        
+    }
+
+    public String toString() {
+        final StringBuilder result = new StringBuilder();
+        result.append("update insert ");
+        result.append(value.toString());
         switch (mode) {
             case INSERT_AFTER:
-            	result.append(" following ");
+                result.append(" following ");
                 break;
             case INSERT_BEFORE:
-            	result.append(" preceding ");
+                result.append(" preceding ");
                 break;
             case INSERT_APPEND:
-            	result.append(" into ");
+                result.append(" into ");
                 break;
-        }        
+        }
         result.append(select.toString());
         return result.toString();
-	}	
+    }
 }
