@@ -120,7 +120,9 @@ public class IndexController {
      * Sets the document for the next operation.
      * 
      * @param doc the document
-     */    
+     *
+     * @Deprecated use getStreamListener(DocumentImpl, ReindexMode)
+     */
     public void setDocument(final DocumentImpl doc) {
         if (currentDoc != doc) {
             //Reset listener
@@ -137,6 +139,8 @@ public class IndexController {
      * 
      * @param mode the mode, one of {@link ReindexMode#UNKNOWN}, {@link ReindexMode#STORE},
      * {@link ReindexMode#REMOVE_SOME_NODES} or {@link ReindexMode#REMOVE_ALL_NODES}.
+     *
+     * @Deprecated use getStreamListener(DocumentImpl, ReindexMode)
      */
     public void setMode(final ReindexMode mode) {
         if (currentMode != mode) {
@@ -173,6 +177,8 @@ public class IndexController {
      * @param doc the document
      * @param mode the mode, one of {@link ReindexMode#UNKNOWN}, {@link ReindexMode#STORE},
      * {@link ReindexMode#REMOVE_SOME_NODES} or {@link ReindexMode#REMOVE_ALL_NODES}.
+     *
+     * @Deprecated use getStreamListener(DocumentImpl, ReindexMode)
      */
     public void setDocument(final DocumentImpl doc, final ReindexMode mode) {
         setDocument(doc);
@@ -202,22 +208,33 @@ public class IndexController {
     /**
      * Re-index all nodes below the specified root node, using the given mode.
      *
-     * @param transaction the current transaction
+     * @param txn the current transaction
      * @param reindexRoot the node from which reindexing should occur
      * @param mode the mode, one of {@link ReindexMode#UNKNOWN}, {@link ReindexMode#STORE},
      * {@link ReindexMode#REMOVE_SOME_NODES} or {@link ReindexMode#REMOVE_ALL_NODES}.
      */
-    public void reindex(final Txn transaction, IStoredNode<? extends IStoredNode> reindexRoot, final ReindexMode mode) {
+    public void reindex(final Txn txn, final IStoredNode<? extends IStoredNode> reindexRoot, final ReindexMode mode) {
         if (reindexRoot == null) {
             return;
         }
+        IStoredNode<? extends IStoredNode> node = broker.objectWith(new NodeProxy(reindexRoot.getOwnerDocument(), reindexRoot.getNodeId()));
+
         setReindexing(true);
-        reindexRoot = broker.objectWith(new NodeProxy(reindexRoot.getOwnerDocument(), reindexRoot.getNodeId()));
-        setDocument(reindexRoot.getOwnerDocument(), mode);
-        getStreamListener();
-        IndexUtils.scanNode(broker, transaction, reindexRoot, listener);
-        flush();
-        setReindexing(false);
+        try {
+            StreamListener stream = getStreamListener(node.getOwnerDocument(), mode);
+            try {
+                stream.startIndexDocument(txn);
+
+                IndexUtils.scanNode(broker, txn, node, listener);
+            } finally {
+                stream.endIndexDocument(txn);
+            }
+
+            //that must be called outside this method to avoid slowdown
+            //flush();
+        } finally {
+            setReindexing(false);
+        }
     }
 
     public boolean isReindexing() {
@@ -263,6 +280,13 @@ public class IndexController {
             top = node;
         }
         return top;
+    }
+
+    public StreamListener getStreamListener(final DocumentImpl doc, final ReindexMode mode) {
+        setDocument(doc);
+        setMode(mode);
+
+        return getStreamListener();
     }
 
     /**
