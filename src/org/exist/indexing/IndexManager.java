@@ -119,6 +119,13 @@ public class IndexManager {
         return index;
     }
 
+    public void unregisterIndex(final Index index) throws DBException {
+        indexers.remove(index.getIndexId(), index);
+        if (LOG.isInfoEnabled()) {
+            LOG.info("Unregistered index " + index.getClass() + " as " + index.getIndexId());
+        }
+    }
+
     /**
      * Returns the {@link org.exist.storage.BrokerPool} on with this IndexManager operates.
      *
