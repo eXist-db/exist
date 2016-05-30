@@ -841,7 +841,7 @@ public class RpcConnection implements RpcAPI {
     public boolean sync() {
         try {
             return withDbAsSystem((broker, transaction) -> {
-                broker.sync(Sync.MAJOR_SYNC);
+                broker.sync(Sync.MAJOR);
                 return true;
             });
         } catch(final EXistException | PermissionDeniedException e) {

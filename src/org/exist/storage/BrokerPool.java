@@ -52,10 +52,12 @@ import org.exist.security.*;
 import org.exist.security.SecurityManager;
 import org.exist.security.internal.SecurityManagerImpl;
 import org.exist.storage.btree.DBException;
+import org.exist.storage.journal.JournalManager;
 import org.exist.storage.lock.DeadlockDetection;
 import org.exist.storage.lock.FileLock;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.ReentrantReadWriteLock;
+import org.exist.storage.recovery.RecoveryManager;
 import org.exist.storage.sync.Sync;
 import org.exist.storage.sync.SyncTask;
 import org.exist.storage.txn.TransactionException;
@@ -75,7 +77,6 @@ import java.io.StringWriter;
 import java.lang.ref.Reference;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.nio.file.FileStore;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -121,7 +122,7 @@ public class BrokerPool implements Database {
     /**
      * The name of a default database instance for those who are too lazy to provide parameters ;-).
      */
-    public final static String DEFAULT_INSTANCE_NAME = "exist";
+    public static final String DEFAULT_INSTANCE_NAME = "exist";
     public static final String CONFIGURATION_CONNECTION_ELEMENT_NAME = "db-connection";
     public static final String CONFIGURATION_STARTUP_ELEMENT_NAME = "startup";
     public static final String CONFIGURATION_POOL_ELEMENT_NAME = "pool";
@@ -148,7 +149,7 @@ public class BrokerPool implements Database {
     public final static String PROPERTY_MAX_CONNECTIONS = "db-connection.pool.max";
     public final static String PROPERTY_SYNC_PERIOD = "db-connection.pool.sync-period";
     public final static String PROPERTY_SHUTDOWN_DELAY = "wait-before-shutdown";
-    public static final String DISK_SPACE_MIN_PROPERTY = "db-connection.diskSpaceMin";
+    public final static String DISK_SPACE_MIN_PROPERTY = "db-connection.diskSpaceMin";
 
     //TODO : move elsewhere ?
     public final static String PROPERTY_COLLECTION_CACHE_SIZE = "db-connection.collection-cache-size";
@@ -158,8 +159,14 @@ public class BrokerPool implements Database {
     public final static String PROPERTY_RECOVERY_ENABLED = "db-connection.recovery.enabled";
     public final static String PROPERTY_RECOVERY_CHECK = "db-connection.recovery.consistency-check";
     public final static String PROPERTY_SYSTEM_TASK_CONFIG = "db-connection.system-task-config";
-    public static final String PROPERTY_NODES_BUFFER = "db-connection.nodes-buffer";
-    public static final String PROPERTY_EXPORT_ONLY = "db-connection.emergency";
+    public final static String PROPERTY_NODES_BUFFER = "db-connection.nodes-buffer";
+    public final static String PROPERTY_EXPORT_ONLY = "db-connection.emergency";
+
+    public final static String PROPERTY_RECOVERY_GROUP_COMMIT = "db-connection.recovery.group-commit";
+    public final static String RECOVERY_GROUP_COMMIT_ATTRIBUTE = "group-commit";
+    public final static String PROPERTY_RECOVERY_FORCE_RESTART = "db-connection.recovery.force-restart";
+    public final static String RECOVERY_FORCE_RESTART_ATTRIBUTE = "force-restart";
+
 
     public static final String DOC_ID_MODE_ATTRIBUTE = "doc-ids";
 
@@ -197,7 +204,7 @@ public class BrokerPool implements Database {
     //TODO : rename as activateShutdownHook ? or registerShutdownHook(Thread aThread)
     // WM: it is probably not necessary to allow users to register their own hook. This method
     // is only used once, by class org.exist.jetty.JettyStart, which registers its own hook.
-    public final static void setRegisterShutdownHook(boolean register) {
+    public final static void setRegisterShutdownHook(final boolean register) {
         /*
          * TODO : call Runtime.getRuntime().removeShutdownHook or Runtime.getRuntime().registerShutdownHook 
          * depending of the value of register
@@ -423,11 +430,8 @@ public class BrokerPool implements Database {
     /**
      * Default values
      */
-    //TODO : make them static when we have 2 classes
-    private final int DEFAULT_MIN_BROKERS = 1;
-    private final int DEFAULT_MAX_BROKERS = 15;
-    public final long DEFAULT_SYNCH_PERIOD = 120000;
-    public final long DEFAULT_MAX_SHUTDOWN_WAIT = 45000;
+    public static final long DEFAULT_SYNCH_PERIOD = 120000;
+    public static final long DEFAULT_MAX_SHUTDOWN_WAIT = 45000;
     //TODO : move this default setting to org.exist.collections.CollectionCache ?
     public final int DEFAULT_COLLECTION_BUFFER_SIZE = 64;
 
@@ -435,22 +439,26 @@ public class BrokerPool implements Database {
     public static final int DEFAULT_PAGE_SIZE = 4096;
 
     /**
-     * <code>true</code> if the database instance is able to handle transactions.
+     * <code>true</code> if the database instance is able to perform recovery.
      */
-    private boolean transactionsEnabled;
+    private final boolean recoveryEnabled;
 
     /**
      * The name of the database instance
      */
-    private String instanceName;
+    private final String instanceName;
 
-    //TODO: change 0 = initializing, 1 = operating, -1 = shutdown  (shabanovd)
-    private final static int SHUTDOWN = -1;
-    private final static int INITIALIZING = 0;
-    private final static int OPERATING = 1;
+    /**
+     * State of the BrokerPool instance
+     */
+    private enum State {
+        SHUTDOWN,
+        INITIALIZING,
+        OPERATIONAL
+    }
 
     // volatile so this doesn't get optimized away or into a CPU register in some thread
-    private volatile int status = INITIALIZING;
+    private volatile State status = State.INITIALIZING;
 
     /**
      * The number of brokers for the database instance
@@ -461,18 +469,18 @@ public class BrokerPool implements Database {
      * The minimal number of brokers for the database instance
      */
     @ConfigurationFieldAsAttribute("min")
-    private int minBrokers;
+    private final int minBrokers;
 
     /**
      * The maximal number of brokers for the database instance
      */
     @ConfigurationFieldAsAttribute("max")
-    private int maxBrokers;
+    private final int maxBrokers;
 
     /**
      * The number of inactive brokers for the database instance
      */
-    private final Stack<DBBroker> inactiveBrokers = new Stack<>();
+    private final Deque<DBBroker> inactiveBrokers = new ArrayDeque<>();
 
     /**
      * The number of active brokers for the database instance
@@ -484,13 +492,13 @@ public class BrokerPool implements Database {
      * Used when TRACE level logging is enabled
      * to provide a history of broker leases
      */
-    private Map<String, TraceableStateChanges<TraceableBrokerLeaseChange.BrokerInfo, TraceableBrokerLeaseChange.Change>> brokerLeaseChangeTrace = LOG.isTraceEnabled() ? new HashMap<>() : null;
-    private Map<String, List<TraceableStateChanges<TraceableBrokerLeaseChange.BrokerInfo, TraceableBrokerLeaseChange.Change>>> brokerLeaseChangeTraceHistory = LOG.isTraceEnabled() ? new HashMap<>() : null;
+    private final Map<String, TraceableStateChanges<TraceableBrokerLeaseChange.BrokerInfo, TraceableBrokerLeaseChange.Change>> brokerLeaseChangeTrace = LOG.isTraceEnabled() ? new HashMap<>() : null;
+    private final Map<String, List<TraceableStateChanges<TraceableBrokerLeaseChange.BrokerInfo, TraceableBrokerLeaseChange.Change>>> brokerLeaseChangeTraceHistory = LOG.isTraceEnabled() ? new HashMap<>() : null;
 
     /**
      * The configuration object for the database instance
      */
-    protected Configuration conf = null;
+    protected final Configuration conf;
 
     /**
      * <code>true</code> if a cache synchronization event is scheduled
@@ -501,9 +509,9 @@ public class BrokerPool implements Database {
 
     /**
      * The kind of scheduled cache synchronization event.
-     * One of {@link org.exist.storage.sync.Sync#MAJOR_SYNC} or {@link org.exist.storage.sync.Sync#MINOR_SYNC}
+     * One of {@link org.exist.storage.sync.Sync}
      */
-    private int syncEvent = 0;
+    private Sync syncEvent = Sync.MINOR;
 
     private boolean checkpoint = false;
 
@@ -513,9 +521,14 @@ public class BrokerPool implements Database {
     @GuardedBy("itself") private Boolean readOnly = Boolean.FALSE;
 
     @ConfigurationFieldAsAttribute("pageSize")
-    private int pageSize;
+    private final int pageSize;
 
     private FileLock dataLock;
+
+    /**
+     * The journal manager of the database instance.
+     */
+    private Optional<JournalManager> journalManager = Optional.empty();
 
     /**
      * The transaction manager of the database instance.
@@ -526,13 +539,13 @@ public class BrokerPool implements Database {
      * Delay (in ms) for running jobs to return when the database instance shuts down.
      */
     @ConfigurationFieldAsAttribute("wait-before-shutdown")
-    private long maxShutdownWait;
+    private final long maxShutdownWait;
 
     /**
      * The scheduler for the database instance.
      */
     @ConfigurationFieldAsAttribute("scheduler")
-    private Scheduler scheduler;
+    private final Scheduler scheduler;
 
     /**
      * Manages pluggable index structures.
@@ -548,10 +561,11 @@ public class BrokerPool implements Database {
      * Cache synchronization on the database instance.
      */
     @ConfigurationFieldAsAttribute("sync-period")
-    private long majorSyncPeriod = DEFAULT_SYNCH_PERIOD;        //the period after which a major sync should occur
+    private final long majorSyncPeriod;        //the period after which a major sync should occur
     private long lastMajorSync = System.currentTimeMillis();    //time the last major sync occurred
 
-    private long diskSpaceMin = 64 * 1024L * 1024L;
+    public static final short DEFAULT_DISK_SPACE_MIN = 64; // 64 MB
+    private final long diskSpaceMin;
 
     /**
      * The listener that is notified when the database instance shuts down.
@@ -617,11 +631,11 @@ public class BrokerPool implements Database {
      */
     protected XMLReaderPool xmlReaderPool;
 
-    private NodeIdFactory nodeFactory = new DLNFactory();
+    private final NodeIdFactory nodeFactory = new DLNFactory();
 
     //TODO : is another value possible ? If no, make it static
     // WM: no, we need one lock per database instance. Otherwise we would lock another database.
-    private Lock globalXUpdateLock = new ReentrantReadWriteLock("xupdate");
+    private final Lock globalXUpdateLock = new ReentrantReadWriteLock("xupdate");
 
     private Subject serviceModeUser = null;
     private boolean inServiceMode = false;
@@ -629,9 +643,9 @@ public class BrokerPool implements Database {
     //the time that the database was started
     private final Calendar startupTime = Calendar.getInstance();
 
-    private BrokerWatchdog watchdog = null;
+    private final Optional<BrokerWatchdog> watchdog;
 
-    private ClassLoader classLoader;
+    private final ClassLoader classLoader;
 
     private Optional<ExistRepository> expathRepo = Optional.empty();
 
@@ -649,9 +663,6 @@ public class BrokerPool implements Database {
     private BrokerPool(final String instanceName, final int minBrokers, final int maxBrokers, final Configuration conf)
         throws EXistException, DatabaseConfigurationException {
 
-        Integer anInteger;
-        Long aLong;
-        Boolean aBoolean;
         final NumberFormat nf = NumberFormat.getNumberInstance();
 
         this.classLoader = Thread.currentThread().getContextClassLoader();
@@ -660,67 +671,33 @@ public class BrokerPool implements Database {
         //WM: needs to be done in the configure method.
         this.instanceName = instanceName;
 
-        //TODO : find a nice way to (re)set the default values
-        //TODO : create static final members for configuration keys
-        this.minBrokers = DEFAULT_MIN_BROKERS;
-        this.maxBrokers = DEFAULT_MAX_BROKERS;
-        this.maxShutdownWait = DEFAULT_MAX_SHUTDOWN_WAIT;
-        //TODO : read from configuration
-        this.transactionsEnabled = true;
+        //TODO : sanity check : the shutdown period should be reasonable
+        this.maxShutdownWait = conf.getProperty(BrokerPool.PROPERTY_SHUTDOWN_DELAY, DEFAULT_MAX_SHUTDOWN_WAIT);
+        LOG.info("database instance '" + instanceName + "' will wait  " + nf.format(this.maxShutdownWait) + " ms during shutdown");
 
-        this.minBrokers = minBrokers;
-        this.maxBrokers = maxBrokers;
-        /*
-		 * strange enough, the settings provided by the constructor may be overridden
-		 * by the ones *explicitly* provided by the constructor
-		 * TODO : consider a private constructor BrokerPool(String instanceName) then configure(int minBrokers, int maxBrokers, Configuration config)
-		 */
-        anInteger = (Integer) conf.getProperty(PROPERTY_MIN_CONNECTIONS);
-        if(anInteger != null) {
-            this.minBrokers = anInteger;
-        }
-        anInteger = (Integer) conf.getProperty(PROPERTY_MAX_CONNECTIONS);
-        if(anInteger != null) {
-            this.maxBrokers = anInteger;
-        }
+        this.recoveryEnabled = conf.getProperty(PROPERTY_RECOVERY_ENABLED, true);
+        LOG.info("database instance '" + instanceName + "' is enabled for recovery : " + this.recoveryEnabled);
+
+        this.minBrokers = conf.getProperty(PROPERTY_MIN_CONNECTIONS, minBrokers);
+        this.maxBrokers = conf.getProperty(PROPERTY_MAX_CONNECTIONS, maxBrokers);
+
         //TODO : sanity check : minBrokers shall be lesser than or equal to maxBrokers
         //TODO : sanity check : minBrokers shall be positive
         LOG.info("database instance '" + instanceName + "' will have between " + nf.format(this.minBrokers) + " and " + nf.format(this.maxBrokers) + " brokers");
 
         //TODO : use the periodicity of a SystemTask (see below)
-        aLong = (Long) conf.getProperty(PROPERTY_SYNC_PERIOD);
-        if(aLong != null)
-			/*this.*/ {
-            majorSyncPeriod = aLong;
-        }
+        this.majorSyncPeriod = conf.getProperty(PROPERTY_SYNC_PERIOD, DEFAULT_SYNCH_PERIOD);
+
         //TODO : sanity check : the synch period should be reasonable
         LOG.info("database instance '" + instanceName + "' will be synchronized every " + nf.format(/*this.*/majorSyncPeriod) + " ms");
 
-        aLong = (Long) conf.getProperty(BrokerPool.PROPERTY_SHUTDOWN_DELAY);
-        if(aLong != null) {
-            this.maxShutdownWait = aLong;
-        }
-        //TODO : sanity check : the shutdown period should be reasonable
-        LOG.info("database instance '" + instanceName + "' will wait  " + nf.format(this.maxShutdownWait) + " ms during shutdown");
+        // convert from bytes to megabytes: 1024 * 1024
+        this.diskSpaceMin = 1024l * 1024l * conf.getProperty(BrokerPool.DISK_SPACE_MIN_PROPERTY, DEFAULT_DISK_SPACE_MIN);
 
-        aBoolean = (Boolean) conf.getProperty(PROPERTY_RECOVERY_ENABLED);
-        if(aBoolean != null) {
-            this.transactionsEnabled = aBoolean;
-        }
-        LOG.info("database instance '" + instanceName + "' is enabled for transactions : " + this.transactionsEnabled);
-
-        final Integer min = (Integer) conf.getProperty(BrokerPool.DISK_SPACE_MIN_PROPERTY);
-        if(min != null) {
-            diskSpaceMin = min * 1024L * 1024L;
-        }
-
-        pageSize = conf.getInteger(PROPERTY_PAGE_SIZE);
-        if(pageSize < 0) {
-            pageSize = DEFAULT_PAGE_SIZE;
-        }
+        this.pageSize = conf.getProperty(PROPERTY_PAGE_SIZE, DEFAULT_PAGE_SIZE);
 
         //TODO : move this to initialize ? (cant as we need it for FileLockHeartBeat)
-        scheduler = new QuartzSchedulerImpl(this, conf);
+        this.scheduler = new QuartzSchedulerImpl(this, conf);
 
         if(!canReadDataDir(conf)) {
             setReadOnly();
@@ -728,6 +705,10 @@ public class BrokerPool implements Database {
 
         //Configuration is valid, save it
         this.conf = conf;
+
+        this.watchdog = Optional.ofNullable(System.getProperty("trace.brokers"))
+                .filter(v -> v.equals("yes"))
+                .map(v -> new BrokerWatchdog());
 
         //TODO : in the future, we should implement an Initializable interface
         try {
@@ -763,10 +744,6 @@ public class BrokerPool implements Database {
             final SyncTask syncTask = new SyncTask();
             syncTask.configure(conf, null);
             scheduler.createPeriodicJob(2500, new SystemTaskJobImpl(SyncTask.getJobName(), syncTask), 2500);
-        }
-
-        if("yes".equals(System.getProperty("trace.brokers", "no"))) {
-            watchdog = new BrokerWatchdog();
         }
     }
 
@@ -820,7 +797,7 @@ public class BrokerPool implements Database {
         }
 
         //Flag to indicate that we are initializing
-        status = INITIALIZING;
+        status = State.INITIALIZING;
 
         // Don't allow two threads to do a race on this. May be irrelevant as this is only called
         // from the constructor right now.
@@ -835,7 +812,7 @@ public class BrokerPool implements Database {
 
                 // statusReporter may have to be terminated or the thread can/will hang.
                 try {
-                    final boolean exportOnly = (Boolean) conf.getProperty(PROPERTY_EXPORT_ONLY, false);
+                    final boolean exportOnly = conf.getProperty(PROPERTY_EXPORT_ONLY, false);
 
                     //create the security manager
                     securityManager = new SecurityManagerImpl(this);
@@ -871,13 +848,23 @@ public class BrokerPool implements Database {
 
                     //REFACTOR : construct then... configure
                     //TODO : journal directory *may* be different from BrokerPool.PROPERTY_DATA_DIR
-                    transactionManager = new TransactionManager(this, (Path)conf.getProperty(BrokerPool.PROPERTY_DATA_DIR), isTransactional());
-                    try {
-                        transactionManager.initialize();
-                    } catch(final ReadOnlyException e) {
-                        LOG.warn(e);
-                        setReadOnly();
+                    journalManager = recoveryEnabled ? Optional.of(new JournalManager(
+                            this,
+                            (Path)conf.getProperty(BrokerPool.PROPERTY_DATA_DIR),
+                            conf.getProperty(PROPERTY_RECOVERY_GROUP_COMMIT, false)
+                    )) : Optional.empty();
+                    if(journalManager.isPresent()) {
+                        try {
+                            journalManager.get().initialize();
+                        } catch (final ReadOnlyException e) {
+                            LOG.warn(e);
+                            setReadOnly();
+                        }
                     }
+
+                    transactionManager = new TransactionManager(this, journalManager);
+                    transactionManager.initialize();
+
                     // If the initialization fails after transactionManager has been created this method better cleans up
                     // or the FileSyncThread for the journal can/will hang.
                     try {
@@ -910,14 +897,14 @@ public class BrokerPool implements Database {
                         try(final DBBroker broker = get(Optional.of(securityManager.getSystemSubject()))) {
 
                             if(isReadOnly()) {
-                                transactionManager.setEnabled(false);
+                                journalManager.ifPresent(JournalManager::disableJournalling);
                             }
 
                             //Run the recovery process
                             //TODO : assume
                             boolean recovered = false;
-                            if(isTransactional()) {
-                                recovered = transactionManager.runRecovery(broker);
+                            if(isRecoveryEnabled()) {
+                                recovered = runRecovery(broker);
                                 //TODO : extract the following from this block ? What if we ware not transactional ? -pb
                                 if(!recovered) {
                                     try {
@@ -956,7 +943,7 @@ public class BrokerPool implements Database {
                             // WM: attention: a small change in the sequence of calls can break
                             // either normal startup or recovery.
 
-                            status = OPERATING;
+                            status = State.OPERATIONAL;
 
                             statusReporter.setStatus(SIGNAL_READINESS);
 
@@ -972,7 +959,7 @@ public class BrokerPool implements Database {
                             //If necessary, launch a task to repair the DB
                             //TODO : merge this with the recovery process ?
                             //XXX: don't do if READONLY mode
-                            if(recovered) {
+                            if(isRecoveryEnabled() && recovered) {
                                 if(!exportOnly) {
                                     reportStatus("Reindexing database files...");
                                     try {
@@ -1012,7 +999,7 @@ public class BrokerPool implements Database {
                                 LOG.error(pde.getMessage(), pde);
                             }
 
-                            sync(broker, Sync.MAJOR_SYNC);
+                            sync(broker, Sync.MAJOR);
 
                             //require to allow access by BrokerPool.getInstance();
                             instances.put(instanceName, this);
@@ -1060,9 +1047,7 @@ public class BrokerPool implements Database {
 
                         statusReporter.setStatus(SIGNAL_STARTED);
                     } catch(final Throwable t) {
-                        if(isTransactional() && transactionManager != null) {
-                            transactionManager.shutdown();
-                        }
+                        transactionManager.shutdown();
                         throw t;
                     }
                 } catch(final EXistException | DatabaseConfigurationException e) {
@@ -1116,7 +1101,7 @@ public class BrokerPool implements Database {
         }
         // trigger a checkpoint after processing all startup triggers
         checkpoint = true;
-        triggerSync(Sync.MAJOR_SYNC);
+        triggerSync(Sync.MAJOR);
     }
 
     /**
@@ -1172,6 +1157,26 @@ public class BrokerPool implements Database {
         }
     }
 
+    /**
+     * Run a database recovery if required. This method is called once during
+     * startup from {@link org.exist.storage.BrokerPool}.
+     *
+     * @param broker
+     * @throws EXistException
+     */
+    public boolean runRecovery(final DBBroker broker) throws EXistException {
+        final boolean forceRestart = conf.getProperty(PROPERTY_RECOVERY_FORCE_RESTART, false);
+        if(LOG.isDebugEnabled()) {
+            LOG.debug("ForceRestart = " + forceRestart);
+        }
+        if(journalManager.isPresent()) {
+            final RecoveryManager recovery = new RecoveryManager(broker, journalManager.get(), forceRestart);
+            return recovery.recover();
+        } else {
+            throw new IllegalStateException("Cannot run recovery without a JournalManager");
+        }
+    }
+
     public long getReservedMem() {
         return reservedMem - cacheManager.getCurrentSize();
     }
@@ -1194,7 +1199,7 @@ public class BrokerPool implements Database {
      */
     //TODO : let's be positive and rename it as isInitialized ? 
     public boolean isInitializing() {
-        return status == INITIALIZING;
+        return status == State.INITIALIZING;
     }
 
     /**
@@ -1322,10 +1327,9 @@ public class BrokerPool implements Database {
      *
      * @return <code>true</code> if transactions can be handled
      */
-    public boolean isTransactional() {
-        //TODO : confusion between dataDir and a so-called "journalDir" !
+    public boolean isRecoveryEnabled() {
         synchronized(readOnly) {
-            return !readOnly && transactionsEnabled;
+            return !readOnly && recoveryEnabled;
         }
     }
 
@@ -1353,6 +1357,10 @@ public class BrokerPool implements Database {
 
     public boolean isInServiceMode() {
         return inServiceMode;
+    }
+
+    public Optional<JournalManager> getJournalManager() {
+        return journalManager;
     }
 
     public TransactionManager getTransactionManager() {
@@ -1625,8 +1633,8 @@ public class BrokerPool implements Database {
                 LOG.trace("+++ " + Thread.currentThread() + Stacktrace.top(Thread.currentThread().getStackTrace(), Stacktrace.DEFAULT_STACK_TOP));
             }
 
-            if(watchdog != null) {
-                watchdog.add(broker);
+            if(watchdog.isPresent()) {
+                watchdog.get().add(broker);
             }
 
             broker.incReferenceCount();
@@ -1718,9 +1726,7 @@ public class BrokerPool implements Database {
             }
 
             inactiveBrokers.push(broker);
-            if(watchdog != null) {
-                watchdog.remove(broker);
-            }
+            watchdog.ifPresent(wd -> wd.remove(broker));
 
             if(LOG.isTraceEnabled()) {
                 if(!brokerLeaseChangeTraceHistory.containsKey(broker.getId())) {
@@ -1775,7 +1781,7 @@ public class BrokerPool implements Database {
         inServiceMode = true;
         final DBBroker broker = inactiveBrokers.peek();
         checkpoint = true;
-        sync(broker, Sync.MAJOR_SYNC);
+        sync(broker, Sync.MAJOR);
         checkpoint = false;
         // Return a broker that can be used to perform system tasks
         return broker;
@@ -1810,7 +1816,7 @@ public class BrokerPool implements Database {
      * Executes a waiting cache synchronization for the database instance.
      *
      * @param broker    A broker responsible for executing the job
-     * @param syncEvent One of {@link org.exist.storage.sync.Sync#MINOR_SYNC} or {@link org.exist.storage.sync.Sync#MINOR_SYNC}
+     * @param syncEvent One of {@link org.exist.storage.sync.Sync}
      */
     //TODO : rename as runSync ? executeSync ?
     //TOUNDERSTAND (pb) : *not* synchronized, so... "executes" or, rather, "schedules" ? "executes" (WM)
@@ -1818,14 +1824,14 @@ public class BrokerPool implements Database {
     // WM: the method will always be under control of the BrokerPool. It is guaranteed that no
     // other brokers are active when it is called. That's why we don't need to synchronize here.
     //TODO : make it protected ?
-    public void sync(final DBBroker broker, final int syncEvent) {
+    public void sync(final DBBroker broker, final Sync syncEvent) {
         broker.sync(syncEvent);
 
         //TODO : strange that it is set *after* the sunc method has been called.
         try {
             broker.pushSubject(securityManager.getSystemSubject());
 
-            if (syncEvent == Sync.MAJOR_SYNC) {
+            if (syncEvent == Sync.MAJOR) {
                 LOG.debug("Major sync");
                 try {
                     if (!FORCE_CORRUPTION) {
@@ -1859,12 +1865,11 @@ public class BrokerPool implements Database {
      * the cache synchronization will be run immediately. Otherwise, the task will be deferred
      * until all running threads have returned.
      *
-     * @param syncEvent One of {@link org.exist.storage.sync.Sync#MINOR_SYNC} or
-     *                  {@link org.exist.storage.sync.Sync#MINOR_SYNC}
+     * @param syncEvent One of {@link org.exist.storage.sync.Sync}
      */
-    public void triggerSync(final int syncEvent) {
+    public void triggerSync(final Sync syncEvent) {
         //TOUNDERSTAND (pb) : synchronized, so... "schedules" or, rather, "executes" ? "schedules" (WM)
-        if(status == SHUTDOWN) {
+        if(status == State.SHUTDOWN) {
             return;
         }
         LOG.debug("Triggering sync: " + syncEvent);
@@ -1916,7 +1921,7 @@ public class BrokerPool implements Database {
     }
 
     public boolean isShuttingDown() {
-        return status == SHUTDOWN;
+        return status == State.SHUTDOWN;
     }
 
     /**
@@ -1925,14 +1930,14 @@ public class BrokerPool implements Database {
      * @param killed <code>true</code> when the JVM is (cleanly) exiting
      */
     public void shutdown(final boolean killed) {
-        if(status == SHUTDOWN) {
+        if(status == State.SHUTDOWN) {
             // we are already shut down
             return;
         }
 
         LOG.info("Database is shutting down ...");
 
-        status = SHUTDOWN;
+        status = State.SHUTDOWN;
 
         processMonitor.stopRunningJobs();
 
@@ -1975,8 +1980,8 @@ public class BrokerPool implements Database {
                 //collectionCache.something();
                 //xmlReaderPool.close();
 
-                if(isTransactional()) {
-                    transactionManager.getJournal().flushToLog(true, true);
+                if(isRecoveryEnabled()) {
+                    journalManager.ifPresent(jm -> jm.flush(true, true));
                 }
 
                 final long waitStart = System.currentTimeMillis();
@@ -2048,8 +2053,6 @@ public class BrokerPool implements Database {
                 // deregister JMX MBeans
                 AgentFactory.getInstance().closeDBInstance(this);
 
-                //Invalidate the configuration
-                conf = null;
                 //Clear the living instances container
                 instances.remove(instanceName);
 
@@ -2095,7 +2098,6 @@ public class BrokerPool implements Database {
             collectionConfigurationManager = null;
             notificationService = null;
             indexManager = null;
-            scheduler = null;
             xmlReaderPool = null;
             shutdownListener = null;
             securityManager = null;
@@ -2148,7 +2150,7 @@ public class BrokerPool implements Database {
         }
     }
 
-    public BrokerWatchdog getWatchdog() {
+    public Optional<BrokerWatchdog> getWatchdog() {
         return watchdog;
     }
 
@@ -2158,7 +2160,7 @@ public class BrokerPool implements Database {
             return;
         }
         synchronized(this) {
-            syncEvent = Sync.MAJOR_SYNC;
+            syncEvent = Sync.MAJOR;
             syncRequired = true;
             checkpoint = true;
         }
@@ -2181,20 +2183,21 @@ public class BrokerPool implements Database {
     }
 
     public void printSystemInfo() {
-        final StringWriter sout = new StringWriter();
-        final PrintWriter writer = new PrintWriter(sout);
+        try(final StringWriter sout = new StringWriter();
+            final PrintWriter writer = new PrintWriter(sout)) {
 
-        writer.println("SYSTEM INFO");
-        writer.format("Database instance: %s\n", getId());
-        writer.println("-------------------------------------------------------------------");
-        if(watchdog != null) {
-            watchdog.dump(writer);
+            writer.println("SYSTEM INFO");
+            writer.format("Database instance: %s\n", getId());
+            writer.println("-------------------------------------------------------------------");
+            watchdog.ifPresent(wd -> wd.dump(writer));
+            DeadlockDetection.debug(writer);
+
+            final String s = sout.toString();
+            LOG.info(s);
+            System.err.println(s);
+        } catch(final IOException e) {
+            LOG.error(e);
         }
-        DeadlockDetection.debug(writer);
-
-        final String s = sout.toString();
-        LOG.info(s);
-        System.err.println(s);
     }
 
     private static class StatusReporter extends Observable implements Runnable {
@@ -2306,11 +2309,11 @@ public class BrokerPool implements Database {
             return Integer.toString(getState().referenceCount);
         }
 
-        final static TraceableBrokerLeaseChange get(final BrokerInfo brokerInfo) {
+        static TraceableBrokerLeaseChange get(final BrokerInfo brokerInfo) {
             return new TraceableBrokerLeaseChange(Change.GET, brokerInfo);
         }
 
-        final static TraceableBrokerLeaseChange release(final BrokerInfo brokerInfo) {
+        static TraceableBrokerLeaseChange release(final BrokerInfo brokerInfo) {
             return new TraceableBrokerLeaseChange(Change.RELEASE, brokerInfo);
         }
     }

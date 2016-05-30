@@ -23,6 +23,7 @@ package org.exist.management.impl;
 
 import java.io.StringWriter;
 import java.util.Map;
+import java.util.Optional;
 import javax.management.openmbean.*;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -84,10 +85,7 @@ public class Database implements DatabaseMBean {
                 final Thread thread = entry.getKey();
                 final DBBroker broker = entry.getValue();
                 final String trace = printStackTrace(thread);
-                String watchdogTrace = null;
-                if (pool.getWatchdog() != null) {
-                	watchdogTrace = pool.getWatchdog().get(broker);
-                }
+                final String watchdogTrace = pool.getWatchdog().map(wd -> wd.get(broker)).orElse(null);
                 final Object[] itemValues = { thread.getName(), broker.getReferenceCount(), trace, watchdogTrace };
                 data.put(new CompositeDataSupport(infoType, itemNames, itemValues));
             }

@@ -46,7 +46,7 @@ public class SyncTask implements SystemTask {
     }
 
     private Path dataDir;
-    private long diskSpaceMin = 64 * 1024L * 1024L;
+    private long diskSpaceMin;
 
     @Override
     public boolean afterCheckpoint() {
@@ -56,9 +56,7 @@ public class SyncTask implements SystemTask {
 
     @Override
     public void configure(Configuration config, Properties properties) throws EXistException {
-        final Integer min = (Integer) config.getProperty(BrokerPool.DISK_SPACE_MIN_PROPERTY);
-        if (min != null)
-            {diskSpaceMin = min * 1024L * 1024L;}
+        this.diskSpaceMin = 1024l * 1024l * config.getProperty(BrokerPool.DISK_SPACE_MIN_PROPERTY, BrokerPool.DEFAULT_DISK_SPACE_MIN);
 
         // fixme! - Shouldn't it be data dir AND journal dir we check
         // rather than EXIST_HOME? /ljo
@@ -79,9 +77,9 @@ public class SyncTask implements SystemTask {
         }
         if(System.currentTimeMillis() - pool.getLastMajorSync() >
                 pool.getMajorSyncPeriod()) {
-            pool.sync(broker, Sync.MAJOR_SYNC);
+            pool.sync(broker, Sync.MAJOR);
         } else {
-            pool.sync(broker, Sync.MINOR_SYNC);
+            pool.sync(broker, Sync.MINOR);
         }
     }
 

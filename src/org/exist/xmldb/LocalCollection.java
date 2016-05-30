@@ -142,7 +142,7 @@ public class LocalCollection extends AbstractLocal implements CollectionImpl {
     public void close() throws XMLDBException {
         if (needsSync) {
             withDb((broker, transaction) -> {
-                broker.sync(Sync.MAJOR_SYNC);
+                broker.sync(Sync.MAJOR);
                 return null;
             });
         }

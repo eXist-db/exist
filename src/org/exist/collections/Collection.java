@@ -1562,7 +1562,7 @@ public class Collection extends Observable implements Resource, Comparable<Colle
         //TODO: *resolve* URI against CollectionConfigurationManager.CONFIG_COLLECTION_URI 
         if (getURI().startsWith(XmldbURI.CONFIG_COLLECTION_URI)
                 && docName.endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX_URI)) {
-            broker.sync(Sync.MAJOR_SYNC);
+            broker.sync(Sync.MAJOR);
             final CollectionConfigurationManager manager = broker.getBrokerPool().getConfigurationManager();
             if(manager != null) {
                 try {

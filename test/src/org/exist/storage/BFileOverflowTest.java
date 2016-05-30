@@ -53,7 +53,7 @@ public class BFileOverflowTest {
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             broker.flush();
-            broker.sync(Sync.MAJOR_SYNC);
+            broker.sync(Sync.MAJOR);
 
             final BFile collectionsDb = (BFile) ((NativeBroker) broker).getStorage(NativeBroker.COLLECTIONS_DBX_ID);
             BrokerPool.FORCE_CORRUPTION = true;
@@ -84,8 +84,8 @@ public class BFileOverflowTest {
             }
        
             collectionsDb.remove(txn, key);
-            
-            mgr.getJournal().flushToLog(true);
+
+            pool.getJournalManager().get().flush(true, false);
 
         }
     }

@@ -124,7 +124,7 @@ public class RemoveTest extends AbstractUpdateTest {
             }
             
 //DO NOT COMMIT TRANSACTION
-            pool.getTransactionManager().getJournal().flushToLog(true);
+            pool.getJournalManager().get().flush(true, false);
 	    }
     }
 }

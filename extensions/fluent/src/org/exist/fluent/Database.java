@@ -171,7 +171,7 @@ public class Database {
 		if (!BrokerPool.isConfigured(dbName)) throw new IllegalStateException("database not started");
 		try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 			broker.flush();
-			broker.sync(Sync.MAJOR_SYNC);
+			broker.sync(Sync.MAJOR);
 		} catch (EXistException e) {
 			throw new DatabaseException(e);
 		}

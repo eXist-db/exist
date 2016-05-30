@@ -72,7 +72,7 @@ public class LocalIndexQueryService extends AbstractLocalService implements Inde
         final XmldbURI collectionPath = resolve(col);
         withDb((broker, transaction) -> {
             broker.reindexCollection(collectionPath);
-            broker.sync(Sync.MAJOR_SYNC);
+            broker.sync(Sync.MAJOR);
             return null;
         });
     }
@@ -89,7 +89,7 @@ public class LocalIndexQueryService extends AbstractLocalService implements Inde
             try {
                 doc = broker.getXMLResource(collectionPath.append(docName), Lock.READ_LOCK);
                 broker.reindexXMLResource(transaction, doc, DBBroker.IndexMode.STORE);
-                broker.sync(Sync.MAJOR_SYNC);
+                broker.sync(Sync.MAJOR);
                 return null;
             } finally {
                 if(doc != null) {

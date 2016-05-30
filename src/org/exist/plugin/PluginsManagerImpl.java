@@ -93,12 +93,10 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, LifeCyc
 	@Override
 	public void start(DBBroker broker) throws EXistException {
         final TransactionManager transaction = db.getTransactionManager();
-        Txn txn = null;
 
-        try {
+        try(final Txn txn = transaction.beginTransaction()) {
 	        collection = broker.getCollection(COLLETION_URI);
 			if (collection == null) {
-				txn = transaction.beginTransaction();
 				collection = broker.getOrCreateCollection(txn, COLLETION_URI);
 				if (collection == null) {return;}
 					//if db corrupted it can lead to unrunnable issue
@@ -106,16 +104,13 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, LifeCyc
 				
 				collection.setPermissions(Permission.DEFAULT_SYSTEM_SECURITY_COLLECTION_PERM);
 				broker.saveCollection(txn, collection);
+			}
 
-				transaction.commit(txn);
-			} 
+			transaction.commit(txn);
         } catch (final Exception e) {
-			transaction.abort(txn);
 			e.printStackTrace();
 			LOG.debug("loading configuration failed: " + e.getMessage());
-		} finally {
-            transaction.close(txn);
-        }
+		}
 
         final Configuration _config_ = Configurator.parse(this, broker, collection, CONFIG_FILE_URI);
 		configuration = Configurator.configure(this, _config_);

@@ -969,7 +969,7 @@ public class Configuration implements ErrorHandler
             }
 
             try {
-                config.put(BrokerPool.DISK_SPACE_MIN_PROPERTY, Integer.valueOf(diskSpace));
+                config.put(BrokerPool.DISK_SPACE_MIN_PROPERTY, Short.valueOf(diskSpace));
             }
             catch( final NumberFormatException nfe ) {
                 LOG.warn( nfe );
@@ -1059,9 +1059,9 @@ public class Configuration implements ErrorHandler
         setProperty( Journal.PROPERTY_RECOVERY_SYNC_ON_COMMIT, parseBoolean( option, true ) );
         LOG.debug( Journal.PROPERTY_RECOVERY_SYNC_ON_COMMIT + ": " + config.get( Journal.PROPERTY_RECOVERY_SYNC_ON_COMMIT ) );
 
-        option = getConfigAttributeValue( recovery, TransactionManager.RECOVERY_GROUP_COMMIT_ATTRIBUTE );
-        setProperty( TransactionManager.PROPERTY_RECOVERY_GROUP_COMMIT, parseBoolean( option, false ) );
-        LOG.debug( TransactionManager.PROPERTY_RECOVERY_GROUP_COMMIT + ": " + config.get( TransactionManager.PROPERTY_RECOVERY_GROUP_COMMIT ) );
+        option = getConfigAttributeValue( recovery, BrokerPool.RECOVERY_GROUP_COMMIT_ATTRIBUTE );
+        setProperty( BrokerPool.PROPERTY_RECOVERY_GROUP_COMMIT, parseBoolean( option, false ) );
+        LOG.debug( BrokerPool.PROPERTY_RECOVERY_GROUP_COMMIT + ": " + config.get( BrokerPool.PROPERTY_RECOVERY_GROUP_COMMIT ) );
 
         option = getConfigAttributeValue( recovery, Journal.RECOVERY_JOURNAL_DIR_ATTRIBUTE );
 
@@ -1094,14 +1094,14 @@ public class Configuration implements ErrorHandler
             }
         }
 
-        option = getConfigAttributeValue( recovery, TransactionManager.RECOVERY_FORCE_RESTART_ATTRIBUTE );
+        option = getConfigAttributeValue( recovery, BrokerPool.RECOVERY_FORCE_RESTART_ATTRIBUTE );
         boolean value = false;
 
         if( option != null ) {
             value = "yes".equals(option);
         }
-        setProperty( TransactionManager.PROPERTY_RECOVERY_FORCE_RESTART, Boolean.valueOf( value ) );
-        LOG.debug( TransactionManager.PROPERTY_RECOVERY_FORCE_RESTART + ": " + config.get( TransactionManager.PROPERTY_RECOVERY_FORCE_RESTART ) );
+        setProperty( BrokerPool.PROPERTY_RECOVERY_FORCE_RESTART, Boolean.valueOf( value ) );
+        LOG.debug( BrokerPool.PROPERTY_RECOVERY_FORCE_RESTART + ": " + config.get( BrokerPool.PROPERTY_RECOVERY_FORCE_RESTART ) );
 
         option = getConfigAttributeValue( recovery, BrokerPool.RECOVERY_POST_RECOVERY_CHECK );
         value  = false;
@@ -1583,33 +1583,24 @@ public class Configuration implements ErrorHandler
     }
 
 
-    public Object getProperty( String name )
-    {
-        return( config.get( name ) );
+    public Object getProperty(final String name) {
+        return config.get(name);
     }
 
-    public Object getProperty( String name, Object defaultValue )
-    {
-    	final Object value = config.get( name );
-    	
-    	if (value == null)
-    		{return defaultValue;}
-        
-    	return value;
+    public <T> T getProperty(final String name, final T defaultValue) {
+        return Optional.ofNullable((T)config.get(name)).orElse(defaultValue);
     }
 
-    public boolean hasProperty( String name )
-    {
-        return( config.containsKey( name ) );
+    public boolean hasProperty(final String name) {
+        return config.containsKey(name);
     }
 
 
-    public void setProperty( String name, Object obj )
-    {
-        config.put( name, obj );
+    public void setProperty(final String name, final Object obj) {
+        config.put(name, obj);
     }
 
-    public void removeProperty(String name) {
+    public void removeProperty(final String name) {
         config.remove(name);
     }
 
@@ -1622,24 +1613,17 @@ public class Configuration implements ErrorHandler
      *
      * @return  The parsed <code>Boolean</code>
      */
-    public static Boolean parseBoolean(final String value, final boolean defaultValue)
-    {
-        if(value == null) {
-            return Boolean.valueOf(defaultValue);
-        }
-        return Boolean.valueOf("yes".equalsIgnoreCase(value) || "true".equalsIgnoreCase(value));
+    public static boolean parseBoolean(final String value, final boolean defaultValue) {
+        return Optional.ofNullable(value)
+                .map(v -> v.equalsIgnoreCase("yes") || v.equalsIgnoreCase("true"))
+                .orElse(defaultValue);
     }
 
-
-    public int getInteger( String name )
-    {
-        final Object obj = getProperty( name );
-
-        if( ( obj == null ) || !( obj instanceof Integer ) ) {
-            return( -1 );
-        }
-
-        return( ( (Integer)obj ).intValue() );
+    public int getInteger(final String name) {
+        return Optional.ofNullable(getProperty(name))
+                .filter(v -> v instanceof Integer)
+                .map(v -> (int)v)
+                .orElse(-1);
     }
 
 
@@ -1691,17 +1675,20 @@ public class Configuration implements ErrorHandler
     }
     
 
-    public static final class IndexModuleConfig
-    {
-        protected String  id;
-        protected String  className;
-        protected Element config;
+    public static final class IndexModuleConfig {
+        private final String id;
+        private final String className;
+        private final Element config;
 
-        public IndexModuleConfig( String id, String className, Element config )
-        {
-            this.id        = id;
+        public IndexModuleConfig(final String id, final String className, final Element config) {
+            this.id = id;
             this.className = className;
-            this.config    = config;
+            this.config = config;
+        }
+
+        public String getId()
+        {
+            return( id );
         }
 
         public String getClassName()
@@ -1709,16 +1696,9 @@ public class Configuration implements ErrorHandler
             return( className );
         }
 
-
         public Element getConfig()
         {
             return( config );
-        }
-
-
-        public String getId()
-        {
-            return( id );
         }
     }
 

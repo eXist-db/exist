@@ -101,7 +101,7 @@ public class AppendTest extends AbstractUpdateTest {
                 proc.reset();
             }
             //DO NOT COMMIT TRANSACTION
-            pool.getTransactionManager().getJournal().flushToLog(true);
+            pool.getJournalManager().get().flush(true, false);
         }
     }
 

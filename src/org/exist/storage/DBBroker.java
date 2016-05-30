@@ -43,6 +43,7 @@ import org.exist.stax.IEmbeddedXMLStreamReader;
 import org.exist.storage.btree.BTreeCallback;
 import org.exist.storage.dom.INodeIterator;
 import org.exist.storage.serializers.Serializer;
+import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.Txn;
 import org.exist.util.*;
 import org.exist.util.function.Tuple2;
@@ -719,13 +720,12 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
 
 	/**
 	 * Sync dom and collection state data (pages) to disk. In case of
-	 * {@link org.exist.storage.sync.Sync#MAJOR_SYNC}, sync all states (dom,
+	 * {@link org.exist.storage.sync.Sync#MAJOR}, sync all states (dom,
 	 * collection, text and element) to disk.
 	 * 
 	 * @param syncEvent
-	 *            Sync.MAJOR_SYNC or Sync.MINOR_SYNC
 	 */
-	public abstract void sync(int syncEvent);
+	public abstract void sync(Sync syncEvent);
 
 	/**
 	 * Update a node's data. To keep nodes in a correct sequential order, it is

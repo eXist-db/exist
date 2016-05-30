@@ -62,14 +62,11 @@ import org.exist.storage.index.BFile;
 import org.exist.storage.index.CollectionStore;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
-import org.exist.storage.journal.Journal;
-import org.exist.storage.journal.LogEntryTypes;
-import org.exist.storage.journal.Loggable;
+import org.exist.storage.journal.*;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.NativeSerializer;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.sync.Sync;
-import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.*;
@@ -149,22 +146,16 @@ public class NativeBroker extends DBBroker {
         COLLECTIONS_DBX_ID, VALUES_DBX_ID, DOM_DBX_ID
     };
 
-    //private static final String TEMP_FRAGMENT_REMOVE_ERROR = "Could not remove temporary fragment";
-    // private static final String TEMP_STORE_ERROR = "An error occurred while storing temporary data: ";
     private static final String EXCEPTION_DURING_REINDEX = "exception during reindex";
     private static final String DATABASE_IS_READ_ONLY = "Database is read-only";
 
     public static final String DEFAULT_DATA_DIR = "data";
     public static final int DEFAULT_INDEX_DEPTH = 1;
-    public static final int DEFAULT_MIN_MEMORY = 5000000;
-    public static final long TEMP_FRAGMENT_TIMEOUT = 60000;
-    /** default buffer size setting */
-    public static final int BUFFERS = 256;
+
     /** check available memory after storing DEFAULT_NODES_BEFORE_MEMORY_CHECK nodes */
     public static final int DEFAULT_NODES_BEFORE_MEMORY_CHECK = 500;
 
     public static final int OFFSET_COLLECTION_ID = 0;
-    public static final int OFFSET_VALUE = OFFSET_COLLECTION_ID + Collection.LENGTH_COLLECTION_ID; //2
 
     public final static String INIT_COLLECTION_CONFIG = "collection.xconf.init";
 
@@ -172,29 +163,29 @@ public class NativeBroker extends DBBroker {
     private final static int BINARY_RESOURCE_BUF_SIZE = 65536;
 
     /** the database files */
-    protected CollectionStore collectionsDb;
-    protected DOMFile domDb;
+    private final CollectionStore collectionsDb;
+    private final DOMFile domDb;
 
     /** the index processors */
-    protected NativeValueIndex valueIndex;
+    private NativeValueIndex valueIndex;
 
-    protected IndexSpec indexConfiguration;
+    private final IndexSpec indexConfiguration;
 
-    protected int defaultIndexDepth;
+    private int defaultIndexDepth;
 
-    protected Serializer xmlSerializer;
+    private final Serializer xmlSerializer;
 
     /** used to count the nodes inserted after the last memory check */
-    protected int nodesCount = 0;
+    private int nodesCount = 0;
 
-    protected int nodesCountThreshold = DEFAULT_NODES_BEFORE_MEMORY_CHECK;
+    private int nodesCountThreshold = DEFAULT_NODES_BEFORE_MEMORY_CHECK;
 
-    protected Path dataDir;
-    protected Path fsDir;
-    protected Path fsBackupDir;
-    protected int pageSize;
+    private final Path dataDir;
+    private final Path fsDir;
+    private final Optional<Path> fsJournalDir;
+    private int pageSize;
 
-    protected byte prepend;
+    private final byte prepend;
 
     private final Runtime run = Runtime.getRuntime();
 
@@ -202,42 +193,43 @@ public class NativeBroker extends DBBroker {
 
     private IEmbeddedXMLStreamReader streamReader = null;
 
-    protected Journal logManager;
+    private final Optional<JournalManager> logManager;
 
-    protected boolean incrementalDocIds = false;
+    private boolean incrementalDocIds = false;
 
     /** initialize database; read configuration, etc. */
     public NativeBroker(final BrokerPool pool, final Configuration config) throws EXistException {
         super(pool, config);
-        this.logManager = pool.getTransactionManager().getJournal();
+        this.logManager = pool.getJournalManager();
         LOG.debug("Initializing broker " + hashCode());
 
         final String prependDB = (String) config.getProperty("db-connection.prepend-db");
         if("always".equalsIgnoreCase(prependDB)) {
-            prepend = PREPEND_DB_ALWAYS;
+            this.prepend = PREPEND_DB_ALWAYS;
         } else if("never".equalsIgnoreCase(prependDB)) {
-            prepend = PREPEND_DB_NEVER;
+            this.prepend = PREPEND_DB_NEVER;
         } else {
-            prepend = PREPEND_DB_AS_NEEDED;
+            this.prepend = PREPEND_DB_AS_NEEDED;
         }
 
-        dataDir = (Path) config.getProperty(BrokerPool.PROPERTY_DATA_DIR);
-        if(dataDir == null) {
-            dataDir = Paths.get(DEFAULT_DATA_DIR);
-        }
+        this.dataDir = config.getProperty(BrokerPool.PROPERTY_DATA_DIR, Paths.get(DEFAULT_DATA_DIR));
 
         final Path fs = dataDir.resolve("fs");
         try {
-            fsDir = Files.createDirectories(fs);
+            this.fsDir = Files.createDirectories(fs);
         } catch(final IOException ioe) {
             throw new EXistException("Cannot make collection filesystem directory: " + fs.toAbsolutePath().toString(), ioe);
         }
 
-        final Path fsJournal = dataDir.resolve("fs.journal");
-        try {
-            fsBackupDir = Files.createDirectories(fsJournal);
-        } catch(final IOException ioe) {
-            throw new EXistException("Cannot make collection filesystem directory: " + fsJournal.toAbsolutePath().toString(), ioe);
+        if(pool.isRecoveryEnabled()) {
+            final Path fsJournal = dataDir.resolve("fs.journal");
+            try {
+                this.fsJournalDir = Optional.of(Files.createDirectories(fsJournal));
+            } catch(final IOException ioe) {
+                throw new EXistException("Cannot make collection filesystem directory: " + fsJournal.toAbsolutePath().toString(), ioe);
+            }
+        } else {
+            this.fsJournalDir = Optional.empty();
         }
 
         nodesCountThreshold = config.getInteger(BrokerPool.PROPERTY_NODES_BUFFER);
@@ -255,8 +247,8 @@ public class NativeBroker extends DBBroker {
             incrementalDocIds = docIdProp.equalsIgnoreCase("incremental");
         }
 
-        indexConfiguration = (IndexSpec) config.getProperty(Indexer.PROPERTY_INDEXER_CONFIG);
-        xmlSerializer = new NativeSerializer(this, config);
+        this.indexConfiguration = (IndexSpec) config.getProperty(Indexer.PROPERTY_INDEXER_CONFIG);
+        this.xmlSerializer = new NativeSerializer(this, config);
 
         try {
             pushSubject(pool.getSecurityManager().getSystemSubject());
@@ -266,9 +258,11 @@ public class NativeBroker extends DBBroker {
             //3) have consistent file creation behaviour (we can probably avoid some unnecessary files)
             //4) use... *customized* factories for a better index extensibility ;-)
             // Initialize DOM storage
-            domDb = (DOMFile) config.getProperty(DOMFile.getConfigKeyForFile());
-            if(domDb == null) {
-                domDb = new DOMFile(pool, DOM_DBX_ID, dataDir, config);
+            final DOMFile configuredDomFile = (DOMFile) config.getProperty(DOMFile.getConfigKeyForFile());
+            if(configuredDomFile != null) {
+                this.domDb = configuredDomFile;
+            } else {
+                this.domDb = new DOMFile(pool, DOM_DBX_ID, dataDir, config);
             }
             if(domDb.isReadOnly()) {
                 LOG.warn(FileUtils.fileName(domDb.getFile()) + " is read-only!");
@@ -276,16 +270,18 @@ public class NativeBroker extends DBBroker {
             }
 
             //Initialize collections storage
-            collectionsDb = (CollectionStore) config.getProperty(CollectionStore.getConfigKeyForFile());
-            if(collectionsDb == null) {
-                collectionsDb = new CollectionStore(pool, COLLECTIONS_DBX_ID, dataDir, config);
+            final CollectionStore configuredCollectionsDb = (CollectionStore) config.getProperty(CollectionStore.getConfigKeyForFile());
+            if(configuredCollectionsDb != null) {
+                this.collectionsDb = configuredCollectionsDb;
+            } else {
+                this.collectionsDb = new CollectionStore(pool, COLLECTIONS_DBX_ID, dataDir, config);
             }
             if(collectionsDb.isReadOnly()) {
                 LOG.warn(FileUtils.fileName(collectionsDb.getFile()) + " is read-only!");
                 pool.setReadOnly();
             }
 
-            valueIndex = new NativeValueIndex(this, VALUES_DBX_ID, dataDir, config);
+            this.valueIndex = new NativeValueIndex(this, VALUES_DBX_ID, dataDir, config);
             if(isReadOnly()) {
                 LOG.warn(DATABASE_IS_READ_ONLY);
             }
@@ -1289,23 +1285,34 @@ public class NativeBroker extends DBBroker {
         final Path targetDir = getCollectionFile(getFsDir(), destination.getURI().append(newName), false);
         if(Files.exists(sourceDir)) {
             if(Files.exists(targetDir)) {
-                final Path targetDelDir = getCollectionFile(fsBackupDir, transaction, destination.getURI().append(newName), true);
-                Files.createDirectories(targetDelDir);
-                Files.move(targetDir, targetDelDir, StandardCopyOption.ATOMIC_MOVE);
-                final Loggable loggable = new RenameBinaryLoggable(this, transaction, targetDir, targetDelDir);
-                try {
-                    logManager.writeToLog(loggable);
-                } catch(final TransactionException e) {
-                    LOG.warn(e.getMessage(), e);
+
+                if(fsJournalDir.isPresent()) {
+                    final Path targetDelDir = getCollectionFile(fsJournalDir.get(), transaction, destination.getURI().append(newName), true);
+                    Files.createDirectories(targetDelDir);
+                    Files.move(targetDir, targetDelDir, StandardCopyOption.ATOMIC_MOVE);
+
+                    if(logManager.isPresent()) {
+                        final Loggable loggable = new RenameBinaryLoggable(this, transaction, targetDir, targetDelDir);
+                        try {
+                            logManager.get().journal(loggable);
+                        } catch (final JournalException e) {
+                            LOG.warn(e.getMessage(), e);
+                        }
+                    }
+                } else {
+                    FileUtils.delete(targetDir);
                 }
             }
             Files.createDirectories(targetDir.getParent());
             Files.move(sourceDir, targetDir, StandardCopyOption.ATOMIC_MOVE);
-            final Loggable loggable = new RenameBinaryLoggable(this, transaction, sourceDir, targetDir);
-            try {
-                logManager.writeToLog(loggable);
-            } catch(final TransactionException e) {
-                LOG.warn(e.getMessage(), e);
+
+            if(logManager.isPresent()) {
+                final Loggable loggable = new RenameBinaryLoggable(this, transaction, sourceDir, targetDir);
+                try {
+                    logManager.get().journal(loggable);
+                } catch (final JournalException e) {
+                    LOG.warn(e.getMessage(), e);
+                }
             }
         }
     }
@@ -1607,21 +1614,28 @@ public class NativeBroker extends DBBroker {
 
                 //now that the database has been updated, update the binary collections on disk
                 final Path fsSourceDir = getCollectionFile(getFsDir(), collection.getURI(), false);
-                final Path fsTargetDir = getCollectionFile(fsBackupDir, transaction, collection.getURI(), true);
+                if(fsJournalDir.isPresent()) {
+                    final Path fsTargetDir = getCollectionFile(fsJournalDir.get(), transaction, collection.getURI(), true);
 
-                // remove child binary collections
-                if(Files.exists(fsSourceDir)) {
-                    Files.createDirectories(fsTargetDir.getParent());
+                    // remove child binary collections
+                    if (Files.exists(fsSourceDir)) {
+                        Files.createDirectories(fsTargetDir.getParent());
 
-                    //TODO(DS) log first, rename second ???
-                    //TODO(DW) not sure a Fatal is required here. Copy and delete maybe?
-                    Files.move(fsSourceDir, fsTargetDir, StandardCopyOption.ATOMIC_MOVE);
-                    final Loggable loggable = new RenameBinaryLoggable(this, transaction, fsSourceDir, fsTargetDir);
-                    try {
-                        logManager.writeToLog(loggable);
-                    } catch(final TransactionException e) {
-                        LOG.warn(e.getMessage(), e);
+                        //TODO(DS) log first, rename second ???
+                        //TODO(DW) not sure a Fatal is required here. Copy and delete maybe?
+                        Files.move(fsSourceDir, fsTargetDir, StandardCopyOption.ATOMIC_MOVE);
+
+                        if (logManager.isPresent()) {
+                            final Loggable loggable = new RenameBinaryLoggable(this, transaction, fsSourceDir, fsTargetDir);
+                            try {
+                                logManager.get().journal(loggable);
+                            } catch (final JournalException e) {
+                                LOG.warn(e.getMessage(), e);
+                            }
+                        }
                     }
+                } else {
+                    FileUtils.delete(fsSourceDir);
                 }
 
 
@@ -2088,22 +2102,29 @@ public class NativeBroker extends DBBroker {
         final Path binFile = getCollectionFile(getFsDir(), blob.getURI(), true);
         final boolean exists = Files.exists(binFile);
 
-        final Function<Path, Loggable> fLoggable;
-        if(exists) {
-            final Path backupFile = getCollectionFile(fsBackupDir, transaction, blob.getURI(), true);
-            Files.move(binFile, backupFile, StandardCopyOption.ATOMIC_MOVE);
-            fLoggable = original -> new UpdateBinaryLoggable(this, transaction, original, backupFile);
+        final Optional<Function<Path, Loggable>> fLoggable;
+        if(fsJournalDir.isPresent()) {
+            if (exists) {
+                final Path backupFile = getCollectionFile(fsJournalDir.get(), transaction, blob.getURI(), true);
+                Files.move(binFile, backupFile, StandardCopyOption.ATOMIC_MOVE);
+                fLoggable = Optional.of(original -> new UpdateBinaryLoggable(this, transaction, original, backupFile));
+            } else {
+                fLoggable = Optional.of(original -> new CreateBinaryLoggable(this, transaction, original));
+            }
         } else {
-            fLoggable = original -> new CreateBinaryLoggable(this, transaction, original);
+            Files.deleteIfExists(binFile);
+            fLoggable = Optional.empty();
         }
 
         fWriteData.accept(binFile);
 
-        final Loggable loggable = fLoggable.apply(binFile);
-        try {
-            logManager.writeToLog(loggable);
-        } catch(final TransactionException e) {
-            LOG.warn(e.getMessage(), e);
+        if(logManager.isPresent() && fLoggable.isPresent()) {
+            final Loggable loggable = fLoggable.get().apply(binFile);
+            try {
+                logManager.get().journal(loggable);
+            } catch (final JournalException e) {
+                LOG.warn(e.getMessage(), e);
+            }
         }
     }
 
@@ -2622,11 +2643,14 @@ public class NativeBroker extends DBBroker {
 
                 /* Rename original file to new location */
                 Files.move(fsOriginalDocument, binFile, StandardCopyOption.ATOMIC_MOVE);
-                final Loggable loggable = new RenameBinaryLoggable(this, transaction, sourceFile, binFile);
-                try {
-                    logManager.writeToLog(loggable);
-                } catch(final TransactionException e) {
-                    LOG.warn(e.getMessage(), e);
+
+                if(logManager.isPresent()) {
+                    final Loggable loggable = new RenameBinaryLoggable(this, transaction, sourceFile, binFile);
+                    try {
+                        logManager.get().journal(loggable);
+                    } catch (final JournalException e) {
+                        LOG.warn(e.getMessage(), e);
+                    }
                 }
             }
             storeXMLResource(transaction, doc);
@@ -2733,15 +2757,20 @@ public class NativeBroker extends DBBroker {
 
         final Path binFile = getCollectionFile(getFsDir(), blob.getURI(), false);
         if(Files.exists(binFile)) {
-            final Path binBackupFile = getCollectionFile(fsBackupDir, transaction, blob.getURI(), true);
-            final Loggable loggable = new RenameBinaryLoggable(this, transaction, binFile, binBackupFile);
+            if(fsJournalDir.isPresent()) {
+	            final Path binBackupFile = getCollectionFile(fsJournalDir.get(), transaction, blob.getURI(), true);
+    	        Files.move(binFile, binBackupFile, StandardCopyOption.ATOMIC_MOVE);
 
-            Files.move(binFile, binBackupFile, StandardCopyOption.ATOMIC_MOVE);
-
-            try {
-                logManager.writeToLog(loggable);
-            } catch(final TransactionException e) {
-                LOG.warn(e.getMessage(), e);
+                if (logManager.isPresent()) {
+                    final Loggable loggable = new RenameBinaryLoggable(this, transaction, binFile, binBackupFile);
+                    try {
+                        logManager.get().journal(loggable);
+                    } catch (final JournalException e) {
+                        LOG.warn(e.getMessage(), e);
+                    }
+                }
+            } else {
+                Files.delete(binFile);
             }
         }
         removeResourceMetadata(transaction, blob);
@@ -3536,7 +3565,7 @@ public class NativeBroker extends DBBroker {
 
         LOG.info("Recreating index files ...");
         try {
-            valueIndex = new NativeValueIndex(this, VALUES_DBX_ID, dataDir, config);
+            this.valueIndex = new NativeValueIndex(this, VALUES_DBX_ID, dataDir, config);
         } catch(final DBException e) {
             LOG.warn("Exception during repair: " + e.getMessage(), e);
         }
@@ -3590,7 +3619,7 @@ public class NativeBroker extends DBBroker {
     long nextReportTS = System.currentTimeMillis();
 
     @Override
-    public void sync(final int syncEvent) {
+    public void sync(final Sync syncEvent) {
         if(isReadOnly()) {
             return;
         }
@@ -3606,7 +3635,7 @@ public class NativeBroker extends DBBroker {
                     return null;
                 }
             }.run();
-            if(syncEvent == Sync.MAJOR_SYNC) {
+            if(syncEvent == Sync.MAJOR) {
                 final Lock lock = collectionsDb.getLock();
                 try {
                     lock.acquire(Lock.WRITE_LOCK);
@@ -3641,7 +3670,7 @@ public class NativeBroker extends DBBroker {
     public void shutdown() {
         try {
             flush();
-            sync(Sync.MAJOR_SYNC);
+            sync(Sync.MAJOR);
             domDb.close();
             collectionsDb.close();
             notifyClose();

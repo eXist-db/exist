@@ -182,7 +182,7 @@ public class CopyResourceTest {
 			broker.saveCollection(transaction, testCollection);
 
 //DO NOT COMMIT TRANSACTION
-			pool.getTransactionManager().getJournal().flushToLog(true);
+			pool.getJournalManager().get().flush(true, false);
 		}
 	}
 

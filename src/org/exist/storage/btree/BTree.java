@@ -80,13 +80,8 @@ import org.exist.storage.CacheManager;
 import org.exist.storage.DefaultCacheManager;
 import org.exist.storage.NativeBroker;
 import org.exist.storage.cache.*;
-import org.exist.storage.journal.Journal;
-import org.exist.storage.journal.LogEntryTypes;
-import org.exist.storage.journal.LogException;
-import org.exist.storage.journal.Loggable;
-import org.exist.storage.journal.Lsn;
+import org.exist.storage.journal.*;
 import org.exist.storage.lock.Lock;
-import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.Txn;
 import org.exist.util.ByteConversion;
 import org.exist.util.FileUtils;
@@ -149,6 +144,8 @@ public class BTree extends Paged implements Lockable {
         LogEntryTypes.addEntryType(LOG_SET_LINK, SetPageLinkLoggable::new);
     }
 
+    private final BrokerPool pool;
+
     protected final DefaultCacheManager cacheManager;
 
     /** Cache of BTreeNode(s) */
@@ -158,35 +155,37 @@ public class BTree extends Paged implements Lockable {
     private final BTreeFileHeader fileHeader;
 
     /** The LogManager for writing the transaction log */
-    protected final Journal logManager;
+    protected final Optional<JournalManager> logManager;
 
     protected final byte fileId;
 
-    protected final boolean isTransactional;
-
     private double splitFactor = -1;
 
-    protected BTree(final BrokerPool pool, final byte fileId, final boolean transactional,
+    protected BTree(final BrokerPool pool, final byte fileId, final boolean recoveryEnabled,
             final DefaultCacheManager cacheManager) throws DBException {
         super(pool);
+        this.pool = pool;
         this.cacheManager = cacheManager;
         this.fileId = fileId;
         this.fileHeader = (BTreeFileHeader) getFileHeader();
         fileHeader.setPageCount(0);
         fileHeader.setTotalCount(0);
-        this.isTransactional = transactional && pool.isTransactional();
-        if (isTransactional) {
-            this.logManager = pool.getTransactionManager().getJournal();
+        if (recoveryEnabled && pool.isRecoveryEnabled()) {
+            this.logManager = pool.getJournalManager();
         } else {
-            this.logManager = null;
+            this.logManager = Optional.empty();
         }
     }
 
+    protected boolean isRecoveryEnabled() {
+        return logManager.isPresent() && pool.isRecoveryEnabled();
+    }
+
     public BTree(final BrokerPool pool, final byte fileId,
-                 final boolean transactional,
+                 final boolean recoveryEnabled,
                  final DefaultCacheManager cacheManager, final Path file)
             throws DBException {
-        this(pool, fileId, transactional, cacheManager);
+        this(pool, fileId, recoveryEnabled, cacheManager);
         setFile(file);
     }
 
@@ -332,7 +331,7 @@ public class BTree extends Paged implements Lockable {
                     return;
                 }
                 if (test) {
-                    if (isTransactional && transaction != null && nextPage.pageHeader.getStatus() == LEAF) {
+                    if (transaction != null && isRecoveryEnabled() && nextPage.pageHeader.getStatus() == LEAF) {
                         final RemoveValueLoggable log = new RemoveValueLoggable(transaction, 
                             fileId, nextPage.page.getPageNum(), i, nextPage.keys[i], nextPage.ptrs[i]);
                         writeToLog(log, nextPage);
@@ -438,7 +437,7 @@ public class BTree extends Paged implements Lockable {
         try {
             final Page page = getFreePage(reuseDeleted);
             final BTreeNode node = new BTreeNode(page, true);
-            if (transaction != null && isTransactional && status == LEAF) {
+            if (transaction != null && isRecoveryEnabled() && status == LEAF) {
                 final Loggable loggable = new CreateBTNodeLoggable(transaction, fileId, 
                     status, page.getPageNum(), parent != null ? parent.page.getPageNum() : Page.NO_PAGE);
                 writeToLog(loggable, node);
@@ -750,11 +749,13 @@ public class BTree extends Paged implements Lockable {
      * ---------------------------------------------------------------------- */
 
     private void writeToLog(final Loggable loggable, final BTreeNode node) {
-        try {
-            logManager.writeToLog(loggable);
-            node.page.getPageHeader().setLsn(loggable.getLsn());
-        } catch (final TransactionException e) {
-            LOG.warn(e.getMessage(), e);
+        if(logManager.isPresent()) {
+            try {
+                logManager.get().journal(loggable);
+                node.page.getPageHeader().setLsn(loggable.getLsn());
+            } catch (final JournalException e) {
+                LOG.warn(e.getMessage(), e);
+            }
         }
     }
 
@@ -1020,8 +1021,8 @@ public class BTree extends Paged implements Lockable {
             if(isDirty()) {
                 try {
                     write();
-                    if (isTransactional && syncJournal) {
-                        logManager.flushToLog(true);
+                    if (isRecoveryEnabled() && syncJournal) {
+                        logManager.get().flush(true, false);
                     }
                     return true;
                 } catch (final IOException e) {
@@ -1367,7 +1368,7 @@ public class BTree extends Paged implements Lockable {
                     else {
                         try {
                             allowUnload = false;
-                            if (transaction != null && isTransactional) {
+                            if (transaction != null && isRecoveryEnabled()) {
                                 final RemoveValueLoggable log = new RemoveValueLoggable(transaction,
                                     fileId, page.getPageNum(), idx, keys[idx], ptrs[idx]);
                                 writeToLog(log, this);
@@ -1408,7 +1409,7 @@ public class BTree extends Paged implements Lockable {
                         if (idx >= 0) {
                             // Value was found... Overwrite
                             final long oldPtr = ptrs[idx];
-                            if (transaction != null && isTransactional) {
+                            if (transaction != null && isRecoveryEnabled()) {
                                 final UpdateValueLoggable loggable = new UpdateValueLoggable(transaction,
                                     fileId, page.getPageNum(), idx, value, pointer, oldPtr);
                                     writeToLog(loggable, this);
@@ -1419,7 +1420,7 @@ public class BTree extends Paged implements Lockable {
                         } else {
                             // Value was not found
                             idx = - (idx + 1);
-                            if (transaction != null && isTransactional) {
+                            if (transaction != null && isRecoveryEnabled()) {
                                 final InsertValueLoggable loggable = new InsertValueLoggable(transaction,
                                     fileId, page.getPageNum(), idx, value, idx, pointer);
                                     writeToLog(loggable, this);
@@ -1525,7 +1526,7 @@ public class BTree extends Paged implements Lockable {
             }
 
             // Log the update of the current page
-            if (transaction != null && isTransactional && pageHeader.getStatus() == LEAF) {
+            if (transaction != null && isRecoveryEnabled() && pageHeader.getStatus() == LEAF) {
                 final Loggable log = new UpdatePageLoggable(transaction, fileId,
                     page.getPageNum(), prefix, leftVals, leftVals.length, leftPtrs, leftPtrs.length);
                 writeToLog(log, this);
@@ -1539,7 +1540,7 @@ public class BTree extends Paged implements Lockable {
                 // This can only happen if this is the root
                 parent = createBTreeNode(transaction, BRANCH, null, false);
                 // Log change of the parent page
-                if (transaction != null && isTransactional && pageHeader.getStatus() == LEAF) {
+                if (transaction != null && isRecoveryEnabled() && pageHeader.getStatus() == LEAF) {
                     final Loggable log = new SetParentLoggable(transaction, fileId, page.getPageNum(), 
                         parent.page.getPageNum());
                     writeToLog(log, this);
@@ -1553,7 +1554,7 @@ public class BTree extends Paged implements Lockable {
                     rNode.prefix = prefix;
                     rNode.growPrefix();
                 } else {
-                    if (transaction != null && isTransactional) {
+                    if (transaction != null && isRecoveryEnabled()) {
                         final Loggable log = new SetPageLinkLoggable(transaction, 
                             fileId, page.getPageNum(), rNode.page.getPageNum());
                         writeToLog(log, this);
@@ -1561,7 +1562,7 @@ public class BTree extends Paged implements Lockable {
                     pageHeader.setNextPage(rNode.page.getPageNum());
                 }
                 // Log update of the right node
-                if (isTransactional && transaction != null && pageHeader.getStatus() == LEAF) {
+                if (transaction != null && isRecoveryEnabled() && pageHeader.getStatus() == LEAF) {
                     final Loggable log = new UpdatePageLoggable(transaction, fileId,
                         rNode.page.getPageNum(), rNode.prefix, rNode.keys, rNode.nKeys, rightPtrs, rightPtrs.length);
                     writeToLog(log, rNode);
@@ -1587,7 +1588,7 @@ public class BTree extends Paged implements Lockable {
                     rNode.prefix = prefix;
                     rNode.growPrefix();
                 } else {
-                    if (transaction != null && isTransactional) {
+                    if (transaction != null && isRecoveryEnabled()) {
                         Loggable log = new SetPageLinkLoggable(transaction, fileId, 
                             rNode.page.getPageNum(), pageHeader.getNextPage());
                         writeToLog(log, this);
@@ -1599,7 +1600,7 @@ public class BTree extends Paged implements Lockable {
                     pageHeader.setNextPage(rNode.page.getPageNum());
                 }
                 // Log update of the right node
-                if (isTransactional && transaction != null && pageHeader.getStatus() == LEAF) {
+                if (transaction != null && isRecoveryEnabled() && pageHeader.getStatus() == LEAF) {
                     final Loggable log = new UpdatePageLoggable(transaction, fileId, 
                         rNode.page.getPageNum(), rNode.prefix, rNode.keys,
                         rNode.nKeys, rightPtrs, rightPtrs.length);
@@ -2161,7 +2162,7 @@ public class BTree extends Paged implements Lockable {
                             switch (query.getOperator()) {
                             case IndexQuery.EQ :
                                 if (leftIdx >= 0) {
-                                    if (isTransactional && transaction != null) {
+                                    if (transaction != null && isRecoveryEnabled()) {
                                         final RemoveValueLoggable log =  new RemoveValueLoggable(transaction,
                                             fileId, page.getPageNum(), leftIdx, keys[leftIdx], ptrs[leftIdx]);
                                         writeToLog(log, this);
@@ -2177,7 +2178,7 @@ public class BTree extends Paged implements Lockable {
                             case IndexQuery.NEQ :
                                 for (int i = 0; i < nPtrs; i++) {
                                     if (i != leftIdx) {
-                                        if (isTransactional && transaction != null) {
+                                        if (transaction != null && isRecoveryEnabled()) {
                                             final RemoveValueLoggable log = new RemoveValueLoggable(transaction,
                                                 fileId, page.getPageNum(), i, keys[i], ptrs[i]);
                                             writeToLog(log, this);
@@ -2206,7 +2207,7 @@ public class BTree extends Paged implements Lockable {
                                     if ((pos && (i >= leftIdx && i <= rightIdx))
                                             || (!pos && (i <= leftIdx || i >= rightIdx))) {
                                         if (query.testValue(keys[i])) {
-                                            if (isTransactional && transaction != null) {
+                                            if (transaction != null && isRecoveryEnabled()) {
                                                 final RemoveValueLoggable log = new RemoveValueLoggable(transaction,
                                                     fileId, page.getPageNum(), i, keys[i], ptrs[i]);
                                                 writeToLog(log, this);
@@ -2231,7 +2232,7 @@ public class BTree extends Paged implements Lockable {
                                 }
                                 for (int i = leftIdx; i < rightIdx && i < nPtrs; i++) {
                                     if (query.testValue(keys[i])) {
-                                        if (isTransactional && transaction != null) {
+                                        if (transaction != null && isRecoveryEnabled()) {
                                             final RemoveValueLoggable log = new RemoveValueLoggable(transaction,
                                                 fileId, page.getPageNum(), i, keys[i], ptrs[i]);
                                             writeToLog(log, this);
@@ -2260,7 +2261,7 @@ public class BTree extends Paged implements Lockable {
                                 for (int i = 0; i < nPtrs; i++) {
                                     if (!pos || (i >= leftIdx && i <= rightIdx)) {
                                         if (query.testValue(keys[i])) {
-                                            if (isTransactional && transaction != null) {
+                                            if (transaction != null && isRecoveryEnabled()) {
                                                 final RemoveValueLoggable log = new RemoveValueLoggable(transaction,
                                                     fileId, page.getPageNum(), i, keys[i], ptrs[i]);
                                                     writeToLog(log, this);
@@ -2284,7 +2285,7 @@ public class BTree extends Paged implements Lockable {
                                 for (int i = 0; i < nPtrs; i++) {
                                     if ((pos && (i <= leftIdx)) || (!pos && (i >= leftIdx))) {
                                         if (query.testValue(keys[i])) {
-                                            if (isTransactional && transaction != null) {
+                                            if (transaction != null && isRecoveryEnabled()) {
                                                 final RemoveValueLoggable log = new RemoveValueLoggable(transaction,
                                                     fileId, page.getPageNum(), i, keys[i], ptrs[i]);
                                                     writeToLog(log, this);
@@ -2308,7 +2309,7 @@ public class BTree extends Paged implements Lockable {
                                 for (int i = 0; i < nPtrs; i++) {
                                     if ((pos && (i >= leftIdx)) || (!pos && (i <= leftIdx))) {
                                         if (query.testValue(keys[i])) {
-                                            if (isTransactional && transaction != null) {
+                                            if (transaction != null && isRecoveryEnabled()) {
                                                 final RemoveValueLoggable log = new RemoveValueLoggable(transaction,
                                                     fileId, page.getPageNum(), i, keys[i], ptrs[i]);
                                                 writeToLog(log, this);
@@ -2330,7 +2331,7 @@ public class BTree extends Paged implements Lockable {
                                 // If it's not implemented, it falls right through
                                 for (int i = 0; i < nPtrs; i++) {
                                     if (query.testValue(keys[i])) {
-                                        if (isTransactional && transaction != null) {
+                                        if (transaction != null && isRecoveryEnabled()) {
                                             final RemoveValueLoggable log = new RemoveValueLoggable(transaction,
                                                 fileId, page.getPageNum(), i, keys[i], ptrs[i]);
                                                 writeToLog(log, this);
@@ -2358,7 +2359,7 @@ public class BTree extends Paged implements Lockable {
                 switch (pageHeader.getStatus()) {
                     case BRANCH :
                         for (int i = 0; i < nPtrs; i++) {
-                            if (isTransactional && transaction != null) {
+                            if (transaction != null && isRecoveryEnabled()) {
                                 final RemoveValueLoggable log =
                                     new RemoveValueLoggable(transaction,
                                         fileId, page.getPageNum(), i, keys[i], ptrs[i]);
@@ -2377,7 +2378,7 @@ public class BTree extends Paged implements Lockable {
                         for (int i = 0; i < nKeys; i++) {
                             if (query.getOperator() != IndexQuery.TRUNC_LEFT
                                     || query.testValue(keys[i])) {
-                                if (isTransactional && transaction != null) {
+                                if (transaction != null && isRecoveryEnabled()) {
                                     final RemoveValueLoggable log = new RemoveValueLoggable(transaction,
                                         fileId, page.getPageNum(), i, keys[i], ptrs[i]);
                                     writeToLog(log, this);

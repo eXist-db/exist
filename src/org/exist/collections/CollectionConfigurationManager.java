@@ -408,21 +408,16 @@ public class CollectionConfigurationManager {
      */
     private void checkCreateCollection(DBBroker broker, XmldbURI uri) throws EXistException {
         final TransactionManager transact = broker.getDatabase().getTransactionManager();
-        Txn txn = null;
-        try {
+        try(final Txn txn = transact.beginTransaction()) {
             Collection collection = broker.getCollection(uri);
             if (collection == null) {
-                txn = transact.beginTransaction();
                 collection = broker.getOrCreateCollection(txn, uri);
                 SanityCheck.THROW_ASSERT(collection != null);
                 broker.saveCollection(txn, collection);
                 transact.commit(txn);
             }
         } catch (final Exception e) {
-            transact.abort(txn);
             throw new EXistException("Failed to initialize '" + uri + "' : " + e.getMessage());
-        } finally {
-            transact.close(txn);
         }
     }
 

@@ -24,6 +24,9 @@ package org.exist.storage.recovery;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -31,16 +34,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.storage.DBBroker;
 import org.exist.storage.BrokerPool;
-import org.exist.storage.journal.Journal;
-import org.exist.storage.journal.JournalReader;
-import org.exist.storage.journal.LogEntryTypes;
-import org.exist.storage.journal.LogException;
-import org.exist.storage.journal.Loggable;
-import org.exist.storage.journal.Lsn;
+import org.exist.storage.journal.*;
 import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.Checkpoint;
 import org.exist.util.FileUtils;
 import org.exist.util.ProgressBar;
+import org.exist.util.function.SupplierE;
 import org.exist.util.hashtable.Long2ObjectHashMap;
 import org.exist.util.sanity.SanityCheck;
 
@@ -55,13 +54,13 @@ public class RecoveryManager {
 	
 	private final static Logger LOG = LogManager.getLogger(RecoveryManager.class);
 
-	private Journal logManager;
-	private DBBroker broker;
-    private boolean restartOnError;
+    private final DBBroker broker;
+    private final JournalRecoveryAccessor journalRecovery;
+    private final boolean restartOnError;
 
-	public RecoveryManager(DBBroker broker, Journal log, boolean restartOnError) {
+    public RecoveryManager(final DBBroker broker, final JournalManager journalManager, final boolean restartOnError) {
         this.broker = broker;
-		this.logManager = log;
+        this.journalRecovery = journalManager.getRecoveryAccessor(this);
         this.restartOnError = restartOnError;
 	}
 
@@ -78,7 +77,7 @@ public class RecoveryManager {
 	public boolean recover() throws LogException {
         boolean recoveryRun = false;
 		final List<Path> files;
-        try(final Stream<Path> fileStream = logManager.getFiles()) {
+        try(final Stream<Path> fileStream = journalRecovery.getFiles.get()) {
             files = fileStream.collect(Collectors.toList());
         } catch(final IOException ioe) {
             throw new LogException("Unable to find journal files in data dir", ioe);
@@ -87,7 +86,7 @@ public class RecoveryManager {
 		final int lastNum = Journal.findLastFile(files.stream());
 		if (-1 < lastNum) {
             // load the last log file
-			final Path last = logManager.getFile(lastNum);
+			final Path last = journalRecovery.getFile.apply(lastNum);
 			// scan the last log file and record the last checkpoint found
 			final JournalReader reader = new JournalReader(broker, last, lastNum);
             try {
@@ -183,16 +182,38 @@ public class RecoveryManager {
                 cleanDirectory(files.stream());
                 if (recoveryRun) {
                     broker.repairPrimary();
-                    broker.sync(Sync.MAJOR_SYNC);
+                    broker.sync(Sync.MAJOR);
                 }
             }
 		}
-        logManager.setCurrentFileNum(lastNum);
-		logManager.switchFiles();
-        logManager.clearBackupFiles();
+        journalRecovery.setCurrentFileNum.accept(lastNum);
+        journalRecovery.switchFiles.get();
+        journalRecovery.clearBackupFiles.get();
 
         return recoveryRun;
 	}
+
+    public class JournalRecoveryAccessor {
+        final Consumer<Boolean> setInRecovery;
+        final SupplierE<Stream<Path>, IOException> getFiles;
+        final Function<Integer, Path> getFile;
+        final Consumer<Integer> setCurrentFileNum;
+        final SupplierE<Void, LogException> switchFiles;
+        final Supplier<Void> clearBackupFiles;
+
+
+        public JournalRecoveryAccessor(final Consumer<Boolean> setInRecovery,
+                final SupplierE<Stream<Path>, IOException> getFiles, final Function<Integer, Path> getFile,
+                final Consumer<Integer> setCurrentFileNum, final SupplierE<Void, LogException> switchFiles,
+                final Supplier<Void> clearBackupFiles) {
+            this.setInRecovery = setInRecovery;
+            this.getFiles = getFiles;
+            this.getFile = getFile;
+            this.setCurrentFileNum = setCurrentFileNum;
+            this.switchFiles = switchFiles;
+            this.clearBackupFiles = clearBackupFiles;
+        }
+    }
 
     /**
      * Called by {@link #recover()} to do the actual recovery.
@@ -208,7 +229,7 @@ public class RecoveryManager {
         if (LOG.isInfoEnabled()) {
             LOG.info("Running recovery ...");
         }
-        logManager.setInRecovery(true);
+        journalRecovery.setInRecovery.accept(true);
 
         try {
             // map to track running transactions
@@ -291,8 +312,8 @@ public class RecoveryManager {
                 }
             }
         } finally {
-            broker.sync(Sync.MAJOR_SYNC);
-            logManager.setInRecovery(false);
+            broker.sync(Sync.MAJOR);
+            journalRecovery.setInRecovery.accept(false);
         }
     }
     
