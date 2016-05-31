@@ -3,8 +3,6 @@ package org.exist.storage.io;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.exist.util.ByteArray;
 import org.exist.util.FastByteBuffer;
 
@@ -18,26 +16,25 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class VariableByteOutputStream extends OutputStream {
 
     private static final int MAX_BUFFER_SIZE = 65536;
-    protected FastByteBuffer buf;	
+    private FastByteBuffer buf;
     private final byte[] temp = new byte[5];
-    
-    private static final Logger LOG = LogManager.getLogger(VariableByteArrayInput.class);
     
     public VariableByteOutputStream() {
         super();
         buf = new FastByteBuffer(9);
     }
 
-    public VariableByteOutputStream(int size) {
+    public VariableByteOutputStream(final int size) {
         super();
         buf = new FastByteBuffer(size);
     }
 
     public void clear() {
-        if (buf.size() > MAX_BUFFER_SIZE)
-            {buf = new FastByteBuffer(9);}
-        else
-            {buf.setLength(0);}
+        if (buf.size() > MAX_BUFFER_SIZE) {
+            buf = new FastByteBuffer(9);
+        } else {
+            buf.setLength(0);
+        }
     }
 
     @Override
@@ -69,25 +66,25 @@ public class VariableByteOutputStream extends OutputStream {
     }
 
     @Override
-    public void write(int b) throws IOException {
+    public void write(final int b) throws IOException {
         buf.append((byte) b);
     }
 
     @Override
-    public void write(byte[] b) {
+    public void write(final byte[] b) {
         buf.append(b);
     }
 
     @Override
-    public void write(byte[] b, int off, int len) throws IOException {
+    public void write(final byte[] b, final int off, final int len) throws IOException {
         buf.append(b, off, len);
     }
 
-    public void write(ByteArray b) {
+    public void write(final ByteArray b) {
         b.copyTo(buf);
     }
 
-    public void writeByte(byte b) {
+    public void writeByte(final byte b) {
         buf.append(b);
     }
 
@@ -109,7 +106,7 @@ public class VariableByteOutputStream extends OutputStream {
         buf.append(temp, 0, count);
     }
 
-    public void writeFixedInt(int i) {
+    public void writeFixedInt(final int i) {
         temp[0] = (byte) ( ( i >>> 0 ) & 0xff );
         temp[1] = (byte) ( ( i >>> 8 ) & 0xff );
         temp[2] = (byte) ( ( i >>> 16 ) & 0xff );
@@ -117,7 +114,7 @@ public class VariableByteOutputStream extends OutputStream {
         buf.append(temp, 0, 4);
     }
     
-    public void writeFixedInt(int position, int i) {
+    public void writeFixedInt(final int position, final int i) {
         buf.set(position, (byte) ( ( i >>> 0 ) & 0xff ));
         buf.set(position + 1, (byte) ( ( i >>> 8 ) & 0xff ));
         buf.set(position + 2, (byte) ( ( i >>> 16 ) & 0xff ));
@@ -140,7 +137,7 @@ public class VariableByteOutputStream extends OutputStream {
         buf.append((byte) l);
     }
 
-    public void writeFixedLong(long l) {
+    public void writeFixedLong(final long l) {
         buf.append((byte) ((l >>> 56) & 0xff));
         buf.append((byte) ((l >>> 48) & 0xff));
         buf.append((byte) ((l >>> 40) & 0xff));
@@ -151,9 +148,8 @@ public class VariableByteOutputStream extends OutputStream {
         buf.append((byte) ((l >>> 0) & 0xff));
     }
 
-    public void writeUTF(String s) throws IOException {
-        byte[] data = s.getBytes(UTF_8);
-
+    public void writeUTF(final String s) throws IOException {
+        final byte[] data = s.getBytes(UTF_8);
         writeInt(data.length);
         write(data, 0, data.length);
     }
