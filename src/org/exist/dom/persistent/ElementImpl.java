@@ -1529,9 +1529,9 @@ public class ElementImpl extends NamedNode implements Element {
             attributes += appendList.getLength();
 
             broker.updateNode(transaction, this, true);
+            broker.getIndexController().reindex(transaction, reindexRoot, ReindexMode.STORE);
+
             broker.flush();
-            broker.getIndexController().reindex(transaction, reindexRoot,
-                    ReindexMode.STORE);
         } catch (final EXistException e) {
             LOG.warn("Exception while inserting node: " + e.getMessage(), e);
         }
