@@ -428,7 +428,7 @@ public class NativeBroker extends DBBroker {
             }
             valueIndex.setDocument(node.getOwnerDocument());
             valueIndex.storeElement((ElementImpl) node, content, RangeIndexSpec.indexTypeToXPath(indexType),
-                NativeValueIndex.IDX_GENERIC, remove);
+                NativeValueIndex.IndexType.GENERIC, remove);
         }
 
         // TODO : move to NativeValueIndexByQName 
@@ -444,7 +444,7 @@ public class NativeBroker extends DBBroker {
             }
             valueIndex.setDocument(node.getOwnerDocument());
             valueIndex.storeElement((ElementImpl) node, content, RangeIndexSpec.indexTypeToXPath(indexType),
-                NativeValueIndex.IDX_QNAME, remove);
+                NativeValueIndex.IndexType.QNAME, remove);
             //qnameValueIndex.setDocument((DocumentImpl) node.getOwnerDocument());
             //qnameValueIndex.endElement((ElementImpl) node, currentPath, content);
         }
@@ -3232,13 +3232,13 @@ public class NativeBroker extends DBBroker {
                 final GeneralRangeIndexSpec spec1 = doc.getCollection().getIndexByPathConfiguration(this, currentPath);
                 if(spec1 != null) {
                     valueIndex.setDocument(doc);
-                    valueIndex.storeElement((ElementImpl) node, content, spec1.getType(), NativeValueIndex.IDX_GENERIC, false);
+                    valueIndex.storeElement((ElementImpl) node, content, spec1.getType(), NativeValueIndex.IndexType.GENERIC, false);
                 }
                 QNameRangeIndexSpec qnSpec = doc.getCollection().getIndexByQNameConfiguration(this, qname);
                 if(qnSpec != null) {
                     valueIndex.setDocument(doc);
                     valueIndex.storeElement((ElementImpl) node, content, qnSpec.getType(),
-                        NativeValueIndex.IDX_QNAME, false);
+                        NativeValueIndex.IndexType.QNAME, false);
                 }
                 break;
 
@@ -3252,17 +3252,17 @@ public class NativeBroker extends DBBroker {
                 switch(attr.getType()) {
                     case AttrImpl.ID:
                         valueIndex.setDocument(doc);
-                        valueIndex.storeAttribute(attr, attr.getValue(), Type.ID, NativeValueIndex.IDX_GENERIC, false);
+                        valueIndex.storeAttribute(attr, attr.getValue(), Type.ID, NativeValueIndex.IndexType.GENERIC, false);
                         break;
                     case AttrImpl.IDREF:
                         valueIndex.setDocument(doc);
-                        valueIndex.storeAttribute(attr, attr.getValue(), Type.IDREF, NativeValueIndex.IDX_GENERIC, false);
+                        valueIndex.storeAttribute(attr, attr.getValue(), Type.IDREF, NativeValueIndex.IndexType.GENERIC, false);
                         break;
                     case AttrImpl.IDREFS:
                         valueIndex.setDocument(doc);
                         final StringTokenizer tokenizer = new StringTokenizer(attr.getValue(), " ");
                         while(tokenizer.hasMoreTokens()) {
-                            valueIndex.storeAttribute(attr, tokenizer.nextToken(),Type.IDREF, NativeValueIndex.IDX_GENERIC, false);
+                            valueIndex.storeAttribute(attr, tokenizer.nextToken(),Type.IDREF, NativeValueIndex.IndexType.GENERIC, false);
                         }
                         break;
                     default:
@@ -3857,19 +3857,19 @@ public class NativeBroker extends DBBroker {
                     switch(attr.getType()) {
                         case AttrImpl.ID:
                             valueIndex.setDocument(doc);
-                            valueIndex.storeAttribute(attr, attr.getValue(), Type.ID, NativeValueIndex.IDX_GENERIC, indexMode == IndexMode.REMOVE);
+                            valueIndex.storeAttribute(attr, attr.getValue(), Type.ID, NativeValueIndex.IndexType.GENERIC, indexMode == IndexMode.REMOVE);
                             break;
 
                         case AttrImpl.IDREF:
                             valueIndex.setDocument(doc);
-                            valueIndex.storeAttribute(attr, attr.getValue(), Type.IDREF, NativeValueIndex.IDX_GENERIC, indexMode == IndexMode.REMOVE);
+                            valueIndex.storeAttribute(attr, attr.getValue(), Type.IDREF, NativeValueIndex.IndexType.GENERIC, indexMode == IndexMode.REMOVE);
                             break;
 
                         case AttrImpl.IDREFS:
                             valueIndex.setDocument(doc);
                             final StringTokenizer tokenizer = new StringTokenizer(attr.getValue(), " ");
                             while(tokenizer.hasMoreTokens()) {
-                                valueIndex.storeAttribute(attr, tokenizer.nextToken(), Type.IDREF, NativeValueIndex.IDX_GENERIC, indexMode == IndexMode.REMOVE);
+                                valueIndex.storeAttribute(attr, tokenizer.nextToken(), Type.IDREF, NativeValueIndex.IndexType.GENERIC, indexMode == IndexMode.REMOVE);
                             }
                             break;
 

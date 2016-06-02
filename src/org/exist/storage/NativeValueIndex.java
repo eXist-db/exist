@@ -26,6 +26,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import org.exist.util.*;
+import org.exist.util.function.FunctionE;
 import org.exist.xquery.XQueryWatchDog;
 import org.w3c.dom.Node;
 
@@ -65,7 +66,7 @@ import java.util.*;
  * <p>In the BTree single BFile, the keys are : (collectionId, indexType, indexData) and the values are : gid1, gid2-gid1, ...</p>
  *
  * <p>Algorithm:</p>
- * <p>When a node is stored, an entry is added or updated in the {@link #pending} map, with given String content and basic type as key. This way, the
+ * <p>When a node is stored, an entry is added or updated in the {@link #pendingGeneric} and {@link #pendingQName} maps, with given String content and basic type as key. This way, the
  * index entries are easily put in the persistent BFile storage by {@link #flush()} .</p>
  *
  * @author wolf
@@ -87,11 +88,18 @@ public class NativeValueIndex implements ContentLoadingObserver {
     public static final int OFFSET_VALUE_TYPE = OFFSET_COLLECTION_ID + Collection.LENGTH_COLLECTION_ID; //2
     public static final int OFFSET_DATA = OFFSET_VALUE_TYPE + NativeValueIndex.LENGTH_VALUE_TYPE; //3
 
-    public final static byte IDX_GENERIC = 0;
-    public final static byte IDX_QNAME = 1;
-
     public final static String INDEX_CASE_SENSITIVE_ATTRIBUTE = "caseSensitive";
     public final static String PROPERTY_INDEX_CASE_SENSITIVE = "indexer.case-sensitive";
+
+    public enum IndexType {
+        GENERIC((byte)0x0),
+        QNAME((byte)0x1);
+        final byte val;
+
+        IndexType(final byte val) {
+            this.val = val;
+        }
+    }
 
     /**
      * The broker that is using this value index.
@@ -104,6 +112,15 @@ public class NativeValueIndex implements ContentLoadingObserver {
     final BFile dbValues;
     private final Configuration config;
 
+    private static class PendingChanges<K> {
+        final IndexType indexType;
+        final Map<K, List<NodeId>> changes = new TreeMap<>();
+
+        PendingChanges(final IndexType indexType) {
+            this.indexType = indexType;
+        }
+    }
+
     /**
      * A collection of key-value pairs that pending modifications for this value index.
      * The keys are {@link org.exist.xquery.value.AtomicValue atomic values}
@@ -111,7 +128,8 @@ public class NativeValueIndex implements ContentLoadingObserver {
      * The values are {@link org.exist.util.LongLinkedList lists} containing the nodes GIDs
      * (global identifiers).
      */
-    private final Map<Object, List<NodeId>>[] pending = new Map[2];
+    private final PendingChanges<AtomicValue> pendingGeneric = new PendingChanges<>(IndexType.GENERIC);
+    private final PendingChanges<QNameKey> pendingQName = new PendingChanges<>(IndexType.QNAME);
 
     /**
      * The current document.
@@ -128,8 +146,6 @@ public class NativeValueIndex implements ContentLoadingObserver {
     public NativeValueIndex(final DBBroker broker, final byte id, final Path dataDir, final Configuration config) throws DBException {
         this.broker = broker;
         this.config = config;
-        this.pending[IDX_GENERIC] = new TreeMap<>();
-        this.pending[IDX_QNAME] = new TreeMap<>();
         final double cacheGrowth = NativeValueIndex.DEFAULT_VALUE_CACHE_GROWTH;
         final double cacheValueThresHold = NativeValueIndex.DEFAULT_VALUE_VALUE_THRESHOLD;
         BFile nativeFile = (BFile) config.getProperty(getConfigKeyForFile());
@@ -163,12 +179,10 @@ public class NativeValueIndex implements ContentLoadingObserver {
     @Override
     public void setDocument(final DocumentImpl document) {
         final boolean documentChanged = (this.doc == null && document != null) || this.doc.getDocId() != document.getDocId();
-        for (byte section = 0; section <= IDX_QNAME; section++) {
-            if (!pending[section].isEmpty() && documentChanged) {
-                LOG.error("Document changed but pending had " + pending[section].size());
-                //TODO : throw exception ? -pb
-                pending[section].clear();
-            }
+        if((!pendingGeneric.changes.isEmpty() || !pendingQName.changes.isEmpty()) && documentChanged) {
+            LOG.error("Document changed, but there were {} Generic and {} QName changes pending. These have been dropped!", pendingGeneric.changes.size(), pendingQName.changes.size());
+            pendingGeneric.changes.clear();
+            pendingQName.changes.clear();
         }
         this.doc = document;
     }
@@ -176,13 +190,13 @@ public class NativeValueIndex implements ContentLoadingObserver {
     /**
      * Store the given element's value in the value index.
      *
-     * @param node      The element
+     * @param node      The element to add to the index
      * @param content   The string representation of the value
      * @param xpathType The value type
-     * @param indexType DOCUMENT ME!
-     * @param remove    DOCUMENT ME!
+     * @param indexType The type of the index to place the element value in
+     * @param remove    Whether the element should be removed from the index
      */
-    public void storeElement(final ElementImpl node, final String content, final int xpathType, final byte indexType, final boolean remove) {
+    public void storeElement(final ElementImpl node, final String content, final int xpathType, final IndexType indexType, final boolean remove) {
         if (doc.getDocId() != node.getOwnerDocument().getDocId()) {
             throw new IllegalArgumentException("Document id ('" + doc.getDocId() + "') and proxy id ('" + node.getOwnerDocument().getDocId() + "') differ !");
         }
@@ -194,38 +208,46 @@ public class NativeValueIndex implements ContentLoadingObserver {
             return;
         }
 
-        final Object key;
-        if (indexType == IDX_QNAME) {
-            key = new QNameKey(node.getQName(), atomic);
-        } else {
-            key = atomic;
-        }
+        switch (indexType) {
+            case GENERIC:
+                store(pendingGeneric, atomic, node.getNodeId(), remove);
+                break;
 
+            case QNAME:
+                store(pendingQName, new QNameKey(node.getQName(), atomic), node.getNodeId(), remove);
+                break;
+
+            default:
+                throw new IllegalArgumentException();
+        }
+    }
+
+    private <T> void store(final PendingChanges<T> pending, final T key, final NodeId value, final boolean remove) {
         if (!remove) {
             final List<NodeId> buf;
             //Is this indexable value already pending ?
-            if (pending[indexType].containsKey(key)) {
-                buf = pending[indexType].get(key);
+            if (pending.changes.containsKey(key)) {
+                buf = pending.changes.get(key);
             } else {
                 //Create a NodeId list
                 buf = new ArrayList<>(8);
-                pending[indexType].put(key, buf);
+                pending.changes.put(key, buf);
             }
             //Add node's NodeId to the list
-            buf.add(node.getNodeId());
+            buf.add(value);
         } else {
-            if (!pending[indexType].containsKey(key)) {
-                pending[indexType].put(key, null);
+            if (!pending.changes.containsKey(key)) {
+                pending.changes.put(key, null);
             }
         }
     }
 
     @Override
     public void storeAttribute(final AttrImpl attr, final NodePath currentPath, final RangeIndexSpec spec, final boolean remove) {
-        storeAttribute(attr, attr.getValue(), spec.getType(), (spec.getQName() == null) ? IDX_GENERIC : IDX_QNAME, remove);
+        storeAttribute(attr, attr.getValue(), spec.getType(), (spec.getQName() == null) ? IndexType.GENERIC : IndexType.QNAME, remove);
     }
 
-    public void storeAttribute(final AttrImpl attr, final String value, final int xpathType, final byte indexType, final boolean remove) {
+    public void storeAttribute(final AttrImpl attr, final String value, final int xpathType, final IndexType indexType, final boolean remove) {
         if (doc != null && doc.getDocId() != attr.getOwnerDocument().getDocId()) {
             throw new IllegalArgumentException("Document id ('" + doc.getDocId() + "') and proxy id ('" + attr.getOwnerDocument().getDocId() + "') differ !");
         }
@@ -237,31 +259,17 @@ public class NativeValueIndex implements ContentLoadingObserver {
             return;
         }
 
-        final Object key;
-        if (indexType == IDX_QNAME) {
-            key = new QNameKey(attr.getQName(), atomic);
-        } else {
-            key = atomic;
-        }
+        switch(indexType) {
+            case GENERIC:
+                store(pendingGeneric, atomic, attr.getNodeId(), remove);
+                break;
 
-        if (!remove) {
-            final List<NodeId> buf;
+            case QNAME:
+                store(pendingQName, new QNameKey(attr.getQName(), atomic), attr.getNodeId(), remove);
+                break;
 
-            //Is this indexable value already pending ?
-            if (pending[indexType].containsKey(key)) {
-                //Reuse the existing NodeId list
-                buf = pending[indexType].get(key);
-            } else {
-                //Create a NodeId list
-                buf = new ArrayList<>(8);
-                pending[indexType].put(key, buf);
-            }
-            //Add node's GID to the list
-            buf.add(attr.getNodeId());
-        } else {
-            if (!pending[indexType].containsKey(key)) {
-                pending[indexType].put(key, null);
-            }
+            default:
+                throw new IllegalArgumentException();
         }
     }
 
@@ -324,211 +332,196 @@ public class NativeValueIndex implements ContentLoadingObserver {
 
     @Override
     public void flush() {
-        //TODO : return if doc == null? -pb
-        final int keyCount = pending[IDX_GENERIC].size() + pending[IDX_QNAME].size();
-
-        if (keyCount == 0) {
+        if (doc == null || (pendingGeneric.changes.isEmpty() && pendingQName.changes.isEmpty())) {
             return;
         }
         final int collectionId = this.doc.getCollection().getId();
-        final Lock lock = dbValues.getLock();
 
-        for (byte section = 0; section <= IDX_QNAME; section++) {
+        flush(pendingGeneric, key -> new SimpleValue(collectionId, (Indexable) key));
+        flush(pendingQName, key -> new QNameValue(collectionId, key.qname, key.value, broker.getBrokerPool().getSymbols()));
+    }
 
-            for (final Map.Entry<Object, List<NodeId>> entry : pending[section].entrySet()) {
-                final Object key = entry.getKey();
+    private <T> void flush(final PendingChanges<T> pending, final FunctionE<T, Value, EXistException> dbKeyFn) {
+        for (final Map.Entry<T, List<NodeId>> entry : pending.changes.entrySet()) {
+            final T key = entry.getKey();
 
             final List<NodeId> gids = entry.getValue();
             final int gidsCount = gids.size();
 
-                //Don't forget this one
-                FastQSort.sort(gids, 0, gidsCount - 1);
-                os.clear();
-                os.writeInt(this.doc.getDocId());
-                os.writeInt(gidsCount);
+            //Don't forget this one
+            FastQSort.sort(gids, 0, gidsCount - 1);
+            os.clear();
+            os.writeInt(this.doc.getDocId());
+            os.writeInt(gidsCount);
 
-                //Mark position
-                final int nodeIDsLength = os.position();
+            //Mark position
+            final int nodeIDsLength = os.position();
 
-                //Dummy value : actual one will be written below
-                os.writeFixedInt(0);
+            //Dummy value : actual one will be written below
+            os.writeFixedInt(0);
 
-                //Compute the GID list
-                NodeId previous = null;
+            //Compute the GID list
+            NodeId previous = null;
 
-                for (final NodeId nodeId : gids) {
-                    try {
-                        previous = nodeId.write(previous, os);
-//                        nodeId.write(os);
-                    } catch (final IOException e) {
-                        LOG.warn("IO error while writing range index: " + e.getMessage(), e);
-                        //TODO : throw exception?
-                    }
-                }
-
-                //Write (variable) length of node IDs
-                os.writeFixedInt(nodeIDsLength, os.position() - nodeIDsLength - LENGTH_NODE_IDS);
-
+            for (final NodeId nodeId : gids) {
                 try {
-                    lock.acquire(Lock.WRITE_LOCK);
-
-                    final Value v;
-                    if (section == IDX_GENERIC) {
-                        v = new SimpleValue(collectionId, (Indexable) key);
-                    } else {
-                        final QNameKey qnk = (QNameKey) key;
-                        v = new QNameValue(collectionId, qnk.qname, qnk.value, broker.getBrokerPool().getSymbols());
-                    }
-
-                    if (dbValues.append(v, os.data()) == BFile.UNKNOWN_ADDRESS) {
-                        LOG.warn("Could not append index data for key '" + key + "'");
-                        //TODO : throw exception ?
-                    }
-                } catch (final EXistException | IOException e) {
-                    LOG.error(e.getMessage(), e);
-                } catch (final LockException e) {
-                    LOG.warn("Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e);
-                    //TODO : return ?
-                } catch (final ReadOnlyException e) {
-                    LOG.warn(e.getMessage(), e);
-
-                    //Return without clearing the pending entries
-                    return;
-                } finally {
-                    lock.release(Lock.WRITE_LOCK);
-                    os.clear();
+                    previous = nodeId.write(previous, os);
+                } catch (final IOException e) {
+                    LOG.warn("IO error while writing range index: " + e.getMessage(), e);
+                    //TODO : throw exception?
                 }
             }
-            pending[section].clear();
+
+            //Write (variable) length of node IDs
+            os.writeFixedInt(nodeIDsLength, os.position() - nodeIDsLength - LENGTH_NODE_IDS);
+            final Lock lock = dbValues.getLock();
+            try {
+                lock.acquire(Lock.WRITE_LOCK);
+
+                final Value v = dbKeyFn.apply(key);
+
+                if (dbValues.append(v, os.data()) == BFile.UNKNOWN_ADDRESS) {
+                    LOG.warn("Could not append index data for key '" + key + "'");
+                    //TODO : throw exception ?
+                }
+            } catch (final EXistException | IOException e) {
+                LOG.error(e.getMessage(), e);
+            } catch (final LockException e) {
+                LOG.warn("Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e);
+                //TODO : return ?
+            } catch (final ReadOnlyException e) {
+                LOG.warn(e.getMessage(), e);
+
+                //Return without clearing the pending entries
+                return;
+            } finally {
+                lock.release(Lock.WRITE_LOCK);
+                os.clear();
+            }
         }
+        pending.changes.clear();
     }
 
     @Override
     public void remove() {
-        //TODO : return if doc == null? -pb
-        final int keyCount = pending[IDX_GENERIC].size() + pending[IDX_QNAME].size();
-
-        if (keyCount == 0) {
+        if (doc == null || (pendingGeneric.changes.isEmpty() && pendingQName.changes.isEmpty())) {
             return;
         }
+
         final int collectionId = this.doc.getCollection().getId();
-        final Lock lock = dbValues.getLock();
 
-        for (byte section = 0; section <= IDX_QNAME; section++) {
+        remove(pendingGeneric, key -> new SimpleValue(collectionId, (Indexable) key));
+        remove(pendingQName, key -> new QNameValue(collectionId, key.qname, key.value, broker.getBrokerPool().getSymbols()));
+    }
 
-            for (final Map.Entry<Object, List<NodeId>> entry : pending[section].entrySet()) {
-                final Object key = entry.getKey();
-                final List<NodeId> storedGIDList = entry.getValue();
-                final List<NodeId> newGIDList = new ArrayList<>();
-                os.clear();
+    private <T> void remove(final PendingChanges<T> pending, final FunctionE<T, Value, EXistException> dbKeyFn) {
+        for (final Map.Entry<T, List<NodeId>> entry : pending.changes.entrySet()) {
+            final T key = entry.getKey();
+            final List<NodeId> storedGIDList = entry.getValue();
+            final List<NodeId> newGIDList = new ArrayList<>();
+            os.clear();
 
-                try {
-                    lock.acquire(Lock.WRITE_LOCK);
+            final Lock lock = dbValues.getLock();
+            try {
+                lock.acquire(Lock.WRITE_LOCK);
 
-                    //Compute a key for the value
-                    final Value searchKey;
-                    if (section == IDX_GENERIC) {
-                        searchKey = new SimpleValue(collectionId, (Indexable) key);
-                    } else {
-                        final QNameKey qnk = (QNameKey) key;
-                        searchKey = new QNameValue(collectionId, qnk.qname, qnk.value, broker.getBrokerPool().getSymbols());
-                    }
-                    final Value value = dbValues.get(searchKey);
+                //Compute a key for the value
+                final Value searchKey = dbKeyFn.apply(key);
+                final Value value = dbValues.get(searchKey);
 
-                    //Does the value already has data in the index ?
-                    if (value != null) {
+                //Does the value already has data in the index ?
+                if (value != null) {
 
-                        //Add its data to the new list
-                        final VariableByteArrayInput is = new VariableByteArrayInput(value.getData());
+                    //Add its data to the new list
+                    final VariableByteArrayInput is = new VariableByteArrayInput(value.getData());
 
-                        while (is.available() > 0) {
-                            final int storedDocId = is.readInt();
-                            final int gidsCount = is.readInt();
-                            final int size = is.readFixedInt();
+                    while (is.available() > 0) {
+                        final int storedDocId = is.readInt();
+                        final int gidsCount = is.readInt();
+                        final int size = is.readFixedInt();
 
-                            if (storedDocId != this.doc.getDocId()) {
+                        if (storedDocId != this.doc.getDocId()) {
 
-                                // data are related to another document:
-                                // append them to any existing data
-                                os.writeInt(storedDocId);
-                                os.writeInt(gidsCount);
-                                os.writeFixedInt(size);
-                                is.copyRaw(os, size);
-                            } else {
-
-                                // data are related to our document:
-                                // feed the new list with the GIDs
-                                NodeId previous = null;
-
-                                for (int j = 0; j < gidsCount; j++) {
-                                    final NodeId nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(previous, is);
-                                    previous = nodeId;
-
-                                    // add the node to the new list if it is not
-                                    // in the list of removed nodes
-                                    if (!containsNode(storedGIDList, nodeId)) {
-                                        newGIDList.add(nodeId);
-                                    }
-                                }
-                            }
-                        }
-
-                        //append the data from the new list
-                        if (newGIDList.size() > 0) {
-                            final int gidsCount = newGIDList.size();
-
-                            //Don't forget this one
-                            FastQSort.sort(newGIDList, 0, gidsCount - 1);
-                            os.writeInt(this.doc.getDocId());
+                            // data are related to another document:
+                            // append them to any existing data
+                            os.writeInt(storedDocId);
                             os.writeInt(gidsCount);
+                            os.writeFixedInt(size);
+                            is.copyRaw(os, size);
+                        } else {
 
-                            //Mark position
-                            final int nodeIDsLength = os.position();
-
-                            //Dummy value : actual one will be written below
-                            os.writeFixedInt(0);
+                            // data are related to our document:
+                            // feed the new list with the GIDs
                             NodeId previous = null;
 
-                            for (final NodeId nodeId : newGIDList) {
-                                try {
-                                    previous = nodeId.write(previous, os);
-                                } catch (final IOException e) {
-                                    LOG.warn("IO error while writing range index: " + e.getMessage(), e);
-                                    //TODO : throw exception ?
+                            for (int j = 0; j < gidsCount; j++) {
+                                final NodeId nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(previous, is);
+                                previous = nodeId;
+
+                                // add the node to the new list if it is not
+                                // in the list of removed nodes
+                                if (!containsNode(storedGIDList, nodeId)) {
+                                    newGIDList.add(nodeId);
                                 }
                             }
-
-                            //Write (variable) length of node IDs
-                            os.writeFixedInt(nodeIDsLength, os.position() - nodeIDsLength - LENGTH_NODE_IDS);
                         }
+                    }
+
+                    //append the data from the new list
+                    if (newGIDList.size() > 0) {
+                        final int gidsCount = newGIDList.size();
+
+                        //Don't forget this one
+                        FastQSort.sort(newGIDList, 0, gidsCount - 1);
+                        os.writeInt(this.doc.getDocId());
+                        os.writeInt(gidsCount);
+
+                        //Mark position
+                        final int nodeIDsLength = os.position();
+
+                        //Dummy value : actual one will be written below
+                        os.writeFixedInt(0);
+                        NodeId previous = null;
+
+                        for (final NodeId nodeId : newGIDList) {
+                            try {
+                                previous = nodeId.write(previous, os);
+                            } catch (final IOException e) {
+                                LOG.warn("IO error while writing range index: " + e.getMessage(), e);
+                                //TODO : throw exception ?
+                            }
+                        }
+
+                        //Write (variable) length of node IDs
+                        os.writeFixedInt(nodeIDsLength, os.position() - nodeIDsLength - LENGTH_NODE_IDS);
+                    }
 
 //                        if(os.data().size() == 0)
 //                            dbValues.remove(value);
-                        if (dbValues.update(value.getAddress(), searchKey, os.data()) == BFile.UNKNOWN_ADDRESS) {
-                            LOG.error("Could not update index data for value '" + searchKey + "'");
-                            //TODO: throw exception ?
-                        }
-                    } else {
-
-                        if (dbValues.put(searchKey, os.data()) == BFile.UNKNOWN_ADDRESS) {
-                            LOG.error("Could not put index data for value '" + searchKey + "'");
-                            //TODO : throw exception ?
-                        }
+                    if (dbValues.update(value.getAddress(), searchKey, os.data()) == BFile.UNKNOWN_ADDRESS) {
+                        LOG.error("Could not update index data for value '" + searchKey + "'");
+                        //TODO: throw exception ?
                     }
-                } catch (final EXistException | IOException e) {
-                    LOG.error(e.getMessage(), e);
-                } catch (final LockException e) {
-                    LOG.warn("Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e);
-                    //TODO : return ?
-                } catch (final ReadOnlyException e) {
-                    LOG.warn("Read-only error on '" + FileUtils.fileName(dbValues.getFile()) + "'", e);
-                } finally {
-                    lock.release(Lock.WRITE_LOCK);
-                    os.clear();
+                } else {
+
+                    if (dbValues.put(searchKey, os.data()) == BFile.UNKNOWN_ADDRESS) {
+                        LOG.error("Could not put index data for value '" + searchKey + "'");
+                        //TODO : throw exception ?
+                    }
                 }
+            } catch (final EXistException | IOException e) {
+                LOG.error(e.getMessage(), e);
+            } catch (final LockException e) {
+                LOG.warn("Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e);
+                //TODO : return ?
+            } catch (final ReadOnlyException e) {
+                LOG.warn("Read-only error on '" + FileUtils.fileName(dbValues.getFile()) + "'", e);
+            } finally {
+                lock.release(Lock.WRITE_LOCK);
+                os.clear();
             }
-            pending[section].clear();
         }
+        pending.changes.clear();
     }
 
     private static boolean containsNode(final List<NodeId> list, final NodeId nodeId) {
@@ -564,75 +557,11 @@ public class NativeValueIndex implements ContentLoadingObserver {
     public void dropIndex(final DocumentImpl document) throws ReadOnlyException {
         final int collectionId = document.getCollection().getId();
         final Lock lock = dbValues.getLock();
-
         try {
             lock.acquire(Lock.WRITE_LOCK);
 
-            for (int section = 0; section <= IDX_QNAME; section++) {
-
-                for (final Map.Entry<Object, List<NodeId>> entry : pending[section].entrySet()) {
-                    final Object key = entry.getKey();
-
-                    //Compute a key for the indexed value in the collection
-                    final Value v;
-                    if (section == IDX_GENERIC) {
-                        v = new SimpleValue(collectionId, (Indexable) key);
-                    } else {
-                        final QNameKey qnk = (QNameKey) key;
-                        v = new QNameValue(collectionId, qnk.qname, qnk.value, broker.getBrokerPool().getSymbols());
-                    }
-                    final Value value = dbValues.get(v);
-
-                    if (value == null) {
-                        continue;
-                    }
-                    final VariableByteArrayInput is = new VariableByteArrayInput(value.getData());
-                    boolean changed = false;
-                    os.clear();
-
-                    while (is.available() > 0) {
-                        final int storedDocId = is.readInt();
-                        final int gidsCount = is.readInt();
-                        final int size = is.readFixedInt();
-
-                        if (storedDocId != document.getDocId()) {
-
-                            // data are related to another document:
-                            // copy them (keep them)
-                            os.writeInt(storedDocId);
-                            os.writeInt(gidsCount);
-                            os.writeFixedInt(size);
-                            is.copyRaw(os, size);
-                        } else {
-
-                            // data are related to our document:
-                            // skip them (remove them)
-                            is.skipBytes(size);
-                            changed = true;
-                        }
-                    }
-
-                    //Store new data, if relevant
-                    if (changed) {
-
-                        if (os.data().size() == 0) {
-
-                            // nothing to store:
-                            // remove the existing key/value pair
-                            dbValues.remove(v);
-                        } else {
-
-                            // still something to store:
-                            // modify the existing value for the key
-                            if (dbValues.put(v, os.data()) == BFile.UNKNOWN_ADDRESS) {
-                                LOG.error("Could not put index data for key '" + v + "'");
-                                //TODO : throw exception ?
-                            }
-                        }
-                    }
-                }
-                pending[section].clear();
-            }
+            dropIndex(document.getDocId(), pendingGeneric, key -> new SimpleValue(collectionId, (Indexable) key));
+            dropIndex(document.getDocId(), pendingQName, key -> new QNameValue(collectionId, key.qname, key.value, broker.getBrokerPool().getSymbols()));
         } catch (final LockException e) {
             LOG.warn("Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e);
         } catch (final IOException e) {
@@ -643,6 +572,66 @@ public class NativeValueIndex implements ContentLoadingObserver {
             os.clear();
             lock.release(Lock.WRITE_LOCK);
         }
+    }
+
+    private <T> void dropIndex(final int docId, final PendingChanges<T> pending, final FunctionE<T, Value, EXistException> dbKeyFn) throws EXistException, IOException, ReadOnlyException {
+        for (final Map.Entry<T, List<NodeId>> entry : pending.changes.entrySet()) {
+            final T key = entry.getKey();
+
+            //Compute a key for the indexed value in the collection
+            final Value v = dbKeyFn.apply(key);
+            final Value value = dbValues.get(v);
+
+            if (value == null) {
+                continue;
+            }
+
+            final VariableByteArrayInput is = new VariableByteArrayInput(value.getData());
+            boolean changed = false;
+            os.clear();
+
+            while (is.available() > 0) {
+                final int storedDocId = is.readInt();
+                final int gidsCount = is.readInt();
+                final int size = is.readFixedInt();
+
+                if (storedDocId != docId) {
+
+                    // data are related to another document:
+                    // copy them (keep them)
+                    os.writeInt(storedDocId);
+                    os.writeInt(gidsCount);
+                    os.writeFixedInt(size);
+                    is.copyRaw(os, size);
+                } else {
+
+                    // data are related to our document:
+                    // skip them (remove them)
+                    is.skipBytes(size);
+                    changed = true;
+                }
+            }
+
+            //Store new data, if relevant
+            if (changed) {
+
+                if (os.data().size() == 0) {
+
+                    // nothing to store:
+                    // remove the existing key/value pair
+                    dbValues.remove(v);
+                } else {
+
+                    // still something to store:
+                    // modify the existing value for the key
+                    if (dbValues.put(v, os.data()) == BFile.UNKNOWN_ADDRESS) {
+                        LOG.error("Could not put index data for key '" + v + "'");
+                        //TODO : throw exception ?
+                    }
+                }
+            }
+        }
+        pending.changes.clear();
     }
 
     public NodeSet find(final XQueryWatchDog watchDog, final int relation, final DocumentSet docs, final NodeSet contextSet, final int axis, final QName qname, final Indexable value) throws TerminatedException {
@@ -1302,7 +1291,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
         @Override
         public boolean indexInfo(final Value value, final long pointer) throws TerminatedException {
             final int offset;
-            if (value.data()[value.start()] == IDX_GENERIC) {
+            if (value.data()[value.start()] == IndexType.GENERIC.val) {
                 offset = SimpleValue.OFFSET_VALUE + NativeValueIndex.LENGTH_VALUE_TYPE;
             } else {
                 offset = QNameValue.OFFSET_VALUE + NativeValueIndex.LENGTH_VALUE_TYPE;
@@ -1458,7 +1447,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
         SimpleValue(final int collectionId) {
             len = LENGTH_IDX_TYPE + Collection.LENGTH_COLLECTION_ID;
             data = new byte[len];
-            data[OFFSET_IDX_TYPE] = IDX_GENERIC;
+            data[OFFSET_IDX_TYPE] = IndexType.GENERIC.val;
             ByteConversion.intToByte(collectionId, data, OFFSET_COLLECTION_ID);
             pos = OFFSET_IDX_TYPE;
         }
@@ -1467,7 +1456,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
             data = atomic.serializeValue(OFFSET_VALUE);
             len = data.length;
             pos = OFFSET_IDX_TYPE;
-            data[OFFSET_IDX_TYPE] = IDX_GENERIC;
+            data[OFFSET_IDX_TYPE] = IndexType.GENERIC.val;
             ByteConversion.intToByte(collectionId, data, OFFSET_COLLECTION_ID);
         }
 
@@ -1482,7 +1471,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
         SimplePrefixValue(final int collectionId, final int type) {
             len = SimpleValue.LENGTH_IDX_TYPE + Collection.LENGTH_COLLECTION_ID + LENGTH_VALUE_TYPE;
             data = new byte[len];
-            data[SimpleValue.OFFSET_IDX_TYPE] = IDX_GENERIC;
+            data[SimpleValue.OFFSET_IDX_TYPE] = IndexType.GENERIC.val;
             ByteConversion.intToByte(collectionId, data, SimpleValue.OFFSET_COLLECTION_ID);
             data[SimpleValue.OFFSET_VALUE] = (byte) type;
             pos = SimpleValue.OFFSET_IDX_TYPE;
@@ -1503,7 +1492,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
         public QNameValue(final int collectionId) {
             len = LENGTH_IDX_TYPE + Collection.LENGTH_COLLECTION_ID;
             data = new byte[len];
-            data[OFFSET_IDX_TYPE] = IDX_QNAME;
+            data[OFFSET_IDX_TYPE] = IndexType.QNAME.val;
             ByteConversion.intToByte(collectionId, data, OFFSET_COLLECTION_ID);
             pos = OFFSET_IDX_TYPE;
         }
@@ -1514,7 +1503,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
             pos = OFFSET_IDX_TYPE;
             final short namespaceId = symbols.getNSSymbol(qname.getNamespaceURI());
             final short localNameId = symbols.getSymbol(qname.getLocalPart());
-            data[OFFSET_IDX_TYPE] = IDX_QNAME;
+            data[OFFSET_IDX_TYPE] = IndexType.QNAME.val;
             ByteConversion.intToByte(collectionId, data, OFFSET_COLLECTION_ID);
             data[OFFSET_QNAME_TYPE] = qname.getNameType();
             ByteConversion.shortToByte(namespaceId, data, OFFSET_NS_URI);
@@ -1536,7 +1525,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
         QNamePrefixValue(final int collectionId, final QName qname, final int type, final SymbolTable symbols) {
             len = QNameValue.OFFSET_VALUE + LENGTH_VALUE_TYPE;
             data = new byte[len];
-            data[QNameValue.OFFSET_IDX_TYPE] = IDX_QNAME;
+            data[QNameValue.OFFSET_IDX_TYPE] = IndexType.QNAME.val;
             ByteConversion.intToByte(collectionId, data, QNameValue.OFFSET_COLLECTION_ID);
             final short namespaceId = symbols.getNSSymbol(qname.getNamespaceURI());
             final short localNameId = symbols.getSymbol(qname.getLocalPart());
@@ -1585,17 +1574,17 @@ public class NativeValueIndex implements ContentLoadingObserver {
 
             switch (attrib.getType()) {
                 case AttrImpl.ID:
-                    storeAttribute(attrib, attrib.getValue(), Type.ID, NativeValueIndex.IDX_GENERIC, false);
+                    storeAttribute(attrib, attrib.getValue(), Type.ID, IndexType.GENERIC, false);
                     break;
 
                 case AttrImpl.IDREF:
-                    storeAttribute(attrib, attrib.getValue(), Type.IDREF, NativeValueIndex.IDX_GENERIC, false);
+                    storeAttribute(attrib, attrib.getValue(), Type.IDREF, IndexType.GENERIC, false);
                     break;
 
                 case AttrImpl.IDREFS:
                     final StringTokenizer tokenizer = new StringTokenizer(attrib.getValue(), " ");
                     while (tokenizer.hasMoreTokens()) {
-                        storeAttribute(attrib, tokenizer.nextToken(), Type.IDREF, NativeValueIndex.IDX_GENERIC, false);
+                        storeAttribute(attrib, tokenizer.nextToken(), Type.IDREF, IndexType.GENERIC, false);
                     }
                     break;
 
@@ -1614,11 +1603,11 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 final XMLString content = contentStack.pop();
 
                 if (rSpec != null) {
-                    storeElement(element, content.toString(), RangeIndexSpec.indexTypeToXPath(rSpec.getIndexType()), NativeValueIndex.IDX_GENERIC, false);
+                    storeElement(element, content.toString(), RangeIndexSpec.indexTypeToXPath(rSpec.getIndexType()), IndexType.GENERIC, false);
                 }
 
                 if (qSpec != null) {
-                    storeElement(element, content.toString(), RangeIndexSpec.indexTypeToXPath(qSpec.getIndexType()), NativeValueIndex.IDX_QNAME, false);
+                    storeElement(element, content.toString(), RangeIndexSpec.indexTypeToXPath(qSpec.getIndexType()), IndexType.QNAME, false);
                 }
             }
             super.endElement(transaction, element, path);
