@@ -19,6 +19,7 @@
  */
 package org.exist.storage;
 
+import net.jcip.annotations.GuardedBy;
 import org.exist.dom.TypedQNameComparator;
 import org.exist.dom.persistent.*;
 import org.exist.dom.QName;
@@ -109,7 +110,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
     /**
      * The data-store for this value index.
      */
-    final BFile dbValues;
+    @GuardedBy("dbValues#getLock()") final BFile dbValues;
     private final Configuration config;
 
     private static class PendingChanges<K> {
@@ -1064,16 +1065,30 @@ public class NativeValueIndex implements ContentLoadingObserver {
 
     @Override
     public void closeAndRemove() {
-        //Use inheritance if necessary ;-)
-        config.setProperty(getConfigKeyForFile(), null);
-        dbValues.closeAndRemove();
+        final Lock lock = dbValues.getLock();
+        try {
+            lock.acquire(Lock.WRITE_LOCK);
+            config.setProperty(getConfigKeyForFile(), null);
+            dbValues.closeAndRemove();
+        } catch (final LockException e) {
+            LOG.warn("Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e);
+        } finally {
+            lock.release(Lock.WRITE_LOCK);
+        }
     }
 
     @Override
     public void close() throws DBException {
-        //Use inheritance if necessary ;-)
-        config.setProperty(getConfigKeyForFile(), null);
-        dbValues.close();
+        final Lock lock = dbValues.getLock();
+        try {
+            lock.acquire(Lock.WRITE_LOCK);
+            config.setProperty(getConfigKeyForFile(), null);
+            dbValues.close();
+        } catch (final LockException e) {
+            LOG.warn("Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e);
+        } finally {
+            lock.release(Lock.WRITE_LOCK);
+        }
     }
 
     @Override
