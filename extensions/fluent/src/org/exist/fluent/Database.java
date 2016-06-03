@@ -524,7 +524,7 @@ public class Database {
 		}
 		public void flush() {}
 		public void setDocument(DocumentImpl document) {}
-		public void storeAttribute(AttrImpl node, NodePath currentPath, int indexingHint, RangeIndexSpec spec, boolean remove) {}
+		public void storeAttribute(AttrImpl node, NodePath currentPath, RangeIndexSpec spec, boolean remove) {}
 		public void storeText(TextImpl node, NodePath currentPath) {}
 		public void sync() {}
 		public void printStatistics() {}

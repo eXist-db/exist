@@ -377,7 +377,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                 final Collator collator   = ( ( collationArg != null ) ? getCollator( contextSequence ) : null );
 
                 if( truncation == Constants.TRUNC_NONE ) {
-                    temp         = context.getBroker().getValueIndex().find(context.getWatchDog(), relation, contextSequence.getDocumentSet(), contextSet, NodeSet.DESCENDANT, contextQName, ( Indexable )key, collator );
+                    temp         = context.getBroker().getValueIndex().find(context.getWatchDog(), relation, contextSequence.getDocumentSet(), contextSet, NodeSet.DESCENDANT, contextQName, ( Indexable )key);
                     hasUsedIndex = true;
                 } else {
 
@@ -826,10 +826,10 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                             NodeSet ns;
 
                             if( indexScan ) {
-                                ns = context.getBroker().getValueIndex().findAll( context.getWatchDog(), relation, docs, nodes, NodeSet.ANCESTOR, ( Indexable )key, collator );
+                                ns = context.getBroker().getValueIndex().findAll( context.getWatchDog(), relation, docs, nodes, NodeSet.ANCESTOR, ( Indexable )key);
                             } else {
                                 ns = context.getBroker().getValueIndex().find( context.getWatchDog(), relation, docs, nodes, NodeSet.ANCESTOR, myContextQName,
-                                        ( Indexable )key, collator, indexMixed );
+                                        ( Indexable )key, indexMixed );
                             }
                             hasUsedIndex = true;
 
