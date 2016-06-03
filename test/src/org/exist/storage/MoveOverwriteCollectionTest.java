@@ -108,17 +108,17 @@ public class MoveOverwriteCollectionTest {
     }
 
     private void store(final DBBroker broker) throws Exception {
-        try(Txn txn = broker.beginTx()) {
+        try(final Txn transaction = broker.getBrokerPool().getTransactionManager().beginTransaction()) {
 
-            test1 = createCollection(txn, broker, TEST_COLLECTION_URI);
-            test2 = createCollection(txn, broker, SUB_TEST_COLLECTION_URI);
-            test3 = createCollection(txn, broker, TEST3_COLLECTION_URI);
+            test1 = createCollection(transaction, broker, TEST_COLLECTION_URI);
+            test2 = createCollection(transaction, broker, SUB_TEST_COLLECTION_URI);
+            test3 = createCollection(transaction, broker, TEST3_COLLECTION_URI);
 
-            store(txn, broker, test1, doc1Name, XML1);
-            store(txn, broker, test2, doc2Name, XML2);
-            store(txn, broker, test3, doc3Name, XML3);
+            store(transaction, broker, test1, doc1Name, XML1);
+            store(transaction, broker, test2, doc2Name, XML2);
+            store(transaction, broker, test3, doc3Name, XML3);
 
-            txn.commit();
+            transaction.commit();
         }
     }
 
@@ -134,10 +134,10 @@ public class MoveOverwriteCollectionTest {
     }
 
     private void move(final DBBroker broker) throws Exception {
-        try (Txn txn = broker.beginTx()) {
+        try(final Txn transaction = broker.getBrokerPool().getTransactionManager().beginTransaction()) {
             Collection root = broker.getCollection(XmldbURI.ROOT_COLLECTION_URI);
-            broker.moveCollection(txn, test3, root, XmldbURI.create("test"));
-            txn.commit();
+            broker.moveCollection(transaction, test3, root, XmldbURI.create("test"));
+            transaction.commit();
         }
     }
 

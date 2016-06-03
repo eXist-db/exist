@@ -107,15 +107,14 @@ public class MoveOverwriteResourceTest {
     }
 
     private void store(final DBBroker broker) throws Exception {
-        try(Txn txn = broker.beginTx()) {
+        try(final Txn transaction = broker.getBrokerPool().getTransactionManager().beginTransaction()) {
+            test1 = createCollection(transaction, broker, TEST_COLLECTION_URI);
+            test2 = createCollection(transaction, broker, SUB_TEST_COLLECTION_URI);
 
-            test1 = createCollection(txn, broker, TEST_COLLECTION_URI);
-            test2 = createCollection(txn, broker, SUB_TEST_COLLECTION_URI);
+            store(transaction, broker, test1, doc1Name, XML1);
+            store(transaction, broker, test2, doc2Name, XML2);
 
-            store(txn, broker, test1, doc1Name, XML1);
-            store(txn, broker, test2, doc2Name, XML2);
-
-            txn.commit();
+            transaction.commit();
         }
     }
 
@@ -142,10 +141,10 @@ public class MoveOverwriteResourceTest {
         //create
         index.expectingDocument.add(test2.getURI().append(doc2Name));
 
-        try(Txn txn = broker.beginTx()) {
+        try(final Txn transaction = broker.getBrokerPool().getTransactionManager().beginTransaction()) {
             final DocumentImpl doc = test1.getDocument(broker, doc1Name);
-            broker.moveResource(txn, doc, test2, doc2Name);
-            txn.commit();
+            broker.moveResource(transaction, doc, test2, doc2Name);
+            transaction.commit();
         }
 
         assertTrue(index.expectingDocument.isEmpty());
