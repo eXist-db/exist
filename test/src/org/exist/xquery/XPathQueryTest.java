@@ -104,7 +104,16 @@ public class XPathQueryTest {
             "   <a> <s>C</s> <n>5</n> </a>" +
             "   <a> <s>Z</s> <n>6</n> </a>" +
             "</test>";
-    
+
+    private final static String ids_content =
+            "<test xml:space=\"preserve\">" +
+            "<a ref=\"id1\"/>" +
+            "<a ref=\"id1\"/>" +
+            "<d ref=\"id2\"/>" +
+            "<b id=\"id1\"><name>one</name></b>" +
+            "<c xml:id=\"     id2     \"><name>two</name></c>" +
+            "</test>";
+
     private final static String ids =
             "<!DOCTYPE test [" +
             "<!ELEMENT test (a | b | c | d)*>" +
@@ -118,13 +127,7 @@ public class XPathQueryTest {
             "<!ATTLIST a ref IDREF #IMPLIED>" +
             "<!ATTLIST b id ID #IMPLIED>" +
             "<!ATTLIST c xml:id ID #IMPLIED>]>" +
-            "<test xml:space=\"preserve\">" +
-            "<a ref=\"id1\"/>" +
-            "<a ref=\"id1\"/>" +
-            "<d ref=\"id2\"/>" +
-            "<b id=\"id1\"><name>one</name></b>" +
-            "<c xml:id=\"     id2     \"><name>two</name></c>" +
-            "</test>";
+            ids_content;
     
     private final static String date =
             "<timestamp date=\"2006-04-29+02:00\"/>";
@@ -1374,7 +1377,7 @@ public class XPathQueryTest {
     }     
     
     @Test
-    public void ids() throws XMLDBException {
+    public void ids_persistent() throws XMLDBException {
         final XQueryService service =
                 storeXMLStringAndGetQueryService("ids.xml", ids);
 
@@ -1398,6 +1401,27 @@ public class XPathQueryTest {
         queryResource(service, "ids.xml", update, 0);
         queryResource(service, "ids.xml", "id('id4', /test)", 1);
     }
+
+    @Ignore("Not yet supported in eXist")
+    @Test
+    public void ids_memtree() throws XMLDBException {
+        final XQueryService service = getQueryService();
+
+        ResourceSet result = service.query("document { " + ids_content + " }//a/id(@ref)");
+        assertEquals(1, result.getSize());
+
+        result = service.query("document { " + ids_content + " }/test/id(//a/@ref)");
+        assertEquals(1, result.getSize());
+
+        result = service.query("document { " + ids_content + " }//a/id(@ref)/name");
+        assertEquals(1, result.getSize());
+        Resource r = result.getResource(0);
+        assertEquals("<name>one</name>", r.getContent().toString());
+
+        result = service.query("document { " + ids_content + " }//d/id(@ref)/name");
+        r = result.getResource(0);
+        assertEquals("<name>two</name>", r.getContent().toString());
+    }
     
     @Test
     public void idsOnEmptyCollection() throws XMLDBException {
@@ -1410,7 +1434,7 @@ public class XPathQueryTest {
     }
     
     @Test
-    public void idRefs() throws XMLDBException {
+    public void idRefs_persistent() throws XMLDBException {
        final XQueryService service =
           storeXMLStringAndGetQueryService("ids.xml", ids);
   
@@ -1418,6 +1442,24 @@ public class XPathQueryTest {
        queryResource(service, "ids.xml", "/idref('id1')", 2);
        queryResource(service, "ids.xml", "/idref(('id2', 'id1'))", 3);
        queryResource(service, "ids.xml", "<results>{/idref('id2')}</results>", 1);
+    }
+
+    @Ignore("Not yet supported in eXist")
+    @Test
+    public void idRefs_memtree() throws XMLDBException {
+        final XQueryService service = getQueryService();
+
+        ResourceSet result = service.query("document {" + ids_content + "}/idref('id2')");
+        assertEquals(1, result.getSize());
+
+        result = service.query("document {" + ids_content + "}/idref('id1')");
+        assertEquals(2, result.getSize());
+
+        result = service.query("document {" + ids_content + "}/idref(('id2', 'id1'))");
+        assertEquals(3, result.getSize());
+
+        result = service.query("let $doc := document {" + ids_content + "} return <results>{$doc/idref('id2')}</results>");
+        assertEquals(1, result.getSize());
     }
     
     @Test
