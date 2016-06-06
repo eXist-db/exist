@@ -152,7 +152,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
         // Case 5: content is a document or internal node, we MUST serialize it
         } else {
             content = withDb((broker, transaction) -> {
-                final Serializer serializer = broker.getSerializer();
+                final Serializer serializer = broker.newSerializer();
                 serializer.setUser(user);
 
                 try {
@@ -287,7 +287,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 
                     // case 3: content is an internal node or a document
                     } else {
-                        final Serializer serializer = broker.getSerializer();
+                        final Serializer serializer = broker.newSerializer();
                         serializer.setUser(user);
                         serializer.setProperties(getProperties());
                         serializer.setSAXHandlers(handler, lexicalHandler);
