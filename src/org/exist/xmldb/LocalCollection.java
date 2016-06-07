@@ -249,7 +249,7 @@ public class LocalCollection extends AbstractLocal implements CollectionImpl {
 
     @Override
     public String getName() throws XMLDBException {
-        return this.<String>read().apply((collection, broker, transaction) -> collection.getURI().toString());
+        return path.toString();
     }
 
     @Override
