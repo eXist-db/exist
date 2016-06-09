@@ -4,6 +4,10 @@
 
     <!-- Convert log4j2.xml for use in war-file -->
     <xsl:output method="xml"/>
+  
+    <xsl:template match="Property[@name='logs']">
+        <Property name="logs">${web:rootDir}/WEB-INF/logs</Property>
+    </xsl:template>
     
     <xsl:template match="category[@name='org.mortbay']">
     </xsl:template>

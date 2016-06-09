@@ -7,7 +7,12 @@
     <!-- import common targets -->
     <import file="../../build.xml"/>
     <import file="git-support.xml"/>
-    
+
+    <!-- temorary location for files that should be added to the war -->
+    <property name="war.tmp" value="webapp/WEB-INF/tmp"/>
+    <!-- temporary location for libs that should be added to the war -->
+    <property name="war.tmp.libs" value="${war.tmp}/lib"/>
+
     <!-- ================================================================== -->
     <!-- Prepare webapp                                                     -->
     <!-- ================================================================== -->
@@ -27,13 +32,29 @@
         <xslt in="conf.xml"  out="webapp/WEB-INF/conf.xml"  style="${build.scripts}/dist-war-conf.xsl"/>
         <xslt in="log4j2.xml" out="webapp/WEB-INF/log4j2.xml" style="${build.scripts}/dist-war-log4j.xsl"/>
         
+        <!-- fetch war specific libs -->
+        <path id="log4j2.core.path">
+            <fileset dir="${lib.core}">
+                <include name="log4j-core-*.jar"/>
+            </fileset>
+        </path>
+        <property name="log4j2.core.file" refid="log4j2.core.path"/>
+        <propertyregex property="log4j2.version" input="${log4j2.core.file}" regexp=".*log4j-core-(.*).jar" select="\1" />
+
+        <echo message="Detected log4j2 version: ${log4j2.version}, downloading log4j-web-${log4j2.version}.jar..."/>
+
+        <property name="log4j2.web.artifact" value="log4j-web-${log4j2.version}.jar"/>
+        <property name="log4j2.web.url" value="http://search.maven.org/remotecontent?filepath=org/apache/logging/log4j/log4j-web/${log4j2.version}/${log4j2.web.artifact}"/>
+
+        <mkdir dir="${war.tmp.libs}"/>
+        <get src="${log4j2.web.url}" dest="${war.tmp.libs}/${log4j2.web.artifact}" verbose="true" usetimestamp="true" skipexisting="true"/>
     </target>
 
     <!-- ================================================================== -->
     <!-- Create .war file                                                   -->
     <!-- ================================================================== -->
     <target name="dist-war" depends="git.details,webapps" description="Create war file">
-        <war destfile="${dist}/exist-${project.version}-${git.commit}.war" webxml="webapp/WEB-INF/web.xml">
+      <war destfile="${dist}/exist-${project.version}-${git.commit}.war" webxml="webapp/WEB-INF/web.xml">
                 
             <!-- Add files to WEB-INF/lib -->
             <lib dir=".">
@@ -102,7 +123,9 @@
             <lib dir="extensions/modules/lib">
                 <include name="*.jar"/>
             </lib>
-            
+            <lib dir="${war.tmp.libs}">
+              <include name="*.jar"/>
+            </lib>
 
             <!-- Add configuration files to WEB-INF -->
             <webinf dir=".">
@@ -121,6 +144,7 @@
             <!-- Add files context root ('/') -->
             <fileset dir="webapp">
                 <exclude name="**/*~"/>
+                <exclude name="WEB-INF/tmp/**"/>
                 <exclude name="api/**"/>
                 <exclude name="WEB-INF/web.xml"/>
                 <exclude name="WEB-INF/data/*.dbx"/>
@@ -158,6 +182,7 @@
             </manifest>
 
         </war>
+        <delete dir="${war.tmp}"/>
     </target>
     
     <!-- ================================================================== -->
