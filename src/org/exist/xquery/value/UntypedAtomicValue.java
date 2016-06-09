@@ -26,6 +26,7 @@ import java.text.Collator;
 
 import org.exist.util.Collations;
 import org.exist.xquery.Constants;
+import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 
@@ -158,28 +159,25 @@ public class UntypedAtomicValue extends AtomicValue {
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.AtomicValue#compareTo(int, org.exist.xquery.value.AtomicValue)
-     */
     @Override
-    public boolean compareTo(Collator collator, int operator, AtomicValue other) throws XPathException {
+    public boolean compareTo(Collator collator, Comparison operator, AtomicValue other) throws XPathException {
         if (other.isEmpty())
             {return false;}
         if (Type.subTypeOf(other.getType(), Type.STRING) ||
                 Type.subTypeOf(other.getType(), Type.UNTYPED_ATOMIC)) {
             final int cmp = Collations.compare(collator, value, other.getStringValue());
             switch (operator) {
-            case Constants.EQ :
+            case EQ:
                 return cmp == 0;
-            case Constants.NEQ :
+            case NEQ:
                 return cmp != 0;
-            case Constants.LT :
+            case LT :
                 return cmp < 0;
-            case Constants.LTEQ :
+            case LTEQ :
                 return cmp <= 0;
-            case Constants.GT :
+            case GT :
                 return cmp > 0;
-            case Constants.GTEQ :
+            case GTEQ :
                 return cmp >= 0;
             default :
                 throw new XPathException("Type error: cannot apply operand to string value");

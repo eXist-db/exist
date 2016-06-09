@@ -1,6 +1,6 @@
 package org.exist.xquery.value;
 
-import org.exist.xquery.Constants;
+import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.XPathException;
 import org.junit.Test;
 
@@ -227,23 +227,23 @@ public class DateTest extends AbstractTimeRelatedTestCase {
     @Test
 	public void compare5() throws XPathException {
 		AbstractDateTimeValue v1 = new DateValue("2004-12-25-12:00"), v2 = new DateValue("2004-12-26+12:00");
-		assertTrue(v1.compareTo(null, Constants.EQ, v2));
-		assertFalse(v1.compareTo(null, Constants.NEQ, v2));
-		assertFalse(v1.compareTo(null, Constants.GT, v2));
-		assertFalse(v1.compareTo(null, Constants.LT, v2));
-		assertTrue(v1.compareTo(null, Constants.GTEQ, v2));
-		assertTrue(v1.compareTo(null, Constants.LTEQ, v2));
+		assertTrue(v1.compareTo(null, Comparison.EQ, v2));
+		assertFalse(v1.compareTo(null, Comparison.NEQ, v2));
+		assertFalse(v1.compareTo(null, Comparison.GT, v2));
+		assertFalse(v1.compareTo(null, Comparison.LT, v2));
+		assertTrue(v1.compareTo(null, Comparison.GTEQ, v2));
+		assertTrue(v1.compareTo(null, Comparison.LTEQ, v2));
 	}
 
     @Test
 	public void compare7() throws XPathException {
 		AbstractDateTimeValue v1 = new DateValue("2004-12-25Z"), v2 = new DateValue("2004-12-25-05:00");
-		assertFalse(v1.compareTo(null, Constants.EQ, v2));
-		assertTrue(v1.compareTo(null, Constants.NEQ, v2));
-		assertFalse(v1.compareTo(null, Constants.GT, v2));
-		assertTrue(v1.compareTo(null, Constants.LT, v2));
-		assertFalse(v1.compareTo(null, Constants.GTEQ, v2));
-		assertTrue(v1.compareTo(null, Constants.LTEQ, v2));
+		assertFalse(v1.compareTo(null, Comparison.EQ, v2));
+		assertTrue(v1.compareTo(null, Comparison.NEQ, v2));
+		assertFalse(v1.compareTo(null, Comparison.GT, v2));
+		assertTrue(v1.compareTo(null, Comparison.LT, v2));
+		assertFalse(v1.compareTo(null, Comparison.GTEQ, v2));
+		assertTrue(v1.compareTo(null, Comparison.LTEQ, v2));
 	}
 
     @Test

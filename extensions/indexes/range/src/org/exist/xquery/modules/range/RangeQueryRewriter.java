@@ -24,6 +24,7 @@ package org.exist.xquery.modules.range;
 import org.exist.indexing.range.*;
 import org.exist.storage.NodePath;
 import org.exist.xquery.*;
+import org.exist.xquery.Constants.Comparison;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -174,21 +175,21 @@ public class RangeQueryRewriter extends QueryRewriter {
         RangeIndex.Operator operator = RangeIndex.Operator.EQ;
         if (expr instanceof GeneralComparison) {
             GeneralComparison comparison = (GeneralComparison) expr;
-            int relation = comparison.getRelation();
+            final Comparison relation = comparison.getRelation();
             switch(relation) {
-                case Constants.LT:
+                case LT:
                     operator = RangeIndex.Operator.LT;
                     break;
-                case Constants.GT:
+                case GT:
                     operator = RangeIndex.Operator.GT;
                     break;
-                case Constants.LTEQ:
+                case LTEQ:
                     operator = RangeIndex.Operator.LE;
                     break;
-                case Constants.GTEQ:
+                case GTEQ:
                     operator = RangeIndex.Operator.GE;
                     break;
-                case Constants.EQ:
+                case EQ:
                     switch (comparison.getTruncation()) {
                         case Constants.TRUNC_BOTH:
                             operator = RangeIndex.Operator.CONTAINS;
@@ -204,7 +205,7 @@ public class RangeQueryRewriter extends QueryRewriter {
                             break;
                     }
                     break;
-                case Constants.NEQ:
+                case NEQ:
                     operator = RangeIndex.Operator.NE;
                     break;
 

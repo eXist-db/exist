@@ -23,6 +23,7 @@ package org.exist.xquery.value;
 import java.text.Collator;
 
 import org.exist.xquery.Constants;
+import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 
@@ -89,24 +90,22 @@ public class BooleanValue extends AtomicValue {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.AtomicValue#compareTo(int, org.exist.xquery.value.AtomicValue)
-	 */
-	public boolean compareTo(Collator collator, int operator, AtomicValue other) throws XPathException {
+	@Override
+	public boolean compareTo(Collator collator, Comparison operator, AtomicValue other) throws XPathException {
 		if (Type.subTypeOf(other.getType(), Type.BOOLEAN)) {
 			boolean otherVal = ((BooleanValue) other).getValue();
 			switch (operator) {
-				case Constants.EQ :
+				case EQ:
 					return value == otherVal;
-				case Constants.NEQ :
+				case NEQ:
 					return value != otherVal;
-				case Constants.LT:
+				case LT:
 					return (!value) && otherVal;
-				case Constants.LTEQ:
+				case LTEQ:
 					return value == otherVal || (!value) && otherVal;
-				case Constants.GT:
+				case GT:
 					return value && (!otherVal);
-				case Constants.GTEQ:
+				case GTEQ:
 					return value == otherVal || value && (!otherVal);
 				default :
 					throw new XPathException("Type error: cannot apply this operator to a boolean value");

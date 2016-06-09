@@ -3,6 +3,7 @@ package org.exist.xquery.value;
 import java.text.Collator;
 
 import org.exist.xquery.Constants;
+import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.XPathException;
 
 public abstract class NumericValue extends ComputableValue {
@@ -42,10 +43,8 @@ public abstract class NumericValue extends ComputableValue {
 		return !(isNaN() || isZero());
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.AtomicValue#compareTo(int, org.exist.xquery.value.AtomicValue)
-	 */
-	public boolean compareTo(Collator collator, int operator, AtomicValue other)
+	@Override
+	public boolean compareTo(Collator collator, Comparison operator, AtomicValue other)
 		throws XPathException {
 		if (other.isEmpty()) {
 			//Never equal, or inequal...
@@ -55,23 +54,23 @@ public abstract class NumericValue extends ComputableValue {
 			if (isNaN()) {
 				//NaN does not equal itself.
 				if (((NumericValue)other).isNaN()) {
-					return operator == Constants.NEQ;
+					return operator == Comparison.NEQ;
 				}
 			}			
 			final double otherVal = ((NumericValue)other).getDouble();
 			final double val = getDouble();
 			switch(operator) {
-				case Constants.EQ:
+				case EQ:
 					return val == otherVal;
-				case Constants.NEQ:
+				case NEQ:
 					return val != otherVal;
-				case Constants.GT:
+				case GT:
 					return val > otherVal;
-				case Constants.GTEQ:
+				case GTEQ:
 					return val >= otherVal;
-				case Constants.LT:
+				case LT:
 					return val < otherVal;
-				case Constants.LTEQ:
+				case LTEQ:
 					return val <= otherVal;
 				default:
 					throw new XPathException("Type error: cannot apply operator to numeric value");
@@ -82,9 +81,7 @@ public abstract class NumericValue extends ComputableValue {
 			Type.getTypeName(other.getType()));
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.AtomicValue#compareTo(org.exist.xquery.value.AtomicValue)
-	 */
+	@Override
 	public int compareTo(Collator collator, AtomicValue other) throws XPathException {
 		if(Type.subTypeOf(other.getType(), Type.NUMBER)) {
 			if (isNaN()) {
@@ -111,7 +108,7 @@ public abstract class NumericValue extends ComputableValue {
 			{return false;}
         if (NumericValue.class.isAssignableFrom(obj.getClass()))
             try {
-                return compareTo(null, Constants.EQ, (NumericValue)obj);
+                return compareTo(null, Comparison.EQ, (NumericValue)obj);
             } catch (final XPathException e) {
                 // should not be possible due to type check
             }

@@ -100,16 +100,25 @@ public interface Constants {
     public final static int PROCESSING_NODE = 7;
 
     /**
-     * Comparison operators
+     * Value and General Comparison operators
      */
-    public final static int LT  = 0;
-    public final static int GT  = 1;
-    public final static int GTEQ = 2;
-    public final static int LTEQ = 3;
-    public final static int EQ  = 4;
-    public final static int NEQ = 5;
-    public final static int IN = 6;
-    public final static int REGEXP = 7;
+    enum Comparison {
+        LT("lt", "<"),
+        GT("gt", ">"),
+        GTEQ("ge", ">="),
+        LTEQ("le", "<="),
+        EQ("eq", "="),
+        NEQ("ne", "!="),
+        IN(null, "IN");
+
+        public final String valueComparisonSymbol;
+        public final String generalComparisonSymbol;
+
+        Comparison(final String valueComparisonSymbol, final String generalComparisonSymbol) {
+            this.valueComparisonSymbol = valueComparisonSymbol;
+            this.generalComparisonSymbol = generalComparisonSymbol;
+        }
+    }
 
     /**
      * String truncation operators
@@ -141,9 +150,6 @@ public interface Constants {
     public final static String[] OPS = 
     { "<", ">", ">=", "<=", "=", "!=", "IN" , "=~", "+", 
       "-", "*", "div", "mod", "idiv", "is", "isnot", "<<", ">>" };
-    
-    public final static String[] VOPS = 
-    { "lt", "gt", "ge", "le", "eq", "ne" };
 
     public final static int KEEP_UNION = 0;
     public final static int KEEP_INTER = 1;

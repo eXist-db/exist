@@ -8,6 +8,7 @@ import javax.xml.datatype.Duration;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.exist.xquery.Constants;
+import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 
@@ -20,11 +21,12 @@ abstract class OrderedDurationValue extends DurationValue {
 		super(duration);
 	}
 
-	public boolean compareTo(Collator collator, int operator, AtomicValue other) throws XPathException {
+	@Override
+	public boolean compareTo(Collator collator, Comparison operator, AtomicValue other) throws XPathException {
 		if (other.isEmpty())
 			{return false;}
 		final int r = compareTo(collator, other);	
-		if (operator != Constants.EQ && operator != Constants.NEQ){
+		if (operator != Comparison.EQ && operator != Comparison.NEQ) {
 			if (getType() == Type.DURATION)
 				{throw new XPathException(ErrorCodes.XPTY0004, 
 						"cannot compare unordered " + Type.getTypeName(getType()) + " to "
@@ -39,18 +41,18 @@ abstract class OrderedDurationValue extends DurationValue {
 					+ Type.getTypeName(other.getType()));}
 		}
 		switch (operator) {
-			case Constants.EQ :
+			case EQ:
 				return r == DatatypeConstants.EQUAL;
-			case Constants.NEQ :
+			case NEQ:
 				return r != DatatypeConstants.EQUAL;
-			case Constants.LT :
+			case LT :
 				return r == DatatypeConstants.LESSER;
-			case Constants.LTEQ :
+			case LTEQ :
 				return r == DatatypeConstants.LESSER || r == DatatypeConstants.EQUAL;
-			case Constants.GT :
+			case GT :
 				return r == DatatypeConstants.GREATER;
-			case Constants.GTEQ :
-				return r == DatatypeConstants.GREATER || r == DatatypeConstants.EQUAL; 
+			case GTEQ :
+				return r == DatatypeConstants.GREATER || r == DatatypeConstants.EQUAL;
 			default :
 				throw new XPathException("Unknown operator type in comparison");
 		}
@@ -63,7 +65,7 @@ abstract class OrderedDurationValue extends DurationValue {
 			//Take care : this method doesn't seem to take ms into account 
 			final int r = duration.compare(((DurationValue) other).duration);
 			//compare fractional seconds to work around the JDK standard behaviour
-			if (r == DatatypeConstants.EQUAL && 
+			if (r == DatatypeConstants.EQUAL &&
 					((BigDecimal)duration.getField(DatatypeConstants.SECONDS)) != null &&
 					((BigDecimal)(((DurationValue) other).duration).getField(DatatypeConstants.SECONDS)) != null) {
 				if (((BigDecimal)duration.getField(DatatypeConstants.SECONDS)).compareTo(

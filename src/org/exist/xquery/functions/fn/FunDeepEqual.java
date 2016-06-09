@@ -34,6 +34,7 @@ import org.exist.dom.memtree.NodeImpl;
 import org.exist.dom.memtree.ReferenceNode;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Constants;
+import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
@@ -195,7 +196,7 @@ public class FunDeepEqual extends CollatingFunction {
                             {return true;}
                     }
                     return ValueComparison.compareAtomic(collator, av, bv,
-                        Constants.TRUNC_NONE, Constants.EQ);
+                        Constants.TRUNC_NONE, Comparison.EQ);
                 } catch (final XPathException e) {
                     return false;
                 }

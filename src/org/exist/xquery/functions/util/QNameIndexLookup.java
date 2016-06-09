@@ -32,7 +32,7 @@ import org.exist.storage.Indexable;
 import org.exist.storage.NativeValueIndex;
 import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.Cardinality;
-import org.exist.xquery.Constants;
+import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.DynamicCardinalityCheck;
 import org.exist.xquery.Expression;
@@ -138,7 +138,7 @@ public class QNameIndexLookup extends Function {
 
         final NativeValueIndex valueIndex = context.getBroker().getValueIndex();
         final Sequence result =
-            valueIndex.find(context.getWatchDog(), Constants.EQ, contextSequence.getDocumentSet(), null, NodeSet.ANCESTOR,
+            valueIndex.find(context.getWatchDog(), Comparison.EQ, contextSequence.getDocumentSet(), null, NodeSet.ANCESTOR,
         qname, comparisonCriterium);
 
         return result;

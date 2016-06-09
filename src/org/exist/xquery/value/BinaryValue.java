@@ -31,7 +31,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 
-import org.exist.xquery.Constants;
+import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.XPathException;
 
 /**
@@ -65,21 +65,21 @@ public abstract class BinaryValue extends AtomicValue {
     }
     
     @Override
-    public boolean compareTo(Collator collator, int operator, AtomicValue other) throws XPathException {
+    public boolean compareTo(Collator collator, Comparison operator, AtomicValue other) throws XPathException {
         if (other.getType() == Type.HEX_BINARY || other.getType() == Type.BASE64_BINARY) {
             final int value = compareTo((BinaryValue)other);
             switch(operator) {
-                case Constants.EQ:
+                case EQ:
                     return value == 0;
-                case Constants.NEQ:
+                case NEQ:
                     return value != 0;
-                case Constants.GT:
+                case GT:
                     return value > 0;
-                case Constants.GTEQ:
+                case GTEQ:
                     return value >= 0;
-                case Constants.LT:
+                case LT:
                     return value < 0;
-                case Constants.LTEQ:
+                case LTEQ:
                     return value <= 0;
                 default:
                     throw new XPathException("Type error: cannot apply operator to numeric value");

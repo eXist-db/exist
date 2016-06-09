@@ -35,6 +35,7 @@ import org.exist.storage.ElementValue;
 import org.exist.storage.IndexSpec;
 import org.exist.storage.Indexable;
 import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.pragmas.Optimize;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.AtomicValue;
@@ -60,7 +61,7 @@ import java.util.List;
 public class GeneralComparison extends BinaryOp implements Optimizable, IndexUseReporter
 {
     /** The type of operator used for the comparison, i.e. =, !=, &lt;, &gt; ... One of the constants declared in class {@link Constants}. */
-    protected int          relation              = Constants.EQ;
+    protected Comparison          relation              = Comparison.EQ;
 
     /**
      * Truncation flags: when comparing with a string value, the search string may be truncated with a single * wildcard. See the constants declared
@@ -99,26 +100,26 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 
     private IndexFlags     idxflags         = new IndexFlags();
 
-    public GeneralComparison( XQueryContext context, int relation )
+    public GeneralComparison( XQueryContext context, Comparison relation )
     {
         this( context, relation, Constants.TRUNC_NONE );
     }
 
 
-    public GeneralComparison( XQueryContext context, int relation, int truncation )
+    public GeneralComparison( XQueryContext context, Comparison relation, int truncation )
     {
         super( context );
         this.relation = relation;
     }
 
 
-    public GeneralComparison( XQueryContext context, Expression left, Expression right, int relation )
+    public GeneralComparison( XQueryContext context, Expression left, Expression right, Comparison relation )
     {
         this( context, left, right, relation, Constants.TRUNC_NONE );
     }
 
 
-    public GeneralComparison( XQueryContext context, Expression left, Expression right, int relation, int truncation )
+    public GeneralComparison( XQueryContext context, Expression left, Expression right, Comparison relation, int truncation )
     {
         super( context );
         boolean didLeftSimplification  = false;
@@ -304,7 +305,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
     }
 
 
-    public int getRelation()
+    public Comparison getRelation()
     {
         return( this.relation );
     }
@@ -1141,7 +1142,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
             dumper.display( ")" );
         } else {
             getLeft().dump( dumper );
-            dumper.display( ' ' ).display( Constants.OPS[relation] ).display( ' ' );
+            dumper.display( ' ' ).display( relation.generalComparisonSymbol ).display( ' ' );
             getRight().dump( dumper );
         }
     }
@@ -1159,7 +1160,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
             result.append( ")" );
         } else {
             result.append( getLeft().toString() );
-            result.append( ' ' ).append( Constants.OPS[relation] ).append( ' ' );
+            result.append( ' ' ).append( relation.generalComparisonSymbol ).append( ' ' );
             result.append( getRight().toString() );
         }
         return( result.toString() );
@@ -1171,32 +1172,28 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
         context.getProfiler().message( this, Profiler.OPTIMIZATIONS, "OPTIMIZATION", "Switching operands" );
 
         //Invert relation
-        switch( relation ) {
+        switch(relation) {
 
-            case Constants.GT: {
-                relation = Constants.LT;
+            case GT:
+                relation = Comparison.LT;
                 break;
-            }
 
-            case Constants.LT: {
-                relation = Constants.GT;
+            case LT:
+                relation = Comparison.GT;
                 break;
-            }
 
-            case Constants.LTEQ: {
-                relation = Constants.GTEQ;
+            case LTEQ:
+                relation = Comparison.GTEQ;
                 break;
-            }
 
-            case Constants.GTEQ: {
-                relation = Constants.LTEQ;
+            case GTEQ:
+                relation = Comparison.LTEQ;
                 break;
-                //What about Constants.EQ and Constants.NEQ ? Well, it seems to never be called
-            }
+                //What about Comparison.EQand Comparison.NEQ? Well, it seems to never be called
         }
         final Expression right = getRight();
-        setRight( getLeft() );
-        setLeft( right );
+        setRight(getLeft());
+        setLeft(right);
     }
 
 

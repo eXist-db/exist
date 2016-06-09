@@ -27,6 +27,7 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.xquery.*;
+import org.exist.xquery.Constants.Comparison;
 
 /**
  * Represents a function item, i.e. a reference to a function that can be called dynamically.
@@ -129,10 +130,8 @@ public class FunctionReference extends AtomicValue {
 		throw new XPathException("Called effectiveBooleanValue() on FunctionReference");
 	}    
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.AtomicValue#compareTo(java.text.Collator, int, org.exist.xquery.value.AtomicValue)
-     */
-    public boolean compareTo(Collator collator, int operator, AtomicValue other)
+    @Override
+    public boolean compareTo(Collator collator, Comparison operator, AtomicValue other)
             throws XPathException {
         throw new XPathException("cannot compare function reference to " + Type.getTypeName(other.getType()));
     }

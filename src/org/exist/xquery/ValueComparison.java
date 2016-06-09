@@ -29,6 +29,7 @@ import org.exist.dom.persistent.ContextItem;
 import org.exist.dom.persistent.ExtArrayNodeSet;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.NodeSet;
+import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.BooleanValue;
@@ -45,7 +46,7 @@ public class ValueComparison extends GeneralComparison {
 	 * @param context
 	 * @param relation
 	 */
-	public ValueComparison(XQueryContext context, int relation) {
+	public ValueComparison(XQueryContext context, Comparison relation) {
 		super(context, relation);
 	}
 
@@ -55,7 +56,7 @@ public class ValueComparison extends GeneralComparison {
 	 * @param right
 	 * @param relation
 	 */
-	public ValueComparison(XQueryContext context, Expression left, Expression right, int relation) {
+	public ValueComparison(XQueryContext context, Expression left, Expression right, Comparison relation) {
 		super(context, left, right, relation);
 	}
 
@@ -107,7 +108,7 @@ public class ValueComparison extends GeneralComparison {
             for (final Iterator<NodeProxy> i = nodes.iterator(); i.hasNext();) {
                 final NodeProxy current = i.next();
                 final AtomicValue lv = current.atomize();
-                if (compareAtomic(collator, lv, rv, Constants.TRUNC_NONE, Constants.EQ))
+                if (compareAtomic(collator, lv, rv, Constants.TRUNC_NONE, Comparison.EQ))
                     {result.add(current);}
             }
         }
@@ -118,7 +119,7 @@ public class ValueComparison extends GeneralComparison {
 	 * Cast the atomic operands into a comparable type
 	 * and compare them.
 	 */
-	public static boolean compareAtomic(Collator collator, AtomicValue lv, AtomicValue rv, int truncation, int relation) throws XPathException {
+	public static boolean compareAtomic(Collator collator, AtomicValue lv, AtomicValue rv, int truncation, Comparison relation) throws XPathException {
 		int ltype = lv.getType();
 		int rtype = rv.getType();
 		if (ltype == Type.UNTYPED_ATOMIC) {
@@ -182,11 +183,11 @@ public class ValueComparison extends GeneralComparison {
     
     public void dump(ExpressionDumper dumper) {
         getLeft().dump(dumper);
-        dumper.display(" ").display(Constants.VOPS[relation]).display(" ");
+        dumper.display(" ").display(relation.valueComparisonSymbol).display(" ");
         getRight().dump(dumper);
     }
     
     public String toString() {
-		return getLeft().toString() +	" " + Constants.VOPS[relation] + " " + getRight().toString();
+		return getLeft().toString() +	" " + relation.valueComparisonSymbol + " " + getRight().toString();
     }
 }

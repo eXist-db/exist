@@ -43,6 +43,7 @@ header {
 	import org.exist.security.PermissionDeniedException;
 	import org.exist.util.XMLChar;
 	import org.exist.xquery.*;
+	import org.exist.xquery.Constants.Comparison;
 	import org.exist.xquery.value.*;
 	import org.exist.xquery.functions.fn.*;
 	import org.exist.xquery.update.*;
@@ -2607,7 +2608,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		eq:"eq" step=expr [left]
 		step=expr [right]
 		{
-			step= new ValueComparison(context, left, right, Constants.EQ);
+			step= new ValueComparison(context, left, right, Comparison.EQ);
             step.setASTNode(eq);
 			path.add(step);
 		}
@@ -2617,7 +2618,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		ne:"ne" step=expr [left]
 		step=expr [right]
 		{
-			step= new ValueComparison(context, left, right, Constants.NEQ);
+			step= new ValueComparison(context, left, right, Comparison.NEQ);
             step.setASTNode(ne);
 			path.add(step);
 		}
@@ -2627,7 +2628,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		lt:"lt" step=expr [left]
 		step=expr [right]
 		{
-			step= new ValueComparison(context, left, right, Constants.LT);
+			step= new ValueComparison(context, left, right, Comparison.LT);
             step.setASTNode(lt);
 			path.add(step);
 		}
@@ -2637,7 +2638,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		le:"le" step=expr [left]
 		step=expr [right]
 		{
-			step= new ValueComparison(context, left, right, Constants.LTEQ);
+			step= new ValueComparison(context, left, right, Comparison.LTEQ);
             step.setASTNode(le);
 			path.add(step);
 		}
@@ -2647,7 +2648,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		gt:"gt" step=expr [left]
 		step=expr [right]
 		{
-			step= new ValueComparison(context, left, right, Constants.GT);
+			step= new ValueComparison(context, left, right, Comparison.GT);
             step.setASTNode(gt);
 			path.add(step);
 		}
@@ -2657,7 +2658,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		ge:"ge" step=expr [left]
 		step=expr [right]
 		{
-			step= new ValueComparison(context, left, right, Constants.GTEQ);
+			step= new ValueComparison(context, left, right, Comparison.GTEQ);
             step.setASTNode(ge);
 			path.add(step);
 		}
@@ -2677,7 +2678,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		eq:EQ step=expr [left]
 		step=expr [right]
 		{
-			step= new GeneralComparison(context, left, right, Constants.EQ);
+			step= new GeneralComparison(context, left, right, Comparison.EQ);
             step.setASTNode(eq);
 			path.add(step);
 		}
@@ -2687,7 +2688,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		neq:NEQ step=expr [left]
 		step=expr [right]
 		{
-			step= new GeneralComparison(context, left, right, Constants.NEQ);
+			step= new GeneralComparison(context, left, right, Comparison.NEQ);
             step.setASTNode(neq);
 			path.add(step);
 		}
@@ -2697,7 +2698,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		lt:LT step=expr [left]
 		step=expr [right]
 		{
-			step= new GeneralComparison(context, left, right, Constants.LT);
+			step= new GeneralComparison(context, left, right, Comparison.LT);
             step.setASTNode(lt);
 			path.add(step);
 		}
@@ -2707,7 +2708,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		lteq:LTEQ step=expr [left]
 		step=expr [right]
 		{
-			step= new GeneralComparison(context, left, right, Constants.LTEQ);
+			step= new GeneralComparison(context, left, right, Comparison.LTEQ);
             step.setASTNode(lteq);
 			path.add(step);
 		}
@@ -2717,7 +2718,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		gt:GT step=expr [left]
 		step=expr [right]
 		{
-			step= new GeneralComparison(context, left, right, Constants.GT);
+			step= new GeneralComparison(context, left, right, Comparison.GT);
             step.setASTNode(gt);
 			path.add(step);
 		}
@@ -2727,7 +2728,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		gteq:GTEQ step=expr [left]
 		step=expr [right]
 		{
-			step= new GeneralComparison(context, left, right, Constants.GTEQ);
+			step= new GeneralComparison(context, left, right, Comparison.GTEQ);
             step.setASTNode(gteq);
 			path.add(step);
 		}

@@ -25,6 +25,7 @@
 	import org.exist.security.PermissionDeniedException;
 	import org.exist.util.XMLChar;
 	import org.exist.xquery.*;
+	import org.exist.xquery.Constants.Comparison;
 	import org.exist.xquery.value.*;
 	import org.exist.xquery.functions.fn.*;
 	import org.exist.xquery.update.*;
@@ -80,7 +81,7 @@ public class XQueryTreeParser extends antlr.TreeParser       implements XQueryTr
 	}
 
 	public String getErrorMessage() {
-		StringBuilder buf= new StringBuilder();
+		StringBuffer buf= new StringBuffer();
 		for (Iterator i= exceptions.iterator(); i.hasNext();) {
 			buf.append(((Exception) i.next()).toString());
 			buf.append('\n');
@@ -6400,7 +6401,7 @@ public XQueryTreeParser() {
 			step=expr(_t,right);
 			_t = _retTree;
 			
-						step= new GeneralComparison(context, left, right, Constants.EQ);
+						step= new GeneralComparison(context, left, right, Comparison.EQ);
 			step.setASTNode(eq);
 						path.add(step);
 					
@@ -6419,7 +6420,7 @@ public XQueryTreeParser() {
 			step=expr(_t,right);
 			_t = _retTree;
 			
-						step= new GeneralComparison(context, left, right, Constants.NEQ);
+						step= new GeneralComparison(context, left, right, Comparison.NEQ);
 			step.setASTNode(neq);
 						path.add(step);
 					
@@ -6438,7 +6439,7 @@ public XQueryTreeParser() {
 			step=expr(_t,right);
 			_t = _retTree;
 			
-						step= new GeneralComparison(context, left, right, Constants.LT);
+						step= new GeneralComparison(context, left, right, Comparison.LT);
 			step.setASTNode(lt);
 						path.add(step);
 					
@@ -6457,7 +6458,7 @@ public XQueryTreeParser() {
 			step=expr(_t,right);
 			_t = _retTree;
 			
-						step= new GeneralComparison(context, left, right, Constants.LTEQ);
+						step= new GeneralComparison(context, left, right, Comparison.LTEQ);
 			step.setASTNode(lteq);
 						path.add(step);
 					
@@ -6476,7 +6477,7 @@ public XQueryTreeParser() {
 			step=expr(_t,right);
 			_t = _retTree;
 			
-						step= new GeneralComparison(context, left, right, Constants.GT);
+						step= new GeneralComparison(context, left, right, Comparison.GT);
 			step.setASTNode(gt);
 						path.add(step);
 					
@@ -6495,7 +6496,7 @@ public XQueryTreeParser() {
 			step=expr(_t,right);
 			_t = _retTree;
 			
-						step= new GeneralComparison(context, left, right, Constants.GTEQ);
+						step= new GeneralComparison(context, left, right, Comparison.GTEQ);
 			step.setASTNode(gteq);
 						path.add(step);
 					
@@ -6543,7 +6544,7 @@ public XQueryTreeParser() {
 			step=expr(_t,right);
 			_t = _retTree;
 			
-						step= new ValueComparison(context, left, right, Constants.EQ);
+						step= new ValueComparison(context, left, right, Comparison.EQ);
 			step.setASTNode(eq);
 						path.add(step);
 					
@@ -6562,7 +6563,7 @@ public XQueryTreeParser() {
 			step=expr(_t,right);
 			_t = _retTree;
 			
-						step= new ValueComparison(context, left, right, Constants.NEQ);
+						step= new ValueComparison(context, left, right, Comparison.NEQ);
 			step.setASTNode(ne);
 						path.add(step);
 					
@@ -6581,7 +6582,7 @@ public XQueryTreeParser() {
 			step=expr(_t,right);
 			_t = _retTree;
 			
-						step= new ValueComparison(context, left, right, Constants.LT);
+						step= new ValueComparison(context, left, right, Comparison.LT);
 			step.setASTNode(lt);
 						path.add(step);
 					
@@ -6600,7 +6601,7 @@ public XQueryTreeParser() {
 			step=expr(_t,right);
 			_t = _retTree;
 			
-						step= new ValueComparison(context, left, right, Constants.LTEQ);
+						step= new ValueComparison(context, left, right, Comparison.LTEQ);
 			step.setASTNode(le);
 						path.add(step);
 					
@@ -6619,7 +6620,7 @@ public XQueryTreeParser() {
 			step=expr(_t,right);
 			_t = _retTree;
 			
-						step= new ValueComparison(context, left, right, Constants.GT);
+						step= new ValueComparison(context, left, right, Comparison.GT);
 			step.setASTNode(gt);
 						path.add(step);
 					
@@ -6638,7 +6639,7 @@ public XQueryTreeParser() {
 			step=expr(_t,right);
 			_t = _retTree;
 			
-						step= new ValueComparison(context, left, right, Constants.GTEQ);
+						step= new ValueComparison(context, left, right, Comparison.GTEQ);
 			step.setASTNode(ge);
 						path.add(step);
 					

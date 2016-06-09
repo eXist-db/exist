@@ -30,6 +30,7 @@ import org.exist.util.Collations;
 import org.exist.util.UTF8;
 import org.exist.util.XMLChar;
 import org.exist.xquery.Constants;
+import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 
@@ -303,10 +304,8 @@ public class StringValue extends AtomicValue {
 			" to Java object of type " + target.getName());
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.AtomicValue#compareTo(int, org.exist.xquery.value.AtomicValue)
-	 */
-	public boolean compareTo(Collator collator, int operator, AtomicValue other) throws XPathException {
+	@Override
+	public boolean compareTo(Collator collator, Comparison operator, AtomicValue other) throws XPathException {
 		if (other.isEmpty())
 			{return false;}
 		//A value of type xs:anyURI (or any type derived by restriction from xs:anyURI) 
@@ -317,17 +316,17 @@ public class StringValue extends AtomicValue {
 		if (Type.subTypeOf(other.getType(), Type.STRING)) {
 			final int cmp = Collations.compare(collator, value, other.getStringValue());
 			switch (operator) {
-				case Constants.EQ :
+				case EQ:
 					return cmp == 0;
-				case Constants.NEQ :
+				case NEQ:
 					return cmp != 0;
-				case Constants.LT :
+				case LT :
 					return cmp < 0;
-				case Constants.LTEQ :
+				case LTEQ :
 					return cmp <= 0;
-				case Constants.GT :
+				case GT :
 					return cmp > 0;
-				case Constants.GTEQ :
+				case GTEQ :
 					return cmp >= 0;
 				default :
 					throw new XPathException("Type error: cannot apply operand to string value");
