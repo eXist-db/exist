@@ -113,9 +113,6 @@ public class NodeComparison extends BinaryOp {
                 case Constants.IS:
                     result = lv.equals(rv) ? BooleanValue.TRUE : BooleanValue.FALSE;
                     break;
-                case Constants.ISNOT:
-                    result = lv.equals(rv) ? BooleanValue.FALSE : BooleanValue.TRUE;
-                    break;
                 case Constants.BEFORE:
                     result = lv.before(rv, false) ? BooleanValue.TRUE : BooleanValue.FALSE;
                     break;

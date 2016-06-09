@@ -143,7 +143,6 @@ public interface Constants {
 	 * Identity operators
 	 */
 	public final static int IS = 14;
-	public final static int ISNOT = 15;
 	public final static int BEFORE = 16;
 	public final static int AFTER = 17;
 	

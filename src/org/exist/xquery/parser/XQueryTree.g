@@ -2754,15 +2754,6 @@ throws PermissionDeniedException, EXistException, XPathException
 	)
 	|
 	#(
-		isnot:"isnot" step=expr[left] step=expr[right]
-		{
-			step = new NodeComparison(context, left, right, Constants.ISNOT);
-            step.setASTNode(isnot);
-			path.add(step);
-		}
-	)
-	|
-	#(
 		before:BEFORE step=expr[left] step=expr[right]
 		{
 			step = new NodeComparison(context, left, right, Constants.BEFORE);
