@@ -140,12 +140,20 @@ public interface Constants {
 	public final static int IDIV = 13;
 
 	/**
-	 * Identity operators
+	 * Node Identity Comparison operators
 	 */
-	public final static int IS = 14;
-	public final static int BEFORE = 16;
-	public final static int AFTER = 17;
-	
+    enum NodeComparisonOperator {
+        IS("is"),
+        BEFORE("<<"),
+        AFTER(">>");
+
+        public final String symbol;
+
+        NodeComparisonOperator(final String symbol) {
+            this.symbol = symbol;
+        }
+    }
+
     public final static String[] OPS = 
     { "<", ">", ">=", "<=", "=", "!=", "IN" , "=~", "+", 
       "-", "*", "div", "mod", "idiv", "is", "isnot", "<<", ">>" };

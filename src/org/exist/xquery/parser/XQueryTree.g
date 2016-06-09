@@ -44,6 +44,7 @@ header {
 	import org.exist.util.XMLChar;
 	import org.exist.xquery.*;
 	import org.exist.xquery.Constants.Comparison;
+	import org.exist.xquery.Constants.NodeComparisonOperator;
 	import org.exist.xquery.value.*;
 	import org.exist.xquery.functions.fn.*;
 	import org.exist.xquery.update.*;
@@ -2747,7 +2748,7 @@ throws PermissionDeniedException, EXistException, XPathException
 	#(
 		is:"is" step=expr [left] step=expr [right]
 		{
-			step = new NodeComparison(context, left, right, Constants.IS);
+			step = new NodeComparison(context, left, right, NodeComparisonOperator.IS);
             step.setASTNode(is);
 			path.add(step);
 		}
@@ -2756,7 +2757,7 @@ throws PermissionDeniedException, EXistException, XPathException
 	#(
 		before:BEFORE step=expr[left] step=expr[right]
 		{
-			step = new NodeComparison(context, left, right, Constants.BEFORE);
+			step = new NodeComparison(context, left, right, NodeComparisonOperator.BEFORE);
             step.setASTNode(before);
 			path.add(step);
 		}
@@ -2765,7 +2766,7 @@ throws PermissionDeniedException, EXistException, XPathException
 	#(
 		after:AFTER step=expr[left] step=expr[right]
 		{
-			step = new NodeComparison(context, left, right, Constants.AFTER);
+			step = new NodeComparison(context, left, right, NodeComparisonOperator.AFTER);
             step.setASTNode(after);
 			path.add(step);
 		}
