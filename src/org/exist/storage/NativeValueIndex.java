@@ -51,6 +51,7 @@ import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.Txn;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Constants.Comparison;
+import org.exist.xquery.Constants.StringTruncationOperator;
 import org.exist.xquery.TerminatedException;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.AtomicValue;
@@ -773,18 +774,18 @@ public class NativeValueIndex implements ContentLoadingObserver {
     }
 
     public NodeSet match(final XQueryWatchDog watchDog, final DocumentSet docs, final NodeSet contextSet, final int axis, final String expr, final QName qname, final int type) throws TerminatedException, EXistException {
-        return match(watchDog, docs, contextSet, axis, expr, qname, type, null, 0);
+        return match(watchDog, docs, contextSet, axis, expr, qname, type, null, StringTruncationOperator.RIGHT);
     }
 
-    public NodeSet match(final XQueryWatchDog watchDog, final DocumentSet docs, final NodeSet contextSet, final int axis, final String expr, final QName qname, final int type, final Collator collator, final int truncation) throws TerminatedException, EXistException {
+    public NodeSet match(final XQueryWatchDog watchDog, final DocumentSet docs, final NodeSet contextSet, final int axis, final String expr, final QName qname, final int type, final Collator collator, final StringTruncationOperator truncation) throws TerminatedException, EXistException {
         return match(watchDog, docs, contextSet, axis, expr, qname, type, 0, true, collator, truncation);
     }
 
     public NodeSet match(final XQueryWatchDog watchDog, final DocumentSet docs, final NodeSet contextSet, final int axis, final String expr, final QName qname, final int type, final int flags, final boolean caseSensitiveQuery) throws TerminatedException, EXistException {
-        return match(watchDog, docs, contextSet, axis, expr, qname, type, flags, caseSensitiveQuery, null, 0);
+        return match(watchDog, docs, contextSet, axis, expr, qname, type, flags, caseSensitiveQuery, null, StringTruncationOperator.RIGHT);
     }
 
-    public NodeSet match(final XQueryWatchDog watchDog, final DocumentSet docs, final NodeSet contextSet, final int axis, final String expr, final QName qname, final int type, final int flags, final boolean caseSensitiveQuery, final Collator collator, final int truncation) throws TerminatedException, EXistException {
+    public NodeSet match(final XQueryWatchDog watchDog, final DocumentSet docs, final NodeSet contextSet, final int axis, final String expr, final QName qname, final int type, final int flags, final boolean caseSensitiveQuery, final Collator collator, final StringTruncationOperator truncation) throws TerminatedException, EXistException {
         final NodeSet result = new NewArrayNodeSet();
         if (qname == null) {
             matchAll(watchDog, docs, contextSet, axis, expr, null, type, flags, caseSensitiveQuery, result, collator, truncation);
@@ -797,10 +798,10 @@ public class NativeValueIndex implements ContentLoadingObserver {
     }
 
     public NodeSet matchAll(final XQueryWatchDog watchDog, final DocumentSet docs, final NodeSet contextSet, final int axis, final String expr, final int type, final int flags, final boolean caseSensitiveQuery) throws TerminatedException, EXistException {
-        return matchAll(watchDog, docs, contextSet, axis, expr, type, flags, caseSensitiveQuery, null, 0);
+        return matchAll(watchDog, docs, contextSet, axis, expr, type, flags, caseSensitiveQuery, null, StringTruncationOperator.RIGHT);
     }
 
-    public NodeSet matchAll(final XQueryWatchDog watchDog, final DocumentSet docs, final NodeSet contextSet, final int axis, final String expr, final int type, final int flags, final boolean caseSensitiveQuery, final Collator collator, final int truncation) throws TerminatedException, EXistException {
+    public NodeSet matchAll(final XQueryWatchDog watchDog, final DocumentSet docs, final NodeSet contextSet, final int axis, final String expr, final int type, final int flags, final boolean caseSensitiveQuery, final Collator collator, final StringTruncationOperator truncation) throws TerminatedException, EXistException {
         final NodeSet result = new NewArrayNodeSet();
         matchAll(watchDog, docs, contextSet, axis, expr, getDefinedIndexes(docs), type, flags, caseSensitiveQuery, result, collator, truncation);
         matchAll(watchDog, docs, contextSet, axis, expr, null, type, flags, caseSensitiveQuery, result, collator, truncation);
@@ -820,12 +821,12 @@ public class NativeValueIndex implements ContentLoadingObserver {
      * @param caseSensitiveQuery DOCUMENT ME!
      * @param result             DOCUMENT ME!
      * @param collator           DOCUMENT ME!
-     * @param truncation         DOCUMENT ME!
+     * @param truncation         The type of string truncation to apply
      * @return DOCUMENT ME!
      * @throws TerminatedException DOCUMENT ME!
      * @throws EXistException      DOCUMENT ME!
      */
-    public NodeSet matchAll(final XQueryWatchDog watchDog, final DocumentSet docs, final NodeSet contextSet, final int axis, final String expr, final List<QName> qnames, final int type, final int flags, final boolean caseSensitiveQuery, final NodeSet result, final Collator collator, final int truncation) throws TerminatedException, EXistException {
+    public NodeSet matchAll(final XQueryWatchDog watchDog, final DocumentSet docs, final NodeSet contextSet, final int axis, final String expr, final List<QName> qnames, final int type, final int flags, final boolean caseSensitiveQuery, final NodeSet result, final Collator collator, final StringTruncationOperator truncation) throws TerminatedException, EXistException {
         // if the match expression starts with a char sequence, we restrict the index scan to entries starting with
         // the same sequence. Otherwise, we have to scan the whole index.
 
@@ -1203,29 +1204,17 @@ public class NativeValueIndex implements ContentLoadingObserver {
 
     private final static class CollatorMatcher implements TermMatcher {
         private final String expr;
-        private final int truncation;
+        private final StringTruncationOperator truncation;
         private final Collator collator;
 
-        CollatorMatcher(final String expr, final int truncation, final Collator collator) throws EXistException {
+        CollatorMatcher(final String expr, final StringTruncationOperator truncation, final Collator collator) throws EXistException {
             if (collator == null) {
                 throw new EXistException("Collator must be non-null");
             }
 
-            switch (truncation) {
-                case Constants.TRUNC_NONE:
-                case Constants.TRUNC_LEFT:
-                case Constants.TRUNC_RIGHT:
-                case Constants.TRUNC_BOTH:
-                case Constants.TRUNC_EQUALS: {
-                    this.expr = expr;
-                    this.truncation = truncation;
-                    this.collator = collator;
-                    break;
-                }
-
-                default:
-                    throw new EXistException("Invalid truncation value: " + truncation);
-            }
+            this.expr = expr;
+            this.truncation = truncation;
+            this.collator = collator;
         }
 
         @Override
@@ -1233,20 +1222,20 @@ public class NativeValueIndex implements ContentLoadingObserver {
             final boolean matches;
 
             switch (truncation) {
-                case Constants.TRUNC_LEFT:
+                case LEFT:
                     matches = Collations.endsWith(collator, term.toString(), expr);
                     break;
 
-                case Constants.TRUNC_RIGHT:
+                case RIGHT:
                     matches = Collations.startsWith(collator, term.toString(), expr);
                     break;
 
-                case Constants.TRUNC_BOTH:
+                case BOTH:
                     matches = Collations.contains(collator, term.toString(), expr);
                     break;
 
-                case Constants.TRUNC_NONE:
-                case Constants.TRUNC_EQUALS:
+                case NONE:
+                case EQUALS:
                 default:
                     matches = Collations.equals(collator, term.toString(), expr);
             }

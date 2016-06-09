@@ -191,13 +191,13 @@ public class RangeQueryRewriter extends QueryRewriter {
                     break;
                 case EQ:
                     switch (comparison.getTruncation()) {
-                        case Constants.TRUNC_BOTH:
+                        case BOTH:
                             operator = RangeIndex.Operator.CONTAINS;
                             break;
-                        case Constants.TRUNC_LEFT:
+                        case LEFT:
                             operator = RangeIndex.Operator.ENDS_WITH;
                             break;
-                        case Constants.TRUNC_RIGHT:
+                        case RIGHT:
                             operator = RangeIndex.Operator.STARTS_WITH;
                             break;
                         default:

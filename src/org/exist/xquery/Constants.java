@@ -123,11 +123,13 @@ public interface Constants {
     /**
      * String truncation operators
      */
-    public final static int TRUNC_NONE = -1;
-    public final static int TRUNC_RIGHT = 0;
-    public final static int TRUNC_LEFT = 1;
-    public final static int TRUNC_BOTH = 2;
-	public final static int TRUNC_EQUALS = 3;
+    enum StringTruncationOperator {
+        NONE,
+        RIGHT,
+        LEFT,
+        BOTH,
+        EQUALS
+    }
 
     /**
      * Arithmetic operators
