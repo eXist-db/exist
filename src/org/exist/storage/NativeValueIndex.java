@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2015 The eXist Project
+ *  Copyright (C) 2001-2016 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -62,15 +62,54 @@ import java.text.Collator;
 import java.util.*;
 
 /**
- * Maintains an index on typed node values.
- *
- * <p>In the BTree single BFile, the keys are : (collectionId, indexType, indexData) and the values are : gid1, gid2-gid1, ...</p>
+ * Maintains an index on typed node values (optionally by QName).
  *
  * <p>Algorithm:</p>
- * <p>When a node is stored, an entry is added or updated in the {@link #pendingGeneric} and {@link #pendingQName} maps, with given String content and basic type as key. This way, the
- * index entries are easily put in the persistent BFile storage by {@link #flush()} .</p>
+ * <p>When a node is stored, an entry is added or updated in the {@link #pendingGeneric} and/or {@link #pendingQName}
+ * maps, with either {@link SimpleValue#SimpleValue(int, Indexable)} or
+ * {@link QNameValue#QNameValue(int, QName, Indexable, SymbolTable)} respectively as the key.
+ * This way, the index entries are easily put in the persistent BFile storage by {@link #flush()}.</p>
  *
- * @author wolf
+ *
+ * There are two types of key/value pairs stored into the Value Index:
+ *
+ * 1) SimpleValue, which represents the classic path based range index:
+ *  key => [indexType, collectionId, atomicValue]
+ *  value => [documentNodes+]
+ *
+ * 2) QNameValue, which represents the qname based reange index:
+ *  key => [indexType, collectionId, qNameType, nsSymbolId, localPartSymbolId, atomicValue]
+ *  Value => [documentNodes+]
+ *
+ *
+ * indexType - 0x0 = Generic, 0x1 = QName
+ *   Generic type is used with ValueSimpleIdx and QName is used with ValueQNameIdx
+ *
+ * collectionId: 4 bytes i.e. int
+ *
+ * atomicValue: [valueType, value]
+ * valueType: 1 byte (the XQuery value type defined in {@link org.exist.xquery.value.Type}
+ * value: n bytes, fixed length encoding of the value of the atomic value
+ *
+ * qNameType: 0x0 = {@link org.exist.storage.ElementValue#ELEMENT} 0x1 = {@link org.exist.storage.ElementValue#ATTRIBUTE}
+ *
+ * nsSymbolId: 2 byte short, The id from the Symbol Table
+ * localPartSymbolId: 2 byte short, The id from the Symbol Table
+ *
+ * documentNodes: [docId, nodeIdCount, nodeIdsLength, nodeIdDelta+]
+ *
+ * docId: variable width encoded integer, the id of the document
+ * nodeIdCount: variable width encoded integer, The number of following nodeIds
+ *
+ * nodeIdsLength: 4 bytes, i.e. int, The number of following bytes that hold the nodeIds
+ *
+ * nodeIdDelta: [deltaOffset, units, nodeIdDeltaData]
+ * deltaOffset: 1 byte, Number of bits this DLN is offset from the previous DLN
+ * units: variable with encoded short, The number of units of this DLN
+ * nodeIdDeltaData: byte[], The delta bits of this DLN from `deltaOffset` of the previous DLN
+ *
+ * @author Wolfgang Meier <wolfgang@exist-db.org>
+ * @author Adam Retter <adam.retter@googlemail.com>
  */
 public class NativeValueIndex implements ContentLoadingObserver {
 
