@@ -25,6 +25,7 @@
 	import org.exist.security.PermissionDeniedException;
 	import org.exist.util.XMLChar;
 	import org.exist.xquery.*;
+	import org.exist.xquery.Constants.ArithmeticOperator;
 	import org.exist.xquery.Constants.Comparison;
 	import org.exist.xquery.Constants.NodeComparisonOperator;
 	import org.exist.xquery.value.*;

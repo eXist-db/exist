@@ -43,6 +43,7 @@ header {
 	import org.exist.security.PermissionDeniedException;
 	import org.exist.util.XMLChar;
 	import org.exist.xquery.*;
+	import org.exist.xquery.Constants.ArithmeticOperator;
 	import org.exist.xquery.Constants.Comparison;
 	import org.exist.xquery.Constants.NodeComparisonOperator;
 	import org.exist.xquery.value.*;
@@ -2346,7 +2347,7 @@ throws PermissionDeniedException, EXistException, XPathException
 :
 	#( plus:PLUS step=expr [left] step=expr [right] )
 	{
-		OpNumeric op= new OpNumeric(context, left, right, Constants.PLUS);
+		OpNumeric op= new OpNumeric(context, left, right, ArithmeticOperator.ADDITION);
         op.setASTNode(plus);
 		path.addPath(op);
 		step= op;
@@ -2354,7 +2355,7 @@ throws PermissionDeniedException, EXistException, XPathException
 	|
 	#( minus:MINUS step=expr [left] step=expr [right] )
 	{
-		OpNumeric op= new OpNumeric(context, left, right, Constants.MINUS);
+		OpNumeric op= new OpNumeric(context, left, right, ArithmeticOperator.SUBTRACTION);
         op.setASTNode(minus);
 		path.addPath(op);
 		step= op;
@@ -2362,7 +2363,7 @@ throws PermissionDeniedException, EXistException, XPathException
 	|
 	#( uminus:UNARY_MINUS step=expr [left] )
 	{
-		UnaryExpr unary= new UnaryExpr(context, Constants.MINUS);
+		UnaryExpr unary= new UnaryExpr(context, ArithmeticOperator.SUBTRACTION);
         unary.setASTNode(uminus);
 		unary.add(left);
 		path.addPath(unary);
@@ -2371,7 +2372,7 @@ throws PermissionDeniedException, EXistException, XPathException
 	|
 	#( uplus:UNARY_PLUS step=expr [left] )
 	{
-		UnaryExpr unary= new UnaryExpr(context, Constants.PLUS);
+		UnaryExpr unary= new UnaryExpr(context, ArithmeticOperator.ADDITION);
         unary.setASTNode(uplus);
 		unary.add(left);
 		path.addPath(unary);
@@ -2380,7 +2381,7 @@ throws PermissionDeniedException, EXistException, XPathException
 	|
 	#( div:"div" step=expr [left] step=expr [right] )
 	{
-		OpNumeric op= new OpNumeric(context, left, right, Constants.DIV);
+		OpNumeric op= new OpNumeric(context, left, right, ArithmeticOperator.DIVISION);
         op.setASTNode(div);
 		path.addPath(op);
 		step= op;
@@ -2388,7 +2389,7 @@ throws PermissionDeniedException, EXistException, XPathException
 	|
 	#( idiv:"idiv" step=expr [left] step=expr [right] )
 	{
-		OpNumeric op= new OpNumeric(context, left, right, Constants.IDIV);
+		OpNumeric op= new OpNumeric(context, left, right, ArithmeticOperator.DIVISION_INTEGER);
         op.setASTNode(idiv);
 		path.addPath(op);
 		step= op;
@@ -2396,7 +2397,7 @@ throws PermissionDeniedException, EXistException, XPathException
 	|
 	#( mod:"mod" step=expr [left] step=expr [right] )
 	{
-		OpNumeric op= new OpNumeric(context, left, right, Constants.MOD);
+		OpNumeric op= new OpNumeric(context, left, right, ArithmeticOperator.MODULUS);
         op.setASTNode(mod);
 		path.addPath(op);
 		step= op;
@@ -2404,7 +2405,7 @@ throws PermissionDeniedException, EXistException, XPathException
 	|
 	#( mult:STAR step=expr [left] step=expr [right] )
 	{
-		OpNumeric op= new OpNumeric(context, left, right, Constants.MULT);
+		OpNumeric op= new OpNumeric(context, left, right, ArithmeticOperator.MULTIPLICATION);
         op.setASTNode(mult);
 		path.addPath(op);
 		step= op;

@@ -132,12 +132,20 @@ public interface Constants {
     /**
      * Arithmetic operators
      */
-	public final static int PLUS = 8;
-	public final static int MINUS = 9;
-	public final static int MULT = 10;
-	public final static int DIV = 11;
-	public final static int MOD = 12;
-	public final static int IDIV = 13;
+    enum ArithmeticOperator {
+        ADDITION("+"),
+        SUBTRACTION("-"),
+        MULTIPLICATION("*"),
+        DIVISION("div"),
+        MODULUS("MOD"),
+        DIVISION_INTEGER("idiv");
+
+        public final String symbol;
+
+        ArithmeticOperator(final String symbol) {
+            this.symbol = symbol;
+        }
+    }
 
 	/**
 	 * Node Identity Comparison operators
@@ -153,10 +161,6 @@ public interface Constants {
             this.symbol = symbol;
         }
     }
-
-    public final static String[] OPS = 
-    { "<", ">", ">=", "<=", "=", "!=", "IN" , "=~", "+", 
-      "-", "*", "div", "mod", "idiv", "is", "isnot", "<<", ">>" };
 
     public final static int KEEP_UNION = 0;
     public final static int KEEP_INTER = 1;

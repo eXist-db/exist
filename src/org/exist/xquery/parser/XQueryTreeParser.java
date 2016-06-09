@@ -25,6 +25,7 @@
 	import org.exist.security.PermissionDeniedException;
 	import org.exist.util.XMLChar;
 	import org.exist.xquery.*;
+	import org.exist.xquery.Constants.ArithmeticOperator;
 	import org.exist.xquery.Constants.Comparison;
 	import org.exist.xquery.Constants.NodeComparisonOperator;
 	import org.exist.xquery.value.*;
@@ -8147,7 +8148,7 @@ public XQueryTreeParser() {
 			_t = __t257;
 			_t = _t.getNextSibling();
 			
-					OpNumeric op= new OpNumeric(context, left, right, Constants.PLUS);
+					OpNumeric op= new OpNumeric(context, left, right, ArithmeticOperator.ADDITION);
 			op.setASTNode(plus);
 					path.addPath(op);
 					step= op;
@@ -8167,7 +8168,7 @@ public XQueryTreeParser() {
 			_t = __t258;
 			_t = _t.getNextSibling();
 			
-					OpNumeric op= new OpNumeric(context, left, right, Constants.MINUS);
+					OpNumeric op= new OpNumeric(context, left, right, ArithmeticOperator.SUBTRACTION);
 			op.setASTNode(minus);
 					path.addPath(op);
 					step= op;
@@ -8185,7 +8186,7 @@ public XQueryTreeParser() {
 			_t = __t259;
 			_t = _t.getNextSibling();
 			
-					UnaryExpr unary= new UnaryExpr(context, Constants.MINUS);
+					UnaryExpr unary= new UnaryExpr(context, ArithmeticOperator.SUBTRACTION);
 			unary.setASTNode(uminus);
 					unary.add(left);
 					path.addPath(unary);
@@ -8204,7 +8205,7 @@ public XQueryTreeParser() {
 			_t = __t260;
 			_t = _t.getNextSibling();
 			
-					UnaryExpr unary= new UnaryExpr(context, Constants.PLUS);
+					UnaryExpr unary= new UnaryExpr(context, ArithmeticOperator.ADDITION);
 			unary.setASTNode(uplus);
 					unary.add(left);
 					path.addPath(unary);
@@ -8225,7 +8226,7 @@ public XQueryTreeParser() {
 			_t = __t261;
 			_t = _t.getNextSibling();
 			
-					OpNumeric op= new OpNumeric(context, left, right, Constants.DIV);
+					OpNumeric op= new OpNumeric(context, left, right, ArithmeticOperator.DIVISION);
 			op.setASTNode(div);
 					path.addPath(op);
 					step= op;
@@ -8245,7 +8246,7 @@ public XQueryTreeParser() {
 			_t = __t262;
 			_t = _t.getNextSibling();
 			
-					OpNumeric op= new OpNumeric(context, left, right, Constants.IDIV);
+					OpNumeric op= new OpNumeric(context, left, right, ArithmeticOperator.DIVISION_INTEGER);
 			op.setASTNode(idiv);
 					path.addPath(op);
 					step= op;
@@ -8265,7 +8266,7 @@ public XQueryTreeParser() {
 			_t = __t263;
 			_t = _t.getNextSibling();
 			
-					OpNumeric op= new OpNumeric(context, left, right, Constants.MOD);
+					OpNumeric op= new OpNumeric(context, left, right, ArithmeticOperator.MODULUS);
 			op.setASTNode(mod);
 					path.addPath(op);
 					step= op;
@@ -8285,7 +8286,7 @@ public XQueryTreeParser() {
 			_t = __t264;
 			_t = _t.getNextSibling();
 			
-					OpNumeric op= new OpNumeric(context, left, right, Constants.MULT);
+					OpNumeric op= new OpNumeric(context, left, right, ArithmeticOperator.MULTIPLICATION);
 			op.setASTNode(mult);
 					path.addPath(op);
 					step= op;
