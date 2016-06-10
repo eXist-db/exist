@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2015 The eXist Project
+ *  Copyright (C) 2001-2016 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -49,7 +49,7 @@ public class IndexManager {
 
     private BrokerPool pool;
 
-    private Map<String, Index> indexers = new HashMap<String, Index>();
+    private Map<String, Index> indexers = new HashMap<>();
 
     /**
      * Constructs a new IndexManager and registers the indexes specified in
@@ -100,9 +100,7 @@ public class IndexManager {
             return index;
         } catch (final ClassNotFoundException e) {
             LOG.warn("Class " + className + " not found. Cannot configure index.");
-        } catch (final IllegalAccessException e) {
-            LOG.warn("Exception while configuring index " + className + ": " + e.getMessage(), e);
-        } catch (final InstantiationException e) {
+        } catch (final IllegalAccessException | InstantiationException e) {
             LOG.warn("Exception while configuring index " + className + ": " + e.getMessage(), e);
         }
         return null;
@@ -111,10 +109,20 @@ public class IndexManager {
     public Index registerIndex(Index index) throws DatabaseConfigurationException {
         index.open();
         indexers.put(index.getIndexId(), index);
-        if (LOG.isInfoEnabled())
-            {LOG.info("Registered index " + index.getClass() + " as " + index.getIndexId());}
+        if (LOG.isInfoEnabled()) {
+            LOG.info("Registered index " + index.getClass() + " as " + index.getIndexId());
+        }
         return index;
     }
+
+    public void unregisterIndex(Index index) throws DBException {
+        indexers.remove(index.getIndexId(), index);
+        index.close();
+        if (LOG.isInfoEnabled()) {
+            LOG.info("Unregistered index " + index.getClass() + " as " + index.getIndexId());
+        }
+    }
+
 
     /**
      * Returns the {@link org.exist.storage.BrokerPool} on with this IndexManager operates.
@@ -143,8 +151,9 @@ public class IndexManager {
     public synchronized Index getIndexById(String indexId) {
         for (final Iterator<Index> i = iterator(); i.hasNext(); ) {
             final Index indexer = i.next();
-            if (indexId.equals(indexer.getIndexId()))
-                {return indexer;}
+            if (indexId.equals(indexer.getIndexId())) {
+                return indexer;
+            }
         }
         return null;
     }
@@ -166,7 +175,7 @@ public class IndexManager {
      * @return set of IndexWorkers
      */
     protected synchronized List<IndexWorker> getWorkers(DBBroker broker) {
-        final List<IndexWorker> workerList = new ArrayList<IndexWorker>(indexers.size());
+        final List<IndexWorker> workerList = new ArrayList<>(indexers.size());
         for (final Index index : indexers.values()) {
             final IndexWorker worker = index.getWorker(broker);
             if (worker != null) {
