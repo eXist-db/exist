@@ -1136,7 +1136,7 @@ public class ElementImpl extends NamedNode implements Element {
                 .append("\" ");
         }
 
-        //in same cases getChildNodes raise exception (unsaved, for example)
+        //in some cases getChildNodes raise exception (unsaved, for example)
         NodeList childNodes;
         try {
             childNodes = getChildNodes();
