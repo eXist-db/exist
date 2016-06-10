@@ -230,8 +230,7 @@ public class IndexController {
                 stream.endIndexDocument(txn);
             }
 
-            //that must be called outside this method to avoid slowdown
-            //flush();
+            flush();
         } finally {
             setReindexing(false);
         }
@@ -300,12 +299,12 @@ public class IndexController {
      */
     public StreamListener getStreamListener() {
         if (listener != null) {
-            StreamListener next = listener;
-            while (next != null) {
-                // wolf: setDocument() should have been called before
-                // next.getWorker().setDocument(currentDoc, currentMode);
-                next = next.getNextInChain();
-            }
+//            StreamListener next = listener;
+//            while (next != null) {
+//                // wolf: setDocument() should have been called before
+//                // next.getWorker().setDocument(currentDoc, currentMode);
+//                next = next.getNextInChain();
+//            }
             return listener;
         }
         StreamListener first = null;

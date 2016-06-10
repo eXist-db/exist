@@ -155,6 +155,9 @@ public class IndexIntegrationTest extends AbstractTestUpdate {
                 stream.attribute(anyObject(), eqAttr("xml:id", "id1"), anyObject()); expectLastCall();
                 stream.endIndexDocument(anyObject()); expectLastCall();
 
+                //flush
+                worker.flush(); expectLastCall();
+
                 //STORE STAGE
                 //set document
                 worker.setDocument(eqDocument(docUri)); expectLastCall();
@@ -171,6 +174,7 @@ public class IndexIntegrationTest extends AbstractTestUpdate {
                 stream.endIndexDocument(anyObject()); expectLastCall();
 
                 //flush
+                worker.flush(); expectLastCall();
                 worker.flush(); expectLastCall();
             },
             service -> queryResource(service, docName, "update value //t/@xml:id with 'id2'", 0)
@@ -204,6 +208,8 @@ public class IndexIntegrationTest extends AbstractTestUpdate {
                 stream.endIndexDocument(anyObject()); expectLastCall();
 
                 //flush
+                worker.flush(); expectLastCall();
+                worker.flush(); expectLastCall();
                 worker.flush(); expectLastCall();
             },
             service -> queryResource(service, docName, "update delete //t/@xml:id", 0)
