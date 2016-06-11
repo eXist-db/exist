@@ -25,15 +25,28 @@
 
         <!-- create war specific configuration files -->
         <xslt in="conf.xml"  out="webapp/WEB-INF/conf.xml"  style="${build.scripts}/dist-war-conf.xsl"/>
-        <xslt in="log4j2.xml" out="webapp/WEB-INF/log4j2.xml" style="${build.scripts}/dist-war-log4j.xsl"/>
+        <xslt in="log4j2.xml" out="webapp/WEB-INF/log4j2.xml" style="${build.scripts}/dist-war-log4j.xsl"/>      
         
+        <!-- fetch war specific libs -->
+        <property name="log4j2.version" value="2.6"/>
+        <property name="log4j2.url" value="http://archive.apache.org/dist/logging/log4j/${log4j2.version}/apache-log4j-${log4j2.version}-bin.zip"/>
+        <taskdef name="fetch" classname="nl.ow.dilemma.ant.fetch.FetchTask" classpathref="classpath.core"/>
+        <mkdir dir="webapp/WEB-INF/temp/lib"/>    
+        <fetch classpathref="classpath.core" dest="webapp/WEB-INF/temp/lib"
+        url="${log4j2.url}" usecache="true">
+              <patternset>
+                    <include name="**/log4j-web-*.jar"/>
+                    <exclude name="**/log4j-web-*-javadoc.jar"/>
+                    <exclude name="**/log4j-web-*-sources.jar"/>
+              </patternset>
+        </fetch>
     </target>
 
     <!-- ================================================================== -->
     <!-- Create .war file                                                   -->
     <!-- ================================================================== -->
     <target name="dist-war" depends="git.details,webapps" description="Create war file">
-        <war destfile="${dist}/exist-${project.version}-${git.commit}.war" webxml="webapp/WEB-INF/web.xml">
+      <war destfile="${dist}/exist-${project.version}-${git.commit}.war" webxml="webapp/WEB-INF/web.xml">
                 
             <!-- Add files to WEB-INF/lib -->
             <lib dir=".">
@@ -102,7 +115,9 @@
             <lib dir="extensions/modules/lib">
                 <include name="*.jar"/>
             </lib>
-            
+            <lib dir="webapp/WEB-INF/temp/lib">
+              <include name="*.jar"/>
+            </lib>
 
             <!-- Add configuration files to WEB-INF -->
             <webinf dir=".">
@@ -158,6 +173,7 @@
             </manifest>
 
         </war>
+        <delete dir="webapp/WEB-INF/temp"/>
     </target>
     
     <!-- ================================================================== -->
