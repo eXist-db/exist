@@ -2868,17 +2868,20 @@ public class NativeBroker extends DBBroker {
         }
         final StreamListener listener = indexController.getStreamListener(doc, ReindexMode.STORE);
         indexController.startIndexDocument(transaction, listener);
-        final NodeList nodes = doc.getChildNodes();
-        for(int i = 0; i < nodes.getLength(); i++) {
-            final IStoredNode<?> node = (IStoredNode<?>) nodes.item(i);
-            try(final INodeIterator iterator = getNodeIterator(node)) {
-                iterator.next();
-                scanNodes(transaction, iterator, node, new NodePath(), mode, listener);
-            } catch(final IOException ioe) {
-                LOG.warn("Unable to close node iterator", ioe);
+        try {
+            final NodeList nodes = doc.getChildNodes();
+            for (int i = 0; i < nodes.getLength(); i++) {
+                final IStoredNode<?> node = (IStoredNode<?>) nodes.item(i);
+                try (final INodeIterator iterator = getNodeIterator(node)) {
+                    iterator.next();
+                    scanNodes(transaction, iterator, node, new NodePath(), mode, listener);
+                } catch (final IOException ioe) {
+                    LOG.warn("Unable to close node iterator", ioe);
+                }
             }
+        } finally {
+            indexController.endIndexDocument(transaction, listener);
         }
-        indexController.endIndexDocument(transaction, listener);
         flush();
         if(doc.isCollectionConfig()) {
             doc.getCollection().setCollectionConfigEnabled(true);
