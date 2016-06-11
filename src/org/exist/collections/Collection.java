@@ -1322,18 +1322,19 @@ public class Collection extends Observable implements Resource, Comparable<Colle
             trigger.beforeDeleteDocument(broker, transaction, doc);
 
             final IndexController indexController = broker.getIndexController();
-            indexController.setDocument(doc, StreamListener.ReindexMode.REMOVE_BINARY);
-            final StreamListener listener = indexController.getStreamListener();
-            indexController.startIndexDocument(transaction, listener);
-
+            final StreamListener listener = indexController.getStreamListener(doc, StreamListener.ReindexMode.REMOVE_BINARY);
             try {
-               broker.removeBinaryResource(transaction, (BinaryDocument) doc);
-            } catch (final IOException ex) {
-               throw new PermissionDeniedException("Cannot delete file: " + doc.getURI().toString() + ": " + ex.getMessage(), ex);
-            }
-            documents.remove(doc.getFileURI().getRawCollectionPath());
+                indexController.startIndexDocument(transaction, listener);
 
-            indexController.endIndexDocument(transaction, listener);
+                try {
+                    broker.removeBinaryResource(transaction, (BinaryDocument) doc);
+                } catch (final IOException ex) {
+                    throw new PermissionDeniedException("Cannot delete file: " + doc.getURI().toString() + ": " + ex.getMessage(), ex);
+                }
+                documents.remove(doc.getFileURI().getRawCollectionPath());
+            } finally {
+                indexController.endIndexDocument(transaction, listener);
+            }
 
             trigger.afterDeleteDocument(broker, transaction, doc.getURI());
 
@@ -2080,13 +2081,13 @@ public class Collection extends Observable implements Resource, Comparable<Colle
             addDocument(transaction, broker, blob, oldDoc);
 
             final IndexController indexController = broker.getIndexController();
-            indexController.setDocument(blob, StreamListener.ReindexMode.STORE);
-            final StreamListener listener = indexController.getStreamListener();
+            final StreamListener listener = indexController.getStreamListener(blob, StreamListener.ReindexMode.STORE);
             indexController.startIndexDocument(transaction, listener);
-
-            broker.storeXMLResource(transaction, blob);
-
-            indexController.endIndexDocument(transaction, listener);
+            try {
+                broker.storeXMLResource(transaction, blob);
+            } finally {
+                indexController.endIndexDocument(transaction, listener);
+            }
 
             blob.getUpdateLock().acquire(Lock.READ_LOCK);
         } finally {

@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2010 The eXist Project
+ *  Copyright (C) 2001-2016 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -16,8 +16,6 @@
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- *  $Id$
  */
 package org.exist.xquery.update;
 
@@ -43,8 +41,6 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
-import org.exist.storage.txn.TransactionException;
-import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.util.hashtable.Int2ObjectHashMap;
@@ -66,46 +62,46 @@ import org.xml.sax.SAXException;
 public abstract class Modification extends AbstractExpression
 {
 
-	protected final static Logger LOG =
-		LogManager.getLogger(Modification.class);
-	
-	protected final Expression select;
-	protected final Expression value;
-	
-	protected DocumentSet lockedDocuments = null;
-	protected MutableDocumentSet modifiedDocuments = new DefaultDocumentSet();
+    protected final static Logger LOG = LogManager.getLogger(Modification.class);
+
+    protected final Expression select;
+    protected final Expression value;
+
+    protected DocumentSet lockedDocuments = null;
+    protected MutableDocumentSet modifiedDocuments = new DefaultDocumentSet();
     protected Int2ObjectHashMap<DocumentTrigger> triggers;
-    
+
     /**
-	 * @param context
-	 */
-	public Modification(XQueryContext context, Expression select, Expression value) {
-		super(context);
-		this.select = select;
-		this.value = value;
-        this.triggers = new Int2ObjectHashMap<DocumentTrigger>(10);
+     * @param context
+     */
+    public Modification(XQueryContext context, Expression select, Expression value) {
+        super(context);
+        this.select = select;
+        this.value = value;
+        this.triggers = new Int2ObjectHashMap<>(10);
     }
 
-	public int getCardinality() {
-		return Cardinality.EMPTY;
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.AbstractExpression#returnsType()
-	 */
-	public int returnsType() {
-		return Type.EMPTY;
-	}
+    public int getCardinality() {
+        return Cardinality.EMPTY;
+    }
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.AbstractExpression#resetState()
-	 */
-	public void resetState(boolean postOptimization) {
-		super.resetState(postOptimization);
-		select.resetState(postOptimization);
-		if (value != null)
-			{value.resetState(postOptimization);}
-	}
+    /* (non-Javadoc)
+     * @see org.exist.xquery.AbstractExpression#returnsType()
+     */
+    public int returnsType() {
+        return Type.EMPTY;
+    }
+
+    /* (non-Javadoc)
+     * @see org.exist.xquery.AbstractExpression#resetState()
+     */
+    public void resetState(boolean postOptimization) {
+        super.resetState(postOptimization);
+        select.resetState(postOptimization);
+        if (value != null) {
+            value.resetState(postOptimization);
+        }
+    }
 
     @Override
     public void accept(ExpressionVisitor visitor) {
@@ -115,244 +111,219 @@ public abstract class Modification extends AbstractExpression
         }
     }
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression, int)
-	 */
-	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
-		contextInfo.setParent(this);
-		contextInfo.addFlag(IN_UPDATE);
-		select.analyze(contextInfo);
-		if (value != null)
-			{value.analyze(contextInfo);}
-	}
-	
-	/**
-	 * Acquire a lock on all documents processed by this modification.
-	 * We have to avoid that node positions change during the
-	 * operation.
-	 * 
-	 * @param nodes
-	 * 
-	 * @throws LockException
-	 * @throws TriggerException 
-	 */
-	protected StoredNode[] selectAndLock(Txn transaction, Sequence nodes) throws LockException, PermissionDeniedException,
-		XPathException, TriggerException {
-	    final Lock globalLock = context.getBroker().getBrokerPool().getGlobalUpdateLock();
-	    try {
-	        globalLock.acquire(Lock.READ_LOCK);
-	       
-	        lockedDocuments = nodes.getDocumentSet();
-	        
-		    // acquire a lock on all documents
-	        // we have to avoid that node positions change
-	        // during the modification
-	        lockedDocuments.lock(context.getBroker(), true, false);
-	        
-		    final StoredNode ql[] = new StoredNode[nodes.getItemCount()];
-			for (int i = 0; i < ql.length; i++) {
+    /* (non-Javadoc)
+     * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression, int)
+     */
+    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+        contextInfo.setParent(this);
+        contextInfo.addFlag(IN_UPDATE);
+        select.analyze(contextInfo);
+        if (value != null) {
+            value.analyze(contextInfo);
+        }
+    }
+
+    /**
+     * Acquire a lock on all documents processed by this modification.
+     * We have to avoid that node positions change during the
+     * operation.
+     *
+     * @param nodes
+     *
+     * @throws LockException
+     * @throws TriggerException
+     */
+    protected StoredNode[] selectAndLock(Txn transaction, Sequence nodes) throws LockException, PermissionDeniedException,
+        XPathException, TriggerException {
+        final Lock globalLock = context.getBroker().getBrokerPool().getGlobalUpdateLock();
+        try {
+            globalLock.acquire(Lock.READ_LOCK);
+
+            lockedDocuments = nodes.getDocumentSet();
+
+            // acquire a lock on all documents
+            // we have to avoid that node positions change
+            // during the modification
+            lockedDocuments.lock(context.getBroker(), true, false);
+
+            final StoredNode ql[] = new StoredNode[nodes.getItemCount()];
+            for (int i = 0; i < ql.length; i++) {
                 final Item item = nodes.itemAt(i);
-                if (!Type.subTypeOf(item.getType(), Type.NODE))
-                    {throw new XPathException(this, "XQuery update expressions can only be applied to nodes. Got: " +
-                        item.getStringValue());}
+                if (!Type.subTypeOf(item.getType(), Type.NODE)) {
+                    throw new XPathException(this, "XQuery update expressions can only be applied to nodes. Got: " +
+                        item.getStringValue());
+                }
                 final NodeValue nv = (NodeValue)item;
-                if (nv.getImplementationType() == NodeValue.IN_MEMORY_NODE)
-                    {throw new XPathException(this, "XQuery update expressions can not be applied to in-memory nodes.");}
+                if (nv.getImplementationType() == NodeValue.IN_MEMORY_NODE) {
+                    throw new XPathException(this, "XQuery update expressions can not be applied to in-memory nodes.");
+                }
                 final Node n = nv.getNode();
-                if (n.getNodeType() == Node.DOCUMENT_NODE)
-                    {throw new XPathException(this, "Updating the document object is not allowed.");}
-				ql[i] = (StoredNode) n;
-				final DocumentImpl doc = ql[i].getOwnerDocument();
-				//prepare Trigger
-				prepareTrigger(transaction, doc);
-			}
-			return ql;
-	    } finally {
-	        globalLock.release(Lock.READ_LOCK);
-	    }
-	}
-	
-	protected Sequence deepCopy(Sequence inSeq) throws XPathException {
-		context.pushDocumentContext();
-		final MemTreeBuilder builder = context.getDocumentBuilder();
-		final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
-		final Serializer serializer = context.getBroker().getSerializer();
-		serializer.setReceiver(receiver);
-		
-		try {
-			final Sequence out = new ValueSequence();
-			for (final SequenceIterator i = inSeq.iterate(); i.hasNext(); ) {
-				Item item = i.nextItem();
-				if (item.getType() == Type.DOCUMENT) {
-					if (((NodeValue)item).getImplementationType() == NodeValue.PERSISTENT_NODE) {
-						final NodeHandle root = (NodeHandle) ((NodeProxy)item).getOwnerDocument().getDocumentElement();
-						item = new NodeProxy(root);
-					} else {
-						item = (Item)((NodeValue) item).getOwnerDocument().getDocumentElement();
-					}
-				}
-				if (Type.subTypeOf(item.getType(), Type.NODE)) {
-					if (((NodeValue)item).getImplementationType() == NodeValue.PERSISTENT_NODE) {
-						final int last = builder.getDocument().getLastNode();
-						final NodeProxy p = (NodeProxy) item;
-						serializer.toReceiver(p, false, false);
+                if (n.getNodeType() == Node.DOCUMENT_NODE) {
+                    throw new XPathException(this, "Updating the document object is not allowed.");
+                }
+                ql[i] = (StoredNode) n;
+                final DocumentImpl doc = ql[i].getOwnerDocument();
+                //prepare Trigger
+                prepareTrigger(transaction, doc);
+            }
+            return ql;
+        } finally {
+            globalLock.release(Lock.READ_LOCK);
+        }
+    }
+
+    protected Sequence deepCopy(Sequence inSeq) throws XPathException {
+        context.pushDocumentContext();
+        final MemTreeBuilder builder = context.getDocumentBuilder();
+        final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
+        final Serializer serializer = context.getBroker().getSerializer();
+        serializer.setReceiver(receiver);
+
+        try {
+            final Sequence out = new ValueSequence();
+            for (final SequenceIterator i = inSeq.iterate(); i.hasNext(); ) {
+                Item item = i.nextItem();
+                if (item.getType() == Type.DOCUMENT) {
+                    if (((NodeValue)item).getImplementationType() == NodeValue.PERSISTENT_NODE) {
+                        final NodeHandle root = (NodeHandle) ((NodeProxy)item).getOwnerDocument().getDocumentElement();
+                        item = new NodeProxy(root);
+                    } else {
+                        item = (Item)((NodeValue) item).getOwnerDocument().getDocumentElement();
+                    }
+                }
+                if (Type.subTypeOf(item.getType(), Type.NODE)) {
+                    if (((NodeValue)item).getImplementationType() == NodeValue.PERSISTENT_NODE) {
+                        final int last = builder.getDocument().getLastNode();
+                        final NodeProxy p = (NodeProxy) item;
+                        serializer.toReceiver(p, false, false);
                         if (p.getNodeType() == Node.ATTRIBUTE_NODE)
                             {item = builder.getDocument().getLastAttr();}
                         else
                             {item = builder.getDocument().getNode(last + 1);}
-					} else {
-						((org.exist.dom.memtree.NodeImpl)item).deepCopy();
-					}
-				}
-				out.add(item);
-			}
-			return out;
-        } catch(final SAXException e) {
+                    } else {
+                        ((org.exist.dom.memtree.NodeImpl)item).deepCopy();
+                    }
+                }
+                out.add(item);
+            }
+            return out;
+        } catch(final SAXException | DOMException e) {
             throw new XPathException(this, e.getMessage(), e);
-		} catch (final DOMException e) {
-		    throw new XPathException(this, e.getMessage(), e);
-		} finally {
-			context.popDocumentContext();
-		}
-	}
+        } finally {
+            context.popDocumentContext();
+        }
+    }
 
     protected void finishTriggers(Txn transaction) throws TriggerException {
         final Iterator<DocumentImpl> iterator = modifiedDocuments.getDocumentIterator();
-		
+
         while(iterator.hasNext()) {
-        	final DocumentImpl doc = iterator.next();
+            final DocumentImpl doc = iterator.next();
             context.addModifiedDoc(doc);
-			finishTrigger(transaction, doc);
-		}
+            finishTrigger(transaction, doc);
+        }
         
         triggers.clear();
     }
 
     /**
-	 * Release all acquired document locks.
-	 */
-	protected void unlockDocuments()
-	{
-	    if(lockedDocuments == null)
-	        {return;}
-	    
-		modifiedDocuments.clear();
-	    
-		//unlock documents
-	    lockedDocuments.unlock(true);
+     * Release all acquired document locks.
+     */
+    protected void unlockDocuments()
+    {
+        if(lockedDocuments == null) {
+            return;
+        }
+
+        modifiedDocuments.clear();
+
+        //unlock documents
+        lockedDocuments.unlock(true);
         lockedDocuments = null;
-	}
+    }
 
     public static void checkFragmentation(XQueryContext context, DocumentSet docs) throws EXistException {
         int fragmentationLimit = -1;
         final Object property = context.getBroker().getBrokerPool().getConfiguration().getProperty(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR);
-        if (property != null)
-            {fragmentationLimit = ((Integer)property).intValue();}
+        if (property != null) {
+            fragmentationLimit = (Integer) property;
+        }
         checkFragmentation(context, docs, fragmentationLimit);
     }
 
-	/**
-	 * Check if any of the modified documents needs defragmentation.
-	 * 
-	 * Defragmentation will take place if the number of split pages in the
-	 * document exceeds the limit defined in the configuration file.
-	 *  
-	 * @param docs
-	 */
-	public static void checkFragmentation(XQueryContext context, DocumentSet docs, int splitCount) throws EXistException {
+    /**
+     * Check if any of the modified documents needs defragmentation.
+     *
+     * Defragmentation will take place if the number of split pages in the
+     * document exceeds the limit defined in the configuration file.
+     *
+     * @param docs
+     */
+    public static void checkFragmentation(XQueryContext context, DocumentSet docs, int splitCount) throws EXistException {
         final DBBroker broker = context.getBroker();
-        final TransactionManager txnMgr = context.getBroker().getBrokerPool().getTransactionManager();
         
         //if there is no batch update transaction, start a new individual transaction
-        final Txn transaction = txnMgr.beginTransaction();
-        try {
+        try (final Txn transaction = broker.getBrokerPool().getTransactionManager().beginTransaction()) {
             for (final Iterator<DocumentImpl> i = docs.getDocumentIterator(); i.hasNext(); ) {
                 final DocumentImpl next = i.next();
-                if(next.getMetadata().getSplitCount() > splitCount)
-                    {try {
-                        next.getUpdateLock().acquire(Lock.WRITE_LOCK);
+                if(next.getMetadata().getSplitCount() > splitCount) {
+                    Lock lock = next.getUpdateLock();
+                    try {
+                        lock.acquire(Lock.WRITE_LOCK);
                         broker.defragXMLResource(transaction, next);
                     } finally {
-                        next.getUpdateLock().release(Lock.WRITE_LOCK);
+                        lock.release(Lock.WRITE_LOCK);
                     }}
                 broker.checkXMLResourceConsistency(next);
             }
-            
-            txnMgr.commit(transaction);
+
+            transaction.commit();
         } catch (final Exception e) {
-			LOG.error(e);
-            txnMgr.abort(transaction);
-        } finally {
-            txnMgr.close(transaction);
+            LOG.error(e, e);
         }
     }
-	
-	/**
-	 * Fires the prepare function for the UPDATE_DOCUMENT_EVENT trigger for the Document doc
-	 *  
-	 * @param transaction	The transaction
-	 * @param doc	The document to trigger for
-	 * 
-	 * @throws TriggerException 
-	 */
-	private void prepareTrigger(Txn transaction, DocumentImpl doc) throws TriggerException {
 
-	    final Collection col = doc.getCollection();
-            final DBBroker broker = context.getBroker();
-            
-            final DocumentTrigger trigger = new DocumentTriggers(broker, col);
-            
-            //prepare the trigger
-            trigger.beforeUpdateDocument(context.getBroker(), transaction, doc);
-            triggers.put(doc.getDocId(), trigger);
-	}
-	
-	/** Fires the finish function for UPDATE_DOCUMENT_EVENT for the documents trigger
-	 * 
-	 * @param transaction	The transaction
-	 * @param doc	The document to trigger for
-	 * 
-	 * @throws TriggerException 
-	 */
-	private void finishTrigger(Txn transaction, DocumentImpl doc) throws TriggerException {
-            //finish the trigger
-            final DocumentTrigger trigger = triggers.get(doc.getDocId());
-            if(trigger != null) {
-                trigger.afterUpdateDocument(context.getBroker(), transaction, doc);
-            }
-	}
-	
-	/**
-	 * Gets the Transaction to use for the update (can be batch or individual)
-	 * 
-	 * @return The transaction
-	 */
-	public Txn getTransaction()
-	{
-            final TransactionManager txnMgr = context.getBroker().getBrokerPool().getTransactionManager();
-            final Txn transaction = txnMgr.beginTransaction();
+    /**
+     * Fires the prepare function for the UPDATE_DOCUMENT_EVENT trigger for the Document doc
+     *
+     * @param transaction	The transaction
+     * @param doc	The document to trigger for
+     *
+     * @throws TriggerException
+     */
+    private void prepareTrigger(Txn transaction, DocumentImpl doc) throws TriggerException {
 
-            return transaction;
-	}
-	
-	/**
-	 * Commit's the transaction for the update unless it is a batch update and then the commit is defered
-	 * 
-	 * @param transaction The Transaction to commit
-	 */
-	public void commitTransaction(Txn transaction) throws TransactionException
-	{	
-            final TransactionManager txnMgr = context.getBroker().getBrokerPool().getTransactionManager();
-            txnMgr.commit(transaction);
-	}
+        final Collection col = doc.getCollection();
+        final DBBroker broker = context.getBroker();
 
-    public void abortTransaction(Txn transaction) {
-        final TransactionManager txnMgr = context.getBroker().getBrokerPool().getTransactionManager();
-        txnMgr.abort(transaction);
+        final DocumentTrigger trigger = new DocumentTriggers(broker, col);
+
+        //prepare the trigger
+        trigger.beforeUpdateDocument(context.getBroker(), transaction, doc);
+        triggers.put(doc.getDocId(), trigger);
     }
 
-    public void closeTransaction(Txn transaction) {
-        final TransactionManager txnMgr = context.getBroker().getBrokerPool().getTransactionManager();
-        txnMgr.close(transaction);
+    /** Fires the finish function for UPDATE_DOCUMENT_EVENT for the documents trigger
+     *
+     * @param transaction	The transaction
+     * @param doc	The document to trigger for
+     *
+     * @throws TriggerException
+     */
+    private void finishTrigger(Txn transaction, DocumentImpl doc) throws TriggerException {
+        //finish the trigger
+        final DocumentTrigger trigger = triggers.get(doc.getDocId());
+        if(trigger != null) {
+            trigger.afterUpdateDocument(context.getBroker(), transaction, doc);
+        }
+    }
+
+    /**
+     * Gets the Transaction to use for the update (can be batch or individual)
+     *
+     * @return The transaction
+     */
+    protected Txn getTransaction() {
+        return context.getBroker().getBrokerPool().getTransactionManager().beginTransaction();
     }
 }
