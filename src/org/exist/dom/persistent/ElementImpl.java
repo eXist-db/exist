@@ -647,13 +647,18 @@ public class ElementImpl extends NamedNode implements Element {
                     broker.insertNodeAfter(transaction, last.getNode(), elem);
                     broker.indexNode(transaction, elem, lastPath);
                     final IndexController indexes = broker.getIndexController();
-                    indexes.indexNode(transaction, elem, lastPath, listener);
-                    elem.setChildCount(0);
-                    last.setNode(elem);
-                    //process child nodes
-                    elem.appendChildren(transaction, newNodeId.newChild(), null, last, lastPath, ch, listener);
-                    broker.endElement(elem, lastPath, null);
-                    indexes.endElement(transaction, elem, lastPath, listener);
+                    indexes.startIndexDocument(transaction, listener);
+                    try {
+                        indexes.indexNode(transaction, elem, lastPath, listener);
+                        elem.setChildCount(0);
+                        last.setNode(elem);
+                        //process child nodes
+                        elem.appendChildren(transaction, newNodeId.newChild(), null, last, lastPath, ch, listener);
+                        broker.endElement(elem, lastPath, null);
+                        indexes.endElement(transaction, elem, lastPath, listener);
+                    } finally {
+                        indexes.endIndexDocument(transaction, listener);
+                    }
                     lastPath.removeLastComponent();
                     return elem;
 
