@@ -1322,8 +1322,7 @@ public class Collection extends Observable implements Resource, Comparable<Colle
             trigger.beforeDeleteDocument(broker, transaction, doc);
 
             final IndexController indexController = broker.getIndexController();
-            indexController.setDocument(doc, StreamListener.ReindexMode.REMOVE_BINARY);
-            final StreamListener listener = indexController.getStreamListener();
+            final StreamListener listener = indexController.getStreamListener(doc, StreamListener.ReindexMode.REMOVE_BINARY);
             indexController.startIndexDocument(transaction, listener);
 
             try {
@@ -2080,8 +2079,7 @@ public class Collection extends Observable implements Resource, Comparable<Colle
             addDocument(transaction, broker, blob, oldDoc);
 
             final IndexController indexController = broker.getIndexController();
-            indexController.setDocument(blob, StreamListener.ReindexMode.STORE);
-            final StreamListener listener = indexController.getStreamListener();
+            final StreamListener listener = indexController.getStreamListener(blob, StreamListener.ReindexMode.STORE);
             indexController.startIndexDocument(transaction, listener);
 
             broker.storeXMLResource(transaction, blob);

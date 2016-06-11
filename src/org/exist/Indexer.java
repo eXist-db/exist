@@ -181,10 +181,8 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
     public void setValidating(final boolean validate) {
         this.validate = validate;
         if (!validate) {
-            broker.getIndexController().setDocument(document,
-                    ReindexMode.STORE);
             this.indexListener = broker.getIndexController()
-                .getStreamListener();
+                .getStreamListener(document, ReindexMode.STORE);
         }
     }
 

@@ -2502,8 +2502,7 @@ public class NativeBroker extends DBBroker {
         if (LOG.isDebugEnabled())
             LOG.debug("Copying document " + oldDoc.getFileURI() + " to " + newDoc.getURI());
         final long start = System.currentTimeMillis();
-        indexController.setDocument(newDoc, ReindexMode.STORE);
-        final StreamListener listener = indexController.getStreamListener();
+        final StreamListener listener = indexController.getStreamListener(newDoc, ReindexMode.STORE);
         final NodeList nodes = oldDoc.getChildNodes();
         for(int i = 0; i < nodes.getLength(); i++) {
             final IStoredNode<?> node = (IStoredNode<?>) nodes.item(i);
@@ -2729,8 +2728,7 @@ public class NativeBroker extends DBBroker {
     }
 
     private void dropIndex(final Txn transaction, final DocumentImpl document) throws ReadOnlyException {
-        indexController.setDocument(document, ReindexMode.REMOVE_ALL_NODES);
-        final StreamListener listener = indexController.getStreamListener();
+        final StreamListener listener = indexController.getStreamListener(document, ReindexMode.REMOVE_ALL_NODES);
         final NodeList nodes = document.getChildNodes();
         for(int i = 0; i < nodes.getLength(); i++) {
             final IStoredNode<?> node = (IStoredNode<?>) nodes.item(i);
@@ -2868,8 +2866,7 @@ public class NativeBroker extends DBBroker {
         if(doc.isCollectionConfig()) {
             doc.getCollection().setCollectionConfigEnabled(false);
         }
-        indexController.setDocument(doc, ReindexMode.STORE);
-        final StreamListener listener = indexController.getStreamListener();
+        final StreamListener listener = indexController.getStreamListener(doc, ReindexMode.STORE);
         indexController.startIndexDocument(transaction, listener);
         final NodeList nodes = doc.getChildNodes();
         for(int i = 0; i < nodes.getLength(); i++) {
@@ -2919,8 +2916,7 @@ public class NativeBroker extends DBBroker {
             final DocumentImpl tempDoc = new DocumentImpl(pool, doc.getCollection(), doc.getFileURI());
             tempDoc.copyOf(doc, true);
             tempDoc.setDocId(doc.getDocId());
-            indexController.setDocument(doc, ReindexMode.STORE);
-            final StreamListener listener = indexController.getStreamListener();
+            final StreamListener listener = indexController.getStreamListener(doc, ReindexMode.STORE);
             // copy the nodes
             final NodeList nodes = doc.getChildNodes();
             for(int i = 0; i < nodes.getLength(); i++) {
