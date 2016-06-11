@@ -211,13 +211,17 @@ public class IndexController {
         if (reindexRoot == null) {
             return;
         }
+
         setReindexing(true);
-        reindexRoot = broker.objectWith(new NodeProxy(reindexRoot.getOwnerDocument(), reindexRoot.getNodeId()));
-        setDocument(reindexRoot.getOwnerDocument(), mode);
-        getStreamListener();
-        IndexUtils.scanNode(broker, transaction, reindexRoot, listener);
-        flush();
-        setReindexing(false);
+        try {
+            reindexRoot = broker.objectWith(new NodeProxy(reindexRoot.getOwnerDocument(), reindexRoot.getNodeId()));
+            setDocument(reindexRoot.getOwnerDocument(), mode);
+            getStreamListener();
+            IndexUtils.scanNode(broker, transaction, reindexRoot, listener);
+            flush();
+        } finally {
+            setReindexing(false);
+        }
     }
 
     public boolean isReindexing() {
