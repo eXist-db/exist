@@ -129,13 +129,12 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
 
         logger.info("Running as user '" 
                 + System.getProperty("user.name", "(unknown user.name)") + "'");
-
+        logger.info("[eXist Home : "
+                + System.getProperty("exist.home", "unknown") + "]");
         logger.info("[eXist Version : " 
                 + SystemProperties.getInstance().getSystemProperty("product-version", "unknown") + "]");
         logger.info("[eXist Build : " 
                 + SystemProperties.getInstance().getSystemProperty("product-build", "unknown") + "]");
-        logger.info("[eXist Home : " 
-                + SystemProperties.getInstance().getSystemProperty("exist.home", "unknown") + "]");
         logger.info("[Git commmit : " 
                 + SystemProperties.getInstance().getSystemProperty("git-commit", "unknown") + "]");
         

@@ -14,10 +14,14 @@ get_exist_home() {
 		(cd $(/usr/bin/dirname "$p") ; /bin/pwd)
 }
 
+resolve_dir() {
+    (builtin cd `dirname "${1/#~/$HOME}"`'/'`basename "${1/#~/$HOME}"` 2>/dev/null; if [ $? -eq 0 ]; then pwd; fi)
+}
+
 check_exist_home() {
     if [ -z "${EXIST_HOME}" ]; then
 	EXIST_HOME_1=$(get_exist_home "$1");
-	EXIST_HOME="$EXIST_HOME_1/..";
+	EXIST_HOME=`resolve_dir "$EXIST_HOME_1/.."`;
     fi
 
     if [ ! -f "${EXIST_HOME}/start.jar" ]; then
