@@ -197,12 +197,14 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
 //            }
 
             final List<Path> configFiles = new ArrayList<>();
-            configFiles.add(jettyConfig.getParent().resolve("jetty-ssl-context.xml"));
+            //configFiles.add(jettyConfig.getParent().resolve("jetty-logging.xml")); //TODO(AR) need to determine how to enable/disable this
+            configFiles.add(jettyConfig.getParent().resolve("jetty-requestlog.xml"));
             configFiles.add(jettyConfig.getParent().resolve("jetty-jmx.xml"));
             configFiles.add(jettyConfig.getParent().resolve("jetty-annotations.xml"));
             configFiles.add(jettyConfig.getParent().resolve("jetty-jaas.xml"));
             configFiles.add(jettyConfig);
             configFiles.add(jettyConfig.getParent().resolve("jetty-http.xml"));
+            configFiles.add(jettyConfig.getParent().resolve("jetty-ssl-context.xml"));
             configFiles.add(jettyConfig.getParent().resolve("jetty-ssl.xml"));
             configFiles.add(jettyConfig.getParent().resolve("jetty-https.xml"));
             configFiles.add(jettyConfig.getParent().resolve("jetty-deploy.xml"));

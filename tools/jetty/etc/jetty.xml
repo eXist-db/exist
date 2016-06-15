@@ -134,9 +134,6 @@
   <Set name="dumpAfterStart">false</Set>
   <Set name="dumpBeforeStop">false</Set>
 
-  <!-- inclusions below -->
-
-
   <!-- =============================================================== -->
   <!-- Add a ContextProvider to the deployment manager                 -->
   <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
@@ -159,31 +156,6 @@
       </Arg>
     </Call>
   </Ref -->
-
-  <!-- =============================================================== -->
-  <!-- Configure stderr and stdout to a Jetty rollover log file        -->
-  <!-- this configuration file should be used in combination with      -->
-  <!-- other configuration files.  e.g.                                -->
-  <!--    java -jar start.jar etc/jetty-logging.xml                    -->
-  <!-- =============================================================== -->
-
-  <!-- <New id="ServerLog" class="java.io.PrintStream">
-       <Arg>
-         <New class="org.eclipse.jetty.util.RolloverFileOutputStream">
-           <Arg><SystemProperty name="jetty.base" default="."/>/logs/yyyy_mm_dd.stderrout.log</Arg>
-           <Arg type="boolean">false</Arg>
-           <Arg type="int">90</Arg>
-           <Arg><Call class="java.util.TimeZone" name="getTimeZone"><Arg>GMT</Arg></Call></Arg>
-           <Get id="ServerLogName" name="datedFilename"/>
-         </New>
-       </Arg>
-     </New>
-
-     <Call class="org.eclipse.jetty.util.log.Log" name="info"><Arg>Redirecting stderr/stdout to <Ref id="ServerLogName"/></Arg></Call>
-     <Call class="java.lang.System" name="setErr"><Arg><Ref id="ServerLog"/></Arg></Call>
-     <Call class="java.lang.System" name="setOut"><Arg><Ref id="ServerLog"/></Arg></Call> -->
-
-
 
   <!-- =========================================================== -->
   <!-- change java.io.tmpdir default value                         -->
