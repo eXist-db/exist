@@ -24,8 +24,8 @@
         <Call id="webappprovider" name="addAppProvider">
           <Arg>
             <New class="org.eclipse.jetty.deploy.providers.WebAppProvider">
-              <Set name="monitoredDirName"><SystemProperty name="jetty.home" default="."/>/webapps</Set>
-              <Set name="defaultsDescriptor"><SystemProperty name="jetty.home" default="."/>/etc/webdefault.xml</Set>
+              <Set name="monitoredDirName"><Property name="jetty.base" default="." />/<Property name="jetty.deploy.monitoredDir" deprecated="jetty.deploy.monitoredDirName" default="webapps"/></Set>
+              <Set name="defaultsDescriptor"><Property name="jetty.home" default="."/>/etc/webdefault.xml</Set>
               <Set name="scanInterval">10</Set>
               <Set name="extractWars">true</Set>
               <Set name="configurationManager">

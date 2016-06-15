@@ -96,9 +96,9 @@
             <New id="exist-webapp-context" class="org.exist.jetty.WebAppContext">
               <!-- can either be '/exist' or '/' -->
               <Set name="contextPath">/exist</Set>
-              <Set name="war"><SystemProperty name="jetty.home" default="."/>/../../webapp/</Set>
-              <Set name="defaultsDescriptor"><SystemProperty name="jetty.home" default="."/>/etc/webdefault.xml</Set>
-              <Set name="tempDirectory"><SystemProperty name="jetty.home" default="."/>/tmp</Set>
+              <Set name="war"><Property name="jetty.base" default="."/>/../../webapp/</Set>
+              <Set name="defaultsDescriptor"><Property name="jetty.home" default="."/>/etc/webdefault.xml</Set>
+              <Set name="tempDirectory"><Property name="jetty.base" default="."/>/tmp</Set>
               <Set name="securityHandler">
                 <New class="org.eclipse.jetty.security.ConstraintSecurityHandler">
                   <Set name="loginService">
@@ -152,7 +152,7 @@
     <Call name="addAppProvider">
       <Arg>
         <New class="org.eclipse.jetty.deploy.providers.ContextProvider">
-          <Set name="monitoredDirName"><SystemProperty name="jetty.home" default="."
+          <Set name="monitoredDirName"><Property name="jetty.base" default="."
             />/contexts</Set>
           <Set name="scanInterval">10</Set>
         </New>
@@ -167,7 +167,7 @@
   <Ref id="RequestLog">
     <Set name="requestLog">
       <New id="RequestLogImpl" class="org.eclipse.jetty.server.NCSARequestLog">
-        <Arg><SystemProperty name="jetty.home" default="."/>/logs/yyyy_mm_dd.request.log</Arg>
+        <Arg><Property name="jetty.base" default="."/>/logs/yyyy_mm_dd.request.log</Arg>
         <Set name="retainDays">90</Set>
         <Set name="append">true</Set>
         <Set name="extended">false</Set>
@@ -186,7 +186,7 @@
   <!-- <New id="ServerLog" class="java.io.PrintStream">
        <Arg>
          <New class="org.eclipse.jetty.util.RolloverFileOutputStream">
-           <Arg><SystemProperty name="jetty.home" default="."/>/logs/yyyy_mm_dd.stderrout.log</Arg>
+           <Arg><SystemProperty name="jetty.base" default="."/>/logs/yyyy_mm_dd.stderrout.log</Arg>
            <Arg type="boolean">false</Arg>
            <Arg type="int">90</Arg>
            <Arg><Call class="java.util.TimeZone" name="getTimeZone"><Arg>GMT</Arg></Call></Arg>
@@ -206,6 +206,6 @@
   <!-- =========================================================== -->
   <Call class="java.lang.System" name="setProperty">
     <Arg>java.io.tmpdir</Arg>
-    <Arg><SystemProperty name="jetty.home" default="."/>/tmp</Arg>
+    <Arg><Property name="jetty.base" default="."/>/tmp</Arg>
   </Call>
 </Configure>
