@@ -20,14 +20,14 @@
  */
 package org.exist.jetty;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.LineNumberReader;
 import java.net.SocketException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.servlet.Servlet;
 
@@ -69,6 +69,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
     public static final String JETTY_HOME_PROP = "jetty.home";
     public static final String JETTY_BASE_PROP = "jetty.base";
 
+    private static final String ENABLED_JETTY_CONFIG = "enabled-jetty-config";
     private static final Logger logger = LogManager.getLogger(JettyStart.class);
 
     public static void main(String[] args) {
@@ -196,24 +197,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
 //                configuration.configure(server);
 //            }
 
-            final List<Path> configFiles = new ArrayList<>();
-            //configFiles.add(jettyConfig.getParent().resolve("jetty-logging.xml")); //TODO(AR) need to determine how to enable/disable this
-            configFiles.add(jettyConfig.getParent().resolve("jetty-requestlog.xml"));
-            configFiles.add(jettyConfig.getParent().resolve("jetty-jmx.xml"));
-            configFiles.add(jettyConfig.getParent().resolve("jetty-annotations.xml"));
-            configFiles.add(jettyConfig.getParent().resolve("jetty-jaas.xml"));
-            configFiles.add(jettyConfig);
-            configFiles.add(jettyConfig.getParent().resolve("jetty-http.xml"));
-            configFiles.add(jettyConfig.getParent().resolve("jetty-ssl-context.xml"));
-            configFiles.add(jettyConfig.getParent().resolve("jetty-ssl.xml"));
-            configFiles.add(jettyConfig.getParent().resolve("jetty-https.xml"));
-            configFiles.add(jettyConfig.getParent().resolve("jetty-deploy.xml"));
-
-            //TODO(AR) figure out why we must have an explicit order - see http://stackoverflow.com/questions/37824063/embedding-jetty-9-3-with-modular-xmlconfiguration
-//            configFiles.addAll(FileUtils.list(jettyConfig.getParent(), p -> p.getFileName().toString().startsWith("jetty-") && p.getFileName().toString().endsWith(".xml") && Files.isRegularFile(p)));
-
-            //jetty.xml must come first, jetty-https.xml must come after jetty-ssl.xml
-
+            final List<Path> configFiles = getEnabledConfigFiles(jettyConfig.getParent());
 
             final List<Object> configuredObjects = new ArrayList();
             XmlConfiguration last = null;
@@ -410,6 +394,32 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
             e.printStackTrace();
             setChanged();
             notifyObservers(SIGNAL_ERROR);
+        }
+    }
+
+    private List<Path> getEnabledConfigFiles(final Path configDir) throws IOException {
+        final Path enabledJettyConfig = configDir.resolve(ENABLED_JETTY_CONFIG);
+        if(Files.notExists(enabledJettyConfig)) {
+            throw new IOException("Cannot find config enabler: "  + enabledJettyConfig.toString());
+        } else {
+            final List<Path> configFiles = new ArrayList<>();
+            try (final LineNumberReader reader = new LineNumberReader(Files.newBufferedReader(enabledJettyConfig))) {
+                String line = null;
+                while ((line = reader.readLine()) != null) {
+                    final String tl = line.trim();
+                    if (tl.isEmpty() || tl.charAt(0) == '#') {
+                        continue;
+                    } else {
+                        final Path configFile = configDir.resolve(tl);
+                        if (Files.notExists(configFile)) {
+                            throw new IOException("Cannot find enabled config: " + configFile.toString());
+                        } else {
+                            configFiles.add(configFile);
+                        }
+                    }
+                }
+            }
+            return configFiles;
         }
     }
 
