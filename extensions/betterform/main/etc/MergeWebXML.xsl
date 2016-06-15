@@ -1,6 +1,6 @@
 <xsl:stylesheet version="2.0"
-    xmlns:webxml="http://java.sun.com/xml/ns/javaee"
-    xmlns="http://java.sun.com/xml/ns/javaee"
+    xmlns:webxml="http://xmlns.jcp.org/xml/ns/javaee"
+    xmlns="http://xmlns.jcp.org/xml/ns/javaee"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
     exclude-result-prefixes="webxml">
 
