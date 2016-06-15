@@ -66,7 +66,10 @@ import org.xmldb.api.base.Database;
  */
 public class JettyStart extends Observable implements LifeCycle.Listener {
 
-    protected static final Logger logger = LogManager.getLogger(JettyStart.class);
+    public static final String JETTY_HOME_PROP = "jetty.home";
+    public static final String JETTY_BASE_PROP = "jetty.base";
+
+    private static final Logger logger = LogManager.getLogger(JettyStart.class);
 
     public static void main(String[] args) {
         final JettyStart start = new JettyStart();
@@ -92,12 +95,12 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
     }
 
     public void run() {
-        final String jettyProperty = Optional.ofNullable(System.getProperty("jetty.home"))
+        final String jettyProperty = Optional.ofNullable(System.getProperty(JETTY_HOME_PROP))
                 .orElseGet(() -> {
                     final Optional<Path> home = ConfigurationHelper.getExistHome();
                     final Path jettyHome = FileUtils.resolve(home, "tools").resolve("jetty");
                     final String jettyPath = jettyHome.toAbsolutePath().toString();
-                    System.setProperty("jetty.home", jettyPath);
+                    System.setProperty(JETTY_HOME_PROP, jettyPath);
                     return jettyPath;
                 });
 
@@ -112,6 +115,9 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
         }
 
         final Path jettyConfig = Paths.get(args[0]);
+        final Map<String, String> configProperties = new HashMap<>();
+        configProperties.put(JETTY_HOME_PROP, System.getProperty(JETTY_HOME_PROP));
+        configProperties.put(JETTY_BASE_PROP, System.getProperty(JETTY_BASE_PROP, System.getProperty(JETTY_HOME_PROP)));
 
         final String shutdownHookOption = System.getProperty("exist.register-shutdown-hook", "true");
         boolean registerShutdownHook = "true".equals(shutdownHookOption);
@@ -146,8 +152,8 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
                 + System.getProperty("os.arch") + "]");
         logger.info("[log4j.configurationFile : "
                 + System.getProperty("log4j.configurationFile") + "]");
-        logger.info("[jetty.home : " 
-                + System.getProperty("jetty.home") + "]");
+        logger.info("[{} : {}]", JETTY_HOME_PROP, configProperties.get(JETTY_HOME_PROP));
+        logger.info("[{} : {}]", JETTY_BASE_PROP, configProperties.get(JETTY_BASE_PROP));
         logger.info("[jetty configuration : {}]", jettyConfig.toAbsolutePath().toString());
 
         try {
@@ -191,6 +197,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
 //            }
 
             final List<Path> configFiles = new ArrayList<>();
+            configFiles.add(jettyConfig.getParent().resolve("jetty-ssl-context.xml"));
             configFiles.add(jettyConfig.getParent().resolve("jetty-jmx.xml"));
             configFiles.add(jettyConfig.getParent().resolve("jetty-annotations.xml"));
             configFiles.add(jettyConfig.getParent().resolve("jetty-jaas.xml"));
@@ -215,6 +222,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
                     if (last != null) {
                         configuration.getIdMap().putAll(last.getIdMap());
                     }
+                    configuration.getProperties().putAll(configProperties);
                     configuredObjects.add(configuration.configure());
                     last = configuration;
                 }

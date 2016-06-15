@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<!DOCTYPE Configure PUBLIC "-//Jetty//Configure//EN" "http://www.eclipse.org/jetty/configure_9_3.dtd">
+
+<!-- ============================================================= -->
+<!-- SSL ContextFactory configuration                              -->
+<!-- ============================================================= -->
+
+<!-- 
+  To configure Includes / Excludes for Cipher Suites or Protocols see tweak-ssl.xml example at 
+     https://www.eclipse.org/jetty/documentation/current/configuring-ssl.html#configuring-sslcontextfactory-cipherSuites
+-->
+
+<Configure id="sslContextFactory" class="org.eclipse.jetty.util.ssl.SslContextFactory">
+  <Set name="keyStorePath"><Property name="jetty.base" default="." />/<Property name="jetty.sslContext.keyStorePath" deprecated="jetty.keystore" default="etc/keystore"/></Set>
+  <Set name="keyStorePassword"><Property name="jetty.sslContext.keyStorePassword" deprecated="jetty.keystore.password" default="OBF:1yta1t331v8w1v9q1t331ytc"/></Set>
+  <Set name="keyStoreType"><Property name="jetty.sslContext.keyStoreType" default="JKS"/></Set>
+  <Set name="keyStoreProvider"><Property name="jetty.sslContext.keyStoreProvider" default="SUN"/></Set>
+
+  <Set name="keyManagerPassword"><Property name="jetty.sslContext.keyManagerPassword" deprecated="jetty.keymanager.password" default="OBF:1yta1t331v8w1v9q1t331ytc"/></Set>
+
+  <Set name="trustStorePath"><Property name="jetty.base" default="." />/<Property name="jetty.sslContext.trustStorePath" deprecated="jetty.truststore" default="etc/keystore"/></Set>
+  <Set name="trustStorePassword"><Property name="jetty.sslContext.trustStorePassword" deprecated="jetty.truststore.password" default="OBF:1yta1t331v8w1v9q1t331ytc"/></Set>
+  <Set name="trustStoreProvider"><Property name="jetty.sslContext.trustStoreProvider"/></Set>
+
+  <Set name="needClientAuth"><Property name="jetty.sslContext.needClientAuth" deprecated="jetty.ssl.needClientAuth" default="false"/></Set>
+  <Set name="wantClientAuth"><Property name="jetty.sslContext.wantClientAuth" deprecated="jetty.ssl.wantClientAuth" default="false"/></Set>
+  <Set name="useCipherSuitesOrder"><Property name="jetty.sslContext.useCipherSuitesOrder" default="true"/></Set>
+  <Set name="sslSessionCacheSize"><Property name="jetty.sslContext.sslSessionCacheSize" default="-1"/></Set>
+  <Set name="sslSessionTimeout"><Property name="jetty.sslContext.sslSessionTimeout" default="-1"/></Set>
+</Configure>

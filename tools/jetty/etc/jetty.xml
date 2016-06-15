@@ -161,37 +161,6 @@
   </Ref -->
 
   <!-- =============================================================== -->
-  <!-- Configure SSL for the Jetty Server                              -->
-  <!-- this configuration file should be used in combination with      -->
-  <!-- other configuration files.  e.g.                                -->
-  <!--    java -jar start.jar etc/jetty-ssl.xml                        -->
-  <!--                                                                 -->
-  <!--  alternately, add to the start.ini for easier usage             -->
-  <!-- =============================================================== -->
-
-<!-- TODO(AR) need to check this -->
-<!--
-  <Call name="addConnector">
-    <Arg>
-      <New class="org.eclipse.jetty.server.ssl.SslSelectChannelConnector">
-        <Arg>
-          <New class="org.eclipse.jetty.http.ssl.SslContextFactory">
-            <Set name="keyStore"><SystemProperty name="jetty.home" default="."/>/etc/keystore</Set>
-            <Set name="keyStorePassword">secret</Set>
-            <Set name="keyManagerPassword">secret</Set>
-            <Set name="trustStore"><SystemProperty name="jetty.home" default="."
-              />/etc/keystore</Set>
-            <Set name="trustStorePassword">secret</Set>
-          </New>
-        </Arg>
-        <Set name="Port"><SystemProperty name="jetty.port.ssl" default="8443"/></Set>
-        <Set name="maxIdleTime">30000</Set>
-      </New>
-    </Arg>
-  </Call>
--->
-
-  <!-- =============================================================== -->
   <!-- Configure request log handler       			                -->
   <!-- http://wiki.eclipse.org/Jetty/Howto/Configure_Request_Logs      -->
   <!-- =============================================================== -->
