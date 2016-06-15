@@ -89,7 +89,7 @@ public class Main {
     static Path getDirectory(final String name) {
         try {
             if (name != null) {
-                final Path dir = Paths.get(name).toAbsolutePath();
+                final Path dir = Paths.get(name).normalize().toAbsolutePath();
                 if (Files.isDirectory(dir)) {
                     return dir;
                 }
