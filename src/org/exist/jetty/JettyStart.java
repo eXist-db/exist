@@ -21,7 +21,6 @@
 package org.exist.jetty;
 
 import java.io.InputStream;
-import java.lang.management.ManagementFactory;
 import java.net.SocketException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -35,7 +34,6 @@ import javax.servlet.Servlet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import org.eclipse.jetty.jmx.MBeanContainer;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.NetworkConnector;
@@ -46,7 +44,6 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.MultiException;
 import org.eclipse.jetty.util.component.LifeCycle;
-import org.eclipse.jetty.util.log.Log;
 import org.eclipse.jetty.xml.XmlConfiguration;
 
 import org.exist.SystemProperties;
@@ -188,22 +185,13 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
         try {
 //            server = new Server();
 
-            //TODO(AR) reinstate JMX!
-
-            // Setup JMX
-//            final MBeanContainer mBeanContainer = new MBeanContainer(ManagementFactory.getPlatformMBeanServer());
-//            server.addBean(mBeanContainer);
-//
-//            server.addBean(Log.getLog());
-
-
-
 //            try(final InputStream is = Files.newInputStream(jettyConfig)) {
 //                final XmlConfiguration configuration = new XmlConfiguration(is);
 //                configuration.configure(server);
 //            }
 
             final List<Path> configFiles = new ArrayList<>();
+            configFiles.add(jettyConfig.getParent().resolve("jetty-jmx.xml"));
             configFiles.add(jettyConfig.getParent().resolve("jetty-annotations.xml"));
             configFiles.add(jettyConfig.getParent().resolve("jetty-jaas.xml"));
             configFiles.add(jettyConfig);
