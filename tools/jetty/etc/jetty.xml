@@ -83,15 +83,7 @@
     <Set name="sendDateHeader">true</Set>
   </New>
 
-  <!-- Configuration classes to use for /exist context -->
-  <Array id="plusConfig" type="java.lang.String">
-       <Item>org.eclipse.jetty.webapp.WebInfConfiguration</Item>
-       <Item>org.eclipse.jetty.webapp.WebXmlConfiguration</Item>
-       <Item>org.eclipse.jetty.webapp.MetaInfConfiguration</Item>
-       <Item>org.eclipse.jetty.webapp.FragmentConfiguration</Item>
-       <Item>org.eclipse.jetty.annotations.AnnotationConfiguration</Item>
-       <Item>org.eclipse.jetty.webapp.JettyWebXmlConfiguration</Item>
-  </Array>
+  <!-- TODO(AR) move the org.exist.jetty.WebAppContext to exist-jetty-handlers.xml -->
 
   <!-- =========================================================== -->
   <!-- Set handler Collection Structure                            -->
@@ -107,7 +99,6 @@
               <Set name="war"><SystemProperty name="jetty.home" default="."/>/../../webapp/</Set>
               <Set name="defaultsDescriptor"><SystemProperty name="jetty.home" default="."/>/etc/webdefault.xml</Set>
               <Set name="tempDirectory"><SystemProperty name="jetty.home" default="."/>/tmp</Set>
-              <Set name="configurationClasses"><Ref id="plusConfig"/></Set>
               <Set name="securityHandler">
                 <New class="org.eclipse.jetty.security.ConstraintSecurityHandler">
                   <Set name="loginService">
@@ -115,16 +106,6 @@
                   </Set>
                 </New>
               </Set>
-              <!-- Set name="securityHandler">
-                <New class="org.eclipse.jetty.security.ConstraintSecurityHandler">
-                  <Set name="loginService">
-                    <New class="org.eclipse.jetty.jaas.JAASLoginService">
-                      <Set name="name">Test JAAS Realm</Set>
-                      <Set name="loginModuleName">JAASLoginService</Set>
-                    </New>
-                  </Set>
-                </New>
-              </Set -->
               <Call name="setAttribute">
                 <Arg>org.eclipse.jetty.server.webapp.ContainerIncludeJarPattern</Arg>
                 <Arg>.*/[^/]*servlet-api-[^/]*\.jar$|.*/javax.servlet.jsp.jstl-.*\.jar$|.*/org.apache.taglibs.taglibs-standard-impl-.*\.jar$</Arg>

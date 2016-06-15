@@ -204,6 +204,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
 //            }
 
             final List<Path> configFiles = new ArrayList<>();
+            configFiles.add(jettyConfig.getParent().resolve("jetty-annotations.xml"));
             configFiles.add(jettyConfig.getParent().resolve("jetty-jaas.xml"));
             configFiles.add(jettyConfig);
             configFiles.add(jettyConfig.getParent().resolve("jetty-http.xml"));
