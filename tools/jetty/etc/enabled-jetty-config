@@ -18,6 +18,7 @@ jetty-jaas.xml
 
 
 ## Main Server Config
+jetty-gzip.xml
 jetty.xml
 
 
