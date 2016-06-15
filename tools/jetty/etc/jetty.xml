@@ -161,22 +161,6 @@
   </Ref -->
 
   <!-- =============================================================== -->
-  <!-- Configure request log handler       			                -->
-  <!-- http://wiki.eclipse.org/Jetty/Howto/Configure_Request_Logs      -->
-  <!-- =============================================================== -->
-  <Ref id="RequestLog">
-    <Set name="requestLog">
-      <New id="RequestLogImpl" class="org.eclipse.jetty.server.NCSARequestLog">
-        <Arg><Property name="jetty.base" default="."/>/logs/yyyy_mm_dd.request.log</Arg>
-        <Set name="retainDays">90</Set>
-        <Set name="append">true</Set>
-        <Set name="extended">false</Set>
-        <Set name="LogTimeZone">GMT</Set>
-      </New>
-    </Set>
-  </Ref>
-
-  <!-- =============================================================== -->
   <!-- Configure stderr and stdout to a Jetty rollover log file        -->
   <!-- this configuration file should be used in combination with      -->
   <!-- other configuration files.  e.g.                                -->
