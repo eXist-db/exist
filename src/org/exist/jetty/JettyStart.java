@@ -23,6 +23,7 @@ package org.exist.jetty;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.LineNumberReader;
+import java.io.Reader;
 import java.net.SocketException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -70,6 +71,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
     public static final String JETTY_BASE_PROP = "jetty.base";
 
     private static final String ENABLED_JETTY_CONFIG = "enabled-jetty-config";
+    private static final String JETTY_PROPETIES_FILENAME = "jetty.properties";
     private static final Logger logger = LogManager.getLogger(JettyStart.class);
 
     public static void main(String[] args) {
@@ -116,48 +118,47 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
         }
 
         final Path jettyConfig = Paths.get(args[0]);
-        final Map<String, String> configProperties = new HashMap<>();
-        configProperties.put(JETTY_HOME_PROP, System.getProperty(JETTY_HOME_PROP));
-        configProperties.put(JETTY_BASE_PROP, System.getProperty(JETTY_BASE_PROP, System.getProperty(JETTY_HOME_PROP)));
 
         final String shutdownHookOption = System.getProperty("exist.register-shutdown-hook", "true");
-        boolean registerShutdownHook = "true".equals(shutdownHookOption);
+        final boolean registerShutdownHook = "true".equals(shutdownHookOption);
 
-        if (observer != null) {
-            addObserver(observer);
-        }
-
-        // configure database
-        logger.info("Configuring eXist from " + SingleInstanceConfiguration.getPath());
-
-        logger.info("Running with Java "
-                + System.getProperty("java.version", "(unknown java.version)") + " ["
-                + System.getProperty("java.vendor", "(unknown java.vendor)") + " ("
-                + System.getProperty("java.vm.name", "(unknown java.vm.name)") + ") in "
-                + System.getProperty("java.home", "(unknown java.home)") + "]");
-
-        logger.info("Running as user '" 
-                + System.getProperty("user.name", "(unknown user.name)") + "'");
-        logger.info("[eXist Home : "
-                + System.getProperty("exist.home", "unknown") + "]");
-        logger.info("[eXist Version : " 
-                + SystemProperties.getInstance().getSystemProperty("product-version", "unknown") + "]");
-        logger.info("[eXist Build : " 
-                + SystemProperties.getInstance().getSystemProperty("product-build", "unknown") + "]");
-        logger.info("[Git commmit : " 
-                + SystemProperties.getInstance().getSystemProperty("git-commit", "unknown") + "]");
-        
-        logger.info("[Operating System : " 
-                + System.getProperty("os.name") + " " 
-                + System.getProperty("os.version") + " "
-                + System.getProperty("os.arch") + "]");
-        logger.info("[log4j.configurationFile : "
-                + System.getProperty("log4j.configurationFile") + "]");
-        logger.info("[{} : {}]", JETTY_HOME_PROP, configProperties.get(JETTY_HOME_PROP));
-        logger.info("[{} : {}]", JETTY_BASE_PROP, configProperties.get(JETTY_BASE_PROP));
-        logger.info("[jetty configuration : {}]", jettyConfig.toAbsolutePath().toString());
-
+        final Map<String, String> configProperties;
         try {
+            configProperties = getConfigProperties(jettyConfig.getParent());
+
+            if (observer != null) {
+                addObserver(observer);
+            }
+
+            // configure database
+            logger.info("Configuring eXist from " + SingleInstanceConfiguration.getPath());
+
+            logger.info("Running with Java "
+                    + System.getProperty("java.version", "(unknown java.version)") + " ["
+                    + System.getProperty("java.vendor", "(unknown java.vendor)") + " ("
+                    + System.getProperty("java.vm.name", "(unknown java.vm.name)") + ") in "
+                    + System.getProperty("java.home", "(unknown java.home)") + "]");
+
+            logger.info("Running as user '"
+                    + System.getProperty("user.name", "(unknown user.name)") + "'");
+            logger.info("[eXist Home : "
+                    + System.getProperty("exist.home", "unknown") + "]");
+            logger.info("[eXist Version : "
+                    + SystemProperties.getInstance().getSystemProperty("product-version", "unknown") + "]");
+            logger.info("[eXist Build : "
+                    + SystemProperties.getInstance().getSystemProperty("product-build", "unknown") + "]");
+            logger.info("[Git commmit : "
+                    + SystemProperties.getInstance().getSystemProperty("git-commit", "unknown") + "]");
+
+            logger.info("[Operating System : "
+                    + System.getProperty("os.name") + " "
+                    + System.getProperty("os.version") + " "
+                    + System.getProperty("os.arch") + "]");
+            logger.info("[log4j.configurationFile : "
+                    + System.getProperty("log4j.configurationFile") + "]");
+            logger.info("[{} : {}]", JETTY_HOME_PROP, configProperties.get(JETTY_HOME_PROP));
+            logger.info("[{} : {}]", JETTY_BASE_PROP, configProperties.get(JETTY_BASE_PROP));
+            logger.info("[jetty configuration : {}]", jettyConfig.toAbsolutePath().toString());
 
             // we register our own shutdown hook
             BrokerPool.setRegisterShutdownHook(false);
@@ -170,7 +171,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
                 config = new SingleInstanceConfiguration();
             }
 
-            if (observer != null){
+            if (observer != null) {
                 BrokerPool.registerStatusObserver(observer);
             }
 
@@ -395,6 +396,30 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
             setChanged();
             notifyObservers(SIGNAL_ERROR);
         }
+    }
+
+    private Map<String, String> getConfigProperties(final Path configDir) throws IOException {
+        final Map<String, String> configProperties = new HashMap<>();
+
+        //load jetty.properties file
+        final Path propertiesFile = configDir.resolve(JETTY_PROPETIES_FILENAME);
+        if(Files.exists(propertiesFile)) {
+            final Properties jettyProperties = new Properties();
+            try(final Reader reader = Files.newBufferedReader(propertiesFile)) {
+                jettyProperties.load(reader);
+                logger.info("Loaded jetty.properties from: " + propertiesFile.toAbsolutePath().toString());
+
+                for(final Map.Entry<Object, Object> property : jettyProperties.entrySet()) {
+                    configProperties.put(property.getKey().toString(), property.getValue().toString());
+                }
+            }
+        }
+
+        // set or override jetty.home and jetty.base with System properties
+        configProperties.put(JETTY_HOME_PROP, System.getProperty(JETTY_HOME_PROP));
+        configProperties.put(JETTY_BASE_PROP, System.getProperty(JETTY_BASE_PROP, System.getProperty(JETTY_HOME_PROP)));
+
+        return configProperties;
     }
 
     private List<Path> getEnabledConfigFiles(final Path configDir) throws IOException {
