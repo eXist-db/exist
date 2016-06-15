@@ -27,6 +27,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.servlet.Servlet;
 
@@ -36,6 +38,7 @@ import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.jmx.MBeanContainer;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Handler;
+import org.eclipse.jetty.server.NetworkConnector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.HandlerCollection;
@@ -111,6 +114,8 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
             return;
         }
 
+        final Path jettyConfig = Paths.get(args[0]);
+
         final String shutdownHookOption = System.getProperty("exist.register-shutdown-hook", "true");
         boolean registerShutdownHook = "true".equals(shutdownHookOption);
 
@@ -142,13 +147,14 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
                 + System.getProperty("os.name") + " " 
                 + System.getProperty("os.version") + " "
                 + System.getProperty("os.arch") + "]");
-        
-        logger.info("[jetty.home : " 
-                + System.getProperty("jetty.home") + "]");
         logger.info("[log4j.configurationFile : "
                 + System.getProperty("log4j.configurationFile") + "]");
+        logger.info("[jetty.home : " 
+                + System.getProperty("jetty.home") + "]");
+        logger.info("[jetty configuration : {}]", jettyConfig.toAbsolutePath().toString());
 
         try {
+
             // we register our own shutdown hook
             BrokerPool.setRegisterShutdownHook(false);
 
@@ -178,24 +184,103 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
         }
 
         // start Jetty
-        final Server server;
+//        final Server server;
         try {
-            server = new Server();
-            MBeanContainer mBeanContainer = new MBeanContainer(ManagementFactory.getPlatformMBeanServer());
-            server.getContainer().addEventListener(mBeanContainer);
-            server.addBean(mBeanContainer);
-            server.addBean(Log.getLog());
+//            server = new Server();
 
-            try(final InputStream is = Files.newInputStream(Paths.get(args[0]))) {
-                final XmlConfiguration configuration = new XmlConfiguration(is);
-                configuration.configure(server);
+            //TODO(AR) reinstate JMX!
+
+            // Setup JMX
+//            final MBeanContainer mBeanContainer = new MBeanContainer(ManagementFactory.getPlatformMBeanServer());
+//            server.addBean(mBeanContainer);
+//
+//            server.addBean(Log.getLog());
+
+
+
+//            try(final InputStream is = Files.newInputStream(jettyConfig)) {
+//                final XmlConfiguration configuration = new XmlConfiguration(is);
+//                configuration.configure(server);
+//            }
+
+            final List<Path> configFiles = new ArrayList<>();
+            configFiles.add(jettyConfig.getParent().resolve("jetty-jaas.xml"));
+            configFiles.add(jettyConfig);
+            configFiles.add(jettyConfig.getParent().resolve("jetty-http.xml"));
+            configFiles.add(jettyConfig.getParent().resolve("jetty-ssl.xml"));
+            configFiles.add(jettyConfig.getParent().resolve("jetty-https.xml"));
+            configFiles.add(jettyConfig.getParent().resolve("jetty-deploy.xml"));
+
+            //TODO(AR) figure out why we must have an explicit order - see http://stackoverflow.com/questions/37824063/embedding-jetty-9-3-with-modular-xmlconfiguration
+//            configFiles.addAll(FileUtils.list(jettyConfig.getParent(), p -> p.getFileName().toString().startsWith("jetty-") && p.getFileName().toString().endsWith(".xml") && Files.isRegularFile(p)));
+
+            //jetty.xml must come first, jetty-https.xml must come after jetty-ssl.xml
+
+
+            final List<Object> configuredObjects = new ArrayList();
+            XmlConfiguration last = null;
+            for(final Path confFile : configFiles) {
+                logger.info("[loading jetty configuration : {}]", confFile.toString());
+                try(final InputStream is = Files.newInputStream(confFile)) {
+                    final XmlConfiguration configuration = new XmlConfiguration(is);
+                    if (last != null) {
+                        configuration.getIdMap().putAll(last.getIdMap());
+                    }
+                    configuredObjects.add(configuration.configure());
+                    last = configuration;
+                }
             }
-            
-            server.setStopAtShutdown(true);
-            server.addLifeCycleListener(this);
 
-            BrokerPool.getInstance().registerShutdownListener(new ShutdownListenerImpl(server));
-            server.start();
+            Server server = null;
+            // For all objects created by XmlConfigurations, start them if they are lifecycles.
+            for (final Object configuredObject : configuredObjects) {
+                if(configuredObject instanceof Server) {
+                    final Server _server = (Server)configuredObject;
+
+                    //TODO(AR) fix shutdown - Ctrl-C from command line causes NPEs
+
+                    //setup server shutdown
+                    _server.addLifeCycleListener(this);
+                    BrokerPool.getInstance().registerShutdownListener(new ShutdownListenerImpl(_server));
+
+                    if (registerShutdownHook) {
+                        // register a shutdown hook for the server
+                        shutdownHook = new Thread() {
+
+                            @Override
+                            public void run() {
+                                setName("Shutdown");
+                                BrokerPool.stopAll(true);
+                                if (_server.isStopping() || _server.isStopped()) {
+                                    return;
+                                }
+
+                                try {
+                                    _server.stop();
+                                } catch (final Exception e) {
+                                    // ignore
+                                }
+
+                            }
+                        };
+                        Runtime.getRuntime().addShutdownHook(shutdownHook);
+                    }
+
+                    server = _server;
+                }
+
+                if (configuredObject instanceof LifeCycle) {
+                    final LifeCycle lc = (LifeCycle)configuredObject;
+                    if (!lc.isRunning()) {
+                        logger.info("[Starting jetty component : {}]", lc.getClass().getName());
+                        lc.start();
+                    }
+                }
+            }
+
+            //TODO(AR) server null check?
+
+            //server.start();
 
             final Connector[] connectors = server.getConnectors();
 
@@ -207,12 +292,19 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
                 allPorts.append("s");
             }
 
-            for(final Connector connector: connectors){
-                allPorts.append(" ");
-                allPorts.append(connector.getPort());
-            }
-            if (connectors.length > 0) {
-                primaryPort = connectors[0].getPort();
+            boolean establishedPrimaryPort = false;
+            for(final Connector connector : connectors) {
+                if(connector instanceof NetworkConnector) {
+                    final NetworkConnector networkConnector = (NetworkConnector)connector;
+
+                    if(!establishedPrimaryPort) {
+                        this.primaryPort = networkConnector.getLocalPort();
+                        establishedPrimaryPort = true;
+                    }
+
+                    allPorts.append(" ");
+                    allPorts.append(networkConnector.getLocalPort());
+                }
             }
 
             //TODO: use pluggable interface
@@ -281,29 +373,6 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
             }
 
             logger.info("-----------------------------------------------------");
-
-            if (registerShutdownHook) {
-                // register a shutdown hook for the server
-                shutdownHook = new Thread() {
-
-                    @Override
-                    public void run() {
-                        setName("Shutdown");
-                        BrokerPool.stopAll(true);
-                        if (server.isStopping() || server.isStopped()) {
-                            return;
-                        }
-                        
-                        try {
-                            server.stop();
-                        } catch (final Exception e) {
-                            // ignore
-                        }
-                        
-                    }
-                };
-                Runtime.getRuntime().addShutdownHook(shutdownHook);
-            }
 
             setChanged();
             notifyObservers(SIGNAL_STARTED);

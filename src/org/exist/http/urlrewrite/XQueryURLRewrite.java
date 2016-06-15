@@ -77,10 +77,7 @@ import org.xml.sax.SAXException;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.DatabaseManager;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.ServletInputStream;
+import javax.servlet.*;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletRequest;
@@ -1451,6 +1448,16 @@ public class XQueryURLRewrite extends HttpServlet {
         public void write(byte b[], int off, int len) throws IOException {
             ostream.write(b, off, len);
         }
+
+        @Override
+        public boolean isReady() {
+            return true;
+        }
+
+        @Override
+        public void setWriteListener(final WriteListener writeListener) {
+            throw new UnsupportedOperationException();
+        }
     }
 
     private static class CachingServletInputStream extends ServletInputStream {
@@ -1482,6 +1489,21 @@ public class XQueryURLRewrite extends HttpServlet {
         @Override
         public int available() throws IOException {
             return istream.available(); 
+        }
+
+        @Override
+        public boolean isFinished() {
+            return istream.available() == 0;
+        }
+
+        @Override
+        public boolean isReady() {
+            return true;
+        }
+
+        @Override
+        public void setReadListener(final ReadListener readListener) {
+            throw new UnsupportedOperationException();
         }
     }
 }
