@@ -30,6 +30,7 @@ import java.util.regex.Pattern;
 
 import org.exist.util.FastStringBuffer;
 import org.exist.xquery.Constants;
+import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 
@@ -399,8 +400,9 @@ public class DecimalValue extends NumericValue {
 				value.min(((DecimalValue) other.convertTo(Type.DECIMAL)).value));
 		}
 	}
-	
-	public boolean compareTo(Collator collator, int operator, AtomicValue other)
+
+	@Override
+	public boolean compareTo(Collator collator, Comparison operator, AtomicValue other)
 		throws XPathException {
 		if (other.isEmpty()) {
 			//Never equal, or inequal...
@@ -410,23 +412,23 @@ public class DecimalValue extends NumericValue {
 			if (isNaN()) {
 				//NaN does not equal itself.
 				if (((NumericValue)other).isNaN()) {
-					return operator == Constants.NEQ;
+					return operator == Comparison.NEQ;
 				}
 			}			
 			if(Type.subTypeOf(other.getType(), Type.DECIMAL)) {
 				final DecimalValue otherValue = (DecimalValue)other.convertTo(Type.DECIMAL);
 				switch(operator) {
-					case Constants.EQ:
+					case EQ:
 						return compareTo(otherValue) == Constants.EQUAL;
-					case Constants.NEQ:
+					case NEQ:
 						return compareTo(otherValue) != Constants.EQUAL;
-					case Constants.GT:
+					case GT:
 						return compareTo(otherValue) == Constants.SUPERIOR;
-					case Constants.GTEQ:
+					case GTEQ:
 						return compareTo(otherValue) != Constants.INFERIOR;
-					case Constants.LT:
+					case LT:
 						return compareTo(otherValue) == Constants.INFERIOR;
-					case Constants.LTEQ:
+					case LTEQ:
 						return compareTo(otherValue) != Constants.SUPERIOR;
 					default:
 						throw new XPathException("Type error: cannot apply operator to numeric value");

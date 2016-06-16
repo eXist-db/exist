@@ -33,7 +33,7 @@ import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.QName;
 import org.exist.util.XMLChar;
 import org.exist.xquery.Cardinality;
-import org.exist.xquery.Constants;
+import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Expression;
@@ -185,7 +185,7 @@ public class FunIdRef extends Function {
 	}
 
 	private void getIdRef(NodeSet result, DocumentSet docs, String id) throws XPathException {
-		final NodeSet attribs = context.getBroker().getValueIndex().find(context.getWatchDog(), Constants.EQ, docs, null, -1, null, new StringValue(id, Type.IDREF));
+		final NodeSet attribs = context.getBroker().getValueIndex().find(context.getWatchDog(), Comparison.EQ, docs, null, -1, null, new StringValue(id, Type.IDREF));
 
 		for (final NodeProxy n : attribs) {
             n.setNodeType(Node.ATTRIBUTE_NODE);

@@ -1,6 +1,6 @@
 package org.exist.xquery.value;
 
-import org.exist.xquery.Constants;
+import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.XPathException;
 import org.junit.Test;
 
@@ -92,49 +92,49 @@ public class DurationTest extends AbstractTimeRelatedTestCase {
 	public void compareSucceeds1() throws XPathException {
         DurationValue dv = new DurationValue("P1Y2M3DT4H5M6S");
         //eq and ne comparison operators are allowed
-        dv.compareTo(null, Constants.EQ, dv);
+        dv.compareTo(null, Comparison.EQ, dv);
 	}
 
     @Test
 	public void compareSucceeds2() throws XPathException {
         DurationValue dv1 = new DurationValue("P1Y2M3DT4H5M6S"), dv2 = new DayTimeDurationValue("P1D");
-        assertFalse(dv1.compareTo(null, Constants.EQ, dv2));
+        assertFalse(dv1.compareTo(null, Comparison.EQ, dv2));
 	}
 
     @Test
 	public void compareSucceeds3() throws XPathException {
         DurationValue dv1 = new DurationValue("P1Y2M3DT4H5M6S"), dv2 = new YearMonthDurationValue("P1Y");
-        assertFalse(dv1.compareTo(null, Constants.EQ, dv2));
+        assertFalse(dv1.compareTo(null, Comparison.EQ, dv2));
 	}
 
     @Test
 	public void compareSucceeds4() throws XPathException {
         DurationValue dv1 = new YearMonthDurationValue("P1Y"), dv2 = new DayTimeDurationValue("P1D");
-        assertFalse(dv1.compareTo(null, Constants.EQ, dv2));
+        assertFalse(dv1.compareTo(null, Comparison.EQ, dv2));
 	}
 
     @Test
 	public void compareSucceeds5() throws XPathException {
         DurationValue dv2 = new YearMonthDurationValue("P1Y"), dv1 = new DayTimeDurationValue("P1D");
-        assertFalse(dv1.compareTo(null, Constants.EQ, dv2));
+        assertFalse(dv1.compareTo(null, Comparison.EQ, dv2));
 	}
 
     @Test
 	public void compareSucceeds6() throws XPathException {
         DurationValue dv2 = new DurationValue("P1Y2M3DT4H5M6S"), dv1 = new DayTimeDurationValue("P1D");
-        assertFalse(dv1.compareTo(null, Constants.EQ, dv2));
+        assertFalse(dv1.compareTo(null, Comparison.EQ, dv2));
 	}
 
     @Test
 	public void compareSucceeds7() throws XPathException {
         DurationValue dv2 = new DurationValue("P1Y2M3DT4H5M6S"), dv1 = new YearMonthDurationValue("P1Y");
-        assertFalse(dv1.compareTo(null, Constants.EQ, dv2));
+        assertFalse(dv1.compareTo(null, Comparison.EQ, dv2));
 	}
 
     @Test(expected = XPathException.class)
 	public void compareFail1() throws XPathException {
         DurationValue dv = new DurationValue("P1Y2M3DT4H5M6S");
-        dv.compareTo(null, Constants.LT, dv);
+        dv.compareTo(null, Comparison.LT, dv);
 	}	
 
     @Test

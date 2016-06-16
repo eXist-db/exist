@@ -22,6 +22,7 @@
  */
 package org.exist.xquery;
 
+import org.exist.xquery.Constants.ArithmeticOperator;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NumericValue;
@@ -35,10 +36,11 @@ import org.exist.xquery.value.Type;
  */
 public class UnaryExpr extends PathExpr {
 
-	private final int mode;
+	private final ArithmeticOperator mode;
 	
-	public UnaryExpr(XQueryContext context, int mode) {
+	public UnaryExpr(XQueryContext context, ArithmeticOperator mode) {
 		super(context);
+		assert(mode == ArithmeticOperator.ADDITION || mode == ArithmeticOperator.SUBTRACTION);
 		this.mode = mode;
 	}
 
@@ -69,7 +71,7 @@ public class UnaryExpr extends PathExpr {
         	{return item;}
         
 		NumericValue value = (NumericValue)item.convertTo(Type.NUMBER);
-		if(mode == Constants.MINUS)
+		if(mode == ArithmeticOperator.SUBTRACTION)
             {result = value.negate();}
 		else
             {result =  value;}
@@ -80,20 +82,16 @@ public class UnaryExpr extends PathExpr {
         return result;        
 	}
 
+	@Override
     public void dump(ExpressionDumper dumper) {    
-    	if(mode == Constants.MINUS)
-    		{dumper.display("-");} 
-    	else
-    		{dumper.display("to be implemented");}      
+		dumper.display(mode.symbol);
     }    
-    
+
+	@Override
     public String toString() {
-    	if(mode == Constants.MINUS)
-    		{return "-";}
-    	else
-    		{return("to be implemented");}      
+		return mode.symbol;
     }
-    
+
     @Override
     public Expression simplify() {
     	return this;

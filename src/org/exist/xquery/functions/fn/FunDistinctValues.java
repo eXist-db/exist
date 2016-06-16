@@ -31,6 +31,8 @@ import java.util.TreeSet;
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Constants;
+import org.exist.xquery.Constants.Comparison;
+import org.exist.xquery.Constants.StringTruncationOperator;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
@@ -162,13 +164,13 @@ public class FunDistinctValues extends CollatingFunction {
         public int compare(AtomicValue o1, AtomicValue o2) {
             try {
                 if (ValueComparison.compareAtomic(collator, o1, o2,
-                        Constants.TRUNC_NONE, Constants.EQ))
+                        StringTruncationOperator.NONE, Comparison.EQ))
                     {return Constants.EQUAL;}
                 else if (ValueComparison.compareAtomic(collator, o1, o2,
-                        Constants.TRUNC_NONE, Constants.LT))
+                        StringTruncationOperator.NONE, Comparison.LT))
                     {return Constants.INFERIOR;}
                 else if (ValueComparison.compareAtomic(collator, o1, o2,
-                        Constants.TRUNC_NONE, Constants.GT))
+                        StringTruncationOperator.NONE, Comparison.GT))
                     {return Constants.SUPERIOR;}
                 //Fallback
                 else

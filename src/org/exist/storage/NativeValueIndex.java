@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2015 The eXist Project
+ *  Copyright (C) 2001-2016 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -50,6 +50,8 @@ import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.Txn;
 import org.exist.xquery.Constants;
+import org.exist.xquery.Constants.Comparison;
+import org.exist.xquery.Constants.StringTruncationOperator;
 import org.exist.xquery.TerminatedException;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.AtomicValue;
@@ -62,15 +64,54 @@ import java.text.Collator;
 import java.util.*;
 
 /**
- * Maintains an index on typed node values.
- *
- * <p>In the BTree single BFile, the keys are : (collectionId, indexType, indexData) and the values are : gid1, gid2-gid1, ...</p>
+ * Maintains an index on typed node values (optionally by QName).
  *
  * <p>Algorithm:</p>
- * <p>When a node is stored, an entry is added or updated in the {@link #pendingGeneric} and {@link #pendingQName} maps, with given String content and basic type as key. This way, the
- * index entries are easily put in the persistent BFile storage by {@link #flush()} .</p>
+ * <p>When a node is stored, an entry is added or updated in the {@link #pendingGeneric} and/or {@link #pendingQName}
+ * maps, with either {@link SimpleValue#SimpleValue(int, Indexable)} or
+ * {@link QNameValue#QNameValue(int, QName, Indexable, SymbolTable)} respectively as the key.
+ * This way, the index entries are easily put in the persistent BFile storage by {@link #flush()}.</p>
  *
- * @author wolf
+ *
+ * There are two types of key/value pairs stored into the Value Index:
+ *
+ * 1) SimpleValue, which represents the classic path based range index:
+ *  key => [indexType, collectionId, atomicValue]
+ *  value => [documentNodes+]
+ *
+ * 2) QNameValue, which represents the qname based reange index:
+ *  key => [indexType, collectionId, qNameType, nsSymbolId, localPartSymbolId, atomicValue]
+ *  Value => [documentNodes+]
+ *
+ *
+ * indexType - 0x0 = Generic, 0x1 = QName
+ *   Generic type is used with ValueSimpleIdx and QName is used with ValueQNameIdx
+ *
+ * collectionId: 4 bytes i.e. int
+ *
+ * atomicValue: [valueType, value]
+ * valueType: 1 byte (the XQuery value type defined in {@link org.exist.xquery.value.Type}
+ * value: n bytes, fixed length encoding of the value of the atomic value
+ *
+ * qNameType: 0x0 = {@link org.exist.storage.ElementValue#ELEMENT} 0x1 = {@link org.exist.storage.ElementValue#ATTRIBUTE}
+ *
+ * nsSymbolId: 2 byte short, The id from the Symbol Table
+ * localPartSymbolId: 2 byte short, The id from the Symbol Table
+ *
+ * documentNodes: [docId, nodeIdCount, nodeIdsLength, nodeIdDelta+]
+ *
+ * docId: variable width encoded integer, the id of the document
+ * nodeIdCount: variable width encoded integer, The number of following nodeIds
+ *
+ * nodeIdsLength: 4 bytes, i.e. int, The number of following bytes that hold the nodeIds
+ *
+ * nodeIdDelta: [deltaOffset, units, nodeIdDeltaData]
+ * deltaOffset: 1 byte, Number of bits this DLN is offset from the previous DLN
+ * units: variable with encoded short, The number of units of this DLN
+ * nodeIdDeltaData: byte[], The delta bits of this DLN from `deltaOffset` of the previous DLN
+ *
+ * @author Wolfgang Meier <wolfgang@exist-db.org>
+ * @author Adam Retter <adam.retter@googlemail.com>
  */
 public class NativeValueIndex implements ContentLoadingObserver {
 
@@ -635,38 +676,38 @@ public class NativeValueIndex implements ContentLoadingObserver {
         pending.changes.clear();
     }
 
-    public NodeSet find(final XQueryWatchDog watchDog, final int relation, final DocumentSet docs, final NodeSet contextSet, final int axis, final QName qname, final Indexable value) throws TerminatedException {
-        return find(watchDog, relation, docs, contextSet, axis, qname, value, false);
+    public NodeSet find(final XQueryWatchDog watchDog, final Comparison comparison, final DocumentSet docs, final NodeSet contextSet, final int axis, final QName qname, final Indexable value) throws TerminatedException {
+        return find(watchDog, comparison, docs, contextSet, axis, qname, value, false);
     }
 
-    public NodeSet find(final XQueryWatchDog watchDog, final int relation, final DocumentSet docs, final NodeSet contextSet, final int axis, final QName qname, final Indexable value, final boolean mixedIndex) throws TerminatedException {
+    public NodeSet find(final XQueryWatchDog watchDog, final Comparison comparison, final DocumentSet docs, final NodeSet contextSet, final int axis, final QName qname, final Indexable value, final boolean mixedIndex) throws TerminatedException {
         final NodeSet result = new NewArrayNodeSet();
 
         if (qname == null) {
-            findAll(watchDog, relation, docs, contextSet, axis, null, value, result);
+            findAll(watchDog, comparison, docs, contextSet, axis, null, value, result);
         } else {
             final List<QName> qnames = new LinkedList<>();
             qnames.add(qname);
-            findAll(watchDog, relation, docs, contextSet, axis, qnames, value, result);
+            findAll(watchDog, comparison, docs, contextSet, axis, qnames, value, result);
             if (mixedIndex) {
-                findAll(watchDog, relation, docs, contextSet, axis, null, value, result);
+                findAll(watchDog, comparison, docs, contextSet, axis, null, value, result);
             }
         }
         return result;
     }
 
-    public NodeSet findAll(final XQueryWatchDog watchDog, final int relation, final DocumentSet docs, final NodeSet contextSet, final int axis, final Indexable value) throws TerminatedException {
+    public NodeSet findAll(final XQueryWatchDog watchDog, final Comparison comparison, final DocumentSet docs, final NodeSet contextSet, final int axis, final Indexable value) throws TerminatedException {
         final NodeSet result = new NewArrayNodeSet();
-        findAll(watchDog, relation, docs, contextSet, axis, getDefinedIndexes(docs), value, result);
-        findAll(watchDog, relation, docs, contextSet, axis, null, value, result);
+        findAll(watchDog, comparison, docs, contextSet, axis, getDefinedIndexes(docs), value, result);
+        findAll(watchDog, comparison, docs, contextSet, axis, null, value, result);
         return result;
     }
 
     /**
      * find.
      *
-     * @param relation   binary operator used for the comparison
-     * @param docs       DOCUMENT ME!
+     * @param comparison The type of comparison the search is performing
+     * @param docs       The documents to search for matches within
      * @param contextSet DOCUMENT ME!
      * @param axis       DOCUMENT ME!
      * @param qnames     DOCUMENT ME!
@@ -675,13 +716,13 @@ public class NativeValueIndex implements ContentLoadingObserver {
      * @return DOCUMENT ME!
      * @throws TerminatedException DOCUMENT ME!
      */
-    private NodeSet findAll(final XQueryWatchDog watchDog, final int relation, final DocumentSet docs, final NodeSet contextSet, final int axis, final List<QName> qnames, final Indexable value, final NodeSet result) throws TerminatedException {
+    private NodeSet findAll(final XQueryWatchDog watchDog, final Comparison comparison, final DocumentSet docs, final NodeSet contextSet, final int axis, final List<QName> qnames, final Indexable value, final NodeSet result) throws TerminatedException {
         final SearchCallback cb = new SearchCallback(docs, contextSet, result, axis == NodeSet.ANCESTOR);
         final Lock lock = dbValues.getLock();
 
         for (final Iterator<Collection> iter = docs.getCollectionIterator(); iter.hasNext(); ) {
             final int collectionId = iter.next().getId();
-            final int idxOp = checkRelationOp(relation);
+            final int idxOp = toIndexQueryOp(comparison);
 
             watchDog.proceed(null);
 
@@ -733,18 +774,18 @@ public class NativeValueIndex implements ContentLoadingObserver {
     }
 
     public NodeSet match(final XQueryWatchDog watchDog, final DocumentSet docs, final NodeSet contextSet, final int axis, final String expr, final QName qname, final int type) throws TerminatedException, EXistException {
-        return match(watchDog, docs, contextSet, axis, expr, qname, type, null, 0);
+        return match(watchDog, docs, contextSet, axis, expr, qname, type, null, StringTruncationOperator.RIGHT);
     }
 
-    public NodeSet match(final XQueryWatchDog watchDog, final DocumentSet docs, final NodeSet contextSet, final int axis, final String expr, final QName qname, final int type, final Collator collator, final int truncation) throws TerminatedException, EXistException {
+    public NodeSet match(final XQueryWatchDog watchDog, final DocumentSet docs, final NodeSet contextSet, final int axis, final String expr, final QName qname, final int type, final Collator collator, final StringTruncationOperator truncation) throws TerminatedException, EXistException {
         return match(watchDog, docs, contextSet, axis, expr, qname, type, 0, true, collator, truncation);
     }
 
     public NodeSet match(final XQueryWatchDog watchDog, final DocumentSet docs, final NodeSet contextSet, final int axis, final String expr, final QName qname, final int type, final int flags, final boolean caseSensitiveQuery) throws TerminatedException, EXistException {
-        return match(watchDog, docs, contextSet, axis, expr, qname, type, flags, caseSensitiveQuery, null, 0);
+        return match(watchDog, docs, contextSet, axis, expr, qname, type, flags, caseSensitiveQuery, null, StringTruncationOperator.RIGHT);
     }
 
-    public NodeSet match(final XQueryWatchDog watchDog, final DocumentSet docs, final NodeSet contextSet, final int axis, final String expr, final QName qname, final int type, final int flags, final boolean caseSensitiveQuery, final Collator collator, final int truncation) throws TerminatedException, EXistException {
+    public NodeSet match(final XQueryWatchDog watchDog, final DocumentSet docs, final NodeSet contextSet, final int axis, final String expr, final QName qname, final int type, final int flags, final boolean caseSensitiveQuery, final Collator collator, final StringTruncationOperator truncation) throws TerminatedException, EXistException {
         final NodeSet result = new NewArrayNodeSet();
         if (qname == null) {
             matchAll(watchDog, docs, contextSet, axis, expr, null, type, flags, caseSensitiveQuery, result, collator, truncation);
@@ -757,10 +798,10 @@ public class NativeValueIndex implements ContentLoadingObserver {
     }
 
     public NodeSet matchAll(final XQueryWatchDog watchDog, final DocumentSet docs, final NodeSet contextSet, final int axis, final String expr, final int type, final int flags, final boolean caseSensitiveQuery) throws TerminatedException, EXistException {
-        return matchAll(watchDog, docs, contextSet, axis, expr, type, flags, caseSensitiveQuery, null, 0);
+        return matchAll(watchDog, docs, contextSet, axis, expr, type, flags, caseSensitiveQuery, null, StringTruncationOperator.RIGHT);
     }
 
-    public NodeSet matchAll(final XQueryWatchDog watchDog, final DocumentSet docs, final NodeSet contextSet, final int axis, final String expr, final int type, final int flags, final boolean caseSensitiveQuery, final Collator collator, final int truncation) throws TerminatedException, EXistException {
+    public NodeSet matchAll(final XQueryWatchDog watchDog, final DocumentSet docs, final NodeSet contextSet, final int axis, final String expr, final int type, final int flags, final boolean caseSensitiveQuery, final Collator collator, final StringTruncationOperator truncation) throws TerminatedException, EXistException {
         final NodeSet result = new NewArrayNodeSet();
         matchAll(watchDog, docs, contextSet, axis, expr, getDefinedIndexes(docs), type, flags, caseSensitiveQuery, result, collator, truncation);
         matchAll(watchDog, docs, contextSet, axis, expr, null, type, flags, caseSensitiveQuery, result, collator, truncation);
@@ -780,12 +821,12 @@ public class NativeValueIndex implements ContentLoadingObserver {
      * @param caseSensitiveQuery DOCUMENT ME!
      * @param result             DOCUMENT ME!
      * @param collator           DOCUMENT ME!
-     * @param truncation         DOCUMENT ME!
+     * @param truncation         The type of string truncation to apply
      * @return DOCUMENT ME!
      * @throws TerminatedException DOCUMENT ME!
      * @throws EXistException      DOCUMENT ME!
      */
-    public NodeSet matchAll(final XQueryWatchDog watchDog, final DocumentSet docs, final NodeSet contextSet, final int axis, final String expr, final List<QName> qnames, final int type, final int flags, final boolean caseSensitiveQuery, final NodeSet result, final Collator collator, final int truncation) throws TerminatedException, EXistException {
+    public NodeSet matchAll(final XQueryWatchDog watchDog, final DocumentSet docs, final NodeSet contextSet, final int axis, final String expr, final List<QName> qnames, final int type, final int flags, final boolean caseSensitiveQuery, final NodeSet result, final Collator collator, final StringTruncationOperator truncation) throws TerminatedException, EXistException {
         // if the match expression starts with a char sequence, we restrict the index scan to entries starting with
         // the same sequence. Otherwise, we have to scan the whole index.
 
@@ -1001,31 +1042,31 @@ public class NativeValueIndex implements ContentLoadingObserver {
         return qnames;
     }
 
-    private int checkRelationOp(final int relation) {
+    private int toIndexQueryOp(final Comparison comparison) {
         final int indexOp;
 
-        switch (relation) {
-            case Constants.LT:
+        switch (comparison) {
+            case LT:
                 indexOp = IndexQuery.LT;
                 break;
 
-            case Constants.LTEQ:
+            case LTEQ:
                 indexOp = IndexQuery.LEQ;
                 break;
 
-            case Constants.GT:
+            case GT:
                 indexOp = IndexQuery.GT;
                 break;
 
-            case Constants.GTEQ:
+            case GTEQ:
                 indexOp = IndexQuery.GEQ;
                 break;
 
-            case Constants.NEQ:
+            case NEQ:
                 indexOp = IndexQuery.NEQ;
                 break;
 
-            case Constants.EQ:
+            case EQ:
             default:
                 indexOp = IndexQuery.EQ;
                 break;
@@ -1163,29 +1204,17 @@ public class NativeValueIndex implements ContentLoadingObserver {
 
     private final static class CollatorMatcher implements TermMatcher {
         private final String expr;
-        private final int truncation;
+        private final StringTruncationOperator truncation;
         private final Collator collator;
 
-        CollatorMatcher(final String expr, final int truncation, final Collator collator) throws EXistException {
+        CollatorMatcher(final String expr, final StringTruncationOperator truncation, final Collator collator) throws EXistException {
             if (collator == null) {
                 throw new EXistException("Collator must be non-null");
             }
 
-            switch (truncation) {
-                case Constants.TRUNC_NONE:
-                case Constants.TRUNC_LEFT:
-                case Constants.TRUNC_RIGHT:
-                case Constants.TRUNC_BOTH:
-                case Constants.TRUNC_EQUALS: {
-                    this.expr = expr;
-                    this.truncation = truncation;
-                    this.collator = collator;
-                    break;
-                }
-
-                default:
-                    throw new EXistException("Invalid truncation value: " + truncation);
-            }
+            this.expr = expr;
+            this.truncation = truncation;
+            this.collator = collator;
         }
 
         @Override
@@ -1193,20 +1222,20 @@ public class NativeValueIndex implements ContentLoadingObserver {
             final boolean matches;
 
             switch (truncation) {
-                case Constants.TRUNC_LEFT:
+                case LEFT:
                     matches = Collations.endsWith(collator, term.toString(), expr);
                     break;
 
-                case Constants.TRUNC_RIGHT:
+                case RIGHT:
                     matches = Collations.startsWith(collator, term.toString(), expr);
                     break;
 
-                case Constants.TRUNC_BOTH:
+                case BOTH:
                     matches = Collations.contains(collator, term.toString(), expr);
                     break;
 
-                case Constants.TRUNC_NONE:
-                case Constants.TRUNC_EQUALS:
+                case NONE:
+                case EQUALS:
                 default:
                     matches = Collations.equals(collator, term.toString(), expr);
             }

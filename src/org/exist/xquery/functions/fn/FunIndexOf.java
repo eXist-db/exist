@@ -26,7 +26,8 @@ import java.text.Collator;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
-import org.exist.xquery.Constants;
+import org.exist.xquery.Constants.Comparison;
+import org.exist.xquery.Constants.StringTruncationOperator;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
@@ -137,7 +138,7 @@ public class FunIndexOf extends BasicFunction {
     		for (final SequenceIterator i = args[0].iterate(); i.hasNext(); j++) {
     			final AtomicValue next = i.nextItem().atomize();
     			try {
-	    			if (ValueComparison.compareAtomic(collator, next, srch, Constants.TRUNC_NONE, Constants.EQ))
+	    			if (ValueComparison.compareAtomic(collator, next, srch, StringTruncationOperator.NONE, Comparison.EQ))
 	    				{result.add(new IntegerValue(j));}
     			} catch (final XPathException e) {
     				//Ignore me : values can not be compared

@@ -33,6 +33,7 @@ import org.exist.storage.Indexable;
 import org.exist.storage.ValueIndexFactory;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Constants;
+import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.util.ExpressionDumper;
@@ -73,7 +74,7 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
 	
 	public abstract AtomicValue convertTo(int requiredType) throws XPathException;
 
-	public abstract boolean compareTo(Collator collator, int operator, AtomicValue other)
+	public abstract boolean compareTo(Collator collator, Comparison operator, AtomicValue other)
 		throws XPathException;
 
 	public abstract int compareTo(Collator collator, AtomicValue other) throws XPathException;
@@ -410,25 +411,23 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
     }
 
     private final static class EmptyValue extends AtomicValue {
-		
+
+		@Override
     	public boolean hasOne() {
     		return false;
     	}
 
+		@Override
     	public boolean isEmpty() {
 			return true;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.exist.xquery.value.AtomicValue#getStringValue()
-		 */
+		@Override
 		public String getStringValue() {
 			return "";
 		}
-		
-		/* (non-Javadoc)
-		 * @see org.exist.xquery.value.AtomicValue#convertTo(int)
-		 */
+
+		@Override
 		public AtomicValue convertTo(int requiredType) throws XPathException {
 			switch (requiredType) {
 				case Type.ATOMIC :
@@ -502,14 +501,13 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
 					throw new XPathException("cannot convert empty value to " + requiredType);
 			}
 		}
-		
+
+		@Override
 		public boolean effectiveBooleanValue() throws XPathException {
 			return false;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.exist.xquery.value.AtomicValue#compareTo(java.lang.Object)
-		 */
+		@Override
 		public int compareTo(Collator collator, AtomicValue other) throws XPathException {
 			if (other instanceof EmptyValue)
 				{return Constants.EQUAL;}
@@ -517,57 +515,40 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
 				{return Constants.INFERIOR;}
 		}
 
-		/* (non-Javadoc)
-		 * @see org.exist.xquery.value.AtomicValue#compareTo(int, org.exist.xquery.value.AtomicValue)
-		 */
-		public boolean compareTo(Collator collator, int operator, AtomicValue other) throws XPathException {
+		@Override
+		public boolean compareTo(Collator collator, Comparison operator, AtomicValue other) throws XPathException {
 			return false;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.exist.xquery.value.AtomicValue#itemAt(int)
-		 */
+		@Override
 		public Item itemAt(int pos) {
 			return null;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.exist.xquery.value.Item#toSequence()
-		 */
+		@Override
 		public Sequence toSequence() {
 			return this;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.exist.xquery.value.AtomicValue#max(org.exist.xquery.value.AtomicValue)
-		 */
+		@Override
 		public AtomicValue max(Collator collator, AtomicValue other) throws XPathException {
 			return this;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.exist.xquery.value.Sequence#add(org.exist.xquery.value.Item)
-		 */
+		@Override
 		public void add(Item item) throws XPathException {
 		}
 
-		/* (non-Javadoc)
-		 * @see org.exist.xquery.value.AtomicValue#min(org.exist.xquery.value.AtomicValue)
-		 */
+		@Override
 		public AtomicValue min(Collator collator, AtomicValue other) throws XPathException {
 			return this;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.exist.xquery.value.Item#conversionPreference(java.lang.Class)
-		 */
+		@Override
 		public int conversionPreference(Class<?> javaClass) {
 			return Integer.MAX_VALUE;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.exist.xquery.value.Item#toJavaObject(java.lang.Class)
-		 */
 		@Override
                 public <T> T toJavaObject(final Class<T> target) throws XPathException {
 			throw new XPathException(

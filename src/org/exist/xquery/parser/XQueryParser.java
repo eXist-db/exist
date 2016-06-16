@@ -15022,9 +15022,9 @@ inputState.guessing--;
 	
 	protected void buildTokenTypeASTClassMap() {
 		tokenTypeToASTClassMap=null;
-	}
-
-	 private static final long[] mk_tokenSet_0() {
+	};
+	
+	private static final long[] mk_tokenSet_0() {
 		long[] data = new long[8];
 		data[0]=2L;
 		data[1]=-144603764359749L;

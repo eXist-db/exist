@@ -24,7 +24,7 @@ package org.exist.xquery.functions.fn;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
-import org.exist.xquery.Constants;
+import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Function;
@@ -92,7 +92,7 @@ public class FunDateTime extends BasicFunction {
             if (!dv.getTimezone().isEmpty()) {
                 if (!tv.getTimezone().isEmpty()) {
                     if (!((DayTimeDurationValue)dv.getTimezone().itemAt(0))
-                    		.compareTo(null, Constants.EQ, 
+                    		.compareTo(null, Comparison.EQ,
                     				((DayTimeDurationValue)tv.getTimezone().itemAt(0)))) {
                         
                     	final ValueSequence argsSeq = new ValueSequence();

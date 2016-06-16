@@ -40,6 +40,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.apache.xerces.util.DatatypeMessageFormatter;
 import org.exist.xquery.Constants;
+import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 
@@ -250,16 +251,17 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
 		if (tz == DatatypeConstants.FIELD_UNDEFINED) {return Sequence.EMPTY_SEQUENCE;}
 		return new DayTimeDurationValue(tz * 60000L);
 	}
-	
-	public boolean compareTo(Collator collator, int operator, AtomicValue other) throws XPathException {
+
+	@Override
+	public boolean compareTo(Collator collator, Comparison operator, AtomicValue other) throws XPathException {
 		final int cmp = compareTo(collator, other);
 		switch (operator) {
-			case Constants.EQ: return cmp == 0;
-			case Constants.NEQ: return cmp != 0;
-			case Constants.LT: return cmp < 0;
-			case Constants.LTEQ: return cmp <= 0;
-			case Constants.GT: return cmp > 0;
-			case Constants.GTEQ: return cmp >= 0;
+			case EQ: return cmp == 0;
+			case NEQ: return cmp != 0;
+			case LT: return cmp < 0;
+			case LTEQ: return cmp <= 0;
+			case GT: return cmp > 0;
+			case GTEQ: return cmp >= 0;
 			default :
 				throw new XPathException("Unknown operator type in comparison");
 		}

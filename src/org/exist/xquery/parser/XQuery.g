@@ -92,7 +92,7 @@ options {
 	}
 
 	public String getErrorMessage() {
-		StringBuffer buf= new StringBuffer();
+		StringBuilder buf= new StringBuilder();
 		for (Iterator i= exceptions.iterator(); i.hasNext();) {
 			buf.append(((Exception) i.next()).toString());
 			buf.append('\n');

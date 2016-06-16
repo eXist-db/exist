@@ -28,7 +28,7 @@ import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
 
-import org.exist.xquery.Constants;
+import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.XPathException;
 
 public class GYearMonthValue extends AbstractDateTimeValue {
@@ -94,7 +94,7 @@ public class GYearMonthValue extends AbstractDateTimeValue {
 		if (other.getType() == getType()) {
             if (!getTimezone().isEmpty()) {
 				if (!((AbstractDateTimeValue) other).getTimezone().isEmpty()) {
-					if (!((DayTimeDurationValue)getTimezone().itemAt(0)).compareTo(null, Constants.EQ, (DayTimeDurationValue)((AbstractDateTimeValue)other).getTimezone().itemAt(0))) {
+					if (!((DayTimeDurationValue)getTimezone().itemAt(0)).compareTo(null, Comparison.EQ, (DayTimeDurationValue)((AbstractDateTimeValue)other).getTimezone().itemAt(0))) {
 						return DatatypeConstants.LESSER;
 	    			} else {
                         // equal? Is this sufficient? /ljo

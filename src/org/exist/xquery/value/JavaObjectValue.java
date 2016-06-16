@@ -24,6 +24,7 @@ package org.exist.xquery.value;
 
 import java.text.Collator;
 
+import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.XPathException;
 
 /**
@@ -72,10 +73,8 @@ public class JavaObjectValue extends AtomicValue {
 		throw new XPathException("Called effectiveBooleanValue() on JavaObjectValue");
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.AtomicValue#compareTo(int, org.exist.xquery.value.AtomicValue)
-	 */
-	public boolean compareTo(Collator collator, int operator, AtomicValue other) throws XPathException {
+	@Override
+	public boolean compareTo(Collator collator, Comparison operator, AtomicValue other) throws XPathException {
 		throw new XPathException(
 			"cannot compare Java object to " + Type.getTypeName(other.getType()));
 	}
