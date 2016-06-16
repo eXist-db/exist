@@ -37,6 +37,7 @@ public class Txn implements Transaction {
     private final TransactionManager tm;
     private final long id;
     private State state;
+    private String originId;
 
     private List<LockInfo> locksHeld = new ArrayList<>();
     private List<TxnListener> listeners = new ArrayList<>();
@@ -128,5 +129,26 @@ public class Txn implements Transaction {
     public void close() {
         tm.close(this);
     }
+
+    /**
+     * Get origin of transaction
+     * @return Id
+     */
+    @Deprecated
+    public String getOriginId() {
+        return originId;
+    }
+
+    /**
+     *  Set origin of transaction. Purpose is to be able to
+     * see the origin of the transaction.
+     *
+     * @param id  Identifier of origin, FQN or URI.
+     */
+    @Deprecated
+    public void setOriginId(String id) {
+        originId = id;
+    }
+
 }
 
