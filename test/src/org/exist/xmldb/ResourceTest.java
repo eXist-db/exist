@@ -22,6 +22,7 @@
 package org.exist.xmldb;
 
 import org.custommonkey.xmlunit.exceptions.XpathException;
+import org.exist.util.serializer.SAXSerializer;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.exist.security.Account;
@@ -29,15 +30,15 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.Properties;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import javax.xml.transform.OutputKeys;
 
-import org.apache.xml.serialize.OutputFormat;
-import org.apache.xml.serialize.XMLSerializer;
 import org.exist.util.XMLFilenameFilter;
 import org.junit.After;
 import org.junit.Test;
@@ -80,20 +81,25 @@ public class ResourceTest {
     }
 
     @Test
-    public void readResource() throws XMLDBException {
-        Collection testCollection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
+    public void readResource() throws XMLDBException, IOException {
+        final Collection testCollection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
         assertNotNull(testCollection);
-        String[] resources = testCollection.listResources();
+        final String[] resources = testCollection.listResources();
         assertEquals(resources.length, testCollection.getResourceCount());
 
-        XMLResource doc = (XMLResource) testCollection.getResource(resources[0]);
+        final XMLResource doc = (XMLResource) testCollection.getResource(resources[0]);
         assertNotNull(doc);
 
-        StringWriter sout = new StringWriter();
-        OutputFormat format = new OutputFormat("xml", "ISO-8859-1", true);
-        format.setLineWidth(60);
-        XMLSerializer xmlout = new XMLSerializer(sout, format);
-        doc.getContentAsSAX(xmlout);
+        try(final StringWriter sout = new StringWriter()) {
+            final Properties outputProperties = new Properties();
+            outputProperties.put(OutputKeys.METHOD, "xml");
+            outputProperties.put(OutputKeys.ENCODING, "ISO-8859-1");
+            outputProperties.put(OutputKeys.INDENT, "yes");
+            outputProperties.put(OutputKeys.OMIT_XML_DECLARATION, "no");
+
+            final ContentHandler xmlout = new SAXSerializer(sout, outputProperties);
+            doc.getContentAsSAX(xmlout);
+        }
     }
 
     @Test
