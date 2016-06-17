@@ -233,7 +233,7 @@ public class IndexIntegrationTest extends AbstractTestUpdate {
 
         @Override
         public void appendTo(final StringBuffer buffer) {
-            throw new UnsupportedOperationException();
+            buffer.append("eqDocument(").append(url.toString()).append(", ?)");
         }
     }
 
@@ -262,7 +262,7 @@ public class IndexIntegrationTest extends AbstractTestUpdate {
 
         @Override
         public void appendTo(final StringBuffer buffer) {
-            throw new UnsupportedOperationException();
+            buffer.append("eqAttr(@").append(name).append("(").append(value).append("), ?)");
         }
     }
 
