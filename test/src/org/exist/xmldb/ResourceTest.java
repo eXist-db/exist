@@ -21,15 +21,7 @@
  */
 package org.exist.xmldb;
 
-import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.exist.util.serializer.SAXSerializer;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.exist.security.Account;
-import java.io.File;
-import java.io.IOException;
-import java.io.StringReader;
-import java.io.StringWriter;
+import java.io.*;
 import java.util.Properties;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -39,22 +31,26 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.OutputKeys;
 
+import org.custommonkey.xmlunit.exceptions.XpathException;
+import org.exist.dom.QName;
+import org.exist.security.Account;
+import org.exist.util.serializer.AttrList;
+import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.XMLFilenameFilter;
 import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
-import org.junit.Before;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
+import org.xml.sax.*;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
@@ -99,6 +95,45 @@ public class ResourceTest {
 
             final ContentHandler xmlout = new SAXSerializer(sout, outputProperties);
             doc.getContentAsSAX(xmlout);
+        }
+    }
+
+    @Test
+    public void testRecursiveSerailization() throws XMLDBException, IOException {
+        final String xmlDoc1 = "<test><title>Title</title>"
+                + "<import href=\"recurseSer2.xml\"></import>"
+                + "<para>Paragraph2</para>"
+                + "</test>";
+        final String xmlDoc2 = "<test2><title>Title2</title></test2>";
+
+        final String doc1Name = "recurseSer1.xml";
+        final String doc2Name = "recurseSer2.xml";
+        final XMLResource resource1 = addResource(doc1Name, xmlDoc1);
+        final XMLResource resource2 = addResource(doc2Name, xmlDoc2);
+
+        final Collection testCollection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
+        assertNotNull(testCollection);
+
+        try(final StringWriter sout = new StringWriter()) {
+            final Properties outputProperties = new Properties();
+            outputProperties.put(OutputKeys.METHOD, "xml");
+            outputProperties.put(OutputKeys.ENCODING, "UTF-8");
+            outputProperties.put(OutputKeys.INDENT, "no");
+            outputProperties.put(OutputKeys.OMIT_XML_DECLARATION, "yes");
+
+            final ContentHandler importHandler = new ImportingContentHandler(sout, outputProperties);
+            resource1.getContentAsSAX(importHandler);
+
+            final String result = sout.getBuffer().toString();
+            assertEquals(
+                    "<test>" +
+                    "<title>Title</title>" +
+                    "<test2>" +
+                    "<title>Title2</title>" +
+                    "</test2>" +
+                    "<para>Paragraph2</para>" +
+                    "</test>"
+            , result.trim());
         }
     }
 
@@ -360,5 +395,60 @@ public class ResourceTest {
         Collection root = DatabaseManager.getCollection(ROOT_URI, ADMIN_UID, ADMIN_PWD);
         CollectionManagementService cms = (CollectionManagementService)root.getService("CollectionManagementService", "1.0");
         cms.removeCollection(TEST_COLLECTION);
+    }
+
+    private class ImportingContentHandler extends SAXSerializer {
+        private static final String IMPORT_ELEM_NAME = "import";
+        private static final String HREF_ATTR_NAME = "href";
+        private final Writer writer;
+        private final Properties outputProperties;
+
+        ImportingContentHandler(final Writer writer, final Properties outputProperties) {
+            super(writer, outputProperties);
+            this.writer = writer;
+            this.outputProperties = outputProperties;
+        }
+
+        @Override
+        public void startElement(final QName qname, final AttrList attribs) throws SAXException {
+            if(qname.getLocalPart().equals(IMPORT_ELEM_NAME)) {
+                importDoc(attribs.getValue(new QName(HREF_ATTR_NAME)));
+            } else {
+                super.startElement(qname, attribs);
+            }
+        }
+
+        @Override
+        public void startElement(final String uri, final String localName, final String qName,
+                final Attributes attributes) throws SAXException {
+            if(localName.equals(IMPORT_ELEM_NAME)) {
+                importDoc(attributes.getValue(HREF_ATTR_NAME));
+            } else {
+                super.startElement(uri, localName, qName, attributes);
+            }
+        }
+
+        private void importDoc(final String href) throws SAXException {
+            try {
+                final XMLResource resource = resourceForId(href);
+                resource.getContentAsSAX(new ImportingContentHandler(writer, outputProperties));
+            } catch (final XMLDBException e) {
+                throw new SAXException(e);
+            }
+        }
+
+        @Override
+        public void endElement(final QName qname) throws SAXException {
+            if(!qname.getLocalPart().equals(IMPORT_ELEM_NAME)) {
+                super.endElement(qname);
+            }
+        }
+
+        @Override
+        public void endElement(final String uri, final String localName, final String qName) throws SAXException {
+            if(!localName.equals(IMPORT_ELEM_NAME)) {
+                super.endElement(uri, localName, qName);
+            }
+        }
     }
 }
