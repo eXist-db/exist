@@ -72,8 +72,8 @@
   <delete file="${test.resources.dir}/15385-SS7886-5i1.gz"/>
 
   <!-- Retrieve copy of the license -->
-  <get src="http://data.exist-db.org/spatial/ordnance-survey-discover-data-licence.pdf" dest="${test.resources.dir}"/>
-  <get src="http://data.exist-db.org/spatial/README.txt" dest="${test.resources.dir}"/>
+  <get src="http://data.exist-db.org/spatial/ordnance-survey-discover-data-licence.pdf" dest="${test.resources.dir}" tryGzipEncoding="true"/>
+  <get src="http://data.exist-db.org/spatial/README.txt" dest="${test.resources.dir}" tryGzipEncoding="true"/>
  </target>
 
 </project>
