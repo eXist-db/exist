@@ -720,9 +720,10 @@ public class NativeValueIndex implements ContentLoadingObserver {
         final SearchCallback cb = new SearchCallback(docs, contextSet, result, axis == NodeSet.ANCESTOR);
         final Lock lock = dbValues.getLock();
 
+        final int idxOp = toIndexQueryOp(comparison);
+
         for (final Iterator<Collection> iter = docs.getCollectionIterator(); iter.hasNext(); ) {
             final int collectionId = iter.next().getId();
-            final int idxOp = toIndexQueryOp(comparison);
 
             watchDog.proceed(null);
 
@@ -730,12 +731,12 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 try {
                     lock.acquire(Lock.READ_LOCK);
                     final Value searchKey = new SimpleValue(collectionId, value);
-                    final Value prefixKey = new SimplePrefixValue(collectionId, value.getType());
                     final IndexQuery query = new IndexQuery(idxOp, searchKey);
 
                     if (idxOp == IndexQuery.EQ) {
                         dbValues.query(query, cb);
                     } else {
+                        final Value prefixKey = new SimplePrefixValue(collectionId, value.getType());
                         dbValues.query(query, prefixKey, cb);
                     }
                 } catch (final EXistException | BTreeException | IOException e) {
@@ -752,12 +753,12 @@ public class NativeValueIndex implements ContentLoadingObserver {
 
                         //Compute a key for the value in the collection
                         final Value searchKey = new QNameValue(collectionId, qname, value, broker.getBrokerPool().getSymbols());
-                        final Value prefixKey = new QNamePrefixValue(collectionId, qname, value.getType(), broker.getBrokerPool().getSymbols());
 
                         final IndexQuery query = new IndexQuery(idxOp, searchKey);
                         if (idxOp == IndexQuery.EQ) {
                             dbValues.query(query, cb);
                         } else {
+                            final Value prefixKey = new QNamePrefixValue(collectionId, qname, value.getType(), broker.getBrokerPool().getSymbols());
                             dbValues.query(query, prefixKey, cb);
                         }
                     } catch (final EXistException | BTreeException | IOException e) {
