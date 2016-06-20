@@ -952,12 +952,11 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 final int collectionId = c.getId();
 
                 //Compute a key for the start value in the collection
+                final Value startKey = new SimpleValue(collectionId, start);
                 if (stringType) {
-                    final Value startKey = new SimpleValue(collectionId, start);
                     final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, startKey);
                     dbValues.query(query, cb);
                 } else {
-                    final Value startKey = new SimpleValue(collectionId, start);
                     final Value prefixKey = new SimplePrefixValue(collectionId, start.getType());
                     final IndexQuery query = new IndexQuery(IndexQuery.GEQ, startKey);
                     dbValues.query(query, prefixKey, cb);
@@ -1006,12 +1005,11 @@ public class NativeValueIndex implements ContentLoadingObserver {
                     final int collectionId = i.next().getId();
 
                     //Compute a key for the start value in the collection
+                    final Value startKey = new QNameValue(collectionId, qname, start, broker.getBrokerPool().getSymbols());
                     if (stringType) {
-                        final Value startKey = new QNameValue(collectionId, qname, start, broker.getBrokerPool().getSymbols());
                         final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, startKey);
                         dbValues.query(query, cb);
                     } else {
-                        final Value startKey = new QNameValue(collectionId, qname, start, broker.getBrokerPool().getSymbols());
                         final Value prefixKey = new QNamePrefixValue(collectionId, qname, start.getType(), broker.getBrokerPool().getSymbols());
                         final IndexQuery query = new IndexQuery(IndexQuery.GEQ, startKey);
                         dbValues.query(query, prefixKey, cb);
