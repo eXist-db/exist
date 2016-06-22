@@ -1,23 +1,21 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2010-2011 The eXist Project
+ *  Copyright (C) 2001-2016 The eXist Project
  *  http://exist-db.org
- *  
+ *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
  *  as published by the Free Software Foundation; either version 2
  *  of the License, or (at your option) any later version.
- *  
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *  
- *  $Id$
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.security.internal;
 
@@ -70,12 +68,10 @@ public class RealmImpl extends AbstractRealm {
     public final static int ADMIN_ACCOUNT_ID = 1048574;
     public final static int GUEST_ACCOUNT_ID = 1048573;
     public final static int UNKNOWN_ACCOUNT_ID = 1048572;
-    public final static int INITIAL_LAST_ACCOUNT_ID = 10;
 
     public final static int DBA_GROUP_ID = 1048575;
     public final static int GUEST_GROUP_ID = 1048574;
     public final static int UNKNOWN_GROUP_ID = 1048573;
-    public final static int INITIAL_LAST_GROUP_ID = 10;
 
     protected final AccountImpl ACCOUNT_SYSTEM;
     protected final AccountImpl ACCOUNT_UNKNOWN;
@@ -94,40 +90,31 @@ public class RealmImpl extends AbstractRealm {
 
     	super(sm, config);
 
-    	sm.lastUserId = INITIAL_LAST_ACCOUNT_ID;     //TODO this is horrible!
-    	sm.lastGroupId = INITIAL_LAST_GROUP_ID;    //TODO this is horrible!
-        
         //DBA group
         GROUP_DBA = new GroupImpl(broker, this, DBA_GROUP_ID, SecurityManager.DBA_GROUP);
         GROUP_DBA.setManagers(new ArrayList<Reference<SecurityManager, Account>>(){
             { add(new ReferenceImpl<>(sm, "getAccount", SecurityManager.DBA_USER)); }
         });
         GROUP_DBA.setMetadataValue(EXistSchemaType.DESCRIPTION, "Database Administrators");
-    	sm.addGroup(GROUP_DBA.getId(), GROUP_DBA);
+        sm.registerGroup(GROUP_DBA);
         registerGroup(GROUP_DBA);
-        //sm.groupsById.put(GROUP_DBA.getId(), GROUP_DBA);
-    	//groupsByName.put(GROUP_DBA.getName(), GROUP_DBA);
-        
+
         //System account
     	ACCOUNT_SYSTEM = new AccountImpl(broker, this, SYSTEM_ACCOUNT_ID, SecurityManager.SYSTEM, "", GROUP_DBA, true);
         ACCOUNT_SYSTEM.setMetadataValue(AXSchemaType.FULLNAME, SecurityManager.SYSTEM);
         ACCOUNT_SYSTEM.setMetadataValue(EXistSchemaType.DESCRIPTION, "System Internals");
-        sm.addUser(ACCOUNT_SYSTEM.getId(), ACCOUNT_SYSTEM);
+        sm.registerAccount(ACCOUNT_SYSTEM);
         registerAccount(ACCOUNT_SYSTEM);
-    	//sm.usersById.put(ACCOUNT_SYSTEM.getId(), ACCOUNT_SYSTEM);
-    	//usersByName.put(ACCOUNT_SYSTEM.getName(), ACCOUNT_SYSTEM);
-        
+
         //guest group
         GROUP_GUEST = new GroupImpl(broker, this, GUEST_GROUP_ID, SecurityManager.GUEST_GROUP);
         GROUP_GUEST.setManagers(new ArrayList<Reference<SecurityManager, Account>>(){
             { add(new ReferenceImpl<>(sm, "getAccount", SecurityManager.DBA_USER)); }
         });
         GROUP_GUEST.setMetadataValue(EXistSchemaType.DESCRIPTION, "Anonymous Users");
-        sm.addGroup(GROUP_GUEST.getId(), GROUP_GUEST);
+        sm.registerGroup(GROUP_GUEST);
         registerGroup(GROUP_GUEST);
-    	//sm.groupsById.put(GROUP_GUEST.getId(), GROUP_GUEST);
-    	//groupsByName.put(GROUP_GUEST.getName(), GROUP_GUEST);
-        
+
         //unknown account and group
         GROUP_UNKNOWN = new GroupImpl(broker, this, UNKNOWN_GROUP_ID, "");
     	ACCOUNT_UNKNOWN = new AccountImpl(broker, this, UNKNOWN_ACCOUNT_ID, "", (String)null, GROUP_UNKNOWN);
@@ -210,7 +197,7 @@ public class RealmImpl extends AbstractRealm {
                     LOG.warn(e.getMessage(), e);
                 }
 
-                getSecurityManager().addUser(remove_account.getId(), remove_account);
+                getSecurityManager().registerAccount(remove_account);
                 principalDb.remove(remove_account.getName());
             }
         });
@@ -246,7 +233,7 @@ public class RealmImpl extends AbstractRealm {
                 LOG.warn(e.getMessage(), e);
             }
 
-            getSecurityManager().addGroup(remove_group.getId(), (Group)remove_group);
+            getSecurityManager().registerGroup((Group)remove_group);
             principalDb.remove(remove_group.getName());
         });
         

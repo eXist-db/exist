@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2015 The eXist Project
+ *  Copyright (C) 2001-2016 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -107,10 +107,6 @@ public interface SecurityManager extends Configurable {
    
    @Deprecated
    Subject getSubjectBySessionId(String sessionid);
-
-   void addGroup(int id, Group group);
-
-   void addUser(int id, Account account);
 
    boolean hasGroup(int id);
 

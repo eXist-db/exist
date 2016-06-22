@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2014 The eXist Project
+ *  Copyright (C) 2001-2016 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -16,18 +16,17 @@
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- *  $Id$
  */
-package org.exist.backup;
+package org.exist.security.internal;
 
 import org.exist.EXistException;
+import org.exist.backup.Backup;
+import org.exist.backup.Restore;
 import org.exist.backup.restore.listener.RestoreListener;
 import org.exist.jetty.JettyStart;
 import static org.exist.repo.AutoDeploymentTrigger.AUTODEPLOY_PROPERTY;
 import org.exist.security.*;
 import org.exist.security.SecurityManager;
-import org.exist.security.internal.RealmImpl;
 import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.internal.aider.UserAider;
 import org.exist.storage.BrokerPool;
@@ -90,9 +89,11 @@ public class BackupRestoreSecurityPrincipalsTest {
     @Before
     public void setup() throws PermissionDeniedException, EXistException, XMLDBException, SAXException, IOException, DatabaseConfigurationException, AuthenticationException {
         //we need to temporarily disable the auto-deploy trigger, as deploying eXide creates user accounts which interferes with this test
-	    autodeploy = System.getProperty(AUTODEPLOY_PROPERTY, "off");
-	    System.setProperty(AUTODEPLOY_PROPERTY, "off");
+        autodeploy = System.getProperty(AUTODEPLOY_PROPERTY, "off");
+        System.setProperty(AUTODEPLOY_PROPERTY, "off");
 
+        //make sure that data folder is empty
+        deleteDatabaseFiles();
         startupDatabase();
 
         createUser(FRANK_USER, FRANK_USER);   //should have id RealmImpl.INITIAL_LAST_ACCOUNT_ID + 1
@@ -181,6 +182,8 @@ public class BackupRestoreSecurityPrincipalsTest {
         final Collection root = DatabaseManager.getCollection("xmldb:exist:///db", "admin", "");
         final XPathQueryService xqs = (XPathQueryService) root.getService("XPathQueryService", "1.0");
 
+        final SecurityManagerImpl sm = (SecurityManagerImpl) BrokerPool.getInstance().getSecurityManager();
+
         //create new users: 'frank' and 'jack'
         createUser(FRANK_USER, FRANK_USER);   // should have id RealmImpl.INITIAL_LAST_ACCOUNT_ID + 1
         createUser(JACK_USER, JACK_USER);     // should have id RealmImpl.INITIAL_LAST_ACCOUNT_ID + 2
@@ -194,14 +197,11 @@ public class BackupRestoreSecurityPrincipalsTest {
         ResourceSet result = xqs.query(accountQuery);
         assertUser(RealmImpl.ADMIN_ACCOUNT_ID, SecurityManager.DBA_USER, ((XMLResource) result.getResource(0)).getContentAsDOM());
         assertUser(RealmImpl.GUEST_ACCOUNT_ID, SecurityManager.GUEST_USER, ((XMLResource) result.getResource(1)).getContentAsDOM());
-        assertUser(RealmImpl.INITIAL_LAST_ACCOUNT_ID + 1, "frank", ((XMLResource) result.getResource(2)).getContentAsDOM());
-        assertUser(RealmImpl.INITIAL_LAST_ACCOUNT_ID + 2, "jack", ((XMLResource) result.getResource(3)).getContentAsDOM());
+        assertUser(SecurityManagerImpl.INITIAL_LAST_ACCOUNT_ID + 1, "frank", ((XMLResource) result.getResource(2)).getContentAsDOM());
+        assertUser(SecurityManagerImpl.INITIAL_LAST_ACCOUNT_ID + 2, "jack", ((XMLResource) result.getResource(3)).getContentAsDOM());
 
         //check the last user id
-        final String lastAccountIdQuery = "declare namespace c = 'http://exist-db.org/Configuration';\n" +
-            "//c:security-manager/string(@last-account-id)";
-        result = xqs.query(lastAccountIdQuery);
-        assertEquals(RealmImpl.INITIAL_LAST_ACCOUNT_ID + 2, Integer.parseInt(result.getResource(0).getContent().toString())); //last account id should be that of 'jack'
+        assertEquals(SecurityManagerImpl.INITIAL_LAST_ACCOUNT_ID + 2, sm.lastAccountId); //last account id should be that of 'jack'
 
         //create a test collection and give everyone access
         final CollectionManagementService cms = (CollectionManagementService)root.getService("CollectionManagementService", "1.0");
@@ -232,13 +232,12 @@ public class BackupRestoreSecurityPrincipalsTest {
         result = xqs.query(accountQuery);
         assertUser(RealmImpl.ADMIN_ACCOUNT_ID, SecurityManager.DBA_USER, ((XMLResource) result.getResource(0)).getContentAsDOM());
         assertUser(RealmImpl.GUEST_ACCOUNT_ID, SecurityManager.GUEST_USER, ((XMLResource) result.getResource(1)).getContentAsDOM());
-        assertUser(RealmImpl.INITIAL_LAST_ACCOUNT_ID + 1, "frank", ((XMLResource) result.getResource(2)).getContentAsDOM());
-        assertUser(RealmImpl.INITIAL_LAST_ACCOUNT_ID + 2, "jack", ((XMLResource) result.getResource(3)).getContentAsDOM());
-        assertUser(RealmImpl.INITIAL_LAST_ACCOUNT_ID + 4, "joe", ((XMLResource) result.getResource(4)).getContentAsDOM()); //this is `+ 4` because pre-allocating an id skips one
+        assertUser(SecurityManagerImpl.INITIAL_LAST_ACCOUNT_ID + 1, FRANK_USER, ((XMLResource) result.getResource(2)).getContentAsDOM());
+        assertUser(SecurityManagerImpl.INITIAL_LAST_ACCOUNT_ID + 2, JACK_USER, ((XMLResource) result.getResource(3)).getContentAsDOM());
+        assertUser(SecurityManagerImpl.INITIAL_LAST_ACCOUNT_ID + 3, JOE_USER, ((XMLResource) result.getResource(4)).getContentAsDOM());
 
         //check the last user id after the restore
-        result = xqs.query(lastAccountIdQuery);
-        assertEquals(RealmImpl.INITIAL_LAST_ACCOUNT_ID + 4, Integer.parseInt(result.getResource(0).getContent().toString())); //last account id should be that of 'joe'
+        assertEquals(SecurityManagerImpl.INITIAL_LAST_ACCOUNT_ID + 3, sm.lastAccountId); //last account id should be that of 'joe'
 
         //check the owner of frank's document after restore
         final Resource fDoc = test.getResource(FRANKS_DOCUMENT);

@@ -1,23 +1,21 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2010-2011 The eXist Project
+ *  Copyright (C) 2001-2016 The eXist Project
  *  http://exist-db.org
- *  
+ *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
  *  as published by the Free Software Foundation; either version 2
  *  of the License, or (at your option) any later version.
- *  
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *  
- *  $Id$
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.security;
 
@@ -65,7 +63,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
     protected final PrincipalDbByName<Group> groupsByName = new PrincipalDbByName<>();
     
 
-    private SecurityManager sm;
+    private SecurityManagerImpl sm;
 
     protected Configuration configuration;
 
@@ -75,7 +73,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
     protected Collection collectionRemovedAccounts = null;
     protected Collection collectionRemovedGroups = null;
 	
-    public AbstractRealm(SecurityManager sm, Configuration config) {
+    public AbstractRealm(SecurityManagerImpl sm, Configuration config) {
         this.sm = sm;
         this.configuration = Configurator.configure(this, config);
     }
@@ -86,7 +84,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
     }
 
     @Override
-    public SecurityManager getSecurityManager() {
+    public SecurityManagerImpl getSecurityManager() {
         return sm;
     }
     
@@ -126,7 +124,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
                         //Group group = instantiateGroup(this, conf);
                         final GroupImpl group = new GroupImpl(r, conf);
 
-                        getSecurityManager().addGroup(group.getId(), group);
+                        getSecurityManager().registerGroup(group);
                         principalDb.put(group.getName(), group);
 
                         //set collection
@@ -152,7 +150,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
                     final GroupImpl group = new GroupImpl(this, conf);
                     group.removed = true;
                     
-                    getSecurityManager().addGroup(group.getId(), group);
+                    getSecurityManager().registerGroup(group);
                 }
             }
         }
@@ -180,7 +178,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
                             return;
                         }
 
-                        getSecurityManager().addUser(account.getId(), account);
+                        getSecurityManager().registerAccount(account);
                         principalDb.put(account.getName(), account);
 
                         //set collection
@@ -206,7 +204,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
 	            final AccountImpl account = new AccountImpl( this, conf );
 	            account.removed = true;
 		    
-                    getSecurityManager().addUser(account.getId(), account);
+                    getSecurityManager().registerAccount(account);
                 }
             }
         }

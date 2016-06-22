@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2015 The eXist Project
+ *  Copyright (C) 2001-2016 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
@@ -100,14 +101,14 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
     private final PrincipalLocks<Account> accountLocks = new PrincipalLocks<>();
     private final PrincipalLocks<Group> groupLocks = new PrincipalLocks<>();
 
-    //TODO: validate & remove if session timeout
     private SessionDb sessions = new SessionDb();
 
-    @ConfigurationFieldAsAttribute("last-account-id")
-    protected int lastUserId = 0;
+    public final static int INITIAL_LAST_ACCOUNT_ID = 10;
+    public final static int INITIAL_LAST_GROUP_ID = 10;
 
-    @ConfigurationFieldAsAttribute("last-group-id")
-    protected int lastGroupId = 0;
+    //calculated runtime
+    protected int lastAccountId = INITIAL_LAST_ACCOUNT_ID;
+    protected int lastGroupId = INITIAL_LAST_GROUP_ID;
 
     @ConfigurationFieldAsAttribute("version")
     private String version = "2.0";
@@ -505,18 +506,29 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
         return db;
     }
 
-    private synchronized int getNextGroupId() {
-        if(lastGroupId + 1 == MAX_GROUP_ID) {
-            throw new RuntimeException("System has no more group-ids available");            
-        }
-        return ++lastGroupId;
+    private int getNextGroupId() {
+        AtomicInteger nextId = new AtomicInteger();
+        groupsById.modify(principalDb -> {
+            if(lastGroupId + 1 >= MAX_GROUP_ID) {
+                throw new RuntimeException("System has no more group-ids available");
+            }
+            nextId.set(++lastGroupId);
+        });
+
+        return nextId.get();
+
     }
 
-    private synchronized int getNextAccountId() {
-        if(lastUserId +1 == MAX_USER_ID) {
-            throw new RuntimeException("System has no more user-ids available");
-        }
-        return ++lastUserId;
+    private int getNextAccountId() {
+        AtomicInteger nextId = new AtomicInteger();
+        usersById.modify(principalDb -> {
+            if(lastAccountId +1 >= MAX_USER_ID) {
+                throw new RuntimeException("System has no more user-ids available");
+            }
+            nextId.set(++lastAccountId);
+        });
+
+        return nextId.get();
     }
 
     @Override
@@ -590,11 +602,9 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
         final Lock lock = groupLocks.getWriteLock(newGroup);
         lock.lock();
         try {
-            groupsById.modify(principalDb -> principalDb.put(id, newGroup));
-            
+            registerGroup(newGroup);
             registeredRealm.registerGroup(newGroup);
 
-            save(broker);
             newGroup.save(broker);
 
             return newGroup;
@@ -604,7 +614,7 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
     }
 
     @Override
-    public final Account addAccount(final Account account) throws  PermissionDeniedException, EXistException {
+    public final Account addAccount(final Account account) throws  PermissionDeniedException, EXistException{
         try(final DBBroker broker = db.getBroker()) {
             return addAccount(broker, account);
         }
@@ -633,29 +643,14 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
         final Lock lock = accountLocks.getWriteLock(newAccount);
         lock.lock();
         try {
-            usersById.modify(principalDb -> principalDb.put(id, newAccount));
-            
+            registerAccount(newAccount);
             registeredRealm.registerAccount(newAccount);
 
-            //XXX: one transaction?
-            save(broker);
             newAccount.save(broker);
 
             return newAccount;
         } finally {
             lock.unlock();
-        }
-    }
-
-    private void save() throws PermissionDeniedException, EXistException {
-        if (configuration != null) {
-            configuration.save();
-        }
-    }
-        
-    private void save(final DBBroker broker) throws PermissionDeniedException, EXistException {
-        if (configuration != null) {
-            configuration.save(broker);
         }
     }
 
@@ -743,15 +738,41 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
         }
         throw new ConfigurationException("Realm id = '" + realmId + "' not found.");
     }
-    
-    @Override
-    public void addGroup(final int id, final Group group) {
-        groupsById.modify(principalDb -> principalDb.put(id, group));
+
+    /**
+     * Register mapping id to group.
+     *
+     * @param group
+     */
+    public void registerGroup(final Group group) {
+        groupsById.modify(principalDb -> {
+
+            final int id = group.getId();
+
+            principalDb.put(id, group);
+
+            if (id < MAX_GROUP_ID) {
+                lastGroupId = Math.max(lastGroupId, id);
+            }
+        });
     }
 
-    @Override
-    public void addUser(final int id, final Account account) {
-        usersById.modify(principalDb -> principalDb.put(id, account));
+    /**
+     * Register mapping id to account.
+     *
+     * @param account
+     */
+    public void registerAccount(final Account account) {
+        usersById.modify(principalDb -> {
+
+            final int id = account.getId();
+
+            principalDb.put(id, account);
+
+            if (id < MAX_USER_ID) {
+                lastAccountId = Math.max(lastAccountId, id);
+            }
+        });
     }
 
     @Override
@@ -885,7 +906,7 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
                 if (isRemoved && id > 2 && !hasUser(id)) {
                     final AccountImpl account = new AccountImpl( realm, conf );
                     account.removed = true;
-                    addUser(account.getId(), account);
+                    registerAccount(account);
                 } else if(name != null) {
                 	if (realm.hasAccount(name)) {
                 		final Integer oldId = saving.get(document.getURI());
@@ -908,7 +929,7 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
             			}
                 	} else {
                 		final Account account = new AccountImpl( realm, conf );
-                		addUser(account.getId(), account);
+                        registerAccount(account);
                 		realm.registerAccount(account);
                 	}
                 } else {
@@ -920,10 +941,10 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
                 if (isRemoved && id > 2 && !hasGroup(id)) {
                     final GroupImpl group = new GroupImpl( realm, conf );
                     group.removed = true;
-                    addGroup(group.getId(), group);
+                    registerGroup(group);
                 } else if (name != null && !realm.hasGroup(name)) {
                     final GroupImpl group = new GroupImpl( realm, conf );
-                    addGroup(group.getId(), group);
+                    registerGroup(group);
                     realm.registerGroup(group);
                 } else {
                     //this can't be! log any way
@@ -1018,16 +1039,12 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
     }
 
     @Override
-    public final synchronized void preAllocateAccountId(final PrincipalIdReceiver receiver) throws PermissionDeniedException, EXistException {
-        final int id = getNextAccountId();
-        save();
-        receiver.allocate(id);
+    public final void preAllocateAccountId(final PrincipalIdReceiver receiver) throws PermissionDeniedException, EXistException {
+        receiver.allocate(getNextAccountId());
     }
 
     @Override
-    public final synchronized void preAllocateGroupId(final PrincipalIdReceiver receiver) throws PermissionDeniedException, EXistException {
-        final int id = getNextGroupId();
-        save();
-        receiver.allocate(id);
+    public final void preAllocateGroupId(final PrincipalIdReceiver receiver) throws PermissionDeniedException, EXistException {
+        receiver.allocate(getNextGroupId());
     }
 }
