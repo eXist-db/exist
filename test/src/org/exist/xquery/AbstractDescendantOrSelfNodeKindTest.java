@@ -45,7 +45,7 @@ public abstract class AbstractDescendantOrSelfNodeKindTest {
     public void nodeCount() throws XMLDBException {
         final ResourceSet result = executeQueryOnDoc("count($doc//node())");
         assertEquals(1, result.getSize());
-        assertEquals(13, Integer.parseInt((String)result.getResource(0).getContent()));
+        assertEquals(23, Integer.parseInt((String)result.getResource(0).getContent()));
     }
 
     @Test
@@ -59,7 +59,7 @@ public abstract class AbstractDescendantOrSelfNodeKindTest {
     public void textCount() throws XMLDBException {
         final ResourceSet result = executeQueryOnDoc("count($doc//text())");
         assertEquals(1, result.getSize());
-        assertEquals(4, Integer.parseInt((String)result.getResource(0).getContent()));
+        assertEquals(14, Integer.parseInt((String)result.getResource(0).getContent()));
     }
 
     @Test

@@ -48,10 +48,10 @@ import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
-import org.junit.After;
+import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
@@ -138,8 +138,8 @@ public class IndexerTest2 {
         }
     }
 
-    @Before
-    public void setUp() throws DatabaseConfigurationException, EXistException {
+    @BeforeClass
+    public static void setUp() throws DatabaseConfigurationException, EXistException {
         Configuration config = new Configuration();
 	config.setProperty(Indexer.PROPERTY_PRESERVE_WS_MIXED_CONTENT, true);
 	// fixme! - Test all four: both, leading, trailing, none
@@ -148,8 +148,8 @@ public class IndexerTest2 {
 
     }  
 
-    @After
-    public void tearDown() {
+    @AfterClass
+    public static void tearDown() {
         BrokerPool.stopAll(false);
     }
 }
