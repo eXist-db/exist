@@ -89,14 +89,46 @@ public class IndexerTest2 {
 "</result>";
 
     @Test
-    public void store_preserve_mixed_ws() throws PermissionDeniedException, IOException, EXistException, SAXException, LockException, AuthenticationException {
-    	final BrokerPool pool = BrokerPool.getInstance();
+    public void store_preserve_mixed_ws() throws PermissionDeniedException, IOException, EXistException, SAXException, LockException, XPathException, AuthenticationException {
+        final BrokerPool pool = BrokerPool.getInstance();
 	assertTrue(((Boolean) pool.getConfiguration().getProperty(Indexer.PROPERTY_PRESERVE_WS_MIXED_CONTENT)).booleanValue());
 	assertEquals("none", pool.getConfiguration().getProperty(Indexer.PROPERTY_SUPPRESS_WHITESPACE));
+    }
 
+    @Test
+    public void retrieve_boundary_space_preserve_with_preserve_mixed_ws() throws EXistException, PermissionDeniedException, SAXException, XPathException {
+        assertEquals("<result name=\"" + TestConstants.TEST_COLLECTION_URI.toString() + "/"+ TestConstants.TEST_XML_URI2.toString() + "\">\n" +
+"    <inline>\n" +
+"Government of new Territory of Nevada—Governor Nye and the practical jokers—Mr. Clemens begins journalistic life on Virginia City Enterprise.\n" + "</inline>\n" +
+"    <stored>\n" +
+"Government of new Territory of Nevada—Governor Nye and the practical jokers—Mr. Clemens begins journalistic life on Virginia City Enterprise.\n" + "</stored>\n" +
+"</result>", executeQuery());
+    }
+
+    private String executeQuery() throws EXistException, PermissionDeniedException, SAXException, XPathException {
+        final BrokerPool pool = BrokerPool.getInstance();
+        StringWriter out = out = new StringWriter();
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+            XQuery xquery = broker.getBrokerPool().getXQueryService();
+            Sequence result = xquery.execute(broker, XQUERY, null);
+            Properties props = new Properties();
+            props.setProperty(OutputKeys.INDENT, "yes");
+            SAXSerializer serializer = new SAXSerializer(out, props);
+            serializer.startDocument();
+            for (SequenceIterator i = result.iterate(); i.hasNext(); ) {
+                Item next = i.nextItem();
+                next.toSAX(broker, serializer, props);
+            }
+            serializer.endDocument();
+        }
+        return out.toString();
+    }
+
+      private static void storeDoc() throws PermissionDeniedException, IOException, EXistException, SAXException, LockException, AuthenticationException {
+        final BrokerPool pool = BrokerPool.getInstance();
         final TransactionManager txnMgr = pool.getTransactionManager();
 
-    	try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().authenticate("admin", "")));
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().authenticate("admin", "")));
 	    final Txn txn = txnMgr.beginTransaction()) {
 
             Collection collection = broker.getOrCreateCollection(txn, TestConstants.TEST_COLLECTION_URI);
@@ -109,42 +141,16 @@ public class IndexerTest2 {
             broker.saveCollection(txn, collection);
             txnMgr.commit(txn);
         }
-	
-    }
-
-    @Test
-    public void retrieve_boundary_space_preserve_with_preserve_mixed_ws() throws EXistException, PermissionDeniedException, SAXException, XPathException {
-        final BrokerPool pool = BrokerPool.getInstance();
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-            XQuery xquery = broker.getBrokerPool().getXQueryService();
-            Sequence result = xquery.execute(broker, XQUERY, null);
-            StringWriter out = new StringWriter();
-            Properties props = new Properties();
-            props.setProperty(OutputKeys.INDENT, "yes");
-            SAXSerializer serializer = new SAXSerializer(out, props);
-            serializer.startDocument();
-            for (SequenceIterator i = result.iterate(); i.hasNext(); ) {
-                Item next = i.nextItem();
-                next.toSAX(broker, serializer, props);
-            }
-            serializer.endDocument();
-            assertEquals("<result name=\"" + TestConstants.TEST_COLLECTION_URI.toString() + "/"+ TestConstants.TEST_XML_URI2.toString() + "\">\n" +
-"    <inline>\n" +
-"Government of new Territory of Nevada—Governor Nye and the practical jokers—Mr. Clemens begins journalistic life on Virginia City Enterprise.\n" + "</inline>\n" +
-"    <stored>\n" + 
-"Government of new Territory of Nevada—Governor Nye and the practical jokers—Mr. Clemens begins journalistic life on Virginia City Enterprise.\n" + "</stored>\n" +
-"</result>", out.toString());
-        }
     }
 
     @BeforeClass
-    public static void setUp() throws DatabaseConfigurationException, EXistException {
+    public static void setUp() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, SAXException, LockException, AuthenticationException {
         Configuration config = new Configuration();
 	config.setProperty(Indexer.PROPERTY_PRESERVE_WS_MIXED_CONTENT, true);
 	// fixme! - Test all four: both, leading, trailing, none
 	config.setProperty(Indexer.PROPERTY_SUPPRESS_WHITESPACE, "none");
         BrokerPool.configure(1, 5, config);
-
+        storeDoc();
     }  
 
     @AfterClass

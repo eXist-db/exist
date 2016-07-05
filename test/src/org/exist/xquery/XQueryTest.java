@@ -844,7 +844,6 @@ public class XQueryTest {
             message = "";
             result = service.query(query);
         } catch (XMLDBException e) {
-            e.printStackTrace();
             message = e.getMessage();
         }
         assertTrue(message.indexOf("does not match namespace URI") > -1);
