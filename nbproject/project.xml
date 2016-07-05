@@ -3,7 +3,7 @@
     <type>org.netbeans.modules.java.j2seproject</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/j2se-project/3">
-            <name>eXist-db trunk</name>
+            <name>eXist-db temp</name>
             <minimum-ant-version>1.6.5</minimum-ant-version>
             <source-roots>
                 <root id="src.dir" name="Core"/>
@@ -24,7 +24,6 @@
                 <root id="src.src11.dir" name="Extensions Security - LDAP"/>
                 <root id="src.src7.dir" name="Extensions WebDAV"/>
                 <root id="src.src8.dir" name="Extensions XQDoc"/>
-                <root id="src.src12.dir" name="Extensions XSLT"/>
                 <root id="src.src6.dir" name="Wrapper"/>
                 <root id="eXist-1.32.dir" name="Samples"/>
             </source-roots>
@@ -35,7 +34,6 @@
                 <root id="test.src3.dir" name="Index Range Test"/>
                 <root id="test.java.dir" name="Extensions EXQuery - RESTXQ Test"/>
                 <root id="test.eXist-1.32.dir" name="Extensions Fluent Test"/>
-                <root id="test.src2.dir" name="Extensions XSLT test"/>
             </test-roots>
         </data>
     </configuration>
