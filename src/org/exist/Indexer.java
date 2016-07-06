@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2015 The eXist Project
+ *  Copyright (C) 2001-2016 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -114,9 +114,11 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
     private String ignorePrefix = null;
     private ProgressIndicator progress;
 
-    private boolean suppressWSmixed = false;
+    protected boolean preserveWSmixed = false;
 
     protected int docSize = 0;
+
+    private enum ProcessTextParent { COMMENT, PI, CDATA_START, ELEMENT_START, ELEMENT_END};
 
     /*
      * used to record the number of children of an element during validation
@@ -173,9 +175,9 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
         }
         Boolean temp;
         if ((temp = (Boolean) config
-                .getProperty(PROPERTY_PRESERVE_WS_MIXED_CONTENT)) != null) {
-            suppressWSmixed = temp;
-        }
+	     .getProperty(PROPERTY_PRESERVE_WS_MIXED_CONTENT)) != null) {
+            preserveWSmixed = temp.booleanValue();
+	}
     }
 
     public void setValidating(final boolean validate) {
@@ -260,7 +262,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
             document.appendChild((NodeHandle)comment);
         } else {
             final ElementImpl last = stack.peek();
-            processText(last);
+            processText(last, ProcessTextParent.COMMENT);
             last.appendChildInternal(prevNode, comment);
             setPrevious(comment);
             if (!validate) {
@@ -313,66 +315,91 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
         //LOG.debug("elementCnt = " + childCnt.length);
     }
 
-    private void processText(final ElementImpl last) {
-        //keep for reference until sure that it's not required
-//        if (charBuf != null && charBuf.length() > 0) {
-//            // remove whitespace if the node has just a single text child,
-//            // keep whitespace for mixed content.
-//            final XMLString normalized;
-//            if ((charBuf.isWhitespaceOnly() && suppressWSmixed) || last.preserveSpace()) {
-//                normalized = charBuf;
-//            } else {
-//                if (last.getChildCount() == 0) {
-//                    normalized = charBuf.normalize(normalize);
-//                } else {
-//                    normalized = charBuf.isWhitespaceOnly() ? null : charBuf;
-//                }
-//            }
-//            if (normalized != null && normalized.length() > 0) {
-//                text.setData(normalized);
-//                text.setOwnerDocument(document);
-//                last.appendChildInternal(prevNode, text);
-//                if (!validate) storeText();
-//                setPrevious(text);
-//            }
-//            charBuf.reset();
-//        }
+    private void processText(ElementImpl last, ProcessTextParent ptp) {
+	// if (charBuf != null && charBuf.length() > 0) {
+        //    // remove whitespace if the node has just a single text child,
+        //    // keep whitespace for mixed content.
+	//     final XMLString normalized;
+	//     if ((charBuf.isWhitespaceOnly() && preserveWSmixed) || last.preserveSpace()) {
+	// 	normalized = charBuf;
+	//     } else {
+	// 	if (last.getChildCount() == 0) {
+        //            normalized = charBuf.normalize(normalize);
+	// 	} else {
+	// 	    normalized = charBuf.isWhitespaceOnly() ? null : charBuf;
+	// 	}
+	//     }
+	//     if (normalized != null && normalized.length() > 0) {
+	// 	text.setData(normalized);
+	// 	text.setOwnerDocument(document);
+	// 	last.appendChildInternal(prevNode, text);
+	// 	if (!validate) storeText();
+	// 	setPrevious(text);
+	//     }
+	//     charBuf.reset();
+	// }
 
         //from startElement method
-        if (charBuf != null && charBuf.length() > 0) {
-            XMLString normalized = null;
-            if (charBuf.isWhitespaceOnly()) {
+	if (charBuf != null && charBuf.length() > 0) {
+	    XMLString normalized = null;
+            switch (ptp) {
+                case COMMENT:
+                case PI:
+                case CDATA_START:
+                    normalized = charBuf;
+                    break;
+                default:
+	    if (charBuf.isWhitespaceOnly()) {
+		if (last.preserveSpace() || last.getChildCount() == 0) {
+		    normalized = charBuf;
+		} else if (preserveWSmixed) {
+		    if (!(last.getChildCount() == 0 && (normalize & XMLString.SUPPRESS_LEADING_WS) != 0)) {
+			normalized = charBuf;
+		    }
+                } else {
+                    normalized = charBuf.normalize(normalize);
+                }
+	    } else {
+		//normalized = charBuf;
                 if (last.preserveSpace()) {
                     normalized = charBuf;
-                } else if (suppressWSmixed) {
-                    if (!(last.getChildCount() == 0 && (normalize & XMLString.SUPPRESS_LEADING_WS) != 0)) {
+                } else if (last.getChildCount() == 0) {
+                    normalized = charBuf.normalize(normalize);
+                } else {
+                    // mixed element content: don't normalize the text node,
+                    // just check if there is any text at all
+                    if (preserveWSmixed) {
                         normalized = charBuf;
+                    } else {
+                        if ((normalize & XMLString.SUPPRESS_LEADING_WS) != 0) {
+                            normalized = charBuf.normalize(XMLString.SUPPRESS_LEADING_WS | XMLString.COLLAPSE_WS);
+                        } else if ((normalize & XMLString.SUPPRESS_TRAILING_WS) != 0) {
+                            normalized = charBuf.normalize(XMLString.SUPPRESS_TRAILING_WS | XMLString.COLLAPSE_WS);
+                        } else {
+                            //normalized = charBuf.normalize(XMLString.COLLAPSE_WS);
+                            normalized = charBuf.normalize(normalize);
+                        }
                     }
                 }
-            } else {
-                // mixed element content: don't normalize the text node,
-                // just check if there is any text at all
-                normalized = charBuf;
-            }
 
-            if (normalized != null) {
-                text.setData(normalized);
-                text.setOwnerDocument(document);
-                last.appendChildInternal(prevNode, text);
-                if (!validate) {
-                    storeText();
-                }
-                setPrevious(text);
             }
-            charBuf.reset();
         }
+	    if (normalized != null) {
+		text.setData(normalized);
+		text.setOwnerDocument(document);
+		last.appendChildInternal(prevNode, text);
+		if (!validate) storeText();
+		setPrevious(text);
+	    }
+	    charBuf.reset();
+	}
     }
 
     @Override
     public void endElement(final String namespace, final String name, final String qname) {
         final ElementImpl last = stack.peek();
         if (last.getNodeName().equals(qname)) {
-            processText(last);
+            processText(last, ProcessTextParent.ELEMENT_END);
             stack.pop();
             XMLString elemContent = null;
             if (!validate && RangeIndexSpec.hasQNameOrValueIndex(last.getIndexType())) {
@@ -459,7 +486,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
             document.appendChild((NodeHandle)pi);
         } else {
             final ElementImpl last = stack.peek();
-            processText(last);
+            processText(last, ProcessTextParent.PI);
             last.appendChildInternal(prevNode, pi);
             setPrevious(pi);
 
@@ -475,7 +502,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
     @Override
     public void startCDATA() {
         if (!stack.isEmpty()) {
-            processText(stack.peek());
+            processText(stack.peek(), ProcessTextParent.CDATA_START);
         }
         inCDATASection = true;
     }
@@ -529,9 +556,10 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
         int p = qname.indexOf(':');
         final String prefix = (p != Constants.STRING_NOT_FOUND) ? qname.substring(0, p) : "";
         final QName qn = broker.getBrokerPool().getSymbols().getQName(Node.ELEMENT_NODE, namespace, name, prefix);
+
         if (!stack.isEmpty()) {
             final ElementImpl last = stack.peek();
-            processText(last);
+            processText(last, ProcessTextParent.ELEMENT_START);
             try {
                 if (!usedElements.isEmpty()) {
                     node = usedElements.pop();

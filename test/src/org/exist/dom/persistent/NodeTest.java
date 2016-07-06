@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
+import org.exist.Indexer;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -42,11 +43,11 @@ public class NodeTest {
 	private static final String XML =
 		"<!-- doc starts here -->" +
         "<test xmlns:ns=\"http://foo.org\">" +
-		"	<a ns:a=\"1\" ns:b=\"m\">abc</a>" +
-		"	<b ns:a=\"2\">def</b>" +
-        "   <c>ghi</c>" +
-        "   <d>jkl</d>" +
-		"</test>";
+	"<a ns:a=\"1\" ns:b=\"m\">abc</a>" +
+	"<b ns:a=\"2\">def</b>" +
+        "<c>ghi</c>" +
+        "<d>jkl</d>" +
+	"</test>";
 	
 	private BrokerPool pool = null;
 	private Collection root = null;

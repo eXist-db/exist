@@ -153,7 +153,7 @@
     <test output="text">
         <task>Following axis test: node()</task>
         <code>count(doc("/db/axes-test/axes1.xml")//line/word[. = 'working']/following::node())</code>
-        <expected>9</expected>
+        <expected>17</expected>
     </test>
     <test output="text">
         <task>Nested following axis test 1</task>
@@ -285,8 +285,8 @@
     </test>
     <test output="text">
         <task>Preceding axis test: node()</task>
-        <code>count(doc("/db/axes-test/axes1.xml")//line/word[. = 'working']/following::node())</code>
-        <expected>9</expected>
+        <code>count(doc("/db/axes-test/axes1.xml")//line/word[. = 'working']/preceding::node())</code>
+        <expected>14</expected>
     </test>
     <test output="text">
         <task>Nested preceding axis test 1</task>

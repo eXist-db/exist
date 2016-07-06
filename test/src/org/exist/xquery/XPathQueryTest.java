@@ -515,13 +515,13 @@ public class XPathQueryTest {
         service.setProperty(OutputKeys.INDENT, "no");
 
         ResourceSet result = queryResource(service, "siblings.xml", "//a[preceding-sibling::*[1]/s = 'B']", 1);
-        assertXMLEqual("<a><s>Z</s><n>4</n></a>", result.getResource(0).getContent().toString());
+        assertXMLEqual("<a> <s>Z</s> <n>4</n> </a>", result.getResource(0).getContent().toString());
         result = queryResource(service, "siblings.xml", "//a[preceding-sibling::a[1]/s = 'B']", 1);
-        assertXMLEqual("<a><s>Z</s><n>4</n></a>", result.getResource(0).getContent().toString());
+        assertXMLEqual("<a> <s>Z</s> <n>4</n> </a>", result.getResource(0).getContent().toString());
         result = queryResource(service, "siblings.xml", "//a[preceding-sibling::*[2]/s = 'B']", 1);
-        assertXMLEqual("<a><s>C</s><n>5</n></a>", result.getResource(0).getContent().toString());
+        assertXMLEqual("<a> <s>C</s> <n>5</n> </a>", result.getResource(0).getContent().toString());
         result = queryResource(service, "siblings.xml", "//a[preceding-sibling::a[2]/s = 'B']", 1);
-        assertXMLEqual("<a><s>C</s><n>5</n></a>", result.getResource(0).getContent().toString());
+        assertXMLEqual("<a> <s>C</s> <n>5</n> </a>", result.getResource(0).getContent().toString());
 
         queryResource(service, "siblings.xml", "(<a/>, <b/>, <c/>)/following-sibling::*", 0);
     }
@@ -534,13 +534,13 @@ public class XPathQueryTest {
         service.setProperty(OutputKeys.INDENT, "no");
 
         ResourceSet result = queryResource(service, "siblings.xml", "//a[following-sibling::*[1]/s = 'B']", 1);
-        assertXMLEqual("<a><s>Z</s><n>2</n></a>", result.getResource(0).getContent().toString());
+        assertXMLEqual("<a> <s>Z</s> <n>2</n> </a>", result.getResource(0).getContent().toString());
         result = queryResource(service, "siblings.xml", "//a[following-sibling::a[1]/s = 'B']", 1);
-        assertXMLEqual("<a><s>Z</s><n>2</n></a>", result.getResource(0).getContent().toString());
+        assertXMLEqual("<a> <s>Z</s> <n>2</n> </a>", result.getResource(0).getContent().toString());
         result = queryResource(service, "siblings.xml", "//a[following-sibling::*[2]/s = 'B']", 1);
-        assertXMLEqual("<a><s>A</s><n>1</n></a>", result.getResource(0).getContent().toString());
+        assertXMLEqual("<a> <s>A</s> <n>1</n> </a>", result.getResource(0).getContent().toString());
         result = queryResource(service, "siblings.xml", "//a[following-sibling::a[2]/s = 'B']", 1);
-        assertXMLEqual("<a><s>A</s><n>1</n></a>", result.getResource(0).getContent().toString());
+        assertXMLEqual("<a> <s>A</s> <n>1</n> </a>", result.getResource(0).getContent().toString());
 
         queryResource(service, "siblings.xml", "(<a/>, <b/>, <c/>)/following-sibling::*", 0);
 
@@ -1634,7 +1634,7 @@ public class XPathQueryTest {
         System.out.println(item);
         assertXMLEqual("<text> </text>", item);
         item = result.getResource(1).getContent().toString();
-        assertXMLEqual("<text xml:space=\"default\"/>", item);
+        assertXMLEqual("<text xml:space=\"default\"> </text>", item);
     }
     
     @Test
