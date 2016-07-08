@@ -21,13 +21,28 @@
           <Arg>.*/[^/]*servlet-api-[^/]*\.jar$|.*/javax.servlet.jsp.jstl-.*\.jar$|.*/org.apache.taglibs.taglibs-standard-impl-.*\.jar$</Arg>
         </Call>
 
+        <!-- Add a customize step to the deployment lifecycle -->
+        <!-- uncomment and replace DebugBinding with your extended AppLifeCycle.Binding class
+        <Call name="insertLifeCycleNode">
+          <Arg>deployed</Arg>
+          <Arg>starting</Arg>
+          <Arg>customise</Arg>
+        </Call>
+        <Call name="addLifeCycleBinding">
+          <Arg>
+            <New class="org.eclipse.jetty.deploy.bindings.DebugBinding">
+              <Arg>customise</Arg>
+            </New>
+          </Arg>
+        </Call> -->
+
         <Call id="webappprovider" name="addAppProvider">
           <Arg>
             <New class="org.eclipse.jetty.deploy.providers.WebAppProvider">
               <Set name="monitoredDirName"><Property name="jetty.base" default="." />/<Property name="jetty.deploy.monitoredDir" deprecated="jetty.deploy.monitoredDirName" default="webapps"/></Set>
-              <Set name="defaultsDescriptor"><Property name="jetty.home" default="."/>/etc/webdefault.xml</Set>
-              <Set name="scanInterval">10</Set>
-              <Set name="extractWars">true</Set>
+              <Set name="defaultsDescriptor"><Property name="jetty.home" default="." />/etc/webdefault.xml</Set>
+              <Set name="scanInterval"><Property name="jetty.deploy.scanInterval" default="10"/></Set>
+              <Set name="extractWars"><Property name="jetty.deploy.extractWars" default="true"/></Set>
               <Set name="configurationManager">
                 <New class="org.eclipse.jetty.deploy.PropertiesConfigurationManager">
                   <!-- file of context configuration properties

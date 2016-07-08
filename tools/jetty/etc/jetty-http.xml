@@ -7,7 +7,7 @@
 <!-- This configuration must be used in conjunction with jetty.xml -->
 <!-- ============================================================= -->
 <Configure id="Server" class="org.eclipse.jetty.server.Server">
-  
+
   <!-- =========================================================== -->
   <!-- Add a HTTP Connector.                                       -->
   <!-- Configure an o.e.j.server.ServerConnector with a single     -->
@@ -28,7 +28,7 @@
           <Array type="org.eclipse.jetty.server.ConnectionFactory">
             <Item>
               <New class="org.eclipse.jetty.server.HttpConnectionFactory">
-                <Arg name="config"><Ref refid="httpConfig"/></Arg>
+                <Arg name="config"><Ref refid="httpConfig" /></Arg>
                 <Arg name="compliance"><Call class="org.eclipse.jetty.http.HttpCompliance" name="valueOf"><Arg><Property name="jetty.http.compliance" default="RFC7230"/></Arg></Call></Arg>
               </New>
             </Item>
@@ -43,5 +43,5 @@
       </New>
     </Arg>
   </Call>
-  
+
 </Configure>

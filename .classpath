@@ -81,11 +81,13 @@
     <classpathentry kind="lib" path="tools/jetty/lib/asm-5.0.1.jar"/>
     <classpathentry kind="lib" path="tools/jetty/lib/asm-commons-5.0.1.jar"/>
     <classpathentry kind="lib" path="tools/jetty/lib/javax.annotation-api-1.2.jar"/>
+	<classpathentry kind="lib" path="tools/jetty/lib/javax.transaction-api-1.2.jar"/>
     <classpathentry kind="lib" path="tools/jetty/lib/jetty-annotations-9.3.9.v20160517.jar"/>
     <classpathentry kind="lib" path="tools/jetty/lib/jetty-deploy-9.3.9.v20160517.jar"/>
 	<classpathentry kind="lib" path="tools/jetty/lib/jetty-http-9.3.9.v20160517.jar"/>
 	<classpathentry kind="lib" path="tools/jetty/lib/jetty-io-9.3.9.v20160517.jar"/>
     <classpathentry kind="lib" path="tools/jetty/lib/jetty-jaas-9.3.9.v20160517.jar"/>
+	<classpathentry kind="lib" path="tools/jetty/lib/jetty-jndi-9.3.9.v20160517.jar"/>
 	<classpathentry kind="lib" path="tools/jetty/lib/jetty-jmx-9.3.9.v20160517.jar"/>
 	<classpathentry kind="lib" path="tools/jetty/lib/jetty-plus-9.3.9.v20160517.jar"/>
 	<classpathentry kind="lib" path="tools/jetty/lib/jetty-security-9.3.9.v20160517.jar"/>

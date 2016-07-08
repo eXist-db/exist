@@ -10,16 +10,7 @@
     <!-- ======================================================== -->
     <Call class="java.lang.System" name="setProperty">
       <Arg>java.security.auth.login.config</Arg>
-      <Arg><Property name="jetty.base" default="." />/etc/login.conf</Arg>
-    </Call>
-  
-    <Call name="addBean">
-      <Arg>
-        <New id="jaasLoginService" class="org.eclipse.jetty.jaas.JAASLoginService">
-          <Set name="name">Test JAAS Realm</Set>
-          <Set name="LoginModuleName">JAASLoginService</Set>
-        </New>
-      </Arg>
+      <Arg><Property name="jetty.base" default="." />/<Property name="jetty.jaas.login.conf" deprecated="jaas.login.conf" default="etc/login.conf"/></Arg>
     </Call>
 
 </Configure>
