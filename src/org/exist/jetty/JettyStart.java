@@ -24,11 +24,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.LineNumberReader;
 import java.io.Reader;
-import java.net.SocketException;
+import java.net.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import javax.servlet.Servlet;
 
@@ -36,12 +37,9 @@ import net.jcip.annotations.GuardedBy;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import org.eclipse.jetty.server.Connector;
-import org.eclipse.jetty.server.Handler;
-import org.eclipse.jetty.server.NetworkConnector;
-import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.*;
 import org.eclipse.jetty.server.handler.ContextHandler;
-import org.eclipse.jetty.server.handler.HandlerCollection;
+import org.eclipse.jetty.server.handler.HandlerWrapper;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.MultiException;
@@ -254,18 +252,24 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
 			}
             
             //*************************************************************
+            final List<URI> serverUris = getSeverURIs(server);
+            if(!serverUris.isEmpty()) {
+                this.primaryPort = serverUris.get(0).getPort();
 
+            }
             logger.info("-----------------------------------------------------");
-            logger.info("Server has started on port {}. Configured contexts:", allPorts);
+            logger.info("Server has started, listening on:");
+            for(final URI serverUri : serverUris) {
+                logger.info("\t{}", serverUri.resolve("/"));
+            }
 
-            final HandlerCollection rootHandler = (HandlerCollection)server.getHandler();
-            final Handler[] handlers = rootHandler.getHandlers();
-            
+            logger.info("Configured contexts:");
+            final LinkedHashSet<Handler> handlers = getAllHandlers(server.getHandler());
             for (final Handler handler: handlers) {
                 
                 if (handler instanceof ContextHandler) {
                     final ContextHandler contextHandler = (ContextHandler) handler;
-                    logger.info("'{}'", contextHandler.getContextPath());
+                    logger.info("\t{}", contextHandler.getContextPath());
                 }
             	
                 //TODO: pluggable in future
@@ -281,7 +285,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
                             suffix = "/openid";
                         }
 
-                        logger.info("'{}'", contextHandler.getContextPath() + suffix);
+                        logger.info("\t{}", contextHandler.getContextPath() + suffix);
                     }
                 }
 
@@ -297,7 +301,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
                             suffix = "/oauth";
                         }
 
-                        logger.info("'{}'", contextHandler.getContextPath() + suffix);
+                        logger.info("\t{}", contextHandler.getContextPath() + suffix);
                     }
                 }
                 //*************************************************************
@@ -342,6 +346,81 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
             e.printStackTrace();
             setChanged();
             notifyObservers(SIGNAL_ERROR);
+        }
+    }
+
+    private LinkedHashSet<Handler> getAllHandlers(final Handler handler) {
+        if(handler instanceof HandlerWrapper) {
+            final HandlerWrapper handlerWrapper = (HandlerWrapper) handler;
+            final LinkedHashSet<Handler> handlers = new LinkedHashSet<>();
+            handlers.add(handlerWrapper);
+            if(handlerWrapper.getHandler() != null) {
+                handlers.addAll(getAllHandlers(handlerWrapper.getHandler()));
+            }
+            return handlers;
+
+        } else if(handler instanceof HandlerContainer) {
+            final HandlerContainer handlerContainer = (HandlerContainer) handler;
+            final LinkedHashSet<Handler> handlers = new LinkedHashSet<>();
+            handlers.add(handler);
+            for(final Handler childHandler : handlerContainer.getChildHandlers()) {
+                handlers.addAll(getAllHandlers(childHandler));
+            }
+            return handlers;
+
+        } else {
+            //assuming just Handler
+            final LinkedHashSet<Handler> handlers = new LinkedHashSet<>();
+            handlers.add(handler);
+            return handlers;
+        }
+    }
+
+    /**
+     * See {@link Server#getURI()}
+     */
+    private List<URI> getSeverURIs(final Server server) {
+        final ContextHandler context = server.getChildHandlerByClass(ContextHandler.class);
+        return Arrays.stream(server.getConnectors())
+                .filter(connector -> connector instanceof NetworkConnector)
+                .map(connector -> (NetworkConnector)connector)
+                .map(networkConnector -> getURI(networkConnector, context))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * See {@link Server#getURI()}
+     */
+    private URI getURI(final NetworkConnector networkConnector, final ContextHandler context) {
+        try {
+            final String protocol = networkConnector.getDefaultConnectionFactory().getProtocol();
+            final String scheme;
+            if (protocol.startsWith("SSL-") || protocol.equals("SSL")) {
+                scheme = "https";
+            } else {
+                scheme = "http";
+            }
+
+            String host = null;
+            if (context != null && context.getVirtualHosts() != null && context.getVirtualHosts().length > 0) {
+                host = context.getVirtualHosts()[0];
+            } else {
+                host = networkConnector.getHost();
+            }
+
+            if (host == null) {
+                host = InetAddress.getLocalHost().getHostAddress();
+            }
+
+            String path = context == null ? null : context.getContextPath();
+            if (path == null) {
+                path = "/";
+            }
+            return new URI(scheme, null, host, networkConnector.getLocalPort(), path, null, null);
+        }  catch(final UnknownHostException | URISyntaxException e) {
+            logger.warn(e);
+            return null;
         }
     }
 
