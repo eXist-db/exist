@@ -272,7 +272,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
                     logger.info("\t{}", contextHandler.getContextPath());
                 }
             	
-                //TODO: pluggable in future
+                //TODO(AR) openid and oauth servlet configs should be moved to the exist-webapp-context or into $EXIST_HOME/webapp/WEB-INF/web.xml
                 if (openid != null) {
                     if (handler instanceof ServletContextHandler) {
                         final ServletContextHandler contextHandler = (ServletContextHandler) handler;
