@@ -47,6 +47,7 @@ import org.eclipse.jetty.util.component.LifeCycle;
 import org.eclipse.jetty.xml.XmlConfiguration;
 
 import org.exist.SystemProperties;
+import org.exist.start.Main;
 import org.exist.storage.BrokerPool;
 import org.exist.util.ConfigurationHelper;
 import org.exist.util.FileUtils;
@@ -69,7 +70,6 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
     public static final String JETTY_HOME_PROP = "jetty.home";
     public static final String JETTY_BASE_PROP = "jetty.base";
 
-    private static final String ENABLED_JETTY_CONFIG = "enabled-jetty-config";
     private static final String JETTY_PROPETIES_FILENAME = "jetty.properties";
     private static final Logger logger = LogManager.getLogger(JettyStart.class);
 
@@ -106,7 +106,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
                     return jettyPath;
                 });
 
-        final Path standaloneFile = Paths.get(jettyProperty).resolve("etc").resolve("standalone.xml");
+        final Path standaloneFile = Paths.get(jettyProperty).resolve("etc").resolve(Main.STANDALONE_ENABLED_JETTY_CONFIGS);
         run(new String[] { standaloneFile.toAbsolutePath().toString() }, null);
     }
     
@@ -186,7 +186,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
 
         try {
             // load jetty configurations
-            final List<Path> configFiles = getEnabledConfigFiles(jettyConfig.getParent());
+            final List<Path> configFiles = getEnabledConfigFiles(jettyConfig);
             final List<Object> configuredObjects = new ArrayList<>();
             XmlConfiguration last = null;
             for(final Path confFile : configFiles) {
@@ -487,20 +487,19 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
         return configProperties;
     }
 
-    private List<Path> getEnabledConfigFiles(final Path configDir) throws IOException {
-        final Path enabledJettyConfig = configDir.resolve(ENABLED_JETTY_CONFIG);
-        if(Files.notExists(enabledJettyConfig)) {
-            throw new IOException("Cannot find config enabler: "  + enabledJettyConfig.toString());
+    private List<Path> getEnabledConfigFiles(final Path enabledJettyConfigs) throws IOException {
+        if(Files.notExists(enabledJettyConfigs)) {
+            throw new IOException("Cannot find config enabler: "  + enabledJettyConfigs.toString());
         } else {
             final List<Path> configFiles = new ArrayList<>();
-            try (final LineNumberReader reader = new LineNumberReader(Files.newBufferedReader(enabledJettyConfig))) {
+            try (final LineNumberReader reader = new LineNumberReader(Files.newBufferedReader(enabledJettyConfigs))) {
                 String line = null;
                 while ((line = reader.readLine()) != null) {
                     final String tl = line.trim();
                     if (tl.isEmpty() || tl.charAt(0) == '#') {
                         continue;
                     } else {
-                        final Path configFile = configDir.resolve(tl);
+                        final Path configFile = enabledJettyConfigs.getParent().resolve(tl);
                         if (Files.notExists(configFile)) {
                             throw new IOException("Cannot find enabled config: " + configFile.toString());
                         } else {
