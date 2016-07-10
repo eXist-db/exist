@@ -85,6 +85,7 @@ import java.text.NumberFormat;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * This class controls all available instances of the database.
@@ -457,8 +458,7 @@ public class BrokerPool implements Database {
         OPERATIONAL
     }
 
-    // volatile so this doesn't get optimized away or into a CPU register in some thread
-    private volatile State status = State.INITIALIZING;
+    private final AtomicReference<State> status = new AtomicReference<>(State.SHUTDOWN);
 
     /**
      * The number of brokers for the database instance
@@ -797,7 +797,9 @@ public class BrokerPool implements Database {
         }
 
         //Flag to indicate that we are initializing
-        status = State.INITIALIZING;
+        if(!status.compareAndSet(State.SHUTDOWN, State.INITIALIZING)) {
+            throw new IllegalStateException("Database is already initialized");
+        }
 
         // Don't allow two threads to do a race on this. May be irrelevant as this is only called
         // from the constructor right now.
@@ -943,7 +945,7 @@ public class BrokerPool implements Database {
                             // WM: attention: a small change in the sequence of calls can break
                             // either normal startup or recovery.
 
-                            status = State.OPERATIONAL;
+                            status.set(State.OPERATIONAL);
 
                             statusReporter.setStatus(SIGNAL_READINESS);
 
@@ -1199,7 +1201,7 @@ public class BrokerPool implements Database {
      */
     //TODO : let's be positive and rename it as isInitialized ? 
     public boolean isInitializing() {
-        return status == State.INITIALIZING;
+        return status.get() == State.INITIALIZING;
     }
 
     /**
@@ -1869,7 +1871,7 @@ public class BrokerPool implements Database {
      */
     public void triggerSync(final Sync syncEvent) {
         //TOUNDERSTAND (pb) : synchronized, so... "schedules" or, rather, "executes" ? "schedules" (WM)
-        if(status == State.SHUTDOWN) {
+        if(status.get() == State.SHUTDOWN) {
             return;
         }
         LOG.debug("Triggering sync: " + syncEvent);
@@ -1921,7 +1923,7 @@ public class BrokerPool implements Database {
     }
 
     public boolean isShuttingDown() {
-        return status == State.SHUTDOWN;
+        return status.get() == State.SHUTDOWN;
     }
 
     /**
@@ -1930,14 +1932,12 @@ public class BrokerPool implements Database {
      * @param killed <code>true</code> when the JVM is (cleanly) exiting
      */
     public void shutdown(final boolean killed) {
-        if(status == State.SHUTDOWN) {
+        if(!status.compareAndSet(State.OPERATIONAL, State.SHUTDOWN)) {
             // we are already shut down
             return;
         }
 
         LOG.info("Database is shutting down ...");
-
-        status = State.SHUTDOWN;
 
         processMonitor.stopRunningJobs();
 
