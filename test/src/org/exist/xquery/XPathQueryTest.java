@@ -1,17 +1,13 @@
 package org.exist.xquery;
 
-import org.exist.jetty.JettyStart;
-import org.exist.TestUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
-import org.exist.xmldb.CollectionImpl;
-import org.exist.xmldb.DatabaseInstanceManager;
+import org.exist.test.ExistWebServer;
 import org.exist.xmldb.XPathQueryServiceImpl;
 import org.exist.xmldb.XmldbURI;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.runner.JUnitCore;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
@@ -28,6 +24,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
 import java.io.*;
+import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -37,9 +34,31 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-
+@RunWith(Parameterized.class)
 public class XPathQueryTest {
-    
+
+    @ClassRule
+    public static final ExistWebServer existWebServer = new ExistWebServer(true, true);
+    private static final String PORT_PLACEHOLDER = "${PORT}";
+
+    @Parameterized.Parameters(name = "{0}")
+    public static java.util.Collection<Object[]> data() {
+        return Arrays.asList(new Object[][] {
+                { "local", XmldbURI.LOCAL_DB },
+                { "remote", "xmldb:exist://localhost:" + PORT_PLACEHOLDER + "/xmlrpc" +  XmldbURI.ROOT_COLLECTION}
+        });
+    }
+
+    @Parameterized.Parameter
+    public String apiName;
+
+    @Parameterized.Parameter(value = 1)
+    public String baseUri;
+
+    private final String getBaseUri() {
+        return baseUri.replace(PORT_PLACEHOLDER, Integer.toString(existWebServer.getPort()));
+    }
+
     private final static String nested =
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
             + "<test><c></c><b><c><b></b></c></b><b></b><c></c></test>";
@@ -158,22 +177,10 @@ public class XPathQueryTest {
     private final static String xpointerElementName =
             "<test><xpointer/></test>";
     
-    private static String uri = XmldbURI.LOCAL_DB;
-
-    public static void setURI(String collectionURI) {
-        uri = collectionURI;
-    }
-    
-    private static JettyStart server = null;
-    
     private Collection testCollection;
     
     @Before
     public void setUp() throws Exception {
-        if (uri.startsWith("xmldb:exist://localhost")) {
-            initServer();
-        }
-        
         // initialize driver
         Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
         Database database = (Database) cl.newInstance();
@@ -182,7 +189,7 @@ public class XPathQueryTest {
 
         Collection root =
                 DatabaseManager.getCollection(
-                uri,
+                getBaseUri(),
                 "admin",
                 "");
         CollectionManagementService service =
@@ -191,25 +198,6 @@ public class XPathQueryTest {
                 "1.0");
         testCollection = service.createCollection("test");
         assertNotNull(testCollection);
-    }
-    
-	private void initServer() {
-        if (server == null) {
-            server = new JettyStart();
-            server.run();
-        }
-    }
-    
-    @After
-    public void tearDown() throws Exception {
-        TestUtils.cleanupDB();
-        if (!((CollectionImpl) testCollection).isRemoteCollection()) {
-            DatabaseInstanceManager dim =
-                    (DatabaseInstanceManager) testCollection.getService(
-                    "DatabaseInstanceManager", "1.0");
-            dim.shutdown();
-        }
-        testCollection = null;
     }
 
     @Test
@@ -1425,7 +1413,7 @@ public class XPathQueryTest {
     
     @Test
     public void idsOnEmptyCollection() throws XMLDBException {
-        final Collection root = DatabaseManager.getCollection(uri, "admin", "");
+        final Collection root = DatabaseManager.getCollection(getBaseUri(), "admin", "");
         final CollectionManagementService service = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
 		final Collection emptyCollection = service.createCollection("empty");
         final XQueryService queryService = (XQueryService) emptyCollection.getService("XPathQueryService", "1.0");

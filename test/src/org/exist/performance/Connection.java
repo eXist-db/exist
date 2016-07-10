@@ -30,7 +30,6 @@ import org.xmldb.api.DatabaseManager;
 public class Connection {
 
     private String id;
-    // jetty.port.jetty
     private String base = "xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/exist/xmlrpc";
     private String user = "guest";
     private String password = "guest";

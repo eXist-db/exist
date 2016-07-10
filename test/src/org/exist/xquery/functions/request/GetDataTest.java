@@ -40,8 +40,7 @@ public class GetDataTest extends RESTTest {
 
     @BeforeClass
     public static void beforeClass() throws XMLDBException {
-	// jetty.port.standalone
-        root = DatabaseManager.getCollection("xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/xmlrpc/db", "admin", "");
+        root = DatabaseManager.getCollection("xmldb:exist://localhost:" + existWebServer.getPort() + "/xmlrpc/db", "admin", "");
         BinaryResource res = (BinaryResource)root.createResource(XQUERY_FILENAME, "BinaryResource");
         ((EXistResource) res).setMimeType("application/xquery");
         res.setContent(XQUERY);
@@ -58,7 +57,7 @@ public class GetDataTest extends RESTTest {
 
     @Test
     public void retrieveEmpty() {
-        PostMethod post = new PostMethod(COLLECTION_ROOT_URL + "/" + XQUERY_FILENAME);
+        PostMethod post = new PostMethod(getCollectionRootUri() + "/" + XQUERY_FILENAME);
 
         post.setRequestHeader("Content-Type", "application/octet-stream");
 
@@ -67,7 +66,7 @@ public class GetDataTest extends RESTTest {
     
     @Test
     public void retrieveBinary() {
-        PostMethod post = new PostMethod(COLLECTION_ROOT_URL + "/" + XQUERY_FILENAME);
+        PostMethod post = new PostMethod(getCollectionRootUri() + "/" + XQUERY_FILENAME);
 
         final String testData = "12345";
 
@@ -79,7 +78,7 @@ public class GetDataTest extends RESTTest {
 
     @Test
     public void retrieveXml() {
-        PostMethod post = new PostMethod(COLLECTION_ROOT_URL + "/" + XQUERY_FILENAME);
+        PostMethod post = new PostMethod(getCollectionRootUri() + "/" + XQUERY_FILENAME);
 
         final String testData = "<a><b><c>hello</c></b></a>";
 
@@ -91,7 +90,7 @@ public class GetDataTest extends RESTTest {
 
     @Test
     public void retrieveMalformedXmlFallbackToString() {
-        PostMethod post = new PostMethod(COLLECTION_ROOT_URL + "/" + XQUERY_FILENAME);
+        PostMethod post = new PostMethod(getCollectionRootUri() + "/" + XQUERY_FILENAME);
 
         final String testData = "<a><b></a>";
 
@@ -103,7 +102,7 @@ public class GetDataTest extends RESTTest {
 
     @Test
     public void retrieveString() {
-        PostMethod post = new PostMethod(COLLECTION_ROOT_URL + "/" + XQUERY_FILENAME);
+        PostMethod post = new PostMethod(getCollectionRootUri() + "/" + XQUERY_FILENAME);
 
         final String testData = "12345";
 

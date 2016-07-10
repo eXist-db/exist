@@ -1,12 +1,9 @@
 package org.exist.xmlrpc;
 
-import org.exist.jetty.JettyStart;
 import org.exist.TestDataGenerator;
+import org.exist.test.ExistWebServer;
 import org.exist.xmldb.IndexQueryService;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.*;
 import org.xmldb.api.modules.CollectionManagementService;
@@ -21,6 +18,9 @@ import java.util.concurrent.TimeUnit;
 /**
  */
 public class QuerySessionTest {
+
+    @ClassRule
+    public final static ExistWebServer existWebServer = new ExistWebServer(true);
 
     private final static String generateXQ = "<book id=\"{$filename}\" n=\"{$count}\">"
 			+ "   <chapter xml:id=\"chapter{$count}\">"
@@ -50,20 +50,20 @@ public class QuerySessionTest {
     private final static String QUERY =
             "declare variable $n external;" +
             "//chapter[@xml:id = $n]";
-    // jetty.port.standalone
-    private final static String baseURI = "xmldb:exist://localhost:" + System.getProperty("jetty.port", "8088") + "/xmlrpc";
+
+    private static String getBaseUri() {
+        return "xmldb:exist://localhost:" + existWebServer.getPort() + "/xmlrpc";
+    }
 
     private final static int N_THREADS = 10;
 
     private final static int DOC_COUNT = 100;
-    
-    private static JettyStart server;
 
     private Random random = new Random();
 
     @Test (expected=XMLDBException.class)
     public void manualRelease() throws XMLDBException {
-        Collection test = DatabaseManager.getCollection(baseURI + "/db/rpctest", "admin", "");
+        Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/rpctest", "admin", "");
         XQueryService service = (XQueryService) test.getService("XQueryService", "1.0");
         ResourceSet result = service.query("//chapter[@xml:id = 'chapter1']");
         Assert.assertEquals(1, result.getSize());
@@ -100,9 +100,10 @@ public class QuerySessionTest {
             this.query = query;
         }
 
+        @Override
         public void run() {
             try {
-                Collection test = DatabaseManager.getCollection(baseURI + "/db/rpctest", "admin", "");
+                Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/rpctest", "admin", "");
                 XQueryService service = (XQueryService) test.getService("XQueryService", "1.0");
                 int n = random.nextInt(DOC_COUNT) + 1;
                 service.declareVariable("n", "chapter" + n);
@@ -117,16 +118,12 @@ public class QuerySessionTest {
 
 	@BeforeClass
     public static void startServer() throws Exception {
-        
-        server = new JettyStart();
-        server.run();
-
         // initialize XML:DB driver
         Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
         Database database = (Database) cl.newInstance();
         DatabaseManager.registerDatabase(database);
 
-        Collection root = DatabaseManager.getCollection(baseURI + "/db", "admin", "");
+        Collection root = DatabaseManager.getCollection(getBaseUri() + "/db", "admin", "");
         
         CollectionManagementService mgmt =
                 (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
@@ -150,21 +147,18 @@ public class QuerySessionTest {
 
     @AfterClass
     public static void stopServer() {
-
         try {
-            Collection root = DatabaseManager.getCollection(baseURI + "/db", "admin", "");
+            Collection root = DatabaseManager.getCollection(getBaseUri() + "/db", "admin", "");
             CollectionManagementService mgmt =
                 (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
             mgmt.removeCollection("rpctest");
 
-            Collection config = DatabaseManager.getCollection(baseURI + "/db/system/config/db", "admin", "");
+            Collection config = DatabaseManager.getCollection(getBaseUri() + "/db/system/config/db", "admin", "");
             mgmt =
                 (CollectionManagementService) config.getService("CollectionManagementService", "1.0");
             mgmt.removeCollection("rpctest");
         } catch (XMLDBException e) {
             e.printStackTrace();
         }
-        server.shutdown();
-        server = null;
     }
 }

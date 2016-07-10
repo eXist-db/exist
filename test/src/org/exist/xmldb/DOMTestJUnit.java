@@ -24,23 +24,22 @@ import static org.junit.Assert.fail;
  * @author Pierrick Brihaye <pierrick.brihaye@free.fr>
  */
 public class DOMTestJUnit extends RemoteDBTest {
-	
-    // jetty.port.standalone
-	private static String baseURI = "xmldb:exist://localhost:" + System.getProperty("jetty.port", "8088") + "/xmlrpc" + XmldbURI.ROOT_COLLECTION;
 	private static String name = "test.xml";
 	private Collection rootColl;
 	private Database database;
 
+	private static String getBaseURI() {
+		return getUri() + XmldbURI.ROOT_COLLECTION;
+	}
+
 	@Before
 	public void setUp() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
-		//Don't worry about closing the server : the shutdownDB hook will do the job
-		initServer();
 		System.setProperty("exist.initdb", "true");
 		Class<?> dbc = Class.forName(DB_DRIVER);
 		database = (Database) dbc.newInstance();
 		DatabaseManager.registerDatabase(database);
 
-		rootColl = DatabaseManager.getCollection(baseURI, "admin", "");
+		rootColl = DatabaseManager.getCollection(getBaseURI(), "admin", "");
 		assertNotNull(rootColl);
 
 		XMLResource r = (XMLResource)rootColl.createResource(name, XMLResource.RESOURCE_TYPE);

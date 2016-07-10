@@ -1,35 +1,22 @@
 package org.exist.http;
 
 import org.apache.commons.httpclient.HttpClient;
-import org.exist.jetty.JettyStart;
+import org.exist.test.ExistWebServer;
 import org.exist.xmldb.XmldbURI;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-
-import static org.junit.Assert.fail;
+import org.junit.ClassRule;
 
 public abstract class RESTTest {
 
-    // jetty.port.standalone
-    protected final static String REST_URL = "http://localhost:" + System.getProperty("jetty.port");
-    protected final static String COLLECTION_ROOT_URL = REST_URL + XmldbURI.ROOT_COLLECTION;
-    protected static JettyStart server = null;
+    @ClassRule
+    public static final ExistWebServer existWebServer = new ExistWebServer(true);
+
+    protected static String getRestUrl() {
+        return "http://localhost:" + existWebServer.getPort();
+    }
+
+    protected static String getCollectionRootUri() {
+        return getRestUrl() + XmldbURI.ROOT_COLLECTION;
+    }
+
     protected static HttpClient client = new HttpClient();
-
-    @BeforeClass
-    public static void startupServer() {
-        try {
-            if(server == null) {
-                server = new JettyStart();
-                server.run();
-            }
-        } catch(Exception e) {
-            fail(e.getMessage());
-        }
-    }
-
-    @AfterClass
-    public static void shutdownServer() {
-        server.shutdown();
-    }
 }

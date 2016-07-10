@@ -45,9 +45,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 public class RemoteQueryTest extends RemoteDBTest {
-    // jetty.port.standalone
-	private static String uri = "xmldb:exist://localhost:" + System.getProperty("jetty.port", "8088") + "/xmlrpc" + XmldbURI.ROOT_COLLECTION;
-
 	private Collection testCollection;
 	private Collection xmlrpcCollection;
 
@@ -91,10 +88,6 @@ public class RemoteQueryTest extends RemoteDBTest {
 
 	@Before
 	public void setUp() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
-		if (uri.startsWith("xmldb:exist://localhost")) {
-            initServer();
-        }
-
         // initialize driver
         Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
         Database database = (Database) cl.newInstance();
@@ -103,7 +96,7 @@ public class RemoteQueryTest extends RemoteDBTest {
 
         Collection root =
             DatabaseManager.getCollection(
-                    uri,
+                    getUri() + XmldbURI.ROOT_COLLECTION,
                     "admin",
                     null);
         CollectionManagementService service =

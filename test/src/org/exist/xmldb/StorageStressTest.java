@@ -21,9 +21,10 @@
  */
 package org.exist.xmldb;
 
-import org.exist.jetty.JettyStart;
+import org.exist.test.ExistWebServer;
 import org.exist.xmldb.concurrent.DBUtils;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -39,11 +40,10 @@ import java.io.File;
  */
 public class StorageStressTest {
 
-	private static JettyStart server = null;
-	//TODO : why a remote test ?
-    // jetty.port.standalone
-	protected final static String URI = "xmldb:exist://localhost:" + System.getProperty("jetty.port", "8088") + "/xmlrpc";
-	//protected final static String URI = "xmldb:exist://";    
+	@ClassRule
+	public static final ExistWebServer existWebServer = new ExistWebServer(true);
+
+	//protected final static String getUri = "xmldb:exist://";
     public final static String DB_DRIVER = "org.exist.xmldb.DatabaseImpl";
     private final static String COLLECTION_NAME = "unit-testing-collection";
     
@@ -56,6 +56,10 @@ public class StorageStressTest {
         "</collection>";
     
     private Collection collection = null;
+
+	protected static String getUri() {
+		return "xmldb:exist://localhost:" + existWebServer.getPort() + "/xmlrpc";
+	}
 
 	@Test
     public void store() throws Exception {
@@ -71,17 +75,8 @@ public class StorageStressTest {
 
 	@Before
     public void setUp() throws ClassNotFoundException, InstantiationException, XMLDBException, IllegalAccessException {
-    	//Don't worry about closing the server : the shutdownDB hook will do the job
-    	initServer();
         setUpRemoteDatabase();
     }
-    
-	private void initServer() {
-		if (server == null) {
-			server = new JettyStart();
-			server.run();
-		}
-	}    
     
     protected void setUpRemoteDatabase() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
 		Class<?> cl = Class.forName(DB_DRIVER);
@@ -89,7 +84,7 @@ public class StorageStressTest {
 		database.setProperty("create-database", "true");
 		DatabaseManager.registerDatabase(database);
 
-		Collection rootCollection = DatabaseManager.getCollection(URI + XmldbURI.ROOT_COLLECTION, "admin", "");
+		Collection rootCollection = DatabaseManager.getCollection(getUri() + XmldbURI.ROOT_COLLECTION, "admin", "");
 
 		Collection childCollection = rootCollection.getChildCollection(COLLECTION_NAME);
 		if (childCollection == null) {

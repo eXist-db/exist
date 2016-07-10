@@ -27,7 +27,7 @@ import org.exist.xmldb.XmldbURI;
  */
 public class TestXPathOpOrSpecialCase extends Assert
 {
-	/** The local database URI. */
+	/** The local database getUri. */
 	private static final String uri = XmldbURI.LOCAL_DB;
 	/** The test Jetty server. */
 	private JettyStart server = null;

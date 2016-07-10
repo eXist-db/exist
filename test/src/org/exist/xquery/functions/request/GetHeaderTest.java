@@ -7,7 +7,6 @@ import static org.junit.Assert.fail;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.methods.GetMethod;
@@ -44,7 +43,7 @@ public class GetHeaderTest extends RESTTest {
 	}
 
 	private void testGetHeader(String headerValue) {
-		final GetMethod get = new GetMethod(COLLECTION_ROOT_URL);
+		final GetMethod get = new GetMethod(getCollectionRootUri());
 
 		final NameValuePair qsParams[] = {
 				new NameValuePair("_query", xquery),

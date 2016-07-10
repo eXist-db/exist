@@ -64,7 +64,7 @@ public abstract class ConcurrentTestBase {
     protected volatile boolean failed = false;
 
     /**
-     * @param uri the XMLDB URI of the root collection.
+     * @param uri the XMLDB getUri of the root collection.
      * @param testCollection the name of the collection that will be created for the test.
      */
     public ConcurrentTestBase(String uri, String testCollection) {

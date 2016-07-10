@@ -25,9 +25,11 @@ import java.util.Arrays;
 import org.exist.jetty.JettyStart;
 import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.internal.aider.UserAider;
+import org.exist.test.ExistWebServer;
 import org.exist.xmldb.UserManagementService;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
@@ -47,13 +49,15 @@ import org.xmldb.api.modules.XMLResource;
 @RunWith(Parameterized.class)
 public class XmldbApiSecurityTest extends AbstractApiSecurityTest {
 
-    private static JettyStart server;
+    @ClassRule
+    public static final ExistWebServer existWebServer = new ExistWebServer(true);
+    private static final String PORT_PLACEHOLDER = "${PORT}";
 
     @Parameters(name = "{0}")
     public static java.util.Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
             { "local", "xmldb:exist://" },
-            { "remote", "xmldb:exist://localhost:" + System.getProperty("jetty.port", "8088") + "/xmlrpc" }
+            { "remote", "xmldb:exist://localhost:" + PORT_PLACEHOLDER + "/xmlrpc" }
         });
     };
     
@@ -62,14 +66,17 @@ public class XmldbApiSecurityTest extends AbstractApiSecurityTest {
     
     @Parameter(value = 1)
     public String baseUri;
-    
-    
+
+    private final String getBaseUri() {
+        return baseUri.replace(PORT_PLACEHOLDER, Integer.toString(existWebServer.getPort()));
+    }
+
     @Override
     protected void createCol(final String collectionName, final String uid, final String pwd) throws ApiException {
         
         Collection col = null;
         try {
-            col = DatabaseManager.getCollection(baseUri + "/db", uid, pwd);
+            col = DatabaseManager.getCollection(getBaseUri() + "/db", uid, pwd);
             CollectionManagementService cms = (CollectionManagementService)col.getService("CollectionManagementService", "1.0");
             cms.createCollection(collectionName);
         } catch(final XMLDBException xmldbe) {
@@ -90,7 +97,7 @@ public class XmldbApiSecurityTest extends AbstractApiSecurityTest {
         
         Collection col = null;
         try {
-            col = DatabaseManager.getCollection(baseUri + "/db", uid, pwd);
+            col = DatabaseManager.getCollection(getBaseUri() + "/db", uid, pwd);
             final Collection child = col.getChildCollection(collectionName);
             if(child != null) {
                 child.close();
@@ -115,7 +122,7 @@ public class XmldbApiSecurityTest extends AbstractApiSecurityTest {
         
         Collection col = null;
         try {
-            col = DatabaseManager.getCollection(baseUri + collectionUri, uid, pwd);
+            col = DatabaseManager.getCollection(getBaseUri() + collectionUri, uid, pwd);
             final UserManagementService ums = (UserManagementService) col.getService("UserManagementService", "1.0");
             
             ums.chown(ums.getAccount(owner_uid), group_gid);
@@ -137,7 +144,7 @@ public class XmldbApiSecurityTest extends AbstractApiSecurityTest {
         
         Collection col = null;
         try {
-            col = DatabaseManager.getCollection(baseUri + collectionUri, uid, pwd);
+            col = DatabaseManager.getCollection(getBaseUri() + collectionUri, uid, pwd);
             final UserManagementService ums = (UserManagementService) col.getService("UserManagementService", "1.0");
 
             ums.chmod(mode);
@@ -159,7 +166,7 @@ public class XmldbApiSecurityTest extends AbstractApiSecurityTest {
         
         Collection col = null;
         try {
-            col = DatabaseManager.getCollection(baseUri + getCollectionUri(resourceUri), uid, pwd);
+            col = DatabaseManager.getCollection(getBaseUri() + getCollectionUri(resourceUri), uid, pwd);
             
             final Resource resource = col.getResource(getResourceName(resourceUri));
             final UserManagementService ums = (UserManagementService) col.getService("UserManagementService", "1.0");
@@ -183,7 +190,7 @@ public class XmldbApiSecurityTest extends AbstractApiSecurityTest {
         
         Collection col = null;
         try {
-            col = DatabaseManager.getCollection(baseUri + getCollectionUri(resourceUri), uid, pwd);
+            col = DatabaseManager.getCollection(getBaseUri() + getCollectionUri(resourceUri), uid, pwd);
             
             final Resource resource = col.getResource(getResourceName(resourceUri));
             final UserManagementService ums = (UserManagementService) col.getService("UserManagementService", "1.0");
@@ -206,7 +213,7 @@ public class XmldbApiSecurityTest extends AbstractApiSecurityTest {
         
         Collection col = null;
         try {
-            col = DatabaseManager.getCollection(baseUri + getCollectionUri(resourceUri), uid, pwd);
+            col = DatabaseManager.getCollection(getBaseUri() + getCollectionUri(resourceUri), uid, pwd);
             final Resource resource = col.getResource(getResourceName(resourceUri));
             return (String)resource.getContent();
         } catch(final XMLDBException xmldbe) {
@@ -226,7 +233,7 @@ public class XmldbApiSecurityTest extends AbstractApiSecurityTest {
     protected void removeAccount(final String account_uid, final String uid, final String pwd) throws ApiException {
         Collection col = null;
         try {
-            col = DatabaseManager.getCollection(baseUri + "/db", uid, pwd);
+            col = DatabaseManager.getCollection(getBaseUri() + "/db", uid, pwd);
             final UserManagementService ums = (UserManagementService) col.getService("UserManagementService", "1.0");
 
             final Account acct = ums.getAccount(account_uid);
@@ -250,7 +257,7 @@ public class XmldbApiSecurityTest extends AbstractApiSecurityTest {
     protected void removeGroup(String group_uid, String uid, String pwd) throws ApiException {
         Collection col = null;
         try {
-            col = DatabaseManager.getCollection(baseUri + "/db", uid, pwd);
+            col = DatabaseManager.getCollection(getBaseUri() + "/db", uid, pwd);
             final UserManagementService ums = (UserManagementService) col.getService("UserManagementService", "1.0");
 
             final Group grp = ums.getGroup(group_uid);
@@ -274,7 +281,7 @@ public class XmldbApiSecurityTest extends AbstractApiSecurityTest {
     protected void createAccount(String account_uid, String account_pwd, String group_uid, String uid, String pwd) throws ApiException {
         Collection col = null;
         try {
-            col = DatabaseManager.getCollection(baseUri + "/db", uid, pwd);
+            col = DatabaseManager.getCollection(getBaseUri() + "/db", uid, pwd);
             final UserManagementService ums = (UserManagementService) col.getService("UserManagementService", "1.0");
 
             final Group group = ums.getGroup(group_uid);
@@ -300,7 +307,7 @@ public class XmldbApiSecurityTest extends AbstractApiSecurityTest {
     protected void createGroup(String group_uid, String uid, String pwd) throws ApiException {
         Collection col = null;
         try {
-            col = DatabaseManager.getCollection(baseUri + "/db", uid, pwd);
+            col = DatabaseManager.getCollection(getBaseUri() + "/db", uid, pwd);
             final UserManagementService ums = (UserManagementService) col.getService("UserManagementService", "1.0");
 
             Group group = new GroupAider("exist", group_uid);
@@ -322,7 +329,7 @@ public class XmldbApiSecurityTest extends AbstractApiSecurityTest {
     protected void createXmlResource(String resourceUri, String content, String uid, String pwd) throws ApiException {
         Collection col = null;
         try {
-            col = DatabaseManager.getCollection(baseUri + getCollectionUri(resourceUri), uid, pwd);
+            col = DatabaseManager.getCollection(getBaseUri() + getCollectionUri(resourceUri), uid, pwd);
             Resource resource = col.createResource(getResourceName(resourceUri), XMLResource.RESOURCE_TYPE);
             resource.setContent(content);
             col.storeResource(resource);
@@ -343,7 +350,7 @@ public class XmldbApiSecurityTest extends AbstractApiSecurityTest {
     protected void createBinResource(String resourceUri, byte[] content, String uid, String pwd) throws ApiException {
         Collection col = null;
         try {
-            col = DatabaseManager.getCollection(baseUri + getCollectionUri(resourceUri), uid, pwd);
+            col = DatabaseManager.getCollection(getBaseUri() + getCollectionUri(resourceUri), uid, pwd);
             Resource resource = col.createResource(getResourceName(resourceUri), BinaryResource.RESOURCE_TYPE);
             resource.setContent(content);
             col.storeResource(resource);
@@ -358,32 +365,5 @@ public class XmldbApiSecurityTest extends AbstractApiSecurityTest {
                 }
             }
         }
-    }
-    
-    @BeforeClass
-    public static void startServer() {
-//            Class<?> cl = Class.forName(DB_DRIVER);
-//            Database database = (Database) cl.newInstance();
-//            database.setProperty("create-database", "true");
-//            DatabaseManager.registerDatabase(database);
-//            Collection root = DatabaseManager.getCollection("xmldb:exist:///db", "admin", "");
-//            assertNotNull(root);
-
-            server = new JettyStart();
-            server.run();
-    }
-
-    @AfterClass
-    public static void stopServer() {
-//        try {
-//         Collection root = DatabaseManager.getCollection("xmldb:exist:///db", "admin", "");
-//            DatabaseInstanceManager mgr =
-//                (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
-//            mgr.shutdownDB();
-//        } catch (XMLDBException e) {
-//            e.printStackTrace();
-//        }
-        server.shutdown();
-        server = null;
     }
 }
