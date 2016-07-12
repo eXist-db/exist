@@ -164,6 +164,7 @@
             <test fork="yes" name="org.exist.collections.triggers.AllTriggerTests" todir="${junit.reports.dat}"/>
             <test fork="yes" name="org.exist.collections.AllCollectionTests" todir="${junit.reports.dat}"/>
             <test fork="yes" name="org.exist.security.XMLDBSecurityTest" todir="${junit.reports.dat}"/>
+            <test fork="yes" name="org.exist.security.XmldbApiSecurityTest" todir="${junit.reports.dat}"/>
             <test fork="yes" name="org.exist.security.SecurityManagerRoundtripTest" todir="${junit.reports.dat}"/>
             <test fork="yes" name="org.exist.storage.NativeBrokerTest" todir="${junit.reports.dat}"/>
 	    <test fork="yes" name="org.exist.AllIndexerTests" todir="${junit.reports.dat}"/>
@@ -326,7 +327,7 @@
             <test fork="yes" name="org.exist.xmlrpc.AllXmlRpcTests" todir="${junit.reports.dat}"/>
 
             <test fork="yes" name="org.exist.xmldb.XmldbRemoteTests" todir="${junit.reports.dat}"/>
-            <test fork="yes" name="org.exist.xquery.XqueryRemoteTests" todir="${junit.reports.dat}"/>
+            <test fork="yes" name="org.exist.xquery.XPathQueryTest" todir="${junit.reports.dat}"/>
             <test fork="yes" name="org.exist.http.RESTServiceTest" todir="${junit.reports.dat}"/>
             <test fork="yes" name="org.exist.storage.XIncludeSerializerTest" todir="${junit.reports.dat}"/>
         </junit>

@@ -44,8 +44,6 @@ public class RemoteDatabaseImplTest extends RemoteDBTest {
 
     @Before
 	public void setUp() throws ClassNotFoundException, InstantiationException, XMLDBException, IllegalAccessException {
-        //Don't worry about closing the server : the shutdownDB hook will do the job
-        initServer();
         setUpRemoteDatabase();
 	}    
 
@@ -55,7 +53,7 @@ public class RemoteDatabaseImplTest extends RemoteDBTest {
         Database database = (Database) cl.newInstance();
         DatabaseManager.registerDatabase(database);
 
-        Collection rootCollection = DatabaseManager.getCollection(URI + XmldbURI.ROOT_COLLECTION, "admin", "");
+        Collection rootCollection = DatabaseManager.getCollection(getUri() + XmldbURI.ROOT_COLLECTION, "admin", "");
 
         CollectionManagementService cms = (CollectionManagementService) rootCollection.getService("CollectionManagementService", "1.0");
         Collection adminCollection = cms.createCollection(ADMIN_COLLECTION_NAME);
@@ -65,7 +63,7 @@ public class RemoteDatabaseImplTest extends RemoteDBTest {
             p.setMode(Permission.USER_STRING + "=+read,+write," + Permission.GROUP_STRING + "=-read,-write," + Permission.OTHER_STRING + "=-read,-write");
             ums.setPermissions(adminCollection, p);
 
-            Collection guestCollection = DatabaseManager.getCollection(URI + XmldbURI.ROOT_COLLECTION + "/" + ADMIN_COLLECTION_NAME, "guest", "guest");
+            Collection guestCollection = DatabaseManager.getCollection(getUri() + XmldbURI.ROOT_COLLECTION + "/" + ADMIN_COLLECTION_NAME, "guest", "guest");
 
             Resource resource = guestCollection.createResource("testguest", "BinaryResource");
             resource.setContent("123".getBytes());

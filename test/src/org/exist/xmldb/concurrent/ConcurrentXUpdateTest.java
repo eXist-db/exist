@@ -72,11 +72,11 @@ public class ConcurrentXUpdateTest extends ConcurrentTestBase {
         //String query1 = "xmldb:document()/ROOT-ELEMENT//ELEMENT-2[@attribute-2]";
 
         addAction(new RemoveAppendAction(URI + "/C1", "R1.xml", wordList), 50, 0, 200);
-        //addAction(new RemoveAppendAction(URI + "/C1", "R1.xml", wordList), 50, 100, 200);
-        //addAction(new MultiResourcesAction("samples/mods", URI + "/C1"), 1, 0, 300);
-        //addAction(new RetrieveResourceAction(URI + "/C1", "R1.xml"), 10, 1000, 2000);
-        //addAction(new XQueryAction(URI + "/C1", "R1.xml", query0), 100, 100, 100);
-        //addAction(new XQueryAction(URI + "/C1", "R1.xml", query1), 100, 200, 100);
+        //addAction(new RemoveAppendAction(getUri + "/C1", "R1.xml", wordList), 50, 100, 200);
+        //addAction(new MultiResourcesAction("samples/mods", getUri + "/C1"), 1, 0, 300);
+        //addAction(new RetrieveResourceAction(getUri + "/C1", "R1.xml"), 10, 1000, 2000);
+        //addAction(new XQueryAction(getUri + "/C1", "R1.xml", query0), 100, 100, 100);
+        //addAction(new XQueryAction(getUri + "/C1", "R1.xml", query1), 100, 200, 100);
 	}
 
 	@After

@@ -23,14 +23,14 @@ import org.junit.Test;
  * @version 1.0
  */
 public class StreamBinaryTest extends RESTTest {
-	
-        @Test
+
+	@Test
 	public void testStreamBinary() {
 		
-                final String testValue = "hello world";
-                final String xquery = "response:stream-binary(xs:base64Binary('" +  Base64.encodeBase64String(testValue.getBytes())  + "'), 'application/octet-stream', 'test.bin')";
-            
-                GetMethod get = new GetMethod(COLLECTION_ROOT_URL);
+		final String testValue = "hello world";
+		final String xquery = "response:stream-binary(xs:base64Binary('" +  Base64.encodeBase64String(testValue.getBytes())  + "'), 'application/octet-stream', 'test.bin')";
+
+		GetMethod get = new GetMethod(getCollectionRootUri());
 
 		NameValuePair qsParams[] = { new NameValuePair("_query", xquery),
 				new NameValuePair("_indent", "no") };

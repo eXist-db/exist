@@ -831,7 +831,7 @@ public class XQueryTest {
             message = e.getMessage();
         }
         assertTrue(message.indexOf("XQST0033") > -1);
-        query = "xquery version \"1.0\";\n" + "import module namespace blah=\"blah\" at \"" + URI + "/test/" + MODULE1_NAME + "\";\n" + "(:: redefine existing prefix with same URI ::)\n" + "declare namespace blah=\"blah\";\n" + "declare variable $blah:param  {\"value-2\"};\n" + "$blah:param";
+        query = "xquery version \"1.0\";\n" + "import module namespace blah=\"blah\" at \"" + URI + "/test/" + MODULE1_NAME + "\";\n" + "(:: redefine existing prefix with same getUri ::)\n" + "declare namespace blah=\"blah\";\n" + "declare variable $blah:param  {\"value-2\"};\n" + "$blah:param";
         try {
             message = "";
             result = service.query(query);
@@ -1002,7 +1002,7 @@ public class XQueryTest {
         assertEquals("XQuery: " + query, 1, result.getSize());
         assertEquals("XQuery: " + query, "value-1", result.getResource(0).getContent());
 
-//            query = "xquery version \"1.0\";\n" + "import module namespace blah=\"blah\" at \"" + URI + "/test/" + MODULE1_NAME + "\";\n" + "(:: redefine variable ::)\n" + "declare variable $blah:param  {\"value-2\"};\n" + "$blah:param";
+//            query = "xquery version \"1.0\";\n" + "import module namespace blah=\"blah\" at \"" + getUri + "/test/" + MODULE1_NAME + "\";\n" + "(:: redefine variable ::)\n" + "declare variable $blah:param  {\"value-2\"};\n" + "$blah:param";
 //            try {
 //                message = "";
 //                result = service.query(query);

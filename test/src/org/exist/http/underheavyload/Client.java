@@ -66,7 +66,6 @@ public class Client implements Runnable {
             	Thread.sleep(1000);
 
             	// connect to a page you're interested...
-		// jetty.port.jetty
             	PostMethod getMethod = new PostMethod("http://localhost:" + System.getProperty("jetty.port") + "/exist/admin/admin.xql?panel=xqueries");
 
             	// ...using the session ID retrieved before
@@ -89,7 +88,6 @@ public class Client implements Runnable {
 
 	private String getURL() {
 		if (manager == null)
-		    // jetty.port.jetty
 		    return "http://localhost:" + System.getProperty("jetty.port") + "/exist/admin";
 		else 
 			return manager.getURL();

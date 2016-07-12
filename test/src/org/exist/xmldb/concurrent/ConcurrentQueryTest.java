@@ -60,9 +60,9 @@ public class ConcurrentQueryTest extends ConcurrentTestBase {
         action0 = new XQueryAction(URI + "/C1", "R1.xml", query0);
         action1 = new XQueryAction(URI + "/C1", "R1.xml", query1);
         action2 = new XQueryAction(URI + "/C1", "R1.xml", query2);
-	//		action3 = new XQueryAction(URI + "/C1", "R1.xml", query0);
-	//		action4 = new XQueryAction(URI + "/C1", "R1.xml", query0);
-	//		action5 = new XQueryAction(URI + "/C1", "R1.xml", query0);
+	//		action3 = new XQueryAction(getUri + "/C1", "R1.xml", query0);
+	//		action4 = new XQueryAction(getUri + "/C1", "R1.xml", query0);
+	//		action5 = new XQueryAction(getUri + "/C1", "R1.xml", query0);
 			
         addAction(action0, 50, 500, 0);
         addAction(action1, 50, 250, 0);
