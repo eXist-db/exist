@@ -501,7 +501,7 @@ public class Main {
 
             if (Files.isReadable(jar)) {
                 try {
-                    _home_dir = Paths.get(".").toAbsolutePath();
+                    _home_dir = Paths.get(".").normalize().toAbsolutePath();
                 } catch (final InvalidPathException e) {
                     // ignore
                 }
@@ -510,7 +510,7 @@ public class Main {
 
         if (_home_dir == null) {
             // failed: try ../exist.jar
-            final Path jar = Paths.get("..").resolve("exist.jar");
+            final Path jar = Paths.get("..").resolve("exist.jar").normalize();
             if (_debug) {
                 System.err.println("trying " + jar.toAbsolutePath());
             }
@@ -542,7 +542,7 @@ public class Main {
 
         if (_home_dir == null) {
             // try ../conf.xml
-            final Path jar = Paths.get("..").resolve("conf.xml");
+            final Path jar = Paths.get("..").resolve("conf.xml").normalize();
             if (_debug) {
                 System.err.println("trying " + jar.toAbsolutePath());
             }

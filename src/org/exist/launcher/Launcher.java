@@ -27,6 +27,7 @@ import org.exist.EXistException;
 import org.exist.jetty.JettyStart;
 import org.exist.repo.ExistRepository;
 import org.exist.security.PermissionDeniedException;
+import org.exist.start.Main;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.util.ConfigurationHelper;
@@ -100,7 +101,7 @@ public class Launcher extends Observable implements Observer {
     private Optional<WrappedService> runningAsService;
     private SplashScreen splash;
     private Optional<JettyStart> jetty = Optional.empty();
-    private String home;
+    private final Path jettyConfig;
     private Properties wrapperProperties;
     private boolean inServiceInstall = false;
     private UtilityPanel utilityPanel;
@@ -114,7 +115,7 @@ public class Launcher extends Observable implements Observer {
 
         captureConsole();
 
-        home = getJettyHome();
+        this.jettyConfig = getJettyConfig();
         final Optional<Path> eXistHome = ConfigurationHelper.getExistHome();
         final Path wrapperConfig;
         if (eXistHome.isPresent()) {
@@ -133,7 +134,7 @@ public class Launcher extends Observable implements Observer {
 
         boolean initSystemTray = true;
         if (isSystemTraySupported()) {
-            initSystemTray = initSystemTray(home);
+            initSystemTray = initSystemTray();
         }
 
         configDialog = new ConfigurationDialog(Launcher.this);
@@ -172,7 +173,7 @@ public class Launcher extends Observable implements Observer {
                 try {
                     if (!jetty.isPresent()) {
                         jetty = Optional.of(new JettyStart());
-                        jetty.get().run(new String[]{home}, splash);
+                        jetty.get().run(new String[]{jettyConfig.toAbsolutePath().toString()}, splash);
                     }
                 } catch (final Exception e) {
                     showMessageAndExit("Error Occurred", "An error occurred during eXist-db startup. Please check console output and logs.", true);
@@ -186,7 +187,7 @@ public class Launcher extends Observable implements Observer {
         return tray != null;
     }
 
-    private boolean initSystemTray(String home) {
+    private boolean initSystemTray() {
         final Dimension iconDim = tray.getTrayIconSize();
         BufferedImage image = null;
         try {
@@ -200,7 +201,7 @@ public class Launcher extends Observable implements Observer {
         hiddenFrame.setUndecorated(true);
         hiddenFrame.setIconImage(image);
 
-        final PopupMenu popup = createMenu(home);
+        final PopupMenu popup = createMenu();
         trayIcon.setPopupMenu(popup);
         trayIcon.addActionListener(actionEvent -> {
                 trayIcon.displayMessage(null, "Right click for menu", TrayIcon.MessageType.INFO);
@@ -234,7 +235,7 @@ public class Launcher extends Observable implements Observer {
         return true;
     }
 
-    private PopupMenu createMenu(final String home) {
+    private PopupMenu createMenu() {
 
 
         final PopupMenu popup = new PopupMenu();
@@ -246,7 +247,7 @@ public class Launcher extends Observable implements Observer {
                     if (server.isStarted()) {
                         showTrayMessage("Server already started", TrayIcon.MessageType.WARNING);
                     } else {
-                        server.run(new String[]{home}, null);
+                        server.run(new String[]{jettyConfig.toAbsolutePath().toString()}, null);
                         if (server.isStarted()) {
                             showTrayMessage("eXist-db server running on port " + server.getPrimaryPort(), TrayIcon
                                     .MessageType.INFO);
@@ -677,7 +678,7 @@ public class Launcher extends Observable implements Observer {
         }
     }
 
-    private String getJettyHome() {
+    private Path getJettyConfig() {
         final String jettyProperty = Optional.ofNullable(System.getProperty("jetty.home"))
                 .orElseGet(() -> {
                     final Optional<Path> home = ConfigurationHelper.getExistHome();
@@ -687,8 +688,10 @@ public class Launcher extends Observable implements Observer {
                     return jettyPath;
                 });
 
-        final Path standaloneFile = Paths.get(jettyProperty).resolve("etc").resolve("jetty.xml");
-        return standaloneFile.toAbsolutePath().toString();
+        return Paths.get(jettyProperty)
+                .normalize()
+                .resolve("etc")
+                .resolve(Main.STANDARD_ENABLED_JETTY_CONFIGS);
     }
 
     protected void showMessageAndExit(String title, String message, boolean logs) {
