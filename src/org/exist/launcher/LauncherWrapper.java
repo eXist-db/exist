@@ -38,8 +38,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
 
 /**
  * A wrapper to start a Java process using start.jar with correct VM settings.
@@ -67,17 +65,26 @@ public class LauncherWrapper {
 
     public void launch() {
         final String home = System.getProperty("exist.home", ".");
+        final String debugLauncher = System.getProperty("exist.debug.launcher", "false");
         final PropertiesConfiguration vmProperties = getVMProperties();
 
         final OperatingSystem os = OperatingSystem.instance();
         final ProcessManager pm = os.processManagerInstance();
         final Process process = pm.createProcess();
-        final String cmdLine = getJavaCmd() + getJavaOpts(home, vmProperties) + " -jar start.jar " + command;
+        final StringBuilder cmdLine = new StringBuilder()
+                .append(getJavaCmd())
+                .append(getJavaOpts(home, vmProperties));
+        if(Boolean.parseBoolean(debugLauncher)) {
+            cmdLine.append(" -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=4000");
+        }
+        cmdLine.append(" -jar start.jar ");
+        cmdLine.append(command);
         process.setWorkingDir(home);
         process.setVisible(false);
         process.setPipeStreams(false, false);
-        process.setCommand(cmdLine);
-        System.out.println(cmdLine);
+        final String cmdLineStr = cmdLine.toString();
+        process.setCommand(cmdLineStr);
+        System.out.println(cmdLineStr);
 
         if (process instanceof WindowsXPProcess) {
             ((WindowsXPProcess)process).startElevated();
