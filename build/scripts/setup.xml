@@ -11,19 +11,19 @@
 
   <!-- import common targets -->
   <import file="../../build.xml"/>
-  
+
   <!-- Additional task defs  -->
   <taskdef resource="net/sf/antcontrib/antcontrib.properties">
     <classpath>
       <pathelement location="tools/ant/lib/ant-contrib-1.0b3.jar"/>
     </classpath>
   </taskdef>
-  
+
   <property file="build.properties"/>
-  
+
   <property name="autodeploy.repo" value="http://demo.exist-db.org/exist/apps/public-repo"/>
   <property name="autostart-dir" value="autodeploy"/>
-  
+
   <target name="prepare">
     <mkdir dir="${autostart-dir}"/>
     <!--  Automatically download standard xar packages from public repository
@@ -34,21 +34,21 @@
         <include name="*.xar"/>
       </fileset>
     </path>
-    
+
     <property name="autostart-files" refid="autostart-files"/>
-    
-    <condition property="autostart-empty"> 
-      <equals arg1="" arg2="${autostart-files}"/> 
+
+    <condition property="autostart-empty">
+      <equals arg1="" arg2="${autostart-files}"/>
     </condition>
   </target>
-  
-  <!-- 
+
+  <!--
     Download xar files from the package website.
   -->
   <target name="setup" depends="prepare" description="Download standard xar packages.">
     <foreach list="${autodeploy}" target="download" param="xar"></foreach>
   </target>
-  
+
   <target name="download">
     <pathconvert property="xar-installed" setonempty="false">
         <fileset dir="${autostart-dir}">
@@ -59,13 +59,13 @@
   </target>
 
   <target name="download-xar" unless="xar-installed">
-      
+
     <taskdef name="fetch" classname="nl.ow.dilemma.ant.fetch.FetchTask">
         <classpath>
           <pathelement location="${asocat-exist.jar}"/>
         </classpath>
     </taskdef>
-    <fetch dest="${autostart-dir}" url="${autodeploy.repo}/pkg.zip?abbrev=${xar}&amp;zip=yes"
+    <fetch dest="${autostart-dir}" url="${autodeploy.repo}/pkg.zip?abbrev=${xar}&amp;zip=yes&amp;processor=${project.version.numeric}"
            failonerror="false" maxtime="120">
          <patternset>
              <include name="**/*.xar"/>
