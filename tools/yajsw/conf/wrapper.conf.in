@@ -11,8 +11,8 @@ wrapper.java.command=java
 
 # or define conditions for YAJSW searching for a JVM
 # currently only valid for windows
-wrapper.java.command.minVersion=1.7
-#wrapper.java.command.maxVersion=1.6
+wrapper.java.command.minVersion=1.8
+#wrapper.java.command.maxVersion=1.8
 #wrapper.java.command.jreOnly=true
 #wrapper.java.command.jdkOnly=true
 #wrapper.java.command.preferJre=true
@@ -106,7 +106,7 @@ wrapper.java.additional.6=-Djava.awt.headless=true
 
 # Application parameters.  Add parameters as needed starting from 1
 wrapper.app.parameter.1=jetty
-wrapper.app.parameter.2=@jetty.dir@/etc/jetty.xml
+wrapper.app.parameter.2=@jetty.dir@/etc/standard.enabled-jetty-configs
 
 # Initial Java Heap Size (in MB)
 # alternative for wrapper.java.additional.<n>=-Xms
