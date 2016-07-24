@@ -329,7 +329,7 @@
             </fileset>
         </chmod>
         <chmod perm="+x">
-            <fileset dir="${dist.dir}/yajsw/bin">
+            <fileset dir="${dist.dir}/tools/yajsw/bin">
                 <include name="*.sh"/>
             </fileset>
         </chmod>
