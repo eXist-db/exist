@@ -22,11 +22,14 @@
  */
 package org.exist.http.servlets;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.URISyntaxException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -46,18 +49,13 @@ import org.exist.security.AuthenticationException;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
-import org.exist.security.internal.AccountImpl;
 import org.exist.security.internal.web.HttpAccount;
-import org.exist.security.xacml.AccessContext;
 import org.exist.source.FileSource;
 import org.exist.source.Source;
 import org.exist.source.SourceFactory;
 import org.exist.source.StringSource;
 import org.exist.storage.DBBroker;
-import org.exist.storage.serializers.Serializer;
 import org.exist.util.MimeTable;
-import org.exist.util.serializer.SAXSerializer;
-import org.exist.util.serializer.SerializerPool;
 import org.exist.util.serializer.XQuerySerializer;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.CompiledXQuery;
@@ -72,7 +70,6 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Item;
 import org.exist.debuggee.DebuggeeFactory;
 import org.exist.dom.persistent.XMLUtil;
-import org.xml.sax.SAXException;
 
 /**
  * Servlet to generate HTML output from an XQuery file.
@@ -358,13 +355,13 @@ public class XQueryServlet extends AbstractExistHttpServlet {
                 sendError(output, "Error", e.getMessage());
             }
         } else {
-            final File f = new File(path);
-            if(!f.canRead()) {
+            final Path f = Paths.get(path);
+            if(!Files.isReadable(f)) {
                 response.setStatus(HttpServletResponse.SC_NOT_FOUND);
                 sendError(output, "Cannot read source file", path);
                 return;
             }
-            source = new FileSource(f, encoding, true);
+            source = new FileSource(f, Charset.forName(encoding), true);
         }
         
         if (source == null) {
@@ -435,7 +432,7 @@ public class XQueryServlet extends AbstractExistHttpServlet {
 
             XQueryContext context;
             if (query==null) {
-               context = new XQueryContext(getPool(), AccessContext.REST);
+               context = new XQueryContext(getPool());
                context.setModuleLoadPath(moduleLoadPath);
                try {
             	   query = xquery.compile(broker, context, source);

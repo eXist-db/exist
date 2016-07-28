@@ -117,11 +117,7 @@ public class DynamicCommentConstructor extends NodeConstructor {
     }
 
     public String toString() {
-        final StringBuilder result = new StringBuilder();
-        result.append("comment {");
-        result.append(content.toString());
-        result.append("} ");
-        return result.toString();
+        return "comment {" + content.toString() + "} ";
     }
 
     public void resetState(boolean postOptimization) {

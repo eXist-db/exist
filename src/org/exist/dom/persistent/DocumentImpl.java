@@ -22,6 +22,7 @@
 package org.exist.dom.persistent;
 
 import org.exist.EXistException;
+import org.exist.Resource;
 import org.exist.dom.QName;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfiguration;
@@ -73,7 +74,7 @@ import java.io.IOException;
  *
  * @author Wolfgang Meier <wolfgang@exist-db.org>
  */
-public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
+public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Document {
 
     public static final int UNKNOWN_DOCUMENT_ID = -1;
 
@@ -242,11 +243,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
         this.fileURI = fileURI;
     }
 
-    /**
-     * The method <code>getURI</code>
-     *
-     * @return a <code>XmldbURI</code> value
-     */
+    @Override
     public XmldbURI getURI() {
         if(collection == null) {
             return fileURI;
@@ -259,11 +256,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
         return fileURI.endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX_URI);
     }
 
-    /**
-     * The method <code>getMode</code>
-     *
-     * @return a <code>Permission</code> value
-     */
+    @Override
     public Permission getPermissions() {
         return permissions;
     }
@@ -292,11 +285,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
         this.metadata = meta;
     }
 
-    /**
-     * The method <code>getMetadata</code>
-     *
-     * @return a <code>DocumentMetadata</code> value
-     */
+    @Override
     public DocumentMetadata getMetadata() {
         if(metadata == null) {
             try(final DBBroker broker = pool.getBroker()) {

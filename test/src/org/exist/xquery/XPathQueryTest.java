@@ -1,17 +1,13 @@
 package org.exist.xquery;
 
-import org.exist.jetty.JettyStart;
-import org.exist.TestUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
-import org.exist.xmldb.CollectionImpl;
-import org.exist.xmldb.DatabaseInstanceManager;
+import org.exist.test.ExistWebServer;
 import org.exist.xmldb.XPathQueryServiceImpl;
 import org.exist.xmldb.XmldbURI;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.runner.JUnitCore;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
@@ -28,6 +24,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
 import java.io.*;
+import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -37,9 +34,31 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-
+@RunWith(Parameterized.class)
 public class XPathQueryTest {
-    
+
+    @ClassRule
+    public static final ExistWebServer existWebServer = new ExistWebServer(true, true);
+    private static final String PORT_PLACEHOLDER = "${PORT}";
+
+    @Parameterized.Parameters(name = "{0}")
+    public static java.util.Collection<Object[]> data() {
+        return Arrays.asList(new Object[][] {
+                { "local", XmldbURI.LOCAL_DB },
+                { "remote", "xmldb:exist://localhost:" + PORT_PLACEHOLDER + "/xmlrpc" +  XmldbURI.ROOT_COLLECTION}
+        });
+    }
+
+    @Parameterized.Parameter
+    public String apiName;
+
+    @Parameterized.Parameter(value = 1)
+    public String baseUri;
+
+    private final String getBaseUri() {
+        return baseUri.replace(PORT_PLACEHOLDER, Integer.toString(existWebServer.getPort()));
+    }
+
     private final static String nested =
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
             + "<test><c></c><b><c><b></b></c></b><b></b><c></c></test>";
@@ -104,7 +123,16 @@ public class XPathQueryTest {
             "   <a> <s>C</s> <n>5</n> </a>" +
             "   <a> <s>Z</s> <n>6</n> </a>" +
             "</test>";
-    
+
+    private final static String ids_content =
+            "<test xml:space=\"preserve\">" +
+            "<a ref=\"id1\"/>" +
+            "<a ref=\"id1\"/>" +
+            "<d ref=\"id2\"/>" +
+            "<b id=\"id1\"><name>one</name></b>" +
+            "<c xml:id=\"     id2     \"><name>two</name></c>" +
+            "</test>";
+
     private final static String ids =
             "<!DOCTYPE test [" +
             "<!ELEMENT test (a | b | c | d)*>" +
@@ -118,13 +146,7 @@ public class XPathQueryTest {
             "<!ATTLIST a ref IDREF #IMPLIED>" +
             "<!ATTLIST b id ID #IMPLIED>" +
             "<!ATTLIST c xml:id ID #IMPLIED>]>" +
-            "<test xml:space=\"preserve\">" +
-            "<a ref=\"id1\"/>" +
-            "<a ref=\"id1\"/>" +
-            "<d ref=\"id2\"/>" +
-            "<b id=\"id1\"><name>one</name></b>" +
-            "<c xml:id=\"     id2     \"><name>two</name></c>" +
-            "</test>";
+            ids_content;
     
     private final static String date =
             "<timestamp date=\"2006-04-29+02:00\"/>";
@@ -155,22 +177,10 @@ public class XPathQueryTest {
     private final static String xpointerElementName =
             "<test><xpointer/></test>";
     
-    private static String uri = XmldbURI.LOCAL_DB;
-
-    public static void setURI(String collectionURI) {
-        uri = collectionURI;
-    }
-    
-    private static JettyStart server = null;
-    
     private Collection testCollection;
     
     @Before
     public void setUp() throws Exception {
-        if (uri.startsWith("xmldb:exist://localhost")) {
-            initServer();
-        }
-        
         // initialize driver
         Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
         Database database = (Database) cl.newInstance();
@@ -179,7 +189,7 @@ public class XPathQueryTest {
 
         Collection root =
                 DatabaseManager.getCollection(
-                uri,
+                getBaseUri(),
                 "admin",
                 "");
         CollectionManagementService service =
@@ -188,25 +198,6 @@ public class XPathQueryTest {
                 "1.0");
         testCollection = service.createCollection("test");
         assertNotNull(testCollection);
-    }
-    
-	private void initServer() {
-        if (server == null) {
-            server = new JettyStart();
-            server.run();
-        }
-    }
-    
-    @After
-    public void tearDown() throws Exception {
-        TestUtils.cleanupDB();
-        if (!((CollectionImpl) testCollection).isRemoteCollection()) {
-            DatabaseInstanceManager dim =
-                    (DatabaseInstanceManager) testCollection.getService(
-                    "DatabaseInstanceManager", "1.0");
-            dim.shutdown();
-        }
-        testCollection = null;
     }
 
     @Test
@@ -512,13 +503,13 @@ public class XPathQueryTest {
         service.setProperty(OutputKeys.INDENT, "no");
 
         ResourceSet result = queryResource(service, "siblings.xml", "//a[preceding-sibling::*[1]/s = 'B']", 1);
-        assertXMLEqual("<a><s>Z</s><n>4</n></a>", result.getResource(0).getContent().toString());
+        assertXMLEqual("<a> <s>Z</s> <n>4</n> </a>", result.getResource(0).getContent().toString());
         result = queryResource(service, "siblings.xml", "//a[preceding-sibling::a[1]/s = 'B']", 1);
-        assertXMLEqual("<a><s>Z</s><n>4</n></a>", result.getResource(0).getContent().toString());
+        assertXMLEqual("<a> <s>Z</s> <n>4</n> </a>", result.getResource(0).getContent().toString());
         result = queryResource(service, "siblings.xml", "//a[preceding-sibling::*[2]/s = 'B']", 1);
-        assertXMLEqual("<a><s>C</s><n>5</n></a>", result.getResource(0).getContent().toString());
+        assertXMLEqual("<a> <s>C</s> <n>5</n> </a>", result.getResource(0).getContent().toString());
         result = queryResource(service, "siblings.xml", "//a[preceding-sibling::a[2]/s = 'B']", 1);
-        assertXMLEqual("<a><s>C</s><n>5</n></a>", result.getResource(0).getContent().toString());
+        assertXMLEqual("<a> <s>C</s> <n>5</n> </a>", result.getResource(0).getContent().toString());
 
         queryResource(service, "siblings.xml", "(<a/>, <b/>, <c/>)/following-sibling::*", 0);
     }
@@ -531,13 +522,13 @@ public class XPathQueryTest {
         service.setProperty(OutputKeys.INDENT, "no");
 
         ResourceSet result = queryResource(service, "siblings.xml", "//a[following-sibling::*[1]/s = 'B']", 1);
-        assertXMLEqual("<a><s>Z</s><n>2</n></a>", result.getResource(0).getContent().toString());
+        assertXMLEqual("<a> <s>Z</s> <n>2</n> </a>", result.getResource(0).getContent().toString());
         result = queryResource(service, "siblings.xml", "//a[following-sibling::a[1]/s = 'B']", 1);
-        assertXMLEqual("<a><s>Z</s><n>2</n></a>", result.getResource(0).getContent().toString());
+        assertXMLEqual("<a> <s>Z</s> <n>2</n> </a>", result.getResource(0).getContent().toString());
         result = queryResource(service, "siblings.xml", "//a[following-sibling::*[2]/s = 'B']", 1);
-        assertXMLEqual("<a><s>A</s><n>1</n></a>", result.getResource(0).getContent().toString());
+        assertXMLEqual("<a> <s>A</s> <n>1</n> </a>", result.getResource(0).getContent().toString());
         result = queryResource(service, "siblings.xml", "//a[following-sibling::a[2]/s = 'B']", 1);
-        assertXMLEqual("<a><s>A</s><n>1</n></a>", result.getResource(0).getContent().toString());
+        assertXMLEqual("<a> <s>A</s> <n>1</n> </a>", result.getResource(0).getContent().toString());
 
         queryResource(service, "siblings.xml", "(<a/>, <b/>, <c/>)/following-sibling::*", 0);
 
@@ -1374,7 +1365,7 @@ public class XPathQueryTest {
     }     
     
     @Test
-    public void ids() throws XMLDBException {
+    public void ids_persistent() throws XMLDBException {
         final XQueryService service =
                 storeXMLStringAndGetQueryService("ids.xml", ids);
 
@@ -1398,10 +1389,31 @@ public class XPathQueryTest {
         queryResource(service, "ids.xml", update, 0);
         queryResource(service, "ids.xml", "id('id4', /test)", 1);
     }
+
+    @Ignore("Not yet supported in eXist")
+    @Test
+    public void ids_memtree() throws XMLDBException {
+        final XQueryService service = getQueryService();
+
+        ResourceSet result = service.query("document { " + ids_content + " }//a/id(@ref)");
+        assertEquals(1, result.getSize());
+
+        result = service.query("document { " + ids_content + " }/test/id(//a/@ref)");
+        assertEquals(1, result.getSize());
+
+        result = service.query("document { " + ids_content + " }//a/id(@ref)/name");
+        assertEquals(1, result.getSize());
+        Resource r = result.getResource(0);
+        assertEquals("<name>one</name>", r.getContent().toString());
+
+        result = service.query("document { " + ids_content + " }//d/id(@ref)/name");
+        r = result.getResource(0);
+        assertEquals("<name>two</name>", r.getContent().toString());
+    }
     
     @Test
     public void idsOnEmptyCollection() throws XMLDBException {
-        final Collection root = DatabaseManager.getCollection(uri, "admin", "");
+        final Collection root = DatabaseManager.getCollection(getBaseUri(), "admin", "");
         final CollectionManagementService service = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
 		final Collection emptyCollection = service.createCollection("empty");
         final XQueryService queryService = (XQueryService) emptyCollection.getService("XPathQueryService", "1.0");
@@ -1410,7 +1422,7 @@ public class XPathQueryTest {
     }
     
     @Test
-    public void idRefs() throws XMLDBException {
+    public void idRefs_persistent() throws XMLDBException {
        final XQueryService service =
           storeXMLStringAndGetQueryService("ids.xml", ids);
   
@@ -1418,6 +1430,24 @@ public class XPathQueryTest {
        queryResource(service, "ids.xml", "/idref('id1')", 2);
        queryResource(service, "ids.xml", "/idref(('id2', 'id1'))", 3);
        queryResource(service, "ids.xml", "<results>{/idref('id2')}</results>", 1);
+    }
+
+    @Ignore("Not yet supported in eXist")
+    @Test
+    public void idRefs_memtree() throws XMLDBException {
+        final XQueryService service = getQueryService();
+
+        ResourceSet result = service.query("document {" + ids_content + "}/idref('id2')");
+        assertEquals(1, result.getSize());
+
+        result = service.query("document {" + ids_content + "}/idref('id1')");
+        assertEquals(2, result.getSize());
+
+        result = service.query("document {" + ids_content + "}/idref(('id2', 'id1'))");
+        assertEquals(3, result.getSize());
+
+        result = service.query("let $doc := document {" + ids_content + "} return <results>{$doc/idref('id2')}</results>");
+        assertEquals(1, result.getSize());
     }
     
     @Test
@@ -1592,7 +1622,7 @@ public class XPathQueryTest {
         System.out.println(item);
         assertXMLEqual("<text> </text>", item);
         item = result.getResource(1).getContent().toString();
-        assertXMLEqual("<text xml:space=\"default\"/>", item);
+        assertXMLEqual("<text xml:space=\"default\"> </text>", item);
     }
     
     @Test

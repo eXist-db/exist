@@ -75,9 +75,9 @@ public class RemoteResourceSet implements ResourceSet {
         } catch (final XmlRpcException e) {
             LOG.error("Failed to release query result on server: " + e.getMessage(), e);
         }
-        handle = -1;
         hash = -1;
         resources.clear();
+        handle = -1;
     }
 
     @Override

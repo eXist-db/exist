@@ -191,17 +191,9 @@ public class DynamicAttributeConstructor extends NodeConstructor {
     }
     
     public String toString() {
-    	final StringBuilder result = new StringBuilder();
-    	result.append("attribute ");
         //TODO : remove curly braces if Qname
-        result.append("{");  
-    	result.append(qnameExpr.toString());
-        result.append("} ");
         //TODO : handle empty value
-        result.append("{");        
-    	result.append(valueExpr.toString());        
-        result.append("} ");
-    	return result.toString();
+        return "attribute " + "{" + qnameExpr.toString() + "} {" + valueExpr.toString() + "} ";
     } 
     
     public void resetState(boolean postOptimization) {

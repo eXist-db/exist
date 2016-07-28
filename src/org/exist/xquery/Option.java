@@ -43,11 +43,12 @@ public class Option {
     public final static QName OPTIMIZE_IMPLICIT_TIMEZONE = new QName("implicit-timezone", Namespaces.EXIST_NS);
     public final static QName CURRENT_DATETIME = new QName("current-dateTime", Namespaces.EXIST_NS);
 	
+    private final static String[] EMPTY = new String[0];
+
     private final static String paramPattern =
 		"\\s*([\\w\\.-]+)\\s*=\\s*('[^']*'|\"[^\"]*\"|[^\"\'\\s][^\\s]*)";
 	
 	private final static Pattern pattern = Pattern.compile(paramPattern);
-	private final static Matcher matcher = pattern.matcher("");
     
 	private final QName qname;
 	private final String contents;
@@ -71,9 +72,11 @@ public class Option {
 		return tokenize(contents);
 	}
 
-    public static String[] tokenize(String contents) {
-        if(contents == null)
-			{return new String[0];}
+
+    public static String[] tokenize(final String contents) {
+        if(contents == null) {
+            return EMPTY;
+        }
 		final StringTokenizer tok = new StringTokenizer(contents, " \r\t\n");
 		final String[] items = new String[tok.countTokens()];
 		for(int i = 0; tok.hasMoreTokens(); i++) {
@@ -82,21 +85,22 @@ public class Option {
 		return items;
     }
 
-    public static synchronized String[] parseKeyValuePair(String s) {
-        matcher.reset(s);
+    public static String[] parseKeyValuePair(final String s) {
+        final Matcher matcher = pattern.matcher(s);
 		if(matcher.matches()) {
 			String value = matcher.group(2);
-			if(value.charAt(0) == '\'' || value.charAt(0) == '"')
-				{value = value.substring(1, value.length() - 1);}
+			if(value.charAt(0) == '\'' || value.charAt(0) == '"') {
+				value = value.substring(1, value.length() - 1);
+			}
 			return new String[] { matcher.group(1), value };
 		}
 		return null;
 	}
-	
-	public boolean equals(Object other) {
-		if (other instanceof Option) {
-			return qname.equals(((Option) other).qname);
-		}
-		return false;
+
+	@Override
+	public boolean equals(final Object other) {
+		return other != null && 
+            other instanceof Option &&
+            qname.equals(((Option) other).qname);
 	}
 }

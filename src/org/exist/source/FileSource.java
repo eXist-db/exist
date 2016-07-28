@@ -1,29 +1,34 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist-db.org
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2016 The eXist Project
+ * http://exist-db.org
  *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- * 
- *  $Id$
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 package org.exist.source;
 
-import java.io.*;
+import java.io.InputStream;
+import java.io.IOException;
+import java.io.Reader;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
@@ -31,29 +36,47 @@ import org.exist.storage.DBBroker;
 
 
 /**
- * A source implementation reading from the file system.
+ * A source implementation reading from the path system.
  * 
  * @author wolf
  */
 public class FileSource extends AbstractSource {
 
-    private File file;
+    private final static Logger LOG = LogManager.getLogger(FileSource.class);
+
+    private final Path path;
+    private Charset encoding;
+    private final boolean checkEncoding;
+
     private String filePath;
     private long lastModified;
-    private String encoding;
-    private boolean checkEncoding = false;
-    
-    public FileSource(File file, String encoding, boolean checkXQEncoding) {
-        this.file = file;
-        this.filePath = file.getAbsolutePath();
-        this.lastModified = file.lastModified();
+
+    /**
+     * Defaults to UTF-8 encoding for the path path
+     */
+    public FileSource(final Path path, final boolean checkXQEncoding) {
+        this(path, StandardCharsets.UTF_8, checkXQEncoding);
+    }
+
+    public FileSource(final Path path, final Charset encoding, final boolean checkXQEncoding) {
+        this.path = path;
         this.encoding = encoding;
         this.checkEncoding = checkXQEncoding;
+        this.filePath = path.toAbsolutePath().toString();
+        this.lastModified = lastModifiedSafe(path);
     }
-    
-    /* (non-Javadoc)
-     * @see org.exist.source.Source#getKey()
-     */
+
+    @Override
+    public String path() {
+        return getFilePath();
+    }
+
+    @Override
+    public String type() {
+        return "File";
+    }
+
+    @Override
     public Object getKey() {
         return filePath;
     }
@@ -62,88 +85,76 @@ public class FileSource extends AbstractSource {
     	return filePath;
     }
 
-    public File getFile() {
-    	return file;
+    public Path getPath() {
+    	return path;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.source.Source#isValid()
-     */
-    public int isValid(DBBroker broker) {
-        final File f = new File(filePath);
-        if(f.lastModified() > lastModified)
-            {return INVALID;}
-        else
-            {return VALID;}
+    @Override
+    public int isValid(final DBBroker broker) {
+        final long currentLastModified = lastModifiedSafe(path);
+        if(currentLastModified == -1 || currentLastModified > lastModified) {
+            return INVALID;
+        } else {
+            return VALID;
+        }
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.source.Source#isValid(org.exist.source.Source)
-     */
-    public int isValid(Source other) {
+    @Override
+    public int isValid(final Source other) {
         return INVALID;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.source.Source#getReader()
-     */
+    @Override
     public Reader getReader() throws IOException {
         checkEncoding();
-        return new InputStreamReader(new FileInputStream(filePath), encoding);
+        return Files.newBufferedReader(path, encoding);
     }
 
+    @Override
     public InputStream getInputStream() throws IOException {
-        return new FileInputStream(filePath);
+        return Files.newInputStream(path);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.source.Source#getContent()
-     */
+    @Override
     public String getContent() throws IOException {
         checkEncoding();
-        final FileInputStream is = new FileInputStream(new File(filePath));
-		try {
-			final Reader reader = new InputStreamReader(is, encoding);
-			final char[] chars = new char[1024];
-			final StringBuilder buf = new StringBuilder();
-			int read;
-			while((read = reader.read(chars)) > -1)
-				buf.append(chars, 0, read);
-			return buf.toString();
-		} finally {
-			is.close();
-		}
+        return new String(Files.readAllBytes(path), encoding);
     }
     
     private void checkEncoding() throws IOException {
         if (checkEncoding) {
-            final FileInputStream is = new FileInputStream(filePath);
-            try {
-                String checkedEnc = guessXQueryEncoding(is);
-                if (checkedEnc != null)
-                    {encoding = checkedEnc;}
-            } finally {
-                is.close();
+            try(final InputStream is = Files.newInputStream(path)) {
+                final String checkedEnc = guessXQueryEncoding(is);
+                if (checkedEnc != null) {
+                    encoding = Charset.forName(checkedEnc);
+                }
             }
+        }
+    }
+
+    private long lastModifiedSafe(final Path path) {
+        try {
+            return Files.getLastModifiedTime(path).toMillis();
+        } catch(final IOException ioe) {
+            LOG.error(ioe);
+            return -1;
         }
     }
 
     @Override
     public QName isModule() throws IOException {
-        final FileInputStream is = new FileInputStream(filePath);
-        try {
+        try(final InputStream is = Files.newInputStream(path)) {
             return getModuleDecl(is);
-        } finally {
-            is.close();
         }
     }
 
+    @Override
     public String toString() {
     	return filePath;
     }
 
 	@Override
-	public void validate(Subject subject, int perm) throws PermissionDeniedException {
+	public void validate(final Subject subject, final int perm) throws PermissionDeniedException {
 		// TODO protected?
 	}
 }

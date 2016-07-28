@@ -12,13 +12,14 @@
 		desktop="yes"
 		terminal="false"
 		iconFile="$INSTALL_PATH/icon.ico"
-		initialState="noShow"/>
+		initialState="noShow"
+		startup="yes"/>
 	<shortcut name="Install eXist-db as Service" 
-		target="$INSTALL_PATH/tools/wrapper/bin/install.bat"
+		target="$INSTALL_PATH/tools/yajsw/bin/installService.bat"
 		description="Install the eXist-db server as a service"
 		programGroup="yes" desktop="no"/>
 	<shortcut name="Uninstall the eXist-db service"
-		target="$INSTALL_PATH/tools/wrapper/bin/uninstall.bat"
+		target="$INSTALL_PATH/tools/yajsw/bin/uninstallService.bat"
 		description="Uninstall the eXist-db service"
 		programGroup="yes" desktop="no"/>
 	<shortcut 

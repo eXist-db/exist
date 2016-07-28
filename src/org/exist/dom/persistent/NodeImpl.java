@@ -142,7 +142,7 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
     public Node getFirstChild() {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
             "getFirstChild() not implemented on class " + getClass().getName());
-    };
+    }
 
     @Override
     public Node getLastChild() {

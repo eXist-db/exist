@@ -4,34 +4,34 @@
 <!-- ======================================================================= -->
 
 <project basedir="../.." default="installer" name="Build installer">
-  
+
     <description>Build installer</description>
 
 	<!-- import common targets -->
 	<import file="../../build.xml"/>
 	<import file="../../build/scripts/macosx.xml"/>
     <import file="git-support.xml"/>
-    
+
     <taskdef resource="net/sf/antcontrib/antcontrib.properties">
         <classpath>
             <pathelement location="tools/ant/lib/ant-contrib-1.0b3.jar"/>
         </classpath>
     </taskdef>
-    
+
 	<property name="apps.dir" value="installer/apps"/>
     <property name="installer.scripts" value="installer/scripts"/>
     <property name="installer.mac.icon" value="${installer.scripts}/icon.icns"/>
-        
+
     <property file="installer/apps.properties"/>
-    
+
 	<target name="commandline-installer">
         <!--ant antfile="build.xml" dir="tools/izpack"/-->
     </target>
 
     <target name="macosx" depends="install-appbundler">
-        <taskdef 
-            name="bundleapp" 
-            classname="com.oracle.appbundler.AppBundlerTask" 
+        <taskdef
+            name="bundleapp"
+            classname="com.oracle.appbundler.AppBundlerTask"
             classpath="${appbundler.jar}" />
         <bundleapp
             outputdirectory="${installer.scripts}"
@@ -45,14 +45,14 @@
             <option value="-Dexist.home=$APP_ROOT/.."/>
         </bundleapp>
     </target>
-    
+
     <target depends="all,samples,xars,copy_scripts,macosx" name="prepare-installer">
 	    <path id="izpackdeps">
 	        <fileset dir="${izpack.dir}/lib/">
 	            <include name="*.jar"/>
 	        </fileset>
 	    </path>
-			
+
 	    <taskdef name="izpack" classname="com.izforge.izpack.ant.IzPackTask">
 		    <classpath refid="izpackdeps" />
 		</taskdef>
@@ -79,22 +79,22 @@
             <mapper type="glob" from="*" to="00*"/>
         </move>
     </target>
-    
+
     <target name="download-xar">
-        
+
         <taskdef name="fetch" classname="nl.ow.dilemma.ant.fetch.FetchTask">
             <classpath>
                 <pathelement location="${asocat-exist.jar}"/>
             </classpath>
         </taskdef>
-        <fetch dest="${apps.dir}" url="${apps.repo}/pkg.zip?abbrev=${xar}&amp;zip=yes"
+        <fetch dest="${apps.dir}" url="${apps.repo}/pkg.zip?abbrev=${xar}&amp;zip=yes&amp;processor=${project.version.numeric}"
             failonerror="false" maxtime="360">
             <patternset>
                 <include name="**/*.xar"/>
             </patternset>
         </fetch>
     </target>
-    
+
     <target name="xars" depends="download-xars" description="Scan apps directory and include all .xar files into installer">
         <echo message="Processing xar packages ..."/>
         <foreach target="process-xar" param="app">
@@ -104,18 +104,18 @@
                 </fileset>
             </path>
         </foreach>
-        
+
         <path id="descriptors">
             <fileset dir="${apps.dir}">
                 <include name="*.xml"/>
             </fileset>
         </path>
-        
+
         <pathconvert pathsep=";" refid="descriptors" property="apps.list"/>
         <delete file="installer/install.xml" failonerror="false"/>
         <xslt basedir="installer" in="installer/install.xml.tmpl"
             out="installer/install.xml"
-            style="installer/install.xsl" classpathref="classpath.core" 
+            style="installer/install.xsl" classpathref="classpath.core"
             processor="trax">
             <factory name="net.sf.saxon.TransformerFactoryImpl"/>
             <classpath>
@@ -128,7 +128,7 @@
             <param name="project-version" expression="${project.version}"/>
         </xslt>
     </target>
-    
+
     <target name="process-xar">
         <propertyregex property="app.name" regexp="^.*\${file.separator}([^\${file.separator}]+).xar$"
             input="${app}" select="\1"/>
@@ -140,7 +140,7 @@
         </unjar>
         <move file="${apps.dir}/expath-pkg.xml" tofile="${apps.dir}/${app.name}.xml"/>
     </target>
-    
+
     <target depends="git.details, prepare-installer,launcher-exe,commandline-installer" name="installer" description="Create installer">
         <echo message="Calling IzPack to create installer ..."/>
         <property name="inst-jar" value="installer/${project.name}-setup-${project.version}-${git.commit}.jar"/>
@@ -150,7 +150,7 @@
             compression="bzip2"
             compressionlevel="9"
             installerType="standard"/>
-        
+
         <!--mkdir dir="installer/temp"/>
         <tstamp/>
         <unjar src="${inst-jar}"
@@ -193,7 +193,7 @@
 	    <propertyregex property="ver.revision" input="${project.version.numeric}" regexp="[0-9]+\.[0-9]+\.([0-9]+).*" replace="\1" defaultValue="0"/>
 	    <propertyregex property="ver.build" input="${project.version.numeric}" regexp="[0-9]+\.[0-9]+\.[0-9]+\.([0-9]+)" replace="\1" defaultValue="0"/>
 
-		<launch4j configFile="installer/launch4j.xml" jar="${inst-jar}" 
+		<launch4j configFile="installer/launch4j.xml" jar="${inst-jar}"
 			outfile="${inst-exe}"
 			fileVersion="${ver.major}.${ver.minor}.${ver.revision}.${ver.build}"
 			txtFileVersion="${project.version}-${git.commit}"
@@ -203,20 +203,20 @@
 
     <target name="copy_scripts">
         <filter filtersfile="installer/scripts/scripts.properties" />
-        
+
         <copy todir="installer/scripts" filtering="true" overwrite="true">
             <fileset dir="bin">
                 <include name="*.sh"/>
                 <exclude name="run.sh"/>
-                
+
                 <include name="*.bat"/>
                 <exclude name="run.bat"/>
             </fileset>
         </copy>
-        
+
         <antcall target="fix-scripts"/>
     </target>
-    
+
     <target name="extract-apps">
         <mkdir dir="installer/temp"/>
         <unzip dest="installer/temp">
@@ -228,7 +228,7 @@
             </patternset>
         </unzip>
     </target>
-    
+
     <target name="fix-scripts">
         <fixcrlf srcdir="installer/scripts" includes="**/*.sh" eol="lf" eof="remove"/>
         <fixcrlf srcdir="installer/scripts" includes="**/*.bat" eol="crlf"/>

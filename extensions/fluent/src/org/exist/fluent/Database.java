@@ -14,7 +14,6 @@ import org.exist.dom.persistent.MutableDocumentSet;
 import org.exist.dom.persistent.NodeHandle;
 import org.exist.dom.persistent.TextImpl;
 import org.exist.security.*;
-import org.exist.security.xacml.AccessContext;
 import org.exist.storage.*;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.sync.Sync;
@@ -24,6 +23,7 @@ import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.*;
@@ -113,9 +113,7 @@ public class Database {
 			} finally {
 				db.releaseBroker(broker);
 			}
-		} catch (PermissionDeniedException e) {
-			throw new DatabaseException(e);
-		} catch (CollectionConfigurationException e) {
+		} catch (final PermissionDeniedException | IOException | CollectionConfigurationException e) {
 			throw new DatabaseException(e);
 		} finally {
 			tx.abortIfIncomplete();
@@ -173,7 +171,7 @@ public class Database {
 		if (!BrokerPool.isConfigured(dbName)) throw new IllegalStateException("database not started");
 		try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 			broker.flush();
-			broker.sync(Sync.MAJOR_SYNC);
+			broker.sync(Sync.MAJOR);
 		} catch (EXistException e) {
 			throw new DatabaseException(e);
 		}
@@ -348,7 +346,7 @@ public class Database {
 	private Sequence adoptInternal(Object o) {
 		DBBroker broker = acquireBroker();
 		try {
-			XQueryContext context = new XQueryContext(broker.getBrokerPool(), AccessContext.INTERNAL_PREFIX_LOOKUP);
+			XQueryContext context = new XQueryContext(broker.getBrokerPool());
 			context.declareNamespaces(namespaceBindings.getCombinedMap());
 			context.setBackwardsCompatibility(false);
 			context.setStaticallyKnownDocuments(DocumentSet.EMPTY_DOCUMENT_SET);
@@ -526,12 +524,12 @@ public class Database {
 		}
 		public void flush() {}
 		public void setDocument(DocumentImpl document) {}
-		public void storeAttribute(AttrImpl node, NodePath currentPath, int indexingHint, RangeIndexSpec spec, boolean remove) {}
+		public void storeAttribute(AttrImpl node, NodePath currentPath, RangeIndexSpec spec, boolean remove) {}
 		public void storeText(TextImpl node, NodePath currentPath) {}
 		public void sync() {}
 		public void printStatistics() {}
 		
-		public boolean close() {return true;}
+		public void close() {}
 		public void remove() {}
 		public void closeAndRemove() {
 			// TODO:  do nothing OK here?  indexes just got wiped and recreated, and this listener

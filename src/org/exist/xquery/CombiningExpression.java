@@ -97,11 +97,7 @@ public abstract class CombiningExpression extends AbstractExpression {
 
 	@Override
 	public String toString() {
-		final StringBuilder result = new StringBuilder();
-		result.append(left.toString());
-		result.append(" ").append(getOperatorName()).append(" ");
-		result.append(right.toString());
-		return result.toString();
+		return left.toString() + " " + getOperatorName() + " " + right.toString();
 	}
 
 	/**

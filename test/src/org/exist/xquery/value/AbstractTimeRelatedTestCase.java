@@ -1,6 +1,6 @@
 package org.exist.xquery.value;
 
-import org.exist.xquery.Constants;
+import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.XPathException;
 import org.junit.After;
 import org.junit.Before;
@@ -32,12 +32,12 @@ public abstract class AbstractTimeRelatedTestCase {
 
 	// type explicitly included in method name to avoid accidental (and confusing!) use of overloaded assertEquals methods
 	protected void assertDurationEquals(DurationValue dv1, AtomicValue dv2) throws XPathException {
-		if (!dv1.compareTo(null, Constants.EQ, dv2)) fail(dv1 + " != " + dv2);
+		if (!dv1.compareTo(null, Comparison.EQ, dv2)) fail(dv1 + " != " + dv2);
 	}
 	
 	// type explicitly included in method name to avoid accidental (and confusing!) use of overloaded assertEquals methods
 	protected void assertDateEquals(AbstractDateTimeValue v1, AtomicValue v2) throws XPathException {
-		if (!v1.compareTo(null, Constants.EQ, v2)) fail(v1 + " != " + v2);
+		if (!v1.compareTo(null, Comparison.EQ, v2)) fail(v1 + " != " + v2);
 	}
 	
 	protected DayTimeDurationValue getLocalTimezoneDuration() throws XPathException {

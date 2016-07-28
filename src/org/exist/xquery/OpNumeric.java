@@ -20,11 +20,13 @@
 
 package org.exist.xquery;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
 import org.exist.dom.persistent.NodeSet;
 import org.exist.storage.DBBroker;
+import org.exist.xquery.Constants.ArithmeticOperator;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.ComputableValue;
 import org.exist.xquery.value.Item;
@@ -38,17 +40,17 @@ import org.exist.xquery.value.Type;
  */
 public class OpNumeric extends BinaryOp {
 
-    protected final int operator;
+    protected final ArithmeticOperator operator;
     protected int returnType = Type.ATOMIC;
     protected NodeSet temp = null;
     protected DBBroker broker;
 
-    public OpNumeric(XQueryContext context, int operator) {
+    public OpNumeric(XQueryContext context, ArithmeticOperator operator) {
         super(context);
         this.operator = operator;
     }
 
-    public OpNumeric(XQueryContext context, Expression left, Expression right, int operator) {
+    public OpNumeric(XQueryContext context, Expression left, Expression right, ArithmeticOperator operator) {
         super(context);
         this.operator = operator;
         int ltype = left.returnsType();
@@ -59,9 +61,9 @@ public class OpNumeric extends BinaryOp {
             } else if (rtype > ltype) {
                 left = new UntypedValueCheck(context, rtype, left);
             }
-            if (operator == Constants.DIV && ltype == Type.INTEGER && rtype == Type.INTEGER) {
+            if (operator == ArithmeticOperator.DIVISION && ltype == Type.INTEGER && rtype == Type.INTEGER) {
                 returnType = Type.DECIMAL;
-            } else if (operator == Constants.IDIV) {
+            } else if (operator == ArithmeticOperator.DIVISION_INTEGER) {
                 returnType = Type.INTEGER;
             } else {
                 returnType = Math.max(ltype, rtype);
@@ -112,10 +114,10 @@ public class OpNumeric extends BinaryOp {
         final Sequence rseq = Atomize.atomize(getRight().eval(contextSequence, contextItem));
         if (lseq.hasMany())
             {throw new XPathException(this, ErrorCodes.XPTY0004,
-                "Too many operands at the left of " + Constants.OPS[operator]);}
+                "Too many operands at the left of " + operator.symbol);}
         if (rseq.hasMany())
             {throw new XPathException(this, ErrorCodes.XPTY0004,
-                "Too many operands at the right of " + Constants.OPS[operator]);}
+                "Too many operands at the right of " + operator.symbol);}
         Sequence result;
         if (rseq.isEmpty())
             {result = Sequence.EMPTY_SEQUENCE;}
@@ -132,19 +134,19 @@ public class OpNumeric extends BinaryOp {
                 if (!(lvalue instanceof ComputableValue))
                     {throw new XPathException(this, ErrorCodes.XPTY0004, "'" +
                         Type.getTypeName(lvalue.getType()) + "(" + lvalue + ")' can not be an operand for " +
-                        Constants.OPS[operator]);}
+                        operator.symbol);}
                 if (!(rvalue instanceof ComputableValue))
                     {throw new XPathException(this, ErrorCodes.XPTY0004, "'" +
                         Type.getTypeName(rvalue.getType()) + "(" + rvalue + ")' can not be an operand for " +
-                        Constants.OPS[operator]);}
+                        operator.symbol);}
                 //TODO : move to implementations
-                if (operator == Constants.IDIV) {
+                if (operator == ArithmeticOperator.DIVISION_INTEGER) {
                     if (!Type.subTypeOf(lvalue.getType(), Type.NUMBER))
                         {throw new XPathException(this, ErrorCodes.XPTY0004, "'" +
-                            Type.getTypeName(lvalue.getType()) + "(" + lvalue + ")' can not be an operand for " + Constants.OPS[operator]);}
+                            Type.getTypeName(lvalue.getType()) + "(" + lvalue + ")' can not be an operand for " + operator.symbol);}
                     if (!Type.subTypeOf(rvalue.getType(), Type.NUMBER))
                         {throw new XPathException(this, ErrorCodes.XPTY0004, "'" +
-                            Type.getTypeName(rvalue.getType()) + "(" + rvalue + ")' can not be an operand for " + Constants.OPS[operator]);}
+                            Type.getTypeName(rvalue.getType()) + "(" + rvalue + ")' can not be an operand for " + operator.symbol);}
                     //If the divisor is (positive or negative) zero, then an error is raised [err:FOAR0001]
                     if (((NumericValue)rvalue).isZero())
                         {throw new XPathException(this, ErrorCodes.FOAR0001, "Division by zero");}
@@ -182,104 +184,107 @@ public class OpNumeric extends BinaryOp {
     public ComputableValue applyOperator(ComputableValue left, ComputableValue right)
             throws XPathException {
         switch (operator) {
-        case Constants.MINUS: return left.minus(right);
-        case Constants.PLUS: return left.plus(right);
-        case Constants.MULT: return left.mult(right);
-        case Constants.DIV: return left.div(right);
-        case Constants.MOD: {
-            if (!Type.subTypeOf(left.getType(), Type.NUMBER))
-                {throw new XPathException(this, ErrorCodes.XPTY0004, "'" +
-                    Type.getTypeName(left.getType()) + "(" + left + ")' is not numeric");}
-            if (!Type.subTypeOf(right.getType(), Type.NUMBER))
-                {throw new XPathException(this, ErrorCodes.XPTY0004, "'" +
-                    Type.getTypeName(right.getType()) + "(" + right + ")' is not numeric");}
-            return ((NumericValue) left).mod((NumericValue) right);
+            case SUBTRACTION: return left.minus(right);
+            case ADDITION: return left.plus(right);
+            case MULTIPLICATION: return left.mult(right);
+            case DIVISION: return left.div(right);
+            case MODULUS: {
+                if (!Type.subTypeOf(left.getType(), Type.NUMBER))
+                    {throw new XPathException(this, ErrorCodes.XPTY0004, "'" +
+                        Type.getTypeName(left.getType()) + "(" + left + ")' is not numeric");}
+                if (!Type.subTypeOf(right.getType(), Type.NUMBER))
+                    {throw new XPathException(this, ErrorCodes.XPTY0004, "'" +
+                        Type.getTypeName(right.getType()) + "(" + right + ")' is not numeric");}
+                return ((NumericValue) left).mod((NumericValue) right);
         }
         default:
             throw new RuntimeException("Unknown numeric operator " + operator);
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.PathExpr#dump(org.exist.xquery.util.ExpressionDumper)
-     */
+    @Override
     public void dump(ExpressionDumper dumper) {
         getLeft().dump(dumper);
-        dumper.display(' ').display(Constants.OPS[operator]).display(' ');
+        dumper.display(' ').display(operator.symbol).display(' ');
         getRight().dump(dumper);
     }
 
+    @Override
     public String toString() {
-        final StringBuilder result = new StringBuilder();
-        result.append(getLeft().toString());
-        result.append(' ').append(Constants.OPS[operator]).append(' ');
-        result.append(getRight());
-        return result.toString();
+        return getLeft().toString() + ' ' + operator.symbol + ' ' + getRight();
     }
 
     // excerpt from operator mapping table in XQuery 1.0 section B.2
     // http://www.w3.org/TR/xquery/#mapping
-    private static final int[] OP_TABLE = {
-        Constants.PLUS,     Type.NUMBER,                Type.NUMBER,                Type.NUMBER,
-        Constants.PLUS,     Type.DATE,                  Type.YEAR_MONTH_DURATION,   Type.DATE,
-        Constants.PLUS,     Type.YEAR_MONTH_DURATION,   Type.DATE,                  Type.DATE,
-        Constants.PLUS,     Type.DATE,                  Type.DAY_TIME_DURATION,     Type.DATE,
-        Constants.PLUS,     Type.DAY_TIME_DURATION,     Type.DATE,                  Type.DATE,
-        Constants.PLUS,     Type.TIME,                  Type.DAY_TIME_DURATION,     Type.TIME,
-        Constants.PLUS,     Type.DAY_TIME_DURATION,     Type.TIME,                  Type.TIME,
-        Constants.PLUS,     Type.DATE_TIME,             Type.YEAR_MONTH_DURATION,   Type.DATE_TIME,
-        Constants.PLUS,     Type.YEAR_MONTH_DURATION,   Type.DATE_TIME,             Type.DATE_TIME,
-        Constants.PLUS,     Type.DATE_TIME,             Type.DAY_TIME_DURATION,     Type.DATE_TIME,
-        Constants.PLUS,     Type.DAY_TIME_DURATION,     Type.DATE_TIME,             Type.DATE_TIME,
-        Constants.PLUS,     Type.YEAR_MONTH_DURATION,   Type.YEAR_MONTH_DURATION,   Type.YEAR_MONTH_DURATION,
-        Constants.PLUS,     Type.DAY_TIME_DURATION,     Type.DAY_TIME_DURATION,     Type.DAY_TIME_DURATION,
-        Constants.MINUS,    Type.NUMBER,                Type.NUMBER,                Type.NUMBER,
-        Constants.MINUS,    Type.DATE,                  Type.DATE,                  Type.DAY_TIME_DURATION,
-        Constants.MINUS,    Type.DATE,                  Type.YEAR_MONTH_DURATION,   Type.DATE,
-        Constants.MINUS,    Type.DATE,                  Type.DAY_TIME_DURATION,     Type.DATE,
-        Constants.MINUS,    Type.TIME,                  Type.TIME,                  Type.DAY_TIME_DURATION,
-        Constants.MINUS,    Type.TIME,                  Type.DAY_TIME_DURATION,     Type.TIME,
-        Constants.MINUS,    Type.DATE_TIME,             Type.DATE_TIME,             Type.DAY_TIME_DURATION,
-        Constants.MINUS,    Type.DATE_TIME,             Type.YEAR_MONTH_DURATION,   Type.DATE_TIME,
-        Constants.MINUS,    Type.DATE_TIME,             Type.DAY_TIME_DURATION,     Type.DATE_TIME,
-        Constants.MINUS,    Type.YEAR_MONTH_DURATION,   Type.YEAR_MONTH_DURATION,   Type.YEAR_MONTH_DURATION,
-        Constants.MINUS,    Type.DAY_TIME_DURATION,     Type.DAY_TIME_DURATION,     Type.DAY_TIME_DURATION,
-        Constants.MULT,     Type.NUMBER,                Type.NUMBER,                Type.NUMBER,
-        Constants.MULT,     Type.YEAR_MONTH_DURATION,   Type.NUMBER,                Type.YEAR_MONTH_DURATION,
-        Constants.MULT,     Type.NUMBER,                Type.YEAR_MONTH_DURATION,   Type.YEAR_MONTH_DURATION,
-        Constants.MULT,     Type.DAY_TIME_DURATION,     Type.NUMBER,                Type.DAY_TIME_DURATION,
-        Constants.MULT,     Type.NUMBER,                Type.DAY_TIME_DURATION,     Type.DAY_TIME_DURATION,
-        Constants.IDIV,     Type.NUMBER,                Type.NUMBER,                Type.INTEGER,
-        Constants.DIV,      Type.NUMBER,                Type.NUMBER,                Type.NUMBER,  // except for integer -> decimal
-        Constants.DIV,      Type.YEAR_MONTH_DURATION,   Type.NUMBER,                Type.YEAR_MONTH_DURATION,
-        Constants.DIV,      Type.DAY_TIME_DURATION,     Type.NUMBER,                Type.DAY_TIME_DURATION,
-        Constants.DIV,      Type.YEAR_MONTH_DURATION,   Type.YEAR_MONTH_DURATION,   Type.DECIMAL,
-        Constants.DIV,      Type.DAY_TIME_DURATION,     Type.DAY_TIME_DURATION,     Type.DECIMAL,
-        Constants.MOD,      Type.NUMBER,                Type.NUMBER,                Type.NUMBER,
+    private static final OpEntry[] OP_TABLE = {
+        new OpEntry(ArithmeticOperator.ADDITION,     Type.NUMBER,                Type.NUMBER,                Type.NUMBER),
+        new OpEntry(ArithmeticOperator.ADDITION,     Type.DATE,                  Type.YEAR_MONTH_DURATION,   Type.DATE),
+        new OpEntry(ArithmeticOperator.ADDITION,     Type.YEAR_MONTH_DURATION,   Type.DATE,                  Type.DATE),
+        new OpEntry(ArithmeticOperator.ADDITION,     Type.DATE,                  Type.DAY_TIME_DURATION,     Type.DATE),
+        new OpEntry(ArithmeticOperator.ADDITION,     Type.DAY_TIME_DURATION,     Type.DATE,                  Type.DATE),
+        new OpEntry(ArithmeticOperator.ADDITION,     Type.TIME,                  Type.DAY_TIME_DURATION,     Type.TIME),
+        new OpEntry(ArithmeticOperator.ADDITION,     Type.DAY_TIME_DURATION,     Type.TIME,                  Type.TIME),
+        new OpEntry(ArithmeticOperator.ADDITION,     Type.DATE_TIME,             Type.YEAR_MONTH_DURATION,   Type.DATE_TIME),
+        new OpEntry(ArithmeticOperator.ADDITION,     Type.YEAR_MONTH_DURATION,   Type.DATE_TIME,             Type.DATE_TIME),
+        new OpEntry(ArithmeticOperator.ADDITION,     Type.DATE_TIME,             Type.DAY_TIME_DURATION,     Type.DATE_TIME),
+        new OpEntry(ArithmeticOperator.ADDITION,     Type.DAY_TIME_DURATION,     Type.DATE_TIME,             Type.DATE_TIME),
+        new OpEntry(ArithmeticOperator.ADDITION,     Type.YEAR_MONTH_DURATION,   Type.YEAR_MONTH_DURATION,   Type.YEAR_MONTH_DURATION),
+        new OpEntry(ArithmeticOperator.ADDITION,     Type.DAY_TIME_DURATION,     Type.DAY_TIME_DURATION,     Type.DAY_TIME_DURATION),
+        new OpEntry(ArithmeticOperator.SUBTRACTION,    Type.NUMBER,                Type.NUMBER,                Type.NUMBER),
+        new OpEntry(ArithmeticOperator.SUBTRACTION,    Type.DATE,                  Type.DATE,                  Type.DAY_TIME_DURATION),
+        new OpEntry(ArithmeticOperator.SUBTRACTION,    Type.DATE,                  Type.YEAR_MONTH_DURATION,   Type.DATE),
+        new OpEntry(ArithmeticOperator.SUBTRACTION,    Type.DATE,                  Type.DAY_TIME_DURATION,     Type.DATE),
+        new OpEntry(ArithmeticOperator.SUBTRACTION,    Type.TIME,                  Type.TIME,                  Type.DAY_TIME_DURATION),
+        new OpEntry(ArithmeticOperator.SUBTRACTION,    Type.TIME,                  Type.DAY_TIME_DURATION,     Type.TIME),
+        new OpEntry(ArithmeticOperator.SUBTRACTION,    Type.DATE_TIME,             Type.DATE_TIME,             Type.DAY_TIME_DURATION),
+        new OpEntry(ArithmeticOperator.SUBTRACTION,    Type.DATE_TIME,             Type.YEAR_MONTH_DURATION,   Type.DATE_TIME),
+        new OpEntry(ArithmeticOperator.SUBTRACTION,    Type.DATE_TIME,             Type.DAY_TIME_DURATION,     Type.DATE_TIME),
+        new OpEntry(ArithmeticOperator.SUBTRACTION,    Type.YEAR_MONTH_DURATION,   Type.YEAR_MONTH_DURATION,   Type.YEAR_MONTH_DURATION),
+        new OpEntry(ArithmeticOperator.SUBTRACTION,    Type.DAY_TIME_DURATION,     Type.DAY_TIME_DURATION,     Type.DAY_TIME_DURATION),
+        new OpEntry(ArithmeticOperator.MULTIPLICATION,     Type.NUMBER,                Type.NUMBER,                Type.NUMBER),
+        new OpEntry(ArithmeticOperator.MULTIPLICATION,     Type.YEAR_MONTH_DURATION,   Type.NUMBER,                Type.YEAR_MONTH_DURATION),
+        new OpEntry(ArithmeticOperator.MULTIPLICATION,     Type.NUMBER,                Type.YEAR_MONTH_DURATION,   Type.YEAR_MONTH_DURATION),
+        new OpEntry(ArithmeticOperator.MULTIPLICATION,     Type.DAY_TIME_DURATION,     Type.NUMBER,                Type.DAY_TIME_DURATION),
+        new OpEntry(ArithmeticOperator.MULTIPLICATION,     Type.NUMBER,                Type.DAY_TIME_DURATION,     Type.DAY_TIME_DURATION),
+        new OpEntry(ArithmeticOperator.DIVISION_INTEGER,     Type.NUMBER,                Type.NUMBER,                Type.INTEGER),
+        new OpEntry(ArithmeticOperator.DIVISION,      Type.NUMBER,                Type.NUMBER,                Type.NUMBER),  // except for integer -> decimal
+        new OpEntry(ArithmeticOperator.DIVISION,      Type.YEAR_MONTH_DURATION,   Type.NUMBER,                Type.YEAR_MONTH_DURATION),
+        new OpEntry(ArithmeticOperator.DIVISION,      Type.DAY_TIME_DURATION,     Type.NUMBER,                Type.DAY_TIME_DURATION),
+        new OpEntry(ArithmeticOperator.DIVISION,      Type.YEAR_MONTH_DURATION,   Type.YEAR_MONTH_DURATION,   Type.DECIMAL),
+        new OpEntry(ArithmeticOperator.DIVISION,      Type.DAY_TIME_DURATION,     Type.DAY_TIME_DURATION,     Type.DECIMAL),
+        new OpEntry(ArithmeticOperator.MODULUS,      Type.NUMBER,                Type.NUMBER,                Type.NUMBER)
     };
 
     private static class OpEntry implements Comparable<OpEntry> {
-        public final int op, typeA, typeB, typeResult;
+        public final ArithmeticOperator op;
+        public final int typeA, typeB, typeResult;
 
-        public OpEntry(int op, int typeA, int typeB) {
+        public OpEntry(final ArithmeticOperator op, final int typeA, final int typeB) {
             this(op, typeA, typeB, Type.ATOMIC);
         }
 
-        public OpEntry(int op, int typeA, int typeB, int typeResult) {
-            this.op = op; this.typeA = typeA; this.typeB = typeB; this.typeResult = typeResult;
+        public OpEntry(final ArithmeticOperator op, final int typeA, final int typeB, final int typeResult) {
+            this.op = op;
+            this.typeA = typeA;
+            this.typeB = typeB;
+            this.typeResult = typeResult;
         }
 
-        public int compareTo(OpEntry that) {
-            if (this.op != that.op)
-                {return this.op - that.op;}
-            else if (this.typeA != that.typeA)
-                {return this.typeA - that.typeA;}
-            else if (this.typeB != that.typeB)
-                {return this.typeB - that.typeB;}
-            else {return 0;}
-   	 }
+        @Override
+        public int compareTo(final OpEntry that) {
+            if (this.op != that.op) {
+                return this.op.ordinal() - that.op.ordinal();
+            } else if (this.typeA != that.typeA) {
+                return this.typeA - that.typeA;
+            } else if (this.typeB != that.typeB) {
+                return this.typeB - that.typeB;
+            } else {
+                return 0;
+            }
+   	    }
 
-        public boolean equals(Object o) {
+        @Override
+        public boolean equals(final Object o) {
             try {
                 final OpEntry that = (OpEntry) o;
                 return this.op == that.op && this.typeA == that.typeA &&
@@ -287,17 +292,13 @@ public class OpNumeric extends BinaryOp {
             } catch (final ClassCastException e) {
                 return false;
             }
-   	     }
-
-// TODO: implement hashcode, if needed
-
+        }
     }
 
-    private static final Map<OpEntry, OpEntry> OP_TYPES = new TreeMap<OpEntry, OpEntry>();
+    private static final Map<OpEntry, OpEntry> OP_TYPES = new TreeMap<>();
 
     static {
-        for (int i=0; i < OP_TABLE.length; i+=4) {
-            final OpEntry entry = new OpEntry(OP_TABLE[i], OP_TABLE[i+1], OP_TABLE[i+2], OP_TABLE[i+3]);
+        for (final OpEntry entry : OP_TABLE) {
             OP_TYPES.put(entry, entry);
         }
     }

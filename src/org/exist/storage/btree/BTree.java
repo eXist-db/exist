@@ -80,13 +80,8 @@ import org.exist.storage.CacheManager;
 import org.exist.storage.DefaultCacheManager;
 import org.exist.storage.NativeBroker;
 import org.exist.storage.cache.*;
-import org.exist.storage.journal.Journal;
-import org.exist.storage.journal.LogEntryTypes;
-import org.exist.storage.journal.LogException;
-import org.exist.storage.journal.Loggable;
-import org.exist.storage.journal.Lsn;
+import org.exist.storage.journal.*;
 import org.exist.storage.lock.Lock;
-import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.Txn;
 import org.exist.util.ByteConversion;
 import org.exist.util.FileUtils;
@@ -149,48 +144,57 @@ public class BTree extends Paged implements Lockable {
         LogEntryTypes.addEntryType(LOG_SET_LINK, SetPageLinkLoggable::new);
     }
 
-    protected DefaultCacheManager cacheManager;
+    private final BrokerPool pool;
+
+    protected final DefaultCacheManager cacheManager;
 
     /** Cache of BTreeNode(s) */
     protected Cache cache;
 
-    /** Fileheader of a BTree file */
-    private BTreeFileHeader fileHeader;
+    /** File header of a BTree file */
+    private final BTreeFileHeader fileHeader;
 
     /** The LogManager for writing the transaction log */
-    protected Journal logManager;
+    protected final Optional<JournalManager> logManager;
 
-    protected byte fileId;
-
-    protected boolean isTransactional;
+    protected final byte fileId;
 
     private double splitFactor = -1;
 
-    protected BTree(BrokerPool pool, byte fileId, boolean transactional,
-            DefaultCacheManager cacheManager) throws DBException {
+    protected BTree(final BrokerPool pool, final byte fileId, final boolean recoveryEnabled,
+            final DefaultCacheManager cacheManager) throws DBException {
         super(pool);
+        this.pool = pool;
         this.cacheManager = cacheManager;
         this.fileId = fileId;
-        fileHeader = (BTreeFileHeader) getFileHeader();
+        this.fileHeader = (BTreeFileHeader) getFileHeader();
         fileHeader.setPageCount(0);
         fileHeader.setTotalCount(0);
-        isTransactional = transactional && pool.isTransactional();
-        if (isTransactional)
-            {logManager = pool.getTransactionManager().getJournal();}
+        if (recoveryEnabled && pool.isRecoveryEnabled()) {
+            this.logManager = pool.getJournalManager();
+        } else {
+            this.logManager = Optional.empty();
+        }
     }
 
-    public BTree(BrokerPool pool, byte fileId, boolean transactional,
-            DefaultCacheManager cacheManager, final Path file)
+    protected boolean isRecoveryEnabled() {
+        return logManager.isPresent() && pool.isRecoveryEnabled();
+    }
+
+    public BTree(final BrokerPool pool, final byte fileId,
+                 final boolean recoveryEnabled,
+                 final DefaultCacheManager cacheManager, final Path file)
             throws DBException {
-        this(pool, fileId, transactional, cacheManager);
+        this(pool, fileId, recoveryEnabled, cacheManager);
         setFile(file);
     }
 
+    @Override
     public short getFileVersion() {
         return -1;
     }
 
-    public boolean create(short fixedKeyLen) throws DBException {
+    public boolean create(final short fixedKeyLen) throws DBException {
         if (super.create()) {
             initCache();
             try {
@@ -209,7 +213,8 @@ public class BTree extends Paged implements Lockable {
         return true;
     }
 
-    public boolean open(short expectedVersion) throws DBException {
+    @Override
+    public boolean open(final short expectedVersion) throws DBException {
         if (super.open(expectedVersion)) {
             initCache();
             return true;
@@ -218,6 +223,7 @@ public class BTree extends Paged implements Lockable {
         }
     }
 
+    @Override
     public void closeAndRemove() {
         super.closeAndRemove();
         cacheManager.deregisterCache(cache);
@@ -228,62 +234,64 @@ public class BTree extends Paged implements Lockable {
      *
      * @see org.exist.util.Lockable#getLock()
      */
+    @Override
     public Lock getLock() {
         return null;
     }
 
     protected void initCache() {
-        cache = new BTreeCache(cacheManager.getDefaultInitialSize(), 1.5,
+        this.cache = new BTreeCache(cacheManager.getDefaultInitialSize(), 1.5,
             0, CacheManager.BTREE_CACHE);
         cache.setFileName(FileUtils.fileName(getFile()));
         cacheManager.registerCache(cache);
     }
 
-    protected void setSplitFactor(double factor) {
-        if (factor > 1.0)
-            {throw new IllegalArgumentException("splitFactor should be <= 1 > 0");}
+    protected void setSplitFactor(final double factor) {
+        if (factor > 1.0) {
+            throw new IllegalArgumentException("splitFactor should be <= 1 > 0");
+        }
         this.splitFactor = factor;
     }
 
     /**
-     *  addValue adds a Value to the BTree and associates a pointer with it. The
-     *  pointer can be used for referencing any type of data, it just so happens
-     *  that dbXML uses it for referencing pages of associated data in the BTree
-     *  file or other files.
+     * addValue adds a Value to the BTree and associates a pointer with it. The
+     * pointer can be used for referencing any type of data, it just so happens
+     * that dbXML uses it for referencing pages of associated data in the BTree
+     * file or other files.
      *
-     *@param  value               The Value to add
-     *@param  pointer             The pointer to associate with it
-     *@return                     The previous value for the pointer (or -1)
-     *@exception  IOException     Description of the Exception
-     *@exception  BTreeException  Description of the Exception
+     * @param  value               The Value to add
+     * @param  pointer             The pointer to associate with it
+     * @return                     The previous value for the pointer (or -1)
+     * @exception  IOException     Description of the Exception
+     * @exception  BTreeException  Description of the Exception
      */
-    public long addValue(Value value, long pointer) throws IOException, BTreeException {
+    public long addValue(final Value value, final long pointer) throws IOException, BTreeException {
         return addValue(null, value, pointer);
     }
 
-    public long addValue(Txn transaction, Value value, long pointer) throws IOException, BTreeException {
+    public long addValue(final Txn transaction, final Value value, final long pointer) throws IOException, BTreeException {
         return getRootNode().addValue(transaction, value, pointer);
     }
 
     /**
-     *  removeValue removes a Value from the BTree and returns the associated
-     *  pointer for it.
+     * removeValue removes a Value from the BTree and returns the associated
+     * pointer for it.
      *
-     *@param  value               The Value to remove
-     *@return                     The pointer that was associated with it
-     *@exception  IOException     Description of the Exception
-     *@exception  BTreeException  Description of the Exception
+     * @param  value               The Value to remove
+     * @return                     The pointer that was associated with it
+     * @exception  IOException     Description of the Exception
+     * @exception  BTreeException  Description of the Exception
      */
-    public long removeValue(Value value) throws IOException, BTreeException {
+    public long removeValue(final Value value) throws IOException, BTreeException {
         return removeValue(null, value);
     }
 
-    public long removeValue(Txn transaction, Value value) throws IOException, BTreeException {
+    public long removeValue(final Txn transaction, final Value value) throws IOException, BTreeException {
         return getRootNode().removeValue(transaction, value);
     }
 
 
-    public void remove(IndexQuery query, BTreeCallback callback) throws IOException,
+    public void remove(final IndexQuery query, final BTreeCallback callback) throws IOException,
             BTreeException, TerminatedException {
         remove(null, query, callback);
     }
@@ -299,7 +307,7 @@ public class BTree extends Paged implements Lockable {
      * @throws BTreeException
      * @throws TerminatedException
      */
-    public void remove(Txn transaction, IndexQuery query, BTreeCallback callback)
+    public void remove(final Txn transaction, IndexQuery query, final BTreeCallback callback)
             throws IOException, BTreeException, TerminatedException {
         if (query != null && query.getOperator() == IndexQuery.TRUNC_RIGHT) {
             final Value val1 = query.getValue(0);
@@ -312,23 +320,25 @@ public class BTree extends Paged implements Lockable {
         getRootNode().remove(transaction, query, callback);
     }
 
-    protected void removeSequential(Txn transaction, BTreeNode page, IndexQuery query,
-            BTreeCallback callback) throws TerminatedException {
+    protected void removeSequential(final Txn transaction, final BTreeNode page, final IndexQuery query,
+            final BTreeCallback callback) throws TerminatedException {
         long next = page.pageHeader.getNextPage();
         while (next != Page.NO_PAGE) {
             final BTreeNode nextPage = getBTreeNode(next);
             for (int i = 0; i < nextPage.nKeys; i++) {
-                boolean test = query.testValue(nextPage.keys[i]);
-                if (query.getOperator() != IndexQuery.NEQ && !test)
-                    {return;}
+                final boolean test = query.testValue(nextPage.keys[i]);
+                if (query.getOperator() != IndexQuery.NEQ && !test) {
+                    return;
+                }
                 if (test) {
-                    if (isTransactional && transaction != null && nextPage.pageHeader.getStatus() == LEAF) {
+                    if (transaction != null && isRecoveryEnabled() && nextPage.pageHeader.getStatus() == LEAF) {
                         final RemoveValueLoggable log = new RemoveValueLoggable(transaction, 
                             fileId, nextPage.page.getPageNum(), i, nextPage.keys[i], nextPage.ptrs[i]);
                         writeToLog(log, nextPage);
                     }
-                    if (callback != null)
-                        {callback.indexInfo(nextPage.keys[i], nextPage.ptrs[i]);}
+                    if (callback != null) {
+                        callback.indexInfo(nextPage.keys[i], nextPage.ptrs[i]);
+                    }
                     nextPage.removeKey(i);
                     nextPage.removePointer(i);
                     nextPage.recalculateDataLen();
@@ -340,28 +350,28 @@ public class BTree extends Paged implements Lockable {
     }
 
     /**
-     *  findValue finds a Value in the BTree and returns the associated pointer
-     *  for it.
+     * findValue finds a Value in the BTree and returns the associated pointer
+     * for it.
      *
-     *@param  value               The Value to find
-     *@return                     The pointer that was associated with it
-     *@exception  IOException     Description of the Exception
-     *@exception  BTreeException  Description of the Exception
+     * @param  value               The Value to find
+     * @return                     The pointer that was associated with it
+     * @exception  IOException     Description of the Exception
+     * @exception  BTreeException  Description of the Exception
      */
-    public long findValue(Value value) throws IOException, BTreeException {
+    public long findValue(final Value value) throws IOException, BTreeException {
         return getRootNode().findValue(value);
     }
 
     /**
-     *  query performs a query against the BTree and performs callback
-     *  operations to report the search results.
+     * query performs a query against the BTree and performs callback
+     * operations to report the search results.
      *
-     *@param  query               The IndexQuery to use (or null for everything)
-     *@param  callback            The callback instance
-     *@exception  IOException     Description of the Exception
-     *@exception  BTreeException  Description of the Exception
+     * @param  query               The IndexQuery to use (or null for everything)
+     * @param  callback            The callback instance
+     * @exception  IOException     Description of the Exception
+     * @exception  BTreeException  Description of the Exception
      */
-    public void query(IndexQuery query, BTreeCallback callback)
+    public void query(IndexQuery query, final BTreeCallback callback)
             throws IOException, BTreeException, TerminatedException {
         if (query != null && query.getOperator() == IndexQuery.TRUNC_RIGHT) {
             final Value val1 = query.getValue(0);
@@ -375,39 +385,43 @@ public class BTree extends Paged implements Lockable {
     }
 
     /**
-     *  Executes a query against the BTree and performs callback
-     *  operations to report the search results. This method takes an
-     *  additional prefix value. Only BTree keys starting with the specified
-     *  prefix are considered. Search through the tree is thus restricted to
-     *  a given key range.
+     * Executes a query against the BTree and performs callback
+     * operations to report the search results. This method takes an
+     * additional prefix value. Only BTree keys starting with the specified
+     * prefix are considered. Search through the tree is thus restricted to
+     * a given key range.
      *
-     *@param  query The IndexQuery to use (or null for everything)
-     *@param prefix a prefix value
-     *@param  callback The callback instance
-     *@exception  IOException
-     *@exception  BTreeException
+     * @param  query The IndexQuery to use (or null for everything)
+     * @param prefix a prefix value
+     * @param  callback The callback instance
+     * @exception  IOException
+     * @exception  BTreeException
      */
-    public void query(IndexQuery query, Value prefix, BTreeCallback callback)
+    public void query(final IndexQuery query, final Value prefix, final BTreeCallback callback)
             throws IOException, BTreeException, TerminatedException {
         getRootNode().query(query, prefix, callback);
     }
 
-    protected void scanSequential(BTreeNode page, IndexQuery query, Value keyPrefix, BTreeCallback callback) throws TerminatedException {
+    protected void scanSequential(BTreeNode page, final IndexQuery query, final Value keyPrefix, final BTreeCallback callback) throws TerminatedException {
         while (page != null) {
             for (int i = 0; i < page.nKeys; i++) {
-                if (keyPrefix != null && page.keys[i].comparePrefix(keyPrefix) > 0)
-                    {return;}
-                boolean test = query.testValue(page.keys[i]);
-                if (query.getOperator() != IndexQuery.NEQ && !test)
-                    {return;}
-                if (test)
-                    {callback.indexInfo(page.keys[i], page.ptrs[i]);}
+                if (keyPrefix != null && page.keys[i].comparePrefix(keyPrefix) > 0) {
+                    return;
+                }
+                final boolean test = query.testValue(page.keys[i]);
+                if (query.getOperator() != IndexQuery.NEQ && !test) {
+                    return;
+                }
+                if (test) {
+                    callback.indexInfo(page.keys[i], page.ptrs[i]);
+                }
             }
             final long next = page.pageHeader.getNextPage();
             if (next != Page.NO_PAGE) {
                 page = getBTreeNode(next);
-            } else
-                {page = null;}
+            } else {
+                page = null;
+            }
         }
     }
 
@@ -419,12 +433,11 @@ public class BTree extends Paged implements Lockable {
      * @param parent
      * @return The BTree node
      */
-    private BTreeNode createBTreeNode(Txn transaction, byte status, BTreeNode parent, 
-            boolean reuseDeleted) {
+    private BTreeNode createBTreeNode(final Txn transaction, final byte status, final BTreeNode parent, final boolean reuseDeleted) {
         try {
             final Page page = getFreePage(reuseDeleted);
             final BTreeNode node = new BTreeNode(page, true);
-            if (transaction != null && isTransactional && status == LEAF) {
+            if (transaction != null && isRecoveryEnabled() && status == LEAF) {
                 final Loggable loggable = new CreateBTNodeLoggable(transaction, fileId, 
                     status, page.getPageNum(), parent != null ? parent.page.getPageNum() : Page.NO_PAGE);
                 writeToLog(loggable, node);
@@ -446,7 +459,7 @@ public class BTree extends Paged implements Lockable {
      * @param pageNum
      * @return The BTree node
      */
-    private BTreeNode getBTreeNode(long pageNum) {
+    private BTreeNode getBTreeNode(final long pageNum) {
         try {
             BTreeNode node = (BTreeNode) cache.get(pageNum);
             if (node == null) {
@@ -469,7 +482,7 @@ public class BTree extends Paged implements Lockable {
      * @param rootNode
      * @throws IOException
      */
-    protected void setRootNode(BTreeNode rootNode) throws IOException {
+    protected void setRootNode(final BTreeNode rootNode) throws IOException {
         fileHeader.setRootPage(rootNode.page.getPageNum());
         fileHeader.write();
         cache.add(rootNode, 2);
@@ -482,7 +495,7 @@ public class BTree extends Paged implements Lockable {
      * @return The root node
      * @throws IOException
      */
-    protected long createRootNode(Txn transaction) throws IOException {
+    protected long createRootNode(final Txn transaction) throws IOException {
         final BTreeNode root = createBTreeNode(transaction, LEAF, null, true);
         setRootNode(root);
         return root.page.getPageNum();
@@ -513,7 +526,7 @@ public class BTree extends Paged implements Lockable {
      * @throws IOException
      * @throws BTreeException
      */
-    public void dump(Writer writer) throws IOException, BTreeException {
+    public void dump(final Writer writer) throws IOException, BTreeException {
         final BTreeNode root = getRootNode();
         LOG.debug("ROOT = " + root.page.getPageNum());
         root.dump(writer);
@@ -526,28 +539,22 @@ public class BTree extends Paged implements Lockable {
         return metrics;
     }
 
-    /* Flush the dirty data to the disk and cleans up the cache.
-     * @see org.exist.storage.btree.Paged#flush()
-     * @return <code>true</code> if something had to be cleaned
-     */
+    @Override
     public boolean flush() throws DBException {
         boolean flushed = cache.flush();
         flushed = flushed | super.flush();
         return flushed;
     }
 
-    /*
-     * @see org.exist.storage.btree.Paged#close()
-     */
-	public boolean close() throws DBException {
+    @Override
+	public void close() throws DBException {
         if (!isReadOnly()) {
             flush();
         }
         super.close();
-        return true;
     }
 
-    protected void dumpValue(Writer writer, Value value, int status) throws IOException {
+    protected void dumpValue(final Writer writer, final Value value, final int status) throws IOException {
         final byte[] data = value.getData();
         writer.write('[');
         writer.write(Paged.hexDump(data));
@@ -557,7 +564,7 @@ public class BTree extends Paged implements Lockable {
         writer.write(']');
     }
 
-    public void rawScan(IndexQuery query, BTreeCallback callback) throws IOException,
+    public void rawScan(final IndexQuery query, final BTreeCallback callback) throws IOException,
             TerminatedException {
         final long pages = getFileHeader().getTotalCount();
         for (int i = 1; i < pages; i++) {
@@ -572,10 +579,10 @@ public class BTree extends Paged implements Lockable {
     }
 
     protected static class TreeInfo {
-        long firstPage;
-        int leafPages = 0;
+        final long firstPage;
+        final int leafPages;
 
-        TreeInfo(long firstPage, int leafs) {
+        TreeInfo(final long firstPage, final int leafs) {
             this.firstPage = firstPage;
             this.leafPages = leafs;
         }
@@ -591,17 +598,18 @@ public class BTree extends Paged implements Lockable {
      * @throws TerminatedException
      * @throws DBException
      */
-    private TreeInfo scanTree(boolean removeBranches) throws IOException, TerminatedException, DBException {
-        final Set<Long> pagePointers = new HashSet<Long>();
-        final Set<Long> nextPages = new HashSet<Long>();
-        final List<Long> branchPages = new ArrayList<Long>();
+    private TreeInfo scanTree(final boolean removeBranches) throws IOException, TerminatedException, DBException {
+        final Set<Long> pagePointers = new HashSet<>();
+        final Set<Long> nextPages = new HashSet<>();
+        final List<Long> branchPages = new ArrayList<>();
 
         int pageCount = 0;
         final long pages = getFileHeader().getTotalCount();
         for (long i = 0; i < pages; i++) {
-            Page page;
             // first check if page is in cache. if yes, use it.
             BTreeNode node = (BTreeNode) cache.get(i);
+
+            final Page page;
             if (node != null) {
                 page = node.page;
             } else {
@@ -629,10 +637,10 @@ public class BTree extends Paged implements Lockable {
             throw new DBException("More than one start page found for btree: " + FileUtils.fileName(getFile()));
         }
         if (removeBranches) {
-            for (long p : branchPages) {
-                Page page = getPage(p);
+            for (final long p : branchPages) {
+                final Page page = getPage(p);
                 page.read();
-                BTreeNode node = new BTreeNode(page, false);
+                final BTreeNode node = new BTreeNode(page, false);
                 node.read();
                 cache.remove(node);
                 unlinkPages(page);
@@ -642,25 +650,20 @@ public class BTree extends Paged implements Lockable {
         return new TreeInfo(pagePointers.iterator().next(), pageCount);
     }
 
-    public void scanSequential(long pageNum, BTreeCallback callback) throws IOException, TerminatedException {
+    public void scanSequential(final PrintStream out, long pageNum, final BTreeCallback callback) throws IOException, TerminatedException {
         while (pageNum != Page.NO_PAGE) {
-            System.out.print(pageNum + " ");
+            out.print(pageNum + " ");
             final BTreeNode node = getBTreeNode(pageNum);
             node.scanRaw(null, callback);
             pageNum = node.pageHeader.getNextPage();
         }
-        System.out.println();
+        out.println();
     }
 
-    public void scanSequential() throws TerminatedException, IOException, DBException {
-        TreeInfo info = scanTree(false);
-        System.out.println("Sequential scan...");
-        scanSequential(info.firstPage, new BTreeCallback() {
-            @Override
-            public boolean indexInfo(Value value, long pointer) throws TerminatedException {
-                return true;
-            }
-        });
+    public void scanSequential(final PrintStream out) throws TerminatedException, IOException, DBException {
+        final TreeInfo info = scanTree(false);
+        out.println("Sequential scan...");
+        scanSequential(out, info.firstPage, (value, pointer) -> true);
     }
 
     /**
@@ -672,9 +675,9 @@ public class BTree extends Paged implements Lockable {
      * @throws DBException
      */
     public void rebuild() throws TerminatedException, IOException, DBException {
-        TreeInfo info  = scanTree(true);
+        final TreeInfo info  = scanTree(true);
         if (info.leafPages == 1) {
-            BTreeNode root = getBTreeNode(info.firstPage);
+            final BTreeNode root = getBTreeNode(info.firstPage);
             setRootNode(root);
             cache.add(root);
         } else {
@@ -724,7 +727,7 @@ public class BTree extends Paged implements Lockable {
      * @return
      * @throws IOException
      */
-    private BTreeNode findParent(Value key) throws IOException {
+    private BTreeNode findParent(final Value key) throws IOException {
         BTreeNode node = getRootNode();
         BTreeNode last = node;
         while (node.pageHeader.getStatus() != LEAF) {
@@ -733,7 +736,7 @@ public class BTree extends Paged implements Lockable {
                 int idx = node.searchKey(key);
                 idx = idx < 0 ? - (idx + 1) : idx + 1;
                 node = node.getChildNode(idx);
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 e.printStackTrace();
                 throw new IOException("Error while scanning page " + node.page.getPageNum());
             }
@@ -745,20 +748,22 @@ public class BTree extends Paged implements Lockable {
      * Methods used by recovery and transaction management
      * ---------------------------------------------------------------------- */
 
-    private void writeToLog(Loggable loggable, BTreeNode node) {
-        try {
-            logManager.writeToLog(loggable);
-            node.page.getPageHeader().setLsn(loggable.getLsn());
-        } catch (final TransactionException e) {
-            LOG.warn(e.getMessage(), e);
+    private void writeToLog(final Loggable loggable, final BTreeNode node) {
+        if(logManager.isPresent()) {
+            try {
+                logManager.get().journal(loggable);
+                node.page.getPageHeader().setLsn(loggable.getLsn());
+            } catch (final JournalException e) {
+                LOG.warn(e.getMessage(), e);
+            }
         }
     }
 
-    protected boolean requiresRedo(Loggable loggable, Page page) {
+    protected boolean requiresRedo(final Loggable loggable, final Page page) {
         return loggable.getLsn() > page.getPageHeader().getLsn();
     }
 
-    protected void redoCreateBTNode(CreateBTNodeLoggable loggable) throws LogException {
+    protected void redoCreateBTNode(final CreateBTNodeLoggable loggable) throws LogException {
         BTreeNode node = (BTreeNode) cache.get(loggable.pageNum);
         if (node == null) {
             // node is not yet loaded. Load it
@@ -790,7 +795,7 @@ public class BTree extends Paged implements Lockable {
         }
     }
 
-    protected void redoInsertValue(InsertValueLoggable loggable) throws LogException {
+    protected void redoInsertValue(final InsertValueLoggable loggable) throws LogException {
         final BTreeNode node = getBTreeNode(loggable.pageNum);
         if (requiresRedo(loggable, node.page)) {
             node.insertKey(loggable.key, loggable.idx);
@@ -800,18 +805,16 @@ public class BTree extends Paged implements Lockable {
         }
     }
 
-    protected void undoInsertValue(InsertValueLoggable loggable) throws LogException {
+    protected void undoInsertValue(final InsertValueLoggable loggable) throws LogException {
         try {
             removeValue(null, loggable.key);
-        } catch (final BTreeException e) {
-            LOG.error("Failed to undo: " + loggable.dump(), e);
-        } catch (final IOException e) {
+        } catch (final BTreeException | IOException e) {
             LOG.error("Failed to undo: " + loggable.dump(), e);
         }
     }
 
-    protected void redoUpdateValue(UpdateValueLoggable loggable) throws LogException {
-            final BTreeNode node = getBTreeNode(loggable.pageNum);
+    protected void redoUpdateValue(final UpdateValueLoggable loggable) throws LogException {
+        final BTreeNode node = getBTreeNode(loggable.pageNum);
         if (node.page.getPageHeader().getLsn() != Page.NO_PAGE && requiresRedo(loggable, node.page)) {
             if (loggable.idx > node.ptrs.length) {
                 LOG.warn(node.page.getPageInfo() +
@@ -832,17 +835,15 @@ public class BTree extends Paged implements Lockable {
         }
     }
 
-    protected void undoUpdateValue(UpdateValueLoggable loggable) throws LogException {
+    protected void undoUpdateValue(final UpdateValueLoggable loggable) throws LogException {
         try {
             addValue(null, loggable.key, loggable.oldPointer);
-        } catch (final BTreeException e) {
-            LOG.error("Failed to undo: " + loggable.dump(), e);
-        } catch (final IOException e) {
+        } catch (final BTreeException | IOException e) {
             LOG.error("Failed to undo: " + loggable.dump(), e);
         }
     }
 
-    protected void redoRemoveValue(RemoveValueLoggable loggable) throws LogException {
+    protected void redoRemoveValue(final RemoveValueLoggable loggable) throws LogException {
         final BTreeNode node = getBTreeNode(loggable.pageNum);
         if (node.page.getPageHeader().getLsn() != Page.NO_PAGE && requiresRedo(loggable, node.page)) {
             node.removeKey(loggable.idx);
@@ -852,17 +853,15 @@ public class BTree extends Paged implements Lockable {
         }
     }
 
-    protected void undoRemoveValue(RemoveValueLoggable loggable) throws LogException {
+    protected void undoRemoveValue(final RemoveValueLoggable loggable) throws LogException {
         try {
             addValue(null, loggable.oldValue, loggable.oldPointer);
-        } catch (final BTreeException e) {
-            LOG.error("Failed to undo: " + loggable.dump(), e);
-        } catch (final IOException e) {
+        } catch (final BTreeException | IOException e) {
             LOG.error("Failed to undo: " + loggable.dump(), e);
         }
     }
 
-    protected void redoUpdatePage(UpdatePageLoggable loggable) throws LogException {
+    protected void redoUpdatePage(final UpdatePageLoggable loggable) throws LogException {
         final BTreeNode node = getBTreeNode(loggable.pageNum);
         if (requiresRedo(loggable, node.page)) {
             node.prefix = loggable.prefix;
@@ -875,7 +874,7 @@ public class BTree extends Paged implements Lockable {
         }
     }
 
-    protected void redoSetParent(SetParentLoggable loggable) throws LogException {
+    protected void redoSetParent(final SetParentLoggable loggable) throws LogException {
             final BTreeNode node = getBTreeNode(loggable.pageNum);
         if (requiresRedo(loggable, node.page)) {
             node.pageHeader.parentPage = loggable.parentNum;
@@ -884,7 +883,7 @@ public class BTree extends Paged implements Lockable {
         }
     }
 
-    protected void redoSetPageLink(SetPageLinkLoggable loggable) throws LogException {
+    protected void redoSetPageLink(final SetPageLinkLoggable loggable) throws LogException {
         final BTreeNode node = getBTreeNode(loggable.pageNum);
         if (requiresRedo(loggable, node.page)) {
             node.pageHeader.setNextPage(loggable.nextPage);
@@ -911,8 +910,8 @@ public class BTree extends Paged implements Lockable {
         /** defines the default size for the keys array */
         private final static int DEFAULT_INITIAL_ENTRIES = 32;
         /** the underlying Page object that stores the node's data */
-        private Page page;
-        private BTreePageHeader pageHeader;
+        private final Page page;
+        private final BTreePageHeader pageHeader;
 
         /** stores the keys in this page */
         private Value[] keys;
@@ -943,9 +942,9 @@ public class BTree extends Paged implements Lockable {
 
         private boolean allowUnload = true;
 
-        public BTreeNode(Page page, boolean newPage) {
+        public BTreeNode(final Page page, final boolean newPage) {
             this.page = page;
-            pageHeader = (BTreePageHeader) page.getPageHeader();
+            this.pageHeader = (BTreePageHeader) page.getPageHeader();
             if (newPage) {
                 keys = new Value[DEFAULT_INITIAL_ENTRIES];
                 ptrs = new long[DEFAULT_INITIAL_ENTRIES + 1];
@@ -959,7 +958,7 @@ public class BTree extends Paged implements Lockable {
          * 
          * @param parent
          */
-        public void setParent(BTreeNode parent) {
+        public void setParent(final BTreeNode parent) {
             if (parent != null) {
                 pageHeader.parentPage = parent.page.getPageNum();
             } else {
@@ -979,63 +978,52 @@ public class BTree extends Paged implements Lockable {
             }
         }
 
-        /**
-         * @see org.exist.storage.cache.Cacheable#getReferenceCount()
-         */
+        @Override
         public int getReferenceCount() {
             return refCount;
         }
 
-        /**
-         * @see org.exist.storage.cache.Cacheable#incReferenceCount()
-         */
+        @Override
         public int incReferenceCount() {
-            if (refCount < Cacheable.MAX_REF)
-                {++refCount;}
+            if (refCount < Cacheable.MAX_REF) {
+                refCount++;
+            }
             return refCount;
         }
 
-        /**
-         * @see org.exist.storage.cache.Cacheable#setReferenceCount(int)
-         */
-        public void setReferenceCount(int count) {
+        @Override
+        public void setReferenceCount(final int count) {
             refCount = count;
         }
 
-        /**
-         * @see org.exist.storage.cache.Cacheable#setTimestamp(int)
-         */
-        public void setTimestamp(int timestamp) {
+        @Override
+        public void setTimestamp(final int timestamp) {
             this.timestamp = timestamp;
         }
 
-        /**
-         * @see org.exist.storage.cache.Cacheable#allowUnload()
-         */
+        @Override
         public boolean allowUnload() {
             return allowUnload;
         }
 
-        /**
-         * @see org.exist.storage.cache.Cacheable#getTimestamp()
-         */
+        @Override
         public int getTimestamp() {
             return timestamp;
         }
 
+        @Override
         public boolean isInnerPage() {
             return pageHeader.getStatus() == BRANCH;
         }
 
-        /**
-         * @see org.exist.storage.cache.Cacheable#sync(boolean syncJournal)
-         */
-        public boolean sync(boolean syncJournal) {
+        @Override
+        public boolean sync(final boolean syncJournal) {
             if(isDirty()) {
                 try {
                     write();
-                    if (isTransactional && syncJournal)
-                        {logManager.flushToLog(true);}
+                    if (isRecoveryEnabled() && syncJournal) {
+                        logManager.get().flush(true, false);
+                    }
                     return true;
                 } catch (final IOException e) {
                     LOG.error("IO error while writing page: " + page.getPageNum(), e);
@@ -1044,23 +1032,17 @@ public class BTree extends Paged implements Lockable {
             return false;
         }
 
-        /**
-         * @see org.exist.storage.cache.Cacheable#getKey()
-         */
+        @Override
         public long getKey() {
             return page.getPageNum();
         }
 
-        /**
-         * @see org.exist.storage.cache.Cacheable#decReferenceCount()
-         */
+        @Override
         public int decReferenceCount() {
             return refCount > 0 ? --refCount : 0;
         }
 
-        /**
-         * @see org.exist.storage.cache.Cacheable#isDirty()
-         */
+        @Override
         public boolean isDirty() {
             return !saved;
         }
@@ -1070,7 +1052,7 @@ public class BTree extends Paged implements Lockable {
          * 
          * @param vals
          */
-        private void setValues(Value[] vals) {
+        private void setValues(final Value[] vals) {
             keys = vals;
             nKeys = vals.length;
             pageHeader.setValueCount((short) nKeys);
@@ -1082,7 +1064,7 @@ public class BTree extends Paged implements Lockable {
          * 
          * @param pointers
          */
-        private void setPointers(long[] pointers) {
+        private void setPointers(final long[] pointers) {
             ptrs = pointers;
             nPtrs = pointers.length;
             saved = false;
@@ -1108,20 +1090,24 @@ public class BTree extends Paged implements Lockable {
             if(fileHeader.getFixedKeyLen() < 0) {
                 currentDataLen += 2 * nKeys;
             }
-            if (pageHeader.getStatus() == BRANCH)
-                {currentDataLen += prefix.getLength() + 2;}
-            if (pageHeader.getStatus() == LEAF)
-                {currentDataLen += nKeys - 1;}
+            if (pageHeader.getStatus() == BRANCH) {
+                currentDataLen += prefix.getLength() + 2;
+            }
+            if (pageHeader.getStatus() == LEAF) {
+                currentDataLen += nKeys - 1;
+            }
             for (int i = 0; i < nKeys; i++) {
                 if (pageHeader.getStatus() == LEAF && i > 0) {
                     // if this is a leaf page, we use prefix compression to store the keys,
                     // so subtract the size of the prefix
                     int prefix = keys[i].commonPrefix(keys[i - 1]);
-                    if (prefix < 0 || prefix > Byte.MAX_VALUE)
-                        {prefix = 0;}
+                    if (prefix < 0 || prefix > Byte.MAX_VALUE) {
+                        prefix = 0;
+                    }
                     currentDataLen += keys[i].getLength() - prefix;
-                } else
-                    {currentDataLen += keys[i].getLength();}
+                } else {
+                    currentDataLen += keys[i].getLength();
+                }
             }
             return currentDataLen;
         }
@@ -1131,7 +1117,7 @@ public class BTree extends Paged implements Lockable {
          * data size of this node.
          *  
          */
-        private void adjustDataLen(int idx) {
+        private void adjustDataLen(final int idx) {
             if(currentDataLen < 0) {
                 recalculateDataLen();
                 return;
@@ -1163,11 +1149,11 @@ public class BTree extends Paged implements Lockable {
             }
         }
 
-        private int calculatePrefixLen(int idx0, int idx1) {
-            int prefix;
-            prefix = keys[idx0].commonPrefix(keys[idx1]);
-            if (prefix < 0 || prefix > Byte.MAX_VALUE)
-                {prefix = 0;}
+        private int calculatePrefixLen(final int idx0, final int idx1) {
+            int prefix = keys[idx0].commonPrefix(keys[idx1]);
+            if (prefix < 0 || prefix > Byte.MAX_VALUE) {
+                prefix = 0;
+            }
             return prefix;
         }
 
@@ -1176,7 +1162,7 @@ public class BTree extends Paged implements Lockable {
          *
          * @return
          */
-        private int getPivot(int preferred) {
+        private int getPivot(final int preferred) {
             if (nKeys == 2) {
                 return 1;
             }
@@ -1188,11 +1174,13 @@ public class BTree extends Paged implements Lockable {
                     // if this is a leaf page, we use prefix compression to store the keys,
                     // so subtract the size of the prefix
                     int prefix = keys[i].commonPrefix(keys[i - 1]);
-                    if (prefix < 0 || prefix > Byte.MAX_VALUE)
+                    if (prefix < 0 || prefix > Byte.MAX_VALUE) {
                         prefix = 0;
+                    }
                     currentLen += keys[i].getLength() - prefix;
-                } else
+                } else {
                     currentLen += keys[i].getLength();
+                }
                 if (currentLen > totalLen / 2 || i + 1 == preferred) {
                     pivot = currentLen > fileHeader.getWorkSize() ? i : i + 1;
                     break;
@@ -1208,8 +1196,9 @@ public class BTree extends Paged implements Lockable {
                     // if this is a leaf page, we use prefix compression to store the keys,
                     // so subtract the size of the prefix
                     int prefix = keys[i].commonPrefix(keys[i - 1]);
-                    if (prefix < 0 || prefix > Byte.MAX_VALUE)
+                    if (prefix < 0 || prefix > Byte.MAX_VALUE) {
                         prefix = 0;
+                    }
                     totalLen += keys[i].getLength() - prefix;
                 } else {
                     totalLen += keys[i].getLength();
@@ -1219,8 +1208,9 @@ public class BTree extends Paged implements Lockable {
         }
 
         private boolean mustSplit() {
-            if (pageHeader.getValueCount() != nKeys)
-                {throw new RuntimeException("Wrong value count");}
+            if (pageHeader.getValueCount() != nKeys) {
+                throw new RuntimeException("Wrong value count");
+            }
             return getDataLen() > fileHeader.getWorkSize();
         }
 
@@ -1236,7 +1226,7 @@ public class BTree extends Paged implements Lockable {
             int p = 0;
             // it this is a branch node, read the common prefix
             if (pageHeader.getStatus() == BRANCH) {
-                short prefixSize = ByteConversion.byteToShort(data, p);
+                final short prefixSize = ByteConversion.byteToShort(data, p);
                 p += 2;
                 if (prefixSize == 0) {
                     prefix = Value.EMPTY_VALUE;
@@ -1260,9 +1250,10 @@ public class BTree extends Paged implements Lockable {
                     final int prefixLen = (data[p++] & 0xFF);
                     try {
                         final byte[] t = new byte[valSize];
-                        if (prefixLen > 0)
+                        if (prefixLen > 0) {
                             // copy prefixLen leading bytes from the previous key
-                            {System.arraycopy(keys[i - 1].data(), keys[i - 1].start(), t, 0, prefixLen);}
+                            System.arraycopy(keys[i - 1].data(), keys[i - 1].start(), t, 0, prefixLen);
+                        }
                         // read the remaining bytes
                         System.arraycopy(data, p, t, prefixLen, valSize - prefixLen);
                         p += valSize - prefixLen;
@@ -1292,11 +1283,13 @@ public class BTree extends Paged implements Lockable {
          * @throws IOException
          */
         private void write() throws IOException {
+            if (nKeys != pageHeader.getValueCount()) {
+                throw new RuntimeException("nkeys: " + nKeys + " valueCount: " + pageHeader.getValueCount());
+            }
+
             final byte[] temp = new byte[fileHeader.getWorkSize()];
             int p = 0;
-            byte[] data;
-            if (nKeys != pageHeader.getValueCount())
-                {throw new RuntimeException("nkeys: " + nKeys + " valueCount: " + pageHeader.getValueCount());}
+
             // if this is a branch node, write out the common prefix
             if (pageHeader.getStatus() == BRANCH) {
                 ByteConversion.shortToByte((short) prefix.getLength(), temp, p);
@@ -1327,10 +1320,10 @@ public class BTree extends Paged implements Lockable {
                             temp, p, keys[i].getLength() - prefixLen);
                     p += keys[i].getLength() - prefixLen;
                 } else {
-                    data = keys[i].getData();
-                    if(p + data.length > temp.length)
-                        {throw new IOException("calculated: " + getDataLen() +
-                            "; required: " + (p + data.length));}
+                    final byte[] data = keys[i].getData();
+                    if(p + data.length > temp.length) {
+                        throw new IOException("calculated: " + getDataLen() + "; required: " + (p + data.length));
+                    }
                     System.arraycopy(data, 0, temp, p, data.length);
                     p += data.length;
                 }
@@ -1350,110 +1343,118 @@ public class BTree extends Paged implements Lockable {
          * @return The BTree node
          * @throws IOException
          */
-        private BTreeNode getChildNode(int idx) throws IOException {
-            if (pageHeader.getStatus() == BRANCH && idx >= 0 && idx < nPtrs)
-                {return getBTreeNode(ptrs[idx]);}
-            else
-                {return null;}
+        private BTreeNode getChildNode(final int idx) throws IOException {
+            if (pageHeader.getStatus() == BRANCH && idx >= 0 && idx < nPtrs) {
+                return getBTreeNode(ptrs[idx]);
+            } else {
+                return null;
+            }
         }
 
         /**
          * Remove a key.
          */
-        private long removeValue(Txn transaction, Value key) throws IOException, BTreeException {
+        private long removeValue(final Txn transaction, final Value key) throws IOException, BTreeException {
             int idx = searchKey(key);
             switch (pageHeader.getStatus()) {
-            case BRANCH :
-                idx = idx < 0 ? - (idx + 1) : idx + 1;
-                return getChildNode(idx).removeValue(transaction, key);
-            case LEAF :
-                if (idx < 0)
-                    {return KEY_NOT_FOUND;}
-                else {
-                    try {
-                        allowUnload = false;
-                        if (transaction != null && isTransactional) {
-                            final RemoveValueLoggable log = new RemoveValueLoggable(transaction, 
-                                fileId, page.getPageNum(), idx, keys[idx], ptrs[idx]);
-                            writeToLog(log, this);
-                        }
-                        final long oldPtr = ptrs[idx];
-                        removeKey(idx);
-                        removePointer(idx);
-                        recalculateDataLen();
-                        return oldPtr;
-                    } finally {
-                        allowUnload = true;
+                case BRANCH :
+                    idx = idx < 0 ? - (idx + 1) : idx + 1;
+                    return getChildNode(idx).removeValue(transaction, key);
+
+                case LEAF :
+                    if (idx < 0) {
+                        return KEY_NOT_FOUND;
                     }
-                }
-            default :
-                throw new BTreeException("Invalid Page Type In removeValue");
+                    else {
+                        try {
+                            allowUnload = false;
+                            if (transaction != null && isRecoveryEnabled()) {
+                                final RemoveValueLoggable log = new RemoveValueLoggable(transaction,
+                                    fileId, page.getPageNum(), idx, keys[idx], ptrs[idx]);
+                                writeToLog(log, this);
+                            }
+                            final long oldPtr = ptrs[idx];
+                            removeKey(idx);
+                            removePointer(idx);
+                            recalculateDataLen();
+                            return oldPtr;
+                        } finally {
+                            allowUnload = true;
+                        }
+                    }
+
+                default :
+                    throw new BTreeException("Invalid Page Type In removeValue");
             }
         }
 
         /**
          * Add a key and the corresponding pointer to the node.
          */
-        private long addValue(Txn transaction, Value value, long pointer) 
+        private long addValue(final Txn transaction, final Value value, final long pointer)
                 throws IOException, BTreeException {
-            if (value == null)
-                {return -1;}
+            if (value == null) {
+                return -1;
+            }
+
             int idx = searchKey(value);
             switch (pageHeader.getStatus()) {
-            case BRANCH :
-                idx = idx < 0 ? - (idx + 1) : idx + 1;
-                return getChildNode(idx).addValue(transaction, value, pointer);
-            case LEAF :
-                try {
-                    allowUnload = false;
-                    if (idx >= 0) {
-                        // Value was found... Overwrite
-                        final long oldPtr = ptrs[idx];
-                        if (transaction != null && isTransactional) {
-                            final UpdateValueLoggable loggable = new UpdateValueLoggable(transaction, 
-                                fileId, page.getPageNum(), idx, value, pointer, oldPtr);
-                                writeToLog(loggable, this);
-                        }
-                        ptrs[idx] = pointer;
-                        saved = false;
-                        return oldPtr;
-                    } else {
-                        // Value was not found
-                        idx = - (idx + 1);
-                        if (transaction != null && isTransactional) {
-                            final InsertValueLoggable loggable = new InsertValueLoggable(transaction, 
-                                fileId, page.getPageNum(), idx, value, idx, pointer);
-                                writeToLog(loggable, this);
+                case BRANCH :
+                    idx = idx < 0 ? - (idx + 1) : idx + 1;
+                    return getChildNode(idx).addValue(transaction, value, pointer);
+
+                case LEAF :
+                    try {
+                        allowUnload = false;
+                        if (idx >= 0) {
+                            // Value was found... Overwrite
+                            final long oldPtr = ptrs[idx];
+                            if (transaction != null && isRecoveryEnabled()) {
+                                final UpdateValueLoggable loggable = new UpdateValueLoggable(transaction,
+                                    fileId, page.getPageNum(), idx, value, pointer, oldPtr);
+                                    writeToLog(loggable, this);
                             }
-                            insertKey(value, idx);
-                            insertPointer(pointer, idx);
-                            adjustDataLen(idx);
-                            if (mustSplit()) {
-                                // we normally split a node at its median value.
-                                // however, if the inserted key is in the upper or lower
-                                // section of the node, we split directly at the key. this
-                                // has advantages if keys are inserted in ascending order
-                                if (splitFactor > 0 && idx > (nKeys * splitFactor) && value.getLength() < fileHeader.getWorkSize() / 4) {
-                                    split(transaction, idx == 0 ? 1 : idx);
-                                } else {
-                                    split(transaction);
+                            ptrs[idx] = pointer;
+                            saved = false;
+                            return oldPtr;
+                        } else {
+                            // Value was not found
+                            idx = - (idx + 1);
+                            if (transaction != null && isRecoveryEnabled()) {
+                                final InsertValueLoggable loggable = new InsertValueLoggable(transaction,
+                                    fileId, page.getPageNum(), idx, value, idx, pointer);
+                                    writeToLog(loggable, this);
                                 }
-                            }
+                                insertKey(value, idx);
+                                insertPointer(pointer, idx);
+                                adjustDataLen(idx);
+                                if (mustSplit()) {
+                                    // we normally split a node at its median value.
+                                    // however, if the inserted key is in the upper or lower
+                                    // section of the node, we split directly at the key. this
+                                    // has advantages if keys are inserted in ascending order
+                                    if (splitFactor > 0 && idx > (nKeys * splitFactor) && value.getLength() < fileHeader.getWorkSize() / 4) {
+                                        split(transaction, idx == 0 ? 1 : idx);
+                                    } else {
+                                        split(transaction);
+                                    }
+                                }
+                        }
+                    } finally {
+                        allowUnload = true;
                     }
-                } finally {
-                    allowUnload = true;
-                }
-                return -1;
-            default :
-                throw new BTreeException("Invalid Page Type In addValue: " + 
-                    pageHeader.getStatus() + "; " + page.getPageInfo());
+                    return -1;
+
+                default :
+                    throw new BTreeException("Invalid Page Type In addValue: " +
+                        pageHeader.getStatus() + "; " + page.getPageInfo());
             }
         }
 
         /**
          * Promote a key to the parent node. Called by {@link #split(Txn)}.
          */
-        private void promoteValue(Txn transaction, Value value, BTreeNode rightNode)
+        private void promoteValue(final Txn transaction, final Value value, final BTreeNode rightNode)
                 throws IOException, BTreeException {
             int idx = searchKey(value);
             idx = idx < 0 ? -( idx + 1) : idx + 1;
@@ -1465,11 +1466,12 @@ public class BTree extends Paged implements Lockable {
             this.saved = false;
             cache.add(this);
             final boolean split = recalculateDataLen() > fileHeader.getWorkSize();
-            if (split)
-                {split(transaction);}
+            if (split) {
+                split(transaction);
+            }
         }
 
-        private void split(Txn transaction) throws IOException, BTreeException {
+        private void split(final Txn transaction) throws IOException, BTreeException {
             split(transaction, -1);
         }
 
@@ -1478,15 +1480,15 @@ public class BTree extends Paged implements Lockable {
          *
          * @param transaction the current transaction
          */
-        private void split(Txn transaction, int pivot) throws IOException, BTreeException {
-            Value[] leftVals;
-            Value[] rightVals;
-            long[] leftPtrs;
-            long[] rightPtrs;
+        private void split(final Txn transaction, int pivot) throws IOException, BTreeException {
+            final Value[] leftVals;
+            final Value[] rightVals;
+            final long[] leftPtrs;
+            final long[] rightPtrs;
             Value separator;
             final short vc = pageHeader.getValueCount();
-
             pivot = getPivot(pivot);
+
             // Split the node into two nodes
             switch (pageHeader.getStatus()) {
                 case BRANCH :
@@ -1506,6 +1508,7 @@ public class BTree extends Paged implements Lockable {
                         separator = new Value(t);
                     }
                     break;
+
                 case LEAF :
                     leftVals = new Value[pivot];
                     leftPtrs = new long[leftVals.length];
@@ -1517,11 +1520,13 @@ public class BTree extends Paged implements Lockable {
                     System.arraycopy(ptrs, leftPtrs.length, rightPtrs, 0, rightPtrs.length);
                     separator = keys[leftVals.length];
                     break;
+
                 default :
                     throw new BTreeException("Invalid Page Type In split");
             }
+
             // Log the update of the current page
-            if (transaction != null && isTransactional && pageHeader.getStatus() == LEAF) {
+            if (transaction != null && isRecoveryEnabled() && pageHeader.getStatus() == LEAF) {
                 final Loggable log = new UpdatePageLoggable(transaction, fileId,
                     page.getPageNum(), prefix, leftVals, leftVals.length, leftPtrs, leftPtrs.length);
                 writeToLog(log, this);
@@ -1535,7 +1540,7 @@ public class BTree extends Paged implements Lockable {
                 // This can only happen if this is the root
                 parent = createBTreeNode(transaction, BRANCH, null, false);
                 // Log change of the parent page
-                if (transaction != null && isTransactional && pageHeader.getStatus() == LEAF) {
+                if (transaction != null && isRecoveryEnabled() && pageHeader.getStatus() == LEAF) {
                     final Loggable log = new SetParentLoggable(transaction, fileId, page.getPageNum(), 
                         parent.page.getPageNum());
                     writeToLog(log, this);
@@ -1544,12 +1549,12 @@ public class BTree extends Paged implements Lockable {
                 final BTreeNode rNode = createBTreeNode(transaction, pageHeader.getStatus(), parent, false);
                 rNode.setValues(rightVals);
                 rNode.setPointers(rightPtrs);
-                rNode.setAsParent(transaction);
+                rNode.setAsParent();
                 if (pageHeader.getStatus() == BRANCH) {
                     rNode.prefix = prefix;
                     rNode.growPrefix();
                 } else {
-                    if (transaction != null && isTransactional) {
+                    if (transaction != null && isRecoveryEnabled()) {
                         final Loggable log = new SetPageLinkLoggable(transaction, 
                             fileId, page.getPageNum(), rNode.page.getPageNum());
                         writeToLog(log, this);
@@ -1557,7 +1562,7 @@ public class BTree extends Paged implements Lockable {
                     pageHeader.setNextPage(rNode.page.getPageNum());
                 }
                 // Log update of the right node
-                if (isTransactional && transaction != null && pageHeader.getStatus() == LEAF) {
+                if (transaction != null && isRecoveryEnabled() && pageHeader.getStatus() == LEAF) {
                     final Loggable log = new UpdatePageLoggable(transaction, fileId,
                         rNode.page.getPageNum(), rNode.prefix, rNode.keys, rNode.nKeys, rightPtrs, rightPtrs.length);
                     writeToLog(log, rNode);
@@ -1578,12 +1583,12 @@ public class BTree extends Paged implements Lockable {
                 final BTreeNode rNode = createBTreeNode(transaction, pageHeader.getStatus(), parent, false);
                 rNode.setValues(rightVals);
                 rNode.setPointers(rightPtrs);
-                rNode.setAsParent(transaction);
+                rNode.setAsParent();
                 if (pageHeader.getStatus() == BRANCH) {
                     rNode.prefix = prefix;
                     rNode.growPrefix();
                 } else {
-                    if (transaction != null && isTransactional) {
+                    if (transaction != null && isRecoveryEnabled()) {
                         Loggable log = new SetPageLinkLoggable(transaction, fileId, 
                             rNode.page.getPageNum(), pageHeader.getNextPage());
                         writeToLog(log, this);
@@ -1595,7 +1600,7 @@ public class BTree extends Paged implements Lockable {
                     pageHeader.setNextPage(rNode.page.getPageNum());
                 }
                 // Log update of the right node
-                if (isTransactional && transaction != null && pageHeader.getStatus() == LEAF) {
+                if (transaction != null && isRecoveryEnabled() && pageHeader.getStatus() == LEAF) {
                     final Loggable log = new UpdatePageLoggable(transaction, fileId, 
                         rNode.page.getPageNum(), rNode.prefix, rNode.keys,
                         rNode.nKeys, rightPtrs, rightPtrs.length);
@@ -1617,7 +1622,7 @@ public class BTree extends Paged implements Lockable {
         }
 
         /** Set the parent-link in all child nodes to point to this node */
-        private void setAsParent(Txn transaction) {
+        private void setAsParent() {
             if (pageHeader.getStatus() == BRANCH) {
                 for (int i = 0; i < nPtrs; i++) {
                     final BTreeNode node = getBTreeNode(ptrs[i]);
@@ -1631,38 +1636,43 @@ public class BTree extends Paged implements Lockable {
          * Locate the given value in the keys and return the
          * associated pointer.
          */
-        private long findValue(Value value) throws IOException, BTreeException {
+        private long findValue(final Value value) throws IOException, BTreeException {
             int idx = searchKey(value);
             switch (pageHeader.getStatus()) {
-            case BRANCH :
-                idx = idx < 0 ? - (idx + 1) : idx + 1;
-                final BTreeNode child = getChildNode(idx);
-                if (child == null)
-                    {throw new BTreeException("Unexpected " + idx + ", " + 
-                        page.getPageNum() + ": value '" + value.toString() + "' doesn't exist");}
-                return child.findValue(value);
-            case LEAF :
-                if (idx < 0) {
-                    return KEY_NOT_FOUND;
-                } else {
-                    return ptrs[idx];
-                }
-            default :
-                throw new BTreeException("Invalid Page Type In findValue");
+
+                case BRANCH :
+                    idx = idx < 0 ? - (idx + 1) : idx + 1;
+                    final BTreeNode child = getChildNode(idx);
+                    if (child == null) {throw new BTreeException("Unexpected " + idx + ", " +
+                            page.getPageNum() + ": value '" + value.toString() + "' doesn't exist");
+                    }
+                    return child.findValue(value);
+
+                case LEAF :
+                    if (idx < 0) {
+                        return KEY_NOT_FOUND;
+                    } else {
+                        return ptrs[idx];
+                    }
+
+                default :
+                    throw new BTreeException("Invalid Page Type In findValue");
             }
         }
 
+        @Override
         public String toString() {
             final StringWriter writer = new StringWriter();
             try {
                 dump(writer);
             } catch (final Exception e) {
+                LOG.error(e);
                 //TODO : add something here ! -pb
             }
             return writer.toString();
         }
 
-        private void treeStatistics(TreeMetrics metrics) throws IOException {
+        private void treeStatistics(final TreeMetrics metrics) throws IOException {
             metrics.addPage(pageHeader.getStatus());
             if (pageHeader.getStatus() == BRANCH) {
                 for (int i = 0; i < nPtrs; i++) {
@@ -1675,11 +1685,12 @@ public class BTree extends Paged implements Lockable {
         /**
          * Prints out a debug view of the node to the given writer.
          */
-        private void dump(Writer writer) throws IOException, BTreeException {
+        private void dump(final Writer writer) throws IOException, BTreeException {
             //if (pageHeader.getStatus() == LEAF)
             //    return;
-            if (page.getPageNum() == fileHeader.getRootPage())
-                {writer.write("ROOT: ");}
+            if (page.getPageNum() == fileHeader.getRootPage()) {
+                writer.write("ROOT: ");
+            }
             writer.write(page.getPageNum() + ": ");
             writer.write(pageHeader.getStatus() == BRANCH ? "BRANCH: " : "LEAF: ");
             writer.write(saved ? "SAVED: " : "DIRTY: ");
@@ -1692,8 +1703,9 @@ public class BTree extends Paged implements Lockable {
             writer.write(Long.toString(pageHeader.getNextPage()));
             writer.write(": ");
             for (int i = 0; i < nKeys; i++) {
-                if (i > 0)
-                    {writer.write(' ');}
+                if (i > 0) {
+                    writer.write(' ');
+                }
                 dumpValue(writer, keys[i], pageHeader.getStatus());
             }
             writer.write('\n');
@@ -1724,7 +1736,7 @@ public class BTree extends Paged implements Lockable {
          * @throws BTreeException
          * @throws TerminatedException
          */
-        private void query(IndexQuery query, BTreeCallback callback)
+        private void query(final IndexQuery query, final BTreeCallback callback)
                 throws IOException, BTreeException, TerminatedException {
             if (query != null
                     && query.getOperator() != IndexQuery.ANY
@@ -1733,154 +1745,179 @@ public class BTree extends Paged implements Lockable {
                 int leftIdx = searchKey(qvals[0]);
                 int rightIdx = qvals.length > 1 ?
                     searchKey(qvals[qvals.length - 1]) : leftIdx;
-                    boolean pos = query.getOperator() >= 0;
+                    final boolean pos = query.getOperator() >= 0;
                     switch (pageHeader.getStatus()) {
-                    case BRANCH :
-                        leftIdx = leftIdx < 0 ? - (leftIdx + 1) : leftIdx + 1;
-                        rightIdx = rightIdx < 0 ? - (rightIdx + 1) : rightIdx + 1;
-                        switch (query.getOperator()) {
-                        case IndexQuery.BWX :
-                        case IndexQuery.NBWX :
-                        case IndexQuery.BW :
-                        case IndexQuery.NBW :
-                        case IndexQuery.IN :
-                        case IndexQuery.NIN :
-                        case IndexQuery.TRUNC_RIGHT :
-                        case IndexQuery.RANGE :
-                            for (int i = 0; i < nPtrs; i++)
-                                if ((i >= leftIdx && i <= rightIdx) == pos) {
-                                    getChildNode(i).query(query, callback);
-                                    if (query.getOperator() == IndexQuery.TRUNC_RIGHT ||
-                                        query.getOperator() == IndexQuery.RANGE)
-                                        {break;}
-                                }
-                            break;
-                        case IndexQuery.NEQ :
-                            getChildNode(0).query(query, callback);
-                            break;
-                        case IndexQuery.EQ :
-                            getChildNode(leftIdx).query(query, callback);
-                            break;
-                        case IndexQuery.LT :
-                            for (int i = 0; i < nPtrs; i++) {
-                                if ((pos && (i <= leftIdx)) || (!pos && (i >= leftIdx)))
-                                    {getChildNode(i).query(query, callback);}
+                        case BRANCH :
+                            leftIdx = leftIdx < 0 ? - (leftIdx + 1) : leftIdx + 1;
+                            rightIdx = rightIdx < 0 ? - (rightIdx + 1) : rightIdx + 1;
+                            switch (query.getOperator()) {
+                                case IndexQuery.BWX :
+                                case IndexQuery.NBWX :
+                                case IndexQuery.BW :
+                                case IndexQuery.NBW :
+                                case IndexQuery.IN :
+                                case IndexQuery.NIN :
+                                case IndexQuery.TRUNC_RIGHT :
+                                case IndexQuery.RANGE :
+                                    for (int i = 0; i < nPtrs; i++)
+                                        if ((i >= leftIdx && i <= rightIdx) == pos) {
+                                            getChildNode(i).query(query, callback);
+                                            if (query.getOperator() == IndexQuery.TRUNC_RIGHT ||
+                                                query.getOperator() == IndexQuery.RANGE) {
+
+                                                break;
+                                            }
+                                        }
+                                    break;
+                                case IndexQuery.NEQ :
+                                    getChildNode(0).query(query, callback);
+                                    break;
+                                case IndexQuery.EQ :
+                                    getChildNode(leftIdx).query(query, callback);
+                                    break;
+                                case IndexQuery.LT :
+                                    for (int i = 0; i < nPtrs; i++) {
+                                        if ((pos && (i <= leftIdx)) || (!pos && (i >= leftIdx))) {
+                                            getChildNode(i).query(query, callback);
+                                        }
+                                    }
+                                    break;
+                                case IndexQuery.GEQ :
+                                case IndexQuery.GT :
+                                    getChildNode(leftIdx).query(query, callback);
+                                    break;
+                                case IndexQuery.LEQ :
+                                    for (int i = 0; i < nPtrs; i++) {
+                                        if ((pos && (i >= leftIdx)) || (!pos && (i <= leftIdx))) {
+                                            getChildNode(i).query(query, callback);
+                                        }
+                                    }
+                                    break;
+                                default :
+                                    // If it's not implemented, we walk the tree
+                                    for (int i = 0; i < nPtrs; i++) {
+                                        getChildNode(i).query(query, callback);
+                                    }
+                                    break;
                             }
                             break;
-                        case IndexQuery.GEQ :
-                        case IndexQuery.GT :
-                            getChildNode(leftIdx).query(query, callback);
-                            break;
-                        case IndexQuery.LEQ :
-                            for (int i = 0; i < nPtrs; i++) {
-                                if ((pos && (i >= leftIdx)) || (!pos && (i <= leftIdx)))
-                                    {getChildNode(i).query(query, callback);}
+                        case LEAF :
+                            switch (query.getOperator()) {
+                                case IndexQuery.EQ :
+                                    if (leftIdx >= 0) {
+                                        callback.indexInfo(keys[leftIdx], ptrs[leftIdx]);
+                                    }
+                                    break;
+                                case IndexQuery.NEQ :
+                                    for (int i = 0; i < nPtrs; i++) {
+                                        if (i != leftIdx) {
+                                            callback.indexInfo(keys[i], ptrs[i]);
+                                        }
+                                    }
+                                    scanNextPage(query, null, callback);
+                                    break;
+                                case IndexQuery.BWX :
+                                case IndexQuery.NBWX :
+                                case IndexQuery.BW :
+                                case IndexQuery.NBW :
+                                    if (leftIdx < 0) {
+                                        leftIdx = - (leftIdx + 1);
+                                    }
+                                    if (rightIdx < 0) {
+                                        rightIdx = - (rightIdx + 1);
+                                    }
+                                    for (int i = 0; i < nPtrs; i++) {
+                                        if ((pos && (i >= leftIdx && i <= rightIdx))
+                                            || (!pos && (i <= leftIdx || i >= rightIdx))) {
+                                            if (query.testValue(keys[i])) {
+                                                callback.indexInfo(keys[i], ptrs[i]);
+                                            }
+                                        }
+                                    }
+                                    break;
+                                case IndexQuery.RANGE :
+                                case IndexQuery.TRUNC_RIGHT :
+                                    if (leftIdx < 0) {
+                                        leftIdx = - (leftIdx + 1);
+                                    }
+                                    if (rightIdx < 0) {
+                                        rightIdx = - (rightIdx + 1);
+                                    }
+                                    for (int i = leftIdx; i < rightIdx && i < nPtrs; i++) {
+                                        if (query.testValue(keys[i])) {
+                                            callback.indexInfo(keys[i], ptrs[i]);
+                                        }
+                                    }
+                                    if (rightIdx >= nPtrs) {
+                                        scanNextPage(query, null, callback);
+                                    }
+                                    break;
+                                case IndexQuery.IN :
+                                case IndexQuery.NIN :
+                                    if (leftIdx < 0) {
+                                        leftIdx = - (leftIdx + 1);
+                                    }
+                                    if (rightIdx < 0) {
+                                        rightIdx = - (rightIdx + 1);
+                                    }
+                                    for (int i = 0; i < nPtrs; i++) {
+                                        if (!pos || (i >= leftIdx && i <= rightIdx)) {
+                                            if (query.testValue(keys[i])) {
+                                                callback.indexInfo(keys[i], ptrs[i]);
+                                            }
+                                        }
+                                    }
+                                    break;
+                                case IndexQuery.LT :
+                                    if (leftIdx < 0) {
+                                        leftIdx = - (leftIdx + 1);
+                                    }
+                                    for (int i = 0; i < nPtrs; i++) {
+                                        if ((pos && (i <= leftIdx)) || (!pos && (i >= leftIdx))) {
+                                            if (query.testValue(keys[i])) {
+                                                callback.indexInfo(keys[i], ptrs[i]);
+                                            }
+                                        }
+                                    }
+                                    break;
+                                case IndexQuery.GEQ :
+                                case IndexQuery.GT :
+                                    if (leftIdx < 0) {
+                                        leftIdx = - (leftIdx + 1);
+                                    }
+                                    for (int i = leftIdx; i < nPtrs; i++) {
+                                        if (query.testValue(keys[i])) {
+                                            callback.indexInfo(keys[i], ptrs[i]);
+                                        }
+                                    }
+                                    scanNextPage(query, null, callback);
+                                    break;
+                                case IndexQuery.LEQ :
+                                    if (leftIdx < 0) {
+                                        leftIdx = - (leftIdx + 1);
+                                    }
+                                    for (int i = 0; i < nPtrs; i++) {
+                                        if ((pos && (i >= leftIdx)) || (!pos && (i <= leftIdx))) {
+                                            if (query.testValue(keys[i])) {
+                                                callback.indexInfo(keys[i], ptrs[i]);
+                                            } else if (query.getOperator() == IndexQuery.TRUNC_RIGHT) {
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    break;
+                                default :
+                                    // If it's not implemented, it falls right through
+                                    for (int i = 0; i < nPtrs; i++) {
+                                        if (query.testValue(keys[i])) {
+                                            callback.indexInfo(keys[i], ptrs[i]);
+                                        }
+                                    }
+                                    break;
                             }
                             break;
                         default :
-                            // If it's not implemented, we walk the tree
-                            for (int i = 0; i < nPtrs; i++) {
-                                getChildNode(i).query(query, callback);
-                            }
-                            break;
-                        }
-                        break;
-                    case LEAF :
-                        switch (query.getOperator()) {
-                        case IndexQuery.EQ :
-                            if (leftIdx >= 0)
-                                {callback.indexInfo(keys[leftIdx], ptrs[leftIdx]);}
-                            break;
-                        case IndexQuery.NEQ :
-                            for (int i = 0; i < nPtrs; i++) {
-                                if (i != leftIdx)
-                                    {callback.indexInfo(keys[i], ptrs[i]);}
-                            }
-                            scanNextPage(query, null, callback);
-                            break;
-                        case IndexQuery.BWX :
-                        case IndexQuery.NBWX :
-                        case IndexQuery.BW :
-                        case IndexQuery.NBW :
-                            if (leftIdx < 0)
-                                {leftIdx = - (leftIdx + 1);}
-                            if (rightIdx < 0)
-                                {rightIdx = - (rightIdx + 1);}
-                            for (int i = 0; i < nPtrs; i++) {
-                                if ((pos && (i >= leftIdx && i <= rightIdx))
-                                    || (!pos && (i <= leftIdx || i >= rightIdx))) {
-                                    if (query.testValue(keys[i]))
-                                        {callback.indexInfo(keys[i], ptrs[i]);}
-                                }
-                            }
-                            break;
-                        case IndexQuery.RANGE :
-                        case IndexQuery.TRUNC_RIGHT :
-                            if (leftIdx < 0)
-                                {leftIdx = - (leftIdx + 1);}
-                            if (rightIdx < 0)
-                                {rightIdx = - (rightIdx + 1);}
-                            for (int i = leftIdx; i < rightIdx && i < nPtrs; i++) {
-                                if (query.testValue(keys[i]))
-                                        {callback.indexInfo(keys[i], ptrs[i]);}
-                            }
-                            if (rightIdx >= nPtrs)
-                                {scanNextPage(query, null, callback);}
-                            break;
-                        case IndexQuery.IN :
-                        case IndexQuery.NIN :
-                            if (leftIdx < 0)
-                                {leftIdx = - (leftIdx + 1);}
-                            if (rightIdx < 0)
-                                {rightIdx = - (rightIdx + 1);}
-                            for (int i = 0; i < nPtrs; i++) {
-                                if (!pos || (i >= leftIdx && i <= rightIdx))
-                                    {if (query.testValue(keys[i]))
-                                        callback.indexInfo(keys[i], ptrs[i]);}
-                            }
-                            break;
-                        case IndexQuery.LT :
-                            if (leftIdx < 0)
-                                {leftIdx = - (leftIdx + 1);}
-                            for (int i = 0; i < nPtrs; i++) {
-                                if ((pos && (i <= leftIdx)) || (!pos && (i >= leftIdx)))
-                                    {if (query.testValue(keys[i]))
-                                        callback.indexInfo(keys[i], ptrs[i]);}
-                            }
-                            break;
-                        case IndexQuery.GEQ :
-                        case IndexQuery.GT :
-                            if (leftIdx < 0)
-                                {leftIdx = - (leftIdx + 1);}
-                            for (int i = leftIdx; i < nPtrs; i++) {
-                                if (query.testValue(keys[i]))
-                                    {callback.indexInfo(keys[i], ptrs[i]);}
-                            }
-                            scanNextPage(query, null, callback);
-                            break;
-                        case IndexQuery.LEQ :
-                            if (leftIdx < 0)
-                                {leftIdx = - (leftIdx + 1);}
-                            for (int i = 0; i < nPtrs; i++) {
-                                if ((pos && (i >= leftIdx)) || (!pos && (i <= leftIdx))) {
-                                    if (query.testValue(keys[i]))
-                                        {callback.indexInfo(keys[i], ptrs[i]);}
-                                    else if (query.getOperator() == IndexQuery.TRUNC_RIGHT)
-                                        {break;}
-                                }
-                            }
-                            break;
-                        default :
-                            // If it's not implemented, it falls right through
-                            for (int i = 0; i < nPtrs; i++) {
-                                if (query.testValue(keys[i]))
-                                    {callback.indexInfo(keys[i], ptrs[i]);}
-                            }
-                            break;
-                        }
-                        break;
-                    default :
-                        throw new BTreeException("Invalid Page Type In query");
+                            throw new BTreeException("Invalid Page Type In query");
                     }
             } else {
                 // No Query - Just Walk The Tree
@@ -1893,8 +1930,9 @@ public class BTree extends Paged implements Lockable {
                 case LEAF :
                     for (int i = 0; i < nKeys; i++) {
                         if (query == null || query.getOperator() != IndexQuery.TRUNC_LEFT
-                                || query.testValue(keys[i]))
-                            {callback.indexInfo(keys[i], ptrs[i]);}
+                                || query.testValue(keys[i])) {
+                            callback.indexInfo(keys[i], ptrs[i]);
+                        }
                     }
                     break;
                 default :
@@ -1914,7 +1952,7 @@ public class BTree extends Paged implements Lockable {
          * @throws BTreeException
          * @throws TerminatedException
          */
-        private void query(IndexQuery query, Value keyPrefix, BTreeCallback callback)
+        private void query(final IndexQuery query, final Value keyPrefix, final BTreeCallback callback)
                 throws IOException, BTreeException, TerminatedException {
             if (query != null
                     && query.getOperator() != IndexQuery.ANY
@@ -1923,109 +1961,121 @@ public class BTree extends Paged implements Lockable {
                 int leftIdx = searchKey(qvals[0]);
                 int pfxIdx = searchKey(keyPrefix);
                 switch (pageHeader.getStatus()) {
-                case BRANCH :
-                    leftIdx = leftIdx < 0 ? - (leftIdx + 1) : leftIdx + 1;
-                    pfxIdx = pfxIdx < 0 ? - (pfxIdx + 1) : pfxIdx + 1;
-                    switch (query.getOperator()) {
-                    case IndexQuery.EQ :
-                        getChildNode(leftIdx).query(query, keyPrefix, callback);
-                        break;
-                    case IndexQuery.NEQ :
-                        getChildNode(pfxIdx).query(query, keyPrefix, callback);
-                        break;
-                    case IndexQuery.LT :
-                        for (int i = pfxIdx; i <= leftIdx && i < nPtrs; i++) {
-                            getChildNode(i).query(query, keyPrefix, callback);
+                    case BRANCH :
+                        leftIdx = leftIdx < 0 ? - (leftIdx + 1) : leftIdx + 1;
+                        pfxIdx = pfxIdx < 0 ? - (pfxIdx + 1) : pfxIdx + 1;
+                        switch (query.getOperator()) {
+                            case IndexQuery.EQ :
+                                getChildNode(leftIdx).query(query, keyPrefix, callback);
+                                break;
+                            case IndexQuery.NEQ :
+                                getChildNode(pfxIdx).query(query, keyPrefix, callback);
+                                break;
+                            case IndexQuery.LT :
+                                for (int i = pfxIdx; i <= leftIdx && i < nPtrs; i++) {
+                                    getChildNode(i).query(query, keyPrefix, callback);
+                                }
+                                break;
+                            case IndexQuery.LEQ :
+                                for (int i = pfxIdx; i <= leftIdx && i < nPtrs; i++) {
+                                    getChildNode(i).query(query, keyPrefix, callback);
+                                }
+                                break;
+                            case IndexQuery.GEQ :
+                            case IndexQuery.GT :
+                                getChildNode(leftIdx).query(query, keyPrefix, callback);
+                                break;
                         }
                         break;
-                    case IndexQuery.LEQ :
-                        for (int i = pfxIdx; i <= leftIdx && i < nPtrs; i++) {
-                            getChildNode(i).query(query, keyPrefix, callback);
+                    case LEAF :
+                        pfxIdx = pfxIdx < 0 ? - (pfxIdx + 1) : pfxIdx + 1;
+                        switch (query.getOperator()) {
+                            case IndexQuery.EQ :
+                                if (leftIdx >= 0) {
+                                    callback.indexInfo(keys[leftIdx], ptrs[leftIdx]);
+                                }
+                                break;
+                            case IndexQuery.NEQ :
+                                for (int i = pfxIdx; i < nPtrs; i++) {
+                                    if (keys[i].comparePrefix(keyPrefix) > 0) {
+                                        break;
+                                    }
+                                    if (i != leftIdx) {
+                                        callback.indexInfo(keys[i], ptrs[i]);
+                                    }
+                                }
+                                scanNextPage(query, keyPrefix, callback);
+                                break;
+                            case IndexQuery.LT :
+                                if (leftIdx < 0) {
+                                    leftIdx = - (leftIdx + 1);
+                                }
+                                for (int i = pfxIdx; i < leftIdx; i++) {
+                                    if (query.testValue(keys[i])) {
+                                        callback.indexInfo(keys[i], ptrs[i]);
+                                    }
+                                }
+                                break;
+                            case IndexQuery.LEQ :
+                                if (leftIdx < 0) {
+                                    leftIdx = - (leftIdx + 1);
+                                }
+                                for (int i = pfxIdx; i <= leftIdx && i < nPtrs; i++) {
+                                    if (query.testValue(keys[i])) {
+                                        callback.indexInfo(keys[i], ptrs[i]);
+                                    }
+                                }
+                                break;
+                            case IndexQuery.GT :
+                            case IndexQuery.GEQ :
+                                if (leftIdx < 0) {
+                                    leftIdx = - (leftIdx + 1);
+                                }
+                                for (int i = leftIdx; i < nPtrs; i++) {
+                                    if (keys[i].comparePrefix(keyPrefix) > 0) {
+                                        return;
+                                    }
+                                    if (query.testValue(keys[i])) {
+                                        callback.indexInfo(keys[i], ptrs[i]);
+                                    }
+                                }
+                                scanNextPage(query, keyPrefix, callback);
+                                break;
                         }
                         break;
-                    case IndexQuery.GEQ :
-                    case IndexQuery.GT :
-                        getChildNode(leftIdx).query(query, keyPrefix, callback);
-                        break;
-                    }
-                    break;
-                case LEAF :
-                    pfxIdx = pfxIdx < 0 ? - (pfxIdx + 1) : pfxIdx + 1;
-                    switch (query.getOperator()) {
-                    case IndexQuery.EQ :
-                        if (leftIdx >= 0)
-                            {callback.indexInfo(keys[leftIdx], ptrs[leftIdx]);}
-                        break;
-                    case IndexQuery.NEQ :
-                        for (int i = pfxIdx; i < nPtrs; i++) {
-                            if (keys[i].comparePrefix(keyPrefix) > 0)
-                                {break;}
-                            if (i != leftIdx)
-                                {callback.indexInfo(keys[i], ptrs[i]);}
-                        }
-                        scanNextPage(query, keyPrefix, callback);
-                        break;
-                    case IndexQuery.LT :
-                        if (leftIdx < 0)
-                            {leftIdx = - (leftIdx + 1);}
-                        for (int i = pfxIdx; i < leftIdx; i++) {
-                            if (query.testValue(keys[i]))
-                                {callback.indexInfo(keys[i], ptrs[i]);}
-                        }
-                        break;
-                    case IndexQuery.LEQ :
-                        if (leftIdx < 0)
-                            {leftIdx = - (leftIdx + 1);}
-                        for (int i = pfxIdx; i <= leftIdx && i < nPtrs; i++) {
-                            if (query.testValue(keys[i]))
-                                {callback.indexInfo(keys[i], ptrs[i]);}
-                        }
-                        break;
-                    case IndexQuery.GT :
-                    case IndexQuery.GEQ :
-                        if (leftIdx < 0)
-                            {leftIdx = - (leftIdx + 1);}
-                        for (int i = leftIdx; i < nPtrs; i++) {
-                            if (keys[i].comparePrefix(keyPrefix) > 0)
-                                {return;}
-                            if (query.testValue(keys[i]))
-                                {callback.indexInfo(keys[i], ptrs[i]);}
-                        }
-                        scanNextPage(query, keyPrefix, callback);
-                        break;
-                    }
-                    break;
-                default :
-                    throw new BTreeException("Invalid Page Type In query");
+                    default :
+                        throw new BTreeException("Invalid Page Type In query");
                 }
             } else {
                 // No Query - Just Walk The Tree
                 switch (pageHeader.getStatus()) {
-                case BRANCH :
-                    for (int i = 0; i < nPtrs; i++) {
-                        getChildNode(i).query(query, callback);
-                    }
-                    break;
-                case LEAF :
-                    for (int i = 0; i < nKeys; i++) {
-                        if (query.getOperator() != IndexQuery.TRUNC_LEFT || query.testValue(keys[i]))
-                            {callback.indexInfo(keys[i], ptrs[i]);}
-                    }
-                    break;
-                default :
-                    throw new BTreeException("Invalid Page Type In query");
+                    case BRANCH :
+                        for (int i = 0; i < nPtrs; i++) {
+                            getChildNode(i).query(query, callback);
+                        }
+                        break;
+                    case LEAF :
+                        for (int i = 0; i < nKeys; i++) {
+                            if (query.getOperator() != IndexQuery.TRUNC_LEFT || query.testValue(keys[i])) {
+                                callback.indexInfo(keys[i], ptrs[i]);
+                            }
+                        }
+                        break;
+                    default :
+                        throw new BTreeException("Invalid Page Type In query");
                 }
             }
         }
 
-        protected void scanRaw(IndexQuery query, BTreeCallback callback) throws TerminatedException {
+        protected void scanRaw(final IndexQuery query, final BTreeCallback callback) throws TerminatedException {
             for (int i = 0; i < nKeys; i++) {
-                if (query == null || query.testValue(keys[i]))
-                    {callback.indexInfo(keys[i], ptrs[i]);}
+                if (query == null || query.testValue(keys[i])) {
+                    callback.indexInfo(keys[i], ptrs[i]);
+                }
             }
         }
 
-        protected void scanNextPage(IndexQuery query, Value keyPrefix, BTreeCallback callback) throws TerminatedException {
+        protected void scanNextPage(final IndexQuery query, final Value keyPrefix, final BTreeCallback callback) throws TerminatedException {
             final long next = pageHeader.getNextPage();
             if (next != Page.NO_PAGE) {
                 final BTreeNode nextPage = getBTreeNode(next);
@@ -2044,7 +2094,7 @@ public class BTree extends Paged implements Lockable {
          * @throws BTreeException
          * @throws TerminatedException
          */
-        private void remove(Txn transaction, IndexQuery query, BTreeCallback callback)
+        private void remove(final Txn transaction, final IndexQuery query, final BTreeCallback callback)
                 throws IOException, BTreeException, TerminatedException {
             if (query != null && query.getOperator() != IndexQuery.ANY
                     && query.getOperator() != IndexQuery.TRUNC_LEFT) {
@@ -2052,282 +2102,308 @@ public class BTree extends Paged implements Lockable {
                 int leftIdx = searchKey(qvals[0]);
                 int rightIdx = qvals.length > 1 ? 
                     searchKey(qvals[qvals.length - 1]) : leftIdx;
-                boolean pos = query.getOperator() >= 0;
+                final boolean pos = query.getOperator() >= 0;
                 switch (pageHeader.getStatus()) {
-                case BRANCH :
-                    leftIdx = leftIdx < 0 ? - (leftIdx + 1) : leftIdx + 1;
-                    rightIdx = rightIdx < 0 ? - (rightIdx + 1) : rightIdx + 1;
-                    switch (query.getOperator()) {
-                    case IndexQuery.BWX :
-                    case IndexQuery.NBWX :
-                    case IndexQuery.BW :
-                    case IndexQuery.NBW :
-                    case IndexQuery.IN :
-                    case IndexQuery.NIN :
-                    case IndexQuery.TRUNC_RIGHT :
-                    case IndexQuery.RANGE :
-                        for (int i = 0; i < nPtrs; i++) {
-                            if ((i >= leftIdx && i <= rightIdx) == pos) {
-                                getChildNode(i).remove(transaction, query, callback);
-                                if (query.getOperator() == IndexQuery.TRUNC_RIGHT)
-                                    {break;}
+                    case BRANCH :
+                        leftIdx = leftIdx < 0 ? - (leftIdx + 1) : leftIdx + 1;
+                        rightIdx = rightIdx < 0 ? - (rightIdx + 1) : rightIdx + 1;
+                        switch (query.getOperator()) {
+                            case IndexQuery.BWX :
+                            case IndexQuery.NBWX :
+                            case IndexQuery.BW :
+                            case IndexQuery.NBW :
+                            case IndexQuery.IN :
+                            case IndexQuery.NIN :
+                            case IndexQuery.TRUNC_RIGHT :
+                            case IndexQuery.RANGE :
+                                for (int i = 0; i < nPtrs; i++) {
+                                    if ((i >= leftIdx && i <= rightIdx) == pos) {
+                                        getChildNode(i).remove(transaction, query, callback);
+                                        if (query.getOperator() == IndexQuery.TRUNC_RIGHT) {
+                                            break;
+                                        }
+                                    }
+                                }
+                                break;
+                            case IndexQuery.EQ :
+                            case IndexQuery.NEQ :
+                                for (int i = 0; i < nPtrs; i++) {
+                                    if (!pos || i == leftIdx) {
+                                        getChildNode(i).remove(transaction, query, callback);
+                                    }
+                                }
+                            case IndexQuery.LT :
+                            case IndexQuery.GEQ :
+                                for (int i = 0; i < nPtrs; i++){
+                                    if ((pos && (i <= leftIdx)) || (!pos && (i >= leftIdx))) {
+                                        getChildNode(i).remove(transaction, query, callback);
+                                    }
+                                }
+                                break;
+                            case IndexQuery.GT :
+                            case IndexQuery.LEQ :
+                                for (int i = 0; i < nPtrs; i++) {
+                                    if ((pos && (i >= leftIdx)) || (!pos && (i <= leftIdx))) {
+                                        getChildNode(i).remove(transaction, query, callback);
+                                    }
+                                }
+                                break;
+                            default :
+                                // If it's not implemented, we walk the tree
+                                for (int i = 0; i < nPtrs; i++) {
+                                    getChildNode(i).remove(transaction, query, callback);
+                                }
+                                break;
+                        }
+                        break;
+                    case LEAF :
+                        try {
+                            allowUnload = false;
+                            switch (query.getOperator()) {
+                            case IndexQuery.EQ :
+                                if (leftIdx >= 0) {
+                                    if (transaction != null && isRecoveryEnabled()) {
+                                        final RemoveValueLoggable log =  new RemoveValueLoggable(transaction,
+                                            fileId, page.getPageNum(), leftIdx, keys[leftIdx], ptrs[leftIdx]);
+                                        writeToLog(log, this);
+                                    }
+                                    if (callback != null) {
+                                        callback.indexInfo(keys[leftIdx], ptrs[leftIdx]);
+                                    }
+                                    removeKey(leftIdx);
+                                    removePointer(leftIdx);
+                                    recalculateDataLen();
+                                }
+                                break;
+                            case IndexQuery.NEQ :
+                                for (int i = 0; i < nPtrs; i++) {
+                                    if (i != leftIdx) {
+                                        if (transaction != null && isRecoveryEnabled()) {
+                                            final RemoveValueLoggable log = new RemoveValueLoggable(transaction,
+                                                fileId, page.getPageNum(), i, keys[i], ptrs[i]);
+                                            writeToLog(log, this);
+                                        }
+                                        if (callback != null) {
+                                            callback.indexInfo(keys[i], ptrs[i]);
+                                        }
+                                        removeKey(i);
+                                        removePointer(i);
+                                        recalculateDataLen();
+                                    }
+                                }
+                                break;
+                            case IndexQuery.BWX :
+                            case IndexQuery.NBWX :
+                            case IndexQuery.BW :
+                            case IndexQuery.NBW :
+                            case IndexQuery.RANGE :
+                                if (leftIdx < 0) {
+                                    leftIdx = - (leftIdx + 1);
+                                }
+                                if (rightIdx < 0) {
+                                    rightIdx = - (rightIdx + 1);
+                                }
+                                for (int i = 0; i < nPtrs; i++) {
+                                    if ((pos && (i >= leftIdx && i <= rightIdx))
+                                            || (!pos && (i <= leftIdx || i >= rightIdx))) {
+                                        if (query.testValue(keys[i])) {
+                                            if (transaction != null && isRecoveryEnabled()) {
+                                                final RemoveValueLoggable log = new RemoveValueLoggable(transaction,
+                                                    fileId, page.getPageNum(), i, keys[i], ptrs[i]);
+                                                writeToLog(log, this);
+                                            }
+                                            if (callback != null) {
+                                                callback.indexInfo(keys[i], ptrs[i]);
+                                            }
+                                            removeKey(i);
+                                            removePointer(i);
+                                            recalculateDataLen();
+                                            --i;
+                                        }
+                                    }
+                                }
+                                break;
+                            case IndexQuery.TRUNC_RIGHT :
+                                if (leftIdx < 0) {
+                                    leftIdx = - (leftIdx + 1);
+                                }
+                                if (rightIdx < 0) {
+                                    rightIdx = - (rightIdx + 1);
+                                }
+                                for (int i = leftIdx; i < rightIdx && i < nPtrs; i++) {
+                                    if (query.testValue(keys[i])) {
+                                        if (transaction != null && isRecoveryEnabled()) {
+                                            final RemoveValueLoggable log = new RemoveValueLoggable(transaction,
+                                                fileId, page.getPageNum(), i, keys[i], ptrs[i]);
+                                            writeToLog(log, this);
+                                        }
+                                        if (callback != null) {
+                                            callback.indexInfo(keys[i], ptrs[i]);
+                                        }
+                                        removeKey(i);
+                                        removePointer(i);
+                                        recalculateDataLen();
+                                        --i;
+                                    }
+                                }
+                                if (rightIdx >= nPtrs) {
+                                    removeSequential(transaction, this, query, callback);
+                                }
+                                break;
+                            case IndexQuery.IN :
+                            case IndexQuery.NIN :
+                                if (leftIdx < 0) {
+                                    leftIdx = - (leftIdx + 1);
+                                }
+                                if (rightIdx < 0) {
+                                    rightIdx = - (rightIdx + 1);
+                                }
+                                for (int i = 0; i < nPtrs; i++) {
+                                    if (!pos || (i >= leftIdx && i <= rightIdx)) {
+                                        if (query.testValue(keys[i])) {
+                                            if (transaction != null && isRecoveryEnabled()) {
+                                                final RemoveValueLoggable log = new RemoveValueLoggable(transaction,
+                                                    fileId, page.getPageNum(), i, keys[i], ptrs[i]);
+                                                    writeToLog(log, this);
+                                            }
+                                            if (callback != null) {
+                                                callback.indexInfo(keys[i], ptrs[i]);
+                                            }
+                                            removeKey(i);
+                                            removePointer(i);
+                                            recalculateDataLen();
+                                            --i;
+                                        }
+                                    }
+                                }
+                                break;
+                            case IndexQuery.LT :
+                            case IndexQuery.GEQ :
+                                if (leftIdx < 0) {
+                                    leftIdx = - (leftIdx + 1);
+                                }
+                                for (int i = 0; i < nPtrs; i++) {
+                                    if ((pos && (i <= leftIdx)) || (!pos && (i >= leftIdx))) {
+                                        if (query.testValue(keys[i])) {
+                                            if (transaction != null && isRecoveryEnabled()) {
+                                                final RemoveValueLoggable log = new RemoveValueLoggable(transaction,
+                                                    fileId, page.getPageNum(), i, keys[i], ptrs[i]);
+                                                    writeToLog(log, this);
+                                            }
+                                            if (callback != null) {
+                                                callback.indexInfo(keys[i], ptrs[i]);
+                                            }
+                                            removeKey(i);
+                                            removePointer(i);
+                                            recalculateDataLen();
+                                            --i;
+                                        }
+                                    }
+                                }
+                                break;
+                            case IndexQuery.GT :
+                            case IndexQuery.LEQ :
+                                if (leftIdx < 0) {
+                                    leftIdx = - (leftIdx + 1);
+                                }
+                                for (int i = 0; i < nPtrs; i++) {
+                                    if ((pos && (i >= leftIdx)) || (!pos && (i <= leftIdx))) {
+                                        if (query.testValue(keys[i])) {
+                                            if (transaction != null && isRecoveryEnabled()) {
+                                                final RemoveValueLoggable log = new RemoveValueLoggable(transaction,
+                                                    fileId, page.getPageNum(), i, keys[i], ptrs[i]);
+                                                writeToLog(log, this);
+                                            }
+                                            if (callback != null) {
+                                                callback.indexInfo(keys[i], ptrs[i]);
+                                            }
+                                            removeKey(i);
+                                            removePointer(i);
+                                            recalculateDataLen();
+                                            --i;
+                                        } else if (query.getOperator() == IndexQuery.TRUNC_RIGHT) {
+                                            break;
+                                        }
+                                    }
+                                }
+                                break;
+                            default :
+                                // If it's not implemented, it falls right through
+                                for (int i = 0; i < nPtrs; i++) {
+                                    if (query.testValue(keys[i])) {
+                                        if (transaction != null && isRecoveryEnabled()) {
+                                            final RemoveValueLoggable log = new RemoveValueLoggable(transaction,
+                                                fileId, page.getPageNum(), i, keys[i], ptrs[i]);
+                                                writeToLog(log, this);
+                                        }
+                                        if (callback != null) {
+                                            callback.indexInfo(keys[i], ptrs[i]);
+                                        }
+                                        removeKey(i);
+                                        removePointer(i);
+                                        recalculateDataLen();
+                                        --i;
+                                    }
+                                }
+                                break;
                             }
-                        }
-                        break;
-                    case IndexQuery.EQ :
-                    case IndexQuery.NEQ :
-                        for (int i = 0; i < nPtrs; i++) {
-                            if (!pos || i == leftIdx)
-                                {getChildNode(i).remove(transaction, query, callback);}
-                        }
-                    case IndexQuery.LT :
-                    case IndexQuery.GEQ :
-                        for (int i = 0; i < nPtrs; i++){
-                            if ((pos && (i <= leftIdx)) || (!pos && (i >= leftIdx)))
-                                {getChildNode(i).remove(transaction, query, callback);}
-                        }
-                        break;
-                    case IndexQuery.GT :
-                    case IndexQuery.LEQ :
-                        for (int i = 0; i < nPtrs; i++) {
-                            if ((pos && (i >= leftIdx)) || (!pos && (i <= leftIdx)))
-                                {getChildNode(i).remove(transaction, query, callback);}
+                        } finally {
+                            allowUnload = true;
                         }
                         break;
                     default :
-                        // If it's not implemented, we walk the tree
-                        for (int i = 0; i < nPtrs; i++) {
-                            getChildNode(i).remove(transaction, query, callback);
-                        }
-                        break;
-                    }
-                    break;
-                case LEAF :
-                    try {
-                        allowUnload = false;
-                        switch (query.getOperator()) {
-                        case IndexQuery.EQ :
-                            if (leftIdx >= 0) {
-                                if (isTransactional && transaction != null) {
-                                    final RemoveValueLoggable log =  new RemoveValueLoggable(transaction,
-                                        fileId, page.getPageNum(), leftIdx, keys[leftIdx], ptrs[leftIdx]);
-                                    writeToLog(log, this);
-                                }
-                                if (callback != null)
-                                    {callback.indexInfo(keys[leftIdx], ptrs[leftIdx]);}
-                                removeKey(leftIdx);
-                                removePointer(leftIdx);
-                                recalculateDataLen();
-                            }
-                            break;
-                        case IndexQuery.NEQ :
-                            for (int i = 0; i < nPtrs; i++) {
-                                if (i != leftIdx) {
-                                    if (isTransactional && transaction != null) {
-                                        final RemoveValueLoggable log = new RemoveValueLoggable(transaction,
-                                            fileId, page.getPageNum(), i, keys[i], ptrs[i]);
-                                        writeToLog(log, this);
-                                    }
-                                    if (callback != null)
-                                        {callback.indexInfo(keys[i], ptrs[i]);}
-                                    removeKey(i);
-                                    removePointer(i);
-                                    recalculateDataLen();
-                                }
-                            }
-                            break;
-                        case IndexQuery.BWX :
-                        case IndexQuery.NBWX :
-                        case IndexQuery.BW :
-                        case IndexQuery.NBW :
-                        case IndexQuery.RANGE :
-                            if (leftIdx < 0)
-                                {leftIdx = - (leftIdx + 1);}
-                            if (rightIdx < 0)
-                                {rightIdx = - (rightIdx + 1);}
-                            for (int i = 0; i < nPtrs; i++) {
-                                if ((pos && (i >= leftIdx && i <= rightIdx))
-                                        || (!pos && (i <= leftIdx || i >= rightIdx))) {
-                                    if (query.testValue(keys[i])) {
-                                        if (isTransactional && transaction != null) {
-                                            final RemoveValueLoggable log = new RemoveValueLoggable(transaction,
-                                                fileId, page.getPageNum(), i, keys[i], ptrs[i]);
-                                            writeToLog(log, this);
-                                        }
-                                        if (callback != null)
-                                            {callback.indexInfo(keys[i], ptrs[i]);}
-                                        removeKey(i);
-                                        removePointer(i);
-                                        recalculateDataLen();
-                                        --i;
-                                    }
-                                }
-                            }
-                            break;
-                        case IndexQuery.TRUNC_RIGHT :
-                            if (leftIdx < 0)
-                                {leftIdx = - (leftIdx + 1);}
-                            if (rightIdx < 0)
-                                {rightIdx = - (rightIdx + 1);}
-                                for (int i = leftIdx; i < rightIdx && i < nPtrs; i++) {
-                                    if (query.testValue(keys[i])) {
-                                        if (isTransactional && transaction != null) {
-                                            final RemoveValueLoggable log = new RemoveValueLoggable(transaction, 
-                                                fileId, page.getPageNum(), i, keys[i], ptrs[i]);
-                                            writeToLog(log, this);
-                                        }
-                                    if (callback != null)
-                                        {callback.indexInfo(keys[i], ptrs[i]);}
-                                    removeKey(i);
-                                    removePointer(i);
-                                    recalculateDataLen();
-                                    --i;
-                                }
-                            }
-                            if (rightIdx >= nPtrs)
-                                {removeSequential(transaction, this, query, callback);}
-                            break;
-                        case IndexQuery.IN :
-                        case IndexQuery.NIN :
-                            if (leftIdx < 0)
-                                {leftIdx = - (leftIdx + 1);}
-                            if (rightIdx < 0)
-                                {rightIdx = - (rightIdx + 1);}
-                            for (int i = 0; i < nPtrs; i++) {
-                                if (!pos || (i >= leftIdx && i <= rightIdx)) {
-                                    if (query.testValue(keys[i])) {
-                                        if (isTransactional && transaction != null) {
-                                            final RemoveValueLoggable log = new RemoveValueLoggable(transaction,
-                                                fileId, page.getPageNum(), i, keys[i], ptrs[i]);
-                                                writeToLog(log, this);
-                                        }
-                                        if (callback != null)
-                                            {callback.indexInfo(keys[i], ptrs[i]);}
-                                        removeKey(i);
-                                        removePointer(i);
-                                        recalculateDataLen();
-                                        --i;
-                                    }
-                                }
-                            }
-                            break;
-                        case IndexQuery.LT :
-                        case IndexQuery.GEQ :
-                            if (leftIdx < 0)
-                                {leftIdx = - (leftIdx + 1);}
-                            for (int i = 0; i < nPtrs; i++) {
-                                if ((pos && (i <= leftIdx)) || (!pos && (i >= leftIdx))) {
-                                    if (query.testValue(keys[i])) {
-                                        if (isTransactional && transaction != null) {
-                                            final RemoveValueLoggable log = new RemoveValueLoggable(transaction,
-                                                fileId, page.getPageNum(), i, keys[i], ptrs[i]);
-                                                writeToLog(log, this);
-                                        }
-                                        if (callback != null)
-                                            {callback.indexInfo(keys[i], ptrs[i]);}
-                                        removeKey(i);
-                                        removePointer(i);
-                                        recalculateDataLen();
-                                        --i;
-                                    }
-                                }
-                            }
-                            break;
-                        case IndexQuery.GT :
-                        case IndexQuery.LEQ :
-                            if (leftIdx < 0)
-                                {leftIdx = - (leftIdx + 1);}
-                            for (int i = 0; i < nPtrs; i++) {
-                                if ((pos && (i >= leftIdx)) || (!pos && (i <= leftIdx))) {
-                                    if (query.testValue(keys[i])) {
-                                        if (isTransactional && transaction != null) {
-                                            final RemoveValueLoggable log = new RemoveValueLoggable(transaction,
-                                                fileId, page.getPageNum(), i, keys[i], ptrs[i]);
-                                            writeToLog(log, this);
-                                        }
-                                        if (callback != null)
-                                            {callback.indexInfo(keys[i], ptrs[i]);}
-                                        removeKey(i);
-                                        removePointer(i);
-                                        recalculateDataLen();
-                                        --i;
-                                    } else if (query.getOperator() == IndexQuery.TRUNC_RIGHT)
-                                        {break;}
-                                }
-                            }
-                            break;
-                        default :
-                            // If it's not implemented, it falls right through
-                            for (int i = 0; i < nPtrs; i++) {
-                                if (query.testValue(keys[i])) {
-                                    if (isTransactional && transaction != null) {
-                                        final RemoveValueLoggable log = new RemoveValueLoggable(transaction,
-                                            fileId, page.getPageNum(), i, keys[i], ptrs[i]);
-                                            writeToLog(log, this);
-                                    }
-                                    if (callback != null)
-                                        {callback.indexInfo(keys[i], ptrs[i]);}
-                                    removeKey(i);
-                                    removePointer(i);
-                                    recalculateDataLen();
-                                    --i;
-                                }
-                            }
-                            break;
-                        }
-                    } finally {
-                        allowUnload = true;
-                    }
-                    break;
-                default :
-                    throw new BTreeException("Invalid Page Type In query");
+                        throw new BTreeException("Invalid Page Type In query");
                 }
             } else {
                 // No Query - Just Walk The Tree
                 switch (pageHeader.getStatus()) {
-                case BRANCH :
-                    for (int i = 0; i < nPtrs; i++) {
-                        if (isTransactional && transaction != null) {
-                            final RemoveValueLoggable log = 
-                                new RemoveValueLoggable(transaction, 
-                                    fileId, page.getPageNum(), i, keys[i], ptrs[i]);
-                            writeToLog(log, this);
-                        }
-                        if (callback != null)
-                            {callback.indexInfo(keys[i], ptrs[i]);}
-                        removeKey(i);
-                        removePointer(i);
-                        recalculateDataLen();
-                        --i;
-                    }
-                    break;
-                case LEAF :
-                    for (int i = 0; i < nKeys; i++) {
-                        if (query.getOperator() != IndexQuery.TRUNC_LEFT
-                                || query.testValue(keys[i])) {
-                            if (isTransactional && transaction != null) {
-                                final RemoveValueLoggable log = new RemoveValueLoggable(transaction, 
-                                    fileId, page.getPageNum(), i, keys[i], ptrs[i]);
+                    case BRANCH :
+                        for (int i = 0; i < nPtrs; i++) {
+                            if (transaction != null && isRecoveryEnabled()) {
+                                final RemoveValueLoggable log =
+                                    new RemoveValueLoggable(transaction,
+                                        fileId, page.getPageNum(), i, keys[i], ptrs[i]);
                                 writeToLog(log, this);
                             }
-                            if (callback != null)
-                                {callback.indexInfo(keys[i], ptrs[i]);}
+                            if (callback != null) {
+                                callback.indexInfo(keys[i], ptrs[i]);
+                            }
                             removeKey(i);
                             removePointer(i);
                             recalculateDataLen();
                             --i;
                         }
-                    }
-                    break;
-                default :
-                    throw new BTreeException("Invalid Page Type In query");
+                        break;
+                    case LEAF :
+                        for (int i = 0; i < nKeys; i++) {
+                            if (query.getOperator() != IndexQuery.TRUNC_LEFT
+                                    || query.testValue(keys[i])) {
+                                if (transaction != null && isRecoveryEnabled()) {
+                                    final RemoveValueLoggable log = new RemoveValueLoggable(transaction,
+                                        fileId, page.getPageNum(), i, keys[i], ptrs[i]);
+                                    writeToLog(log, this);
+                                }
+                                if (callback != null) {
+                                    callback.indexInfo(keys[i], ptrs[i]);
+                                }
+                                removeKey(i);
+                                removePointer(i);
+                                recalculateDataLen();
+                                --i;
+                            }
+                        }
+                        break;
+                    default :
+                        throw new BTreeException("Invalid Page Type In query");
                 }
             }
         }
 
         private void growPrefix() {
-            if (nKeys == 0)
-                {return;}
+            if (nKeys == 0) {
+                return;
+            }
+
             if (nKeys == 1) {
                 if (keys[0].getLength() > 0) {
                     final byte[] newPrefix = new byte[prefix.getLength() + keys[0].getLength()];
@@ -2339,14 +2415,15 @@ public class BTree extends Paged implements Lockable {
                 }
                 return;
             }
-            int idx;
+            //int idx;
             int max = Integer.MAX_VALUE;
             final Value first = keys[0];
             for (int i = 1; i < nKeys; i++) {
                 final Value value = keys[i];
-                idx = Math.abs(value.compareTo(first));
-                if (idx < max)
-                    {max = idx;}
+                final int idx = Math.abs(value.compareTo(first));
+                if (idx < max) {
+                    max = idx;
+                }
             }
             final int addChars = max - 1;
             if (addChars > 0) {
@@ -2356,16 +2433,15 @@ public class BTree extends Paged implements Lockable {
                 System.arraycopy(keys[0].data(), keys[0].start(), pdata, prefix.getLength(), addChars);
                 prefix = new Value(pdata);
                 // shrink the keys by addChars characters
-                Value key;
                 for (int i = 0; i < nKeys; i++) {
-                    key = keys[i];
+                    final Value key = keys[i];
                     keys[i] = new Value(key.data(), key.start() + addChars, key.getLength() - addChars);
                 }
                 recalculateDataLen();
             }
         }
 
-        private void shrinkPrefix(int newLen) {
+        private void shrinkPrefix(final int newLen) {
             final int diff = prefix.getLength() - newLen;
             Value[] nv = new Value[nKeys];
             for (int i = 0; i < nKeys; i++) {
@@ -2384,7 +2460,7 @@ public class BTree extends Paged implements Lockable {
          * @param val
          * @param idx
          */
-        private void insertKey(Value val, int idx) {
+        private void insertKey(Value val, final int idx) {
             if (pageHeader.getStatus() == BRANCH) {
                 // in a leaf page we might have to adjust the prefix
                 if (nKeys == 0) {
@@ -2409,7 +2485,7 @@ public class BTree extends Paged implements Lockable {
          * Remove a key from the array of keys.
          * @param idx
          */
-        private void removeKey(int idx) {
+        private void removeKey(final int idx) {
             try {
                 System.arraycopy(keys, idx + 1, keys, idx, nKeys - idx - 1);
             } catch (ArrayIndexOutOfBoundsException e) {
@@ -2425,11 +2501,11 @@ public class BTree extends Paged implements Lockable {
          * @param ptr
          * @param idx
          */
-        private void insertPointer(long ptr, int idx) {
+        private void insertPointer(final long ptr, final int idx) {
             resizePtrs(nPtrs + 1);
             System.arraycopy(ptrs, idx, ptrs, idx + 1, nPtrs - idx);
             ptrs[idx] = ptr;
-            ++nPtrs;
+            nPtrs++;
             saved = false;
         }
 
@@ -2437,9 +2513,9 @@ public class BTree extends Paged implements Lockable {
          * Remove a pointer from the array of pointers.
          * @param idx
          */
-        private void removePointer(int idx) {
+        private void removePointer(final int idx) {
             System.arraycopy(ptrs, idx + 1, ptrs, idx, nPtrs - idx - 1);
-            --nPtrs;
+            nPtrs--;
             saved = false;
         }
 
@@ -2449,13 +2525,16 @@ public class BTree extends Paged implements Lockable {
         private int searchKey(Value key) {
             if (pageHeader.getStatus() == BRANCH && prefix != null && prefix.getLength() > 0) {
                 // if this is a leaf page, check the common prefix first
-                if (key.getLength() < prefix.getLength())
-                    {return key.compareTo(prefix) <= 0 ? -1 : -(nKeys + 1);}
+                if (key.getLength() < prefix.getLength()) {
+                    return key.compareTo(prefix) <= 0 ? -1 : -(nKeys + 1);
+                }
                 final int pfxCmp = key.comparePrefix(prefix);
-                if (pfxCmp < 0)
-                    {return -1;}
-                if (pfxCmp > 0)
-                    {return -(nKeys + 1);}
+                if (pfxCmp < 0) {
+                    return -1;
+                }
+                if (pfxCmp > 0) {
+                    return -(nKeys + 1);
+                }
                 key = new Value(key.data(), key.start() + prefix.getLength(), 
                     key.getLength() - prefix.getLength());
             }
@@ -2465,51 +2544,50 @@ public class BTree extends Paged implements Lockable {
                 final int mid = (low + high) >> 1;
                 final Value  midVal = keys[mid];
                 final int cmp = midVal.compareTo(key);
-                if (cmp < 0)
-                    {low = mid + 1;}
-                else if (cmp > 0)
-                    {high = mid - 1;}
-                else
-                    {return mid;} // key found
+                if (cmp < 0) {
+                    low = mid + 1;
+                } else if (cmp > 0) {
+                    high = mid - 1;
+                } else {
+                    return mid;  // key found
+                }
             }
             return -(low + 1); // key not found.
         }
 
-        private void resizeKeys(int minCapacity) {
+        private void resizeKeys(final int minCapacity) {
             final int oldCapacity = keys.length;
             if (minCapacity > oldCapacity) {
                 final Value oldData[] = keys;
                 int newCapacity = (oldCapacity * 3)/2 + 1;
-                if (newCapacity < minCapacity)
-                    {newCapacity = minCapacity;}
+                if (newCapacity < minCapacity) {
+                    newCapacity = minCapacity;
+                }
                 keys = new Value[newCapacity];
                 System.arraycopy(oldData, 0, keys, 0, nKeys);
             }
         }
  
-        private void resizePtrs(int minCapacity) {
+        private void resizePtrs(final int minCapacity) {
             final int oldCapacity = ptrs.length;
             if (minCapacity > oldCapacity) {
                 final long[] oldData = ptrs;
                 int newCapacity = (oldCapacity * 3)/2 + 1;
-                if (newCapacity < minCapacity)
-                    {newCapacity = minCapacity;}
+                if (newCapacity < minCapacity) {
+                    newCapacity = minCapacity;
+                }
                 ptrs = new long[newCapacity];
                 System.arraycopy(oldData, 0, ptrs, 0, nPtrs);
             }
         }
     }
 
-    /**
-     * @see org.exist.storage.btree.Paged#createFileHeader(int pageSize)
-     */
-    public FileHeader createFileHeader(int pageSize) {
+    @Override
+    public FileHeader createFileHeader(final int pageSize) {
         return new BTreeFileHeader(pageSize);
     }
 
-    /**
-     * @see org.exist.storage.btree.Paged#createPageHeader()
-     */
+    @Override
     public PageHeader createPageHeader() {
         return new BTreePageHeader();
     }
@@ -2527,16 +2605,18 @@ public class BTree extends Paged implements Lockable {
         final StringBuilder buf = new StringBuilder();
         buf.append(FileUtils.fileName(getFile())).append(" INDEX ");
         buf.append("Buffers occupation : ");
-        if (cache.getBuffers() == 0 && cache.getUsedBuffers() == 0)
-            {buf.append("N/A");}
-        else
-            {buf.append(nf.format(cache.getUsedBuffers()/(float)cache.getBuffers()));}
-        buf.append(" (" + cache.getUsedBuffers() + " out of " + cache.getBuffers() + ")");
+        if (cache.getBuffers() == 0 && cache.getUsedBuffers() == 0) {
+            buf.append("N/A");
+        } else {
+            buf.append(nf.format(cache.getUsedBuffers()/(float)cache.getBuffers()));
+        }
+        buf.append(" (").append(cache.getUsedBuffers()).append(" out of ").append(cache.getBuffers()).append(")");
         buf.append(" Cache efficiency : ");
-        if (cache.getHits() == 0 && cache.getFails() == 0)
-            {buf.append("N/A");}
-        else
-            {buf.append(nf.format(cache.getHits() / (float)(cache.getFails() + cache.getHits())));}
+        if (cache.getHits() == 0 && cache.getFails() == 0) {
+            buf.append("N/A");
+        } else {
+            buf.append(nf.format(cache.getHits() / (float)(cache.getFails() + cache.getHits())));
+        }
         LOGSTATS.info(buf.toString());
     }
 
@@ -2545,31 +2625,16 @@ public class BTree extends Paged implements Lockable {
         private long rootPage = 0;
         private short fixedLen = -1;
 
-        public BTreeFileHeader() {
-            super();
-        }
-
-        public BTreeFileHeader(long pageCount) {
-            super(pageCount);
-        }
-
-        public BTreeFileHeader(long pageCount, int pageSize) {
+        public BTreeFileHeader(final long pageCount, final int pageSize) {
             super(pageCount, pageSize);
         }
 
-        public BTreeFileHeader(long pageCount, int pageSize, byte blockSize) {
-            super(pageCount, pageSize, blockSize);
-        }
-
-        public BTreeFileHeader(int pageSize) {
+        public BTreeFileHeader(final int pageSize) {
             super(1024, pageSize);
         }
 
-        public BTreeFileHeader(boolean read) throws IOException {
-            super(read);
-        }
-
-        public int read(byte[] buf) throws IOException {
+        @Override
+        public int read(final byte[] buf) throws IOException {
             int offset = super.read(buf);
             rootPage = ByteConversion.byteToLong(buf, offset);
             offset += 8;
@@ -2578,7 +2643,8 @@ public class BTree extends Paged implements Lockable {
             return offset;
         }
 
-        public int write(byte[] buf) throws IOException {
+        @Override
+        public int write(final byte[] buf) throws IOException {
             int offset = super.write(buf);
             ByteConversion.longToByte(rootPage, buf, offset);
             offset += 8;
@@ -2592,7 +2658,7 @@ public class BTree extends Paged implements Lockable {
          *
          *@param  rootPage The new rootPage value
          */
-        public final void setRootPage(long rootPage) {
+        public final void setRootPage(final long rootPage) {
             this.rootPage = rootPage;
             setDirty(true);
         }
@@ -2614,6 +2680,7 @@ public class BTree extends Paged implements Lockable {
             this.fixedLen = keyLen;
         }
 
+        @Override
         public int getMaxKeySize() {
             return (getWorkSize() / 2) - MIN_SPACE_PER_KEY;
         }
@@ -2628,11 +2695,12 @@ public class BTree extends Paged implements Lockable {
             super();
         }
 
-        public BTreePageHeader(byte[] data, int offset) throws IOException {
+        public BTreePageHeader(final byte[] data, final int offset) throws IOException {
             super(data, offset);
         }
 
-        public int read(byte[] data, int offset) throws IOException {
+        @Override
+        public int read(final byte[] data, int offset) throws IOException {
             offset = super.read(data, offset);
             parentPage = ByteConversion.byteToLong(data, offset);
             offset += 8;
@@ -2640,7 +2708,8 @@ public class BTree extends Paged implements Lockable {
             return offset + 2;
         }
 
-        public int write(byte[] data, int offset) throws IOException {
+        @Override
+        public int write(final byte[] data, int offset) throws IOException {
             offset = super.write(data, offset);
             ByteConversion.longToByte(parentPage, data, offset);
             offset += 8;
@@ -2648,7 +2717,7 @@ public class BTree extends Paged implements Lockable {
             return offset + 2;
         }
 
-        public final void setValueCount(short valueCount) {
+        public final void setValueCount(final short valueCount) {
             this.valueCount = valueCount;
             setDirty(true);
         }
@@ -2668,10 +2737,11 @@ public class BTree extends Paged implements Lockable {
          *@return    The pointerCount value
          */
         public final short getPointerCount() {
-            if (getStatus() == BRANCH)
-                {return (short) (valueCount + 1);}
-            else
-                {return valueCount;}
+            if (getStatus() == BRANCH) {
+                return (short) (valueCount + 1);
+            } else {
+                return valueCount;
+            }
         }
 
     }

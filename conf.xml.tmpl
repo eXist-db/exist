@@ -20,6 +20,7 @@
             indexer
             scheduler
                 job
+            parser
             serializer
             transformer
             validation
@@ -406,8 +407,8 @@
             Changing the parameter will only have an effect on newly loaded 
             files, not old ones.
         
-        - suppress-whitespace-mixed-content:
-            preserve the white space inside a mixed content node
+        - preserve-whitespace-mixed-content:
+            preserve the white space inside a mixed content node: "yes" or "no".
     -->
     <indexer caseSensitive="yes" index-depth="5" preserve-whitespace-mixed-content="no"
         suppress-whitespace="none">
@@ -562,6 +563,57 @@
         
     </scheduler>
 
+    <!--
+        Default settings for parsing structured documents:
+
+        - html-to-xml (optional)
+
+            - class
+                The Java classname of a parser which implements org.xml.sax.XMLReader
+                and is capable of parsing HTML and emitting an XML Sax Stream.
+
+                Whichever library you use for this, it must be present on the classpath
+                perhaps the best way to do this is to place it into $EXIST_HOME/lib/user
+
+                Examples include:
+                    - org.cyberneko.html.parsers.SAXParser
+                        The Cyber NekoHTML parser from https://sourceforge.net/projects/nekohtml/
+
+                    - org.ccil.cowan.tagsoup.Parser
+                        The TagSoup parser from http://home.ccil.org/~cowan/XML/tagsoup/
+
+            - properties
+                Any default SAX2 properties to set on the Parser
+
+                    - property
+                        - name
+                            the name of the property
+                        - value
+                            the value of the property
+
+
+            - features
+                Any default SAX2 feature flags to set on the parser
+
+                    - feature
+                        - name
+                            the name of the feature flag
+                        - value
+                            the value of the feature flag
+    -->
+    <parser>
+
+        <!-- html-to-xml class="org.ccil.cowan.tagsoup.Parser"/ -->
+
+        <html-to-xml class="org.cyberneko.html.parsers.SAXParser">
+            <properties>
+                <property name="http://cyberneko.org/html/properties/names/elems" value="match"/>
+                <property name="http://cyberneko.org/html/properties/names/attrs" value="no-change"/>
+            </properties>
+        </html-to-xml>
+
+    </parser>
+
     <!-- 
         Default settings for the serializer. Most of these can be changed
         by client code:
@@ -614,7 +666,15 @@
             <custom-filter class="org.exist.FirstFilter"/>
             <custom-filter class="org.exist.SecondFilter"/>
         -->
-        
+
+        <!--
+            Custom filters can be used during backup serialize document.
+            You may add as many backup-filters as you want, they will be executed
+            in the order you specify them. Thus:
+
+            <backup-filter class="org.exist.FirstFilter"/>
+            <backup-filter class="org.exist.SecondFilter"/>
+        -->
     </serializer>
 
     <!--
@@ -813,9 +873,6 @@
             
             <!-- Compression module-->
             <module uri="http://exist-db.org/xquery/compression" class="org.exist.xquery.modules.compression.CompressionModule" />
-            
-            <!-- XSL functions -->
-            <module uri="http://www.w3.org/1999/XSL/Transform" class="org.exist.xslt.functions.XSLModule" />
             
             <!-- XQDoc module: required for generating function documentation -->
             <module uri="http://exist-db.org/xquery/xqdoc" class="org.exist.xqdoc.xquery.XQDocModule" />

@@ -1,6 +1,6 @@
 package org.exist.xquery.value;
 
-import org.exist.xquery.Constants;
+import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.XPathException;
 import org.junit.Test;
 
@@ -106,23 +106,23 @@ public class YearMonthDurationTest extends AbstractTimeRelatedTestCase {
 	@Test
 	public void compare3() throws XPathException {
 		DurationValue dv1 = new YearMonthDurationValue("P1Y2M"), dv2 = new YearMonthDurationValue("P1Y3M");
-		assertFalse(dv1.compareTo(null, Constants.EQ, dv2));
-		assertTrue(dv1.compareTo(null, Constants.NEQ, dv2));
-		assertFalse(dv1.compareTo(null, Constants.GT, dv2));
-		assertTrue(dv1.compareTo(null, Constants.LT, dv2));
-		assertFalse(dv1.compareTo(null, Constants.GTEQ, dv2));
-		assertTrue(dv1.compareTo(null, Constants.LTEQ, dv2));
+		assertFalse(dv1.compareTo(null, Comparison.EQ, dv2));
+		assertTrue(dv1.compareTo(null, Comparison.NEQ, dv2));
+		assertFalse(dv1.compareTo(null, Comparison.GT, dv2));
+		assertTrue(dv1.compareTo(null, Comparison.LT, dv2));
+		assertFalse(dv1.compareTo(null, Comparison.GTEQ, dv2));
+		assertTrue(dv1.compareTo(null, Comparison.LTEQ, dv2));
 	}
 
 	@Test
 	public void compare4() throws XPathException {
 		DurationValue dv1 = new YearMonthDurationValue("P1Y2M"), dv2 = new YearMonthDurationValue("P1Y2M");
-		assertTrue(dv1.compareTo(null, Constants.EQ, dv2));
-		assertFalse(dv1.compareTo(null, Constants.NEQ, dv2));
-		assertFalse(dv1.compareTo(null, Constants.GT, dv2));
-		assertFalse(dv1.compareTo(null, Constants.LT, dv2));
-		assertTrue(dv1.compareTo(null, Constants.GTEQ, dv2));
-		assertTrue(dv1.compareTo(null, Constants.LTEQ, dv2));
+		assertTrue(dv1.compareTo(null, Comparison.EQ, dv2));
+		assertFalse(dv1.compareTo(null, Comparison.NEQ, dv2));
+		assertFalse(dv1.compareTo(null, Comparison.GT, dv2));
+		assertFalse(dv1.compareTo(null, Comparison.LT, dv2));
+		assertTrue(dv1.compareTo(null, Comparison.GTEQ, dv2));
+		assertTrue(dv1.compareTo(null, Comparison.LTEQ, dv2));
 	}
 
 	@Test

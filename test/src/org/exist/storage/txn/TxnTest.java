@@ -5,8 +5,10 @@ import org.exist.EXistException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.NativeBroker;
 import org.exist.storage.SystemTaskManager;
-import org.exist.storage.journal.Journal;
+import org.exist.storage.journal.JournalManager;
 import org.junit.Test;
+
+import java.util.Optional;
 
 import static org.easymock.EasyMock.*;
 import static org.junit.Assert.assertEquals;
@@ -191,11 +193,11 @@ public class TxnTest extends EasyMockSupport {
         mockBroker.close();
         expectLastCall().atLeastOnce();
 
-        final Journal mockJournal = createMock(Journal.class);
+        final JournalManager mockJournalManager = createMock(JournalManager.class);
         final SystemTaskManager mockTaskManager = createMock(SystemTaskManager.class);
 
         replay(mockBrokerPool, mockBroker);
 
-        return new TransactionManager(mockBrokerPool, true, mockJournal, false, false, mockTaskManager);
+        return new TransactionManager(mockBrokerPool, Optional.of(mockJournalManager), mockTaskManager);
     }
 }

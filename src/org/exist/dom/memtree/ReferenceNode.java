@@ -56,11 +56,7 @@ public class ReferenceNode extends NodeImpl {
 
     @Override
     public String toString() {
-        final StringBuilder result = new StringBuilder();
-        result.append("reference[ ");
-        result.append(getReference().getNode().toString());
-        result.append(" ]");
-        return result.toString();
+        return "reference[ " + getReference().getNode().toString() + " ]";
     }
 
     @Override

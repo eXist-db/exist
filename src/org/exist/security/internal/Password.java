@@ -39,7 +39,7 @@ public class Password implements Credential {
     
     public enum Hash {
         MD5,
-        RIPEMD160;
+        RIPEMD160
     }
     
 
@@ -51,7 +51,6 @@ public class Password implements Credential {
     private final Hash algorithm;
     
     final Pattern ptnHash = Pattern.compile("\\{([A-Z0-9]+)\\}(.*)");
-    final Matcher mtcHash = ptnHash.matcher("");
 
     public Password(Account account, String password) {
         
@@ -60,7 +59,7 @@ public class Password implements Credential {
             this.pw = null;
             this.digestPw = null;
         } else{
-            mtcHash.reset(password);
+            final Matcher mtcHash = ptnHash.matcher(password);
             
             if (mtcHash.matches()) {
                 this.algorithm = Hash.valueOf(mtcHash.group(1));

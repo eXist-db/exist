@@ -145,7 +145,7 @@ public class MoveCollectionTest {
             broker.moveCollection(transaction, test2, dest, XmldbURI.create("test3"));
 
 //          Don't commit...
-            pool.getTransactionManager().getJournal().flushToLog(true);
+            pool.getJournalManager().get().flush(true, false);
 	    }
     }
 

@@ -87,7 +87,7 @@ public class GetRequestAttribute extends BasicFunction {
             } else {
                 final ValueSequence names = new ValueSequence();
                 for (final Enumeration<String> e = ((RequestWrapper) value.getObject()).getAttributeNames(); e.hasMoreElements(); ) {
-                    names.add(new StringValue(e.nextElement().toString()));
+                    names.add(new StringValue(e.nextElement()));
                 }
                 return names;
             }

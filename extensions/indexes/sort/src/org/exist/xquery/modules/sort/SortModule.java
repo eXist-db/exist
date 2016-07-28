@@ -21,29 +21,30 @@
  */
 package org.exist.xquery.modules.sort;
 
-import java.util.List;
-import java.util.Map;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 
+import java.util.List;
+import java.util.Map;
+
 public class SortModule extends AbstractInternalModule {
 
-    public final static String        NAMESPACE_URI       = "http://exist-db.org/xquery/sort";
+    public final static String NAMESPACE_URI = "http://exist-db.org/xquery/sort";
 
-    public final static String        PREFIX              = "sort";
-    public final static String        INCLUSION_DATE      = "2010-03-22";
-    public final static String        RELEASED_IN_VERSION = "eXist-1.5";
+    public final static String PREFIX = "sort";
+    public final static String INCLUSION_DATE = "2010-03-22";
+    public final static String RELEASED_IN_VERSION = "eXist-1.5";
 
-    public final static FunctionDef[] functions           = {
-        new FunctionDef(CreateOrderIndex.signatures[0], CreateOrderIndex.class),
-        new FunctionDef(CreateOrderIndex.signatures[1], CreateOrderIndex.class),
-        new FunctionDef(GetIndex.signature, GetIndex.class),
-        new FunctionDef(HasIndex.signature, HasIndex.class),
-        new FunctionDef(RemoveIndex.signatures[0], RemoveIndex.class),
-        new FunctionDef(RemoveIndex.signatures[1], RemoveIndex.class)
+    public final static FunctionDef[] functions = {
+            new FunctionDef(CreateOrderIndex.signatures[0], CreateOrderIndex.class),
+            new FunctionDef(CreateOrderIndex.signatures[1], CreateOrderIndex.class),
+            new FunctionDef(GetIndex.signature, GetIndex.class),
+            new FunctionDef(HasIndex.signature, HasIndex.class),
+            new FunctionDef(RemoveIndex.signatures[0], RemoveIndex.class),
+            new FunctionDef(RemoveIndex.signatures[1], RemoveIndex.class)
     };
 
-    public SortModule(Map<String, List<? extends Object>> parameters) {
+    public SortModule(final Map<String, List<?>> parameters) {
         super(functions, parameters, false);
     }
 

@@ -204,10 +204,9 @@ public class Serialize extends BasicFunction {
         // serialize the node set
         final SAXSerializer sax = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
         outputProperties.setProperty(Serializer.GENERATE_DOC_EVENTS, "false");
-        try
+        final String encoding = outputProperties.getProperty(OutputKeys.ENCODING, "UTF-8");
+        try(final Writer writer = new OutputStreamWriter(os, encoding))
         {
-            final String encoding = outputProperties.getProperty(OutputKeys.ENCODING, "UTF-8");
-            final Writer writer = new OutputStreamWriter(os, encoding);
             sax.setOutput(writer, outputProperties);
             final Serializer serializer = context.getBroker().getSerializer();
             serializer.reset();
@@ -225,15 +224,10 @@ public class Serialize extends BasicFunction {
             sax.endDocument();
             writer.close();
         }
-        catch(final SAXException e)
+        catch(final SAXException | IOException e)
         {
             throw new XPathException(this, "A problem occurred while serializing the node set: " + e.getMessage(), e);
-        }
-        catch (final IOException e)
-        {
-            throw new XPathException(this, "A problem occurred while serializing the node set: " + e.getMessage(), e);
-        }
-        finally
+        } finally
         {
             SerializerPool.getInstance().returnObject(sax);
         }

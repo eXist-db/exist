@@ -31,6 +31,7 @@ import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.Duration;
 
 import org.exist.xquery.Constants;
+import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 
@@ -119,7 +120,7 @@ public class DurationValue extends ComputableValue {
 	}
 	
 	private static BigInteger nullIfZero(BigInteger x) {
-		if (BigInteger.ZERO.compareTo(x) == Constants.EQUAL) {x = null;}		
+		if (BigInteger.ZERO.compareTo(x) == Constants.EQUAL) {x = null;}
 		return x;
 	}
 	
@@ -274,9 +275,10 @@ public class DurationValue extends ComputableValue {
 		}
 	}
 
-	public boolean compareTo(Collator collator, int operator, AtomicValue other) throws XPathException {		
+	@Override
+	public boolean compareTo(Collator collator, Comparison operator, AtomicValue other) throws XPathException {
 		switch (operator) {
-			case Constants.EQ :
+			case EQ:
 			{
 				if (!(DurationValue.class.isAssignableFrom(other.getClass()))) 
 					{throw new XPathException(ErrorCodes.XPTY0004, "invalid operand type: " + Type.getTypeName(other.getType()));}
@@ -287,7 +289,7 @@ public class DurationValue extends ComputableValue {
 					{r = r & areReallyEqual(getCanonicalDuration(), ((DurationValue)other).getCanonicalDuration());}
 				return r;
 			}
-			case Constants.NEQ :
+			case NEQ:
 			{
 				if (!(DurationValue.class.isAssignableFrom(other.getClass()))) 
 					{throw new XPathException(ErrorCodes.XPTY0004, "invalid operand type: " + Type.getTypeName(other.getType()));}
@@ -298,10 +300,10 @@ public class DurationValue extends ComputableValue {
 					{r = r & areReallyEqual(getCanonicalDuration(), ((DurationValue)other).getCanonicalDuration());}
 				return !r;
 			}
-			case Constants.LT :			
-			case Constants.LTEQ :			
-			case Constants.GT :
-			case Constants.GTEQ :
+			case LT :
+			case LTEQ :
+			case GT :
+			case GTEQ :
 				throw new XPathException(ErrorCodes.XPTY0004, "" + Type.getTypeName(other.getType()) + " type can not be ordered");
 			default :
 				throw new IllegalArgumentException("Unknown comparison operator");
@@ -362,7 +364,7 @@ public class DurationValue extends ComputableValue {
     
     public static boolean areReallyEqual(Duration duration1, Duration duration2) {
     	final boolean secondsEqual = zeroIfNull((BigDecimal)duration1.getField(DatatypeConstants.SECONDS)).compareTo(
-    				zeroIfNull((BigDecimal)duration2.getField(DatatypeConstants.SECONDS))) == Constants.EQUAL;    		
+    				zeroIfNull((BigDecimal)duration2.getField(DatatypeConstants.SECONDS))) == Constants.EQUAL;
     	return secondsEqual &&
     	duration1.getMinutes() == duration2.getMinutes() &&
     	duration1.getHours() == duration2.getHours() &&

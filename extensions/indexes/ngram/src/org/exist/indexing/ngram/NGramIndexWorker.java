@@ -56,6 +56,7 @@ import org.exist.indexing.MatchListener;
 import org.exist.indexing.OrderedValuesIndex;
 import org.exist.indexing.QNamedKeysIndex;
 import org.exist.indexing.StreamListener;
+import org.exist.indexing.StreamListener.ReindexMode;
 import org.exist.numbering.NodeId;
 import org.exist.stax.ExtendedXMLStreamReader;
 import org.exist.storage.DBBroker;
@@ -100,7 +101,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     @SuppressWarnings("unused")
     private static final byte IDX_GENERIC = 1;
 
-    private int mode = 0;
+    private ReindexMode mode = ReindexMode.STORE;
     private final org.exist.indexing.ngram.NGramIndex index;
     private char[] buf = new char[1024];
     private int currentChar = 0;
@@ -163,11 +164,11 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     @Override
     public void flush() {
         switch (mode) {
-            case StreamListener.STORE :
+            case STORE :
                 saveIndex();
                 break;
-            case StreamListener.REMOVE_ALL_NODES :
-            case StreamListener.REMOVE_SOME_NODES :
+            case REMOVE_ALL_NODES :
+            case REMOVE_SOME_NODES :
                 dropIndex(mode);
                 break;
         }
@@ -229,7 +230,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         ngrams.clear();
     }
 
-    private void dropIndex(int mode) {
+    private void dropIndex(ReindexMode mode) {
         if (ngrams.size() == 0)
             return;
         for (Map.Entry<QNameTerm, OccurrenceList> entry : ngrams.entrySet()) {
@@ -265,7 +266,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                         is.copyRaw(os, length);
                     } else {
                         // data are related to our document:
-                        if (mode == StreamListener.REMOVE_ALL_NODES) {
+                        if (mode == ReindexMode.REMOVE_ALL_NODES) {
                             // skip them
                             is.skipBytes(length);
                         } else {
@@ -606,11 +607,11 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     @Override
     public void setDocument(DocumentImpl document) {
-    	setDocument(document, StreamListener.UNKNOWN);
+    	setDocument(document, ReindexMode.UNKNOWN);
     }
 
     @Override
-    public void setMode(int newMode) {
+    public void setMode(ReindexMode newMode) {
         // wolf: unnecessary call to setDocument?
 //    	setDocument(currentDoc, newMode);
         mode = newMode;
@@ -622,12 +623,12 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
     
     @Override
-    public int getMode() {
+    public ReindexMode getMode() {
     	return mode;
     }    
     
     @Override
-    public void setDocument(DocumentImpl document, int newMode) {
+    public void setDocument(DocumentImpl document, ReindexMode newMode) {
     	currentDoc = document;
         //config = null;
         contentStack = null;

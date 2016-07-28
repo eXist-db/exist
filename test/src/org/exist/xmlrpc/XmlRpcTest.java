@@ -24,19 +24,19 @@ import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
 import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
-import org.exist.jetty.JettyStart;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.exist.security.MessageDigester;
 import org.exist.storage.serializers.EXistOutputKeys;
+import org.exist.test.ExistWebServer;
 import org.exist.test.TestConstants;
 import org.exist.util.MimeType;
 import org.exist.xmldb.XmldbURI;
-import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import org.junit.BeforeClass;
+
+import org.junit.ClassRule;
 import org.junit.Test;
 
 import javax.xml.transform.OutputKeys;
@@ -61,9 +61,8 @@ import org.xml.sax.SAXException;
  */
 public class XmlRpcTest {
 
-    private static JettyStart server = null;
-    // jetty.port.standalone
-    private final static String URI = "http://localhost:" + System.getProperty("jetty.port", "8088") + "/xmlrpc";
+    @ClassRule
+    public final static ExistWebServer existWebServer = new ExistWebServer(true);
 
     private final static XmldbURI TARGET_COLLECTION = XmldbURI.ROOT_COLLECTION_URI.append("xmlrpc");
 
@@ -102,25 +101,8 @@ public class XmlRpcTest {
             + "declare variable $tm-query:local-external-string as xs:string external;"
             + "($tm:imported-external-string, $tm-query:local-external-string)";
 
-    public XmlRpcTest() {
-    }
-
-    @BeforeClass
-    public static void setUp() {
-        //Don't worry about closing the server : the shutdownDB hook will do the job
-        initServer();
-    }
-
-    @AfterClass
-    public static void stopServer() {
-        server.shutdown();
-        server = null;
-        System.gc();
-        try {
-            Thread.sleep(500);
-        } catch (InterruptedException ex) {
-            ex.printStackTrace();
-        }
+    private static String getUri() {
+        return "http://localhost:" + existWebServer.getPort() + "/xmlrpc";
     }
 
     @After
@@ -130,13 +112,6 @@ public class XmlRpcTest {
         params.add(TARGET_COLLECTION.toString());
         @SuppressWarnings("unused")
         Boolean b = (Boolean) xmlrpc.execute("removeCollection", params);
-    }
-
-    private static void initServer() {
-        if (server == null) {
-            server = new JettyStart();
-            server.run();
-        }
     }
 
     @Test
@@ -495,7 +470,7 @@ public class XmlRpcTest {
         XmlRpcClient client = new XmlRpcClient();
         XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
         config.setEnabledForExtensions(true);
-        config.setServerURL(new URL(URI));
+        config.setServerURL(new URL(getUri()));
         config.setBasicUserName("admin");
         config.setBasicPassword("");
         client.setConfig(config);

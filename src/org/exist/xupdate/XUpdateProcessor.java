@@ -36,8 +36,6 @@ import org.exist.Namespaces;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.NodeListImpl;
 import org.exist.dom.persistent.NodeSetHelper;
-import org.exist.security.xacml.AccessContext;
-import org.exist.security.xacml.NullAccessContextException;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
 import org.exist.util.FastStringBuffer;
@@ -193,16 +191,11 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
      */
     private Stack<Conditional> conditionals = new Stack<Conditional>();
 
-	private AccessContext accessCtx;
-	
 	/**
 	 * Constructor for XUpdateProcessor.
 	 */
-	public XUpdateProcessor(DBBroker broker, DocumentSet docs, AccessContext accessCtx)
+	public XUpdateProcessor(DBBroker broker, DocumentSet docs)
 		throws ParserConfigurationException {
-		if(accessCtx == null)
-			{throw new NullAccessContextException();}
-		this.accessCtx = accessCtx;
 		final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		factory.setNamespaceAware(true);
 		factory.setValidating(false);
@@ -320,54 +313,62 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 		}
 		if (namespaceURI.equals(XUPDATE_NS)) {
 			String select = null;
-			if (localName.equals(MODIFICATIONS)) {
-				startModifications(atts);
-				return;
-			} else if (localName.equals(VARIABLE)) {
-				// variable declaration
-				startVariableDecl(atts);
-				return;
-			} else if (IF.equals(localName)) {
-				if (inModification)
-					{throw new SAXException("xupdate:if is not allowed inside a modification");}
-				select = atts.getValue("test");
-				final Conditional cond = new Conditional(broker, documentSet, select, namespaces, variables);
-				cond.setAccessContext(accessCtx);
-				conditionals.push(cond);
-				return;
-			} else if (VALUE_OF.equals(localName)) {
-				if(!inModification)
-					{throw new SAXException("xupdate:value-of is not allowed outside a modification");}
-				
-			} else if (APPEND.equals(localName)
-				|| INSERT_BEFORE.equals(localName)
-				|| INSERT_AFTER.equals(localName)
-				|| REMOVE.equals(localName)
-				|| RENAME.equals(localName)
-				|| UPDATE.equals(localName)
-				|| REPLACE.equals(localName)) {
-				if (inModification)
-					{throw new SAXException("nested modifications are not allowed");}
-				select = atts.getValue("select");
-				if (select == null)
-					{throw new SAXException(
-						localName + " requires a select attribute");}
-				doc = builder.newDocument();
-				contents = new NodeListImpl();
-				inModification = true;
-			} else if (
-				(ELEMENT.equals(localName)
-					|| ATTRIBUTE.equals(localName)
-					|| TEXT.equals(localName)
-					|| PROCESSING_INSTRUCTION.equals(localName)
-					|| COMMENT.equals(localName))) {
-				if(!inModification)
-					{throw new SAXException(
-							"creation elements are only allowed inside "
-							+ "a modification");}
-				charBuf.setLength(0);
-			} else
-				{throw new SAXException("Unknown XUpdate element: " + qName);}
+			switch (localName) {
+				case MODIFICATIONS:
+					startModifications(atts);
+					return;
+				case VARIABLE:
+					// variable declaration
+					startVariableDecl(atts);
+					return;
+				case IF:
+					if (inModification) {
+						throw new SAXException("xupdate:if is not allowed inside a modification");
+					}
+					select = atts.getValue("test");
+					final Conditional cond = new Conditional(broker, documentSet, select, namespaces, variables);
+					conditionals.push(cond);
+					return;
+				case VALUE_OF:
+					if (!inModification) {
+						throw new SAXException("xupdate:value-of is not allowed outside a modification");
+					}
+
+					break;
+				case APPEND:
+				case INSERT_BEFORE:
+				case INSERT_AFTER:
+				case REMOVE:
+				case RENAME:
+				case UPDATE:
+				case REPLACE:
+					if (inModification) {
+						throw new SAXException("nested modifications are not allowed");
+					}
+					select = atts.getValue("select");
+					if (select == null) {
+						throw new SAXException(
+								localName + " requires a select attribute");
+					}
+					doc = builder.newDocument();
+					contents = new NodeListImpl();
+					inModification = true;
+					break;
+				case ELEMENT:
+				case ATTRIBUTE:
+				case TEXT:
+				case PROCESSING_INSTRUCTION:
+				case COMMENT:
+					if (!inModification) {
+						throw new SAXException(
+								"creation elements are only allowed inside "
+										+ "a modification");
+					}
+					charBuf.setLength(0);
+					break;
+				default:
+					throw new SAXException("Unknown XUpdate element: " + qName);
+			}
 
 			// start a new modification section
 			if (APPEND.equals(localName)) {
@@ -594,7 +595,6 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 				|| localName.equals(INSERT_AFTER)) {
 				inModification = false;
 				modification.setContent(contents);
-				modification.setAccessContext(accessCtx);
 				if(!conditionals.isEmpty()) {
 					final Conditional cond = conditionals.peek();
 					cond.addModification(modification);
@@ -733,7 +733,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 	private Sequence processQuery(String select) throws SAXException {
         XQueryContext context = null;
         try {
-			context = new XQueryContext(broker.getBrokerPool(), accessCtx);
+			context = new XQueryContext(broker.getBrokerPool());
 			context.setStaticallyKnownDocuments(documentSet);
 			Map.Entry<String, String> namespaceEntry;
 			for (final Iterator<Map.Entry<String, String>> i = namespaces.entrySet().iterator(); i.hasNext();) {
@@ -745,7 +745,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 			Map.Entry<String, Object> entry;
 			for (final Iterator<Map.Entry<String, Object>> i = variables.entrySet().iterator(); i.hasNext(); ) {
 				entry = (Map.Entry<String, Object>) i.next();
-				context.declareVariable(entry.getKey().toString(), entry.getValue());
+				context.declareVariable(entry.getKey(), entry.getValue());
 			}
 			// TODO(pkaminsk2): why replicate XQuery.compile here?
 			final XQueryLexer lexer = new XQueryLexer(context, new StringReader(select));

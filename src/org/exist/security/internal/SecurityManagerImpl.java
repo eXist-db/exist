@@ -56,7 +56,6 @@ import org.exist.security.Principal;
 import org.exist.security.SchemaType;
 import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.realm.Realm;
-import org.exist.security.xacml.ExistPDP;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
@@ -112,11 +111,6 @@ public class SecurityManagerImpl implements SecurityManager {
     @ConfigurationFieldAsElement("authentication-entry-point")
     public final static String authenticationEntryPoint = "/authentication/login";
     
-    //@ConfigurationField("enableXACML")
-    private Boolean enableXACML = false;
-
-    private ExistPDP pdp;
-    
     private RealmImpl defaultRealm;
     
     @ConfigurationFieldAsElement("realm")
@@ -170,9 +164,8 @@ public class SecurityManagerImpl implements SecurityManager {
 
                 systemCollection.setPermissions(Permission.DEFAULT_SYSTEM_COLLECTION_PERM);
                 broker.saveCollection(txn, systemCollection);
-
-                transaction.commit(txn);
             }
+            transaction.commit(txn);
         } catch (final Exception e) {
             e.printStackTrace();
             LOG.debug("loading acl failed: " + e.getMessage());
@@ -206,24 +199,8 @@ public class SecurityManagerImpl implements SecurityManager {
         for (final Realm realm : realms) {
             realm.start(broker);
         }
-
-        enableXACML = (Boolean)broker.getConfiguration().getProperty("xacml.enable");
-        if(enableXACML != null && enableXACML.booleanValue()) {
-            pdp = new ExistPDP(broker.getBrokerPool());
-            LOG.debug("XACML enabled");
-        }
     }
     
-    @Override
-    public boolean isXACMLEnabled() {
-        return pdp != null;
-    }
-    
-    @Override
-    public ExistPDP getPDP() {
-        return pdp;
-    }
-
     @Override
     public boolean updateAccount(final Account account) throws PermissionDeniedException, EXistException {
         if (account == null) {

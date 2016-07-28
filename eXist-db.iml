@@ -14,16 +14,14 @@
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/test/src" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/tools/izpack/src" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/tools/wrapper/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/indexes/range/src" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/extensions/xslt/src" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/extensions/xslt/test/src" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/samples/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/webdav/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/expath/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/exquery/restxq/src/main/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/exquery/restxq/src/test/java" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/exquery/modules/request/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tools/yajsw/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/autodeploy" />
       <excludeFolder url="file://$MODULE_DIR$/backup" />
       <excludeFolder url="file://$MODULE_DIR$/build" />

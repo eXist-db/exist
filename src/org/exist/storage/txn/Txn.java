@@ -32,21 +32,17 @@ import org.exist.util.LockException;
  */
 public class Txn implements Transaction {
 
-    public enum State { STARTED, ABORTED, COMMITTED, CLOSED };
-
-    private long id;
-
+    public enum State { STARTED, ABORTED, COMMITTED, CLOSED }
+    
+    private final TransactionManager tm;
+    private final long id;
     private State state;
-
-    private List<LockInfo> locksHeld = new ArrayList<LockInfo>();
-
-    private List<TxnListener> listeners = new ArrayList<TxnListener>();
-    
     private String originId;
-    
-    private TransactionManager tm;
 
-    public Txn(TransactionManager tm, long transactionId) {
+    private List<LockInfo> locksHeld = new ArrayList<>();
+    private List<TxnListener> listeners = new ArrayList<>();
+
+    public Txn(final TransactionManager tm, final long transactionId) {
         this.tm = tm;
         this.id = transactionId;
         this.state = State.STARTED;
@@ -56,7 +52,7 @@ public class Txn implements Transaction {
         return state;
     }
 
-    protected void setState(State state) {
+    protected void setState(final State state) {
         this.state = state;
     }
 
@@ -64,11 +60,11 @@ public class Txn implements Transaction {
         return id;
     }
     
-    public void registerLock(Lock lock, int lockMode) {
+    public void registerLock(final Lock lock, final int lockMode) {
         locksHeld.add(new LockInfo(lock, lockMode));
     }
     
-    public void acquireLock(Lock lock, int lockMode) throws LockException {
+    public void acquireLock(final Lock lock, final int lockMode) throws LockException {
         lock.acquire(lockMode);
         locksHeld.add(new LockInfo(lock, lockMode));
     }
@@ -81,7 +77,7 @@ public class Txn implements Transaction {
         locksHeld.clear();
     }
 
-    public void registerListener(TxnListener listener) {
+    public void registerListener(final TxnListener listener) {
         listeners.add(listener);
     }
 
@@ -100,31 +96,13 @@ public class Txn implements Transaction {
     }
 
     private static class LockInfo {
-        Lock lock;
-        int lockMode;
+        final Lock lock;
+        final int lockMode;
         
-        public LockInfo(Lock lock, int lockMode) {
+        public LockInfo(final Lock lock, final int lockMode) {
             this.lock = lock;
             this.lockMode = lockMode;
         }
-    }
-    
-    /**
-     * Get origin of transaction
-     * @return Id
-     */
-    public String getOriginId() {
-        return originId;
-    }
-
-    /**
-     *  Set origin of transaction. Purpose is to be able to 
-     * see the origin of the transaction.
-     * 
-     * @param id  Identifier of origin, FQN or URI.
-     */
-    public void setOriginId(String id) {
-        originId = id;
     }
  
     @Override
@@ -151,5 +129,26 @@ public class Txn implements Transaction {
     public void close() {
         tm.close(this);
     }
+
+    /**
+     * Get origin of transaction
+     * @return Id
+     */
+    @Deprecated
+    public String getOriginId() {
+        return originId;
+    }
+
+    /**
+     *  Set origin of transaction. Purpose is to be able to
+     * see the origin of the transaction.
+     *
+     * @param id  Identifier of origin, FQN or URI.
+     */
+    @Deprecated
+    public void setOriginId(String id) {
+        originId = id;
+    }
+
 }
 

@@ -22,10 +22,10 @@
 package org.exist.xquery;
 
 import org.exist.dom.persistent.DocumentSet;
+import org.exist.source.Source;
 import org.exist.xquery.parser.XQueryAST;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
-import org.exist.security.xacml.XACMLSource;
 
 public abstract class AbstractExpression implements Expression {
 
@@ -166,8 +166,8 @@ public abstract class AbstractExpression implements Expression {
     }
 
     @Override
-    public XACMLSource getSource() {
-        return context.getXacmlSource();
+    public Source getSource() {
+        return context.getSource();
     }
 
     @Override

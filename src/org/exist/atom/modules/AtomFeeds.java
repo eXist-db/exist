@@ -41,7 +41,6 @@ import org.exist.http.BadRequestException;
 import org.exist.http.NotFoundException;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.xacml.AccessContext;
 import org.exist.source.URLSource;
 import org.exist.storage.DBBroker;
 import org.exist.storage.XQueryPool;
@@ -225,7 +224,7 @@ public class AtomFeeds extends AtomModuleBase implements Atom {
 
 		XQueryContext context;
 		if (feedQuery == null) {
-			context = new XQueryContext(broker.getBrokerPool(), AccessContext.REST);
+			context = new XQueryContext(broker.getBrokerPool());
 			try {
 				feedQuery = xquery.compile(broker, context, entryByIdSource);
 			} catch (final XPathException ex) {
@@ -261,7 +260,7 @@ public class AtomFeeds extends AtomModuleBase implements Atom {
 				serializer.setProperties(outputProperties);
 				serializer.setSAXHandlers(sax, sax);
 
-				serializer.toSAX(resultSequence, 1, 1, false, false);
+				serializer.toSAX(resultSequence);
 
 				SerializerPool.getInstance().returnObject(sax);
 				w.flush();
@@ -298,7 +297,7 @@ public class AtomFeeds extends AtomModuleBase implements Atom {
 
 		XQueryContext context;
 		if (feedQuery == null) {
-			context = new XQueryContext(broker.getBrokerPool(), AccessContext.REST);
+			context = new XQueryContext(broker.getBrokerPool());
 			try {
 				feedQuery = xquery.compile(broker, context, getFeedSource);
 			} catch (final XPathException ex) {
@@ -337,7 +336,7 @@ public class AtomFeeds extends AtomModuleBase implements Atom {
 				serializer.setProperties(outputProperties);
 				serializer.setSAXHandlers(sax, sax);
 
-				serializer.toSAX(resultSequence, 1, 1, false, false);
+				serializer.toSAX(resultSequence, 1, 1, false, false, 0, 0);
 
 				SerializerPool.getInstance().returnObject(sax);
 				w.flush();

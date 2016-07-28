@@ -36,6 +36,7 @@ import org.exist.dom.memtree.NodeImpl;
 import org.exist.util.XMLChar;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Constants;
+import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.Expression;
 import org.exist.xquery.Function;
@@ -206,7 +207,7 @@ public class FunId extends Function {
 	}
 
 	private void getId(NodeSet result, DocumentSet docs, String id) throws XPathException {
-		final NodeSet attribs = context.getBroker().getValueIndex().find(context.getWatchDog(), Constants.EQ, docs, null, -1, null, new StringValue(id, Type.ID));
+		final NodeSet attribs = context.getBroker().getValueIndex().find(context.getWatchDog(), Comparison.EQ, docs, null, -1, null, new StringValue(id, Type.ID));
 		NodeProxy p;
 		for (final NodeProxy n : attribs) {
 			p = new NodeProxy(n.getOwnerDocument(), n.getNodeId().getParentId(), Node.ELEMENT_NODE);

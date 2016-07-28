@@ -22,19 +22,22 @@ public class CollectionScanner {
 	throws XMLDBException {
 		final String[] resources = current.listResources();
 		String name;
-		for(int i = 0; i < resources.length; i++) {
-			name = vpath + resources[i];
+		for (String resource : resources) {
+			name = vpath + resource;
 			System.out.println("checking " + name);
-			if(DirectoryScanner.match(pattern, name))
-				{list.add(current.getResource(resources[i]));}
+			if (DirectoryScanner.match(pattern, name)) {
+				list.add(current.getResource(resource));
+			}
 		}
-		final String[] subs = current.listChildCollections();
-		for(int i = 0; i < subs.length; i++) {
-			name = vpath + subs[i];
+		final String[] childCollections = current.listChildCollections();
+		for (String sub : childCollections) {
+			name = vpath + sub;
 			System.out.println("checking " + name + " = " + pattern);
-			if(DirectoryScanner.matchStart(pattern, name))
-                ///TODO : use dedicated function in XmldbURI
-				{scan(list, current.getChildCollection(subs[i]), name + "/", pattern);}
+			if (DirectoryScanner.matchStart(pattern, name))
+			///TODO : use dedicated function in XmldbURI
+			{
+				scan(list, current.getChildCollection(sub), name + "/", pattern);
+			}
 		}
 	}
 }

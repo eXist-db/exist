@@ -26,7 +26,6 @@ import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.Subject;
-import org.exist.security.xacml.AccessContext;
 import org.exist.source.DBSource;
 import org.exist.source.Source;
 import org.exist.storage.BrokerPool;
@@ -137,7 +136,7 @@ public class AuditTrailSessionListener implements HttpSessionListener {
                     CompiledXQuery compiled = xqpool.borrowCompiledXQuery(broker, source);
                     XQueryContext context;
                     if (compiled == null) {
-                        context = new XQueryContext(broker.getBrokerPool(), AccessContext.REST);
+                        context = new XQueryContext(broker.getBrokerPool());
                     } else {
                         context = compiled.getContext();
                     }

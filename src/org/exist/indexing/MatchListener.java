@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2015 The eXist Project
+ *  Copyright (C) 2001-2016 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -19,7 +19,7 @@
  */
 package org.exist.indexing;
 
-import org.exist.dom.persistent.NodeHandle;
+import org.exist.storage.serializers.ChainOfReceivers;
 import org.exist.util.serializer.Receiver;
 
 /**
@@ -33,7 +33,8 @@ import org.exist.util.serializer.Receiver;
  * Class {@link org.exist.indexing.AbstractMatchListener} provides default implementations
  * for all methods.
  */
-public interface MatchListener extends Receiver<NodeHandle> {
+@Deprecated //use ChainOfReceivers
+public interface MatchListener extends ChainOfReceivers {
 
     /**
      * Register the next receiver in the chain. All

@@ -30,7 +30,6 @@ import org.xmldb.api.base.XMLDBException;
 
 public class FragmentsTest extends ConcurrentTestBase {
 
-    // jetty.port.jetty
     private final static String URI = "xmldb:exist://localhost:" + System.getProperty("jetty.port", "8088") + "/exist/xmlrpc" + XmldbURI.ROOT_COLLECTION;
     
     private final static String QUERY =

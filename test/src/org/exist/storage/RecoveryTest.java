@@ -30,7 +30,6 @@ import org.exist.collections.IndexInfo;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.xacml.AccessContext;
 import org.exist.storage.btree.BTreeException;
 import org.exist.storage.dom.DOMFile;
 import org.exist.storage.lock.Lock;
@@ -155,7 +154,7 @@ public class RecoveryTest {
             test2.removeBinaryResource(transaction, broker, doc);
             
 //DO NOT COMMIT TRANSACTION
-            transact.getJournal().flushToLog(true);
+            pool.getJournalManager().get().flush(true, false);
 
             //DOMFile domDb = ((NativeBroker)broker).getDOMFile();
             //assertNotNull(domDb);
@@ -207,7 +206,7 @@ public class RecoveryTest {
             
             final XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
-            final Sequence seq = xquery.execute(broker, "//SPEECH[ft:query(LINE, 'king')]", null, AccessContext.TEST);
+            final Sequence seq = xquery.execute(broker, "//SPEECH[ft:query(LINE, 'king')]", null);
             assertNotNull(seq);
             for (final SequenceIterator i = seq.iterate(); i.hasNext(); ) {
                 final Item next = i.nextItem();

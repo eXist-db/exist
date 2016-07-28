@@ -26,7 +26,6 @@ import org.exist.collections.IndexInfo;
 import org.exist.dom.persistent.DefaultDocumentSet;
 import org.exist.dom.persistent.MutableDocumentSet;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.xacml.AccessContext;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.DatabaseConfigurationException;
@@ -39,8 +38,6 @@ import org.junit.Test;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
-
-import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -59,7 +56,7 @@ public class AppendTest extends AbstractUpdateTest {
             final MutableDocumentSet docs = new DefaultDocumentSet();
             docs.add(info.getDocument());
 
-            final XUpdateProcessor proc = new XUpdateProcessor(broker, docs, AccessContext.TEST);
+            final XUpdateProcessor proc = new XUpdateProcessor(broker, docs);
 
 			try(final Txn transaction = transact.beginTransaction()) {
 
@@ -104,7 +101,7 @@ public class AppendTest extends AbstractUpdateTest {
                 proc.reset();
             }
             //DO NOT COMMIT TRANSACTION
-            pool.getTransactionManager().getJournal().flushToLog(true);
+            pool.getJournalManager().get().flush(true, false);
         }
     }
 

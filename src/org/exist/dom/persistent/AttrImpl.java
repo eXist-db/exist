@@ -318,30 +318,15 @@ public class AttrImpl extends NamedNode implements Attr {
 
     @Override
     public String toString() {
-        final StringBuilder buf = new StringBuilder();
-        buf.append(nodeName)
-            .append("=\"")
-            .append(value)
-            .append("\"");
-        return buf.toString();
+        return String.valueOf(nodeName) + "=\"" + value + "\"";
     }
 
     @Override
     public String toString(final boolean top) {
         if(top) {
-            final StringBuilder result = new StringBuilder();
-            result.append("<exist:attribute ")
-                .append("xmlns:exist=\"").append(Namespaces.EXIST_NS).append("\" ")
-                .append("exist:id=\"")
-                .append(getNodeId())
-                .append("\" exist:source=\"")
-                .append(getOwnerDocument().getFileURI())
-                .append("\" ")
-                .append(getNodeName())
-                .append("=\"")
-                .append(getValue())
-                .append("\"/>");
-            return result.toString();
+            return"<exist:attribute " + "xmlns:exist=\"" + Namespaces.EXIST_NS + "\" " +
+                    "exist:id=\"" +  getNodeId() +  "\" exist:source=\"" +
+                    getOwnerDocument().getFileURI() + "\" " +  getNodeName() + "=\"" + getValue() + "\"/>";
         } else {
             return toString();
         }

@@ -149,8 +149,8 @@ public class ProcessReport implements ProcessReportMBean {
                 if (processMonitor.getTrackRequestURI()) {
                     requestURI = ProcessMonitor.getRequestURI(watchdog);
                 }
-                final Object[] itemValues = { Integer.valueOf(watchdog.getContext().hashCode()), watchdog.getContext().getXacmlSource().getType(),
-                        watchdog.getContext().getXacmlSource().getKey(), Boolean.valueOf(watchdog.isTerminating()), requestURI,
+                final Object[] itemValues = { Integer.valueOf(watchdog.getContext().hashCode()), watchdog.getContext().getSource().type(),
+                        watchdog.getContext().getSource().path(), Boolean.valueOf(watchdog.isTerminating()), requestURI,
                         watchdog.getRunningThread(), System.currentTimeMillis() - watchdog.getStartTime()};
                 data.put(new CompositeDataSupport(infoType, qItemNames, itemValues));
             }

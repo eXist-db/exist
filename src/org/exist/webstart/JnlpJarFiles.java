@@ -56,8 +56,7 @@ public class JnlpJarFiles {
         "log4j-core-%latest%",
         "log4j-jul-%latest%",
         "log4j-slf4j-impl-%latest%",
-        "slf4j-api-%latest%",
-        "sunxacml-%latest%"
+        "slf4j-api-%latest%"
     };
 
     // Resolves jar file patterns from jars[].

@@ -48,7 +48,6 @@ import org.exist.http.servlets.HttpResponseWrapper;
 import org.exist.http.servlets.RequestWrapper;
 import org.exist.http.servlets.ResponseWrapper;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.xacml.AccessContext;
 import org.exist.source.StringSource;
 import org.exist.source.URLSource;
 import org.exist.storage.DBBroker;
@@ -198,7 +197,7 @@ public class Query extends AtomModuleBase implements Atom {
 
 			final XQuery xquery = broker.getBrokerPool().getXQueryService();
 
-			final XQueryContext context = new XQueryContext(broker.getBrokerPool(), AccessContext.REST);
+			final XQueryContext context = new XQueryContext(broker.getBrokerPool());
 			context.setModuleLoadPath(getContext().getModuleLoadPath());
 
 			String contentType = request.getHeader("Content-Type");
@@ -271,7 +270,7 @@ public class Query extends AtomModuleBase implements Atom {
 					serializer.setProperties(outputProperties);
 					serializer.setSAXHandlers(sax, sax);
 
-					serializer.toSAX(resultSequence, 1, 1, false, false);
+					serializer.toSAX(resultSequence, 1, 1, false, false, 0, 0);
 
 					SerializerPool.getInstance().returnObject(sax);
 					w.flush();
@@ -327,7 +326,7 @@ public class Query extends AtomModuleBase implements Atom {
 
 		XQueryContext context;
 		if (feedQuery == null) {
-			context = new XQueryContext(broker.getBrokerPool(), AccessContext.REST);
+			context = new XQueryContext(broker.getBrokerPool());
 			context.setModuleLoadPath(getContext().getModuleLoadPath());
 			try {
 				feedQuery = xquery.compile(broker, context, config.querySource);
@@ -368,7 +367,7 @@ public class Query extends AtomModuleBase implements Atom {
 				serializer.setProperties(outputProperties);
 				serializer.setSAXHandlers(sax, sax);
 
-				serializer.toSAX(resultSequence, 1, 1, false, false);
+				serializer.toSAX(resultSequence, 1, 1, false, false, 0, 0);
 
 				SerializerPool.getInstance().returnObject(sax);
 				w.flush();

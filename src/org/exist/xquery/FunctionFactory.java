@@ -24,6 +24,8 @@ import java.util.List;
 
 import org.exist.Namespaces;
 import org.exist.dom.QName;
+import org.exist.xquery.Constants.Comparison;
+import org.exist.xquery.Constants.StringTruncationOperator;
 import org.exist.xquery.parser.XQueryAST;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
@@ -113,7 +115,7 @@ public class FunctionFactory {
                 "Second argument of starts-with() is empty");
         }
         final GeneralComparison op = new GeneralComparison(context, p0, p1,
-            Constants.EQ, Constants.TRUNC_RIGHT);
+            Comparison.EQ, StringTruncationOperator.RIGHT);
         op.setLocation(ast.getLine(), ast.getColumn());
         //TODO : not sure for parent -pb
         context.getProfiler().message(parent, Profiler.OPTIMIZATIONS,
@@ -143,7 +145,7 @@ public class FunctionFactory {
             throw new XPathException(ast.getLine(), ast.getColumn(),
                 "Second argument of ends-with() is empty");
         }
-        final GeneralComparison op = new GeneralComparison(context, p0, p1, Constants.EQ, Constants.TRUNC_LEFT);
+        final GeneralComparison op = new GeneralComparison(context, p0, p1, Comparison.EQ, StringTruncationOperator.LEFT);
         //TODO : not sure for parent -pb
         context.getProfiler().message(parent, Profiler.OPTIMIZATIONS,
             "OPTIMIZATION", "Rewritten ends-with as a general comparison with a left truncations");
@@ -174,7 +176,7 @@ public class FunctionFactory {
                 "Second argument of contains() is empty");
         }
         final GeneralComparison op = new GeneralComparison(context, p0, p1,
-            Constants.EQ, Constants.TRUNC_BOTH);
+            Comparison.EQ, StringTruncationOperator.BOTH);
         //TODO : not sure for parent -pb
         context.getProfiler().message(parent, Profiler.OPTIMIZATIONS,
             "OPTIMIZATION", "Rewritten contains() as a general comparison with left and right truncations");
@@ -205,7 +207,7 @@ public class FunctionFactory {
                 "Second argument of equals() is empty");
         }
         final GeneralComparison op = new GeneralComparison(context, p0, p1,
-            Constants.EQ, Constants.TRUNC_EQUALS);
+            Comparison.EQ, StringTruncationOperator.EQUALS);
         //TODO : not sure for parent -pb
         context.getProfiler().message(parent, Profiler.OPTIMIZATIONS,
             "OPTIMIZATION", "Rewritten contains() as a general comparison with no truncations");

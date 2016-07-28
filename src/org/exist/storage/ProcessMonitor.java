@@ -160,7 +160,7 @@ public class ProcessMonitor {
         final long elapsed = System.currentTimeMillis() - watchdog.getStartTime();
         if (found && elapsed > minTime) {
             synchronized (history) {
-                final String sourceKey = watchdog.getContext().getXacmlSource().getKey();
+                final String sourceKey = watchdog.getContext().getSource().path();
                 QueryHistory qh = new QueryHistory(sourceKey, historyTimespan);
                 qh.setMostRecentExecutionTime(watchdog.getStartTime());
                 qh.setMostRecentExecutionDuration(elapsed);

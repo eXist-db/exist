@@ -50,7 +50,6 @@ import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.internal.aider.UserAider;
-import org.exist.security.xacml.AccessContext;
 import org.exist.source.FileSource;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
@@ -634,7 +633,7 @@ public class Deployment {
             return Sequence.EMPTY_SEQUENCE;
         }
         final XQuery xqs = broker.getBrokerPool().getXQueryService();
-        final XQueryContext ctx = new XQueryContext(broker.getBrokerPool(), AccessContext.REST);
+        final XQueryContext ctx = new XQueryContext(broker.getBrokerPool());
         ctx.declareVariable("dir", tempDir.toAbsolutePath().toString());
         final Optional<Path> home = broker.getConfiguration().getExistHome();
         if(home.isPresent()) {
@@ -654,7 +653,7 @@ public class Deployment {
 
         CompiledXQuery compiled;
         try {
-            compiled = xqs.compile(broker, ctx, new FileSource(xquery.toFile(), "UTF-8", false));
+            compiled = xqs.compile(broker, ctx, new FileSource(xquery, false));
             return xqs.execute(broker, compiled, null);
         } catch (final PermissionDeniedException e) {
             throw new PackageException(e.getMessage(), e);

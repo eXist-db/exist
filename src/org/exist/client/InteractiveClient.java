@@ -46,6 +46,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import javax.swing.ImageIcon;
@@ -72,16 +73,7 @@ import org.exist.security.Permission;
 import org.exist.security.SecurityManager;
 import org.exist.security.internal.aider.UserAider;
 import org.exist.storage.ElementIndex;
-import org.exist.util.CollectionScanner;
-import org.exist.util.ConfigurationHelper;
-import org.exist.util.DirectoryScanner;
-import org.exist.util.GZIPInputSource;
-import org.exist.util.MimeTable;
-import org.exist.util.MimeType;
-import org.exist.util.Occurrences;
-import org.exist.util.ProgressBar;
-import org.exist.util.ProgressIndicator;
-import org.exist.util.ZipEntryInputSource;
+import org.exist.util.*;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
 import org.exist.xmldb.CollectionManagementServiceImpl;
@@ -1045,8 +1037,6 @@ public class InteractiveClient {
                         }
                         command.append(lastLine);
                     }
-                } catch (final EOFException e) {
-                    //TODO report error?
                 } catch (final IOException e) {
                     //TODO report error?
                 }
@@ -1201,8 +1191,6 @@ public class InteractiveClient {
                 thread.join();
             } catch (final InterruptedException e) {
             }
-        } catch (final FileNotFoundException e) {
-            System.err.println("ERROR: " + e);
         } catch (final IOException e) {
             System.err.println("ERROR: " + e);
         }
@@ -1446,32 +1434,35 @@ public class InteractiveClient {
     }
     
     
-    private synchronized boolean findGZipRecursive(final Collection collection, final File dir, final XmldbURI base) throws XMLDBException {
-        final File files[] = dir.listFiles();
+    private synchronized boolean findGZipRecursive(final Collection collection, final Path dir, final XmldbURI base) throws XMLDBException, IOException {
+
+        final List<Path> files = FileUtils.list(dir);
         Collection c;
         Resource document;
         CollectionManagementServiceImpl mgtService;
         //The XmldbURIs here aren't really used...
         XmldbURI next;
         MimeType mimeType;
-        for (int i = 0; i < files.length; i++) {
-            next = base.append(files[i].getName());
+        int i = 0;
+        for (final Path file : files) {
+            i++;
+            next = base.append(FileUtils.fileName(file));
             try {
-                if (files[i].isDirectory()) {
-                    messageln("entering directory " + files[i].getAbsolutePath());
-                    c = collection.getChildCollection(files[i].getName());
+                if (Files.isDirectory(file)) {
+                    messageln("entering directory " + file.toAbsolutePath().toString());
+                    c = collection.getChildCollection(FileUtils.fileName(file));
                     if (c == null) {
                         mgtService = (CollectionManagementServiceImpl) collection.getService("CollectionManagementService", "1.0");
-                        c = mgtService.createCollection(URIUtils.encodeXmldbUriFor(files[i].getName()));
+                        c = mgtService.createCollection(URIUtils.encodeXmldbUriFor(FileUtils.fileName(file)));
                     }
                     if (c instanceof Observable && verbose) {
                         final ProgressObserver observer = new ProgressObserver();
                         ((Observable) c).addObserver(observer);
                     }
-                    findGZipRecursive(c, files[i], next);
+                    findGZipRecursive(c, file, next);
                 } else {
                     final long start1 = System.currentTimeMillis();
-                    final String compressedName = files[i].getName();
+                    final String compressedName = FileUtils.fileName(file);
                     String localName = compressedName;
                     final String[] cSuffix = {".gz",".Z"};
                     boolean isCompressed = false;
@@ -1489,17 +1480,17 @@ public class InteractiveClient {
                         messageln("File " + compressedName + " has an unknown suffix. Cannot determine file type.");
                     	mimeType = MimeType.BINARY_TYPE;
 		    }
-                    message("storing document " + compressedName + " (" + i + " of " + files.length + ") " + "...");
+                    message("storing document " + compressedName + " (" + i + " of " + files.size() + ") " + "...");
                     document = collection.createResource(URIUtils.urlEncodeUtf8(compressedName), mimeType.getXMLDBType());
-                    document.setContent(isCompressed?new GZIPInputSource(files[i]):files[i]);
+                    document.setContent(isCompressed?new GZIPInputSource(file):file);
                     ((EXistResource)document).setMimeType(mimeType.getName());
                     collection.storeResource(document);
                     ++filesCount;
-                    messageln(" " + files[i].length() + (isCompressed?" compressed":"") + " bytes in "
+                    messageln(" " + Files.size(file) + (isCompressed?" compressed":"") + " bytes in "
                     	    + (System.currentTimeMillis() - start1) + "ms.");
                 }
             } catch (final URISyntaxException e) {
-                errorln("uri syntax exception parsing " + files[i].getAbsolutePath() + ": " + e.getMessage());
+                errorln("uri syntax exception parsing " + file.toAbsolutePath().toString() + ": " + e.getMessage());
             }
         }
         return true;
@@ -1509,21 +1500,21 @@ public class InteractiveClient {
      * @param fileName simple file or directory
      * @throws XMLDBException
      */
-    protected synchronized boolean parseGZip(String fileName) throws XMLDBException {
+    protected synchronized boolean parseGZip(String fileName) throws XMLDBException, IOException {
         //TODO : why is this test for ? Fileshould make it, shouldn't it ? -pb
         fileName = fileName.replace('/', File.separatorChar).replace('\\',
                 File.separatorChar);
-        final File file = new File(fileName);
+        final Path file = Paths.get(fileName);
         Resource document;
         // String xml;
         if (current instanceof Observable && verbose) {
             final ProgressObserver observer = new ProgressObserver();
             ((Observable) current).addObserver(observer);
         }
-        final File files[];
-        if (file.canRead()) {
+        final List<Path> files;
+        if (Files.isReadable(file)) {
             // TODO, same logic as for the graphic client
-            if (file.isDirectory()) {
+            if (Files.isDirectory(file)) {
                 if (recurseDirs) {
                     filesCount = 0;
                     final long start = System.currentTimeMillis();
@@ -1533,24 +1524,26 @@ public class InteractiveClient {
                             + "sec.");
                     return result;
                 } 
-                files = file.listFiles();
+                files = FileUtils.list(file);
             } else {
-                files = new File[1];
-                files[0] = file;
+                files = new ArrayList<>();
+                files.add(file);
             }
         } else {
-            files = DirectoryScanner.scanDir(fileName);
+            files = Arrays.asList(DirectoryScanner.scanDir(fileName)).stream().map(File::toPath).collect(Collectors.toList());
         }
         
         final long start0 = System.currentTimeMillis();
         long bytes = 0;
         MimeType mimeType;
-        for (int i = 0; i < files.length; i++) {
-            if (files[i].isDirectory()) {
+        int i = 0;
+        for (final Path p : files) {
+            i++;
+            if (Files.isDirectory(p)) {
                 continue;
             }
             final long start = System.currentTimeMillis();
-            final String compressedName = files[i].getName();
+            final String compressedName = FileUtils.fileName(p);
             String localName = compressedName;
             final String[] cSuffix = {".gz",".Z"};
             boolean isCompressed = false;
@@ -1568,15 +1561,15 @@ public class InteractiveClient {
                 mimeType = MimeType.BINARY_TYPE;
             }
             document = current.createResource(compressedName,mimeType.getXMLDBType());
-            message("storing document " + compressedName + " (" + (i + 1)
-            + " of " + files.length + ") ...");
-            document.setContent(isCompressed?new GZIPInputSource(files[i]):files[i]);
+            message("storing document " + compressedName + " (" + i
+            + " of " + Files.size(p) + ") ...");
+            document.setContent(isCompressed?new GZIPInputSource(p):p);
             ((EXistResource)document).setMimeType(mimeType.getName());
             current.storeResource(document);
             messageln("done.");
-            messageln("parsing " + files[i].length() + (isCompressed?" compressed":"") + " bytes took "
+            messageln("parsing " + Files.size(p) + (isCompressed?" compressed":"") + " bytes took "
                     + (System.currentTimeMillis() - start) + "ms." + EOL);
-            bytes += files[i].length();
+            bytes += Files.size(p);
         }
         messageln("parsed " + bytes + " compressed bytes in "
                 + (System.currentTimeMillis() - start0) + "ms.");
@@ -2199,23 +2192,20 @@ public class InteractiveClient {
             }
         } else if (cOpt.optionXpath != null || cOpt.optionQueryFile != null) {
             if (cOpt.optionQueryFile != null) {
-                final BufferedReader reader = new BufferedReader(new FileReader(cOpt.optionQueryFile));
-                try {
+                try (final BufferedReader reader = new BufferedReader(new FileReader(cOpt.optionQueryFile))) {
                     final StringBuilder buf = new StringBuilder();
                     String line;
                     while ((line = reader.readLine()) != null) {
-                            buf.append(line);
-                            buf.append(EOL);
+                        buf.append(line);
+                        buf.append(EOL);
                     }
                     cOpt.optionXpath = buf.toString();
-                } finally {
-                    reader.close();
                 }
             }
             // if no argument has been found, read query from stdin
             if ("stdin".equals(cOpt.optionXpath)) {
-                try {
-                    final BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in));
+                try (final BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in))){
+
                     final StringBuilder buf = new StringBuilder();
                     String line;
                     while ((line = stdin.readLine()) != null) {
@@ -2598,8 +2588,6 @@ public class InteractiveClient {
                 
             } catch (final EOFException e) {
                 break;
-            } catch (final IOException ioe) {
-                System.err.println(ioe);
             } catch (final Exception e) {
                 System.err.println(e);
             }

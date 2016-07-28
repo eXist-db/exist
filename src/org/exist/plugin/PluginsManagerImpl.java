@@ -93,12 +93,10 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, LifeCyc
 	@Override
 	public void start(DBBroker broker) throws EXistException {
         final TransactionManager transaction = db.getTransactionManager();
-        Txn txn = null;
 
-        try {
+        try(final Txn txn = transaction.beginTransaction()) {
 	        collection = broker.getCollection(COLLETION_URI);
 			if (collection == null) {
-				txn = transaction.beginTransaction();
 				collection = broker.getOrCreateCollection(txn, COLLETION_URI);
 				if (collection == null) {return;}
 					//if db corrupted it can lead to unrunnable issue
@@ -106,16 +104,13 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, LifeCyc
 				
 				collection.setPermissions(Permission.DEFAULT_SYSTEM_SECURITY_COLLECTION_PERM);
 				broker.saveCollection(txn, collection);
+			}
 
-				transaction.commit(txn);
-			} 
+			transaction.commit(txn);
         } catch (final Exception e) {
-			transaction.abort(txn);
 			e.printStackTrace();
 			LOG.debug("loading configuration failed: " + e.getMessage());
-		} finally {
-            transaction.close(txn);
-        }
+		}
 
         final Configuration _config_ = Configurator.parse(this, broker, collection, CONFIG_FILE_URI);
 		configuration = Configurator.configure(this, _config_);
@@ -217,25 +212,23 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, LifeCyc
 		final Set<Class<? extends S>> services = new HashSet<Class<? extends S>>();
 		while (e.hasMoreElements()) {
 			final URL url = e.nextElement();
-			final InputStream is = url.openStream();
-			try {
-				final BufferedReader r = new BufferedReader(new InputStreamReader(is, "UTF-8"));
-				while (true) {
-					String line = r.readLine();
-					if (line == null)
-						{break;}
+			try (final InputStream is = url.openStream() ;
+				final BufferedReader r = new BufferedReader(new InputStreamReader(is, "UTF-8")) ){
+				String line;
+				while ((line = r.readLine()) != null) {
+
 					final int comment = line.indexOf('#');
-					if (comment >= 0)
-						{line = line.substring(0, comment);}
+					if (comment >= 0) {
+						line = line.substring(0, comment);
+					}
 					final String name = line.trim();
-					if (name.length() == 0)
-						{continue;}
+					if (name.length() == 0) {
+						continue;
+					}
 					final Class<?> clz = Class.forName(name, true, ldr);
 					final Class<? extends S> impl = clz.asSubclass(ifc);
 					services.add(impl);
 				}
-			} finally {
-				is.close();
 			}
 		}
 		return services;

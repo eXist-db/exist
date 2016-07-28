@@ -115,7 +115,6 @@ import org.exist.backup.Restore;
 import org.exist.backup.restore.listener.GuiRestoreListener;
 import org.exist.client.security.EditPropertiesDialog;
 import org.exist.client.security.UserManagerDialog;
-import org.exist.client.xacml.XACMLEditor;
 import org.exist.security.ACLPermission;
 import org.exist.security.Account;
 import org.exist.security.Permission;
@@ -207,25 +206,17 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         URL url = getClass().getResource("icons/Up24.gif"); //$NON-NLS-1$
         JButton button = new JButton(new ImageIcon(url));
         button.setToolTipText(Messages.getString("ClientFrame.5")); //$NON-NLS-1$
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(final ActionEvent e) {
-                goUpAction(e);
-            }
-        });
+        button.addActionListener(this::goUpAction);
         toolbar.add(button);
         
         url = getClass().getResource("icons/Refresh24.gif"); //$NON-NLS-1$
         button = new JButton(new ImageIcon(url));
         button.setToolTipText(Messages.getString("ClientFrame.7")); //$NON-NLS-1$
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(final ActionEvent e) {
-                try {
-                    client.reloadCollection();
-                } catch (final XMLDBException e1) {
-                    //TODO report message
-                }
+        button.addActionListener(e -> {
+            try {
+                client.reloadCollection();
+            } catch (final XMLDBException e1) {
+                //TODO report message
             }
         });
         toolbar.add(button);
@@ -234,47 +225,29 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         url = getClass().getResource("icons/New24.gif"); //$NON-NLS-1$
         button = new JButton(new ImageIcon(url));
         button.setToolTipText(Messages.getString("ClientFrame.9")); //$NON-NLS-1$
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(final ActionEvent e) {
-                newCollectionAction(e);
-            }
-        });
+        button.addActionListener(this::newCollectionAction);
         toolbar.add(button);
         
         url = getClass().getResource("icons/Add24.gif"); //$NON-NLS-1$
         button = new JButton(new ImageIcon(url));
         button.setToolTipText(Messages.getString("ClientFrame.11")); //$NON-NLS-1$
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(final ActionEvent e) {
-                uploadAction(e);
-            }
-        });
+        button.addActionListener(this::uploadAction);
         toolbar.add(button);
         
         url = getClass().getResource("icons/Delete24.gif"); //$NON-NLS-1$
         button = new JButton(new ImageIcon(url));
         button.setToolTipText(Messages.getString("ClientFrame.13")); //$NON-NLS-1$
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(final ActionEvent e) {
-                removeAction(e);
-            }
-        });
+        button.addActionListener(this::removeAction);
         toolbar.add(button);
         
         url = getClass().getResource(Messages.getString("ClientFrame.14")); //$NON-NLS-1$
         button = new JButton(new ImageIcon(url));
         button.setToolTipText(Messages.getString("ClientFrame.15")); //$NON-NLS-1$
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(final ActionEvent e) {
-                try {
-                    setPermAction(e);
-                } catch(final PermissionDeniedException pde) {
-                    showErrorMessage(pde.getMessage(), pde);
-                }
+        button.addActionListener(e -> {
+            try {
+                setPermAction(e);
+            } catch(final PermissionDeniedException pde) {
+                showErrorMessage(pde.getMessage(), pde);
             }
         });
         toolbar.add(button);
@@ -283,46 +256,26 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         url = getClass().getResource("icons/Export24.gif"); //$NON-NLS-1$
         button = new JButton(new ImageIcon(url));
         button.setToolTipText(Messages.getString("ClientFrame.17")); //$NON-NLS-1$
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(final ActionEvent e) {
-                backupAction(e);
-            }
-        });
+        button.addActionListener(this::backupAction);
         toolbar.add(button);
         
         url = getClass().getResource("icons/Import24.gif"); //$NON-NLS-1$
         button = new JButton(new ImageIcon(url));
         button.setToolTipText(Messages.getString("ClientFrame.19")); //$NON-NLS-1$
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(final ActionEvent e) {
-                restoreAction(e);
-            }
-        });
+        button.addActionListener(this::restoreAction);
         toolbar.add(button);
         
         toolbar.addSeparator();
         url = getClass().getResource(Messages.getString("ClientFrame.20")); //$NON-NLS-1$
         button = new JButton(new ImageIcon(url));
         button.setToolTipText(Messages.getString("ClientFrame.21")); //$NON-NLS-1$
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(final ActionEvent e) {
-                editUsersAction(e);
-            }
-        });
+        button.addActionListener(this::editUsersAction);
         toolbar.add(button);
         
         url = getClass().getResource("icons/Find24.gif"); //$NON-NLS-1$
         button = new JButton(new ImageIcon(url));
         button.setToolTipText(Messages.getString("ClientFrame.23")); //$NON-NLS-1$
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(final ActionEvent e) {
-                findAction(e);
-            }
-        });
+        button.addActionListener(this::findAction);
         toolbar.add(button);
         
         // the split pane separates the resource view table from the shell
@@ -383,90 +336,50 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         JMenuItem item = new JMenuItem(Messages.getString("ClientFrame.32"), KeyEvent.VK_S); //$NON-NLS-1$
         item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S,
         		Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-        item.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(final ActionEvent e) {
-                uploadAction(e);
-            }
-        });
+        item.addActionListener(this::uploadAction);
         fileMenu.add(item);
         
         item = new JMenuItem(Messages.getString("ClientFrame.34"), KeyEvent.VK_N); //$NON-NLS-1$
         item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N,
         		Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-        item.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(final ActionEvent e) {
-                newCollectionAction(e);
-            }
-        });
+        item.addActionListener(this::newCollectionAction);
         fileMenu.add(item);
         
         item = new JMenuItem(Messages.getString("ClientFrame.36"), KeyEvent.VK_B); //$NON-NLS-1$
         item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_B,
         		Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-        item.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(final ActionEvent e) {
-                newBlankDocument(e);
-            }
-        });
+        item.addActionListener(this::newBlankDocument);
         fileMenu.add(item);
         fileMenu.addSeparator();
         
         item = new JMenuItem(Messages.getString("ClientFrame.40")); //$NON-NLS-1$
         item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D,
         		Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-        item.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(final ActionEvent e) {
-                removeAction(e);
-            }
-        });
+        item.addActionListener(this::removeAction);
         fileMenu.add(item);
         
         item = new JMenuItem(Messages.getString("ClientFrame.42"), KeyEvent.VK_C); //$NON-NLS-1$
         item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C,
         		Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-        item.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(final ActionEvent e) {
-                copyAction(e);
-            }
-        });
+        item.addActionListener(this::copyAction);
         fileMenu.add(item);
         
         item = new JMenuItem(Messages.getString("ClientFrame.44"), KeyEvent.VK_M); //$NON-NLS-1$
         item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_M,
         		Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-        item.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(final ActionEvent e) {
-                moveAction(e);
-            }
-        });
+        item.addActionListener(this::moveAction);
         fileMenu.add(item);
         
         item = new JMenuItem(Messages.getString("ClientFrame.46"), KeyEvent.VK_R); //$NON-NLS-1$
         item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R,
         		Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-        item.addActionListener(new ActionListener() {
-            @Override
-        	public void actionPerformed(final ActionEvent e) {
-        		renameAction(e);
-        	}
-        });
+        item.addActionListener(this::renameAction);
 		fileMenu.add(item);
         
         item = new JMenuItem(Messages.getString("ClientFrame.47"), KeyEvent.VK_E);
         item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E,
         		Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-        item.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(final ActionEvent e) {
-                exportAction(e);
-            }
-        });
+        item.addActionListener(this::exportAction);
         fileMenu.add(item);
         
         fileMenu.addSeparator();
@@ -474,25 +387,17 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         item = new JMenuItem(Messages.getString("ClientFrame.48"), KeyEvent.VK_I); //$NON-NLS-1$
         item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_I,
         		Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-        item.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(final ActionEvent e) {
-                reindexAction(e);
-            }
-        });
+        item.addActionListener(this::reindexAction);
         fileMenu.add(item);
         
         item = new JMenuItem(Messages.getString("ClientFrame.50")); //$NON-NLS-1$
         item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P,
         		Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-        item.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(final ActionEvent e) {
-                try {
-                    setPermAction(e);
-                } catch(final PermissionDeniedException pde) {
-                    showErrorMessage(pde.getMessage(), pde);
-                }
+        item.addActionListener(e -> {
+            try {
+                setPermAction(e);
+            } catch(final PermissionDeniedException pde) {
+                showErrorMessage(pde.getMessage(), pde);
             }
         });
         fileMenu.add(item);
@@ -501,12 +406,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         item = new JMenuItem(Messages.getString("ClientFrame.52"), KeyEvent.VK_Q); //$NON-NLS-1$
         item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q,
         		Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-        item.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(final ActionEvent e) {
-                close();
-            }
-        });
+        item.addActionListener(e -> close());
         fileMenu.add(item);
         
         final JMenu toolsMenu = new JMenu(Messages.getString("ClientFrame.54")); //$NON-NLS-1$
@@ -516,12 +416,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         item = new JMenuItem(Messages.getString("ClientFrame.55"), KeyEvent.VK_F); //$NON-NLS-1$
         item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F,
         		Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-        item.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(final ActionEvent e) {
-                findAction(e);
-            }
-        });
+        item.addActionListener(this::findAction);
         toolsMenu.add(item);
         
         toolsMenu.addSeparator();
@@ -529,12 +424,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         item = new JMenuItem(Messages.getString("ClientFrame.57"), KeyEvent.VK_U); //$NON-NLS-1$
         item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_U,
         		Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-        item.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(final ActionEvent e) {
-                editUsersAction(e);
-            }
-        });
+        item.addActionListener(this::editUsersAction);
         toolsMenu.add(item);
 
         // Disable "Edit Indexes" menu item.
@@ -551,53 +441,29 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         item = new JMenuItem(Messages.getString("ClientFrame.60"), KeyEvent.VK_T);
         item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_T,
         		Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-        item.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(final ActionEvent e) {
-                editTriggersAction(e);
-            }
-        });
-        toolsMenu.add(item);
-        
-        item = new JMenuItem(Messages.getString("ClientFrame.61"), KeyEvent.VK_O); //$NON-NLS-1$
-        item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O,
-        		Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-        item.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(final ActionEvent e) {
-                editPolicies();
-            }
-        });
+        item.addActionListener(this::editTriggersAction);
         toolsMenu.add(item);
 
         toolsMenu.addSeparator();
 
         item = new JMenuItem(Messages.getString("ClientFrame.62a"));
-        item.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(final ActionEvent e) {
-                try {
-                    final DatabaseInstanceManager service = (DatabaseInstanceManager) client.current.getService("DatabaseInstanceManager", "1.0");
-                    service.enterServiceMode();
-                } catch (final XMLDBException ex) {
-                    showErrorMessage(ex.getMessage(), ex);
-                }
+        item.addActionListener(e -> {
+            try {
+                final DatabaseInstanceManager service = (DatabaseInstanceManager) client.current.getService("DatabaseInstanceManager", "1.0");
+                service.enterServiceMode();
+            } catch (final XMLDBException ex) {
+                showErrorMessage(ex.getMessage(), ex);
             }
         });
         toolsMenu.add(item);
 
         item = new JMenuItem(Messages.getString("ClientFrame.62b"));
-        item.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(final ActionEvent e) {
-                try {
-                    final DatabaseInstanceManager service = (DatabaseInstanceManager) client.current.getService("DatabaseInstanceManager", "1.0");
-                    service.exitServiceMode();
-                } catch (final XMLDBException ex) {
-                    showErrorMessage(ex.getMessage(), ex);
-                }
+        item.addActionListener(e -> {
+            try {
+                final DatabaseInstanceManager service = (DatabaseInstanceManager) client.current.getService("DatabaseInstanceManager", "1.0");
+                service.exitServiceMode();
+            } catch (final XMLDBException ex) {
+                showErrorMessage(ex.getMessage(), ex);
             }
         });
         toolsMenu.add(item);
@@ -605,21 +471,11 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         toolsMenu.addSeparator();
         
         item = new JMenuItem(Messages.getString("ClientFrame.63"), KeyEvent.VK_B); //$NON-NLS-1$
-        item.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(final ActionEvent e) {
-                backupAction(e);
-            }
-        });
+        item.addActionListener(this::backupAction);
         toolsMenu.add(item);
         
         item = new JMenuItem(Messages.getString("ClientFrame.64"), KeyEvent.VK_R); //$NON-NLS-1$
-        item.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(final ActionEvent e) {
-                restoreAction(e);
-            }
-        });
+        item.addActionListener(this::restoreAction);
         toolsMenu.add(item);
         
         final JMenu connectMenu = new JMenu(Messages.getString("ClientFrame.65")); //$NON-NLS-1$
@@ -627,25 +483,19 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         menubar.add(connectMenu);
         
         item = new JMenuItem(Messages.getString("ClientFrame.66"), KeyEvent.VK_S); //$NON-NLS-1$
-        item.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(final ActionEvent e) {
-                display(Messages.getString("ClientFrame.67")); //$NON-NLS-1$
-                process.setAction("shutdown"); //$NON-NLS-1$
-            }
+        item.addActionListener(e -> {
+            display(Messages.getString("ClientFrame.67")); //$NON-NLS-1$
+            process.setAction("shutdown"); //$NON-NLS-1$
         });
         connectMenu.add(item);
         
         // Show LoginPanel to Reconnect
         item = new JMenuItem(Messages.getString("ClientFrame.69"), KeyEvent.VK_U); //$NON-NLS-1$
         item.setToolTipText(Messages.getString("ClientFrame.70")); //$NON-NLS-1$
-        item.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(final ActionEvent e) {
-                // load properties modified by the login panel
-                final Properties loginData = getLoginData(properties);
-                reconnectClient(loginData);
-            }
+        item.addActionListener(e -> {
+            // load properties modified by the login panel
+            final Properties loginData = getLoginData(properties);
+            reconnectClient(loginData);
         });
         connectMenu.add(item);
 
@@ -655,35 +505,29 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         menubar.add(optionsMenu);
         
         JCheckBoxMenuItem check = new JCheckBoxMenuItem(Messages.getString("ClientFrame.81"), "yes".equals(properties.getProperty(OutputKeys.INDENT))); //$NON-NLS-1$
-        check.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(final ActionEvent e) {
-                properties.setProperty(OutputKeys.INDENT,
-                        ((JCheckBoxMenuItem) e.getSource()).isSelected()
-                        ? "yes" //$NON-NLS-1$
-                        : "no"); //$NON-NLS-1$
-                try {
-                    client.getResources();
-                } catch (final XMLDBException e1) {
-                    //TODO report error
-                }
+        check.addActionListener(e -> {
+            properties.setProperty(OutputKeys.INDENT,
+                    ((JCheckBoxMenuItem) e.getSource()).isSelected()
+                    ? "yes" //$NON-NLS-1$
+                    : "no"); //$NON-NLS-1$
+            try {
+                client.getResources();
+            } catch (final XMLDBException e1) {
+                //TODO report error
             }
         });
         optionsMenu.add(check);
         
         check = new JCheckBoxMenuItem(Messages.getString("ClientFrame.85"), "yes".equals(properties.getProperty(EXistOutputKeys.EXPAND_XINCLUDES))); //$NON-NLS-1$
-        check.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(final ActionEvent e) {
-                properties.setProperty(EXistOutputKeys.EXPAND_XINCLUDES,
-                        ((JCheckBoxMenuItem) e.getSource()).isSelected()
-                        ? "yes" //$NON-NLS-1$
-                        : "no"); //$NON-NLS-1$
-                try {
-                    client.getResources();
-                } catch (final XMLDBException e1) {
-                    //TODO report error
-                }
+        check.addActionListener(e -> {
+            properties.setProperty(EXistOutputKeys.EXPAND_XINCLUDES,
+                    ((JCheckBoxMenuItem) e.getSource()).isSelected()
+                    ? "yes" //$NON-NLS-1$
+                    : "no"); //$NON-NLS-1$
+            try {
+                client.getResources();
+            } catch (final XMLDBException e1) {
+                //TODO report error
             }
         });
         optionsMenu.add(check);
@@ -694,12 +538,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         menubar.add(HelpMenu);
         
         item = new JMenuItem(Messages.getString("ClientFrame.90"), KeyEvent.VK_A); //$NON-NLS-1$
-        item.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(final ActionEvent e) {
-                AboutAction();
-            }
-        });
+        item.addActionListener(e -> AboutAction());
         HelpMenu.add(item);
         
         return menubar;
@@ -903,51 +742,48 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         if (JOptionPane.showConfirmDialog(this,
                 Messages.getString("ClientFrame.104") + Messages.getString("ClientFrame.105"), //$NON-NLS-1$ //$NON-NLS-2$
                 Messages.getString("ClientFrame.106"), JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) { //$NON-NLS-1$
-            final Runnable removeTask = new Runnable() {
-                @Override
-                public void run() {
-                    final ProgressMonitor monitor = new ProgressMonitor(ClientFrame.this, Messages.getString("ClientFrame.107"), Messages.getString("ClientFrame.108"), 1, res.length); //$NON-NLS-1$ //$NON-NLS-2$
-                    monitor.setMillisToDecideToPopup(500);
-                    monitor.setMillisToPopup(500);
-                    for (int i = 0; i < res.length; i++) {
-                        final ResourceDescriptor resource = res[i];
-                        if (resource.isCollection()) {
-                            try {
-                                final CollectionManagementServiceImpl mgtService = (CollectionManagementServiceImpl) removeRootCollection
-                                        .getService(
-                                        "CollectionManagementService", //$NON-NLS-1$
-                                        "1.0"); //$NON-NLS-1$
-                                mgtService
-                                        .removeCollection(resource.getName());
-                            } catch (final XMLDBException e) {
-                                showErrorMessage(e.getMessage(), e);
-                            }
-                        } else {
-                            try {
-                                final Resource res = removeRootCollection
-                                        .getResource(resource.getName().toString());
-                                removeRootCollection.removeResource(res);
-                            } catch (final XMLDBException e) {
-                                showErrorMessage(e.getMessage(), e);
-                            }
+            final Runnable removeTask = () -> {
+                final ProgressMonitor monitor = new ProgressMonitor(ClientFrame.this, Messages.getString("ClientFrame.107"), Messages.getString("ClientFrame.108"), 1, res.length); //$NON-NLS-1$ //$NON-NLS-2$
+                monitor.setMillisToDecideToPopup(500);
+                monitor.setMillisToPopup(500);
+                for (int i = 0; i < res.length; i++) {
+                    final ResourceDescriptor resource = res[i];
+                    if (resource.isCollection()) {
+                        try {
+                            final CollectionManagementServiceImpl mgtService = (CollectionManagementServiceImpl) removeRootCollection
+                                    .getService(
+                                    "CollectionManagementService", //$NON-NLS-1$
+                                    "1.0"); //$NON-NLS-1$
+                            mgtService
+                                    .removeCollection(resource.getName());
+                        } catch (final XMLDBException e) {
+                            showErrorMessage(e.getMessage(), e);
                         }
-                        monitor.setProgress(i + 1);
-                        if (monitor.isCanceled()) {
-                            return;
+                    } else {
+                        try {
+                            final Resource res1 = removeRootCollection
+                                    .getResource(resource.getName().toString());
+                            removeRootCollection.removeResource(res1);
+                        } catch (final XMLDBException e) {
+                            showErrorMessage(e.getMessage(), e);
                         }
                     }
-                    
-                    try {
-                        removeRootCollection.close();
-                    } catch (final XMLDBException e) {
-                        showErrorMessage(e.getMessage(), e);
+                    monitor.setProgress(i + 1);
+                    if (monitor.isCanceled()) {
+                        return;
                     }
-                    
-                    try {
-                        client.getResources();
-                    } catch (final XMLDBException e) {
-                        showErrorMessage(e.getMessage(), e);
-                    }
+                }
+
+                try {
+                    removeRootCollection.close();
+                } catch (final XMLDBException e) {
+                    showErrorMessage(e.getMessage(), e);
+                }
+
+                try {
+                    client.getResources();
+                } catch (final XMLDBException e) {
+                    showErrorMessage(e.getMessage(), e);
                 }
             };
             new Thread(removeTask).start();
@@ -977,26 +813,23 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         }
 	    
         final XmldbURI destinationPath = ((PrettyXmldbURI)val).getTargetURI();
-        final Runnable moveTask = new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    final CollectionManagementServiceImpl service = (CollectionManagementServiceImpl)
-                    client.current.getService("CollectionManagementService", "1.0"); //$NON-NLS-1$ //$NON-NLS-2$
-                    for(int i = 0; i < res.length; i++) {
-                        setStatus(Messages.getString("ClientFrame.115") + res[i].getName() + Messages.getString("ClientFrame.116") + destinationPath + Messages.getString("ClientFrame.117")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                        if(res[i].isCollection()) {
-                            service.move(res[i].getName(), destinationPath, null);
-                        } else {
-                            service.moveResource(res[i].getName(), destinationPath, null);
-                        }
+        final Runnable moveTask = () -> {
+            try {
+                final CollectionManagementServiceImpl service = (CollectionManagementServiceImpl)
+                client.current.getService("CollectionManagementService", "1.0"); //$NON-NLS-1$ //$NON-NLS-2$
+                for(int i = 0; i < res.length; i++) {
+                    setStatus(Messages.getString("ClientFrame.115") + res[i].getName() + Messages.getString("ClientFrame.116") + destinationPath + Messages.getString("ClientFrame.117")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                    if(res[i].isCollection()) {
+                        service.move(res[i].getName(), destinationPath, null);
+                    } else {
+                        service.moveResource(res[i].getName(), destinationPath, null);
                     }
-                    client.reloadCollection();
-                } catch (final XMLDBException e) {
-                    showErrorMessage(e.getMessage(), e);
                 }
-                setStatus(Messages.getString("ClientFrame.118")); //$NON-NLS-1$
+                client.reloadCollection();
+            } catch (final XMLDBException e) {
+                showErrorMessage(e.getMessage(), e);
             }
+            setStatus(Messages.getString("ClientFrame.118")); //$NON-NLS-1$
         };
         new Thread(moveTask).start();
     }
@@ -1022,26 +855,23 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
             return;
         }
         final XmldbURI destinationFilename = parseIt;
-        final Runnable renameTask = new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    final CollectionManagementServiceImpl service = (CollectionManagementServiceImpl)
-                    client.current.getService("CollectionManagementService", "1.0"); //$NON-NLS-1$ //$NON-NLS-2$
-                    for(int i = 0; i < res.length; i++) {
-                        setStatus(Messages.getString("ClientFrame.124") + res[i].getName() + Messages.getString("ClientFrame.125") + destinationFilename + Messages.getString("ClientFrame.126")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                        if(res[i].isCollection()) {
-                            service.move(res[i].getName(), null, destinationFilename);
-                        } else {
-                            service.moveResource(res[i].getName(), null, destinationFilename);
-                        }
+        final Runnable renameTask = () -> {
+            try {
+                final CollectionManagementServiceImpl service = (CollectionManagementServiceImpl)
+                client.current.getService("CollectionManagementService", "1.0"); //$NON-NLS-1$ //$NON-NLS-2$
+                for(int i = 0; i < res.length; i++) {
+                    setStatus(Messages.getString("ClientFrame.124") + res[i].getName() + Messages.getString("ClientFrame.125") + destinationFilename + Messages.getString("ClientFrame.126")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                    if(res[i].isCollection()) {
+                        service.move(res[i].getName(), null, destinationFilename);
+                    } else {
+                        service.moveResource(res[i].getName(), null, destinationFilename);
                     }
-                    client.reloadCollection();
-                } catch (final XMLDBException e) {
-                    showErrorMessage(e.getMessage(), e);
                 }
-                setStatus(Messages.getString("ClientFrame.127")); //$NON-NLS-1$
+                client.reloadCollection();
+            } catch (final XMLDBException e) {
+                showErrorMessage(e.getMessage(), e);
             }
+            setStatus(Messages.getString("ClientFrame.127")); //$NON-NLS-1$
         };
         new Thread(renameTask).start();
     }
@@ -1070,36 +900,33 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
 	    
         final XmldbURI destinationPath = ((PrettyXmldbURI)val).getTargetURI();
                
-        final Runnable moveTask = new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    final CollectionManagementServiceImpl service = (CollectionManagementServiceImpl)
-                    client.current.getService("CollectionManagementService", "1.0"); //$NON-NLS-1$ //$NON-NLS-2$
-                    for(int i = 0; i < res.length; i++) {
-                        
-                    	//TODO
-                    	//what happens if the source and destination paths are the same?
-                        //we need to check and prompt the user to either skip or choose a new name
-                        //this function can copy multiple resources/collections selected by the user,
-                    	//so may need to prompt the user multiple times? is in this thread the correct
-                    	//place to do it? also need to do something similar for moveAction()
-                    	//
-                    	//Its too late and brain hurts - deliriumsky
-                    	
-                        setStatus(Messages.getString("ClientFrame.132") + res[i].getName() + Messages.getString("ClientFrame.133") + destinationPath + Messages.getString("ClientFrame.134")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                        if(res[i].isCollection()) {
-                            service.copy(res[i].getName(), destinationPath, null);
-                        } else {
-                            service.copyResource(res[i].getName(), destinationPath, null);
-                        }
+        final Runnable moveTask = () -> {
+            try {
+                final CollectionManagementServiceImpl service = (CollectionManagementServiceImpl)
+                client.current.getService("CollectionManagementService", "1.0"); //$NON-NLS-1$ //$NON-NLS-2$
+                for(int i = 0; i < res.length; i++) {
+
+                    //TODO
+                    //what happens if the source and destination paths are the same?
+                    //we need to check and prompt the user to either skip or choose a new name
+                    //this function can copy multiple resources/collections selected by the user,
+                    //so may need to prompt the user multiple times? is in this thread the correct
+                    //place to do it? also need to do something similar for moveAction()
+                    //
+                    //Its too late and brain hurts - deliriumsky
+
+                    setStatus(Messages.getString("ClientFrame.132") + res[i].getName() + Messages.getString("ClientFrame.133") + destinationPath + Messages.getString("ClientFrame.134")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                    if(res[i].isCollection()) {
+                        service.copy(res[i].getName(), destinationPath, null);
+                    } else {
+                        service.copyResource(res[i].getName(), destinationPath, null);
                     }
-                    client.reloadCollection();
-                } catch (final XMLDBException e) {
-                    showErrorMessage(e.getMessage(), e);
                 }
-                setStatus(Messages.getString("ClientFrame.135")); //$NON-NLS-1$
+                client.reloadCollection();
+            } catch (final XMLDBException e) {
+                showErrorMessage(e.getMessage(), e);
             }
+            setStatus(Messages.getString("ClientFrame.135")); //$NON-NLS-1$
         };
         new Thread(moveTask).start();
     }
@@ -1153,25 +980,22 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
                 Messages.getString("ClientFrame.138"), //$NON-NLS-1$
                 Messages.getString("ClientFrame.139"), JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) { //$NON-NLS-1$
             final ResourceDescriptor collections[] = res;
-            final Runnable reindexThread = new Runnable() {
-                @Override
-                public void run() {
-                    ClientFrame.this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                    final IndexQueryService service;
-                    try {
-                        service = (IndexQueryService)
-                        client.current.getService("IndexQueryService", "1.0"); //$NON-NLS-1$ //$NON-NLS-2$
-                        for(int i = 0; i < collections.length; i++) {
-                            final ResourceDescriptor next = collections[i];
-                            setStatus(Messages.getString("ClientFrame.142") + next.getName() + Messages.getString("ClientFrame.143")); //$NON-NLS-1$ //$NON-NLS-2$
-                            service.reindexCollection(next.getName());
-                        }
-                        setStatus(Messages.getString("ClientFrame.144")); //$NON-NLS-1$
-                    } catch (final XMLDBException e) {
-                        showErrorMessage(e.getMessage(), e);
+            final Runnable reindexThread = () -> {
+                ClientFrame.this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                final IndexQueryService service;
+                try {
+                    service = (IndexQueryService)
+                    client.current.getService("IndexQueryService", "1.0"); //$NON-NLS-1$ //$NON-NLS-2$
+                    for(int i = 0; i < collections.length; i++) {
+                        final ResourceDescriptor next = collections[i];
+                        setStatus(Messages.getString("ClientFrame.142") + next.getName() + Messages.getString("ClientFrame.143")); //$NON-NLS-1$ //$NON-NLS-2$
+                        service.reindexCollection(next.getName());
                     }
-                    ClientFrame.this.setCursor(Cursor.getDefaultCursor());
+                    setStatus(Messages.getString("ClientFrame.144")); //$NON-NLS-1$
+                } catch (final XMLDBException e) {
+                    showErrorMessage(e.getMessage(), e);
                 }
+                ClientFrame.this.setCursor(Cursor.getDefaultCursor());
             };
             new Thread(reindexThread).start();
         }
@@ -1322,50 +1146,43 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
     
     private void doRestore(final GuiRestoreListener listener, final String username, final String password, final String dbaPassword, final Path f, final String uri) {
         
-        final Callable<Void> callable = new Callable<Void>() {
+        final Callable<Void> callable = () -> {
 
-            @Override
-            public Void call() throws Exception {
+            final Restore restore = new Restore();
 
-                final Restore restore = new Restore();
-                
-                try {
-                    restore.restore(listener, username, password, dbaPassword, f, uri);
+            try {
+                restore.restore(listener, username, password, dbaPassword, f, uri);
 
-                    if (JOptionPane.showConfirmDialog(null, Messages.getString("ClientFrame.223"), Messages.getString("ClientFrame.224"),
-                            JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-                        setStatus(Messages.getString("ClientFrame.225"));
-                        repairRepository(client.getCollection());
-                        setStatus(Messages.getString("ClientFrame.226"));
-                    }
-
-                    listener.hideDialog();
-
-                    if (properties.getProperty(InteractiveClient.USER, SecurityManager.DBA_USER).equals(SecurityManager.DBA_USER) && dbaPassword != null) {
-                        properties.setProperty(InteractiveClient.PASSWORD, dbaPassword);
-                    }
-                    
-                    SwingUtilities.invokeAndWait(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                client.reloadCollection();
-                            } catch(final XMLDBException xe) {
-                                xe.printStackTrace();
-                            }
-                        }
-                    });
-                } catch (final Exception e) {
-                    showErrorMessage(Messages.getString("ClientFrame.181") + e.getMessage(), e); //$NON-NLS-1$
-                } finally {
-                    if(listener.hasProblems()) {
-                        showErrorMessage(Messages.getString("ClientFrame.181") + listener.warningsAndErrorsAsString(), null);
-                    }
+                if (JOptionPane.showConfirmDialog(null, Messages.getString("ClientFrame.223"), Messages.getString("ClientFrame.224"),
+                        JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+                    setStatus(Messages.getString("ClientFrame.225"));
+                    repairRepository(client.getCollection());
+                    setStatus(Messages.getString("ClientFrame.226"));
                 }
-                
-                return null;
-            }      
-        };   
+
+                listener.hideDialog();
+
+                if (properties.getProperty(InteractiveClient.USER, SecurityManager.DBA_USER).equals(SecurityManager.DBA_USER) && dbaPassword != null) {
+                    properties.setProperty(InteractiveClient.PASSWORD, dbaPassword);
+                }
+
+                SwingUtilities.invokeAndWait(() -> {
+                    try {
+                        client.reloadCollection();
+                    } catch(final XMLDBException xe) {
+                        xe.printStackTrace();
+                    }
+                });
+            } catch (final Exception e) {
+                showErrorMessage(Messages.getString("ClientFrame.181") + e.getMessage(), e); //$NON-NLS-1$
+            } finally {
+                if(listener.hasProblems()) {
+                    showErrorMessage(Messages.getString("ClientFrame.181") + listener.warningsAndErrorsAsString(), null);
+                }
+            }
+
+            return null;
+        };
              
         final ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.submit(callable);
@@ -1474,31 +1291,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         final TriggersDialog dialog = new TriggersDialog("Edit Triggers", client);
         dialog.setVisible(true);
     }
-    
-    private void editPolicies() {
-        final Collection systemCollection;
-        try {
-            systemCollection = client.getCollection(XmldbURI.SYSTEM_COLLECTION);
-        } catch (final XMLDBException e) {
-            showErrorMessage(Messages.getString("ClientFrame.187"), e); //$NON-NLS-1$
-            return;
-        }
-        
-        try {
-            final DatabaseInstanceManager dim = (DatabaseInstanceManager)systemCollection.getService("DatabaseInstanceManager", "1.0"); //$NON-NLS-1$ //$NON-NLS-2$
-            if(!dim.isXACMLEnabled()) {
-                showErrorMessage(Messages.getString("ClientFrame.190"), null); //$NON-NLS-1$
-                return;
-            }
-        } catch (final XMLDBException e) {
-            showErrorMessage(Messages.getString("ClientFrame.191"), e); //$NON-NLS-1$
-            return;
-        }
-        
-        final XACMLEditor editor = new XACMLEditor(systemCollection);
-        editor.setVisible(true);
-    }
-    
+
     private void findAction(final ActionEvent ev) {
         final Collection collection = client.getCollection();
         final QueryDialog dialog = new QueryDialog(client, collection, properties);
@@ -1881,20 +1674,17 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         
         connectionDialog.setTitle(SystemProperties.getInstance().getSystemProperty("product-name", "eXist-db") + " " + SystemProperties.getInstance().getSystemProperty("product-version", "unknown") + " Database Login");
         
-        connectionDialog.addDialogCompleteWithResponseCallback(new DialogCompleteWithResponse<Connection>(){
-            @Override
-            public void complete(final Connection connection) {
-                properties.setProperty(InteractiveClient.USER, connection.getUsername());
-                properties.setProperty(InteractiveClient.PASSWORD, connection.getPassword());
-                
-                if(!connection.getUri().isEmpty()) {
-                    properties.setProperty(InteractiveClient.URI, connection.getUri());
-                    properties.setProperty(InteractiveClient.SSL_ENABLE, Boolean.valueOf(connection.isSsl()).toString().toUpperCase());
-                    properties.setProperty(InteractiveClient.LOCAL_MODE, "FALSE");
-                } else {
-                    properties.setProperty(InteractiveClient.CONFIGURATION, connection.getConfiguration());
-                    properties.setProperty(InteractiveClient.URI, XmldbURI.EMBEDDED_SERVER_URI.toString());
-                }
+        connectionDialog.addDialogCompleteWithResponseCallback(connection -> {
+            properties.setProperty(InteractiveClient.USER, connection.getUsername());
+            properties.setProperty(InteractiveClient.PASSWORD, connection.getPassword());
+
+            if(!connection.getUri().isEmpty()) {
+                properties.setProperty(InteractiveClient.URI, connection.getUri());
+                properties.setProperty(InteractiveClient.SSL_ENABLE, Boolean.valueOf(connection.isSsl()).toString().toUpperCase());
+                properties.setProperty(InteractiveClient.LOCAL_MODE, "FALSE");
+            } else {
+                properties.setProperty(InteractiveClient.CONFIGURATION, connection.getConfiguration());
+                properties.setProperty(InteractiveClient.URI, XmldbURI.EMBEDDED_SERVER_URI.toString());
             }
         });
         
@@ -2127,18 +1917,9 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
                 if(files != null) {
                     uploadFiles(files.toArray(new File[files.size()]));
                 }
-            } catch(final URISyntaxException use) {
+            } catch(final URISyntaxException | IOException | UnsupportedFlavorException | ClassNotFoundException use) {
                 System.err.println("An exception occurred while dragging and dropping files: " + use.getMessage());
                 use.printStackTrace();
-            } catch(final ClassNotFoundException cnfe) {
-                System.err.println("An exception occurred while dragging and dropping files: " + cnfe.getMessage());
-                cnfe.printStackTrace();
-            } catch(final UnsupportedFlavorException ufe) {
-                System.err.println("An exception occurred while dragging and dropping files: " + ufe.getMessage());
-                ufe.printStackTrace();
-            } catch(final IOException ioe) {
-                System.err.println("An exception occurred while dragging and dropping files: " + ioe.getMessage());
-                ioe.printStackTrace();
             }
         }
 

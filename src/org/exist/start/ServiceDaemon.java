@@ -1,7 +1,7 @@
 package org.exist.start;
 
-import java.io.File;
 import java.lang.reflect.Method;
+import java.nio.file.Path;
 
 /**
  * An apache commons daemon class to start eXist.
@@ -15,9 +15,13 @@ public class ServiceDaemon {
     public ServiceDaemon() {
     }
 
-    protected void finalize() {
-        System.err.println("ServiceDaemon: instance "+this.hashCode()+
-                           " garbage collected");
+    protected void finalize() throws Throwable {
+        try {
+            System.err.println("ServiceDaemon: instance " + this.hashCode() + " garbage collected");
+        }
+        finally {
+            super.finalize();
+        }
     }
 
     public void init(String[] arguments)
@@ -42,7 +46,7 @@ public class ServiceDaemon {
         /* Dump a message */
         System.err.println("ServiceDaemon: stopping");
         try {
-           final File homeDir = existMain.detectHome();
+           final Path homeDir = existMain.detectHome();
            final String [] noArgs = {};
            final Classpath classpath = existMain.constructClasspath(homeDir,noArgs);
            final ClassLoader cl = classpath.getClassLoader(null);

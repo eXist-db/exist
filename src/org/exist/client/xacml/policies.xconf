@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<collection xmlns="http://exist-db.org/collection-config/1.0">
-    <index xmlns:x="urn:oasis:names:tc:xacml:1.0:policy" index-depth="5">
-        <create path="//@x:PolicyId" type="xs:string"/>
-        <create path="//@x:PolicySetId" type="xs:string"/>
-    </index>
-</collection>

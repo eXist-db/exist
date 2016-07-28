@@ -2,7 +2,7 @@ xquery version "3.0";
 
 (:~
  : Test query rewriting for range index.
- : 
+ :
  : Expressions use the @test:stats annotation to retrieve execution statistics
  : for each test function. All comparisons should be fully optimized.
  :)
@@ -11,11 +11,10 @@ module namespace ot="http://exist-db.org/xquery/range/optimizer/test";
 import module namespace range="http://exist-db.org/xquery/range" at "java:org.exist.xquery.modules.range.RangeIndexModule";
 import module namespace test="http://exist-db.org/xquery/xqsuite" at "resource:org/exist/xquery/lib/xqsuite/xqsuite.xql";
 
-
 declare namespace tei="http://www.tei-c.org/ns/1.0";
 declare namespace stats="http://exist-db.org/xquery/profiling";
 
-declare variable $ot:COLLECTION_CONFIG := 
+declare variable $ot:COLLECTION_CONFIG :=
     <collection xmlns="http://exist-db.org/collection-config/1.0">
         <index xmlns:xs="http://www.w3.org/2001/XMLSchema"
             xmlns:tei="http://www.tei-c.org/ns/1.0">
@@ -40,7 +39,7 @@ declare variable $ot:COLLECTION_CONFIG :=
         </index>
     </collection>;
 
-declare variable $ot:DATA_NESTED := 
+declare variable $ot:DATA_NESTED :=
     <place xmlns="http://www.tei-c.org/ns/1.0">
         <placeName xml:id="ODB_S00004004_NAM001" xml:lang="de-DE" type="ref" subtype="inofficial">Hofthiergarten<note type="source">
                 <date ana="#notBefore">1750</date>
@@ -59,7 +58,7 @@ declare variable $ot:DATA_NESTED :=
             </note>
         </placeName>
     </place>;
-    
+
 declare variable $ot:DATA :=
     <test>
         <address id="muh">
@@ -182,10 +181,28 @@ function ot:optimize-matches-string($name as xs:string) {
 
 declare
     %test:stats
+    %test:args("[rR]udi .*")
+    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 1]")
+function ot:optimize-matches-string-filtered($name as xs:string) {
+    let $address := collection($ot:COLLECTION)//address
+    return
+        $address[range:matches(name, $name)]
+};
+
+declare
+    %test:stats
     %test:args("Rudi Rüssel")
     %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
 function ot:optimize-eq-string-self($name as xs:string) {
     collection($ot:COLLECTION)//address/name[. = $name]
+};
+
+declare
+    %test:args("Rudi Rüssel")
+function ot:eq-string-self-filtered($name as xs:string) {
+    let $n := collection($ot:COLLECTION)//address/name
+    return
+        $n[. = $name]
 };
 
 declare
@@ -393,6 +410,14 @@ function ot:optimize-matches-field($city as xs:string) {
 };
 
 declare
+    %test:args("[rR]üssel.*")
+function ot:matches-field-filtered($city as xs:string) {
+    let $address := collection($ot:COLLECTION)//address
+    return
+        $address[range:matches(city, $city)]
+};
+
+declare
     %test:stats
     %test:args("Rüsselsheim", "Elefantenweg 67")
     %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
@@ -405,6 +430,15 @@ declare
     %test:assertEquals(1)
 function ot:eq-field-multi($city as xs:string, $street as xs:string) {
     count(collection($ot:COLLECTION)//address[city = $city][street = $street])
+};
+
+declare
+    %test:args("Rüsselsheim", "Elefantenweg 67")
+    %test:assertEquals(1)
+function ot:eq-field-multi-filtered($city as xs:string, $street as xs:string) {
+    let $address := collection($ot:COLLECTION)//address
+    return
+        count($address[city = $city][street = $street])
 };
 
 declare
@@ -453,7 +487,7 @@ function ot:optimize-lt-field-nested($email as xs:string) {
     collection($ot:COLLECTION)//address[contact/email < $email]
 };
 
-declare 
+declare
     %test:args("main", "official", "Hofthiergarten")
     %test:assertEquals("Hofthiergarten")
     %test:args("ref", "inofficial", "Hofthiergarten")
@@ -464,7 +498,7 @@ function ot:equality-field-nested($type as xs:string, $subtype as xs:string, $na
     //tei:placeName[@type = $type][@subtype = $subtype][. = $name]/text()
 };
 
-declare 
+declare
     %test:stats
     %test:args("main", "official", "Hofthiergarten")
     %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")

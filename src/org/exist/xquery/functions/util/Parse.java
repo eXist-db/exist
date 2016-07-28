@@ -25,10 +25,11 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Namespaces;
 import org.exist.dom.QName;
-import org.exist.dom.memtree.DocumentImpl;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.memtree.NodeImpl;
 import org.exist.dom.memtree.SAXAdapter;
+import org.exist.util.HtmlToXmlParser;
+import org.exist.util.function.Either;
 import org.exist.validation.ValidationReport;
 import org.exist.xquery.*;
 import org.exist.xquery.functions.validation.Shared;
@@ -46,14 +47,15 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.Optional;
 
 public class Parse extends BasicFunction {
 	
-	protected static final FunctionReturnSequenceType RESULT_TYPE = new FunctionReturnSequenceType( Type.DOCUMENT, Cardinality.ZERO_OR_ONE, "the XML fragment parsed from the string" );
+    private static final FunctionReturnSequenceType RESULT_TYPE = new FunctionReturnSequenceType( Type.DOCUMENT, Cardinality.ZERO_OR_ONE, "the XML fragment parsed from the string" );
 
-	protected static final FunctionParameterSequenceType TO_BE_PARSED_PARAMETER = new FunctionParameterSequenceType( "to-be-parsed", Type.STRING, Cardinality.ZERO_OR_ONE, "The string to be parsed" );
+	private static final FunctionParameterSequenceType TO_BE_PARSED_PARAMETER = new FunctionParameterSequenceType( "to-be-parsed", Type.STRING, Cardinality.ZERO_OR_ONE, "The string to be parsed" );
 
-	protected static final Logger logger = LogManager.getLogger(Parse.class);
+	private static final Logger logger = LogManager.getLogger(Parse.class);
 
     public final static FunctionSignature signatures[] = {
         new FunctionSignature(
@@ -77,11 +79,12 @@ public class Parse extends BasicFunction {
         )
     };
 
-    public Parse(XQueryContext context, FunctionSignature signature) {
+    public Parse(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
 
-    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+    @Override
+    public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
     	
         if (args[0].getItemCount() == 0) {
             return Sequence.EMPTY_SEQUENCE;
@@ -98,20 +101,24 @@ public class Parse extends BasicFunction {
             factory.setNamespaceAware(true);
             final InputSource src = new InputSource(reader);
 
-            XMLReader xr = null;
+            final XMLReader xr;
             if (isCalledAs("parse-html")) {
-                try {
-                    final Class<?> clazz = Class.forName( "org.cyberneko.html.parsers.SAXParser" );
-                    xr = (XMLReader) clazz.newInstance();
-                    //do not modify the case of elements and attributes
-                    xr.setProperty("http://cyberneko.org/html/properties/names/elems", "match");
-                    xr.setProperty("http://cyberneko.org/html/properties/names/attrs", "no-change");
-                } catch (final Exception e) {
-                    logger.warn("Could not instantiate neko HTML parser for function util:parse-html, falling back to " +
-                            "default XML parser.", e);
+                final Optional<Either<Throwable, XMLReader>> maybeReaderInst = HtmlToXmlParser.getHtmlToXmlParser(context.getBroker().getConfiguration());
+
+                if(maybeReaderInst.isPresent()) {
+                    final Either<Throwable, XMLReader> readerInst = maybeReaderInst.get();
+                    if (readerInst.isLeft()) {
+                        final String msg = "Unable to parse HTML to XML please ensure the parser is configured in conf.xml and is present on the classpath";
+                        final Throwable t = readerInst.left().get();
+                        LOG.error(msg, t);
+                        throw new XPathException(this, ErrorCodes.EXXQDY0002, t);
+                    } else {
+                        xr = readerInst.right().get();
+                    }
+                } else {
+                    throw new XPathException(this, ErrorCodes.EXXQDY0002, "There is no HTML to XML parser configured in conf.xml");
                 }
-            }
-            if (xr == null) {
+            } else {
                 final SAXParser parser = factory.newSAXParser();
                 xr = parser.getXMLReader();
             }
@@ -128,9 +135,9 @@ public class Parse extends BasicFunction {
             throw new XPathException(this, ErrorCodes.EXXQDY0002, "Error while parsing XML: " + e.getMessage(), args[0], e);
         }
         
-        if (report.isValid())
-        	{return (DocumentImpl) adapter.getDocument();}
-        else {
+        if (report.isValid()) {
+            return adapter.getDocument();
+        } else {
         	final MemTreeBuilder builder = context.getDocumentBuilder();
             final NodeImpl result = Shared.writeReport(report, builder);
     		throw new XPathException(this, ErrorCodes.EXXQDY0002, report.toString(), result);

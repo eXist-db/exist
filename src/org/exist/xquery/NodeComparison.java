@@ -22,6 +22,7 @@
  */
 package org.exist.xquery;
 
+import org.exist.xquery.Constants.NodeComparisonOperator;
 import org.exist.xquery.util.Error;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.BooleanValue;
@@ -37,12 +38,12 @@ import org.exist.xquery.value.Type;
  */
 public class NodeComparison extends BinaryOp {
 
-    private final int relation;
+    private final NodeComparisonOperator relation;
 
     /**
      * @param context
      */
-    public NodeComparison(XQueryContext context, Expression left, Expression right, int relation) {
+    public NodeComparison(XQueryContext context, Expression left, Expression right, NodeComparisonOperator relation) {
         super(context);
         this.relation = relation;
         add(new DynamicCardinalityCheck(context, Cardinality.ZERO_OR_ONE, left, 
@@ -79,7 +80,7 @@ public class NodeComparison extends BinaryOp {
      */
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {
-            context.getProfiler().start(this);       
+            context.getProfiler().start(this);
             context.getProfiler().message(this, Profiler.DEPENDENCIES,
                 "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
@@ -110,16 +111,13 @@ public class NodeComparison extends BinaryOp {
                 result =  BooleanValue.FALSE;
             } else {
                 switch(relation) {
-                case Constants.IS:
+                case IS:
                     result = lv.equals(rv) ? BooleanValue.TRUE : BooleanValue.FALSE;
                     break;
-                case Constants.ISNOT:
-                    result = lv.equals(rv) ? BooleanValue.FALSE : BooleanValue.TRUE;
-                    break;
-                case Constants.BEFORE:
+                case BEFORE:
                     result = lv.before(rv, false) ? BooleanValue.TRUE : BooleanValue.FALSE;
                     break;
-                case Constants.AFTER:
+                case AFTER:
                     result = lv.after(rv, false) ? BooleanValue.TRUE : BooleanValue.FALSE;
                     break;
                 default:
@@ -139,25 +137,20 @@ public class NodeComparison extends BinaryOp {
             }
             result = BooleanValue.EMPTY_SEQUENCE;
         }
-        if (context.getProfiler().isEnabled()) 
+        if (context.getProfiler().isEnabled())
             {context.getProfiler().end(this, "", result);}
         return result;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.PathExpr#dump(org.exist.xquery.util.ExpressionDumper)
-     */
+    @Override
     public void dump(ExpressionDumper dumper) {
         getLeft().dump(dumper);
-        dumper.display(' ').display(Constants.OPS[relation]).display(' ');
+        dumper.display(' ').display(relation.symbol).display(' ');
         getRight().dump(dumper);
     }
 
+    @Override
     public String toString() {
-        final StringBuilder result = new StringBuilder();
-        result.append(getLeft().toString());
-        result.append(' ').append(Constants.OPS[relation]).append(' ');
-        result.append(getRight().toString());
-        return result.toString();
+        return getLeft().toString() + ' ' + relation.symbol + ' ' + getRight().toString();
     }
 }

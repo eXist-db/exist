@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2010 The eXist Project
+ *  Copyright (C) 2001-2016 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -16,8 +16,6 @@
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- *  $Id$
  */
 package org.exist.xquery.update;
 
@@ -61,110 +59,109 @@ import org.w3c.dom.Node;
  */
 public class Update extends Modification {
 
-	private final static Logger LOG = LogManager.getLogger(Update.class);
-	
-	public Update(XQueryContext context, Expression select, Expression value) {
-		super(context, select, value);
-	}
+    private final static Logger LOG = LogManager.getLogger(Update.class);
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.AbstractExpression#eval(org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
-	 */
-	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+    public Update(XQueryContext context, Expression select, Expression value) {
+        super(context, select, value);
+    }
+
+    /* (non-Javadoc)
+     * @see org.exist.xquery.AbstractExpression#eval(org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
+     */
+    public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {
-            context.getProfiler().start(this);       
+            context.getProfiler().start(this);
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
-            if (contextSequence != null)
-                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
-            if (contextItem != null)
-                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
+            if (contextSequence != null) {
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+            }
+            if (contextItem != null) {
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+            }
         }
-        
-		if (contextItem != null)
-			{contextSequence = contextItem.toSequence();}
-        
+
+        if (contextItem != null) {
+            contextSequence = contextItem.toSequence();
+        }
+
         final Sequence contentSeq = value.eval(contextSequence);
-        if (contentSeq.isEmpty())
-            {throw new XPathException(this, Messages.getMessage(Error.UPDATE_EMPTY_CONTENT));}
-        
+        if (contentSeq.isEmpty()) {
+            throw new XPathException(this, Messages.getMessage(Error.UPDATE_EMPTY_CONTENT));
+        }
+
         final Sequence inSeq = select.eval(contextSequence);
-        
+
         //START trap Update failure
         /* If we try and Update a node at an invalid location,
          * trap the error in a context variable,
          * this is then accessible from xquery via. the context extension module - deliriumsky
          * TODO: This trapping could be expanded further - basically where XPathException is thrown from thiss class
-         * TODO: Maybe we could provide more detailed messages in the trap, e.g. couldnt update node `xyz` into `abc` becuase... this would be nicer for the end user of the xquery application 
+         * TODO: Maybe we could provide more detailed messages in the trap, e.g. couldnt update node `xyz` into `abc` becuase... this would be nicer for the end user of the xquery application
          */
-        if (!Type.subTypeOf(inSeq.getItemType(), Type.NODE)) 
+        if (!Type.subTypeOf(inSeq.getItemType(), Type.NODE))
         {
-        	//Indicate the failure to perform this update by adding it to the sequence in the context variable XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR
-        	ValueSequence prevUpdateErrors = null;
-        	
-        	final XPathException xpe = new XPathException(this, Messages.getMessage(Error.UPDATE_SELECT_TYPE));
-        	final Object ctxVarObj = context.getXQueryContextVar(XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR);
-        	if(ctxVarObj == null)
-        	{
-        		prevUpdateErrors = new ValueSequence();
-        	}
-        	else
-        	{
-        		prevUpdateErrors = (ValueSequence)XPathUtil.javaObjectToXPath(ctxVarObj, context);
-        	}
-        	prevUpdateErrors.add(new StringValue(xpe.getMessage()));
-			context.setXQueryContextVar(XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR, prevUpdateErrors);
-			
-        	if(!inSeq.isEmpty())
-        		{throw xpe;}	//TODO: should we trap this instead of throwing an exception - deliriumsky?
+            //Indicate the failure to perform this update by adding it to the sequence in the context variable XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR
+            ValueSequence prevUpdateErrors = null;
+
+            final XPathException xpe = new XPathException(this, Messages.getMessage(Error.UPDATE_SELECT_TYPE));
+            final Object ctxVarObj = context.getXQueryContextVar(XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR);
+            if(ctxVarObj == null) {
+                prevUpdateErrors = new ValueSequence();
+            } else {
+                prevUpdateErrors = (ValueSequence)XPathUtil.javaObjectToXPath(ctxVarObj, context);
+            }
+            prevUpdateErrors.add(new StringValue(xpe.getMessage()));
+            context.setXQueryContextVar(XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR, prevUpdateErrors);
+
+            if(!inSeq.isEmpty()) {
+                //TODO: should we trap this instead of throwing an exception - deliriumsky?
+                throw xpe;
+            }
         }
         //END trap Update failure
         
         if (!inSeq.isEmpty()) {          
-        	context.pushInScopeNamespaces();
+            context.pushInScopeNamespaces();
             //start a transaction
-            final Txn transaction = getTransaction();
-    		try {
-    			final NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
+            try (final Txn transaction = getTransaction()) {
+                final NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
 
                 final StoredNode ql[] = selectAndLock(transaction, inSeq);
                 TextImpl text;
                 AttrImpl attribute;
                 ElementImpl parent;
-                for (int i = 0; i < ql.length; i++) {
-                    final StoredNode node = ql[i];
+                for (final StoredNode node : ql) {
                     final DocumentImpl doc = node.getOwnerDocument();
-                    if (!doc.getPermissions().validate(context.getUser(),
-                            Permission.WRITE)){
-                            throw new XPathException(this, "User '" + context.getSubject().getName() + "' does not have permission to write to the document '" + doc.getDocumentURI() + "'!");
+                    if (!doc.getPermissions().validate(context.getSubject(),
+                        Permission.WRITE)) {
+                        throw new XPathException(this, "User '" + context.getSubject().getName() + "' does not have permission to write to the document '" + doc.getDocumentURI() + "'!");
                     }
-                                        
+
                     //update the document
-                    switch (node.getNodeType())
-                    {
+                    switch (node.getNodeType()) {
                         case Node.ELEMENT_NODE:
-    						final NodeListImpl content = new NodeListImpl();
-    						for (final SequenceIterator j = contentSeq.iterate(); j.hasNext(); ) {
-    							final Item next = j.nextItem();
-    							if (Type.subTypeOf(next.getType(), Type.NODE))
-    								{content.add(((NodeValue)next).getNode());}
-    							else {
-    								text = new TextImpl(next.getStringValue());
-    								content.add(text);
-    							}
-    						}
+                            final NodeListImpl content = new NodeListImpl();
+                            for (final SequenceIterator j = contentSeq.iterate(); j.hasNext(); ) {
+                                final Item next = j.nextItem();
+                                if (Type.subTypeOf(next.getType(), Type.NODE)) {
+                                    content.add(((NodeValue) next).getNode());
+                                } else {
+                                    text = new TextImpl(next.getStringValue());
+                                    content.add(text);
+                                }
+                            }
                             ((ElementImpl) node).update(transaction, content);
                             break;
                         case Node.TEXT_NODE:
                             parent = (ElementImpl) node.getParentNode();
-                        	text = new TextImpl(contentSeq.getStringValue());
+                            text = new TextImpl(contentSeq.getStringValue());
                             text.setOwnerDocument(doc);
                             parent.updateChild(transaction, node, text);
                             break;
                         case Node.ATTRIBUTE_NODE:
                             parent = (ElementImpl) node.getParentNode();
                             if (parent == null) {
-                                LOG.warn("parent node not found for "
-                                        + node.getNodeId());
+                                LOG.warn("parent node not found for " + node.getNodeId());
                                 break;
                             }
                             final AttrImpl attr = (AttrImpl) node;
@@ -182,50 +179,35 @@ public class Update extends Modification {
                 }
                 finishTriggers(transaction);
                 //commit the transaction
-                commitTransaction(transaction);
-            } catch (final LockException e) {
-                abortTransaction(transaction);
+                transaction.commit();
+            } catch (final LockException | PermissionDeniedException | EXistException | TriggerException e) {
                 throw new XPathException(this, e.getMessage(), e);
-    		} catch (final PermissionDeniedException e) {
-                abortTransaction(transaction);
-                throw new XPathException(this, e.getMessage(), e);
-    		} catch (final EXistException e) {
-                abortTransaction(transaction);
-                throw new XPathException(this, e.getMessage(), e);
-    		} catch (final TriggerException e) {
-                abortTransaction(transaction);
-                throw new XPathException(this, e.getMessage(), e);
-			} finally {
+            } finally {
                 unlockDocuments();
-                closeTransaction(transaction);
                 context.popInScopeNamespaces();
             }
         }
 
-        if (context.getProfiler().isEnabled()) 
-            {context.getProfiler().end(this, "", Sequence.EMPTY_SEQUENCE);}
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().end(this, "", Sequence.EMPTY_SEQUENCE);
+        }
         
         return Sequence.EMPTY_SEQUENCE;
-	}
+    }
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)
-	 */
-	public void dump(ExpressionDumper dumper) {
-		dumper.display("update value").nl();
-		dumper.startIndent();
-		select.dump(dumper);
-		dumper.nl().endIndent().display("with").nl().startIndent();
-		value.dump(dumper);
-		dumper.nl().endIndent();
+    /* (non-Javadoc)
+     * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)
+     */
+    public void dump(ExpressionDumper dumper) {
+        dumper.display("update value").nl();
+        dumper.startIndent();
+        select.dump(dumper);
+        dumper.nl().endIndent().display("with").nl().startIndent();
+        value.dump(dumper);
+        dumper.nl().endIndent();
+    }
+
+    public String toString() {
+        return "update value" + select.toString() + " with " + value.toString();
 	}
-	
-	public String toString() {
-		final StringBuilder result = new StringBuilder();
-		result.append("update value" );		
-		result.append(select.toString());
-		result.append(" with ");
-		result.append(value.toString());
-		return result.toString();
-	}	
 }

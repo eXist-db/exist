@@ -150,7 +150,7 @@ public class ConcurrentStoreTest {
                 transact.commit(transaction);
                 
 //              Don't commit...
-                transact.getJournal().flushToLog(true);
+                pool.getJournalManager().get().flush(true, false);
     	    } catch (Exception e) {
                 e.printStackTrace();
     	        fail(e.getMessage()); 

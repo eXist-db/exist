@@ -22,6 +22,7 @@
  */
 package org.exist.dom.persistent;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.exist.dom.QName;
 import org.exist.util.hashtable.AbstractHashSet;
 
@@ -35,6 +36,7 @@ import java.util.Objects;
  *
  * @author wolf
  */
+@NotThreadSafe
 public class QNamePool extends AbstractHashSet<QName> {
 
     private static final int DEFAULT_POOL_SIZE = 512;
@@ -97,11 +99,11 @@ public class QNamePool extends AbstractHashSet<QName> {
         final QName qn = new QName(localName, namespaceURI, prefix, type);
         try {
             return insert(qn);
-        } catch(final HashtableOverflowException e) {
+        } catch(final HashSetOverflowException e) {
             clear();
             try {
                 return insert(qn);
-            } catch(final HashtableOverflowException e1) {
+            } catch(final HashSetOverflowException e1) {
                 throw new RuntimeException(e1);
             }
         }
@@ -113,7 +115,7 @@ public class QNamePool extends AbstractHashSet<QName> {
         items = 0;
     }
 
-    private QName insert(final QName value) throws HashtableOverflowException {
+    private QName insert(final QName value) throws HashSetOverflowException {
         if(value == null) {
             throw new IllegalArgumentException("Illegal value: null");
         }
@@ -164,11 +166,11 @@ public class QNamePool extends AbstractHashSet<QName> {
             ++items;
             return values[bucket];
         } else {
-            throw new HashtableOverflowException();
+            throw new HashSetOverflowException();
         }
     }
 
-    protected int rehash(final int iVal) {
+    private int rehash(final int iVal) {
         int retVal = (iVal + iVal / 2) % tabSize;
         if(retVal == 0) {
             retVal = 1;
@@ -216,6 +218,6 @@ public class QNamePool extends AbstractHashSet<QName> {
 
     @Override
     public Iterator<QName> iterator() {
-        return null;
+        throw new UnsupportedOperationException();
     }
 }

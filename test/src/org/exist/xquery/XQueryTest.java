@@ -112,15 +112,15 @@ public class XQueryTest {
     private final static String child2Module =
             "module namespace foo=\"foo2\";\n" + "import module namespace blah=\"blah\" at \"" + URI + "/test/" + MODULE1_NAME + "\";\n" + "declare variable $foo:bar {\"bar2\"};";
     private final static String namespacedDocument =
-            "<rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\" \n" +
-            "xmlns:dc=\"http://purl.org/dc/elements/1.1/\" \n" +
-            "xmlns:x=\"http://exist.sourceforge.net/dc-ext\"> \n" +
-            "<rdf:Description id=\"3\"> \n" +
-            "<dc:title>title</dc:title> \n" +
-            "<dc:creator>creator</dc:creator> \n" +
-            "<x:place>place</x:place> \n" +
-            "<x:edition>place</x:edition> \n" +
-            "</rdf:Description> \n" +
+            "<rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"\n" +
+            "xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n" +
+            "xmlns:x=\"http://exist.sourceforge.net/dc-ext\">\n" +
+            "    <rdf:Description id=\"3\">\n" +
+            "        <dc:title>title</dc:title>\n" +
+            "        <dc:creator>creator</dc:creator>\n" +
+            "        <x:place>place</x:place>\n" +
+            "        <x:edition>place</x:edition>\n" +
+            "    </rdf:Description>\n" +
             "</rdf:RDF>";
     private final static String bowling =
             "<series>" +
@@ -831,7 +831,7 @@ public class XQueryTest {
             message = e.getMessage();
         }
         assertTrue(message.indexOf("XQST0033") > -1);
-        query = "xquery version \"1.0\";\n" + "import module namespace blah=\"blah\" at \"" + URI + "/test/" + MODULE1_NAME + "\";\n" + "(:: redefine existing prefix with same URI ::)\n" + "declare namespace blah=\"blah\";\n" + "declare variable $blah:param  {\"value-2\"};\n" + "$blah:param";
+        query = "xquery version \"1.0\";\n" + "import module namespace blah=\"blah\" at \"" + URI + "/test/" + MODULE1_NAME + "\";\n" + "(:: redefine existing prefix with same getUri ::)\n" + "declare namespace blah=\"blah\";\n" + "declare variable $blah:param  {\"value-2\"};\n" + "$blah:param";
         try {
             message = "";
             result = service.query(query);
@@ -844,7 +844,6 @@ public class XQueryTest {
             message = "";
             result = service.query(query);
         } catch (XMLDBException e) {
-            e.printStackTrace();
             message = e.getMessage();
         }
         assertTrue(message.indexOf("does not match namespace URI") > -1);
@@ -879,7 +878,7 @@ public class XQueryTest {
                 ((XMLResource) result.getResource(0)).getContent());
         query = "<result xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#'>{//rdf:Description}</result>";
         result = service.query(query);
-        assertEquals("XQuery: " + query,
+        assertEquals(query,
                 "<result xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">\n" +
                 "    <rdf:Description id=\"3\">\n" +
                 "        <dc:title xmlns:dc=\"http://purl.org/dc/elements/1.1/\">title</dc:title>\n" +
@@ -1003,7 +1002,7 @@ public class XQueryTest {
         assertEquals("XQuery: " + query, 1, result.getSize());
         assertEquals("XQuery: " + query, "value-1", result.getResource(0).getContent());
 
-//            query = "xquery version \"1.0\";\n" + "import module namespace blah=\"blah\" at \"" + URI + "/test/" + MODULE1_NAME + "\";\n" + "(:: redefine variable ::)\n" + "declare variable $blah:param  {\"value-2\"};\n" + "$blah:param";
+//            query = "xquery version \"1.0\";\n" + "import module namespace blah=\"blah\" at \"" + getUri + "/test/" + MODULE1_NAME + "\";\n" + "(:: redefine variable ::)\n" + "declare variable $blah:param  {\"value-2\"};\n" + "$blah:param";
 //            try {
 //                message = "";
 //                result = service.query(query);

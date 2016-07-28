@@ -30,8 +30,6 @@ public class RemoteCollectionTest extends RemoteDBTest {
 
 	@Before
 	public void setUp() throws ClassNotFoundException, InstantiationException, XMLDBException, IllegalAccessException {
-		//Don't worry about closing the server : the shutdownDB hook will do the job
-		initServer();
 		setUpRemoteDatabase();
 	}
 
@@ -122,16 +120,16 @@ public class RemoteCollectionTest extends RemoteDBTest {
 	 */
     @Test
 	public void parent() throws XMLDBException {
-        Collection c = DatabaseManager.getCollection(URI + XmldbURI.ROOT_COLLECTION, "admin", "");
+        Collection c = DatabaseManager.getCollection(getUri() + XmldbURI.ROOT_COLLECTION, "admin", "");
         assertNull(c.getChildCollection("b"));
 
         String parentName = c.getName() + "/" + System.currentTimeMillis();
         String colName = parentName + "/a";
-        c = DatabaseManager.getCollection(URI + parentName, "admin", "");
+        c = DatabaseManager.getCollection(getUri() + parentName, "admin", "");
         assertNull(c);
 
         // following fails for XmlDb 20051203
-        c = DatabaseManager.getCollection(URI + colName, "admin", "");
+        c = DatabaseManager.getCollection(getUri() + colName, "admin", "");
         assertNull(c);
 	}
 	

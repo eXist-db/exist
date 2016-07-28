@@ -38,6 +38,7 @@ import org.exist.indexing.IndexController;
 import org.exist.indexing.IndexWorker;
 import org.exist.indexing.MatchListener;
 import org.exist.indexing.StreamListener;
+import org.exist.indexing.StreamListener.ReindexMode;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
 import org.exist.storage.IndexSpec;
@@ -104,7 +105,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     protected IndexController controller;
     protected AbstractGMLJDBCIndex index;
     protected DBBroker broker;
-    protected int currentMode = StreamListener.UNKNOWN;
+    protected ReindexMode currentMode = ReindexMode.UNKNOWN;
     protected DocumentImpl currentDoc = null;  
     private boolean isDocumentGMLAware = false;
     protected Map<NodeId, SRSGeometry> geometries = new TreeMap<NodeId, SRSGeometry>();
@@ -136,10 +137,12 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
         return broker;
     }
 
+    @Override
     public String getIndexId() {
         return AbstractGMLJDBCIndex.ID;
     }
 
+    @Override
     public String getIndexName() {
         return index.getIndexName();
     }
@@ -148,6 +151,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
         return index;
     }
 
+    @Override
     public Object configure(IndexController controller, NodeList configNodes, Map<String, String> namespaces) throws DatabaseConfigurationException {
         this.controller = controller;
         Map<String, GMLIndexConfig> map = null;
@@ -163,6 +167,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
         return map;
     }
 
+    @Override
     public void setDocument(DocumentImpl document) {
         isDocumentGMLAware = false;
         documentDeleted= false;
@@ -181,15 +186,17 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
             currentDoc = document;
         } else {
             currentDoc = null;
-            currentMode = StreamListener.UNKNOWN;
+            currentMode = ReindexMode.UNKNOWN;
         }
     } 
 
-    public void setMode(int newMode) {
+    @Override
+    public void setMode(final ReindexMode newMode) {
         currentMode = newMode; 
     }
 
-    public void setDocument(DocumentImpl doc, int mode) {
+    @Override
+    public void setDocument(DocumentImpl doc, ReindexMode mode) {
         setDocument(doc);
         setMode(mode);
     }
@@ -199,6 +206,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
      * 
      * @return the document
      */
+    @Override
     public DocumentImpl getDocument() {
         return currentDoc;
     }
@@ -208,17 +216,20 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
      * 
      * @return the document
      */
-    public int getMode() {
+    @Override
+    public ReindexMode getMode() {
         return currentMode;
     }
 
+    @Override
     public StreamListener getListener() {
         //We won't listen to anything here
-        if (currentDoc == null || currentMode == StreamListener.REMOVE_ALL_NODES)
+        if (currentDoc == null || currentMode == ReindexMode.REMOVE_ALL_NODES)
             return null;
         return gmlStreamListener;
     }
 
+    @Override
     public MatchListener getMatchListener(DBBroker broker, NodeProxy proxy) {
         return null;
     }
@@ -245,20 +256,20 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
             //Not concerned
             return;
         //Is the job already done ?
-        if (currentMode == StreamListener.REMOVE_ALL_NODES && documentDeleted)
+        if (currentMode == ReindexMode.REMOVE_ALL_NODES && documentDeleted)
             return;
         Connection conn = null;
         try {
             conn = acquireConnection();
             conn.setAutoCommit(false);
             switch (currentMode) {
-                case StreamListener.STORE :
+                case STORE :
                     saveDocumentNodes(conn);
                     break;
-                case StreamListener.REMOVE_SOME_NODES :
+                case REMOVE_SOME_NODES :
                     dropDocumentNode(conn);
                     break;
-                case StreamListener.REMOVE_ALL_NODES:
+                case REMOVE_ALL_NODES:
                     removeDocument(conn);
                     documentDeleted = true;
                     break;
@@ -376,6 +387,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
             LOG.debug("Dropped " + nodeCount + " nodes from GML index");
     }
 
+    @Override
     public void removeCollection(Collection collection, DBBroker broker, boolean reindex) {
         boolean isCollectionGMLAware = false;
         IndexSpec idxConf = collection.getIndexConfiguration(broker);

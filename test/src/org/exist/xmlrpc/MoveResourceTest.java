@@ -22,7 +22,7 @@ package org.exist.xmlrpc;
 import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
-import org.exist.jetty.JettyStart;
+import org.exist.test.ExistWebServer;
 import org.exist.xmldb.XmldbURI;
 
 import java.io.*;
@@ -41,7 +41,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -58,12 +58,16 @@ import static org.junit.Assert.assertTrue;
  */
 public class MoveResourceTest {
 
-    private JettyStart server;
+    @ClassRule
+    public static final ExistWebServer existWebServer = new ExistWebServer(true);
 
-    // jetty.port.standalone
-    private final static String URI = "http://localhost:" + System.getProperty("jetty.port", "8088") + "/xmlrpc";
+    private static String getUri() {
+        return "http://localhost:" + existWebServer.getPort() + "/xmlrpc";
+    }
 
-    private final static String REST_URI = "http://localhost:" + System.getProperty("jetty.port", "8088");
+    private static String getRestUri() {
+        return "http://localhost:" + existWebServer.getPort();
+    }
 
     @Test
     public void testMove() throws InterruptedException, ExecutionException {
@@ -174,7 +178,7 @@ public class MoveResourceTest {
 
         @Override
         public Void call() throws IOException, InterruptedException {
-            String reqUrl = REST_URI + "/db?_query=" + URLEncoder.encode("collection('/db')//SPEECH[SPEAKER = 'JULIET']");
+            String reqUrl = getRestUri() + "/db?_query=" + URLEncoder.encode("collection('/db')//SPEECH[SPEAKER = 'JULIET']");
             for (int i = 0; i < 200; i++) {
                 URL url = new URL(reqUrl);
                 HttpURLConnection connect = (HttpURLConnection) url.openConnection();
@@ -208,20 +212,11 @@ public class MoveResourceTest {
         }
     }
 
-    @Before
-    public void setUp() {
-        //Don't worry about closing the server : the shutdownDB hook will do the job
-        if (server == null) {
-            server = new JettyStart();
-            server.run();
-        }
-    }
-
     protected static XmlRpcClient getClient() throws MalformedURLException {
         XmlRpcClient client = new XmlRpcClient();
         XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
         config.setEnabledForExtensions(true);
-        config.setServerURL(new URL(URI));
+        config.setServerURL(new URL(getUri()));
         config.setBasicUserName("admin");
         config.setBasicPassword("");
         client.setConfig(config);

@@ -14,7 +14,7 @@ import java.util.List;
  */
 public class ArrayConstructor extends AbstractExpression {
 
-    public enum ConstructorType { SQUARE_ARRAY, CURLY_ARRAY };
+    public enum ConstructorType { SQUARE_ARRAY, CURLY_ARRAY }
 
     private ConstructorType type;
     private List<Expression> arguments = new ArrayList<Expression>();

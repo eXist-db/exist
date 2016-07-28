@@ -29,7 +29,6 @@ import org.exist.dom.persistent.DefaultDocumentSet;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.MutableDocumentSet;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
@@ -55,7 +54,6 @@ import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
-import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -118,11 +116,11 @@ public class CustomIndexTest {
 
             XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
-            Sequence seq = xquery.execute(broker, "//item[ngram:contains(., 'cha')]", null, AccessContext.TEST);
+            Sequence seq = xquery.execute(broker, "//item[ngram:contains(., 'cha')]", null);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
 
-            XUpdateProcessor proc = new XUpdateProcessor(broker, docs, AccessContext.TEST);
+            XUpdateProcessor proc = new XUpdateProcessor(broker, docs);
             assertNotNull(proc);
             proc.setBroker(broker);
             proc.setDocumentSet(docs);
@@ -198,11 +196,11 @@ public class CustomIndexTest {
 
             XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
-            Sequence seq = xquery.execute(broker, "//item[ngram:contains(., 'cha')]", null, AccessContext.TEST);
+            Sequence seq = xquery.execute(broker, "//item[ngram:contains(., 'cha')]", null);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
 
-            XUpdateProcessor proc = new XUpdateProcessor(broker, docs, AccessContext.TEST);
+            XUpdateProcessor proc = new XUpdateProcessor(broker, docs);
             assertNotNull(proc);
             proc.setBroker(broker);
             proc.setDocumentSet(docs);
@@ -314,11 +312,11 @@ public class CustomIndexTest {
 
             XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
-            Sequence seq = xquery.execute(broker, "//item[ngram:contains(., 'cha')]", null, AccessContext.TEST);
+            Sequence seq = xquery.execute(broker, "//item[ngram:contains(., 'cha')]", null);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
 
-            XUpdateProcessor proc = new XUpdateProcessor(broker, docs, AccessContext.TEST);
+            XUpdateProcessor proc = new XUpdateProcessor(broker, docs);
             assertNotNull(proc);
             proc.setBroker(broker);
             proc.setDocumentSet(docs);
@@ -374,11 +372,11 @@ public class CustomIndexTest {
 
             XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
-            Sequence seq = xquery.execute(broker, "//item[ngram:contains(., 'cha')]", null, AccessContext.TEST);
+            Sequence seq = xquery.execute(broker, "//item[ngram:contains(., 'cha')]", null);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
 
-            XUpdateProcessor proc = new XUpdateProcessor(broker, docs, AccessContext.TEST);
+            XUpdateProcessor proc = new XUpdateProcessor(broker, docs);
             assertNotNull(proc);
             proc.setBroker(broker);
             proc.setDocumentSet(docs);
@@ -426,11 +424,11 @@ public class CustomIndexTest {
 
             XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
-            Sequence seq = xquery.execute(broker, "//item[ngram:contains(., 'cha')]", null, AccessContext.TEST);
+            Sequence seq = xquery.execute(broker, "//item[ngram:contains(., 'cha')]", null);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
 
-            XUpdateProcessor proc = new XUpdateProcessor(broker, docs, AccessContext.TEST);
+            XUpdateProcessor proc = new XUpdateProcessor(broker, docs);
             assertNotNull(proc);
             proc.setBroker(broker);
             proc.setDocumentSet(docs);
@@ -450,7 +448,7 @@ public class CustomIndexTest {
     }
  
     @Test
-    public void reindex() throws PermissionDeniedException, XPathException, URISyntaxException, EXistException {
+    public void reindex() throws PermissionDeniedException, XPathException, URISyntaxException, EXistException, IOException {
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             	final Txn transaction = transact.beginTransaction()) {
@@ -463,15 +461,15 @@ public class CustomIndexTest {
 
             XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
-            Sequence seq = xquery.execute(broker, "//item[ngram:contains(., 'cha')]", null, AccessContext.TEST);
+            Sequence seq = xquery.execute(broker, "//item[ngram:contains(., 'cha')]", null);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
 
-            seq = xquery.execute(broker, "//section[ngram:contains(para, '123')]", null, AccessContext.TEST);
+            seq = xquery.execute(broker, "//section[ngram:contains(para, '123')]", null);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
 
-            seq = xquery.execute(broker, "//section[ngram:contains(para, '123')]", null, AccessContext.TEST);
+            seq = xquery.execute(broker, "//section[ngram:contains(para, '123')]", null);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
 
@@ -480,14 +478,14 @@ public class CustomIndexTest {
     }
 
     @Test
-    public void dropIndex() throws EXistException, PermissionDeniedException, XPathException, LockException, TriggerException {
+    public void dropIndex() throws EXistException, PermissionDeniedException, XPathException, LockException, TriggerException, IOException {
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn transaction = transact.beginTransaction()) {
 
             XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
-            Sequence seq = xquery.execute(broker, "//item[ngram:contains(., 'cha')]", null, AccessContext.TEST);
+            Sequence seq = xquery.execute(broker, "//item[ngram:contains(., 'cha')]", null);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
 
@@ -501,7 +499,7 @@ public class CustomIndexTest {
 
             checkIndex(broker, docs, "cha", 0);
 
-            seq = xquery.execute(broker, "//item[ngram:contains(., 'cha')]", null, AccessContext.TEST);
+            seq = xquery.execute(broker, "//item[ngram:contains(., 'cha')]", null);
             assertNotNull(seq);
             assertEquals(0, seq.getItemCount());
 
@@ -514,19 +512,19 @@ public class CustomIndexTest {
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
-            Sequence seq = xquery.execute(broker, "//item[ngram:contains(., 'cha')]", null, AccessContext.TEST);
+            Sequence seq = xquery.execute(broker, "//item[ngram:contains(., 'cha')]", null);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
 
-            seq = xquery.execute(broker, "//section[ngram:contains(*, '123')]", null, AccessContext.TEST);
+            seq = xquery.execute(broker, "//section[ngram:contains(*, '123')]", null);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
 
-            seq = xquery.execute(broker, "//section[ngram:contains(para, '123')]", null, AccessContext.TEST);
+            seq = xquery.execute(broker, "//section[ngram:contains(para, '123')]", null);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
 
-            seq = xquery.execute(broker, "//*[ngram:contains(., '567')]", null, AccessContext.TEST);
+            seq = xquery.execute(broker, "//*[ngram:contains(., '567')]", null);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
 
@@ -539,23 +537,23 @@ public class CustomIndexTest {
             XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
             
-            Sequence seq = xquery.execute(broker, "util:index-key-occurrences(/test/item, 'cha', 'ngram-index')", null, AccessContext.TEST);
-            //Sequence seq = xquery.execute("util:index-key-occurrences(/test/item, 'cha', 'org.exist.indexing.impl.NGramIndex')", null, AccessContext.TEST);
+            Sequence seq = xquery.execute(broker, "util:index-key-occurrences(/test/item, 'cha', 'ngram-index')", null);
+            //Sequence seq = xquery.execute("util:index-key-occurrences(/test/item, 'cha', 'org.exist.indexing.impl.NGramIndex')", null);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
 
-            seq = xquery.execute(broker, "util:index-key-occurrences(/test/item, 'le8', 'ngram-index')", null, AccessContext.TEST);
-            //seq = xquery.execute("util:index-key-occurrences(/test/item, 'le8', 'org.exist.indexing.impl.NGramIndex')", null, AccessContext.TEST);
+            seq = xquery.execute(broker, "util:index-key-occurrences(/test/item, 'le8', 'ngram-index')", null);
+            //seq = xquery.execute("util:index-key-occurrences(/test/item, 'le8', 'org.exist.indexing.impl.NGramIndex')", null);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
 
-            seq = xquery.execute(broker, "util:index-key-documents(/test/item, 'le8', 'ngram-index')", null, AccessContext.TEST);
-            //seq = xquery.execute("util:index-key-documents(/test/item, 'le8', 'org.exist.indexing.impl.NGramIndex')", null, AccessContext.TEST);
+            seq = xquery.execute(broker, "util:index-key-documents(/test/item, 'le8', 'ngram-index')", null);
+            //seq = xquery.execute("util:index-key-documents(/test/item, 'le8', 'org.exist.indexing.impl.NGramIndex')", null);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             
-            seq = xquery.execute(broker, "util:index-key-documents(/test/item, 'le8', 'ngram-index')", null, AccessContext.TEST);
-            //seq = xquery.execute("util:index-key-doucments(/test/item, 'le8', 'org.exist.indexing.impl.NGramIndex')", null, AccessContext.TEST);
+            seq = xquery.execute(broker, "util:index-key-documents(/test/item, 'le8', 'ngram-index')", null);
+            //seq = xquery.execute("util:index-key-doucments(/test/item, 'le8', 'org.exist.indexing.impl.NGramIndex')", null);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             
@@ -571,7 +569,7 @@ public class CustomIndexTest {
             
             String query = queryBody + "util:index-keys(/test/item, \'\', util:function(xs:QName(\'local:callback\'), 2), 1000, 'ngram-index')";
             //String query = queryBody + "util:index-keys(/test/item, \'\', util:function(xs:QName(\'local:callback\'), 2), 1000, 'org.exist.indexing.impl.NGramIndex')";
-            seq = xquery.execute(broker, query, null, AccessContext.TEST);
+            seq = xquery.execute(broker, query, null);
             assertNotNull(seq);
             //TODO : check cardinality
             StringWriter out = new StringWriter();
@@ -593,7 +591,7 @@ public class CustomIndexTest {
     //TODO : could be replaced by an XQuery call to index-keys(). See above
     private void checkIndex(DBBroker broker, DocumentSet docs, String term, int count) {
         NGramIndexWorker index = (NGramIndexWorker) broker.getIndexController().getWorkerByIndexId(NGramIndex.ID);
-        XQueryContext context = new XQueryContext(broker.getBrokerPool(), AccessContext.TEST);
+        XQueryContext context = new XQueryContext(broker.getBrokerPool());
         Occurrences[] occurrences = index.scanIndex(context, docs, null, null);
         int found = 0;
         for (int i = 0; i < occurrences.length; i++) {

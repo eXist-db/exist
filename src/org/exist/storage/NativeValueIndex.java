@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2015 The eXist Project
+ *  Copyright (C) 2001-2016 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -19,24 +19,15 @@
  */
 package org.exist.storage;
 
+import net.jcip.annotations.GuardedBy;
 import org.exist.dom.TypedQNameComparator;
-import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.*;
 import org.exist.dom.QName;
-import org.exist.dom.persistent.AttrImpl;
-import org.exist.dom.persistent.AbstractCharacterData;
-import org.exist.dom.persistent.TextImpl;
-import org.exist.dom.persistent.ElementImpl;
-import org.exist.dom.persistent.DocumentSet;
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.IStoredNode;
-import org.exist.dom.persistent.NodeHandle;
-import org.exist.dom.persistent.SymbolTable;
-import org.exist.dom.persistent.NewArrayNodeSet;
-import org.exist.dom.persistent.NodeSet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import org.exist.util.*;
+import org.exist.util.function.FunctionE;
 import org.exist.xquery.XQueryWatchDog;
 import org.w3c.dom.Node;
 
@@ -59,6 +50,8 @@ import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.Txn;
 import org.exist.xquery.Constants;
+import org.exist.xquery.Constants.Comparison;
+import org.exist.xquery.Constants.StringTruncationOperator;
 import org.exist.xquery.TerminatedException;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.AtomicValue;
@@ -68,28 +61,57 @@ import org.exist.xquery.value.Type;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.text.Collator;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Stack;
-import java.util.StringTokenizer;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
- * Maintains an index on typed node values.
- *
- * <p>TODO: Check correct types during validation.</p>
- *
- * <p>In the BTree single BFile, the keys are : (collectionId, indexType, indexData) and the values are : gid1, gid2-gid1, ... <b></b></p>
+ * Maintains an index on typed node values (optionally by QName).
  *
  * <p>Algorithm:</p>
+ * <p>When a node is stored, an entry is added or updated in the {@link #pendingGeneric} and/or {@link #pendingQName}
+ * maps, with either {@link SimpleValue#SimpleValue(int, Indexable)} or
+ * {@link QNameValue#QNameValue(int, QName, Indexable, SymbolTable)} respectively as the key.
+ * This way, the index entries are easily put in the persistent BFile storage by {@link #flush()}.</p>
  *
- * <p>When a node is stored, an entry is added or updated in the {@link #pending} map, with given String content and basic type as key. This way, the
- * index entries are easily put in the persistent BFile storage by {@link #flush()} .</p>
  *
- * @author  wolf
+ * There are two types of key/value pairs stored into the Value Index:
+ *
+ * 1) SimpleValue, which represents the classic path based range index:
+ *  key => [indexType, collectionId, atomicValue]
+ *  value => [documentNodes+]
+ *
+ * 2) QNameValue, which represents the qname based reange index:
+ *  key => [indexType, collectionId, qNameType, nsSymbolId, localPartSymbolId, atomicValue]
+ *  Value => [documentNodes+]
+ *
+ *
+ * indexType - 0x0 = Generic, 0x1 = QName
+ *   Generic type is used with ValueSimpleIdx and QName is used with ValueQNameIdx
+ *
+ * collectionId: 4 bytes i.e. int
+ *
+ * atomicValue: [valueType, value]
+ * valueType: 1 byte (the XQuery value type defined in {@link org.exist.xquery.value.Type}
+ * value: n bytes, fixed length encoding of the value of the atomic value
+ *
+ * qNameType: 0x0 = {@link org.exist.storage.ElementValue#ELEMENT} 0x1 = {@link org.exist.storage.ElementValue#ATTRIBUTE}
+ *
+ * nsSymbolId: 2 byte short, The id from the Symbol Table
+ * localPartSymbolId: 2 byte short, The id from the Symbol Table
+ *
+ * documentNodes: [docId, nodeIdCount, nodeIdsLength, nodeIdDelta+]
+ *
+ * docId: variable width encoded integer, the id of the document
+ * nodeIdCount: variable width encoded integer, The number of following nodeIds
+ *
+ * nodeIdsLength: 4 bytes, i.e. int, The number of following bytes that hold the nodeIds
+ *
+ * nodeIdDelta: [deltaOffset, units, nodeIdDeltaData]
+ * deltaOffset: 1 byte, Number of bits this DLN is offset from the previous DLN
+ * units: variable with encoded short, The number of units of this DLN
+ * nodeIdDeltaData: byte[], The delta bits of this DLN from `deltaOffset` of the previous DLN
+ *
+ * @author Wolfgang Meier <wolfgang@exist-db.org>
+ * @author Adam Retter <adam.retter@googlemail.com>
  */
 public class NativeValueIndex implements ContentLoadingObserver {
 
@@ -98,32 +120,48 @@ public class NativeValueIndex implements ContentLoadingObserver {
     public static final String FILE_NAME = "values.dbx";
     public static final String FILE_KEY_IN_CONFIG = "db-connection.values";
 
-    public static final int WITH_PATH = 1;
-    public static final int WITHOUT_PATH = 2;
+    private static final double DEFAULT_VALUE_CACHE_GROWTH = 1.25;
+    private static final double DEFAULT_VALUE_VALUE_THRESHOLD = 0.04;
 
-    public static final double DEFAULT_VALUE_CACHE_GROWTH = 1.25;
-    public static final double DEFAULT_VALUE_KEY_THRESHOLD = 0.01;
-    public static final double DEFAULT_VALUE_VALUE_THRESHOLD = 0.04;
-
-    public static final int LENGTH_VALUE_TYPE = 1; //sizeof byte
-    public static final int LENGTH_NODE_IDS = 4; //sizeof int
+    private static final int LENGTH_VALUE_TYPE = 1; //sizeof byte
+    private static final int LENGTH_NODE_IDS = 4; //sizeof int
 
     public static final int OFFSET_COLLECTION_ID = 0;
     public static final int OFFSET_VALUE_TYPE = OFFSET_COLLECTION_ID + Collection.LENGTH_COLLECTION_ID; //2
     public static final int OFFSET_DATA = OFFSET_VALUE_TYPE + NativeValueIndex.LENGTH_VALUE_TYPE; //3
 
-    public final static byte IDX_GENERIC = 0;
-    public final static byte IDX_QNAME = 1;
-
     public final static String INDEX_CASE_SENSITIVE_ATTRIBUTE = "caseSensitive";
     public final static String PROPERTY_INDEX_CASE_SENSITIVE = "indexer.case-sensitive";
 
-    /** The broker that is using this value index. */
-    DBBroker broker;
+    public enum IndexType {
+        GENERIC((byte)0x0),
+        QNAME((byte)0x1);
+        final byte val;
 
-    /** The data-store for this value index. */
-    protected BFile dbValues;
-    protected Configuration config;
+        IndexType(final byte val) {
+            this.val = val;
+        }
+    }
+
+    /**
+     * The broker that is using this value index.
+     */
+    private final DBBroker broker;
+
+    /**
+     * The data-store for this value index.
+     */
+    @GuardedBy("dbValues#getLock()") final BFile dbValues;
+    private final Configuration config;
+
+    private static class PendingChanges<K> {
+        final IndexType indexType;
+        final Map<K, List<NodeId>> changes = new TreeMap<>();
+
+        PendingChanges(final IndexType indexType) {
+            this.indexType = indexType;
+        }
+    }
 
     /**
      * A collection of key-value pairs that pending modifications for this value index.
@@ -132,69 +170,61 @@ public class NativeValueIndex implements ContentLoadingObserver {
      * The values are {@link org.exist.util.LongLinkedList lists} containing the nodes GIDs
      * (global identifiers).
      */
-    protected Map<Object, List<NodeId>>[] pending = new Map[2];
+    private final PendingChanges<AtomicValue> pendingGeneric = new PendingChanges<>(IndexType.GENERIC);
+    private final PendingChanges<QNameKey> pendingQName = new PendingChanges<>(IndexType.QNAME);
 
-    /** The current document. */
+    /**
+     * The current document.
+     */
     private DocumentImpl doc;
 
-    /** Work output Stream that should be cleared before every use. */
+    /**
+     * Work output Stream that should be cleared before every use.
+     */
     private VariableByteOutputStream os = new VariableByteOutputStream();
 
-    //TODO : reconsider this. Case sensitivity have nothing to do with atomic values -pb
-    protected boolean caseSensitive = true;
+    private final boolean caseSensitive;
 
-    public NativeValueIndex(DBBroker broker, byte id, Path dataDir,
-        Configuration config ) throws DBException {
+    public NativeValueIndex(final DBBroker broker, final byte id, final Path dataDir, final Configuration config) throws DBException {
         this.broker = broker;
         this.config = config;
-        this.pending[IDX_GENERIC] = new TreeMap<Object, List<NodeId>>();
-        this.pending[IDX_QNAME] = new TreeMap<Object, List<NodeId>>();
-        //use inheritance if necessary !
-        //TODO : read from configuration (key ?)
         final double cacheGrowth = NativeValueIndex.DEFAULT_VALUE_CACHE_GROWTH;
-        final double cacheKeyThresdhold = NativeValueIndex.DEFAULT_VALUE_KEY_THRESHOLD;
         final double cacheValueThresHold = NativeValueIndex.DEFAULT_VALUE_VALUE_THRESHOLD;
-        BFile nativeFile = (BFile)config.getProperty(getConfigKeyForFile());
+        BFile nativeFile = (BFile) config.getProperty(getConfigKeyForFile());
         if (nativeFile == null) {
             //use inheritance
             final Path file = dataDir.resolve(getFileName());
             LOG.debug("Creating '" + FileUtils.fileName(file) + "'...");
             nativeFile = new BFile(broker.getBrokerPool(), id, false, file,
-                broker.getBrokerPool().getCacheManager(), cacheGrowth,
-                cacheValueThresHold);
+                    broker.getBrokerPool().getCacheManager(), cacheGrowth,
+                    cacheValueThresHold);
             config.setProperty(getConfigKeyForFile(), nativeFile);
         }
         dbValues = nativeFile;
-        //TODO : reconsider this. Case sensitivity have nothing to do with atomic values -pb
-        final Boolean caseOpt = (Boolean)config.getProperty(NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE);
-        if (caseOpt != null) {
-            caseSensitive = caseOpt.booleanValue();
-        }
-        broker.addContentLoadingObserver( getInstance() );
+        caseSensitive = Optional.ofNullable((Boolean) config.getProperty(NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE)).orElse(false);
+
+        broker.addContentLoadingObserver(getInstance());
     }
 
-    public String getFileName() {
-        return( FILE_NAME );
+    private String getFileName() {
+        return (FILE_NAME);
     }
 
-    public String getConfigKeyForFile() {
-        return(FILE_KEY_IN_CONFIG);
+    private String getConfigKeyForFile() {
+        return (FILE_KEY_IN_CONFIG);
     }
 
-    public NativeValueIndex getInstance() {
-        return(this);
+    private NativeValueIndex getInstance() {
+        return (this);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.storage.ContentLoadingObserver#setDocument(org.exist.dom.persistent.DocumentImpl)
-     */
-    public void setDocument(DocumentImpl document) {
-        for (byte section = 0; section <= IDX_QNAME; section++) {
-            if ((pending[section].size() > 0) && (this.doc.getDocId() != doc.getDocId())) {
-                LOG.error("Document changed but pending had " + pending[section].size(), new Throwable());
-                //TODO : throw exception ? -pb
-                pending[section].clear();
-            }
+    @Override
+    public void setDocument(final DocumentImpl document) {
+        final boolean documentChanged = (this.doc == null && document != null) || this.doc.getDocId() != document.getDocId();
+        if((!pendingGeneric.changes.isEmpty() || !pendingQName.changes.isEmpty()) && documentChanged) {
+            LOG.error("Document changed, but there were {} Generic and {} QName changes pending. These have been dropped!", pendingGeneric.changes.size(), pendingQName.changes.size());
+            pendingGeneric.changes.clear();
+            pendingQName.changes.clear();
         }
         this.doc = document;
     }
@@ -202,1166 +232,913 @@ public class NativeValueIndex implements ContentLoadingObserver {
     /**
      * Store the given element's value in the value index.
      *
-     * @param  node The element
-     * @param  content The string representation of the value
-     * @param  xpathType The value type
-     * @param  indexType DOCUMENT ME!
-     * @param  remove DOCUMENT ME!
+     * @param node      The element to add to the index
+     * @param content   The string representation of the value
+     * @param xpathType The value type
+     * @param indexType The type of the index to place the element value in
+     * @param remove    Whether the element should be removed from the index
      */
-    public void storeElement(ElementImpl node, String content, int xpathType,
-        byte indexType, boolean remove) {
+    public void storeElement(final ElementImpl node, final String content, final int xpathType, final IndexType indexType, final boolean remove) {
         if (doc.getDocId() != node.getOwnerDocument().getDocId()) {
-            throw( new IllegalArgumentException( "Document id ('" + doc.getDocId() +
-                "') and proxy id ('" + node.getOwnerDocument().getDocId() + "') differ !"));
+            throw new IllegalArgumentException("Document id ('" + doc.getDocId() + "') and proxy id ('" + node.getOwnerDocument().getDocId() + "') differ !");
         }
-        AtomicValue atomic = convertToAtomic(xpathType, content);
-        //Ignore if the value can't be successfully atomized
-        //(this is logged elsewhere)
+
+        final AtomicValue atomic = convertToAtomic(xpathType, content);
         if (atomic == null) {
+            //Ignore if the value can't be successfully atomized
+            //(this is logged elsewhere)
             return;
         }
-        Object key;
-        if (indexType == IDX_QNAME) {
-            key = new QNameKey(node.getQName(), atomic);
-        } else {
-            key = atomic;
+
+        switch (indexType) {
+            case GENERIC:
+                store(pendingGeneric, atomic, node.getNodeId(), remove);
+                break;
+
+            case QNAME:
+                store(pendingQName, new QNameKey(node.getQName(), atomic), node.getNodeId(), remove);
+                break;
+
+            default:
+                throw new IllegalArgumentException();
         }
-        if(!remove) {
-            List<NodeId> buf;
+    }
+
+    private <T> void store(final PendingChanges<T> pending, final T key, final NodeId value, final boolean remove) {
+        if (!remove) {
+            final List<NodeId> buf;
             //Is this indexable value already pending ?
-            if (pending[indexType].containsKey(key)) {
-                buf = pending[indexType].get(key);
+            if (pending.changes.containsKey(key)) {
+                buf = pending.changes.get(key);
             } else {
                 //Create a NodeId list
-                buf = new ArrayList<NodeId>(8);
-                pending[indexType].put(key, buf);
+                buf = new ArrayList<>(8);
+                pending.changes.put(key, buf);
             }
             //Add node's NodeId to the list
-            buf.add(node.getNodeId());
+            buf.add(value);
         } else {
-            if (!pending[indexType].containsKey(key)) {
-                pending[indexType].put(key, null);
+            if (!pending.changes.containsKey(key)) {
+                pending.changes.put(key, null);
             }
         }
     }
 
-    /**
-     * Store the given attribute's value in the value index.
-     *
-     * @param  node          The attribute
-     * @param  currentPath   DOCUMENT ME!
-     * @param  indexingHint  DOCUMENT ME!
-     * @param  spec          The index specification
-     * @param  remove        DOCUMENT ME!
-     */
-    public void storeAttribute( AttrImpl node, NodePath currentPath, int indexingHint, RangeIndexSpec spec, boolean remove )
-    {
-        storeAttribute( node, node.getValue(), currentPath, indexingHint, spec.getType(), ( spec.getQName() == null ) ? IDX_GENERIC : IDX_QNAME, remove );
+    @Override
+    public void storeAttribute(final AttrImpl attr, final NodePath currentPath, final RangeIndexSpec spec, final boolean remove) {
+        storeAttribute(attr, attr.getValue(), spec.getType(), (spec.getQName() == null) ? IndexType.GENERIC : IndexType.QNAME, remove);
     }
 
+    public void storeAttribute(final AttrImpl attr, final String value, final int xpathType, final IndexType indexType, final boolean remove) {
+        if (doc != null && doc.getDocId() != attr.getOwnerDocument().getDocId()) {
+            throw new IllegalArgumentException("Document id ('" + doc.getDocId() + "') and proxy id ('" + attr.getOwnerDocument().getDocId() + "') differ !");
+        }
 
-    public void storeAttribute( AttrImpl node, String value, NodePath currentPath, int indexingHint, int xpathType, byte indexType, boolean remove )
-    {
-        //Return early
-        if( indexingHint != WITHOUT_PATH ) {
+        final AtomicValue atomic = convertToAtomic(xpathType, value);
+        if (atomic == null) {
+            //Ignore if the value can't be successfully atomized
+            //(this is logged elsewhere)
             return;
         }
 
-        if( ( doc != null ) && ( doc.getDocId() != node.getOwnerDocument().getDocId() ) ) {
-            throw( new IllegalArgumentException( "Document id ('" + doc.getDocId() + "') and proxy id ('" + node.getOwnerDocument().getDocId() + "') differ !" ) );
-        }
+        switch(indexType) {
+            case GENERIC:
+                store(pendingGeneric, atomic, attr.getNodeId(), remove);
+                break;
 
-        AtomicValue atomic = convertToAtomic( xpathType, value );
+            case QNAME:
+                store(pendingQName, new QNameKey(attr.getQName(), atomic), attr.getNodeId(), remove);
+                break;
 
-        //Ignore if the value can't be successfully atomized
-        //(this is logged elsewhere)
-        if( atomic == null ) {
-            return;
-        }
-        Object key;
-
-        if( indexType == IDX_QNAME ) {
-            key = new QNameKey( node.getQName(), atomic );
-        } else {
-            key = atomic;
-        }
-
-        if( !remove ) {
-            List<NodeId> buf;
-
-            //Is this indexable value already pending ?
-            if( pending[indexType].containsKey( key ) ) {
-
-                //Reuse the existing NodeId list
-                buf = pending[indexType].get( key );
-            } else {
-
-                //Create a NodeId list
-                buf = new ArrayList<NodeId>( 8 );
-                pending[indexType].put( key, buf );
-            }
-
-            //Add node's GID to the list
-            buf.add( node.getNodeId() );
-        } else {
-
-            if( !pending[indexType].containsKey( key ) ) {
-                pending[indexType].put( key, null );
-            }
+            default:
+                throw new IllegalArgumentException();
         }
     }
 
+    public <T extends IStoredNode> IStoredNode getReindexRoot(final IStoredNode<T> node, final NodePath nodePath) {
+        this.doc = node.getOwnerDocument();
+        final NodePath path = new NodePath(nodePath);
+        IStoredNode root = null;
+        IStoredNode currentNode = (node.getNodeType() == Node.ELEMENT_NODE || node.getNodeType() == Node.ATTRIBUTE_NODE) ? node : node.getParentStoredNode();
 
-    public <T extends IStoredNode> IStoredNode getReindexRoot(IStoredNode<T> node, NodePath nodePath )
-    {
-        doc = node.getOwnerDocument();
-        final NodePath   path        = new NodePath( nodePath );
-        IStoredNode root        = null;
-        IStoredNode currentNode = ( ( ( node.getNodeType() == Node.ELEMENT_NODE ) || ( node.getNodeType() == Node.ATTRIBUTE_NODE ) ) ? node : node.getParentStoredNode() );
+        while (currentNode != null) {
+            final GeneralRangeIndexSpec rSpec = doc.getCollection().getIndexByPathConfiguration(broker, path);
+            final QNameRangeIndexSpec qSpec = doc.getCollection().getIndexByQNameConfiguration(broker, currentNode.getQName());
 
-        while( currentNode != null ) {
-            final GeneralRangeIndexSpec rSpec = doc.getCollection().getIndexByPathConfiguration( broker, path );
-            final QNameRangeIndexSpec   qSpec = doc.getCollection().getIndexByQNameConfiguration( broker, currentNode.getQName() );
-
-            if( ( rSpec != null ) || ( qSpec != null ) ) {
+            if ((rSpec != null) || (qSpec != null)) {
                 root = currentNode;
             }
 
-            if( doc.getCollection().isTempCollection() && ( currentNode.getNodeId().getTreeLevel() == 2 ) ) {
+            if (doc.getCollection().isTempCollection() && (currentNode.getNodeId().getTreeLevel() == 2)) {
                 break;
             }
             currentNode = currentNode.getParentStoredNode();
             path.removeLastComponent();
         }
-        return( root );
+        return root;
     }
 
-
-    public void reindex(IStoredNode node )
-    {
-        if( node == null ) {
+    public void reindex(final IStoredNode node) {
+        if (node == null) {
             return;
         }
         final StreamListener listener = new ValueIndexStreamListener();
-        IndexUtils.scanNode( broker, null, node, listener );
+        IndexUtils.scanNode(broker, null, node, listener);
     }
 
-
-    public void storeText( TextImpl node, NodePath currentPath )
-    {
+    @Override
+    public void storeText(final TextImpl node, final NodePath currentPath) {
     }
 
-
-    public void removeNode(NodeHandle node, NodePath currentPath, String content )
-    {
+    @Override
+    public void removeNode(final NodeHandle node, final NodePath currentPath, final String content) {
     }
 
-
-    /* (non-Javadoc)
-     * @see org.exist.storage.IndexGenerator#sync()
-     */
-    public void sync()
-    {
+    @Override
+    public void sync() {
         final Lock lock = dbValues.getLock();
 
         try {
-            lock.acquire( Lock.WRITE_LOCK );
+            lock.acquire(Lock.WRITE_LOCK);
             dbValues.flush();
-        }
-        catch( final LockException e ) {
-            LOG.warn( "Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e );
+        } catch (final LockException e) {
+            LOG.warn("Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e);
             //TODO : throw an exception ? -pb
-        }
-        catch( final DBException e ) {
-            LOG.error( e.getMessage(), e );
+        } catch (final DBException e) {
+            LOG.error(e.getMessage(), e);
             //TODO : throw an exception ? -pb
-        }
-        finally {
-            lock.release( Lock.WRITE_LOCK );
+        } finally {
+            lock.release(Lock.WRITE_LOCK);
         }
     }
 
-
-    /* (non-Javadoc)
-     * @see org.exist.storage.IndexGenerator#flush()
-     */
-    public void flush()
-    {
-        //TODO : return if doc == null? -pb
-        final int keyCount = pending[IDX_GENERIC].size() + pending[IDX_QNAME].size();
-
-        if( keyCount == 0 ) {
+    @Override
+    public void flush() {
+        if (doc == null || (pendingGeneric.changes.isEmpty() && pendingQName.changes.isEmpty())) {
             return;
         }
-        final int  collectionId = this.doc.getCollection().getId();
-        final Lock lock         = dbValues.getLock();
+        final int collectionId = this.doc.getCollection().getId();
 
-        for( byte section = 0; section <= IDX_QNAME; section++ ) {
-
-            for( final Map.Entry<Object, List<NodeId>> entry : pending[section].entrySet()) {
-                final Object key = entry.getKey();
-
-                //TODO : NativeElementIndex uses ArrayLists -pb
-                final List<NodeId> gids = entry.getValue();
-                final int gidsCount = gids.size();
-
-                //Don't forget this one
-                FastQSort.sort( gids, 0, gidsCount - 1 );
-                os.clear();
-                os.writeInt( this.doc.getDocId() );
-                os.writeInt( gidsCount );
-
-                //Mark position
-                final int nodeIDsLength = os.position();
-
-                //Dummy value : actual one will be written below
-                os.writeFixedInt( 0 );
-
-                //Compute the GID list
-                NodeId previous = null;
-
-                for( final NodeId nodeId : gids ) {
-                    try {
-                        previous = nodeId.write( previous, os );
-//                        nodeId.write(os);
-                    }
-                    catch( final IOException e ) {
-                        LOG.warn( "IO error while writing range index: " + e.getMessage(), e );
-                        //TODO : throw exception?
-                    }
-                }
-
-                //Write (variable) length of node IDs
-                os.writeFixedInt( nodeIDsLength, os.position() - nodeIDsLength - LENGTH_NODE_IDS );
-
-                try {
-                    lock.acquire( Lock.WRITE_LOCK );
-                    Value v;
-
-                    if( section == IDX_GENERIC ) {
-                        v = new SimpleValue( collectionId, ( Indexable )key );
-                    } else {
-                        final QNameKey qnk = ( QNameKey )key;
-                        v = new QNameValue( collectionId, qnk.qname, qnk.value, broker.getBrokerPool().getSymbols() );
-                    }
-
-                    if( dbValues.append( v, os.data() ) == BFile.UNKNOWN_ADDRESS ) {
-                        LOG.warn( "Could not append index data for key '" + key + "'" );
-                        //TODO : throw exception ?
-                    }
-                }
-                catch( final EXistException e ) {
-                    LOG.error( e.getMessage(), e );
-                }
-                catch( final LockException e ) {
-                    LOG.warn( "Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e );
-                    //TODO : return ?
-                }
-                catch( final IOException e ) {
-                    LOG.error( e.getMessage(), e );
-                    //TODO : return ?
-                }
-                catch( final ReadOnlyException e ) {
-                    LOG.warn( e.getMessage(), e );
-
-                    //Return without clearing the pending entries
-                    return;
-                }
-                finally {
-                    lock.release( Lock.WRITE_LOCK );
-                    os.clear();
-                }
-            }
-            pending[section].clear();
-        }
+        flush(pendingGeneric, key -> new SimpleValue(collectionId, (Indexable) key));
+        flush(pendingQName, key -> new QNameValue(collectionId, key.qname, key.value, broker.getBrokerPool().getSymbols()));
     }
 
+    private <T> void flush(final PendingChanges<T> pending, final FunctionE<T, Value, EXistException> dbKeyFn) {
+        for (final Map.Entry<T, List<NodeId>> entry : pending.changes.entrySet()) {
+            final T key = entry.getKey();
 
-    /* (non-Javadoc)
-     * @see org.exist.storage.IndexGenerator#remove()
-     */
-    public void remove()
-    {
-        //TODO : return if doc == null? -pb
-        final int keyCount = pending[IDX_GENERIC].size() + pending[IDX_QNAME].size();
+            final List<NodeId> gids = entry.getValue();
+            final int gidsCount = gids.size();
 
-        if( keyCount == 0 ) {
+            //Don't forget this one
+            FastQSort.sort(gids, 0, gidsCount - 1);
+            os.clear();
+            os.writeInt(this.doc.getDocId());
+            os.writeInt(gidsCount);
+
+            //Mark position
+            final int nodeIDsLength = os.position();
+
+            //Dummy value : actual one will be written below
+            os.writeFixedInt(0);
+
+            //Compute the GID list
+            NodeId previous = null;
+
+            for (final NodeId nodeId : gids) {
+                try {
+                    previous = nodeId.write(previous, os);
+                } catch (final IOException e) {
+                    LOG.warn("IO error while writing range index: " + e.getMessage(), e);
+                    //TODO : throw exception?
+                }
+            }
+
+            //Write (variable) length of node IDs
+            os.writeFixedInt(nodeIDsLength, os.position() - nodeIDsLength - LENGTH_NODE_IDS);
+            final Lock lock = dbValues.getLock();
+            try {
+                lock.acquire(Lock.WRITE_LOCK);
+
+                final Value v = dbKeyFn.apply(key);
+
+                if (dbValues.append(v, os.data()) == BFile.UNKNOWN_ADDRESS) {
+                    LOG.warn("Could not append index data for key '" + key + "'");
+                    //TODO : throw exception ?
+                }
+            } catch (final EXistException | IOException e) {
+                LOG.error(e.getMessage(), e);
+            } catch (final LockException e) {
+                LOG.warn("Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e);
+                //TODO : return ?
+            } catch (final ReadOnlyException e) {
+                LOG.warn(e.getMessage(), e);
+
+                //Return without clearing the pending entries
+                return;
+            } finally {
+                lock.release(Lock.WRITE_LOCK);
+                os.clear();
+            }
+        }
+        pending.changes.clear();
+    }
+
+    @Override
+    public void remove() {
+        if (doc == null || (pendingGeneric.changes.isEmpty() && pendingQName.changes.isEmpty())) {
             return;
         }
-        final int  collectionId = this.doc.getCollection().getId();
-        final Lock lock         = dbValues.getLock();
 
-        for( byte section = 0; section <= IDX_QNAME; section++ ) {
+        final int collectionId = this.doc.getCollection().getId();
 
-            for( final Map.Entry<Object, List<NodeId>> entry : pending[section].entrySet() ) {
-                final Object    key           = entry.getKey();
-                final List<NodeId> storedGIDList = entry.getValue();
-                final List<NodeId> newGIDList    = new ArrayList<NodeId>();
-                os.clear();
-
-                try {
-                    lock.acquire( Lock.WRITE_LOCK );
-
-                    //Compute a key for the value
-                    Value searchKey;
-
-                    if( section == IDX_GENERIC ) {
-                        searchKey = new SimpleValue( collectionId, ( Indexable )key );
-                    } else {
-                        final QNameKey qnk = ( QNameKey )key;
-                        searchKey = new QNameValue( collectionId, qnk.qname, qnk.value, broker.getBrokerPool().getSymbols() );
-                    }
-                    final Value value = dbValues.get( searchKey );
-
-                    //Does the value already has data in the index ?
-                    if( value != null ) {
-
-                        //Add its data to the new list
-                        final VariableByteArrayInput is = new VariableByteArrayInput( value.getData() );
-
-                        while( is.available() > 0 ) {
-                            final int storedDocId = is.readInt();
-                            final int gidsCount   = is.readInt();
-                            final int size        = is.readFixedInt();
-
-                            if( storedDocId != this.doc.getDocId() ) {
-
-                                // data are related to another document:
-                                // append them to any existing data
-                                os.writeInt( storedDocId );
-                                os.writeInt( gidsCount );
-                                os.writeFixedInt( size );
-                                is.copyRaw( os, size );
-                            } else {
-
-                                // data are related to our document:
-                                // feed the new list with the GIDs
-                                NodeId previous = null;
-
-                                for( int j = 0; j < gidsCount; j++ ) {
-                                    NodeId nodeId = broker.getBrokerPool().getNodeFactory().createFromStream( previous, is );
-                                    previous = nodeId;
-
-                                    // add the node to the new list if it is not
-                                    // in the list of removed nodes
-                                    if( !containsNode( storedGIDList, nodeId ) ) {
-                                        newGIDList.add( nodeId );
-                                    }
-                                }
-                            }
-                        }
-
-                        //append the data from the new list
-                        if( newGIDList.size() > 0 ) {
-                            final int gidsCount = newGIDList.size();
-
-                            //Don't forget this one
-                            FastQSort.sort( newGIDList, 0, gidsCount - 1 );
-                            os.writeInt( this.doc.getDocId() );
-                            os.writeInt( gidsCount );
-
-                            //Mark position
-                            final int nodeIDsLength = os.position();
-
-                            //Dummy value : actual one will be written below
-                            os.writeFixedInt( 0 );
-                            NodeId previous = null;
-
-                            for( final NodeId nodeId : newGIDList ) {
-                                try {
-                                    previous = nodeId.write( previous, os );
-                                }
-                                catch( final IOException e ) {
-                                    LOG.warn( "IO error while writing range index: " + e.getMessage(), e );
-                                    //TODO : throw exception ?
-                                }
-                            }
-
-                            //Write (variable) length of node IDs
-                            os.writeFixedInt( nodeIDsLength, os.position() - nodeIDsLength - LENGTH_NODE_IDS );
-                        }
-
-//                        if(os.data().size() == 0)
-//                            dbValues.remove(value);
-                        if( dbValues.update( value.getAddress(), searchKey, os.data() ) == BFile.UNKNOWN_ADDRESS ) {
-                            LOG.error( "Could not update index data for value '" + searchKey + "'" );
-                            //TODO: throw exception ?
-                        }
-                    } else {
-
-                        if( dbValues.put( searchKey, os.data() ) == BFile.UNKNOWN_ADDRESS ) {
-                            LOG.error( "Could not put index data for value '" + searchKey + "'" );
-                            //TODO : throw exception ?
-                        }
-                    }
-                }
-                catch( final EXistException e ) {
-                    LOG.error( e.getMessage(), e );
-                }
-                catch( final LockException e ) {
-                    LOG.warn( "Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e );
-                    //TODO : return ?
-                }
-                catch( final ReadOnlyException e ) {
-                    LOG.warn( "Read-only error on '" + FileUtils.fileName(dbValues.getFile()) + "'", e );
-                }
-                catch( final IOException e ) {
-                    LOG.error( e.getMessage(), e );
-                }
-                finally {
-                    lock.release( Lock.WRITE_LOCK );
-                    os.clear();
-                }
-            }
-            pending[section].clear();
-        }
+        remove(pendingGeneric, key -> new SimpleValue(collectionId, (Indexable) key));
+        remove(pendingQName, key -> new QNameValue(collectionId, key.qname, key.value, broker.getBrokerPool().getSymbols()));
     }
 
+    private <T> void remove(final PendingChanges<T> pending, final FunctionE<T, Value, EXistException> dbKeyFn) {
+        for (final Map.Entry<T, List<NodeId>> entry : pending.changes.entrySet()) {
+            final T key = entry.getKey();
+            final List<NodeId> storedGIDList = entry.getValue();
+            final List<NodeId> newGIDList = new ArrayList<>();
+            os.clear();
 
-    private static boolean containsNode( List<NodeId> list, NodeId nodeId )
-    {
-        for( int i = 0; i < list.size(); i++ ) {
+            final Lock lock = dbValues.getLock();
+            try {
+                lock.acquire(Lock.WRITE_LOCK);
 
-            if( ( ( NodeId )list.get( i ) ).equals( nodeId ) ) {
-                return( true );
-            }
-        }
-        return( false );
-    }
+                //Compute a key for the value
+                final Value searchKey = dbKeyFn.apply(key);
+                final Value value = dbValues.get(searchKey);
 
+                //Does the value already has data in the index ?
+                if (value != null) {
 
-    /* Drop all index entries for the given collection.
-     * @see org.exist.storage.IndexGenerator#dropIndex(org.exist.collections.Collection)
-     */
-    public void dropIndex( Collection collection )
-    {
-        final Lock lock = dbValues.getLock();
+                    //Add its data to the new list
+                    final VariableByteArrayInput is = new VariableByteArrayInput(value.getData());
 
-        try {
-            lock.acquire( Lock.WRITE_LOCK );
-
-            //TODO : flush ? -pb
-            // remove generic index
-            Value ref = new SimpleValue( collection.getId() );
-            dbValues.removeAll( null, new IndexQuery( IndexQuery.TRUNC_RIGHT, ref ) );
-
-            // remove QName index
-            ref = new QNameValue( collection.getId() );
-            dbValues.removeAll( null, new IndexQuery( IndexQuery.TRUNC_RIGHT, ref ) );
-        }
-        catch( final LockException e ) {
-            LOG.warn( "Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e );
-        }
-        catch( final BTreeException e ) {
-            LOG.error( e.getMessage(), e );
-        }
-        catch( final IOException e ) {
-            LOG.error( e.getMessage(), e );
-        }
-        finally {
-            lock.release( Lock.WRITE_LOCK );
-        }
-    }
-
-
-    /* Drop all index entries for the given document.
-     * @see org.exist.storage.IndexGenerator#dropIndex(org.exist.dom.persistent.DocumentImpl)
-     */
-    //TODO : note that this is *not* this.doc -pb
-    public void dropIndex( DocumentImpl document ) throws ReadOnlyException
-    {
-        final int  collectionId = document.getCollection().getId();
-        final Lock lock         = dbValues.getLock();
-
-        try {
-            lock.acquire( Lock.WRITE_LOCK );
-
-            for( int section = 0; section <= IDX_QNAME; section++ ) {
-
-                for( final Map.Entry<Object, List<NodeId>> entry : pending[section].entrySet() ) {
-                    final Object    key   = entry.getKey();
-
-                    //Compute a key for the indexed value in the collection
-                    Value     v;
-
-                    if( section == IDX_GENERIC ) {
-                        v = new SimpleValue( collectionId, ( Indexable )key );
-                    } else {
-                        final QNameKey qnk = ( QNameKey )key;
-                        v = new QNameValue( collectionId, qnk.qname, qnk.value, broker.getBrokerPool().getSymbols() );
-                    }
-                    final Value value = dbValues.get( v );
-
-                    if( value == null ) {
-                        continue;
-                    }
-                    final VariableByteArrayInput is      = new VariableByteArrayInput( value.getData() );
-                    boolean                changed = false;
-                    os.clear();
-
-                    while( is.available() > 0 ) {
+                    while (is.available() > 0) {
                         final int storedDocId = is.readInt();
-                        final int gidsCount   = is.readInt();
-                        final int size        = is.readFixedInt();
+                        final int gidsCount = is.readInt();
+                        final int size = is.readFixedInt();
 
-                        if( storedDocId != document.getDocId() ) {
+                        if (storedDocId != this.doc.getDocId()) {
 
                             // data are related to another document:
-                            // copy them (keep them)
-                            os.writeInt( storedDocId );
-                            os.writeInt( gidsCount );
-                            os.writeFixedInt( size );
-                            is.copyRaw( os, size );
+                            // append them to any existing data
+                            os.writeInt(storedDocId);
+                            os.writeInt(gidsCount);
+                            os.writeFixedInt(size);
+                            is.copyRaw(os, size);
                         } else {
 
                             // data are related to our document:
-                            // skip them (remove them)
-                            is.skipBytes( size );
-                            changed = true;
-                        }
-                    }
+                            // feed the new list with the GIDs
+                            NodeId previous = null;
 
-                    //Store new data, if relevant
-                    if( changed ) {
+                            for (int j = 0; j < gidsCount; j++) {
+                                final NodeId nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(previous, is);
+                                previous = nodeId;
 
-                        if( os.data().size() == 0 ) {
-
-                            // nothing to store:
-                            // remove the existing key/value pair
-                            dbValues.remove( v );
-                        } else {
-
-                            // still something to store:
-                            // modify the existing value for the key
-                            if( dbValues.put( v, os.data() ) == BFile.UNKNOWN_ADDRESS ) {
-                                LOG.error( "Could not put index data for key '" + v + "'" );
-                                //TODO : throw exception ?
+                                // add the node to the new list if it is not
+                                // in the list of removed nodes
+                                if (!containsNode(storedGIDList, nodeId)) {
+                                    newGIDList.add(nodeId);
+                                }
                             }
                         }
                     }
+
+                    //append the data from the new list
+                    if (newGIDList.size() > 0) {
+                        final int gidsCount = newGIDList.size();
+
+                        //Don't forget this one
+                        FastQSort.sort(newGIDList, 0, gidsCount - 1);
+                        os.writeInt(this.doc.getDocId());
+                        os.writeInt(gidsCount);
+
+                        //Mark position
+                        final int nodeIDsLength = os.position();
+
+                        //Dummy value : actual one will be written below
+                        os.writeFixedInt(0);
+                        NodeId previous = null;
+
+                        for (final NodeId nodeId : newGIDList) {
+                            try {
+                                previous = nodeId.write(previous, os);
+                            } catch (final IOException e) {
+                                LOG.warn("IO error while writing range index: " + e.getMessage(), e);
+                                //TODO : throw exception ?
+                            }
+                        }
+
+                        //Write (variable) length of node IDs
+                        os.writeFixedInt(nodeIDsLength, os.position() - nodeIDsLength - LENGTH_NODE_IDS);
+                    }
+
+//                        if(os.data().size() == 0)
+//                            dbValues.remove(value);
+                    if (dbValues.update(value.getAddress(), searchKey, os.data()) == BFile.UNKNOWN_ADDRESS) {
+                        LOG.error("Could not update index data for value '" + searchKey + "'");
+                        //TODO: throw exception ?
+                    }
+                } else {
+
+                    if (dbValues.put(searchKey, os.data()) == BFile.UNKNOWN_ADDRESS) {
+                        LOG.error("Could not put index data for value '" + searchKey + "'");
+                        //TODO : throw exception ?
+                    }
                 }
-                pending[section].clear();
+            } catch (final EXistException | IOException e) {
+                LOG.error(e.getMessage(), e);
+            } catch (final LockException e) {
+                LOG.warn("Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e);
+                //TODO : return ?
+            } catch (final ReadOnlyException e) {
+                LOG.warn("Read-only error on '" + FileUtils.fileName(dbValues.getFile()) + "'", e);
+            } finally {
+                lock.release(Lock.WRITE_LOCK);
+                os.clear();
             }
         }
-        catch( final LockException e ) {
-            LOG.warn( "Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e );
+        pending.changes.clear();
+    }
+
+    private static boolean containsNode(final List<NodeId> list, final NodeId nodeId) {
+        return list.stream().filter(nodeId::equals).findFirst().isPresent();
+    }
+
+    @Override
+    public void dropIndex(final Collection collection) {
+        final Lock lock = dbValues.getLock();
+
+        try {
+            lock.acquire(Lock.WRITE_LOCK);
+
+            flush();
+
+            // remove generic index
+            Value ref = new SimpleValue(collection.getId());
+            dbValues.removeAll(null, new IndexQuery(IndexQuery.TRUNC_RIGHT, ref));
+
+            // remove QName index
+            ref = new QNameValue(collection.getId());
+            dbValues.removeAll(null, new IndexQuery(IndexQuery.TRUNC_RIGHT, ref));
+        } catch (final LockException e) {
+            LOG.warn("Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e);
+        } catch (final BTreeException | IOException e) {
+            LOG.error(e.getMessage(), e);
+        } finally {
+            lock.release(Lock.WRITE_LOCK);
         }
-        catch( final IOException e ) {
-            LOG.error( e.getMessage(), e );
-        }
-        catch( final EXistException e ) {
-            LOG.warn( "Exception while removing range index: " + e.getMessage(), e );
-        }
-        finally {
+    }
+
+    @Override
+    public void dropIndex(final DocumentImpl document) throws ReadOnlyException {
+        final int collectionId = document.getCollection().getId();
+        final Lock lock = dbValues.getLock();
+        try {
+            lock.acquire(Lock.WRITE_LOCK);
+
+            dropIndex(document.getDocId(), pendingGeneric, key -> new SimpleValue(collectionId, (Indexable) key));
+            dropIndex(document.getDocId(), pendingQName, key -> new QNameValue(collectionId, key.qname, key.value, broker.getBrokerPool().getSymbols()));
+        } catch (final LockException e) {
+            LOG.warn("Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e);
+        } catch (final IOException e) {
+            LOG.error(e.getMessage(), e);
+        } catch (final EXistException e) {
+            LOG.warn("Exception while removing range index: " + e.getMessage(), e);
+        } finally {
             os.clear();
-            lock.release( Lock.WRITE_LOCK );
+            lock.release(Lock.WRITE_LOCK);
         }
     }
 
+    private <T> void dropIndex(final int docId, final PendingChanges<T> pending, final FunctionE<T, Value, EXistException> dbKeyFn) throws EXistException, IOException, ReadOnlyException {
+        for (final Map.Entry<T, List<NodeId>> entry : pending.changes.entrySet()) {
+            final T key = entry.getKey();
 
-    public NodeSet find( XQueryWatchDog watchDog, int relation, DocumentSet docs, NodeSet contextSet, int axis, QName qname, Indexable value ) throws TerminatedException
-    {
-        return( find( watchDog, relation, docs, contextSet, axis, qname, value, null, false ) );
+            //Compute a key for the indexed value in the collection
+            final Value v = dbKeyFn.apply(key);
+            final Value value = dbValues.get(v);
+
+            if (value == null) {
+                continue;
+            }
+
+            final VariableByteArrayInput is = new VariableByteArrayInput(value.getData());
+            boolean changed = false;
+            os.clear();
+
+            while (is.available() > 0) {
+                final int storedDocId = is.readInt();
+                final int gidsCount = is.readInt();
+                final int size = is.readFixedInt();
+
+                if (storedDocId != docId) {
+
+                    // data are related to another document:
+                    // copy them (keep them)
+                    os.writeInt(storedDocId);
+                    os.writeInt(gidsCount);
+                    os.writeFixedInt(size);
+                    is.copyRaw(os, size);
+                } else {
+
+                    // data are related to our document:
+                    // skip them (remove them)
+                    is.skipBytes(size);
+                    changed = true;
+                }
+            }
+
+            //Store new data, if relevant
+            if (changed) {
+
+                if (os.data().size() == 0) {
+
+                    // nothing to store:
+                    // remove the existing key/value pair
+                    dbValues.remove(v);
+                } else {
+
+                    // still something to store:
+                    // modify the existing value for the key
+                    if (dbValues.put(v, os.data()) == BFile.UNKNOWN_ADDRESS) {
+                        LOG.error("Could not put index data for key '" + v + "'");
+                        //TODO : throw exception ?
+                    }
+                }
+            }
+        }
+        pending.changes.clear();
     }
 
-    public NodeSet find( XQueryWatchDog watchDog, int relation, DocumentSet docs, NodeSet contextSet, int axis, QName qname, Indexable value, Collator collator ) throws TerminatedException
-    {
-        return( find( watchDog, relation, docs, contextSet, axis, qname, value, collator, false ) );
+    public NodeSet find(final XQueryWatchDog watchDog, final Comparison comparison, final DocumentSet docs, final NodeSet contextSet, final int axis, final QName qname, final Indexable value) throws TerminatedException {
+        return find(watchDog, comparison, docs, contextSet, axis, qname, value, false);
     }
 
-    public NodeSet find( XQueryWatchDog watchDog, int relation, DocumentSet docs, NodeSet contextSet, int axis, QName qname, Indexable value, Collator collator, boolean mixedIndex ) throws TerminatedException
-    {
+    public NodeSet find(final XQueryWatchDog watchDog, final Comparison comparison, final DocumentSet docs, final NodeSet contextSet, final int axis, final QName qname, final Indexable value, final boolean mixedIndex) throws TerminatedException {
         final NodeSet result = new NewArrayNodeSet();
 
-        if( qname == null ) {
-            findAll( watchDog, relation, docs, contextSet, axis, null, value, result, collator );
+        if (qname == null) {
+            findAll(watchDog, comparison, docs, contextSet, axis, null, value, result);
         } else {
-            final List<QName> qnames = new LinkedList<QName>();
-            qnames.add( qname );
-            findAll( watchDog, relation, docs, contextSet, axis, qnames, value, result, collator );
-            if (mixedIndex)
-                {findAll(watchDog, relation, docs, contextSet, axis, null, value, result);}
+            final List<QName> qnames = new LinkedList<>();
+            qnames.add(qname);
+            findAll(watchDog, comparison, docs, contextSet, axis, qnames, value, result);
+            if (mixedIndex) {
+                findAll(watchDog, comparison, docs, contextSet, axis, null, value, result);
+            }
         }
-        return( result );
+        return result;
     }
 
-
-    public NodeSet findAll( XQueryWatchDog watchDog, int relation, DocumentSet docs, NodeSet contextSet, int axis, Indexable value ) throws TerminatedException
-    {
-        return( findAll( watchDog, relation, docs, contextSet, axis, value, null ) );
-    }
-
-
-    public NodeSet findAll( XQueryWatchDog watchDog, int relation, DocumentSet docs, NodeSet contextSet, int axis, Indexable value, Collator collator ) throws TerminatedException
-    {
+    public NodeSet findAll(final XQueryWatchDog watchDog, final Comparison comparison, final DocumentSet docs, final NodeSet contextSet, final int axis, final Indexable value) throws TerminatedException {
         final NodeSet result = new NewArrayNodeSet();
-        findAll( watchDog, relation, docs, contextSet, axis, getDefinedIndexes( docs ), value, result, collator );
-        findAll( watchDog, relation, docs, contextSet, axis, null, value, result, collator );
-        return( result );
+        findAll(watchDog, comparison, docs, contextSet, axis, getDefinedIndexes(docs), value, result);
+        findAll(watchDog, comparison, docs, contextSet, axis, null, value, result);
+        return result;
     }
-
-
-    private NodeSet findAll( XQueryWatchDog watchDog, int relation, DocumentSet docs, NodeSet contextSet, int axis, List<QName> qnames, Indexable value, NodeSet result ) throws TerminatedException
-    {
-        return( findAll( watchDog, relation, docs, contextSet, axis, qnames, value, result, null ) );
-    }
-
 
     /**
      * find.
      *
-     * @param   relation    binary operator used for the comparison
-     * @param   docs        DOCUMENT ME!
-     * @param   contextSet  DOCUMENT ME!
-     * @param   axis        DOCUMENT ME!
-     * @param   qnames      DOCUMENT ME!
-     * @param   value       right hand comparison value
-     * @param   result      DOCUMENT ME!
-     * @param   collator    DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  TerminatedException  DOCUMENT ME!
+     * @param comparison The type of comparison the search is performing
+     * @param docs       The documents to search for matches within
+     * @param contextSet DOCUMENT ME!
+     * @param axis       DOCUMENT ME!
+     * @param qnames     DOCUMENT ME!
+     * @param value      right hand comparison value
+     * @param result     DOCUMENT ME!
+     * @return DOCUMENT ME!
+     * @throws TerminatedException DOCUMENT ME!
      */
-    private NodeSet findAll(XQueryWatchDog watchDog, int relation, DocumentSet docs, NodeSet contextSet, int axis, List<QName> qnames, Indexable value, NodeSet result, Collator collator ) throws TerminatedException
-    {
-        final SearchCallback cb   = new SearchCallback( docs, contextSet, result, axis == NodeSet.ANCESTOR );
-        final Lock           lock = dbValues.getLock();
+    private NodeSet findAll(final XQueryWatchDog watchDog, final Comparison comparison, final DocumentSet docs, final NodeSet contextSet, final int axis, final List<QName> qnames, final Indexable value, final NodeSet result) throws TerminatedException {
+        final SearchCallback cb = new SearchCallback(docs, contextSet, result, axis == NodeSet.ANCESTOR);
+        final Lock lock = dbValues.getLock();
 
-        for( final Iterator<Collection> iter = docs.getCollectionIterator(); iter.hasNext(); ) {
+        final int idxOp = toIndexQueryOp(comparison);
+
+        for (final Iterator<Collection> iter = docs.getCollectionIterator(); iter.hasNext(); ) {
             final int collectionId = iter.next().getId();
-            final int idxOp        = checkRelationOp( relation );
-            Value     searchKey;
-            Value     prefixKey;
 
             watchDog.proceed(null);
 
-            if( qnames == null ) {
-
+            if (qnames == null) {
                 try {
-                    lock.acquire( Lock.READ_LOCK );
-                    searchKey = new SimpleValue( collectionId, value );
-                    prefixKey = new SimplePrefixValue( collectionId, value.getType() );
-                    final IndexQuery query = new IndexQuery( idxOp, searchKey );
+                    lock.acquire(Lock.READ_LOCK);
+                    final Value searchKey = new SimpleValue(collectionId, value);
+                    final IndexQuery query = new IndexQuery(idxOp, searchKey);
 
-                    if( idxOp == IndexQuery.EQ ) {
-                        dbValues.query( query, cb );
+                    if (idxOp == IndexQuery.EQ) {
+                        dbValues.query(query, cb);
                     } else {
-                        dbValues.query( query, prefixKey, cb );
+                        final Value prefixKey = new SimplePrefixValue(collectionId, value.getType());
+                        dbValues.query(query, prefixKey, cb);
                     }
-                }
-                catch( final EXistException e ) {
-                    LOG.error( e.getMessage(), e );
-                }
-                catch( final LockException e ) {
-                    LOG.warn( "Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e );
-                }
-                catch( final IOException e ) {
-                    LOG.error( e.getMessage(), e );
-                }
-                catch( final BTreeException e ) {
-                    LOG.error( e.getMessage(), e );
-                }
-                finally {
-                    lock.release( Lock.READ_LOCK );
+                } catch (final EXistException | BTreeException | IOException e) {
+                    LOG.error(e.getMessage(), e);
+                } catch (final LockException e) {
+                    LOG.warn("Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e);
+                } finally {
+                    lock.release(Lock.READ_LOCK);
                 }
             } else {
-
-                for( int i = 0; i < qnames.size(); i++ ) {
-                    final QName qname = ( QName )qnames.get( i );
-
+                for (final QName qname : qnames) {
                     try {
-                        lock.acquire( Lock.READ_LOCK );
+                        lock.acquire(Lock.READ_LOCK);
 
                         //Compute a key for the value in the collection
-                        searchKey = new QNameValue( collectionId, qname, value, broker.getBrokerPool().getSymbols() );
-                        prefixKey = new QNamePrefixValue( collectionId, qname, value.getType(), broker.getBrokerPool().getSymbols() );
+                        final Value searchKey = new QNameValue(collectionId, qname, value, broker.getBrokerPool().getSymbols());
 
-                        final IndexQuery query = new IndexQuery( idxOp, searchKey );
-
-                        if( idxOp == IndexQuery.EQ ) {
-                            dbValues.query( query, cb );
+                        final IndexQuery query = new IndexQuery(idxOp, searchKey);
+                        if (idxOp == IndexQuery.EQ) {
+                            dbValues.query(query, cb);
                         } else {
-                            dbValues.query( query, prefixKey, cb );
+                            final Value prefixKey = new QNamePrefixValue(collectionId, qname, value.getType(), broker.getBrokerPool().getSymbols());
+                            dbValues.query(query, prefixKey, cb);
                         }
-                    }
-                    catch( final EXistException e ) {
-                        LOG.error( e.getMessage(), e );
-                    }
-                    catch( final LockException e ) {
-                        LOG.warn( "Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e );
-                    }
-                    catch( final IOException e ) {
-                        LOG.error( e.getMessage(), e );
-                    }
-                    catch( final BTreeException e ) {
-                        LOG.error( e.getMessage(), e );
-                    }
-                    finally {
-                        lock.release( Lock.READ_LOCK );
+                    } catch (final EXistException | BTreeException | IOException e) {
+                        LOG.error(e.getMessage(), e);
+                    } catch (final LockException e) {
+                        LOG.warn("Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e);
+                    } finally {
+                        lock.release(Lock.READ_LOCK);
                     }
                 }
             }
         }
-        return( result );
+        return result;
     }
 
-
-    public NodeSet match( XQueryWatchDog watchDog, DocumentSet docs, NodeSet contextSet, int axis, String expr, QName qname, int type ) throws TerminatedException, EXistException
-    {
-        return( match( watchDog, docs, contextSet, axis, expr, qname, type, null, 0 ) );
+    public NodeSet match(final XQueryWatchDog watchDog, final DocumentSet docs, final NodeSet contextSet, final int axis, final String expr, final QName qname, final int type) throws TerminatedException, EXistException {
+        return match(watchDog, docs, contextSet, axis, expr, qname, type, null, StringTruncationOperator.RIGHT);
     }
 
-
-    public NodeSet match( XQueryWatchDog watchDog, DocumentSet docs, NodeSet contextSet, int axis, String expr, QName qname, int type, Collator collator, int truncation ) throws TerminatedException, EXistException
-    {
-        return( match( watchDog, docs, contextSet, axis, expr, qname, type, 0, true, collator, truncation ) );
+    public NodeSet match(final XQueryWatchDog watchDog, final DocumentSet docs, final NodeSet contextSet, final int axis, final String expr, final QName qname, final int type, final Collator collator, final StringTruncationOperator truncation) throws TerminatedException, EXistException {
+        return match(watchDog, docs, contextSet, axis, expr, qname, type, 0, true, collator, truncation);
     }
 
-
-    public NodeSet match( XQueryWatchDog watchDog, DocumentSet docs, NodeSet contextSet, int axis, String expr, QName qname, int type, int flags, boolean caseSensitiveQuery ) throws TerminatedException, EXistException
-    {
-        return( match( watchDog, docs, contextSet, axis, expr, qname, type, flags, caseSensitiveQuery, null, 0 ) );
+    public NodeSet match(final XQueryWatchDog watchDog, final DocumentSet docs, final NodeSet contextSet, final int axis, final String expr, final QName qname, final int type, final int flags, final boolean caseSensitiveQuery) throws TerminatedException, EXistException {
+        return match(watchDog, docs, contextSet, axis, expr, qname, type, flags, caseSensitiveQuery, null, StringTruncationOperator.RIGHT);
     }
 
-
-    public NodeSet match( XQueryWatchDog watchDog, DocumentSet docs, NodeSet contextSet, int axis, String expr, QName qname, int type, int flags, boolean caseSensitiveQuery, Collator collator, int truncation ) throws TerminatedException, EXistException
-    {
+    public NodeSet match(final XQueryWatchDog watchDog, final DocumentSet docs, final NodeSet contextSet, final int axis, final String expr, final QName qname, final int type, final int flags, final boolean caseSensitiveQuery, final Collator collator, final StringTruncationOperator truncation) throws TerminatedException, EXistException {
         final NodeSet result = new NewArrayNodeSet();
-
-        if( qname == null ) {
-            matchAll( watchDog, docs, contextSet, axis, expr, null, type, flags, caseSensitiveQuery, result, collator, truncation );
+        if (qname == null) {
+            matchAll(watchDog, docs, contextSet, axis, expr, null, type, flags, caseSensitiveQuery, result, collator, truncation);
         } else {
-            final List<QName> qnames = new LinkedList<QName>();
-            qnames.add( qname );
-            matchAll( watchDog, docs, contextSet, axis, expr, qnames, type, flags, caseSensitiveQuery, result, collator, truncation );
+            final List<QName> qnames = new LinkedList<>();
+            qnames.add(qname);
+            matchAll(watchDog, docs, contextSet, axis, expr, qnames, type, flags, caseSensitiveQuery, result, collator, truncation);
         }
-        return( result );
+        return result;
     }
 
-
-    public NodeSet matchAll( XQueryWatchDog watchDog, DocumentSet docs, NodeSet contextSet, int axis, String expr, int type, int flags, boolean caseSensitiveQuery ) throws TerminatedException, EXistException
-    {
-        return( matchAll( watchDog,     docs, contextSet, axis, expr, type, flags, caseSensitiveQuery, null, 0 ) );
+    public NodeSet matchAll(final XQueryWatchDog watchDog, final DocumentSet docs, final NodeSet contextSet, final int axis, final String expr, final int type, final int flags, final boolean caseSensitiveQuery) throws TerminatedException, EXistException {
+        return matchAll(watchDog, docs, contextSet, axis, expr, type, flags, caseSensitiveQuery, null, StringTruncationOperator.RIGHT);
     }
 
-
-    public NodeSet matchAll( XQueryWatchDog watchDog, DocumentSet docs, NodeSet contextSet, int axis, String expr, int type, int flags, boolean caseSensitiveQuery, Collator collator, int truncation ) throws TerminatedException, EXistException
-    {
+    public NodeSet matchAll(final XQueryWatchDog watchDog, final DocumentSet docs, final NodeSet contextSet, final int axis, final String expr, final int type, final int flags, final boolean caseSensitiveQuery, final Collator collator, final StringTruncationOperator truncation) throws TerminatedException, EXistException {
         final NodeSet result = new NewArrayNodeSet();
-        matchAll( watchDog, docs, contextSet, axis, expr, getDefinedIndexes( docs ), type, flags, caseSensitiveQuery, result, collator, truncation );
-        matchAll( watchDog, docs, contextSet, axis, expr, null, type, flags, caseSensitiveQuery, result, collator, truncation );
-        return( result );
+        matchAll(watchDog, docs, contextSet, axis, expr, getDefinedIndexes(docs), type, flags, caseSensitiveQuery, result, collator, truncation);
+        matchAll(watchDog, docs, contextSet, axis, expr, null, type, flags, caseSensitiveQuery, result, collator, truncation);
+        return result;
     }
-
-
-    public NodeSet matchAll( XQueryWatchDog watchDog, DocumentSet docs, NodeSet contextSet, int axis, String expr, List<QName> qnames, int type, int flags, boolean caseSensitiveQuery, NodeSet result ) throws TerminatedException, EXistException
-    {
-        return( matchAll( watchDog, docs, contextSet, axis, expr, qnames, type, flags, caseSensitiveQuery, result, null, 0 ) );
-    }
-
 
     /**
      * Regular expression search.
      *
-     * @param   docs                DOCUMENT ME!
-     * @param   contextSet          DOCUMENT ME!
-     * @param   axis                DOCUMENT ME!
-     * @param   expr                DOCUMENT ME!
-     * @param   qnames              DOCUMENT ME!
-     * @param   type                like type argument for {@link org.exist.storage.RegexMatcher} constructor
-     * @param   flags               like flags argument for {@link org.exist.storage.RegexMatcher} constructor
-     * @param   caseSensitiveQuery  DOCUMENT ME!
-     * @param   result              DOCUMENT ME!
-     * @param   collator            DOCUMENT ME!
-     * @param   truncation          DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  TerminatedException  DOCUMENT ME!
-     * @throws  EXistException       DOCUMENT ME!
+     * @param docs               DOCUMENT ME!
+     * @param contextSet         DOCUMENT ME!
+     * @param axis               DOCUMENT ME!
+     * @param expr               DOCUMENT ME!
+     * @param qnames             DOCUMENT ME!
+     * @param type               like type argument for {@link org.exist.storage.RegexMatcher} constructor
+     * @param flags              like flags argument for {@link org.exist.storage.RegexMatcher} constructor
+     * @param caseSensitiveQuery DOCUMENT ME!
+     * @param result             DOCUMENT ME!
+     * @param collator           DOCUMENT ME!
+     * @param truncation         The type of string truncation to apply
+     * @return DOCUMENT ME!
+     * @throws TerminatedException DOCUMENT ME!
+     * @throws EXistException      DOCUMENT ME!
      */
-    public NodeSet matchAll( XQueryWatchDog watchDog, DocumentSet docs, NodeSet contextSet, int axis, String expr, List<QName> qnames, int type, int flags, boolean caseSensitiveQuery, NodeSet result, Collator collator, int truncation ) throws TerminatedException, EXistException
-    {
+    public NodeSet matchAll(final XQueryWatchDog watchDog, final DocumentSet docs, final NodeSet contextSet, final int axis, final String expr, final List<QName> qnames, final int type, final int flags, final boolean caseSensitiveQuery, final NodeSet result, final Collator collator, final StringTruncationOperator truncation) throws TerminatedException, EXistException {
         // if the match expression starts with a char sequence, we restrict the index scan to entries starting with
         // the same sequence. Otherwise, we have to scan the whole index.
-		
-        StringValue startTerm = null;
 
-        if( type == DBBroker.MATCH_REGEXP && expr.startsWith( "^" ) && ( caseSensitiveQuery == caseSensitive ) ) {
+        final StringValue startTerm;
+
+        if (type == DBBroker.MATCH_REGEXP && expr.startsWith("^") && caseSensitiveQuery == caseSensitive) {
             final StringBuilder term = new StringBuilder();
-
-            for( int j = 1; j < expr.length(); j++ ) {
-
-                if( Character.isLetterOrDigit( expr.charAt( j ) ) ) {
-                    term.append( expr.charAt( j ) );
+            for (int j = 1; j < expr.length(); j++) {
+                if (Character.isLetterOrDigit(expr.charAt(j))) {
+                    term.append(expr.charAt(j));
                 } else {
                     break;
                 }
             }
 
-            if( term.length() > 0 ) {
-                startTerm = new StringValue( term.toString() );
-                LOG.debug( "Match will begin index scan at '" + startTerm + "'" );
+            if (term.length() > 0) {
+                startTerm = new StringValue(term.toString());
+                LOG.debug("Match will begin index scan at '" + startTerm + "'");
+            } else {
+                startTerm = null;
             }
-		} else if( collator == null && ( type == DBBroker.MATCH_EXACT || type == DBBroker.MATCH_STARTSWITH ) ) {
-			startTerm = new StringValue( expr );
-            LOG.debug( "Match will begin index scan at '" + startTerm + "'" );
-		}
-
-        TermMatcher matcher;
+        } else if (collator == null && (type == DBBroker.MATCH_EXACT || type == DBBroker.MATCH_STARTSWITH)) {
+            startTerm = new StringValue(expr);
+            LOG.debug("Match will begin index scan at '" + startTerm + "'");
+        } else {
+            startTerm = null;
+        }
 
         // Select appropriate matcher/comparator
-
-        if( collator == null ) {
-
-            switch( type ) {
-
-                case DBBroker.MATCH_EXACT: {
-                    matcher = new ExactMatcher( expr );
+        final TermMatcher matcher;
+        if (collator == null) {
+            switch (type) {
+                case DBBroker.MATCH_EXACT:
+                    matcher = new ExactMatcher(expr);
                     break;
-                }
 
-                case DBBroker.MATCH_CONTAINS: {
-                    matcher = new ContainsMatcher( expr );
+                case DBBroker.MATCH_CONTAINS:
+                    matcher = new ContainsMatcher(expr);
                     break;
-                }
 
-                case DBBroker.MATCH_STARTSWITH: {
-                    matcher = new StartsWithMatcher( expr );
+                case DBBroker.MATCH_STARTSWITH:
+                    matcher = new StartsWithMatcher(expr);
                     break;
-                }
 
-                case DBBroker.MATCH_ENDSWITH: {
-                    matcher = new EndsWithMatcher( expr );
+                case DBBroker.MATCH_ENDSWITH:
+                    matcher = new EndsWithMatcher(expr);
                     break;
-                }
 
-                default: {
-                    matcher = new RegexMatcher( expr, type, flags );
-                }
+                default:
+                    matcher = new RegexMatcher(expr, type, flags);
             }
         } else {
-            matcher = new CollatorMatcher( expr, truncation, collator );
+            matcher = new CollatorMatcher(expr, truncation, collator);
         }
 
-        final MatcherCallback cb   = new MatcherCallback( docs, contextSet, result, matcher, axis == NodeSet.ANCESTOR );
-        final Lock            lock = dbValues.getLock();
+        final MatcherCallback cb = new MatcherCallback(docs, contextSet, result, matcher, axis == NodeSet.ANCESTOR);
+        final Lock lock = dbValues.getLock();
 
-        for( final Iterator<Collection> iter = docs.getCollectionIterator(); iter.hasNext(); ) {
+        for (final Iterator<Collection> iter = docs.getCollectionIterator(); iter.hasNext(); ) {
             final int collectionId = iter.next().getId();
-            Value     searchKey;
 
             watchDog.proceed(null);
-            if( qnames == null ) {
-
+            if (qnames == null) {
                 try {
-                    lock.acquire( Lock.READ_LOCK );
+                    lock.acquire(Lock.READ_LOCK);
 
-                    if( startTerm != null ) {
-
+                    final Value searchKey;
+                    if (startTerm != null) {
                         //Compute a key for the start term in the collection
-                        searchKey = new SimpleValue( collectionId, startTerm );
+                        searchKey = new SimpleValue(collectionId, startTerm);
                     } else {
-
                         //Compute a key for an arbitrary string in the collection
-                        searchKey = new SimplePrefixValue( collectionId, Type.STRING );
+                        searchKey = new SimplePrefixValue(collectionId, Type.STRING);
                     }
-                    final IndexQuery query = new IndexQuery( IndexQuery.TRUNC_RIGHT, searchKey );
-                    dbValues.query( query, cb );
-                }
-                catch( final LockException e ) {
-                    LOG.warn( "Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e );
-                }
-                catch( final IOException e ) {
-                    LOG.error( e.getMessage(), e );
-                }
-                catch( final BTreeException e ) {
-                    LOG.error( e.getMessage(), e );
-                }
-                finally {
-                    lock.release( Lock.READ_LOCK );
+                    final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, searchKey);
+                    dbValues.query(query, cb);
+                } catch (final IOException | BTreeException e) {
+                    LOG.error(e.getMessage(), e);
+                } catch (final LockException e) {
+                    LOG.warn("Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e);
+                } finally {
+                    lock.release(Lock.READ_LOCK);
                 }
             } else {
-
-                for( int i = 0; i < qnames.size(); i++ ) {
-                    final QName qname = ( QName )qnames.get( i );
-
+                for (final QName qname : qnames) {
                     try {
-                        lock.acquire( Lock.READ_LOCK );
+                        lock.acquire(Lock.READ_LOCK);
 
-                        if( startTerm != null ) {
-                            searchKey = new QNameValue( collectionId, qname, startTerm, broker.getBrokerPool().getSymbols() );
+                        final Value searchKey;
+                        if (startTerm != null) {
+                            searchKey = new QNameValue(collectionId, qname, startTerm, broker.getBrokerPool().getSymbols());
                         } else {
-                            LOG.debug( "Searching with QName prefix" );
-                            searchKey = new QNamePrefixValue( collectionId, qname, Type.STRING, broker.getBrokerPool().getSymbols() );
+                            LOG.debug("Searching with QName prefix");
+                            searchKey = new QNamePrefixValue(collectionId, qname, Type.STRING, broker.getBrokerPool().getSymbols());
                         }
-                        final IndexQuery query = new IndexQuery( IndexQuery.TRUNC_RIGHT, searchKey );
-                        dbValues.query( query, cb );
-                    }
-                    catch( final LockException e ) {
-                        LOG.warn( "Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e );
-                    }
-                    catch( final IOException e ) {
-                        LOG.error( e.getMessage(), e );
-                    }
-                    catch( final BTreeException e ) {
-                        LOG.error( e.getMessage(), e );
-                    }
-                    finally {
-                        lock.release( Lock.READ_LOCK );
+                        final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, searchKey);
+                        dbValues.query(query, cb);
+                    } catch (final IOException | BTreeException e) {
+                        LOG.error(e.getMessage(), e);
+                    } catch (final LockException e) {
+                        LOG.warn("Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e);
+                    } finally {
+                        lock.release(Lock.READ_LOCK);
                     }
                 }
             }
         }
-        return( result );
+        return result;
     }
 
+    public ValueOccurrences[] scanIndexKeys(final DocumentSet docs, final NodeSet contextSet, final Indexable start) {
+        final int type = start.getType();
+        final boolean stringType = Type.subTypeOf(type, Type.STRING);
+        final IndexScanCallback cb = new IndexScanCallback(docs, contextSet, type, false);
+        final Lock lock = dbValues.getLock();
 
-    public ValueOccurrences[] scanIndexKeys( DocumentSet docs, NodeSet contextSet, Indexable start )
-    {
-        final int               type       = start.getType();
-        final boolean           stringType = Type.subTypeOf( type, Type.STRING );
-        final IndexScanCallback cb         = new IndexScanCallback( docs, contextSet, type, false );
-        final Lock              lock       = dbValues.getLock();
-
-        for( final Iterator<Collection> i = docs.getCollectionIterator(); i.hasNext(); ) {
+        for (final Iterator<Collection> i = docs.getCollectionIterator(); i.hasNext(); ) {
 
             try {
-                lock.acquire( Lock.READ_LOCK );
-                final Collection c            = ( Collection )i.next();
-                final int        collectionId = c.getId();
+                lock.acquire(Lock.READ_LOCK);
+                final Collection c = i.next();
+                final int collectionId = c.getId();
 
                 //Compute a key for the start value in the collection
-                if( stringType ) {
-                    final Value startKey = new SimpleValue( collectionId, start );
-                    final IndexQuery  query    = new IndexQuery( IndexQuery.TRUNC_RIGHT, startKey );
-                    dbValues.query( query, cb );
+                final Value startKey = new SimpleValue(collectionId, start);
+                if (stringType) {
+                    final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, startKey);
+                    dbValues.query(query, cb);
                 } else {
-                    final Value      startKey  = new SimpleValue( collectionId, start );
-                    final Value      prefixKey = new SimplePrefixValue( collectionId, start.getType() );
-                    final IndexQuery query     = new IndexQuery( IndexQuery.GEQ, startKey );
-                    dbValues.query( query, prefixKey, cb );
+                    final Value prefixKey = new SimplePrefixValue(collectionId, start.getType());
+                    final IndexQuery query = new IndexQuery(IndexQuery.GEQ, startKey);
+                    dbValues.query(query, prefixKey, cb);
                 }
-            }
-            catch( final EXistException e ) {
-                LOG.error( e.getMessage(), e );
-            }
-            catch( final LockException e ) {
-                LOG.warn( "Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e );
-            }
-            catch( final IOException e ) {
-                LOG.error( e.getMessage(), e );
-            }
-            catch( final BTreeException e ) {
-                LOG.error( e.getMessage(), e );
-            }
-            catch( final TerminatedException e ) {
-                LOG.warn( e.getMessage(), e );
-            }
-            finally {
-                lock.release( Lock.READ_LOCK );
+            } catch (final EXistException | IOException | TerminatedException | BTreeException e) {
+                LOG.error(e.getMessage(), e);
+            } catch (final LockException e) {
+                LOG.warn("Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e);
+            } finally {
+                lock.release(Lock.READ_LOCK);
             }
         }
         final Map<AtomicValue, ValueOccurrences> map = cb.map;
         final ValueOccurrences[] result = new ValueOccurrences[map.size()];
-        return( ( ValueOccurrences[] )map.values().toArray( result ) );
+        return map.values().toArray(result);
     }
-
 
     /**
      * Scan all index keys indexed by the given QName. Return {@link org.exist.util.ValueOccurrences} for those index entries pointing to descendants
      * of the specified context set. The first argument specifies the set of documents to include in the scan. Nodes which are not in this document
      * set will be ignored.
      *
-     * @param   docs        set of documents to scan
-     * @param   contextSet  if != null, return only index entries pointing to nodes which are descendants of nodes in the context set
-     * @param   qnames      an array of QNames: defines the index entries to be scanned.
-     * @param   start       an optional start value: only index keys starting with or being greater than this start value (depends on the type of the
-     *                      index key) will be scanned
-     *
-     * @return  a list of ValueOccurrences
+     * @param docs       set of documents to scan
+     * @param contextSet if != null, return only index entries pointing to nodes which are descendants of nodes in the context set
+     * @param qnames     an array of QNames: defines the index entries to be scanned.
+     * @param start      an optional start value: only index keys starting with or being greater than this start value (depends on the type of the
+     *                   index key) will be scanned
+     * @return a list of ValueOccurrences
      */
-    public ValueOccurrences[] scanIndexKeys( DocumentSet docs, NodeSet contextSet, QName[] qnames, Indexable start )
-    {
-        if( qnames == null ) {
-            final List<QName> qnlist = getDefinedIndexes( docs );
+    public ValueOccurrences[] scanIndexKeys(final DocumentSet docs, final NodeSet contextSet, QName[] qnames, final Indexable start) {
+        if (qnames == null) {
+            final List<QName> qnlist = getDefinedIndexes(docs);
             qnames = new QName[qnlist.size()];
-            qnames = ( QName[] )qnlist.toArray( qnames );
+            qnames = qnlist.toArray(qnames);
         }
-        final int               type       = start.getType();
-        final boolean           stringType = Type.subTypeOf( type, Type.STRING );
-        final IndexScanCallback cb         = new IndexScanCallback( docs, contextSet, type, true );
-        final Lock              lock       = dbValues.getLock();
+        final int type = start.getType();
+        final boolean stringType = Type.subTypeOf(type, Type.STRING);
+        final IndexScanCallback cb = new IndexScanCallback(docs, contextSet, type, true);
+        final Lock lock = dbValues.getLock();
 
-        for( int j = 0; j < qnames.length; j++ ) {
+        for (final QName qname : qnames) {
 
-            for( final Iterator<Collection> i = docs.getCollectionIterator(); i.hasNext(); ) {
-
+            for (final Iterator<Collection> i = docs.getCollectionIterator(); i.hasNext(); ) {
                 try {
-                    lock.acquire( Lock.READ_LOCK );
-                    final int collectionId = ( ( Collection )i.next() ).getId();
+                    lock.acquire(Lock.READ_LOCK);
+                    final int collectionId = i.next().getId();
 
                     //Compute a key for the start value in the collection
-                    if( stringType ) {
-                        final Value startKey = new QNameValue( collectionId, qnames[j], start, broker.getBrokerPool().getSymbols() );
-                        final IndexQuery  query    = new IndexQuery( IndexQuery.TRUNC_RIGHT, startKey );
-                        dbValues.query( query, cb );
+                    final Value startKey = new QNameValue(collectionId, qname, start, broker.getBrokerPool().getSymbols());
+                    if (stringType) {
+                        final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, startKey);
+                        dbValues.query(query, cb);
                     } else {
-                        final Value      startKey  = new QNameValue( collectionId, qnames[j], start, broker.getBrokerPool().getSymbols() );
-                        final Value      prefixKey = new QNamePrefixValue( collectionId, qnames[j], start.getType(), broker.getBrokerPool().getSymbols() );
-                        final IndexQuery query     = new IndexQuery( IndexQuery.GEQ, startKey );
-                        dbValues.query( query, prefixKey, cb );
+                        final Value prefixKey = new QNamePrefixValue(collectionId, qname, start.getType(), broker.getBrokerPool().getSymbols());
+                        final IndexQuery query = new IndexQuery(IndexQuery.GEQ, startKey);
+                        dbValues.query(query, prefixKey, cb);
                     }
-                }
-                catch( final EXistException e ) {
-                    LOG.error( e.getMessage(), e );
-                }
-                catch( final LockException e ) {
-                    LOG.warn( "Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e );
-                }
-                catch( final IOException e ) {
-                    LOG.error( e.getMessage(), e );
-                }
-                catch( final BTreeException e ) {
-                    LOG.error( e.getMessage(), e );
-                }
-                catch( final TerminatedException e ) {
-                    LOG.warn( e.getMessage(), e );
-                }
-                finally {
-                    lock.release( Lock.READ_LOCK );
+                } catch (final EXistException | BTreeException | IOException | TerminatedException e) {
+                    LOG.error(e.getMessage(), e);
+                } catch (final LockException e) {
+                    LOG.warn("Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e);
+                } finally {
+                    lock.release(Lock.READ_LOCK);
                 }
             }
         }
         final Map<AtomicValue, ValueOccurrences> map = cb.map;
         final ValueOccurrences[] result = new ValueOccurrences[map.size()];
-        return( ( ValueOccurrences[] )map.values().toArray( result ) );
+        return map.values().toArray(result);
     }
 
+    private List<QName> getDefinedIndexes(final DocumentSet docs) {
+        final List<QName> qnames = new ArrayList<>();
 
-    protected List<QName> getDefinedIndexes( DocumentSet docs )
-    {
-        final List<QName> qnames = new ArrayList<QName>();
-
-        for( final Iterator<Collection> i = docs.getCollectionIterator(); i.hasNext(); ) {
-            final Collection collection = ( Collection )i.next();
-            final IndexSpec  idxConf    = collection.getIndexConfiguration( broker );
-
-            if( idxConf != null ) {
-                qnames.addAll( idxConf.getIndexedQNames() );
+        for (final Iterator<Collection> i = docs.getCollectionIterator(); i.hasNext(); ) {
+            final Collection collection = i.next();
+            final IndexSpec idxConf = collection.getIndexConfiguration(broker);
+            if (idxConf != null) {
+                qnames.addAll(idxConf.getIndexedQNames());
             }
         }
-        return( qnames );
+        return qnames;
     }
 
+    private int toIndexQueryOp(final Comparison comparison) {
+        final int indexOp;
 
-    protected int checkRelationOp( int relation )
-    {
-        int indexOp;
-
-        switch( relation ) {
-
-            case Constants.LT: {
+        switch (comparison) {
+            case LT:
                 indexOp = IndexQuery.LT;
                 break;
-            }
 
-            case Constants.LTEQ: {
+            case LTEQ:
                 indexOp = IndexQuery.LEQ;
                 break;
-            }
 
-            case Constants.GT: {
+            case GT:
                 indexOp = IndexQuery.GT;
                 break;
-            }
 
-            case Constants.GTEQ: {
+            case GTEQ:
                 indexOp = IndexQuery.GEQ;
                 break;
-            }
 
-            case Constants.NEQ: {
+            case NEQ:
                 indexOp = IndexQuery.NEQ;
                 break;
-            }
 
-            case Constants.EQ:
-            default: {
+            case EQ:
+            default:
                 indexOp = IndexQuery.EQ;
                 break;
-            }
         }
-        return( indexOp );
+
+        return indexOp;
     }
 
 
     /**
-     * DOCUMENT ME!
+     * Converts a Value to an AtomicValue
      *
-     * @param   xpathType
-     * @param   value
-     *
-     * @return  <code>null</null> if atomization fails or if the atomic value is not indexable. Should we throw an exception instead ? -pb
+     * @param xpathType The type to convert the value to
+     * @param value     The value to atomize
+     * @return <code>null</null> if atomization fails or if the atomic value is not indexable
      */
-    private AtomicValue convertToAtomic( int xpathType, String value )
-    {
-        AtomicValue atomic;
-
-        if( Type.subTypeOf( xpathType, Type.STRING ) ) {
-
+    private AtomicValue convertToAtomic(final int xpathType, final String value) {
+        final AtomicValue atomic;
+        if (Type.subTypeOf(xpathType, Type.STRING)) {
             try {
-                atomic = new StringValue( value, xpathType, false );
-            }
-            catch( final XPathException e ) {
-                return( null );
+                atomic = new StringValue(value, xpathType, false);
+            } catch (final XPathException e) {
+                LOG.error(e);
+                return null;
             }
         } else {
-
             try {
-                atomic = new StringValue( value ).convertTo( xpathType );
+                atomic = new StringValue(value).convertTo(xpathType);
+            } catch (final XPathException e) {
+                LOG.error("Node value '" + value + "' cannot be converted to " + Type.getTypeName(xpathType));
+                return null;
             }
-            catch( final XPathException e ) {
-                LOG.warn( "Node value '" + value + "' cannot be converted to " + Type.getTypeName( xpathType ) );
-                return( null );
-            }
-        }
-
-        if( atomic == null ) {
-            LOG.warn( "Node value '" + Type.getTypeName( xpathType ) + "(" + value + ")'" + " cannot be used as index key. It is null." );
-            return( null );
         }
 
         return atomic;
     }
 
-
-    public void closeAndRemove()
-    {
-        //Use inheritance if necessary ;-)
-        config.setProperty( getConfigKeyForFile(), null );
-        dbValues.closeAndRemove();
+    @Override
+    public void closeAndRemove() {
+        final Lock lock = dbValues.getLock();
+        try {
+            lock.acquire(Lock.WRITE_LOCK);
+            config.setProperty(getConfigKeyForFile(), null);
+            dbValues.closeAndRemove();
+        } catch (final LockException e) {
+            LOG.warn("Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e);
+        } finally {
+            lock.release(Lock.WRITE_LOCK);
+        }
     }
 
-
-    public boolean close() throws DBException
-    {
-        //Use inheritance if necessary ;-)
-        config.setProperty( getConfigKeyForFile(), null );
-        return( dbValues.close() );
+    @Override
+    public void close() throws DBException {
+        final Lock lock = dbValues.getLock();
+        try {
+            lock.acquire(Lock.WRITE_LOCK);
+            config.setProperty(getConfigKeyForFile(), null);
+            dbValues.close();
+        } catch (final LockException e) {
+            LOG.warn("Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e);
+        } finally {
+            lock.release(Lock.WRITE_LOCK);
+        }
     }
 
-
-    public void printStatistics()
-    {
+    @Override
+    public void printStatistics() {
         dbValues.printStatistics();
     }
 
-
-    public String toString()
-    {
-        return( this.getClass().getName() + " at " + FileUtils.fileName(dbValues.getFile()) + " owned by " + broker.toString() + " (case sensitive = " + caseSensitive + ")" );
+    @Override
+    public String toString() {
+        return this.getClass().getName() + " at " + FileUtils.fileName(dbValues.getFile()) + " owned by " + broker.toString() + " (case sensitive = " + caseSensitive + ")";
     }
 
     //***************************************************************************
@@ -1370,134 +1147,101 @@ public class NativeValueIndex implements ContentLoadingObserver {
     //*
     //***************************************************************************/
 
-    private static class ExactMatcher implements TermMatcher
-    {
-        private String expr;
+    private final static class ExactMatcher implements TermMatcher {
+        private final String expr;
 
-        public ExactMatcher( String expr ) throws EXistException
-        {
+        ExactMatcher(final String expr) throws EXistException {
             this.expr = expr;
         }
 
-        public boolean matches( CharSequence term )
-        {
-            return( term.toString() == expr );
+        @Override
+        public boolean matches(final CharSequence term) {
+            return term.toString().equals(expr);
         }
     }
 
 
-    private static class ContainsMatcher implements TermMatcher
-    {
-        private String expr;
+    private final static class ContainsMatcher implements TermMatcher {
+        private final String expr;
 
-        public ContainsMatcher( String expr ) throws EXistException
-        {
+        ContainsMatcher(final String expr) throws EXistException {
             this.expr = expr;
         }
 
-        public boolean matches( CharSequence term )
-        {
-            return( term.toString().contains( expr ) );
+        @Override
+        public boolean matches(final CharSequence term) {
+            return term.toString().contains(expr);
         }
     }
 
 
-    private static class StartsWithMatcher implements TermMatcher
-    {
-        private String expr;
+    private final static class StartsWithMatcher implements TermMatcher {
+        private final String expr;
 
-        public StartsWithMatcher( String expr ) throws EXistException
-        {
+        StartsWithMatcher(final String expr) throws EXistException {
             this.expr = expr;
         }
 
-        public boolean matches( CharSequence term )
-        {
-            return( term.toString().startsWith( expr ) );
+        @Override
+        public boolean matches(final CharSequence term) {
+            return (term.toString().startsWith(expr));
         }
     }
 
+    private final static class EndsWithMatcher implements TermMatcher {
+        private final String expr;
 
-    private static class EndsWithMatcher implements TermMatcher
-    {
-        private String expr;
-
-        public EndsWithMatcher( String expr ) throws EXistException
-        {
+        EndsWithMatcher(final String expr) throws EXistException {
             this.expr = expr;
         }
 
-        public boolean matches( CharSequence term )
-        {
-            return( term.toString().endsWith( expr ) );
+        @Override
+        public boolean matches(final CharSequence term) {
+            return term.toString().endsWith(expr);
         }
     }
 
+    private final static class CollatorMatcher implements TermMatcher {
+        private final String expr;
+        private final StringTruncationOperator truncation;
+        private final Collator collator;
 
-    private static class CollatorMatcher implements TermMatcher
-    {
-        private String   expr;
-        private int      truncation;
-        private Collator collator;
-
-        public CollatorMatcher( String expr, int truncation, Collator collator ) throws EXistException
-        {
-            if( collator == null ) {
-                throw( new EXistException( "Collator must be non-null" ) );
-            } else {
-
-                switch( truncation ) {
-
-                    case Constants.TRUNC_NONE:
-                    case Constants.TRUNC_LEFT:
-                    case Constants.TRUNC_RIGHT:
-                    case Constants.TRUNC_BOTH:
-                    case Constants.TRUNC_EQUALS: {
-                        this.expr       = expr;
-                        this.truncation = truncation;
-                        this.collator   = collator;
-                        break;
-                    }
-
-                    default: {
-                        throw( new EXistException( "Invalid truncation value: " + truncation ) );
-                    }
-                }
-            }
-        }
-
-        public boolean matches( CharSequence term )
-        {
-            boolean matches = false;
-
-            switch( truncation ) {
-
-                case Constants.TRUNC_LEFT: {
-                    matches = Collations.endsWith( collator, term.toString(), expr );
-                    break;
-                }
-
-                case Constants.TRUNC_RIGHT: {
-                    matches = Collations.startsWith( collator, term.toString(), expr );
-                    break;
-                }
-
-                case Constants.TRUNC_BOTH: {
-                    matches = Collations.contains( collator, term.toString(), expr );
-                    break;
-                }
-
-                case Constants.TRUNC_NONE:
-                case Constants.TRUNC_EQUALS:
-                default: {
-                    matches = Collations.equals( collator, term.toString(), expr );
-                }
+        CollatorMatcher(final String expr, final StringTruncationOperator truncation, final Collator collator) throws EXistException {
+            if (collator == null) {
+                throw new EXistException("Collator must be non-null");
             }
 
-            return( matches );
+            this.expr = expr;
+            this.truncation = truncation;
+            this.collator = collator;
+        }
+
+        @Override
+        public boolean matches(final CharSequence term) {
+            final boolean matches;
+
+            switch (truncation) {
+                case LEFT:
+                    matches = Collations.endsWith(collator, term.toString(), expr);
+                    break;
+
+                case RIGHT:
+                    matches = Collations.startsWith(collator, term.toString(), expr);
+                    break;
+
+                case BOTH:
+                    matches = Collations.contains(collator, term.toString(), expr);
+                    break;
+
+                case NONE:
+                case EQUALS:
+                default:
+                    matches = Collations.equals(collator, term.toString(), expr);
+            }
+
+            return matches;
         }
     }
-
 
     //***************************************************************************
     //*
@@ -1505,226 +1249,191 @@ public class NativeValueIndex implements ContentLoadingObserver {
     //*
     //***************************************************************************/
 
-    /**
-     * TODO document.
-     */
-    class SearchCallback implements BTreeCallback
-    {
-        DocumentSet docs;
-        NodeSet     contextSet;
-        NodeSet     result;
-        boolean     returnAncestor;
+    private class SearchCallback implements BTreeCallback {
+        private final DocumentSet docs;
+        private final NodeSet contextSet;
+        private final NodeSet result;
+        private final boolean returnAncestor;
 
-        public SearchCallback( DocumentSet docs, NodeSet contextSet, NodeSet result, boolean returnAncestor )
-        {
-            this.docs           = docs;
-            this.contextSet     = contextSet;
-            this.result         = result;
+        public SearchCallback(final DocumentSet docs, final NodeSet contextSet, final NodeSet result, boolean returnAncestor) {
+            this.docs = docs;
+            this.contextSet = contextSet;
+            this.result = result;
             this.returnAncestor = returnAncestor;
         }
 
-        /* (non-Javadoc)
-         * @see org.dbxml.core.filer.BTreeCallback#indexInfo(org.dbxml.core.data.Value, long)
-         */
-        public boolean indexInfo( Value value, long pointer ) throws TerminatedException
-        {
-            VariableByteInput is;
-
+        @Override
+        public boolean indexInfo(final Value value, final long pointer) throws TerminatedException {
+            final VariableByteInput is;
             try {
-                is = dbValues.getAsStream( pointer );
-            }
-            catch( final IOException e ) {
-                LOG.error( e.getMessage(), e );
-                return( true );
+                is = dbValues.getAsStream(pointer);
+            } catch (final IOException e) {
+                LOG.error(e.getMessage(), e);
+                return (true);
             }
 
             try {
-
-                while( is.available() > 0 ) {
-                    final int          storedDocId    = is.readInt();
-                    final int          gidsCount      = is.readInt();
-                    final int          size           = is.readFixedInt();
-                    final DocumentImpl storedDocument = docs.getDoc( storedDocId );
+                while (is.available() > 0) {
+                    final int storedDocId = is.readInt();
+                    final int gidsCount = is.readInt();
+                    final int size = is.readFixedInt();
+                    final DocumentImpl storedDocument = docs.getDoc(storedDocId);
 
                     //Exit if the document is not concerned
-                    if( storedDocument == null ) {
-                        is.skipBytes( size );
+                    if (storedDocument == null) {
+                        is.skipBytes(size);
                         continue;
                     }
 
                     //Process the nodes
-                    NodeId    previous   = null;
-                    NodeId    nodeId;
-                    NodeProxy storedNode;
+                    NodeId previous = null;
 
-                    for( int j = 0; j < gidsCount; j++ ) {
-                        nodeId     = broker.getBrokerPool().getNodeFactory().createFromStream( previous, is );
-                        previous   = nodeId;
-                        storedNode = new NodeProxy( storedDocument, nodeId );
+                    for (int j = 0; j < gidsCount; j++) {
+                        final NodeId nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(previous, is);
+                        previous = nodeId;
+                        final NodeProxy storedNode = new NodeProxy(storedDocument, nodeId);
 
                         // if a context set is specified, we can directly check if the
                         // matching node is a descendant of one of the nodes
                         // in the context set.
-                        if( contextSet != null ) {
-                            final int sizeHint = contextSet.getSizeHint( storedDocument );
+                        if (contextSet != null) {
+                            final int sizeHint = contextSet.getSizeHint(storedDocument);
 
-                            if( returnAncestor ) {
-//                                NodeProxy parentNode = contextSet.parentWithChild( storedNode, false, true, NodeProxy.UNKNOWN_NODE_LEVEL );
-                            	final NodeProxy parentNode = contextSet.get(storedNode);
-                                if( parentNode != null ) {
-                                    result.add( parentNode, sizeHint );
+                            if (returnAncestor) {
+                                final NodeProxy parentNode = contextSet.get(storedNode);
+                                if (parentNode != null) {
+                                    result.add(parentNode, sizeHint);
                                 }
                             } else {
-                                result.add( storedNode, sizeHint );
+                                result.add(storedNode, sizeHint);
                             }
 
                             // otherwise, we add all nodes without check
                         } else {
-                            result.add( storedNode, Constants.NO_SIZE_HINT );
+                            result.add(storedNode, Constants.NO_SIZE_HINT);
                         }
                     }
                 }
+            } catch (final IOException e) {
+                LOG.error(e.getMessage(), e);
             }
-            catch( final IOException e ) {
-                LOG.error( e.getMessage(), e );
-            }
-            return( false );
+
+            return false;
         }
     }
 
+    private final class MatcherCallback extends SearchCallback {
+        private final TermMatcher matcher;
+        private final XMLString key = new XMLString(128);
 
-    /**
-     * TODO document.
-     */
-    private class MatcherCallback extends SearchCallback
-    {
-        private TermMatcher matcher;
-        private XMLString   key = new XMLString( 128 );
-
-        public MatcherCallback( DocumentSet docs, NodeSet contextSet, NodeSet result, TermMatcher matcher, boolean returnAncestor )
-        {
-            super( docs, contextSet, result, returnAncestor );
+        MatcherCallback(final DocumentSet docs, final NodeSet contextSet, final NodeSet result, final TermMatcher matcher, final boolean returnAncestor) {
+            super(docs, contextSet, result, returnAncestor);
             this.matcher = matcher;
         }
 
-        public boolean indexInfo( Value value, long pointer ) throws TerminatedException
-        {
-            int offset;
-
-            if( value.data()[value.start()] == IDX_GENERIC ) {
+        @Override
+        public boolean indexInfo(final Value value, final long pointer) throws TerminatedException {
+            final int offset;
+            if (value.data()[value.start()] == IndexType.GENERIC.val) {
                 offset = SimpleValue.OFFSET_VALUE + NativeValueIndex.LENGTH_VALUE_TYPE;
             } else {
                 offset = QNameValue.OFFSET_VALUE + NativeValueIndex.LENGTH_VALUE_TYPE;
             }
             key.reuse();
-            UTF8.decode( value.data(), value.start() + offset, value.getLength() - offset, key );
+            UTF8.decode(value.data(), value.start() + offset, value.getLength() - offset, key);
 
-            if( matcher.matches( key ) ) {
-                super.indexInfo( value, pointer );
+            if (matcher.matches(key)) {
+                super.indexInfo(value, pointer);
             }
-            return( true );
+            return true;
         }
     }
 
+    private final class IndexScanCallback implements BTreeCallback {
+        private final DocumentSet docs;
+        private final NodeSet contextSet;
+        private final int type;
+        private final boolean byQName;
+        private final Map<AtomicValue, ValueOccurrences> map = new TreeMap<>();
 
-    private final class IndexScanCallback implements BTreeCallback
-    {
-        private DocumentSet docs;
-        private NodeSet     contextSet;
-        private Map<AtomicValue, ValueOccurrences> map = new TreeMap<AtomicValue, ValueOccurrences>();
-        private int         type;
-        private boolean     byQName;
-
-        IndexScanCallback( DocumentSet docs, NodeSet contextSet, int type, boolean byQName )
-        {
-            this.docs       = docs;
+        IndexScanCallback(final DocumentSet docs, final NodeSet contextSet, final int type, final boolean byQName) {
+            this.docs = docs;
             this.contextSet = contextSet;
-            this.type       = type;
-            this.byQName    = byQName;
+            this.type = type;
+            this.byQName = byQName;
         }
 
-        /* (non-Javadoc)
-         * @see org.dbxml.core.filer.BTreeCallback#indexInfo(org.dbxml.core.data.Value, long)
-         */
-        public boolean indexInfo( Value key, long pointer ) throws TerminatedException
-        {
-            AtomicValue atomic;
-
+        @Override
+        public boolean indexInfo(final Value key, final long pointer) throws TerminatedException {
+            final AtomicValue atomic;
             try {
-
-                if( byQName ) {
-                    atomic = ( AtomicValue )QNameValue.deserialize( key.data(), key.start(), key.getLength() );
+                if (byQName) {
+                    atomic = (AtomicValue) QNameValue.deserialize(key.data(), key.start(), key.getLength());
                 } else {
-                    atomic = ( AtomicValue )SimpleValue.deserialize( key.data(), key.start(), key.getLength() );
+                    atomic = (AtomicValue) SimpleValue.deserialize(key.data(), key.start(), key.getLength());
                 }
 
-                if( atomic.getType() != type ) {
-                    return( false );
+                if (atomic.getType() != type) {
+                    return false;
                 }
+            } catch (final EXistException e) {
+                LOG.error(e.getMessage(), e);
+                return true;
             }
-            catch( final EXistException e ) {
-                LOG.error( e.getMessage(), e );
-                return( true );
-            }
-            VariableByteInput is;
 
+            final VariableByteInput is;
             try {
-                is = dbValues.getAsStream( pointer );
-            }
-            catch( final IOException e ) {
-                LOG.error( e.getMessage(), e );
-                return( true );
+                is = dbValues.getAsStream(pointer);
+            } catch (final IOException e) {
+                LOG.error(e.getMessage(), e);
+                return true;
             }
 
-            ValueOccurrences oc = map.get( atomic );
-
+            ValueOccurrences oc = map.get(atomic);
             try {
-
-                while( is.available() > 0 ) {
-                    boolean      docAdded       = false;
-                    final int          storedDocId    = is.readInt();
-                    final int          gidsCount      = is.readInt();
-                    final int          size           = is.readFixedInt();
-                    final DocumentImpl storedDocument = docs.getDoc( storedDocId );
+                while (is.available() > 0) {
+                    boolean docAdded = false;
+                    final int storedDocId = is.readInt();
+                    final int gidsCount = is.readInt();
+                    final int size = is.readFixedInt();
+                    final DocumentImpl storedDocument = docs.getDoc(storedDocId);
 
                     //Exit if the document is not concerned
-                    if( storedDocument == null ) {
-                        is.skipBytes( size );
+                    if (storedDocument == null) {
+                        is.skipBytes(size);
                         continue;
                     }
-                    NodeId    lastParentId = null;
-                    NodeId    previous     = null;
-                    NodeId    nodeId;
-                    NodeProxy parentNode;
+                    NodeId lastParentId = null;
 
-                    for( int j = 0; j < gidsCount; j++ ) {
-                        nodeId   = broker.getBrokerPool().getNodeFactory().createFromStream( previous, is );
+                    NodeId previous = null;
+                    for (int j = 0; j < gidsCount; j++) {
+                        final NodeId nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(previous, is);
                         previous = nodeId;
 
-                        if( contextSet != null ) {
-                        	parentNode = contextSet.get(storedDocument, nodeId);
-//                            parentNode = contextSet.parentWithChild( storedDocument, nodeId, false, true );
+                        final NodeProxy parentNode;
+                        if (contextSet != null) {
+                            parentNode = contextSet.get(storedDocument, nodeId);
                         } else {
-                            parentNode = new NodeProxy( storedDocument, nodeId );
+                            parentNode = new NodeProxy(storedDocument, nodeId);
                         }
 
-                        if( parentNode != null ) {
+                        if (parentNode != null) {
 
-                            if( oc == null ) {
-                                oc = new ValueOccurrences( atomic );
-                                map.put( atomic, oc );
+                            if (oc == null) {
+                                oc = new ValueOccurrences(atomic);
+                                map.put(atomic, oc);
                             }
 
                             //Handle this very special case : /item[foo = "bar"] vs. /item[@foo = "bar"]
                             //Same value, same parent but different nodes !
                             //Not sure if we should track the contextSet's parentId... (just like we do)
                             //... or the way the contextSet is created (thus keeping track of the NodeTest)
-                            if( ( lastParentId == null ) || !lastParentId.equals( parentNode.getNodeId() ) ) {
-                                oc.addOccurrences( 1 );
+                            if (lastParentId == null || !lastParentId.equals(parentNode.getNodeId())) {
+                                oc.addOccurrences(1);
                             }
 
-                            if( !docAdded ) {
-                                oc.addDocument( storedDocument );
+                            if (!docAdded) {
+                                oc.addDocument(storedDocument);
                                 docAdded = true;
                             }
                             lastParentId = parentNode.getNodeId();
@@ -1734,11 +1443,11 @@ public class NativeValueIndex implements ContentLoadingObserver {
                         //otherwise, we add all nodes without check
                     }
                 }
+            } catch (final IOException e) {
+                LOG.error(e.getMessage(), e);
             }
-            catch( final IOException e ) {
-                LOG.error( e.getMessage(), e );
-            }
-            return( true );
+
+            return true;
         }
     }
 
@@ -1749,253 +1458,216 @@ public class NativeValueIndex implements ContentLoadingObserver {
     //*
     //***************************************************************************/
 
-    private static class QNameKey implements Comparable<QNameKey>
-    {
-        private QName       qname;
-        private AtomicValue value;
+    private static class QNameKey implements Comparable<QNameKey> {
+        private final static TypedQNameComparator comparator = new TypedQNameComparator();
 
-        public QNameKey( QName qname, AtomicValue atomic )
-        {
+        private final QName qname;
+        private final AtomicValue value;
+
+        public QNameKey(final QName qname, final AtomicValue atomic) {
             this.qname = qname;
             this.value = atomic;
         }
 
-        final static TypedQNameComparator comparator = new TypedQNameComparator();
-
-        public int compareTo( QNameKey other )
-        {
+        @Override
+        public int compareTo(final QNameKey other) {
             final int cmp = comparator.compare(qname, other.qname);
 
-            if( cmp == 0 ) {
-                return( value.compareTo( other.value ) );
+            if (cmp == 0) {
+                return value.compareTo(other.value);
             } else {
-                return( cmp );
+                return cmp;
             }
         }
     }
 
+    private final static class SimpleValue extends Value {
+        static final int OFFSET_IDX_TYPE = 0;
+        static final int LENGTH_IDX_TYPE = 1; //sizeof byte
+        static final int OFFSET_COLLECTION_ID = OFFSET_IDX_TYPE + LENGTH_IDX_TYPE; //1
+        static final int OFFSET_VALUE = OFFSET_COLLECTION_ID + Collection.LENGTH_COLLECTION_ID; // 3
 
-    private static class SimpleValue extends Value
-    {
-        public static int OFFSET_IDX_TYPE      = 0;
-        public static int LENGTH_IDX_TYPE      = 1; //sizeof byte
-        public static int OFFSET_COLLECTION_ID = OFFSET_IDX_TYPE + LENGTH_IDX_TYPE; //1
-        public static int OFFSET_VALUE         = OFFSET_COLLECTION_ID + Collection.LENGTH_COLLECTION_ID; // 3
-
-        public SimpleValue( int collectionId )
-        {
-            len                   = LENGTH_IDX_TYPE + Collection.LENGTH_COLLECTION_ID;
-            data                  = new byte[len];
-            data[OFFSET_IDX_TYPE] = IDX_GENERIC;
-            ByteConversion.intToByte( collectionId, data, OFFSET_COLLECTION_ID );
+        SimpleValue(final int collectionId) {
+            len = LENGTH_IDX_TYPE + Collection.LENGTH_COLLECTION_ID;
+            data = new byte[len];
+            data[OFFSET_IDX_TYPE] = IndexType.GENERIC.val;
+            ByteConversion.intToByte(collectionId, data, OFFSET_COLLECTION_ID);
             pos = OFFSET_IDX_TYPE;
         }
 
-
-        public SimpleValue( int collectionId, Indexable atomic ) throws EXistException
-        {
-            data                  = atomic.serializeValue( OFFSET_VALUE );
-            len                   = data.length;
-            pos                   = OFFSET_IDX_TYPE;
-            data[OFFSET_IDX_TYPE] = IDX_GENERIC;
-            ByteConversion.intToByte( collectionId, data, OFFSET_COLLECTION_ID );
+        SimpleValue(final int collectionId, final Indexable atomic) throws EXistException {
+            data = atomic.serializeValue(OFFSET_VALUE);
+            len = data.length;
+            pos = OFFSET_IDX_TYPE;
+            data[OFFSET_IDX_TYPE] = IndexType.GENERIC.val;
+            ByteConversion.intToByte(collectionId, data, OFFSET_COLLECTION_ID);
         }
 
-        public static Indexable deserialize( byte[] data, int start, int len ) throws EXistException
-        {
-            return( ValueIndexFactory.deserialize( data, start + OFFSET_VALUE, len - OFFSET_VALUE ) );
+        public static Indexable deserialize(final byte[] data, final int start, final int len) throws EXistException {
+            return ValueIndexFactory.deserialize(data, start + OFFSET_VALUE, len - OFFSET_VALUE);
         }
     }
 
+    private static class SimplePrefixValue extends Value {
+        static final int LENGTH_VALUE_TYPE = 1; //sizeof byte
 
-    private static class SimplePrefixValue extends Value
-    {
-        public static int LENGTH_VALUE_TYPE = 1; //sizeof byte
-
-        public SimplePrefixValue( int collectionId, int type )
-        {
-            len                               = SimpleValue.LENGTH_IDX_TYPE + Collection.LENGTH_COLLECTION_ID + LENGTH_VALUE_TYPE;
-            data                              = new byte[len];
-            data[SimpleValue.OFFSET_IDX_TYPE] = IDX_GENERIC;
-            ByteConversion.intToByte( collectionId, data, SimpleValue.OFFSET_COLLECTION_ID );
-            data[SimpleValue.OFFSET_VALUE] = ( byte )type;
-            pos                            = SimpleValue.OFFSET_IDX_TYPE;
+        SimplePrefixValue(final int collectionId, final int type) {
+            len = SimpleValue.LENGTH_IDX_TYPE + Collection.LENGTH_COLLECTION_ID + LENGTH_VALUE_TYPE;
+            data = new byte[len];
+            data[SimpleValue.OFFSET_IDX_TYPE] = IndexType.GENERIC.val;
+            ByteConversion.intToByte(collectionId, data, SimpleValue.OFFSET_COLLECTION_ID);
+            data[SimpleValue.OFFSET_VALUE] = (byte) type;
+            pos = SimpleValue.OFFSET_IDX_TYPE;
         }
     }
 
+    private static class QNameValue extends Value {
+        static final int LENGTH_IDX_TYPE = 1; //sizeof byte
+        static final int LENGTH_QNAME_TYPE = 1; //sizeof byte
 
-    private static class QNameValue extends Value
-    {
-        public static int LENGTH_IDX_TYPE      = 1; //sizeof byte
-        public static int LENGTH_QNAME_TYPE    = 1; //sizeof byte
+        static final int OFFSET_IDX_TYPE = 0;
+        static final int OFFSET_COLLECTION_ID = OFFSET_IDX_TYPE + LENGTH_IDX_TYPE; //1
+        static final int OFFSET_QNAME_TYPE = OFFSET_COLLECTION_ID + Collection.LENGTH_COLLECTION_ID; //3
+        static final int OFFSET_NS_URI = OFFSET_QNAME_TYPE + LENGTH_QNAME_TYPE; //4
+        static final int OFFSET_LOCAL_NAME = OFFSET_NS_URI + SymbolTable.LENGTH_NS_URI; //6
+        static final int OFFSET_VALUE = OFFSET_LOCAL_NAME + SymbolTable.LENGTH_LOCAL_NAME; //8
 
-        public static int OFFSET_IDX_TYPE      = 0;
-        public static int OFFSET_COLLECTION_ID = OFFSET_IDX_TYPE + LENGTH_IDX_TYPE; //1
-        public static int OFFSET_QNAME_TYPE    = OFFSET_COLLECTION_ID + Collection.LENGTH_COLLECTION_ID; //3
-        public static int OFFSET_NS_URI        = OFFSET_QNAME_TYPE + LENGTH_QNAME_TYPE; //4
-        public static int OFFSET_LOCAL_NAME    = OFFSET_NS_URI + SymbolTable.LENGTH_NS_URI; //6
-        public static int OFFSET_VALUE         = OFFSET_LOCAL_NAME + SymbolTable.LENGTH_LOCAL_NAME; //8
-
-        public QNameValue( int collectionId )
-        {
-            len                   = LENGTH_IDX_TYPE + Collection.LENGTH_COLLECTION_ID;
-            data                  = new byte[len];
-            data[OFFSET_IDX_TYPE] = IDX_QNAME;
-            ByteConversion.intToByte( collectionId, data, OFFSET_COLLECTION_ID );
+        public QNameValue(final int collectionId) {
+            len = LENGTH_IDX_TYPE + Collection.LENGTH_COLLECTION_ID;
+            data = new byte[len];
+            data[OFFSET_IDX_TYPE] = IndexType.QNAME.val;
+            ByteConversion.intToByte(collectionId, data, OFFSET_COLLECTION_ID);
             pos = OFFSET_IDX_TYPE;
         }
 
-
-        public QNameValue( int collectionId, QName qname, Indexable atomic, SymbolTable symbols ) throws EXistException
-        {
-            data = atomic.serializeValue( OFFSET_VALUE );
-            len  = data.length;
-            pos  = OFFSET_IDX_TYPE;
-            final short namespaceId = symbols.getNSSymbol( qname.getNamespaceURI() );
-            final short localNameId = symbols.getSymbol( qname.getLocalPart() );
-            data[OFFSET_IDX_TYPE] = IDX_QNAME;
-            ByteConversion.intToByte( collectionId, data, OFFSET_COLLECTION_ID );
+        public QNameValue(final int collectionId, final QName qname, final Indexable atomic, final SymbolTable symbols) throws EXistException {
+            data = atomic.serializeValue(OFFSET_VALUE);
+            len = data.length;
+            pos = OFFSET_IDX_TYPE;
+            final short namespaceId = symbols.getNSSymbol(qname.getNamespaceURI());
+            final short localNameId = symbols.getSymbol(qname.getLocalPart());
+            data[OFFSET_IDX_TYPE] = IndexType.QNAME.val;
+            ByteConversion.intToByte(collectionId, data, OFFSET_COLLECTION_ID);
             data[OFFSET_QNAME_TYPE] = qname.getNameType();
-            ByteConversion.shortToByte( namespaceId, data, OFFSET_NS_URI );
-            ByteConversion.shortToByte( localNameId, data, OFFSET_LOCAL_NAME );
+            ByteConversion.shortToByte(namespaceId, data, OFFSET_NS_URI);
+            ByteConversion.shortToByte(localNameId, data, OFFSET_LOCAL_NAME);
         }
 
-        public static Indexable deserialize( byte[] data, int start, int len ) throws EXistException
-        {
-            return( ValueIndexFactory.deserialize( data, start + OFFSET_VALUE, len - OFFSET_VALUE ) );
+        public static Indexable deserialize(final byte[] data, final int start, final int len) throws EXistException {
+            return ValueIndexFactory.deserialize(data, start + OFFSET_VALUE, len - OFFSET_VALUE);
         }
 
-
-        public static byte getType( byte[] data, int start )
-        {
-            return( data[start + OFFSET_QNAME_TYPE] );
+        public static byte getType(final byte[] data, final int start) {
+            return data[start + OFFSET_QNAME_TYPE];
         }
     }
 
+    private static class QNamePrefixValue extends Value {
+        static final int LENGTH_VALUE_TYPE = 1; //sizeof byte
 
-    private static class QNamePrefixValue extends Value
-    {
-        public static int LENGTH_VALUE_TYPE = 1; //sizeof byte
-
-        public QNamePrefixValue( int collectionId, QName qname, int type, SymbolTable symbols )
-        {
-            len                              = QNameValue.OFFSET_VALUE + LENGTH_VALUE_TYPE;
-            data                             = new byte[len];
-            data[QNameValue.OFFSET_IDX_TYPE] = IDX_QNAME;
-            ByteConversion.intToByte( collectionId, data, QNameValue.OFFSET_COLLECTION_ID );
-            final short namespaceId            = symbols.getNSSymbol( qname.getNamespaceURI() );
-            final short localNameId            = symbols.getSymbol( qname.getLocalPart() );
+        QNamePrefixValue(final int collectionId, final QName qname, final int type, final SymbolTable symbols) {
+            len = QNameValue.OFFSET_VALUE + LENGTH_VALUE_TYPE;
+            data = new byte[len];
+            data[QNameValue.OFFSET_IDX_TYPE] = IndexType.QNAME.val;
+            ByteConversion.intToByte(collectionId, data, QNameValue.OFFSET_COLLECTION_ID);
+            final short namespaceId = symbols.getNSSymbol(qname.getNamespaceURI());
+            final short localNameId = symbols.getSymbol(qname.getLocalPart());
             data[QNameValue.OFFSET_QNAME_TYPE] = qname.getNameType();
-            ByteConversion.shortToByte( namespaceId, data, QNameValue.OFFSET_NS_URI );
-            ByteConversion.shortToByte( localNameId, data, QNameValue.OFFSET_LOCAL_NAME );
-            data[QNameValue.OFFSET_VALUE] = ( byte )type;
-            pos                           = QNameValue.OFFSET_IDX_TYPE;
+            ByteConversion.shortToByte(namespaceId, data, QNameValue.OFFSET_NS_URI);
+            ByteConversion.shortToByte(localNameId, data, QNameValue.OFFSET_LOCAL_NAME);
+            data[QNameValue.OFFSET_VALUE] = (byte) type;
+            pos = QNameValue.OFFSET_IDX_TYPE;
         }
     }
 
+    private class ValueIndexStreamListener extends AbstractStreamListener {
+        private Deque<XMLString> contentStack = null;
 
-    private class ValueIndexStreamListener extends AbstractStreamListener
-    {
-        private Stack<XMLString> contentStack = null;
-
-        public ValueIndexStreamListener()
-        {
+        ValueIndexStreamListener() {
             super();
         }
 
-        public void startElement( Txn transaction, ElementImpl element, NodePath path )
-        {
-            final GeneralRangeIndexSpec rSpec = doc.getCollection().getIndexByPathConfiguration( broker, path );
-            final QNameRangeIndexSpec   qSpec = doc.getCollection().getIndexByQNameConfiguration( broker, element.getQName() );
+        @Override
+        public void startElement(final Txn transaction, final ElementImpl element, final NodePath path) {
+            final GeneralRangeIndexSpec rSpec = doc.getCollection().getIndexByPathConfiguration(broker, path);
+            final QNameRangeIndexSpec qSpec = doc.getCollection().getIndexByQNameConfiguration(broker, element.getQName());
 
-            if( ( rSpec != null ) || ( qSpec != null ) ) {
-
-                if( contentStack == null ) {
-                    contentStack = new Stack<XMLString>();
+            if (rSpec != null || qSpec != null) {
+                if (contentStack == null) {
+                    contentStack = new ArrayDeque<>();
                 }
                 final XMLString contentBuf = new XMLString();
-                contentStack.push( contentBuf );
+                contentStack.push(contentBuf);
             }
-            super.startElement( transaction, element, path );
+            super.startElement(transaction, element, path);
         }
 
+        @Override
+        public void attribute(final Txn transaction, final AttrImpl attrib, final NodePath path) {
+            final GeneralRangeIndexSpec rSpec = doc.getCollection().getIndexByPathConfiguration(broker, path);
+            final QNameRangeIndexSpec qSpec = doc.getCollection().getIndexByQNameConfiguration(broker, attrib.getQName());
 
-        public void attribute( Txn transaction, AttrImpl attrib, NodePath path )
-        {
-            final GeneralRangeIndexSpec rSpec = doc.getCollection().getIndexByPathConfiguration( broker, path );
-            final QNameRangeIndexSpec   qSpec = doc.getCollection().getIndexByQNameConfiguration( broker, attrib.getQName() );
-
-            if( rSpec != null ) {
-                storeAttribute( attrib, path, NativeValueIndex.WITHOUT_PATH, rSpec, false );
+            if (rSpec != null) {
+                storeAttribute(attrib, path, rSpec, false);
             }
 
-            if( qSpec != null ) {
-                storeAttribute( attrib, path, NativeValueIndex.WITHOUT_PATH, qSpec, false );
+            if (qSpec != null) {
+                storeAttribute(attrib, path, qSpec, false);
             }
 
-            switch( attrib.getType() ) {
-
-                case AttrImpl.ID: {
-                    storeAttribute( attrib, attrib.getValue(), path, NativeValueIndex.WITHOUT_PATH, Type.ID, NativeValueIndex.IDX_GENERIC, false );
+            switch (attrib.getType()) {
+                case AttrImpl.ID:
+                    storeAttribute(attrib, attrib.getValue(), Type.ID, IndexType.GENERIC, false);
                     break;
-                }
 
-                case AttrImpl.IDREF: {
-                    storeAttribute( attrib, attrib.getValue(), path, NativeValueIndex.WITHOUT_PATH, Type.IDREF, NativeValueIndex.IDX_GENERIC, false );
+                case AttrImpl.IDREF:
+                    storeAttribute(attrib, attrib.getValue(), Type.IDREF, IndexType.GENERIC, false);
                     break;
-                }
 
-                case AttrImpl.IDREFS: {
-                    final StringTokenizer tokenizer = new StringTokenizer( attrib.getValue(), " " );
-                    while( tokenizer.hasMoreTokens() ) {
-                        storeAttribute( attrib, tokenizer.nextToken(), path, NativeValueIndex.WITHOUT_PATH, Type.IDREF, NativeValueIndex.IDX_GENERIC, false );
+                case AttrImpl.IDREFS:
+                    final StringTokenizer tokenizer = new StringTokenizer(attrib.getValue(), " ");
+                    while (tokenizer.hasMoreTokens()) {
+                        storeAttribute(attrib, tokenizer.nextToken(), Type.IDREF, IndexType.GENERIC, false);
                     }
                     break;
-                }
 
                 default:
                     // do nothing special
             }
-            super.attribute( transaction, attrib, path );
+            super.attribute(transaction, attrib, path);
         }
 
+        @Override
+        public void endElement(final Txn transaction, final ElementImpl element, final NodePath path) {
+            final GeneralRangeIndexSpec rSpec = doc.getCollection().getIndexByPathConfiguration(broker, path);
+            final QNameRangeIndexSpec qSpec = doc.getCollection().getIndexByQNameConfiguration(broker, element.getQName());
 
-        public void endElement( Txn transaction, ElementImpl element, NodePath path )
-        {
-            final GeneralRangeIndexSpec rSpec = doc.getCollection().getIndexByPathConfiguration( broker, path );
-            final QNameRangeIndexSpec   qSpec = doc.getCollection().getIndexByQNameConfiguration( broker, element.getQName() );
+            if (rSpec != null || qSpec != null) {
+                final XMLString content = contentStack.pop();
 
-            if( ( rSpec != null ) || ( qSpec != null ) ) {
-                final XMLString content = ( XMLString )contentStack.pop();
-
-                if( rSpec != null ) {
-                    storeElement( element, content.toString(), RangeIndexSpec.indexTypeToXPath( rSpec.getIndexType() ), NativeValueIndex.IDX_GENERIC, false );
+                if (rSpec != null) {
+                    storeElement(element, content.toString(), RangeIndexSpec.indexTypeToXPath(rSpec.getIndexType()), IndexType.GENERIC, false);
                 }
 
-                if( qSpec != null ) {
-                    storeElement( element, content.toString(), RangeIndexSpec.indexTypeToXPath( qSpec.getIndexType() ), NativeValueIndex.IDX_QNAME, false );
-                }
-            }
-            super.endElement( transaction, element, path );
-        }
-
-
-        public void characters( Txn transaction, AbstractCharacterData text, NodePath path )
-        {
-            if( ( contentStack != null ) && !contentStack.isEmpty() ) {
-
-                for( int i = 0; i < contentStack.size(); i++ ) {
-                    final XMLString next = ( XMLString )contentStack.get( i );
-                    next.append( text.getXMLString() );
+                if (qSpec != null) {
+                    storeElement(element, content.toString(), RangeIndexSpec.indexTypeToXPath(qSpec.getIndexType()), IndexType.QNAME, false);
                 }
             }
-            super.characters( transaction, text, path );
+            super.endElement(transaction, element, path);
         }
 
+        @Override
+        public void characters(final Txn transaction, final AbstractCharacterData text, final NodePath path) {
+            final XMLString xmlString = text.getXMLString();
+            if (contentStack != null) {
+                contentStack.forEach(next -> next.append(xmlString));
+            }
+            super.characters(transaction, text, path);
+        }
 
-        public IndexWorker getWorker()
-        {
-            return( null );
+        @Override
+        public IndexWorker getWorker() {
+            return null;
         }
     }
 }

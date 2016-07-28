@@ -31,27 +31,32 @@ import org.exist.storage.txn.Txn;
  */
 public interface StreamListener {
 
-    /**
-     * Undefined mode
-     */	
-    public final static int UNKNOWN = -1;
+    enum ReindexMode {
+        /**
+         * Undefined mode
+         */
+        UNKNOWN,
 
-    /**
-     * Mode for storing nodes of a document
-     */	
-    public final static int STORE = 0;
+        /**
+         * Mode for storing nodes of a document
+         */
+        STORE,
 
-    /**
-     * Mode for removing all the nodes of a document
-     */
-    public final static int REMOVE_ALL_NODES = 1;
+        /**
+         * Mode for removing all the nodes of a document
+         */
+        REMOVE_ALL_NODES,
 
-    /**
-     * Mode for removing some nodes of a document
-     */
-    public final static int REMOVE_SOME_NODES = 2;
+        /**
+         * Mode for removing some nodes of a document
+         */
+        REMOVE_SOME_NODES,
 
-    public final static int REMOVE_BINARY = 3;
+        /**
+         * Mode for removing a binary document
+         */
+        REMOVE_BINARY
+    }
 
     /**
      * Returns the IndexWorker that owns this listener.
@@ -75,6 +80,13 @@ public interface StreamListener {
      * @return the next listener in the chain.
      */
     StreamListener getNextInChain();
+
+    /**
+     * Starting to index a document
+     *
+     * @param transaction the current transaction
+     */
+    void startIndexDocument(Txn transaction);
 
     /**
      * Processed the opening tag of an element.
@@ -110,4 +122,11 @@ public interface StreamListener {
      * @param path the current node path
      */
     void endElement(Txn transaction, ElementImpl element, NodePath path);
+
+    /**
+     * Finishing storing a document
+     *
+     * @param transaction the current transaction
+     */
+    void endIndexDocument(Txn transaction);
 }

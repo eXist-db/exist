@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <Properties>
-        <Property name="logs">webapp/WEB-INF/logs</Property>
+        <Property name="logs">${log4j:configParentLocation}/webapp/WEB-INF/logs</Property>
         <Property name="rollover.max.size">10MB</Property>
         <Property name="rollover.max">14</Property>
         <Property name="rollover.file.pattern">%d{yyyyMMddHHmmss}</Property>
@@ -21,15 +21,7 @@
             <DefaultRolloverStrategy max="${rollover.max}"/>
             <PatternLayout pattern="${exist.file.pattern}"/>
         </RollingRandomAccessFile>
-        
-        <RollingRandomAccessFile name="exist.xacml" filePattern="${logs}/xacml.${rollover.file.pattern}.log.gz" fileName="${logs}/xacml.log">
-            <Policies>
-                <SizeBasedTriggeringPolicy size="${rollover.max.size}"/>
-            </Policies>
-            <DefaultRolloverStrategy max="${rollover.max}"/>
-            <PatternLayout pattern="${exist.file.pattern}"/>
-        </RollingRandomAccessFile>
-        
+
         <RollingRandomAccessFile name="exist.xmldb" filePattern="${logs}/xmldb.${rollover.file.pattern}.log.gz" fileName="${logs}/xmldb.log">
             <Policies>
                 <SizeBasedTriggeringPolicy size="${rollover.max.size}"/>
@@ -151,10 +143,6 @@
         
         <Logger name="org.exist.backup.SystemExport" additivity="false" level="trace">
             <AppenderRef ref="exist.backup"/>
-        </Logger>
-        
-        <Logger name="org.exist.security.xacml" additivity="false" level="warn">
-            <AppenderRef ref="exist.xacml"/>
         </Logger>
         
         <Logger name="org.exist.xmldb" additivity="false" level="info">

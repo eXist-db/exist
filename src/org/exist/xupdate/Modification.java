@@ -42,8 +42,6 @@ import org.exist.dom.persistent.MutableDocumentSet;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.persistent.StoredNode;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.xacml.AccessContext;
-import org.exist.security.xacml.NullAccessContextException;
 import org.exist.source.Source;
 import org.exist.source.StringSource;
 import org.exist.storage.DBBroker;
@@ -89,8 +87,6 @@ public abstract class Modification {
 	protected MutableDocumentSet modifiedDocuments = new DefaultDocumentSet();
     protected Int2ObjectHashMap<DocumentTrigger> triggers;
 
-    private AccessContext accessCtx;
-
 	@SuppressWarnings("unused")
 	private Modification() {}
 	/**
@@ -107,20 +103,6 @@ public abstract class Modification {
         // DESIGN_QUESTION : wouldn't that be nice to apply selectStmt right here ?
 	}
 
-	public final void setAccessContext(AccessContext accessCtx) {
-		if(accessCtx == null)
-			{throw new NullAccessContextException();}
-		if(this.accessCtx != null)
-			{throw new IllegalStateException("Access context can only be set once.");}
-		this.accessCtx = accessCtx;
-		
-	}
-	public final AccessContext getAccessContext() {
-		if(accessCtx == null)
-			{throw new IllegalStateException("Access context has not been set.");}
-		return accessCtx;
-	}
-	
 	/**
      * Process the modification. This is the main method that has to be implemented 
      * by all subclasses.
@@ -157,7 +139,7 @@ public abstract class Modification {
 		CompiledXQuery compiled = pool.borrowCompiledXQuery(broker, source);
 		XQueryContext context;
 		if(compiled == null)
-		    {context = new XQueryContext(broker.getBrokerPool(), getAccessContext());}
+		    {context = new XQueryContext(broker.getBrokerPool());}
 		else
 		    {context = compiled.getContext();}
 
@@ -193,7 +175,7 @@ public abstract class Modification {
 	protected void declareVariables(XQueryContext context) throws XPathException {
 		for (final Iterator<Map.Entry<String, Object>> i = variables.entrySet().iterator(); i.hasNext(); ) {
 			final Map.Entry<String, Object> entry = (Map.Entry<String, Object>) i.next();
-			context.declareVariable(entry.getKey().toString(), entry.getValue());
+			context.declareVariable(entry.getKey(), entry.getValue());
 		}
 	}
 
@@ -336,16 +318,7 @@ public abstract class Modification {
 	}
 	
 	public String toString() {
-		final StringBuilder buf = new StringBuilder();
-		buf.append("<xu:");
-		buf.append(getName());
-		buf.append(" select=\"");
-		buf.append(selectStmt);
-		buf.append("\">");
-//		buf.append(XMLUtil.dump(content));
-		buf.append("</xu:");
-		buf.append(getName());
-		buf.append(">");
-		return buf.toString();
+		//		buf.append(XMLUtil.dump(content));
+		return "<xu:" + getName() + " select=\"" + selectStmt + "\">" + "</xu:" +	getName() +	">";
 	}
 }

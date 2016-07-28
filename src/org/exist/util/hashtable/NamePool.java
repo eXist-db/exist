@@ -23,21 +23,24 @@ package org.exist.util.hashtable;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+
+import net.jcip.annotations.ThreadSafe;
 import org.exist.dom.QName;
 import org.exist.xquery.Constants;
 
 /**
  * @author Pieter Deelen
  */
+@ThreadSafe
 public class NamePool {
 
-    private ConcurrentMap<WrappedQName, QName> pool;
+    private final ConcurrentMap<WrappedQName, QName> pool;
 
     public NamePool() {
-        pool = new ConcurrentHashMap<WrappedQName, QName>();
+        pool = new ConcurrentHashMap<>();
     }
-    
-    public QName getSharedName(QName name) {
+
+    public QName getSharedName(final QName name) {
         final WrappedQName wrapped = new WrappedQName(name);
         final QName sharedName = pool.putIfAbsent(wrapped, name);
         if (sharedName == null) {
@@ -54,25 +57,25 @@ public class NamePool {
      * Wrap it to overwrite those methods.
      */
     private static class WrappedQName implements Comparable<WrappedQName> {
-
-        private QName qname = null;
+        private final QName qname;
 
         public WrappedQName(final QName qname) {
             this.qname = qname;
         }
 
         @Override
-        public int compareTo(WrappedQName other) {
-            if(qname.getNameType() != other.qname.getNameType()) {
+        public int compareTo(final WrappedQName other) {
+            if (qname.getNameType() != other.qname.getNameType()) {
                 return qname.getNameType() < other.qname.getNameType() ? Constants.INFERIOR : Constants.SUPERIOR;
             }
-            int c;
-            if (qname.getNamespaceURI() == null)
-            {c = other.qname.getNamespaceURI() == null ? Constants.EQUAL : Constants.INFERIOR;}
-            else if (other.qname.getNamespaceURI() == null)
-            {c = Constants.SUPERIOR;}
-            else
-            {c = other.qname.getNamespaceURI().compareTo(other.qname.getNamespaceURI());}
+            final int c;
+            if (qname.getNamespaceURI() == null) {
+                c = other.qname.getNamespaceURI() == null ? Constants.EQUAL : Constants.INFERIOR;
+            } else if (other.qname.getNamespaceURI() == null) {
+                c = Constants.SUPERIOR;
+            } else {
+                c = other.qname.getNamespaceURI().compareTo(other.qname.getNamespaceURI());
+            }
             return c == Constants.EQUAL ? qname.getLocalPart().compareTo(other.qname.getLocalPart()) : c;
         }
 
@@ -85,20 +88,20 @@ public class NamePool {
         }
 
         @Override
-        public boolean equals(Object obj) {
-            if(obj == null || !(obj instanceof WrappedQName)) {
+        public boolean equals(final Object obj) {
+            if (obj == null || !(obj instanceof WrappedQName)) {
                 return false;
             }
 
             final WrappedQName other = (WrappedQName) obj;
             final int cmp = compareTo(other);
-            if(cmp != 0) {
+            if (cmp != 0) {
                 return false;
             }
 
-            if(qname.getPrefix() == null) {
+            if (qname.getPrefix() == null) {
                 return other.qname.getPrefix() == null;
-            } else if(other.qname.getPrefix() == null) {
+            } else if (other.qname.getPrefix() == null) {
                 return false;
             } else {
                 return qname.getPrefix().equals(other.qname.getPrefix());

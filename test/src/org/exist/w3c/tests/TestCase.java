@@ -30,6 +30,8 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.lang.reflect.Field;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -403,23 +405,18 @@ public abstract class TestCase {
 			throw new IOException(e);
         }
     }
-	
+
+	public static String readFileAsString(final Path file) throws IOException {
+		return new String(Files.readAllBytes(file));
+	}
+
 	public static String readFileAsString(File file) throws IOException {
-	    byte[] buffer = new byte[(int) file.length()];
-	    try(final FileInputStream f = new FileInputStream(file)) {
-	    	f.read(buffer);
-	    	return new String(buffer);
-	    }
+		return readFileAsString(file.toPath());
 	}
 	
 	public static String readFileAsString(File file, long limit) throws IOException {
 		if (file.length() >= limit) return "DATA TOO BIG";
-		
-	    byte[] buffer = new byte[(int) file.length()];
-	    try(final FileInputStream f = new FileInputStream(file)) {
-	    	f.read(buffer);
-	    	return new String(buffer);
-	    }
+	    return readFileAsString(file.toPath());
 	}
 
 	public String sequenceToString(Sequence seq) {

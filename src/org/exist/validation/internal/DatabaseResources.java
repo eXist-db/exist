@@ -30,7 +30,6 @@ import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
-import org.exist.security.xacml.AccessContext;
 import org.exist.source.ClassLoaderSource;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -136,7 +135,7 @@ public class DatabaseResources {
         try(final DBBroker broker = brokerPool.get(Optional.ofNullable(user))) {
 
             final XQuery xquery = brokerPool.getXQueryService();
-            final XQueryContext context = new XQueryContext(brokerPool, AccessContext.INTERNAL_PREFIX_LOOKUP);
+            final XQueryContext context = new XQueryContext(brokerPool);
             
             if(collection!=null){
                 context.declareVariable(COLLECTION, collection);

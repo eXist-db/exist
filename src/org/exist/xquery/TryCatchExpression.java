@@ -26,14 +26,15 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
-                
+import java.util.Optional;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import org.apache.xerces.impl.xpath.XPath;
 import org.exist.Namespaces;
 import org.exist.dom.QName;
 
-import org.exist.security.xacml.XACMLSource;
 import org.exist.xquery.ErrorCodes.ErrorCode;
 import org.exist.xquery.ErrorCodes.JavaErrorCode;
 import org.exist.xquery.util.ExpressionDumper;
@@ -304,8 +305,8 @@ public class TryCatchExpression extends AbstractExpression {
         err_module.setSequenceType(new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE));
 
         final Sequence module;
-        if (t != null && t instanceof XPathException && ((XPathException)t).getXACMLSource() != null) {
-            module = new StringValue(((XPathException)t).getXACMLSource().getKey());
+        if (t != null && t instanceof XPathException && ((XPathException)t).getSource() != null) {
+            module = new StringValue(((XPathException)t).getSource().path());
         } else {
             module = Sequence.EMPTY_SEQUENCE;
         }
@@ -344,22 +345,18 @@ public class TryCatchExpression extends AbstractExpression {
     // description is available (for example, if the error function 
     // was called with one argument).
     private void addErrDescription(final Throwable t, final ErrorCode errorCode) throws XPathException {
-        String description = errorCode.getDescription();
-        if (description == null && t != null) {
-            if(t instanceof XPathException) {
-                description = ((XPathException) t).getDetailMessage();
-            } else {
-                description = t.getMessage();
-            }
-        }
+        final Optional<String> errorDesc = Optional.ofNullable(errorCode.getDescription());
+        final Optional<String> throwableDesc = Optional.ofNullable(t instanceof XPathException ? ((XPathException) t).getDetailMessage() : t.getMessage());
+        final Sequence description = errorDesc
+                .<Sequence>map(
+                    d -> new StringValue(throwableDesc.filter(td -> !td.equals(d)).map(td -> d + (d.endsWith(".") ? " " : ". ") + td).orElse(d))
+                ).orElse(
+                        errorDesc.<Sequence>map(StringValue::new).orElse(Sequence.EMPTY_SEQUENCE)
+                );
 
         final LocalVariable err_description = new LocalVariable(QN_DESCRIPTION);
         err_description.setSequenceType(new SequenceType(Type.QNAME, Cardinality.ZERO_OR_ONE));
-        if(description == null){
-            err_description.setValue(Sequence.EMPTY_SEQUENCE);
-        } else {
-            err_description.setValue(new StringValue(description));
-        } 
+        err_description.setValue(description);
         context.declareVariableBinding(err_description);
     }
 

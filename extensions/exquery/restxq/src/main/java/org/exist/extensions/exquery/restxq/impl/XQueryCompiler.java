@@ -33,7 +33,6 @@ import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.DocumentMetadata;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.xacml.AccessContext;
 import org.exist.source.DBSource;
 import org.exist.source.Source;
 import org.exist.storage.DBBroker;
@@ -72,7 +71,7 @@ class XQueryCompiler {
                 if(metadata.getMimeType().equals(XQUERY_MIME_TYPE)){
             
                     //compile the query
-                    final XQueryContext context = new XQueryContext(broker.getBrokerPool(), AccessContext.REST);
+                    final XQueryContext context = new XQueryContext(broker.getBrokerPool());
                     final Source source = new DBSource(broker, (BinaryDocument)document, true);
 
                     //set the module load path for any module imports that are relative

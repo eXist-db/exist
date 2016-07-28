@@ -2,7 +2,6 @@ package org.exist.storage;
 
 import org.exist.EXistException;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.xacml.AccessContext;
 import org.exist.source.StringSource;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
@@ -52,7 +51,7 @@ public class LowLevelText {
 		stringSource = new StringSource(TEST_XQUERY_SOURCE);
 
 		XQuery xquery = brokerPool.getXQueryService();
-		XQueryContext context = new XQueryContext(broker.getBrokerPool(), AccessContext.TEST);
+		XQueryContext context = new XQueryContext(broker.getBrokerPool());
 		preCompiledXQuery = xquery.compile(broker, context, stringSource);
 	}
 

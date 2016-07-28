@@ -21,12 +21,13 @@
 package org.exist.launcher;
 
 
+import org.apache.commons.configuration2.MapConfiguration;
 import org.apache.commons.lang3.SystemUtils;
 import org.exist.EXistException;
 import org.exist.jetty.JettyStart;
 import org.exist.repo.ExistRepository;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.xacml.AccessContext;
+import org.exist.start.Main;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.util.ConfigurationHelper;
@@ -35,8 +36,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
-import org.tanukisoftware.wrapper.WrapperManager;
-import org.tanukisoftware.wrapper.WrapperWin32Service;
+import org.rzo.yajsw.wrapper.WrappedService;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -53,7 +53,7 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.List;
 import java.util.function.BiConsumer;
-import java.util.stream.Stream;
+import java.util.function.Consumer;
 
 /**
  * A launcher for the eXist-db server integrated with the desktop.
@@ -71,6 +71,7 @@ public class Launcher extends Observable implements Observer {
     private MenuItem monexItem;
     private MenuItem installServiceItem;
     private MenuItem uninstallServiceItem;
+    private MenuItem showServices;
     private MenuItem quitItem;
 
     public final static String PACKAGE_DASHBOARD = "http://exist-db.org/apps/dashboard";
@@ -97,15 +98,15 @@ public class Launcher extends Observable implements Observer {
 
     private SystemTray tray = null;
     private TrayIcon trayIcon = null;
-    private boolean initSystemTray = true;
-    private Optional<WrapperWin32Service> runningAsService = Optional.empty();
+    private Optional<WrappedService> runningAsService;
     private SplashScreen splash;
     private Optional<JettyStart> jetty = Optional.empty();
-    private String home;
-    private Path wrapperBin;
+    private final Path jettyConfig;
+    private Properties wrapperProperties;
     private boolean inServiceInstall = false;
     private UtilityPanel utilityPanel;
     private ConfigurationDialog configDialog;
+    private boolean canUseServices = false;
 
     public Launcher(final String[] args) {
         if (SystemTray.isSupported()) {
@@ -114,16 +115,27 @@ public class Launcher extends Observable implements Observer {
 
         captureConsole();
 
-        home = getJettyHome();
+        this.jettyConfig = getJettyConfig();
         final Optional<Path> eXistHome = ConfigurationHelper.getExistHome();
+        final Path wrapperConfig;
         if (eXistHome.isPresent()) {
-            wrapperBin = eXistHome.get().resolve("tools/wrapper/bin");
+            wrapperConfig = eXistHome.get().resolve("tools/yajsw/conf/wrapper.conf");
         } else {
-            wrapperBin = Paths.get("tools/wrapper/bin");
+            wrapperConfig = Paths.get("tools/yajsw/conf/wrapper.conf");
         }
 
-        if (isSystemTraySupported())
-            {initSystemTray = initSystemTray(home);}
+        wrapperProperties = new Properties();
+        wrapperProperties.setProperty("wrapper.working.dir", eXistHome.orElse(Paths.get(".")).toString());
+        wrapperProperties.setProperty("wrapper.config", wrapperConfig.toString());
+
+        System.setProperty("wrapper.config", wrapperConfig.toString());
+
+        installedAsService();
+
+        boolean initSystemTray = true;
+        if (isSystemTraySupported()) {
+            initSystemTray = initSystemTray();
+        }
 
         configDialog = new ConfigurationDialog(Launcher.this);
 
@@ -133,7 +145,7 @@ public class Launcher extends Observable implements Observer {
             public void windowOpened(WindowEvent windowEvent) {
                 setServiceState();
                 if (runningAsService.isPresent()) {
-                    splash.setStatus("eXist-db is already installed as service!");
+                    splash.setStatus("eXist-db is already installed as service! Attaching to it ...");
                     final Timer timer = new Timer(3000, (event) -> splash.setVisible(false));
                     timer.setRepeats(false);
                     timer.start();
@@ -161,7 +173,7 @@ public class Launcher extends Observable implements Observer {
                 try {
                     if (!jetty.isPresent()) {
                         jetty = Optional.of(new JettyStart());
-                        jetty.get().run(new String[]{home}, splash);
+                        jetty.get().run(new String[]{jettyConfig.toAbsolutePath().toString()}, splash);
                     }
                 } catch (final Exception e) {
                     showMessageAndExit("Error Occurred", "An error occurred during eXist-db startup. Please check console output and logs.", true);
@@ -175,7 +187,7 @@ public class Launcher extends Observable implements Observer {
         return tray != null;
     }
 
-    private boolean initSystemTray(String home) {
+    private boolean initSystemTray() {
         final Dimension iconDim = tray.getTrayIconSize();
         BufferedImage image = null;
         try {
@@ -189,18 +201,21 @@ public class Launcher extends Observable implements Observer {
         hiddenFrame.setUndecorated(true);
         hiddenFrame.setIconImage(image);
 
-        final PopupMenu popup = createMenu(home);
+        final PopupMenu popup = createMenu();
         trayIcon.setPopupMenu(popup);
-
-        trayIcon.addActionListener(actionEvent -> trayIcon.displayMessage(null, "Right click for menu", TrayIcon.MessageType.INFO));
+        trayIcon.addActionListener(actionEvent -> {
+                trayIcon.displayMessage(null, "Right click for menu", TrayIcon.MessageType.INFO);
+                setServiceState();
+            }
+        );
 
         // add listener for left click on system tray icon. doesn't work well on linux though.
-        final String os = System.getProperty("os.name", "");
-        if (!os.equals("Linux")) {
+        if (!SystemUtils.IS_OS_LINUX) {
             trayIcon.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent mouseEvent) {
                     if (mouseEvent.getButton() == MouseEvent.BUTTON1) {
+                        setServiceState();
                         hiddenFrame.add(popup);
                         popup.show(hiddenFrame, mouseEvent.getXOnScreen(), mouseEvent.getYOnScreen());
                     }
@@ -220,7 +235,7 @@ public class Launcher extends Observable implements Observer {
         return true;
     }
 
-    private PopupMenu createMenu(final String home) {
+    private PopupMenu createMenu() {
 
 
         final PopupMenu popup = new PopupMenu();
@@ -232,7 +247,7 @@ public class Launcher extends Observable implements Observer {
                     if (server.isStarted()) {
                         showTrayMessage("Server already started", TrayIcon.MessageType.WARNING);
                     } else {
-                        server.run(new String[]{home}, null);
+                        server.run(new String[]{jettyConfig.toAbsolutePath().toString()}, null);
                         if (server.isStarted()) {
                             showTrayMessage("eXist-db server running on port " + server.getPrimaryPort(), TrayIcon
                                     .MessageType.INFO);
@@ -240,22 +255,14 @@ public class Launcher extends Observable implements Observer {
                     }
                     setServiceState();
                 });
-            } else {
-                SwingUtilities.invokeLater(() -> {
-                    showTrayMessage("Starting the eXistdb service. Please wait...", TrayIcon.MessageType.INFO);
-                    List<String> argsStart = new ArrayList<>();
-                    argsStart.add(wrapperBin.resolve("control.bat").toString());
-                    argsStart.add("--start");
-                    run(argsStart, (code, message) -> {
-                        if (code > 0) {
-                            JOptionPane.showMessageDialog(null, "Error:\n" + message, "Starting Server Failed",
-                                    JOptionPane.ERROR_MESSAGE);
-                        } else {
-                            showTrayMessage("eXistdb service started", TrayIcon.MessageType.INFO);
-                        }
-                        setServiceState();
-                    });
-                });
+            } else if (runningAsService.isPresent()){
+                showTrayMessage("Starting the eXistdb service. Please wait...", TrayIcon.MessageType.INFO);
+                if (runningAsService.get().start()) {
+                    showTrayMessage("eXistdb service started", TrayIcon.MessageType.INFO);
+                } else {
+                    showTrayMessage("Starting eXistdb service failed", TrayIcon.MessageType.ERROR);
+                }
+                setServiceState();
             }
         });
 
@@ -266,22 +273,13 @@ public class Launcher extends Observable implements Observer {
                 jetty.get().shutdown();
                 setServiceState();
                 showTrayMessage("eXist-db stopped", TrayIcon.MessageType.INFO);
-            } else {
-                SwingUtilities.invokeLater(() -> {
-                    List<String> argsStart = new ArrayList<>();
-                    argsStart.add(wrapperBin.resolve("control.bat").toString());
-                    argsStart.add("--stop");
-                    showTrayMessage("Stopping the eXistdb service. Please wait...", TrayIcon.MessageType.INFO);
-                    run(argsStart, (code, message) -> {
-                        if (code > 0) {
-                            JOptionPane.showMessageDialog(null, "Error:\n" + message, "Stopping Server Failed",
-                                    JOptionPane.ERROR_MESSAGE);
-                        } else {
-                            showTrayMessage("eXistdb stopped", TrayIcon.MessageType.INFO);
-                        }
-                        setServiceState();
-                    });
-                });
+            } else if (runningAsService.isPresent()) {
+                if (runningAsService.get().stop()) {
+                    showTrayMessage("eXistdb service stopped", TrayIcon.MessageType.INFO);
+                } else {
+                    showTrayMessage("Stopping eXistdb service failed", TrayIcon.MessageType.ERROR);
+                }
+                setServiceState();
             }
         });
 
@@ -296,18 +294,37 @@ public class Launcher extends Observable implements Observer {
         }));
 
         if (SystemUtils.IS_OS_WINDOWS) {
-            installServiceItem = new MenuItem("Install as service");
-            popup.add(installServiceItem);
-            installServiceItem.addActionListener(e -> SwingUtilities.invokeLater(() -> installAsService()));
-
-            uninstallServiceItem = new MenuItem("Uninstall service");
-            popup.add(uninstallServiceItem);
-            uninstallServiceItem.addActionListener(e -> SwingUtilities.invokeLater(() -> uninstallService()));
+            canUseServices = true;
+        } else {
+            isRoot((root) -> canUseServices = root);
         }
 
+        final String requiresRootMsg;
+        if (canUseServices) {
+            requiresRootMsg = "";
+        } else {
+            requiresRootMsg = " (requires root)";
+        }
+
+        installServiceItem = new MenuItem("Install as service" + requiresRootMsg);
+
+        popup.add(installServiceItem);
+        installServiceItem.setEnabled(canUseServices);
+        installServiceItem.addActionListener(e -> SwingUtilities.invokeLater(this::installAsService));
+
+        uninstallServiceItem = new MenuItem("Uninstall service" + requiresRootMsg);
+        popup.add(uninstallServiceItem);
+        uninstallServiceItem.setEnabled(canUseServices);
+        uninstallServiceItem.addActionListener(e -> SwingUtilities.invokeLater(this::uninstallService));
+
+        if (SystemUtils.IS_OS_WINDOWS) {
+            showServices = new MenuItem("Show services console");
+            popup.add(showServices);
+            showServices.addActionListener(e -> SwingUtilities.invokeLater(this::showServicesConsole));
+        }
         popup.addSeparator();
 
-        final MenuItem toolbar = new MenuItem("Show Tool Window");
+        final MenuItem toolbar = new MenuItem("Show tool window");
         popup.add(toolbar);
         toolbar.addActionListener(actionEvent -> EventQueue.invokeLater(() -> {
             utilityPanel.toFront();
@@ -345,17 +362,12 @@ public class Launcher extends Observable implements Observer {
             popup.add(quitItem);
             quitItem.addActionListener(actionEvent -> shutdown(false));
 
-            if (SystemUtils.IS_OS_WINDOWS) {
-                setServiceState();
-            }
+            setServiceState();
         }
         return popup;
     }
 
     protected void installAsService() {
-        final List<String> args = new ArrayList<>();
-        args.add(wrapperBin.resolve("install.bat").toString());
-
         jetty.ifPresent(server -> {
             if (server.isStarted()) {
                 showTrayMessage("Stopping eXistdb...", TrayIcon.MessageType.INFO);
@@ -365,65 +377,97 @@ public class Launcher extends Observable implements Observer {
         jetty = Optional.empty();
 
         showTrayMessage("Installing service and starting eXistdb ...", TrayIcon.MessageType.INFO);
-        run(args, (exitCode, output) -> {
-            if (exitCode > 0) {
-                JOptionPane.showMessageDialog(null, output, "Install Service Failed", JOptionPane.ERROR_MESSAGE);
-            } else {
-                runningAsService = installedAsService();
-                setServiceState();
-                inServiceInstall = false;
-                showTrayMessage("Service installed and started", TrayIcon.MessageType.INFO);
+
+        final WrappedService service = new WrappedService();
+        service.setLocalConfiguration(new MapConfiguration(wrapperProperties));
+        service.init();
+        final boolean installed = service.install();
+        if (installed) {
+            if (SystemUtils.IS_OS_WINDOWS) {
+                service.start();
             }
-        });
+            runningAsService = Optional.of(service);
+            setServiceState();
+            showTrayMessage("Service installed and started", TrayIcon.MessageType.INFO);
+        } else {
+            JOptionPane.showMessageDialog(null, "Failed to install service. ", "Install Service Failed", JOptionPane
+                    .ERROR_MESSAGE);
+            runningAsService = Optional.empty();
+        }
+        inServiceInstall = false;
     }
 
     protected void uninstallService() {
-        SwingUtilities.invokeLater(() -> {
-            final List<String> args = new ArrayList<>();
-            args.add(wrapperBin.resolve("uninstall.bat").toString());
-            run(args, (exitCode, output) -> {
-                if (exitCode > 0) {
-                    showTrayMessage("Service removed and db stopped", TrayIcon.MessageType.INFO);
-                } else {
-                    JOptionPane.showMessageDialog(null, "Error:\n" + output, "Removing Service Failed", JOptionPane.ERROR_MESSAGE);
-                }
-            });
-        });
+        if (runningAsService.isPresent()) {
+            final boolean uninstalled = runningAsService.get().uninstall();
+            if (uninstalled) {
+                showTrayMessage("Service removed and db stopped", TrayIcon.MessageType.INFO);
+                runningAsService = Optional.empty();
+            } else {
+                JOptionPane.showMessageDialog(null, "Removing the service failed.", "Removing Service Failed", JOptionPane.ERROR_MESSAGE);
+            }
+            setServiceState();
+        }
     }
 
     private void setServiceState() {
-        runningAsService = installedAsService();
         if (runningAsService.isPresent()) {
-            final int state = runningAsService.get().getServiceState();
-            final boolean serverRunning = state == WrapperWin32Service.SERVICE_STATE_RUNNING || state ==
-                    WrapperWin32Service
-                    .SERVICE_STATE_START_PENDING || state == WrapperWin32Service.SERVICE_STATE_CONTINUE_PENDING;
-            if (installServiceItem != null && uninstallServiceItem != null) {
-                installServiceItem.setEnabled(false);
-                uninstallServiceItem.setEnabled(true);
+            final WrappedService service = runningAsService.get();
+
+            final boolean serverRunning = service.isRunning() || service.isStarting();
+            if (canUseServices) {
+                final boolean serviceInstalled = service.isInstalled();
+                if (installServiceItem != null && uninstallServiceItem != null) {
+                    installServiceItem.setEnabled(!serviceInstalled);
+                    uninstallServiceItem.setEnabled(serviceInstalled);
+                }
             }
             quitItem.setLabel("Quit");
             stopItem.setEnabled(serverRunning);
             startItem.setEnabled(!serverRunning);
-            dashboardItem.setEnabled(serverRunning);
-            monexItem.setEnabled(serverRunning);
-            eXideItem.setEnabled(serverRunning);
+            if (dashboardItem != null) {
+                dashboardItem.setEnabled(serverRunning);
+                monexItem.setEnabled(serverRunning);
+                eXideItem.setEnabled(serverRunning);
+            }
         } else {
             final boolean serverRunning = jetty.isPresent() && jetty.get().isStarted();
-            if (installServiceItem != null && uninstallServiceItem != null) {
-                installServiceItem.setEnabled(true);
-                uninstallServiceItem.setEnabled(false);
+            if (canUseServices) {
+                if (installServiceItem != null && uninstallServiceItem != null) {
+                    installServiceItem.setEnabled(true);
+                    uninstallServiceItem.setEnabled(false);
+                }
             }
             quitItem.setLabel("Quit (and stop server)");
             stopItem.setEnabled(serverRunning);
             startItem.setEnabled(!serverRunning);
-            dashboardItem.setEnabled(serverRunning);
-            monexItem.setEnabled(serverRunning);
-            eXideItem.setEnabled(serverRunning);
+            if (dashboardItem != null) {
+                dashboardItem.setEnabled(serverRunning);
+                monexItem.setEnabled(serverRunning);
+                eXideItem.setEnabled(serverRunning);
+            }
         }
     }
 
-    private void run(List<String> args, BiConsumer<Integer, String> consumer) {
+    private void isRoot(Consumer<Boolean> consumer) {
+        final List<String> args = new ArrayList<>(2);
+        args.add("id");
+        args.add("-u");
+        run(args, (code, output) -> {
+            consumer.accept("0".equals(output.trim()));
+        });
+    }
+
+    private void showServicesConsole() {
+        final List<String> args = new ArrayList<>(2);
+        args.add("cmd");
+        args.add("/c");
+        args.add("services.msc");
+
+        run(args, null);
+    }
+
+    protected static void run(List<String> args, BiConsumer<Integer, String> consumer) {
         final ProcessBuilder pb = new ProcessBuilder(args);
         final Optional<Path> home = ConfigurationHelper.getExistHome();
         if (home.isPresent()) {
@@ -431,35 +475,58 @@ public class Launcher extends Observable implements Observer {
         }
         pb.redirectErrorStream(true);
         try {
-            Process process = pb.start();
-            StringBuilder output = new StringBuilder();
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), "UTF-8"))) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    output.append('\n').append(line);
+            final Process process = pb.start();
+            if (consumer != null) {
+                final StringBuilder output = new StringBuilder();
+                try (final BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(),
+                        "UTF-8"))) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        output.append('\n').append(line);
+                    }
                 }
+                final int exitValue = process.waitFor();
+                consumer.accept(exitValue, output.toString());
             }
-            int exitValue = process.waitFor();
-            consumer.accept(exitValue, output.toString());
         } catch (IOException | InterruptedException e) {
-            JOptionPane.showMessageDialog(null, e.getMessage(), "Install Service", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, e.getMessage(), "Error Running Process", JOptionPane.ERROR_MESSAGE);
         }
     }
 
     protected void shutdown(final boolean restart) {
         utilityPanel.setStatus("Shutting down ...");
         SwingUtilities.invokeLater(() -> {
-            if (tray != null) {
-                tray.remove(trayIcon);
-            }
-            if (jetty.isPresent()) {
-                jetty.get().shutdown();
-                if (restart) {
-                    final LauncherWrapper wrapper = new LauncherWrapper(Launcher.class.getName());
-                    wrapper.launch();
+            if (restart && runningAsService.isPresent()) {
+                final WrappedService service = runningAsService.get();
+                if (service.isRunning() || service.isStarting()) {
+                    if (service.stop()) {
+                        while (service.isRunning()) {
+                            try {
+                                wait(500);
+                            } catch (InterruptedException e) {
+                                break;
+                            }
+                        }
+                        if (!service.isRunning() && service.start()) {
+                            trayIcon.displayMessage(null, "Database restarted", TrayIcon.MessageType.INFO);
+                        } else {
+                            trayIcon.displayMessage(null, "Failed to restart. Please start service manually.", TrayIcon.MessageType.INFO);
+                        }
+                    }
                 }
+            } else {
+                if (tray != null) {
+                    tray.remove(trayIcon);
+                }
+                if (jetty.isPresent()) {
+                    jetty.get().shutdown();
+                    if (restart) {
+                        final LauncherWrapper wrapper = new LauncherWrapper(Launcher.class.getName());
+                        wrapper.launch();
+                    }
+                }
+                System.exit(0);
             }
-            System.exit(0);
         });
     }
 
@@ -557,7 +624,7 @@ public class Launcher extends Observable implements Observer {
             try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
                 final XQuery xquery = pool.getXQueryService();
-                final Sequence pkgs = xquery.execute(broker, "repo:list()", null, AccessContext.INITIALIZE);
+                final Sequence pkgs = xquery.execute(broker, "repo:list()", null);
                 for (final SequenceIterator i = pkgs.iterate(); i.hasNext(); ) {
                     final ExistRepository.Notification notification = new ExistRepository.Notification(ExistRepository.Action.INSTALL, i.nextItem().getStringValue());
                     Optional<ExistRepository> expathRepo = pool.getExpathRepo();
@@ -611,7 +678,7 @@ public class Launcher extends Observable implements Observer {
         }
     }
 
-    private String getJettyHome() {
+    private Path getJettyConfig() {
         final String jettyProperty = Optional.ofNullable(System.getProperty("jetty.home"))
                 .orElseGet(() -> {
                     final Optional<Path> home = ConfigurationHelper.getExistHome();
@@ -621,8 +688,10 @@ public class Launcher extends Observable implements Observer {
                     return jettyPath;
                 });
 
-        final Path standaloneFile = Paths.get(jettyProperty).resolve("etc").resolve("jetty.xml");
-        return standaloneFile.toAbsolutePath().toString();
+        return Paths.get(jettyProperty)
+                .normalize()
+                .resolve("etc")
+                .resolve(Main.STANDARD_ENABLED_JETTY_CONFIGS);
     }
 
     protected void showMessageAndExit(String title, String message, boolean logs) {
@@ -649,16 +718,20 @@ public class Launcher extends Observable implements Observer {
 
     protected void showTrayMessage(String message, TrayIcon.MessageType type) {
         if (isSystemTraySupported()) {
-            trayIcon.displayMessage(null, message, type);
+            trayIcon.displayMessage(message, message, type);
         }
     }
 
-    private Optional<WrapperWin32Service> installedAsService() {
-        if (SystemUtils.IS_OS_WINDOWS) {
-            WrapperWin32Service[] services = WrapperManager.listServices();
-            return Stream.of(services).filter(service -> service.getName().equals("eXist-db")).findFirst();
+    private void installedAsService() {
+        final WrappedService service = new WrappedService();
+        service.setLocalConfiguration(new MapConfiguration(wrapperProperties));
+        service.init();
+
+        if (service.isInstalled()) {
+            runningAsService = Optional.of(service);
+        } else {
+            runningAsService = Optional.empty();
         }
-        return Optional.empty();
     }
 
     /**

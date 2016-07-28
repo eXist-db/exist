@@ -21,120 +21,117 @@
  */
 package org.exist.util.hashtable;
 
+import net.jcip.annotations.NotThreadSafe;
+
 import java.util.Iterator;
 
 /**
  * Abstract base class for all hashset implementations.
- *
  */
-public abstract class AbstractHashSet<K> {
+@NotThreadSafe
+public abstract class AbstractHashSet<K> implements Iterable<K> {
 
-	private static final int defaultSize = 1031; // must be a prime number
+    private static final int DEFAULT_SIZE = 1031; // must be a prime number
 
-	// marker for removed objects
-	protected final static Object REMOVED = new Object();
-	
-	protected int tabSize;
-	protected int items;
+    // marker for removed objects
+    protected final static Object REMOVED = new Object();
 
-	protected int maxRehash = 0;
-	
-	/**
-	 * Create a new hashset with default size (1031).
-	 */
-	protected AbstractHashSet() {
-		items = 0;
-		tabSize = defaultSize;
-	}
-	
-	/**
-	 * Create a new hashtable using the specified size.
-	 * 
-	 * The actual size will be next prime number following
-	 * iSize * 1.5.
-	 * 
-	 * @param iSize
-	 */
-	protected AbstractHashSet(int iSize) {
-		items = 0;
-		if (iSize < 1)
-			{tabSize = defaultSize;}
-		else {
-			if (!isPrime(iSize)) {
-				iSize = (iSize * 3) / 2;
-				iSize = (int) nextPrime((long) iSize);
-			}
-			tabSize = iSize;
-		}
-	}
+    protected int tabSize;
+    protected int items;
 
-	public int size() {
-		return items;
-	}
-        
-        public boolean isEmpty() {
-            return items == 0;
+    private int maxRehash = 0;
+
+    /**
+     * Create a new hashset with default size (1031).
+     */
+    AbstractHashSet() {
+        items = 0;
+        tabSize = DEFAULT_SIZE;
+    }
+
+    /**
+     * Create a new hashtable using the specified size.
+     *
+     * The actual size will be next prime number following
+     * iSize * 1.5.
+     *
+     * @param iSize Initial size of the hash set
+     */
+    public AbstractHashSet(int iSize) {
+        items = 0;
+        if (iSize < 1) {
+            tabSize = DEFAULT_SIZE;
+        } else {
+            if (!isPrime(iSize)) {
+                iSize = (iSize * 3) / 2;
+                iSize = (int) nextPrime((long) iSize);
+            }
+            tabSize = iSize;
         }
-	
-	public abstract Iterator<K> iterator();
-	
-	public final static boolean isPrime(long number) {
-		if (number < 2) {return false;}
-		if (number == 2) {return true;}
-		if (number % 2 == 0) {return false;}
-		if (number == 3) {return true;}
-		if (number % 3 == 0) {return false;}
- 
-		int y = 2;
-		final int x = (int) Math.sqrt(number);
- 
-		for (int i = 5; i <= x; i += y, y = 6 - y) {
-			if (number % i == 0)
-				{return false;}
-		}
- 
-		return true;
-	}
+    }
 
-	public final static long nextPrime(long iVal) {
-		long retval = iVal;
-		for (;;) {
-			++retval;
-			if (isPrime(retval))
-				{return retval;}
-		}
-	}
-	
-	public int getMaxRehash() {
-		return maxRehash;
-	}
-	
+    public int size() {
+        return items;
+    }
 
-	protected static enum IteratorType {KEYS, VALUES};
+    public boolean isEmpty() {
+        return items == 0;
+    }
 
-	protected abstract class HashtableIterator<T> implements Iterator<T> {	
-		
-		protected final IteratorType returnType;
-		
-		public HashtableIterator(IteratorType type) {
-			this.returnType = type;
-		}
-		
-		/* (non-Javadoc)
-		 * @see java.util.Iterator#remove()
-		 */
-		public void remove() {
-			throw new UnsupportedOperationException();
-		}
-	}
-	
-	protected final static class HashtableOverflowException extends Exception {
-		
-		private static final long serialVersionUID = -4679763007424266920L;
+    private static boolean isPrime(final long number) {
+        if (number < 2) {
+            return false;
+        } else if (number == 2) {
+            return true;
+        } else if (number % 2 == 0) {
+            return false;
+        } else if (number == 3) {
+            return true;
+        } else if (number % 3 == 0) {
+            return false;
+        }
 
-		public HashtableOverflowException() {
-			super();
-		}
-	}
+        int y = 2;
+        final int x = (int) Math.sqrt(number);
+        for (int i = 5; i <= x; i += y, y = 6 - y) {
+            if (number % i == 0) {
+                return false;
+            }
+        }
 
+        return true;
+    }
+
+    static long nextPrime(final long iVal) {
+        long retval = iVal;
+        for (; ; ) {
+            ++retval;
+            if (isPrime(retval)) {
+                return retval;
+            }
+        }
+    }
+
+    public int getMaxRehash() {
+        return maxRehash;
+    }
+
+
+    enum IteratorType {KEYS, VALUES}
+
+    abstract class AbstractHashSetIterator<T> implements Iterator<T> {
+        protected final IteratorType returnType;
+
+        AbstractHashSetIterator(final IteratorType type) {
+            this.returnType = type;
+        }
+    }
+
+    public final static class HashSetOverflowException extends Exception {
+        private static final long serialVersionUID = -4679763007424266920L;
+
+        public HashSetOverflowException() {
+            super();
+        }
+    }
 }

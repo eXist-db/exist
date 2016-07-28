@@ -136,14 +136,7 @@ public class ConditionalExpression extends AbstractExpression implements Rewrita
     }
 
     public String toString() {
-        final StringBuilder result = new StringBuilder();
-        result.append("if ( ");
-        result.append(testExpr.toString());
-        result.append(" ) then ");
-        result.append(thenExpr.toString());
-        result.append(" else ");
-        result.append(elseExpr.toString());
-        return result.toString();
+        return "if ( " + testExpr.toString() + " ) then " + thenExpr.toString() + " else " + elseExpr.toString();
     }
 
     /* (non-Javadoc)

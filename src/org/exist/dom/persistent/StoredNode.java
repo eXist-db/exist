@@ -399,11 +399,7 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
 
     @Override
     public String toString() {
-        final StringBuilder buf = new StringBuilder();
-        buf.append(nodeId.toString());
-        buf.append('\t');
-        buf.append(getQName());
-        return buf.toString();
+        return nodeId.toString() + '\t' + getQName();
     }
 
     public String toString(final boolean top) {

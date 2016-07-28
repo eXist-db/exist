@@ -25,8 +25,6 @@ import org.exist.EXistException;
 import org.exist.debuggee.Debuggee;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
-import org.exist.security.xacml.AccessContext;
-import org.exist.security.xacml.NullAccessContextException;
 import org.exist.source.DBSource;
 import org.exist.source.FileSource;
 import org.exist.source.Source;
@@ -75,16 +73,9 @@ public class LocalXPathQueryService extends AbstractLocalService implements XPat
     private LockedDocumentMap lockedDocuments = null;
     private DBBroker reservedBroker = null;
 
-    private final AccessContext accessCtx;
-	
-    public LocalXPathQueryService(final Subject user, final BrokerPool pool, final LocalCollection collection, final AccessContext accessCtx) {
+    public LocalXPathQueryService(final Subject user, final BrokerPool pool, final LocalCollection collection) {
         super(user, pool, collection);
 
-        if(accessCtx == null) {
-            throw new NullAccessContextException();
-        }
-
-        this.accessCtx = accessCtx;
         this.properties = new Properties(collection.getProperties());
     }
 
@@ -242,7 +233,7 @@ public class LocalXPathQueryService extends AbstractLocalService implements XPat
             XQueryContext context;
             CompiledXQuery compiled = pool.borrowCompiledXQuery(broker, source);
             if (compiled == null) {
-                context = new XQueryContext(broker.getBrokerPool(), accessCtx);
+                context = new XQueryContext(broker.getBrokerPool());
             } else {
                 context = compiled.getContext();
             }
@@ -298,7 +289,7 @@ public class LocalXPathQueryService extends AbstractLocalService implements XPat
     private Either<XPathException, CompiledExpression> compileAndCheck(final DBBroker broker, final Txn transaction, final String query) throws XMLDBException {
         final long start = System.currentTimeMillis();
         final XQuery xquery = broker.getBrokerPool().getXQueryService();
-        final XQueryContext context = new XQueryContext(broker.getBrokerPool(), accessCtx);
+        final XQueryContext context = new XQueryContext(broker.getBrokerPool());
 
         try {
             setupContext(null, context);
@@ -306,13 +297,13 @@ public class LocalXPathQueryService extends AbstractLocalService implements XPat
             if(LOG.isDebugEnabled()) {
                 LOG.debug("compilation took " + (System.currentTimeMillis() - start));
             }
-            return new Either.Right(expr);
+            return Either.Right(expr);
         } catch (final PermissionDeniedException e) {
             throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e.getMessage(), e);
         } catch(final IllegalArgumentException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         } catch(final XPathException e) {
-            return new Either.Left(e);
+            return Either.Left(e);
         }
     }
 
@@ -340,7 +331,7 @@ public class LocalXPathQueryService extends AbstractLocalService implements XPat
             if (source instanceof DBSource) {
                 modulePath = ((DBSource) source).getDocumentPath().removeLastSegment().toString();
             } else if (source instanceof FileSource) {
-                modulePath = ((FileSource) source).getFile().getParent();
+                modulePath = ((FileSource) source).getPath().getParent().toString();
             }
 
             if (modulePath != null) {

@@ -22,9 +22,12 @@ package org.exist.xmldb;
 import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.dom.persistent.DefaultDocumentSet;
+import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.MutableDocumentSet;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
+import org.exist.storage.DBBroker;
+import org.exist.storage.lock.Lock;
 import org.exist.storage.sync.Sync;
 import org.exist.util.Occurrences;
 import org.exist.xquery.XQuery;
@@ -69,8 +72,30 @@ public class LocalIndexQueryService extends AbstractLocalService implements Inde
         final XmldbURI collectionPath = resolve(col);
         withDb((broker, transaction) -> {
             broker.reindexCollection(collectionPath);
-            broker.sync(Sync.MAJOR_SYNC);
+            broker.sync(Sync.MAJOR);
             return null;
+        });
+    }
+
+    @Override
+    public void reindexDocument(final String name) throws XMLDBException {
+        reindexDocument(collection.getURI().toCollectionPathURI(), name);
+    }
+
+    private void reindexDocument(final XmldbURI col, final String docName) throws XMLDBException {
+        final XmldbURI collectionPath = resolve(col);
+        withDb((broker, transaction) -> {
+            DocumentImpl doc = null;
+            try {
+                doc = broker.getXMLResource(collectionPath.append(docName), Lock.READ_LOCK);
+                broker.reindexXMLResource(transaction, doc, DBBroker.IndexMode.STORE);
+                broker.sync(Sync.MAJOR);
+                return null;
+            } finally {
+                if(doc != null) {
+                    doc.getUpdateLock().release(Lock.READ_LOCK);
+                }
+            }
         });
     }
 

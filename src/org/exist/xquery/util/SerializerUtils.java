@@ -47,9 +47,7 @@ public class SerializerUtils {
                     properties.put(key, value);
                 }
             }
-        } catch (final XMLStreamException e) {
-            throw new XPathException(parent, ErrorCodes.EXXQDY0001, e.getMessage());
-        } catch (final IOException e) {
+        } catch (final XMLStreamException | IOException e) {
             throw new XPathException(parent, ErrorCodes.EXXQDY0001, e.getMessage());
         }
     }

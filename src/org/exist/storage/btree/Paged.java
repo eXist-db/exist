@@ -79,9 +79,7 @@ import org.exist.util.ByteConversion;
 import org.exist.util.FileUtils;
 import org.exist.xquery.Constants;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.RandomAccessFile;
+import java.io.*;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.channels.NonWritableChannelException;
@@ -93,8 +91,7 @@ import java.util.Arrays;
  *  Paged is a paged file foundation that is used by the BTree class and
  *  its subclasses.
  */
-
-public abstract class Paged {
+public abstract class Paged implements AutoCloseable {
 
     public static final int LENGTH_VERSION_ID = 2;  //sizeof short
     public static final int LENGTH_HEADER_SIZE = 2;  //sizeof short
@@ -129,22 +126,22 @@ public abstract class Paged {
 
     private RandomAccessFile raf;
     private Path file;
-    private FileHeader fileHeader;
+    private final FileHeader fileHeader;
     private boolean readOnly = false;
     private boolean fileIsNew = false;
 
-    private byte[] tempPageData = null;
-    private byte[] tempHeaderData = null;
+    private final byte[] tempPageData;
+    private final byte[] tempHeaderData;
 	
-    public Paged(BrokerPool pool) {
-        fileHeader = createFileHeader(pool.getPageSize());
-        tempPageData = new byte[fileHeader.pageSize];
-        tempHeaderData = new byte[fileHeader.pageHeaderSize];
+    public Paged(final BrokerPool pool) {
+        this.fileHeader = createFileHeader(pool.getPageSize());
+        this.tempPageData = new byte[fileHeader.pageSize];
+        this.tempHeaderData = new byte[fileHeader.pageHeaderSize];
     }
 
     public abstract short getFileVersion();
 
-    public final static void setPageSize(int pageSize) {
+    public final static void setPageSize(final int pageSize) {
         PAGE_SIZE = pageSize;
     }
 
@@ -158,17 +155,16 @@ public abstract class Paged {
 
     /**
      * Close the underlying files.
-     * 
-     * @return TRUE if closed.
+     *
      * @throws DBException
      */
-    public boolean close() throws DBException {
+    @Override
+    public void close() throws DBException {
         try {
             raf.close();
         } catch (final IOException e) {
             throw new DBException("an error occurred while closing database file: " + e.getMessage());
         }
-        return true;
     }
 
     public boolean create() throws DBException {
@@ -182,18 +178,18 @@ public abstract class Paged {
     }
 
     /**
-     *  createFileHeader must be implemented by a Paged implementation in order
-     *  to create an appropriate subclass instance of a FileHeader.
+     * createFileHeader must be implemented by a Paged implementation in order
+     * to create an appropriate subclass instance of a FileHeader.
      *
-     *@return A new file header
+     * @return A new file header
      */
     public abstract FileHeader createFileHeader(int pageSize);
 
     /**
-     *  createPageHeader must be implemented by a Paged implementation in order
-     *  to create an appropriate subclass instance of a PageHeader.
+     * createPageHeader must be implemented by a Paged implementation in order
+     * to create an appropriate subclass instance of a PageHeader.
      *
-     *@return A new page header
+     * @return A new page header
      */
     public abstract PageHeader createPageHeader();
 
@@ -226,7 +222,7 @@ public abstract class Paged {
      * @param os
      * @throws IOException
      */
-    public void backupToStream(OutputStream os) throws IOException {
+    public void backupToStream(final OutputStream os) throws IOException {
         raf.seek(0);
         final byte[] buf = new byte[4096];
         int len;
@@ -236,18 +232,18 @@ public abstract class Paged {
     }
 
     /**
-     *  getFile returns the file object for this Paged.
+     * getPath returns the file object for this Paged.
      *
-     *@return    The File
+     * @return The File
      */
     public final Path getFile() {
         return file;
     }
 
     /**
-     *  getFileHeader returns the FileHeader
+     * getFileHeader returns the FileHeader
      *
-     *@return    The FileHeader
+     * @return The FileHeader
      */
     public FileHeader getFileHeader() {
         return fileHeader;
@@ -256,7 +252,6 @@ public abstract class Paged {
     /**
      * Completely close down the instance and
      * all underlying resources and caches.
-     *
      */
     public void closeAndRemove() {
         try {
@@ -281,10 +276,10 @@ public abstract class Paged {
      * concurrency conflicts within a transaction.
      *
      * @return a free page
-     * @throws  IOException
+     * @throws IOException
      */
-    protected final Page getFreePage(boolean reuseDeleted) throws IOException {
-        Page page = null;
+    protected final Page getFreePage(final boolean reuseDeleted) throws IOException {
+        final Page page;
         synchronized (fileHeader) {
             long pageNum = fileHeader.firstFreePage;
             if (reuseDeleted && pageNum != Page.NO_PAGE) {
@@ -292,8 +287,9 @@ public abstract class Paged {
                 page = new Page(pageNum);
                 page.read();
                 fileHeader.firstFreePage = page.header.nextPage;
-                if (fileHeader.firstFreePage == Page.NO_PAGE)
-                    {fileHeader.setLastFreePage(Page.NO_PAGE);}
+                if (fileHeader.firstFreePage == Page.NO_PAGE) {
+                    fileHeader.setLastFreePage(Page.NO_PAGE);
+                }
             } else {
                 // Grow the file
                 pageNum = fileHeader.totalCount;
@@ -315,38 +311,40 @@ public abstract class Paged {
     }
 
     /**
-     *  getPage returns the page specified by pageNum.
+     * getPage returns the page specified by pageNum.
      *
-     *@param  pageNum       The Page number
-     *@return               The requested Page
-     *@throws IOException  if an exception occurs
+     * @param pageNum The Page number
+     *
+     * @return The requested Page
+     * @throws IOException if an exception occurs
      */
-    protected final Page getPage(long pageNum) throws IOException {
+    protected final Page getPage(final long pageNum) throws IOException {
         return new Page(pageNum);
     }
 
     /**
-     *  Gets the opened attribute of the Paged object
+     * Gets the opened attribute of the Paged object
      *
-     *@return    The opened value
+     * @return The opened value
      */
     public boolean isOpened() {
         return true;
     }
 
-    public boolean open(short expectedVersion) throws DBException {
+    public boolean open(final short expectedVersion) throws DBException {
         try {
             if (exists()) {
                 fileHeader.read();
-                if(fileHeader.getVersion() != expectedVersion)
-                    {throw new DBException("Database file " +
+                if(fileHeader.getVersion() != expectedVersion) {
+                    throw new DBException("Database file " +
                         FileUtils.fileName(getFile()) + " has a storage format incompatible with this " +
                         "version of eXist. You need to upgrade your database by creating a backup," +
                         "cleaning your data directory and restoring the data. In some cases," +
                         "a reindex may be sufficient. " +
                         "Please follow the instructions for the version you installed." + 
                         "File version is: " + expectedVersion +
-                        "; db expects version " + fileHeader.getVersion());}
+                        "; db expects version " + fileHeader.getVersion());
+                }
                 return true;
             } else {
                 return false;
@@ -358,28 +356,28 @@ public abstract class Paged {
     }
 
     /**
-     *  Debug
+     * Debug
      *
-     *@exception  IOException  Description of the Exception
+     * @exception IOException Description of the Exception
      */
-    public void printFreeSpaceList() throws IOException {
+    public void printFreeSpaceList(final PrintStream out) throws IOException {
         long pageNum = fileHeader.firstFreePage;
-        System.out.println("first free page: " + pageNum);
+        out.println("first free page: " + pageNum);
         Page next;
-        System.out.println("free pages for " + FileUtils.fileName(getFile()));
+        out.println("free pages for " + FileUtils.fileName(getFile()));
         while (pageNum != Page.NO_PAGE) {
             next = getPage(pageNum);
             next.read();
-            System.out.print(pageNum + ";");
+            out.print(pageNum + ";");
             pageNum = next.header.nextPage;
         }
-        System.out.println();
+        out.println();
     }
 
     /**
-     *  setFile sets the file object for this Paged.
+     * setFile sets the file object for this Paged.
      *
-     *@param  file  The File
+     * @param file The File
      */
     protected final void setFile(final Path file) throws DBException {
         this.file = file;
@@ -411,12 +409,12 @@ public abstract class Paged {
     }
 
     /**
-     *  Unlinks a set of pages starting at the specified page.
+     * Unlinks a set of pages starting at the specified page.
      *
-     *@param  page          The starting Page to unlink
-     *@throws  IOException  If an exception occurs
+     * @param page The starting Page to unlink
+     * @throws IOException If an exception occurs
      */
-    protected void unlinkPages(Page page) throws IOException {
+    protected void unlinkPages(final Page page) throws IOException {
         //Mmmmh... is this null test accurate ? -pb
         if (page != null) {
             // Walk the chain and add it to the unused list
@@ -438,17 +436,17 @@ public abstract class Paged {
     }
 
     /**
-     *  Unlinks a set of pages starting at the specified page
-     *  number.
+     * Unlinks a set of pages starting at the specified page
+     * number.
      *
-     *@param pageNum A page number
-     *@throws IOException if an exception occurs
+     * @param pageNum A page number
+     * @throws IOException if an exception occurs
      */
-    protected final void unlinkPages(long pageNum) throws IOException {
+    protected final void unlinkPages(final long pageNum) throws IOException {
         unlinkPages(getPage(pageNum));
     }
 
-    protected void reuseDeleted(Page page) throws IOException {
+    protected void reuseDeleted(final Page page) throws IOException {
         if (page != null && fileHeader.getFirstFreePage() != Page.NO_PAGE) {
             long firstFreePageNum = fileHeader.getFirstFreePage();
             if (firstFreePageNum == page.pageNum) {
@@ -474,48 +472,48 @@ public abstract class Paged {
     }
 
     /**
-     *  Writes the multi-paged value starting at the specified Page.
+     * Writes the multi-paged value starting at the specified Page.
      *
-     *@param  page          The starting Page
-     *@param  value         The value to write
-     *@throws  IOException  if an Exception occurs
+     * @param page The starting Page
+     * @param value The value to write
+     *
+     * @throws IOException if an Exception occurs
      */
-    protected final void writeValue(Page page, Value value) throws IOException {
+    protected final void writeValue(final Page page, final Value value) throws IOException {
         final byte[] data = value.getData();
         writeValue(page, data);
     }
 
-    protected final void writeValue(Page page, byte[] data) throws IOException {
+    protected final void writeValue(final Page page, final byte[] data) throws IOException {
         final PageHeader pageHeader = page.getPageHeader();
         pageHeader.dataLen = fileHeader.workSize;
         if (data.length != pageHeader.dataLen) {
             //TODO : where to get this 64 from ?
-            if (pageHeader.dataLen != getPageSize() - 64)
-                {LOG.warn("ouch: " + fileHeader.workSize + " != " + data.length);}
+            if (pageHeader.dataLen != getPageSize() - 64) {
+                LOG.warn("ouch: " + fileHeader.workSize + " != " + data.length);
+            }
             pageHeader.dataLen = data.length;
         }
         page.write(data);
     }
 
     /**
-     *  Writes the multi-Paged Value starting at the specified page number.
+     * Writes the multi-Paged Value starting at the specified page number.
      *
-     *@param  page          The starting page number
-     *@param  value         The Value to write
-     *@throws  IOException  if an Exception occurs
+     * @param page The starting page number
+     * @param value The Value to write
+     * @throws IOException if an Exception occurs
      */
-    protected final void writeValue(long page, Value value) throws IOException {
+    protected final void writeValue(final long page, final Value value) throws IOException {
         writeValue(getPage(page), value);
     }
 
     /**
-     *  FileHeader
+     * FileHeader
      *
-     *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
+     * @author Wolfgang Meier <meier@ifs.tu-darmstadt.de>
      */
-
     public abstract class FileHeader {
-
         private short versionId;
 
         private boolean dirty = false;
@@ -531,27 +529,9 @@ public abstract class Paged {
         private long totalCount;
         private int workSize;
 
-        private byte[] buf;
+        private final byte[] buf;
 
-        /**  Constructor for the FileHeader object */
-        public FileHeader() {
-            this(1024, PAGE_SIZE);
-        }
-
-        /**
-         *  Constructor for the FileHeader object
-         *
-         *@param  pageCount  Description of the Parameter
-         */
-        public FileHeader(long pageCount) {
-            this(pageCount, 4096);
-        }
-
-        public FileHeader(long pageCount, int pageSize) {
-            this(pageCount, pageSize, (byte) 4);
-        }
-
-        public FileHeader(long pageCount, int pageSize, byte blockSize) {
+        public FileHeader(final long pageCount, final int pageSize) {
             this.pageSize = pageSize;
             this.pageCount = pageCount;
             this.totalCount = pageCount;
@@ -561,79 +541,76 @@ public abstract class Paged {
             calculateWorkSize();
         }
 
-        public FileHeader(boolean read) throws IOException {
-            if (read)
-                {read();}
-        }
-
         private void calculateWorkSize() {
             workSize = pageSize - pageHeaderSize;
         }
 
-        /**  Decrement the number of records being managed by the file */
+        /**
+         * Decrement the number of records being managed by the file
+         */
         public final synchronized void decRecordCount() {
             recordCount--;
             dirty = true;
         }
 
         /**
-         *  The first free page in unused secondary space
+         * The first free page in unused secondary space
          *
-         *@return    The firstFreePage value
+         * @return The firstFreePage value
          */
         public final long getFirstFreePage() {
             return firstFreePage;
         }
 
         /**
-         *  The size of the FileHeader. Usually 1 OS Page
+         * The size of the FileHeader. Usually 1 OS Page
          *
-         *@return The size value
+         * @return The size value
          */
         public final short getHeaderSize() {
             return headerSize;
         }
 
         /**
-         *  The last free page in unused secondary space
+         * The last free page in unused secondary space
          *
-         *@return    The lastFreePage value
+         * @return The lastFreePage value
          */
         public final long getLastFreePage() {
             return lastFreePage;
         }
 
         /**
-         *  The maximum number of bytes a key can be. 256 is good
+         * The maximum number of bytes a key can be. 256 is good
          *
-         *@return    The maxKeySize value
+         * @return The maxKeySize value
          */
         public int getMaxKeySize() {
             return maxKeySize;
         }
 
         /**
-         *  The number of pages in primary storage
+         * The number of pages in primary storage
          *
-         *@return    The pageCount value
+         * @return The pageCount value
          */
         public final long getPageCount() {
             return pageCount;
         }
 
         /**
-         *  The size of a page header. 64 is sufficient
+         * The size of a page header. 64 is sufficient
          *
-         *@return    The pageHeaderSize value
+         *@return The pageHeaderSize value
          */
         public final byte getPageHeaderSize() {
             return pageHeaderSize;
         }
 
         /**
-         *  The size of a page. Usually a multiple of a FS block
+         * The size of a page. Usually a multiple of a FS block
          *
-         *@return The page size
+         * @return The page size
          */
         public final int getPageSize() {
             return pageSize;
@@ -649,18 +626,18 @@ public abstract class Paged {
         }
 
         /**
-         *  The total number of pages in the file
+         * The total number of pages in the file
          *
-         *@return    The total number of pages
+         * @return The total number of pages
          */
         public final long getTotalCount() {
             return totalCount;
         }
 
         /**
-         *  Gets the workSize attribute of the FileHeader object
+         * Gets the workSize attribute of the FileHeader object
          *
-         *@return    The workSize value
+         * @return The workSize value
          */
         public final int getWorkSize() {
             return workSize;
@@ -670,7 +647,9 @@ public abstract class Paged {
             return versionId;
         }
         
-        /**  Increment the number of records being managed by the file */
+        /**
+         * Increment the number of records being managed by the file
+         */
         public final synchronized void incRecordCount() {
             recordCount++;
             dirty = true;
@@ -679,7 +658,7 @@ public abstract class Paged {
         /**
          * Returns whether this page has been modified or not.
          *
-         *@return    <code>true</code> if this page has been modified
+         * @return <code>true</code> if this page has been modified
          */
         public final boolean isDirty() {
             return dirty;
@@ -693,7 +672,7 @@ public abstract class Paged {
             dirty = false;
         }
 
-        public int read(byte[] buf) throws IOException {
+        public int read(final byte[] buf) throws IOException {
             versionId = ByteConversion.byteToShort(buf, OFFSET_VERSION_ID);
             headerSize = ByteConversion.byteToShort(buf, OFFSET_HEADER_SIZE);
             pageSize = ByteConversion.byteToInt(buf, OFFSET_PAGE_SIZE);
@@ -707,7 +686,7 @@ public abstract class Paged {
             return OFFSET_REMAINDER;
         }
 
-        public int write(byte[] buf) throws IOException {
+        public int write(final byte[] buf) throws IOException {
             ByteConversion.shortToByte(versionId, buf, OFFSET_VERSION_ID);
             ByteConversion.shortToByte(headerSize, buf, OFFSET_HEADER_SIZE);
             ByteConversion.intToByte(pageSize, buf, OFFSET_PAGE_SIZE);
@@ -722,102 +701,102 @@ public abstract class Paged {
         }
 
         /**
-         *  Sets the dirty attribute of the FileHeader object
+         * Sets the dirty attribute of the FileHeader object
          *
-         *@param  dirty  The new dirty value
+         * @param dirty The new dirty value
          */
-        public final void setDirty(boolean dirty) {
+        public final void setDirty(final boolean dirty) {
         	this.dirty = dirty;
         }
 
         /**
-         *  The first free page in unused secondary space
+         * The first free page in unused secondary space
          *
-         *@param  firstFreePage  The new first free page number
+         * @param firstFreePage The new first free page number
          */
-        public final void setFirstFreePage(long firstFreePage) {
+        public final void setFirstFreePage(final long firstFreePage) {
             this.firstFreePage = firstFreePage;
             dirty = true;
         }
 
         /**
-         *  The size of the FileHeader. Usually 1 OS Page
+         * The size of the FileHeader. Usually 1 OS Page
          *
-         *@param  headerSize  The new headerSize value
+         * @param headerSize The new headerSize value
          */
-        public final void setHeaderSize(short headerSize) {
+        public final void setHeaderSize(final short headerSize) {
             this.headerSize = headerSize;
             dirty = true;
         }
 
         /**
-         *  The last free page in unused secondary space
+         * The last free page in unused secondary space
          *
-         *@param  lastFreePage  The new lastFreePage value
+         * @param lastFreePage The new lastFreePage value
          */
-        public final void setLastFreePage(long lastFreePage) {
+        public final void setLastFreePage(final long lastFreePage) {
             this.lastFreePage = lastFreePage;
             dirty = true;
         }
 
         /**
-         *  The maximum number of bytes a key can be. 256 is good
+         * The maximum number of bytes a key can be. 256 is good
          *
-         *@param  maxKeySize  The new maximum size for a key
+         * @param maxKeySize The new maximum size for a key
          */
-        public final void setMaxKeySize(short maxKeySize) {
+        public final void setMaxKeySize(final short maxKeySize) {
             this.maxKeySize = maxKeySize;
             dirty = true;
         }
 
         /**
-         *  The number of pages in primary storage
+         * The number of pages in primary storage
          *
-         *@param  pageCount  The new pageCount value
+         * @param  pageCount  The new pageCount value
          */
-        public final void setPageCount(long pageCount) {
+        public final void setPageCount(final long pageCount) {
             this.pageCount = pageCount;
             dirty = true;
         }
 
         /**
-         *  The size of a page header. 64 is sufficient
+         * The size of a page header. 64 is sufficient
          *
-         *@param  pageHeaderSize  The new pageHeaderSize value
+         * @param pageHeaderSize The new pageHeaderSize value
          */
-        public final void setPageHeaderSize(byte pageHeaderSize) {
+        public final void setPageHeaderSize(final byte pageHeaderSize) {
             this.pageHeaderSize = pageHeaderSize;
             calculateWorkSize();
             dirty = true;
         }
 
         /**
-         *  The size of a page. Usually a multiple of a FS block
+         * The size of a page. Usually a multiple of a FS block
          *
-         *@param  pageSize  The new pageSize value
+         * @param pageSize The new pageSize value
          */
-        public final void setPageSize(int pageSize) {
+        public final void setPageSize(final int pageSize) {
             this.pageSize = pageSize;
             calculateWorkSize();
             dirty = true;
         }
 
         /**
-         *  The number of records being managed by the file (not pages)
+         * The number of records being managed by the file (not pages)
          *
-         *@param  recordCount  The new recordCount value
+         * @param recordCount The new recordCount value
          */
-        public final void setRecordCount(long recordCount) {
+        public final void setRecordCount(final long recordCount) {
             this.recordCount = recordCount;
             dirty = true;
         }
 
         /**
-         *  The number of total pages in the file
+         * The number of total pages in the file
          *
-         *@param  totalCount  The new totalCount value
+         * @param totalCount The new totalCount value
          */
-        public final void setTotalCount(long totalCount) {
+        public final void setTotalCount(final long totalCount) {
             this.totalCount = totalCount;
             dirty = true;
         }
@@ -828,19 +807,17 @@ public abstract class Paged {
             raf.write(buf);
             dirty = false;
         }
-
     }
 
     /**
-     *  Page
+     * Page
      */
-    
     public final class Page implements Comparable<Page> {
 
         public static final long NO_PAGE = -1;
 
         /**  The Header for this Page */
-        private PageHeader header;
+        private final PageHeader header;
 
         /**  The offset into the file that this page starts */
         private long offset;
@@ -849,21 +826,22 @@ public abstract class Paged {
 
         private int refCount = 0;
 
-        /**  Constructor for the Page object */
         public Page() {
-            header = createPageHeader();
+            this.header = createPageHeader();
         }
 
         /**
-         *  Constructor for the Page object
+         * Constructor for the Page object
          *
-         *@param  pageNum          Description of the Parameter
-         *@exception  IOException  Description of the Exception
+         * @param pageNum Description of the Parameter
+         *
+         * @exception IOException Description of the Exception
          */
-        public Page(long pageNum) throws IOException {
+        public Page(final long pageNum) throws IOException {
             this();
-            if(pageNum == Page.NO_PAGE)
-                {throw new IOException("Illegal page num: " + pageNum);}
+            if(pageNum == Page.NO_PAGE) {
+                throw new IOException("Illegal page num: " + pageNum);
+            }
             setPageNum(pageNum);
         }
 
@@ -872,27 +850,27 @@ public abstract class Paged {
         }
 
         /**
-         *  Gets the offset attribute of the Page object
+         * Gets the offset attribute of the Page object
          *
-         *@return    The offset value
+         * @return The offset value
          */
         public long getOffset() {
             return offset;
         }
 
         /**
-         *  Gets the pageHeader attribute of the Page object
+         * Gets the pageHeader attribute of the Page object
          *
-         *@return    The pageHeader value
+         * @return The pageHeader value
          */
         public PageHeader getPageHeader() {
             return header;
         }
 
         /**
-         *  Gets the pageInfo attribute of the Page object
+         * Gets the pageInfo attribute of the Page object
          *
-         *@return    The pageInfo value
+         * @return The pageInfo value
          */
         public String getPageInfo() {
             return "page: " + pageNum +
@@ -937,7 +915,7 @@ public abstract class Paged {
             }
         }
 
-        public void setPageNum(long pageNum) {
+        public void setPageNum(final long pageNum) {
             this.pageNum = pageNum;
             offset = fileHeader.headerSize + (pageNum * fileHeader.pageSize);
         }
@@ -946,7 +924,7 @@ public abstract class Paged {
             write(null);
         }
 
-        private final void write(byte[] data) throws IOException {
+        private final void write(final byte[] data) throws IOException {
             if(data == null) {
                 // Removed page: fill with 0
                 Arrays.fill(tempPageData, (byte)0);
@@ -956,40 +934,38 @@ public abstract class Paged {
             header.write(tempPageData, 0);
             header.dirty = false;
             if (data != null) {
-                if (data.length > fileHeader.workSize)
-                    {throw new IOException("page: " + getPageInfo() +
-                    ": data length too large: " + data.length);}
-                else {
+                if (data.length > fileHeader.workSize) {
+                    throw new IOException("page: " + getPageInfo() + ": data length too large: " + data.length);
+                } else {
                     System.arraycopy(data, 0, tempPageData, fileHeader.pageHeaderSize, data.length);
                 }
             }
-            if (raf.getFilePointer() != offset)
-                {raf.seek(offset);}
+            if (raf.getFilePointer() != offset) {
+                raf.seek(offset);
+            }
             raf.write(tempPageData);
         }
 
-        /* (non-Javadoc)
-         * @see java.lang.Object#equals(java.lang.Object)
-         */
-        public boolean equals(Object obj) {
+        @Override
+        public boolean equals(final Object obj) {
             return ((Page)obj).pageNum == pageNum;
         }
 
-        /* (non-Javadoc)
-         * @see java.lang.Comparable#compareTo(java.lang.Object)
-         */
-        public int compareTo(Page other) {
-            if (pageNum == other.pageNum)
-                {return Constants.EQUAL;}
-            else if(pageNum > other.pageNum)
-                {return Constants.SUPERIOR;}
-            else
-                {return Constants.INFERIOR;}
+        @Override
+        public int compareTo(final Page other) {
+            if (pageNum == other.pageNum) {
+                return Constants.EQUAL;
+            } else if(pageNum > other.pageNum) {
+                return Constants.SUPERIOR;
+            } else {
+                return Constants.INFERIOR;
+            }
         }
 
         public void dumpPage() throws IOException {
-            if (raf.getFilePointer() != offset)
-                {raf.seek(offset);}
+            if (raf.getFilePointer() != offset) {
+                raf.seek(offset);
+            }
             final byte[] data = new byte[fileHeader.pageSize];
             raf.read(data);
             LOG.debug("Contents of page " + pageNum + ": " + hexDump(data));
@@ -1012,37 +988,37 @@ public abstract class Paged {
         private long lsn = Lsn.LSN_INVALID;
         
         public PageHeader() {
-    }
+        }
 
-        public PageHeader(byte[] data, int offset) throws IOException {
+        public PageHeader(final byte[] data, final int offset) throws IOException {
             read(data, offset);
         }
 
         /**
-         *  The length of the Data
+         * The length of the Data
          *
-         *@return    The dataLen value
+         * @return The dataLen value
          */
         public final int getDataLen() {
             return dataLen;
         }
 
         /**
-         *  The next page for this Record (if overflowed)
+         * The next page for this Record (if overflowed)
          *
-         *@return    The nextPage value
+         * @return The nextPage value
          */
         public final long getNextPage() {
             return nextPage;
         }
 
         /**
-         *  The status of this page (UNUSED, RECORD, DELETED, etc...)
+         * The status of this page (UNUSED, RECORD, DELETED, etc...)
          * - jmv - DESIGN_NOTE : 44 calls to this functions, mostly with switch;
          * the "state" design pattern is appropriate to eliminate these non - object oriented switches,
          * and put together all the behavior related to one state. 
          * 
-         *@return    The status value
+         * @return    The status value
          */
         public final byte getStatus() {
             return status;
@@ -1072,11 +1048,11 @@ public abstract class Paged {
             return lsn;
         }
 
-        public final void setLsn(long lsn) {
+        public final void setLsn(final long lsn) {
             this.lsn = lsn;
         }
 
-        public int read(byte[] data, int offset) throws IOException {
+        public int read(final byte[] data, int offset) throws IOException {
             status = data[offset];
             offset += LENGTH_PAGE_STATUS;
             dataLen = ByteConversion.byteToInt(data, offset);
@@ -1088,7 +1064,7 @@ public abstract class Paged {
         	return offset;
         }
 
-        public int write(byte[] data, int offset) throws IOException {
+        public int write(final byte[] data, int offset) throws IOException {
             data[offset] = status;
             offset += LENGTH_PAGE_STATUS;
             ByteConversion.intToByte(dataLen, data, offset);
@@ -1102,35 +1078,35 @@ public abstract class Paged {
         }
 
         /**
-         *  The length of the Data
+         * The length of the Data
          *
-         *@param  dataLen  The new dataLen value
+         * @param  dataLen  The new dataLen value
          */
-        public final void setDataLen(int dataLen) {
+        public final void setDataLen(final int dataLen) {
             this.dataLen = dataLen;
             dirty = true;
         }
 
-        public final void setDirty(boolean dirty) {
+        public final void setDirty(final boolean dirty) {
             this.dirty = dirty;
         }
 
         /**
-         *  The next page for this Record (if overflowed)
+         * The next page for this Record (if overflowed)
          *
-         *@param  nextPage  The new nextPage value
+         * @param nextPage The new nextPage value
          */
-        public final void setNextPage(long nextPage) {
+        public final void setNextPage(final long nextPage) {
             this.nextPage = nextPage;
             dirty = true;
         }
 
         /**
-         *  The status of this page (UNUSED, RECORD, DELETED, etc...)
+         * The status of this page (UNUSED, RECORD, DELETED, etc...)
          *
-         *@param  status  The new status value
+         * @param status The new status value
          */
-        public final void setStatus(byte status) {
+        public final void setStatus(final byte status) {
             this.status = status;
             dirty = true;
         }
@@ -1139,7 +1115,7 @@ public abstract class Paged {
     private static String[] hex = {"0", "1", "2", "3", "4", "5", "6", "7",
         "8", "9", "a", "b", "c", "d", "e", "f"};
 
-    public static String hexDump(byte[] data) {
+    public static String hexDump(final byte[] data) {
         final StringBuilder buf = new StringBuilder();
         int columns = 0;
         for (int i = 0; i < data.length; i++, columns++) {
@@ -1153,15 +1129,15 @@ public abstract class Paged {
         return buf.toString();
     }
 
-    private static void byteToHex( StringBuilder buf, byte b ) {
+    private static void byteToHex(final StringBuilder buf, final byte b) {
         int n = b;
         if ( n < 0 ) {
             n = 256 + n;
         }
         final int d1 = n / 16;
         final int d2 = n % 16;
-        buf.append( hex[d1] );
-        buf.append( hex[d2] );
+        buf.append(hex[d1]);
+        buf.append(hex[d2]);
     }
 
 }

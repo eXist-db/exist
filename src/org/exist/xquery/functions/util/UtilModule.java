@@ -40,13 +40,13 @@ import org.exist.xquery.functions.inspect.InspectFunction;
  * @author Adam retter <adam.retter@googlemail.com>
  */
 public class UtilModule extends AbstractInternalModule {
-    
+
     public final static String NAMESPACE_URI = "http://exist-db.org/xquery/util";
 
     public final static String PREFIX = "util";
     public final static String INCLUSION_DATE = "2004-09-12";
     public final static String RELEASED_IN_VERSION = "pre eXist-1.0";
-    
+
     public boolean evalDisabled = false;
 
     public final static FunctionDef[] functions = {
@@ -146,8 +146,8 @@ public class UtilModule extends AbstractInternalModule {
         new FunctionDef(Base64Functions.signatures[1], Base64Functions.class),
         new FunctionDef(Base64Functions.signatures[2], Base64Functions.class),
         new FunctionDef(BaseConversionFunctions.FNS_INT_TO_OCTAL, BaseConversionFunctions.class),
-        new FunctionDef(BaseConversionFunctions.FNS_OCTAL_TO_INT, BaseConversionFunctions.class)
-            
+        new FunctionDef(BaseConversionFunctions.FNS_OCTAL_TO_INT, BaseConversionFunctions.class),
+        new FunctionDef(LineNumber.signature, LineNumber.class)
     };
 
     static {
@@ -158,10 +158,13 @@ public class UtilModule extends AbstractInternalModule {
 
     public final static QName EXCEPTION_MESSAGE_QNAME = new QName("exception-message", UtilModule.NAMESPACE_URI, UtilModule.PREFIX);
 
-    public UtilModule(Map<String, List<? extends Object>> parameters) throws XPathException {
+    public final static QName ERROR_CODE_QNAME = new QName("error-code", UtilModule.NAMESPACE_URI, UtilModule.PREFIX);
+
+    public UtilModule(final Map<String, List<? extends Object>> parameters) throws XPathException {
         super(functions, parameters, true);
         declareVariable(EXCEPTION_QNAME, null);
         declareVariable(EXCEPTION_MESSAGE_QNAME, null);
+        declareVariable(ERROR_CODE_QNAME, null);
         
         final List<String> evalDisabledParamList = (List<String>)getParameter("evalDisabled");
         if(evalDisabledParamList != null && !evalDisabledParamList.isEmpty()) {
@@ -172,32 +175,20 @@ public class UtilModule extends AbstractInternalModule {
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.Module#getDescription()
-     */
     @Override
     public String getDescription() {
         return "A module for various utility extension functions.";
     }
 
-
-    /* (non-Javadoc)
-     * @see org.exist.xquery.Module#getNamespaceURI()
-     */
     @Override
     public String getNamespaceURI() {
         return NAMESPACE_URI;
     }
 
-
-    /* (non-Javadoc)
-     * @see org.exist.xquery.Module#getDefaultPrefix()
-     */
     @Override
     public String getDefaultPrefix() {
         return PREFIX;
     }
-
 
     @Override
     public String getReleaseVersion(){

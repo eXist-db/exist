@@ -145,8 +145,13 @@ public class AttributeBuilder {
 	}
 
 	@Override
-	protected void finalize() {
-		if (!done) LOG.warn("disposed without commit");
+	protected void finalize() throws Throwable {
+		try {
+			if (!done) LOG.warn("disposed without commit");
+		}
+		finally {
+			super.finalize();
+		}
 	}
 	
 }

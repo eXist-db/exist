@@ -42,7 +42,7 @@ public class ConcurrentAttrUpdateTest extends ConcurrentTestBase {
         tempFile = DBUtils.generateXMLFile(250, 10, wordList);
         DBUtils.addXMLResource(getTestCollection(), "R1.xml", tempFile);
         addAction(new AttributeUpdateAction(URI + "/C1", "R1.xml", wordList), 20, 0, 0);
-        //addAction(new XQueryAction(URI + "/C1", "R1.xml", QUERY), 100, 100, 30);
+        //addAction(new XQueryAction(getUri + "/C1", "R1.xml", QUERY), 100, 100, 30);
 	}
 
     @After

@@ -27,10 +27,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Source;
@@ -156,6 +153,8 @@ public abstract class Serializer implements XMLReader {
     protected final static QName ATTR_COUNT_QNAME = new QName("count", Namespaces.EXIST_NS, "exist");
     protected final static QName ELEM_RESULT_QNAME = new QName("result", Namespaces.EXIST_NS, "exist");
     protected final static QName ATTR_SESSION_ID = new QName("session", Namespaces.EXIST_NS, "exist");
+	protected final static QName ATTR_COMPILATION_TIME_QNAME = new QName("compilation-time", Namespaces.EXIST_NS, "exist");
+	protected final static QName ATTR_EXECUTION_TIME_QNAME = new QName("execution-time", Namespaces.EXIST_NS, "exist");
     protected final static QName ATTR_TYPE_QNAME = new QName("type", Namespaces.EXIST_NS, "exist");
     protected final static QName ELEM_VALUE_QNAME = new QName("value", Namespaces.EXIST_NS, "exist");
 
@@ -227,10 +226,14 @@ public abstract class Serializer implements XMLReader {
     
     
     public Serializer(DBBroker broker, Configuration config) {
+		this(broker, config, null);
+	}
+
+	public Serializer(DBBroker broker, Configuration config, List<String> chainOfReceivers) {
 		this.broker = broker;
 		factory = TransformerFactoryAllocator.getTransformerFactory(broker.getBrokerPool());
 		xinclude = new XIncludeFilter(this);
-        customMatchListeners = new CustomMatchListenerFactory(broker, config);
+        customMatchListeners = new CustomMatchListenerFactory(broker, config, chainOfReceivers);
 		receiver = xinclude;
 		
 		String option = (String) config.getProperty(PROPERTY_ENABLE_XSL);
@@ -303,18 +306,24 @@ public abstract class Serializer implements XMLReader {
 	
 	public void setProperty(String prop, Object value)
 		throws SAXNotRecognizedException, SAXNotSupportedException {
-		if (prop.equals(Namespaces.SAX_LEXICAL_HANDLER)) {
-			lexicalHandler = (LexicalHandler) value;
-        } else if (EXistOutputKeys.ADD_EXIST_ID.equals(prop)) {
-            if ("element".equals(value))
-                {showId = EXIST_ID_ELEMENT;}
-            else if ("all".equals(value))
-                {showId = EXIST_ID_ALL;}
-            else
-                {showId = EXIST_ID_NONE;}
-        } else {
-			outputProperties.put(prop, value);
+		switch (prop) {
+			case Namespaces.SAX_LEXICAL_HANDLER:
+				lexicalHandler = (LexicalHandler) value;
+				break;
+			case EXistOutputKeys.ADD_EXIST_ID:
+				if ("element".equals(value)) {
+					showId = EXIST_ID_ELEMENT;
+				} else if ("all".equals(value)) {
+					showId = EXIST_ID_ALL;
+				} else {
+					showId = EXIST_ID_NONE;
+				}
+				break;
+			default:
+				outputProperties.put(prop, value);
+				break;
 		}
+
 	}
 
 	public String getProperty(String key, String defaultValue) {
@@ -887,14 +896,17 @@ public abstract class Serializer implements XMLReader {
 	 * 
 	 * &lt;exist:result hits="sequence length" start="value of start" count="value of count">
 	 * 
-	 * @param seq
-	 * @param start
-	 * @param count
+	 * @param seq The sequence to serialize
+	 * @param start The position in the sequence to start serialization from
+	 * @param count The number of items from the start position to serialize
 	 * @param wrap Indicates whether the output should be wrapped
-         * @param typed Indicates whether the output types should be wrapped
-	 * @throws SAXException
+	 * @param typed Indicates whether the output types should be wrapped
+	 * @param compilationTime The time taken to compile the query which produced the sequence
+	 * @param executionTime The time taken to execute the query which produced the sequence
+	 *
+	 * @throws SAXException If an error occurs during serialization
 	 */
-	public void toSAX(Sequence seq, int start, int count, boolean wrap, boolean typed) throws SAXException {
+	public void toSAX(final Sequence seq, int start, final int count, final boolean wrap, final boolean typed, final long compilationTime, final long executionTime) throws SAXException {
         try {
             setStylesheetFromProperties(null);
         } catch (final TransformerConfigurationException e) {
@@ -908,21 +920,23 @@ public abstract class Serializer implements XMLReader {
 		if (outputProperties.getProperty(PROPERTY_SESSION_ID) != null) {
             attrs.addAttribute(ATTR_SESSION_ID, outputProperties.getProperty(PROPERTY_SESSION_ID));
         }
+		attrs.addAttribute(ATTR_COMPILATION_TIME_QNAME, Long.toString(compilationTime));
+		attrs.addAttribute(ATTR_EXECUTION_TIME_QNAME, Long.toString(compilationTime));
+
 		receiver.startDocument();
 		if(wrap) {
 			receiver.startPrefixMapping("exist", Namespaces.EXIST_NS);
 			receiver.startElement(ELEM_RESULT_QNAME, attrs);
 		}
-		
-		Item item;
+
 		for(int i = --start; i < start + count; i++) {
-			item = seq.itemAt(i);
+			final Item item = seq.itemAt(i);
                         if (item == null) {
                             LOG.debug("item " + i + " not found");
                             continue;
                         }
                         
-			itemToSAX(item, typed, wrap, attrs);
+			itemToSAX(item, typed, wrap);
 		}
 		
 		if(wrap) {
@@ -932,15 +946,18 @@ public abstract class Serializer implements XMLReader {
 		receiver.endDocument();
 	}
         
-        /**
+    /**
 	 * Serialize the items in the given sequence to SAX, starting with item start. If parameter
 	 * wrap is set to true, output a wrapper element to enclose the serialized items. The
 	 * wrapper element will be in namespace {@link org.exist.Namespaces#EXIST_NS} and has the following form:
 	 * 
 	 * &lt;exist:result hits="sequence length" start="value of start" count="value of count">
-	 * 
+	 *
+	 * @param seq The sequence to serialize
+	 *
+	 * @throws SAXException If an error occurs during serialization
 	 */
-    public void toSAX(Sequence seq) throws SAXException {
+    public void toSAX(final Sequence seq) throws SAXException {
         try {
             setStylesheetFromProperties(null);
         } catch (final TransformerConfigurationException e) {
@@ -952,11 +969,10 @@ public abstract class Serializer implements XMLReader {
         receiver.startDocument();
 
         try {
-            Item item;
             final SequenceIterator itSeq = seq.iterate();
             while(itSeq.hasNext()) {
-                item = itSeq.nextItem();
-                itemToSAX(item, false, false, null);
+                final Item item = itSeq.nextItem();
+                itemToSAX(item, false, false);
             }
         } catch(final XPathException xpe) {
             throw new SAXException(xpe.getMessage(), xpe);
@@ -965,18 +981,16 @@ public abstract class Serializer implements XMLReader {
         receiver.endDocument();
     }
         
-        /**
-	 * Serialize the items in the given sequence to SAX, starting with item start. If parameter
-	 * wrap is set to true, output a wrapper element to enclose the serialized items. The
-	 * wrapper element will be in namespace {@link org.exist.Namespaces#EXIST_NS} and has the following form:
-	 * 
-	 * &lt;exist:result hits="sequence length" start="value of start" count="value of count">
-	 * 
+    /**
+	 * Serializes an Item
+	 *
+	 * @param item The item to serialize
 	 * @param wrap Indicates whether the output should be wrapped
-         * @param typed Indicates whether the output types should be wrapped
-	 * @throws SAXException
+	 * @param typed Indicates whether the output types should be wrapped
+	 *
+	 * @throws SAXException If an error occurs during serialization
 	 */
-	public void toSAX(Item item, boolean wrap, boolean typed) throws SAXException {
+	public void toSAX(final Item item, final boolean wrap, final boolean typed) throws SAXException {
             try {
                 setStylesheetFromProperties(null);
             } catch (final TransformerConfigurationException e) {
@@ -1000,7 +1014,7 @@ public abstract class Serializer implements XMLReader {
             }
 		
                         
-            itemToSAX(item, typed, wrap, attrs);
+            itemToSAX(item, typed, wrap);
 		
             if(wrap) {
                 receiver.endElement(ELEM_RESULT_QNAME);
@@ -1010,45 +1024,43 @@ public abstract class Serializer implements XMLReader {
             receiver.endDocument();
 	}
         
-        private void itemToSAX(Item item, boolean typed, boolean wrap, AttrList attrs) throws SAXException {
-            
+	private void itemToSAX(final Item item, final boolean typed, final boolean wrap) throws SAXException {
+		if(Type.subTypeOf(item.getType(), Type. NODE)) {
+			final NodeValue node = (NodeValue) item;
 
-            if(Type.subTypeOf(item.getType(), Type. NODE)) {
-                final NodeValue node = (NodeValue) item;
+			if(typed) {
+				//TODO the typed and wrapped stuff should ideally be replaced
+				//with Marshaller.marshallItem
+				//unfortrunately calling Marshaller.marshallItem(broker, item, new SAXToReceiver(receiver))
+				//results in a stack overflow
+				//TODO consider a full XDM serializer in place of this for these special needs
 
-                if(typed) {
-                    //TODO the typed and wrapped stuff should ideally be replaced
-                    //with Marshaller.marshallItem
-                    //unfortrunately calling Marshaller.marshallItem(broker, item, new SAXToReceiver(receiver))
-                    //results in a stack overflow
-                    //TODO consider a full XDM serializer in place of this for these special needs
-
-                    serializeTypePreNode(node);
-                    if(node.getType() == Type.ATTRIBUTE) {
-                        serializeTypeAttributeValue(node);
-                    } else {
-                        serializeToReceiver(node, false);
-                    }
-                    serializeTypePostNode(node);
-                } else {
-                    serializeToReceiver(node, false);
-                }
-            } else {
-                if(wrap) {
-                        attrs = new AttrList();
-                        attrs.addAttribute(ATTR_TYPE_QNAME, Type.getTypeName(item.getType()));
-                        receiver.startElement(ELEM_VALUE_QNAME, attrs);
-                }
-                try {
-                        receiver.characters(item.getStringValue());
-                } catch (final XPathException e) {
-                        throw new SAXException(e.getMessage(), e);
-                }
-                if(wrap) {
-                        receiver.endElement(ELEM_VALUE_QNAME);
-                }
-            }
-        }
+				serializeTypePreNode(node);
+				if(node.getType() == Type.ATTRIBUTE) {
+					serializeTypeAttributeValue(node);
+				} else {
+					serializeToReceiver(node, false);
+				}
+				serializeTypePostNode(node);
+			} else {
+				serializeToReceiver(node, false);
+			}
+		} else {
+			if(wrap) {
+					final AttrList attrs = new AttrList();
+					attrs.addAttribute(ATTR_TYPE_QNAME, Type.getTypeName(item.getType()));
+					receiver.startElement(ELEM_VALUE_QNAME, attrs);
+			}
+			try {
+					receiver.characters(item.getStringValue());
+			} catch (final XPathException e) {
+					throw new SAXException(e.getMessage(), e);
+			}
+			if(wrap) {
+					receiver.endElement(ELEM_VALUE_QNAME);
+			}
+		}
+	}
 
     public void toReceiver(NodeProxy p, boolean highlightMatches) throws SAXException {
         toReceiver(p, highlightMatches, true);

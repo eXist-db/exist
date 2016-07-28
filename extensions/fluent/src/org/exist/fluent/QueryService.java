@@ -11,7 +11,6 @@ import java.util.regex.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.xacml.AccessContext;
 import org.exist.source.*;
 import org.exist.storage.*;
 import org.exist.util.LockException;
@@ -311,7 +310,7 @@ public class QueryService implements Cloneable {
 			try {
 				XQueryContext context;
 				if (compiledQuery == null) {
-					context = new XQueryContext(broker.getBrokerPool(), AccessContext.INTERNAL_PREFIX_LOOKUP);
+					context = new XQueryContext(broker.getBrokerPool());
 					buildXQueryStaticContext(context, true);
 				} else {
 					context = compiledQuery.getContext();
@@ -541,7 +540,7 @@ public class QueryService implements Cloneable {
 			try {
 				AnalysisXQueryContext context;
 				if (compiledQuery == null) {
-					context = new AnalysisXQueryContext(broker, AccessContext.INTERNAL_PREFIX_LOOKUP);
+					context = new AnalysisXQueryContext(broker);
 					buildXQueryStaticContext(context, false);
 					buildXQueryDynamicContext(context, params, null, false);
 					t2 = System.currentTimeMillis();
@@ -573,8 +572,8 @@ public class QueryService implements Cloneable {
 		final Set<QName> requiredFunctions = new TreeSet<QName>();
 		final Set<QName> requiredVariables = new TreeSet<QName>();
 
-		private AnalysisXQueryContext(DBBroker broker, AccessContext accessCtx) {
-			super(broker.getBrokerPool(), accessCtx);
+		private AnalysisXQueryContext(DBBroker broker) {
+			super(broker.getBrokerPool());
 		}
 
 		@Override public Variable resolveVariable(org.exist.dom.QName qname) throws XPathException {

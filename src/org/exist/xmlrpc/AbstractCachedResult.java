@@ -86,9 +86,13 @@ public abstract class AbstractCachedResult {
     public abstract Object getResult();
 
     @Override
-    protected void finalize()
-            throws Throwable {
+    protected void finalize() throws Throwable {
         // Calling free to reclaim pinned resources
-        free();
+        try {
+            free();
+        }
+        finally {
+            super.finalize();
+        }
     }
 }

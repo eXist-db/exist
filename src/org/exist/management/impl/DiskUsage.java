@@ -69,35 +69,30 @@ public class DiskUsage implements DiskUsageMBean {
         return journalDir.map(d -> d.toAbsolutePath().toString()).orElse(NOT_CONFIGURED);
     }
 
-    private long measureFileStore(final Optional<Path> path, final FunctionE<FileStore, Long, IOException> measurement) {
-        return path.map(p -> {
-            try {
-                return measurement.apply(Files.getFileStore(p));
-            } catch(final IOException ioe) {
-                LOG.error(ioe);
-                return NO_VALUE;
-            }
-        }).orElse(NO_VALUE);
+    private long measureFileStore(final Optional<Path> path, final FunctionE<FileStore, Long, IOException> measurer) {
+        return path
+                .map(p -> FileUtils.measureFileStore(p, measurer))
+                .orElse(NO_VALUE);
     }
 
     @Override
     public long getDataDirectoryTotalSpace() {
-        return measureFileStore(dataDir, fs -> fs.getTotalSpace());
+        return measureFileStore(dataDir, FileStore::getTotalSpace);
     }
 
     @Override
     public long getDataDirectoryUsableSpace() {
-        return measureFileStore(dataDir, fs -> fs.getUsableSpace());
+        return measureFileStore(dataDir, FileStore::getUsableSpace);
     }
 
     @Override
     public long getJournalDirectoryTotalSpace() {
-        return measureFileStore(journalDir, fs -> fs.getTotalSpace());
+        return measureFileStore(journalDir, FileStore::getTotalSpace);
     }
 
     @Override
     public long getJournalDirectoryUsableSpace() {
-        return measureFileStore(journalDir, fs -> fs.getUsableSpace());
+        return measureFileStore(journalDir, FileStore::getUsableSpace);
     }
 
     @Override

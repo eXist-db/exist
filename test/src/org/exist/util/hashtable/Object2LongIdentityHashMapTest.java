@@ -8,59 +8,73 @@ import static org.junit.Assert.assertEquals;
 
 public class Object2LongIdentityHashMapTest extends AbstractHashtableTest<Object2LongIdentityHashMap, Object, Long> {
 
-	java.util.HashMap<Integer, Integer> canonicalObject = new java.util.HashMap<>();
-	
+	private final java.util.HashMap<Integer, Integer> canonicalObject = new java.util.HashMap<>();
+
+	@Override
 	protected Object2LongIdentityHashMap newT() {
 		return new Object2LongIdentityHashMap();
 	}
-	
-	@SuppressWarnings("unchecked")
-	protected Iterator<? extends Object> simpleKeyIterator() {
+
+	@Override
+	protected Iterator<?> simpleKeyIterator() {
 		return map.iterator();
 	}
 
 	@SuppressWarnings("unchecked")
+	@Override
 	protected Iterator<? extends Long> simpleValueIterator() {
 		return map.valueIterator();
 	}
 
-	protected Long simpleGet(Object k) {
-		long foo = map.get(k);
+	@SuppressWarnings("unchecked")
+	@Override
+	protected Long simpleGet(final Object k) {
+		final long foo = map.get(k);
 		return foo == -1 ? null : foo;
 	}
 
-	protected void simplePut(Object k, Long v) {
+	@SuppressWarnings("unchecked")
+	@Override
+	protected void simplePut(final Object k, final Long v) {
 		map.put(k, v);
 	}
 
-	protected void simpleRemove(Object k) {
+	@SuppressWarnings("unchecked")
+	@Override
+	protected void simpleRemove(final Object k) {
 		map.remove(k);
 	}
 
-	protected boolean simpleContainsKey(int k) {
+	@SuppressWarnings("unchecked")
+	protected boolean simpleContainsKey(final int k) {
 		return map.containsKey(keyEquiv(k));
 	}
 
-	protected Long valEquiv(int v) {
+	@Override
+	protected Long valEquiv(final int v) {
 		return (long) v;
 	}
 
-	protected int valEquiv(Long v) {
+	@Override
+	protected int valEquiv(final Long v) {
 		return v.intValue();
 	}
 
-	protected Object keyEquiv(int k) {
+	@Override
+	protected Object keyEquiv(final int k) {
 		if(!canonicalObject.containsKey(k)) {
 			canonicalObject.put(k,k);
 		}
 		return canonicalObject.get(k);
 	}
 
-	protected int keyEquiv(Object k) {
+	@Override
+	protected int keyEquiv(final Object k) {
 		return (Integer) k;
 	}
-	
-	protected Integer keyEquiv_newObject(int k) {
+
+	@Override
+	protected Integer keyEquiv_newObject(final int k) {
 		return new Integer(k);
 	}
 
@@ -75,10 +89,10 @@ public class Object2LongIdentityHashMapTest extends AbstractHashtableTest<Object
 				simpleAdd(keyEquiv_newObject(j));
 			}
 
-		int[] test = new int[10];
-		for (Iterator<? extends Object> ki = simpleKeyIterator(); ki.hasNext();) {
-			Object k = ki.next();
-			int kk = keyEquiv(k);
+		final int[] test = new int[10];
+		for (final Iterator<?> ki = simpleKeyIterator(); ki.hasNext();) {
+			final Object k = ki.next();
+			final int kk = keyEquiv(k);
 			test[kk]++;
 		}
 
@@ -86,6 +100,4 @@ public class Object2LongIdentityHashMapTest extends AbstractHashtableTest<Object
 			assertEquals("key " + i + " appeared 10 times", 10, test[i]);
 		}
 	}
-
-	
 }

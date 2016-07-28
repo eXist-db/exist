@@ -3,7 +3,6 @@ package org.exist.storage;
 import org.exist.util.Configuration;
 import org.exist.xquery.XQuery;
 import org.exist.xmldb.XmldbURI;
-import org.exist.security.xacml.AccessContext;
 import org.exist.test.TestConstants;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
@@ -97,7 +96,7 @@ public class DirtyShutdownTest {
 
             try(final Txn transaction = transact.beginTransaction()) {
                 XQuery xquery = pool.getXQueryService();
-                xquery.execute(broker, query, null, AccessContext.TEST);
+                xquery.execute(broker, query, null);
                 transact.commit(transaction);
             }
         } catch (Exception e) {

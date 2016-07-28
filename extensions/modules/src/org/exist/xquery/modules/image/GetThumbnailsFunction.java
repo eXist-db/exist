@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.util.Iterator;
+import java.util.Optional;
 
 import javax.imageio.ImageIO;
 
@@ -43,6 +44,7 @@ import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
+import org.exist.storage.journal.JournalManager;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.xmldb.XmldbURI;
@@ -321,7 +323,10 @@ public class GetThumbnailsFunction extends BasicFunction {
                     throw new XPathException(this, e.getMessage());
                 }
             }
-            transact.getJournal().flushToLog(true);
+            final Optional<JournalManager> journalManager = pool.getJournalManager();
+            if(journalManager.isPresent()) {
+                journalManager.get().flush(true, false);
+            }
             dbbroker.closeDocument();
         }
 		return result;

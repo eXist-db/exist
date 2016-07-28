@@ -148,12 +148,8 @@ public class CastableExpression extends AbstractExpression {
     }
     
     public String toString() {
-    	final StringBuilder result = new StringBuilder();
-    	result.append(expression.toString());
-    	result.append(" castable as ");
-    	result.append(Type.getTypeName(requiredType));
-    	return result.toString();
-    }    
+		return expression.toString() + " castable as " + Type.getTypeName(requiredType);
+    }
     
     public void setContextDocSet(DocumentSet contextSet) {
 		super.setContextDocSet(contextSet);

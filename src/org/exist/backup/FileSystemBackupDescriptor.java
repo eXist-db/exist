@@ -83,17 +83,17 @@ public class FileSystemBackupDescriptor extends AbstractBackupDescriptor
     @Override
     public EXistInputSource getInputSource()
     {
-        return( new FileInputSource( descriptor.toFile() ) );
+        return new FileInputSource(descriptor);
     }
 
     @Override
-    public EXistInputSource getInputSource( String describedItem )
+    public EXistInputSource getInputSource(final String describedItem)
     {
         final Path             child = descriptor.getParent().resolve(describedItem);
         EXistInputSource is    = null;
 
         if((!Files.isDirectory(child)) && Files.isReadable(child) ) {
-            is = new FileInputSource( child.toFile() );
+            is = new FileInputSource(child);
         }
 
         return( is );

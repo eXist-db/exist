@@ -66,8 +66,7 @@ public class DeferredFunctionCallTest {
         
         //expectations for functionCall.evalFunction
         expect(mockContext.isProfilingEnabled()).andReturn(false);
-        expect(mockContext.getPDP()).andReturn(null);
-        
+
         //expectations for DeferredFunctionCall.execute
         mockContext.pushDocumentContext();
         mockContext.functionStart(mockFunctionSignature);
@@ -77,6 +76,8 @@ public class DeferredFunctionCallTest {
         expect(mockFunctionSignature.getArgumentTypes()).andReturn(mockArgumentTypes); 
         
         expect(mockExpression.eval(mockContextSequence, mockContextItem)).andReturn(Sequence.EMPTY_SEQUENCE);
+
+        mockExpression.resetState(true);
 
         mockContext.stackLeave((Expression)anyObject());
         mockContext.functionEnd();
@@ -98,6 +99,7 @@ public class DeferredFunctionCallTest {
         
         // 1) Call reset, this should set current arguments to null
         functionCall.resetState(true);
+        functionCall.setRecursive(true); //ensure DeferredFunction
         
         // 2) check UserDefinedFunction.currentArguments == null
         assertNull(userDefinedFunction.getCurrentArguments());

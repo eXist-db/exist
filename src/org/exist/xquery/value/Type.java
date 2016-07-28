@@ -337,12 +337,14 @@ public class Type {
 	 */
 	public static int getType(QName qname) throws XPathException {
 		final String uri = qname.getNamespaceURI();
-		if (uri.equals(Namespaces.SCHEMA_NS))
-			{return getType("xs:" + qname.getLocalPart());}
-		else if (uri.equals(Namespaces.XPATH_DATATYPES_NS))
-			{return getType("xdt:" + qname.getLocalPart());}
-		else
-			{return getType(qname.getLocalPart());}
+        switch (uri) {
+            case Namespaces.SCHEMA_NS:
+                return getType("xs:" + qname.getLocalPart());
+            case Namespaces.XPATH_DATATYPES_NS:
+                return getType("xdt:" + qname.getLocalPart());
+            default:
+                return getType(qname.getLocalPart());
+        }
 	}
 
 	/**

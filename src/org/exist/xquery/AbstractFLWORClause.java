@@ -20,18 +20,16 @@ public abstract class AbstractFLWORClause extends AbstractExpression implements 
 
     public LocalVariable createVariable(String name) throws XPathException {
         final LocalVariable var = new LocalVariable(QName.parse(context, name, null));
-        if (firstVar == null) {
-            firstVar = var;
-        }
+        firstVar = var;
         return var;
     }
 
     @Override
     public Sequence preEval(Sequence seq) throws XPathException {
-        // just return the input sequence by default
         if (returnExpr instanceof FLWORClause) {
             return ((FLWORClause)returnExpr).preEval(seq);
         }
+        // just return the input sequence by default
         return seq;
     }
 

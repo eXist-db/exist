@@ -1,25 +1,12 @@
 package org.exist.xquery.functions.inspect;
 
-import org.exist.dom.persistent.BinaryDocument;
-import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
-import org.exist.security.PermissionDeniedException;
-import org.exist.security.xacml.AccessContext;
-import org.exist.source.DBSource;
-import org.exist.source.Source;
-import org.exist.source.SourceFactory;
-import org.exist.storage.lock.Lock;
-import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 import org.exist.xquery.xqdoc.XQDocHelper;
 import org.xml.sax.helpers.AttributesImpl;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.util.Iterator;
 import java.util.Map;
 
 public class InspectModule extends BasicFunction {
@@ -60,7 +47,7 @@ public class InspectModule extends BasicFunction {
     @Override
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
         Module module;
-        final XQueryContext tempContext = new XQueryContext(context.getBroker().getBrokerPool(), AccessContext.XMLDB);
+        final XQueryContext tempContext = new XQueryContext(context.getBroker().getBrokerPool());
         tempContext.setModuleLoadPath(context.getModuleLoadPath());
         if (isCalledAs("inspect-module")) {
             module = tempContext.importModule(null, null, args[0].getStringValue());

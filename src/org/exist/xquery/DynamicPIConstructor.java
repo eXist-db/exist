@@ -149,13 +149,7 @@ public class DynamicPIConstructor extends NodeConstructor {
     }
 
     public String toString() {
-        final StringBuilder result = new StringBuilder();
-        result.append("processing-instruction {");
-        result.append(name.toString());
-        result.append("} {");        
-        result.append(content.toString());
-        result.append("} ");
-        return result.toString();
+        return "processing-instruction {" + name.toString() + "} {" + content.toString() + "} ";
     }
 
     public void resetState(boolean postOptimization) {

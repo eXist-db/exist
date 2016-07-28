@@ -20,7 +20,8 @@
  */
 package org.exist.xmldb;
 
-import org.exist.jetty.JettyStart;
+import org.exist.test.ExistWebServer;
+import org.junit.ClassRule;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
@@ -36,26 +37,18 @@ import static org.junit.Assert.fail;
  */
 //TODO : manage content from here, not from the derived classes
 public abstract class RemoteDBTest {
-	
-	protected static JettyStart server = null;
-    // jetty.port.standalone
-    protected final static String URI = "xmldb:exist://localhost:" + System.getProperty("jetty.port", "8088") + "/xmlrpc";
+
+    @ClassRule
+    public static final ExistWebServer existWebServer = new ExistWebServer(true);
+
     private final static String CHILD_COLLECTION = "unit-testing-collection-Citt\u00E0";
     public final static String DB_DRIVER = "org.exist.xmldb.DatabaseImpl";
 
     private RemoteCollection collection = null;
 
-	protected void initServer() {
-		try {
-			if (server == null) {
-				server = new JettyStart();
-                server.run();
-			}
-        } catch (Exception e) {
-        	e.printStackTrace();
-            fail(e.getMessage()); 
-        }
-	}  		
+    public static String getUri() {
+        return "xmldb:exist://localhost:" + existWebServer.getPort() + "/xmlrpc";
+    }
 
     protected void setUpRemoteDatabase() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
         //Connect to the DB
@@ -64,7 +57,7 @@ public abstract class RemoteDBTest {
         assertNotNull(database);
         DatabaseManager.registerDatabase(database);
         //Get the root collection...
-        Collection rootCollection = DatabaseManager.getCollection(URI + XmldbURI.ROOT_COLLECTION, "admin", "");
+        Collection rootCollection = DatabaseManager.getCollection(getUri() + XmldbURI.ROOT_COLLECTION, "admin", "");
         assertNotNull(rootCollection);
         CollectionManagementService cms = (CollectionManagementService) rootCollection.getService(
                 "CollectionManagementService", "1.0");
@@ -78,7 +71,7 @@ public abstract class RemoteDBTest {
 
     protected void removeCollection() {
     	try {
-	        Collection rootCollection = DatabaseManager.getCollection(URI + XmldbURI.ROOT_COLLECTION, "admin", "");
+	        Collection rootCollection = DatabaseManager.getCollection(getUri() + XmldbURI.ROOT_COLLECTION, "admin", "");
 	        assertNotNull(rootCollection);
 	        CollectionManagementService cms = (CollectionManagementService) rootCollection.getService(
 	                "CollectionManagementService", "1.0");

@@ -367,11 +367,12 @@ public class ExistCollection extends ExistResource {
                     LOG.debug(String.format("Inserting XML document '%s'", mime.getName()));
 
                 // Stream into database
-                VirtualTempFileInputSource vtfis = new VirtualTempFileInputSource(vtf);
-                IndexInfo info = collection.validateXMLResource(txn, broker, newNameUri, vtfis);
-                DocumentImpl doc = info.getDocument();
-                doc.getMetadata().setMimeType(mime.getName());
-                collection.store(txn, broker, info, vtfis, false);
+                try(final VirtualTempFileInputSource vtfis = new VirtualTempFileInputSource(vtf)) {
+                    IndexInfo info = collection.validateXMLResource(txn, broker, newNameUri, vtfis);
+                    DocumentImpl doc = info.getDocument();
+                    doc.getMetadata().setMimeType(mime.getName());
+                    collection.store(txn, broker, info, vtfis, false);
+                }
 
             } else {
 

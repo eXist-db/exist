@@ -142,7 +142,7 @@ public class XMLDBXQueryTask extends AbstractXMLDBTask
 
                 } else if( queryFile != null ) {
                     log( "XQuery file " + queryFile.getAbsolutePath(), Project.MSG_DEBUG );
-                    source = new FileSource( queryFile, "UTF-8", true );
+                    source = new FileSource( queryFile.toPath(), true );
 
                 } else {
                     log( "XQuery string: " + query, Project.MSG_DEBUG );

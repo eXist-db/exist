@@ -21,7 +21,6 @@
  */
 package org.exist.http;
 
-import org.junit.BeforeClass;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,13 +31,11 @@ import java.io.StringReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.util.List;
-import java.util.Map;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.exist.jetty.JettyStart;
 import org.exist.Namespaces;
 import org.exist.dom.memtree.SAXAdapter;
+import org.exist.test.ExistWebServer;
 import org.exist.util.Base64Encoder;
 import org.exist.xmldb.XmldbURI;
 import org.xml.sax.InputSource;
@@ -49,7 +46,8 @@ import org.w3c.dom.Element;
 
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.parsers.SAXParser;
-import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -61,74 +59,8 @@ import static org.junit.Assert.assertTrue;
  */
 public class RESTServiceTest {
 
-    private static JettyStart server = null;
-    // jetty.port.standalone
-    private final static String SERVER_URI = "http://localhost:" + System.getProperty("jetty.port", "8088") + "/rest";
-
-    private final static String SERVER_URI_REDIRECTED = "http://localhost:" + System.getProperty("jetty.port", "8088");
-
-    private final static String COLLECTION_URI = SERVER_URI + XmldbURI.ROOT_COLLECTION + "/test";
-
-    private final static String COLLECTION_URI_REDIRECTED =
-            SERVER_URI_REDIRECTED + XmldbURI.ROOT_COLLECTION + "/test";
-
-    private final static String RESOURCE_URI = SERVER_URI + XmldbURI.ROOT_COLLECTION + "/test/test.xml";
-
-    /* About path components of URIs:
-
-     ** reserved characters # http://tools.ietf.org/html/rfc3986#section-2.2
-     *
-     *  gen-delims  = ":" / "/" / "?" / "#" / "[" / "]" / "@"
-     *  sub-delims  = "!" / "$" / "&" / "'" / "(" / ")"
-     *              / "*" / "+" / "," / ";" / "="
-     *  reserved    = gen-delims / sub-delims
-        RCHAR=": / ? # [ ] @ ! $ & ' ( ) *  + , ; ="
-
-     ** path-segment # http://tools.ietf.org/html/rfc3986#section-3.3
-     *
-     *  unreserved  = ALPHA / DIGIT / "-" / "." / "_" / "~"
-     *  pct-encoded = "%" HEXDIG HEXDIG
-     *  sub-delims  = "!" / "$" / "&" / "'" / "(" / ")"
-     *              / "*" / "+" / "," / ";" / "="
-     *  pchar       = unreserved / pct-encoded / sub-delims / ":" / "@"
-
-     ** So, characters literally allowed in a path-segment are:
-        PCHAR="A-Z a-z 0-9 - . _ ~ ! $ & ' ( ) *  + , ; = : @"
-
-     ** All the rest has to be percent-encoded
-     *  the percent sign itself MUST start a code
-     *  reserved+ chars in need of encoding - in a path-segment - are:
-     *       /   ?   #   [   ]   %
-     *  %20 %2F %3F %23 %5B %5D %25
-
-     ** Interoperability /rest/ space:
-     *  most webbrowsers act mostly correct
-     *  curl does _no_ encoding on its own
-     *  all browsers send a bare / as is (user error? will separate path-segments)
-     *  all browsers send a bare ? as is (user error? will start the query-string)
-     *  no browser sends a bare # at all (user error? will start the fragment-identifier)
-     *  chrome and msie send [] verbatim (wrong? apache can accomodate…)
-     *  all browsers send a bare % as is (user error? will start an escape, apache returns Bad Request)
-
-     ** Interoperability /webdav/ space:
-     *  the GET and PUT methods mirror /rest/ space
-     *  These characters are not allowed in an NFTS filename
-        INTFS='/ \ : *   ? " < > |'
-     *  of those, Macintosh HFS only prohibits the colon
-     *  most other UN*X FSs only prohibit the slash
-     *  Quick test with bash on Linux extfs:
-        TWDAV="$PCHAR $RCHAR $INTFS %"
-     *  set -f; for fn in $TWDAV; do echo T__${fn}__ > /tmp/T__${fn}__; done
-     *  only the slash will error out (twice)
-     *  anything in this set can be thrown at webdav!
-
-     ** Beware, some chars valid in a path-segment must not be in a filename (mostly NTFS)
-     */
-    // Below String mostly contains the PCHAR set literally; the colon fails though, so its omitted…
-    // Also in the mix: some (mandatory except %27) escapes, some multibyte UTF-8 characters
-    // and a superficial directory traversal and a superficial double slash too
-    private final static String RESOURCE_URI_PLUS = SERVER_URI + XmldbURI.ROOT_COLLECTION +
-            "/test//../test/A-Za-z0-9_~!$&'()*+,;=@%20%23%25%27%2F%3F%5B%5Däöü.xml";
+    @ClassRule
+    public final static ExistWebServer existWebServer = new ExistWebServer(true);
 
     private final static String XML_DATA = "<test>"
             + "<para>\u00E4\u00E4\u00FC\u00FC\u00F6\u00F6\u00C4\u00C4\u00D6\u00D6\u00DC\u00DC</para>"
@@ -202,8 +134,85 @@ public class RESTServiceTest {
 
     private static String credentials;
     private static String badCredentials;
-    
-    
+
+    private static String getServerUri() {
+        return "http://localhost:" + existWebServer.getPort() + "/rest";
+    }
+
+    private static String getServerUriRedirected() {
+        return "http://localhost:" +  existWebServer.getPort();
+    }
+
+    private static String getCollectionUri() {
+        return getServerUri() + XmldbURI.ROOT_COLLECTION + "/test";
+    }
+
+    private static String getCollectionUriRedirected() {
+        return getServerUriRedirected() + XmldbURI.ROOT_COLLECTION + "/test";
+    }
+
+    private static String getResourceUri() {
+        return getServerUri() + XmldbURI.ROOT_COLLECTION + "/test/test.xml";
+    }
+
+    /* About path components of URIs:
+
+     ** reserved characters # http://tools.ietf.org/html/rfc3986#section-2.2
+     *
+     *  gen-delims  = ":" / "/" / "?" / "#" / "[" / "]" / "@"
+     *  sub-delims  = "!" / "$" / "&" / "'" / "(" / ")"
+     *              / "*" / "+" / "," / ";" / "="
+     *  reserved    = gen-delims / sub-delims
+        RCHAR=": / ? # [ ] @ ! $ & ' ( ) *  + , ; ="
+
+     ** path-segment # http://tools.ietf.org/html/rfc3986#section-3.3
+     *
+     *  unreserved  = ALPHA / DIGIT / "-" / "." / "_" / "~"
+     *  pct-encoded = "%" HEXDIG HEXDIG
+     *  sub-delims  = "!" / "$" / "&" / "'" / "(" / ")"
+     *              / "*" / "+" / "," / ";" / "="
+     *  pchar       = unreserved / pct-encoded / sub-delims / ":" / "@"
+
+     ** So, characters literally allowed in a path-segment are:
+        PCHAR="A-Z a-z 0-9 - . _ ~ ! $ & ' ( ) *  + , ; = : @"
+
+     ** All the rest has to be percent-encoded
+     *  the percent sign itself MUST start a code
+     *  reserved+ chars in need of encoding - in a path-segment - are:
+     *       /   ?   #   [   ]   %
+     *  %20 %2F %3F %23 %5B %5D %25
+
+     ** Interoperability /rest/ space:
+     *  most webbrowsers act mostly correct
+     *  curl does _no_ encoding on its own
+     *  all browsers send a bare / as is (user error? will separate path-segments)
+     *  all browsers send a bare ? as is (user error? will start the query-string)
+     *  no browser sends a bare # at all (user error? will start the fragment-identifier)
+     *  chrome and msie send [] verbatim (wrong? apache can accomodate…)
+     *  all browsers send a bare % as is (user error? will start an escape, apache returns Bad Request)
+
+     ** Interoperability /webdav/ space:
+     *  the GET and PUT methods mirror /rest/ space
+     *  These characters are not allowed in an NFTS filename
+        INTFS='/ \ : *   ? " < > |'
+     *  of those, Macintosh HFS only prohibits the colon
+     *  most other UN*X FSs only prohibit the slash
+     *  Quick test with bash on Linux extfs:
+        TWDAV="$PCHAR $RCHAR $INTFS %"
+     *  set -f; for fn in $TWDAV; do echo T__${fn}__ > /tmp/T__${fn}__; done
+     *  only the slash will error out (twice)
+     *  anything in this set can be thrown at webdav!
+
+     ** Beware, some chars valid in a path-segment must not be in a filename (mostly NTFS)
+     */
+    // Below String mostly contains the PCHAR set literally; the colon fails though, so its omitted…
+    // Also in the mix: some (mandatory except %27) escapes, some multibyte UTF-8 characters
+    // and a superficial directory traversal and a superficial double slash too
+    private static String getResourceUriPlus() {
+        return getServerUri() + XmldbURI.ROOT_COLLECTION + "/test//../test/A-Za-z0-9_~!$&'()*+,;=@%20%23%25%27%2F%3F%5B%5Däöü.xml";
+    }
+
+
     @BeforeClass
     public final static void createCredentials() {
         Base64Encoder enc = new Base64Encoder();
@@ -215,18 +224,9 @@ public class RESTServiceTest {
         badCredentials = new String(enc.getCharArray());
     }
 
-    @Before
-    public void setUp() throws Exception {
-        //Don't worry about closing the server : the shutdownDB hook will do the job
-        if (server == null) {
-            server = new JettyStart();
-            server.run();
-        }
-    }
-
     @Test
     public void getFailNoSuchDocument() throws IOException {
-        String uri = COLLECTION_URI + "/nosuchdocument.xml";
+        String uri = getCollectionUri() + "/nosuchdocument.xml";
         HttpURLConnection connect = getConnection(uri);
         connect.setRequestMethod("GET");
         connect.connect();
@@ -240,7 +240,7 @@ public class RESTServiceTest {
         /* store the documents that we need for this test */
         doPut(TEST_XQUERY_WITH_PATH_PARAMETER, "requestwithpath.xq", 201);
 
-        String path = COLLECTION_URI + "/requestwithpath.xq";
+        String path = getCollectionUri() + "/requestwithpath.xq";
         HttpURLConnection connect = getConnection(path);
         connect.setRequestProperty("Authorization", "Basic " + credentials);
         connect.setRequestMethod("GET");
@@ -261,7 +261,7 @@ public class RESTServiceTest {
         /* store the documents that we need for this test */
         doPut(TEST_XQUERY_WITH_PATH_PARAMETER, "requestwithpath.xq", 201);
 
-        String path = COLLECTION_URI + "/requestwithpath.xq";
+        String path = getCollectionUri() + "/requestwithpath.xq";
         HttpURLConnection connect = preparePost("boo", path);
         connect.connect();
         int r = connect.getResponseCode();
@@ -280,7 +280,7 @@ public class RESTServiceTest {
         /* store the documents that we need for this test */
         doPut(TEST_XQUERY_WITH_PATH_PARAMETER, "requestwithpath.xq", 201);
 
-        String path = COLLECTION_URI + "/requestwithpath.xq/some/path";
+        String path = getCollectionUri() + "/requestwithpath.xq/some/path";
         HttpURLConnection connect = getConnection(path);
         connect.setRequestProperty("Authorization", "Basic " + credentials);
         connect.setRequestMethod("GET");
@@ -301,7 +301,7 @@ public class RESTServiceTest {
         /* store the documents that we need for this test */
         doPut(TEST_XQUERY_WITH_PATH_PARAMETER, "requestwithpath.xq", 201);
     		
-        String path = COLLECTION_URI + "/requestwithpath.xq/some/path";
+        String path = getCollectionUri() + "/requestwithpath.xq/some/path";
         HttpURLConnection connect = preparePost("boo", path);
         connect.connect();
         int r = connect.getResponseCode();
@@ -319,7 +319,7 @@ public class RESTServiceTest {
     @Test
     public void xqueryGetFailWithNonEmptyPath() throws IOException {
         /* store the documents that we need for this test */
-        HttpURLConnection sconnect = getConnection(RESOURCE_URI);
+        HttpURLConnection sconnect = getConnection(getResourceUri());
         sconnect.setRequestProperty("Authorization", "Basic " + credentials);
         sconnect.setRequestMethod("PUT");
         sconnect.setDoOutput(true);
@@ -328,7 +328,7 @@ public class RESTServiceTest {
         writer.write(XML_DATA);
         writer.close();
 
-        String path = RESOURCE_URI + "/some/path";	// should not be able to get this path
+        String path = getResourceUri() + "/some/path";	// should not be able to get this path
         HttpURLConnection connect = getConnection(path);
         connect.setRequestMethod("GET");
         connect.connect();
@@ -354,7 +354,7 @@ public class RESTServiceTest {
 
     @Test
     public void putFailAgainstCollection() throws IOException {
-        HttpURLConnection connect = getConnection(COLLECTION_URI);
+        HttpURLConnection connect = getConnection(getCollectionUri());
         connect.setRequestProperty("Authorization", "Basic " + credentials);
         connect.setRequestMethod("PUT");
         connect.setDoOutput(true);
@@ -370,7 +370,7 @@ public class RESTServiceTest {
     
     @Test
     public void putWithCharset() throws IOException {
-        HttpURLConnection connect = getConnection(RESOURCE_URI);
+        HttpURLConnection connect = getConnection(getResourceUri());
         connect.setRequestProperty("Authorization", "Basic " + credentials);
         connect.setRequestMethod("PUT");
         connect.setDoOutput(true);
@@ -389,7 +389,7 @@ public class RESTServiceTest {
 
     @Test
     public void putFailAndRechallengeAuthorization() throws IOException {
-        HttpURLConnection connect = getConnection(RESOURCE_URI);
+        HttpURLConnection connect = getConnection(getResourceUri());
         connect.setRequestProperty("Authorization", "Basic " + badCredentials);
         connect.setDoOutput(true);
         connect.setRequestMethod("PUT");
@@ -405,7 +405,7 @@ public class RESTServiceTest {
     public void putAgainstXQuery() throws IOException {
         doPut(TEST_XQUERY_WITH_PATH_AND_CONTENT, "requestwithcontent.xq", 201);
 
-        String path = COLLECTION_URI_REDIRECTED + "/requestwithcontent.xq/a/b/c";
+        String path = getCollectionUriRedirected() + "/requestwithcontent.xq/a/b/c";
         HttpURLConnection connect = getConnection(path);
         connect.setRequestProperty("Authorization", "Basic " + credentials);
         connect.setRequestMethod("PUT");
@@ -428,7 +428,7 @@ public class RESTServiceTest {
     public void deleteAgainstXQuery() throws IOException {
         doPut(TEST_XQUERY_WITH_PATH_PARAMETER, "requestwithcontent.xq", 201);
 
-        String path = COLLECTION_URI_REDIRECTED + "/requestwithcontent.xq/a/b/c";
+        String path = getCollectionUriRedirected() + "/requestwithcontent.xq/a/b/c";
         HttpURLConnection connect = getConnection(path);
         connect.setRequestProperty("Authorization", "Basic " + credentials);
         connect.setRequestMethod("DELETE");
@@ -447,7 +447,7 @@ public class RESTServiceTest {
     public void headAgainstXQuery() throws IOException {
         doPut(TEST_XQUERY_WITH_PATH_PARAMETER, "requestwithcontent.xq", 201);
 
-        String path = COLLECTION_URI_REDIRECTED + "/requestwithcontent.xq/a/b/c";
+        String path = getCollectionUriRedirected() + "/requestwithcontent.xq/a/b/c";
         HttpURLConnection connect = getConnection(path);
         connect.setRequestProperty("Authorization", "Basic " + credentials);
         connect.setRequestMethod("HEAD");
@@ -459,7 +459,7 @@ public class RESTServiceTest {
 
     @Test
     public void xUpdate() throws IOException {
-        HttpURLConnection connect = preparePost(XUPDATE, RESOURCE_URI);
+        HttpURLConnection connect = preparePost(XUPDATE, getResourceUri());
         connect.connect();
         int r = connect.getResponseCode();
         assertEquals("Server returned response code " + r, 200, r);
@@ -471,7 +471,7 @@ public class RESTServiceTest {
     public void queryPost() throws IOException, SAXException, ParserConfigurationException {
         uploadData();
         
-        HttpURLConnection connect = preparePost(QUERY_REQUEST, RESOURCE_URI);
+        HttpURLConnection connect = preparePost(QUERY_REQUEST, getResourceUri());
         connect.connect();
         int r = connect.getResponseCode();
         assertEquals("Server returned response code " + r, 200, r);
@@ -483,7 +483,7 @@ public class RESTServiceTest {
 
     @Test
     public void queryPostXQueryError() throws IOException {
-        HttpURLConnection connect = preparePost(QUERY_REQUEST_ERROR, RESOURCE_URI);
+        HttpURLConnection connect = preparePost(QUERY_REQUEST_ERROR, getResourceUri());
         connect.connect();
         int r = connect.getResponseCode();
         assertEquals("Server returned response code " + r, 202, r);
@@ -492,7 +492,7 @@ public class RESTServiceTest {
 
     @Test
     public void queryGet() throws IOException {
-        String uri = COLLECTION_URI
+        String uri = getCollectionUri()
                 + "?_query="
                 + URLEncoder
                         .encode(
@@ -512,7 +512,7 @@ public class RESTServiceTest {
 
     @Test
     public void requestModule() throws IOException {
-        String uri = COLLECTION_URI + "?_query=request:get-uri()&_wrap=no";
+        String uri = getCollectionUri() + "?_query=request:get-uri()&_wrap=no";
         HttpURLConnection connect = getConnection(uri);
         connect.setRequestMethod("GET");
         connect.connect();
@@ -523,7 +523,7 @@ public class RESTServiceTest {
         String response = readResponse(connect.getInputStream()).trim();
         assertTrue(response.endsWith(XmldbURI.ROOT_COLLECTION + "/test"));
 
-        uri = COLLECTION_URI + "?_query=request:get-url()&_wrap=no";
+        uri = getCollectionUri() + "?_query=request:get-url()&_wrap=no";
         connect = getConnection(uri);
         connect.setRequestMethod("GET");
         connect.connect();
@@ -546,7 +546,7 @@ public class RESTServiceTest {
         HttpURLConnection connect;
         int iHttpResult;
         for(int i=0; i < 5; i++) {
-            connect = getConnection(COLLECTION_URI + "/requestparameter.xql?doc=somedoc" + i);
+            connect = getConnection(getCollectionUri() + "/requestparameter.xql?doc=somedoc" + i);
             connect.setRequestProperty("Authorization", "Basic " + credentials);
             connect.setRequestMethod("GET");
             connect.connect();
@@ -587,7 +587,7 @@ public class RESTServiceTest {
     }
     
     private void doPut(String data, String path, int responseCode) throws IOException {
-        HttpURLConnection connect = getConnection(COLLECTION_URI + '/' + path);
+        HttpURLConnection connect = getConnection(getCollectionUri() + '/' + path);
         connect.setRequestProperty("Authorization", "Basic " + credentials);
         connect.setRequestMethod("PUT");
         connect.setDoOutput(true);
@@ -603,7 +603,7 @@ public class RESTServiceTest {
 
     private void doStoredQuery(boolean cacheHeader, boolean wrap) throws IOException {
     	
-        String uri = COLLECTION_URI + "/test.xq?p=Hello";
+        String uri = getCollectionUri() + "/test.xq?p=Hello";
         if(wrap) {
             uri += "&_wrap=yes";
         }
@@ -642,7 +642,7 @@ public class RESTServiceTest {
     }
     
     private int uploadData() throws IOException {
-        HttpURLConnection connect = getConnection(RESOURCE_URI);
+        HttpURLConnection connect = getConnection(getResourceUri());
         connect.setRequestProperty("Authorization", "Basic " + credentials);
         connect.setRequestMethod("PUT");
         connect.setDoOutput(true);
@@ -656,7 +656,7 @@ public class RESTServiceTest {
     }
     
     private void doGet() throws IOException {
-        HttpURLConnection connect = getConnection(RESOURCE_URI);
+        HttpURLConnection connect = getConnection(getResourceUri());
         connect.setRequestMethod("GET");
         connect.connect();
 
@@ -673,7 +673,7 @@ public class RESTServiceTest {
     }
 
     private int uploadDataPlus() throws IOException {
-        HttpURLConnection connect = getConnection(RESOURCE_URI_PLUS);
+        HttpURLConnection connect = getConnection(getResourceUriPlus());
         connect.setRequestProperty("Authorization", "Basic " + credentials);
         connect.setRequestMethod("PUT");
         connect.setDoOutput(true);
@@ -687,7 +687,7 @@ public class RESTServiceTest {
     }
 
     private void doGetPlus() throws IOException {
-        HttpURLConnection connect = getConnection(RESOURCE_URI_PLUS);
+        HttpURLConnection connect = getConnection(getResourceUriPlus());
         connect.setRequestMethod("GET");
         connect.connect();
 

@@ -131,7 +131,7 @@
         <copy todir="${app.exist}/tools">
             <fileset dir="${basedir}/tools">
                 <include name="**/*.jar"/>
-                <include name="wrapper/**"/>
+                <include name="yajsw/**"/>
                 <include name="requestlog/**"/>
                 <include name="rulesets/**"/>
                 <include name="ant/**"/>

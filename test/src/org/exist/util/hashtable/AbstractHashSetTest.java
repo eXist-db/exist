@@ -14,7 +14,6 @@ import static org.junit.Assert.assertTrue;
 public abstract class AbstractHashSetTest<T, K> {
 
 	protected T map;
-	protected Random rnd = new Random();
 
 	protected abstract T newT();
 

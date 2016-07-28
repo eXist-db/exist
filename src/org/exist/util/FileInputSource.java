@@ -1,131 +1,171 @@
 package org.exist.util;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.Reader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Optional;
 
 public class FileInputSource extends EXistInputSource {
+	private final static Logger LOG = LogManager.getLogger(FileInputSource.class);
 
-	private File file;
-	private InputStream inputStream;
-
-	/**
-	 * Empty constructor
-	 */
-	public FileInputSource() {
-		this(null);
-	}
+	private Optional<Path> file = Optional.empty();
+	private Optional<InputStream> inputStream = Optional.empty();
 	
 	/**
-	 * Constructor which calls {@link #setFile(File)}
+	 * Constructor which calls {@link #setFile(Path)}
 	 * @param file
-	 * The file passed to {@link #setFile(File)}
+	 * The file passed to {@link #setFile(Path)}
 	 */
-	public FileInputSource(File file) {
+	public FileInputSource(final Path file) {
 		super();
-		inputStream = null;
 		setFile(file);
 	}
 	
 	/**
 	 * If a file source has been set, the File
 	 * object used for that is returned
-	 * @return
-	 * The File object.
+	 *
+	 * @return The Path object.
 	 */
-	public File getFile() {
-		return file;
+	public Path getFile() {
+		return file.orElse(null);
 	}
 	
 	/**
 	 * This method sets the File object used to get
 	 * the uncompressed stream of data
-	 * @param file
-	 * The File object pointing to the GZIP file.
+	 *
+	 * @param file The Path object pointing to the file.
+	 *
+	 * @throws IllegalStateException if the InputSource was previously closed
 	 */
-	public void setFile(File file) {
+	public void setFile(final Path file) {
+		assertOpen();
+
 		close();
-		this.file=file;
+		this.file = Optional.of(file);
+		reOpen();
+
 		// Remember: super.setSystemId must be used instead of local implementation
-		if(file!=null)
-			{super.setSystemId(file.toURI().toASCIIString());}
-		else
-			{super.setSystemId(null);}
+		super.setSystemId(this.file.map(f -> f.toUri().toASCIIString()).orElse(null));
 	}
 	
 	/**
 	 * This method was re-implemented to open a
-	 * new GZIPInputStream each time it is called.
-	 * @return
-	 * If the file was set, and it could be opened, and it was
-	 * a correct gzip file, a GZIPInputStream object.
+	 * new InputStream each time it is called.
+	 *
+	 * @return If the file was set, and it could be opened, an InputStream object.
 	 * null, otherwise.
+	 *
+	 * @throws IllegalStateException if the InputSource was previously closed
 	 */
+	@Override
 	public InputStream getByteStream() {
+		assertOpen();
+
         // close any open stream first
 		close();
 
-        if(file!=null) {
+		if(file.isPresent()) {
 			try {
-				inputStream = new BufferedInputStream(new FileInputStream(file));
-			} catch(final FileNotFoundException fnfe) {
-				// No way to notify :-(
+				this.inputStream = Optional.of(new BufferedInputStream(Files.newInputStream(file.get())));
+				reOpen();
+				return inputStream.get();
+			} catch(final IOException e) {
+				LOG.error(e);
 			}
 		}
-		
-		return inputStream;
-	}
 
-    public void close() {
-        if(inputStream != null) {
-            try {
-                inputStream.close();
-            } catch (final IOException e) {
-                // ignore if the stream is already closed
-            }
-	        inputStream = null;
-        }
-    }
+		return null;
+	}
 
     /**
 	 * This method now does nothing, so collateral
-	 * effects from superclass with this one are avoided 
+	 * effects from superclass with this one are avoided
+	 *
+	 * @throws IllegalStateException if the InputSource was previously closed
 	 */
-	public void setByteStream(InputStream is) {
+	@Override
+	public void setByteStream(final InputStream is) {
+		assertOpen();
 		// Nothing, so collateral effects are avoided!
 	}
 	
 	/**
 	 * This method now does nothing, so collateral
-	 * effects from superclass with this one are avoided 
+	 * effects from superclass with this one are avoided
+	 *
+	 * @throws IllegalStateException if the InputSource was previously closed
 	 */
-	public void setCharacterStream(Reader r) {
+	@Override
+	public void setCharacterStream(final Reader r) {
+		assertOpen();
 		// Nothing, so collateral effects are avoided!
 	}
 
 	/**
 	 * This method now does nothing, so collateral
-	 * effects from superclass with this one are avoided 
+	 * effects from superclass with this one are avoided
+	 *
+	 * @throws IllegalStateException if the InputSource was previously closed
 	 */
-	public void setSystemId(String systemId) {
+	@Override
+	public void setSystemId(final String systemId) {
+		assertOpen();
 		// Nothing, so collateral effects are avoided!
 	}
-	
+
+	/**
+	 * @see EXistInputSource#getByteStreamLength()
+	 *
+	 * @throws IllegalStateException if the InputSource was previously closed
+	 */
+	@Override
 	public long getByteStreamLength() {
-		long retval=-1L;
-		
-		if(file!=null) {
-			retval=file.length();
+		assertOpen();
+		if(file.isPresent()) {
+			try {
+				return Files.size(file.get());
+			} catch(final IOException e) {
+				LOG.error(e);
+			}
 		}
-		return retval;
+
+		return -1;
 	}
-	
-	public String getSymbolicPath()
-	{
-		return file.getAbsolutePath();
+
+	/**
+	 * @see EXistInputSource#getSymbolicPath()
+	 *
+	 * @throws IllegalStateException if the InputSource was previously closed
+	 */
+	@Override
+	public String getSymbolicPath() {
+		assertOpen();
+		return file.map(Path::toAbsolutePath).map(Path::toString).orElse(null);
+	}
+
+	@Override
+	public void close() {
+		if(!isClosed()) {
+			try {
+				if (inputStream.isPresent()) {
+					try {
+						inputStream.get().close();
+					} catch (final IOException e) {
+						LOG.warn(e);
+					}
+					inputStream = Optional.empty();
+				}
+			} finally {
+				super.close();
+			}
+		}
 	}
 }

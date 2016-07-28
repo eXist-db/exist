@@ -98,12 +98,12 @@ public class ValueOccurrences {
 	public String toString() {
 		final StringBuilder buf = new StringBuilder();
 		try {
-			buf.append("Value: '" + value.getStringValue() +"'");
+			buf.append("Value: '").append(value.getStringValue()).append("'");
 		} catch (final XPathException e) {
-			buf.append("Value: '" + e.getMessage() +"'");
+			buf.append("Value: '").append(e.getMessage()).append("'");
 		}
-		buf.append(" occurences: '" + occurrences +"'");
-		buf.append(" documents: '" + docs.getDocumentCount() +"'");
+		buf.append(" occurences: '").append(occurrences).append("'");
+		buf.append(" documents: '").append(docs.getDocumentCount()).append("'");
 		return buf.toString();
 	}
 }

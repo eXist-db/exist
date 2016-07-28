@@ -43,10 +43,10 @@ import org.exist.stax.IEmbeddedXMLStreamReader;
 import org.exist.storage.btree.BTreeCallback;
 import org.exist.storage.dom.INodeIterator;
 import org.exist.storage.serializers.Serializer;
+import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.Txn;
-import org.exist.util.Configuration;
-import org.exist.util.LockException;
-import org.exist.util.Stacktrace;
+import org.exist.util.*;
+import org.exist.util.function.Tuple2;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.TerminatedException;
 import org.w3c.dom.Document;
@@ -100,6 +100,16 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
 
     private Deque<Subject> subject = new ArrayDeque<>();
 
+    /**
+     * Used when TRACE level logging is enabled
+     * to provide a history of {@link Subject} state
+     * changes
+     *
+     * This can be written to a log file by calling
+     * {@link DBBroker#traceSubjectChanges()}
+     */
+    private TraceableStateChanges<Subject, TraceableSubjectChange.Change> subjectChangeTrace = LOG.isTraceEnabled() ? new TraceableStateChanges<>() : null;
+
     private int referenceCount = 0;
 
     protected String id;
@@ -121,36 +131,65 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
     }
 
     /**
-     * Change the subject that the broker performs actions as
+     * Change the state that the broker performs actions as
      *
-     * @param subject The new subject for the broker to perform actions as
+     * @param subject The new state for the broker to perform actions as
      */
     public void pushSubject(final Subject subject) {
         if(LOG.isTraceEnabled()) {
-            LOG.trace(String.format("%s: pushSubject(%s) from: %s %s", getId(), subject.getName(), Thread.currentThread(), Stacktrace.top(Thread.currentThread().getStackTrace(), 10)));
+            subjectChangeTrace.add(TraceableSubjectChange.push(subject, getId()));
         }
         this.subject.addFirst(subject);
     }
 
     /**
-     * Restore the previous subject for the broker to perform actions as
+     * Restore the previous state for the broker to perform actions as
      *
-     * @return The subject which has been popped
+     * @return The state which has been popped
      */
     public Subject popSubject() {
+        final Subject subject = this.subject.removeFirst();
         if(LOG.isTraceEnabled()) {
-            LOG.trace(String.format("%s: popSubject(%s) from: %s %s", getId(), getCurrentSubject().getName(), Thread.currentThread(), Stacktrace.top(Thread.currentThread().getStackTrace(), 10)));
+            subjectChangeTrace.add(TraceableSubjectChange.pop(subject, getId()));
         }
-        return this.subject.removeFirst();
+        return subject;
     }
 
     /**
-     * The subject that is currently using this DBBroker object
+     * The state that is currently using this DBBroker object
      * 
-     * @return The current subject that the broker is executing as
+     * @return The current state that the broker is executing as
      */
     public Subject getCurrentSubject() {
         return subject.peekFirst();
+    }
+
+    /**
+     * Logs the details of all state changes
+     *
+     * Used for tracing privilege escalation/de-escalation
+     * during the lifetime of an active broker
+     *
+     * @throws IllegalStateException if TRACE level logging is not enabled
+     */
+    public void traceSubjectChanges() {
+        subjectChangeTrace.logTrace(LOG);
+    }
+
+    /**
+     * Clears the details of all state changes
+     *
+     * Used for tracing privilege escalation/de-escalation
+     * during the lifetime of an active broker
+     *
+     * @throws IllegalStateException if TRACE level logging is not enabled
+     */
+    public void clearSubjectChangesTrace() {
+        if(!LOG.isTraceEnabled()) {
+            throw new IllegalStateException("This is only enabled at TRACE level logging");
+        }
+
+        subjectChangeTrace.clear();
     }
 
     public IndexController getIndexController() {
@@ -395,6 +434,8 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
 
     public abstract Serializer newSerializer();
 
+    public abstract Serializer newSerializer(List<String> chainOfReceivers);
+
     /**
      * Get a node with given owner document and id from the database.
      * 
@@ -420,15 +461,27 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
 
     /**
      * Remove a document from the database.
-     * 
+     *
+     */
+    public abstract void removeResource(Txn tx, DocumentImpl doc) throws IOException, PermissionDeniedException;
+
+    /**
+     * Remove a XML document from the database.
+     *
      */
     public void removeXMLResource(Txn transaction, DocumentImpl document)
-            throws PermissionDeniedException {
+            throws PermissionDeniedException, IOException {
         removeXMLResource(transaction, document, true);
     }
 
     public abstract void removeXMLResource(Txn transaction,
-        DocumentImpl document, boolean freeDocId) throws PermissionDeniedException;
+        DocumentImpl document, boolean freeDocId) throws PermissionDeniedException, IOException;
+
+    public enum IndexMode {
+        STORE,
+        REPAIR,
+        REMOVE
+    }
 
     /**
      * Reindex a collection.
@@ -440,7 +493,11 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
      * PermissionDeniedException;
      */
     public abstract void reindexCollection(XmldbURI collectionName)
-        throws PermissionDeniedException;
+            throws PermissionDeniedException, IOException;
+
+    public abstract void reindexXMLResource(Txn txn, DocumentImpl doc);
+
+    public abstract void reindexXMLResource(final Txn transaction, final DocumentImpl doc, final IndexMode mode);
 
     /**
      * Repair indexes. Should delete all secondary indexes and rebuild them.
@@ -448,7 +505,7 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
      *
      * @throws PermissionDeniedException
      */
-    public abstract void repair() throws PermissionDeniedException;
+    public abstract void repair() throws PermissionDeniedException, IOException;
 
     /**
      * Repair core indexes (dom, collections ...). This method is called immediately
@@ -638,7 +695,7 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
 	 */
 	public abstract void copyResource(Txn transaction, DocumentImpl doc,
 			Collection destination, XmldbURI newName)
-			throws PermissionDeniedException, LockException, EXistException;
+            throws PermissionDeniedException, LockException, EXistException, IOException;
 
 	/**
 	 * Defragment pages of this document. This will minimize the number of split
@@ -663,13 +720,12 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
 
 	/**
 	 * Sync dom and collection state data (pages) to disk. In case of
-	 * {@link org.exist.storage.sync.Sync#MAJOR_SYNC}, sync all states (dom,
+	 * {@link org.exist.storage.sync.Sync#MAJOR}, sync all states (dom,
 	 * collection, text and element) to disk.
 	 * 
 	 * @param syncEvent
-	 *            Sync.MAJOR_SYNC or Sync.MINOR_SYNC
 	 */
-	public abstract void sync(int syncEvent);
+	public abstract void sync(Sync syncEvent);
 
 	/**
 	 * Update a node's data. To keep nodes in a correct sequential order, it is
@@ -795,8 +851,43 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
     public void release() {
         pool.release(this);
     }
-    
-    public Txn beginTx() {
-        return getDatabase().getTransactionManager().beginTransaction();
+
+    /**
+     * Represents a {@link Subject} change
+     * made to a broker
+     *
+     * Used for tracing subject changes
+     */
+    private static class TraceableSubjectChange extends TraceableStateChange<Subject, TraceableSubjectChange.Change> {
+        private final String id;
+
+        public enum Change {
+            PUSH,
+            POP
+        }
+
+        private TraceableSubjectChange(final Change change, final Subject subject, final String id) {
+            super(change, subject);
+            this.id = id;
+        }
+
+        @Override
+        public String getId() {
+            return id;
+        }
+
+        @Override
+        public String describeState() {
+            return getState().getName();
+        }
+
+        final static TraceableSubjectChange push(final Subject subject, final String id) {
+            return new TraceableSubjectChange(Change.PUSH, subject, id);
+        }
+
+        final static TraceableSubjectChange pop(final Subject subject, final String id) {
+            return new TraceableSubjectChange(Change.POP, subject, id);
+        }
     }
 }
+

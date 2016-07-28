@@ -22,11 +22,10 @@
 
 package org.exist.protocolhandler.embedded;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.Optional;
 
 import org.apache.logging.log4j.LogManager;
@@ -76,24 +75,13 @@ public class EmbeddedUpload {
      * @throws IOException
      */
     public void stream(XmldbURL xmldbURL, InputStream is, Subject user) throws IOException {
-        File tmp =null;
+        Path tmp =null;
         try{
-            tmp = File.createTempFile("EMBEDDED", "tmp");
-            final FileOutputStream fos = new FileOutputStream(tmp);
-            
-            try{
-                // Transfer bytes from in to out
-                final byte[] buf = new byte[1024];
-                int len;
-                while ((len = is.read(buf)) > 0) {
-                    fos.write(buf, 0, len);
-                }
-            } finally {
-                fos.close();
-            }
-            
+            tmp = Files.createTempFile("EMBEDDED", "tmp");
+            Files.copy(is, tmp, StandardCopyOption.REPLACE_EXISTING);
+
             // Let database read file
-            stream(xmldbURL, tmp, user);
+            stream(xmldbURL, tmp.toFile(), user);
             
         } catch(final IOException ex){
             //ex.printStackTrace();
@@ -102,7 +90,7 @@ public class EmbeddedUpload {
             
         } finally {
             if(tmp!=null){
-                tmp.delete();
+                Files.delete(tmp);
             }
         }
     }

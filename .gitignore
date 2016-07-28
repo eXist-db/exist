@@ -1,8 +1,8 @@
 # Alphabetical order
 .exist_history
-/target
+/target/
 autodeploy/
-backup/
+/backup/
 build/intellij
 classes/
 client.properties
@@ -67,3 +67,7 @@ webapp/WEB-INF/web.xml
 webapp/xqts/config.xml
 .exist_query_history
 .idea/workspace.xml
+tools/yajsw/conf/log4j2.xml
+tools/yajsw/conf/wrapper.conf
+tools/yajsw/conf/wrapper.conf.install
+tools/yajsw/tmp/

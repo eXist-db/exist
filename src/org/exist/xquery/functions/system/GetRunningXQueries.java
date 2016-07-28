@@ -92,11 +92,11 @@ public class GetRunningXQueries extends BasicFunction
         
         //Add all the running xqueries
         final XQueryWatchDog watchdogs[] = getContext().getBroker().getBrokerPool().getProcessMonitor().getRunningXQueries();
-        for (int i = 0; i < watchdogs.length; i++) {
-        	final XQueryContext 	context 	= watchdogs[i].getContext();
-        	
-        	getRunningXQuery( builder, context, watchdogs[i] );
-        }
+
+		for (XQueryWatchDog watchdog : watchdogs) {
+			final XQueryContext context = watchdog.getContext();
+			getRunningXQuery(builder, context, watchdog);
+		}
         
         builder.endElement();
         
@@ -110,12 +110,12 @@ public class GetRunningXQueries extends BasicFunction
 		builder.startElement( new QName( "xquery", NAMESPACE_URI, PREFIX ), null );
 		
 		builder.addAttribute( new QName( "id", null, null ), "" + context.hashCode() );
-		builder.addAttribute( new QName( "sourceType", null, null ), context.getXacmlSource().getType() );
+		builder.addAttribute( new QName( "sourceType", null, null ), context.getSource().type() );
                 builder.addAttribute( new QName( "started", null, null), new DateTimeValue(new Date(watchdog.getStartTime())).getStringValue());
 		builder.addAttribute( new QName( "terminating", null, null ), ( watchdog.isTerminating() ? "true" : "false" ) );
 		
 		builder.startElement( new QName( "sourceKey", NAMESPACE_URI, PREFIX ), null );
-		builder.characters( context.getXacmlSource().getKey() );
+		builder.characters( context.getSource().path() );
 		builder.endElement();
 
 		builder.startElement( new QName( "xqueryExpression", NAMESPACE_URI, PREFIX ), null );

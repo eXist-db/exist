@@ -162,4 +162,10 @@ public class DefaultExpressionVisitor extends BasicExpressionVisitor {
             clause.getCatchExpr().accept(this);
         }
     }
+
+    @Override
+    public void visitSimpleMapOperator(OpSimpleMap simpleMap) {
+        simpleMap.getLeft().accept(this);
+        simpleMap.getRight().accept(this);
+    }
 }

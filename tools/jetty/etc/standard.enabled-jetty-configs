@@ -1,0 +1,48 @@
+### This file controls which jetty config files will be loaded by eXist
+# Note that the order of the configurations listen in this file is important,
+# dependency load order between the config files must be respected.
+#
+# Dependency load order can be determined from interogating a clean jetty
+# base with the desired modules enabled...
+# see: http://stackoverflow.com/questions/37846079/nullpointerexception-in-requestlogcollection-jetty-9-3-9#37932579
+
+
+
+### Jetty log redirection
+# jetty-logging.xml		# enable to redirect stdout and stderr to jetty.home/logs
+
+
+### Main Server Config
+jetty.xml
+
+
+### GZip Transfer Encoding Support
+jetty-gzip.xml
+
+
+### HTTP
+jetty-http.xml
+
+
+### JAAS Security
+jetty-jaas.xml
+
+
+### Logging and Monitoring
+jetty-jmx.xml
+jetty-requestlog.xml
+
+
+### SSL and HTTPS
+jetty-ssl.xml
+jetty-ssl-context.xml
+jetty-https.xml
+
+
+### Webapp deployment
+jetty-deploy.xml
+jetty-plus.xml
+
+
+### Annotation support 
+jetty-annotations.xml

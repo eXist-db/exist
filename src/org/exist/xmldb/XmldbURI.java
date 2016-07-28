@@ -516,7 +516,7 @@ public class XmldbURI implements Comparable<Object>, Serializable {
             name = name.substring(0, last);
             last = name.lastIndexOf('/');
         }
-        return XmldbURI.create(name.substring(last + 1));
+        return new XmldbURI(name.substring(last + 1));
     }
 
     /**

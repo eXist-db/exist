@@ -35,29 +35,35 @@ import org.exist.util.ReadOnlyException;
  * startElement() and endElement() bear the same names as the corresponding SAX events.  
  * However storeXXX() have no corresponding method in SAX.
  */
-public interface ContentLoadingObserver {
+public interface ContentLoadingObserver extends AutoCloseable {
 
-	/** store and index given attribute */
-	//TODO : remove the RangeIndexSpec dependency ASAP
-	public void storeAttribute(AttrImpl node, NodePath currentPath, int indexingHint, RangeIndexSpec spec, boolean remove);
+	/**
+	 * Store and index given attribute
+	 *
+	 * @param attr         The attribute
+	 * @param currentPath  The path of the attribute within the document
+	 * @param spec         The index specification
+	 * @param remove       whether the attribute should be removed
+	 */
+	void storeAttribute(AttrImpl attr, NodePath currentPath, RangeIndexSpec spec, boolean remove);
 
 	/** store and index given text node */ 
-	public void storeText(TextImpl node, NodePath currentPath);
+	void storeText(TextImpl node, NodePath currentPath);
 			
 	/**
 	 * The given node is being removed from the database. 
 	 */
-	public void removeNode(NodeHandle node, NodePath currentPath, String content );
+	void removeNode(NodeHandle node, NodePath currentPath, String content );
 
 	/** set the current document; generally called before calling an operation */
-	public void setDocument(DocumentImpl document);
+	void setDocument(DocumentImpl document);
 
 	/**
 	 * Drop all index entries for the given collection.
 	 * 
 	 * @param collection
 	 */
-	public void dropIndex(Collection collection);
+	void dropIndex(Collection collection);
 
 	/**
 	 * Drop all index entries for the given document.
@@ -65,24 +71,25 @@ public interface ContentLoadingObserver {
 	 * @param doc
 	 * @throws ReadOnlyException
 	 */
-	public void dropIndex(DocumentImpl doc) throws ReadOnlyException;
+	void dropIndex(DocumentImpl doc) throws ReadOnlyException;
 
 	/** remove all pending modifications, for the current document. */
-	public void remove();
+	void remove();
 	
 	/* The following methods are rather related to file management : create a dedicated interface ? /*
 
 	/** writes the pending items, for the current document's collection */
-	public void flush() throws DBException;
+	void flush() throws DBException;
 
 	/** triggers a cache sync, i.e. forces to write out all cached pages.	
 	 sync() is called from time to time by the background sync daemon. */
-	public void sync();
+	void sync();
 
-	public boolean close() throws DBException;
+	@Override
+	void close() throws DBException;
 	
-	public void closeAndRemove();
+	void closeAndRemove();
 	
-	public void printStatistics();
+	void printStatistics();
 	
 }

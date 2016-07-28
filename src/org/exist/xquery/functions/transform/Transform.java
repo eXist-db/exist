@@ -23,14 +23,10 @@ package org.exist.xquery.functions.transform;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.InputStream;
-import java.lang.reflect.Array;
 import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.HashMap;
@@ -46,7 +42,6 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.URIResolver;
 import javax.xml.transform.ErrorListener;
-import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TemplatesHandler;
@@ -63,7 +58,6 @@ import org.exist.http.servlets.ResponseWrapper;
 import org.exist.dom.memtree.DocumentBuilderReceiver;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.numbering.NodeId;
-import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
@@ -257,7 +251,7 @@ public class Transform extends BasicFunction {
                         {xipath = context.getModuleLoadPath();}
                     serializer.getXIncludeFilter().setModuleLoadPath(xipath);
                 }
-    			serializer.toSAX(inputNode, 1, inputNode.getItemCount(), false, false);
+    			serializer.toSAX(inputNode, 1, inputNode.getItemCount(), false, false, 0, 0);
     		} catch (final Exception e) {
     			throw new XPathException(this, "Exception while transforming node: " + e.getMessage(), e);
     		}
@@ -327,7 +321,7 @@ public class Transform extends BasicFunction {
                         receiver = xinclude;
                     }
                     serializer.setReceiver(receiver);
-                    serializer.toSAX(inputNode, 1, inputNode.getItemCount(), false, false);
+                    serializer.toSAX(inputNode);
                 } catch (final Exception e) {
                     throw new XPathException(this, "Exception while transforming node: " + e.getMessage(), e);
                 }
@@ -375,7 +369,7 @@ public class Transform extends BasicFunction {
                     {
 						//as this is a persistent node (e.g. a stylesheet stored in the db)
 						//set the URI Resolver as a DatabaseResolver
-						factory.setURIResolver(new EXistURIResolver(root.getOwnerDocument().getCollection().getURI().toString()));
+						factory.setURIResolver(new EXistURIResolver(context.getBroker(), root.getOwnerDocument().getCollection().getURI().toString()));
 					
 						final String uri = XmldbURI.XMLDB_URI_PREFIX + context.getBroker().getBrokerPool().getId() + "://" + root.getOwnerDocument().getURI();
 						templates = getSource(factory, uri);
@@ -392,7 +386,7 @@ public class Transform extends BasicFunction {
 						 */
 						if(uri != null){
 							uri = uri.substring(0, uri.lastIndexOf('/'));
-							factory.setURIResolver(new EXistURIResolver(uri));
+							factory.setURIResolver(new EXistURIResolver(context.getBroker(), uri));
 						}
 					}
 					templates = getSource(factory, stylesheetNode);
@@ -409,7 +403,7 @@ public class Transform extends BasicFunction {
 					 */
 					if(uri != null){
 						uri = uri.substring(0, uri.lastIndexOf('/'));
-						factory.setURIResolver(new EXistURIResolver(uri));
+						factory.setURIResolver(new EXistURIResolver(context.getBroker(), uri));
 					}
 				}
 
@@ -574,12 +568,9 @@ public class Transform extends BasicFunction {
 				long modified = connection.getLastModified();
 				if(!caching || (templates == null || modified > lastModified || modified == 0)) {
 					LOG.debug("compiling stylesheet " + url.toString());
-                    final InputStream is = connection.getInputStream();
-                    try {
-                        templates = factory.newTemplates(new StreamSource(is));
-                    } finally {
-                        is.close();
-                    }
+					try (final InputStream is = connection.getInputStream()) {
+						templates = factory.newTemplates(new StreamSource(is));
+					}
 				}
 				lastModified = modified;
 			}
@@ -588,7 +579,7 @@ public class Transform extends BasicFunction {
 		
 		private Templates getSource(DocumentImpl stylesheet)
 		throws XPathException, TransformerConfigurationException {
-			factory.setURIResolver(new EXistURIResolver(stylesheet.getCollection().getURI().toString()));
+			factory.setURIResolver(new EXistURIResolver(context.getBroker(), stylesheet.getCollection().getURI().toString()));
             final TransformErrorListener errorListener = new TransformErrorListener();
             factory.setErrorListener(errorListener);
 			final TemplatesHandler handler = factory.newTemplatesHandler();
@@ -612,155 +603,24 @@ public class Transform extends BasicFunction {
 		}
 	}
 	
-	private static class ExternalResolver implements URIResolver {
+	public static class ExternalResolver implements URIResolver {
+		private final String baseURI;
 		
-		private String baseURI;
-		
-		public ExternalResolver(String base) {
+		public ExternalResolver(final String base) {
 			this.baseURI = base;
 		}
 		
-		/* (non-Javadoc)
-		 * @see javax.xml.transform.URIResolver#resolve(java.lang.String, java.lang.String)
-		 */
-		public Source resolve(String href, String base)
-				throws TransformerException {
-			URL url;
+		@Override
+		public Source resolve(final String href, final String base) throws TransformerException {
 			try {
                 //TODO : use dedicated function in XmldbURI
-				url = new URL(baseURI + "/"  + href);
+				final URL url = new URL(baseURI + "/"  + href);
 				final URLConnection connection = url.openConnection();
 				return new StreamSource(connection.getInputStream());
-			} catch (final MalformedURLException e) {
-				return null;
 			} catch (final IOException e) {
+				LOG.warn(e);
 				return null;
 			}
-		}
-	}
-	
-	private class EXistURIResolver implements URIResolver {
-		
-		// Base path
-		String  	basePath;
-		
-		public EXistURIResolver(String docPath) {
-			basePath = docPath;
-			
-			LOG.debug("Database Resolver base path set to " + basePath);
-		}
-		
-		/** Simplify a path removing any "." and ".." path elements.
-		 * Assumes an absolute path is given.
-		 */
-		private String normalizePath(String path) {
-			if (!path.startsWith("/"))
-                {throw new IllegalArgumentException("normalizePath may only be applied to an absolute path; " +
-                    "argument was: " + path + "; base: " + basePath);}
-
-			final String[]	pathComponents = path.substring(1).split("/");
-				
-			final int			numPathComponents  = Array.getLength(pathComponents);
-			final String[]	simplifiedComponents = new String[numPathComponents];
-			int 		numSimplifiedComponents = 0;
-			
-			for(String s : pathComponents) {
-				if (s.length() == 0) {continue;}		// Remove empty elements ("//")
-				if (".".equals(s)) {continue;}		// Remove identity elements ("/./")
-				if ("..".equals(s)) {				// Remove parent elements ("/../") unless at the root
-					if (numSimplifiedComponents > 0) {numSimplifiedComponents--;}
-					continue;
-				}
-				simplifiedComponents[numSimplifiedComponents++] = s;
-			}
-			
-			if (numSimplifiedComponents == 0) {return "/";}
-			
-			final StringBuffer	b = new StringBuffer(path.length());
-			for(int x = 0; x < numSimplifiedComponents; x++) {
-				b.append("/").append(simplifiedComponents[x]);
-			}
-			
-			if (path.endsWith("/"))
-				{b.append("/");}
-			
-			return b.toString();
-		}
-		
-		/* (non-Javadoc)
-		 * @see javax.xml.transform.URIResolver#resolve(java.lang.String, java.lang.String)
-		 */
-		public Source resolve(String href, String base)
-			throws TransformerException {
-			String path;
-			
-			if (href.isEmpty()) {
-				path = base;
-			} else {
-				URI hrefURI = null;
-				try {
-					hrefURI = new URI(href);
-				} catch (final URISyntaxException e) {
-				}
-				if (hrefURI != null && hrefURI.isAbsolute())
-					{path = href;}
-				else {
-					if (href.startsWith("/"))
-						{path = href;}
-					else if (href.startsWith(XmldbURI.EMBEDDED_SERVER_URI_PREFIX))
-						{path = href.substring(XmldbURI.EMBEDDED_SERVER_URI_PREFIX.length());}
-					else if (base == null || base.length() == 0) {
-						path = basePath + "/" + href;
-					} else {
-						// Maybe base never contains this prefix?  Check to be sure.
-						if (base.startsWith(XmldbURI.EMBEDDED_SERVER_URI_PREFIX)) {
-							base = base.substring(XmldbURI.EMBEDDED_SERVER_URI_PREFIX.length());
-						}
-						path = base.substring(0, base.lastIndexOf("/") + 1) + href;
-					}
-				}
-			}
-			LOG.debug("Resolving path " + href + " with base " + base + " to " + path);// + " (URI = " + uri.toASCIIString() + ")");
-
-			if (path.startsWith("/")) {
-				path = normalizePath(path);
-				return databaseSource(path);
-			} else {
-				return urlSource(path);
-			}
-		}
-		
-		private Source urlSource(String path) throws TransformerException {
-			try {
-				final URL url = new URL(path);
-				return new StreamSource(url.openStream());
-			
-			} catch (final FileNotFoundException e) {
-				throw new TransformerException(e.getMessage(), e);
-			} catch (final MalformedURLException e) {
-				throw new TransformerException(e.getMessage(), e);
-			} catch (final IOException e) {
-				throw new TransformerException(e.getMessage(), e);
-			}
-		}
-
-		private Source databaseSource(String path) throws TransformerException {
-			final XmldbURI uri = XmldbURI.create(path);
-			
-			DocumentImpl xslDoc;
-			try {
-				xslDoc = context.getBroker().getResource(uri, Permission.READ);
-			} catch (final PermissionDeniedException e) {
-				throw new TransformerException(e.getMessage(), e);
-			}
-			if(xslDoc == null) {
-				LOG.debug("Document " + path + " not found");
-			    throw new TransformerException("Resource " + path + " not found in database.");
-			}
-
-			final DOMSource source = new DOMSource(xslDoc);
-			source.setSystemId(uri.toASCIIString());
-			return source;
 		}
 	}
 

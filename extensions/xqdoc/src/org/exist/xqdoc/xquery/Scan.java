@@ -10,7 +10,6 @@ import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.xacml.AccessContext;
 import org.exist.source.*;
 import org.exist.storage.lock.Lock;
 import org.exist.util.LockException;
@@ -164,7 +163,7 @@ public class Scan extends BasicFunction {
         XQuery xquery = context.getBroker().getBrokerPool().getXQueryService();
         if (normalizeXQuery == null) {
             Source source = new ClassLoaderSource(NORMALIZE_XQUERY);
-            XQueryContext xc = new XQueryContext(context.getBroker().getBrokerPool(), AccessContext.INITIALIZE);
+            XQueryContext xc = new XQueryContext(context.getBroker().getBrokerPool());
             try {
                 normalizeXQuery = xquery.compile(context.getBroker(), xc, source);
             } catch(final PermissionDeniedException e) {

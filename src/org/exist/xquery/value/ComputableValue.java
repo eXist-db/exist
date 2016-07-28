@@ -42,11 +42,6 @@ public abstract class ComputableValue extends AtomicValue {
 	public abstract AtomicValue convertTo(int requiredType) throws XPathException;
 
 	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.AtomicValue#compareTo(int, org.exist.xquery.value.AtomicValue)
-	 */
-	public abstract boolean compareTo(Collator collator, int operator, AtomicValue other) throws XPathException;
-
-	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.AtomicValue#compareTo(org.exist.xquery.value.AtomicValue)
 	 */
 	public abstract int compareTo(Collator collator, AtomicValue other) throws XPathException;

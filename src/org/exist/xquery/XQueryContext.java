@@ -20,12 +20,12 @@
  */
 package org.exist.xquery;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Path;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Date;
@@ -74,7 +74,6 @@ import org.exist.security.AuthenticationException;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
-import org.exist.security.xacml.*;
 import org.exist.source.*;
 import org.exist.stax.ExtendedXMLStreamReader;
 import org.exist.storage.DBBroker;
@@ -294,8 +293,6 @@ public class XQueryContext implements BinaryValueManager, Context
     
     //For holding the environment variables
     Map<String,String> envs;
-    
-    private AccessContext                              accessCtx;
 
     private ContextUpdateListener                      updateListener                = null;
 
@@ -307,8 +304,6 @@ public class XQueryContext implements BinaryValueManager, Context
 
     private Source source = null;
     
-    private XACMLSource                                xacmlSource                        = null;
-
     private DebuggeeJoint                              debuggeeJoint                 = null;
 
     private int                                        xqueryVersion                 = 31;
@@ -350,7 +345,7 @@ public class XQueryContext implements BinaryValueManager, Context
             }
         }
         // try an eXist-specific module
-        File resolved = null;
+        Path resolved = null;
         if (repo.isPresent()) {
             resolved = repo.get().resolveXQueryModule(namespace);
             // use the resolved file or return null
@@ -359,25 +354,21 @@ public class XQueryContext implements BinaryValueManager, Context
             }
         }
         // build a module object from the file
-        final Source src = new FileSource(resolved, "utf-8", false);
+        final Source src = new FileSource(resolved, false);
         return compileOrBorrowModule(prefix, namespace, "", src);
     }
     // TODO: end of expath repo manager, may change
 
 
-    protected XQueryContext( AccessContext accessCtx )
+    protected XQueryContext( )
     {
-        if( accessCtx == null ) {
-            throw( new NullAccessContextException() );
-        }
-        this.accessCtx = accessCtx;
         profiler = new Profiler( null );
     }
 
 
-    public XQueryContext( Database db, AccessContext accessCtx )
+    public XQueryContext( Database db )
     {
-        this( accessCtx );
+        this( );
         this.db = db;
         loadDefaults( db.getConfiguration() );
         this.profiler = new Profiler( db );
@@ -386,7 +377,7 @@ public class XQueryContext implements BinaryValueManager, Context
 
     public XQueryContext( XQueryContext copyFrom )
     {
-        this( copyFrom.getAccessContext() );
+        this( );
         this.db = copyFrom.db;
         loadDefaultNS();
         final Iterator<String> prefixes = copyFrom.staticNamespaces.keySet().iterator();
@@ -547,13 +538,6 @@ public class XQueryContext implements BinaryValueManager, Context
         //Note that, for some reasons, an XQueryContext might be used without calling this method
     }
 
-
-    public AccessContext getAccessContext()
-    {
-        return( accessCtx );
-    }
-
-
     /**
      * Is profiling enabled?
      *
@@ -624,18 +608,6 @@ public class XQueryContext implements BinaryValueManager, Context
     public int getExpressionCount()
     {
         return( expressionCounter );
-    }
-
-
-    @Override
-    public void setXacmlSource(final XACMLSource xacmlSource) {
-        this.xacmlSource = xacmlSource;
-    }
-
-
-    @Override
-    public XACMLSource getXacmlSource() {
-        return xacmlSource;
     }
 
     /**
@@ -1734,17 +1706,6 @@ public class XQueryContext implements BinaryValueManager, Context
         return module;
     }
 
-
-    /**
-     * Convenience method that returns the XACML Policy Decision Point for this database instance. If XACML has not been enabled, this returns null.
-     *
-     * @return  the PDP for this database instance, or null if XACML is disabled
-     */
-    public ExistPDP getPDP() {
-    	return db.getSecurityManager().getPDP();
-    }
-
-
     /**
      * Declare a user-defined function. All user-defined functions are kept in a single hash map.
      *
@@ -2758,11 +2719,11 @@ public class XQueryContext implements BinaryValueManager, Context
                                 sourceDoc = getBroker().getXMLResource( locationUri.toCollectionPathURI(), Lock.READ_LOCK );
 
                                 if(sourceDoc == null) {
-                                    throw moduleLoadException("Module location hint URI '" + location + " does not refer to anything.", location);
+                                    throw moduleLoadException("Module location hint URI '" + location + "' does not refer to anything.", location);
                                 }
 
                                 if(( sourceDoc.getResourceType() != DocumentImpl.BINARY_FILE ) || !"application/xquery".equals(sourceDoc.getMetadata().getMimeType())) {
-                                    throw moduleLoadException("Module location hint URI '" + location + " does not refer to an XQuery.", location);
+                                    throw moduleLoadException("Module location hint URI '" + location + "' does not refer to an XQuery.", location);
                                 }
 
                                 moduleSource = new DBSource( getBroker(), (BinaryDocument)sourceDoc, true );
@@ -2778,7 +2739,7 @@ public class XQueryContext implements BinaryValueManager, Context
                                 }
                             }
                         } catch(final URISyntaxException e) {
-                            throw moduleLoadException("Invalid module location hint URI '" + location + ".", location, e);
+                            throw moduleLoadException("Invalid module location hint URI '" + location + "'.", location, e);
                         }
 
                     } else {
@@ -2790,9 +2751,9 @@ public class XQueryContext implements BinaryValueManager, Context
                             moduleSource = SourceFactory.getSource( getBroker(), moduleLoadPath, location, true );
 
                         } catch(final MalformedURLException e) {
-                            throw moduleLoadException("Invalid module location hint URI '" + location + ".", location, e);
+                            throw moduleLoadException("Invalid module location hint URI '" + location + "'.", location, e);
                         } catch(final IOException e) {
-                            throw moduleLoadException("Source for module '" + namespaceURI + "' not found module location hint URI '" + location + ".", location, e);
+                            throw moduleLoadException("Source for module '" + namespaceURI + "' not found module location hint URI '" + location + "'.", location, e);
                         } catch(final PermissionDeniedException e) {
                             throw moduleLoadException("Permission denied to read module source from location hint URI '" + location + ".", location, e);
                         }
@@ -2929,7 +2890,6 @@ public class XQueryContext implements BinaryValueManager, Context
 
             // Set source information on module context
 //            String sourceClassName = source.getClass().getName();
-            modContext.setXacmlSource( XACMLSource.getInstance( source ) );
 //            modContext.setSourceKey(source.getKey().toString());
             // Extract the source type from the classname by removing the package prefix and the "Source" suffix
 //            modContext.setSourceType( sourceClassName.substring( 17, sourceClassName.length() - 6 ) );
@@ -3536,27 +3496,35 @@ public class XQueryContext implements BinaryValueManager, Context
     @Override
     public void registerBinaryValueInstance(final BinaryValue binaryValue) {
         if(binaryValueInstances == null) {
-             binaryValueInstances = new ArrayList<BinaryValue>();
-             
-             cleanupTasks.add(new CleanupTask() {
-                 
-                 @Override
-                 public void cleanup(final XQueryContext context) {
-                    if(context.binaryValueInstances != null) {
-                       for(final BinaryValue bv : context.binaryValueInstances) {
-                           try {
-                               bv.close();
-                           } catch (final IOException ioe) {
-                               LOG.error("Unable to close binary value: " + ioe.getMessage(), ioe);
-                           }
-                       }
-                       context.binaryValueInstances.clear();
-                   }
-                 }
-             });
+             binaryValueInstances = new ArrayList<>();
         }
-        
+
+        if(cleanupTasks.isEmpty() || !cleanupTasks.stream().filter(ct -> ct instanceof BinaryValueCleanupTask).findFirst().isPresent()) {
+            cleanupTasks.add(new BinaryValueCleanupTask());
+        }
+
         binaryValueInstances.add(binaryValue);
+    }
+
+    /**
+     * Cleanup Task which is responsible for relasing the streams
+     * of any {@link BinaryValue} which have been used during
+     * query execution
+     */
+    private static class BinaryValueCleanupTask implements CleanupTask {
+        @Override
+        public void cleanup(final XQueryContext context) {
+            if (context.binaryValueInstances != null) {
+                for (final BinaryValue bv : context.binaryValueInstances) {
+                    try {
+                        bv.close();
+                    } catch (final IOException ioe) {
+                        LOG.error("Unable to close binary value: " + ioe.getMessage(), ioe);
+                    }
+                }
+                context.binaryValueInstances.clear();
+            }
+        }
     }
 
     @Override
@@ -3654,14 +3622,14 @@ public class XQueryContext implements BinaryValueManager, Context
 
     }
     
-    private List<CleanupTask> cleanupTasks = new ArrayList<CleanupTask>();
+    private final List<CleanupTask> cleanupTasks = new ArrayList<>();
     
     public void registerCleanupTask(final CleanupTask cleanupTask) {
         cleanupTasks.add(cleanupTask);
     }
     
     public interface CleanupTask {
-        public void cleanup(final XQueryContext context);
+        void cleanup(final XQueryContext context);
     }
     
     @Override

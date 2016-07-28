@@ -27,8 +27,7 @@ package org.exist.storage.sync;
  * It will periodically trigger a cache sync to write
  * cached pages to disk. 
  */
-public interface Sync {
-
-    public final static int MINOR_SYNC = 0;
-    public final static int MAJOR_SYNC = 1;
+public enum Sync {
+    MINOR,
+    MAJOR
 }

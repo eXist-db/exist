@@ -243,14 +243,9 @@ public abstract class AbstractUnixStylePermission implements Permission {
         setMode(simpleSymbolicModeToInt(simpleSymbolicMode));
     }
 
-    private final static Pattern unixSymbolicModePattern = Pattern.compile("((?:[augo]*(?:[+\\-=](?:[" + READ_CHAR + SETUID_CHAR + STICKY_CHAR + WRITE_CHAR + EXECUTE_CHAR +"])+)+),?)+");
-    private final static Matcher unixSymbolicModeMatcher = unixSymbolicModePattern.matcher("");
-
+    private final static Pattern unixSymbolicModePattern = Pattern.compile("((?:[augo]*(?:[+\\-=](?:[" + READ_CHAR + SETUID_CHAR + STICKY_CHAR + WRITE_CHAR + EXECUTE_CHAR + "])+)+),?)+");
     private final static Pattern existSymbolicModePattern = Pattern.compile("(?:(?:" + USER_STRING + "|" + GROUP_STRING + "|" + OTHER_STRING + ")=(?:[+-](?:" + READ_STRING + "|" + WRITE_STRING + "|" + EXECUTE_STRING + "),?)+)+");
-    private final static Matcher existSymbolicModeMatcher = existSymbolicModePattern.matcher("");
-
     private final static Pattern simpleSymbolicModePattern = Pattern.compile("(?:(?:" + READ_CHAR + "|" + UNSET_CHAR + ")(?:" + WRITE_CHAR + "|" + UNSET_CHAR + ")(?:[" + EXECUTE_CHAR + SETUID_CHAR + SETUID_CHAR_NO_EXEC + "]|" + UNSET_CHAR + ")){2}(?:" + READ_CHAR + "|" + UNSET_CHAR + ")(?:" + WRITE_CHAR + "|" + UNSET_CHAR + ")(?:[" + EXECUTE_CHAR + STICKY_CHAR + "]|" + UNSET_CHAR + ")");
-    private final static Matcher simpleSymbolicModeMatcher = simpleSymbolicModePattern.matcher("");
 
     /**
      * Note: we don't need @PermissionRequired(user = IS_DBA | IS_OWNER) here
@@ -268,16 +263,16 @@ public abstract class AbstractUnixStylePermission implements Permission {
     @Override
     public final void setMode(final String modeStr) 
             throws SyntaxException, PermissionDeniedException {
-        simpleSymbolicModeMatcher.reset(modeStr);
+        final Matcher simpleSymbolicModeMatcher = simpleSymbolicModePattern.matcher(modeStr);
 
         if(simpleSymbolicModeMatcher.matches()) {
             setSimpleSymbolicMode(modeStr);
         } else {
-            unixSymbolicModeMatcher.reset(modeStr);
+            final Matcher unixSymbolicModeMatcher = unixSymbolicModePattern.matcher(modeStr);
             if(unixSymbolicModeMatcher.matches()){
                 setUnixSymbolicMode(modeStr);
             } else {
-                existSymbolicModeMatcher.reset(modeStr);
+                final Matcher existSymbolicModeMatcher = existSymbolicModePattern.matcher(modeStr);
                 if(existSymbolicModeMatcher.matches()) {
                     setExistSymbolicMode(modeStr);
                 } else {

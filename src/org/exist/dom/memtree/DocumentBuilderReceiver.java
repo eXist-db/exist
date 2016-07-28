@@ -54,6 +54,8 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
     private Map<String, String> namespaces = null;
     private boolean checkNS = false;
 
+    private boolean suppressWhitespace = true;
+
     public DocumentBuilderReceiver() {
         this(null);
     }
@@ -69,6 +71,10 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
 
     public void setCheckNS(final boolean checkNS) {
         this.checkNS = checkNS;
+    }
+
+    public void setSuppressWhitespace(boolean flag) {
+        this.suppressWhitespace = flag;
     }
 
     @Override
@@ -184,6 +190,9 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
 
     @Override
     public void ignorableWhitespace(final char[] ch, final int start, final int len) throws SAXException {
+        if (!suppressWhitespace) {
+            builder.characters(ch, start, len);
+        }
     }
 
     @Override

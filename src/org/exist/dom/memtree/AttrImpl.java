@@ -167,25 +167,18 @@ public class AttrImpl extends NodeImpl implements Attr {
 
     @Override
     public String toString() {
-        final StringBuilder result = new StringBuilder();
-        result.append("in-memory#");
-        result.append("attribute {");
-        result.append(getQName().getStringValue());
-        result.append("} {");
-        result.append(getValue());
-        result.append("} ");
-        return result.toString();
+        return "in-memory#attribute {" + getQName().getStringValue() + "} {" + getValue() + "} ";
     }
 
     @Override
     public void selectAttributes(final NodeTest test, final Sequence result)
-        throws XPathException {
-        throw new UnsupportedOperationException("selectAttributes is not yet implemented!");
+            throws XPathException {
+        //do nothing, which will return an empty sequence
     }
 
     @Override
     public void selectChildren(final NodeTest test, final Sequence result)
-        throws XPathException {
-        throw new UnsupportedOperationException("selectChildren is not yet implemented!");
+            throws XPathException {
+        //do nothing, which will return an empty sequence
     }
 }

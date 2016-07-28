@@ -133,7 +133,7 @@ public class FloatValue extends NumericValue {
 		if (isInfinite())
 			{return false;}
 		return new DecimalValue(new BigDecimal(value)).hasFractionalPart();
-	};
+	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Sequence#convertTo(int)

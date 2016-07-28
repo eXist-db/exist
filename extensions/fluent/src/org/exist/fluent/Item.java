@@ -8,7 +8,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
-import org.exist.xquery.Constants;
+import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.*;
 import org.xml.sax.SAXException;
@@ -56,7 +56,7 @@ public class Item extends Resource {
 			try {
 				return
 						thisValue.getType() == thatValue.getType()
-						&& thisValue.compareTo(null, Constants.EQ, thatValue);
+						&& thisValue.compareTo(null, Comparison.EQ, thatValue);
 			} catch (XPathException e) {
 				// fall through
 			}

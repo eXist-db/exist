@@ -96,7 +96,7 @@ public class RecoverBinaryTest {
 //          root.removeBinaryResource(transaction, broker, doc);
             
             //TODO : remove ?
-            transact.getJournal().flushToLog(true);
+            pool.getJournalManager().get().flush(true, false);
 		}
     }
     

@@ -182,16 +182,21 @@ public class JSONWriter extends XMLWriter {
     @Override
     public void attribute(final String qname, final String value) throws TransformerException {
         final JSONObject parent = stack.peek();
-        if(qname.equals(JSON_ARRAY)) {
-            parent.setSerializationType(JSONNode.SerializationType.AS_ARRAY);
-        } else if(qname.equals(JSON_LITERAL)) {
-            parent.setSerializationDataType(JSONNode.SerializationDataType.AS_LITERAL);
-        } else if(qname.equals(JSON_NAME)) {
-            parent.setName(value);
-        } else {
-            final String name = prefixAttributes ? "@" + qname : qname;
-            final JSONSimpleProperty obj = new JSONSimpleProperty(name, value);
-            parent.addObject(obj);
+        switch (qname) {
+            case JSON_ARRAY:
+                parent.setSerializationType(JSONNode.SerializationType.AS_ARRAY);
+                break;
+            case JSON_LITERAL:
+                parent.setSerializationDataType(JSONNode.SerializationDataType.AS_LITERAL);
+                break;
+            case JSON_NAME:
+                parent.setName(value);
+                break;
+            default:
+                final String name = prefixAttributes ? "@" + qname : qname;
+                final JSONSimpleProperty obj = new JSONSimpleProperty(name, value);
+                parent.addObject(obj);
+                break;
         }
     }
 

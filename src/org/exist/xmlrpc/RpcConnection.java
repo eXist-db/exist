@@ -62,7 +62,6 @@ import org.exist.security.Subject;
 import org.exist.security.internal.aider.ACEAider;
 import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.internal.aider.UserAider;
-import org.exist.security.xacml.AccessContext;
 import org.exist.source.DBSource;
 import org.exist.source.Source;
 import org.exist.source.StringSource;
@@ -83,6 +82,7 @@ import org.exist.util.VirtualTempFile;
 import org.exist.util.VirtualTempFileInputSource;
 import org.exist.util.function.Function2E;
 import org.exist.util.function.Function3E;
+import org.exist.util.function.SupplierE;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
 import org.exist.validation.ValidationReport;
@@ -106,6 +106,8 @@ import java.io.*;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.zip.DeflaterOutputStream;
@@ -292,7 +294,7 @@ public class RpcConnection implements RpcAPI {
         CompiledXQuery compiled = pool.borrowCompiledXQuery(broker, source);
         XQueryContext context;
         if (compiled == null) {
-            context = new XQueryContext(broker.getBrokerPool(), AccessContext.XMLRPC);
+            context = new XQueryContext(broker.getBrokerPool());
         } else {
             context = compiled.getContext();
         }
@@ -416,17 +418,8 @@ public class RpcConnection implements RpcAPI {
     }
 
     protected String formatErrorMsg(final String type, final String message) {
-        final StringBuilder buf = new StringBuilder();
-        buf.append("<exist:result xmlns:exist=\"" + Namespaces.EXIST_NS + "\" ");
-        buf.append("hitCount=\"0\">");
-        buf.append('<');
-        buf.append(type);
-        buf.append('>');
-        buf.append(message);
-        buf.append("</");
-        buf.append(type);
-        buf.append("></exist:result>");
-        return buf.toString();
+        return ("<exist:result xmlns:exist=\"" + Namespaces.EXIST_NS + "\" ") + "hitCount=\"0\">" +
+                '<' + type + '>' +  message + "</" + type + "></exist:result>";
     }
 
     @Override
@@ -800,7 +793,7 @@ public class RpcConnection implements RpcAPI {
             //TODO : register a lock (which one ?) in the transaction ?
             final DocumentSet docs = collectionRef.allDocs(broker, new DefaultDocumentSet(), true);
             try {
-                final XUpdateProcessor processor = new XUpdateProcessor(broker, docs, AccessContext.XMLRPC);
+                final XUpdateProcessor processor = new XUpdateProcessor(broker, docs);
                 final Modification modifications[] = processor.parse(new InputSource(new StringReader(xupdate)));
                 long mods = 0;
                 for (final Modification modification : modifications) {
@@ -830,7 +823,7 @@ public class RpcConnection implements RpcAPI {
             final MutableDocumentSet docs = new DefaultDocumentSet();
             docs.add(documentRef);
             try {
-                final XUpdateProcessor processor = new XUpdateProcessor(broker, docs, AccessContext.XMLRPC);
+                final XUpdateProcessor processor = new XUpdateProcessor(broker, docs);
                 final Modification modifications[] = processor.parse(new InputSource(new StringReader(xupdate)));
                 long mods = 0;
                 for (final Modification modification : modifications) {
@@ -848,18 +841,13 @@ public class RpcConnection implements RpcAPI {
     public boolean sync() {
         try {
             return withDbAsSystem((broker, transaction) -> {
-                broker.sync(Sync.MAJOR_SYNC);
+                broker.sync(Sync.MAJOR);
                 return true;
             });
         } catch(final EXistException | PermissionDeniedException e) {
             LOG.error(e.getMessage(), e);
             return false;
         }
-    }
-
-    @Override
-    public boolean isXACMLEnabled() {
-        return factory.getBrokerPool().getSecurityManager().isXACMLEnabled();
     }
 
     @Override
@@ -1410,33 +1398,36 @@ public class RpcConnection implements RpcAPI {
                 }
             }
 
-            VirtualTempFileInputSource source = null;
+
+            // get the source for parsing
+            SupplierE<VirtualTempFileInputSource, IOException> sourceSupplier;
             try {
-                try {
-                    final int handle = Integer.parseInt(localFile);
-                    final SerializedResult sr = factory.resultSets.getSerializedResult(handle);
-                    if (sr == null) {
-                        throw new EXistException("Invalid handle specified");
-                    }
-
-                    source = new VirtualTempFileInputSource(sr.result);
-
-                    // Unlinking the VirtualTempFile from the SerializeResult
-                    sr.result = null;
-                    factory.resultSets.remove(handle);
-                } catch (final NumberFormatException nfe) {
-                    // As this file can be a non-temporal one, we should not
-                    // blindly erase it!
-                    final File file = new File(localFile);
-                    if (!file.canRead()) {
-                        throw new EXistException("unable to read file " + file.getAbsolutePath());
-                    }
-
-                    source = new VirtualTempFileInputSource(file);
-                } catch (final IOException ioe) {
-                    throw new EXistException("Error preparing virtual temp file for parsing");
+                final int handle = Integer.parseInt(localFile);
+                final SerializedResult sr = factory.resultSets.getSerializedResult(handle);
+                if (sr == null) {
+                    throw new EXistException("Invalid handle specified");
                 }
 
+                sourceSupplier = () -> {
+                    final VirtualTempFileInputSource source = new VirtualTempFileInputSource(sr.result);
+                    sr.result = null; // de-reference the VirtualTempFile in the SerializeResult
+                    factory.resultSets.remove(handle);
+                    return source;
+                };
+            } catch (final NumberFormatException nfe) {
+
+                // As this file can be a non-temporal one, we should not
+                // blindly erase it!
+                final Path path = Paths.get(localFile);
+                if (!Files.isReadable(path)) {
+                    throw new EXistException("unable to read file " + path.toAbsolutePath().toString());
+                }
+
+                sourceSupplier = () -> new VirtualTempFileInputSource(path);
+            }
+
+            // parse the source
+            try(final VirtualTempFileInputSource source = sourceSupplier.get()) {
                 final MimeType mime = Optional.ofNullable(MimeTable.getInstance().getContentType(mimeType)).orElse(MimeType.BINARY_TYPE);
                 final boolean treatAsXML = (isXML != null && isXML) || (isXML == null && mime.isXMLType());
 
@@ -1462,11 +1453,6 @@ public class RpcConnection implements RpcAPI {
                 }
 
                 return true;
-            } finally {
-                if (source != null) {
-                    // DWES there are situations the file is not cleaned up
-                    source.free();
-                }
             }
         });
     }
@@ -1711,7 +1697,7 @@ public class RpcConnection implements RpcAPI {
                 }
 
                 if (sortBy.isPresent()) {
-                    final SortedNodeSet sorted = new SortedNodeSet(factory.getBrokerPool(), user, sortBy.get(), AccessContext.XMLRPC);
+                    final SortedNodeSet sorted = new SortedNodeSet(factory.getBrokerPool(), user, sortBy.get());
                     sorted.addAll(resultSeq);
                     resultSeq = sorted;
                 }
@@ -1800,7 +1786,7 @@ public class RpcConnection implements RpcAPI {
                 }
 
                 if (sortBy.isPresent()) {
-                    final SortedNodeSet sorted = new SortedNodeSet(factory.getBrokerPool(), user, sortBy.get(), AccessContext.XMLRPC);
+                    final SortedNodeSet sorted = new SortedNodeSet(factory.getBrokerPool(), user, sortBy.get());
                     sorted.addAll(resultSeq);
                     resultSeq = sorted;
                 }
@@ -3097,6 +3083,24 @@ public class RpcConnection implements RpcAPI {
             LOG.debug("collection " + collUri + " and sub-collections reindexed");
             return null;
         });
+    }
+
+    @Override
+    public boolean reindexDocument(final String docUri) throws EXistException, PermissionDeniedException {
+        withDb((broker, transaction) -> {
+            DocumentImpl doc = null;
+            try {
+                doc = broker.getXMLResource(XmldbURI.create(docUri), Lock.READ_LOCK);
+                broker.reindexXMLResource(transaction, doc, DBBroker.IndexMode.STORE);
+                LOG.debug("document " + docUri + " reindexed");
+                return null;
+            } finally {
+                if(doc != null) {
+                    doc.getUpdateLock().release(Lock.READ_LOCK);
+                }
+            }
+        });
+        return true;
     }
 
     @Override

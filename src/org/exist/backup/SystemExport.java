@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2010 The eXist Project
+ *  Copyright (C) 2001-2016 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -16,8 +16,6 @@
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- *  $Id$
  */
 package org.exist.backup;
 
@@ -47,8 +45,10 @@ import org.exist.storage.btree.BTreeCallback;
 import org.exist.storage.btree.Value;
 import org.exist.storage.index.CollectionStore;
 import org.exist.storage.io.VariableByteInput;
+import org.exist.storage.serializers.ChainOfReceiversFactory;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.FileUtils;
+import org.exist.util.LockException;
 import org.exist.util.UTF8;
 import org.exist.util.function.FunctionE;
 import org.exist.util.serializer.AttrList;
@@ -76,8 +76,6 @@ import java.io.*;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.function.Function;
-import java.util.function.Supplier;
 
 
 /**
@@ -101,6 +99,9 @@ public class SystemExport
     private static final XmldbURI   TEMP_COLLECTION         = XmldbURI.createInternal(XmldbURI.TEMP_COLLECTION);
     private static final XmldbURI   CONTENTS_URI            = XmldbURI.createInternal( "__contents__.xml" );
     private static final XmldbURI   LOST_URI                = XmldbURI.createInternal( "__lost_and_found__" );
+
+    public final static String CONFIGURATION_ELEMENT = "backup-filter";
+    public final static String CONFIG_FILTERS = "backup.serialization.filters";
 
     private static final int        currVersion             = 1;
 
@@ -130,14 +131,26 @@ public class SystemExport
         contentsOutputProps.setProperty( OutputKeys.INDENT, "yes" );
     }
 
-    public SystemExport( DBBroker broker, StatusCallback callback, ProcessMonitor.Monitor monitor, boolean direct )
+    private ChainOfReceiversFactory chainFactory;
+
+    public SystemExport( DBBroker broker, StatusCallback callback, ProcessMonitor.Monitor monitor, boolean direct, ChainOfReceiversFactory chainFactory )
     {
         this.broker       = broker;
         this.callback     = callback;
         this.monitor      = monitor;
         this.directAccess = direct;
-        
-    	bh = broker.getDatabase().getPluginsManager().getBackupHandler(LOG);
+        this.chainFactory = chainFactory;
+
+        bh = broker.getDatabase().getPluginsManager().getBackupHandler(LOG);
+    }
+
+    public SystemExport( DBBroker broker, StatusCallback callback, ProcessMonitor.Monitor monitor, boolean direct ) {
+        this(broker, callback, monitor, direct, null);
+
+        List<String> list = (List<String>) broker.getConfiguration().getProperty(CONFIG_FILTERS);
+        if (list != null) {
+            chainFactory = new ChainOfReceiversFactory(list);
+        }
     }
 
     public Path export( String targetDir, boolean incremental, boolean zip, List<ErrorReport> errorList )
@@ -216,7 +229,7 @@ public class SystemExport
             if(zip) {
                 fWriter = p -> new ZipWriter(p, XmldbURI.ROOT_COLLECTION );
             } else {
-                fWriter = p -> new FileSystemWriter(p);
+                fWriter = FileSystemWriter::new;
             }
 
             try(final BackupWriter output = fWriter.apply(backupFile)) {
@@ -503,9 +516,18 @@ public class SystemExport
                     final BufferedWriter writer            = new BufferedWriter( new OutputStreamWriter( os, "UTF-8" ) );
 
                     // write resource to contentSerializer
-                    final SAXSerializer  contentSerializer = (SAXSerializer)SerializerPool.getInstance().borrowObject( SAXSerializer.class );
+                    final SAXSerializer contentSerializer = (SAXSerializer)SerializerPool.getInstance().borrowObject( SAXSerializer.class );
                     contentSerializer.setOutput( writer, defaultOutputProperties );
-                    writeXML( doc, contentSerializer );
+
+                    final Receiver receiver;
+                    if (chainFactory != null) {
+                        chainFactory.getLast().setNextInChain(contentSerializer);
+                        receiver = chainFactory.getFirst();
+                    } else {
+                        receiver = contentSerializer;
+                    }
+
+                    writeXML( doc, receiver );
                     SerializerPool.getInstance().returnObject( contentSerializer );
                     writer.flush();
                 }
@@ -918,8 +940,8 @@ public class SystemExport
                             serializer.endElement( Namespaces.EXIST_NS, "deleted", "deleted" );
                         }
                     }
-                } catch(final PermissionDeniedException pde) {
-                    throw new SAXException("Unable to process :" + qName + ": " + pde.getMessage(), pde);
+                } catch(final LockException | PermissionDeniedException e) {
+                    throw new SAXException("Unable to process :" + qName + ": " + e.getMessage(), e);
                 }
             }
         }

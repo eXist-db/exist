@@ -21,29 +21,29 @@
  */
 package org.exist.storage.txn;
 
+import net.jcip.annotations.GuardedBy;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
-import org.exist.config.annotation.ConfigurationClass;
-import org.exist.config.annotation.ConfigurationFieldAsAttribute;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.SystemTask;
 import org.exist.storage.SystemTaskManager;
-import org.exist.storage.journal.Journal;
-import org.exist.storage.recovery.RecoveryManager;
-import org.exist.util.ReadOnlyException;
+import org.exist.storage.journal.JournalException;
+import org.exist.storage.journal.JournalManager;
 import org.exist.xmldb.XmldbURI;
 
+import java.io.IOException;
 import java.io.PrintStream;
-import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * This is the central entry point to the transaction management service.
@@ -55,19 +55,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * @author wolf
  *
  */
-@ConfigurationClass("recovery")
 public class TransactionManager {
-	
-	public final static String RECOVERY_GROUP_COMMIT_ATTRIBUTE = "group-commit";
-	public final static String PROPERTY_RECOVERY_GROUP_COMMIT = "db-connection.recovery.group-commit";
-    public final static String RECOVERY_FORCE_RESTART_ATTRIBUTE = "force-restart";
-    public final static String PROPERTY_RECOVERY_FORCE_RESTART = "db-connection.recovery.force-restart";
-
-    /**
-     * Timeout for inactive transactions. A transaction which has not processed
-     * any operations for this time may be considered dead.
-     */
-    public final static long TXN_INACTIVE_TIMEOUT = 60 * 1000;
 
     /**
      * Logger for this class
@@ -77,18 +65,9 @@ public class TransactionManager {
     private long nextTxnId = 0;
 
     private final BrokerPool pool;
-    private final Journal journal;
-    
-    @ConfigurationFieldAsAttribute("enabled")
-    private boolean enabled;
-    
-    @ConfigurationFieldAsAttribute("group-commit")
-    private boolean groupCommit = false;
+    private final Optional<JournalManager> journalManager;
 
-    @ConfigurationFieldAsAttribute("force-restart")
-    private boolean forceRestart = false;
-
-    private SystemTaskManager taskManager;
+    private final SystemTaskManager taskManager;
 
     private final Map<Long, TxnCounter> transactions = new HashMap<>();
 
@@ -98,83 +77,50 @@ public class TransactionManager {
      * Initialize the transaction manager using the specified data directory.
      * 
      * @param pool
-     * @param dataDir
-     * @param transactionsEnabled
+     * @param journalManager
      * @throws EXistException
      */
-    public TransactionManager(final BrokerPool pool, final Path dataDir, final boolean transactionsEnabled) throws EXistException {
+    public TransactionManager(final BrokerPool pool, final Optional<JournalManager> journalManager) throws EXistException {
     	this(
             pool,
-            transactionsEnabled,
-            transactionsEnabled ? new Journal(pool, dataDir) : null,
-            Optional.ofNullable((boolean)pool.getConfiguration().getProperty(PROPERTY_RECOVERY_GROUP_COMMIT)).orElse(false),
-            Optional.ofNullable((boolean)pool.getConfiguration().getProperty(PROPERTY_RECOVERY_FORCE_RESTART)).orElse(false),
+            journalManager,
             new SystemTaskManager(pool)
         );
     }
 
-    TransactionManager(final BrokerPool pool, final boolean transactionsEnabled, final Journal journal, final boolean groupCommit, final boolean forceRestart, final SystemTaskManager taskManager) {
+    TransactionManager(final BrokerPool pool, final Optional<JournalManager> journal, final SystemTaskManager taskManager) {
         this.pool = pool;
-        this.enabled = transactionsEnabled;
-        this.journal = journal;
-        this.groupCommit = groupCommit;
-        this.forceRestart = forceRestart;
+        this.journalManager = journal;
         this.taskManager = taskManager;
-
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("GroupCommits = " + groupCommit);
-            LOG.debug("ForceRestart = " + forceRestart);
-        }
     }
 
-    public void initialize() throws EXistException, ReadOnlyException {
-        if (enabled)
-            {journal.initialize();}
+    public void initialize() {
         transactions.clear();
     }
-    
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
-
-    /**
-     * Run a database recovery if required. This method is called once during
-     * startup from {@link org.exist.storage.BrokerPool}.
-     * 
-     * @param broker
-     * @throws EXistException
-     */
-	public boolean runRecovery(DBBroker broker) throws EXistException {
-		final RecoveryManager recovery = new RecoveryManager(broker, journal, forceRestart);
-		return recovery.recover();
-	}
 	
     /**
      * Create a new transaction. Creates a new transaction id that will
      * be logged to disk immediately. 
      */
     public Txn beginTransaction() {
-        if (!enabled)
-            {return null;}
+        return withLock(broker -> {
+            final long txnId = nextTxnId++;
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("Starting new transaction: " + txnId);
+            }
 
-        return new RunWithLock<Txn>() {
-
-			public Txn execute() {
-				final long txnId = nextTxnId++;
-                if(LOG.isDebugEnabled()) {
-                    LOG.debug("Starting new transaction: " + txnId);
-                }
-                final Txn txn = new Txn(TransactionManager.this, txnId);
-	            try {
-	                journal.writeToLog(new TxnStart(txnId));
-	            } catch (final TransactionException e) {
+            if(journalManager.isPresent()) {
+                try {
+                    journalManager.get().journal(new TxnStart(txnId));
+                } catch(final JournalException e) {
                     LOG.error("Failed to create transaction. Error writing to log file.", e);
-	            }
-                transactions.put(txn.getId(), new TxnCounter());
-                return txn;
-			}
-        	
-        }.run();
+                }
+            }
+
+            final Txn txn = new Txn(TransactionManager.this, txnId);
+            transactions.put(txn.getId(), new TxnCounter());
+            return txn;
+        });
     }
     
     /**
@@ -186,56 +132,52 @@ public class TransactionManager {
     public void commit(final Txn txn) throws TransactionException {
 
         //we can only commit something which is in the STARTED state
-        if (!enabled || txn.getState() != Txn.State.STARTED) {
+        if (txn.getState() != Txn.State.STARTED) {
             return;
         }
 
-        new RunWithLock<Object>() {
-        	public Object execute() {
-                if (enabled) {
-                    try {
-						journal.writeToLog(new TxnCommit(txn.getId()));
-					} catch (final TransactionException e) {
-						LOG.error("Transaction manager caught exception while committing", e);
-					}
-                    if (!groupCommit)
-                        {journal.flushToLog(true);}
+        withLock(broker -> {
+            if(journalManager.isPresent()) {
+                try {
+                    journalManager.get().journalGroup(new TxnCommit(txn.getId()));
+                } catch(final JournalException e) {
+                    LOG.error("Failed to write commit record to journal: " + e.getMessage());
                 }
-                txn.signalCommit();
-                txn.releaseAll();
-                transactions.remove(txn.getId());
-                processSystemTasks();
-                if(LOG.isDebugEnabled()) {
-                    LOG.debug("Committed transaction: " + txn.getId());
-                }
-                return null;
-        	}
-        }.run();
+            }
+
+            txn.signalCommit();
+            txn.releaseAll();
+            transactions.remove(txn.getId());
+            processSystemTasks();
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("Committed transaction: " + txn.getId());
+            }
+        });
     }
 	
     public void abort(final Txn txn) {
+        Objects.requireNonNull(txn);
 
         //we can only abort something which is in the STARTED state
-        if (!enabled || txn == null || txn.getState() != Txn.State.STARTED) {
+        if (txn.getState() != Txn.State.STARTED) {
             return;
         }
 
-        new RunWithLock<Object>() {
-        	public Object execute() {
-                transactions.remove(txn.getId());
+        withLock(broker -> {
+            transactions.remove(txn.getId());
+
+            if(journalManager.isPresent()) {
                 try {
-                    journal.writeToLog(new TxnAbort(txn.getId()));
-                } catch (final TransactionException e) {
+                    journalManager.get().journalGroup(new TxnAbort(txn.getId()));
+                } catch(final JournalException e) {
                     LOG.error("Failed to write abort record to journal: " + e.getMessage());
                 }
-                if (!groupCommit)
-                    {journal.flushToLog(true);}
-                txn.signalAbort();
-                txn.releaseAll();
-                processSystemTasks();
-                return null;
-        	}
-        }.run();
+            }
+
+            txn.signalAbort();
+            txn.releaseAll();
+            processSystemTasks();
+        });
     }
 
     /**
@@ -244,9 +186,10 @@ public class TransactionManager {
      * @param txn
      */
     public void close(final Txn txn) {
+        Objects.requireNonNull(txn);
 
         //if the transaction is already closed, do nothing
-        if (!enabled || txn == null || txn.getState() == Txn.State.CLOSED) {
+        if (txn.getState() == Txn.State.CLOSED) {
             return;
         }
 
@@ -266,7 +209,7 @@ public class TransactionManager {
      *
      * @param txnId
      */
-    public void trackOperation(long txnId) {
+    public void trackOperation(final long txnId) {
         final TxnCounter count = transactions.get(txnId);
         // checkpoint operations do not create a transaction, so we have to check for null here
         if (count != null) {
@@ -281,32 +224,32 @@ public class TransactionManager {
     /**
      * Create a new checkpoint. A checkpoint fixes the current database state. All dirty pages
      * are written to disk and the journal file is cleaned.
-     * 
-     * This method is called from 
+     *
+     * This method is called from
      * {@link org.exist.storage.BrokerPool} within pre-defined periods. It
      * should not be called from somewhere else. The database needs to
      * be in a stable state (all transactions completed, no operations running).
-     * 
+     *
+     * @param switchFiles Indicates whether a new journal file should be started
+     *
      * @throws TransactionException
      */
-    public void checkpoint(boolean switchFiles) throws TransactionException {
-        if (!enabled) {
-            return;
+    public void checkpoint(final boolean switchFiles) throws TransactionException {
+	    final long txnId = nextTxnId++;
+        if(journalManager.isPresent()) {
+            try {
+                journalManager.get().checkpoint(txnId, switchFiles);
+            } catch(final JournalException e) {
+                throw new TransactionException(e.getMessage(), e);
+            }
         }
-        
-	final long txnId = nextTxnId++;
-	journal.checkpoint(txnId, switchFiles);
-    }
-	
-    public Journal getJournal() {
-	return journal;
     }
 
     /**
      * @Deprecated This mixes concerns and should not be here.
      */
     @Deprecated
-    public void reindex(final DBBroker broker) {
+    public void reindex(final DBBroker broker) throws IOException {
         broker.pushSubject(broker.getBrokerPool().getSecurityManager().getSystemSubject());
         try {
             broker.reindexCollection(XmldbURI.ROOT_COLLECTION_URI);
@@ -325,18 +268,19 @@ public class TransactionManager {
         shutdown(uncommitted == 0);
     }
 
-    public void shutdown(boolean checkpoint) {
-        if (enabled) {
-                final long txnId = nextTxnId++;
-            journal.shutdown(txnId, checkpoint);
-            transactions.clear();
+    public void shutdown(final boolean checkpoint) {
+        final long txnId = nextTxnId++;
+        if(journalManager.isPresent()) {
+            journalManager.get().shutdown(txnId, checkpoint);
         }
+        transactions.clear();
     }
 
     private int uncommittedTransaction() {
         int count = 0;
-        if (transactions.isEmpty())
-            {return count;}
+        if (transactions.isEmpty()) {
+            return count;
+        }
         for (final Map.Entry<Long, TxnCounter> entry : transactions.entrySet()) {
             if (entry.getValue().counter > 0) {
                 LOG.warn("Found an uncommitted transaction with id " + entry.getKey() + ". Pending operations: " + entry.getValue().counter);
@@ -350,56 +294,62 @@ public class TransactionManager {
     }
 
     public void triggerSystemTask(final SystemTask task) {
-    	new RunWithLock<Object>() {
-			public Object execute() {
-				taskManager.triggerSystemTask(task);
-				return null;
-			}
-    	}.run();
+        withLock(broker -> {
+            taskManager.triggerSystemTask(task);
+    	});
     }
 
     public void processSystemTasks() {
-    	new RunWithLock<Object>() {
-    		public Object execute() {
-    			if (transactions.isEmpty())
-                    {taskManager.processTasks();}
-    			return null;
-    		}
-    	}.run();
+        withLock(broker -> {
+           if(transactions.isEmpty()) {
+               taskManager.processTasks();
+           }
+        });
     }
 
-	public void debug(PrintStream out) {
+	public void debug(final PrintStream out) {
 		out.println("Active transactions: "+ transactions.size());
 	}
 
     /**
-     * Run code block with a lock on the transaction manager.
+     * Run a consumer within a lock on the transaction manager.
      * Make sure locks are acquired in the right order.
-     * 
-     * @author wolf
      *
+     * @param lockedCn A consumer that must be run exclusively
+     *                 with respect to the TransactionManager
+     *                 instance
      */
-    private abstract class RunWithLock<T> {
-    	
-    	public T run() {
+    @GuardedBy("lock")
+    private void withLock(final Consumer<DBBroker> lockedCn) {
+        withLock(broker -> {
+            lockedCn.accept(broker);
+            return null;
+        });
+    }
 
-            // we first need to get a broker for the current thread
-            // before we acquire the transaction manager lock. Otherwise
-            // a deadlock may occur.
-    		try(final DBBroker broker = pool.getBroker()) {
-    			try {
-    				lock.lock();
-    				return execute();
-    			} finally {
-    				lock.unlock();
-    			}
-    		} catch (final EXistException e) {
-				LOG.error("Transaction manager failed to acquire broker for running system tasks");
-				return null;
-			}
-    	}
-    	
-    	public abstract T execute();
+    /**
+     * Run a function within a lock on the transaction manager.
+     * Make sure locks are acquired in the right order.
+     *
+     * @param lockedFn A function that must be run exclusively
+     *                 with respect to the TransactionManager
+     *                 instance
+     *
+     * @return The result of lockedFn
+     */
+    @GuardedBy("lock")
+    private <T> T withLock(final Function<DBBroker, T> lockedFn) {
+        try(final DBBroker broker = pool.getBroker()) {
+            try {
+                lock.lock();
+                return lockedFn.apply(broker);
+            } finally {
+                lock.unlock();
+            }
+        } catch (final EXistException e) {
+            LOG.error("Transaction manager failed to acquire broker for running system tasks");
+            return null;
+        }
     }
 
     /**
@@ -409,7 +359,6 @@ public class TransactionManager {
      */
     protected final static class TxnCounter {
         int counter = 0;
-
         public void increment() {
             counter++;
         }

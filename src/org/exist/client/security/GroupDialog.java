@@ -118,28 +118,16 @@ public class GroupDialog extends javax.swing.JFrame {
         btnAddMember = new javax.swing.JButton();
 
         miAddGroupMember.setText("Add Group Member...");
-        miAddGroupMember.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                miAddGroupMemberActionPerformed(evt);
-            }
-        });
+        miAddGroupMember.addActionListener(this::miAddGroupMemberActionPerformed);
         pmGroupMembers.add(miAddGroupMember);
 
         micbGroupMemberManager.setSelected(true);
         micbGroupMemberManager.setText("Group Manager");
-        micbGroupMemberManager.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                micbGroupMemberManagerActionPerformed(evt);
-            }
-        });
+        micbGroupMemberManager.addActionListener(this::micbGroupMemberManagerActionPerformed);
         pmGroupMembers.add(micbGroupMemberManager);
 
         miRemoveGroupMember.setText("Remove Group Member");
-        miRemoveGroupMember.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                miRemoveGroupMemberActionPerformed(evt);
-            }
-        });
+        miRemoveGroupMember.addActionListener(this::miRemoveGroupMemberActionPerformed);
         pmGroupMembers.add(miRemoveGroupMember);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
@@ -165,25 +153,13 @@ public class GroupDialog extends javax.swing.JFrame {
         lblGroupMembers.setText("Group Members:");
 
         btnCreate.setText("Create");
-        btnCreate.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnCreateActionPerformed(evt);
-            }
-        });
+        btnCreate.addActionListener(this::btnCreateActionPerformed);
 
         btnClose.setText("Close");
-        btnClose.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnCloseActionPerformed(evt);
-            }
-        });
+        btnClose.addActionListener(this::btnCloseActionPerformed);
 
         btnAddMember.setText("Add Group Member...");
-        btnAddMember.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnAddMemberActionPerformed(evt);
-            }
-        });
+        btnAddMember.addActionListener(this::btnAddMemberActionPerformed);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -373,16 +349,13 @@ public class GroupDialog extends javax.swing.JFrame {
     }
     
     private void showFindUserForm() {
-        final DialogCompleteWithResponse<String> callback = new DialogCompleteWithResponse<String>() {
-            @Override
-            public void complete(final String username) {
-               if(!groupMembersContains(username)) {
-                   getGroupMembersTableModel().addRow(new Object[]{
-                       username,
-                       false
-                   });
-               }
-            }
+        final DialogCompleteWithResponse<String> callback = username -> {
+           if(!groupMembersContains(username)) {
+               getGroupMembersTableModel().addRow(new Object[]{
+                   username,
+                   false
+               });
+           }
         };
         
         try {

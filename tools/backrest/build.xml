@@ -57,8 +57,7 @@
                         <include name="excalibur-cli-*.jar"/>
                         <include name="jline-*.jar"/>
                         <include name="log4j-*.jar"/>
-                        <include name="sunxacml-*.jar"/>
-                    </fileset>                     
+                    </fileset>
                 </zips>
                 
                 <zips>                   

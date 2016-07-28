@@ -76,11 +76,7 @@ public class AtomicToString extends AbstractExpression {
     }
 
     public String toString() {
-        final StringBuilder result = new StringBuilder();
-        result.append("xs:string(");
-        result.append(expression.toString());
-        result.append(")");
-        return result.toString();
+        return "xs:string(" + expression.toString() + ")";
     }
 
     /* (non-Javadoc)

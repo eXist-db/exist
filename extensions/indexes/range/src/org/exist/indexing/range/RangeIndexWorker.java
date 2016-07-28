@@ -21,7 +21,6 @@
  */
 package org.exist.indexing.range;
 
-import org.apache.lucene.util.FixedBitSet;
 import org.exist.dom.persistent.ElementImpl;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.persistent.NewArrayNodeSet;
@@ -46,6 +45,7 @@ import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.NumericUtils;
 import org.exist.collections.Collection;
 import org.exist.indexing.*;
+import org.exist.indexing.StreamListener.ReindexMode;
 import org.exist.indexing.lucene.BinaryTokenStream;
 import org.exist.indexing.lucene.LuceneIndexWorker;
 import org.exist.indexing.lucene.LuceneUtil;
@@ -94,7 +94,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     private final DBBroker broker;
     private IndexController controller;
     private DocumentImpl currentDoc;
-    private int mode = 0;
+    private ReindexMode mode = ReindexMode.STORE;
     private List<RangeIndexDoc> nodesToWrite;
     private Set<NodeId> nodesToRemove = null;
     private RangeIndexConfig config = null;
@@ -237,11 +237,11 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     @Override
     public void setDocument(DocumentImpl document) {
-        setDocument(document, StreamListener.UNKNOWN);
+        setDocument(document, ReindexMode.UNKNOWN);
     }
 
     @Override
-    public void setDocument(DocumentImpl document, int mode) {
+    public void setDocument(DocumentImpl document, ReindexMode mode) {
         this.currentDoc = document;
         IndexSpec indexConf = document.getCollection().getIndexConfiguration(broker);
         if (indexConf != null) {
@@ -255,18 +255,18 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     @Override
-    public void setMode(int mode) {
+    public void setMode(ReindexMode mode) {
         this.mode = mode;
         switch (mode) {
-            case StreamListener.STORE:
+            case STORE:
                 if (nodesToWrite == null)
-                    nodesToWrite = new ArrayList<RangeIndexDoc>();
+                    nodesToWrite = new ArrayList<>();
                 else
                     nodesToWrite.clear();
                 cachedNodesSize = 0;
                 break;
-            case StreamListener.REMOVE_SOME_NODES:
-                nodesToRemove = new TreeSet<NodeId>();
+            case REMOVE_SOME_NODES:
+                nodesToRemove = new TreeSet<>();
                 break;
         }
     }
@@ -277,7 +277,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     @Override
-    public int getMode() {
+    public ReindexMode getMode() {
         return mode;
     }
 
@@ -334,13 +334,13 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     @Override
     public void flush() {
         switch (mode) {
-            case StreamListener.STORE:
+            case STORE:
                 write();
                 break;
-            case StreamListener.REMOVE_SOME_NODES:
+            case REMOVE_SOME_NODES:
                 removeNodes();
                 break;
-            case StreamListener.REMOVE_ALL_NODES:
+            case REMOVE_ALL_NODES:
                 removeDocument(currentDoc.getDocId());
                 break;
         }
@@ -373,7 +373,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     LOG.warn("Exception during reindex: " + e.getMessage(), e);
                 }
             }
-            mode = StreamListener.STORE;
+            mode = ReindexMode.STORE;
         }
         if (LOG.isDebugEnabled())
             LOG.debug("Collection removed.");
@@ -391,13 +391,13 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             LOG.warn("Error while removing lucene index: " + e.getMessage(), e);
         } finally {
             index.releaseWriter(writer);
-            mode = StreamListener.STORE;
+            mode = ReindexMode.STORE;
         }
     }
 
     /**
      * Remove specific nodes from the index. This method is used for node updates
-     * and called from flush() if the worker is in {@link StreamListener#REMOVE_SOME_NODES}
+     * and called from flush() if the worker is in {@link ReindexMode#REMOVE_SOME_NODES}
      * mode.
      */
     protected void removeNodes() {
@@ -512,7 +512,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     public NodeSet query(int contextId, DocumentSet docs, NodeSet contextSet, List<QName> qnames, AtomicValue[] keys, RangeIndex.Operator operator, int axis) throws IOException, XPathException {
         return index.withSearcher(searcher -> {
             List<QName> definedIndexes = getDefinedIndexes(qnames);
-            NodeSet resultSet = NodeSet.EMPTY_SET;
+            NodeSet resultSet = new NewArrayNodeSet();
             for (QName qname : definedIndexes) {
                 Query query;
                 String field = LuceneUtil.encodeQName(qname, index.getBrokerPool().getSymbols());
@@ -530,9 +530,9 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     NodesFilter filter = new NodesFilter(contextSet);
                     filter.init(searcher.getIndexReader());
                     FilteredQuery filtered = new FilteredQuery(query, filter, FilteredQuery.LEAP_FROG_FILTER_FIRST_STRATEGY);
-                    resultSet = doQuery(contextId, docs, contextSet, axis, searcher, null, filtered, null);
+                    resultSet.addAll(doQuery(contextId, docs, contextSet, axis, searcher, null, filtered, null));
                 } else {
-                    resultSet = doQuery(contextId, docs, contextSet, axis, searcher, null, query, null);
+                    resultSet.addAll(doQuery(contextId, docs, contextSet, axis, searcher, null, query, null));
                 }
             }
             return resultSet;
@@ -564,14 +564,14 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             if (clauses.length == 1) {
                 qu = clauses[0].getQuery();
             }
-            NodeSet resultSet = NodeSet.EMPTY_SET;
+            NodeSet resultSet = new NewArrayNodeSet();
             if (contextSet != null && contextSet.hasOne() && contextSet.getItemType() != Type.DOCUMENT) {
                 NodesFilter filter = new NodesFilter(contextSet);
                 filter.init(searcher.getIndexReader());
                 FilteredQuery filtered = new FilteredQuery(qu, filter, FilteredQuery.LEAP_FROG_FILTER_FIRST_STRATEGY);
-                resultSet = doQuery(contextId, docs, contextSet, axis, searcher, null, filtered, null);
+                resultSet.addAll(doQuery(contextId, docs, contextSet, axis, searcher, null, filtered, null));
             } else {
-                resultSet = doQuery(contextId, docs, contextSet, axis, searcher, null, qu, null);
+                resultSet.addAll(doQuery(contextId, docs, contextSet, axis, searcher, null, qu, null));
             }
             return resultSet;
         });
@@ -809,7 +809,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
         @Override
         public void startElement(Txn transaction, ElementImpl element, NodePath path) {
-            if (mode == STORE && config != null) {
+            if (mode == ReindexMode.STORE && config != null) {
                 if (contentStack != null && !contentStack.isEmpty()) {
                     for (TextCollector extractor : contentStack) {
                         extractor.startElement(element.getQName(), path);
@@ -842,8 +842,8 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             Iterator<RangeIndexConfigElement> configIter = null;
             if (config != null)
                 configIter = config.getConfig(path);
-            if (mode != REMOVE_ALL_NODES && configIter != null) {
-                if (mode == REMOVE_SOME_NODES) {
+            if (mode != ReindexMode.REMOVE_ALL_NODES && configIter != null) {
+                if (mode == ReindexMode.REMOVE_SOME_NODES) {
                     nodesToRemove.add(attrib.getNodeId());
                 } else {
                     while (configIter.hasNext()) {
@@ -862,14 +862,14 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         @Override
         public void endElement(Txn transaction, ElementImpl element, NodePath path) {
             if (config != null) {
-                if (mode == STORE && contentStack != null && !contentStack.isEmpty()) {
+                if (mode == ReindexMode.STORE && contentStack != null && !contentStack.isEmpty()) {
                     for (TextCollector extractor : contentStack) {
                         extractor.endElement(element.getQName(), path);
                     }
                 }
                 Iterator<RangeIndexConfigElement> configIter = config.getConfig(path);
-                if (mode != REMOVE_ALL_NODES && configIter != null) {
-                    if (mode == REMOVE_SOME_NODES) {
+                if (mode != ReindexMode.REMOVE_ALL_NODES && configIter != null) {
+                    if (mode == ReindexMode.REMOVE_SOME_NODES) {
                         nodesToRemove.add(element.getNodeId());
                     } else {
                         while (configIter.hasNext()) {

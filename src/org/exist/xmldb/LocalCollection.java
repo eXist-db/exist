@@ -19,13 +19,9 @@
  */
 package org.exist.xmldb;
 
+import java.io.InputStream;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-import java.util.Random;
+import java.util.*;
 import javax.xml.transform.OutputKeys;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -37,13 +33,13 @@ import org.exist.dom.persistent.LockToken;
 import org.exist.security.Account;
 import org.exist.security.Permission;
 import org.exist.security.Subject;
-import org.exist.security.xacml.AccessContext;
-import org.exist.security.xacml.NullAccessContextException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.Txn;
+import org.exist.util.HtmlToXmlParser;
+import org.exist.util.function.Either;
 import org.exist.util.function.FunctionE;
 import org.exist.xmldb.function.LocalXmldbCollectionFunction;
 import org.xml.sax.InputSource;
@@ -91,7 +87,6 @@ public class LocalCollection extends AbstractLocal implements CollectionImpl {
     private final XmldbURI path;
     private Properties properties = new Properties(defaultProperties);
     private boolean needsSync = false;
-    private final AccessContext accessCtx;
     private XMLReader userReader = null;
 
     /**
@@ -102,8 +97,8 @@ public class LocalCollection extends AbstractLocal implements CollectionImpl {
      * @param collection
      * @throws XMLDBException
      */
-    public LocalCollection(final Subject user, final BrokerPool brokerPool, final XmldbURI collection, final AccessContext accessCtx) throws XMLDBException {
-        this(user, brokerPool, null, collection, accessCtx);
+    public LocalCollection(final Subject user, final BrokerPool brokerPool, final XmldbURI collection) throws XMLDBException {
+        this(user, brokerPool, null, collection);
     }
 
     /**
@@ -115,13 +110,8 @@ public class LocalCollection extends AbstractLocal implements CollectionImpl {
      * @param name
      * @throws XMLDBException
      */
-    public LocalCollection(Subject user, final BrokerPool brokerPool, final LocalCollection parent, final XmldbURI name, final AccessContext accessCtx) throws XMLDBException {
+    public LocalCollection(Subject user, final BrokerPool brokerPool, final LocalCollection parent, final XmldbURI name) throws XMLDBException {
         super(user, brokerPool, parent);
-
-        if(accessCtx == null) {
-            throw new NullAccessContextException();
-        }
-        this.accessCtx = accessCtx;
 
         if(name == null) {
             this.path = XmldbURI.ROOT_COLLECTION_URI.toCollectionPathURI();
@@ -134,10 +124,6 @@ public class LocalCollection extends AbstractLocal implements CollectionImpl {
                will throw an XMLDBException if they cannot */
             return null;
         });
-    }
-
-    public AccessContext getAccessContext() {
-        return accessCtx;
     }
 
     protected boolean checkOwner(final Collection collection, final Account account) throws XMLDBException {
@@ -156,7 +142,7 @@ public class LocalCollection extends AbstractLocal implements CollectionImpl {
     public void close() throws XMLDBException {
         if (needsSync) {
             withDb((broker, transaction) -> {
-                broker.sync(Sync.MAJOR_SYNC);
+                broker.sync(Sync.MAJOR);
                 return null;
             });
         }
@@ -244,7 +230,7 @@ public class LocalCollection extends AbstractLocal implements CollectionImpl {
         });
 
         if(nameUri != null) {
-            return new LocalCollection(user, brokerPool, this, nameUri, accessCtx);
+            return new LocalCollection(user, brokerPool, this, nameUri);
         } else {
             return null;
         }
@@ -274,7 +260,7 @@ public class LocalCollection extends AbstractLocal implements CollectionImpl {
         
         if(collection == null) {
             final XmldbURI parentUri = this.<XmldbURI>read().apply((collection, broker, transaction) -> collection.getParentURI());
-            this.collection = new LocalCollection(user, brokerPool, null, parentUri, accessCtx);
+            this.collection = new LocalCollection(user, brokerPool, null, parentUri);
         }
         return collection;
     }
@@ -343,12 +329,12 @@ public class LocalCollection extends AbstractLocal implements CollectionImpl {
         switch(name) {
             case "XPathQueryService":
             case "XQueryService":
-                service = new LocalXPathQueryService(user, brokerPool, this, accessCtx);
+                service = new LocalXPathQueryService(user, brokerPool, this);
                 break;
 
             case "CollectionManagementService":
             case "CollectionManager":
-                service = new LocalCollectionManagementService(user, brokerPool, this, accessCtx);
+                service = new LocalCollectionManagementService(user, brokerPool, this);
                 break;
 
             case "UserManagementService":
@@ -376,8 +362,8 @@ public class LocalCollection extends AbstractLocal implements CollectionImpl {
     @Override
     public Service[] getServices() throws XMLDBException {
         final Service[] services = {
-                new LocalXPathQueryService(user, brokerPool, this, accessCtx),
-                new LocalCollectionManagementService(user, brokerPool, this, accessCtx),
+                new LocalXPathQueryService(user, brokerPool, this),
+                new LocalCollectionManagementService(user, brokerPool, this),
                 new LocalUserManagementService(user, brokerPool, this),
                 new LocalDatabaseInstanceManager(user, brokerPool),
                 new LocalXUpdateQueryService(user, brokerPool, this),
@@ -541,7 +527,9 @@ public class LocalCollection extends AbstractLocal implements CollectionImpl {
             try {
                 final long conLength = res.getStreamLength();
                 if (conLength != -1) {
-                    collection.addBinaryResource(transaction, broker, resURI, res.getStreamContent(), res.getMimeType(), conLength, res.datecreated, res.datemodified);
+                    try (InputStream is = res.getStreamContent()) {
+                        collection.addBinaryResource(transaction, broker, resURI, is, res.getMimeType(), conLength, res.datecreated, res.datemodified);
+                    }
                 } else {
                     collection.addBinaryResource(transaction, broker, resURI, (byte[]) res.getContent(), res.getMimeType(), res.datecreated, res.datemodified);
                 }
@@ -612,21 +600,25 @@ public class LocalCollection extends AbstractLocal implements CollectionImpl {
         if((normalize.equalsIgnoreCase("yes") || normalize.equalsIgnoreCase("true")) &&
                 ("text/html".equals(res.getMimeType()) || res.getId().endsWith(".htm") ||
                     res.getId().endsWith(".html"))) {
-            try {
-                if(LOG.isDebugEnabled()) {
-                    LOG.debug("Converting HTML to XML using NekoHTML parser.");
+
+          final Optional<Either<Throwable, XMLReader>> maybeReaderInst = HtmlToXmlParser.getHtmlToXmlParser(brokerPool.getConfiguration());
+
+            if(maybeReaderInst.isPresent()) {
+                final Either<Throwable, XMLReader> readerInst = maybeReaderInst.get();
+                if (readerInst.isLeft()) {
+                    final String msg = "Unable to parse HTML to XML please ensure the parser is configured in conf.xml and is present on the classpath";
+                    final Throwable t = readerInst.left().get();
+                    LOG.error(msg, t);
+                    throw new XMLDBException(ErrorCodes.VENDOR_ERROR, msg, t);
+                } else {
+                    final XMLReader htmlReader = readerInst.right().get();
+                    if(LOG.isDebugEnabled()) {
+                        LOG.debug("Converting HTML to XML using: " + htmlReader.getClass().getName());
+                    }
+                    collection.setReader(htmlReader);
                 }
-                final Class<?> clazz = Class.forName("org.cyberneko.html.parsers.SAXParser");
-                final XMLReader htmlReader = (XMLReader) clazz.newInstance();
-                //do not modify the case of elements and attributes
-                htmlReader.setProperty("http://cyberneko.org/html/properties/names/elems", "match");
-                htmlReader.setProperty("http://cyberneko.org/html/properties/names/attrs", "no-change");
-                collection.setReader(htmlReader);
-            } catch(final Exception e) {
-                LOG.error("Error while involing NekoHTML parser. (" + e.getMessage()
-                    + "). If you want to parse non-wellformed HTML files, put "
-                    + "nekohtml.jar into directory 'lib/optional'.");
-                throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "NekoHTML parser error", e);
+            } else {
+                throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "There is no HTML to XML parser configured in conf.xml");
             }
         }
     }

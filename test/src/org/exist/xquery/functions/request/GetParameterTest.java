@@ -50,8 +50,7 @@ public class GetParameterTest extends RESTTest {
     
     @BeforeClass
     public static void beforeClass() throws XMLDBException {
-	// jetty.port.standalone
-        root = DatabaseManager.getCollection("xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/xmlrpc/db", "admin", "");
+        root = DatabaseManager.getCollection("xmldb:exist://localhost:" + existWebServer.getPort() + "/xmlrpc/db", "admin", "");
         BinaryResource res = (BinaryResource)root.createResource(XQUERY_FILENAME, "BinaryResource");
         ((EXistResource) res).setMimeType("application/xquery");
         res.setContent(XQUERY);
@@ -290,7 +289,7 @@ public class GetParameterTest extends RESTTest {
         StringBuilder expectedResponse = new StringBuilder();
         NameValuePair qsParams[] = convertNameValuesToNameValuePairs(queryStringParams, expectedResponse);
 
-        GetMethod get = new GetMethod(COLLECTION_ROOT_URL + "/" + XQUERY_FILENAME);
+        GetMethod get = new GetMethod(getCollectionRootUri() + "/" + XQUERY_FILENAME);
         if(qsParams.length > 0) {
             get.setQueryString(qsParams);
         }
@@ -303,7 +302,7 @@ public class GetParameterTest extends RESTTest {
         StringBuilder expectedResponse = new StringBuilder();
         NameValuePair fParams[] = convertNameValuesToNameValuePairs(formParams, expectedResponse);
 
-        PostMethod post = new PostMethod(COLLECTION_ROOT_URL + "/" + XQUERY_FILENAME);
+        PostMethod post = new PostMethod(getCollectionRootUri() + "/" + XQUERY_FILENAME);
 
         if(fParams.length > 0) {
             post.setRequestBody(fParams);
@@ -318,7 +317,7 @@ public class GetParameterTest extends RESTTest {
         NameValuePair qsParams[] = convertNameValuesToNameValuePairs(queryStringParams, expectedResponse);
         NameValuePair fParams[] = convertNameValuesToNameValuePairs(formParams, expectedResponse);
 
-        PostMethod post = new PostMethod(COLLECTION_ROOT_URL + "/" + XQUERY_FILENAME);
+        PostMethod post = new PostMethod(getCollectionRootUri() + "/" + XQUERY_FILENAME);
 
         if(qsParams.length > 0) {
             post.setQueryString(qsParams);
@@ -347,7 +346,7 @@ public class GetParameterTest extends RESTTest {
             }
         }
 
-        PostMethod post = new PostMethod(COLLECTION_ROOT_URL + "/" + XQUERY_FILENAME);
+        PostMethod post = new PostMethod(getCollectionRootUri() + "/" + XQUERY_FILENAME);
         post.setRequestEntity(new MultipartRequestEntity(parts.toArray(new Part[parts.size()]), post.getParams()));
 
         testRequest(post, expectedResponse);
@@ -371,7 +370,7 @@ public class GetParameterTest extends RESTTest {
             }
         }
 
-        PostMethod post = new PostMethod(COLLECTION_ROOT_URL + "/" + XQUERY_FILENAME);
+        PostMethod post = new PostMethod(getCollectionRootUri() + "/" + XQUERY_FILENAME);
 
         if(qsParams.length > 0) {
             post.setQueryString(qsParams);

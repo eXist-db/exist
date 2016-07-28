@@ -47,25 +47,40 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class XMLDBReindex extends XMLDBAbstractCollectionManipulator {
 	protected static final Logger logger = LogManager.getLogger(XMLDBReindex.class);
-    public final static FunctionSignature signature = new FunctionSignature(
-            new QName("reindex", XMLDBModule.NAMESPACE_URI,
-                      XMLDBModule.PREFIX),
+
+    public final static FunctionSignature FNS_REINDEX_COLLECTION = new FunctionSignature(
+            new QName("reindex", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
             "Reindex collection $collection-uri. " +
             XMLDBModule.COLLECTION_URI + " " +
             XMLDBModule.NEED_PRIV_USER,
-            new SequenceType[]{
+            new SequenceType[] {
                 new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collection URI")
-    },
-            new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if successfully reindexed, false() otherwise"));
+            },
+            new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if successfully reindexed, false() otherwise")
+    );
+
+    public final static FunctionSignature FNS_REINDEX_DOCUMENT = new FunctionSignature(
+            new QName("reindex", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
+            "Reindex document $doc-uri from $collection-uri. " +
+                    XMLDBModule.COLLECTION_URI + " " +
+                    XMLDBModule.ANY_URI + " " +
+                    XMLDBModule.NEED_PRIV_USER,
+            new SequenceType[] {
+                    new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collection URI"),
+                    new FunctionParameterSequenceType("doc-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The document URI")
+            },
+            new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if successfully reindexed, false() otherwise")
+    );
 
     /**
      * @param context
      */
-    public XMLDBReindex(XQueryContext context) {
+    public XMLDBReindex(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature, false);
     }
 
-    public Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence)
+    @Override
+    public Sequence evalWithCollection(final Collection collection, final Sequence[] args, final Sequence contextSequence)
         throws XPathException {
         // Check for DBA user
         if (!context.getSubject().hasDbaRole()) {
@@ -80,10 +95,15 @@ public class XMLDBReindex extends XMLDBAbstractCollectionManipulator {
             return BooleanValue.FALSE;
         }
 
-        // Reindex
         try {
             final IndexQueryService iqs = (IndexQueryService) collection.getService("IndexQueryService", "1.0");
-            iqs.reindexCollection();
+            if(args.length == 2) {
+                //reindex document
+                iqs.reindexDocument(args[1].getStringValue());
+            } else {
+                //reindex collection
+                iqs.reindexCollection();
+            }
         } catch (final XMLDBException xe) {
             logger.error("Unable to reindex collection", xe);
             return BooleanValue.FALSE;

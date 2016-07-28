@@ -170,7 +170,7 @@ public class Profiler {
     }
 
     public final void traceQueryEnd(XQueryContext context) {
-        stats.recordQuery(context.getXacmlSource().getKey(), (System.currentTimeMillis() - queryStart));
+        stats.recordQuery(context.getSource().path(), (System.currentTimeMillis() - queryStart));
     }
 
     public final void traceFunctionStart(Function function) {
@@ -181,13 +181,9 @@ public class Profiler {
 
     public final void traceFunctionEnd(Function function, long elapsed) {
         if (stats.isEnabled()) {
-            String source;
-            if (function instanceof InternalFunctionCall) {
-                source = ((InternalFunctionCall) function).getFunction().getClass().getName();
-            } else {
-                source = function.getContext().getXacmlSource().getKey();
-            }
-            source = String.format("%s [%d:%d]", source, function.getLine(), function.getColumn());
+            final String source = String.format("%s [%d:%d]", function.getContext().getSource().getKey(),
+                    function
+                    .getLine(), function.getColumn());
             stats.recordFunctionCall(function.getSignature().getName(), source, elapsed);
         }
         if (isLogEnabled()) {
@@ -196,7 +192,7 @@ public class Profiler {
     }
 
     public final void traceIndexUsage(XQueryContext context, String indexType, Expression expression, int mode, long elapsed) {
-        stats.recordIndexUse(expression, indexType, context.getXacmlSource().getKey(), mode, elapsed);
+        stats.recordIndexUse(expression, indexType, context.getSource().path(), mode, elapsed);
     }
 
     private void save() {
@@ -299,7 +295,8 @@ public class Profiler {
                 else if (verbosity >= SEQUENCE_PREVIEW)
                     buf.append(sequencePreview(result));
                 else*/ if (verbosity >= ITEM_COUNT) 
-                    {buf.append(result.getItemCount() + " item(s)");}   
+                    {
+                        buf.append(result.getItemCount()).append(" item(s)");}
                 buf.append("\t");     
                 printPosition(e.expr);   
                 buf.append(expr.toString());
@@ -311,7 +308,7 @@ public class Profiler {
     	    	for (int i = 0; i < stack.size(); i++)
     	    		buf.append('\t');	            	
                 buf.append("TIME\t");                
-                buf.append(elapsed + " ms"); 
+                buf.append(elapsed).append(" ms");
                 buf.append("\t");     
                 printPosition(e.expr);   
                 buf.append(expr.toString());                
@@ -363,7 +360,8 @@ public class Profiler {
         else if (verbosity >= SEQUENCE_PREVIEW)
             buf.append(sequencePreview(sequence));
         else */ if (verbosity >= ITEM_COUNT) 
-            {buf.append(sequence.getItemCount() + " item(s)");} 
+            {
+                buf.append(sequence.getItemCount()).append(" item(s)");}
         buf.append("\t"); 
         buf.append(expr.toString());        
     	log.debug(buf.toString());        

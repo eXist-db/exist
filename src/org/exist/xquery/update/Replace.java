@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2010 The eXist Project
+ *  Copyright (C) 2001-2016 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -16,8 +16,6 @@
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- *  $Id$
  */
 package org.exist.xquery.update;
 
@@ -56,100 +54,107 @@ import org.w3c.dom.Node;
  *
  */
 public class Replace extends Modification {
-	
-	/**
-	 * @param context
-	 */
-	public Replace(XQueryContext context, Expression select, Expression value) {
-		super(context, select, value);
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.AbstractExpression#eval(org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
-	 */
-	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+
+    /**
+     * @param context
+     */
+    public Replace(XQueryContext context, Expression select, Expression value) {
+        super(context, select, value);
+    }
+
+    /* (non-Javadoc)
+     * @see org.exist.xquery.AbstractExpression#eval(org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
+     */
+    public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {
-            context.getProfiler().start(this);       
+            context.getProfiler().start(this);
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
-            if (contextSequence != null)
-                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
-            if (contextItem != null)
-                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
+            if (contextSequence != null) {
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+            }
+            if (contextItem != null) {
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+            }
         }
-        
-		if (contextItem != null)
-			{contextSequence = contextItem.toSequence();}
-		final Sequence inSeq = select.eval(contextSequence);
-		if (inSeq.isEmpty())
-			{return Sequence.EMPTY_SEQUENCE;}
-				
-		//START trap Replace failure
+
+        if (contextItem != null) {
+            contextSequence = contextItem.toSequence();
+        }
+        final Sequence inSeq = select.eval(contextSequence);
+        if (inSeq.isEmpty()) {
+            return Sequence.EMPTY_SEQUENCE;
+        }
+
+        //START trap Replace failure
         /* If we try and Replace a node at an invalid location,
          * trap the error in a context variable,
          * this is then accessible from xquery via. the context extension module - deliriumsky
          * TODO: This trapping could be expanded further - basically where XPathException is thrown from thiss class
-         * TODO: Maybe we could provide more detailed messages in the trap, e.g. couldnt replace node `xyz` into `abc` becuase... this would be nicer for the end user of the xquery application 
+         * TODO: Maybe we could provide more detailed messages in the trap, e.g. couldnt replace node `xyz` into `abc` becuase... this would be nicer for the end user of the xquery application
          */
-        if (!Type.subTypeOf(inSeq.getItemType(), Type.NODE)) 
+        if (!Type.subTypeOf(inSeq.getItemType(), Type.NODE))
         {
-        	//Indicate the failure to perform this update by adding it to the sequence in the context variable XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR
-        	ValueSequence prevUpdateErrors = null;
-        	
-        	final XPathException xpe = new XPathException(this, Messages.getMessage(Error.UPDATE_SELECT_TYPE));
-        	final Object ctxVarObj = context.getXQueryContextVar(XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR);
-        	if(ctxVarObj == null)
-        	{
-        		prevUpdateErrors = new ValueSequence();
-        	}
-        	else
-        	{
-        		prevUpdateErrors = (ValueSequence)XPathUtil.javaObjectToXPath(ctxVarObj, context);
-        	}
-        	prevUpdateErrors.add(new StringValue(xpe.getMessage()));
-			context.setXQueryContextVar(XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR, prevUpdateErrors);
-			
-        	if(!inSeq.isEmpty())
-        		{throw xpe;}	//TODO: should we trap this instead of throwing an exception - deliriumsky?
+            //Indicate the failure to perform this update by adding it to the sequence in the context variable XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR
+            ValueSequence prevUpdateErrors = null;
+
+            final XPathException xpe = new XPathException(this, Messages.getMessage(Error.UPDATE_SELECT_TYPE));
+            final Object ctxVarObj = context.getXQueryContextVar(XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR);
+            if(ctxVarObj == null)
+            {
+                prevUpdateErrors = new ValueSequence();
+            }
+            else
+            {
+                prevUpdateErrors = (ValueSequence)XPathUtil.javaObjectToXPath(ctxVarObj, context);
+            }
+            prevUpdateErrors.add(new StringValue(xpe.getMessage()));
+            context.setXQueryContextVar(XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR, prevUpdateErrors);
+
+            if(!inSeq.isEmpty()) {
+                //TODO: should we trap this instead of throwing an exception - deliriumsky?
+                throw xpe;
+            }
         }
         //END trap Replace failure
-		
-		Sequence contentSeq = value.eval(contextSequence);
-		if (contentSeq.isEmpty())
-			{throw new XPathException(this, Messages.getMessage(Error.UPDATE_EMPTY_CONTENT));}
-		context.pushInScopeNamespaces();
+
+        Sequence contentSeq = value.eval(contextSequence);
+        if (contentSeq.isEmpty()) {
+            throw new XPathException(this, Messages.getMessage(Error.UPDATE_EMPTY_CONTENT));
+        }
+        context.pushInScopeNamespaces();
         contentSeq = deepCopy(contentSeq);
         
         //start a transaction
-        final Txn transaction = getTransaction();
-        try {
+        try (final Txn transaction = getTransaction()) {
             final StoredNode ql[] = selectAndLock(transaction, inSeq);
             final NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
             Item temp;
             TextImpl text;
             AttrImpl attribute;
             ElementImpl parent;
-            for (int i = 0; i < ql.length; i++) {
-                final StoredNode node = ql[i];
+            for (final StoredNode node : ql) {
                 final DocumentImpl doc = node.getOwnerDocument();
-                if (!doc.getPermissions().validate(context.getUser(), Permission.WRITE)) {
-                        throw new PermissionDeniedException("User '" + context.getSubject().getName() + "' does not have permission to write to the document '" + doc.getDocumentURI() + "'!");
+                if (!doc.getPermissions().validate(context.getSubject(), Permission.WRITE)) {
+                    throw new PermissionDeniedException("User '" + context.getSubject().getName() + "' does not have permission to write to the document '" + doc.getDocumentURI() + "'!");
                 }
-                
+
                 //update the document
                 parent = (ElementImpl) node.getParentStoredNode();
-                if (parent == null)
-                    {throw new XPathException(this, "The root element of a document can not be replaced with 'update replace'. " +
-                            "Please consider removing the document or use 'update value' to just replace the children of the root.");}
+                if (parent == null) {
+                    throw new XPathException(this, "The root element of a document can not be replaced with 'update replace'. " +
+                        "Please consider removing the document or use 'update value' to just replace the children of the root.");
+                }
                 switch (node.getNodeType()) {
                     case Node.ELEMENT_NODE:
                         temp = contentSeq.itemAt(0);
-						if (!Type.subTypeOf(temp.getType(), Type.NODE))
-							{throw new XPathException(this,
-									Messages.getMessage(Error.UPDATE_REPLACE_ELEM_TYPE,
-											Type.getTypeName(temp.getType())));}
-                        parent.replaceChild(transaction, ((NodeValue)temp).getNode(), node);
+                        if (!Type.subTypeOf(temp.getType(), Type.NODE)) {
+                            throw new XPathException(this,
+                                Messages.getMessage(Error.UPDATE_REPLACE_ELEM_TYPE,
+                                    Type.getTypeName(temp.getType())));
+                        }
+                        parent.replaceChild(transaction, ((NodeValue) temp).getNode(), node);
                         break;
-                    case Node.TEXT_NODE: 
+                    case Node.TEXT_NODE:
                         text = new TextImpl(contentSeq.getStringValue());
                         text.setOwnerDocument(doc);
                         parent.updateChild(transaction, node, text);
@@ -170,49 +175,34 @@ public class Replace extends Modification {
             }
             finishTriggers(transaction);
             //commit the transaction
-            commitTransaction(transaction);
-        } catch (final LockException e) {
-            abortTransaction(transaction);
+            transaction.commit();
+        } catch (final LockException | PermissionDeniedException | EXistException | TriggerException e) {
             throw new XPathException(this, e.getMessage(), e);
-		} catch (final PermissionDeniedException e) {
-            abortTransaction(transaction);
-            throw new XPathException(this, e.getMessage(), e);
-		} catch (final EXistException e) {
-            abortTransaction(transaction);
-            throw new XPathException(this, e.getMessage(), e);
-        } catch (final TriggerException e) {
-            abortTransaction(transaction);
-            throw new XPathException(this, e.getMessage(), e);
-		} finally {
+        } finally {
             unlockDocuments();
-            closeTransaction(transaction);
             context.popInScopeNamespaces();
         }
 
-        if (context.getProfiler().isEnabled()) 
-            {context.getProfiler().end(this, "", Sequence.EMPTY_SEQUENCE);}
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().end(this, "", Sequence.EMPTY_SEQUENCE);
+        }
         
         return Sequence.EMPTY_SEQUENCE;
-	}
+    }
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)
-	 */
-	public void dump(ExpressionDumper dumper) {
-		dumper.display("update replace").nl();
-		dumper.startIndent();
-		select.dump(dumper);
-		dumper.nl().endIndent().display("with").nl().startIndent();
-		value.dump(dumper);
-		dumper.nl().endIndent();
-	}
-	
-	public String toString() {
-		final StringBuilder result = new StringBuilder();
-		result.append("update replace ");		
-		result.append(select.toString());
-		result.append(" with ");
-		result.append(value.toString());
-		return result.toString();
-	}	
+    /* (non-Javadoc)
+     * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)
+     */
+    public void dump(ExpressionDumper dumper) {
+        dumper.display("update replace").nl();
+        dumper.startIndent();
+        select.dump(dumper);
+        dumper.nl().endIndent().display("with").nl().startIndent();
+        value.dump(dumper);
+        dumper.nl().endIndent();
+    }
+
+    public String toString() {
+        return "update replace " + select.toString() + " with " + value.toString();
+    }
 }

@@ -35,6 +35,8 @@ import org.exist.storage.ElementValue;
 import org.exist.storage.IndexSpec;
 import org.exist.storage.Indexable;
 import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.Constants.Comparison;
+import org.exist.xquery.Constants.StringTruncationOperator;
 import org.exist.xquery.pragmas.Optimize;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.AtomicValue;
@@ -60,7 +62,7 @@ import java.util.List;
 public class GeneralComparison extends BinaryOp implements Optimizable, IndexUseReporter
 {
     /** The type of operator used for the comparison, i.e. =, !=, &lt;, &gt; ... One of the constants declared in class {@link Constants}. */
-    protected int          relation              = Constants.EQ;
+    protected Comparison          relation              = Comparison.EQ;
 
     /**
      * Truncation flags: when comparing with a string value, the search string may be truncated with a single * wildcard. See the constants declared
@@ -69,7 +71,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
      * <p>The standard functions starts-with, ends-with and contains are transformed into a general comparison with wildcard. Hence the need to
      * consider wildcards here.</p>
      */
-    protected int          truncation            = Constants.TRUNC_NONE;
+    protected StringTruncationOperator          truncation            = StringTruncationOperator.NONE;
 
     /** The class might cache the entire results of a previous execution. */
     protected CachedResult cached                = null;
@@ -99,26 +101,26 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 
     private IndexFlags     idxflags         = new IndexFlags();
 
-    public GeneralComparison( XQueryContext context, int relation )
+    public GeneralComparison( XQueryContext context, Comparison relation )
     {
-        this( context, relation, Constants.TRUNC_NONE );
+        this( context, relation, StringTruncationOperator.NONE );
     }
 
 
-    public GeneralComparison( XQueryContext context, int relation, int truncation )
+    public GeneralComparison( XQueryContext context, Comparison relation, StringTruncationOperator truncation )
     {
         super( context );
         this.relation = relation;
     }
 
 
-    public GeneralComparison( XQueryContext context, Expression left, Expression right, int relation )
+    public GeneralComparison( XQueryContext context, Expression left, Expression right, Comparison relation )
     {
-        this( context, left, right, relation, Constants.TRUNC_NONE );
+        this( context, left, right, relation, StringTruncationOperator.NONE );
     }
 
 
-    public GeneralComparison( XQueryContext context, Expression left, Expression right, int relation, int truncation )
+    public GeneralComparison( XQueryContext context, Expression left, Expression right, Comparison relation, final StringTruncationOperator truncation )
     {
         super( context );
         boolean didLeftSimplification  = false;
@@ -304,12 +306,12 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
     }
 
 
-    public int getRelation()
+    public Comparison getRelation()
     {
         return( this.relation );
     }
 
-    public int getTruncation() {
+    public StringTruncationOperator getTruncation() {
         return truncation;
     }
 
@@ -338,7 +340,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
             Item key = itRightSeq.nextItem();
 
             //if key has truncation, convert it to string
-            if( truncation != Constants.TRUNC_NONE ) {
+            if( truncation != StringTruncationOperator.NONE ) {
 
                 if( !Type.subTypeOf( key.getType(), Type.STRING ) ) {
                     LOG.info( "Truncated key. Converted from " + Type.getTypeName( key.getType() ) + " to xs:string" );
@@ -376,8 +378,8 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                 final NodeSet  contextSet = useContext ? contextSequence.toNodeSet() : null;
                 final Collator collator   = ( ( collationArg != null ) ? getCollator( contextSequence ) : null );
 
-                if( truncation == Constants.TRUNC_NONE ) {
-                    temp         = context.getBroker().getValueIndex().find(context.getWatchDog(), relation, contextSequence.getDocumentSet(), contextSet, NodeSet.DESCENDANT, contextQName, ( Indexable )key, collator );
+                if( truncation == StringTruncationOperator.NONE ) {
+                    temp         = context.getBroker().getValueIndex().find(context.getWatchDog(), relation, contextSequence.getDocumentSet(), contextSet, NodeSet.DESCENDANT, contextQName, ( Indexable )key);
                     hasUsedIndex = true;
                 } else {
 
@@ -770,7 +772,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                 Item key = itRightSeq.nextItem();
 
                 //if key has truncation, convert it to string
-                if( truncation != Constants.TRUNC_NONE ) {
+                if( truncation != StringTruncationOperator.NONE ) {
 
                     if( !Type.subTypeOf( key.getType(), Type.STRING ) ) {
                         LOG.info( "Truncated key. Converted from " + Type.getTypeName( key.getType() ) + " to xs:string" );
@@ -814,7 +816,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 
                     if( Type.subTypeOf( key.getType(), indexType ) ) {
 
-                        if( truncation == Constants.TRUNC_NONE ) {
+                        if( truncation == StringTruncationOperator.NONE ) {
 
                             if( LOG.isTraceEnabled() ) {
                                 LOG.trace( "Using range index for key: " + key.getStringValue() );
@@ -826,10 +828,10 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                             NodeSet ns;
 
                             if( indexScan ) {
-                                ns = context.getBroker().getValueIndex().findAll( context.getWatchDog(), relation, docs, nodes, NodeSet.ANCESTOR, ( Indexable )key, collator );
+                                ns = context.getBroker().getValueIndex().findAll( context.getWatchDog(), relation, docs, nodes, NodeSet.ANCESTOR, ( Indexable )key);
                             } else {
                                 ns = context.getBroker().getValueIndex().find( context.getWatchDog(), relation, docs, nodes, NodeSet.ANCESTOR, myContextQName,
-                                        ( Indexable )key, collator, indexMixed );
+                                        ( Indexable )key, indexMixed );
                             }
                             hasUsedIndex = true;
 
@@ -924,7 +926,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
     }
 
 
-    private int getMatchType( int truncation ) throws XPathException
+    private int getMatchType( StringTruncationOperator truncation ) throws XPathException
     {
         int matchType;
 
@@ -932,22 +934,22 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 
         switch( truncation ) {
 
-            case Constants.TRUNC_RIGHT: {
+            case RIGHT: {
                 matchType = DBBroker.MATCH_STARTSWITH;
                 break;
             }
 
-            case Constants.TRUNC_LEFT: {
+            case LEFT: {
                 matchType = DBBroker.MATCH_ENDSWITH;
                 break;
             }
 
-            case Constants.TRUNC_BOTH: {
+            case BOTH: {
                 matchType = DBBroker.MATCH_CONTAINS;
                 break;
             }
 
-            case Constants.TRUNC_EQUALS: {
+            case EQUALS: {
                 matchType = DBBroker.MATCH_EXACT;
                 break;
             }
@@ -968,11 +970,11 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
     {
         switch( truncation ) {
 
-            case Constants.TRUNC_LEFT: {
+            case LEFT: {
                 return( new StringBuilder().append( expr ).append( '$' ) );
             }
 
-            case Constants.TRUNC_RIGHT: {
+            case RIGHT: {
                 return( new StringBuilder().append( '^' ).append( expr ) );
             }
 
@@ -1066,7 +1068,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
             }
             */
             // if truncation is set, we always do a string comparison
-            if( truncation != Constants.TRUNC_NONE ) {
+            if( truncation != StringTruncationOperator.NONE ) {
 
                 //TODO : log this ?
                 lv = lv.convertTo( Type.STRING );
@@ -1076,15 +1078,15 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 //                  lv.getStringValue() + Constants.OPS[relation] + rv.getStringValue());
             switch( truncation ) {
 
-                case Constants.TRUNC_RIGHT: {
+                case RIGHT: {
                     return( lv.startsWith( collator, rv ) );
                 }
 
-                case Constants.TRUNC_LEFT: {
+                case LEFT: {
                     return( lv.endsWith( collator, rv ) );
                 }
 
-                case Constants.TRUNC_BOTH: {
+                case BOTH: {
                     return( lv.contains( collator, rv ) );
                 }
 
@@ -1133,7 +1135,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
      */
     public void dump( ExpressionDumper dumper )
     {
-        if( truncation == Constants.TRUNC_BOTH ) {
+        if( truncation == StringTruncationOperator.BOTH ) {
             dumper.display( "contains" ).display( '(' );
             getLeft().dump( dumper );
             dumper.display( ", " );
@@ -1141,7 +1143,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
             dumper.display( ")" );
         } else {
             getLeft().dump( dumper );
-            dumper.display( ' ' ).display( Constants.OPS[relation] ).display( ' ' );
+            dumper.display( ' ' ).display( relation.generalComparisonSymbol ).display( ' ' );
             getRight().dump( dumper );
         }
     }
@@ -1151,7 +1153,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
     {
         final StringBuilder result = new StringBuilder();
 
-        if( truncation == Constants.TRUNC_BOTH ) {
+        if( truncation == StringTruncationOperator.BOTH ) {
             result.append( "contains" ).append( '(' );
             result.append( getLeft().toString() );
             result.append( ", " );
@@ -1159,7 +1161,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
             result.append( ")" );
         } else {
             result.append( getLeft().toString() );
-            result.append( ' ' ).append( Constants.OPS[relation] ).append( ' ' );
+            result.append( ' ' ).append( relation.generalComparisonSymbol ).append( ' ' );
             result.append( getRight().toString() );
         }
         return( result.toString() );
@@ -1171,32 +1173,28 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
         context.getProfiler().message( this, Profiler.OPTIMIZATIONS, "OPTIMIZATION", "Switching operands" );
 
         //Invert relation
-        switch( relation ) {
+        switch(relation) {
 
-            case Constants.GT: {
-                relation = Constants.LT;
+            case GT:
+                relation = Comparison.LT;
                 break;
-            }
 
-            case Constants.LT: {
-                relation = Constants.GT;
+            case LT:
+                relation = Comparison.GT;
                 break;
-            }
 
-            case Constants.LTEQ: {
-                relation = Constants.GTEQ;
+            case LTEQ:
+                relation = Comparison.GTEQ;
                 break;
-            }
 
-            case Constants.GTEQ: {
-                relation = Constants.LTEQ;
+            case GTEQ:
+                relation = Comparison.LTEQ;
                 break;
-                //What about Constants.EQ and Constants.NEQ ? Well, it seems to never be called
-            }
+                //What about Comparison.EQand Comparison.NEQ? Well, it seems to never be called
         }
         final Expression right = getRight();
-        setRight( getLeft() );
-        setLeft( right );
+        setRight(getLeft());
+        setLeft(right);
     }
 
 

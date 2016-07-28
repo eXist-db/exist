@@ -27,7 +27,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
-import org.exist.security.xacml.AccessContext;
 import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -117,7 +116,7 @@ public class Compile extends BasicFunction {
 		int line = -1, column = -1;
 		
 		final XQueryContext pContext = 
-			new XQueryContext(context.getBroker().getBrokerPool(), AccessContext.VALIDATION_INTERNAL);
+			new XQueryContext(context.getBroker().getBrokerPool());
 		
 		if (getArgumentCount() == 2 && args[1].hasOne()) {
 			pContext.setModuleLoadPath(args[1].getStringValue());
@@ -154,6 +153,7 @@ public class Compile extends BasicFunction {
 			error = e.getMessage();
 		} finally {
 			context.popNamespaceContext();
+            pContext.reset(false);
 		}
 		
 		if (isCalledAs("compile")) {

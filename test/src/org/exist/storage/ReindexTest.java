@@ -87,7 +87,7 @@ public class ReindexTest {
             final Txn transaction = transact.beginTransaction();
             broker.reindexCollection(TestConstants.TEST_COLLECTION_URI);
 
-            transact.getJournal().flushToLog(true);
+            pool.getJournalManager().get().flush(true, false);
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());
@@ -111,7 +111,7 @@ public class ReindexTest {
             assertNotNull(root);
             transaction.registerLock(root.getLock(), Lock.WRITE_LOCK);
             broker.removeCollection(transaction, root);
-            transact.getJournal().flushToLog(true);
+            pool.getJournalManager().get().flush(true, false);
             transact.commit(transaction);
         } catch (Exception e) {
             e.printStackTrace();

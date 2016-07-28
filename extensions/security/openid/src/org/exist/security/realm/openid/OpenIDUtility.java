@@ -27,7 +27,6 @@ import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.SchemaType;
 import org.exist.security.Subject;
-import org.exist.security.xacml.AccessContext;
 import org.exist.source.Source;
 import org.exist.source.DBSource;
 import org.exist.storage.BrokerPool;
@@ -124,7 +123,7 @@ public class OpenIDUtility {
                     return false;
                 }
 
-                XQueryContext context = new XQueryContext(broker.getBrokerPool(), AccessContext.REST);
+                XQueryContext context = new XQueryContext(broker.getBrokerPool());
 
                 CompiledXQuery compiled = xquery.compile(broker, context, source);
 

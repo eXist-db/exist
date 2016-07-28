@@ -24,10 +24,8 @@ package org.exist.storage;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
-import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.xacml.AccessContext;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
@@ -39,7 +37,6 @@ import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.junit.After;
@@ -50,7 +47,6 @@ import java.io.IOException;
 import java.util.Optional;
 
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 
 public abstract class AbstractUpdateTest {
 
@@ -81,7 +77,7 @@ public abstract class AbstractUpdateTest {
             }
             
             final XQuery xquery = pool.getXQueryService();
-            final Sequence seq = xquery.execute(broker, "/products/product[last()]", null, AccessContext.TEST);
+            final Sequence seq = xquery.execute(broker, "/products/product[last()]", null);
             for (final SequenceIterator i = seq.iterate(); i.hasNext(); ) {
                 Item next = i.nextItem();
             }

@@ -96,8 +96,8 @@ public class BTreeRecoverTest {
             
             final IndexQuery idx = new IndexQuery(IndexQuery.GT, new NativeBroker.NodeRef(500, idFact.createInstance(600)));
             domDb.remove(txn, idx, null);
-            
-            mgr.getJournal().flushToLog(true);
+
+            pool.getJournalManager().get().flush(true, false);
             
             Writer writer = new StringWriter();
             domDb.dump(writer);

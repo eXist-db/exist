@@ -23,11 +23,11 @@ import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
 import org.custommonkey.xmlunit.Diff;
-import org.exist.jetty.JettyStart;
 import org.exist.storage.serializers.XIncludeFilter;
+import org.exist.test.ExistWebServer;
 import org.exist.xmldb.XmldbURI;
-import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
 import static org.junit.Assert.assertTrue;
 import org.xml.sax.SAXException;
@@ -48,14 +48,19 @@ import java.util.List;
  */
 public class XIncludeSerializerTest {
 
-    private static JettyStart server = null;
+    @ClassRule
+    public static final ExistWebServer existWebServer = new ExistWebServer(true, true);
 
     private final static XmldbURI XINCLUDE_COLLECTION = XmldbURI.ROOT_COLLECTION_URI.append("xinclude_test");
     private final static XmldbURI XINCLUDE_NESTED_COLLECTION = XmldbURI.ROOT_COLLECTION_URI.append("xinclude_test/data");
 
-    // jetty.port.standalone
-    private final static String XMLRPC_URI = "http://127.0.0.1:" + System.getProperty("jetty.port") + "/xmlrpc";
-    private final static String REST_URI = "http://admin:admin@127.0.0.1:" + System.getProperty("jetty.port") + "/db/xinclude_test";
+    private final static String getXmlRpcApi() {
+        return "http://127.0.0.1:" + existWebServer.getPort() + "/xmlrpc";
+    }
+
+    private final static String getRestUri()  {
+        return "http://admin:admin@127.0.0.1:" + existWebServer.getPort() + "/db/xinclude_test";
+    }
 
     private final static String XML_DATA1
             = "<test xmlns:xi='" + XIncludeFilter.XINCLUDE_NS + "'>"
@@ -140,7 +145,7 @@ public class XIncludeSerializerTest {
     @Test
     public void absSimpleREST() throws IOException, SAXException {
         // path needs to indicate indent and wrap is off
-        final String uri = REST_URI + "/test_simple.xml?_indent=no&_wrap=no";
+        final String uri = getRestUri() + "/test_simple.xml?_indent=no&_wrap=no";
 
         // we use honest http
         final HttpURLConnection connect = getConnection(uri);
@@ -165,7 +170,7 @@ public class XIncludeSerializerTest {
 
     @Test
     public void relSimpleREST1() throws IOException, SAXException {
-        final String uri = REST_URI + "/test_relative1.xml?_indent=no&_wrap=no";
+        final String uri = getRestUri() + "/test_relative1.xml?_indent=no&_wrap=no";
 
         final HttpURLConnection connect = getConnection(uri);
         connect.setRequestMethod("GET");
@@ -188,7 +193,7 @@ public class XIncludeSerializerTest {
     @Test
     public void relSimpleREST2() throws IOException, SAXException {
         // path needs to indicate indent and wrap is off
-        final String uri = REST_URI + "/test_relative2.xml?_indent=no&_wrap=no";
+        final String uri = getRestUri() + "/test_relative2.xml?_indent=no&_wrap=no";
 
         final HttpURLConnection connect = getConnection(uri);
         connect.setRequestMethod("GET");
@@ -210,7 +215,7 @@ public class XIncludeSerializerTest {
 
     @Test
     public void xpointerREST3() throws IOException, SAXException {
-        final String uri = REST_URI + "/test_xpointer1.xml?_indent=no&_wrap=no";
+        final String uri = getRestUri() + "/test_xpointer1.xml?_indent=no&_wrap=no";
 
         final HttpURLConnection connect = getConnection(uri);
         connect.setRequestMethod("GET");
@@ -232,7 +237,7 @@ public class XIncludeSerializerTest {
 
     @Test
     public void xpointerREST4() throws IOException, SAXException {
-        final String uri = REST_URI + "/test_xpointer2.xml?_indent=no&_wrap=no";
+        final String uri = getRestUri() + "/test_xpointer2.xml?_indent=no&_wrap=no";
 
         final HttpURLConnection connect = getConnection(uri);
         connect.setRequestMethod("GET");
@@ -254,7 +259,7 @@ public class XIncludeSerializerTest {
 
     @Test
     public void fallback1() throws IOException, SAXException {
-        final String uri = REST_URI + "/test_fallback1.xml?_indent=no&_wrap=no";
+        final String uri = getRestUri() + "/test_fallback1.xml?_indent=no&_wrap=no";
 
         final HttpURLConnection connect = getConnection(uri);
         connect.setRequestMethod("GET");
@@ -276,7 +281,7 @@ public class XIncludeSerializerTest {
 
     @Test(expected = IOException.class)
     public void fallback2() throws IOException {
-        final String uri = REST_URI + "/test_fallback2.xml?_indent=no&_wrap=no";
+        final String uri = getRestUri() + "/test_fallback2.xml?_indent=no&_wrap=no";
 
         final HttpURLConnection connect = getConnection(uri);
         connect.setRequestMethod("GET");
@@ -329,7 +334,7 @@ public class XIncludeSerializerTest {
         final XmlRpcClient client = new XmlRpcClient();
         final XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
         config.setEnabledForExtensions(true);
-        config.setServerURL(new URL(XMLRPC_URI));
+        config.setServerURL(new URL(getXmlRpcApi()));
         config.setBasicUserName("admin");
         config.setBasicPassword("");
         client.setConfig(config);
@@ -343,12 +348,6 @@ public class XIncludeSerializerTest {
      */
     @BeforeClass
     public static void startDB() throws XmlRpcException, MalformedURLException {
-        //Don't worry about closing the server : the shutdownDB hook will do the job
-        if (server == null) {
-            server = new JettyStart();
-            server.run();
-        }
-
         final XmlRpcClient xmlrpc = getClient();
         final List<Object> params = new ArrayList<>();
         params.add(XINCLUDE_COLLECTION.toString());
@@ -411,14 +410,6 @@ public class XIncludeSerializerTest {
         params.add("/db/xinclude_test/test_fallback2.xml");
         params.add(1);
         xmlrpc.execute("parse", params);
-    }
-
-    @AfterClass
-    public static void stopDB() throws XmlRpcException, MalformedURLException {
-        final XmlRpcClient xmlrpc = getClient();
-        final List<Object> params = new ArrayList<>();
-        params.add("/db/xinclude_test");
-        xmlrpc.execute("removeCollection", params);
     }
 
     public static void main(String[] args) {

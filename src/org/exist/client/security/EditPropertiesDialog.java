@@ -195,45 +195,25 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
         btnAddAce = new javax.swing.JButton();
 
         miInsertAceBefore.setText("Insert ACE before...");
-        miInsertAceBefore.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                miInsertAceBeforeActionPerformed(evt);
-            }
-        });
+        miInsertAceBefore.addActionListener(this::miInsertAceBeforeActionPerformed);
         pmAcl.add(miInsertAceBefore);
 
         miInsertAceAfter.setText("Insert ACE after...");
-        miInsertAceAfter.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                miInsertAceAfterActionPerformed(evt);
-            }
-        });
+        miInsertAceAfter.addActionListener(this::miInsertAceAfterActionPerformed);
         pmAcl.add(miInsertAceAfter);
         pmAcl.add(jSeparator3);
 
         miMoveUp.setText("Move ACE up");
-        miMoveUp.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                miMoveUpActionPerformed(evt);
-            }
-        });
+        miMoveUp.addActionListener(this::miMoveUpActionPerformed);
         pmAcl.add(miMoveUp);
 
         miMoveDown.setText("Move ACE down");
-        miMoveDown.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                miMoveDownActionPerformed(evt);
-            }
-        });
+        miMoveDown.addActionListener(this::miMoveDownActionPerformed);
         pmAcl.add(miMoveDown);
         pmAcl.add(jSeparator4);
 
         miRemoveAce.setText("Remove ACE");
-        miRemoveAce.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                miRemoveAceActionPerformed(evt);
-            }
-        });
+        miRemoveAce.addActionListener(this::miRemoveAceActionPerformed);
         pmAcl.add(miRemoveAce);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
@@ -264,18 +244,10 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
         lblGroupValue.setText("<group>");
 
         btnChangeOwner.setText("...");
-        btnChangeOwner.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnChangeOwnerActionPerformed(evt);
-            }
-        });
+        btnChangeOwner.addActionListener(this::btnChangeOwnerActionPerformed);
 
         btnChangeGroup.setText("...");
-        btnChangeGroup.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnChangeGroupActionPerformed(evt);
-            }
-        });
+        btnChangeGroup.addActionListener(this::btnChangeGroupActionPerformed);
 
         tblBasePermissions.setModel(getBasicPermissionsTableModel());
         tblBasePermissions.setRowSelectionAllowed(false);
@@ -295,25 +267,13 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
         jScrollPane3.setViewportView(tblAcl);
 
         btnSave.setText("Save");
-        btnSave.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnSaveActionPerformed(evt);
-            }
-        });
+        btnSave.addActionListener(this::btnSaveActionPerformed);
 
         btnClose.setText("Close");
-        btnClose.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnCloseActionPerformed(evt);
-            }
-        });
+        btnClose.addActionListener(this::btnCloseActionPerformed);
 
         btnAddAce.setText("Add Access Control Entry...");
-        btnAddAce.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnAddAceActionPerformed(evt);
-            }
-        });
+        btnAddAce.addActionListener(this::btnAddAceActionPerformed);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -470,12 +430,7 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
     }//GEN-LAST:event_btnCloseActionPerformed
 
     private void btnChangeOwnerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnChangeOwnerActionPerformed
-        final DialogCompleteWithResponse<String> callback = new DialogCompleteWithResponse<String>(){
-            @Override
-            public void complete(final String username) {
-                lblOwnerValue.setText(username);
-            }
-        };
+        final DialogCompleteWithResponse<String> callback = username -> lblOwnerValue.setText(username);
         
         try {
             final FindUserForm findUserForm = new FindUserForm(getUserManagementService());
@@ -488,12 +443,7 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
     }//GEN-LAST:event_btnChangeOwnerActionPerformed
 
     private void btnChangeGroupActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnChangeGroupActionPerformed
-        final DialogCompleteWithResponse<String> callback = new DialogCompleteWithResponse<String>(){
-            @Override
-            public void complete(final String groupName) {
-                lblGroupValue.setText(groupName);
-            }
-        };
+        final DialogCompleteWithResponse<String> callback = groupName -> lblGroupValue.setText(groupName);
         
         try {
             final FindGroupForm findGroupForm = new FindGroupForm(getUserManagementService());
@@ -523,19 +473,14 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
 
     private void btnAddAceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddAceActionPerformed
         
-        final DialogCompleteWithResponse<ACEAider> callback = new DialogCompleteWithResponse<ACEAider>(){
-            @Override
-            public void complete(final ACEAider ace) {
-                getAclTableModel().addRow(new Object[]{
-                    ace.getTarget().toString(),
-                    ace.getWho(),
-                    ace.getAccessType().toString(),
-                    (ace.getMode() & Permission.READ) == Permission.READ,
-                    (ace.getMode() & Permission.WRITE) == Permission.WRITE,
-                    (ace.getMode() & Permission.EXECUTE) == Permission.EXECUTE,
-                });
-            }
-        };
+        final DialogCompleteWithResponse<ACEAider> callback = ace -> getAclTableModel().addRow(new Object[]{
+            ace.getTarget().toString(),
+            ace.getWho(),
+            ace.getAccessType().toString(),
+            (ace.getMode() & Permission.READ) == Permission.READ,
+            (ace.getMode() & Permission.WRITE) == Permission.WRITE,
+            (ace.getMode() & Permission.EXECUTE) == Permission.EXECUTE,
+        });
         
         try {
             final AccessControlEntryDialog aceDialog = new AccessControlEntryDialog(getUserManagementService(), "Create Access Control Entry");
@@ -547,19 +492,16 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
     }//GEN-LAST:event_btnAddAceActionPerformed
 
     private void miInsertAceBeforeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miInsertAceBeforeActionPerformed
-        final DialogCompleteWithResponse<ACEAider> callback = new DialogCompleteWithResponse<ACEAider>(){
-            @Override
-            public void complete(final ACEAider ace) {
-                final int insertAt = tblAcl.getSelectedRow();
-                getAclTableModel().insertRow(insertAt, new Object[]{
-                    ace.getTarget().toString(),
-                    ace.getWho(),
-                    ace.getAccessType().toString(),
-                    (ace.getMode() & Permission.READ) == Permission.READ,
-                    (ace.getMode() & Permission.WRITE) == Permission.WRITE,
-                    (ace.getMode() & Permission.EXECUTE) == Permission.EXECUTE,
-                });
-            }
+        final DialogCompleteWithResponse<ACEAider> callback = ace -> {
+            final int insertAt = tblAcl.getSelectedRow();
+            getAclTableModel().insertRow(insertAt, new Object[]{
+                ace.getTarget().toString(),
+                ace.getWho(),
+                ace.getAccessType().toString(),
+                (ace.getMode() & Permission.READ) == Permission.READ,
+                (ace.getMode() & Permission.WRITE) == Permission.WRITE,
+                (ace.getMode() & Permission.EXECUTE) == Permission.EXECUTE,
+            });
         };
         
         try {
@@ -572,19 +514,16 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
     }//GEN-LAST:event_miInsertAceBeforeActionPerformed
 
     private void miInsertAceAfterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miInsertAceAfterActionPerformed
-        final DialogCompleteWithResponse<ACEAider> callback = new DialogCompleteWithResponse<ACEAider>(){
-            @Override
-            public void complete(final ACEAider ace) {
-                final int insertAt = tblAcl.getSelectedRow() < getAclTableModel().getRowCount() - 1 ? tblAcl.getSelectedRow() + 1 : getAclTableModel().getRowCount();
-                getAclTableModel().insertRow(insertAt, new Object[]{
-                    ace.getTarget().toString(),
-                    ace.getWho(),
-                    ace.getAccessType().toString(),
-                    (ace.getMode() & Permission.READ) == Permission.READ,
-                    (ace.getMode() & Permission.WRITE) == Permission.WRITE,
-                    (ace.getMode() & Permission.EXECUTE) == Permission.EXECUTE,
-                });
-            }
+        final DialogCompleteWithResponse<ACEAider> callback = ace -> {
+            final int insertAt = tblAcl.getSelectedRow() < getAclTableModel().getRowCount() - 1 ? tblAcl.getSelectedRow() + 1 : getAclTableModel().getRowCount();
+            getAclTableModel().insertRow(insertAt, new Object[]{
+                ace.getTarget().toString(),
+                ace.getWho(),
+                ace.getAccessType().toString(),
+                (ace.getMode() & Permission.READ) == Permission.READ,
+                (ace.getMode() & Permission.WRITE) == Permission.WRITE,
+                (ace.getMode() & Permission.EXECUTE) == Permission.EXECUTE,
+            });
         };
         
         try {

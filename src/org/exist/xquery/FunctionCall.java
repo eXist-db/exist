@@ -21,15 +21,11 @@
  */
 package org.exist.xquery;
 
-import com.sun.xacml.ctx.RequestCtx;
-
 import java.util.Arrays;
 import java.util.List;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.QName;
 import org.exist.dom.persistent.VirtualNodeSet;
-import org.exist.security.PermissionDeniedException;
-import org.exist.security.xacml.ExistPDP;
 import org.exist.xquery.util.Error;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
@@ -153,13 +149,6 @@ public class FunctionCall extends Function {
 		} finally {
 			context.functionEnd();
 		}
-
-        context.functionStart(functionDef.getSignature());
-        try {
-            expression.analyze(newContextInfo);
-        } finally {
-            context.functionEnd();
-        }
 
         varDeps = new VariableReference[getArgumentCount()];
         for(int i = 0; i < getArgumentCount(); i++) {
@@ -287,23 +276,6 @@ public class FunctionCall extends Function {
             }
         }
 
-        //check access to the method
-        try {
-            final ExistPDP pdp = context.getPDP();
-            if(pdp != null) {
-                final RequestCtx request = pdp.getRequestHelper().createFunctionRequest(context, null, getName());
-                //if request is null, this function belongs to a main module and is allowed to be called
-                //otherwise, the access must be checked
-                if(request != null) {
-                    pdp.evaluate(request);
-                }
-            }
-        } catch(final PermissionDeniedException pde) {
-            final XPathException xe = new XPathException(this, "Access to function '" + getName() + "'  denied.", pde);
-            xe.addFunctionCall(functionDef, this);
-            throw xe;
-        }
-		
         functionDef.setArguments(seq, contextDocs);
         
         if(isRecursive()) {
@@ -370,6 +342,7 @@ public class FunctionCall extends Function {
     @Override
     public void resetState(boolean postOptimization) {
         super.resetState(postOptimization);
+        setRecursive(false);
         if(expression.needsReset() || postOptimization) {
             expression.resetState(postOptimization);
         }

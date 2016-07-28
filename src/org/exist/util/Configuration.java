@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2015 The eXist Project
+ *  Copyright (C) 2001-2016 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -22,6 +22,7 @@ package org.exist.util;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import org.exist.backup.SystemExport;
 import org.exist.repo.Deployment;
 
 import org.w3c.dom.Document;
@@ -41,7 +42,6 @@ import org.exist.dom.memtree.SAXAdapter;
 import org.exist.scheduler.JobConfig;
 import org.exist.scheduler.JobException;
 import org.exist.security.internal.RealmImpl;
-import org.exist.security.xacml.XACMLConstants;
 import org.exist.storage.BrokerFactory;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.CollectionCacheManager;
@@ -227,6 +227,12 @@ public class Configuration implements ErrorHandler
                 configureTransformer((Element)transformers.item(0));
             }
 
+            //parser settings
+            final NodeList parsers = doc.getElementsByTagName(HtmlToXmlParser.PARSER_ELEMENT_NAME);
+            if(parsers.getLength() > 0) {
+                configureParser((Element)parsers.item(0));
+            }
+
             //serializer settings
             final NodeList serializers = doc.getElementsByTagName(Serializer.CONFIGURATION_ELEMENT_NAME);
             if(serializers.getLength() > 0) {
@@ -243,13 +249,6 @@ public class Configuration implements ErrorHandler
             final NodeList xquery = doc.getElementsByTagName(XQUERY_CONFIGURATION_ELEMENT_NAME);
             if(xquery.getLength() > 0) {
                 configureXQuery((Element)xquery.item(0));
-            }
-
-            //XACML settings
-            final NodeList xacml = doc.getElementsByTagName(XACMLConstants.CONFIGURATION_ELEMENT_NAME);
-            //TODO : check that we have only one element
-            if(xacml.getLength() > 0) {
-                configureXACML((Element)xacml.item(0));
             }
 
             //Validation
@@ -458,19 +457,6 @@ public class Configuration implements ErrorHandler
         return mClass;
     }
 
-
-    public void configureXACML( Element xacml )
-    {
-        final String enable = getConfigAttributeValue( xacml, XACMLConstants.ENABLE_XACML_ATTRIBUTE );
-        config.put( XACMLConstants.ENABLE_XACML_PROPERTY, Configuration.parseBoolean( enable, XACMLConstants.ENABLE_XACML_BY_DEFAULT ) );
-        LOG.debug( XACMLConstants.ENABLE_XACML_PROPERTY + ": " + config.get( XACMLConstants.ENABLE_XACML_PROPERTY ) );
-
-        final String loadDefaults = getConfigAttributeValue( xacml, XACMLConstants.LOAD_DEFAULT_POLICIES_ATTRIBUTE );
-        config.put( XACMLConstants.LOAD_DEFAULT_POLICIES_PROPERTY, Configuration.parseBoolean( loadDefaults, true ) );
-        LOG.debug( XACMLConstants.LOAD_DEFAULT_POLICIES_PROPERTY + ": " + config.get( XACMLConstants.LOAD_DEFAULT_POLICIES_PROPERTY ) );
-    }
-
-
     /**
      * DOCUMENT ME!
      *
@@ -552,6 +538,34 @@ public class Configuration implements ErrorHandler
         }
     }
 
+    private void configureParser(final Element parser) {
+        final NodeList nlHtmlToXml = parser.getElementsByTagName(HtmlToXmlParser.HTML_TO_XML_PARSER_ELEMENT);
+        if(nlHtmlToXml.getLength() > 0) {
+            final Element htmlToXml = (Element)nlHtmlToXml.item(0);
+            final String htmlToXmlParserClass = getConfigAttributeValue(htmlToXml, HtmlToXmlParser.HTML_TO_XML_PARSER_CLASS_ATTRIBUTE);
+            config.put(HtmlToXmlParser.HTML_TO_XML_PARSER_PROPERTY, htmlToXmlParserClass);
+
+            final NodeList nlProperties = htmlToXml.getElementsByTagName(HtmlToXmlParser.HTML_TO_XML_PARSER_PROPERTIES_ELEMENT);
+            if(nlProperties.getLength() > 0) {
+                final Properties pProperties = ParametersExtractor.parseProperties(nlProperties.item(0));
+                if(pProperties != null) {
+                    final Map<String, Object> properties = new HashMap<>();
+                    pProperties.forEach((k,v) -> properties.put(k.toString(), v));
+                    config.put(HtmlToXmlParser.HTML_TO_XML_PARSER_PROPERTIES_PROPERTY, properties);
+                }
+            }
+
+            final NodeList nlFeatures = htmlToXml.getElementsByTagName(HtmlToXmlParser.HTML_TO_XML_PARSER_FEATURES_ELEMENT);
+            if(nlFeatures.getLength() > 0) {
+                final Properties pFeatures = ParametersExtractor.parseFeatures(nlFeatures.item(0));
+                if(pFeatures != null) {
+                    final Map<String, Boolean> features = new HashMap<>();
+                    pFeatures.forEach((k,v) -> features.put(k.toString(), Boolean.valueOf(v.toString())));
+                    config.put(HtmlToXmlParser.HTML_TO_XML_PARSER_FEATURES_PROPERTY, features);
+                }
+            }
+        }
+    }
 
     /**
      * DOCUMENT ME!
@@ -611,24 +625,41 @@ public class Configuration implements ErrorHandler
 
         final NodeList nlFilters = serializer.getElementsByTagName( CustomMatchListenerFactory.CONFIGURATION_ELEMENT );
 
-        if( nlFilters == null ) {
-            return;
-        }
+        if( nlFilters != null ) {
+            final List<String> filters = new ArrayList<>(nlFilters.getLength());
 
-        final List<String> filters = new ArrayList<String>( nlFilters.getLength() );
+            for (int i = 0; i < nlFilters.getLength(); i++) {
+                final Element filterElem = (Element) nlFilters.item(i);
+                final String filterClass = filterElem.getAttribute(CustomMatchListenerFactory.CONFIGURATION_ATTR_CLASS);
 
-        for( int i = 0; i < nlFilters.getLength(); i++ ) {
-            final Element filterElem  = (Element)nlFilters.item( i );
-            final String  filterClass = filterElem.getAttribute( CustomMatchListenerFactory.CONFIGURATION_ATTR_CLASS );
-
-            if( filterClass != null ) {
-                filters.add( filterClass );
-                LOG.debug( CustomMatchListenerFactory.CONFIG_MATCH_LISTENERS + ": " + filterClass );
-            } else {
-                LOG.warn( "Configuration element " + CustomMatchListenerFactory.CONFIGURATION_ELEMENT + " needs an attribute 'class'" );
+                if (filterClass != null) {
+                    filters.add(filterClass);
+                    LOG.debug(CustomMatchListenerFactory.CONFIG_MATCH_LISTENERS + ": " + filterClass);
+                } else {
+                    LOG.warn("Configuration element " + CustomMatchListenerFactory.CONFIGURATION_ELEMENT + " needs an attribute 'class'");
+                }
             }
+            config.put(CustomMatchListenerFactory.CONFIG_MATCH_LISTENERS, filters);
         }
-        config.put( CustomMatchListenerFactory.CONFIG_MATCH_LISTENERS, filters );
+
+        final NodeList backupFilters = serializer.getElementsByTagName( SystemExport.CONFIGURATION_ELEMENT );
+
+        if( backupFilters != null ) {
+            final List<String> filters = new ArrayList<>(backupFilters.getLength());
+
+            for (int i = 0; i < backupFilters.getLength(); i++) {
+                final Element filterElem = (Element) backupFilters.item(i);
+                final String filterClass = filterElem.getAttribute(CustomMatchListenerFactory.CONFIGURATION_ATTR_CLASS);
+
+                if (filterClass != null) {
+                    filters.add(filterClass);
+                    LOG.debug(CustomMatchListenerFactory.CONFIG_MATCH_LISTENERS + ": " + filterClass);
+                } else {
+                    LOG.warn("Configuration element " + SystemExport.CONFIGURATION_ELEMENT + " needs an attribute 'class'");
+                }
+            }
+            if (!filters.isEmpty()) config.put(SystemExport.CONFIG_FILTERS, filters);
+        }
     }
 
 
@@ -938,7 +969,7 @@ public class Configuration implements ErrorHandler
             }
 
             try {
-                config.put(BrokerPool.DISK_SPACE_MIN_PROPERTY, Integer.valueOf(diskSpace));
+                config.put(BrokerPool.DISK_SPACE_MIN_PROPERTY, Short.valueOf(diskSpace));
             }
             catch( final NumberFormatException nfe ) {
                 LOG.warn( nfe );
@@ -1028,9 +1059,9 @@ public class Configuration implements ErrorHandler
         setProperty( Journal.PROPERTY_RECOVERY_SYNC_ON_COMMIT, parseBoolean( option, true ) );
         LOG.debug( Journal.PROPERTY_RECOVERY_SYNC_ON_COMMIT + ": " + config.get( Journal.PROPERTY_RECOVERY_SYNC_ON_COMMIT ) );
 
-        option = getConfigAttributeValue( recovery, TransactionManager.RECOVERY_GROUP_COMMIT_ATTRIBUTE );
-        setProperty( TransactionManager.PROPERTY_RECOVERY_GROUP_COMMIT, parseBoolean( option, false ) );
-        LOG.debug( TransactionManager.PROPERTY_RECOVERY_GROUP_COMMIT + ": " + config.get( TransactionManager.PROPERTY_RECOVERY_GROUP_COMMIT ) );
+        option = getConfigAttributeValue( recovery, BrokerPool.RECOVERY_GROUP_COMMIT_ATTRIBUTE );
+        setProperty( BrokerPool.PROPERTY_RECOVERY_GROUP_COMMIT, parseBoolean( option, false ) );
+        LOG.debug( BrokerPool.PROPERTY_RECOVERY_GROUP_COMMIT + ": " + config.get( BrokerPool.PROPERTY_RECOVERY_GROUP_COMMIT ) );
 
         option = getConfigAttributeValue( recovery, Journal.RECOVERY_JOURNAL_DIR_ATTRIBUTE );
 
@@ -1063,14 +1094,14 @@ public class Configuration implements ErrorHandler
             }
         }
 
-        option = getConfigAttributeValue( recovery, TransactionManager.RECOVERY_FORCE_RESTART_ATTRIBUTE );
+        option = getConfigAttributeValue( recovery, BrokerPool.RECOVERY_FORCE_RESTART_ATTRIBUTE );
         boolean value = false;
 
         if( option != null ) {
             value = "yes".equals(option);
         }
-        setProperty( TransactionManager.PROPERTY_RECOVERY_FORCE_RESTART, Boolean.valueOf( value ) );
-        LOG.debug( TransactionManager.PROPERTY_RECOVERY_FORCE_RESTART + ": " + config.get( TransactionManager.PROPERTY_RECOVERY_FORCE_RESTART ) );
+        setProperty( BrokerPool.PROPERTY_RECOVERY_FORCE_RESTART, Boolean.valueOf( value ) );
+        LOG.debug( BrokerPool.PROPERTY_RECOVERY_FORCE_RESTART + ": " + config.get( BrokerPool.PROPERTY_RECOVERY_FORCE_RESTART ) );
 
         option = getConfigAttributeValue( recovery, BrokerPool.RECOVERY_POST_RECOVERY_CHECK );
         value  = false;
@@ -1552,33 +1583,24 @@ public class Configuration implements ErrorHandler
     }
 
 
-    public Object getProperty( String name )
-    {
-        return( config.get( name ) );
+    public Object getProperty(final String name) {
+        return config.get(name);
     }
 
-    public Object getProperty( String name, Object defaultValue )
-    {
-    	final Object value = config.get( name );
-    	
-    	if (value == null)
-    		{return defaultValue;}
-        
-    	return value;
+    public <T> T getProperty(final String name, final T defaultValue) {
+        return Optional.ofNullable((T)config.get(name)).orElse(defaultValue);
     }
 
-    public boolean hasProperty( String name )
-    {
-        return( config.containsKey( name ) );
+    public boolean hasProperty(final String name) {
+        return config.containsKey(name);
     }
 
 
-    public void setProperty( String name, Object obj )
-    {
-        config.put( name, obj );
+    public void setProperty(final String name, final Object obj) {
+        config.put(name, obj);
     }
 
-    public void removeProperty(String name) {
+    public void removeProperty(final String name) {
         config.remove(name);
     }
 
@@ -1591,24 +1613,17 @@ public class Configuration implements ErrorHandler
      *
      * @return  The parsed <code>Boolean</code>
      */
-    public static Boolean parseBoolean(final String value, final boolean defaultValue)
-    {
-        if(value == null) {
-            return Boolean.valueOf(defaultValue);
-        }
-        return Boolean.valueOf("yes".equalsIgnoreCase(value) || "true".equalsIgnoreCase(value));
+    public static boolean parseBoolean(final String value, final boolean defaultValue) {
+        return Optional.ofNullable(value)
+                .map(v -> v.equalsIgnoreCase("yes") || v.equalsIgnoreCase("true"))
+                .orElse(defaultValue);
     }
 
-
-    public int getInteger( String name )
-    {
-        final Object obj = getProperty( name );
-
-        if( ( obj == null ) || !( obj instanceof Integer ) ) {
-            return( -1 );
-        }
-
-        return( ( (Integer)obj ).intValue() );
+    public int getInteger(final String name) {
+        return Optional.ofNullable(getProperty(name))
+                .filter(v -> v instanceof Integer)
+                .map(v -> (int)v)
+                .orElse(-1);
     }
 
 
@@ -1660,17 +1675,20 @@ public class Configuration implements ErrorHandler
     }
     
 
-    public static final class IndexModuleConfig
-    {
-        protected String  id;
-        protected String  className;
-        protected Element config;
+    public static final class IndexModuleConfig {
+        private final String id;
+        private final String className;
+        private final Element config;
 
-        public IndexModuleConfig( String id, String className, Element config )
-        {
-            this.id        = id;
+        public IndexModuleConfig(final String id, final String className, final Element config) {
+            this.id = id;
             this.className = className;
-            this.config    = config;
+            this.config = config;
+        }
+
+        public String getId()
+        {
+            return( id );
         }
 
         public String getClassName()
@@ -1678,16 +1696,9 @@ public class Configuration implements ErrorHandler
             return( className );
         }
 
-
         public Element getConfig()
         {
             return( config );
-        }
-
-
-        public String getId()
-        {
-            return( id );
         }
     }
 

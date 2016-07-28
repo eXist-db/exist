@@ -46,6 +46,7 @@ import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
@@ -67,9 +68,13 @@ public class NativeSerializer extends Serializer {
     private final static QName ID_ATTRIB = new QName("id", Namespaces.EXIST_NS, "exist");
 
     public NativeSerializer(DBBroker broker, Configuration config) {
-        super(broker, config);
+        this(broker, config, null);
     }
-    
+
+    public NativeSerializer(DBBroker broker, Configuration config, List<String> chainOfReceivers) {
+        super(broker, config, chainOfReceivers);
+    }
+
     protected void serializeToReceiver(NodeProxy p, boolean generateDocEvent, boolean checkAttributes)
     throws SAXException {
     	if(Type.subTypeOf(p.getType(), Type.DOCUMENT) || p.getNodeId() == NodeId.DOCUMENT_NODE) {

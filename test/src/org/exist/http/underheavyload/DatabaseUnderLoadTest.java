@@ -38,8 +38,7 @@ public class DatabaseUnderLoadTest {
 	public void testHeavyLoad() {
 		database = new org.exist.start.Main("jetty");
 		database.run(new String[]{"jetty"});
-		
-		// jetty.port.jetty
+
 		manager = new ClientsManager(5, "http://localhost:" + System.getProperty("jetty.port") + "/exist/admin");
 		manager.start();
 		

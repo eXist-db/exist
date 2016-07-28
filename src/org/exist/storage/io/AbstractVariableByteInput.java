@@ -23,9 +23,6 @@ package org.exist.storage.io;
 import java.io.EOFException;
 import java.io.IOException;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -34,23 +31,19 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * @author wolf
  */
 public abstract class AbstractVariableByteInput implements VariableByteInput {
-    
-    private static Logger LOG = LogManager.getLogger(AbstractVariableByteInput.class.getName());
 
     public AbstractVariableByteInput() {
         //Nothing to do
     }
 
-    public abstract int available() throws IOException;
-
-    public abstract int read() throws IOException;
-
+    @Override
     public byte readByte() throws IOException {
         final int i = read();
         if (i < 0) {throw new EOFException();}
         return (byte) i;
     }
 
+    @Override
     public short readShort() throws IOException {
         byte b = readByte();
         short i = (short) (b & 0177);
@@ -61,6 +54,7 @@ public abstract class AbstractVariableByteInput implements VariableByteInput {
         return i;
     }
 
+    @Override
     public int readInt() throws IOException {
         byte b = readByte();
         int i = b & 0177;
@@ -71,6 +65,7 @@ public abstract class AbstractVariableByteInput implements VariableByteInput {
         return i;
     }
 
+    @Override
     public int readFixedInt() throws IOException {
         return ( readByte() & 0xff ) |
         ( ( readByte() & 0xff ) << 8 ) |
@@ -78,6 +73,7 @@ public abstract class AbstractVariableByteInput implements VariableByteInput {
         ( ( readByte() & 0xff ) << 24 );
     }
 
+    @Override
     public long readLong() throws IOException {
         byte b = readByte();
         long i = b & 0177;
@@ -88,6 +84,7 @@ public abstract class AbstractVariableByteInput implements VariableByteInput {
         return i;
     }
 
+    @Override
     public String readUTF() throws IOException {
         final int len = readInt();
         final byte data[] = new byte[len];
@@ -97,23 +94,27 @@ public abstract class AbstractVariableByteInput implements VariableByteInput {
         return new String(data, UTF_8);
     }
 
-    public void skip(int count) throws IOException {
+    @Override
+    public void skip(final int count) throws IOException {
         for (int i = 0; i < count && available() > 0; i++) {
             while ((readByte() & 0200) > 0)
                 ;
         }
     }
 
-    public void skipBytes(long count) throws IOException {
+    @Override
+    public void skipBytes(final long count) throws IOException {
         for(long i = 0; i < count; i++)
             readByte();
     }
-    
-    public int read(byte[] data) throws IOException {
+
+    @Override
+    public int read(final byte[] data) throws IOException {
         return read(data, 0, data.length);
     }
 
-    public int read(byte b[], int off, int len) throws IOException {
+    @Override
+    public int read(final byte b[], final int off, final int len) throws IOException {
         if (b == null) {
             throw new NullPointerException();
         } else if ((off < 0) || (off > b.length) || (len < 0)
@@ -142,36 +143,39 @@ public abstract class AbstractVariableByteInput implements VariableByteInput {
         return i;
     }
 
-    public void copyTo(VariableByteOutputStream os) throws IOException {
+    public void copyTo(final VariableByteOutputStream os) throws IOException {
         int more;
         do {
             more = read();
-            os.buf.append((byte) more);
+            os.write((byte) more);
             more &= 0200;
         } while (more > 0);
     }
 
-    public void copyTo(VariableByteOutputStream os, int count)
+    @Override
+    public void copyTo(final VariableByteOutputStream os, final int count)
             throws IOException {
         int more;
         for (int i = 0; i < count; i++) {
             do {
                 more = read();
-                os.buf.append((byte)more);
+                os.write((byte)more);
                 more &= 0200;
             } while (more > 0);
         }
     }
-    
-    public void copyRaw(VariableByteOutputStream os, int count) throws IOException {
-        for (int i = 0; i < count; i++) {
-            os.buf.append((byte) read());
+
+    @Override
+    public void copyRaw(final VariableByteOutputStream os, final int count) throws IOException {
+        final byte buf[] = new byte[count];
+        int totalRead = 0;
+        int read;
+        while((read = read(buf, 0, count - totalRead)) > 0) {
+            os.write(buf, 0, read);
+            totalRead += read;
         }
     }
-    
-    /* (non-Javadoc)
-     * @see org.exist.storage.io.VariableByteInput#release()
-     */
+
     public void release() {
         //Nothing to do
     }

@@ -30,8 +30,7 @@ public class TransfomerFactoryAllocatorTest {
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
             { "net.sf.saxon.TransformerFactoryImpl" },
-            { "org.apache.xalan.processor.TransformerFactoryImpl" },
-            { "org.exist.xslt.TransformerFactoryImpl" }
+            { "org.apache.xalan.processor.TransformerFactoryImpl" }
         });
     }
 

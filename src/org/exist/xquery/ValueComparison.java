@@ -29,6 +29,8 @@ import org.exist.dom.persistent.ContextItem;
 import org.exist.dom.persistent.ExtArrayNodeSet;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.NodeSet;
+import org.exist.xquery.Constants.Comparison;
+import org.exist.xquery.Constants.StringTruncationOperator;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.BooleanValue;
@@ -45,7 +47,7 @@ public class ValueComparison extends GeneralComparison {
 	 * @param context
 	 * @param relation
 	 */
-	public ValueComparison(XQueryContext context, int relation) {
+	public ValueComparison(XQueryContext context, Comparison relation) {
 		super(context, relation);
 	}
 
@@ -55,7 +57,7 @@ public class ValueComparison extends GeneralComparison {
 	 * @param right
 	 * @param relation
 	 */
-	public ValueComparison(XQueryContext context, Expression left, Expression right, int relation) {
+	public ValueComparison(XQueryContext context, Expression left, Expression right, Comparison relation) {
 		super(context, left, right, relation);
 	}
 
@@ -71,7 +73,7 @@ public class ValueComparison extends GeneralComparison {
 			lv = ls.itemAt(0).atomize();
 			rv = rs.itemAt(0).atomize();
             final Collator collator = getCollator(contextSequence);
-			return BooleanValue.valueOf(compareAtomic(collator, lv, rv, Constants.TRUNC_NONE, relation));
+			return BooleanValue.valueOf(compareAtomic(collator, lv, rv, StringTruncationOperator.NONE, relation));
 		} 
         throw new XPathException(this, "Type error: sequence with more than one item is not allowed here");
 	}
@@ -94,7 +96,7 @@ public class ValueComparison extends GeneralComparison {
                     if (!rs.hasOne())
                         {throw new XPathException(this,
                                 "Type error: sequence with less or more than one item is not allowed here");}                    
-                    if (compareAtomic(collator, lv, rs.itemAt(0).atomize(), Constants.TRUNC_NONE, relation))
+                    if (compareAtomic(collator, lv, rs.itemAt(0).atomize(), StringTruncationOperator.NONE, relation))
                         {result.add(current);}
                 } while ((context = context.getNextDirect()) != null);
             }
@@ -107,7 +109,7 @@ public class ValueComparison extends GeneralComparison {
             for (final Iterator<NodeProxy> i = nodes.iterator(); i.hasNext();) {
                 final NodeProxy current = i.next();
                 final AtomicValue lv = current.atomize();
-                if (compareAtomic(collator, lv, rv, Constants.TRUNC_NONE, Constants.EQ))
+                if (compareAtomic(collator, lv, rv, StringTruncationOperator.NONE, Comparison.EQ))
                     {result.add(current);}
             }
         }
@@ -118,7 +120,7 @@ public class ValueComparison extends GeneralComparison {
 	 * Cast the atomic operands into a comparable type
 	 * and compare them.
 	 */
-	public static boolean compareAtomic(Collator collator, AtomicValue lv, AtomicValue rv, int truncation, int relation) throws XPathException {
+	public static boolean compareAtomic(Collator collator, AtomicValue lv, AtomicValue rv, StringTruncationOperator truncation, Comparison relation) throws XPathException {
 		int ltype = lv.getType();
 		int rtype = rv.getType();
 		if (ltype == Type.UNTYPED_ATOMIC) {
@@ -164,16 +166,16 @@ public class ValueComparison extends GeneralComparison {
 		}
 
 		// if truncation is set, we always do a string comparison
-        if (truncation != Constants.TRUNC_NONE) {
+        if (truncation != StringTruncationOperator.NONE) {
         	//TODO : log this ?
             lv = lv.convertTo(Type.STRING);
         }
 		switch(truncation) {
-			case Constants.TRUNC_RIGHT:
+			case RIGHT:
 				return lv.startsWith(collator, rv);
-			case Constants.TRUNC_LEFT:
+			case LEFT:
 				return lv.endsWith(collator, rv);
-			case Constants.TRUNC_BOTH:
+			case BOTH:
 				return lv.contains(collator, rv);
 			default:
 				return lv.compareTo(collator, relation, rv);
@@ -182,15 +184,11 @@ public class ValueComparison extends GeneralComparison {
     
     public void dump(ExpressionDumper dumper) {
         getLeft().dump(dumper);
-        dumper.display(" ").display(Constants.VOPS[relation]).display(" ");
+        dumper.display(" ").display(relation.valueComparisonSymbol).display(" ");
         getRight().dump(dumper);
     }
     
     public String toString() {
-        final StringBuilder result = new StringBuilder();
-        result.append(getLeft().toString());
-        result.append(" ").append(Constants.VOPS[relation]).append(" ");
-        result.append(getRight().toString());
-        return result.toString();
-    }        
+		return getLeft().toString() +	" " + relation.valueComparisonSymbol + " " + getRight().toString();
+    }
 }

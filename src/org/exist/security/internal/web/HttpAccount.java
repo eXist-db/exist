@@ -21,6 +21,8 @@
  */
 package org.exist.security.internal.web;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.security.Subject;
 
 import javax.servlet.http.HttpServletRequest;
@@ -30,15 +32,18 @@ import java.security.Principal;
 
 public class HttpAccount {
 
+    private final static Logger LOG = LogManager.getLogger(HttpAccount.class);
+
     public static Subject getUserFromServletRequest(final HttpServletRequest request) {
         final Principal principal = request.getUserPrincipal();
         if(principal instanceof Subject) {
             return (Subject) principal;
+        } else if(principal != null && "org.eclipse.jetty.plus.jaas.JAASUserPrincipal".equals(principal.getClass().getName())) {
 
             //workaroud strange jetty authentication method, why encapsulate user object??? -shabanovd
-        } else if(principal != null && "org.eclipse.jetty.plus.jaas.JAASUserPrincipal".equals(principal.getClass().getName())) {
+
             try {
-                final Method method = principal.getClass().getMethod("getCurrentSubject");
+                final Method method = principal.getClass().getMethod("getSubject");
                 final Object obj = method.invoke(principal);
                 if(obj instanceof javax.security.auth.Subject) {
                     final javax.security.auth.Subject subject = (javax.security.auth.Subject) obj;
@@ -48,11 +53,8 @@ public class HttpAccount {
                         }
                     }
                 }
-            } catch(final SecurityException e) {
-            } catch(final IllegalArgumentException e) {
-            } catch(final IllegalAccessException e) {
-            } catch(final NoSuchMethodException e) {
-            } catch(final InvocationTargetException e) {
+            } catch(final SecurityException | InvocationTargetException | NoSuchMethodException | IllegalAccessException | IllegalArgumentException e) {
+                LOG.error(e);
             }
         }
         return null;

@@ -26,8 +26,6 @@ import org.exist.EXistException;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.Subject;
-import org.exist.security.xacml.AccessContext;
-import org.exist.security.xacml.NullAccessContextException;
 import org.exist.storage.BrokerPool;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
@@ -35,14 +33,8 @@ import org.xmldb.api.base.XMLDBException;
 
 public class LocalCollectionManagementService extends AbstractLocalService implements CollectionManagementServiceImpl {
 
-    private final AccessContext accessCtx;
-
-    public LocalCollectionManagementService(final Subject user, final BrokerPool pool, final LocalCollection parent, final AccessContext accessCtx) {
+    public LocalCollectionManagementService(final Subject user, final BrokerPool pool, final LocalCollection parent) {
     	super(user, pool, parent);
-        if(accessCtx == null) {
-            throw new NullAccessContextException();
-        }
-    	this.accessCtx = accessCtx;
     }
 
     @Override
@@ -91,7 +83,7 @@ public class LocalCollectionManagementService extends AbstractLocalService imple
             }
         });
 
-        return new LocalCollection(user, brokerPool, collection, collName, accessCtx);
+        return new LocalCollection(user, brokerPool, collection, collName);
     }
 
     @Override

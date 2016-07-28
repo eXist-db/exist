@@ -76,7 +76,7 @@ public class Conditional extends Modification {
 		CompiledXQuery compiled = pool.borrowCompiledXQuery(broker, source);
 		XQueryContext context;
 		if(compiled == null)
-		    {context = new XQueryContext(broker.getBrokerPool(), getAccessContext());}
+		    {context = new XQueryContext(broker.getBrokerPool());}
 		else
 		    {context = compiled.getContext();}
 

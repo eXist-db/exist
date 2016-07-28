@@ -22,7 +22,7 @@ package org.exist.xquery;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import org.exist.security.xacml.XACMLSource;
+import org.exist.source.Source;
 import org.exist.xquery.ErrorCodes.ErrorCode;
 import org.exist.xquery.parser.XQueryAST;
 import org.exist.xquery.value.Sequence;
@@ -40,7 +40,7 @@ public class XPathException extends Exception {
     private Sequence errorVal;
     private List<FunctionStackElement> callStack = null;
 
-    private XACMLSource source = null;
+    private Source source = null;
 
     /**
      * @deprecated Use a constructor with errorCode
@@ -246,7 +246,7 @@ public class XPathException extends Exception {
         this.column = column;
     }
 
-    public void setLocation(int line, int column, XACMLSource source) {
+    public void setLocation(int line, int column, Source source) {
         this.line = line;
         this.column = column;
         this.source = source;
@@ -270,15 +270,15 @@ public class XPathException extends Exception {
     	return errorCode;
     }
     
-    public XACMLSource getXACMLSource() {
+    public Source getSource() {
         return source;
     }
-    
+
     public void addFunctionCall(UserDefinedFunction def, Expression call) {
         if(callStack == null) {
            callStack = new ArrayList<>();
         }
-        callStack.add(new FunctionStackElement(def, def.getSource().getKey(), call.getLine(), call.getColumn()));
+        callStack.add(new FunctionStackElement(def, def.getSource().path(), call.getLine(), call.getColumn()));
     }
     
     public List<FunctionStackElement> getCallStack() {
@@ -439,11 +439,7 @@ public class XPathException extends Exception {
 
         @Override
         public String toString() {
-            final StringBuilder buf = new StringBuilder();
-            buf.append(function).append(" [");
-            buf.append(line).append(":");
-            buf.append(column).append(":").append(file).append(']');
-            return buf.toString();
+            return function + " [" + line + ":" + column + ":" + file + ']';
         }
     }
 }

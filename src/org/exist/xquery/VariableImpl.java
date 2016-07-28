@@ -167,7 +167,7 @@ public class VariableImpl implements Variable {
 
 	public String toString() {
 		final StringBuilder result = new StringBuilder();
-		result.append("$" + qname.getStringValue());
+		result.append("$").append(qname.getStringValue());
 		result.append(" as ");
 		result.append(Type.getTypeName(getType()));		
 		result.append(Cardinality.toString(getCardinality()));

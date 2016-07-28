@@ -72,14 +72,15 @@ public class GetRunningJobs extends BasicFunction {
         final BrokerPool brokerPool = context.getBroker().getBrokerPool();
 		final ProcessMonitor monitor = brokerPool.getProcessMonitor();
         final ProcessMonitor.JobInfo[] jobs = monitor.runningJobs();
-        for (int i = 0; i < jobs.length; i++) {
-            final Thread process = jobs[i].getThread();
-			final Date startDate = new Date(jobs[i].getStartTime());
-            builder.startElement( new QName( "job", NAMESPACE_URI, PREFIX ), null);
-            builder.addAttribute( new QName("id", null, null), process.getName());
-            builder.addAttribute( new QName("action", null, null), jobs[i].getAction());
-			builder.addAttribute( new QName("start", null, null), new DateTimeValue(startDate).getStringValue());
-            builder.addAttribute(new QName("info", null, null), jobs[i].getAddInfo().toString());
+        
+        for (ProcessMonitor.JobInfo job : jobs) {
+            final Thread process = job.getThread();
+            final Date startDate = new Date(job.getStartTime());
+            builder.startElement(new QName("job", NAMESPACE_URI, PREFIX), null);
+            builder.addAttribute(new QName("id", null, null), process.getName());
+            builder.addAttribute(new QName("action", null, null), job.getAction());
+            builder.addAttribute(new QName("start", null, null), new DateTimeValue(startDate).getStringValue());
+            builder.addAttribute(new QName("info", null, null), job.getAddInfo().toString());
             builder.endElement();
         }
 

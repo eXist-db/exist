@@ -10,7 +10,8 @@ import org.xmldb.api.modules.XQueryService;
 public class MemtreeDescendantOrSelfNodeKindTest extends AbstractDescendantOrSelfNodeKindTest {
 
     private String getInMemoryQuery(final String queryPostfix) {
-        return "let $doc := document {\n" +
+        return "declare boundary-space preserve;\n"
+                + "let $doc := document {\n" +
             TEST_DOCUMENT +
             "\n}\n" +
             "return\n" +

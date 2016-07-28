@@ -3,7 +3,6 @@ package org.exist;
 import org.exist.collections.Collection;
 import org.exist.dom.persistent.DefaultDocumentSet;
 import org.exist.dom.persistent.DocumentSet;
-import org.exist.security.xacml.AccessContext;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.serializer.SAXSerializer;
@@ -55,7 +54,7 @@ public class TestDataGenerator {
         try {
             DocumentSet docs = collection.allDocs(broker, new DefaultDocumentSet(), true);
             XQuery service = broker.getBrokerPool().getXQueryService();
-            XQueryContext context = new XQueryContext(broker.getBrokerPool(), AccessContext.TEST);
+            XQueryContext context = new XQueryContext(broker.getBrokerPool());
             context.declareVariable("filename", "");
             context.declareVariable("count", "0");
             context.setStaticallyKnownDocuments(docs);

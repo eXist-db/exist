@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2014 The eXist Project
+ *  Copyright (C) 2001-2016 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -115,6 +115,7 @@ public class XQueryTriggerTest {
     	"import module namespace util='http://exist-db.org/xquery/util'; " +
         "" +
     	"declare function trigger:logEvent($type as xs:string, $event as xs:string, $objectType as xs:string, $uri as xs:anyURI) {" +
+        "let $log := util:log(\"INFO\", concat($type, ' ', $event, ' ', $objectType, ' ', $uri))" +
     	"let $isLoggedIn := xmldb:login('" + XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION + "', 'admin', '') return " +
     	  "xmldb:update(" +
     	    "'" + XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION + "', " +
@@ -125,7 +126,6 @@ public class XQueryTriggerTest {
                   "<xu:attribute name='type'>{$type}</xu:attribute>" +
                   "<xu:attribute name='event'>{$event}</xu:attribute>" +
                   "<xu:attribute name='object-type'>{$objectType}</xu:attribute>" +
-                  "<xu:element name='collection'>{$uri}</xu:element>" +
                   "<xu:element name='uri'>{$uri}</xu:element>" +
                 "</xu:element>" +            
               "</xu:append>" +
@@ -245,6 +245,7 @@ public class XQueryTriggerTest {
     
     private final static String testCollectionURI = "[uri/text() = '/db/testXQueryTrigger/test']";
     private final static String testDstCollectionURI = "[uri/text() = '/db/testXQueryTrigger/test-dst']";
+    private final static String testDstTestCollectionURI = "[uri/text() = '/db/testXQueryTrigger/test-dst/test']";
 
     private final static String documentURI = "[uri/text() = '/db/testXQueryTrigger/test.xml']";
     private final static String binaryURI = "[uri/text() = '/db/testXQueryTrigger/1x1.gif']";
@@ -263,6 +264,8 @@ public class XQueryTriggerTest {
                 .getService("CollectionManagementService", "1.0");
         testCollection = service.createCollection(TEST_COLLECTION);
         assertNotNull(testCollection);
+
+        TestUtils.cleanupDB();
     }
 
     @AfterClass
@@ -519,7 +522,7 @@ public class XQueryTriggerTest {
     }
 
     /** test a trigger fired by a Collection manipulations */
-    @Test @Ignore
+    @Test
     public void collectionCopy() throws XMLDBException, URISyntaxException {
         final IndexQueryService idxConf = (IndexQueryService) root.getService("IndexQueryService", "1.0");
         idxConf.configureCollection(COLLECTION_CONFIG);
@@ -556,7 +559,7 @@ public class XQueryTriggerTest {
         result = query.query(BEFORE+COPY+COLLECTION+testCollectionURI);
         assertEquals(1, result.getSize());
 
-        result = query.query(AFTER+COPY+COLLECTION+testCollectionURI);
+        result = query.query(AFTER+COPY+COLLECTION+testDstTestCollectionURI);
         assertEquals(1, result.getSize());
 
         result = query.query(EVENTS);
@@ -598,10 +601,10 @@ public class XQueryTriggerTest {
         result = query.query(AFTER+CREATE+COLLECTION+testDstCollectionURI);
         assertEquals(1, result.getSize());
 
-        result = query.query(AFTER+MOVE+COLLECTION+testCollectionURI);
+        result = query.query(BEFORE+MOVE+COLLECTION+testCollectionURI);
         assertEquals(1, result.getSize());
 
-        result = query.query(AFTER+MOVE+COLLECTION+testCollectionURI);
+        result = query.query(AFTER+MOVE+COLLECTION+testDstTestCollectionURI);
         assertEquals(1, result.getSize());
 
         result = query.query(EVENTS);
@@ -663,7 +666,7 @@ public class XQueryTriggerTest {
                 testCollection.storeResource(doc);
             } catch(XMLDBException xdbe) {
                if(xdbe.getCause() instanceof TriggerException) {
-                   if(xdbe.getCause().getMessage().equals(XQueryTrigger.PEPARE_EXCEIPTION_MESSAGE)) {
+                   if(xdbe.getCause().getMessage().equals(XQueryTrigger.PREPARE_EXCEPTION_MESSAGE)) {
                         count_prepare_exceptions++;
                    }
                }

@@ -17,9 +17,34 @@ public class GroupByClause extends AbstractFLWORClause {
 
     protected FLWORClause rootClause = null;
     private GroupSpec[] groupSpecs;
-    private Map<List<AtomicValue>, Tuple> groupedMap = null;
-    private Map<QName, LocalVariable> variables = null;
-    private List<LocalVariable> groupingVars = null;
+    private final Deque<GroupByData> stack = new ArrayDeque<>();
+
+    /**
+     * Collect tuples and grouping vars. Because GroupByClause needs to keep
+     * state across calls to preEval/eval/postEval, we have to track state data
+     * in a separate object and push it to a stack, otherwise recursive calls
+     * would overwrite data.
+     */
+    private class GroupByData {
+
+        private Map<List<AtomicValue>, Tuple> groupedMap = null;
+        private Map<QName, LocalVariable> variables = null;
+        private List<LocalVariable> groupingVars = null;
+
+        private boolean initialized = false;
+
+        public GroupByData() {
+            // check if we can use a hash map
+            if (usesDefaultCollator()) {
+                groupedMap = new HashMap<>();
+            } else {
+                // non-default collation: must use tree map
+                groupedMap = new TreeMap<>(GroupByClause.this::compareKeys);
+            }
+            variables = new HashMap<>();
+            groupingVars = new ArrayList<>();
+        }
+    }
 
     public GroupByClause(XQueryContext context) {
         super(context);
@@ -31,19 +56,14 @@ public class GroupByClause extends AbstractFLWORClause {
     }
 
     @Override
+    public Sequence preEval(Sequence seq) throws XPathException {
+        stack.push(new GroupByData());
+        return super.preEval(seq);
+    }
+
+    @Override
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
-        final boolean init = groupedMap == null;
-        if (init) {
-            // check if we can use a hash map
-            if (usesDefaultCollator()) {
-                groupedMap = new HashMap<>();
-            } else {
-                // non-default collation: must use tree map
-                groupedMap = new TreeMap<>(this::compareKeys);
-            }
-            variables = new HashMap<>();
-            groupingVars = new ArrayList<>();
-        }
+        final GroupByData data = stack.peek();
 
         // Evaluate group spec to create grouping key sequence
         final List<Sequence> groupingValues = new ArrayList<>();
@@ -56,60 +76,62 @@ public class GroupByClause extends AbstractFLWORClause {
             }
             final AtomicValue groupingValue = groupingSeq.isEmpty() ? AtomicValue.EMPTY_VALUE : groupingSeq.itemAt(0)
                     .atomize();
-            if (init) {
+            if (!data.initialized) {
                 final LocalVariable groupingVar = new LocalVariable(spec.getKeyVarName());
                 groupingVar.setSequenceType(new SequenceType(Type.ATOMIC, groupingValue.isEmpty() ? Cardinality
                         .EMPTY : Cardinality.EXACTLY_ONE));
                 groupingVar.setStaticType(groupingValue.getType());
-                groupingVars.add(groupingVar);
+                data.groupingVars.add(groupingVar);
             }
             groupingValues.add(groupingSeq);
             groupingKeys.add(groupingValue);
         }
 
         // collect the current tuples into the grouping map
-        final Tuple tuple = groupedMap.computeIfAbsent(groupingKeys, ks -> new Tuple(groupingValues));
+        final Tuple tuple = data.groupedMap.computeIfAbsent(groupingKeys, ks -> new Tuple(groupingValues));
 
         // scan in-scope variables to collect tuples
         LocalVariable nextVar = rootClause.getStartVariable();
         Objects.requireNonNull(nextVar);
         while(nextVar != null) {
             tuple.add(nextVar.getQName(), nextVar.getValue());
-            if (init) {
+            if (!data.initialized) {
                 // on first call: initialize non-grouping variable for later use
                 final LocalVariable var = new LocalVariable(nextVar.getQName());
                 var.setSequenceType(nextVar.getSequenceType());
                 var.setStaticType(nextVar.getStaticType());
                 var.setContextDocs(nextVar.getContextDocs());
-                variables.put(var.getQName(), var);
+                data.variables.put(var.getQName(), var);
             }
             nextVar = nextVar.after;
         }
 
+        data.initialized = true;
         return contextSequence;
     }
 
     @Override
     public Sequence postEval(final Sequence seq) throws XPathException {
-        if (groupedMap != null) {
+        if (!stack.isEmpty()) {
+            final GroupByData data = stack.peek();
             Sequence result = new ValueSequence();
             final LocalVariable mark = context.markLocalVariables(false);
             try {
                 // declare non-grouping variables
-                for (LocalVariable var: variables.values()) {
+                for (LocalVariable var : data.variables.values()) {
                     context.declareVariableBinding(var);
                 }
                 // declare grouping variables
-                for (LocalVariable var: groupingVars) {
+                for (LocalVariable var : data.groupingVars) {
                     context.declareVariableBinding(var);
                 }
                 // iterate over each group
-                for (Tuple tuple: groupedMap.values()) {
+                for (Tuple tuple : data.groupedMap.values()) {
                     context.proceed();
 
                     // set grouping variable values
                     final Iterator<Sequence> siter = tuple.groupingValues.iterator();
-                    for (LocalVariable var : groupingVars) {
+                    for (LocalVariable var : data.groupingVars) {
                         if (siter.hasNext()) {
                             Sequence val = siter.next();
                             var.setValue(val);
@@ -119,17 +141,17 @@ public class GroupByClause extends AbstractFLWORClause {
                     }
                     // set values of non-grouping variables
                     for (Map.Entry<QName, Sequence> entry : tuple.entrySet()) {
-                        final LocalVariable var = variables.get(entry.getKey());
+                        final LocalVariable var = data.variables.get(entry.getKey());
                         var.setValue(entry.getValue());
                     }
-                    result.addAll(returnExpr.eval(null));
+                    final Sequence r = returnExpr.eval(null);
+                    result.addAll(r);
                 }
             } finally {
+                stack.pop();
                 context.popLocalVariables(mark, result);
             }
-            groupedMap = null;
-            groupingVars = null;
-            variables = null;
+
             if (returnExpr instanceof FLWORClause) {
                 result = ((FLWORClause) returnExpr).postEval(result);
             }
@@ -210,9 +232,7 @@ public class GroupByClause extends AbstractFLWORClause {
     @Override
     public void resetState(boolean postOptimization) {
         super.resetState(postOptimization);
-        groupedMap = null;
-        groupingVars = null;
-        variables = null;
+        stack.clear();
         returnExpr.resetState(postOptimization);
         for (GroupSpec spec: groupSpecs) {
             spec.resetState(postOptimization);
@@ -263,7 +283,7 @@ public class GroupByClause extends AbstractFLWORClause {
             this.groupingValues = groupingValues;
         }
 
-        public void add(QName name, Sequence val) throws XPathException {
+        public void add(final QName name, final Sequence val) throws XPathException {
             Sequence seq = get(name);
             if (seq == null) {
                 final ValueSequence temp = new ValueSequence(val.getItemCount());

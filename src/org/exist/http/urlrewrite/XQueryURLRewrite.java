@@ -24,7 +24,6 @@ package org.exist.http.urlrewrite;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -57,7 +56,6 @@ import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.xmldb.XmldbURI;
 import org.exist.security.*;
-import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.XQueryPool;
@@ -79,10 +77,7 @@ import org.xml.sax.SAXException;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.DatabaseManager;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.ServletInputStream;
+import javax.servlet.*;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletRequest;
@@ -90,6 +85,9 @@ import javax.servlet.http.HttpServletResponseWrapper;
 import javax.xml.transform.OutputKeys;
 
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
@@ -672,7 +670,7 @@ public class XQueryURLRewrite extends HttpServlet {
         }
         XQueryContext queryContext;
         if (compiled == null) {
-			queryContext = new XQueryContext(broker.getBrokerPool(), AccessContext.REST);
+			queryContext = new XQueryContext(broker.getBrokerPool());
 		} else {
 			queryContext = compiled.getContext();
 		}
@@ -842,42 +840,43 @@ public class XQueryURLRewrite extends HttpServlet {
             	LOG.trace("Looking for controller.xql in the filesystem, starting from: " + basePath);
             }
             final String realPath = config.getServletContext().getRealPath(basePath);
-            final File baseDir = new File(realPath);
-            if (!baseDir.isDirectory()) {
+            final Path baseDir = Paths.get(realPath);
+            if (!Files.isDirectory(baseDir)) {
                 LOG.warn("Base path for XQueryURLRewrite does not point to a directory");
                 return null;
             }
 
-            File controllerFile = null;
-            File subDir = baseDir;
+            Path controllerFile = null;
+            Path subDir = baseDir;
             for (int i = 0; i < components.length; i++) {
                 if (components[i].length() > 0) {
-                    subDir = new File(subDir, components[i]);
-                    if (subDir.isDirectory()) {
-                        File cf = new File(subDir, "controller.xql");
-                        if (cf.canRead())
-                            {controllerFile = cf;}
+                    subDir = subDir.resolve(components[i]);
+                    if (Files.isDirectory(subDir)) {
+                        Path cf = subDir.resolve("controller.xql");
+                        if (Files.isReadable(cf)) {
+                            controllerFile = cf;
+                        }
                     } else {
                         break;
                     }
                 }
             }
             if (controllerFile == null) {
-                File cf = new File(baseDir, "controller.xql");
-                if (cf.canRead())
-                    {controllerFile = cf;}
+                Path cf = baseDir.resolve("controller.xql");
+                if (Files.isReadable(cf)) {
+                    controllerFile = cf;
+                }
             }
             if (controllerFile == null) {
                 LOG.warn("XQueryURLRewrite controller could not be found");
                 return null;
             }
             if (LOG.isTraceEnabled()) {
-                LOG.trace("Found controller file: " + controllerFile.getAbsolutePath());
+                LOG.trace("Found controller file: " + controllerFile.toAbsolutePath());
             }
-            final String parentPath = controllerFile.getParentFile().getAbsolutePath();
-            
-            sourceInfo = new SourceInfo(new FileSource(controllerFile, "UTF-8", true), parentPath);
-            sourceInfo.controllerPath = parentPath.substring(baseDir.getAbsolutePath().length());
+            final String parentPath = controllerFile.getParent().toAbsolutePath().toString();
+            sourceInfo = new SourceInfo(new FileSource(controllerFile, true), parentPath);
+            sourceInfo.controllerPath = parentPath.substring(baseDir.toAbsolutePath().toString().length());
             // replace windows path separators
             sourceInfo.controllerPath = sourceInfo.controllerPath.replace('\\', '/');
             
@@ -1449,6 +1448,16 @@ public class XQueryURLRewrite extends HttpServlet {
         public void write(byte b[], int off, int len) throws IOException {
             ostream.write(b, off, len);
         }
+
+        @Override
+        public boolean isReady() {
+            return true;
+        }
+
+        @Override
+        public void setWriteListener(final WriteListener writeListener) {
+            throw new UnsupportedOperationException();
+        }
     }
 
     private static class CachingServletInputStream extends ServletInputStream {
@@ -1480,6 +1489,21 @@ public class XQueryURLRewrite extends HttpServlet {
         @Override
         public int available() throws IOException {
             return istream.available(); 
+        }
+
+        @Override
+        public boolean isFinished() {
+            return istream.available() == 0;
+        }
+
+        @Override
+        public boolean isReady() {
+            return true;
+        }
+
+        @Override
+        public void setReadListener(final ReadListener readListener) {
+            throw new UnsupportedOperationException();
         }
     }
 }

@@ -141,7 +141,7 @@ public class ExtCollection extends Function {
                         }
                     } else {
                         if (context.inProtectedMode())
-                            {context.getProtectedDocs().getDocsByCollection(coll, includeSubCollections, ndocs);}
+                            {context.getProtectedDocs().getDocsByCollection(coll, ndocs);}
                         else
                             {coll.allDocs(context.getBroker(), ndocs,
                                 includeSubCollections, context.getProtectedDocs());}

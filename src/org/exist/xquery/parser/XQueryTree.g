@@ -43,6 +43,9 @@ header {
 	import org.exist.security.PermissionDeniedException;
 	import org.exist.util.XMLChar;
 	import org.exist.xquery.*;
+	import org.exist.xquery.Constants.ArithmeticOperator;
+	import org.exist.xquery.Constants.Comparison;
+	import org.exist.xquery.Constants.NodeComparisonOperator;
 	import org.exist.xquery.value.*;
 	import org.exist.xquery.functions.fn.*;
 	import org.exist.xquery.update.*;
@@ -93,7 +96,7 @@ options {
 	}
 
 	public String getErrorMessage() {
-		StringBuffer buf= new StringBuffer();
+		StringBuilder buf= new StringBuilder();
 		for (Iterator i= exceptions.iterator(); i.hasNext();) {
 			buf.append(((Exception) i.next()).toString());
 			buf.append('\n');
@@ -2344,7 +2347,7 @@ throws PermissionDeniedException, EXistException, XPathException
 :
 	#( plus:PLUS step=expr [left] step=expr [right] )
 	{
-		OpNumeric op= new OpNumeric(context, left, right, Constants.PLUS);
+		OpNumeric op= new OpNumeric(context, left, right, ArithmeticOperator.ADDITION);
         op.setASTNode(plus);
 		path.addPath(op);
 		step= op;
@@ -2352,7 +2355,7 @@ throws PermissionDeniedException, EXistException, XPathException
 	|
 	#( minus:MINUS step=expr [left] step=expr [right] )
 	{
-		OpNumeric op= new OpNumeric(context, left, right, Constants.MINUS);
+		OpNumeric op= new OpNumeric(context, left, right, ArithmeticOperator.SUBTRACTION);
         op.setASTNode(minus);
 		path.addPath(op);
 		step= op;
@@ -2360,7 +2363,7 @@ throws PermissionDeniedException, EXistException, XPathException
 	|
 	#( uminus:UNARY_MINUS step=expr [left] )
 	{
-		UnaryExpr unary= new UnaryExpr(context, Constants.MINUS);
+		UnaryExpr unary= new UnaryExpr(context, ArithmeticOperator.SUBTRACTION);
         unary.setASTNode(uminus);
 		unary.add(left);
 		path.addPath(unary);
@@ -2369,7 +2372,7 @@ throws PermissionDeniedException, EXistException, XPathException
 	|
 	#( uplus:UNARY_PLUS step=expr [left] )
 	{
-		UnaryExpr unary= new UnaryExpr(context, Constants.PLUS);
+		UnaryExpr unary= new UnaryExpr(context, ArithmeticOperator.ADDITION);
         unary.setASTNode(uplus);
 		unary.add(left);
 		path.addPath(unary);
@@ -2378,7 +2381,7 @@ throws PermissionDeniedException, EXistException, XPathException
 	|
 	#( div:"div" step=expr [left] step=expr [right] )
 	{
-		OpNumeric op= new OpNumeric(context, left, right, Constants.DIV);
+		OpNumeric op= new OpNumeric(context, left, right, ArithmeticOperator.DIVISION);
         op.setASTNode(div);
 		path.addPath(op);
 		step= op;
@@ -2386,7 +2389,7 @@ throws PermissionDeniedException, EXistException, XPathException
 	|
 	#( idiv:"idiv" step=expr [left] step=expr [right] )
 	{
-		OpNumeric op= new OpNumeric(context, left, right, Constants.IDIV);
+		OpNumeric op= new OpNumeric(context, left, right, ArithmeticOperator.DIVISION_INTEGER);
         op.setASTNode(idiv);
 		path.addPath(op);
 		step= op;
@@ -2394,7 +2397,7 @@ throws PermissionDeniedException, EXistException, XPathException
 	|
 	#( mod:"mod" step=expr [left] step=expr [right] )
 	{
-		OpNumeric op= new OpNumeric(context, left, right, Constants.MOD);
+		OpNumeric op= new OpNumeric(context, left, right, ArithmeticOperator.MODULUS);
         op.setASTNode(mod);
 		path.addPath(op);
 		step= op;
@@ -2402,7 +2405,7 @@ throws PermissionDeniedException, EXistException, XPathException
 	|
 	#( mult:STAR step=expr [left] step=expr [right] )
 	{
-		OpNumeric op= new OpNumeric(context, left, right, Constants.MULT);
+		OpNumeric op= new OpNumeric(context, left, right, ArithmeticOperator.MULTIPLICATION);
         op.setASTNode(mult);
 		path.addPath(op);
 		step= op;
@@ -2607,7 +2610,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		eq:"eq" step=expr [left]
 		step=expr [right]
 		{
-			step= new ValueComparison(context, left, right, Constants.EQ);
+			step= new ValueComparison(context, left, right, Comparison.EQ);
             step.setASTNode(eq);
 			path.add(step);
 		}
@@ -2617,7 +2620,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		ne:"ne" step=expr [left]
 		step=expr [right]
 		{
-			step= new ValueComparison(context, left, right, Constants.NEQ);
+			step= new ValueComparison(context, left, right, Comparison.NEQ);
             step.setASTNode(ne);
 			path.add(step);
 		}
@@ -2627,7 +2630,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		lt:"lt" step=expr [left]
 		step=expr [right]
 		{
-			step= new ValueComparison(context, left, right, Constants.LT);
+			step= new ValueComparison(context, left, right, Comparison.LT);
             step.setASTNode(lt);
 			path.add(step);
 		}
@@ -2637,7 +2640,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		le:"le" step=expr [left]
 		step=expr [right]
 		{
-			step= new ValueComparison(context, left, right, Constants.LTEQ);
+			step= new ValueComparison(context, left, right, Comparison.LTEQ);
             step.setASTNode(le);
 			path.add(step);
 		}
@@ -2647,7 +2650,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		gt:"gt" step=expr [left]
 		step=expr [right]
 		{
-			step= new ValueComparison(context, left, right, Constants.GT);
+			step= new ValueComparison(context, left, right, Comparison.GT);
             step.setASTNode(gt);
 			path.add(step);
 		}
@@ -2657,7 +2660,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		ge:"ge" step=expr [left]
 		step=expr [right]
 		{
-			step= new ValueComparison(context, left, right, Constants.GTEQ);
+			step= new ValueComparison(context, left, right, Comparison.GTEQ);
             step.setASTNode(ge);
 			path.add(step);
 		}
@@ -2677,7 +2680,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		eq:EQ step=expr [left]
 		step=expr [right]
 		{
-			step= new GeneralComparison(context, left, right, Constants.EQ);
+			step= new GeneralComparison(context, left, right, Comparison.EQ);
             step.setASTNode(eq);
 			path.add(step);
 		}
@@ -2687,7 +2690,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		neq:NEQ step=expr [left]
 		step=expr [right]
 		{
-			step= new GeneralComparison(context, left, right, Constants.NEQ);
+			step= new GeneralComparison(context, left, right, Comparison.NEQ);
             step.setASTNode(neq);
 			path.add(step);
 		}
@@ -2697,7 +2700,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		lt:LT step=expr [left]
 		step=expr [right]
 		{
-			step= new GeneralComparison(context, left, right, Constants.LT);
+			step= new GeneralComparison(context, left, right, Comparison.LT);
             step.setASTNode(lt);
 			path.add(step);
 		}
@@ -2707,7 +2710,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		lteq:LTEQ step=expr [left]
 		step=expr [right]
 		{
-			step= new GeneralComparison(context, left, right, Constants.LTEQ);
+			step= new GeneralComparison(context, left, right, Comparison.LTEQ);
             step.setASTNode(lteq);
 			path.add(step);
 		}
@@ -2717,7 +2720,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		gt:GT step=expr [left]
 		step=expr [right]
 		{
-			step= new GeneralComparison(context, left, right, Constants.GT);
+			step= new GeneralComparison(context, left, right, Comparison.GT);
             step.setASTNode(gt);
 			path.add(step);
 		}
@@ -2727,7 +2730,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		gteq:GTEQ step=expr [left]
 		step=expr [right]
 		{
-			step= new GeneralComparison(context, left, right, Constants.GTEQ);
+			step= new GeneralComparison(context, left, right, Comparison.GTEQ);
             step.setASTNode(gteq);
 			path.add(step);
 		}
@@ -2746,17 +2749,8 @@ throws PermissionDeniedException, EXistException, XPathException
 	#(
 		is:"is" step=expr [left] step=expr [right]
 		{
-			step = new NodeComparison(context, left, right, Constants.IS);
+			step = new NodeComparison(context, left, right, NodeComparisonOperator.IS);
             step.setASTNode(is);
-			path.add(step);
-		}
-	)
-	|
-	#(
-		isnot:"isnot" step=expr[left] step=expr[right]
-		{
-			step = new NodeComparison(context, left, right, Constants.ISNOT);
-            step.setASTNode(isnot);
 			path.add(step);
 		}
 	)
@@ -2764,7 +2758,7 @@ throws PermissionDeniedException, EXistException, XPathException
 	#(
 		before:BEFORE step=expr[left] step=expr[right]
 		{
-			step = new NodeComparison(context, left, right, Constants.BEFORE);
+			step = new NodeComparison(context, left, right, NodeComparisonOperator.BEFORE);
             step.setASTNode(before);
 			path.add(step);
 		}
@@ -2773,7 +2767,7 @@ throws PermissionDeniedException, EXistException, XPathException
 	#(
 		after:AFTER step=expr[left] step=expr[right]
 		{
-			step = new NodeComparison(context, left, right, Constants.AFTER);
+			step = new NodeComparison(context, left, right, NodeComparisonOperator.AFTER);
             step.setASTNode(after);
 			path.add(step);
 		}

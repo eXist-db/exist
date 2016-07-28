@@ -447,12 +447,12 @@ public class Resource extends File {
         try(final DBBroker broker = db.getBroker();
                 final Txn txn = tm.beginTransaction()) {
 
-            FileInputSource is = new FileInputSource(file.toFile());
+            FileInputSource is = new FileInputSource(file);
 	        
             final IndexInfo info = collection.validateXMLResource(txn, broker, uri.lastSegment(), is);
 //	        info.getDocument().getMetadata().setMimeType(mimeType.getName());
 	
-	        is = new FileInputSource(file.toFile());
+	        is = new FileInputSource(file);
 	        collection.store(txn, broker, info, is, false);
 
             tm.commit(txn);
@@ -488,12 +488,12 @@ public class Resource extends File {
                 
                 final Path file = broker.getBinaryFile((BinaryDocument) doc);
 
-                FileInputSource is = new FileInputSource(file.toFile());
+                FileInputSource is = new FileInputSource(file);
                 
                 final IndexInfo info = destination.validateXMLResource(txn, broker, newName, is);
                 info.getDocument().getMetadata().setMimeType(mimeType.getName());
 
-                is = new FileInputSource(file.toFile());
+                is = new FileInputSource(file);
                 destination.store(txn, broker, info, is, false);
                 
                 source.removeBinaryResource(txn, broker, doc);
@@ -584,7 +584,8 @@ public class Resource extends File {
 
                 return true;
 	        }
-        } catch (final EXistException | PermissionDeniedException | LockException | TriggerException e) {
+        } catch (final EXistException | IOException | PermissionDeniedException | LockException | TriggerException e) {
+            LOG.error(e);
             return false;
         }
     }
@@ -851,14 +852,15 @@ public class Resource extends File {
                 final BrokerPool db = BrokerPool.getInstance();
     			try(final DBBroker broker = db.getBroker()) {
 
-                    final List<String> list = new ArrayList<String>();
+                    final List<String> list = new ArrayList<>();
                     for (final CollectionEntry entry : collection.getEntries(broker)) {
                         list.add(entry.getUri().lastSegment().toString());
                     }
 
                     return list.toArray(new String[list.size()]);
                 }
-    		} catch (final PermissionDeniedException | EXistException e) {
+    		} catch (final LockException | PermissionDeniedException | EXistException e) {
+                LOG.error(e);
             	return new String[0];
 			}
     	}

@@ -46,6 +46,7 @@ import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.triggers.*;
 import org.exist.indexing.StreamListener;
+import org.exist.indexing.StreamListener.ReindexMode;
 import org.exist.indexing.StructuralIndex;
 import org.exist.numbering.NodeId;
 import org.exist.security.*;
@@ -61,14 +62,11 @@ import org.exist.storage.index.BFile;
 import org.exist.storage.index.CollectionStore;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
-import org.exist.storage.journal.Journal;
-import org.exist.storage.journal.LogEntryTypes;
-import org.exist.storage.journal.Loggable;
+import org.exist.storage.journal.*;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.NativeSerializer;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.sync.Sync;
-import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.*;
@@ -148,22 +146,16 @@ public class NativeBroker extends DBBroker {
         COLLECTIONS_DBX_ID, VALUES_DBX_ID, DOM_DBX_ID
     };
 
-    //private static final String TEMP_FRAGMENT_REMOVE_ERROR = "Could not remove temporary fragment";
-    // private static final String TEMP_STORE_ERROR = "An error occurred while storing temporary data: ";
     private static final String EXCEPTION_DURING_REINDEX = "exception during reindex";
-    private static final String DATABASE_IS_READ_ONLY = "database is read-only";
+    private static final String DATABASE_IS_READ_ONLY = "Database is read-only";
 
     public static final String DEFAULT_DATA_DIR = "data";
     public static final int DEFAULT_INDEX_DEPTH = 1;
-    public static final int DEFAULT_MIN_MEMORY = 5000000;
-    public static final long TEMP_FRAGMENT_TIMEOUT = 60000;
-    /** default buffer size setting */
-    public static final int BUFFERS = 256;
+
     /** check available memory after storing DEFAULT_NODES_BEFORE_MEMORY_CHECK nodes */
     public static final int DEFAULT_NODES_BEFORE_MEMORY_CHECK = 500;
 
     public static final int OFFSET_COLLECTION_ID = 0;
-    public static final int OFFSET_VALUE = OFFSET_COLLECTION_ID + Collection.LENGTH_COLLECTION_ID; //2
 
     public final static String INIT_COLLECTION_CONFIG = "collection.xconf.init";
 
@@ -171,29 +163,29 @@ public class NativeBroker extends DBBroker {
     private final static int BINARY_RESOURCE_BUF_SIZE = 65536;
 
     /** the database files */
-    protected CollectionStore collectionsDb;
-    protected DOMFile domDb;
+    private final CollectionStore collectionsDb;
+    private final DOMFile domDb;
 
     /** the index processors */
-    protected NativeValueIndex valueIndex;
+    private NativeValueIndex valueIndex;
 
-    protected IndexSpec indexConfiguration;
+    private final IndexSpec indexConfiguration;
 
-    protected int defaultIndexDepth;
+    private int defaultIndexDepth;
 
-    protected Serializer xmlSerializer;
+    private final Serializer xmlSerializer;
 
     /** used to count the nodes inserted after the last memory check */
-    protected int nodesCount = 0;
+    private int nodesCount = 0;
 
-    protected int nodesCountThreshold = DEFAULT_NODES_BEFORE_MEMORY_CHECK;
+    private int nodesCountThreshold = DEFAULT_NODES_BEFORE_MEMORY_CHECK;
 
-    protected Path dataDir;
-    protected Path fsDir;
-    protected Path fsBackupDir;
-    protected int pageSize;
+    private final Path dataDir;
+    private final Path fsDir;
+    private final Optional<Path> fsJournalDir;
+    private int pageSize;
 
-    protected byte prepend;
+    private final byte prepend;
 
     private final Runtime run = Runtime.getRuntime();
 
@@ -201,42 +193,43 @@ public class NativeBroker extends DBBroker {
 
     private IEmbeddedXMLStreamReader streamReader = null;
 
-    protected Journal logManager;
+    private final Optional<JournalManager> logManager;
 
-    protected boolean incrementalDocIds = false;
+    private boolean incrementalDocIds = false;
 
     /** initialize database; read configuration, etc. */
     public NativeBroker(final BrokerPool pool, final Configuration config) throws EXistException {
         super(pool, config);
-        this.logManager = pool.getTransactionManager().getJournal();
+        this.logManager = pool.getJournalManager();
         LOG.debug("Initializing broker " + hashCode());
 
         final String prependDB = (String) config.getProperty("db-connection.prepend-db");
         if("always".equalsIgnoreCase(prependDB)) {
-            prepend = PREPEND_DB_ALWAYS;
+            this.prepend = PREPEND_DB_ALWAYS;
         } else if("never".equalsIgnoreCase(prependDB)) {
-            prepend = PREPEND_DB_NEVER;
+            this.prepend = PREPEND_DB_NEVER;
         } else {
-            prepend = PREPEND_DB_AS_NEEDED;
+            this.prepend = PREPEND_DB_AS_NEEDED;
         }
 
-        dataDir = (Path) config.getProperty(BrokerPool.PROPERTY_DATA_DIR);
-        if(dataDir == null) {
-            dataDir = Paths.get(DEFAULT_DATA_DIR);
-        }
+        this.dataDir = config.getProperty(BrokerPool.PROPERTY_DATA_DIR, Paths.get(DEFAULT_DATA_DIR));
 
         final Path fs = dataDir.resolve("fs");
         try {
-            fsDir = Files.createDirectories(fs);
+            this.fsDir = Files.createDirectories(fs);
         } catch(final IOException ioe) {
             throw new EXistException("Cannot make collection filesystem directory: " + fs.toAbsolutePath().toString(), ioe);
         }
 
-        final Path fsJournal = dataDir.resolve("fs.journal");
-        try {
-            fsBackupDir = Files.createDirectories(fsJournal);
-        } catch(final IOException ioe) {
-            throw new EXistException("Cannot make collection filesystem directory: " + fsJournal.toAbsolutePath().toString(), ioe);
+        if(pool.isRecoveryEnabled()) {
+            final Path fsJournal = dataDir.resolve("fs.journal");
+            try {
+                this.fsJournalDir = Optional.of(Files.createDirectories(fsJournal));
+            } catch(final IOException ioe) {
+                throw new EXistException("Cannot make collection filesystem directory: " + fsJournal.toAbsolutePath().toString(), ioe);
+            }
+        } else {
+            this.fsJournalDir = Optional.empty();
         }
 
         nodesCountThreshold = config.getInteger(BrokerPool.PROPERTY_NODES_BUFFER);
@@ -254,8 +247,8 @@ public class NativeBroker extends DBBroker {
             incrementalDocIds = docIdProp.equalsIgnoreCase("incremental");
         }
 
-        indexConfiguration = (IndexSpec) config.getProperty(Indexer.PROPERTY_INDEXER_CONFIG);
-        xmlSerializer = new NativeSerializer(this, config);
+        this.indexConfiguration = (IndexSpec) config.getProperty(Indexer.PROPERTY_INDEXER_CONFIG);
+        this.xmlSerializer = new NativeSerializer(this, config);
 
         try {
             pushSubject(pool.getSecurityManager().getSystemSubject());
@@ -265,9 +258,11 @@ public class NativeBroker extends DBBroker {
             //3) have consistent file creation behaviour (we can probably avoid some unnecessary files)
             //4) use... *customized* factories for a better index extensibility ;-)
             // Initialize DOM storage
-            domDb = (DOMFile) config.getProperty(DOMFile.getConfigKeyForFile());
-            if(domDb == null) {
-                domDb = new DOMFile(pool, DOM_DBX_ID, dataDir, config);
+            final DOMFile configuredDomFile = (DOMFile) config.getProperty(DOMFile.getConfigKeyForFile());
+            if(configuredDomFile != null) {
+                this.domDb = configuredDomFile;
+            } else {
+                this.domDb = new DOMFile(pool, DOM_DBX_ID, dataDir, config);
             }
             if(domDb.isReadOnly()) {
                 LOG.warn(FileUtils.fileName(domDb.getFile()) + " is read-only!");
@@ -275,18 +270,20 @@ public class NativeBroker extends DBBroker {
             }
 
             //Initialize collections storage
-            collectionsDb = (CollectionStore) config.getProperty(CollectionStore.getConfigKeyForFile());
-            if(collectionsDb == null) {
-                collectionsDb = new CollectionStore(pool, COLLECTIONS_DBX_ID, dataDir, config);
+            final CollectionStore configuredCollectionsDb = (CollectionStore) config.getProperty(CollectionStore.getConfigKeyForFile());
+            if(configuredCollectionsDb != null) {
+                this.collectionsDb = configuredCollectionsDb;
+            } else {
+                this.collectionsDb = new CollectionStore(pool, COLLECTIONS_DBX_ID, dataDir, config);
             }
             if(collectionsDb.isReadOnly()) {
                 LOG.warn(FileUtils.fileName(collectionsDb.getFile()) + " is read-only!");
                 pool.setReadOnly();
             }
 
-            valueIndex = new NativeValueIndex(this, VALUES_DBX_ID, dataDir, config);
-            if(pool.isReadOnly()) {
-                LOG.info("Database runs in read-only mode");
+            this.valueIndex = new NativeValueIndex(this, VALUES_DBX_ID, dataDir, config);
+            if(isReadOnly()) {
+                LOG.warn(DATABASE_IS_READ_ONLY);
             }
         } catch(final DBException e) {
             LOG.debug(e.getMessage(), e);
@@ -431,7 +428,7 @@ public class NativeBroker extends DBBroker {
             }
             valueIndex.setDocument(node.getOwnerDocument());
             valueIndex.storeElement((ElementImpl) node, content, RangeIndexSpec.indexTypeToXPath(indexType),
-                NativeValueIndex.IDX_GENERIC, remove);
+                NativeValueIndex.IndexType.GENERIC, remove);
         }
 
         // TODO : move to NativeValueIndexByQName 
@@ -447,7 +444,7 @@ public class NativeBroker extends DBBroker {
             }
             valueIndex.setDocument(node.getOwnerDocument());
             valueIndex.storeElement((ElementImpl) node, content, RangeIndexSpec.indexTypeToXPath(indexType),
-                NativeValueIndex.IDX_QNAME, remove);
+                NativeValueIndex.IndexType.QNAME, remove);
             //qnameValueIndex.setDocument((DocumentImpl) node.getOwnerDocument());
             //qnameValueIndex.endElement((ElementImpl) node, currentPath, content);
         }
@@ -599,6 +596,11 @@ public class NativeBroker extends DBBroker {
         return new NativeSerializer(this, getConfiguration());
     }
 
+    @Override
+    public Serializer newSerializer(List<String> chainOfReceivers) {
+        return new NativeSerializer(this, getConfiguration(), chainOfReceivers);
+    }
+
     public XmldbURI prepend(final XmldbURI uri) {
         switch(prepend) {
             case PREPEND_DB_ALWAYS:
@@ -701,6 +703,9 @@ public class NativeBroker extends DBBroker {
                     saveCollection(transaction, current);
                     created = true;
 
+                    //adding to make it available @ afterCreateCollection
+                    collectionsCache.add(current);
+
                     trigger.afterCreateCollection(this, transaction, current);
 
                     //import an initial collection configuration
@@ -729,12 +734,12 @@ public class NativeBroker extends DBBroker {
                     if(current.hasSubcollectionNoLock(this, temp)) {
                         current = getCollection(path);
                         if(current == null) {
-                            LOG.debug("Collection '" + path + "' not found!");
+                            LOG.error("Collection '" + path + "' found in subCollections set but is missing from collections.dbx!");
                         }
                     } else {
 
-                        if(pool.isReadOnly()) {
-                            throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
+                        if(isReadOnly()) {
+                            throw new IOException(DATABASE_IS_READ_ONLY);
                         }
 
                         if(!current.getPermissionsNoLock().validate(getCurrentSubject(), Permission.WRITE)) {
@@ -775,6 +780,9 @@ public class NativeBroker extends DBBroker {
                         current.addCollection(this, sub, true);
                         saveCollection(transaction, current);
                         created = true;
+
+                        //adding to make it available @ afterCreateCollection
+                        collectionsCache.add(sub);
 
                         trigger.afterCreateCollection(this, transaction, sub);
 
@@ -924,10 +932,9 @@ public class NativeBroker extends DBBroker {
                     }
                     collection = new Collection(this, uri);
                     collection.read(this, is);
-                    //TODO : manage this from within the cache -pb
-                    if(!pool.isInitializing()) {
-                        collectionsCache.add(collection);
-                    }
+
+                    collectionsCache.add(collection);
+
                     //TODO : rethrow exceptions ? -pb
                 } catch(final UnsupportedEncodingException e) {
                     LOG.error("Unable to encode '" + uri + "' in UTF-8");
@@ -1036,8 +1043,8 @@ public class NativeBroker extends DBBroker {
      */
     @Override
     public void copyCollection(final Txn transaction, final Collection collection, final Collection destination, final XmldbURI newName) throws PermissionDeniedException, LockException, IOException, TriggerException, EXistException {
-        if(pool.isReadOnly()) {
-            throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
+        if(isReadOnly()) {
+            throw new IOException(DATABASE_IS_READ_ONLY);
         }
 
         //TODO : resolve URIs !!!
@@ -1201,8 +1208,8 @@ public class NativeBroker extends DBBroker {
     @Override
     public void moveCollection(final Txn transaction, final Collection collection, final Collection destination, final XmldbURI newName) throws PermissionDeniedException, LockException, IOException, TriggerException {
 
-        if(pool.isReadOnly()) {
-            throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
+        if(isReadOnly()) {
+            throw new IOException(DATABASE_IS_READ_ONLY);
         }
 
         if(newName != null && newName.numSegments() != 1) {
@@ -1278,23 +1285,34 @@ public class NativeBroker extends DBBroker {
         final Path targetDir = getCollectionFile(getFsDir(), destination.getURI().append(newName), false);
         if(Files.exists(sourceDir)) {
             if(Files.exists(targetDir)) {
-                final Path targetDelDir = getCollectionFile(fsBackupDir, transaction, destination.getURI().append(newName), true);
-                Files.createDirectories(targetDelDir);
-                Files.move(targetDir, targetDelDir, StandardCopyOption.ATOMIC_MOVE);
-                final Loggable loggable = new RenameBinaryLoggable(this, transaction, targetDir, targetDelDir);
-                try {
-                    logManager.writeToLog(loggable);
-                } catch(final TransactionException e) {
-                    LOG.warn(e.getMessage(), e);
+
+                if(fsJournalDir.isPresent()) {
+                    final Path targetDelDir = getCollectionFile(fsJournalDir.get(), transaction, destination.getURI().append(newName), true);
+                    Files.createDirectories(targetDelDir);
+                    Files.move(targetDir, targetDelDir, StandardCopyOption.ATOMIC_MOVE);
+
+                    if(logManager.isPresent()) {
+                        final Loggable loggable = new RenameBinaryLoggable(this, transaction, targetDir, targetDelDir);
+                        try {
+                            logManager.get().journal(loggable);
+                        } catch (final JournalException e) {
+                            LOG.warn(e.getMessage(), e);
+                        }
+                    }
+                } else {
+                    FileUtils.delete(targetDir);
                 }
             }
             Files.createDirectories(targetDir.getParent());
             Files.move(sourceDir, targetDir, StandardCopyOption.ATOMIC_MOVE);
-            final Loggable loggable = new RenameBinaryLoggable(this, transaction, sourceDir, targetDir);
-            try {
-                logManager.writeToLog(loggable);
-            } catch(final TransactionException e) {
-                LOG.warn(e.getMessage(), e);
+
+            if(logManager.isPresent()) {
+                final Loggable loggable = new RenameBinaryLoggable(this, transaction, sourceDir, targetDir);
+                try {
+                    logManager.get().journal(loggable);
+                } catch (final JournalException e) {
+                    LOG.warn(e.getMessage(), e);
+                }
             }
         }
     }
@@ -1396,8 +1414,8 @@ public class NativeBroker extends DBBroker {
     @Override
     public boolean removeCollection(final Txn transaction, final Collection collection) throws PermissionDeniedException, IOException, TriggerException {
 
-        if(pool.isReadOnly()) {
-            throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
+        if(isReadOnly()) {
+            throw new IOException(DATABASE_IS_READ_ONLY);
         }
 
         final XmldbURI parentName = collection.getParentURI();
@@ -1596,21 +1614,28 @@ public class NativeBroker extends DBBroker {
 
                 //now that the database has been updated, update the binary collections on disk
                 final Path fsSourceDir = getCollectionFile(getFsDir(), collection.getURI(), false);
-                final Path fsTargetDir = getCollectionFile(fsBackupDir, transaction, collection.getURI(), true);
+                if(fsJournalDir.isPresent()) {
+                    final Path fsTargetDir = getCollectionFile(fsJournalDir.get(), transaction, collection.getURI(), true);
 
-                // remove child binary collections
-                if(Files.exists(fsSourceDir)) {
-                    Files.createDirectories(fsTargetDir.getParent());
+                    // remove child binary collections
+                    if (Files.exists(fsSourceDir)) {
+                        Files.createDirectories(fsTargetDir.getParent());
 
-                    //TODO(DS) log first, rename second ???
-                    //TODO(DW) not sure a Fatal is required here. Copy and delete maybe?
-                    Files.move(fsSourceDir, fsTargetDir, StandardCopyOption.ATOMIC_MOVE);
-                    final Loggable loggable = new RenameBinaryLoggable(this, transaction, fsSourceDir, fsTargetDir);
-                    try {
-                        logManager.writeToLog(loggable);
-                    } catch(final TransactionException e) {
-                        LOG.warn(e.getMessage(), e);
+                        //TODO(DS) log first, rename second ???
+                        //TODO(DW) not sure a Fatal is required here. Copy and delete maybe?
+                        Files.move(fsSourceDir, fsTargetDir, StandardCopyOption.ATOMIC_MOVE);
+
+                        if (logManager.isPresent()) {
+                            final Loggable loggable = new RenameBinaryLoggable(this, transaction, fsSourceDir, fsTargetDir);
+                            try {
+                                logManager.get().journal(loggable);
+                            } catch (final JournalException e) {
+                                LOG.warn(e.getMessage(), e);
+                            }
+                        }
                     }
+                } else {
+                    FileUtils.delete(fsSourceDir);
                 }
 
 
@@ -1645,14 +1670,11 @@ public class NativeBroker extends DBBroker {
             LOG.error("NativeBroker.saveCollection called with collection == null! Aborting.");
             return;
         }
-        if(pool.isReadOnly()) {
-            throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
+        if(isReadOnly()) {
+            throw new IOException(DATABASE_IS_READ_ONLY);
         }
 
-        if(!pool.isInitializing()) {
-            // don't cache the collection during initialization: SecurityManager is not yet online
-            pool.getCollectionsCache().add(collection);
-        }
+        pool.getCollectionsCache().add(collection);
 
         final Lock lock = collectionsDb.getLock();
         try {
@@ -1716,9 +1738,9 @@ public class NativeBroker extends DBBroker {
     }
 
     @Override
-    public void reindexCollection(XmldbURI collectionName) throws PermissionDeniedException {
-        if(pool.isReadOnly()) {
-            throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
+    public void reindexCollection(XmldbURI collectionName) throws PermissionDeniedException, IOException {
+        if(isReadOnly()) {
+            throw new IOException(DATABASE_IS_READ_ONLY);
         }
         collectionName = prepend(collectionName.toCollectionPathURI());
         final Collection collection = getCollection(collectionName);
@@ -1726,10 +1748,10 @@ public class NativeBroker extends DBBroker {
             LOG.debug("collection " + collectionName + " not found!");
             return;
         }
-        reindexCollection(collection, NodeProcessor.MODE_STORE);
+        reindexCollection(collection, IndexMode.STORE);
     }
 
-    public void reindexCollection(final Collection collection, final int mode) throws PermissionDeniedException {
+    public void reindexCollection(final Collection collection, final IndexMode mode) throws PermissionDeniedException {
         final TransactionManager transact = pool.getTransactionManager();
 
         final long start = System.currentTimeMillis();
@@ -1750,14 +1772,14 @@ public class NativeBroker extends DBBroker {
         }
     }
 
-    public void reindexCollection(final Txn transaction, final Collection collection, final int mode) throws PermissionDeniedException {
+    public void reindexCollection(final Txn transaction, final Collection collection, final IndexMode mode) throws PermissionDeniedException, IOException {
         final CollectionCache collectionsCache = pool.getCollectionsCache();
         synchronized(collectionsCache) {
             if(!collection.getPermissionsNoLock().validate(getCurrentSubject(), Permission.WRITE)) {
                 throw new PermissionDeniedException("Account " + getCurrentSubject().getName() + " have insufficient privileges on collection " + collection.getURI());
             }
             LOG.debug("Reindexing collection " + collection.getURI());
-            if(mode == NodeProcessor.MODE_STORE) {
+            if(mode == IndexMode.STORE) {
                 dropCollectionIndex(transaction, collection, true);
             }
             for(final Iterator<DocumentImpl> i = collection.iterator(this); i.hasNext(); ) {
@@ -1777,13 +1799,13 @@ public class NativeBroker extends DBBroker {
         }
     }
 
-    public void dropCollectionIndex(final Txn transaction, final Collection collection) throws PermissionDeniedException {
+    public void dropCollectionIndex(final Txn transaction, final Collection collection) throws PermissionDeniedException, IOException {
         dropCollectionIndex(transaction, collection, false);
     }
 
-    public void dropCollectionIndex(final Txn transaction, final Collection collection, final boolean reindex) throws PermissionDeniedException {
-        if(pool.isReadOnly()) {
-            throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
+    public void dropCollectionIndex(final Txn transaction, final Collection collection, final boolean reindex) throws PermissionDeniedException, IOException {
+        if(isReadOnly()) {
+            throw new IOException(DATABASE_IS_READ_ONLY);
         }
         if(!collection.getPermissionsNoLock().validate(getCurrentSubject(), Permission.WRITE)) {
             throw new PermissionDeniedException("Account " + getCurrentSubject().getName() + " have insufficient privileges on collection " + collection.getURI());
@@ -2080,22 +2102,29 @@ public class NativeBroker extends DBBroker {
         final Path binFile = getCollectionFile(getFsDir(), blob.getURI(), true);
         final boolean exists = Files.exists(binFile);
 
-        final Function<Path, Loggable> fLoggable;
-        if(exists) {
-            final Path backupFile = getCollectionFile(fsBackupDir, transaction, blob.getURI(), true);
-            Files.move(binFile, backupFile, StandardCopyOption.ATOMIC_MOVE);
-            fLoggable = original -> new UpdateBinaryLoggable(this, transaction, original, backupFile);
+        final Optional<Function<Path, Loggable>> fLoggable;
+        if(fsJournalDir.isPresent()) {
+            if (exists) {
+                final Path backupFile = getCollectionFile(fsJournalDir.get(), transaction, blob.getURI(), true);
+                Files.move(binFile, backupFile, StandardCopyOption.ATOMIC_MOVE);
+                fLoggable = Optional.of(original -> new UpdateBinaryLoggable(this, transaction, original, backupFile));
+            } else {
+                fLoggable = Optional.of(original -> new CreateBinaryLoggable(this, transaction, original));
+            }
         } else {
-            fLoggable = original -> new CreateBinaryLoggable(this, transaction, original);
+            Files.deleteIfExists(binFile);
+            fLoggable = Optional.empty();
         }
 
         fWriteData.accept(binFile);
 
-        final Loggable loggable = fLoggable.apply(binFile);
-        try {
-            logManager.writeToLog(loggable);
-        } catch(final TransactionException e) {
-            LOG.warn(e.getMessage(), e);
+        if(logManager.isPresent() && fLoggable.isPresent()) {
+            final Loggable loggable = fLoggable.get().apply(binFile);
+            try {
+                logManager.get().journal(loggable);
+            } catch (final JournalException e) {
+                LOG.warn(e.getMessage(), e);
+            }
         }
     }
 
@@ -2368,10 +2397,10 @@ public class NativeBroker extends DBBroker {
      * @param newName     the new name for the document
      */
     @Override
-    public void copyResource(final Txn transaction, final DocumentImpl doc, final Collection destination, XmldbURI newName) throws PermissionDeniedException, LockException, EXistException {
+    public void copyResource(final Txn transaction, final DocumentImpl doc, final Collection destination, XmldbURI newName) throws PermissionDeniedException, LockException, EXistException, IOException {
 
-        if(pool.isReadOnly()) {
-            throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
+        if(isReadOnly()) {
+            throw new IOException(DATABASE_IS_READ_ONLY);
         }
 
         final Collection collection = doc.getCollection();
@@ -2473,8 +2502,7 @@ public class NativeBroker extends DBBroker {
         if (LOG.isDebugEnabled())
             LOG.debug("Copying document " + oldDoc.getFileURI() + " to " + newDoc.getURI());
         final long start = System.currentTimeMillis();
-        indexController.setDocument(newDoc, StreamListener.STORE);
-        final StreamListener listener = indexController.getStreamListener();
+        final StreamListener listener = indexController.getStreamListener(newDoc, ReindexMode.STORE);
         final NodeList nodes = oldDoc.getChildNodes();
         for(int i = 0; i < nodes.getLength(); i++) {
             final IStoredNode<?> node = (IStoredNode<?>) nodes.item(i);
@@ -2500,8 +2528,8 @@ public class NativeBroker extends DBBroker {
     @Override
     public void moveResource(final Txn transaction, final DocumentImpl doc, final Collection destination, XmldbURI newName) throws PermissionDeniedException, LockException, IOException, TriggerException {
 
-        if(pool.isReadOnly()) {
-            throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
+        if(isReadOnly()) {
+            throw new IOException(DATABASE_IS_READ_ONLY);
         }
 
         final Account docUser = doc.getUserLock();
@@ -2571,8 +2599,7 @@ public class NativeBroker extends DBBroker {
                 }
                 */
 
-                trigger.beforeDeleteDocument(this, transaction, oldDoc);
-                trigger.afterDeleteDocument(this, transaction, oldDoc.getURI());
+                removeResource(transaction, oldDoc);
             }
 
             boolean renameOnly = collection.getId() == destination.getId();
@@ -2582,25 +2609,30 @@ public class NativeBroker extends DBBroker {
 
             trigger.beforeMoveDocument(this, transaction, doc, newURI);
 
+            if(doc.getResourceType() == DocumentImpl.XML_FILE) {
+                if (!renameOnly) {
+                    dropIndex(transaction, doc);
+                }
+            }
+
             collection.unlinkDocument(this, doc);
+            if(!renameOnly) {
+                saveCollection(transaction, collection);
+            }
+
             removeResourceMetadata(transaction, doc);
+
             doc.setFileURI(newName);
+            doc.setCollection(destination);
+            destination.addDocument(transaction, this, doc);
+
             if(doc.getResourceType() == DocumentImpl.XML_FILE) {
                 if(!renameOnly) {
-                    //XXX: BUG: doc have new uri here!
-                    dropIndex(transaction, doc);
-                    saveCollection(transaction, collection);
-                }
-                doc.setCollection(destination);
-                destination.addDocument(transaction, this, doc);
-                if(!renameOnly) {
                     // reindexing
-                    reindexXMLResource(transaction, doc, NodeProcessor.MODE_REPAIR);
+                    reindexXMLResource(transaction, doc, IndexMode.REPAIR);
                 }
             } else {
                 // binary resource
-                doc.setCollection(destination);
-                destination.addDocument(transaction, this, doc);
                 final Path colDir = getCollectionFile(getFsDir(), destination.getURI(), true);
                 final Path binFile = colDir.resolve(newName.lastSegment().toString());
                 final Path sourceFile = getCollectionFile(getFsDir(), doc.getURI(), false);
@@ -2610,11 +2642,14 @@ public class NativeBroker extends DBBroker {
 
                 /* Rename original file to new location */
                 Files.move(fsOriginalDocument, binFile, StandardCopyOption.ATOMIC_MOVE);
-                final Loggable loggable = new RenameBinaryLoggable(this, transaction, sourceFile, binFile);
-                try {
-                    logManager.writeToLog(loggable);
-                } catch(final TransactionException e) {
-                    LOG.warn(e.getMessage(), e);
+
+                if(logManager.isPresent()) {
+                    final Loggable loggable = new RenameBinaryLoggable(this, transaction, sourceFile, binFile);
+                    try {
+                        logManager.get().journal(loggable);
+                    } catch (final JournalException e) {
+                        LOG.warn(e.getMessage(), e);
+                    }
                 }
             }
             storeXMLResource(transaction, doc);
@@ -2628,9 +2663,9 @@ public class NativeBroker extends DBBroker {
     }
 
     @Override
-    public void removeXMLResource(final Txn transaction, final DocumentImpl document, boolean freeDocId) throws PermissionDeniedException {
-        if(pool.isReadOnly()) {
-            throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
+    public void removeXMLResource(final Txn transaction, final DocumentImpl document, boolean freeDocId) throws PermissionDeniedException, IOException {
+        if(isReadOnly()) {
+            throw new IOException(DATABASE_IS_READ_ONLY);
         }
         try {
             if(LOG.isInfoEnabled()) {
@@ -2693,14 +2728,13 @@ public class NativeBroker extends DBBroker {
     }
 
     private void dropIndex(final Txn transaction, final DocumentImpl document) throws ReadOnlyException {
-        indexController.setDocument(document, StreamListener.REMOVE_ALL_NODES);
-        final StreamListener listener = indexController.getStreamListener();
+        final StreamListener listener = indexController.getStreamListener(document, ReindexMode.REMOVE_ALL_NODES);
         final NodeList nodes = document.getChildNodes();
         for(int i = 0; i < nodes.getLength(); i++) {
             final IStoredNode<?> node = (IStoredNode<?>) nodes.item(i);
             try(final INodeIterator iterator = getNodeIterator(node)) {
                 iterator.next();
-                scanNodes(transaction, iterator, node, new NodePath(), NodeProcessor.MODE_REMOVE, listener);
+                scanNodes(transaction, iterator, node, new NodePath(), IndexMode.REMOVE, listener);
             } catch(final IOException ioe) {
                 LOG.warn("Unable to close node iterator", ioe);
             }
@@ -2711,8 +2745,8 @@ public class NativeBroker extends DBBroker {
 
     @Override
     public void removeBinaryResource(final Txn transaction, final BinaryDocument blob) throws PermissionDeniedException, IOException {
-        if(pool.isReadOnly()) {
-            throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
+        if(isReadOnly()) {
+            throw new IOException(DATABASE_IS_READ_ONLY);
         }
 
         if(LOG.isDebugEnabled()) {
@@ -2721,20 +2755,25 @@ public class NativeBroker extends DBBroker {
 
         final Path binFile = getCollectionFile(getFsDir(), blob.getURI(), false);
         if(Files.exists(binFile)) {
-            final Path binBackupFile = getCollectionFile(fsBackupDir, transaction, blob.getURI(), true);
-            final Loggable loggable = new RenameBinaryLoggable(this, transaction, binFile, binBackupFile);
+            if(fsJournalDir.isPresent()) {
+	            final Path binBackupFile = getCollectionFile(fsJournalDir.get(), transaction, blob.getURI(), true);
+    	        Files.move(binFile, binBackupFile, StandardCopyOption.ATOMIC_MOVE);
 
-            Files.move(binFile, binBackupFile, StandardCopyOption.ATOMIC_MOVE);
-
-            try {
-                logManager.writeToLog(loggable);
-            } catch(final TransactionException e) {
-                LOG.warn(e.getMessage(), e);
+                if (logManager.isPresent()) {
+                    final Loggable loggable = new RenameBinaryLoggable(this, transaction, binFile, binBackupFile);
+                    try {
+                        logManager.get().journal(loggable);
+                    } catch (final JournalException e) {
+                        LOG.warn(e.getMessage(), e);
+                    }
+                }
+            } else {
+                Files.delete(binFile);
             }
         }
         removeResourceMetadata(transaction, blob);
 
-        getIndexController().setDocument(blob, StreamListener.REMOVE_BINARY);
+        getIndexController().setDocument(blob, ReindexMode.REMOVE_BINARY);
         getIndexController().flush();
     }
 
@@ -2758,6 +2797,14 @@ public class NativeBroker extends DBBroker {
             LOG.warn("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()));
         } finally {
             lock.release(Lock.READ_LOCK);
+        }
+    }
+
+    public void removeResource(Txn tx, DocumentImpl doc) throws IOException, PermissionDeniedException {
+        if (doc instanceof BinaryDocument) {
+            removeBinaryResource(tx, (BinaryDocument) doc);
+        } else {
+            removeXMLResource(tx, doc);
         }
     }
 
@@ -2804,26 +2851,36 @@ public class NativeBroker extends DBBroker {
         return nextDocId;
     }
 
+    @Override
+    public void reindexXMLResource(final Txn txn, final DocumentImpl doc) {
+        reindexXMLResource(txn, doc, IndexMode.REPAIR);
+    }
+
     /**
      * Reindex the nodes in the document. This method will either reindex all
      * descendant nodes of the passed node, or all nodes below some level of
      * the document if node is null.
      */
-    private void reindexXMLResource(final Txn transaction, final DocumentImpl doc, final int mode) {
+    @Override
+    public void reindexXMLResource(final Txn transaction, final DocumentImpl doc, final IndexMode mode) {
         if(doc.isCollectionConfig()) {
             doc.getCollection().setCollectionConfigEnabled(false);
         }
-        indexController.setDocument(doc, StreamListener.STORE);
-        final StreamListener listener = indexController.getStreamListener();
-        final NodeList nodes = doc.getChildNodes();
-        for(int i = 0; i < nodes.getLength(); i++) {
-            final IStoredNode<?> node = (IStoredNode<?>) nodes.item(i);
-            try(final INodeIterator iterator = getNodeIterator(node)) {
-                iterator.next();
-                scanNodes(transaction, iterator, node, new NodePath(), mode, listener);
-            } catch(final IOException ioe) {
-                LOG.warn("Unable to close node iterator", ioe);
+        final StreamListener listener = indexController.getStreamListener(doc, ReindexMode.STORE);
+        indexController.startIndexDocument(transaction, listener);
+        try {
+            final NodeList nodes = doc.getChildNodes();
+            for (int i = 0; i < nodes.getLength(); i++) {
+                final IStoredNode<?> node = (IStoredNode<?>) nodes.item(i);
+                try (final INodeIterator iterator = getNodeIterator(node)) {
+                    iterator.next();
+                    scanNodes(transaction, iterator, node, new NodePath(), mode, listener);
+                } catch (final IOException ioe) {
+                    LOG.warn("Unable to close node iterator", ioe);
+                }
             }
+        } finally {
+            indexController.endIndexDocument(transaction, listener);
         }
         flush();
         if(doc.isCollectionConfig()) {
@@ -2862,8 +2919,7 @@ public class NativeBroker extends DBBroker {
             final DocumentImpl tempDoc = new DocumentImpl(pool, doc.getCollection(), doc.getFileURI());
             tempDoc.copyOf(doc, true);
             tempDoc.setDocId(doc.getDocId());
-            indexController.setDocument(doc, StreamListener.STORE);
-            final StreamListener listener = indexController.getStreamListener();
+            final StreamListener listener = indexController.getStreamListener(doc, ReindexMode.STORE);
             // copy the nodes
             final NodeList nodes = doc.getChildNodes();
             for(int i = 0; i < nodes.getLength(); i++) {
@@ -3175,13 +3231,13 @@ public class NativeBroker extends DBBroker {
                 final GeneralRangeIndexSpec spec1 = doc.getCollection().getIndexByPathConfiguration(this, currentPath);
                 if(spec1 != null) {
                     valueIndex.setDocument(doc);
-                    valueIndex.storeElement((ElementImpl) node, content, spec1.getType(), NativeValueIndex.IDX_GENERIC, false);
+                    valueIndex.storeElement((ElementImpl) node, content, spec1.getType(), NativeValueIndex.IndexType.GENERIC, false);
                 }
                 QNameRangeIndexSpec qnSpec = doc.getCollection().getIndexByQNameConfiguration(this, qname);
                 if(qnSpec != null) {
                     valueIndex.setDocument(doc);
                     valueIndex.storeElement((ElementImpl) node, content, qnSpec.getType(),
-                        NativeValueIndex.IDX_QNAME, false);
+                        NativeValueIndex.IndexType.QNAME, false);
                 }
                 break;
 
@@ -3195,17 +3251,17 @@ public class NativeBroker extends DBBroker {
                 switch(attr.getType()) {
                     case AttrImpl.ID:
                         valueIndex.setDocument(doc);
-                        valueIndex.storeAttribute(attr, attr.getValue(), currentPath, NativeValueIndex.WITHOUT_PATH, Type.ID, NativeValueIndex.IDX_GENERIC, false);
+                        valueIndex.storeAttribute(attr, attr.getValue(), Type.ID, NativeValueIndex.IndexType.GENERIC, false);
                         break;
                     case AttrImpl.IDREF:
                         valueIndex.setDocument(doc);
-                        valueIndex.storeAttribute(attr, attr.getValue(), currentPath, NativeValueIndex.WITHOUT_PATH, Type.IDREF, NativeValueIndex.IDX_GENERIC, false);
+                        valueIndex.storeAttribute(attr, attr.getValue(), Type.IDREF, NativeValueIndex.IndexType.GENERIC, false);
                         break;
                     case AttrImpl.IDREFS:
                         valueIndex.setDocument(doc);
                         final StringTokenizer tokenizer = new StringTokenizer(attr.getValue(), " ");
                         while(tokenizer.hasMoreTokens()) {
-                            valueIndex.storeAttribute(attr, tokenizer.nextToken(), currentPath, NativeValueIndex.WITHOUT_PATH, Type.IDREF, NativeValueIndex.IDX_GENERIC, false);
+                            valueIndex.storeAttribute(attr, tokenizer.nextToken(),Type.IDREF, NativeValueIndex.IndexType.GENERIC, false);
                         }
                         break;
                     default:
@@ -3214,12 +3270,12 @@ public class NativeBroker extends DBBroker {
                 final RangeIndexSpec spec2 = doc.getCollection().getIndexByPathConfiguration(this, currentPath);
                 if(spec2 != null) {
                     valueIndex.setDocument(doc);
-                    valueIndex.storeAttribute(attr, null, NativeValueIndex.WITHOUT_PATH, spec2, false);
+                    valueIndex.storeAttribute(attr, null, spec2, false);
                 }
                 qnSpec = doc.getCollection().getIndexByQNameConfiguration(this, qname);
                 if(qnSpec != null) {
                     valueIndex.setDocument(doc);
-                    valueIndex.storeAttribute(attr, null, NativeValueIndex.WITHOUT_PATH, qnSpec, false);
+                    valueIndex.storeAttribute(attr, null, qnSpec, false);
                 }
                 currentPath.removeLastComponent();
                 break;
@@ -3310,12 +3366,12 @@ public class NativeBroker extends DBBroker {
      */
     @Override
     public void indexNode(final Txn transaction, final IStoredNode node, final NodePath currentPath) {
-        indexNode(transaction, node, currentPath, NodeProcessor.MODE_STORE);
+        indexNode(transaction, node, currentPath, IndexMode.STORE);
     }
 
-    public void indexNode(final Txn transaction, final IStoredNode node, final NodePath currentPath, final int repairMode) {
+    public void indexNode(final Txn transaction, final IStoredNode node, final NodePath currentPath, final IndexMode repairMode) {
         nodeProcessor.reset(transaction, node, currentPath, null);
-        nodeProcessor.setMode(repairMode);
+        nodeProcessor.setIndexMode(repairMode);
         nodeProcessor.index();
     }
 
@@ -3371,7 +3427,7 @@ public class NativeBroker extends DBBroker {
      * @param currentPath
      */
     private void scanNodes(final Txn transaction, final INodeIterator iterator, final IStoredNode node,
-                           final NodePath currentPath, final int mode, final StreamListener listener) {
+                           final NodePath currentPath, final IndexMode mode, final StreamListener listener) {
         if(node.getNodeType() == Node.ELEMENT_NODE) {
             currentPath.addComponent(node.getQName());
         }
@@ -3408,7 +3464,7 @@ public class NativeBroker extends DBBroker {
             }
         }
         if(node.getNodeType() == Node.ELEMENT_NODE) {
-            endElement(node, currentPath, null, mode == NodeProcessor.MODE_REMOVE);
+            endElement(node, currentPath, null, mode == IndexMode.REMOVE);
             if(listener != null) {
                 listener.endElement(transaction, (ElementImpl) node, currentPath);
             }
@@ -3493,9 +3549,9 @@ public class NativeBroker extends DBBroker {
     }
 
     @Override
-    public void repair() throws PermissionDeniedException {
-        if(pool.isReadOnly()) {
-            throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
+    public void repair() throws PermissionDeniedException, IOException {
+        if(isReadOnly()) {
+            throw new IOException(DATABASE_IS_READ_ONLY);
         }
 
         LOG.info("Removing index files ...");
@@ -3508,7 +3564,7 @@ public class NativeBroker extends DBBroker {
 
         LOG.info("Recreating index files ...");
         try {
-            valueIndex = new NativeValueIndex(this, VALUES_DBX_ID, dataDir, config);
+            this.valueIndex = new NativeValueIndex(this, VALUES_DBX_ID, dataDir, config);
         } catch(final DBException e) {
             LOG.warn("Exception during repair: " + e.getMessage(), e);
         }
@@ -3522,7 +3578,7 @@ public class NativeBroker extends DBBroker {
         initIndexModules();
         LOG.info("Reindexing database files ...");
         //Reindex from root collection
-        reindexCollection(null, getCollection(XmldbURI.ROOT_COLLECTION_URI), NodeProcessor.MODE_REPAIR);
+        reindexCollection(null, getCollection(XmldbURI.ROOT_COLLECTION_URI), IndexMode.REPAIR);
     }
 
     @Override
@@ -3562,7 +3618,7 @@ public class NativeBroker extends DBBroker {
     long nextReportTS = System.currentTimeMillis();
 
     @Override
-    public void sync(final int syncEvent) {
+    public void sync(final Sync syncEvent) {
         if(isReadOnly()) {
             return;
         }
@@ -3578,7 +3634,7 @@ public class NativeBroker extends DBBroker {
                     return null;
                 }
             }.run();
-            if(syncEvent == Sync.MAJOR_SYNC) {
+            if(syncEvent == Sync.MAJOR) {
                 final Lock lock = collectionsDb.getLock();
                 try {
                     lock.acquire(Lock.WRITE_LOCK);
@@ -3613,7 +3669,7 @@ public class NativeBroker extends DBBroker {
     public void shutdown() {
         try {
             flush();
-            sync(Sync.MAJOR_SYNC);
+            sync(Sync.MAJOR);
             domDb.close();
             collectionsDb.close();
             notifyClose();
@@ -3631,14 +3687,7 @@ public class NativeBroker extends DBBroker {
         if(nodesCountThreshold <= 0) {
             if(nodesCount > DEFAULT_NODES_BEFORE_MEMORY_CHECK) {
                 if(run.totalMemory() >= run.maxMemory() && run.freeMemory() < pool.getReservedMem()) {
-                    final NumberFormat nf = NumberFormat.getNumberInstance();
-                    LOG.info("total memory: " + nf.format(run.totalMemory()) +
-                        "; max: " + nf.format(run.maxMemory()) +
-                        "; free: " + nf.format(run.freeMemory()) +
-                        "; reserved: " + nf.format(pool.getReservedMem()) +
-                        "; used: " + nf.format(pool.getCacheManager().getCurrentSize()));
                     flush();
-                    System.gc();
                 }
                 nodesCount = 0;
             }
@@ -3701,11 +3750,6 @@ public class NativeBroker extends DBBroker {
      * Delegate for Node Processing : indexing
      */
     private class NodeProcessor {
-
-        final static int MODE_STORE = 0;
-        final static int MODE_REPAIR = 1;
-        final static int MODE_REMOVE = 2;
-
         private Txn transaction;
         private IStoredNode<? extends IStoredNode> node;
         private NodePath currentPath;
@@ -3718,7 +3762,7 @@ public class NativeBroker extends DBBroker {
 
         private IndexSpec idxSpec;
         private int level;
-        private int mode = MODE_STORE;
+        private IndexMode indexMode = IndexMode.STORE;
 
         NodeProcessor() {
             //ignore
@@ -3732,7 +3776,7 @@ public class NativeBroker extends DBBroker {
             this.transaction = transaction;
             this.node = node;
             this.currentPath = currentPath;
-            this.mode = MODE_STORE;
+            this.indexMode = IndexMode.STORE;
             doc = node.getOwnerDocument();
             address = node.getInternalAddress();
             if(indexSpec == null) {
@@ -3742,8 +3786,8 @@ public class NativeBroker extends DBBroker {
             level = node.getNodeId().getTreeLevel();
         }
 
-        public void setMode(int mode) {
-            this.mode = mode;
+        public void setIndexMode(final IndexMode indexMode) {
+            this.indexMode = indexMode;
         }
 
         /**
@@ -3792,8 +3836,7 @@ public class NativeBroker extends DBBroker {
                             valueIndex.setDocument(node.getOwnerDocument());
                             //Oh dear : is it the right semantics then ?
                             valueIndex.storeAttribute((AttrImpl) node, currentPath,
-                                NativeValueIndex.WITHOUT_PATH,
-                                rangeSpec, mode == MODE_REMOVE);
+                                rangeSpec, indexMode == IndexMode.REMOVE);
                         }
                         final QNameRangeIndexSpec qnIdx = idxSpec.getIndexByQName(node.getQName());
                         if(qnIdx != null) {
@@ -3803,8 +3846,8 @@ public class NativeBroker extends DBBroker {
                             }
                             valueIndex.setDocument(node.getOwnerDocument());
                             //Oh dear : is it the right semantics then ?
-                            valueIndex.storeAttribute((AttrImpl) node, currentPath, NativeValueIndex.WITHOUT_PATH,
-                                qnIdx, mode == MODE_REMOVE);
+                            valueIndex.storeAttribute((AttrImpl) node, currentPath,
+                                qnIdx, indexMode == IndexMode.REMOVE);
                         }
                     }
                     node.setQName(new QName(qname, ElementValue.ATTRIBUTE));
@@ -3813,19 +3856,19 @@ public class NativeBroker extends DBBroker {
                     switch(attr.getType()) {
                         case AttrImpl.ID:
                             valueIndex.setDocument(doc);
-                            valueIndex.storeAttribute(attr, attr.getValue(), currentPath, NativeValueIndex.WITHOUT_PATH, Type.ID, NativeValueIndex.IDX_GENERIC, mode == MODE_REMOVE);
+                            valueIndex.storeAttribute(attr, attr.getValue(), Type.ID, NativeValueIndex.IndexType.GENERIC, indexMode == IndexMode.REMOVE);
                             break;
 
                         case AttrImpl.IDREF:
                             valueIndex.setDocument(doc);
-                            valueIndex.storeAttribute(attr, attr.getValue(), currentPath, NativeValueIndex.WITHOUT_PATH, Type.IDREF, NativeValueIndex.IDX_GENERIC, mode == MODE_REMOVE);
+                            valueIndex.storeAttribute(attr, attr.getValue(), Type.IDREF, NativeValueIndex.IndexType.GENERIC, indexMode == IndexMode.REMOVE);
                             break;
 
                         case AttrImpl.IDREFS:
                             valueIndex.setDocument(doc);
                             final StringTokenizer tokenizer = new StringTokenizer(attr.getValue(), " ");
                             while(tokenizer.hasMoreTokens()) {
-                                valueIndex.storeAttribute(attr, tokenizer.nextToken(), currentPath, NativeValueIndex.WITHOUT_PATH, Type.IDREF, NativeValueIndex.IDX_GENERIC, mode == MODE_REMOVE);
+                                valueIndex.storeAttribute(attr, tokenizer.nextToken(), Type.IDREF, NativeValueIndex.IndexType.GENERIC, indexMode == IndexMode.REMOVE);
                             }
                             break;
 
@@ -3848,7 +3891,7 @@ public class NativeBroker extends DBBroker {
          */
         public void store() {
             final DocumentImpl doc = node.getOwnerDocument();
-            if(mode == MODE_STORE && node.getNodeType() == Node.ELEMENT_NODE && level <= defaultIndexDepth) {
+            if(indexMode == IndexMode.STORE && node.getNodeType() == Node.ELEMENT_NODE && level <= defaultIndexDepth) {
                 //TODO : used to be this, but NativeBroker.this avoids an owner change
                 new DOMTransaction(NativeBroker.this, domDb, Lock.WRITE_LOCK) {
                     @Override
@@ -3868,12 +3911,9 @@ public class NativeBroker extends DBBroker {
          * check available memory
          */
         private void checkAvailableMemory() {
-            if(mode != MODE_REMOVE && nodesCount > DEFAULT_NODES_BEFORE_MEMORY_CHECK) {
+            if(indexMode != IndexMode.REMOVE && nodesCount > DEFAULT_NODES_BEFORE_MEMORY_CHECK) {
                 if(run.totalMemory() >= run.maxMemory() && run.freeMemory() < pool.getReservedMem()) {
-                    //LOG.info("total memory: " + run.totalMemory() + "; free: " + run.freeMemory());
                     flush();
-                    System.gc();
-                    LOG.info("total memory: " + run.totalMemory() + "; free: " + run.freeMemory());
                 }
                 nodesCount = 0;
             }

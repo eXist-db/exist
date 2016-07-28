@@ -23,13 +23,11 @@ package org.exist.xquery.functions.util;
 import java.net.URI;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Optional;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
-import org.exist.security.xacml.AccessContext;
 import org.exist.source.Source;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -168,7 +166,7 @@ public class ModuleInfo extends BasicFunction {
         } else if ("mapped-modules".equals(getSignature().getName().getLocalPart())) {
             final ValueSequence resultSeq = new ValueSequence();
             for (final Iterator<String> i = context.getMappedModuleURIs(); i.hasNext();) {
-                resultSeq.add(new StringValue(i.next().toString()));
+                resultSeq.add(new StringValue(i.next()));
             }
             return resultSeq;
 		} else if ("is-module-mapped".equals(getSignature().getName().getLocalPart())) {
@@ -218,7 +216,7 @@ public class ModuleInfo extends BasicFunction {
 			}
 		} else {
 			final ValueSequence resultSeq = new ValueSequence();
-            final XQueryContext tempContext = new XQueryContext(context.getBroker().getBrokerPool(), AccessContext.XMLDB);
+            final XQueryContext tempContext = new XQueryContext(context.getBroker().getBrokerPool());
 			for(final Iterator<Module> i = tempContext.getRootModules(); i.hasNext(); ) {
 				final Module module = i.next();
 				resultSeq.add(new StringValue(module.getNamespaceURI()));

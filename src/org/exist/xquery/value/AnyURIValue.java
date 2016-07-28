@@ -30,6 +30,7 @@ import java.util.BitSet;
 
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
+import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.functions.fn.FunEscapeURI;
@@ -265,30 +266,28 @@ public class AnyURIValue extends AtomicValue {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.AtomicValue#compareTo(int, org.exist.xquery.value.AtomicValue)
-	 */
-	public boolean compareTo(Collator collator, int operator, AtomicValue other) throws XPathException {
+	@Override
+	public boolean compareTo(Collator collator, Comparison operator, AtomicValue other) throws XPathException {
 		if (other.getType() == Type.ANY_URI) {
 			final String otherURI = other.getStringValue();
 			final int cmp = uri.compareTo(otherURI);
 			switch (operator) {
-				case Constants.EQ :
+				case EQ:
 					return cmp == 0;
-				case Constants.NEQ :
+				case NEQ:
 					return cmp != 0;
-				case Constants.GT :
+				case GT :
 					return cmp > 0;
-				case Constants.GTEQ :
+				case GTEQ :
 					return cmp >= 0;
-				case Constants.LT :
+				case LT :
 					return cmp < 0;
-				case Constants.LTEQ :
+				case LTEQ :
 					return cmp <= 0;					
 				default :
 					throw new XPathException(
 						"XPTY0004: cannot apply operator "
-							+ Constants.OPS[operator]
+							+ operator.generalComparisonSymbol
 							+ " to xs:anyURI");
 			}
 		} else

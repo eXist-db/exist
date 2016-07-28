@@ -20,7 +20,7 @@
 
         <!-- <dependency org="jivesoftware" name="smack" rev="3.1.0"/> -->
         
-        <!-- <dependency org="org.apache.xmlgraphics" name="fop" rev="1.1" conf="*->*,!sources,!javadoc">
+        <!-- <dependency org="org.apache.xmlgraphics" name="fop" rev="2.1" conf="*->*,!sources,!javadoc">
                     <exclude module="xalan"/>
                     <exclude module="xml-apis"/>
                     <exclude module="xml-apis-ext"/>

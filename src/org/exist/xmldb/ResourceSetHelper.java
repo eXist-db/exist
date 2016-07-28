@@ -41,9 +41,7 @@ public class ResourceSetHelper {
         final Set<String> set2 = m2.keySet();
         set1.retainAll(set2);
         final Map<String, Resource> m = new HashMap<>();
-        final Iterator<String> iter = set1.iterator();
-        while (iter.hasNext()) {
-            final String key = iter.next();
+        for (String key : set1) {
             final Resource resource = m1.get(key);
             m.put(key, resource);
         }

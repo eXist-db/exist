@@ -38,6 +38,7 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -467,18 +468,19 @@ public class Configurator {
                                 if (obj instanceof org.exist.security.internal.RealmImpl) {
                                     continue;
                                 }
+                                if(list.size() > i) {
+                                    if (LOG.isDebugEnabled()) {
+                                        LOG.debug("No configured instance of [" + obj + "], will attempt to replace object...");
+                                    }
 
-                                if (LOG.isDebugEnabled()) {
-                                    LOG.debug("No configured instance of [" + obj + "], will attempt to replace object...");
-                                }
-
-                                final Field referee = getFieldRecursive(Optional.of(list.get(i).getClass()), referenceBy.get());
-                                if(referee != null) {
-                                    referee.setAccessible(true);
-                                    removed.put((String) referee.get(list.remove(i)), i);
-                                } else {
-                                    LOG.error("Could not lookup referenced field: " + referenceBy.get() + " against: " + list.get(i).getClass().getName());
-                                    list.remove(i);
+                                    final Field referee = getFieldRecursive(Optional.of(list.get(i).getClass()), referenceBy.get());
+                                    if (referee != null) {
+                                        referee.setAccessible(true);
+                                        removed.put((String) referee.get(list.remove(i)), i);
+                                    } else {
+                                        LOG.error("Could not lookup referenced field: " + referenceBy.get() + " against: " + list.get(i).getClass().getName());
+                                        list.remove(i);
+                                    }
                                 }
                                 continue;
                             }
@@ -489,7 +491,9 @@ public class Configurator {
 
                             if(applicableConfs.size() == confs.size()) {
                                 LOG.debug("Configuration was removed, will attempt to replace [" + obj + "].");
-                                removed.put(((Configurable)list.remove(i)).getConfiguration().getProperty(referenceBy.get()), i);
+                                if(list.size() > i) {
+                                    removed.put(((Configurable) list.remove(i)).getConfiguration().getProperty(referenceBy.get()), i);
+                                }
                             } else {
                                 confs = applicableConfs;
                             }
@@ -1246,7 +1250,7 @@ public class Configurator {
         }
     }
     
-    protected static final Set<FullXmldbURI> saving = new HashSet<>();
+    protected static final Set<FullXmldbURI> saving = new ConcurrentSkipListSet<>();
 
     public static DocumentImpl save(final Configurable instance, final DBBroker broker, final Collection collection, final XmldbURI uri) throws IOException, ConfigurationException {
         
@@ -1287,10 +1291,9 @@ public class Configurator {
             collection.store(txn, broker, info, data, false);
             broker.saveCollection(txn, doc.getCollection());
             transact.commit(txn);
-            txn = null;
             saving.remove(fullURI);
             broker.flush();
-            broker.sync(Sync.MAJOR_SYNC);
+            broker.sync(Sync.MAJOR);
             return collection.getDocument(broker, uri.lastSegment());
             
         } catch (final Exception e) {

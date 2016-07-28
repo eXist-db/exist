@@ -28,7 +28,6 @@ import org.exist.EXistException;
 import org.exist.security.AuthenticationException;
 import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
-import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.util.Configuration;
 import org.exist.util.SSLHelper;
@@ -186,7 +185,7 @@ public class DatabaseImpl implements Database {
         try {
             final BrokerPool pool = BrokerPool.getInstance(xmldbURI.getInstanceName());
             final Subject u = getUser(user, password, pool);
-            return new LocalCollection(u, pool, xmldbURI.toCollectionPathURI(), AccessContext.XMLDB);
+            return new LocalCollection(u, pool, xmldbURI.toCollectionPathURI());
         } catch (final EXistException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "Can not access to local database instance", e);
         } catch (final XMLDBException e) {
@@ -377,15 +376,15 @@ public class DatabaseImpl implements Database {
                 break;
 
             case SSL_ENABLE:
-                value = Boolean.valueOf(ssl_enable).toString();
+                value = ssl_enable.toString();
                 break;
 
             case SSL_ALLOW_SELF_SIGNED:
-                value = Boolean.valueOf(ssl_allow_self_signed).toString();
+                value = ssl_allow_self_signed.toString();
                 break;
 
             case SSL_VERIFY_HOSTNAME:
-                value = Boolean.valueOf(ssl_verify_hostname).toString();
+                value = ssl_verify_hostname.toString();
                 break;
 
             default:

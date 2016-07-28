@@ -21,6 +21,7 @@ package org.exist.util;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exist.util.function.FunctionE;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,6 +29,7 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -131,6 +133,23 @@ public class FileUtils {
         }
     }
 
+    /**
+     * Make a measurement of the FileStore for a particular path
+     *
+     * @param path The path for which the FileStore should be measured
+     * @param measurer A function which provided with a FileStore makes a measurement
+     *
+     * @return The measured value or -1 if an error occurred whilst accessing the FileStore
+     */
+    public static long measureFileStore(final Path path, final FunctionE<FileStore, Long, IOException> measurer) {
+        try {
+            return measurer.apply(Files.getFileStore(path));
+        } catch(final IOException ioe) {
+            LOG.error(ioe);
+            return -1l;
+        }
+    }
+
     private static class DirSizeVisitor extends SimpleFileVisitor<Path> {
 
         private long size = 0;
@@ -171,10 +190,25 @@ public class FileUtils {
     /**
      * A list of the entries in the directory. The listing is not recursive.
      *
+     * @param directory The directory to list the entries for
+     *
      * @return The list of entries
      */
     public static List<Path> list(final Path directory) throws IOException {
         try(final Stream<Path> entries = Files.list(directory)) {
+            return entries.collect(Collectors.toList());
+        }
+    }
+
+    /**
+     * A list of the entries in the directory. The listing is not recursive.
+     *
+     * @param directory The directory to list the entries for
+     * @param filter A filter to be applied to the list
+     * @return The list of entries
+     */
+    public static List<Path> list(final Path directory, final Predicate<Path> filter) throws IOException {
+        try(final Stream<Path> entries = Files.list(directory).filter(filter)) {
             return entries.collect(Collectors.toList());
         }
     }

@@ -62,7 +62,7 @@ public class ModuleContext extends XQueryContext {
 	 * @param parentContext
 	 */
 	public ModuleContext(XQueryContext parentContext, String modulePrefix, String moduleNamespace, String location) {
-		super(parentContext.getAccessContext());
+		super();
         this.moduleNamespace = moduleNamespace;
         this.modulePrefix = modulePrefix;
         this.location = location;
@@ -286,7 +286,11 @@ public class ModuleContext extends XQueryContext {
         //final String dependantModule = XmldbURI.create(moduleLoadPath).append(location).toString();
         String dependantModule;
         try {
-            dependantModule = XmldbURI.create(getParentContext().getModuleLoadPath(), false).append(location).toString();
+            if(location != null && location.startsWith(XmldbURI.LOCAL_DB)) {
+                dependantModule = location;
+            } else {
+                dependantModule = XmldbURI.create(getParentContext().getModuleLoadPath(), false).append(location).toString();
+            }
         } catch (final Exception ex) {
             dependantModule = location;
         }

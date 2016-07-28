@@ -24,7 +24,6 @@ package org.exist.xquery;
 import antlr.RecognitionException;
 import antlr.TokenStreamException;
 import antlr.collections.AST;
-import com.sun.xacml.ctx.RequestCtx;
 import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
@@ -38,9 +37,6 @@ import org.exist.security.EffectiveSubject;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
-import org.exist.security.xacml.AccessContext;
-import org.exist.security.xacml.ExistPDP;
-import org.exist.security.xacml.XACMLSource;
 import org.exist.source.DBSource;
 import org.exist.source.FileSource;
 import org.exist.source.Source;
@@ -78,21 +74,11 @@ public class XQuery {
     public CompiledXQuery compile(final DBBroker broker, final XQueryContext context, final Source source, final boolean xpointer) throws XPathException, IOException, PermissionDeniedException {
 
         context.setSource(source);
-        context.setXacmlSource(XACMLSource.getInstance(source));
-		
-        Reader reader;
-        try {
-            reader = source.getReader();
+
+        try(final Reader reader = source.getReader()) {
+            return compile(broker, context, reader, xpointer);
         } catch(final UnsupportedEncodingException e) {
             throw new XPathException(ErrorCodes.XQST0087, "unsupported encoding " + e.getMessage());
-        }
-        
-        try {
-            return compile(broker, context, reader, xpointer);
-        } finally {
-            if(reader != null) {
-                reader.close();
-            }
         }
     }
     
@@ -216,19 +202,7 @@ public class XQuery {
         final long start = System.currentTimeMillis();
     	
         final XQueryContext context = expression.getContext();
-    	
-        //check access to the query
-        final XACMLSource source = expression.getSource();
-        try {
-            final ExistPDP pdp = context.getPDP();
-            if(pdp != null) {
-                final RequestCtx request = pdp.getRequestHelper().createQueryRequest(context, source);
-                pdp.evaluate(request);
-            }
-        } catch(final PermissionDeniedException pde) {
-            throw new XPathException("Permission to execute query: " + source.createId() + " denied.", pde);
-        }
-		
+
         expression.reset();
         if(resetContext) {
             //context.setBroker(broker);
@@ -304,15 +278,15 @@ public class XQuery {
         }
     }
 
-    public Sequence execute(final DBBroker broker, final String expression, final Sequence contextSequence, final AccessContext accessCtx) throws XPathException, PermissionDeniedException {
-        final XQueryContext context = new XQueryContext(broker.getBrokerPool(), accessCtx);
+    public Sequence execute(final DBBroker broker, final String expression, final Sequence contextSequence) throws XPathException, PermissionDeniedException {
+        final XQueryContext context = new XQueryContext(broker.getBrokerPool());
         final CompiledXQuery compiled = compile(broker, context, expression);
         return execute(broker, compiled, contextSequence);
     }
 	
-    public Sequence execute(final DBBroker broker, File file, Sequence contextSequence, AccessContext accessCtx) throws XPathException, IOException, PermissionDeniedException {
-        final XQueryContext context = new XQueryContext(broker.getBrokerPool(), accessCtx);
-        final CompiledXQuery compiled = compile(broker, context, new FileSource(file, "UTF-8", true));
+    public Sequence execute(final DBBroker broker, File file, Sequence contextSequence) throws XPathException, IOException, PermissionDeniedException {
+        final XQueryContext context = new XQueryContext(broker.getBrokerPool());
+        final CompiledXQuery compiled = compile(broker, context, new FileSource(file.toPath(), true));
         return execute(broker, compiled, contextSequence);
     }
 }

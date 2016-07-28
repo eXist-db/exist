@@ -42,7 +42,7 @@ import org.exist.xquery.value.Type;
 import org.w3c.dom.Node;
 
 /**
- * Built-in function fn:last().
+ * Built-in function fn:nilled().
  * 
  * @author wolf
  */
@@ -68,30 +68,31 @@ public class FunNilled extends BasicFunction {
             if (contextSequence != null)
                 {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
         }
-        
-        Sequence result;
-        if (args[0].isEmpty())
-        	{result = Sequence.EMPTY_SEQUENCE;}
-        else {
-        	final Item arg = args[0].itemAt(0);
-        	if (!Type.subTypeOf(arg.getType(), Type.ELEMENT))
-            	{result = Sequence.EMPTY_SEQUENCE;}
-            else {
-            	final Node n = ((NodeValue)arg).getNode();
-            	//TODO : think more...
-            	if (n.hasAttributes()) {
-            		final Node nilled = n.getAttributes().getNamedItemNS(Namespaces.SCHEMA_INSTANCE_NS, "nil");
-            		if (nilled != null)
-            			{result = new BooleanValue(nilled.getNodeValue() == "false");}
-            		else
-            			{result = BooleanValue.FALSE;}
-            	} else
-            		{result = BooleanValue.FALSE;}
-            }
-        }
-        	
-        
-        if (context.getProfiler().isEnabled()) 
+
+		Sequence result;
+		if (args[0].isEmpty()) {
+			result = Sequence.EMPTY_SEQUENCE;
+		} else {
+			final Item arg = args[0].itemAt(0);
+			if (!Type.subTypeOf(arg.getType(), Type.ELEMENT)) {
+				result = Sequence.EMPTY_SEQUENCE;
+			} else {
+				final Node n = ((NodeValue) arg).getNode();
+				if (n.hasAttributes()) {
+					final Node nilled = n.getAttributes().getNamedItemNS(Namespaces.SCHEMA_INSTANCE_NS, "nil");
+					if (nilled != null) {
+						result = new BooleanValue(nilled.getNodeValue().equals("true"));
+					} else {
+						result = BooleanValue.FALSE;
+					}
+				} else {
+					result = BooleanValue.FALSE;
+				}
+			}
+		}
+
+
+		if (context.getProfiler().isEnabled())
             {context.getProfiler().end(this, "", result);} 
         
         return result;           

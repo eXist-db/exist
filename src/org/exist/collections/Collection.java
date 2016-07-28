@@ -19,6 +19,8 @@
  */
 package org.exist.collections;
 
+import net.jcip.annotations.GuardedBy;
+import org.exist.Resource;
 import org.exist.dom.QName;
 import org.exist.dom.persistent.DocumentMetadata;
 import org.exist.dom.persistent.DocumentSet;
@@ -27,14 +29,8 @@ import org.exist.dom.persistent.MutableDocumentSet;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DefaultDocumentSet;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Observable;
-import java.util.Observer;
-import java.util.TreeMap;
+import java.util.*;
+
 import org.apache.commons.io.input.CloseShieldInputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -42,6 +38,8 @@ import org.exist.Database;
 import org.exist.EXistException;
 import org.exist.Indexer;
 import org.exist.collections.triggers.*;
+import org.exist.indexing.IndexController;
+import org.exist.indexing.StreamListener;
 import org.exist.security.Account;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
@@ -81,7 +79,7 @@ import org.xml.sax.XMLReader;
  *
  * @author wolf
  */
-public class Collection extends Observable implements Comparable<Collection>, Cacheable {
+public class Collection extends Observable implements Resource, Comparable<Collection>, Cacheable {
 
     public static final int LENGTH_COLLECTION_ID = 4; //sizeof int
 
@@ -98,14 +96,18 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
     // Internal id
     private int collectionId = UNKNOWN_COLLECTION_ID;
     
-    // the documents contained in this collection
-    private Map<String, DocumentImpl> documents = new TreeMap<String, DocumentImpl>();
-    
     // the path of this collection
     private XmldbURI path;
-    
+
+    private final Lock lock;
+
+    // the documents contained in this collection
+    @GuardedBy("lock")
+    private final Map<String, DocumentImpl> documents = new TreeMap<>();
+
     // stores child-collections with their storage address
-    private ObjectHashSet<XmldbURI> subCollections = new ObjectHashSet<XmldbURI>(19);
+    @GuardedBy("lock")
+    private ObjectHashSet<XmldbURI> subCollections = new ObjectHashSet<>(19);
     
     // Storage address of the collection in the BFile
     private long address = BFile.UNKNOWN_ADDRESS;
@@ -121,9 +123,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
     // fields required by the collections cache
     private int refCount;
     private int timestamp;
-    
-    private final Lock lock;
-    
+
     /** user-defined Reader */
     private XMLReader userReader;
     
@@ -132,12 +132,15 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
 
     private Permission permissions;
 
+    private final CollectionMetadata collectionMetadata;
+
     public Collection(final DBBroker broker, final XmldbURI path) {
         //The permissions assigned to this collection
         permissions = PermissionFactory.getDefaultCollectionPermission(broker.getBrokerPool().getSecurityManager());
 
         setPath(path);
         lock = new ReentrantReadWriteLock(path);
+        this.collectionMetadata = new CollectionMetadata(this);
     }
 
     public boolean isTriggersEnabled() {
@@ -159,25 +162,38 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
      *  Add a new sub-collection to the collection.
      *
      */
-    public void addCollection(final DBBroker broker, final Collection child, final boolean isNew) throws PermissionDeniedException {
+    public void addCollection(final DBBroker broker, final Collection child, final boolean isNew) throws PermissionDeniedException, LockException {
         if(!getPermissionsNoLock().validate(broker.getCurrentSubject(), Permission.WRITE)) {
             throw new PermissionDeniedException("Permission to write to Collection denied for " + this.getURI());
         }
         
         final XmldbURI childName = child.getURI().lastSegment();
-        if(!subCollections.contains(childName)) {
-            subCollections.add(childName);
+
+        getLock().acquire(Lock.WRITE_LOCK);
+        try {
+            if (!subCollections.contains(childName)) {
+                subCollections.add(childName);
+            }
+        } finally {
+            getLock().release(Lock.WRITE_LOCK);
         }
+
         if(isNew) {
             child.setCreationTime(System.currentTimeMillis());
         }
     }
 
-    public boolean hasChildCollection(final DBBroker broker, final XmldbURI path) throws PermissionDeniedException {
+    public boolean hasChildCollection(final DBBroker broker, final XmldbURI path) throws PermissionDeniedException, LockException {
         if(!getPermissionsNoLock().validate(broker.getCurrentSubject(), Permission.READ)) {
             throw new PermissionDeniedException("Permission denied to read collection: " + path);
         }
-        return subCollections.contains(path);
+
+        getLock().acquire(Lock.READ_LOCK);
+        try {
+            return subCollections.contains(path);
+        } finally {
+            getLock().release(Lock.READ_LOCK);
+        }
     }
 
     public abstract class CollectionEntry {
@@ -196,7 +212,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         public XmldbURI getUri() {
             return uri;
         }
-        
+
         public long getCreated() {
             return created;
         }
@@ -259,19 +275,27 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         }
     }
 
-    public List<CollectionEntry> getEntries(final DBBroker broker) throws PermissionDeniedException {
+    public List<CollectionEntry> getEntries(final DBBroker broker) throws PermissionDeniedException, LockException {
         if(!getPermissionsNoLock().validate(broker.getCurrentSubject(), Permission.READ)) {
             throw new PermissionDeniedException("Permission denied to read collection: " + path);
         }
-        final List<CollectionEntry> list = new ArrayList<CollectionEntry>();
-        final Iterator<XmldbURI> subCollectionIterator = subCollections.iterator();
+        final List<CollectionEntry> list = new ArrayList<>();
+
+        final Iterator<XmldbURI> subCollectionIterator;
+        getLock().acquire(Lock.READ_LOCK);
+        try {
+            subCollectionIterator = subCollections.stableIterator();
+        } finally {
+            getLock().release(Lock.READ_LOCK);
+        }
         while(subCollectionIterator.hasNext()) {
             final XmldbURI subCollectionURI = subCollectionIterator.next();
             final CollectionEntry entry = new SubCollectionEntry(broker.getBrokerPool().getSecurityManager(), subCollectionURI);
             entry.readMetadata(broker);
             list.add(entry);
         }
-        for(final DocumentImpl document : documents.values()) {
+
+        for(final DocumentImpl document : copyOfDocs()) {
             final CollectionEntry entry = new DocumentEntry(document);
             entry.readMetadata(broker);
             list.add(entry);
@@ -289,11 +313,19 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         return entry;
     }
 
-    public CollectionEntry getResourceEntry(final DBBroker broker, final String name) throws PermissionDeniedException {
+    public CollectionEntry getResourceEntry(final DBBroker broker, final String name) throws PermissionDeniedException, LockException {
         if(!getPermissionsNoLock().validate(broker.getCurrentSubject(), Permission.READ)) {
             throw new PermissionDeniedException("Permission denied to read collection: " + path);
         }
-        final CollectionEntry entry = new DocumentEntry(documents.get(name));
+
+        final CollectionEntry entry;
+        getLock().acquire(Lock.READ_LOCK);
+        try {
+            entry = new DocumentEntry(documents.get(name));
+        }  finally {
+            getLock().release(Lock.READ_LOCK);
+        }
+
         entry.readMetadata(broker);
         return entry;
     }
@@ -321,10 +353,15 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
      *
      * @param child
      */
-    public void update(final DBBroker broker, final Collection child) throws PermissionDeniedException {
+    public void update(final DBBroker broker, final Collection child) throws PermissionDeniedException, LockException {
         final XmldbURI childName = child.getURI().lastSegment();
-        subCollections.remove(childName);
-        subCollections.add(childName);
+        getLock().acquire(Lock.WRITE_LOCK);
+        try {
+            subCollections.remove(childName);
+            subCollections.add(childName);
+        } finally {
+            getLock().release(Lock.WRITE_LOCK);
+        }
     }
 
     /**
@@ -332,7 +369,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
      *
      * @param  doc
      */
-    public void addDocument(final Txn transaction, final DBBroker broker, final DocumentImpl doc) throws PermissionDeniedException {
+    public void addDocument(final Txn transaction, final DBBroker broker, final DocumentImpl doc) throws PermissionDeniedException, LockException {
         addDocument(transaction, broker, doc, null);
     }
     
@@ -340,7 +377,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
      * @param oldDoc if not null, then this document is replacing another and so WRITE access on the collection is not required,
      * just WRITE access on the old document
      */
-    private void addDocument(final Txn transaction, final DBBroker broker, final DocumentImpl doc, final DocumentImpl oldDoc) throws PermissionDeniedException {
+    private void addDocument(final Txn transaction, final DBBroker broker, final DocumentImpl doc, final DocumentImpl oldDoc) throws PermissionDeniedException, LockException {
         if(oldDoc == null) {
             
             /* create */
@@ -364,7 +401,13 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
                 return;
             }
         }
-        documents.put(doc.getFileURI().getRawCollectionPath(), doc);
+
+        getLock().acquire(Lock.WRITE_LOCK);
+        try {
+            documents.put(doc.getFileURI().getRawCollectionPath(), doc);
+        } finally {
+            getLock().release(Lock.WRITE_LOCK);
+        }
     }
 
     /**
@@ -373,11 +416,17 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
      *
      * @param doc
      */
-    public void unlinkDocument(final DBBroker broker, final DocumentImpl doc) throws PermissionDeniedException {
+    public void unlinkDocument(final DBBroker broker, final DocumentImpl doc) throws PermissionDeniedException, LockException {
         if(!getPermissionsNoLock().validate(broker.getCurrentSubject(), Permission.WRITE)) {
             throw new PermissionDeniedException("Permission denied to remove document from collection: " + path);
         }
-        documents.remove(doc.getFileURI().getRawCollectionPath());
+
+        getLock().acquire(Lock.WRITE_LOCK);
+        try {
+            documents.remove(doc.getFileURI().getRawCollectionPath());
+        } finally {
+            getLock().release(Lock.WRITE_LOCK);
+        }
     }
 
     /**
@@ -392,15 +441,17 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         if(!getPermissionsNoLock().validate(broker.getCurrentSubject(), Permission.READ)) {
             throw new PermissionDeniedException("Permission to list sub-collections denied on " + this.getURI());
         }
-        
+
         try {
             getLock().acquire(Lock.READ_LOCK);
-            return subCollections.stableIterator();
-        } catch(final LockException e) {
-            LOG.warn(e.getMessage(), e);
+            try {
+                return subCollections.stableIterator();
+            } finally {
+                getLock().release(Lock.READ_LOCK);
+            }
+        } catch (final LockException e) {
+            LOG.error(e.getMessage(), e);
             return null;
-        } finally {
-            getLock().release(Lock.READ_LOCK);
         }
     }
 
@@ -411,7 +462,12 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
      * via the iterator have no effect.
      *
      * @return An iterator over the collections
+     *
+     * @deprecated The creation of the stable iterator may
+     * throw an {@link java.lang.IndexOutOfBoundsException},
+     * use {@link #collectionIterator(DBBroker)} instead
      */
+    @Deprecated
     public Iterator<XmldbURI> collectionIteratorNoLock(final DBBroker broker) throws PermissionDeniedException {
         if(!getPermissionsNoLock().validate(broker.getCurrentSubject(), Permission.READ)) {
             throw new PermissionDeniedException("Permission to list sub-collections denied on " + this.getURI());
@@ -428,27 +484,35 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         if(!getPermissionsNoLock().validate(broker.getCurrentSubject(), Permission.READ)) {
             throw new PermissionDeniedException("Permission to list sub-collections denied on " + this.getURI());
         }
-        
-        final ArrayList<Collection> collectionList = new ArrayList<Collection>(subCollections.size());
+
+        final ArrayList<Collection> collectionList;
+        final Iterator<XmldbURI> i;
         try {
             getLock().acquire(Lock.READ_LOCK);
-            for(final Iterator<XmldbURI> i = subCollections.iterator(); i.hasNext(); ) {
-                final XmldbURI childName = i.next();
-                //TODO : resolve URI !
-                final Collection child = broker.getCollection(path.append(childName));
-                if(getPermissionsNoLock().validate(user, Permission.READ)) {
-                    collectionList.add(child);
-                    if(child.getChildCollectionCount(broker) > 0) {
-                        //Recursive call
-                        collectionList.addAll(child.getDescendants(broker, user));
-                    }
-                }
+            try {
+                collectionList = new ArrayList<>(subCollections.size());
+                i = subCollections.stableIterator();
+            } finally {
+                getLock().release(Lock.READ_LOCK);
             }
         } catch(final LockException e) {
-            LOG.warn(e.getMessage(), e);
-        } finally {
-            getLock().release(Lock.READ_LOCK);
+            LOG.error(e.getMessage(), e);
+            return Collections.EMPTY_LIST;
         }
+
+        while(i.hasNext()) {
+            final XmldbURI childName = i.next();
+            //TODO : resolve URI !
+            final Collection child = broker.getCollection(path.append(childName));
+            if(getPermissionsNoLock().validate(user, Permission.READ)) {
+                collectionList.add(child);
+                if(child.getChildCollectionCount(broker) > 0) {
+                    //Recursive call
+                    collectionList.addAll(child.getDescendants(broker, user));
+                }
+            }
+        }
+
         return collectionList;
     }
 
@@ -462,25 +526,27 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
      * If recursive is true, documents from sub-collections are
      * included.
      *
-     * @return The set of documents.
+     * @return The set of documents
      */
     public MutableDocumentSet allDocs(final DBBroker broker, final MutableDocumentSet docs, final boolean recursive, final LockedDocumentMap protectedDocs) throws PermissionDeniedException {
         List<XmldbURI> subColls = null;
         if(getPermissionsNoLock().validate(broker.getCurrentSubject(), Permission.READ)) {
             try {
-                //Acquire a lock on the collection
                 getLock().acquire(Lock.READ_LOCK);
-                //Add all docs in this collection to the returned set
-                getDocuments(broker, docs);
-                //Get a list of sub-collection URIs. We will process them
-                //after unlocking this collection. otherwise we may deadlock ourselves
-                subColls = subCollections.keys();
+                try {
+                    //Add all docs in this collection to the returned set
+                    getDocuments(broker, docs);
+                    //Get a list of sub-collection URIs. We will process them
+                    //after unlocking this collection. otherwise we may deadlock ourselves
+                    subColls = subCollections.keys();
+                } finally {
+                    getLock().release(Lock.READ_LOCK);
+                }
             } catch(final LockException e) {
-                LOG.warn(e.getMessage(), e);
-            } finally {
-                getLock().release(Lock.READ_LOCK);
+                LOG.error(e.getMessage(), e);
             }
         }
+
         if(recursive && subColls != null) {
             // process the child collections
             for(final XmldbURI childName : subColls) {
@@ -504,9 +570,8 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         
         XmldbURI uris[] = null;
         if(getPermissionsNoLock().validate(broker.getCurrentSubject(), Permission.READ)) {
+            getLock().acquire(Lock.READ_LOCK);
             try {
-                //Acquire a lock on the collection
-                getLock().acquire(Lock.READ_LOCK);
                 //Add all documents in this collection to the returned set
                 getDocuments(broker, docs, lockMap, lockType);
                 //Get a list of sub-collection URIs. We will process them
@@ -519,9 +584,6 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
                         uris[i] = path.appendInternal(subColls.get(i));
                     }
                 }
-            } catch(final LockException e) {
-                LOG.error(e.getMessage());
-                throw e;
             } finally {
                 getLock().release(Lock.READ_LOCK);
             }
@@ -529,12 +591,12 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         
         if(recursive && uris != null) {
             //Process the child collections
-            for(int i = 0; i < uris.length; i++) {
+            for (XmldbURI uri : uris) {
                 //TODO : resolve URI !
                 try {
-                    final Collection child = broker.openCollection(uris[i], Lock.NO_LOCK);
+                    final Collection child = broker.openCollection(uri, Lock.NO_LOCK);
                     // a collection may have been removed in the meantime, so check first
-                    if(child != null) {
+                    if (child != null) {
                         child.allDocs(broker, docs, recursive, lockMap, lockType);
                     }
                 } catch (final PermissionDeniedException pde) {
@@ -570,6 +632,13 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         return docs;
     }
 
+    /**
+     * @deprecated This is not an atomic operation and
+     * so there are no guarantees about which docs will be added to
+     * the document set. Use {@link #getDocuments(DBBroker, MutableDocumentSet)}
+     * instead
+     */
+    @Deprecated
     public DocumentSet getDocumentsNoLock(final DBBroker broker, final MutableDocumentSet docs) {
         docs.addCollection(this);
         addDocumentsToSet(broker, docs);
@@ -591,8 +660,36 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         return docs;
     }
 
+    /**
+     * Gets a stable list of the document objects
+     * from {@link #documents}
+     *
+     * @return A stable list of the document objects
+     */
+    private List<DocumentImpl> copyOfDocs() throws LockException {
+        getLock().acquire(Lock.READ_LOCK);
+        try {
+            return new ArrayList<>(documents.values());
+        } finally {
+            getLock().release(Lock.READ_LOCK);
+        }
+    }
+
+    /**
+     * Gets a stable set of the the document object
+     * names from {@link #documents}
+     */
+    private Set<String> copyOfDocNames() throws LockException {
+        getLock().acquire(Lock.READ_LOCK);
+        try {
+            return new TreeSet<>(documents.keySet());
+        } finally {
+            getLock().release(Lock.READ_LOCK);
+        }
+    }
+
     private void addDocumentsToSet(final DBBroker broker, final MutableDocumentSet docs, final LockedDocumentMap lockMap, final int lockType) throws LockException {
-    	for(final DocumentImpl doc : documents.values()) {
+    	for(final DocumentImpl doc : copyOfDocs()) {
             if(doc.getPermissions().validate(broker.getCurrentSubject(), Permission.WRITE)) {
                 doc.getUpdateLock().acquire(Lock.WRITE_LOCK);
 
@@ -603,23 +700,16 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
     }
     
     private void addDocumentsToSet(final DBBroker broker, final MutableDocumentSet docs) {
-    	for(final DocumentImpl doc : documents.values()) {
-            if(doc.getPermissions().validate(broker.getCurrentSubject(), Permission.READ)) {
-                docs.add(doc);
+    	try {
+            for (final DocumentImpl doc : copyOfDocs()) {
+                if (doc.getPermissions().validate(broker.getCurrentSubject(), Permission.READ)) {
+                    docs.add(doc);
+                }
             }
-    	}
-    }
-    
-    /*
-    private String[] getDocumentPaths() {
-        final String paths[] = new String[documents.size()];
-        int i = 0;
-        for (Iterator<String> iter = documents.keySet().iterator(); iter.hasNext(); i++) {
-            paths[i] = iter.next();
+        } catch(final LockException e) {
+            LOG.error(e);
         }
-        return paths;
     }
-    */
 
     /**
      * Check if this collection may be safely removed from the
@@ -633,26 +723,23 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         if (getURI().startsWith(CollectionConfigurationManager.ROOT_COLLECTION_CONFIG_URI)) {
             return false;
         }
-        for(final DocumentImpl doc : documents.values()) {
-            if(doc.isLockedForWrite()) {
-                return false;
+
+        try {
+            getLock().acquire(Lock.READ_LOCK);
+            try {
+                for (final DocumentImpl doc : documents.values()) {
+                    if (doc.isLockedForWrite()) {
+                        return false;
+                    }
+                }
+                return true;
+            } finally {
+                getLock().release(Lock.READ_LOCK);
             }
+        } catch(final LockException e) {
+            LOG.error(e);
+            return false;
         }
-        return true;
-        //try {
-            //lock.acquire(Lock.WRITE_LOCK);
-            //for (Iterator i = documents.values().iterator(); i.hasNext(); ) {
-                //DocumentImpl doc = (DocumentImpl) i.next();
-                //if (doc.isLockedForWrite())
-                    //return false;
-            //}
-            //return true;
-        //} catch (LockException e) {
-            //LOG.warn("Failed to acquire lock on collection: " + getName(), e);
-        //} finally {
-            //lock.release();
-        //}
-        //return false;
     }
 
     @Override
@@ -684,7 +771,17 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
      * @return estimated amount of memory in bytes
      */
     public int getMemorySize() {
-        return SHALLOW_SIZE + documents.size() * DOCUMENT_SIZE;
+        try {
+            getLock().acquire(Lock.READ_LOCK);
+            try {
+                return SHALLOW_SIZE + documents.size() * DOCUMENT_SIZE;
+            } finally {
+                getLock().release(Lock.READ_LOCK);
+            }
+        } catch(final LockException e) {
+            LOG.error(e);
+            return -1;
+        }
     }
 
     /**
@@ -693,20 +790,20 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
      * @return The childCollectionCount value
      */
     public int getChildCollectionCount(final DBBroker broker) throws PermissionDeniedException {
-    
         if(!getPermissionsNoLock().validate(broker.getCurrentSubject(), Permission.READ)) {
             throw new PermissionDeniedException("Permission denied to read collection: " + path);
         }
-        
-        
+
         try {
             getLock().acquire(Lock.READ_LOCK);
-            return subCollections.size();
+            try {
+                return subCollections.size();
+            } finally {
+                getLock().release(Lock.READ_LOCK);
+            }
         } catch(final LockException e) {
-            LOG.warn(e.getMessage(), e);
+            LOG.error(e.getMessage(), e);
             return 0;
-        } finally {
-            getLock().release(Lock.READ_LOCK);
         }
     }
     
@@ -714,19 +811,20 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
      * Determines if this Collection has any documents, or sub-collections
      */
     public boolean isEmpty(final DBBroker broker) throws PermissionDeniedException {
-        
         if(!getPermissionsNoLock().validate(broker.getCurrentSubject(), Permission.READ)) {
             throw new PermissionDeniedException("Permission denied to read collection: " + path);
         }
-        
+
         try {
             getLock().acquire(Lock.READ_LOCK);
-            return documents.isEmpty() && subCollections.isEmpty();
+            try {
+                return documents.isEmpty() && subCollections.isEmpty();
+            } finally {
+                getLock().release(Lock.READ_LOCK);
+            }
         } catch(final LockException e) {
-            LOG.warn(e.getMessage(), e);
+            LOG.error(e.getMessage(), e);
             return false;
-        } finally {
-            getLock().release(Lock.READ_LOCK);
         }
     }
 
@@ -742,21 +840,23 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
     public DocumentImpl getDocument(final DBBroker broker, final XmldbURI path) throws PermissionDeniedException {
         try {
             getLock().acquire(Lock.READ_LOCK);
-            final DocumentImpl doc = documents.get(path.getRawCollectionPath());
-            if(doc != null){
-                if(!doc.getPermissions().validate(broker.getCurrentSubject(), Permission.READ)) {
-                    throw new PermissionDeniedException("Permission denied to read document: " + path.toString());
+            try {
+                final DocumentImpl doc = documents.get(path.getRawCollectionPath());
+                if (doc != null) {
+                    if (!doc.getPermissions().validate(broker.getCurrentSubject(), Permission.READ)) {
+                        throw new PermissionDeniedException("Permission denied to read document: " + path.toString());
+                    }
+                } else {
+                    LOG.debug("Document " + path + " not found!");
                 }
-            } else {
-            	LOG.debug("Document " + path + " not found!");
+
+                return doc;
+            } finally {
+                getLock().release(Lock.READ_LOCK);
             }
-            
-            return doc;
         } catch(final LockException e) {
-            LOG.warn(e.getMessage(), e);
+            LOG.error(e.getMessage(), e);
             return null;
-        } finally {
-            getLock().release(Lock.READ_LOCK);
         }
     }
 
@@ -786,10 +886,9 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
      * @throws LockException
      */
     public DocumentImpl getDocumentWithLock(final DBBroker broker, final XmldbURI uri, final int lockMode) throws LockException, PermissionDeniedException {
+        getLock().acquire(Lock.READ_LOCK);
         try {
-            getLock().acquire(Lock.READ_LOCK);
             final DocumentImpl doc = documents.get(uri.getRawCollectionPath());
-            
             if(doc != null) {
                 if(!doc.getPermissions().validate(broker.getCurrentSubject(), Permission.READ)) {
                     throw new PermissionDeniedException("Permission denied to read document: " + uri.toString());
@@ -802,6 +901,10 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         }
     }
 
+    /**
+     * @deprecated Use {@link #getDocument(DBBroker, XmldbURI)} instead
+     */
+    @Deprecated
     public DocumentImpl getDocumentNoLock(final DBBroker broker, final String rawPath) throws PermissionDeniedException {
         final DocumentImpl doc = documents.get(rawPath);
         if(doc != null) {
@@ -814,7 +917,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
 
     /**
      * Release any locks held on the document.
-     * @deprecated Use releaseDocument(DocumentImpl doc, int mode)
+     * @deprecated Use {@link #releaseDocument(DocumentImpl, int)} instead
      * @param doc
      */
     @Deprecated
@@ -838,24 +941,30 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
     /**
      * Returns the number of documents in this collection.
      *
-     * @return The documentCount value
+     * @return The documentCount value, or -1 if the collection could not be locked
      */
     public int getDocumentCount(final DBBroker broker) throws PermissionDeniedException {
         if(!getPermissionsNoLock().validate(broker.getCurrentSubject(), Permission.READ)) {
             throw new PermissionDeniedException("Permission denied to read collection: " + path);
         }
-        
+
         try {
             getLock().acquire(Lock.READ_LOCK);
-            return documents.size();
+            try {
+                return documents.size();
+            } finally {
+                getLock().release(Lock.READ_LOCK);
+            }
         } catch(final LockException e) {
             LOG.warn(e.getMessage(), e);
-            return 0;
-        } finally {
-            getLock().release(Lock.READ_LOCK);
+            return -1;
         }
     }
 
+    /**
+     * @deprecated Use {@link #getDocumentCount(DBBroker)}
+     */
+    @Deprecated
     public int getDocumentCountNoLock(final DBBroker broker) throws PermissionDeniedException {
         if(!getPermissionsNoLock().validate(broker.getCurrentSubject(), Permission.READ)) {
             throw new PermissionDeniedException("Permission denied to read collection: " + path);
@@ -872,11 +981,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         return collectionId;
     }
 
-    /**
-     * Get the name of this collection.
-     *
-     * @return    The name value
-     */
+    @Override
     public XmldbURI getURI() {
         return path;
     }
@@ -894,17 +999,13 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
          return path.removeLastSegment();
     }
 
-    /**
-     * Gets the permissions attribute of the Collection object
-     *
-     * @return The permissions value
-     */
+    @Override
     final public Permission getPermissions() {
         try {
             getLock().acquire(Lock.READ_LOCK);
             return permissions;
         } catch(final LockException e) {
-            LOG.warn(e.getMessage(), e);
+            LOG.error(e.getMessage(), e);
             return permissions;
         } finally {
             getLock().release(Lock.READ_LOCK);
@@ -913,6 +1014,11 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
 
     public Permission getPermissionsNoLock() {
         return permissions;
+    }
+
+    @Override
+    public CollectionMetadata getMetadata() {
+        return collectionMetadata;
     }
 
     /**
@@ -925,8 +1031,19 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         if(!getPermissionsNoLock().validate(broker.getCurrentSubject(), Permission.READ)) {
             throw new PermissionDeniedException("Permission denied to read collection: " + path);
         }
-        
-        return documents.containsKey(uri.getRawCollectionPath());
+
+        try {
+            getLock().acquire(Lock.READ_LOCK);
+            try {
+                return documents.containsKey(uri.getRawCollectionPath());
+            } finally {
+                getLock().release(Lock.READ_LOCK);
+            }
+        } catch(final LockException e) {
+            LOG.warn(e.getMessage(), e);
+            //TODO : ouch ! Should we return at any price ? Xithout even logging ? -pb
+            return documents.containsKey(uri.getRawCollectionPath());
+        }
     }
 
     /**
@@ -939,24 +1056,30 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         if(!getPermissionsNoLock().validate(broker.getCurrentSubject(), Permission.READ)) {
             throw new PermissionDeniedException("Permission denied to read collection: " + path);
         }
-        
+
         try {
             getLock().acquire(Lock.READ_LOCK);
-            return subCollections.contains(name);
+            try {
+                return subCollections.contains(name);
+            } finally {
+                getLock().release(Lock.READ_LOCK);
+            }
         } catch(final LockException e) {
             LOG.warn(e.getMessage(), e);
             //TODO : ouch ! Should we return at any price ? Xithout even logging ? -pb
-            return subCollections.contains(name);
-        } finally {
-            getLock().release(Lock.READ_LOCK);
+            return hasSubcollectionNoLock(broker, name);
         }
     }
 
+    /**
+     * @deprecated Use {@link #hasSubcollection(DBBroker, XmldbURI)} instead
+     */
+    @Deprecated
     public boolean hasSubcollectionNoLock(final DBBroker broker, final XmldbURI name) throws PermissionDeniedException {
         if(!getPermissionsNoLock().validate(broker.getCurrentSubject(), Permission.READ)) {
             throw new PermissionDeniedException("Permission denied to read collection: " + path);
         }
-        
+
         return subCollections.contains(name);
     }
 
@@ -973,6 +1096,12 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         return getDocuments(broker, new DefaultDocumentSet()).getDocumentIterator();
     }
 
+    /**
+     * @deprecated This is not an atomic operation and
+     * so there are no guarantees about which docs will be available to
+     * the iterator. Use {@link #iterator(DBBroker)} instead
+     */
+    @Deprecated
     public Iterator<DocumentImpl> iteratorNoLock(final DBBroker broker) throws PermissionDeniedException {
         if(!getPermissionsNoLock().validate(broker.getCurrentSubject(), Permission.READ)) {
             throw new PermissionDeniedException("Permission denied to read collection: " + path);
@@ -987,11 +1116,22 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
      * @param ostream
      * @throws IOException
      */
-    public void write(final DBBroker broker, final VariableByteOutputStream ostream) throws IOException {
+    public void write(final DBBroker broker, final VariableByteOutputStream ostream) throws IOException, LockException {
         ostream.writeInt(collectionId);
-        ostream.writeInt(subCollections.size());
-        
-        for(final Iterator<XmldbURI> i = subCollections.iterator(); i.hasNext(); ) {
+
+        final int size;
+        final Iterator<XmldbURI> i;
+
+        getLock().acquire(Lock.READ_LOCK);
+        try {
+            size = subCollections.size();
+            i = subCollections.stableIterator();
+        } finally {
+            getLock().release(Lock.READ_LOCK);
+        }
+
+        ostream.writeInt(size);
+        while(i.hasNext()) {
             final XmldbURI childCollectionURI = i.next();
             ostream.writeUTF(childCollectionURI.toString());
         }
@@ -1010,44 +1150,51 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
      * @param istream
      * @throws IOException
      */
-    public void read(final DBBroker broker, final VariableByteInput istream) throws IOException, PermissionDeniedException {
+    public void read(final DBBroker broker, final VariableByteInput istream) throws IOException, PermissionDeniedException, LockException {
         collectionId = istream.readInt();
         if (collectionId < 0) {
             throw new PermissionDeniedException("Internal error reading collection: invalid collection id");
         }
         final int collLen = istream.readInt();
-        subCollections = new ObjectHashSet<XmldbURI>(collLen == 0 ? 19 : collLen); //TODO what is this number 19?
-        for (int i = 0; i < collLen; i++) {
-            subCollections.add(XmldbURI.create(istream.readUTF()));
-        }
-        
-        permissions.read(istream);
 
-        created = istream.readLong();
-        
-        if(!permissions.validate(broker.getCurrentSubject(), Permission.EXECUTE)) {
-            throw new PermissionDeniedException("Permission denied to open the Collection " + path);
-        }
-        
-        final Collection col = this;
-        broker.getCollectionResources(new InternalAccess() {
-            @Override
-            public void addDocument(final DocumentImpl doc) throws EXistException {
-                doc.setCollection(col);
-                
-                if(doc.getDocId() == DocumentImpl.UNKNOWN_DOCUMENT_ID) {
-                    LOG.error("Document must have ID. ["+doc+"]");
-                    throw new EXistException("Document must have ID.");
+        getLock().acquire(Lock.WRITE_LOCK);
+        try {
+            subCollections = new ObjectHashSet<>(collLen == 0 ? 19 : collLen); //TODO what is this number 19?
+            for (int i = 0; i < collLen; i++) {
+                subCollections.add(XmldbURI.create(istream.readUTF()));
+            }
+
+            permissions.read(istream);
+
+            created = istream.readLong();
+
+            if (!permissions.validate(broker.getCurrentSubject(), Permission.EXECUTE)) {
+                throw new PermissionDeniedException("Permission denied to open the Collection " + path);
+            }
+
+            final Collection col = this;
+
+            broker.getCollectionResources(new InternalAccess() {
+                @Override
+                public void addDocument(final DocumentImpl doc) throws EXistException {
+                    doc.setCollection(col);
+
+                    if (doc.getDocId() == DocumentImpl.UNKNOWN_DOCUMENT_ID) {
+                        LOG.error("Document must have ID. [" + doc + "]");
+                        throw new EXistException("Document must have ID.");
+                    }
+
+                    documents.put(doc.getFileURI().getRawCollectionPath(), doc);
                 }
-                
-                documents.put(doc.getFileURI().getRawCollectionPath(), doc);
-            }
 
-            @Override
-            public int getId() {
-                return col.getId();
-            }
-        });
+                @Override
+                public int getId() {
+                    return col.getId();
+                }
+            });
+        } finally {
+            getLock().release(Lock.WRITE_LOCK);
+        }
     }
 
     /**
@@ -1059,9 +1206,9 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         if(!getPermissionsNoLock().validate(broker.getCurrentSubject(), Permission.WRITE)) {
             throw new PermissionDeniedException("Permission denied to read collection: " + path);
         }
-        
+
+        getLock().acquire(Lock.WRITE_LOCK);
         try {
-            getLock().acquire(Lock.WRITE_LOCK);
             subCollections.remove(name);
         } finally {
             getLock().release(Lock.WRITE_LOCK);
@@ -1075,7 +1222,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
      * @param  broker
      * @param  docUri
      */
-    public void removeXMLResource(final Txn transaction, final DBBroker broker, final XmldbURI docUri) throws PermissionDeniedException, TriggerException, LockException {
+    public void removeXMLResource(final Txn transaction, final DBBroker broker, final XmldbURI docUri) throws PermissionDeniedException, TriggerException, LockException, IOException {
         
         if(!getPermissionsNoLock().validate(broker.getCurrentSubject(), Permission.WRITE)) {
             throw new PermissionDeniedException("Permission denied to write collection: " + path);
@@ -1084,11 +1231,11 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         DocumentImpl doc = null;
         
         final BrokerPool db = broker.getBrokerPool();
-        try {
-            db.getProcessMonitor().startJob(ProcessMonitor.ACTION_REMOVE_XML, docUri);
 
-            getLock().acquire(Lock.WRITE_LOCK);
-            
+        db.getProcessMonitor().startJob(ProcessMonitor.ACTION_REMOVE_XML, docUri);
+        getLock().acquire(Lock.WRITE_LOCK);
+
+        try {
             doc = documents.get(docUri.getRawCollectionPath());
             
             if (doc == null) {
@@ -1154,10 +1301,11 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         if(doc == null) {
             return;  //TODO should throw an exception!!! Otherwise we dont know if the document was removed
         }
-        
+
+        broker.getBrokerPool().getProcessMonitor().startJob(ProcessMonitor.ACTION_REMOVE_BINARY, doc.getFileURI());
+        getLock().acquire(Lock.WRITE_LOCK);
+
         try {
-            broker.getBrokerPool().getProcessMonitor().startJob(ProcessMonitor.ACTION_REMOVE_BINARY, doc.getFileURI());
-            getLock().acquire(Lock.WRITE_LOCK);
             
             if(doc.getResourceType() != DocumentImpl.BINARY_FILE) {
                 throw new PermissionDeniedException("document " + doc.getFileURI() + " is not a binary object");
@@ -1173,14 +1321,21 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
 
             trigger.beforeDeleteDocument(broker, transaction, doc);
 
+            final IndexController indexController = broker.getIndexController();
+            final StreamListener listener = indexController.getStreamListener(doc, StreamListener.ReindexMode.REMOVE_BINARY);
             try {
-               broker.removeBinaryResource(transaction, (BinaryDocument) doc);
-            } catch (final IOException ex) {
-               throw new PermissionDeniedException("Cannot delete file: " + doc.getURI().toString() + ": " + ex.getMessage(), ex);
+                indexController.startIndexDocument(transaction, listener);
+
+                try {
+                    broker.removeBinaryResource(transaction, (BinaryDocument) doc);
+                } catch (final IOException ex) {
+                    throw new PermissionDeniedException("Cannot delete file: " + doc.getURI().toString() + ": " + ex.getMessage(), ex);
+                }
+                documents.remove(doc.getFileURI().getRawCollectionPath());
+            } finally {
+                indexController.endIndexDocument(transaction, listener);
             }
-            
-            documents.remove(doc.getFileURI().getRawCollectionPath());
-            
+
             trigger.afterDeleteDocument(broker, transaction, doc.getURI());
 
         } finally {
@@ -1408,7 +1563,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         //TODO: *resolve* URI against CollectionConfigurationManager.CONFIG_COLLECTION_URI 
         if (getURI().startsWith(XmldbURI.CONFIG_COLLECTION_URI)
                 && docName.endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX_URI)) {
-            broker.sync(Sync.MAJOR_SYNC);
+            broker.sync(Sync.MAJOR);
             final CollectionConfigurationManager manager = broker.getBrokerPool().getConfigurationManager();
             if(manager != null) {
                 try {
@@ -1592,15 +1747,15 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         final Database db = broker.getBrokerPool();
         
         if (db.isReadOnly()) {
-            throw new PermissionDeniedException("Database is read-only");
+            throw new IOException("Database is read-only");
         }
         
         DocumentImpl oldDoc = null;
         boolean oldDocLocked = false;
+
+        db.getProcessMonitor().startJob(ProcessMonitor.ACTION_VALIDATE_DOC, docUri);
+        getLock().acquire(Lock.WRITE_LOCK);
         try {
-            db.getProcessMonitor().startJob(ProcessMonitor.ACTION_VALIDATE_DOC, docUri); 
-            getLock().acquire(Lock.WRITE_LOCK);   
-            
             DocumentImpl document = new DocumentImpl((BrokerPool) db, this, docUri);
             oldDoc = documents.get(docUri.getRawCollectionPath());
             checkPermissionsForAddDocument(broker, oldDoc);
@@ -1643,6 +1798,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("removing old document " + oldDoc.getFileURI());
                 }
+                updateModificationTime(document);
                 oldDoc.getUpdateLock().acquire(Lock.WRITE_LOCK);
                 oldDocLocked = true;
                 if (oldDoc.getResourceType() == DocumentImpl.BINARY_FILE) {
@@ -1731,9 +1887,9 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
     private void addObserversToIndexer(final DBBroker broker, final Indexer indexer) {
         broker.deleteObservers();
         if(observers != null) {
-            for(int i = 0; i < observers.length; i++) {
-                indexer.addObserver(observers[i]);
-                broker.addObserver(observers[i]);
+            for (Observer observer : observers) {
+                indexer.addObserver(observer);
+                broker.addObserver(observer);
             }
         }
     }
@@ -1748,7 +1904,6 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         if (oldDoc != null) {
             metadata = oldDoc.getMetadata();
             metadata.setCreated(oldDoc.getMetadata().getCreated());
-            metadata.setLastModified(System.currentTimeMillis());
             document.setPermissions(oldDoc.getPermissions());
         } else {
         	//Account user = broker.getCurrentSubject();
@@ -1774,6 +1929,16 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         document.setMetadata(metadata);
     }
 
+     /** Update the modification time of a document
+     * @param document
+     */
+    
+    private void updateModificationTime(final DocumentImpl document) {
+        final DocumentMetadata metadata = document.getMetadata();
+        metadata.setLastModified(System.currentTimeMillis());
+        document.setMetadata(metadata);
+    }
+    
     /**
      * Check Permissions about user and document when a document is added to the databse, and throw exceptions if necessary.
      *
@@ -1877,15 +2042,16 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
     public BinaryDocument addBinaryResource(final Txn transaction, final DBBroker broker, final BinaryDocument blob, final InputStream is, final String mimeType, final long size, final Date created, final Date modified) throws EXistException, PermissionDeniedException, LockException, TriggerException, IOException {
         final Database db = broker.getBrokerPool();
         if (db.isReadOnly()) {
-            throw new PermissionDeniedException("Database is read-only");
+            throw new IOException("Database is read-only");
         }
         final XmldbURI docUri = blob.getFileURI();
         //TODO : move later, i.e. after the collection lock is acquired ?
         final DocumentImpl oldDoc = getDocument(broker, docUri);
         final DocumentTriggers trigger = new DocumentTriggers(broker, null, this, isTriggersEnabled() ? getConfiguration(broker) : null);
+
+        getLock().acquire(Lock.WRITE_LOCK);
         try {
             db.getProcessMonitor().startJob(ProcessMonitor.ACTION_STORE_BINARY, docUri);
-            getLock().acquire(Lock.WRITE_LOCK);
             checkPermissionsForAddDocument(broker, oldDoc);
             checkCollectionConflict(docUri);
             manageDocumentInformation(oldDoc, blob);
@@ -1907,15 +2073,21 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
 
             if (oldDoc != null) {
                 LOG.debug("removing old document " + oldDoc.getFileURI());
-                if (oldDoc instanceof BinaryDocument) {
-                    broker.removeBinaryResource(transaction, (BinaryDocument) oldDoc);
-                } else {
-                    broker.removeXMLResource(transaction, oldDoc);
-                }
+                updateModificationTime(blob);
+                broker.removeResource(transaction, oldDoc);
             }
+
             broker.storeBinaryResource(transaction, blob, is);
             addDocument(transaction, broker, blob, oldDoc);
-            broker.storeXMLResource(transaction, blob);
+
+            final IndexController indexController = broker.getIndexController();
+            final StreamListener listener = indexController.getStreamListener(blob, StreamListener.ReindexMode.STORE);
+            indexController.startIndexDocument(transaction, listener);
+            try {
+                broker.storeXMLResource(transaction, blob);
+            } finally {
+                indexController.endIndexDocument(transaction, listener);
+            }
 
             blob.getUpdateLock().acquire(Lock.READ_LOCK);
         } finally {
@@ -2031,6 +2203,10 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         created = ms;
     }
 
+    /**
+     * @deprecated Use {@link #getMetadata()} {@link CollectionMetadata#getCreated()}
+     */
+    @Deprecated
     public long getCreationTime() {
         return created;
     }
@@ -2127,8 +2303,8 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         if(observers == null) {
             return false;
         }
-        for(int i = 0; i < observers.length; i++) {
-            if(observers[i] == o) {
+        for (Observer observer : observers) {
+            if (observer == o) {
                 return true;
             }
         }
@@ -2222,11 +2398,17 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         final StringBuilder buf = new StringBuilder();
         buf.append( getURI() );
         buf.append("[");
-        for(final Iterator<String> i = documents.keySet().iterator(); i.hasNext(); ) {
-            buf.append(i.next());
-            if(i.hasNext()) {
-                buf.append(", ");
+
+        try {
+            for (final Iterator<String> i = copyOfDocNames().iterator(); i.hasNext(); ) {
+                buf.append(i.next());
+                if (i.hasNext()) {
+                    buf.append(", ");
+                }
             }
+        } catch(final LockException e) {
+            LOG.error(e);
+            throw new IllegalStateException(e);
         }
         buf.append("]");
         return buf.toString();

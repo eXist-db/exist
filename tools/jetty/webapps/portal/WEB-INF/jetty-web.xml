@@ -1,6 +1,7 @@
-<?xml version="1.0"?>
-<!DOCTYPE Configure PUBLIC "-//Jetty//Configure//EN" "http://www.eclipse.org/jetty/configure.dtd">
-<Configure class="org.eclipse.jetty.webapp.WebAppContext">
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Configure PUBLIC "-//Jetty//Configure//EN" "http://www.eclipse.org/jetty/configure_9_3.dtd">
+<Configure id="exist-portal-context" class="org.eclipse.jetty.webapp.WebAppContext">
   <Set name="contextPath">/</Set>
+  <Set name="defaultsDescriptor"><Property name="jetty.home" default="."/>/etc/webdefault.xml</Set>
+  <Set name="tempDirectory"><Property name="jetty.base" default="."/>/tmp</Set>
 </Configure>
-

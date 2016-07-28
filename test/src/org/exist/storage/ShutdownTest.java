@@ -11,7 +11,6 @@ import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.xacml.AccessContext;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.test.TestConstants;
@@ -87,7 +86,7 @@ public class ShutdownTest {
 
                 final XQuery xquery = pool.getXQueryService();
                 assertNotNull(xquery);
-                final Sequence result = xquery.execute(broker, "//SPEECH[ft:query(LINE, 'love')]", Sequence.EMPTY_SEQUENCE, AccessContext.TEST);
+                final Sequence result = xquery.execute(broker, "//SPEECH[ft:query(LINE, 'love')]", Sequence.EMPTY_SEQUENCE);
                 assertNotNull(result);
                 assertEquals(result.getItemCount(), 160);
 

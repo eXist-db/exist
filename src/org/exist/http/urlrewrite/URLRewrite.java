@@ -220,7 +220,7 @@ public abstract class URLRewrite {
         if (parameters != null) {
             for(final Map.Entry<String, List<String>> param : parameters.entrySet()) {
                 for(final String paramValue : param.getValue()) {
-                    request.addParameter(param.getKey().toString(), paramValue);
+                    request.addParameter(param.getKey(), paramValue);
                 }
             }
         }
@@ -228,9 +228,9 @@ public abstract class URLRewrite {
             for (final Map.Entry<String, String> entry : attributes.entrySet()) {
             	final String value = entry.getValue();
                 if(value.equals(UNSET)) {
-                    request.removeAttribute(entry.getKey().toString());
+                    request.removeAttribute(entry.getKey());
                 } else {
-                    request.setAttribute(entry.getKey().toString(), entry.getValue());
+                    request.setAttribute(entry.getKey(), entry.getValue());
                 }
             }
         }
@@ -239,7 +239,7 @@ public abstract class URLRewrite {
     protected void setHeaders(HttpResponseWrapper response) {
         if (headers != null) {
             for (final Map.Entry<String, String> entry : headers.entrySet()) {
-                response.setHeader(entry.getKey().toString(), entry.getValue().toString());
+                response.setHeader(entry.getKey(), entry.getValue());
             }
         }
     }

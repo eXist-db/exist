@@ -26,7 +26,6 @@ import org.exist.collections.IndexInfo;
 import org.exist.dom.persistent.DefaultDocumentSet;
 import org.exist.dom.persistent.MutableDocumentSet;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.xacml.AccessContext;
 import org.exist.storage.dom.DOMFile;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
@@ -42,7 +41,6 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.ParserConfigurationException;
 
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -61,7 +59,7 @@ public class RenameTest extends AbstractUpdateTest {
             assertNotNull(info);
             final MutableDocumentSet docs = new DefaultDocumentSet();
             docs.add(info.getDocument());
-            final XUpdateProcessor proc = new XUpdateProcessor(broker, docs, AccessContext.TEST);
+            final XUpdateProcessor proc = new XUpdateProcessor(broker, docs);
             assertNotNull(proc);
             
             try(final Txn transaction = mgr.beginTransaction()) {
@@ -110,7 +108,7 @@ public class RenameTest extends AbstractUpdateTest {
             proc.reset();
             
 //DO NOT COMMIT TRANSACTION
-            pool.getTransactionManager().getJournal().flushToLog(true);
+            pool.getJournalManager().get().flush(true, false);
         }
     }
 

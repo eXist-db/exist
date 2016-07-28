@@ -33,6 +33,7 @@ import org.exist.dom.persistent.ExtNodeSet;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.collections.Collection;
 import org.exist.indexing.*;
+import org.exist.indexing.StreamListener.ReindexMode;
 import org.exist.numbering.NodeId;
 import org.exist.storage.*;
 import org.exist.storage.btree.BTree;
@@ -61,7 +62,7 @@ import org.exist.security.PermissionDeniedException;
 public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex {
 
     private NativeStructuralIndex index;
-    private int mode = 0;
+    private ReindexMode mode = ReindexMode.STORE;
     private DocumentImpl document;
 
     //TODO throw away this Comparator or use a different data struct here when we have moved
@@ -426,16 +427,19 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
         return null;
     }
 
+    @Override
     public void setDocument(DocumentImpl doc) {
-        setDocument(doc, StreamListener.UNKNOWN);
+        setDocument(doc, ReindexMode.UNKNOWN);
     }
 
-    public void setDocument(DocumentImpl doc, int mode) {
+    @Override
+    public void setDocument(DocumentImpl doc, ReindexMode mode) {
         this.document = doc;
         this.mode = mode;
     }
 
-    public void setMode(int mode) {
+    @Override
+    public void setMode(ReindexMode mode) {
         this.mode = mode;
     }
 
@@ -443,7 +447,8 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
         return document;
     }
 
-    public int getMode() {
+    @Override
+    public ReindexMode getMode() {
         return mode;
     }
 
@@ -465,13 +470,13 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
 
     public void flush() {
         switch (mode) {
-            case StreamListener.STORE:
+            case STORE:
                 processPending();
                 break;
-            case StreamListener.REMOVE_ALL_NODES:
+            case REMOVE_ALL_NODES:
                 removeDocument(document);
                 break;
-            case StreamListener.REMOVE_SOME_NODES:
+            case REMOVE_SOME_NODES:
                 removeSome();
         }
     }
@@ -809,7 +814,7 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
         @Override
         public void startElement(Txn transaction, ElementImpl element, NodePath path) {
             super.startElement(transaction, element, path);
-            if (mode == StreamListener.STORE || mode == StreamListener.REMOVE_SOME_NODES) {
+            if (mode == ReindexMode.STORE || mode == ReindexMode.REMOVE_SOME_NODES) {
                 short indexType = RangeIndexSpec.NO_INDEX;
                 if (element.getIndexType() != RangeIndexSpec.NO_INDEX)
                     {indexType = (short) element.getIndexType();}
@@ -826,7 +831,7 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
 
         @Override
         public void attribute(Txn transaction, AttrImpl attrib, NodePath path) {
-            if (mode == StreamListener.STORE || mode == StreamListener.REMOVE_SOME_NODES) {
+            if (mode == ReindexMode.STORE || mode == ReindexMode.REMOVE_SOME_NODES) {
                 short indexType = RangeIndexSpec.NO_INDEX;
                 if (attrib.getIndexType() != RangeIndexSpec.NO_INDEX)
                     {indexType = (short) attrib.getIndexType();}
