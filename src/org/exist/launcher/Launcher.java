@@ -137,7 +137,7 @@ public class Launcher extends Observable implements Observer {
             initSystemTray = initSystemTray();
         }
 
-        configDialog = new ConfigurationDialog(Launcher.this);
+        configDialog = new ConfigurationDialog(this::shutdown);
 
         splash = new SplashScreen(this);
         splash.addWindowListener(new WindowAdapter() {

@@ -10,7 +10,7 @@
     
     <xsl:template match="SystemProperty[@name='jetty.port']"><SystemProperty name="jetty.port" default="{$port}"/></xsl:template>
 
-    <xsl:template match="SystemProperty[@name='jetty.port.ssl']"><SystemProperty name="jetty.port.ssl" default="{$port.ssl}"/></xsl:template>
+    <xsl:template match="SystemProperty[@name='jetty.ssl.port']"><SystemProperty name="jetty.ssl.port" default="{$port.ssl}"/></xsl:template>
     
     <xsl:template match="@*|node()" priority="-1">
         <xsl:copy>

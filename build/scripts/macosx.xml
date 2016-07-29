@@ -5,13 +5,13 @@
 <!-- ======================================================================= -->
 <!-- $Id$ -->
 <project basedir="../.." default="all" name="Mac OS App">
-    
+
     <description>Build installer</description>
-    
+
     <!-- import common targets -->
     <import file="../../build.xml"/>
     <import file="git-support.xml"/>
-    
+
     <property name="dist" value="${basedir}/dist"/>
     <property name="app.dir" value="${dist}/eXist-db.app"/>
     <property name="app.resources" value="${app.dir}/Contents/Resources"/>
@@ -22,26 +22,26 @@
     <property name="appbundler.url" value="http://java.net/downloads/appbundler/appbundler-1.0.jar"/>
 
     <available property="appbundler.available" file="${appbundler.jar}"/>
-    
-    <target name="app" description="Build Mac OS X dmg (unsigned)" depends="bundle,copy-all,dmg"/>
-    
-    <target name="app-signed" description="Build Mac OS X dmg (signed)" depends="bundle,copy-all,codesign,dmg"/>
-    
+
+    <target name="app" description="Build Mac OS X dmg (unsigned)" depends="all,bundle,copy-all,dmg"/>
+
+    <target name="app-signed" description="Build Mac OS X dmg (signed)" depends="all,bundle,copy-all,codesign,dmg"/>
+
     <target name="install-appbundler" unless="appbundler.available">
         <taskdef name="fetch" classname="nl.ow.dilemma.ant.fetch.FetchTask">
             <classpath>
                 <pathelement location="${asocat-exist.jar}"/>
             </classpath>
         </taskdef>
-        
+
         <fetch dest="${tools.ant}/lib" url="${appbundler.url}"
             failonerror="false" maxtime="120"/>
     </target>
-    
+
     <target name="bundle" depends="prepare-app">
-        <taskdef 
-            name="bundleapp" 
-            classname="com.oracle.appbundler.AppBundlerTask" 
+        <taskdef
+            name="bundleapp"
+            classname="com.oracle.appbundler.AppBundlerTask"
             classpath="${appbundler.jar}" />
         <bundleapp
             outputdirectory="${dist}"
@@ -51,7 +51,9 @@
             mainclassname="org.exist.start.Main"
             shortversion="${project.version.numeric}"
             icon="${app.icon}">
-            <classpath file="start.jar"/>
+            <classpath dir=".">
+                <include name="start.jar"/>
+            </classpath>
             <option value="-Dexist.home=$APP_ROOT/Contents/Resources/eXist-db"/>
         </bundleapp>
     </target>
@@ -198,7 +200,7 @@
 
         <!-- Set this property value to your application name -->
         <property name="app.name" value="${project.name}"/>
-        
+
         <property name="dmg.name" value="${app.name}-${project.version}-${git.commit}.dmg"/>
         <echo message="Creating ${dmg.name}..."/>
 
@@ -208,7 +210,7 @@
         <mkdir dir="${mountdir}"/>
 
         <!-- Delete previously created DMG -->
-        <delete file="${dist}/${app.name}.dmg" quiet="yes" failonerror="false"/>
+        <delete file="${dist}/${dmg.name}" quiet="yes" failonerror="false"/>
 
         <!-- Create a temporary Disk Image (Mac) -->
         <exec executable="/usr/bin/hdiutil" os="Mac OS X" failonerror="true">
@@ -222,7 +224,7 @@
             <arg value="-format"/>
             <arg value="UDRW"/>
         </exec>
-        
+
         <!-- Attach the temporary image (Mac) -->
         <exec executable="/usr/bin/hdiutil" os="Mac OS X" failonerror="true">
             <arg value="attach"/>
@@ -230,7 +232,7 @@
             <arg value="-mountroot"/>
             <arg value="${mountdir}/"/>
         </exec>
-        
+
         <!-- Create a temporary Disk Image (Linux) -->
         <exec executable="du" outputproperty="du.out" os="Linux" failonerror="true">
             <arg value="-sm"/>
@@ -247,14 +249,14 @@
                 <math result="dmg.size" operand1="${du.size}" operation="add" operand2="2" datatype="int"/>
             </then>
         </if>
-        
+
         <exec executable="dd" os="Linux" failonerror="true">
             <arg value="if=/dev/zero"/>
             <arg value="of=${dist}/${app.name}-tmp.dmg"/>
             <arg value="bs=1M"/>
             <arg value="count=${dmg.size}"/>
         </exec>
-        
+
         <exec executable="/sbin/mkfs" os="Linux" failonerror="true">
             <arg value="-t"/>
             <arg value="hfsplus"/>
@@ -262,7 +264,7 @@
             <arg value="${app.name}"/>
             <arg value="${dist}/${app.name}-tmp.dmg"/>
         </exec>
-        
+
         <!-- Attach the temporary image (Linux) -->
         <exec executable="whoami" os="Linux" outputproperty="username" failonerror="true"/>
         <exec executable="sudo" os="Linux" failonerror="true">
@@ -278,11 +280,11 @@
             <arg value="${app.dir}"/>
             <arg value="${mountdir}"/>
         </exec>
-        
+
         <condition property="app.dest" value="${mountdir}/${app.name}" else="${mountdir}">
             <os family="mac"/>
         </condition>
-        
+
         <!-- Copy the background, the volume icon and DS_Store files -->
         <mkdir dir="${app.dest}/.DropDMGBackground"/>
         <copy file="installer/background.png"
@@ -310,7 +312,7 @@
             <arg value="detach"/>
             <arg value="${app.dest}"/>
         </exec>
-        
+
         <!-- Detach the temporary image (Linux) -->
         <exec executable="sudo" os="Linux" failonerror="true">
             <arg value="umount"/>
@@ -332,7 +334,7 @@
             <arg value="-yes"/>
             <arg value="${dist}/${dmg.name}"/>
         </exec>
-        
+
         <!-- Copy it to a new image (Linux) -->
         <exec executable="cp" os="Linux" failonerror="true">
             <arg value="${dist}/${app.name}-tmp.dmg"/>
@@ -342,11 +344,11 @@
         <!-- Delete the temporary image -->
         <delete file="${dist}/${app.name}-tmp.dmg"
                 quiet="yes" failonerror="false"/>
-        
+
         <!-- Delete the mount point -->
         <delete includeemptydirs="true">
             <fileset dir="${mountdir}" includes="**/*"/>
         </delete>
-        
+
     </target>
 </project>
