@@ -37,7 +37,10 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * A wrapper to start a Java process using start.jar with correct VM settings.
@@ -54,7 +57,16 @@ public class LauncherWrapper {
 
     public final static void main(String[] args) {
         final LauncherWrapper wrapper = new LauncherWrapper(LAUNCHER);
-        wrapper.launch();
+        if (ConfigurationUtility.isFirstStart()) {
+            System.out.println("First launch: opening configuration dialog");
+            ConfigurationDialog configDialog = new ConfigurationDialog(restart -> {
+                wrapper.launch();
+            });
+            configDialog.open(true);
+            configDialog.requestFocus();
+        } else {
+            wrapper.launch();
+        }
     }
 
     protected String command;
@@ -71,20 +83,23 @@ public class LauncherWrapper {
         final OperatingSystem os = OperatingSystem.instance();
         final ProcessManager pm = os.processManagerInstance();
         final Process process = pm.createProcess();
-        final StringBuilder cmdLine = new StringBuilder()
-                .append(getJavaCmd())
-                .append(getJavaOpts(home, vmProperties));
+        final List<String> args = new ArrayList<>();
+        args.add(getJavaCmd());
+        getJavaOpts(args, home, vmProperties);
+
         if(Boolean.parseBoolean(debugLauncher)) {
-            cmdLine.append(" -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=4000");
+            args.add("-Xdebug");
+            args.add("-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=4000");
         }
-        cmdLine.append(" -jar start.jar ");
-        cmdLine.append(command);
+        args.add("-jar");
+        args.add("start.jar");
+        args.add(command);
+
         process.setWorkingDir(home);
         process.setVisible(false);
         process.setPipeStreams(false, false);
-        final String cmdLineStr = cmdLine.toString();
-        process.setCommand(cmdLineStr);
-        System.out.println(cmdLineStr);
+        System.out.println(String.join(" ", args));
+        process.setCommand(args.toArray(new String[args.size()]));
 
         if (process instanceof WindowsXPProcess) {
             ((WindowsXPProcess)process).startElevated();
@@ -113,43 +128,36 @@ public class LauncherWrapper {
         return "java";
     }
 
-    protected String getJavaOpts(String home, PropertiesConfiguration vmProperties) {
-        final StringBuilder opts = new StringBuilder();
-
-        opts.append(getVMOpts(vmProperties));
+    protected void getJavaOpts(List<String> args, String home, PropertiesConfiguration vmProperties) {
+        getVMOpts(args, vmProperties);
 
         if (command.equals(LAUNCHER) && "mac os x".equals(OS)) {
-            opts.append(" -Dapple.awt.UIElement=true");
+            args.add("-Dapple.awt.UIElement=true");
         }
-        opts.append(" -Dexist.home=");
-        opts.append('"').append(home).append('"');
+        args.add("-Dexist.home=\"" + home + '"');
 
-        opts.append(" -Djava.endorsed.dirs=");
-        opts.append('"').append(home).append("/lib/endorsed").append('"');
-
-        return opts.toString();
+        args.add("-Djava.endorsed.dirs=\"" + home + "/lib/endorsed\"");
     }
 
-    protected String getVMOpts(PropertiesConfiguration vmProperties) {
-        final StringBuilder opts = new StringBuilder();
+    protected void getVMOpts(List<String> args, PropertiesConfiguration vmProperties) {
         for (final Iterator<String> i = vmProperties.getKeys(); i.hasNext(); ) {
             final String key = i.next();
             if (key.startsWith("memory.")) {
                 if ("memory.max".equals(key)) {
-                    opts.append(" -Xmx").append(vmProperties.getString(key)).append('m');
+                    args.add("-Xmx" + vmProperties.getString(key) + 'm');
                 } else if ("memory.min".equals(key)) {
-                    opts.append(" -Xms").append(vmProperties.getString(key)).append('m');
+                    args.add("-Xms" + vmProperties.getString(key) + 'm');
                 }
             } else if ("vmoptions".equals(key)) {
-                opts.append(' ').append(vmProperties.getString(key));
+                args.add(vmProperties.getString(key));
             } else if (key.startsWith("vmoptions.")) {
                 final String os = key.substring("vmoptions.".length()).toLowerCase();
                 if (OS.contains(os)) {
-                    opts.append(' ').append(vmProperties.getString(key));
+                    final String value = vmProperties.getString(key);
+                    Arrays.stream(value.split("\\s+")).forEach(args::add);
                 }
             }
         }
-        return opts.toString();
     }
 
     public static PropertiesConfiguration getVMProperties() {

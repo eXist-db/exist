@@ -35,7 +35,14 @@ public class ConfigurationUtility {
 
     public static Map<String, Integer> getJettyPorts() throws DatabaseConfigurationException {
         final Map<String, Integer> ports = new HashMap<>();
-        final Path jettyConfig = ConfigurationHelper.lookup("tools/jetty/etc/jetty.xml");
+        final Path jettyHttpConfig = ConfigurationHelper.lookup("tools/jetty/etc/jetty-http.xml");
+        final Path jettyHttpsConfig = ConfigurationHelper.lookup("tools/jetty/etc/jetty-ssl.xml");
+        getJettyPorts(ports, jettyHttpConfig);
+        getJettyPorts(ports, jettyHttpsConfig);
+        return ports;
+    }
+
+    private static void getJettyPorts(Map<String, Integer> ports, Path jettyConfig) throws DatabaseConfigurationException {
         if (Files.exists(jettyConfig)) {
             try {
                 final XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(Files
@@ -44,7 +51,7 @@ public class ConfigurationUtility {
                     final int status = reader.next();
                     if (status == XMLStreamReader.START_ELEMENT && "SystemProperty".equals(reader.getLocalName())) {
                         final String name = reader.getAttributeValue(null, "name");
-                        if (name != null && name.startsWith("jetty.port")) {
+                        if (name != null && (name.equals("jetty.port") || name.equals("jetty.ssl.port"))) {
                             final String defaultValue = reader.getAttributeValue(null, "default");
                             if (defaultValue != null) {
                                 try {
@@ -60,7 +67,6 @@ public class ConfigurationUtility {
                 throw new DatabaseConfigurationException(e.getMessage(), e);
             }
         }
-        return ports;
     }
 
     public static void saveProperties(Properties properties) throws ConfigurationException, IOException {

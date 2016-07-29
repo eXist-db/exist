@@ -8,6 +8,7 @@ import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -35,7 +36,7 @@ import org.exist.util.FileUtils;
 
 public class ConfigurationDialog extends JDialog {
 
-    private final Launcher launcher;
+    private final Consumer<Boolean> callback;
     private boolean changed = false;
     private boolean dataDirChanged = false;
     private boolean jettyConfigChanged = false;
@@ -44,13 +45,13 @@ public class ConfigurationDialog extends JDialog {
     /**
      * Creates new form ConfigurationDialog
      */
-    public ConfigurationDialog(Launcher launcher) {
+    public ConfigurationDialog(Consumer<Boolean> callback) {
         setModal(true);
         setTitle("eXist-db System Configuration");
 
         initComponents();
 
-        this.launcher = launcher;
+        this.callback = callback;
         
         final PropertiesConfiguration vmProperties = LauncherWrapper.getVMProperties();
         final int maxMemProp = vmProperties.getInt("memory.max", 1024);
@@ -73,8 +74,8 @@ public class ConfigurationDialog extends JDialog {
             if (ports.containsKey("jetty.port")) {
                 httpPort.setValue(ports.get("jetty.port"));
             }
-            if (ports.containsKey("jetty.port.ssl")) {
-                sslPort.setValue(ports.get("jetty.port.ssl"));
+            if (ports.containsKey("jetty.ssl.port")) {
+                sslPort.setValue(ports.get("jetty.ssl.port"));
             }
         } catch (DatabaseConfigurationException ex) {
             Logger.getLogger(ConfigurationDialog.class.getName()).log(Level.SEVERE, null, ex);
@@ -516,13 +517,14 @@ public class ConfigurationDialog extends JDialog {
                 properties.clear();
                 properties.setProperty("port", httpPort.getValue().toString());
                 properties.setProperty("port.ssl", sslPort.getValue().toString());
-                ConfigurationUtility.saveConfiguration("tools/jetty/etc/jetty.xml", "jetty.xsl", properties);
+                ConfigurationUtility.saveConfiguration("tools/jetty/etc/jetty-ssl.xml", "jetty.xsl", properties);
+                ConfigurationUtility.saveConfiguration("tools/jetty/etc/jetty-http.xml", "jetty.xsl", properties);
             }
             if (beforeStart) {
                 beforeStart = false;
                 btnCancel.setVisible(true);
                 setVisible(false);
-                this.launcher.shutdown(true);
+                callback.accept(true);
             } else if (changed || dataDirChanged || jettyConfigChanged) {
                 int r = JOptionPane.showConfirmDialog(this, "Database needs to be restarted to apply the " +
                             "new settings.", "Confirm restart", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
@@ -530,7 +532,7 @@ public class ConfigurationDialog extends JDialog {
                     changed = false;
                     dataDirChanged = false;
                     setVisible(false);
-                    this.launcher.shutdown(true);
+                    callback.accept(true);
                 }
             }
         } catch (IOException | ConfigurationException e) {
