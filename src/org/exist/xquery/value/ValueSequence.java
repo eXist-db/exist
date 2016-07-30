@@ -793,7 +793,7 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
 
     private class ReverseValueSequenceIterator implements SequenceIterator {
 
-        private int pos = size - 1;
+        private int pos = size; // size is not the actual size
 
         public ReverseValueSequenceIterator() {
         }
