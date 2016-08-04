@@ -256,7 +256,7 @@ public class BrokerPool extends BrokerPools implements Database {
     /**
      * The configuration object for the database instance
      */
-    protected final Configuration conf;
+    private final Configuration conf;
 
     private final ConcurrentSkipListSet<Observer> statusObservers = new ConcurrentSkipListSet<>();
 
@@ -384,12 +384,12 @@ public class BrokerPool extends BrokerPools implements Database {
      * The cache in which the database instance's collections are stored.
      */
     //TODO : rename as collectionsCache ?
-    protected CollectionCache collectionCache;
+    private CollectionCache collectionCache;
 
     /**
      * The pool in which the database instance's readers are stored.
      */
-    protected XMLReaderPool xmlReaderPool;
+    private XMLReaderPool xmlReaderPool;
 
     private final NodeIdFactory nodeFactory = new DLNFactory();
 
@@ -505,7 +505,7 @@ public class BrokerPool extends BrokerPools implements Database {
     }
 
     //TODO : create a canReadJournalDir() method in the *relevant* class. The two directories may be different.
-    protected boolean canReadDataDir(final Configuration conf) throws EXistException {
+    private boolean canReadDataDir(final Configuration conf) throws EXistException {
         final Path dataDir = Optional.ofNullable((Path) conf.getProperty(PROPERTY_DATA_DIR))
                 .orElse(Paths.get(NativeBroker.DEFAULT_DATA_DIR));
 
@@ -548,7 +548,7 @@ public class BrokerPool extends BrokerPools implements Database {
      *
      * @throws EXistException
      */
-    protected void initialize() throws EXistException, DatabaseConfigurationException {
+    private void initialize() throws EXistException, DatabaseConfigurationException {
         if(LOG.isDebugEnabled()) {
             LOG.debug("initializing database instance '" + instanceName + "'...");
         }
