@@ -21,6 +21,7 @@ package org.exist;
 
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.Observer;
 import java.util.Optional;
 
 import org.exist.collections.CollectionConfigurationManager;
@@ -170,4 +171,8 @@ public interface Database {
     public SymbolTable getSymbols();
 
     public MetaStorage getMetaStorage();
+
+    void addStatusObserver(final Observer statusObserver);
+    boolean removeStatusObserver(final Observer statusObserver);
+
 }

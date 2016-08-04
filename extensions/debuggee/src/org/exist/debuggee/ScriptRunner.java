@@ -68,8 +68,8 @@ public class ScriptRunner implements Runnable, Observer {
 	public void run() {
 		try {
 			final Database db = BrokerPool.getInstance();
-			
-            BrokerPool.registerStatusObserver(this);
+
+            db.addStatusObserver(this);
 			
 			try(final DBBroker broker = db.getBroker()) {
 
