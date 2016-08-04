@@ -132,10 +132,12 @@ public class ModificationTimeTest {
             assertEquals(modificationTimeBefore, modificationTimeAfter);
     }
 
-   protected BrokerPool startDB() throws DatabaseConfigurationException, EXistException {
+   @BeforeClass
+   public static void startDB() throws DatabaseConfigurationException, EXistException, IOException {
+        cleanupDataDir();
         final Configuration config = new Configuration();
-        BrokerPool.configure(1, 5, config);
-        return BrokerPool.getInstance();
+        BrokerPool.configure(1, 5, config, Optional.empty());
+        pool = BrokerPool.getInstance();
     }
 
     @After

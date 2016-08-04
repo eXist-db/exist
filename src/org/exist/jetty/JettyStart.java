@@ -154,11 +154,6 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
             logger.info("[{} : {}]", JETTY_BASE_PROP, configProperties.get(JETTY_BASE_PROP));
             logger.info("[jetty configuration : {}]", jettyConfig.toAbsolutePath().toString());
 
-            if(registerShutdownHook) {
-                // we will register our own shutdown hook
-                BrokerPool.setRegisterShutdownHook(false);
-            }
-
             // configure the database instance
             SingleInstanceConfiguration config;
             if (args.length == 2) {
@@ -167,11 +162,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
                 config = new SingleInstanceConfiguration();
             }
 
-            if (observer != null) {
-                BrokerPool.registerStatusObserver(observer);
-            }
-
-            BrokerPool.configure(1, 5, config);
+            BrokerPool.configure(1, 5, config, Optional.ofNullable(observer));
 
             // register the XMLDB driver
             final Database xmldb = new DatabaseImpl();
