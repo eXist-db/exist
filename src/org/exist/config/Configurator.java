@@ -60,7 +60,6 @@ import org.exist.dom.QName;
 import org.exist.dom.memtree.SAXAdapter;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
@@ -1279,7 +1278,6 @@ public class Configurator {
         final TransactionManager transact = pool.getTransactionManager();
         Txn txn = null;
         LOG.info("Storing configuration " + collection.getURI() + "/" + uri);
-        final Subject currentUser = broker.getCurrentSubject();
         
         try {
             broker.pushSubject(pool.getSecurityManager().getSystemSubject());
