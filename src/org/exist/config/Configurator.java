@@ -679,6 +679,7 @@ public class Configurator {
                     db = BrokerPool.getInstance();
                 } catch (final EXistException e) {
                     //ignore if database is starting-up
+                    LOG.warn("Unable to start lifecycle object: {}", obj.getClass().getName());
                     //TODO: add to BrokerPool static list to activate when ready
                 }
                 
