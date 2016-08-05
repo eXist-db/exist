@@ -60,7 +60,6 @@ import org.exist.dom.QName;
 import org.exist.dom.memtree.SAXAdapter;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
@@ -356,6 +355,7 @@ public class Configurator {
                         try {
                             method.invoke(instance, value);
                         } catch (final InvocationTargetException e) {
+                            LOG.warn(e);
                             method = null;
                         }
                     }
@@ -679,6 +679,7 @@ public class Configurator {
                     db = BrokerPool.getInstance();
                 } catch (final EXistException e) {
                     //ignore if database is starting-up
+                    LOG.warn("Unable to start lifecycle object: {}", obj.getClass().getName());
                     //TODO: add to BrokerPool static list to activate when ready
                 }
                 
@@ -876,6 +877,7 @@ public class Configurator {
                         final int radix = Integer.valueOf(settingKey.extractValueFromSettings(settings));
                         return Integer.toString((Integer) field.get(instance), radix);
                     } catch (final Exception e) {
+                        LOG.error(e);
                         //TODO UNDERSTAND: ignore, set back to default or throw error?
                     }
                     
@@ -1276,7 +1278,6 @@ public class Configurator {
         final TransactionManager transact = pool.getTransactionManager();
         Txn txn = null;
         LOG.info("Storing configuration " + collection.getURI() + "/" + uri);
-        final Subject currentUser = broker.getCurrentSubject();
         
         try {
             broker.pushSubject(pool.getSecurityManager().getSystemSubject());
