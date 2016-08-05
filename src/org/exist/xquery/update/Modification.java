@@ -135,10 +135,9 @@ public abstract class Modification extends AbstractExpression
      */
     protected StoredNode[] selectAndLock(Txn transaction, Sequence nodes) throws LockException, PermissionDeniedException,
         XPathException, TriggerException {
-        final Lock globalLock = context.getBroker().getBrokerPool().getGlobalUpdateLock();
+        final java.util.concurrent.locks.Lock globalLock = context.getBroker().getBrokerPool().getGlobalUpdateLock();
+        globalLock.lock();
         try {
-            globalLock.acquire(Lock.READ_LOCK);
-
             lockedDocuments = nodes.getDocumentSet();
 
             // acquire a lock on all documents
@@ -168,7 +167,7 @@ public abstract class Modification extends AbstractExpression
             }
             return ql;
         } finally {
-            globalLock.release(Lock.READ_LOCK);
+            globalLock.unlock();
         }
     }
 

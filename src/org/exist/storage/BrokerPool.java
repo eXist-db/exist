@@ -54,8 +54,6 @@ import org.exist.storage.btree.DBException;
 import org.exist.storage.journal.JournalManager;
 import org.exist.storage.lock.DeadlockDetection;
 import org.exist.storage.lock.FileLock;
-import org.exist.storage.lock.Lock;
-import org.exist.storage.lock.ReentrantReadWriteLock;
 import org.exist.storage.recovery.RecoveryManager;
 import org.exist.storage.sync.Sync;
 import org.exist.storage.sync.SyncTask;
@@ -86,6 +84,8 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * This class controls all available instances of the database.
@@ -315,7 +315,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
 
     private final NodeIdFactory nodeFactory = new DLNFactory();
 
-    private final Lock globalXUpdateLock = new ReentrantReadWriteLock("xupdate");
+    private final Lock globalXUpdateLock = new ReentrantLock();
 
     private Subject serviceModeUser = null;
     private boolean inServiceMode = false;
