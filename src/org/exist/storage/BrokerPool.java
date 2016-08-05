@@ -100,75 +100,9 @@ import java.util.concurrent.atomic.AtomicReference;
  * @author Adam Retter <adam@exist-db.org>
  */
 @ConfigurationClass("pool")
-public class BrokerPool extends BrokerPools implements Database {
+public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Database {
 
     private final static Logger LOG = LogManager.getLogger(BrokerPool.class);
-
-    //on-start, ready, go
-    /*** initializing sub-components */
-    public final static String SIGNAL_STARTUP = "startup";
-    /*** ready for recovery & read-only operations */
-    public final static String SIGNAL_READINESS = "ready";
-    /*** ready for writable operations */
-    public final static String SIGNAL_WRITABLE = "writable";
-    /*** ready for writable operations */
-    public final static String SIGNAL_STARTED = "started";
-    /*** running shutdown sequence */
-    public final static String SIGNAL_SHUTDOWN = "shutdown";
-    /*** recovery aborted, db stopped */
-    public final static String SIGNAL_ABORTED = "aborted";
-
-    /**
-     * The name of a default database instance for those who are too lazy to provide parameters ;-).
-     */
-    public static final String CONFIGURATION_CONNECTION_ELEMENT_NAME = "db-connection";
-    public static final String CONFIGURATION_STARTUP_ELEMENT_NAME = "startup";
-    public static final String CONFIGURATION_POOL_ELEMENT_NAME = "pool";
-    public static final String CONFIGURATION_SECURITY_ELEMENT_NAME = "security";
-    public static final String CONFIGURATION_RECOVERY_ELEMENT_NAME = "recovery";
-    public static final String DISK_SPACE_MIN_ATTRIBUTE = "minDiskSpace";
-
-    public static final String DATA_DIR_ATTRIBUTE = "files";
-    //TODO : move elsewhere ?
-    public final static String RECOVERY_ENABLED_ATTRIBUTE = "enabled";
-    public final static String RECOVERY_POST_RECOVERY_CHECK = "consistency-check";
-    //TODO : move elsewhere ?
-    public final static String COLLECTION_CACHE_SIZE_ATTRIBUTE = "collectionCacheSize";
-    public final static String MIN_CONNECTIONS_ATTRIBUTE = "min";
-    public final static String MAX_CONNECTIONS_ATTRIBUTE = "max";
-    public final static String SYNC_PERIOD_ATTRIBUTE = "sync-period";
-    public final static String SHUTDOWN_DELAY_ATTRIBUTE = "wait-before-shutdown";
-    public final static String NODES_BUFFER_ATTRIBUTE = "nodesBuffer";
-
-    //Various configuration property keys (set by the configuration manager)
-    public final static String PROPERTY_STARTUP_TRIGGERS = "startup.triggers";
-    public final static String PROPERTY_DATA_DIR = "db-connection.data-dir";
-    public final static String PROPERTY_MIN_CONNECTIONS = "db-connection.pool.min";
-    public final static String PROPERTY_MAX_CONNECTIONS = "db-connection.pool.max";
-    public final static String PROPERTY_SYNC_PERIOD = "db-connection.pool.sync-period";
-    public final static String PROPERTY_SHUTDOWN_DELAY = "wait-before-shutdown";
-    public final static String DISK_SPACE_MIN_PROPERTY = "db-connection.diskSpaceMin";
-
-    //TODO : move elsewhere ?
-    public final static String PROPERTY_COLLECTION_CACHE_SIZE = "db-connection.collection-cache-size";
-    //TODO : move elsewhere ? Get fully qualified class name ?
-    public final static String DEFAULT_SECURITY_CLASS = "org.exist.security.internal.SecurityManagerImpl";
-    public final static String PROPERTY_SECURITY_CLASS = "db-connection.security.class";
-    public final static String PROPERTY_RECOVERY_ENABLED = "db-connection.recovery.enabled";
-    public final static String PROPERTY_RECOVERY_CHECK = "db-connection.recovery.consistency-check";
-    public final static String PROPERTY_SYSTEM_TASK_CONFIG = "db-connection.system-task-config";
-    public final static String PROPERTY_NODES_BUFFER = "db-connection.nodes-buffer";
-    public final static String PROPERTY_EXPORT_ONLY = "db-connection.emergency";
-
-    public final static String PROPERTY_RECOVERY_GROUP_COMMIT = "db-connection.recovery.group-commit";
-    public final static String RECOVERY_GROUP_COMMIT_ATTRIBUTE = "group-commit";
-    public final static String PROPERTY_RECOVERY_FORCE_RESTART = "db-connection.recovery.force-restart";
-    public final static String RECOVERY_FORCE_RESTART_ATTRIBUTE = "force-restart";
-
-
-    public static final String DOC_ID_MODE_ATTRIBUTE = "doc-ids";
-
-    public static final String DOC_ID_MODE_PROPERTY = "db-connection.doc-ids.mode";
 
     private StatusReporter statusReporter = null;
 
@@ -184,17 +118,6 @@ public class BrokerPool extends BrokerPools implements Database {
      * junit tests to test the recovery process.
      */
     public static boolean FORCE_CORRUPTION = false;
-
-    /**
-     * Default values
-     */
-    public static final long DEFAULT_SYNCH_PERIOD = 120000;
-    public static final long DEFAULT_MAX_SHUTDOWN_WAIT = 45000;
-    //TODO : move this default setting to org.exist.collections.CollectionCache ?
-    public final int DEFAULT_COLLECTION_BUFFER_SIZE = 64;
-
-    public static final String PROPERTY_PAGE_SIZE = "db-connection.page-size";
-    public static final int DEFAULT_PAGE_SIZE = 4096;
 
     /**
      * <code>true</code> if the database instance is able to perform recovery.
@@ -324,7 +247,6 @@ public class BrokerPool extends BrokerPools implements Database {
     private final long majorSyncPeriod;        //the period after which a major sync should occur
     private long lastMajorSync = System.currentTimeMillis();    //time the last major sync occurred
 
-    public static final short DEFAULT_DISK_SPACE_MIN = 64; // 64 MB
     private final long diskSpaceMin;
 
     /**
@@ -393,8 +315,6 @@ public class BrokerPool extends BrokerPools implements Database {
 
     private final NodeIdFactory nodeFactory = new DLNFactory();
 
-    //TODO : is another value possible ? If no, make it static
-    // WM: no, we need one lock per database instance. Otherwise we would lock another database.
     private final Lock globalXUpdateLock = new ReentrantReadWriteLock("xupdate");
 
     private Subject serviceModeUser = null;
