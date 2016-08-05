@@ -356,6 +356,7 @@ public class Configurator {
                         try {
                             method.invoke(instance, value);
                         } catch (final InvocationTargetException e) {
+                            LOG.warn(e);
                             method = null;
                         }
                     }
@@ -877,6 +878,7 @@ public class Configurator {
                         final int radix = Integer.valueOf(settingKey.extractValueFromSettings(settings));
                         return Integer.toString((Integer) field.get(instance), radix);
                     } catch (final Exception e) {
+                        LOG.error(e);
                         //TODO UNDERSTAND: ignore, set back to default or throw error?
                     }
                     
