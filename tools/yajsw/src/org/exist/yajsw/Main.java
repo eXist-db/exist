@@ -19,7 +19,6 @@ public class Main implements Observer {
     }
 
     public void start(String[] args) {
-        System.setProperty("exist.register-shutdown-hook", "true");
         try {
             // use the bootstrap loader to autodetect EXIST_HOME and
             // construct a correct classpath
