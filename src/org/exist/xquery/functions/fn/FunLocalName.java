@@ -107,7 +107,7 @@ public class FunLocalName extends Function {
             item = contextSequence.itemAt(0);
         }
         
-        Sequence result;
+        final Sequence result;
         if (item == null)
             {result = StringValue.EMPTY_STRING;}
         else {
@@ -115,7 +115,12 @@ public class FunLocalName extends Function {
             	{throw new XPathException(this, ErrorCodes.XPTY0004, "item is not a node; got '" + Type.getTypeName(item.getType()) + "'");}          
             //TODO : how to improve performance ?
             final Node n = ((NodeValue)item).getNode();
-            result = new StringValue(n.getLocalName());
+            final String localName = n.getLocalName();
+            if(localName != null) {
+                result = new StringValue(localName);
+            } else {
+                result = StringValue.EMPTY_STRING;
+            }
         }
         
         if (context.getProfiler().isEnabled()) 
