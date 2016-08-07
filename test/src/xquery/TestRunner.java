@@ -23,11 +23,10 @@ import org.exist.Namespaces;
 import org.exist.dom.memtree.SAXAdapter;
 import org.exist.source.FileSource;
 import org.exist.source.Source;
+import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.util.FileUtils;
 import org.exist.util.XMLFilenameFilter;
-import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.XQueryService;
-import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.value.Sequence;
 import org.junit.*;
 import org.w3c.dom.Document;
@@ -37,9 +36,6 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
-import org.xmldb.api.DatabaseManager;
-import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.Database;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
@@ -59,11 +55,12 @@ import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.*;
 
 import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.fail;
 
 public abstract class TestRunner {
 
-    private Collection rootCollection;
+    @ClassRule
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
+
     protected abstract String getDirectory();
 
     @Test
@@ -80,7 +77,7 @@ public abstract class TestRunner {
         }
 
         final List<TestSuite> all = new ArrayList<>();
-        final XQueryService xqs = (XQueryService) rootCollection.getService("XQueryService", "1.0");
+        final XQueryService xqs = (XQueryService) existEmbeddedServer.getRoot().getService("XQueryService", "1.0");
         final Source query = new FileSource(Paths.get("test/src/xquery/runTests.xql"), false);
 
         if(files != null) {
@@ -118,7 +115,7 @@ public abstract class TestRunner {
 
         if(suites != null) {
             for (final Path suite : suites) {
-                final XQueryService xqs = (XQueryService) rootCollection.getService("XQueryService", "1.0");
+                final XQueryService xqs = (XQueryService) existEmbeddedServer.getRoot().getService("XQueryService", "1.0");
                 xqs.setModuleLoadPath(getDirectory());
                 final Source query = new FileSource(suite, false);
 
@@ -352,34 +349,6 @@ public abstract class TestRunner {
 
             return builder.toString();
         }
-    }
-
-    @Before
-    public void setUpBefore() throws Exception {
-        // initialize driver
-        Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
-        Database database = (Database) cl.newInstance();
-        database.setProperty("create-database", "true");
-        DatabaseManager.registerDatabase(database);
-
-        rootCollection =
-                DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
-    }
-
-    @After
-    public void tearDownAfter() {
-        if (rootCollection != null) {
-            try {
-                DatabaseInstanceManager dim =
-                        (DatabaseInstanceManager) rootCollection.getService(
-                        "DatabaseInstanceManager", "1.0");
-                dim.shutdown();
-            } catch (Exception e) {
-                e.printStackTrace();
-                fail(e.getMessage());
-            }
-        }
-        rootCollection = null;
     }
 
     protected static Document parse(final Path file) throws IOException, SAXException, ParserConfigurationException {

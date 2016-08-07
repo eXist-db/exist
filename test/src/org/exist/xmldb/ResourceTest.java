@@ -22,7 +22,11 @@
 package org.exist.xmldb;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Properties;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -34,18 +38,15 @@ import javax.xml.transform.OutputKeys;
 import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.exist.dom.QName;
 import org.exist.security.Account;
+import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.util.serializer.AttrList;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.XMLFilenameFilter;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
+
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -53,7 +54,6 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.*;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.Database;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceIterator;
 import org.xmldb.api.base.ResourceSet;
@@ -65,6 +65,9 @@ import static org.exist.xmldb.XmldbLocalTests.*;
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 
 public class ResourceTest {
+
+    @ClassRule
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
 
     private final static String TEST_COLLECTION = "testResource";
 
@@ -341,59 +344,32 @@ public class ResourceTest {
                     + "</test>";
     }
 
-    @BeforeClass
-    public static void startDatabase() {
-        try {
-            // initialize driver
-            Class<?> cl = Class.forName(DRIVER);
-            Database database = (Database) cl.newInstance();
-            database.setProperty("create-database", "true");
-            DatabaseManager.registerDatabase(database);
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        }
-    }
-
-    @AfterClass
-    public static void stopDatabase() {
-        try {
-            Collection dbCol = DatabaseManager.getCollection(ROOT_URI, ADMIN_UID, ADMIN_PWD);
-            DatabaseInstanceManager mgr = (DatabaseInstanceManager) dbCol.getService("DatabaseInstanceManager", "1.0");
-            mgr.shutdown();
-        } catch (XMLDBException e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        }
-    }
-
     @Before
-    public void setUp() throws XMLDBException {
+    public void setUp() throws XMLDBException, IOException {
         //create a test collection
-        Collection root = DatabaseManager.getCollection(ROOT_URI, ADMIN_UID, ADMIN_PWD);
-        CollectionManagementService cms = (CollectionManagementService)root.getService("CollectionManagementService", "1.0");
-        Collection testCollection = cms.createCollection(TEST_COLLECTION);
-        UserManagementService ums = (UserManagementService) testCollection.getService("UserManagementService", "1.0");
+        final CollectionManagementService cms = (CollectionManagementService)existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
+        final Collection testCollection = cms.createCollection(TEST_COLLECTION);
+        final UserManagementService ums = (UserManagementService) testCollection.getService("UserManagementService", "1.0");
         // change ownership to guest
-        Account guest = ums.getAccount(GUEST_UID);
+        final Account guest = ums.getAccount(GUEST_UID);
         ums.chown(guest, guest.getPrimaryGroup());
         ums.chmod("rwxr-xr-x");
 
         //store sample files as guest
-        Collection testCollectionAsGuest = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
-        File files[] = getShakespeareSamplesDirectory().listFiles(new XMLFilenameFilter());
-        for(File file : files) {
-            XMLResource res = (XMLResource) testCollectionAsGuest.createResource(file.getName(), "XMLResource");
-            res.setContent(file);
-            testCollectionAsGuest.storeResource(res);
+        final Collection testCollectionAsGuest = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
+        try(final Stream<Path> files = Files.list(getShakespeareSamplesDirectory()).filter(XMLFilenameFilter.asPredicate())) {
+            for(final Path file : files.collect(Collectors.toList())) {
+                final XMLResource res = (XMLResource) testCollectionAsGuest.createResource(file.getFileName().toString(), "XMLResource");
+                res.setContent(file.toFile());
+                testCollectionAsGuest.storeResource(res);
+            }
         }
     }
 
     @After
     public void tearDown() throws XMLDBException {
         //delete the test collection
-        Collection root = DatabaseManager.getCollection(ROOT_URI, ADMIN_UID, ADMIN_PWD);
-        CollectionManagementService cms = (CollectionManagementService)root.getService("CollectionManagementService", "1.0");
+        CollectionManagementService cms = (CollectionManagementService)existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
         cms.removeCollection(TEST_COLLECTION);
     }
 

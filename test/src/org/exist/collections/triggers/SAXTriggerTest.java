@@ -24,24 +24,19 @@ import static org.junit.Assert.*;
 import org.exist.EXistException;
 import org.exist.TestUtils;
 import org.exist.storage.BrokerPool;
-import org.exist.storage.DBBroker;
-import org.exist.xmldb.DatabaseInstanceManager;
+import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.xmldb.IndexQueryService;
-import org.exist.xmldb.XmldbURI;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.Database;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 
-import java.util.Optional;
-
 public class SAXTriggerTest {
+
+    @ClassRule
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
 
     private final static String DOCUMENT1_CONTENT = 
         "<test>"
@@ -80,68 +75,52 @@ public class SAXTriggerTest {
     public void test() throws EXistException, XMLDBException {
 
         final BrokerPool db = BrokerPool.getInstance();
-
         db.registerDocumentTrigger(AnotherTrigger.class);
 
-        try(final DBBroker broker = db.get(Optional.of(db.getSecurityManager().getSystemSubject()))) {
+        final Collection root = DatabaseManager.getCollection(BASE_URI + testCollection, "admin", "");
 
-            final Collection root = DatabaseManager.getCollection(BASE_URI + testCollection, "admin", "");
+        final Resource resource = root.createResource("data.xml", "XMLResource");
+        resource.setContent(DOCUMENT1_CONTENT);
+        root.storeResource(resource);
 
-            final Resource resource = root.createResource("data.xml", "XMLResource");
-            resource.setContent(DOCUMENT1_CONTENT);
-            root.storeResource(resource);
+        assertEquals(3, AnotherTrigger.createDocumentEvents);
 
-            assertEquals(3, AnotherTrigger.createDocumentEvents);
+        assertEquals(26, AnotherTrigger.count);
 
-            assertEquals(26, AnotherTrigger.count);
-
-            assertEquals(DOCUMENT1_CONTENT, AnotherTrigger.sb.toString());
-        }
+        assertEquals(DOCUMENT1_CONTENT, AnotherTrigger.sb.toString());
     }
 
     @Test
     public void saxEventModifications() throws EXistException, XMLDBException {
 
         final BrokerPool db = BrokerPool.getInstance();
-
         db.registerDocumentTrigger(StoreTrigger.class);
 
-        try(final DBBroker broker = db.get(Optional.of(db.getSecurityManager().getSystemSubject()))) {
+        final Collection root = DatabaseManager.getCollection(BASE_URI + testCollection, "admin", "");
 
-            final Collection root = DatabaseManager.getCollection(BASE_URI + testCollection, "admin", "");
+        Resource resource = root.createResource("data.xml", "XMLResource");
+        resource.setContent(DOCUMENT2_CONTENT);
+        root.storeResource(resource);
 
-            Resource resource = root.createResource("data.xml", "XMLResource");
-            resource.setContent(DOCUMENT2_CONTENT);
-            root.storeResource(resource);
+        resource = root.createResource("data.xml", "XMLResource");
 
-            resource = root.createResource("data.xml", "XMLResource");
-
-            assertEquals(DOCUMENT3_CONTENT, resource.getContent().toString());
-
-        }
+        assertEquals(DOCUMENT3_CONTENT, resource.getContent().toString());
     }
 
     @Test
     public void saxEventModificationsAtXConf() throws EXistException, XMLDBException {
+        final Collection root = DatabaseManager.getCollection(BASE_URI + testCollection, "admin", "");
 
-        final BrokerPool db = BrokerPool.getInstance();
+        final IndexQueryService idxConf = (IndexQueryService) root.getService("IndexQueryService", "1.0");
+        idxConf.configureCollection(COLLECTION_CONFIG);
 
-        try(final DBBroker broker = db.get(Optional.of(db.getSecurityManager().getSystemSubject()))) {
+        Resource resource = root.createResource("data.xml", "XMLResource");
+        resource.setContent(DOCUMENT2_CONTENT);
+        root.storeResource(resource);
 
-            final Collection root = DatabaseManager.getCollection(BASE_URI + testCollection, "admin", "");
+        resource = root.createResource("data.xml", "XMLResource");
 
-            final IndexQueryService idxConf = (IndexQueryService) root.getService("IndexQueryService", "1.0");
-            idxConf.configureCollection(COLLECTION_CONFIG);
-
-            Resource resource = root.createResource("data.xml", "XMLResource");
-            resource.setContent(DOCUMENT2_CONTENT);
-            root.storeResource(resource);
-
-            resource = root.createResource("data.xml", "XMLResource");
-
-            assertEquals(DOCUMENT3_CONTENT, resource.getContent().toString());
-
-        }
+        assertEquals(DOCUMENT3_CONTENT, resource.getContent().toString());
     }
 
     @After
@@ -166,14 +145,7 @@ public class SAXTriggerTest {
 
     @BeforeClass
     public static void initDB() throws ClassNotFoundException, XMLDBException, InstantiationException, IllegalAccessException {
-        // initialize XML:DB driver
-        final Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
-        final Database database = (Database) cl.newInstance();
-        database.setProperty("create-database", "true");
-        DatabaseManager.registerDatabase(database);
-
-        final Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
-        CollectionManagementService mgmt = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
+        CollectionManagementService mgmt = (CollectionManagementService) existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
         Collection testCol = mgmt.createCollection("triggers");
 
         for (int i = 1; i <= 2; i++) {
@@ -185,9 +157,5 @@ public class SAXTriggerTest {
     @AfterClass
     public static void closeDB() throws XMLDBException {
         TestUtils.cleanupDB();
-        
-        final Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
-        final DatabaseInstanceManager mgr = (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
-        mgr.shutdown();
     }
 }

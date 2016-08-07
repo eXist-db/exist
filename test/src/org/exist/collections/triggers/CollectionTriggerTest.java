@@ -3,24 +3,23 @@ package org.exist.collections.triggers;
 import org.exist.EXistException;
 import org.exist.TestUtils;
 import org.exist.security.PermissionDeniedException;
+import org.exist.test.ExistXmldbEmbeddedServer;
 import org.xmldb.api.base.Collection;
 import org.exist.xmldb.CollectionManagementServiceImpl;
-import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.IndexQueryService;
 import org.exist.xmldb.XmldbURI;
 import org.junit.*;
-import org.xmldb.api.DatabaseManager;
-import org.xmldb.api.base.Database;
 import org.xmldb.api.base.XMLDBException;
+
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 
 
 public class CollectionTriggerTest {
 
+    @ClassRule
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
+
     private final static String TEST_COLLECTION = "testCollectionTrigger";
-    private static Collection root;
     private static Collection testCollection;
     private static CollectionManagementServiceImpl rootSrv;
 
@@ -66,42 +65,15 @@ public class CollectionTriggerTest {
 
     /** just start the DB and create the test collection */
     @BeforeClass
-    public static void startDB() {
-        try {
-            // initialize driver
-            Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
-            Database database = (Database) cl.newInstance();
-            database.setProperty("create-database", "true");
-            DatabaseManager.registerDatabase(database);
-
-            root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
-            assertNotNull(root);
-
-            rootSrv = (CollectionManagementServiceImpl)root.getService("CollectionManagementService", "1.0");
-        } catch (ClassNotFoundException e) {
-            fail(e.getMessage());
-        } catch (InstantiationException e) {
-            fail(e.getMessage());
-        } catch (IllegalAccessException e) {
-            fail(e.getMessage());
-        } catch (XMLDBException e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        }
+    public static void startDB() throws XMLDBException {
+        rootSrv = (CollectionManagementServiceImpl)existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
     }
 
     @AfterClass
     public static void shutdownDB() {
         TestUtils.cleanupDB();
-        try {
-            org.xmldb.api.base.Collection root = DatabaseManager.getCollection("xmldb:exist://" + XmldbURI.ROOT_COLLECTION, "admin", "");
-            DatabaseInstanceManager mgr = (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
-            mgr.shutdown();
-        } catch (XMLDBException e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        }
         testCollection = null;
+        rootSrv = null;
     }
 
     private final static String COLLECTION_CONFIG =

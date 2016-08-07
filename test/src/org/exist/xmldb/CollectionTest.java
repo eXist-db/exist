@@ -21,52 +21,37 @@
  */
 package org.exist.xmldb;
 
+import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.test.TestConstants;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Test;
 import static org.junit.Assert.assertNotNull;
-import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.Database;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
-import static org.exist.xmldb.XmldbLocalTests.*;
 
 public class CollectionTest {
 
-    @Test
-    public void create() throws XMLDBException {
-        Collection root = DatabaseManager.getCollection(ROOT_URI, ADMIN_UID, ADMIN_PWD);
-        CollectionManagementService service = (CollectionManagementService)root.getService("CollectionManagementService", "1.0");
-        Collection testCollection = service.createCollection(TestConstants.SPECIAL_NAME);
-        assertNotNull(testCollection);
+    @ClassRule
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
+
+    @Before
+    public void setup() throws XMLDBException {
+        final CollectionManagementService service = (CollectionManagementService)existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
+        service.createCollection(TestConstants.SPECIAL_NAME);
+    }
+
+    @After
+    public void cleanup() throws XMLDBException {
+        final CollectionManagementService service = (CollectionManagementService)existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
+        service.removeCollection(TestConstants.SPECIAL_NAME);
     }
 
     @Test
     public void testRead() throws XMLDBException {
-        Collection test = DatabaseManager.getCollection(ROOT_URI, ADMIN_UID, ADMIN_PWD);
+        final Collection test = existEmbeddedServer.getRoot().getChildCollection(TestConstants.SPECIAL_NAME);
         assertNotNull(test);
-        Collection root = DatabaseManager.getCollection(ROOT_URI, ADMIN_UID, ADMIN_PWD);
-        test = root.getChildCollection(TestConstants.SPECIAL_NAME);
-        assertNotNull(test);
-        CollectionManagementService service = (CollectionManagementService)root.getService("CollectionManagementService", "1.0");
-        service.removeCollection(TestConstants.SPECIAL_NAME);
-    }
-
-    @Before
-    public void setUp() throws Exception {
-        // initialize driver
-        Class<?> cl = Class.forName(DRIVER);
-        Database database = (Database) cl.newInstance();
-        database.setProperty("create-database", "true");
-        DatabaseManager.registerDatabase(database);
-    }
-
-    @After
-    public void tearDown() throws XMLDBException {
-        Collection root = DatabaseManager.getCollection(ROOT_URI, ADMIN_UID, ADMIN_PWD);
-        DatabaseInstanceManager mgr = (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
-        mgr.shutdown();
     }
 }

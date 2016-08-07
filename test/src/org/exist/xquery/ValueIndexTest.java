@@ -23,15 +23,13 @@ package org.exist.xquery;
 
 import java.io.File;
 
-import org.exist.xmldb.DatabaseInstanceManager;
+import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.xmldb.IndexQueryService;
-import org.exist.xmldb.XmldbURI;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Test;
-import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.Database;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceIterator;
 import org.xmldb.api.base.ResourceSet;
@@ -49,7 +47,8 @@ import static org.junit.Assert.assertNotNull;
  */
 public class ValueIndexTest {
 
-    private final static String URI = XmldbURI.LOCAL_DB;
+    @ClassRule
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
 
     private String CONFIG =
     	"<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" + 
@@ -99,14 +98,7 @@ public class ValueIndexTest {
 
     @Before
     public void setUp() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
-        // initialize driver
-        Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
-        Database database = (Database) cl.newInstance();
-        database.setProperty("create-database", "true");
-        DatabaseManager.registerDatabase(database);
-
-        Collection root = DatabaseManager.getCollection(URI, "admin", "");
-        CollectionManagementService service = (CollectionManagementService) root
+        final CollectionManagementService service = (CollectionManagementService) existEmbeddedServer.getRoot()
                 .getService("CollectionManagementService", "1.0");
         testCollection = service.createCollection("test");
         assertNotNull(testCollection);
@@ -114,17 +106,10 @@ public class ValueIndexTest {
 
     @After
     public void tearDown() throws Exception {
-        try {
-            Collection root = DatabaseManager.getCollection(URI, "admin", "");
-            CollectionManagementService service = (CollectionManagementService) root
-                    .getService("CollectionManagementService", "1.0");
-            service.removeCollection("test");
-        } finally {
-            DatabaseInstanceManager dim =
-                    (DatabaseInstanceManager) testCollection.getService("DatabaseInstanceManager", "1.0");
-            dim.shutdown();
-            testCollection = null;
-        }
+        final CollectionManagementService service = (CollectionManagementService) existEmbeddedServer.getRoot()
+                .getService("CollectionManagementService", "1.0");
+        service.removeCollection("test");
+        testCollection = null;
     }
     
 	/**

@@ -1,25 +1,29 @@
 package org.exist.xmldb;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXResult;
 
+import org.exist.test.ExistXmldbEmbeddedServer;
+import org.junit.ClassRule;
+import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.Locator;
+import org.xml.sax.SAXException;
 import org.xmldb.api.DatabaseManager;
-import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.Database;
-import org.xmldb.api.base.ResourceIterator;
-import org.xmldb.api.base.ResourceSet;
+import org.xmldb.api.base.*;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XPathQueryService;
@@ -31,22 +35,10 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class DOMTest {
 
-	private static String driver = "org.exist.xmldb.DatabaseImpl";
-	private static String baseURI = XmldbURI.LOCAL_DB;
+	@ClassRule
+	public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
 
-	private static String username = "admin";
-	private static String password = "";
 	private static String name = "test.xml";
-
-	public static void main(String[] args) {
-		System.setProperty("exist.initdb", "true");
-		DOMTest tester = new DOMTest();
-		tester.runTest1();
-		tester.runTest2();
-		tester.runTest3();
-		tester.runTest4(false);
-		tester.runTest4(true);
-	}
 	
 	/** 
 	 * - Storing XML resource from XML string
@@ -54,249 +46,171 @@ public class DOMTest {
 	 * - removing resource
 	 * - shutdownDB with the DatabaseInstanceManager
 	 */
-	public void runTest1() {
-		try {
-			Class<?> dbc = Class.forName(driver);
-			Database database = (Database) dbc.newInstance();
-			DatabaseManager.registerDatabase(database);
-			Collection rootColl =
-				DatabaseManager.getCollection(baseURI, "admin", "");
-			CollectionManagementService cms =
-				(CollectionManagementService) rootColl.getService(
-					"CollectionManagementService",
-					"1.0");
-			cms.createCollection("A"); // jmv
-			cms.removeCollection("A");
-			cms.createCollection("A");
-			Collection coll = rootColl.getChildCollection("A");
+	@Test
+	public void test1() throws XMLDBException {
 
-			XMLResource r =
-				(XMLResource) coll.createResource(
-					name,
-					XMLResource.RESOURCE_TYPE);
-			r.setContent(
-				"<properties><property key=\"type\">Table</property></properties>");
-			coll.storeResource(r);
 
-			XPathQueryService xpqs =
-				(XPathQueryService) coll.getService("XPathQueryService", "1.0");
-			ResourceSet rs =
-				xpqs.query(
-					"//properties[property[@key='type' and text()='Table']]");
-			for (ResourceIterator i = rs.getIterator();
-				i.hasMoreResources();
-				) {
-				r = (XMLResource) i.nextResource();
-				String s = (String) r.getContent();
-				Node content = r.getContentAsDOM();
-				coll.removeResource(r);
-			}
+		CollectionManagementService cms =
+			(CollectionManagementService) existEmbeddedServer.getRoot().getService(
+				"CollectionManagementService",
+				"1.0");
+		cms.createCollection("A"); // jmv
+		cms.removeCollection("A");
+		cms.createCollection("A");
+		Collection coll = existEmbeddedServer.getRoot().getChildCollection("A");
 
-			cms.removeCollection("A");
-			DatabaseManager.deregisterDatabase(database);
-			DatabaseInstanceManager dim =
-				(DatabaseInstanceManager) rootColl.getService(
-					"DatabaseInstanceManager",
-					"1.0");
-			dim.shutdown();
-		} catch (Exception e) {
-			e.printStackTrace();
+		XMLResource r =
+			(XMLResource) coll.createResource(
+				name,
+				XMLResource.RESOURCE_TYPE);
+		r.setContent(
+			"<properties><property key=\"type\">Table</property></properties>");
+		coll.storeResource(r);
+
+		XPathQueryService xpqs =
+			(XPathQueryService) coll.getService("XPathQueryService", "1.0");
+		ResourceSet rs =
+			xpqs.query(
+				"//properties[property[@key='type' and text()='Table']]");
+		for (ResourceIterator i = rs.getIterator();
+			i.hasMoreResources();
+			) {
+			r = (XMLResource) i.nextResource();
+			String s = (String) r.getContent();
+			Node content = r.getContentAsDOM();
+			coll.removeResource(r);
 		}
+
+		cms.removeCollection("A");
 	}
 	/** 
 	 * - create and fill a simple document via DOM and JAXP
 	 * - store it with setContentAsDOM()
 	 * - simple access via getContentAsDOM()
 	 * */
-	public void runTest2() {
-		try {
-			for (int i = 0; i < 2; i++) {
-				Class<?> dbc = Class.forName(driver);
-				Database database = (Database) dbc.newInstance();
-				DatabaseManager.registerDatabase(database);
+	@Test
+	public void test2() throws XMLDBException, InstantiationException, IllegalAccessException, ClassNotFoundException, ParserConfigurationException {
+		for (int i = 0; i < 2; i++) {
+			XMLResource resource = (XMLResource) existEmbeddedServer.getRoot().getResource(name);
+			if (resource == null) {
+				resource =
+					(XMLResource) existEmbeddedServer.getRoot().createResource(
+						name,
+						XMLResource.RESOURCE_TYPE);
 
-				Collection coll =
-					DatabaseManager.getCollection(baseURI, username, password);
-				XMLResource resource = (XMLResource) coll.getResource(name);
-				if (resource == null) {
-					resource =
-						(XMLResource) coll.createResource(
-							name,
-							XMLResource.RESOURCE_TYPE);
+				DocumentBuilderFactory dbf =
+					DocumentBuilderFactory.newInstance();
+				DocumentBuilder db = dbf.newDocumentBuilder();
+				Document doc = db.newDocument();
+				Element rootElem = doc.createElement("element");
+				doc.appendChild(rootElem);
 
-					DocumentBuilderFactory dbf =
-						DocumentBuilderFactory.newInstance();
-					DocumentBuilder db = dbf.newDocumentBuilder();
-					Document doc = db.newDocument();
-					Element rootElem = doc.createElement("element");
-					doc.appendChild(rootElem);
+				resource.setContentAsDOM(doc);
+				existEmbeddedServer.getRoot().storeResource(resource);
 
-					resource.setContentAsDOM(doc);
-					coll.storeResource(resource);
-
-					coll =
-						DatabaseManager.getCollection(
-							baseURI,
-							username,
-							password);
-					resource = (XMLResource) coll.getResource(name);
-				}
-
-				String s = (String) resource.getContent();
-				Node content = resource.getContentAsDOM();
-
-				DatabaseManager.deregisterDatabase(database);
-				DatabaseInstanceManager dim =
-					(DatabaseInstanceManager) coll.getService(
-						"DatabaseInstanceManager",
-						"1.0");
-				dim.shutdown();
+				resource = (XMLResource) existEmbeddedServer.getRoot().getResource(name);
 			}
 
-			Class<?> dbc = Class.forName(driver);
-			Database database = (Database) dbc.newInstance();
-			DatabaseManager.registerDatabase(database);
-			Collection coll =
-				DatabaseManager.getCollection(baseURI, username, password);
-			XMLResource resource = (XMLResource) coll.getResource(name);
-			coll.removeResource(resource);
-			DatabaseManager.deregisterDatabase(database);
-			DatabaseInstanceManager dim =
-				(DatabaseInstanceManager) coll.getService(
-					"DatabaseInstanceManager",
-					"1.0");
-			dim.shutdown();
-
-		} catch (Exception e) {
-			e.printStackTrace();
+			String s = (String) resource.getContent();
+			Node content = resource.getContentAsDOM();
 		}
+
+		existEmbeddedServer.restart();
+
+		XMLResource resource = (XMLResource) existEmbeddedServer.getRoot().getResource(name);
+		existEmbeddedServer.getRoot().removeResource(resource);
 	}
 	
 	/** like test 2 but add attribute and text as well */
-	public void runTest3() {
-		try {
+	@Test
+	public void test3() throws XMLDBException, ParserConfigurationException {
+		Collection coll = existEmbeddedServer.getRoot();
+		XMLResource resource =
+			(XMLResource) coll.createResource(
+				name,
+				XMLResource.RESOURCE_TYPE);
 
-			Class<?> dbc = Class.forName("org.exist.xmldb.DatabaseImpl");
-			Database database = (Database) dbc.newInstance();
-			DatabaseManager.registerDatabase(database);
+		Document doc =
+			DocumentBuilderFactory
+				.newInstance()
+				.newDocumentBuilder()
+				.newDocument();
+		Element rootElem = doc.createElement("element");
+		Element propertyElem = doc.createElement("property");
+		propertyElem.setAttribute("key", "value");
+		propertyElem.appendChild(doc.createTextNode("text"));
+		rootElem.appendChild(propertyElem);
+		doc.appendChild(rootElem);
+		resource.setContentAsDOM(doc);
 
-			Collection coll =
-				DatabaseManager.getCollection(baseURI, username, password);
-			XMLResource resource =
-				(XMLResource) coll.createResource(
-					name,
-					XMLResource.RESOURCE_TYPE);
+		coll.storeResource(resource);
+		coll.close();
 
-			Document doc =
-				DocumentBuilderFactory
-					.newInstance()
-					.newDocumentBuilder()
-					.newDocument();
-			Element rootElem = doc.createElement("element");
-			Element propertyElem = doc.createElement("property");
-			propertyElem.setAttribute("key", "value");
-			propertyElem.appendChild(doc.createTextNode("text"));
-			rootElem.appendChild(propertyElem);
-			doc.appendChild(rootElem);
-			resource.setContentAsDOM(doc);
+		coll = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
+		resource = (XMLResource) coll.getResource(name);
+		String s = (String) resource.getContent();
+		Node n = resource.getContentAsDOM();
 
-			coll.storeResource(resource);
-			coll.close();
-
-			coll = DatabaseManager.getCollection(baseURI, username, password);
-			resource = (XMLResource) coll.getResource(name);
-			String s = (String) resource.getContent();
-			Node n = resource.getContentAsDOM();
-
-			coll.removeResource(resource);
-
-			DatabaseManager.deregisterDatabase(database);
-			DatabaseInstanceManager dim =
-				(DatabaseInstanceManager) coll.getService(
-					"DatabaseInstanceManager",
-					"1.0");
-			dim.shutdown();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		coll.removeResource(resource);
 	}
 
 	/** like test 3 but uses the DOM as input to an (identity) XSLT transform */
-	public void runTest4(boolean getContentAsDOM) {
-		Database database = null;
-		try {
+	@Test
+	public void test4_getContentAsString() throws XMLDBException, ParserConfigurationException, IOException, SAXException, TransformerException {
+		_test4(false);
+	}
 
-			Class<?> dbc = Class.forName("org.exist.xmldb.DatabaseImpl");
-			database = (Database) dbc.newInstance();
-			DatabaseManager.registerDatabase(database);
+	@Test
+	public void test4_getContentAsDOM() throws XMLDBException, ParserConfigurationException, IOException, SAXException, TransformerException {
+		_test4(true);
+	}
 
-			Collection coll =
-				DatabaseManager.getCollection(baseURI, username, password);
-			XMLResource resource =
-				(XMLResource) coll.createResource(
-					name,
-					XMLResource.RESOURCE_TYPE);
+	private void _test4(boolean getContentAsDOM) throws TransformerException, ParserConfigurationException, XMLDBException, IOException, SAXException {
+		Collection coll =  existEmbeddedServer.getRoot();
+		XMLResource resource =
+			(XMLResource) coll.createResource(
+				name,
+				XMLResource.RESOURCE_TYPE);
 
-			Document doc =
-				DocumentBuilderFactory
-					.newInstance()
-					.newDocumentBuilder()
-					.newDocument();
-			Element rootElem = doc.createElement("element");
-			Element propertyElem = doc.createElement("property");
-			propertyElem.setAttribute("key", "value");
-			propertyElem.appendChild(doc.createTextNode("text"));
-			rootElem.appendChild(propertyElem);
-			doc.appendChild(rootElem);
-			resource.setContentAsDOM(doc);
+		Document doc =
+			DocumentBuilderFactory
+				.newInstance()
+				.newDocumentBuilder()
+				.newDocument();
+		Element rootElem = doc.createElement("element");
+		Element propertyElem = doc.createElement("property");
+		propertyElem.setAttribute("key", "value");
+		propertyElem.appendChild(doc.createTextNode("text"));
+		rootElem.appendChild(propertyElem);
+		doc.appendChild(rootElem);
+		resource.setContentAsDOM(doc);
 
-			coll.storeResource(resource);
-			coll.close();
+		coll.storeResource(resource);
+		coll.close();
 
-			coll = DatabaseManager.getCollection(baseURI, username, password);
-			resource = (XMLResource) coll.getResource(name);
+		coll = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
+		resource = (XMLResource) coll.getResource(name);
 
-			Node n;
-			if (getContentAsDOM) {
-				n = resource.getContentAsDOM();
-			} else {
-				String s = (String) resource.getContent();
-				byte[] bytes;
-				bytes = s.getBytes(UTF_8);
-				ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+		Node n;
+		if (getContentAsDOM) {
+			n = resource.getContentAsDOM();
+		} else {
+			String s = (String) resource.getContent();
+			byte[] bytes;
+			bytes = s.getBytes(UTF_8);
+			try(final ByteArrayInputStream bais = new ByteArrayInputStream(bytes)) {
 				DocumentBuilder db =
-					DocumentBuilderFactory.newInstance().newDocumentBuilder();
+						DocumentBuilderFactory.newInstance().newDocumentBuilder();
 				n = db.parse(bais);
 			}
-
-			Transformer t = TransformerFactory.newInstance().newTransformer();
-			DOMSource source = new DOMSource(n);
-			SAXResult result = new SAXResult(new DOMTest.SAXHandler());
-			t.transform(source, result);
-
-			coll.removeResource(resource);
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			if (database != null) {
-				try {
-					Collection coll =
-						DatabaseManager.getCollection(
-							baseURI,
-							username,
-							password);
-					DatabaseManager.deregisterDatabase(database);
-					DatabaseInstanceManager dim =
-						(DatabaseInstanceManager) coll.getService(
-							"DatabaseInstanceManager",
-							"1.0");
-					dim.shutdown();
-				} catch (Exception e) {
-                    e.printStackTrace();
-				}
-			}
 		}
+
+		Transformer t = TransformerFactory.newInstance().newTransformer();
+		DOMSource source = new DOMSource(n);
+		SAXResult result = new SAXResult(new DOMTest.SAXHandler());
+		t.transform(source, result);
+
+		coll.removeResource(resource);
 	}
 
 	public static class SAXHandler implements ContentHandler {

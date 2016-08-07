@@ -21,10 +21,11 @@
  */
 package org.exist.xmldb;
 
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import org.exist.security.Permission;
 import org.exist.security.Account;
+import org.exist.test.ExistXmldbEmbeddedServer;
+import org.junit.ClassRule;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 import javax.xml.transform.OutputKeys;
@@ -39,7 +40,6 @@ import org.junit.Test;
 import org.w3c.dom.Node;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.Database;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.modules.XMLResource;
@@ -53,7 +53,10 @@ import static org.exist.xmldb.XmldbLocalTests.*;
  * @author wolf
  */
 public class ContentAsDOMTest {
-    
+
+    @ClassRule
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
+
     private final static String XML =
         "<root><test>ABCDEF</test></root>";
     
@@ -67,8 +70,7 @@ public class ContentAsDOMTest {
 
 
     @Test
-    public void getContentAsDOM() throws XMLDBException, TransformerConfigurationException, TransformerException {
-
+    public void getContentAsDOM() throws XMLDBException, TransformerException {
         Collection testCollection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
         XQueryService service = (XQueryService) testCollection.getService("XQueryService", "1.0");
         ResourceSet result = service.query(XQUERY);
@@ -88,14 +90,7 @@ public class ContentAsDOMTest {
 
     @Before
     public void setUp() throws Exception {
-        // initialize driver
-        Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
-        Database database = (Database) cl.newInstance();
-        database.setProperty("create-database", "true");
-        DatabaseManager.registerDatabase(database);
-
-        Collection root = DatabaseManager.getCollection(ROOT_URI, ADMIN_UID, ADMIN_PWD);
-        CollectionManagementService service = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
+        CollectionManagementService service = (CollectionManagementService) existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
         Collection testCollection = service.createCollection(TEST_COLLECTION);
         UserManagementService ums = (UserManagementService) testCollection.getService("UserManagementService", "1.0");
         // change ownership to guest
@@ -111,14 +106,9 @@ public class ContentAsDOMTest {
 
     @After
     public void tearDown() throws XMLDBException {
-
         //delete the test collection
         Collection root = DatabaseManager.getCollection(ROOT_URI, ADMIN_UID, ADMIN_PWD);
         CollectionManagementService service = (CollectionManagementService)root.getService("CollectionManagementService", "1.0");
         service.removeCollection(TEST_COLLECTION);
-
-        //shutdownDB the db
-        DatabaseInstanceManager dim = (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
-        dim.shutdown();
     }
 }

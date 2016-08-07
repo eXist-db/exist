@@ -1,16 +1,15 @@
 package org.exist.collections;
 
-import org.exist.xmldb.DatabaseInstanceManager;
+import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.xmldb.XPathQueryServiceImpl;
-import org.exist.xmldb.XmldbURI;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.Database;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
@@ -23,6 +22,9 @@ import java.util.concurrent.TimeUnit;
  * Test concurrent access to collections.
  */
 public class ConcurrencyTest {
+
+    @ClassRule
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
 
     private static final int N_THREADS = 10;
     private static final int DOC_COUNT = 200; 
@@ -74,6 +76,7 @@ public class ConcurrencyTest {
             this.start = start;
         }
 
+        @Override
         public void run() {
             try {
                 Collection collection = DatabaseManager.getCollection("xmldb:exist:///db/test", "admin", "");
@@ -94,50 +97,31 @@ public class ConcurrencyTest {
     }
 
     @BeforeClass
-    public static void initDB() {
-        // initialize XML:DB driver
-        try {
-            Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
-            Database database = (Database) cl.newInstance();
-            database.setProperty("create-database", "true");
-            DatabaseManager.registerDatabase(database);
+    public static void initDB() throws XMLDBException {
+        final CollectionManagementService mgmt = (CollectionManagementService) existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
+        final Collection test = mgmt.createCollection("test");
 
-            org.xmldb.api.base.Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
-            CollectionManagementService mgmt = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
-            Collection test = mgmt.createCollection("test");
-
-            for (int i = 1; i <= DOC_COUNT; i++) {
-                Resource r = test.createResource("test" + i + ".xml", "XMLResource");
-                String XML =
-                    "<test id='" + i + "'>" +
-                    "   <a>b</a>" +
-                    "   <c>d</c>" +
-                    "</test>";
-                r.setContent(XML);
-                test.storeResource(r);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
+        for (int i = 1; i <= DOC_COUNT; i++) {
+            final Resource r = test.createResource("test" + i + ".xml", "XMLResource");
+            final String XML =
+                "<test id='" + i + "'>" +
+                "   <a>b</a>" +
+                "   <c>d</c>" +
+                "</test>";
+            r.setContent(XML);
+            test.storeResource(r);
         }
     }
 
     @AfterClass
-    public static void closeDB() {
-        try {
-            Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
-            CollectionManagementService cmgr = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
-            cmgr.removeCollection("test");
+    public static void cleanup() throws XMLDBException {
+        final CollectionManagementService cmgr = (CollectionManagementService) existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
+        cmgr.removeCollection("test");
 
 //            Collection configRoot = DatabaseManager.getCollection("xmldb:exist://" + CollectionConfigurationManager.CONFIG_COLLECTION,
 //                    "admin", null);
 //            cmgr = (CollectionManagementService) configRoot.getService("CollectionManagementService", "1.0");
 //            cmgr.removeCollection("db");
-            DatabaseInstanceManager mgr = (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
-            mgr.shutdown();
-        } catch (XMLDBException e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        }
+
     }
 }

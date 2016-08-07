@@ -45,6 +45,7 @@ import org.xml.sax.SAXException;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.Optional;
 
@@ -144,12 +145,12 @@ public class RemoveCollectionTest {
             try(final Txn transaction = transact.beginTransaction()) {
 
                 TestDataGenerator generator = new TestDataGenerator("xdb", COUNT);
-                File[] files = generator.generate(broker, test, generateXQ);
+                final Path[] files = generator.generate(broker, test, generateXQ);
 
                 int j = 0;
                 for (final Iterator<DocumentImpl> i = test.iterator(broker); i.hasNext() && j < files.length; j++) {
                     final DocumentImpl doc = i.next();
-                    final InputSource is = new InputSource(files[j].toURI().toASCIIString());
+                    final InputSource is = new InputSource(files[j].toUri().toASCIIString());
                     assertNotNull(is);
                     final IndexInfo info = test.validateXMLResource(transaction, broker, doc.getURI(), is);
                     assertNotNull(info);
@@ -185,11 +186,11 @@ public class RemoveCollectionTest {
 
         try(final Txn transaction = transact.beginTransaction()) {
             final TestDataGenerator generator = new TestDataGenerator("xdb", COUNT);
-            final File[] files = generator.generate(broker, test, generateXQ);
-            for(final File file : files) {
-                final InputSource is = new InputSource(file.toURI().toASCIIString());
+            final Path[] files = generator.generate(broker, test, generateXQ);
+            for(final Path file : files) {
+                final InputSource is = new InputSource(file.toUri().toASCIIString());
                 assertNotNull(is);
-                final IndexInfo info = test.validateXMLResource(transaction, broker, XmldbURI.create(file.getName()), is);
+                final IndexInfo info = test.validateXMLResource(transaction, broker, XmldbURI.create(file.getFileName().toString()), is);
                 assertNotNull(info);
                 test.store(transaction, broker, info, is, false);
             }

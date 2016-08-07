@@ -276,8 +276,8 @@ public class ValidationFunctions_DTD_Test {
         final BrokerPool pool = BrokerPool.getInstance();
         final TransactionManager transact = pool.getTransactionManager();
 
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().authenticate(ADMIN_UID, ADMIN_PWD)));
-            final Txn txn = transact.beginTransaction()) {
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().authenticate(ADMIN_UID, ADMIN_PWD)));
+             final Txn txn = transact.beginTransaction()) {
 
             org.exist.collections.Collection testCollection = broker.getOrCreateCollection(txn, XmldbURI.create(VALIDATION_HOME_COLLECTION_URI));
             broker.removeCollection(txn, testCollection);
@@ -285,83 +285,4 @@ public class ValidationFunctions_DTD_Test {
             transact.commit(txn);
         }
     }
-    /*
-
-    @Before
-    public void setUp() throws Exception {
-
-        logger.info("setUp");
-
-        Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
-        database = (Database) cl.newInstance();
-        database.setProperty("create-database", "true");
-        DatabaseManager.registerDatabase(database);
-        root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", "");
-        service = (XPathQueryService) root.getService( "XQueryService", "1.0" );
-
-        try {
-            File file = new File(eXistHome, "samples/shakespeare/hamlet.xml");
-            InputStream fis = new FileInputStream(file);
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            TestTools.copyStream(fis, baos);
-            fis.close();
-
-            String sb = new String(baos.toByteArray());
-            sb=sb.replaceAll("\\Q<!\\E.*DOCTYPE.*\\Q-->\\E",
-                "<!DOCTYPE PLAY PUBLIC \"-//PLAY//EN\" \"play.dtd\">" );
-            InputStream is = new ByteArrayInputStream(sb.getBytes());
-
-            // -----
-
-            URL url = new URL("xmldb:exist://" + TestTools.VALIDATION_TMP + "/hamlet_valid.xml");
-            URLConnection connection = url.openConnection();
-            OutputStream os = connection.getOutputStream();
-
-            TestTools.copyStream(is, os);
-
-            is.close();
-            os.close();
-
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            logger.error(ex);
-            fail(ex.getMessage());
-        }
-
-        try{
-            config.setProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, "no");
-
-            String hamlet = eXistHome + "/samples/validation/dtd";
-
-            TestTools.insertDocumentToURL(hamlet+"/hamlet.dtd",
-                "xmldb:exist://"+TestTools.VALIDATION_DTD+"/hamlet.dtd");
-            TestTools.insertDocumentToURL(hamlet+"/catalog.xml",
-                "xmldb:exist://"+TestTools.VALIDATION_DTD+"/catalog.xml");
-
-            TestTools.insertDocumentToURL(hamlet+"/hamlet_valid.xml",
-                "xmldb:exist://"+TestTools.VALIDATION_HOME+"/hamlet_valid.xml");
-            TestTools.insertDocumentToURL(hamlet+"/hamlet_invalid.xml",
-                "xmldb:exist://"+TestTools.VALIDATION_HOME+"/hamlet_invalid.xml");
-
-            config.setProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, "yes");
-
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            logger.error(ex);
-            fail(ex.getMessage());
-        }
-    }
-
-    @AfterClass
-    public static void shutdownDB() throws Exception {
-
-        logger.info("shutdownDB");
-        
-        DatabaseManager.deregisterDatabase(database);
-        DatabaseInstanceManager dim =
-            (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
-        dim.shutdownDB();
-        
-    }*/
-    
 }

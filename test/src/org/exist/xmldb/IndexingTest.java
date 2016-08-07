@@ -12,7 +12,9 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXResult;
 
+import org.exist.test.ExistXmldbEmbeddedServer;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -39,6 +41,9 @@ import static org.junit.Assert.fail;
  * connected to the root, with width (arity) of 16 at each level.
  */
 public class IndexingTest {
+
+    @ClassRule
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
 
     private int siblingCount;
     private int depth;
@@ -82,76 +87,48 @@ public class IndexingTest {
         final String testName = "IrregularilyStructured";
         startTime = System.currentTimeMillis();
 
-        try {
+        Collection coll =
+                DatabaseManager.getCollection(baseURI, username, password);
+        XMLResource resource =
+                (XMLResource) coll.createResource(
+                        name,
+                        XMLResource.RESOURCE_TYPE);
 
-            // Tell eXist where conf.xml is :
-            // DWES #### use Configuration.getExistHome()
-            if (EXIST_HOME != "")
-                System.setProperty("exist.home", EXIST_HOME);
+        Document doc =
+                DocumentBuilderFactory
+                        .newInstance()
+                        .newDocumentBuilder()
+                        .newDocument();
+        effectiveSiblingCount = populate(doc);
+        resource.setContentAsDOM(doc);
+        coll.storeResource(resource);
+        coll.close();
 
-            Class<?> dbc = Class.forName("org.exist.xmldb.DatabaseImpl");
-            database = (Database) dbc.newInstance();
-            database.setProperty("create-database", "true");
-            DatabaseManager.registerDatabase(database);
+        coll = DatabaseManager.getCollection(baseURI, username, password);
+        resource = (XMLResource) coll.getResource(name);
 
-            Collection coll =
-                    DatabaseManager.getCollection(baseURI, username, password);
-            XMLResource resource =
-                    (XMLResource) coll.createResource(
-                            name,
-                            XMLResource.RESOURCE_TYPE);
-
-            Document doc =
-                    DocumentBuilderFactory
-                            .newInstance()
-                            .newDocumentBuilder()
-                            .newDocument();
-            effectiveSiblingCount = populate(doc);
-            resource.setContentAsDOM(doc);
-            coll.storeResource(resource);
-            coll.close();
-
-            coll = DatabaseManager.getCollection(baseURI, username, password);
-            resource = (XMLResource) coll.getResource(name);
-
-            Node n;
-            if (getContentAsDOM) {
-                n = resource.getContentAsDOM();
-            } else {
-                String s = (String) resource.getContent();
-                byte[] bytes = s.getBytes(UTF_8);
-                ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
-                DocumentBuilder db =
-                        DocumentBuilderFactory.newInstance().newDocumentBuilder();
-                n = db.parse(bais);
-            }
-
-            Element documentElement = null;
-            if (n instanceof Element) {
-                documentElement = (Element) n;
-            } else if (n instanceof Document) {
-                documentElement = ((Document) n).getDocumentElement();
-            }
-
-            assertions(documentElement);
-
-            coll.removeResource(resource);
-
-        } finally {
-            if (database != null) {
-                Collection coll =
-                        DatabaseManager.getCollection(
-                                baseURI,
-                                username,
-                                password);
-                DatabaseManager.deregisterDatabase(database);
-                DatabaseInstanceManager dim =
-                        (DatabaseInstanceManager) coll.getService(
-                                "DatabaseInstanceManager",
-                                "1.0");
-                dim.shutdown();
-            }
+        Node n;
+        if (getContentAsDOM) {
+            n = resource.getContentAsDOM();
+        } else {
+            String s = (String) resource.getContent();
+            byte[] bytes = s.getBytes(UTF_8);
+            ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+            DocumentBuilder db =
+                    DocumentBuilderFactory.newInstance().newDocumentBuilder();
+            n = db.parse(bais);
         }
+
+        Element documentElement = null;
+        if (n instanceof Element) {
+            documentElement = (Element) n;
+        } else if (n instanceof Document) {
+            documentElement = ((Document) n).getDocumentElement();
+        }
+
+        assertions(documentElement);
+
+        coll.removeResource(resource);
     }
 
     /**

@@ -22,8 +22,7 @@
 package org.exist.xquery;
 
 import org.custommonkey.xmlunit.DetailedDiff;
-import org.exist.TestUtils;
-import org.exist.xmldb.DatabaseInstanceManager;
+import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.XmldbURI;
 import org.junit.*;
@@ -32,7 +31,6 @@ import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.Database;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
@@ -61,6 +59,9 @@ import static org.junit.Assert.*;
  * TODO maybe move the various eXist XQuery extensions in another class ...
  */
 public class XQueryTest {
+
+    @ClassRule
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
 
     private static final String NUMBERS_XML = "numbers.xml";
     private static final String BOWLING_XML = "bowling.xml";
@@ -142,39 +143,19 @@ public class XQueryTest {
     private static int nbElem = 1;
     private String file_name = "detail_xml.xml";
     private String xml;
-    private static Database database;
-
-    @BeforeClass
-    public static void setUpOnce() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
-        // initialize driver
-        Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
-        database = (Database) cl.newInstance();
-        database.setProperty("create-database", "true");
-        DatabaseManager.registerDatabase(database);
-    }
 
     @Before
     public void setup() throws XMLDBException {
-        Collection root =
-                DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
-        CollectionManagementService service =
-                (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
-        Collection testCollection = service.createCollection("test");
-        assertNotNull(testCollection);
+        final CollectionManagementService service =
+                (CollectionManagementService) existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
+        service.createCollection("test");
     }
 
     @After
-    public void tearDown() {
-        TestUtils.cleanupDB();
-    }
-
-    @AfterClass
-    public static void tearDownOnce() throws XMLDBException {
-        DatabaseInstanceManager dim =
-                (DatabaseInstanceManager) DatabaseManager.getCollection("xmldb:exist:///db", "admin", "").getService("DatabaseInstanceManager", "1.0");
-        dim.shutdown();
-        DatabaseManager.deregisterDatabase(database);
-        database = null;
+    public void tearDown() throws XMLDBException {
+        final CollectionManagementService service =
+                (CollectionManagementService) existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
+        service.removeCollection("test");
     }
 
     private Collection getTestCollection() throws XMLDBException {

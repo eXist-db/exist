@@ -21,78 +21,50 @@
  */
 package org.exist.xmldb;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.exist.dom.persistent.XMLUtil;
 import org.exist.security.Account;
+import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.util.XMLFilenameFilter;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
+import org.junit.*;
+
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.fail;
-import org.junit.BeforeClass;
-import org.junit.Test;
+
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.Database;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.Service;
 import org.xmldb.api.base.XMLDBException;
-import org.xmldb.api.modules.BinaryResource;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import static org.exist.xmldb.XmldbLocalTests.*;
 
 public class CreateCollectionsTest  {
 
+    @ClassRule
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
+
     private final static String TEST_COLLECTION = "testCreateCollection";
-
-
-    @BeforeClass
-    public static void startDatabase() {
-        try {
-            // initialize driver
-            Class<?> cl = Class.forName(DRIVER);
-            Database database = (Database) cl.newInstance();
-            database.setProperty("create-database", "true");
-            DatabaseManager.registerDatabase(database);
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        }
-    }
-
-    @AfterClass
-    public static void stopDatabase() {
-        try {
-            Collection dbCol = DatabaseManager.getCollection(ROOT_URI, ADMIN_UID, ADMIN_PWD);
-            DatabaseInstanceManager mgr = (DatabaseInstanceManager) dbCol.getService("DatabaseInstanceManager", "1.0");
-            mgr.shutdown();
-        } catch (XMLDBException e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        }
-    }
 
     @Before
     public void setUp() throws XMLDBException {
         //create a test collection
-        Collection root = DatabaseManager.getCollection(ROOT_URI, ADMIN_UID, ADMIN_PWD);
-        CollectionManagementService cms = (CollectionManagementService)root.getService("CollectionManagementService", "1.0");
-        Collection test = cms.createCollection(TEST_COLLECTION);
-        UserManagementService ums = (UserManagementService) test.getService("UserManagementService", "1.0");
+        final CollectionManagementService cms = (CollectionManagementService)existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
+        final Collection test = cms.createCollection(TEST_COLLECTION);
+        final UserManagementService ums = (UserManagementService) test.getService("UserManagementService", "1.0");
         // change ownership to guest
         Account guest = ums.getAccount(GUEST_UID);
         ums.chown(guest, guest.getPrimaryGroup());
@@ -102,8 +74,7 @@ public class CreateCollectionsTest  {
     @After
     public void tearDown() throws XMLDBException {
         //delete the test collection
-        Collection root = DatabaseManager.getCollection(ROOT_URI, ADMIN_UID, ADMIN_PWD);
-        CollectionManagementService cms = (CollectionManagementService)root.getService("CollectionManagementService", "1.0");
+        final CollectionManagementService cms = (CollectionManagementService)existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
         cms.removeCollection(TEST_COLLECTION);
     }
 
@@ -139,19 +110,15 @@ public class CreateCollectionsTest  {
         UserManagementService ums = (UserManagementService) testCollection.getService("UserManagementService", "1.0");
         ums.chmod("rwxr-xr-x");
 
-        final File files[] = getShakespeareSamplesDirectory().listFiles(new XMLFilenameFilter());
-
-        //store the samples
-        final List<String> storedResourceNames = new ArrayList<String>();
-        for(File file : files) {
-            Resource res = storeResourceFromFile(file, testCollection);
-            storedResourceNames.add(res.getId());
-        }
-
-        //get a list of the sample names
-        final List<String> filenames = new ArrayList<String>();
-        for(File file : files) {
-           filenames.add(file.getName());
+        final List<String> storedResourceNames = new ArrayList<>();
+        final List<String> filenames = new ArrayList<>();
+        try(final Stream<Path> files = Files.list(getShakespeareSamplesDirectory()).filter(XMLFilenameFilter.asPredicate())) {
+            //store the samples
+            for (final Path file : files.collect(Collectors.toList())) {
+                final Resource res = storeResourceFromFile(file, testCollection);
+                storedResourceNames.add(res.getId());
+                filenames.add(file.getFileName().toString());
+            }
         }
 
         assertEquals(filenames, storedResourceNames);
@@ -175,7 +142,7 @@ public class CreateCollectionsTest  {
         ums.chmod("rwxr-xr-x");
 
         final String testFile = "macbeth.xml";
-        storeResourceFromFile(new File(getShakespeareSamplesDirectory(), testFile), testCollection);
+        storeResourceFromFile(getShakespeareSamplesDirectory().resolve(testFile), testCollection);
         Resource resMacbeth = testCollection.getResource(testFile);
         assertNotNull("getResource(" + testFile + "\")", resMacbeth);
 
@@ -187,7 +154,7 @@ public class CreateCollectionsTest  {
         assertNull(resMacbeth);
 
         // restore the resource just removed
-        storeResourceFromFile(new File(getShakespeareSamplesDirectory(), testFile), testCollection);
+        storeResourceFromFile(getShakespeareSamplesDirectory().resolve(testFile), testCollection);
         assertEquals("After re-store resource count must increase", resourceCount, testCollection.getResourceCount());
         resMacbeth = testCollection.getResource(testFile);
         assertNotNull("getResource(" + testFile + "\")", resMacbeth);
@@ -201,36 +168,32 @@ public class CreateCollectionsTest  {
         UserManagementService ums = (UserManagementService) testCollection.getService("UserManagementService", "1.0");
         ums.chmod("rwxr-xr-x");
 
-        byte[] data = storeBinaryResourceFromFile(new File( getExistDir(),"webapp/logo.jpg"), testCollection);
+        byte[] data = storeBinaryResourceFromFile(getExistDir().resolve("webapp/logo.jpg"), testCollection);
         Object content = testCollection.getResource("logo.jpg").getContent();
         byte[] dataStored = (byte[])content;
         assertArrayEquals("After storing binary resource, data out==data in", data, dataStored);
     }
 
-    private XMLResource storeResourceFromFile(File file, Collection testCollection) throws XMLDBException, IOException {
-        XMLResource res = (XMLResource) testCollection.createResource(file.getName(), "XMLResource");
+    private XMLResource storeResourceFromFile(Path file, Collection testCollection) throws XMLDBException, IOException {
+        XMLResource res = (XMLResource) testCollection.createResource(file.getFileName().toString(), "XMLResource");
         assertNotNull("storeResourceFromFile", res);
-        String xml = XMLUtil.readFile(file, "UTF-8");
+        String xml = XMLUtil.readFile(file.toFile(), "UTF-8");
         res.setContent(xml);
         testCollection.storeResource(res);
         return res;
     }
 
-    private byte[] storeBinaryResourceFromFile(File file, Collection testCollection) throws XMLDBException, IOException {
-        Resource res = (BinaryResource)testCollection.createResource(file.getName(), "BinaryResource");
+    private byte[] storeBinaryResourceFromFile(Path file, Collection testCollection) throws XMLDBException, IOException {
+        final Resource res = testCollection.createResource(file.getFileName().toString(), "BinaryResource");
         assertNotNull("store binary Resource From File", res);
-
         // Get an array of bytes from the file:
-        FileInputStream istr = new FileInputStream(file);
-        BufferedInputStream bstr = new BufferedInputStream(istr); // promote
-        int size = (int) file.length();  // get the file size (in bytes)
-        byte[] data = new byte[size]; // allocate byte array of right size
-        bstr.read(data, 0, size);   // read into byte array
-        bstr.close();
-
-        res.setContent(data);
-        testCollection.storeResource(res);
-        return data;
+        try(final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            Files.copy(file, os);
+            final byte[] data = os.toByteArray();
+            res.setContent(data);
+            testCollection.storeResource(res);
+            return data;
+        }
     }
 
     @Test

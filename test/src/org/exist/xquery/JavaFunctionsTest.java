@@ -3,11 +3,13 @@
  */
 package org.exist.xquery;
 
+import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.util.Configuration;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.XmldbURI;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -26,9 +28,8 @@ import static org.junit.Assert.fail;
  */
 public class JavaFunctionsTest {
 
-    private XPathQueryService service;
-    private Collection root = null;
-    private Database database = null;
+    @ClassRule
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
 
     private boolean javabindingenabled = false;
 
@@ -43,7 +44,7 @@ public class JavaFunctionsTest {
                     "let $list := list:new() " +
                     "let $actions := (list:add($list,'a'),list:add($list,'b'),list:add($list,'c')) " +
                     "return list:get($list,1)";
-            ResourceSet result = service.query(query);
+            ResourceSet result = existEmbeddedServer.executeQuery(query);
             String r = (String) result.getResource(0).getContent();
             assertEquals("b", r);
         } catch (XMLDBException e) {
@@ -59,14 +60,6 @@ public class JavaFunctionsTest {
 
     @Before
     public void setUp() throws Exception {
-        // initialize driver
-        Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
-        database = (Database) cl.newInstance();
-        database.setProperty("create-database", "true");
-        DatabaseManager.registerDatabase(database);
-        root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
-        service = (XPathQueryService) root.getService("XQueryService", "1.0");
-
         //Check the configuration file to see if Java binding is enabled
         //if it is not enabled then we expect an exception when trying to
         //perform Java binding.
@@ -78,13 +71,4 @@ public class JavaFunctionsTest {
             }
         }
     }
-
-    @After
-    public void tearDown() throws Exception {
-        DatabaseManager.deregisterDatabase(database);
-        DatabaseInstanceManager dim =
-                (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
-        dim.shutdown();
-    }
-
 }

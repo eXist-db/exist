@@ -30,13 +30,13 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.xmldb.XQueryService;
 import org.exist.xmldb.XmldbURI;
 
 import org.junit.Before;
-import org.xmldb.api.DatabaseManager;
+import org.junit.ClassRule;
 import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.Database;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
@@ -46,18 +46,16 @@ import org.xmldb.api.modules.XMLResource;
  */
 public class XQueryUseCase {
 
+	@ClassRule
+	public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
+
 	private final static String baseDir = "samples/xquery/use-cases";
 
 	private Collection root = null;
 
 	@Before
 	protected void setUp() throws Exception {
-		// initialize driver
-		Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
-		Database database = (Database) cl.newInstance();
-		database.setProperty("create-database", "true");
-		DatabaseManager.registerDatabase(database);
-		root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
+		root = existEmbeddedServer.getRoot();
 	}
 
 	public void doTest(String useCase) throws Exception {

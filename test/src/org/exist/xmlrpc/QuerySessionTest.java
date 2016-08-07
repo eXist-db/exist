@@ -10,6 +10,7 @@ import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XQueryService;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -136,10 +137,10 @@ public class QuerySessionTest {
         test.storeResource(resource);
         
         TestDataGenerator generator = new TestDataGenerator("xdb", DOC_COUNT);
-        File[] files = generator.generate(test, generateXQ);
+        final Path[] files = generator.generate(test, generateXQ);
         for (int i = 0; i < files.length; i++) {
-            resource = test.createResource(files[i].getName(), "XMLResource");
-            resource.setContent(files[i]);
+            resource = test.createResource(files[i].getFileName().toString(), "XMLResource");
+            resource.setContent(files[i].toFile());
             test.storeResource(resource);
         }
         generator.releaseAll();
