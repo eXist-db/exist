@@ -548,11 +548,68 @@ public class XQueryFunctionsTest {
 
     @Test
     public void localName() throws XPathException, XMLDBException {
-        ResourceSet result = service.query(
+        final ResourceSet result = service.query(
                 "let $a := <a><b></b></a>" +
                         "return fn:local-name($a)");
         String r = (String) result.getResource(0).getContent();
         assertEquals("a", r);
+    }
+
+    @Test
+    public void localName_empty() throws XPathException, XMLDBException {
+        final ResourceSet result = service.query(
+                "fn:local-name(())");
+        final String r = (String) result.getResource(0).getContent();
+        assertEquals("", r);
+    }
+
+    @Test
+    public void localName_emptyElement() throws XPathException, XMLDBException {
+        final ResourceSet result = service.query(
+                "<a>b</a>/fn:local-name(c)");
+        final String r = (String) result.getResource(0).getContent();
+        assertEquals("", r);
+    }
+
+    @Test
+    public void localName_emptyText() throws XPathException, XMLDBException {
+        final ResourceSet result = service.query(
+                "<a>b</a>/fn:local-name(text())");
+        final String r = (String) result.getResource(0).getContent();
+        assertEquals("", r);
+    }
+
+    @Test
+    public void name() throws XPathException, XMLDBException {
+        final ResourceSet result = service.query(
+                "let $a := <a><b></b></a>" +
+                        "return fn:name($a)");
+        String r = (String) result.getResource(0).getContent();
+        assertEquals("a", r);
+    }
+
+    @Test
+    public void name_empty() throws XPathException, XMLDBException {
+        final ResourceSet result = service.query(
+                "fn:name(())");
+        final String r = (String) result.getResource(0).getContent();
+        assertEquals("", r);
+    }
+
+    @Test
+    public void name_emptyElement() throws XPathException, XMLDBException {
+        final ResourceSet result = service.query(
+                "<a>b</a>/fn:name(c)");
+        final String r = (String) result.getResource(0).getContent();
+        assertEquals("", r);
+    }
+
+    @Test
+    public void name_emptyText() throws XPathException, XMLDBException {
+        final ResourceSet result = service.query(
+                "<a>b</a>/fn:local-name(text())");
+        final String r = (String) result.getResource(0).getContent();
+        assertEquals("", r);
     }
 
     @Test
@@ -668,11 +725,31 @@ public class XQueryFunctionsTest {
 
     @Test
     public void nodeName() throws XMLDBException {
-        String query = "let $a := <a><b>-1</b><b>-2</b></a> " +
-                "for $b in $a/b[node-name(.) = xs:QName('b')] return $b";
-
-        ResourceSet result = service.query(query);
+        final String query = "let $a := <a><b>-1</b><b>-2</b></a> " +
+                "for $b in $a/b[fn:node-name(.) = xs:QName('b')] return $b";
+        final ResourceSet result = service.query(query);
         assertEquals(2, result.getSize());
+    }
+
+    @Test
+    public void noeName_empty() throws XPathException, XMLDBException {
+        final ResourceSet result = service.query(
+                "fn:node-name(())");
+        assertEquals(0, result.getSize());
+    }
+
+    @Test
+    public void nodeName_emptyElement() throws XPathException, XMLDBException {
+        final ResourceSet result = service.query(
+                "<a>b</a>/fn:node-name(c)");
+        assertEquals(0, result.getSize());
+    }
+
+    @Test
+    public void nodeName_emptyText() throws XPathException, XMLDBException {
+        final ResourceSet result = service.query(
+                "<a>b</a>/fn:node-name(text())");
+        assertEquals(0, result.getSize());
     }
 
     @Test
