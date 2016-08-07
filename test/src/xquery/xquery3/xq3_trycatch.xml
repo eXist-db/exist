@@ -330,7 +330,7 @@ catch * {
 ]]>
     </code>
     <expected>
-        <code><ns>http://www.w3.org/2005/xqt-errors/</ns><local-name>XPTY0004</local-name></code>
+        <code><ns>http://www.w3.org/2005/xqt-errors</ns><local-name>XPTY0004</local-name></code>
     </expected>
 </test>
 
