@@ -86,7 +86,6 @@ public class IndexIntegrationTest extends AbstractTestUpdate {
             broker.initIndexModules();
 
         } finally {
-            System.out.println("reset");
             control.resetToStrict();
         }
 
