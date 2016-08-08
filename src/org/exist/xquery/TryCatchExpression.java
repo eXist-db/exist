@@ -228,10 +228,13 @@ public class TryCatchExpression extends AbstractExpression {
 
                 // If an error hasn't been caught, throw new one
                 if (!errorMatched) {
-                    LOG.error(throwable);
-                    throw new XPathException(throwable);
+                    if (throwable instanceof XPathException) {
+                        throw throwable;
+                    } else {
+                        LOG.error(throwable);
+                        throw new XPathException(throwable);
+                    }
                 }
-
 
             } finally {
                 context.popLocalVariables(mark0, catchResultSeq);
