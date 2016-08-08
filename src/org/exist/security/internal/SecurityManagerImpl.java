@@ -184,9 +184,8 @@ public class SecurityManagerImpl implements SecurityManager {
 
                 collection.setPermissions(Permission.DEFAULT_SYSTEM_SECURITY_COLLECTION_PERM);
                 broker.saveCollection(txn, collection);
-
-                transaction.commit(txn);
-            } 
+            }
+            transaction.commit(txn);
         } catch (final Exception e) {
             e.printStackTrace();
             LOG.debug("loading configuration failed: " + e.getMessage());

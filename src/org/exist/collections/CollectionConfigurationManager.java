@@ -414,8 +414,8 @@ public class CollectionConfigurationManager {
                 collection = broker.getOrCreateCollection(txn, uri);
                 SanityCheck.THROW_ASSERT(collection != null);
                 broker.saveCollection(txn, collection);
-                transact.commit(txn);
             }
+            transact.commit(txn);
         } catch (final Exception e) {
             throw new EXistException("Failed to initialize '" + uri + "' : " + e.getMessage());
         }
