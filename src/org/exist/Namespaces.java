@@ -49,7 +49,7 @@ public interface Namespaces {
         
     public final static String XSLT_XQUERY_SERIALIZATION_NS = "http://www.w3.org/2010/xslt-xquery-serialization";
 
-    public final static String W3C_XQUERY_XPATH_ERROR_NS = "http://www.w3.org/2005/xqt-errors/";
+    public final static String W3C_XQUERY_XPATH_ERROR_NS = "http://www.w3.org/2005/xqt-errors";
     public final static String W3C_XQUERY_XPATH_ERROR_PREFIX = "err";
 
 	public final static String XSL_NS = "http://www.w3.org/1999/XSL/Transform";

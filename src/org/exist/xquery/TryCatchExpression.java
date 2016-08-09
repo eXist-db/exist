@@ -176,11 +176,7 @@ public class TryCatchExpression extends AbstractExpression {
             // need to be retrieved as variables
             Sequence catchResultSeq = null;
             final LocalVariable mark0 = context.markLocalVariables(false); // DWES: what does this do?
-            
-            // Register new namespace
-            // DWES: 
-            // when declaring "fn:error( fn:QName('http://www.w3.org/2005/xqt-errors', 'err:FOER0000') )"
-            // An Exception is thrown: err:XQST0033 It is a static error if a module contains multiple bindings for the same namespace prefix.
+
             // DWES: should I use popLocalVariables
             context.declareInScopeNamespace(Namespaces.W3C_XQUERY_XPATH_ERROR_PREFIX, Namespaces.W3C_XQUERY_XPATH_ERROR_NS);
             context.declareInScopeNamespace(Namespaces.EXIST_XQUERY_XPATH_ERROR_PREFIX, Namespaces.EXIST_XQUERY_XPATH_ERROR_NS);
