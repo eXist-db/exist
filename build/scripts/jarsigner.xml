@@ -22,12 +22,6 @@
     
     <description>Sign jarfiles for eXist webstart application</description>
     
-    <!-- Set sign properties -->
-    <property name="keystore.alias" value="exist"/>
-    <property name="keystore.password" value="secret"/>
-    <property name="keystore.file" value="key.store"/>
-    <property name="keystore.validity" value="100000"/>
-    
     <!-- Check wether the keystore already exists -->
     <available file="${keystore.file}" property="keystore.present"/>
     
