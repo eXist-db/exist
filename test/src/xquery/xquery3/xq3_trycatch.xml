@@ -274,7 +274,7 @@ try{
         </expected>
     </test>
     
-<test output="text">
+    <test output="text">
         <task>Test for catching the right java exception 2</task>
         <code><![CDATA[
         xquery version '3.0';
@@ -294,7 +294,7 @@ catch * {
 
 
 
-<test output="text">
+    <test output="text">
         <task>Test for catching the right java exception 2</task>
         <code><![CDATA[
 xquery version '3.0';
@@ -310,9 +310,9 @@ catch * {
         <expected>err:FOER0000  module:  String ( 4 , 5 )</expected>
     </test>
 
-<test output="text">
-    <task>Check that the $err:code is the correct QName</task>
-    <code><![CDATA[
+    <test output="text">
+        <task>Check that the $err:code is the correct QName</task>
+        <code><![CDATA[
 xquery version '3.0';
 try {
     let $xq := "
@@ -328,10 +328,27 @@ catch * {
     </code>
 }
 ]]>
-    </code>
-    <expected>
-        <code><ns>http://www.w3.org/2005/xqt-errors</ns><local-name>XPTY0004</local-name></code>
-    </expected>
-</test>
+        </code>
+        <expected>
+            <code><ns>http://www.w3.org/2005/xqt-errors</ns><local-name>XPTY0004</local-name></code>
+        </expected>
+    </test>
+
+    <test output="text">
+        <task>Catch BracedURILiteral</task>
+        <code><![CDATA[
+ xquery version '3.0';
+ try {
+     fn:error(xs:QName("local:my-error"))
+ }
+ catch Q{http://www.w3.org/2005/xquery-local-functions}my-error {
+     <caught>{$err:code}</caught>
+ }
+ ]]>
+        </code>
+        <expected>
+            <caught>local:my-error</caught>
+        </expected>
+    </test>
 
 </TestSet>
