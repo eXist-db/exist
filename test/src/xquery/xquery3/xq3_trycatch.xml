@@ -351,4 +351,37 @@ catch * {
         </expected>
     </test>
 
+    <test output="text">
+        <task>Catch wildcard local-part</task>
+        <code><![CDATA[
+xquery version '3.0';
+try {
+    fn:error(xs:QName("local:my-error"))
+}
+catch local:* {
+    <caught>{$err:code}</caught>
+}
+]]>
+        </code>
+        <expected>
+            <caught>local:my-error</caught>
+        </expected>
+    </test>
+
+    <test output="text">
+        <task>Catch wildcard prefix</task>
+        <code><![CDATA[
+xquery version '3.0';
+try {
+    fn:error(xs:QName("local:my-error"))
+}
+catch *:my-error {
+    <caught>{$err:code}</caught>
+}
+]]>
+        </code>
+        <expected>
+            <caught>local:my-error</caught>
+        </expected>
+    </test>
 </TestSet>

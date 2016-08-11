@@ -858,10 +858,22 @@ catchError [List<QName> catchErrors]
 throws XPathException
 :
 	(
+	    #(ncwc:NCNAME WILDCARD
+        {
+            catchErrors.add(QName.WildcardLocalPartQName.parseFromPrefix(staticContext, ncwc.toString()));
+        }
+        )
+        |
 		#(wc:WILDCARD
 		{
 			catchErrors.add(QName.WildcardQName.getInstance());
 		}
+        )
+        |
+        #(PREFIX_WILDCARD pwcnc:NCNAME
+        {
+            catchErrors.add(new QName.WildcardNamespaceURIQName(pwcnc.toString()));
+        }
         )
         |
         #(eq:EQNAME
