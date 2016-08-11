@@ -61,6 +61,9 @@ public interface Namespaces {
 	public final static String RDF_NS = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
 	public final static String DC_NS = "http://purl.org/dc/elements/1.1/";
 
+	public final static String EXIST_JAVA_BINDING_NS = "http://exist.sourceforge.net/NS/exist/java-binding";
+	public final static String EXIST_JAVA_BINDING_NS_PREFIX = "java";
+
 
     public final static String XML_NS = XMLConstants.XML_NS_URI;
 	public final static String XMLNS_NS = XMLConstants.XMLNS_ATTRIBUTE_NS_URI;

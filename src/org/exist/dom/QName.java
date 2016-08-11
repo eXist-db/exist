@@ -34,7 +34,7 @@ import java.util.regex.Pattern;
 
 /**
  * Represents a QName, consisting of a local name, a namespace URI and a prefix.
- * 
+ *
  * @author Wolfgang <wolfgang@exist-db.org>
  */
 public class QName implements Comparable<QName> {
@@ -72,7 +72,7 @@ public class QName implements Comparable<QName> {
      * Construct a QName. The prefix might be null for the default namespace or if no prefix 
      * has been defined for the QName. The namespace URI should be set to the empty 
      * string, if no namespace URI is defined.
-     * 
+     *
      * @param localPart
      * @param namespaceURI
      * @param prefix
@@ -111,7 +111,7 @@ public class QName implements Comparable<QName> {
 
     /**
      * Returns true if the QName defines a non-default namespace
-     * 
+     *
      */
     public boolean hasNamespace() {
         return !namespaceURI.equals(XMLConstants.NULL_NS_URI);
@@ -156,7 +156,7 @@ public class QName implements Comparable<QName> {
     /**
      * Compares two QNames by comparing namespace URI
      * and local names. The prefixes are not relevant.
-     * 
+     *
      * @see java.lang.Comparable#compareTo(java.lang.Object)
      */
     @Override
@@ -165,10 +165,10 @@ public class QName implements Comparable<QName> {
         return c == Constants.EQUAL ? localPart.compareTo(other.localPart) : c;
     }
 
-    /** 
+    /**
      * Checks two QNames for equality. Two QNames are equal
      * if their namespace URIs and local names are equal.
-     * 
+     *
      * @see java.lang.Object#equals(java.lang.Object)
      */
     @Override
@@ -180,7 +180,33 @@ public class QName implements Comparable<QName> {
         } else {
             final QName qnOther = (QName)other;
             return this.namespaceURI.equals(qnOther.namespaceURI)
-                && this.localPart.equals(qnOther.localPart);
+                    && this.localPart.equals(qnOther.localPart);
+        }
+    }
+
+    /**
+     * Determines whether two QNames match
+     * similar to {@link #equals(Object)} but
+     * incorporates wildcards on either side
+     *
+     * @param qnOther Another QName to compare against this
+     * @return true if two qnames match
+     */
+    public boolean matches(final QName qnOther) {
+        if(equals(qnOther)) {
+            return true;
+        } else {
+            if(this == WildcardQName.instance || qnOther == WildcardQName.instance) {
+                return true;
+            } else if((localPart.equals(WILDCARD) || qnOther.localPart.equals(WILDCARD)) && this.namespaceURI.equals(qnOther.namespaceURI)) {
+                return true;
+            } else if((namespaceURI.equals(WILDCARD) || qnOther.namespaceURI.equals(WILDCARD)) && this.localPart.equals(qnOther.localPart)) {
+                return true;
+            } else if((namespaceURI.equals(WILDCARD) && localPart.equals(WILDCARD)) || (qnOther.namespaceURI.equals(WILDCARD) || qnOther.localPart.equals(WILDCARD))) {
+                return true;
+            } else {
+                return false;
+            }
         }
     }
 
@@ -194,12 +220,12 @@ public class QName implements Comparable<QName> {
 
     public javax.xml.namespace.QName toJavaQName() {
         return new javax.xml.namespace.QName(
-            namespaceURI, localPart, prefix == null ? XMLConstants.DEFAULT_NS_PREFIX : prefix);
+                namespaceURI, localPart, prefix == null ? XMLConstants.DEFAULT_NS_PREFIX : prefix);
     }
 
     /**
      * Extract the prefix from a QName string.
-     *  
+     *
      * @param qname
      * @return the prefix, if found
      * @exception IllegalArgumentException if the qname starts with a leading :
@@ -220,7 +246,7 @@ public class QName implements Comparable<QName> {
 
     /**
      * Extract the local name from a QName string.
-     * 
+     *
      * @param qname
      * @exception IllegalArgumentException if the qname starts with a leading : or ends with a :
      */
@@ -266,7 +292,7 @@ public class QName implements Comparable<QName> {
     /**
      * Parses the given string into a QName. The method uses context to look up
      * a namespace URI for an existing prefix.
-     * 
+     *
      * @param context
      * @param qname The QName may be either in Clark Notation
      *              e.g. `{namespace}local-part` or XDM literal qname form e.g. `prefix:local-part`.
@@ -309,9 +335,9 @@ public class QName implements Comparable<QName> {
     /**
      * Parses the given string into a QName. The method uses context to look up
      * a namespace URI for an optional existing prefix.
-     * 
+     *
      * This method uses the default element namespace for qnames without prefix.
-     * 
+     *
      * @param context
      * @param qname The QName may be either in Clark Notation
      *              e.g. `{namespace}local-part` or XDM literal qname form
@@ -323,10 +349,10 @@ public class QName implements Comparable<QName> {
     }
 
     public final void isValid() throws XPathException {
-    	if ((!(this instanceof WildcardLocalPartQName)) && !XMLChar.isValidNCName(localPart)) {
+        if ((!(this instanceof WildcardLocalPartQName)) && !XMLChar.isValidNCName(localPart)) {
             throw new XPathException(ErrorCodes.XPTY0004, "Invalid localPart '" +  localPart + "' for QName '" + this + "'.");
         }
-        
+
         if (prefix != null && !XMLChar.isValidNCName(prefix)) {
             throw new XPathException(ErrorCodes.XPTY0004, "Invalid prefix '" + prefix + "' for QName '" + this + "'.");
         }
@@ -354,6 +380,17 @@ public class QName implements Comparable<QName> {
 
     public interface PartialQName{}
 
+    public static class WildcardQName extends QName implements PartialQName {
+        private final static WildcardQName instance = new WildcardQName();
+        public static WildcardQName getInstance() {
+            return instance;
+        }
+
+        private WildcardQName() {
+            super(WILDCARD, WILDCARD, WILDCARD);
+        }
+    }
+
     public static class WildcardNamespaceURIQName extends QName implements PartialQName {
         public WildcardNamespaceURIQName(final String localPart) {
             super(localPart, WILDCARD);
@@ -375,6 +412,47 @@ public class QName implements Comparable<QName> {
 
         public WildcardLocalPartQName(final String namespaceURI, final String prefix) {
             super(WILDCARD, namespaceURI, prefix);
+        }
+
+        /**
+         * Parses the given prefix into a WildcardLocalPartQName. The method uses context to look up
+         * a namespace URI for an existing prefix.
+         *
+         * @param context
+         * @param prefix The namepspace prefix
+         * @param defaultNS the default namespace to use if no namespace prefix is present.
+         * @return WildcardLocalPartQName
+         * @exception IllegalArgumentException if no namespace URI is mapped to the prefix
+         */
+        public static WildcardLocalPartQName parseFromPrefix(final Context context, final String prefix,
+                                                             final String defaultNS) throws XPathException {
+            String namespaceURI;
+            if (prefix != null) {
+                namespaceURI = context.getURIForPrefix(prefix);
+                if (namespaceURI == null) {
+                    throw new XPathException(ErrorCodes.XPST0081, "No namespace defined for prefix " + prefix);
+                }
+            } else {
+                namespaceURI = defaultNS;
+            }
+            if (namespaceURI == null) {
+                namespaceURI = XMLConstants.NULL_NS_URI;
+            }
+            return new WildcardLocalPartQName(namespaceURI, prefix);
+        }
+
+        /**
+         * Parses the given prefix into a WildcardLocalPartQName. The method uses context to look up
+         * a namespace URI for an existing prefix.
+         *
+         * @param context
+         * @param prefix The namepspace prefix
+         * @return WildcardLocalPartQName
+         * @exception IllegalArgumentException if no namespace URI is mapped to the prefix
+         */
+        public static WildcardLocalPartQName parseFromPrefix(final Context context, final String prefix)
+                throws XPathException {
+            return parseFromPrefix(context, prefix, context.getURIForPrefix(XMLConstants.DEFAULT_NS_PREFIX));
         }
     }
 }

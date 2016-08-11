@@ -831,9 +831,9 @@ public XQueryTreeParser() {
 				if (_t==null) _t=ASTNULL;
 				if ((_t.getType()==LITERAL_catch)) {
 					
-									List<String> catchErrorList = new ArrayList<String>(2);
-					List<QName> catchVars = new ArrayList<QName>(3);
-									PathExpr catchExpr = new PathExpr(context);
+									final List<QName> catchErrorList = new ArrayList<>(2);
+					final List<QName> catchVars = new ArrayList<>(3);
+									final PathExpr catchExpr = new PathExpr(context);
 								
 					AST __t149 = _t;
 					astCatch = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
@@ -6163,7 +6163,7 @@ public XQueryTreeParser() {
  * catchErrorList in try-catch.
  */
 	public final void catchErrorList(AST _t,
-		List catchErrors
+		List<QName> catchErrors
 	) throws RecognitionException, XPathException {
 		
 		org.exist.xquery.parser.XQueryAST catchErrorList_AST_in = (_t == ASTNULL) ? null : (org.exist.xquery.parser.XQueryAST)_t;
@@ -6191,7 +6191,7 @@ public XQueryTreeParser() {
  * Single catchError.
  */
 	public final void catchError(AST _t,
-		List catchErrors
+		List<QName> catchErrors
 	) throws RecognitionException, XPathException {
 		
 		org.exist.xquery.parser.XQueryAST catchError_AST_in = (_t == ASTNULL) ? null : (org.exist.xquery.parser.XQueryAST)_t;
@@ -6208,7 +6208,7 @@ public XQueryTreeParser() {
 			match(_t,WILDCARD);
 			_t = _t.getFirstChild();
 			
-						catchErrors.add(wc.toString());
+						catchErrors.add(QName.WildcardQName.getInstance());
 					
 			_t = __t85;
 			_t = _t.getNextSibling();
@@ -6221,7 +6221,7 @@ public XQueryTreeParser() {
 			match(_t,EQNAME);
 			_t = _t.getFirstChild();
 			
-						catchErrors.add(eq.toString());
+						catchErrors.add(QName.parse(staticContext, eq.toString()));
 					
 			_t = __t86;
 			_t = _t.getNextSibling();

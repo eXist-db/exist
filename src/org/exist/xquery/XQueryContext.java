@@ -3379,7 +3379,8 @@ public class XQueryContext implements BinaryValueManager, Context
             declareNamespace( Namespaces.W3C_XQUERY_XPATH_ERROR_PREFIX, Namespaces.W3C_XQUERY_XPATH_ERROR_NS );
 
             //*not* as standard NS
-            declareNamespace( "exist", Namespaces.EXIST_NS );
+            declareNamespace( Namespaces.EXIST_NS_PREFIX, Namespaces.EXIST_NS );
+            declareNamespace( Namespaces.EXIST_JAVA_BINDING_NS_PREFIX, Namespaces.EXIST_JAVA_BINDING_NS );
             declareNamespace( Namespaces.EXIST_XQUERY_XPATH_ERROR_PREFIX, Namespaces.EXIST_XQUERY_XPATH_ERROR_NS );
 
             //TODO : include "err" namespace ?

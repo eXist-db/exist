@@ -281,8 +281,8 @@ public class ErrorCodes {
         public JavaErrorCode(Throwable throwable) {
             super(new QName(
                         throwable.getClass().getName(),
-                        Namespaces.EXIST_XQUERY_XPATH_ERROR_NS,
-                        "java" ), // Namespaces.EXIST_XQUERY_XPATH_ERROR_PREFIX
+                        Namespaces.EXIST_JAVA_BINDING_NS,
+                        Namespaces.EXIST_JAVA_BINDING_NS_PREFIX),
                   throwable.getMessage());
         }
     }
