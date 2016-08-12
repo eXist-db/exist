@@ -845,7 +845,7 @@ throws XPathException
 /**
  * catchErrorList in try-catch.
  */
-catchErrorList [List catchErrors]
+catchErrorList [List<QName> catchErrors]
 throws XPathException
 :
     catchError [catchErrors] ( catchError [catchErrors] )*
@@ -854,19 +854,31 @@ throws XPathException
 /**
  * Single catchError.
  */
-catchError [List catchErrors]
+catchError [List<QName> catchErrors]
 throws XPathException
 :
 	(
+	    #(ncwc:NCNAME WILDCARD
+        {
+            catchErrors.add(QName.WildcardLocalPartQName.parseFromPrefix(staticContext, ncwc.toString()));
+        }
+        )
+        |
 		#(wc:WILDCARD
 		{
-			catchErrors.add(wc.toString());
+			catchErrors.add(QName.WildcardQName.getInstance());
 		}
+        )
+        |
+        #(PREFIX_WILDCARD pwcnc:NCNAME
+        {
+            catchErrors.add(new QName.WildcardNamespaceURIQName(pwcnc.toString()));
+        }
         )
         |
         #(eq:EQNAME
         {
-			catchErrors.add(eq.toString());
+			catchErrors.add(QName.parse(staticContext, eq.toString()));
 		}
         )
 	)
@@ -1314,9 +1326,9 @@ throws PermissionDeniedException, EXistException, XPathException
         }
         (
 			{
-				List<String> catchErrorList = new ArrayList<String>(2);
-                List<QName> catchVars = new ArrayList<QName>(3);
-				PathExpr catchExpr = new PathExpr(context);
+				final List<QName> catchErrorList = new ArrayList<>(2);
+                final List<QName> catchVars = new ArrayList<>(3);
+				final PathExpr catchExpr = new PathExpr(context);
 			}
 			#(
 				astCatch:"catch"
