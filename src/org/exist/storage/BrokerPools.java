@@ -192,6 +192,12 @@ abstract class BrokerPools {
         } finally {
             writeLock.unlock();
         }
+        // run startup triggers now that the instance is fully set up
+        final BrokerPool instance = getInstance(instanceName);
+        try(final DBBroker broker = instance.get(Optional.of(instance.getSecurityManager().getSystemSubject()))) {
+            instance.callStartupTriggers((List<Configuration.StartupTriggerConfig>) config.getProperty(BrokerPool
+                    .PROPERTY_STARTUP_TRIGGERS), broker);
+        }
     }
 
     /**

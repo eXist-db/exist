@@ -678,12 +678,6 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                             }
 
                             sync(broker, Sync.MAJOR);
-
-                            //TODO(AR) remove this!
-                            //require to allow access by BrokerPool.getInstance();
-                            //instances.put(instanceName, this);
-
-                            callStartupTriggers((List<StartupTriggerConfig>) conf.getProperty(BrokerPool.PROPERTY_STARTUP_TRIGGERS), broker);
                         }
 
                         //Create a default configuration file for the root collection
@@ -762,7 +756,8 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
         }
     }*/
 
-    private void callStartupTriggers(final List<StartupTriggerConfig> startupTriggerConfigs, final DBBroker sysBroker) {
+    protected void callStartupTriggers(final List<StartupTriggerConfig> startupTriggerConfigs, final DBBroker
+            sysBroker) {
         if(startupTriggerConfigs == null) {
             return;
         }
