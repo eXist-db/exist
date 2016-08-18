@@ -37,7 +37,7 @@ import org.exist.SystemProperties;
  *
  * @author Wolfgang Meier
  */
-public class SplashScreen extends JFrame implements Observer {
+public class SplashScreen extends JFrame implements Observer, Comparable {
 
     private static final long serialVersionUID = -8449133653386075548L;
 
@@ -126,5 +126,10 @@ public class SplashScreen extends JFrame implements Observer {
         } else {
             setStatus(arg.toString());
         }
+    }
+
+    @Override
+    public int compareTo(Object other) {
+        return other == this ? 0 : -1;
     }
 }
