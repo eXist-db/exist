@@ -116,10 +116,80 @@ function fd:format-dateTime-z($date as xs:dateTime) {
 };
 
 declare
+    %test:args("2012-06-26T12:00:00.000-10:00")
+    %test:assertEquals("GMT-10:00")
+function fd:format-dateTime-z-negative-double-digit($date as xs:dateTime) {
+    format-dateTime($date, "[z]")
+};
+
+declare
+    %test:args("2012-06-26T12:00:00.000-05:00")
+    %test:assertEquals("GMT-05:00")
+function fd:format-dateTime-z-negative-single-digit($date as xs:dateTime) {
+    format-dateTime($date, "[z]")
+};
+
+declare
+    %test:args("2012-06-26T12:00:00.000+00:00")
+    %test:assertEquals("GMT+00:00")
+function fd:format-dateTime-z-zero($date as xs:dateTime) {
+    format-dateTime($date, "[z]")
+};
+
+declare
+    %test:args("2012-06-26T12:00:00.000+05:30")
+    %test:assertEquals("GMT+05:30")
+function fd:format-dateTime-z-positive-single-digit($date as xs:dateTime) {
+    format-dateTime($date, "[z]")
+};
+
+declare
+    %test:args("2012-06-26T12:00:00.000+13:00")
+    %test:assertEquals("GMT+13:00")
+function fd:format-dateTime-z-positive-double-digit($date as xs:dateTime) {
+    format-dateTime($date, "[z]")
+};
+
+declare
     %test:args("2012-06-26T23:14:22.566+02:00")
     %test:assertEquals("20120626231422+02:00")
 function fd:format-dateTime-Z($date as xs:dateTime) {
     format-dateTime($date, "[Y0001][M01][D01][H01][m01][s01][Z]")
+};
+
+declare
+    %test:args("2012-06-26T12:00:00.000-10:00")
+    %test:assertEquals("-10:00")
+function fd:format-dateTime-Z-negative-double-digit($date as xs:dateTime) {
+    format-dateTime($date, "[Z]")
+};
+
+declare
+    %test:args("2012-06-26T12:00:00.000-05:00")
+    %test:assertEquals("-05:00")
+function fd:format-dateTime-Z-negative-single-digit($date as xs:dateTime) {
+    format-dateTime($date, "Z]")
+};
+
+declare
+    %test:args("2012-06-26T12:00:00.000+00:00")
+    %test:assertEquals("+0")
+function fd:format-dateTime-Z-zero($date as xs:dateTime) {
+    format-dateTime($date, "[Z]")
+};
+
+declare
+    %test:args("2012-06-26T12:00:00.000+05:30")
+    %test:assertEquals("+05:30")
+function fd:format-dateTime-Z-positive-single-digit($date as xs:dateTime) {
+    format-dateTime($date, "[Z]")
+};
+
+declare
+    %test:args("2012-06-26T12:00:00.000+13:00")
+    %test:assertEquals("+13:00")
+function fd:format-dateTime-Z-positive-double-digit($date as xs:dateTime) {
+    format-dateTime($date, "[Z]")
 };
 
 declare
@@ -134,6 +204,286 @@ declare
     %test:assertEquals("20120626231422")
 function fd:format-dateTime-no-tz-Z($date as xs:dateTime) {
     format-dateTime($date, "[Y0001][M01][D01][H01][m01][s01][Z]")
+};
+
+declare
+    %test:args("2012-06-26T12:00:00.000-10:00")
+    %test:assertEquals("-10")
+function fd:format-dateTime-Z0-negative-double-digit($date as xs:dateTime) {
+    format-dateTime($date, "[Z0]")
+};
+
+declare
+    %test:args("2012-06-26T12:00:00.000-05:00")
+    %test:assertEquals("-5")
+function fd:format-dateTime-Z0-negative-single-digit($date as xs:dateTime) {
+    format-dateTime($date, "[Z0]")
+};
+
+declare
+    %test:args("2012-06-26T12:00:00.000+00:00")
+    %test:assertEquals("+0")
+function fd:format-dateTime-Z0-zero($date as xs:dateTime) {
+    format-dateTime($date, "[Z0]")
+};
+
+declare
+    %test:args("2012-06-26T12:00:00.000+05:30")
+    %test:assertEquals("+5:30")
+function fd:format-dateTime-Z0-positive-single-digit($date as xs:dateTime) {
+    format-dateTime($date, "[Z0]")
+};
+
+declare
+    %test:args("2012-06-26T12:00:00.000+13:00")
+    %test:assertEquals("+13")
+function fd:format-dateTime-Z0-positive-double-digit($date as xs:dateTime) {
+    format-dateTime($date, "[Z0]")
+};
+
+declare
+    %test:args("2012-06-26T12:00:00.000-10:00")
+    %test:assertEquals("-10:00")
+function fd:format-dateTime-Z0-00-negative-double-digit($date as xs:dateTime) {
+    format-dateTime($date, "[Z0:00]")
+};
+
+declare
+    %test:args("2012-06-26T12:00:00.000-05:00")
+    %test:assertEquals("-5:00")
+function fd:format-dateTime-Z0-00-negative-single-digit($date as xs:dateTime) {
+    format-dateTime($date, "[Z0:00]")
+};
+
+declare
+    %test:args("2012-06-26T12:00:00.000+00:00")
+    %test:assertEquals("+0:00")
+function fd:format-dateTime-Z0-00-zero($date as xs:dateTime) {
+    format-dateTime($date, "[Z0:00]")
+};
+
+declare
+    %test:args("2012-06-26T12:00:00.000+05:30")
+    %test:assertEquals("+5:30")
+function fd:format-dateTime-Z0-00-positive-single-digit($date as xs:dateTime) {
+    format-dateTime($date, "[Z0:00]")
+};
+
+declare
+    %test:args("2012-06-26T12:00:00.000+13:00")
+    %test:assertEquals("+13:00")
+function fd:format-dateTime-Z0-00-positive-double-digit($date as xs:dateTime) {
+    format-dateTime($date, "[Z0:00]")
+};
+
+declare
+    %test:args("2012-06-26T12:00:00.000-10:00")
+    %test:assertEquals("-10:00")
+function fd:format-dateTime-Z00-00-negative-double-digit($date as xs:dateTime) {
+    format-dateTime($date, "[Z00:00]")
+};
+
+declare
+    %test:args("2012-06-26T12:00:00.000-05:00")
+    %test:assertEquals("-05:00")
+function fd:format-dateTime-Z00-00-negative-single-digit($date as xs:dateTime) {
+    format-dateTime($date, "[Z00:00]")
+};
+
+declare
+    %test:args("2012-06-26T12:00:00.000+00:00")
+    %test:assertEquals("+00:00")
+function fd:format-dateTime-Z00-00-zero($date as xs:dateTime) {
+    format-dateTime($date, "[Z00:00]")
+};
+
+declare
+    %test:args("2012-06-26T12:00:00.000+05:30")
+    %test:assertEquals("+05:30")
+function fd:format-dateTime-Z00-00-positive-single-digit($date as xs:dateTime) {
+    format-dateTime($date, "[Z00:00]")
+};
+
+declare
+    %test:args("2012-06-26T12:00:00.000+13:00")
+    %test:assertEquals("+13:00")
+function fd:format-dateTime-Z00-00-positive-double-digit($date as xs:dateTime) {
+    format-dateTime($date, "[Z00:00]")
+};
+
+declare
+    %test:args("2012-06-26T12:00:00.000-10:00")
+    %test:assertEquals("-1000")
+function fd:format-dateTime-Z0000-negative-double-digit($date as xs:dateTime) {
+    format-dateTime($date, "[Z0000]")
+};
+
+declare
+    %test:args("2012-06-26T12:00:00.000-05:00")
+    %test:assertEquals("-0500")
+function fd:format-dateTime-Z0000-negative-single-digit($date as xs:dateTime) {
+    format-dateTime($date, "[Z0000]")
+};
+
+declare
+    %test:args("2012-06-26T12:00:00.000+00:00")
+    %test:assertEquals("+0000")
+function fd:format-dateTime-Z0000-zero($date as xs:dateTime) {
+    format-dateTime($date, "[Z0000]")
+};
+
+declare
+    %test:args("2012-06-26T12:00:00.000+05:30")
+    %test:assertEquals("+0530")
+function fd:format-dateTime-Z0000-positive-single-digit($date as xs:dateTime) {
+    format-dateTime($date, "[Z0000]")
+};
+
+declare
+    %test:args("2012-06-26T12:00:00.000+13:00")
+    %test:assertEquals("+1300")
+function fd:format-dateTime-Z0000-positive-double-digit($date as xs:dateTime) {
+    format-dateTime($date, "[Z0000]")
+};
+
+declare
+    %test:args("2012-06-26T12:00:00.000-10:00")
+    %test:assertEquals("-10:00")
+function fd:format-dateTime-Z00-00t-negative-double-digit($date as xs:dateTime) {
+    format-dateTime($date, "[Z00:00t]")
+};
+
+declare
+    %test:args("2012-06-26T12:00:00.000-05:00")
+    %test:assertEquals("-05:00")
+function fd:format-dateTime-Z00-00t-negative-single-digit($date as xs:dateTime) {
+    format-dateTime($date, "[Z00:00t]")
+};
+
+declare
+    %test:args("2012-06-26T12:00:00.000+00:00")
+    %test:assertEquals("Z")
+function fd:format-dateTime-Z00-00t-zero($date as xs:dateTime) {
+    format-dateTime($date, "[Z00:00t]")
+};
+
+declare
+    %test:args("2012-06-26T12:00:00.000+05:30")
+    %test:assertEquals("+05:30")
+function fd:format-dateTime-Z00-00t-positive-single-digit($date as xs:dateTime) {
+    format-dateTime($date, "[Z00:00t]")
+};
+
+declare
+    %test:args("2012-06-26T12:00:00.000+13:00")
+    %test:assertEquals("+13:00")
+function fd:format-dateTime-Z00-00t-positive-double-digit($date as xs:dateTime) {
+    format-dateTime($date, "[Z00:00t]")
+};
+
+declare
+    %test:args("2012-06-26T12:00:00.000-10:00")
+    %test:assertEquals("W")
+function fd:format-dateTime-ZZ-negative-double-digit($date as xs:dateTime) {
+    format-dateTime($date, "[ZZ]")
+};
+
+declare
+    %test:args("2012-06-26T12:00:00.000-05:00")
+    %test:assertEquals("R")
+function fd:format-dateTime-ZZ-negative-single-digit($date as xs:dateTime) {
+    format-dateTime($date, "[ZZ]")
+};
+
+declare
+    %test:args("2012-06-26T12:00:00.000+00:00")
+    %test:assertEquals("Z")
+function fd:format-dateTime-ZZ-zero($date as xs:dateTime) {
+    format-dateTime($date, "[ZZ]")
+};
+
+declare
+    %test:args("2012-06-26T12:00:00.000+05:30")
+    %test:assertEquals("+05:30")
+function fd:format-dateTime-ZZ-positive-single-digit($date as xs:dateTime) {
+    format-dateTime($date, "[ZZ]")
+};
+
+declare
+    %test:args("2012-06-26T12:00:00.000+13:00")
+    %test:assertEquals("+13:00")
+function fd:format-dateTime-ZZ-positive-double-digit($date as xs:dateTime) {
+    format-dateTime($date, "[ZZ]")
+};
+
+declare
+    %test:args("2012-06-26T12:00:00.000-10:00")
+    %test:assertEquals("HST")
+function fd:format-dateTime-ZN-negative-double-digit($date as xs:dateTime) {
+    format-dateTime($date, "[ZN]", (), (), "us")
+};
+
+declare
+    %test:args("2012-06-26T12:00:00.000-05:00")
+    %test:assertEquals("EST")
+function fd:format-dateTime-ZN-negative-single-digit($date as xs:dateTime) {
+    format-dateTime($date, "[ZN]", (), (), "us")
+};
+
+declare
+    %test:args("2012-06-26T12:00:00.000+00:00")
+    %test:assertEquals("GMT")
+function fd:format-dateTime-ZN-zero($date as xs:dateTime) {
+    format-dateTime($date, "[ZN]", (), (), "us")
+};
+
+declare
+    %test:args("2012-06-26T12:00:00.000+05:30")
+    %test:assertEquals("IST")
+function fd:format-dateTime-ZN-positive-single-digit($date as xs:dateTime) {
+    format-dateTime($date, "[ZN]", (), (), "us")
+};
+
+declare
+    %test:args("2012-06-26T12:00:00.000+13:00")
+    %test:assertEquals("+13:00")
+function fd:format-dateTime-ZN-positive-double-digit($date as xs:dateTime) {
+    format-dateTime($date, "[ZN]", (), (), "us")
+};
+
+declare
+    %test:args("2012-06-26T12:00:00.000-10:00")
+    %test:assertEquals("06:00 EST")
+function fd:format-dateTime-ZN-NY-negative-double-digit($date as xs:dateTime) {
+    format-dateTime($date, "[H00]:[M00] [ZN]", (), (), "America/New_York")
+};
+
+declare
+    %test:args("2012-06-26T12:00:00.000-05:00")
+    %test:assertEquals("12:00 EST")
+function fd:format-dateTime-ZN-NY-negative-single-digit($date as xs:dateTime) {
+    format-dateTime($date, "[H00]:[M00] [ZN]", (), (), "America/New_York")
+};
+
+declare
+    %test:args("2012-06-26T12:00:00.000+00:00")
+    %test:assertEquals("07:00 EST")
+function fd:format-dateTime-ZN-NY-zero($date as xs:dateTime) {
+    format-dateTime($date, "[H00]:[M00] [ZN]", (), (), "America/New_York")
+};
+
+declare
+    %test:args("2012-06-26T12:00:00.000+05:30")
+    %test:assertEquals("01:30 EST")
+function fd:format-dateTime-ZN-NY-positive-single-digit($date as xs:dateTime) {
+    format-dateTime($date, "[H00]:[M00] [ZN]", (), (), "America/New_York")
+};
+
+declare
+    %test:args("2012-06-26T12:00:00.000+13:00")
+    %test:assertEquals("18:00 EST")
+function fd:format-dateTime-ZN-NY-positive-double-digit($date as xs:dateTime) {
+    format-dateTime($date, "[H00]:[M00] [ZN]", (), (), "America/New_York")
 };
 
 declare
