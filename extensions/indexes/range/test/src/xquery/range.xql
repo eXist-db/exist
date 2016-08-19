@@ -4,6 +4,9 @@ module namespace rt="http://exist-db.org/xquery/range/test";
 
 import module namespace test="http://exist-db.org/xquery/xqsuite" at "resource:org/exist/xquery/lib/xqsuite/xqsuite.xql";
 
+declare namespace tei = "http://www.tei-c.org/ns/1.0";
+
+
 declare variable $rt:COLLECTION_CONFIG := 
     <collection xmlns="http://exist-db.org/collection-config/1.0">
         <index xmlns:xs="http://www.w3.org/2001/XMLSchema"
@@ -26,6 +29,25 @@ declare variable $rt:COLLECTION_CONFIG :=
                 <create match="/test/address/city" type="xs:string" collation="?lang=de-DE&amp;strength=primary"/>
                 <create match="/test/address/city/@code" type="xs:integer"/>
                 <create qname="@id" type="xs:string"/>
+            </range>
+        </index>
+    </collection>;
+
+declare variable $rt:SR_COLLECTION_CONFIG :=
+    <collection xmlns="http://exist-db.org/collection-config/1.0">
+        <index xmlns:xs="http://www.w3.org/2001/XMLSchema"
+            xmlns:tei="http://www.tei-c.org/ns/1.0">
+            <range>
+                <create qname="tei:orth" type="xs:string" collation="?lang=sr&amp;strength=primary" case="no"/>
+            </range>
+        </index>
+    </collection>;
+
+declare variable $rt:SR_COLLECTION_CONFIG_NO_NS :=
+    <collection xmlns="http://exist-db.org/collection-config/1.0">
+        <index xmlns:xs="http://www.w3.org/2001/XMLSchema">
+            <range>
+                <create qname="orth" type="xs:string" collation="?lang=sr&amp;strength=primary" case="no"/>
             </range>
         </index>
     </collection>;
@@ -82,7 +104,95 @@ declare variable $rt:DATA2 :=
             <value>value1</value>
         </parameter>
     </object>;
-    
+
+declare variable $rt:DATA_SR_WITH_DIACRITICS :=
+    <TEI xmlns="http://www.tei-c.org/ns/1.0">
+        <teiHeader>
+            <fileDesc>
+                <titleStmt><title>sr with diacritics</title></titleStmt>
+                <publicationStmt><distributor>sr with diacritics</distributor></publicationStmt>
+                <sourceDesc><listOrg><org><name>test</name></org></listOrg></sourceDesc>
+            </fileDesc>
+        </teiHeader>
+        <text>
+            <body>
+                <div>
+                    <entryFree>
+                        <form type="lemma">
+                            <orth>Мла̀тишума</orth>
+                        </form>
+                    </entryFree>
+                </div>
+            </body>
+        </text>
+    </TEI>;
+
+declare variable $rt:DATA_SR_WITHOUT_DIACRITICS :=
+    <TEI xmlns="http://www.tei-c.org/ns/1.0">
+        <teiHeader>
+            <fileDesc>
+                <titleStmt><title>sr without diacritics</title></titleStmt>
+                <publicationStmt><distributor>sr without diacritics</distributor></publicationStmt>
+                <sourceDesc><listOrg><org><name>test</name></org></listOrg></sourceDesc>
+            </fileDesc>
+        </teiHeader>
+        <text>
+            <body>
+                <div>
+                    <entryFree>
+                        <form type="lemma">
+                            <orth>Млатишума</orth>
+                        </form>
+                    </entryFree>
+                </div>
+            </body>
+        </text>
+    </TEI>;
+
+declare variable $rt:DATA_SR_WITH_DIACRITICS_NO_NS :=
+    <TEI>
+        <teiHeader>
+            <fileDesc>
+                <titleStmt><title>sr with diacritics</title></titleStmt>
+                <publicationStmt><distributor>sr with diacritics</distributor></publicationStmt>
+                <sourceDesc><listOrg><org><name>test</name></org></listOrg></sourceDesc>
+            </fileDesc>
+        </teiHeader>
+        <text>
+            <body>
+                <div>
+                    <entryFree>
+                        <form type="lemma">
+                            <orth>Мла̀тишума</orth>
+                        </form>
+                    </entryFree>
+                </div>
+            </body>
+        </text>
+    </TEI>;
+
+declare variable $rt:DATA_SR_WITHOUT_DIACRITICS_NO_NS :=
+    <TEI>
+        <teiHeader>
+            <fileDesc>
+                <titleStmt><title>sr without diacritics</title></titleStmt>
+                <publicationStmt><distributor>sr without diacritics</distributor></publicationStmt>
+                <sourceDesc><listOrg><org><name>test</name></org></listOrg></sourceDesc>
+            </fileDesc>
+        </teiHeader>
+        <text>
+            <body>
+                <div>
+                    <entryFree>
+                        <form type="lemma">
+                            <orth>Млатишума</orth>
+                        </form>
+                    </entryFree>
+                </div>
+            </body>
+        </text>
+    </TEI>;
+
 declare
     %test:setUp
 function rt:setup() {
@@ -90,14 +200,29 @@ function rt:setup() {
     xmldb:store("/db/system/config/db/rangetest", "collection.xconf", $rt:COLLECTION_CONFIG),
     xmldb:create-collection("/db", "rangetest"),
     xmldb:store("/db/rangetest", "test.xml", $rt:DATA),
-    xmldb:store("/db/rangetest", "nested.xml", $rt:DATA_NESTED)
+    xmldb:store("/db/rangetest", "nested.xml", $rt:DATA_NESTED),
+
+    xmldb:create-collection("/db/system/config/db", "rangetest-sr"),
+    xmldb:store("/db/system/config/db/rangetest-sr", "collection.xconf", $rt:SR_COLLECTION_CONFIG),
+    xmldb:create-collection("/db", "rangetest-sr"),
+    xmldb:store("/db/rangetest-sr", "with-diacritics.xml", $rt:DATA_SR_WITH_DIACRITICS),
+    xmldb:store("/db/rangetest-sr", "without-diacritics.xml", $rt:DATA_SR_WITHOUT_DIACRITICS),
+
+    xmldb:create-collection("/db/system/config/db", "rangetest-sr-no-ns"),
+    xmldb:store("/db/system/config/db/rangetest-sr-no-ns", "collection.xconf", $rt:SR_COLLECTION_CONFIG_NO_NS),
+    xmldb:create-collection("/db", "rangetest-sr-no-ns"),
+    xmldb:store("/db/rangetest-sr-no-ns", "with-diacritics-no-ns.xml", $rt:DATA_SR_WITH_DIACRITICS_NO_NS),
+    xmldb:store("/db/rangetest-sr-no-ns", "without-diacritics-no-ns.xml", $rt:DATA_SR_WITHOUT_DIACRITICS_NO_NS)
 };
 
 declare
     %test:tearDown
 function rt:cleanup() {
     xmldb:remove("/db/rangetest"),
-    xmldb:remove("/db/system/config/db/rangetest")
+    xmldb:remove("/db/system/config/db/rangetest"),
+
+    xmldb:remove("/db/rangetest-sr"),
+    xmldb:remove("/db/system/config/db/rangetest-sr")
 };
 
 declare
@@ -405,4 +530,60 @@ function rt:update-value() {
     range:field-eq("address-name", "Pü Reh"),
     //address[range:eq(name, "Rita Rebhuhn")]/street/text(),
     range:field-eq("address-name", "Rita Rebhuhn")/city/text()
+};
+
+declare
+    %test:args("Мла̀тишума")
+    %test:assertEquals("2")
+function rt:sr-contains-string-collation-with-diacritics($name as xs:string) {
+    count(//tei:form[range:contains(tei:orth, $name)])
+};
+
+declare
+    %test:args("Млатишума")
+    %test:assertEquals("2")
+function rt:sr-contains-string-collation-without-diacritics($name as xs:string) {
+    count(//tei:form[range:contains(tei:orth, $name)])
+};
+
+declare
+    %test:args("Мла̀тишума")
+    %test:assertEquals("2")
+function rt:sr-contains-string-collation-with-diacritics-2($name as xs:string) {
+    count(//tei:entryFree[descendant::tei:form[@type eq 'lemma'][range:contains(tei:orth, $name)]])
+};
+
+declare
+    %test:args("Млатишума")
+    %test:assertEquals("2")
+function rt:sr-contains-string-collation-without-diacritics-2($name as xs:string) {
+    count(//tei:entryFree[descendant::tei:form[@type eq 'lemma'][range:contains(tei:orth, $name)]])
+};
+
+declare
+    %test:args("Мла̀тишума")
+    %test:assertEquals("2")
+function rt:sr-contains-string-collation-with-diacritics-no-ns($name as xs:string) {
+    count(//form[range:contains(orth, $name)])
+};
+
+declare
+    %test:args("Млатишума")
+    %test:assertEquals("2")
+function rt:sr-contains-string-collation-without-diacritics-no-ns($name as xs:string) {
+    count(//form[range:contains(orth, $name)])
+};
+
+declare
+    %test:args("Мла̀тишума")
+    %test:assertEquals("2")
+function rt:sr-contains-string-collation-with-diacritics-no-ns-2($name as xs:string) {
+    count(//entryFree[descendant::form[@type eq 'lemma'][range:contains(orth, $name)]])
+};
+
+declare
+    %test:args("Млатишума")
+    %test:assertEquals("2")
+function rt:sr-contains-string-collation-without-diacritics-no-ns-2($name as xs:string) {
+    count(//entryFree[descendant::form[@type eq 'lemma'][range:contains(orth, $name)]])
 };
