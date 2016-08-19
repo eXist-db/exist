@@ -168,7 +168,7 @@ declare
     %test:args("2012-06-26T12:00:00.000-05:00")
     %test:assertEquals("-05:00")
 function fd:format-dateTime-Z-negative-single-digit($date as xs:dateTime) {
-    format-dateTime($date, "Z]")
+    format-dateTime($date, "[Z]")
 };
 
 declare
