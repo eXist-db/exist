@@ -173,7 +173,7 @@ function fd:format-dateTime-Z-negative-single-digit($date as xs:dateTime) {
 
 declare
     %test:args("2012-06-26T12:00:00.000+00:00")
-    %test:assertEquals("+0")
+    %test:assertEquals("+00:00")
 function fd:format-dateTime-Z-zero($date as xs:dateTime) {
     format-dateTime($date, "[Z]")
 };
