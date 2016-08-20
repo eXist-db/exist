@@ -23,11 +23,14 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.collections.CollectionCache;
 import org.exist.storage.cache.Cache;
+import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.management.AgentFactory;
 import org.exist.management.Agent;
 
-public class CollectionCacheManager implements CacheManager {
+import java.util.Optional;
+
+public class CollectionCacheManager implements CacheManager, BrokerPoolService {
 
     private static final Logger LOG = LogManager.getLogger(CollectionCacheManager.class);
 
@@ -35,28 +38,29 @@ public class CollectionCacheManager implements CacheManager {
     public static final String PROPERTY_CACHE_SIZE = "db-connection.collection-cache-mem";
 
     private static final int DEFAULT_CACHE_SIZE = 8;
+    private final String brokerPoolId;
 
     private int maxCacheSize;
 
     private CollectionCache collectionCache;
 
-    public CollectionCacheManager(BrokerPool pool, CollectionCache cache) {
-        int cacheSize;
-        
-        if((cacheSize = pool.getConfiguration().getInteger(PROPERTY_CACHE_SIZE)) < 0){
-            cacheSize = DEFAULT_CACHE_SIZE;
-        }
+    public CollectionCacheManager(final BrokerPool pool, final CollectionCache cache) {
+        this.brokerPoolId = pool.getId();
+        this.collectionCache = cache;
+        this.collectionCache.setCacheManager(this);
+    }
 
+    @Override
+    public void configure(final Configuration configuration) throws BrokerPoolServiceException {
+        final int cacheSize = Optional.of(configuration.getInteger(PROPERTY_CACHE_SIZE)).filter(size -> size > 0).orElse(DEFAULT_CACHE_SIZE);
         this.maxCacheSize = cacheSize * 1024 * 1024;
-        
+
         if(LOG.isDebugEnabled()){
             LOG.debug("collection collectionCache will be using " + this.maxCacheSize + " bytes max.");
         }
 
-        this.collectionCache = cache;
-        this.collectionCache.setCacheManager(this);
-
-        registerMBean(pool.getId());
+        //TODO(AR) move to some start method...
+        registerMBean(brokerPoolId);
     }
 
     @Override

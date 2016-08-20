@@ -176,6 +176,10 @@ abstract class BrokerPools {
             try {
                 //Create the instance
                 final BrokerPool instance = new BrokerPool(instanceName, minBrokers, maxBrokers, config, statusObserver);
+
+                //initialize it!
+                instance.initialize();
+
                 //Add it to the list
                 instances.put(instanceName, instance);
             } catch(final Throwable e) {

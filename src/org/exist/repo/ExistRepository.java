@@ -24,6 +24,7 @@ import javax.xml.transform.stream.StreamSource;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.storage.BrokerPool;
+import org.exist.storage.BrokerPoolService;
 import org.exist.storage.NativeBroker;
 import org.exist.util.Configuration;
 import org.exist.util.FileUtils;
@@ -45,7 +46,7 @@ import org.expath.pkg.repo.URISpace;
  * @author Wolfgang Meier
  * @since  2010-09-22
  */
-public class ExistRepository extends Observable {
+public class ExistRepository extends Observable implements BrokerPoolService {
 
     public final static String EXPATH_REPO_DIR = "expathrepo";
 

@@ -22,6 +22,7 @@ package org.exist.storage;
 import net.jcip.annotations.GuardedBy;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.jetty.util.component.LifeCycle;
 import org.exist.Database;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
@@ -103,6 +104,8 @@ import java.util.concurrent.locks.ReentrantLock;
 public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Database {
 
     private final static Logger LOG = LogManager.getLogger(BrokerPool.class);
+
+    private final BrokerPoolServicesManager servicesManager = new BrokerPoolServicesManager();
 
     private StatusReporter statusReporter = null;
 
@@ -228,7 +231,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
      * The scheduler for the database instance.
      */
     @ConfigurationFieldAsAttribute("scheduler")
-    private final Scheduler scheduler;
+    private Scheduler scheduler;
 
     /**
      * Manages pluggable index structures.
@@ -329,6 +332,8 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
 
     private Optional<ExistRepository> expathRepo = Optional.empty();
 
+    private StartupTriggersManager startupTriggersManager;
+
     /**
      * Creates and configures the database instance.
      *
@@ -342,7 +347,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
      */
     //TODO : Then write a configure(int minBrokers, int maxBrokers, Configuration conf) method
     BrokerPool(final String instanceName, final int minBrokers, final int maxBrokers, final Configuration conf,
-            final Optional<Observer> statusObserver) throws EXistException, DatabaseConfigurationException {
+            final Optional<Observer> statusObserver) {
 
         final NumberFormat nf = NumberFormat.getNumberInstance();
 
@@ -377,13 +382,6 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
 
         this.pageSize = conf.getProperty(PROPERTY_PAGE_SIZE, DEFAULT_PAGE_SIZE);
 
-        //TODO : move this to initialize ? (cant as we need it for FileLockHeartBeat)
-        this.scheduler = new QuartzSchedulerImpl(this, conf);
-
-        if(!canReadDataDir(conf)) {
-            setReadOnly();
-        }
-
         //Configuration is valid, save it
         this.conf = conf;
 
@@ -392,36 +390,6 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
         this.watchdog = Optional.ofNullable(System.getProperty("trace.brokers"))
                 .filter(v -> v.equals("yes"))
                 .map(v -> new BrokerWatchdog());
-
-        //TODO : in the future, we should implement an Initializable interface
-        try {
-            initialize();
-        } catch(final Throwable e) {
-            // remove that file lock we may have acquired in canReadDataDir
-            synchronized(readOnly) {
-                if (dataLock != null && !readOnly) {
-                    dataLock.release();
-                }
-            }
-
-            if(e instanceof EXistException) {
-                throw (EXistException) e;
-            } else if(e instanceof DatabaseConfigurationException) {
-                throw (DatabaseConfigurationException) e;
-            } else {
-                throw new EXistException(e);
-            }
-        }
-
-        //TODO : move this to initialize ?
-        //setup database synchronization job
-        if(majorSyncPeriod > 0) {
-            //TODO : why not automatically register Sync in system tasks ?
-//            scheduler.createPeriodicJob(2500, new Sync(), 2500);
-            final SyncTask syncTask = new SyncTask();
-            syncTask.configure(conf, null);
-            scheduler.createPeriodicJob(2500, new SystemTaskJobImpl(SyncTask.getJobName(), syncTask), 2500);
-        }
     }
 
     //TODO : create a canReadJournalDir() method in the *relevant* class. The two directories may be different.
@@ -463,21 +431,137 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
         return true;
     }
 
+    void initialize() throws EXistException, DatabaseConfigurationException {
+        try {
+            _initialize();
+        } catch(final Throwable e) {
+            // remove that file lock we may have acquired in canReadDataDir
+            synchronized(readOnly) {
+                if (dataLock != null && !readOnly) {
+                    dataLock.release();
+                }
+            }
+
+            if(e instanceof EXistException) {
+                throw (EXistException) e;
+            } else if(e instanceof DatabaseConfigurationException) {
+                throw (DatabaseConfigurationException) e;
+            } else {
+                throw new EXistException(e);
+            }
+        }
+    }
+
     /**
      * Initializes the database instance.
      *
      * @throws EXistException
      */
-    private void initialize() throws EXistException, DatabaseConfigurationException {
-        if(LOG.isDebugEnabled()) {
-            LOG.debug("initializing database instance '" + instanceName + "'...");
-        }
-
+    private void _initialize() throws EXistException, DatabaseConfigurationException {
         //Flag to indicate that we are initializing
         if(!status.compareAndSet(State.SHUTDOWN, State.INITIALIZING)) {
             throw new IllegalStateException("Database is already initialized");
         }
 
+        if(LOG.isDebugEnabled()) {
+            LOG.debug("initializing database instance '" + instanceName + "'...");
+        }
+
+        // register core broker pool services
+        this.scheduler = servicesManager.register(new QuartzSchedulerImpl(this));
+        this.securityManager = servicesManager.register(new SecurityManagerImpl(this));
+        this.cacheManager = servicesManager.register(new DefaultCacheManager(this));
+        this.xQueryPool = servicesManager.register(new XQueryPool());
+        this.processMonitor = servicesManager.register(new ProcessMonitor());
+        this.xqueryStats = servicesManager.register(new PerformanceStats(this));
+        this.xmlReaderPool = servicesManager.register(new XMLReaderPool(servicesManager.register(new XMLReaderObjectFactory()), 5, 0));
+        final int bufferSize = Optional.of(conf.getInteger(PROPERTY_COLLECTION_CACHE_SIZE))
+                .filter(size -> size != -1)
+                .orElse(DEFAULT_COLLECTION_BUFFER_SIZE);
+        this.collectionCache = servicesManager.register(new CollectionCache(this, bufferSize, 0.000001));
+        this.collectionCacheMgr = servicesManager.register(new CollectionCacheManager(this, collectionCache));
+        this.notificationService = servicesManager.register(new NotificationService());
+
+        //TODO : journal directory *may* be different from BrokerPool.PROPERTY_DATA_DIR
+        journalManager = recoveryEnabled ? Optional.of(new JournalManager()) : Optional.empty();
+        if(journalManager.isPresent()) {
+                servicesManager.register(journalManager.get());
+
+                //TODO(AR) change where this happens!
+//            try {
+//                journalManager.get().initialize();
+//            } catch (final ReadOnlyException e) {
+//                LOG.warn(e);
+//                setReadOnly();
+//            }
+        }
+
+        final SystemTaskManager systemTaskManager = servicesManager.register(new SystemTaskManager(this));
+        this.transactionManager = servicesManager.register(new TransactionManager(this, journalManager, systemTaskManager));
+
+        this.symbols = servicesManager.register(new SymbolTable());
+
+        try {
+            //TODO(AR) defer the initialization with the BrokerPoolService
+
+            // initialize EXPath repository so indexManager and
+            // startup triggers can access it
+            this.expathRepo = Optional.ofNullable(ExistRepository.getRepository(this.conf));
+        } catch(final PackageException e) {
+            LOG.error("Failed to initialize expath repository: " + e.getMessage() + " - " +
+                    "indexing apps and the package manager may not work.");
+        }
+        ClasspathHelper.updateClasspath(this);
+        if(expathRepo.isPresent()) {
+            servicesManager.register(expathRepo.get());
+        }
+
+        this.indexManager = servicesManager.register(new IndexManager(this, conf));
+
+        //prepare those services that require system (single-user) mode
+        this.pluginManager = servicesManager.register(new PluginsManagerImpl());
+
+        //Get a manager to handle further collections configuration
+        this.collectionConfigurationManager = servicesManager.register(new CollectionConfigurationManager(this));
+
+        this.startupTriggersManager = servicesManager.register(new StartupTriggersManager());
+
+
+        //configure the registered services
+        try {
+            servicesManager.configureServices(conf); //TODO(AR) should this be here?
+        } catch(final BrokerPoolServiceException e) {
+            throw new EXistException(e);
+        }
+
+        //TODO(AR) improve this and its' FileLockHeartbeat interaction with scheduler,
+        // then we can refactor QuartzSchedulerImpl with #perpare
+        if(!canReadDataDir(conf)) {
+            setReadOnly();
+        }
+
+        // calculate how much memory is reserved for caches to grow
+        final Runtime rt = Runtime.getRuntime();
+        final long maxMem = rt.maxMemory();
+        final long minFree = maxMem / 5;
+        reservedMem = cacheManager.getTotalMem() + collectionCacheMgr.getMaxTotal() + minFree;
+        LOG.debug("Reserved memory: " + reservedMem + "; max: " + maxMem + "; min: " + minFree);
+
+        //prepare the registered services, before entering system (single-user) mode
+        try {
+            servicesManager.prepareServices(this); //TODO(AR) should this be here?
+        } catch(final BrokerPoolServiceException e) {
+            throw new EXistException(e);
+        }
+
+        //setup database synchronization job
+        if(majorSyncPeriod > 0) {
+            final SyncTask syncTask = new SyncTask();
+            syncTask.configure(conf, null);
+            scheduler.createPeriodicJob(2500, new SystemTaskJobImpl(SyncTask.getJobName(), syncTask), 2500);
+        }
+
+        //TODO(AR) remove sync, this method is protected by CAS on `status`
         // Don't allow two threads to do a race on this. May be irrelevant as this is only called
         // from the constructor right now.
         synchronized(this) {
@@ -492,77 +576,28 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                 try {
                     final boolean exportOnly = conf.getProperty(PROPERTY_EXPORT_ONLY, false);
 
-                    //create the security manager
-                    securityManager = new SecurityManagerImpl(this);
 
-                    //REFACTOR : construct then configure
-                    cacheManager = new DefaultCacheManager(this);
-
-                    //REFACTOR : construct then configure
-                    xQueryPool = new XQueryPool(conf);
-                    //REFACTOR : construct then... configure
-                    processMonitor = new ProcessMonitor(maxShutdownWait);
-                    xqueryStats = new PerformanceStats(this);
-
-                    //REFACTOR : construct then... configure
-                    xmlReaderPool = new XMLReaderPool(conf, new XMLReaderObjectFactory(this), 5, 0);
-
-                    //REFACTOR : construct then... configure
-                    int bufferSize = conf.getInteger(PROPERTY_COLLECTION_CACHE_SIZE);
-                    if(bufferSize == -1) {
-                        bufferSize = DEFAULT_COLLECTION_BUFFER_SIZE;
-                    }
-                    collectionCache = new CollectionCache(this, bufferSize, 0.0001);
-                    collectionCacheMgr = new CollectionCacheManager(this, collectionCache);
-
-                    // compute how much memory should be reserved for caches to grow
-                    final Runtime rt = Runtime.getRuntime();
-                    final long maxMem = rt.maxMemory();
-                    final long minFree = maxMem / 5;
-                    reservedMem = cacheManager.getTotalMem() + collectionCacheMgr.getMaxTotal() + minFree;
-                    LOG.debug("Reserved memory: " + reservedMem + "; max: " + maxMem + "; min: " + minFree);
-
-                    notificationService = new NotificationService();
-
-                    //REFACTOR : construct then... configure
-                    //TODO : journal directory *may* be different from BrokerPool.PROPERTY_DATA_DIR
-                    journalManager = recoveryEnabled ? Optional.of(new JournalManager(
-                            this,
-                            (Path)conf.getProperty(BrokerPool.PROPERTY_DATA_DIR),
-                            conf.getProperty(PROPERTY_RECOVERY_GROUP_COMMIT, false)
-                    )) : Optional.empty();
-                    if(journalManager.isPresent()) {
-                        try {
-                            journalManager.get().initialize();
-                        } catch (final ReadOnlyException e) {
-                            LOG.warn(e);
-                            setReadOnly();
-                        }
-                    }
-
-                    transactionManager = new TransactionManager(this, journalManager);
-                    transactionManager.initialize();
 
                     // If the initialization fails after transactionManager has been created this method better cleans up
                     // or the FileSyncThread for the journal can/will hang.
                     try {
-                        symbols = new SymbolTable(conf);
-                        if(!Files.isWritable(symbols.getFile())) {
-                            LOG.warn("Symbols table is not writable: " + symbols.getFile().toAbsolutePath().toString());
-                            setReadOnly();
-                        }
-
-                        try {
-                            // initialize EXPath repository so indexManager and
-                            // startup triggers can access it
-                            expathRepo = Optional.ofNullable(ExistRepository.getRepository(this.conf));
-                        } catch(final PackageException e) {
-                            LOG.error("Failed to initialize expath repository: " + e.getMessage() + " - " +
-                                     "indexing apps and the package manager may not work.");
-                        }
-                        ClasspathHelper.updateClasspath(this);
-
-                        indexManager = new IndexManager(this, conf);
+//                        symbols = new SymbolTable(conf);
+//                        if(!Files.isWritable(symbols.getFile())) {
+//                            LOG.warn("Symbols table is not writable: " + symbols.getFile().toAbsolutePath().toString());
+//                            setReadOnly();
+//                        }
+//
+//                        try {
+//                            // initialize EXPath repository so indexManager and
+//                            // startup triggers can access it
+//                            expathRepo = Optional.ofNullable(ExistRepository.getRepository(this.conf));
+//                        } catch(final PackageException e) {
+//                            LOG.error("Failed to initialize expath repository: " + e.getMessage() + " - " +
+//                                     "indexing apps and the package manager may not work.");
+//                        }
+//                        ClasspathHelper.updateClasspath(this);
+//
+//                        indexManager = new IndexManager(this, conf);
 
                         //TODO : replace the following code by get()/release() statements ?
                         // WM: I would rather tend to keep this broker reserved as a system broker.
@@ -572,7 +607,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                         // at this stage, the database is still single-threaded, so reusing the broker later is not a problem.
                         //DBBroker broker = inactiveBrokers.peek();
                         // dmitriy: Security issue: better to use proper get()/release() way, because of sub-processes (SecurityManager as example)
-                        try(final DBBroker broker = get(Optional.of(securityManager.getSystemSubject()))) {
+                        try(final DBBroker systemBroker = get(Optional.of(securityManager.getSystemSubject()))) {
 
                             if(isReadOnly()) {
                                 journalManager.ifPresent(JournalManager::disableJournalling);
@@ -582,15 +617,15 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                             //TODO : assume
                             boolean recovered = false;
                             if(isRecoveryEnabled()) {
-                                recovered = runRecovery(broker);
+                                recovered = runRecovery(systemBroker);
                                 //TODO : extract the following from this block ? What if we ware not transactional ? -pb
                                 if(!recovered) {
                                     try {
-                                        if(broker.getCollection(XmldbURI.ROOT_COLLECTION_URI) == null) {
+                                        if(systemBroker.getCollection(XmldbURI.ROOT_COLLECTION_URI) == null) {
                                             final Txn txn = transactionManager.beginTransaction();
                                             try {
                                                 //TODO : use a root collection final member
-                                                broker.getOrCreateCollection(txn, XmldbURI.ROOT_COLLECTION_URI);
+                                                systemBroker.getOrCreateCollection(txn, XmldbURI.ROOT_COLLECTION_URI);
                                                 transactionManager.commit(txn);
                                             } catch(final IOException | TriggerException | PermissionDeniedException e) {
                                                 transactionManager.abort(txn);
@@ -607,15 +642,12 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
         					/* initialise required collections if they don't exist yet */
                             if(!exportOnly) {
                                 try {
-                                    initialiseSystemCollections(broker);
+                                    initialiseSystemCollections(systemBroker);
                                 } catch(final PermissionDeniedException pde) {
                                     LOG.error(pde.getMessage(), pde);
                                     throw new EXistException(pde.getMessage(), pde);
                                 }
                             }
-
-                            //create the plugin manager
-                            pluginManager = new PluginsManagerImpl(this, broker);
 
                             //TODO : from there, rethink the sequence of calls.
                             // WM: attention: a small change in the sequence of calls can break
@@ -625,14 +657,13 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
 
                             statusReporter.setStatus(SIGNAL_READINESS);
 
-                            //Get a manager to handle further collections configuration
-                            initCollectionConfigurationManager(broker);
-
-                            //wake-up the plugins manager
-                            pluginManager.start(broker);
-
-                            //wake-up the security manager
-                            securityManager.attach(broker);
+                            //TODO(AR) consider introducing another state to describe SYSTEM_MODE (i.e. single user startup)
+                            //TODO(AR) is this the right place for this?
+                            try {
+                                servicesManager.startSystemServices(systemBroker);
+                            } catch(final BrokerPoolServiceException e) {
+                                throw new EXistException(e);
+                            }
 
                             //If necessary, launch a task to repair the DB
                             //TODO : merge this with the recovery process ?
@@ -641,7 +672,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                                 if(!exportOnly) {
                                     reportStatus("Reindexing database files...");
                                     try {
-                                        broker.repair();
+                                        systemBroker.repair();
                                     } catch(final PermissionDeniedException e) {
                                         LOG.warn("Error during recovery: " + e.getMessage(), e);
                                     }
@@ -653,7 +684,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                                     props.setProperty("backup", "no");
                                     props.setProperty("output", "sanity");
                                     task.configure(conf, props);
-                                    task.execute(broker);
+                                    task.execute(systemBroker);
                                 }
                             }
 
@@ -663,7 +694,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                             //initialize configurations watcher trigger
                             if(!exportOnly) {
                                 try {
-                                    initialiseTriggersForCollections(broker, XmldbURI.SYSTEM_COLLECTION_URI);
+                                    initialiseTriggersForCollections(systemBroker, XmldbURI.SYSTEM_COLLECTION_URI);
                                 } catch(final PermissionDeniedException pde) {
                                     //XXX: do not catch exception!
                                     LOG.error(pde.getMessage(), pde);
@@ -672,18 +703,19 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
 
                             // remove temporary docs
                             try {
-                                broker.cleanUpTempResources(true);
+                                systemBroker.cleanUpTempResources(true);
                             } catch(final PermissionDeniedException pde) {
                                 LOG.error(pde.getMessage(), pde);
                             }
 
-                            sync(broker, Sync.MAJOR);
+                            sync(systemBroker, Sync.MAJOR);
 
-                            //TODO(AR) remove this!
-                            //require to allow access by BrokerPool.getInstance();
-                            //instances.put(instanceName, this);
-
-                            callStartupTriggers((List<StartupTriggerConfig>) conf.getProperty(BrokerPool.PROPERTY_STARTUP_TRIGGERS), broker);
+                            //TODO(AR) is this the right place for this?
+                            try {
+                                servicesManager.startTrailingSystemServices(systemBroker);
+                            } catch(final BrokerPoolServiceException e) {
+                                throw new EXistException(e);
+                            }
                         }
 
                         //Create a default configuration file for the root collection
@@ -716,20 +748,14 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                             LOG.debug("database instance '" + instanceName + "' initialized");
                         }
 
-                        //setup any configured jobs
-                        //scheduler.setupConfiguredJobs();
-
-                        //execute any startup jobs
-                        //scheduler.executeStartupJobs();
-
-                        scheduler.run();
+                        scheduler.run();    //TODO(AR) move this into the BrokerPoolService framework startMultiUser?
 
                         statusReporter.setStatus(SIGNAL_STARTED);
                     } catch(final Throwable t) {
                         transactionManager.shutdown();
                         throw t;
                     }
-                } catch(final EXistException | DatabaseConfigurationException e) {
+                } catch(final EXistException /*| DatabaseConfigurationException*/ e) {
                     throw e;
                 } catch(final Throwable t) {
                     throw new EXistException(t.getMessage(), t);
@@ -761,27 +787,6 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
             throw new EXistException("Failed to initialize system maintenance task: " + e.getMessage());
         }
     }*/
-
-    private void callStartupTriggers(final List<StartupTriggerConfig> startupTriggerConfigs, final DBBroker sysBroker) {
-        if(startupTriggerConfigs == null) {
-            return;
-        }
-
-        for(final StartupTriggerConfig startupTriggerConfig : startupTriggerConfigs) {
-            try {
-                final Class<StartupTrigger> clazz = (Class<StartupTrigger>) Class.forName(startupTriggerConfig.getClazz());
-                final StartupTrigger startupTrigger = clazz.newInstance();
-                startupTrigger.execute(sysBroker, startupTriggerConfig.getParams());
-            } catch(final ClassNotFoundException | IllegalAccessException | InstantiationException e) {
-                LOG.error("Could not call StartupTrigger class: " + startupTriggerConfig + ". SKIPPING! " + e.getMessage(), e);
-            } catch(final RuntimeException re) {
-                LOG.warn("StartupTrigger threw RuntimeException: " + re.getMessage() + ". IGNORING!", re);
-            }
-        }
-        // trigger a checkpoint after processing all startup triggers
-        checkpoint = true;
-        triggerSync(Sync.MAJOR);
-    }
 
     /**
      * Initialise system collections, if it doesn't exist yet
@@ -1055,17 +1060,6 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
     public CollectionConfigurationManager getConfigurationManager() {
         return collectionConfigurationManager;
     }
-
-    public void initCollectionConfigurationManager(final DBBroker broker) {
-        if(collectionConfigurationManager == null) {
-            try {
-                collectionConfigurationManager = new CollectionConfigurationManager(broker);
-            } catch(final Exception e) {
-                LOG.error("Found an error while initializing database: " + e.getMessage(), e);
-            }
-        }
-    }
-
 
     /**
      * Returns a cache in which the database instance's collections are stored.
@@ -1687,7 +1681,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
 
                     if (pluginManager != null)
                         try {
-                            pluginManager.stop(null);
+                            pluginManager.stop((DBBroker)null);
                         } catch (final EXistException e) {
                             LOG.warn("Error during plugin manager shutdown: " + e.getMessage(), e);
                         }

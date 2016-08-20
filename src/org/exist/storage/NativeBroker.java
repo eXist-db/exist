@@ -714,8 +714,11 @@ public class NativeBroker extends DBBroker {
                         if(initCollectionConfig != null) {
                             CollectionConfigurationManager collectionConfigurationManager = pool.getConfigurationManager();
                             if(collectionConfigurationManager == null) {
-                                //might not yet have been initialised
-                                pool.initCollectionConfigurationManager(this);
+                                if(pool.getConfigurationManager() == null) {
+                                    throw new IllegalStateException();
+                                    //might not yet have been initialised
+                                    //pool.initCollectionConfigurationManager(this);
+                                }
                                 collectionConfigurationManager = pool.getConfigurationManager();
                             }
 

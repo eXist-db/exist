@@ -34,11 +34,16 @@ import org.exist.backup.BackupHandler;
 import org.exist.backup.RestoreHandler;
 import org.exist.collections.Collection;
 import org.exist.config.*;
+import org.exist.config.Configuration;
 import org.exist.config.annotation.*;
 import org.exist.security.Permission;
+import org.exist.storage.BrokerPool;
+import org.exist.storage.BrokerPoolService;
+import org.exist.storage.BrokerPoolServiceException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.util.*;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.xmldb.XmldbURI;
 import org.w3c.dom.Document;
@@ -55,7 +60,7 @@ import org.xml.sax.helpers.AttributesImpl;
  * 
  */
 @ConfigurationClass("plugin-manager")
-public class PluginsManagerImpl implements Configurable, PluginsManager, LifeCycle {
+public class PluginsManagerImpl implements Configurable, BrokerPoolService, PluginsManager, LifeCycle {
 
 	private final static Logger LOG = LogManager.getLogger(PluginsManagerImpl.class);
 
@@ -78,12 +83,13 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, LifeCyc
 	private Configuration configuration = null;
 	
 	private Collection collection;
-	
+
 	private Database db;
-	
-	public PluginsManagerImpl(Database db, DBBroker broker) throws ConfigurationException {
-		this.db = db;
-		
+
+	@Override
+	public void prepare(final BrokerPool brokerPool) {
+		this.db = brokerPool;
+
 		//Temporary for testing
 		addPlugin("org.exist.scheduler.SchedulerManager");
 		addPlugin("org.exist.storage.md.MDStorageManager");
@@ -91,8 +97,17 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, LifeCyc
 	}
 
 	@Override
+	public void startSystem(final DBBroker systemBroker) throws BrokerPoolServiceException {
+		try {
+			start(systemBroker);
+		} catch(final EXistException e) {
+			throw new BrokerPoolServiceException(e);
+		}
+	}
+
+	@Override
 	public void start(DBBroker broker) throws EXistException {
-        final TransactionManager transaction = db.getTransactionManager();
+        final TransactionManager transaction = broker.getBrokerPool().getTransactionManager();
 
         try(final Txn txn = transaction.beginTransaction()) {
 	        collection = broker.getCollection(COLLETION_URI);
@@ -176,7 +191,12 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, LifeCyc
 	public String version() {
 		return version;
 	}
-	
+
+	@Override
+	public Database getDatabase() {
+		return db; //TODO(AR) get rid of this, maybe expand the BrokerPoolService arch to replace PluginsManagerImpl etc
+	}
+
 	@SuppressWarnings("unchecked")
 	public void addPlugin(String className) {
 		//check if already run
@@ -190,17 +210,12 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, LifeCyc
 			final Plug plgn = ctor.newInstance(this);
 			
 			jacks.put(plugin.getName(), plgn);
-
 			runPlugins.add(className);
 			
 			//TODO: if (jack instanceof Startable) { ((Startable) jack).startUp(broker); }
 		} catch (final Throwable e) {
 //			e.printStackTrace();
 		}
-	}
-
-	public Database getDatabase() {
-		return db;
 	}
 	
 	/*

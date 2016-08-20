@@ -49,7 +49,7 @@ import org.exist.xquery.*;
  */
 @ConfigurationClass("query-pool")
 @ThreadSafe
-public class XQueryPool extends Object2ObjectHashMap {
+public class XQueryPool extends Object2ObjectHashMap implements BrokerPoolService {
 
     private final static int MAX_POOL_SIZE = 128;
     private final static int MAX_STACK_SIZE = 5;
@@ -62,16 +62,16 @@ public class XQueryPool extends Object2ObjectHashMap {
     private long lastTimeOfCleanup;
 
     @ConfigurationFieldAsAttribute("size")
-    private final int maxPoolSize;
+    private int maxPoolSize;
 
     @ConfigurationFieldAsAttribute("max-stack-size")
-    private final int maxStackSize;
+    private int maxStackSize;
 
     @ConfigurationFieldAsAttribute("timeout")
-    private final long timeout;
+    private long timeout;
 
     @ConfigurationFieldAsAttribute("timeout-check-interval")
-    private final long timeoutCheckInterval;
+    private long timeoutCheckInterval;
 
     public static final String CONFIGURATION_ELEMENT_NAME = "query-pool";
     public static final String MAX_STACK_SIZE_ATTRIBUTE = "max-stack-size";
@@ -86,17 +86,17 @@ public class XQueryPool extends Object2ObjectHashMap {
 
     private final static int DEFAULT_SIZE = 27;
 
-    /**
-     * @param conf The configuration
-     */
-    public XQueryPool(final Configuration conf) {
+    public XQueryPool() {
         super(DEFAULT_SIZE);
-        lastTimeOutCheck = lastTimeOfCleanup = System.currentTimeMillis();
+        this.lastTimeOutCheck = lastTimeOfCleanup = System.currentTimeMillis();
+    }
 
-        final Integer maxStSz = (Integer) conf.getProperty(PROPERTY_MAX_STACK_SIZE);
-        final Integer maxPoolSz = (Integer) conf.getProperty(PROPERTY_POOL_SIZE);
-        final Long t = (Long) conf.getProperty(PROPERTY_TIMEOUT);
-        final Long tci = (Long) conf.getProperty(PROPERTY_TIMEOUT_CHECK_INTERVAL);
+    @Override
+    public void configure(final Configuration configuration) {
+        final Integer maxStSz = (Integer) configuration.getProperty(PROPERTY_MAX_STACK_SIZE);
+        final Integer maxPoolSz = (Integer) configuration.getProperty(PROPERTY_POOL_SIZE);
+        final Long t = (Long) configuration.getProperty(PROPERTY_TIMEOUT);
+        final Long tci = (Long) configuration.getProperty(PROPERTY_TIMEOUT_CHECK_INTERVAL);
         final NumberFormat nf = NumberFormat.getNumberInstance();
 
         if (maxPoolSz != null) {

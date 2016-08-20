@@ -35,6 +35,8 @@ import org.exist.scheduler.*;
 import org.exist.scheduler.Scheduler;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
+import org.exist.storage.BrokerPoolService;
+import org.exist.storage.BrokerPoolServiceException;
 import org.exist.storage.SystemTask;
 import org.exist.util.Configuration;
 
@@ -57,32 +59,37 @@ import org.quartz.impl.matchers.GroupMatcher;
  * @author  Adam Retter <adam@existsolutions.com>
  * @author  Andrzej Taramina <andrzej@chaeron.com>
  */
-public class QuartzSchedulerImpl implements Scheduler {
+public class QuartzSchedulerImpl implements Scheduler, BrokerPoolService {
 
     private final static Logger LOG = LogManager.getLogger(QuartzSchedulerImpl.class);
 
     //the scheduler
-    private final org.quartz.Scheduler scheduler;
+    private org.quartz.Scheduler scheduler;
 
     private final BrokerPool brokerPool;
-    private final Configuration config;
+    private Configuration config;
 
     /**
      * Create and Start a new Scheduler.
      *
      * @param   brokerpool  The broker pool for which this scheduler is intended
-     * @param   config      DOCUMENT ME!
      *
      * @throws  EXistException  DOCUMENT ME!
      */
-    public QuartzSchedulerImpl(final BrokerPool brokerpool, final Configuration config) throws EXistException {
+    public QuartzSchedulerImpl(final BrokerPool brokerpool) throws EXistException {
         this.brokerPool = brokerpool;
-        this.config = config;
+    }
+
+    @Override
+    public void configure(final Configuration configuration) throws BrokerPoolServiceException {
+        this.config = configuration;
+
+        //TODO(AR) move to start!
         try {
             final SchedulerFactory schedulerFactory = new StdSchedulerFactory(getQuartzProperties());
             scheduler = schedulerFactory.getScheduler();
-        } catch(final SchedulerException se) {
-            throw(new EXistException("Unable to create Scheduler: " + se.getMessage(), se));
+        } catch(final SchedulerException e) {
+            throw new BrokerPoolServiceException("Unable to create Scheduler: " + e.getMessage(), e);
         }
     }
 

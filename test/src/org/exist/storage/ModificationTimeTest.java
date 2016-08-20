@@ -1,50 +1,38 @@
 package org.exist.storage;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 import org.exist.collections.triggers.TriggerException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.util.LockException;
-import org.junit.BeforeClass;
+import org.junit.*;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.EXistException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.test.TestConstants;
 import org.exist.collections.Collection;
-import org.exist.Database;
 import static org.exist.TestUtils.cleanupDataDir;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.persistent.DocumentImpl;
-import org.exist.start.Main;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
-import org.exist.util.FileUtils;
-import org.junit.Test;
+
 import static org.junit.Assert.*;
-import org.exist.util.ConfigurationHelper;
 import org.exist.util.DatabaseConfigurationException;
-import org.junit.After;
 import org.xml.sax.SAXException;
 
 
 public class ModificationTimeTest {
 
-    protected static String XML_FILENAME = "test.xml";
-    protected static String VALID_XML = "<?xml version=\"1.0\"?>" +
+    private static final String XML_FILENAME = "test.xml";
+    private static final String VALID_XML = "<?xml version=\"1.0\"?>" +
                                         "<valid/>";
-    protected static String INVALID_XML = "<?xml version=\"1.0\"?>"
+    private static final String INVALID_XML = "<?xml version=\"1.0\"?>"
             + "<invalid>";
 
-    
-    @BeforeClass
-    public static void setup() throws IOException, DatabaseConfigurationException, EXistException {
-        cleanupDataDir();
-    }
+    private static BrokerPool pool = null;
 
      /**
      * Store a binary document, wait for a while and then overwrite it 
@@ -140,16 +128,13 @@ public class ModificationTimeTest {
         pool = BrokerPool.getInstance();
     }
 
-    @After
-    public void tearDown() {
+    @AfterClass
+    public static void stopDB() {
         BrokerPool.stopAll(false);
     }
 
     private DocumentImpl getDocument(final XmldbURI uri) throws EXistException, PermissionDeniedException, DatabaseConfigurationException {
         DocumentImpl doc = null;
-        final BrokerPool pool = startDB();
-        final TransactionManager transact = pool.getTransactionManager();
-
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
             assertNotNull(broker);
 
@@ -164,7 +149,6 @@ public class ModificationTimeTest {
     }
 
     private BinaryDocument storeBinary(String name,  String data, String mimeType) throws EXistException, PermissionDeniedException, IOException, TriggerException, LockException, DatabaseConfigurationException {
-        final BrokerPool pool = startDB();
         final TransactionManager transact = pool.getTransactionManager();
 
         BinaryDocument binaryDoc = null;
@@ -183,8 +167,7 @@ public class ModificationTimeTest {
         return binaryDoc;
     }
     
-    private IndexInfo storeXML(String name, String xml) throws EXistException, PermissionDeniedException, IOException, TriggerException, LockException, SAXException, DatabaseConfigurationException {
-        final BrokerPool pool = startDB();
+    private IndexInfo storeXML(String name, String xml) throws EXistException, PermissionDeniedException, IOException, LockException, SAXException, DatabaseConfigurationException {
         final TransactionManager transact = pool.getTransactionManager();
 
         IndexInfo info = null;

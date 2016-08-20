@@ -28,14 +28,14 @@ import org.exist.storage.sync.Sync;
 import java.util.Optional;
 import java.util.Stack;
 
-public class SystemTaskManager {
+public class SystemTaskManager implements BrokerPoolService {
 
     //private final static Logger LOG = LogManager.getLogger(SystemTaskManager.class);
 
     /**
 	 * The pending system maintenance tasks of the database instance.
 	 */
-	private final Stack<SystemTask> waitingSystemTasks = new Stack<SystemTask>();
+	private final Stack<SystemTask> waitingSystemTasks = new Stack<>();
 
     private BrokerPool pool;
     

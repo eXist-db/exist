@@ -32,6 +32,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.exist.Namespaces;
 import org.exist.storage.BrokerPool;
+import org.exist.storage.BrokerPoolService;
 import org.exist.validation.GrammarPool;
 import org.exist.validation.resolver.eXistXMLCatalogResolver;
 
@@ -46,7 +47,7 @@ import org.xml.sax.XMLReader;
  *
  * @author wolf
  */
-public class XMLReaderObjectFactory extends BasePoolableObjectFactory {
+public class XMLReaderObjectFactory extends BasePoolableObjectFactory implements BrokerPoolService {
 
     private final static Logger LOG = LogManager.getLogger(XMLReaderObjectFactory.class);
 
@@ -78,38 +79,25 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory {
     public final static String APACHE_PROPERTIES_NONAMESPACESCHEMALOCATION
             ="http://apache.org/xml/properties/schema/external-noNamespaceSchemaLocation";
 
-    private BrokerPool pool;
+    private Configuration configuration;
+    private GrammarPool grammarPool;
+    private eXistXMLCatalogResolver resolver;
 
-
-
-    /**
-     *
-     */
-    public XMLReaderObjectFactory(BrokerPool pool) {
-        super();
-        this.pool = pool;
+    @Override
+    public void configure(final Configuration configuration) {
+        this.configuration = configuration;
+        this.grammarPool = (GrammarPool) configuration.getProperty(XMLReaderObjectFactory.GRAMMER_POOL);
+        this.resolver = (eXistXMLCatalogResolver) configuration.getProperty(CATALOG_RESOLVER);
     }
 
     /**
      * @see org.apache.commons.pool.BasePoolableObjectFactory#makeObject()
      */
     public Object makeObject() throws Exception {
-        final Configuration config = pool.getConfiguration();
-
-        // Get validation settings
-        final String option = (String) config.getProperty(PROPERTY_VALIDATION_MODE);
+        final String option = (String) configuration.getProperty(PROPERTY_VALIDATION_MODE);
         final VALIDATION_SETTING validation = convertValidationMode(option);
-
-        final GrammarPool grammarPool =
-                (GrammarPool) config.getProperty(XMLReaderObjectFactory.GRAMMER_POOL);
-        
-        final eXistXMLCatalogResolver resolver =
-                (eXistXMLCatalogResolver) config.getProperty(CATALOG_RESOLVER);
-
         final XMLReader xmlReader = createXmlReader(validation, grammarPool, resolver);
-
         setReaderValidationMode(validation, xmlReader);
-
         return xmlReader;
     }
 

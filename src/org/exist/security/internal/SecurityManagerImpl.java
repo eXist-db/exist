@@ -57,6 +57,8 @@ import org.exist.security.SchemaType;
 import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.realm.Realm;
 import org.exist.storage.BrokerPool;
+import org.exist.storage.BrokerPoolService;
+import org.exist.storage.BrokerPoolServiceException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
@@ -80,7 +82,7 @@ import org.quartz.SimpleTrigger;
  */
 //<!-- Central user configuration. Editing this document will cause the security to reload and update its internal database. Please handle with care! -->
 @ConfigurationClass("security-manager")
-public class SecurityManagerImpl implements SecurityManager {
+public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
 
 
     public final static int MAX_USER_ID = 1048571;  //1 less than RealmImpl.UNKNOWN_ACCOUNT_ID
@@ -125,15 +127,34 @@ public class SecurityManagerImpl implements SecurityManager {
     
     private Configuration configuration = null;
     
-    public SecurityManagerImpl(final Database db) throws ConfigurationException {
+    public SecurityManagerImpl(final Database db) {
         this.db = db;
+    }
 
-        defaultRealm = new RealmImpl(this, null); //TODO: in-memory configuration???
-        realms.add(defaultRealm);
+    @Override
+    public void configure(final org.exist.util.Configuration configuration) throws BrokerPoolServiceException {
+        try {
+            this.defaultRealm = new RealmImpl(this, null); //TODO: in-memory configuration???
+            realms.add(defaultRealm);
+        } catch(final ConfigurationException e) {
+            throw new BrokerPoolServiceException(e);
+        }
+    }
 
+    @Override
+    public void prepare(final BrokerPool brokerPool) {
         final Properties params = new Properties();
         params.put(getClass().getName(), this);
         db.getScheduler().createPeriodicJob(TIMEOUT_CHECK_PERIOD, new SessionsCheck(), TIMEOUT_CHECK_PERIOD, params, SimpleTrigger.REPEAT_INDEFINITELY, false);
+    }
+
+    @Override
+    public void startSystem(final DBBroker systemBroker) throws BrokerPoolServiceException {
+        try {
+            attach(systemBroker);
+        } catch(final EXistException e) {
+            throw new BrokerPoolServiceException(e);
+        }
     }
 
     /**

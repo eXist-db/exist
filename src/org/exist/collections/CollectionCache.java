@@ -22,6 +22,7 @@ package org.exist.collections;
 import java.util.Iterator;
 
 import org.exist.storage.BrokerPool;
+import org.exist.storage.BrokerPoolService;
 import org.exist.storage.CacheManager;
 import org.exist.storage.cache.Cacheable;
 import org.exist.storage.cache.LRUCache;
@@ -38,13 +39,13 @@ import org.exist.xmldb.XmldbURI;
  * 
  * @author wolf
  */
-public class CollectionCache extends LRUCache {
+public class CollectionCache extends LRUCache implements BrokerPoolService {
 
     private Object2LongHashMap names;
     private BrokerPool pool;
 
     public CollectionCache(BrokerPool pool, int blockBuffers, double growthThreshold) {
-        super(blockBuffers, 2.0, 0.000001, CacheManager.DATA_CACHE);
+        super(blockBuffers, 2.0, growthThreshold, CacheManager.DATA_CACHE);
         this.names = new Object2LongHashMap(blockBuffers);
         this.pool = pool;
         setFileName("collection cache");

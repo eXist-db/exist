@@ -26,6 +26,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.http.servlets.RequestWrapper;
 import org.exist.http.urlrewrite.XQueryURLRewrite;
+import org.exist.util.Configuration;
 import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryWatchDog;
@@ -51,7 +52,7 @@ import java.util.stream.StreamSupport;
  * 
  * @author wolf
  */
-public class ProcessMonitor {
+public class ProcessMonitor implements BrokerPoolService {
 
     public final static String ACTION_UNSPECIFIED = "unspecified";
     public final static String ACTION_VALIDATE_DOC = "validating document";
@@ -83,9 +84,10 @@ public class ProcessMonitor {
 
     private boolean trackRequests = false;
 
-	public ProcessMonitor(long maxShutdownWait) {
-		this.maxShutdownWait = maxShutdownWait;
-	}
+	@Override
+    public void configure(final Configuration configuration) {
+        this.maxShutdownWait = configuration.getProperty(BrokerPool.PROPERTY_SHUTDOWN_DELAY, BrokerPool.DEFAULT_MAX_SHUTDOWN_WAIT);
+    }
 
     public void startJob(String action) {
         startJob(action, null);
