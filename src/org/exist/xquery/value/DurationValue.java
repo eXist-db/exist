@@ -243,8 +243,7 @@ public class DurationValue extends ComputableValue {
                 r = duration.getMinutes();
                 break;
             case SIGN:
-                r = duration.getSign();
-                break;
+                return duration.getSign();
             default:
                 throw new IllegalArgumentException("Invalid argument to method getPart");
         }
