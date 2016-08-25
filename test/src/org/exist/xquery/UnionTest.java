@@ -1,17 +1,12 @@
 package org.exist.xquery;
 
-import org.exist.TestUtils;
-import org.exist.xmldb.DatabaseInstanceManager;
-import org.exist.xmldb.XmldbURI;
-import org.junit.AfterClass;
+import org.exist.test.ExistXmldbEmbeddedServer;
+import org.junit.*;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.xmldb.api.DatabaseManager;
+
 import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.Database;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
@@ -25,7 +20,10 @@ import org.xmldb.api.modules.XQueryService;
  * @author Adam Retter <adam.retter@googlemail.com>
  */
 public class UnionTest {
-    
+
+    @ClassRule
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
+
     private final static String TEST_COLLECTION_NAME = "test-pubmed";
     
     private final static String PUBMED_DOC_NAME = "pubmed.xml";
@@ -171,28 +169,21 @@ public class UnionTest {
             service.removeCollection(TEST_COLLECTION_NAME);
         }
     }
-    
-    @BeforeClass
-    public static void startDbAndCreateTestCollection() throws Exception {
-        
-        // initialize driver
-        final Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
-        final Database database = (Database) cl.newInstance();
-        database.setProperty("create-database", "true");
-        DatabaseManager.registerDatabase(database);
 
-        final Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
-        final CollectionManagementService service = (CollectionManagementService)root.getService("CollectionManagementService", "1.0");
+    @BeforeClass
+    public static void createTestCollection() throws Exception {
+        final CollectionManagementService service = (CollectionManagementService)existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
         testCollection = service.createCollection(TEST_COLLECTION_NAME);
         assertNotNull(testCollection);
     }
-    
+
     @AfterClass
     public static void tearDown() throws Exception {
-        TestUtils.cleanupDB();
-
-        final DatabaseInstanceManager dim = (DatabaseInstanceManager)testCollection.getService("DatabaseInstanceManager", "1.0");
-        dim.shutdown();
+        final CollectionManagementService service =
+                (CollectionManagementService) existEmbeddedServer.getRoot().getService(
+                        "CollectionManagementService",
+                        "1.0");
+        service.removeCollection(TEST_COLLECTION_NAME);
         testCollection = null;
     }
 }

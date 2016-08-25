@@ -21,51 +21,54 @@
  */
 package org.exist.xmldb;
 
+import org.exist.test.ExistXmldbEmbeddedServer;
 import org.junit.After;
 import org.junit.Before;
-import org.xmldb.api.base.Database;
+import org.junit.ClassRule;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.base.Resource;
-import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.BinaryResource;
 import org.xmldb.api.modules.XMLResource;
 
-import java.io.File;
+import java.nio.file.Path;
+
 import org.junit.Test;
 import static org.junit.Assert.assertNotNull;
 import static org.exist.xmldb.XmldbLocalTests.*;
 
 public class BinaryResourceUpdateTest  {
 
+    @ClassRule
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
+
     private final static String TEST_COLLECTION = "testBinaryResource";
 
-    private Database database;
     private Collection testCollection;
 
     private static final int REPEAT = 10;
 
-    private static final File binFile;
-    private static final File xmlFile;
+    private static final Path binFile;
+    private static final Path xmlFile;
 
     static {
-      binFile = new File(getExistDir(), "LICENSE");
-      xmlFile = new File(getExistDir(), "samples/examples.xml");
+      binFile = getExistDir().resolve("LICENSE");
+      xmlFile = getExistDir().resolve("samples/examples.xml");
     }
 
     @Test
     public void updateBinary() throws XMLDBException {
         for (int i = 0; i < REPEAT; i++) {
             BinaryResource binaryResource = (BinaryResource)testCollection.createResource("test1.xml", "BinaryResource");
-            binaryResource.setContent(binFile);
+            binaryResource.setContent(binFile.toFile());
             testCollection.storeResource(binaryResource);
 
             Resource resource = testCollection.getResource("test1.xml");
             assertNotNull(resource);
 
             XMLResource xmlResource = (XMLResource) testCollection.createResource("test2.xml", "XMLResource");
-            xmlResource.setContent(xmlFile);
+            xmlResource.setContent(xmlFile.toFile());
             testCollection.storeResource(xmlResource);
 
             resource = testCollection.getResource("test2.xml");
@@ -79,14 +82,14 @@ public class BinaryResourceUpdateTest  {
     public void updateBinary_windows() throws XMLDBException {
         for (int i = 0; i < REPEAT; i++) {
             BinaryResource binaryResource = (BinaryResource)testCollection.createResource("test.xml", "BinaryResource");
-            binaryResource.setContent(binFile);
+            binaryResource.setContent(binFile.toFile());
             testCollection.storeResource(binaryResource);
 
             Resource resource = testCollection.getResource("test.xml");
             assertNotNull(resource);
 
             XMLResource xmlResource = (XMLResource) testCollection.createResource("test.xml", "XMLResource");
-            xmlResource.setContent(xmlFile);
+            xmlResource.setContent(xmlFile.toFile());
             testCollection.storeResource(xmlResource);
 
             resource = testCollection.getResource("test.xml");
@@ -97,31 +100,15 @@ public class BinaryResourceUpdateTest  {
 
     @Before
     public void setUp() throws Exception {
-        // initialize driver
-        Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
-        database = (Database) cl.newInstance();
-        database.setProperty("create-database", "true");
-        DatabaseManager.registerDatabase(database);
-
-        Collection root = DatabaseManager.getCollection(ROOT_URI, ADMIN_UID, ADMIN_PWD);
-        CollectionManagementService service = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
+        final CollectionManagementService service = (CollectionManagementService) existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
         testCollection = service.createCollection(TEST_COLLECTION);
         assertNotNull(testCollection);
     }
 
     @After
     public void tearDown() throws XMLDBException {
-
         //delete the test collection
-        CollectionManagementService service = (CollectionManagementService)testCollection.getParentCollection().getService("CollectionManagementService", "1.0");
+        final CollectionManagementService service = (CollectionManagementService)testCollection.getParentCollection().getService("CollectionManagementService", "1.0");
         service.removeCollection(TEST_COLLECTION);
-
-        //shutdownDB the db
-        DatabaseManager.deregisterDatabase(database);
-        DatabaseInstanceManager dim = (DatabaseInstanceManager) testCollection.getService("DatabaseInstanceManager", "1.0");
-        dim.shutdown();
-
-        testCollection = null;
-        database = null;
     }
 }

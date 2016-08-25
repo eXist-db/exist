@@ -24,6 +24,7 @@ package org.exist.storage.lock;
 import static org.junit.Assert.*;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -268,10 +269,10 @@ public class DeadlockTest {
                         transact.commit(transaction);
                     }
 
-                    final File[] files = generator.generate(broker, coll, generateXQ);
+                    final Path[] files = generator.generate(broker, coll, generateXQ);
                     for (int j = 0; j < files.length; j++, fileCount++) {
                         try(final Txn transaction = transact.beginTransaction()) {
-                            InputSource is = new InputSource(files[j].toURI()
+                            InputSource is = new InputSource(files[j].toUri()
                                     .toASCIIString());
                             assertNotNull(is);
                             IndexInfo info = coll.validateXMLResource(transaction,

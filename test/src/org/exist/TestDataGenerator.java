@@ -3,10 +3,13 @@ package org.exist;
 import org.exist.collections.Collection;
 import org.exist.dom.persistent.DefaultDocumentSet;
 import org.exist.dom.persistent.DocumentSet;
+import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
+import org.exist.util.FileUtils;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.xquery.CompiledXQuery;
+import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.*;
@@ -14,14 +17,15 @@ import org.xml.sax.SAXException;
 import org.xmldb.api.base.CompiledExpression;
 import org.xmldb.api.base.ResourceIterator;
 import org.xmldb.api.base.ResourceSet;
+import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XQueryService;
 
 import javax.xml.transform.OutputKeys;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Properties;
 
 /**
@@ -42,78 +46,79 @@ public class TestDataGenerator {
 
     private String prefix;
     private int count;
-    private File[] generatedFiles;
+    private Path[] generatedFiles;
 
-    public TestDataGenerator(String prefix, int count) {
+    public TestDataGenerator(final String prefix, final int count) {
         this.prefix = prefix;
         this.count = count;
-        this.generatedFiles = new File[count];
+        this.generatedFiles = new Path[count];
     }
 
-    public File[] generate(DBBroker broker, Collection collection, String xqueryContent) throws SAXException {
+    public Path[] generate(final DBBroker broker, final Collection collection, final String xqueryContent) throws SAXException {
         try {
-            DocumentSet docs = collection.allDocs(broker, new DefaultDocumentSet(), true);
-            XQuery service = broker.getBrokerPool().getXQueryService();
-            XQueryContext context = new XQueryContext(broker.getBrokerPool());
+            final DocumentSet docs = collection.allDocs(broker, new DefaultDocumentSet(), true);
+            final XQuery service = broker.getBrokerPool().getXQueryService();
+            final XQueryContext context = new XQueryContext(broker.getBrokerPool());
             context.declareVariable("filename", "");
             context.declareVariable("count", "0");
             context.setStaticallyKnownDocuments(docs);
 
-            String query = IMPORT + xqueryContent;
+            final String query = IMPORT + xqueryContent;
 
-            CompiledXQuery compiled = service.compile(broker, context, query);
+            final CompiledXQuery compiled = service.compile(broker, context, query);
 
             for (int i = 0; i < count; i++) {
-                generatedFiles[i] = File.createTempFile(prefix, ".xml");
+                generatedFiles[i] = Files.createTempFile(prefix, ".xml");
 
-                context.declareVariable("filename", generatedFiles[i].getName());
+                context.declareVariable("filename", generatedFiles[i].getFileName().toString());
                 context.declareVariable("count", new Integer(i));
-                Sequence results = service.execute(broker, compiled, Sequence.EMPTY_SEQUENCE);
+                final Sequence results = service.execute(broker, compiled, Sequence.EMPTY_SEQUENCE);
 
-                Serializer serializer = broker.getSerializer();
+                final Serializer serializer = broker.getSerializer();
                 serializer.reset();
-                Writer out = new OutputStreamWriter(new FileOutputStream(generatedFiles[i]), "UTF-8");
-                SAXSerializer sax = new SAXSerializer(out, outputProps);
-                serializer.setSAXHandlers(sax, sax);
-                for (SequenceIterator iter = results.iterate(); iter.hasNext(); ) {
-                    Item item = iter.nextItem();
-                    if (!Type.subTypeOf(item.getType(), Type.NODE))
-                        continue;
-                    serializer.toSAX((NodeValue) item);
+                try(final Writer out = Files.newBufferedWriter(generatedFiles[i], StandardCharsets.UTF_8)) {
+                    final SAXSerializer sax = new SAXSerializer(out, outputProps);
+                    serializer.setSAXHandlers(sax, sax);
+                    for (final SequenceIterator iter = results.iterate(); iter.hasNext(); ) {
+                        final Item item = iter.nextItem();
+                        if (!Type.subTypeOf(item.getType(), Type.NODE)) {
+                            continue;
+                        }
+                        serializer.toSAX((NodeValue) item);
+                    }
                 }
-                out.close();
             }
-        } catch (Exception e) {
+        } catch (final XPathException | PermissionDeniedException | IOException e) {
             e.printStackTrace();
             throw new SAXException(e.getMessage(), e);
         }
         return generatedFiles;
     }
 
-    public File[] generate(org.xmldb.api.base.Collection collection, String xqueryContent) throws SAXException {
-        String query = IMPORT + xqueryContent;
+    public Path[] generate(final org.xmldb.api.base.Collection collection, final String xqueryContent) throws SAXException {
+        final String query = IMPORT + xqueryContent;
         try {
-            XQueryService service = (XQueryService) collection.getService("XQueryService", "1.0");
+            final XQueryService service = (XQueryService) collection.getService("XQueryService", "1.0");
             service.declareVariable("filename", "");
             service.declareVariable("count", "0");
-            CompiledExpression compiled = service.compile(query);
+            final CompiledExpression compiled = service.compile(query);
 
             for (int i = 0; i < count; i++) {
-                generatedFiles[i] = File.createTempFile(prefix, ".xml");
+                generatedFiles[i] = Files.createTempFile(prefix, ".xml");
 
-                service.declareVariable("filename", generatedFiles[i].getName());
+                service.declareVariable("filename", generatedFiles[i].getFileName().toString());
                 service.declareVariable("count", new Integer(i));
-                ResourceSet result = service.execute(compiled);
+                final ResourceSet result = service.execute(compiled);
 
-                Writer out = new OutputStreamWriter(new FileOutputStream(generatedFiles[i]), "UTF-8");
-                SAXSerializer sax = new SAXSerializer(out, outputProps);
-                for (ResourceIterator iter = result.getIterator(); iter.hasMoreResources(); ) {
-                    XMLResource r = (XMLResource) iter.nextResource();
-                    r.getContentAsSAX(sax);
+                try(final Writer out = Files.newBufferedWriter(generatedFiles[i], StandardCharsets.UTF_8)) {
+                    final SAXSerializer sax = new SAXSerializer(out, outputProps);
+                    for (ResourceIterator iter = result.getIterator(); iter.hasMoreResources(); ) {
+                        XMLResource r = (XMLResource) iter.nextResource();
+                        r.getContentAsSAX(sax);
+                    }
                 }
-                out.close();
             }
-        } catch (Exception e) {
+        } catch (final XMLDBException | IOException e) {
             e.printStackTrace();
             throw new SAXException(e.getMessage(), e);
         }
@@ -121,10 +126,8 @@ public class TestDataGenerator {
     }
 
     public void releaseAll() {
-        for (int i = 0; i < generatedFiles.length; i++) {
-            File file = generatedFiles[i];
-            file.delete();
-            generatedFiles[i] = null;
+        for(final Path generatedFile : generatedFiles) {
+            FileUtils.deleteQuietly(generatedFile);
         }
     }
 }

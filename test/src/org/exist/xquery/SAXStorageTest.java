@@ -6,18 +6,16 @@ package org.exist.xquery;
 
 import java.io.File;
 
-import org.exist.xmldb.DatabaseInstanceManager;
+import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.xmldb.LocalCollection;
-import org.exist.xmldb.XmldbURI;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
-import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.Database;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
@@ -33,33 +31,33 @@ import static org.junit.Assert.assertEquals;
  */
 public class SAXStorageTest {
 
+	@ClassRule
+	public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
+
 	private XMLResource doc;
-	private Collection root;
+	private Collection testCollection;
 	private static String FILE_STORED;
 
 	@Before
 	public void setUp() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
-        // initialize driver
-        Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
-        Database database = (Database) cl.newInstance();
-        database.setProperty("create-database", "true");
-        DatabaseManager.registerDatabase(database);
-        root = DatabaseManager.getCollection( XmldbURI.LOCAL_DB, "admin", "");
-        CollectionManagementService service =
-            (CollectionManagementService) root.getService(
+        final CollectionManagementService service =
+            (CollectionManagementService)  existEmbeddedServer.getRoot().getService(
                 "CollectionManagementService",
                 "1.0");
-        root = service.createCollection("test");
+        testCollection = service.createCollection("test");
         FILE_STORED = "big.xml";
-        doc = (XMLResource) root.createResource(FILE_STORED, "XMLResource");
+        doc = (XMLResource) testCollection.createResource(FILE_STORED, "XMLResource");
+		testCollection.storeResource(doc);
 	}
 
     @After
-    public void shutdown() throws XMLDBException {
-        // shutdownDB the database gracefully
-        DatabaseInstanceManager manager =
-                (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
-        manager.shutdown();
+    public void cleanup() throws XMLDBException {
+		final CollectionManagementService service =
+				(CollectionManagementService) existEmbeddedServer.getRoot().getService(
+						"CollectionManagementService",
+						"1.0");
+		service.removeCollection("test");
+		testCollection = null;
     }
 
 	/**
@@ -70,7 +68,7 @@ public class SAXStorageTest {
 	private ResourceSet querySingleLine(String xquery, String mess) throws XMLDBException {
 		// query a single line:
 		XPathQueryService service =
-			(XPathQueryService) root.getService(
+			(XPathQueryService) testCollection.getService(
 					"XPathQueryService", 	"1.0");
 		ResourceSet result = null;
 		if ( xquery != "") {
@@ -90,7 +88,7 @@ public class SAXStorageTest {
 	public void queryStoreContentAsSAX() throws XMLDBException, SAXException {
         ContentHandler databaseInserter = doc.setContentAsSAX();
         (new TabularXMLReader()).writeDocument(databaseInserter);
-        root.storeResource(doc);
+        testCollection.storeResource(doc);
         querySingleLine("", "testQueryStoreContentAsSAX");
 	}
 
@@ -111,9 +109,9 @@ public class SAXStorageTest {
 	 * @throws XMLDBException
 	 */
 	private void storeSAXEvents(XMLReader dataSource) throws XMLDBException {
-        if ( root instanceof LocalCollection ) {
+        if ( testCollection instanceof LocalCollection ) {
             long t0 = System.currentTimeMillis();
-            LocalCollection coll = (LocalCollection)root;
+            LocalCollection coll = (LocalCollection)testCollection;
             coll.setReader(dataSource);
                             String existHome = System.getProperty("exist.home");
                             File existDir = existHome==null ? new File(".") : new File(existHome);
@@ -147,6 +145,6 @@ public class SAXStorageTest {
             ResourceSet result = tester.querySingleLine(xquery, "testQueryBigDocument" );
             System.out.println("result size: " + result.getSize() );
         }
-        tester.shutdown();
+        tester.cleanup();
 	}
 }

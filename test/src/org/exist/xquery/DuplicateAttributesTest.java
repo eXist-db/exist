@@ -21,12 +21,12 @@
  */
 package org.exist.xquery;
 
-import org.xmldb.api.base.Database;
+import org.exist.test.ExistXmldbEmbeddedServer;
+import org.junit.ClassRule;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceSet;
-import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XQueryService;
 import static org.junit.Assert.assertNotNull;
@@ -35,9 +35,11 @@ import static org.junit.Assert.assertEquals;
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
 import org.junit.Test;
-import org.exist.xmldb.DatabaseInstanceManager;
 
 public class DuplicateAttributesTest {
+
+    @ClassRule
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
 
     private static Collection testCollection;
 
@@ -127,48 +129,29 @@ public class DuplicateAttributesTest {
     }
 
     @BeforeClass
-    public static void initDB() {
-        try {
-            // initialize driver
-            Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
-            Database database = (Database) cl.newInstance();
-            database.setProperty("create-database", "true");
-            DatabaseManager.registerDatabase(database);
+    public static void setup() throws XMLDBException {
+        final CollectionManagementService service = (CollectionManagementService)
+                existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
+        testCollection = service.createCollection("test");
+        assertNotNull(testCollection);
 
-            Collection root = DatabaseManager.getCollection("xmldb:exist:///db", "admin", "");
-            CollectionManagementService service = (CollectionManagementService)
-                    root.getService("CollectionManagementService", "1.0");
-            testCollection = service.createCollection("test");
-            assertNotNull(testCollection);
+        Resource resource = testCollection.createResource("stored1.xml", "XMLResource");
+        resource.setContent(STORED_DOC1);
+        testCollection.storeResource(resource);
 
-            Resource resource = testCollection.createResource("stored1.xml", "XMLResource");
-            resource.setContent(STORED_DOC1);
-            testCollection.storeResource(resource);
+        resource = testCollection.createResource("stored2.xml", "XMLResource");
+        resource.setContent(STORED_DOC2);
+        testCollection.storeResource(resource);
 
-            resource = testCollection.createResource("stored2.xml", "XMLResource");
-            resource.setContent(STORED_DOC2);
-            testCollection.storeResource(resource);
-
-            resource = testCollection.createResource("docdtd.xml", "XMLResource");
-            resource.setContent(DOC_WITH_DTD);
-            testCollection.storeResource(resource);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        resource = testCollection.createResource("docdtd.xml", "XMLResource");
+        resource.setContent(DOC_WITH_DTD);
+        testCollection.storeResource(resource);
     }
 
     @AfterClass
-    public static void stopDB() {
-        try {
-            Collection root = DatabaseManager.getCollection("xmldb:exist:///db", "admin", "");
-            CollectionManagementService service = (CollectionManagementService)
-                root.getService("CollectionManagementService", "1.0");
-            service.removeCollection("test");
-            DatabaseInstanceManager mgr = (DatabaseInstanceManager)
-                root.getService("DatabaseInstanceManager", "1.0");
-            mgr.shutdown();
-        } catch (XMLDBException e) {
-            e.printStackTrace();
-        }
+    public static void cleanup() throws XMLDBException {
+        final CollectionManagementService service = (CollectionManagementService)
+            existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
+        service.removeCollection("test");
     }
 }

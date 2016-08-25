@@ -22,27 +22,31 @@
 package org.exist.storage.lock;
 
 import org.exist.TestDataGenerator;
-import org.exist.xmldb.DatabaseInstanceManager;
+import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.xmldb.XPathQueryServiceImpl;
 import org.exist.xmldb.IndexQueryService;
-import org.exist.xmldb.XmldbURI;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
+import org.xml.sax.SAXException;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.Database;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.Random;
 
 public class ProtectedModeTest {
+
+    @ClassRule
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
 
     private final static String COLLECTION_CONFIG =
 		"<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
@@ -128,54 +132,33 @@ public class ProtectedModeTest {
     }
 
     @BeforeClass
-    public static void initDB() {
-        // initialize XML:DB driver
-        try {
-            Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
-            Database database = (Database) cl.newInstance();
-            database.setProperty("create-database", "true");
-            DatabaseManager.registerDatabase(database);
+    public static void setupDb() throws XMLDBException, SAXException {
+        CollectionManagementService mgmt = (CollectionManagementService) existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
+        final Collection collection = mgmt.createCollection("protected");
 
-            Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
-            CollectionManagementService mgmt = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
-            Collection collection = mgmt.createCollection("protected");
+        final IndexQueryService idxConf = (IndexQueryService) collection.getService("IndexQueryService", "1.0");
+        idxConf.configureCollection(COLLECTION_CONFIG);
+        final XMLResource hamlet = (XMLResource) collection.createResource("hamlet.xml", "XMLResource");
+        hamlet.setContent(new File("samples/shakespeare/hamlet.xml"));
+        collection.storeResource(hamlet);
 
-            IndexQueryService idxConf = (IndexQueryService) collection.getService("IndexQueryService", "1.0");
-            idxConf.configureCollection(COLLECTION_CONFIG);
-            XMLResource hamlet = (XMLResource) collection.createResource("hamlet.xml", "XMLResource");
-            hamlet.setContent(new File("samples/shakespeare/hamlet.xml"));
-            collection.storeResource(hamlet);
+        mgmt = (CollectionManagementService) collection.getService("CollectionManagementService", "1.0");
 
-            mgmt = (CollectionManagementService) collection.getService("CollectionManagementService", "1.0");
-            
-            TestDataGenerator generator = new TestDataGenerator("xdb", DOCUMENT_COUNT);
-            for (int i = 0; i < COLLECTION_COUNT; i++) {
-                Collection currentColl = mgmt.createCollection("test" + i);
-                File[] files = generator.generate(currentColl, generateXQ);
-                for (int j = 0; j < files.length; j++) {
-                    XMLResource resource = (XMLResource) currentColl.createResource("xdb" + j + ".xml", "XMLResource");
-                    resource.setContent(files[j]);
-                    currentColl.storeResource(resource);
-                }
+        final TestDataGenerator generator = new TestDataGenerator("xdb", DOCUMENT_COUNT);
+        for (int i = 0; i < COLLECTION_COUNT; i++) {
+            Collection currentColl = mgmt.createCollection("test" + i);
+            final Path[] files = generator.generate(currentColl, generateXQ);
+            for (int j = 0; j < files.length; j++) {
+                final XMLResource resource = (XMLResource) currentColl.createResource("xdb" + j + ".xml", "XMLResource");
+                resource.setContent(files[j].toFile());
+                currentColl.storeResource(resource);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
         }
     }
 
     @AfterClass
-    public static void closeDB() {
-        try {
-            Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
-            CollectionManagementService cmgr = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
-            cmgr.removeCollection("protected");
-            
-            DatabaseInstanceManager mgr = (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
-            mgr.shutdown();
-        } catch (XMLDBException e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        }
+    public static void cleanupDb() throws XMLDBException {
+        CollectionManagementService cmgr = (CollectionManagementService) existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
+        cmgr.removeCollection("protected");
     }
 }

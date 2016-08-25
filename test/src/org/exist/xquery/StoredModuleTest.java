@@ -21,23 +21,20 @@
  */
 package org.exist.xquery;
 
+import org.exist.test.ExistXmldbEmbeddedServer;
 import org.xmldb.api.base.Resource;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintWriter;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
-import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.XmldbURI;
 
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.CompiledExpression;
-import org.xmldb.api.base.Database;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.BinaryResource;
@@ -53,9 +50,9 @@ import static org.junit.Assert.*;
  */
 public class StoredModuleTest {
 
-    private final static Logger LOG = LogManager.getLogger(StoredModuleTest.class);
-    private final static String URI = XmldbURI.LOCAL_DB;
-//    private final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
+    @ClassRule
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
+
     private final static String MODULE =
             "module namespace itg-modules = \"http://localhost:80/itg/xquery\";\n" +
             "declare variable $itg-modules:colls as xs:string+ external;\n" +
@@ -65,72 +62,26 @@ public class StoredModuleTest {
             "   if (fn:empty($itg-modules:coll)) then fn:false()\n" +
             "   else fn:true()\n" +
             "};";
-    private static Collection rootCollection = null;
-    private static CollectionManagementService cmService = null;
-    private static XQueryService xqService = null;
-    private static Database database = null;
-
-    @BeforeClass
-    public static void first() {
-        LOG.info("Starting...");
-        try {
-            Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
-            database = (Database) cl.newInstance();
-            database.setProperty("create-database", "true");
-            DatabaseManager.registerDatabase(database);
-
-            rootCollection = DatabaseManager.getCollection(URI, "admin", "");
-            xqService = (XQueryService) rootCollection.getService("XQueryService", "1.0");
-            cmService = (CollectionManagementService) rootCollection.getService("CollectionManagementService", "1.0");
-
-        } catch (Exception ex) {
-            LOG.error(ex);
-        }
-    }
-
-    @AfterClass
-    public static void tearDown() throws XMLDBException {
-        LOG.info("Shutting down");
-        DatabaseManager.deregisterDatabase(database);
-        DatabaseInstanceManager dim =
-                (DatabaseInstanceManager) rootCollection.getService("DatabaseInstanceManager", "1.0");
-        dim.shutdown();
-    }
 
     private Collection createCollection(String collectionName) throws XMLDBException {
-        LOG.info("Create collection " + collectionName);
-        Collection collection = rootCollection.getChildCollection(collectionName);
+        Collection collection = existEmbeddedServer.getRoot().getChildCollection(collectionName);
+        final CollectionManagementService cmService = (CollectionManagementService) existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
         if (collection == null) {
             //cmService.removeCollection(collectionName);
             cmService.createCollection(collectionName);
         }
 
-        collection = DatabaseManager.getCollection(URI + "/" + collectionName, "admin", "");
+        collection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + collectionName, "admin", "");
         assertNotNull(collection);
         return collection;
     }
 
     private void writeModule(Collection collection, String modulename, String module) throws XMLDBException {
-        LOG.info("Create module " + modulename);
         BinaryResource res = (BinaryResource) collection.createResource(modulename, "BinaryResource");
         ((EXistResource) res).setMimeType("application/xquery");
         res.setContent(module.getBytes());
         collection.storeResource(res);
         collection.close();
-    }
-
-    private ResourceSet executeQuery(String query) throws XMLDBException {
-        CompiledExpression compiledQuery = xqService.compile(query);
-        ResourceSet result = xqService.execute(compiledQuery);
-        return result;
-    }
-
-    @Test
-    public void testDB() {
-        assertNotNull(database);
-        assertNotNull(rootCollection);
-        assertNotNull(xqService);
-        assertNotNull(cmService);
     }
 
     @Test
@@ -143,6 +94,8 @@ public class StoredModuleTest {
                 "\"xmldb:exist://" + XmldbURI.ROOT_COLLECTION + "/test/test.xqm\"; itg-modules:check-coll()";
 
         String cols[] = {"one", "two", "three"};
+
+        final XQueryService xqService = (XQueryService) existEmbeddedServer.getRoot().getService("XQueryService", "1.0");
 
         xqService.setNamespace("itg-modules", "http://localhost:80/itg/xquery");
 
@@ -168,7 +121,7 @@ public class StoredModuleTest {
         Collection c = createCollection(collectionName);
         writeModule(c, "module1.xqm", module);
 
-        ResourceSet rs = executeQuery(query);
+        ResourceSet rs = existEmbeddedServer.executeQuery(query);
         String r = (String) rs.getResource(0).getContent();
         assertEquals("hi from module 1", r);
 
@@ -225,7 +178,7 @@ public class StoredModuleTest {
         Collection c3 = createCollection(collection3Name);
         writeModule(c3, "module3.xqm", module3a);
 
-        ResourceSet rs = executeQuery(query);
+        ResourceSet rs = existEmbeddedServer.executeQuery(query);
         String r = (String) rs.getResource(0).getContent();
         assertEquals("hi from module 3a", r);
     }
@@ -250,27 +203,16 @@ public class StoredModuleTest {
         writeModule(c3, "module3.xqm", module3a);
 
         // test relative module import in subfolder
-        try {
-            ResourceSet rs = executeQuery(query);
-            String r = (String) rs.getResource(0).getContent();
-            assertEquals("hi from module 3a", r);
-            
-        } catch (XMLDBException ex) {
-            fail(ex.getMessage());
-            LOG.error(ex);
-        }
+        ResourceSet rs = existEmbeddedServer.executeQuery(query);
+        String r = (String) rs.getResource(0).getContent();
+        assertEquals("hi from module 3a", r);
 
         // test relative module import in same folder, and using ".."
         writeModule(c2, "module2.xqm", module2b);
-        
-        try {
-            ResourceSet rs = executeQuery(query);
-            String r = (String) rs.getResource(0).getContent();
-            assertEquals("hi from module 4", r);
-        } catch (XMLDBException ex) {
-            fail(ex.getMessage());
-            LOG.error(ex);
-        }
+
+        rs = existEmbeddedServer.executeQuery(query);
+        r = (String) rs.getResource(0).getContent();
+        assertEquals("hi from module 4", r);
     }
     
     @Test 
@@ -291,27 +233,16 @@ public class StoredModuleTest {
         writeFile(c3 + "/module3.xqm", module3a);
 
         // test relative module import in subfolder
-        try {
-            ResourceSet rs = executeQuery(query);
-            String r = (String) rs.getResource(0).getContent();
-            assertEquals("hi from module 3a", r);
-            
-        } catch (XMLDBException ex) {
-            fail(ex.getMessage());
-            LOG.error(ex);
-        }
+        ResourceSet rs = existEmbeddedServer.executeQuery(query);
+        String r = (String) rs.getResource(0).getContent();
+        assertEquals("hi from module 3a", r);
         
         // test relative module import in same folder, and using ".."
         writeFile(c2 + "/module2.xqm", module2b);
-        
-        try {
-            ResourceSet rs = executeQuery(query);
-            String r = (String) rs.getResource(0).getContent();
-            assertEquals("hi from module 4", r);
-        } catch (XMLDBException ex) {
-            fail(ex.getMessage());
-            LOG.error(ex);
-        }
+
+        rs = existEmbeddedServer.executeQuery(query);
+        r = (String) rs.getResource(0).getContent();
+        assertEquals("hi from module 4", r);
     }
 
     @Test
@@ -362,9 +293,8 @@ public class StoredModuleTest {
         writeModule(testHome, "processor.xqy", processor_module);
         writeModule(testHome, "impl.xqy", impl_module);
         writeModule(testHome, "controller.xqy", controller_module);
-        
-        CompiledExpression query = xqService.compile(index_module);
-        xqService.execute(query);
+
+        existEmbeddedServer.executeQuery(index_module);
     }
 
     @Test
@@ -388,8 +318,7 @@ public class StoredModuleTest {
         Collection testHome = createCollection("testLocalVariableDeclaration");
         writeModule(testHome, "module1.xqm", module1_module);
 
-        CompiledExpression query = xqService.compile(index_module);
-        xqService.execute(query);
+        existEmbeddedServer.executeQuery(index_module);
     }
     
     @Test
@@ -437,9 +366,8 @@ public class StoredModuleTest {
                 "xquery version \"1.0\";" +
                 "import module namespace processor = \"http://processor\" at \"xmldb:exist://" + testHome.getName() + "/processor.xqm\";" +
                 "\tprocessor:execute-module-function(xs:anyURI('http://moda'), xs:anyURI('" + testHome.getName() + "/module1.xqm'), 'hello')";
-        
-        final CompiledExpression xq1 = xqService.compile(query1);
-        final ResourceSet rs1 = xqService.execute(xq1);
+
+        final ResourceSet rs1 = existEmbeddedServer.executeQuery(query1);
         
         assertEquals(1, rs1.getSize());
         Resource r1 = rs1.getIterator().nextResource();
@@ -450,9 +378,8 @@ public class StoredModuleTest {
                 "import module namespace processor = \"http://processor\" at \"xmldb:exist://" + testHome.getName() + "/processor.xqm\";" +
                 "\tprocessor:execute-module-function(xs:anyURI('http://moda'), xs:anyURI('" + testHome.getName() + "/module2.xqm'), 'hello')";
         
-        
-        final CompiledExpression xq2 = xqService.compile(query2);
-        final ResourceSet rs2 = xqService.execute(xq2);
+
+        final ResourceSet rs2 = existEmbeddedServer.executeQuery(query2);
         
         assertEquals(1, rs2.getSize());
         Resource r2 = rs2.getIterator().nextResource();
@@ -462,13 +389,13 @@ public class StoredModuleTest {
 
     private void writeFile(String path, String module) throws IOException {
         path = path.replace("/", File.separator);
-        File f = new File (path);
-        File dir = f.getParentFile();
-        assertTrue (dir.exists() || dir.mkdirs());
-        assertTrue (dir.canWrite());
-        assertTrue (f.createNewFile() || f.canWrite());
-        PrintWriter writer = new PrintWriter (new FileOutputStream(f));
-        writer.print(module);
-        writer.close();
+        final Path f = Paths.get(path);
+        final Path dir = f.getParent();
+        assertTrue (Files.exists(dir) || Files.createDirectories(dir) != null);
+        assertTrue (Files.isWritable(dir));
+        assertTrue (Files.isWritable(f) || Files.createFile(f) != null);
+        try(final PrintWriter writer = new PrintWriter(Files.newBufferedWriter(f))) {
+            writer.print(module);
+        }
     }
 }

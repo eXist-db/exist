@@ -21,15 +21,13 @@ package org.exist.collections.triggers;
 
 import java.util.Arrays;
 import org.exist.TestUtils;
-import org.exist.xmldb.DatabaseInstanceManager;
+import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.xmldb.IndexQueryService;
-import org.exist.xmldb.XmldbURI;
-import org.junit.After;
-import org.junit.AfterClass;
+import org.junit.*;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
-import org.junit.BeforeClass;
-import org.junit.Test;
+
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
@@ -47,6 +45,9 @@ import org.junit.runners.Parameterized.Parameters;
  */
 @RunWith(Parameterized.class)
 public class TriggerConfigTest {
+
+    @ClassRule
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
 
     @Parameters(name = "{0}")
     public static java.util.Collection<Object[]> data() {
@@ -194,39 +195,18 @@ public class TriggerConfigTest {
     }
 
     @BeforeClass
-    public static void initDB() {
-        // initialize XML:DB driver
-        try {
-            Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
-            Database database = (Database) cl.newInstance();
-            database.setProperty("create-database", "true");
-            DatabaseManager.registerDatabase(database);
+    public static void initDB() throws XMLDBException {
+        CollectionManagementService mgmt = (CollectionManagementService) existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
+        Collection testCol = mgmt.createCollection("triggers");
 
-            Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
-            CollectionManagementService mgmt = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
-            Collection testCol = mgmt.createCollection("triggers");
-
-            for (int i = 1; i <= 2; i++) {
-                mgmt = (CollectionManagementService) testCol.getService("CollectionManagementService", "1.0");
-                testCol = mgmt.createCollection("sub" + i);
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
+        for (int i = 1; i <= 2; i++) {
+            mgmt = (CollectionManagementService) testCol.getService("CollectionManagementService", "1.0");
+            testCol = mgmt.createCollection("sub" + i);
         }
     }
 
     @AfterClass
     public static void closeDB() {
         TestUtils.cleanupDB();
-        try {
-            Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
-            DatabaseInstanceManager mgr = (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
-            mgr.shutdown();
-        } catch (XMLDBException e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        }
     }
 }

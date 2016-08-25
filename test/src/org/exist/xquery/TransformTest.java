@@ -1,14 +1,14 @@
 package org.exist.xquery;
 
-import org.exist.xmldb.DatabaseInstanceManager;
+import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.XmldbURI;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.Database;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
@@ -21,9 +21,11 @@ import static org.junit.Assert.assertNotNull;
 
 
 public class TransformTest {
+    @ClassRule
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
+
 	private static final String TEST_COLLECTION_NAME = "transform-test";
-    
-    private Database database;
+
     private Collection testCollection;
     
     /**
@@ -70,16 +72,8 @@ public class TransformTest {
 
     @Before
     public void setUp() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
-        // initialize driver
-        Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
-        database = (Database) cl.newInstance();
-        database.setProperty("create-database", "true");
-        DatabaseManager.registerDatabase(database);
-
-        Collection root =
-            DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
         CollectionManagementService service =
-            (CollectionManagementService) root.getService(
+            (CollectionManagementService) existEmbeddedServer.getRoot().getService(
                 "CollectionManagementService",
                 "1.0");
         testCollection = service.createCollection(TEST_COLLECTION_NAME);
@@ -149,13 +143,6 @@ public class TransformTest {
                 "CollectionManagementService",
                 "1.0");
         service.removeCollection(TEST_COLLECTION_NAME);
-
-        DatabaseManager.deregisterDatabase(database);
-        DatabaseInstanceManager dim =
-            (DatabaseInstanceManager) testCollection.getService(
-                "DatabaseInstanceManager", "1.0");
-        dim.shutdown();
-        database = null;
         testCollection = null;
     }
 }

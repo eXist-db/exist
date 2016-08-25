@@ -27,20 +27,14 @@ import java.net.URISyntaxException;
 import javax.xml.transform.OutputKeys;
 
 import org.exist.TestUtils;
+import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.util.Base64Decoder;
 import org.exist.xmldb.CollectionManagementServiceImpl;
-import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.IndexQueryService;
 import org.exist.xmldb.XmldbURI;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.xmldb.api.DatabaseManager;
+import org.junit.*;
 import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.Database;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
@@ -54,7 +48,10 @@ import org.xmldb.api.modules.XUpdateQueryService;
  * @author Pierrick Brihaye <pierrick.brihaye@free.fr>
  */
 public class XQueryTriggerTest {
-	
+
+    @ClassRule
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
+
 	private final static String TEST_COLLECTION = "testXQueryTrigger";
 
     /** XQuery module implementing the trigger under test */
@@ -213,8 +210,7 @@ public class XQueryTriggerTest {
         	"trigger:logEvent('after', 'delete', 'document', $uri)" +
         "};" +
         "";
-    
-    private static Collection root;
+
     private static Collection testCollection;
 
       /** XQuery module implementing the invalid trigger under test */
@@ -249,18 +245,11 @@ public class XQueryTriggerTest {
 
     private final static String documentURI = "[uri/text() = '/db/testXQueryTrigger/test.xml']";
     private final static String binaryURI = "[uri/text() = '/db/testXQueryTrigger/1x1.gif']";
-    
-    /** just start the DB and create the test collection */
-    @BeforeClass
-    public static void startDB() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
-        // initialize driver
-        final Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
-        final Database database = (Database) cl.newInstance();
-        database.setProperty("create-database", "true");
-        DatabaseManager.registerDatabase(database);
 
-        root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
-        final CollectionManagementService service = (CollectionManagementService) root
+    /** just create the test collection */
+    @BeforeClass
+    public static void createTestCollection() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
+        final CollectionManagementService service = (CollectionManagementService) existEmbeddedServer.getRoot()
                 .getService("CollectionManagementService", "1.0");
         testCollection = service.createCollection(TEST_COLLECTION);
         assertNotNull(testCollection);
@@ -269,11 +258,8 @@ public class XQueryTriggerTest {
     }
 
     @AfterClass
-    public static void shutdownDB() throws XMLDBException {
+    public static void cleanup() throws XMLDBException {
         TestUtils.cleanupDB();
-        final Collection root = DatabaseManager.getCollection("xmldb:exist://" + XmldbURI.ROOT_COLLECTION, "admin", "");
-        final DatabaseInstanceManager mgr = (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
-        mgr.shutdown();
         testCollection = null;
     }
 
@@ -282,7 +268,7 @@ public class XQueryTriggerTest {
     @Before
     public void storePreliminaryDocuments() throws XMLDBException {
         TestUtils.cleanupDB();
-        final CollectionManagementService service = (CollectionManagementService) root
+        final CollectionManagementService service = (CollectionManagementService) existEmbeddedServer.getRoot()
                 .getService("CollectionManagementService", "1.0");
         testCollection = service.createCollection(TEST_COLLECTION);
         assertNotNull(testCollection);
@@ -414,7 +400,7 @@ public class XQueryTriggerTest {
 //	        assertEquals(1, result.getSize());
 //	        assertXMLEqual(MODIFIED_DOCUMENT_CONTENT, result.getResource(0).getContent().toString());
     }
-    
+
 	/** test a trigger fired by creating a new Binary Document  */
     @Test
     public void documentBinaryCreate() throws XMLDBException {
@@ -495,11 +481,11 @@ public class XQueryTriggerTest {
 //	        assertEquals(1, result.getSize());
 //	        assertEquals("<document>" + BINARY_DOCUMENT_CONTENT + "</document>", result.getResource(0).getContent().toString());
     }
-    
+
     /** test a trigger fired by a Collection manipulations */
     @Test
     public void collectionCreate() throws XMLDBException {
-        final IndexQueryService idxConf = (IndexQueryService) root.getService("IndexQueryService", "1.0");
+        final IndexQueryService idxConf = (IndexQueryService) existEmbeddedServer.getRoot().getService("IndexQueryService", "1.0");
         idxConf.configureCollection(COLLECTION_CONFIG);
 
         final CollectionManagementService service = (CollectionManagementService) testCollection.getService("CollectionManagementService", "1.0");
@@ -509,7 +495,7 @@ public class XQueryTriggerTest {
         // remove the trigger for the Collection under test
         idxConf.configureCollection(EMPTY_COLLECTION_CONFIG);
 
-        final XPathQueryService query = (XPathQueryService) root.getService("XPathQueryService", "1.0");
+        final XPathQueryService query = (XPathQueryService) existEmbeddedServer.getRoot().getService("XPathQueryService", "1.0");
 
         ResourceSet result = query.query(BEFORE+CREATE+COLLECTION+testCollectionURI);
         assertEquals(1, result.getSize());
@@ -524,7 +510,7 @@ public class XQueryTriggerTest {
     /** test a trigger fired by a Collection manipulations */
     @Test
     public void collectionCopy() throws XMLDBException, URISyntaxException {
-        final IndexQueryService idxConf = (IndexQueryService) root.getService("IndexQueryService", "1.0");
+        final IndexQueryService idxConf = (IndexQueryService) existEmbeddedServer.getRoot().getService("IndexQueryService", "1.0");
         idxConf.configureCollection(COLLECTION_CONFIG);
 
         final XmldbURI srcURI = XmldbURI.xmldbUriFor("/db/testXQueryTrigger/test");
@@ -542,38 +528,36 @@ public class XQueryTriggerTest {
         // remove the trigger for the Collection under test
         idxConf.configureCollection(EMPTY_COLLECTION_CONFIG);
 
-        final XPathQueryService query = (XPathQueryService) root.getService("XPathQueryService", "1.0");
-
-        ResourceSet result = query.query(BEFORE+CREATE+COLLECTION+testCollectionURI);
+        ResourceSet result = existEmbeddedServer.executeQuery(BEFORE+CREATE+COLLECTION+testCollectionURI);
         assertEquals(1, result.getSize());
 
-        result = query.query(AFTER+CREATE+COLLECTION+testCollectionURI);
+        result = existEmbeddedServer.executeQuery(AFTER+CREATE+COLLECTION+testCollectionURI);
         assertEquals(1, result.getSize());
 
-        result = query.query(BEFORE+CREATE+COLLECTION+testDstCollectionURI);
+        result = existEmbeddedServer.executeQuery(BEFORE+CREATE+COLLECTION+testDstCollectionURI);
         assertEquals(1, result.getSize());
 
-        result = query.query(AFTER+CREATE+COLLECTION+testDstCollectionURI);
+        result = existEmbeddedServer.executeQuery(AFTER+CREATE+COLLECTION+testDstCollectionURI);
         assertEquals(1, result.getSize());
 
-        result = query.query(BEFORE+COPY+COLLECTION+testCollectionURI);
+        result = existEmbeddedServer.executeQuery(BEFORE+COPY+COLLECTION+testCollectionURI);
         assertEquals(1, result.getSize());
 
-        result = query.query(AFTER+COPY+COLLECTION+testDstTestCollectionURI);
+        result = existEmbeddedServer.executeQuery(AFTER+COPY+COLLECTION+testDstTestCollectionURI);
         assertEquals(1, result.getSize());
 
-        result = query.query(EVENTS);
+        result = existEmbeddedServer.executeQuery(EVENTS);
         assertEquals(6, result.getSize());
     }
-    
+
     /** test a trigger fired by a Collection manipulations */
     @Test
     public void collectionMove() throws XMLDBException, URISyntaxException {
-        final IndexQueryService idxConf = (IndexQueryService) root.getService("IndexQueryService", "1.0");
+        final IndexQueryService idxConf = (IndexQueryService) existEmbeddedServer.getRoot().getService("IndexQueryService", "1.0");
         idxConf.configureCollection(COLLECTION_CONFIG);
 
-        XmldbURI srcURI = XmldbURI.xmldbUriFor("/db/testXQueryTrigger/test");
-        XmldbURI dstURI = XmldbURI.xmldbUriFor("/db/testXQueryTrigger/test-dst");
+        final XmldbURI srcURI = XmldbURI.xmldbUriFor("/db/testXQueryTrigger/test");
+        final XmldbURI dstURI = XmldbURI.xmldbUriFor("/db/testXQueryTrigger/test-dst");
 
         final CollectionManagementServiceImpl service = (CollectionManagementServiceImpl) testCollection.getService("CollectionManagementService", "1.0");
         final Collection src = service.createCollection("test");
@@ -587,30 +571,28 @@ public class XQueryTriggerTest {
         // remove the trigger for the Collection under test
         idxConf.configureCollection(EMPTY_COLLECTION_CONFIG);
 
-        final XPathQueryService query = (XPathQueryService) root.getService("XPathQueryService", "1.0");
-
-        ResourceSet result = query.query(BEFORE+CREATE+COLLECTION+testCollectionURI);
+        ResourceSet result = existEmbeddedServer.executeQuery(BEFORE+CREATE+COLLECTION+testCollectionURI);
         assertEquals(1, result.getSize());
 
-        result = query.query(AFTER+CREATE+COLLECTION+testCollectionURI);
+        result = existEmbeddedServer.executeQuery(AFTER+CREATE+COLLECTION+testCollectionURI);
         assertEquals(1, result.getSize());
 
-        result = query.query(BEFORE+CREATE+COLLECTION+testDstCollectionURI);
+        result = existEmbeddedServer.executeQuery(BEFORE+CREATE+COLLECTION+testDstCollectionURI);
         assertEquals(1, result.getSize());
 
-        result = query.query(AFTER+CREATE+COLLECTION+testDstCollectionURI);
+        result = existEmbeddedServer.executeQuery(AFTER+CREATE+COLLECTION+testDstCollectionURI);
         assertEquals(1, result.getSize());
 
-        result = query.query(BEFORE+MOVE+COLLECTION+testCollectionURI);
+        result = existEmbeddedServer.executeQuery(BEFORE+MOVE+COLLECTION+testCollectionURI);
         assertEquals(1, result.getSize());
 
-        result = query.query(AFTER+MOVE+COLLECTION+testDstTestCollectionURI);
+        result = existEmbeddedServer.executeQuery(AFTER+MOVE+COLLECTION+testDstTestCollectionURI);
         assertEquals(1, result.getSize());
 
-        result = query.query(EVENTS);
+        result = existEmbeddedServer.executeQuery(EVENTS);
         assertEquals(6, result.getSize());
     }
-    
+
     /** test a trigger fired by a Collection manipulations */
     @Test
     public void collectionDelete() throws XMLDBException {
@@ -626,24 +608,21 @@ public class XQueryTriggerTest {
         // remove the trigger for the Collection under test
         idxConf.configureCollection(EMPTY_COLLECTION_CONFIG);
 
-        final XPathQueryService query = (XPathQueryService) root.getService("XPathQueryService", "1.0");
-
-        ResourceSet result = query.query(BEFORE+CREATE+COLLECTION+testCollectionURI);
+        ResourceSet result = existEmbeddedServer.executeQuery(BEFORE+CREATE+COLLECTION+testCollectionURI);
         assertEquals(1, result.getSize());
 
-        result = query.query(AFTER+CREATE+COLLECTION+testCollectionURI);
+        result = existEmbeddedServer.executeQuery(AFTER+CREATE+COLLECTION+testCollectionURI);
         assertEquals(1, result.getSize());
 
-        result = query.query(BEFORE+DELETE+COLLECTION+testCollectionURI);
+        result = existEmbeddedServer.executeQuery(BEFORE+DELETE+COLLECTION+testCollectionURI);
         assertEquals(1, result.getSize());
 
-        result = query.query(AFTER+DELETE+COLLECTION+testCollectionURI);
+        result = existEmbeddedServer.executeQuery(AFTER+DELETE+COLLECTION+testCollectionURI);
         assertEquals(1, result.getSize());
 
-        result = query.query("/events/event");
+        result = existEmbeddedServer.executeQuery("/events/event");
         assertEquals(4, result.getSize());
     }
-
 
     @Test
     public void storeDocument_invalidTriggerForPrepare() throws XMLDBException {

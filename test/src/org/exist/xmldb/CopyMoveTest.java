@@ -1,9 +1,11 @@
 package org.exist.xmldb;
 
+import org.exist.test.ExistXmldbEmbeddedServer;
 import org.junit.After;
 import org.exist.security.Account;
 import org.exist.security.Permission;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -15,6 +17,9 @@ import static org.exist.xmldb.XmldbLocalTests.*;
 
 
 public class CopyMoveTest {
+
+    @ClassRule
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
 
     private final static String TEST_COLLECTION = "testCopyMove";
 
@@ -97,17 +102,11 @@ public class CopyMoveTest {
 
     @Before
     public void setUp() throws Exception {
-        // initialize driver
-        Database database = (Database) Class.forName(DRIVER).newInstance();
-        database.setProperty("create-database", "true");
-        DatabaseManager.registerDatabase(database);
-
-        Collection root = DatabaseManager.getCollection(ROOT_URI, ADMIN_UID, ADMIN_PWD);
-        CollectionManagementService cms = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
-        Collection testCollection = cms.createCollection(TEST_COLLECTION);
-        UserManagementService ums = (UserManagementService) testCollection.getService("UserManagementService", "1.0");
+        final CollectionManagementService cms = (CollectionManagementService) existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
+        final Collection testCollection = cms.createCollection(TEST_COLLECTION);
+        final UserManagementService ums = (UserManagementService) testCollection.getService("UserManagementService", "1.0");
         // change ownership to guest
-        Account guest = ums.getAccount(GUEST_UID);
+        final Account guest = ums.getAccount(GUEST_UID);
         ums.chown(guest, guest.getPrimaryGroup());
         ums.chmod("rwxr-xr-x");
     }
@@ -115,12 +114,7 @@ public class CopyMoveTest {
     @After
     public void tearDown() throws XMLDBException {
         //delete the test collection
-        Collection root = DatabaseManager.getCollection(ROOT_URI, ADMIN_UID, ADMIN_PWD);
-        CollectionManagementService cms = (CollectionManagementService)root.getService("CollectionManagementService", "1.0");
+        final CollectionManagementService cms = (CollectionManagementService)existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
         cms.removeCollection(TEST_COLLECTION);
-
-        //shutdownDB the db
-        DatabaseInstanceManager dim = (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
-        dim.shutdown();
     }
 }

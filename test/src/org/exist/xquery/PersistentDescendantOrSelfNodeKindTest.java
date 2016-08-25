@@ -2,11 +2,11 @@ package org.exist.xquery;
 
 import org.junit.After;
 import org.junit.Before;
+import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
-import org.xmldb.api.modules.XQueryService;
 
 /**
  * @author Adam Retter <adam.retter@googlemail.com>
@@ -23,12 +23,12 @@ public class PersistentDescendantOrSelfNodeKindTest extends AbstractDescendantOr
 
     @Override
     protected ResourceSet executeQueryOnDoc(final String docQuery) throws XMLDBException {
-        final XQueryService service = (XQueryService) root.getService("XPathQueryService", "1.0");
-        return service.query(getDbQuery(docQuery));
+        return  existEmbeddedServer.executeQuery(getDbQuery(docQuery));
     }
 
     @Before
     public void storeTestDoc() throws XMLDBException {
+        final Collection root =  existEmbeddedServer.getRoot();
         final XMLResource res = (XMLResource)root.createResource(TEST_DOCUMENT_NAME, "XMLResource");
         res.setContent(TEST_DOCUMENT);
         root.storeResource(res);
@@ -36,6 +36,7 @@ public class PersistentDescendantOrSelfNodeKindTest extends AbstractDescendantOr
 
     @After
     public void removeTestDoc() throws XMLDBException {
+        final Collection root =  existEmbeddedServer.getRoot();
         final Resource res = root.getResource(TEST_DOCUMENT_NAME);
         root.removeResource(res);
     }

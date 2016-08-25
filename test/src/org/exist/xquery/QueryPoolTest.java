@@ -23,15 +23,13 @@
 package org.exist.xquery;
 
 import org.exist.source.StringSource;
-import org.exist.xmldb.DatabaseInstanceManager;
+import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.xmldb.XQueryService;
-import org.exist.xmldb.XmldbURI;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Test;
-import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.Database;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
@@ -40,14 +38,15 @@ import static org.junit.Assert.assertNotNull;
 
 public class QueryPoolTest {
 
-    private final static String URI = XmldbURI.LOCAL_DB;
-    
+    @ClassRule
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
+
     private Collection testCollection;
 
     @Test
     public void differentQueries() throws XMLDBException {
         XQueryService service = (XQueryService) testCollection.getService("XQueryService", "1.0");
-        for (int i = 0; i < 10000; i++) {
+        for (int i = 0; i < 1000; i++) {
             String query = "update insert <node id='id" + Integer.toHexString(i) + "'>" +
                     "<p>Some longer text <b>content</b> in this node. Some longer text <b>content</b> in this node. " +
                     "Some longer text <b>content</b> in this node. Some longer text <b>content</b> in this node.</p>" +
@@ -65,40 +64,24 @@ public class QueryPoolTest {
 
     @Before
     public void setUp() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
-        // initialize driver
-        Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
-        Database database = (Database) cl.newInstance();
-        database.setProperty("create-database", "true");
-        DatabaseManager.registerDatabase(database);
-
-        Collection root =
-            DatabaseManager.getCollection(
-                URI,
-                "admin",
-                null);
-        CollectionManagementService service =
-            (CollectionManagementService) root.getService(
+        final CollectionManagementService service =
+            (CollectionManagementService) existEmbeddedServer.getRoot().getService(
                 "CollectionManagementService",
                 "1.0");
         testCollection = service.createCollection("test-pool");
         assertNotNull(testCollection);
 
-      XMLResource doc =
+        final XMLResource doc =
           (XMLResource) testCollection.createResource("large_list.xml", "XMLResource");
-      doc.setContent("<test id='t1'/>");
-      testCollection.storeResource(doc);
+        doc.setContent("<test id='t1'/>");
+        testCollection.storeResource(doc);
     }
 
     @After
     public void tearDown() throws Exception {
-        CollectionManagementService service = (CollectionManagementService)
+        final CollectionManagementService service = (CollectionManagementService)
             testCollection.getService("CollectionManagementService", "1.0");
-        DatabaseInstanceManager manager = (DatabaseInstanceManager)
-                testCollection.getService("DatabaseInstanceManager","1.0");
-
         service.removeCollection("/db/test-pool");
         testCollection.close();
-        manager.shutdown();
-
     }
 }

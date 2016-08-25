@@ -48,47 +48,6 @@ public class TestTools {
     public final static String VALIDATION_XSD_COLLECTION = "xsd";
     public final static String VALIDATION_TMP_COLLECTION = "tmp";
     
-
-    /*
-    public static void insertResources(){
-
-        try {
-            String eXistHome = ConfigurationHelper.getExistHome().getAbsolutePath();
-
-            Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
-            Database database = (Database) cl.newInstance();
-            database.setProperty("create-database", "true");
-            DatabaseManager.registerDatabase(database);
-            Collection root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", "");
-            XPathQueryService service = (XPathQueryService) root.getService("XQueryService", "1.0");
-
-            CollectionManagementService cmservice = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
-            Collection col1 = cmservice.createCollection(TestTools.VALIDATION_HOME);
-            Collection col2 = cmservice.createCollection(TestTools.VALIDATION_XSD);
-
-            Permission permission = PermissionAiderFactory.getPermission("guest", "guest", 999);
-
-            UserManagementService umservice = (UserManagementService) root.getService("UserManagementService", "1.0");
-            umservice.setPermissions(col1, permission);
-            umservice.setPermissions(col2, permission);
-
-            String addressbook = eXistHome + "/samples/validation/addressbook";
-
-            TestTools.insertDocumentToURL(addressbook + "/addressbook.xsd",
-                    "xmldb:exist://" + TestTools.VALIDATION_XSD + "/addressbook.xsd");
-            TestTools.insertDocumentToURL(addressbook + "/catalog.xml",
-                    "xmldb:exist://" + TestTools.VALIDATION_XSD + "/catalog.xml");
-
-            TestTools.insertDocumentToURL(addressbook + "/addressbook_valid.xml",
-                    "xmldb:exist://" + TestTools.VALIDATION_HOME + "/addressbook_valid.xml");
-            TestTools.insertDocumentToURL(addressbook + "/addressbook_invalid.xml",
-                    "xmldb:exist://" + TestTools.VALIDATION_HOME + "/addressbook_invalid.xml");
-
-        } catch (Throwable ex) {
-            ex.printStackTrace();
-        }
-    }*/
-    
     // Transfer bytes from in to out
     public static void copyStream(InputStream is, OutputStream os) throws IOException {
         byte[] buf = new byte[1024];

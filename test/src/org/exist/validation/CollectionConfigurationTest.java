@@ -21,18 +21,10 @@
  */
 package org.exist.validation;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
-import org.exist.xmldb.DatabaseInstanceManager;
-import org.exist.xmldb.XmldbURI;
-import org.xmldb.api.DatabaseManager;
+import org.exist.test.ExistXmldbEmbeddedServer;
+import org.junit.ClassRule;
 import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.Database;
 import org.xmldb.api.base.XMLDBException;
-import org.xmldb.api.modules.XPathQueryService;
-
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import org.xmldb.api.base.ResourceSet;
@@ -47,46 +39,13 @@ import static org.junit.Assert.*;
  */
 public class CollectionConfigurationTest {
 
-    String invalidConfig = "<invalid/>";
-    private static final Logger LOG = LogManager.getLogger(CollectionConfigurationValidationModeTest.class);
-    private static XPathQueryService xpqservice;
-    private static Collection root = null;
-    private static Database database = null;
-    private static CollectionManagementService cmservice = null;
+    @ClassRule
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
 
-    public CollectionConfigurationTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-        startDatabase();
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-        DatabaseManager.deregisterDatabase(database);
-        DatabaseInstanceManager dim =
-                (DatabaseInstanceManager) root.getService(
-                "DatabaseInstanceManager", "1.0");
-        dim.shutdown();
-        database = null;
-    }
-
-
-    // =============
-    
-    private static void startDatabase() throws XMLDBException, InstantiationException, IllegalAccessException, ClassNotFoundException {
-        Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
-        database = (Database) cl.newInstance();
-        database.setProperty("create-database", "true");
-        DatabaseManager.registerDatabase(database);
-        root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
-        xpqservice = (XPathQueryService) root.getService("XQueryService", "1.0");
-        cmservice = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
-
-    }
+    private static final String invalidConfig = "<invalid/>";
 
     private void createCollection(String collection) throws XMLDBException {
+        final CollectionManagementService cmservice = (CollectionManagementService) existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
         Collection testCollection = cmservice.createCollection(collection);
         assertNotNull(testCollection);
 
@@ -95,38 +54,20 @@ public class CollectionConfigurationTest {
     }
 
     private void storeCollectionXconf(String collection, String document) throws XMLDBException {
-        ResourceSet result = xpqservice.query("xmldb:store(\"" + collection + "\", \"collection.xconf\", " + document + ")");
+        final ResourceSet result = existEmbeddedServer.executeQuery("xmldb:store(\"" + collection + "\", \"collection.xconf\", " + document + ")");
         String r = (String) result.getResource(0).getContent();
         assertEquals("Store xconf", collection + "/collection.xconf", r);
     }
 
-    @SuppressWarnings("unused")
-	private void storeDocument(String collection, String name, String document) throws XMLDBException {
-        ResourceSet result = xpqservice.query("xmldb:store(\"" + collection + "\", \"" + name + "\", " + document + ")");
-        String r = (String) result.getResource(0).getContent();
-        assertEquals("Store doc", collection + "/" + name, r);
-    }
 
-    // ==========
-    
     @Test
-    public void insertInvalidCollectionXconf() {
+    public void insertInvalidCollectionXconf() throws XMLDBException {
+        createCollection("/db/system/config/db/foobar");
+        storeCollectionXconf("/db/system/config/db/foobar", invalidConfig);
 
-        try {
-            createCollection("/db/system/config/db/foobar");
-            storeCollectionXconf("/db/system/config/db/foobar", invalidConfig);
-        } catch (XMLDBException ex) {
-            LOG.error(ex);
-            fail(ex.getMessage());
-        }
 
-        try {
-            createCollection("/db/system/config/db/foobar");
-            storeCollectionXconf("/db/system/config/db/foobar", invalidConfig);
-        } catch (XMLDBException ex) {
-            LOG.error(ex);
-            fail(ex.getMessage());
-        }
+        createCollection("/db/system/config/db/foobar");
+        storeCollectionXconf("/db/system/config/db/foobar", invalidConfig);
 
     }
 }

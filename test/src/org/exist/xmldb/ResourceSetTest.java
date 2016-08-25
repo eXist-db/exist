@@ -1,65 +1,80 @@
-// $Header$
-
 package org.exist.xmldb;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.xmldb.api.*;
+import org.exist.test.ExistXmldbEmbeddedServer;
+import org.junit.*;
 import org.xmldb.api.base.*;
 import org.xmldb.api.modules.*;
 
+import java.nio.file.Path;
+
+import static org.exist.xmldb.XmldbLocalTests.getShakespeareSamplesDirectory;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 public class ResourceSetTest {
 
-	String XPathPrefix;
-	String query1;
-	String query2;
-    int expected;
-	private final static String URI = XmldbURI.LOCAL_DB;
-	private final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
+	@ClassRule
+	public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
+
+	private final static String TEST_COLLECTION = "testResourceSet";
+
+	private Collection testCollection;
 
 	@Before
-	public void setUp() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
-		// initialize driver
-		Class<?> cl = Class.forName(DRIVER);
-		Database database = (Database) cl.newInstance();
-		database.setProperty("create-database", "true");
-		DatabaseManager.registerDatabase(database);
+	public void setUp() throws Exception {
+		final CollectionManagementService service = (CollectionManagementService) existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
+		testCollection = service.createCollection(TEST_COLLECTION);
+		assertNotNull(testCollection);
 
-        // Currently (2003-04-02) fires an exception in FunPosition:
-        XPathPrefix = "xmldb:document('" + XmldbURI.ROOT_COLLECTION + "/test/shakes.xsl')/*/*"; // "xmldb:document('" + DBBroker.ROOT_COLLECTION + "/test/macbeth.xml')/*/*";
-   		query1 = XPathPrefix + "[position()>=5 ]";
-   		query2 = XPathPrefix + "[position()<=10]";
-        expected = 87;
-// This validates OK:
-//   XPathPrefix = "xmldb:document('" +  DBBroker.ROOT_COLLECTION + "/test/hamlet.xml')//LINE";
-//		query1 = XPathPrefix + "[ .&='funeral' ]";		// count=4
-//		query2 = XPathPrefix + "[.&='dirge']";		// count=1, intersection=1
-//		expected = 1;
+		final Path shakes = getShakespeareSamplesDirectory().resolve("shakes.xsl");
+		final Resource shakesRes = testCollection.createResource("shakes.xsl", XMLResource.RESOURCE_TYPE);
+		shakesRes.setContent(shakes.toFile());
+		testCollection.storeResource(shakesRes);
+
+		final Path hamlet = getShakespeareSamplesDirectory().resolve("hamlet.xml");
+		final Resource hamletRes = testCollection.createResource("hamlet.xml", XMLResource.RESOURCE_TYPE);
+		hamletRes.setContent(hamlet.toFile());
+		testCollection.storeResource(hamletRes);
 	}
 
+	@After
+	public void tearDown() throws XMLDBException {
+		//delete the test collection
+		final CollectionManagementService service = (CollectionManagementService)testCollection.getParentCollection().getService("CollectionManagementService", "1.0");
+		service.removeCollection(TEST_COLLECTION);
+	}
+
+	@Ignore
     @Test
-	public void intersection() throws XMLDBException {
-        // try to get collection
-        Collection testCollection =
-            DatabaseManager.getCollection(URI + "/test");
-        assertNotNull(testCollection);
-        XPathQueryService service = (XPathQueryService)
+	public void intersection1() throws XMLDBException {
+		final String xpathPrefix = "doc('/db/" + TEST_COLLECTION + "/shakes.xsl')/*/*"; // "xmldb:document('" + DBBroker.ROOT_COLLECTION + "/test/macbeth.xml')/*/*";
+		final String query1 = xpathPrefix + "[position() >= 5 ]";
+		final String query2 = xpathPrefix + "[position() <= 10]";
+		final int expected = 87;
+
+        final XPathQueryService service = (XPathQueryService)
             testCollection.getService("XPathQueryService", "1.0");
 
-        ResourceSet result1 = service.query(query1);
-        ResourceSet result2 = service.query(query2);
+        final ResourceSet result1 = service.query(query1);
+        final ResourceSet result2 = service.query(query2);
 
-        assertEquals( "size of intersection of "+query1+" and "+query2+" yields ",
-          expected,
-          ( ResourceSetHelper.intersection(result1, result2) ).getSize() );
+        assertEquals("size of intersection of " + query1 + " and " + query2 + " yields ", expected, ResourceSetHelper.intersection(result1, result2).getSize());
 	}
-	/* useless if we catch the relevant exception in the debugger:
-	public static void main(String args[]){
-		ResourceSetTest t = new ResourceSetTest("ResourceSetTest");
-		t.setUp();
-		t.testIntersection();
-	} ****/
+
+	@Ignore
+	@Test
+	public void intersection2() throws XMLDBException {
+	   	final String xpathPrefix = "doc('/db/" + TEST_COLLECTION + "/hamlet.xml')//LINE";
+		final String query1 = xpathPrefix + "[. = 'funeral' ]";		// count=4
+		final String query2 = xpathPrefix + "[. = 'dirge']";		// count=1, intersection=1
+		final int expected = 1;
+
+		final XPathQueryService service = (XPathQueryService)
+				testCollection.getService("XPathQueryService", "1.0");
+
+		final ResourceSet result1 = service.query(query1);
+		final ResourceSet result2 = service.query(query2);
+
+		assertEquals("size of intersection of " + query1 + " and " + query2 + " yields ", expected, ResourceSetHelper.intersection(result1, result2).getSize());
+	}
 }

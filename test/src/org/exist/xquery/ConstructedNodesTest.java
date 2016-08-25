@@ -23,18 +23,13 @@ package org.exist.xquery;
 
 import javax.xml.transform.OutputKeys;
 
-import org.exist.xmldb.DatabaseInstanceManager;
-import org.exist.xmldb.XmldbURI;
-import org.junit.After;
-import org.junit.Before;
+import org.exist.test.ExistXmldbEmbeddedServer;
+import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.xmldb.api.DatabaseManager;
-import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.Database;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
-import org.xmldb.api.modules.XPathQueryService;
+import org.xmldb.api.modules.XQueryService;
 
 import static org.junit.Assert.assertEquals;
 
@@ -44,13 +39,10 @@ import static org.junit.Assert.assertEquals;
  * @author ljo
  */
 public class ConstructedNodesTest {
-	private final static String TEST_DB_USER = "admin";
-	private final static String TEST_DB_PWD = "";
-	
-	private XPathQueryService service;
-	private Collection root = null;
-	private Database database = null;
-	
+
+	@ClassRule
+	public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
+
 	/**
 	 * Iteratively constructs some nodes
 	 */
@@ -81,7 +73,7 @@ public class ConstructedNodesTest {
 			"<option value=\"4\">Dairy</option>"
 		};
 		
-		ResourceSet result = service.query(xquery);
+		ResourceSet result = existEmbeddedServer.executeQuery(xquery);
 			
         assertEquals(expectedResults.length, result.getSize());
 
@@ -115,7 +107,7 @@ public class ConstructedNodesTest {
 				"<category uid=\"1\">Fruit</category>"
 		};
 		
-		ResourceSet result = service.query(xquery);
+		ResourceSet result = existEmbeddedServer.executeQuery(xquery);
 			
         assertEquals(expectedResults.length, result.getSize());
 
@@ -149,7 +141,7 @@ public class ConstructedNodesTest {
 				"<option value=\"1\">Fruit</option>"
 				};
 		
-		ResourceSet result = service.query(xquery);
+		ResourceSet result = existEmbeddedServer.executeQuery(xquery);
 			
         assertEquals(expectedResults.length, result.getSize());
 
@@ -176,10 +168,12 @@ public class ConstructedNodesTest {
 				"<a><b>world</b>hello</a>"
 				};
 
-        String oki = service.getProperty(OutputKeys.INDENT);
-        service.setProperty(OutputKeys.INDENT, "no");
+		final XQueryService xpathQueryService = (XQueryService) existEmbeddedServer.getRoot().getService("XQueryService", "1.0");
 
-        ResourceSet result = service.query(xquery);
+        String oki = xpathQueryService.getProperty(OutputKeys.INDENT);
+		xpathQueryService.setProperty(OutputKeys.INDENT, "no");
+
+        ResourceSet result = xpathQueryService.query(xquery);
 
         assertEquals(expectedResults.length, result.getSize());
 
@@ -189,29 +183,6 @@ public class ConstructedNodesTest {
         }
 
         // Restore indent property to ensure test atomicity
-        service.setProperty(OutputKeys.INDENT, oki);
-	}
-
-    @Before
-	public void setUp() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
-		// initialize driver
-		Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
-		database = (Database) cl.newInstance();
-		database.setProperty("create-database", "true");
-		DatabaseManager.registerDatabase(database);
-		root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, TEST_DB_USER, TEST_DB_PWD);
-		service = (XPathQueryService) root.getService( "XQueryService", "1.0" );
-	}
-
-    @After
-	public void tearDown() throws XMLDBException {
-		DatabaseManager.deregisterDatabase(database);
-		DatabaseInstanceManager dim =
-			(DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
-		dim.shutdown();
-        
-        // clear instance variables
-        service = null;
-        root = null;
+		xpathQueryService.setProperty(OutputKeys.INDENT, oki);
 	}
 }

@@ -22,6 +22,9 @@
 package org.exist.xmldb;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
@@ -30,7 +33,7 @@ import org.junit.runners.Suite;
     CreateCollectionsTest.class,
     ResourceTest.class,
     BinaryResourceUpdateTest.class,
-    /* ResourceSetTest.class */
+    ResourceSetTest.class,
     TestEXistXMLSerialize.class,
     CopyMoveTest.class,
     ContentAsDOMTest.class,
@@ -42,20 +45,19 @@ import org.junit.runners.Suite;
 public class XmldbLocalTests {
 
     public final static String ROOT_URI = XmldbURI.LOCAL_DB;
-    public final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
 
     public final static String ADMIN_UID = "admin";
     public final static String ADMIN_PWD = "";
 
     public final static String GUEST_UID = "guest";
 
-    public static File getExistDir() {
+    public static Path getExistDir() {
         final String existHome = System.getProperty("exist.home");
-        return existHome == null ? new File(".") : new File(existHome);
+        return existHome == null ? Paths.get(".").normalize() : Paths.get(existHome).normalize();
     }
 
-    public static File getShakespeareSamplesDirectory() {
+    public static Path getShakespeareSamplesDirectory() {
         final String directory = "samples/shakespeare";
-        return new File(getExistDir(), directory);
+        return getExistDir().resolve(directory).normalize();
     }
 }

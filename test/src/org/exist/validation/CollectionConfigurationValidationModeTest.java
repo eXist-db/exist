@@ -23,21 +23,11 @@
 package org.exist.validation;
 
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.exist.xmldb.XmldbURI;
+import org.exist.test.ExistXmldbEmbeddedServer;
 
-import org.xmldb.api.DatabaseManager;
+import org.junit.*;
 import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.Database;
 import org.xmldb.api.base.XMLDBException;
-import org.xmldb.api.modules.XPathQueryService;
-
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.modules.CollectionManagementService;
@@ -50,48 +40,30 @@ import static org.junit.Assert.*;
  */
 public class CollectionConfigurationValidationModeTest {
 
-    String valid = "<xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"http://jmvanel.free.fr/xsd/addressBook\" elementFormDefault=\"qualified\">" + "<xsd:attribute name=\"uselessAttribute\" type=\"xsd:string\"/>" + "<xsd:complexType name=\"record\">" + "<xsd:sequence>" + "<xsd:element name=\"cname\" type=\"xsd:string\"/>" + "<xsd:element name=\"email\" type=\"xsd:string\"/>" + "</xsd:sequence>" + "</xsd:complexType>" + "<xsd:element name=\"addressBook\">" + "<xsd:complexType>" + "<xsd:sequence>" + "<xsd:element name=\"owner\" type=\"record\"/>" + "<xsd:element name=\"person\" type=\"record\" minOccurs=\"0\" maxOccurs=\"unbounded\"/>" + "</xsd:sequence>" + "</xsd:complexType>" + "</xsd:element>" + "</xsd:schema>";
-    String invalid = "<xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"http://jmvanel.free.fr/xsd/addressBook\" elementFormDefault=\"qualified\">" + "<xsd:attribute name=\"uselessAttribute\" type=\"xsd:string\"/>" + "<xsd:complexType name=\"record\">" + "<xsd:sequence>" + "<xsd:elementa name=\"cname\" type=\"xsd:string\"/>" + "<xsd:elementb name=\"email\" type=\"xsd:string\"/>" + "</xsd:sequence>" + "</xsd:complexType>" + "<xsd:element name=\"addressBook\">" + "<xsd:complexType>" + "<xsd:sequence>" + "<xsd:element name=\"owner\" type=\"record\"/>" + "<xsd:element name=\"person\" type=\"record\" minOccurs=\"0\" maxOccurs=\"unbounded\"/>" + "</xsd:sequence>" + "</xsd:complexType>" + "</xsd:element>" + "</xsd:schema>";
-    String anonymous = "<schema elementFormDefault=\"qualified\">" + "<attribute name=\"uselessAttribute\" type=\"string\"/>" + "<complexType name=\"record\">" + "<sequence>" + "<elementa name=\"cname\" type=\"string\"/>" + "<elementb name=\"email\" type=\"string\"/>" + "</sequence>" + "</complexType>" + "<element name=\"addressBook\">" + "<complexType>" + "<sequence>" + "<element name=\"owner\" type=\"record\"/>" + "<element name=\"person\" type=\"record\" minOccurs=\"0\" maxOccurs=\"unbounded\"/>" + "</sequence>" + "</complexType>" + "</element>" + "</schema>";
-    String different = "<asd:schema xmlns:asd=\"http://www.w3.org/2001/XMLSchemaschema\" targetNamespace=\"http://jmvanel.free.fr/xsd/addressBookbook\" elementFormDefault=\"qualified\">" + "<asd:attribute name=\"uselessAttribute\" type=\"asd:string\"/>" + "<asd:complexType name=\"record\">" + "<asd:sequence>" + "<asd:element name=\"cname\" type=\"asd:string\"/>" + "<asd:element name=\"email\" type=\"asd:string\"/>" + "</asd:sequence>" + "</asd:complexType>" + "<asd:element name=\"addressBook\">" + "<asd:complexType>" + "<asd:sequence>" + "<asd:element name=\"owner\" type=\"record\"/>" + "<asd:element name=\"person\" type=\"record\" minOccurs=\"0\" maxOccurs=\"unbounded\"/>" + "</asd:sequence>" + "</asd:complexType>" + "</asd:element>" + "</asd:schema>";
+    @ClassRule
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
 
-    String xconf_yes = "<collection xmlns=\"http://exist-db.org/collection-config/1.0\"><validation mode=\"yes\"/></collection>";
-    String xconf_no = "<collection xmlns=\"http://exist-db.org/collection-config/1.0\"><validation mode=\"no\"/></collection>";
-    String xconf_auto = "<collection xmlns=\"http://exist-db.org/collection-config/1.0\"><validation mode=\"auto\"/></collection>";
-    @SuppressWarnings("unused")
-	private static final Logger logger = LogManager.getLogger(CollectionConfigurationValidationModeTest.class);
-    private static XPathQueryService xpqservice;
-    private static Collection root = null;
-    private static Database database = null;
-    private static CollectionManagementService cmservice = null;
+    private static final String valid = "<xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"http://jmvanel.free.fr/xsd/addressBook\" elementFormDefault=\"qualified\">" + "<xsd:attribute name=\"uselessAttribute\" type=\"xsd:string\"/>" + "<xsd:complexType name=\"record\">" + "<xsd:sequence>" + "<xsd:element name=\"cname\" type=\"xsd:string\"/>" + "<xsd:element name=\"email\" type=\"xsd:string\"/>" + "</xsd:sequence>" + "</xsd:complexType>" + "<xsd:element name=\"addressBook\">" + "<xsd:complexType>" + "<xsd:sequence>" + "<xsd:element name=\"owner\" type=\"record\"/>" + "<xsd:element name=\"person\" type=\"record\" minOccurs=\"0\" maxOccurs=\"unbounded\"/>" + "</xsd:sequence>" + "</xsd:complexType>" + "</xsd:element>" + "</xsd:schema>";
+    private static final String invalid = "<xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"http://jmvanel.free.fr/xsd/addressBook\" elementFormDefault=\"qualified\">" + "<xsd:attribute name=\"uselessAttribute\" type=\"xsd:string\"/>" + "<xsd:complexType name=\"record\">" + "<xsd:sequence>" + "<xsd:elementa name=\"cname\" type=\"xsd:string\"/>" + "<xsd:elementb name=\"email\" type=\"xsd:string\"/>" + "</xsd:sequence>" + "</xsd:complexType>" + "<xsd:element name=\"addressBook\">" + "<xsd:complexType>" + "<xsd:sequence>" + "<xsd:element name=\"owner\" type=\"record\"/>" + "<xsd:element name=\"person\" type=\"record\" minOccurs=\"0\" maxOccurs=\"unbounded\"/>" + "</xsd:sequence>" + "</xsd:complexType>" + "</xsd:element>" + "</xsd:schema>";
+    private static final String anonymous = "<schema elementFormDefault=\"qualified\">" + "<attribute name=\"uselessAttribute\" type=\"string\"/>" + "<complexType name=\"record\">" + "<sequence>" + "<elementa name=\"cname\" type=\"string\"/>" + "<elementb name=\"email\" type=\"string\"/>" + "</sequence>" + "</complexType>" + "<element name=\"addressBook\">" + "<complexType>" + "<sequence>" + "<element name=\"owner\" type=\"record\"/>" + "<element name=\"person\" type=\"record\" minOccurs=\"0\" maxOccurs=\"unbounded\"/>" + "</sequence>" + "</complexType>" + "</element>" + "</schema>";
+    private static final String different = "<asd:schema xmlns:asd=\"http://www.w3.org/2001/XMLSchemaschema\" targetNamespace=\"http://jmvanel.free.fr/xsd/addressBookbook\" elementFormDefault=\"qualified\">" + "<asd:attribute name=\"uselessAttribute\" type=\"asd:string\"/>" + "<asd:complexType name=\"record\">" + "<asd:sequence>" + "<asd:element name=\"cname\" type=\"asd:string\"/>" + "<asd:element name=\"email\" type=\"asd:string\"/>" + "</asd:sequence>" + "</asd:complexType>" + "<asd:element name=\"addressBook\">" + "<asd:complexType>" + "<asd:sequence>" + "<asd:element name=\"owner\" type=\"record\"/>" + "<asd:element name=\"person\" type=\"record\" minOccurs=\"0\" maxOccurs=\"unbounded\"/>" + "</asd:sequence>" + "</asd:complexType>" + "</asd:element>" + "</asd:schema>";
 
-    public CollectionConfigurationValidationModeTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-        Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
-        database = (Database) cl.newInstance();
-        database.setProperty("create-database", "true");
-        DatabaseManager.registerDatabase(database);
-        root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
-        xpqservice = (XPathQueryService) root.getService( "XQueryService", "1.0" );
-        cmservice = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
-    }
+    private static final String xconf_yes = "<collection xmlns=\"http://exist-db.org/collection-config/1.0\"><validation mode=\"yes\"/></collection>";
+    private static final String xconf_no = "<collection xmlns=\"http://exist-db.org/collection-config/1.0\"><validation mode=\"no\"/></collection>";
+    private static final String xconf_auto = "<collection xmlns=\"http://exist-db.org/collection-config/1.0\"><validation mode=\"auto\"/></collection>";
 
     @AfterClass
     public static void tearDownClass() throws Exception {
-        @SuppressWarnings("unused")
-		ResourceSet result = xpqservice.query("validation:clear-grammar-cache()");
+        existEmbeddedServer.executeQuery("validation:clear-grammar-cache()");
     }
 
     @Before
     public void setUp() throws Exception {
-        @SuppressWarnings("unused")
-		ResourceSet result = xpqservice.query("validation:clear-grammar-cache()");
+        existEmbeddedServer.executeQuery("validation:clear-grammar-cache()");
     }
 
-    private void createCollection(String collection) throws XMLDBException {
+    private void createCollection(final String collection) throws XMLDBException {
+        final CollectionManagementService cmservice = (CollectionManagementService) existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
         Collection testCollection = cmservice.createCollection(collection);
         assertNotNull(testCollection);
 
@@ -99,58 +71,43 @@ public class CollectionConfigurationValidationModeTest {
         assertNotNull(testCollection);
     }
 
-    private void storeCollectionXconf(String collection, String document) throws XMLDBException {
-        ResourceSet result = xpqservice.query("xmldb:store(\"" + collection + "\", \"collection.xconf\", " + document + ")");
-        String r = (String) result.getResource(0).getContent();
+    private void storeCollectionXconf(final String collection, final String document) throws XMLDBException {
+        final ResourceSet result = existEmbeddedServer.executeQuery("xmldb:store(\"" + collection + "\", \"collection.xconf\", " + document + ")");
+        final String r = (String) result.getResource(0).getContent();
         assertEquals("Store xconf", collection + "/collection.xconf", r);
     }
 
-    private void storeDocument(String collection, String name, String document) throws XMLDBException {
-        ResourceSet result = xpqservice.query("xmldb:store(\"" + collection + "\", \"" + name + "\", " + document + ")");
-        String r = (String) result.getResource(0).getContent();
+    private void storeDocument(final String collection, final String name, final String document) throws XMLDBException {
+        final ResourceSet result = existEmbeddedServer.executeQuery("xmldb:store(\"" + collection + "\", \"" + name + "\", " + document + ")");
+        final String r = (String) result.getResource(0).getContent();
         assertEquals("Store doc", collection + "/" + name, r);
     }
 
     @Test
-    public void insertModeFalse() {
+    public void insertModeFalse() throws XMLDBException {
+        createCollection("/db/false");
+        storeCollectionXconf("/db/system/config/db/false", xconf_no);
 
-        try {
-            createCollection("/db/false");
-            storeCollectionXconf("/db/system/config/db/false", xconf_no);
-        } catch (XMLDBException ex) {
-            fail(ex.getMessage());
-        }
+        // namespace provided, valid document; should pass
+        storeDocument("/db/false", "valid.xml", valid);
 
-        try {
-            // namespace provided, valid document; should pass
-            storeDocument("/db/false", "valid.xml", valid);
+        // namespace provided, invalid document; should pass
+        storeDocument("/db/false", "invalid.xml", invalid);
 
-            // namespace provided, invalid document; should pass
-            storeDocument("/db/false", "invalid.xml", invalid);
+        // no namespace provided, should pass
+        storeDocument("/db/false", "anonymous.xml", anonymous);
 
-            // no namespace provided, should pass
-            storeDocument("/db/false", "anonymous.xml", anonymous);
-
-            // non resolvable namespace provided, should pass
-            storeDocument("/db/false", "different.xml", different);
-
-        } catch (XMLDBException ex) {
-            fail(ex.getMessage());
-        }
+        // non resolvable namespace provided, should pass
+        storeDocument("/db/false", "different.xml", different);
     }
 
     @Test
-    public void insertModeTrue() {
-
+    public void insertModeTrue() throws XMLDBException {
         // namespace provided, valid document; should pass
-        try {
-            createCollection("/db/true");
-            storeCollectionXconf("/db/system/config/db/true", xconf_yes);
+        createCollection("/db/true");
+        storeCollectionXconf("/db/system/config/db/true", xconf_yes);
 
-            storeDocument("/db/true", "valid.xml", valid);
-        } catch (XMLDBException ex) {
-            fail(ex.getMessage());
-        }
+        storeDocument("/db/true", "valid.xml", valid);
 
         // namespace provided, invalid document; should fail
         try {
@@ -189,17 +146,13 @@ public class CollectionConfigurationValidationModeTest {
     }
 
     @Test
-    public void insertModeAuto() {
-
+    public void insertModeAuto() throws XMLDBException {
         // namespace provided, valid document; should pass
-        try {
-            createCollection("/db/auto");
-            storeCollectionXconf("/db/system/config/db/auto", xconf_auto);
+        createCollection("/db/auto");
+        storeCollectionXconf("/db/system/config/db/auto", xconf_auto);
 
-            storeDocument("/db/auto", "valid.xml", valid);
-        } catch (XMLDBException ex) {
-            fail(ex.getMessage());
-        }
+        storeDocument("/db/auto", "valid.xml", valid);
+
 
         // namespace provided, invalid document, should fail
         try {

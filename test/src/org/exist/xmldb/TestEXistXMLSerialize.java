@@ -22,10 +22,12 @@
 package org.exist.xmldb;
 
 import org.exist.security.Account;
+import org.exist.test.ExistXmldbEmbeddedServer;
+import org.junit.ClassRule;
 import org.xmldb.api.modules.CollectionManagementService;
-import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.nio.file.Path;
 import java.util.Properties;
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -52,7 +54,6 @@ import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.Database;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
 import static org.exist.xmldb.XmldbLocalTests.*;
@@ -62,6 +63,9 @@ import static org.exist.xmldb.XmldbLocalTests.*;
  * @author  bmadigan
  */
 public class TestEXistXMLSerialize {
+
+    @ClassRule
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
 
 	private final static String XML_DATA =
     	"<test>" +
@@ -78,19 +82,13 @@ public class TestEXistXMLSerialize {
 		"<p><xsl:value-of select=\"$testparam\"/>: <xsl:apply-templates/></p></xsl:template>" +
 		"</xsl:stylesheet>";
     
-    private final static File testFile = new File(getExistDir(),"test/src/org/exist/xmldb/PerformanceTest.xml");
+    private final static Path testFile = getExistDir().resolve("test/src/org/exist/xmldb/PerformanceTest.xml").normalize();
 
     private final static String TEST_COLLECTION = "testXmlSerialize";
 
     @Before
     public void setUp() throws Exception {
-        Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
-        Database database = (Database) cl.newInstance();
-        database.setProperty("create-database", "true");
-        DatabaseManager.registerDatabase(database);
-
-        Collection root = DatabaseManager.getCollection(ROOT_URI, ADMIN_UID, ADMIN_PWD);
-        CollectionManagementService service = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
+        CollectionManagementService service = (CollectionManagementService) existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
         Collection testCollection = service.createCollection(TEST_COLLECTION);
         UserManagementService ums = (UserManagementService) testCollection.getService("UserManagementService", "1.0");
         // change ownership to guest
@@ -102,13 +100,8 @@ public class TestEXistXMLSerialize {
     @After
     public void tearDown() throws XMLDBException {
         //delete the test collection
-        Collection root = DatabaseManager.getCollection(ROOT_URI, ADMIN_UID, ADMIN_PWD);
-        CollectionManagementService cms = (CollectionManagementService)root.getService("CollectionManagementService", "1.0");
+        CollectionManagementService cms = (CollectionManagementService)existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
         cms.removeCollection(TEST_COLLECTION);
-
-        //shutdownDB the db
-        DatabaseInstanceManager dim = (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
-        dim.shutdown();
     }
 
     @Test
@@ -117,7 +110,7 @@ public class TestEXistXMLSerialize {
         XMLResource resource = (XMLResource) testCollection.createResource(null, "XMLResource");
 
         Document doc = javax.xml.parsers.DocumentBuilderFactory.newInstance( ).
-                        newDocumentBuilder().parse(testFile);
+                        newDocumentBuilder().parse(testFile.toFile());
 
         resource.setContentAsDOM(doc);
         testCollection.storeResource(resource);
@@ -139,7 +132,7 @@ public class TestEXistXMLSerialize {
     @Test
     public void serialize2() throws ParserConfigurationException, SAXException, IOException, XMLDBException {
         Collection testCollection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
-        Document doc = javax.xml.parsers.DocumentBuilderFactory.newInstance( ).newDocumentBuilder().parse(testFile);
+        Document doc = javax.xml.parsers.DocumentBuilderFactory.newInstance( ).newDocumentBuilder().parse(testFile.toFile());
         XMLResource resource = (XMLResource) testCollection.createResource(null, "XMLResource");
         resource.setContentAsDOM(doc);
         testCollection.storeResource(resource);
@@ -167,7 +160,7 @@ public class TestEXistXMLSerialize {
     @Test
     public void serialize3() throws ParserConfigurationException, SAXException, IOException, XMLDBException, TransformerException {
         Collection testCollection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
-        Document doc = javax.xml.parsers.DocumentBuilderFactory.newInstance( ).newDocumentBuilder().parse(testFile);
+        Document doc = javax.xml.parsers.DocumentBuilderFactory.newInstance( ).newDocumentBuilder().parse(testFile.toFile());
         XMLResource resource = (XMLResource) testCollection.createResource(null, "XMLResource");
         resource.setContentAsDOM(doc);
         testCollection.storeResource(resource);
@@ -187,7 +180,7 @@ public class TestEXistXMLSerialize {
     public void serialize4() throws ParserConfigurationException, SAXException, IOException, XMLDBException {
         Collection testCollection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
 
-        Document doc = javax.xml.parsers.DocumentBuilderFactory.newInstance( ).newDocumentBuilder().parse(testFile);
+        Document doc = javax.xml.parsers.DocumentBuilderFactory.newInstance( ).newDocumentBuilder().parse(testFile.toFile());
         XMLResource resource = (XMLResource) testCollection.createResource(null, "XMLResource");
         resource.setContentAsDOM(doc);
 

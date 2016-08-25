@@ -21,11 +21,10 @@
  */
 package org.exist.xmldb;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import org.exist.test.ExistXmldbEmbeddedServer;
+import org.junit.*;
 import org.exist.security.Account;
-import org.junit.After;
-import org.junit.Before;
+
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -35,7 +34,6 @@ import org.exist.test.TestConstants;
 import org.exist.xquery.Constants;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.Database;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
@@ -46,6 +44,8 @@ import static org.exist.xmldb.XmldbLocalTests.*;
 
 public class CollectionConfigurationTest {
 
+    @ClassRule
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
 
     private final static String TEST_COLLECTION = "testIndexConfiguration";
     
@@ -157,24 +157,16 @@ public class CollectionConfigurationTest {
 
     @Before
     public void setUp() throws Exception {
-        
-        // initialize driver
-        Class<?> cl = Class.forName(DRIVER);
-        Database database = (Database) cl.newInstance();
-        database.setProperty("create-database", "true");
-        DatabaseManager.registerDatabase(database);
-        
-        Collection root = DatabaseManager.getCollection(ROOT_URI, ADMIN_UID, ADMIN_PWD);
-        CollectionManagementService service = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
+        final CollectionManagementService service = (CollectionManagementService) existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
 
-        Collection testCollection = service.createCollection(TEST_COLLECTION);
+        final Collection testCollection = service.createCollection(TEST_COLLECTION);
         UserManagementService ums = (UserManagementService) testCollection.getService("UserManagementService", "1.0");
         // change ownership to guest
-        Account guest = ums.getAccount(GUEST_UID);
+        final Account guest = ums.getAccount(GUEST_UID);
         ums.chown(guest, guest.getPrimaryGroup());
         ums.chmod("rwxr-xr-x");
 
-        Collection testConfCollection = service.createCollection(CONF_COLL_URI.toString());
+        final Collection testConfCollection = service.createCollection(CONF_COLL_URI.toString());
         ums = (UserManagementService) testConfCollection.getService("UserManagementService", "1.0");
         // change ownership to guest
         ums.chown(guest, guest.getPrimaryGroup());
@@ -185,13 +177,9 @@ public class CollectionConfigurationTest {
 
     @After
     public void tearDown() throws XMLDBException {
-        Collection root = DatabaseManager.getCollection(ROOT_URI, ADMIN_UID, ADMIN_PWD);
-        CollectionManagementService service = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
+        final CollectionManagementService service = (CollectionManagementService) existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
         service.removeCollection(TEST_COLLECTION.toString());
         service.removeCollection(CONF_COLL_URI.toString()); //Removes the collection config collection *manually*
-
-        DatabaseInstanceManager mgr = (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
-        mgr.shutdown();
     }
 
     @Test

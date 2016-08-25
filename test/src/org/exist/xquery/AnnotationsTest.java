@@ -22,15 +22,15 @@
 package org.exist.xquery;
 
 import org.exist.TestUtils;
-import org.exist.xmldb.DatabaseInstanceManager;
-import org.exist.xmldb.XmldbURI;
+import org.exist.test.ExistXmldbEmbeddedServer;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import static org.junit.Assert.*;
+
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.Database;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
@@ -39,21 +39,15 @@ import org.xmldb.api.modules.XPathQueryService;
 
 public class AnnotationsTest {
 
-    private static Database database;
+    @ClassRule
+    public final static ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
 
     public AnnotationsTest() {
     }
 
     @BeforeClass
     public static void setUp() throws XMLDBException, ClassNotFoundException, InstantiationException, IllegalAccessException {
-        // initialize driver
-        Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
-        database = (Database) cl.newInstance();
-        database.setProperty("create-database", "true");
-        DatabaseManager.registerDatabase(database);
-
-        Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
-        CollectionManagementService service = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
+        CollectionManagementService service = (CollectionManagementService) existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
         Collection testCollection = service.createCollection("test");
         assertNotNull(testCollection);
     }
@@ -62,11 +56,6 @@ public class AnnotationsTest {
     public static void tearDown() throws Exception {
         // testCollection.removeResource( testCollection .getResource(file_name));
         TestUtils.cleanupDB();
-        DatabaseInstanceManager dim =
-                (DatabaseInstanceManager) DatabaseManager.getCollection("xmldb:exist:///db", "admin", "").getService("DatabaseInstanceManager", "1.0");
-        dim.shutdown();
-        DatabaseManager.deregisterDatabase(database);
-        database = null;
     }
 
     private Collection getTestCollection() throws XMLDBException {

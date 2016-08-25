@@ -1,13 +1,10 @@
 package org.exist.xquery;
 
-import org.exist.jetty.JettyStart;
-import org.exist.xmldb.CollectionImpl;
-import org.exist.xmldb.DatabaseInstanceManager;
-import org.exist.xmldb.XmldbURI;
+import org.exist.test.ExistXmldbEmbeddedServer;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Test;
-import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.*;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
@@ -17,59 +14,31 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 public class SpecialNamesTest {
-    
-    private static String uri = XmldbURI.LOCAL_DB;
-    
-    public static void setURI(String collectionURI) {
-        uri = collectionURI;
-    }
-    
-    private static JettyStart server = null;
-    
+
+    @ClassRule
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
+
     private Collection testCollection;
     @SuppressWarnings("unused")
 	private String query;
 
     @Before
     public void setUp() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
-        if (uri.startsWith("xmldb:exist://localhost")) {
-            initServer();
-        }
-
-        // initialize driver
-        Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
-        Database database = (Database) cl.newInstance();
-        database.setProperty("create-database", "true");
-        DatabaseManager.registerDatabase(database);
-
-        Collection root =
-                DatabaseManager.getCollection(
-                uri,
-                "admin",
-                null);
-        CollectionManagementService service =
-                (CollectionManagementService) root.getService(
+        final CollectionManagementService service =
+                (CollectionManagementService) existEmbeddedServer.getRoot().getService(
                 "CollectionManagementService",
                 "1.0");
         testCollection = service.createCollection("test");
         assertNotNull(testCollection);
     }
-    
-	private void initServer() {
-        if (server == null) {
-            server = new JettyStart();
-            server.run();
-        }
-    }
 
     @After
     public void tearDown() throws Exception {
-        if (!((CollectionImpl) testCollection).isRemoteCollection()) {
-            DatabaseInstanceManager dim =
-                    (DatabaseInstanceManager) testCollection.getService(
-                    "DatabaseInstanceManager", "1.0");
-            dim.shutdown();
-        }
+        final CollectionManagementService service =
+                (CollectionManagementService) existEmbeddedServer.getRoot().getService(
+                        "CollectionManagementService",
+                        "1.0");
+        service.removeCollection("test");
         testCollection = null;
     }
     
