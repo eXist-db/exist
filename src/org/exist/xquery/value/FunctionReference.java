@@ -127,7 +127,7 @@ public class FunctionReference extends AtomicValue {
     }
     
 	public boolean effectiveBooleanValue() throws XPathException {
-		throw new XPathException("Called effectiveBooleanValue() on FunctionReference");
+		throw new XPathException(ErrorCodes.FORG0006, "Effective boolean value is not defined for a FunctionReference");
 	}    
 
     @Override
