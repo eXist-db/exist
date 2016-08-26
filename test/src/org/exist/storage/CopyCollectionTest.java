@@ -75,6 +75,29 @@ public class CopyCollectionTest {
         xmldbRead();
     }
 
+    @Test(expected = PermissionDeniedException.class)
+    public void copyToSubCollection() throws Exception {
+        final BrokerPool pool = startDB();
+
+        final TransactionManager transact = pool.getTransactionManager();
+
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+            final Txn transaction = transact.beginTransaction()) {
+
+            final Collection src = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
+            broker.saveCollection(transaction, src);
+
+            final Collection dst = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI2);
+            broker.saveCollection(transaction, dst);
+
+            broker.copyCollection(transaction, src, dst, src.getURI().lastSegment());
+
+            fail("expect PermissionDeniedException: Cannot copy collection '/db/test' to it child collection '/db/test/test2'");
+
+            transact.commit(transaction);
+        }
+    }
+
     private void store() throws IllegalAccessException, DatabaseConfigurationException, InstantiationException, XMLDBException, EXistException, ClassNotFoundException, PermissionDeniedException, IOException, SAXException, LockException {
         BrokerPool.FORCE_CORRUPTION = true;
         final BrokerPool pool = startDB();

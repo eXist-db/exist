@@ -1056,10 +1056,13 @@ public class NativeBroker extends DBBroker {
         final XmldbURI dstURI = destination.getURI().append(newName);
 
         if(collection.getURI().equals(dstURI)) {
-            throw new PermissionDeniedException("Cannot move collection to itself '" + collection.getURI() + "'.");
+            throw new PermissionDeniedException("Cannot copy collection to itself '" + collection.getURI() + "'.");
         }
         if(collection.getId() == destination.getId()) {
-            throw new PermissionDeniedException("Cannot move collection to itself '" + collection.getURI() + "'.");
+            throw new PermissionDeniedException("Cannot copy collection to itself '" + collection.getURI() + "'.");
+        }
+        if(isSubCollection(collection, destination)) {
+            throw new PermissionDeniedException("Cannot copy collection '" + collection.getURI() + "' to it child collection '"+destination.getURI()+"'.");
         }
 
         final CollectionCache collectionsCache = pool.getCollectionsCache();
@@ -1068,6 +1071,11 @@ public class NativeBroker extends DBBroker {
             try {
                 pool.getProcessMonitor().startJob(ProcessMonitor.ACTION_COPY_COLLECTION, collection.getURI());
                 lock.acquire(Lock.WRITE_LOCK);
+
+                //recheck here because now under 'synchronized(collectionsCache)'
+                if(isSubCollection(collection, destination)) {
+                    throw new PermissionDeniedException("Cannot copy collection '" + collection.getURI() + "' to it child collection '"+destination.getURI()+"'.");
+                }
 
                 final XmldbURI parentName = collection.getParentURI();
                 final Collection parent = parentName == null ? collection : getCollection(parentName);
@@ -1205,6 +1213,10 @@ public class NativeBroker extends DBBroker {
         }
     }
 
+    private boolean isSubCollection(final Collection col, final Collection sub) {
+        return sub.getURI().startsWith(col.getURI());
+    }
+
     @Override
     public void moveCollection(final Txn transaction, final Collection collection, final Collection destination, final XmldbURI newName) throws PermissionDeniedException, LockException, IOException, TriggerException {
 
@@ -1224,6 +1236,9 @@ public class NativeBroker extends DBBroker {
         }
         if(collection.getURI().equals(XmldbURI.ROOT_COLLECTION_URI)) {
             throw new PermissionDeniedException("Cannot move the db root collection");
+        }
+        if(isSubCollection(collection, destination)) {
+            throw new PermissionDeniedException("Cannot move collection '" + collection.getURI() + "' to it child collection '"+destination.getURI()+"'.");
         }
 
         final XmldbURI parentName = collection.getParentURI();
@@ -1338,6 +1353,11 @@ public class NativeBroker extends DBBroker {
 
             final XmldbURI srcURI = collection.getURI();
             final XmldbURI dstURI = destination.getURI().append(newName);
+
+            //recheck here because now under 'synchronized(collectionsCache)'
+            if(isSubCollection(collection, destination)) {
+                throw new PermissionDeniedException("Cannot move collection '" + srcURI + "' to it child collection '"+dstURI+"'.");
+            }
 
             if(fireTrigger) {
                 trigger.beforeMoveCollection(this, transaction, collection, dstURI);
