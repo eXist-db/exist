@@ -123,6 +123,8 @@ public class XmldbURI implements Comparable<Object>, Serializable {
     public final static String API_REST = "rest-style";
     public final static String API_LOCAL = "local";
 
+    public final static XmldbURI[] NO_SEGMENTS = new XmldbURI[0];
+
     private String encodedCollectionPath;
     protected boolean hadXmldbPrefix = false;
 
@@ -546,6 +548,8 @@ public class XmldbURI implements Comparable<Object>, Serializable {
             return new XmldbURI[0];
         }
         final String[] split = name.split("/");
+        if (split.length == 0) return NO_SEGMENTS;
+
         final int fix = ("".equals(split[0])) ? 1 : 0;
         final XmldbURI[] segments = new XmldbURI[split.length - fix];
 
