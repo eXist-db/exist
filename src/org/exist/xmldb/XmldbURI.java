@@ -801,15 +801,27 @@ public class XmldbURI implements Comparable<Object>, Serializable {
         return getXmldbURI().toURL();
     }
 
-    //TODO: add unit test for this
-    //TODO : come on ! use a URI method name.
-    //resolve() is a must here
-    public boolean startsWith(final XmldbURI xmldbUri) {
-        return xmldbUri == null ? false : toString().startsWith(xmldbUri.toString());
+    public boolean startsWith(final XmldbURI prefix) {
+        if (prefix == null) {
+            return false;
+        }
+
+        final XmldbURI[] segments = getPathSegments();
+        final XmldbURI[] prefix_segments = prefix.getPathSegments();
+
+        if (prefix_segments.length > segments.length) {
+            return false;
+        }
+
+        for (int i = 0; i < prefix_segments.length; i++) {
+            if (!prefix_segments[i].equalsInternal(segments[i])) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
-    //TODO : come on ! use a URI method name.
-    //resolve() is a must here
     public boolean startsWith(final String string) throws URISyntaxException {
         return startsWith(XmldbURI.xmldbUriFor(string));
     }
