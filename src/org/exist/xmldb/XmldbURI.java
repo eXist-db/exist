@@ -544,10 +544,14 @@ public class XmldbURI implements Comparable<Object>, Serializable {
     public XmldbURI[] getPathSegments() {
         final String name = getRawCollectionPath();
 
-        if ((name == null) || name.isEmpty()) return NO_SEGMENTS;
+        if ((name == null) || name.isEmpty()) {
+            return NO_SEGMENTS;
+        }
         
         final String[] split = name.split("/");
-        if (split.length == 0) return NO_SEGMENTS;
+        if (split.length == 0) {
+            return NO_SEGMENTS;
+        }
 
         final int fix = ("".equals(split[0])) ? 1 : 0;
         final XmldbURI[] segments = new XmldbURI[split.length - fix];
@@ -805,10 +809,12 @@ public class XmldbURI implements Comparable<Object>, Serializable {
     }
 
     public boolean startsWith(final XmldbURI prefix) {
-        if (prefix == null) return false;
+        if (prefix == null) {
+            return false;
+        }
 
-        XmldbURI[] segments = getPathSegments();
-        XmldbURI[] prefix_segments = prefix.getPathSegments();
+        final XmldbURI[] segments = getPathSegments();
+        final XmldbURI[] prefix_segments = prefix.getPathSegments();
 
         if (prefix_segments.length > segments.length) return false;
 

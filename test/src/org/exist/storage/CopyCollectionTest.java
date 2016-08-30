@@ -94,7 +94,7 @@ public class CopyCollectionTest {
 
             fail("expect PermissionDeniedException: Cannot copy collection '/db/test' to it child collection '/db/test/test2'");
 
-            transact.commit(transaction);
+            transaction.commit();
         }
     }
 
