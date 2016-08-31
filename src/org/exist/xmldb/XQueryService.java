@@ -182,7 +182,12 @@ public interface XQueryService extends org.xmldb.api.modules.XQueryService {
 	 * @throws XMLDBException
 	 */
 	public void declareVariable(String qname, Object initialValue) throws XMLDBException;
-	
+
+	/**
+	 * Clears any previously declared variables
+	 */
+	public void clearVariables() throws XMLDBException;
+
 	/**
 	 * Enable or disable XPath 1.0 compatibility mode. In XPath 1.0
 	 * compatibility mode, some XQuery expressions will behave different.

@@ -436,6 +436,11 @@ public class LocalXPathQueryService extends AbstractLocalService implements XPat
     }
 
     @Override
+    public void clearVariables() throws XMLDBException {
+        variableDecls.clear();
+    }
+
+    @Override
     public void setXPathCompatibility(final boolean backwardsCompatible) {
         this.xpathCompatible = backwardsCompatible;
     }
