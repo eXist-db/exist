@@ -24,9 +24,9 @@ package org.exist.collections;
 import org.exist.EXistException;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.DocumentImpl;
+import org.exist.security.AuthenticationException;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
@@ -78,34 +78,46 @@ public class CollectionRemovalTest {
     private static BrokerPool pool;
 
     @Test
-    public void failingRemoveCollection() {
+    public void failingRemoveCollection()
+            throws XMLDBException, PermissionDeniedException, SAXException, EXistException, IOException, AuthenticationException {
         doQuery(3);
         retrieveDoc(TestConstants.TEST_COLLECTION_URI3);
-        
+
+        boolean caughtPermissionDenied = false;
+        try {
         removeCollection(
         		org.exist.security.SecurityManager.GUEST_USER,
         		org.exist.security.SecurityManager.GUEST_USER,
         		TestConstants.TEST_COLLECTION_URI2);
-        
+        } catch(final PermissionDeniedException e) {
+            caughtPermissionDenied = true;
+        }
+
+        if(!caughtPermissionDenied) {
+            fail("Guest user should not have been able to remove the collection");
+        }
+
         retrieveDoc(TestConstants.TEST_COLLECTION_URI3);
         retrieveDoc(TestConstants.TEST_COLLECTION_URI2);
         doQuery(3);
     }
 
     @Test
-    public void removeCollection() {
+    public void removeCollection()
+            throws XMLDBException, PermissionDeniedException, SAXException, EXistException, IOException, AuthenticationException {
         doQuery(3);
         retrieveDoc(TestConstants.TEST_COLLECTION_URI3);
 
         removeCollection(
-        		org.exist.security.SecurityManager.DBA_USER,
-        		"",
-        		TestConstants.TEST_COLLECTION_URI2);
+                org.exist.security.SecurityManager.DBA_USER,
+                "",
+                TestConstants.TEST_COLLECTION_URI2);
 
         doQuery(0);
     }
 
-    private void removeCollection(String user, String password, XmldbURI uri) {
+    private void removeCollection(final String user, final String password, final XmldbURI uri)
+            throws AuthenticationException, EXistException, PermissionDeniedException, IOException, TriggerException {
         Collection test = null;
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().authenticate(user, password)));
@@ -114,8 +126,6 @@ public class CollectionRemovalTest {
             test = broker.openCollection(uri, Lock.WRITE_LOCK);
             broker.removeCollection(transaction, test);
             transact.commit(transaction);
-        } catch (Exception e) {
-			e.printStackTrace();
 		} finally {
             if (test != null) {
                 test.release(Lock.WRITE_LOCK);
@@ -123,7 +133,7 @@ public class CollectionRemovalTest {
 		}
     }
 
-    private void retrieveDoc(XmldbURI uri) {
+    private void retrieveDoc(final XmldbURI uri) throws EXistException, PermissionDeniedException, SAXException {
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             Collection test = null;
             try {
@@ -141,50 +151,34 @@ public class CollectionRemovalTest {
                     test.release(Lock.WRITE_LOCK);
                 }
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
         }
     }
 
-    private void doQuery(int expected) {
-        try {
-            org.xmldb.api.base.Collection testCollection =
-                    DatabaseManager.getCollection("xmldb:exist://" + TestConstants.TEST_COLLECTION_URI.toString(), "admin", "");
-            if (testCollection == null)
-                return;
-            XPathQueryServiceImpl service = (XPathQueryServiceImpl)
-                    testCollection.getService("XQueryService", "1.0");
-            ResourceSet result = service.query(QUERY1);
-            assertEquals(expected, result.getSize());
-
-            result = service.query(QUERY2);
-            assertEquals(expected, result.getSize());
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
+    private void doQuery(final int expected) throws XMLDBException {
+        final org.xmldb.api.base.Collection testCollection =
+                DatabaseManager.getCollection("xmldb:exist://" + TestConstants.TEST_COLLECTION_URI.toString(), "admin", "");
+        if (testCollection == null) {
+            return;
         }
+        final XPathQueryServiceImpl service = (XPathQueryServiceImpl)
+                testCollection.getService("XQueryService", "1.0");
+        ResourceSet result = service.query(QUERY1);
+        assertEquals(expected, result.getSize());
+
+        result = service.query(QUERY2);
+        assertEquals(expected, result.getSize());
     }
 
     @After
-    public void clearDB() {
-        try {
-			org.xmldb.api.base.Collection root =
-                    DatabaseManager.getCollection("xmldb:exist://" + TestConstants.TEST_COLLECTION_URI.toString(), "admin", "");
-			CollectionManagementService service = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
-			service.removeCollection(".");
-        } catch (XMLDBException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
+    public void clearDB() throws XMLDBException {
+        final org.xmldb.api.base.Collection root =
+                DatabaseManager.getCollection("xmldb:exist://" + TestConstants.TEST_COLLECTION_URI.toString(), "admin", "");
+        final CollectionManagementService service = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
+        service.removeCollection(".");
     }
 
     @Before
 	public void initDB() throws EXistException, DatabaseConfigurationException, PermissionDeniedException, IOException, SAXException, LockException, ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
-        final Configuration config = new Configuration();
-        BrokerPool.configure(1, 40, config);
-        this.pool = BrokerPool.getInstance();
-
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn transaction = transact.beginTransaction()) {
@@ -236,36 +230,26 @@ public class CollectionRemovalTest {
 			childCol.store(transaction, broker, info, DATA, false);
 
             transact.commit(transaction);
-
-			// initialize XML:DB driver
-			Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
-			Database database = (Database) cl.newInstance();
-			DatabaseManager.registerDatabase(database);
 		}
 	}
 
     @BeforeClass
-    public static void startDB() {
-        try {
-			Configuration config = new Configuration();
-			BrokerPool.configure(1, 40, config);
-			pool = BrokerPool.getInstance();
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        }
+    public static void startDB() throws DatabaseConfigurationException, EXistException, ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
+        final Configuration config = new Configuration();
+        BrokerPool.configure(1, 40, config, Optional.empty());
+        pool = BrokerPool.getInstance();
+
+        // initialize XML:DB driver
+        final Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
+        final Database database = (Database) cl.newInstance();
+        DatabaseManager.registerDatabase(database);
     }
     @AfterClass
-	public static void stopDB() {
-		try {
-			org.xmldb.api.base.Collection root = DatabaseManager.getCollection(
-					"xmldb:exist:///db", "admin", "");
-            DatabaseInstanceManager dim = (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
-			dim.shutdown();
-		} catch (XMLDBException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
+	public static void stopDB() throws XMLDBException {
+        org.xmldb.api.base.Collection root = DatabaseManager.getCollection(
+                "xmldb:exist:///db", "admin", "");
+        final DatabaseInstanceManager dim = (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
+        dim.shutdown();
 		pool = null;
 	}
 }
