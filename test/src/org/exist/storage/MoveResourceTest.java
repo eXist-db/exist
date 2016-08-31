@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.util.Optional;
 
 import org.exist.EXistException;
+import org.exist.TestUtils;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.persistent.DocumentImpl;
@@ -36,10 +37,12 @@ import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.test.TestConstants;
 import org.exist.util.Configuration;
+import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xmldb.CollectionManagementServiceImpl;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Test;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
@@ -272,5 +275,10 @@ public class MoveResourceTest {
     @After
     public void tearDown() {
         BrokerPool.stopAll(false);
+    }
+
+    @AfterClass
+    public static void cleanup() throws IOException, DatabaseConfigurationException {
+        TestUtils.cleanupDataDir();
     }
 }
