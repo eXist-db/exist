@@ -436,6 +436,15 @@ function mt:lookupWrongType() {
 };
 
 declare 
+    %test:assertTrue
+function mt:lookupWildcard() {
+    let $days := ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
+    let $map := $mt:daysOfWeek
+    return
+        every $day in $map?* satisfies $day = $days
+};
+
+declare 
     %test:assertEquals(1)
 function mt:compat() {
     let $map := map { "one":= 1, "two":= "2" }
