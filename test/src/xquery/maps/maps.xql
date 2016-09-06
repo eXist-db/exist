@@ -436,6 +436,7 @@ function mt:lookupWrongType() {
 };
 
 declare 
+    %test:pending
     %test:assertTrue
 function mt:lookupWildcard() {
     let $days := ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
