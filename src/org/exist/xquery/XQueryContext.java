@@ -514,6 +514,8 @@ public class XQueryContext implements BinaryValueManager, Context
         if (this.staticOptions != null){
         	ctx.staticOptions = new ArrayList<Option>( this.staticOptions );
         }
+
+        ctx.source = this.source;
         
     }
 
