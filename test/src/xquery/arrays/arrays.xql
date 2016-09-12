@@ -54,6 +54,8 @@ declare variable $arr:RESTXQ_TEST :=
          }
      };';
 
+declare variable $arr:primes := [2, 3, 5, 7, 11, 13, 17, 19];
+
 declare
     %test:setUp
 function arr:setup() {
@@ -588,7 +590,7 @@ function arr:apply-param-array() {
 };
 
 declare
-    %test:assertEquals("key")
+    %test:assertEquals("1")
 function arr:apply-param-map() {
     let $fn := function($m as map(*)) {
         $m?*
@@ -881,6 +883,17 @@ function arr:nested-for-each() {
             $_
         })
     })?*?*
+};
+
+declare
+    %test:assertTrue
+function arr:lookupWildcard() {
+    let $expected := (1 to array:size($arr:primes)) ! $arr:primes(.)
+    let $actual := $arr:primes?*
+    return
+        count($actual) eq count($expected)
+        and
+        (every $prime in $actual satisfies $prime = $expected)
 };
 
 (: Requires running server :)
