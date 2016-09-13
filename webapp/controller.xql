@@ -34,10 +34,13 @@ return
     	return
 			<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
 			{
-				if ($dashboard) then
-					<redirect url="apps/{$dashboard}/"/>
-				else
-					<redirect url="404.html"/>
+			if ($dashboard) then
+                if(request:get-uri() = "/exist/" and request:get-header("X-Forwarded-URI") = "/") then
+                   <redirect url="/apps/{$dashboard}/"/>
+                else
+                   <redirect url="apps/{$dashboard}/"/>
+            else
+                <redirect url="404.html"/>
 			}
 			</dispatch>
 	else
