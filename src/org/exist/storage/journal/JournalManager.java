@@ -31,6 +31,7 @@ import org.exist.util.ReadOnlyException;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 /**
@@ -48,7 +49,8 @@ public class JournalManager implements BrokerPoolService {
 
     @Override
     public void configure(final Configuration configuration) {
-        this.journalDir = (Path)configuration.getProperty(BrokerPool.PROPERTY_DATA_DIR);
+        this.journalDir = (Path) Optional.ofNullable(configuration.getProperty(Journal.PROPERTY_RECOVERY_JOURNAL_DIR))
+                .orElse(configuration.getProperty(BrokerPool.PROPERTY_DATA_DIR));
         this.groupCommits = configuration.getProperty(BrokerPool.PROPERTY_RECOVERY_GROUP_COMMIT, false);
         if (LOG.isDebugEnabled()) {
             LOG.debug("GroupCommits = " + groupCommits);

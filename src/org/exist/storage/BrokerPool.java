@@ -482,8 +482,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
         this.collectionCacheMgr = servicesManager.register(new CollectionCacheManager(this, collectionCache));
         this.notificationService = servicesManager.register(new NotificationService());
 
-        //TODO : journal directory *may* be different from BrokerPool.PROPERTY_DATA_DIR
-        journalManager = recoveryEnabled ? Optional.of(new JournalManager()) : Optional.empty();
+        this.journalManager = recoveryEnabled ? Optional.of(new JournalManager()) : Optional.empty();
         if(journalManager.isPresent()) {
                 servicesManager.register(journalManager.get());
 
