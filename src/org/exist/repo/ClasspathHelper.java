@@ -32,6 +32,8 @@ import org.exist.SystemProperties;
 import org.exist.start.Classpath;
 import org.exist.start.EXistClassLoader;
 import org.exist.storage.BrokerPool;
+import org.exist.storage.BrokerPoolService;
+import org.exist.storage.BrokerPoolServiceException;
 import org.expath.pkg.repo.*;
 import org.expath.pkg.repo.Package;
 import org.expath.pkg.repo.deps.ProcessorDependency;
@@ -40,19 +42,21 @@ import org.expath.pkg.repo.deps.ProcessorDependency;
  * Helper class to construct classpath for expath modules containing
  * jar files. Part of start.jar
  */
-public class ClasspathHelper {
+public class ClasspathHelper implements BrokerPoolService {
 
     private final static Logger LOG = LogManager.getLogger(ClasspathHelper.class);
 
     // if no eXist version is specified in the expath-pkg.xml, we assume it is 2.2 or older
     private final static PackageLoader.Version DEFAULT_VERSION = new PackageLoader.Version("1.4.0", "2.2.1");
 
-    public static void updateClasspath(BrokerPool pool) {
-        final ClassLoader loader = pool.getClassLoader();
-        if (!(loader instanceof EXistClassLoader))
-            {return;}
+    @Override
+    public void prepare(final BrokerPool brokerPool) throws BrokerPoolServiceException {
+        final ClassLoader loader = brokerPool.getClassLoader();
+        if (!(loader instanceof EXistClassLoader)) {
+            return;
+        }
         final Classpath cp = new Classpath();
-        scanPackages(pool, cp);
+        scanPackages(brokerPool, cp);
         ((EXistClassLoader)loader).addURLs(cp);
     }
 

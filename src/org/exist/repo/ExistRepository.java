@@ -25,6 +25,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.BrokerPoolService;
+import org.exist.storage.BrokerPoolServiceException;
 import org.exist.storage.NativeBroker;
 import org.exist.util.Configuration;
 import org.exist.util.FileUtils;
@@ -54,22 +55,35 @@ public class ExistRepository extends Observable implements BrokerPoolService {
     public final static String EXPATH_REPO_DEFAULT = "webapp/WEB-INF/" + EXPATH_REPO_DIR;
 
     /** The wrapped EXPath repository. */
-    private final Repository myParent;
+    private Path expathDir;
+    private Repository myParent;
 
-    public ExistRepository(final FileSystemStorage storage) throws PackageException {
-        this.myParent = new Repository(storage);
-        myParent.registerExtension(new ExistPkgExtension());
+    @Override
+    public void configure(final Configuration configuration) throws BrokerPoolServiceException {
+        final Path dataDir = Optional.ofNullable((Path) configuration.getProperty(BrokerPool.PROPERTY_DATA_DIR))
+                .orElse(Paths.get(NativeBroker.DEFAULT_DATA_DIR));
+        this.expathDir = dataDir.resolve(EXPATH_REPO_DIR);
     }
 
-    public static ExistRepository getRepository(final Configuration config) throws PackageException {
+    @Override
+    public void prepare(final BrokerPool brokerPool) throws BrokerPoolServiceException {
+        if(!Files.exists(expathDir)) {
+            moveOldRepo(brokerPool.getConfiguration().getExistHome(), expathDir);
+        }
         try {
-            final Path expathDir = getRepositoryDir(config);
+            Files.createDirectories(expathDir);
+        } catch(final IOException e) {
+            throw new BrokerPoolServiceException("Unable to access EXPath repository", e);
+        }
 
-            LOG.info("Using directory " + expathDir.toAbsolutePath().toString() + " for expath package repository");
+        LOG.info("Using directory " + expathDir.toAbsolutePath().toString() + " for expath package repository");
+
+        try {
             final FileSystemStorage storage = new FileSystemStorage(expathDir.toFile());
-            return new ExistRepository(storage);
-        } catch(final IOException ioe) {
-            throw new PackageException("Unable to access EXPath repository", ioe);
+            this.myParent = new Repository(storage);
+            myParent.registerExtension(new ExistPkgExtension());
+        } catch(final PackageException e) {
+            throw new BrokerPoolServiceException("Unable to prepare EXPath Package Repository: " + expathDir.toAbsolutePath().toString(), e);
         }
     }
 
@@ -104,7 +118,7 @@ public class ExistRepository extends Observable implements BrokerPoolService {
     private Module getModule(final String name, final String namespace, final XQueryContext ctxt)
             throws XPathException {
         try {
-            final Class clazz = Class.forName(name);
+            final Class<Module> clazz = (Class<Module>)Class.forName(name);
             final Module module = instantiateModule(clazz);
             final String ns = module.getNamespaceURI();
             if (!ns.equals(namespace)) {

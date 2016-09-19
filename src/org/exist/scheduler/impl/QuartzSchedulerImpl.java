@@ -87,10 +87,15 @@ public class QuartzSchedulerImpl implements Scheduler, BrokerPoolService {
         //TODO(AR) move to start!
         try {
             final SchedulerFactory schedulerFactory = new StdSchedulerFactory(getQuartzProperties());
-            scheduler = schedulerFactory.getScheduler();
+            this.scheduler = schedulerFactory.getScheduler();
         } catch(final SchedulerException e) {
             throw new BrokerPoolServiceException("Unable to create Scheduler: " + e.getMessage(), e);
         }
+    }
+
+    @Override
+    public void startMultiUser(final BrokerPool brokerPool) throws BrokerPoolServiceException {
+        run(); // start running all the defined jobs
     }
 
     private final static Properties defaultQuartzProperties = new Properties();

@@ -22,7 +22,6 @@ package org.exist.storage;
 import net.jcip.annotations.GuardedBy;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.eclipse.jetty.util.component.LifeCycle;
 import org.exist.Database;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
@@ -62,12 +61,10 @@ import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.*;
-import org.exist.util.Configuration.StartupTriggerConfig;
 import org.exist.xmldb.ShutdownListener;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.PerformanceStats;
 import org.exist.xquery.XQuery;
-import org.expath.pkg.repo.PackageException;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -139,6 +136,8 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
         SHUTTING_DOWN,
         SHUTDOWN,
         INITIALIZING,
+        INITIALIZING_SYSTEM_MODE,
+        INITIALIZING_MULTI_USER_MODE,
         OPERATIONAL
     }
 
@@ -334,6 +333,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
 
     private StartupTriggersManager startupTriggersManager;
 
+
     /**
      * Creates and configures the database instance.
      *
@@ -352,12 +352,8 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
         final NumberFormat nf = NumberFormat.getNumberInstance();
 
         this.classLoader = Thread.currentThread().getContextClassLoader();
-
-        //TODO : ensure that the instance name is unique ?
-        //WM: needs to be done in the configure method.
         this.instanceName = instanceName;
 
-        //TODO : sanity check : the shutdown period should be reasonable
         this.maxShutdownWait = conf.getProperty(BrokerPool.PROPERTY_SHUTDOWN_DELAY, DEFAULT_MAX_SHUTDOWN_WAIT);
         LOG.info("database instance '" + instanceName + "' will wait  " + nf.format(this.maxShutdownWait) + " ms during shutdown");
 
@@ -367,14 +363,10 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
         this.minBrokers = conf.getProperty(PROPERTY_MIN_CONNECTIONS, minBrokers);
         this.maxBrokers = conf.getProperty(PROPERTY_MAX_CONNECTIONS, maxBrokers);
 
-        //TODO : sanity check : minBrokers shall be lesser than or equal to maxBrokers
-        //TODO : sanity check : minBrokers shall be positive
         LOG.info("database instance '" + instanceName + "' will have between " + nf.format(this.minBrokers) + " and " + nf.format(this.maxBrokers) + " brokers");
 
-        //TODO : use the periodicity of a SystemTask (see below)
         this.majorSyncPeriod = conf.getProperty(PROPERTY_SYNC_PERIOD, DEFAULT_SYNCH_PERIOD);
 
-        //TODO : sanity check : the synch period should be reasonable
         LOG.info("database instance '" + instanceName + "' will be synchronized every " + nf.format(/*this.*/majorSyncPeriod) + " ms");
 
         // convert from bytes to megabytes: 1024 * 1024
@@ -474,7 +466,8 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
         this.xQueryPool = servicesManager.register(new XQueryPool());
         this.processMonitor = servicesManager.register(new ProcessMonitor());
         this.xqueryStats = servicesManager.register(new PerformanceStats(this));
-        this.xmlReaderPool = servicesManager.register(new XMLReaderPool(servicesManager.register(new XMLReaderObjectFactory()), 5, 0));
+        final XMLReaderObjectFactory xmlReaderObjectFactory = servicesManager.register(new XMLReaderObjectFactory());
+        this.xmlReaderPool = servicesManager.register(new XMLReaderPool(xmlReaderObjectFactory, 5, 0));
         final int bufferSize = Optional.of(conf.getInteger(PROPERTY_COLLECTION_CACHE_SIZE))
                 .filter(size -> size != -1)
                 .orElse(DEFAULT_COLLECTION_BUFFER_SIZE);
@@ -485,14 +478,6 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
         this.journalManager = recoveryEnabled ? Optional.of(new JournalManager()) : Optional.empty();
         if(journalManager.isPresent()) {
                 servicesManager.register(journalManager.get());
-
-                //TODO(AR) change where this happens!
-//            try {
-//                journalManager.get().initialize();
-//            } catch (final ReadOnlyException e) {
-//                LOG.warn(e);
-//                setReadOnly();
-//            }
         }
 
         final SystemTaskManager systemTaskManager = servicesManager.register(new SystemTaskManager(this));
@@ -500,20 +485,11 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
 
         this.symbols = servicesManager.register(new SymbolTable());
 
-        try {
-            //TODO(AR) defer the initialization with the BrokerPoolService
-
-            // initialize EXPath repository so indexManager and
-            // startup triggers can access it
-            this.expathRepo = Optional.ofNullable(ExistRepository.getRepository(this.conf));
-        } catch(final PackageException e) {
-            LOG.error("Failed to initialize expath repository: " + e.getMessage() + " - " +
-                    "indexing apps and the package manager may not work.");
-        }
-        ClasspathHelper.updateClasspath(this);
+        this.expathRepo = Optional.ofNullable(new ExistRepository());
         if(expathRepo.isPresent()) {
             servicesManager.register(expathRepo.get());
         }
+        servicesManager.register(new ClasspathHelper());
 
         this.indexManager = servicesManager.register(new IndexManager(this, conf));
 
@@ -525,16 +501,14 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
 
         this.startupTriggersManager = servicesManager.register(new StartupTriggersManager());
 
-
         //configure the registered services
         try {
-            servicesManager.configureServices(conf); //TODO(AR) should this be here?
+            servicesManager.configureServices(conf);
         } catch(final BrokerPoolServiceException e) {
             throw new EXistException(e);
         }
 
-        //TODO(AR) improve this and its' FileLockHeartbeat interaction with scheduler,
-        // then we can refactor QuartzSchedulerImpl with #perpare
+        //TODO(AR) improve this and its' FileLockHeartbeat interaction with scheduler, then we can refactor QuartzSchedulerImpl with #perpare
         if(!canReadDataDir(conf)) {
             setReadOnly();
         }
@@ -548,7 +522,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
 
         //prepare the registered services, before entering system (single-user) mode
         try {
-            servicesManager.prepareServices(this); //TODO(AR) should this be here?
+            servicesManager.prepareServices(this);
         } catch(final BrokerPoolServiceException e) {
             throw new EXistException(e);
         }
@@ -560,232 +534,173 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
             scheduler.createPeriodicJob(2500, new SystemTaskJobImpl(SyncTask.getJobName(), syncTask), 2500);
         }
 
-        //TODO(AR) remove sync, this method is protected by CAS on `status`
-        // Don't allow two threads to do a race on this. May be irrelevant as this is only called
-        // from the constructor right now.
-        synchronized(this) {
+        try {
+            statusReporter = new StatusReporter(SIGNAL_STARTUP);
+            statusObservers.forEach(statusReporter::addObserver);
+
+            final Thread statusThread = new Thread(statusReporter);
+            statusThread.start();
+
+            // statusReporter may have to be terminated or the thread can/will hang.
             try {
-                statusReporter = new StatusReporter(SIGNAL_STARTUP);
-                statusObservers.forEach(statusReporter::addObserver);
+                final boolean exportOnly = conf.getProperty(PROPERTY_EXPORT_ONLY, false);
 
-                final Thread statusThread = new Thread(statusReporter);
-                statusThread.start();
-
-                // statusReporter may have to be terminated or the thread can/will hang.
+                // If the initialization fails after transactionManager has been created this method better cleans up
+                // or the FileSyncThread for the journal can/will hang.
                 try {
-                    final boolean exportOnly = conf.getProperty(PROPERTY_EXPORT_ONLY, false);
 
+                    // Enter System Mode
+                    try(final DBBroker systemBroker = get(Optional.of(securityManager.getSystemSubject()))) {
 
+                        if(!status.compareAndSet(State.INITIALIZING, State.INITIALIZING_SYSTEM_MODE)) {
+                            throw new IllegalStateException("Invalid transition from '" + status.get().name() + "' to 'INITIALIZING_SYSTEM_MODE'");
+                        }
 
-                    // If the initialization fails after transactionManager has been created this method better cleans up
-                    // or the FileSyncThread for the journal can/will hang.
-                    try {
-//                        symbols = new SymbolTable(conf);
-//                        if(!Files.isWritable(symbols.getFile())) {
-//                            LOG.warn("Symbols table is not writable: " + symbols.getFile().toAbsolutePath().toString());
-//                            setReadOnly();
-//                        }
-//
-//                        try {
-//                            // initialize EXPath repository so indexManager and
-//                            // startup triggers can access it
-//                            expathRepo = Optional.ofNullable(ExistRepository.getRepository(this.conf));
-//                        } catch(final PackageException e) {
-//                            LOG.error("Failed to initialize expath repository: " + e.getMessage() + " - " +
-//                                     "indexing apps and the package manager may not work.");
-//                        }
-//                        ClasspathHelper.updateClasspath(this);
-//
-//                        indexManager = new IndexManager(this, conf);
+                        if(isReadOnly()) {
+                            journalManager.ifPresent(JournalManager::disableJournalling);
+                        }
 
-                        //TODO : replace the following code by get()/release() statements ?
-                        // WM: I would rather tend to keep this broker reserved as a system broker.
-                        // create a first broker to initialize the security manager
-                        //createBroker();
-                        //TODO : this broker is *not* marked as active and *might* be reused by another process ! Is it intended ?
-                        // at this stage, the database is still single-threaded, so reusing the broker later is not a problem.
-                        //DBBroker broker = inactiveBrokers.peek();
-                        // dmitriy: Security issue: better to use proper get()/release() way, because of sub-processes (SecurityManager as example)
-                        try(final DBBroker systemBroker = get(Optional.of(securityManager.getSystemSubject()))) {
-
-                            if(isReadOnly()) {
-                                journalManager.ifPresent(JournalManager::disableJournalling);
-                            }
-
-                            //Run the recovery process
-                            //TODO : assume
-                            boolean recovered = false;
-                            if(isRecoveryEnabled()) {
-                                recovered = runRecovery(systemBroker);
-                                //TODO : extract the following from this block ? What if we ware not transactional ? -pb
-                                if(!recovered) {
-                                    try {
-                                        if(systemBroker.getCollection(XmldbURI.ROOT_COLLECTION_URI) == null) {
-                                            final Txn txn = transactionManager.beginTransaction();
-                                            try {
-                                                //TODO : use a root collection final member
-                                                systemBroker.getOrCreateCollection(txn, XmldbURI.ROOT_COLLECTION_URI);
-                                                transactionManager.commit(txn);
-                                            } catch(final IOException | TriggerException | PermissionDeniedException e) {
-                                                transactionManager.abort(txn);
-                                            } finally {
-                                                transactionManager.close(txn);
-                                            }
+                        //Run the recovery process
+                        boolean recovered = false;
+                        if(isRecoveryEnabled()) {
+                            recovered = runRecovery(systemBroker);
+                            //TODO : extract the following from this block ? What if we are not transactional ? -pb
+                            if(!recovered) {
+                                try {
+                                    if(systemBroker.getCollection(XmldbURI.ROOT_COLLECTION_URI) == null) {
+                                        final Txn txn = transactionManager.beginTransaction();
+                                        try {
+                                            systemBroker.getOrCreateCollection(txn, XmldbURI.ROOT_COLLECTION_URI);
+                                            transactionManager.commit(txn);
+                                        } catch(final IOException | TriggerException | PermissionDeniedException e) {
+                                            transactionManager.abort(txn);
+                                        } finally {
+                                            transactionManager.close(txn);
                                         }
-                                    } catch(final PermissionDeniedException pde) {
-                                        LOG.fatal(pde.getMessage(), pde);
                                     }
-                                }
-                            }
-
-        					/* initialise required collections if they don't exist yet */
-                            if(!exportOnly) {
-                                try {
-                                    initialiseSystemCollections(systemBroker);
                                 } catch(final PermissionDeniedException pde) {
-                                    LOG.error(pde.getMessage(), pde);
-                                    throw new EXistException(pde.getMessage(), pde);
+                                    LOG.fatal(pde.getMessage(), pde);
                                 }
                             }
+                        }
 
-                            //TODO : from there, rethink the sequence of calls.
-                            // WM: attention: a small change in the sequence of calls can break
-                            // either normal startup or recovery.
-
-                            status.set(State.OPERATIONAL);
-
-                            statusReporter.setStatus(SIGNAL_READINESS);
-
-                            //TODO(AR) consider introducing another state to describe SYSTEM_MODE (i.e. single user startup)
-                            //TODO(AR) is this the right place for this?
+                        /* initialise required collections if they don't exist yet */
+                        if(!exportOnly) {
                             try {
-                                servicesManager.startSystemServices(systemBroker);
-                            } catch(final BrokerPoolServiceException e) {
-                                throw new EXistException(e);
-                            }
-
-                            //If necessary, launch a task to repair the DB
-                            //TODO : merge this with the recovery process ?
-                            //XXX: don't do if READONLY mode
-                            if(isRecoveryEnabled() && recovered) {
-                                if(!exportOnly) {
-                                    reportStatus("Reindexing database files...");
-                                    try {
-                                        systemBroker.repair();
-                                    } catch(final PermissionDeniedException e) {
-                                        LOG.warn("Error during recovery: " + e.getMessage(), e);
-                                    }
-                                }
-
-                                if(((Boolean) conf.getProperty(PROPERTY_RECOVERY_CHECK)).booleanValue()) {
-                                    final ConsistencyCheckTask task = new ConsistencyCheckTask();
-                                    final Properties props = new Properties();
-                                    props.setProperty("backup", "no");
-                                    props.setProperty("output", "sanity");
-                                    task.configure(conf, props);
-                                    task.execute(systemBroker);
-                                }
-                            }
-
-                            //OK : the DB is repaired; let's make a few RW operations
-                            statusReporter.setStatus(SIGNAL_WRITABLE);
-
-                            //initialize configurations watcher trigger
-                            if(!exportOnly) {
-                                try {
-                                    initialiseTriggersForCollections(systemBroker, XmldbURI.SYSTEM_COLLECTION_URI);
-                                } catch(final PermissionDeniedException pde) {
-                                    //XXX: do not catch exception!
-                                    LOG.error(pde.getMessage(), pde);
-                                }
-                            }
-
-                            // remove temporary docs
-                            try {
-                                systemBroker.cleanUpTempResources(true);
+                                initialiseSystemCollections(systemBroker);
                             } catch(final PermissionDeniedException pde) {
                                 LOG.error(pde.getMessage(), pde);
+                                throw new EXistException(pde.getMessage(), pde);
+                            }
+                        }
+
+                        statusReporter.setStatus(SIGNAL_READINESS);
+
+                        try {
+                            servicesManager.startSystemServices(systemBroker);
+                        } catch(final BrokerPoolServiceException e) {
+                            throw new EXistException(e);
+                        }
+
+                        //If necessary, launch a task to repair the DB
+                        //TODO : merge this with the recovery process ?
+                        if(isRecoveryEnabled() && recovered) {
+                            if(!exportOnly) {
+                                reportStatus("Reindexing database files...");
+                                try {
+                                    systemBroker.repair();
+                                } catch(final PermissionDeniedException e) {
+                                    LOG.warn("Error during recovery: " + e.getMessage(), e);
+                                }
                             }
 
-                            sync(systemBroker, Sync.MAJOR);
+                            if(((Boolean) conf.getProperty(PROPERTY_RECOVERY_CHECK)).booleanValue()) {
+                                final ConsistencyCheckTask task = new ConsistencyCheckTask();
+                                final Properties props = new Properties();
+                                props.setProperty("backup", "no");
+                                props.setProperty("output", "sanity");
+                                task.configure(conf, props);
+                                task.execute(systemBroker);
+                            }
+                        }
 
-                            //TODO(AR) is this the right place for this?
+                        //OK : the DB is repaired; let's make a few RW operations
+                        statusReporter.setStatus(SIGNAL_WRITABLE);
+
+                        //initialize configurations watcher trigger
+                        if(!exportOnly) {
                             try {
-                                servicesManager.startTrailingSystemServices(systemBroker);
-                            } catch(final BrokerPoolServiceException e) {
-                                throw new EXistException(e);
+                                initialiseTriggersForCollections(systemBroker, XmldbURI.SYSTEM_COLLECTION_URI);
+                            } catch(final PermissionDeniedException pde) {
+                                //XXX: do not catch exception!
+                                LOG.error(pde.getMessage(), pde);
                             }
                         }
 
-                        //Create a default configuration file for the root collection
-                        //TODO : why can't we call this from within CollectionConfigurationManager ?
-                        //TODO : understand why we get a test suite failure
-                        //collectionConfigurationManager.checkRootCollectionConfigCollection(broker);
-                        //collectionConfigurationManager.checkRootCollectionConfig(broker);
-
-
-        				/* TODO: start adam */
-
-                        //Schedule the system tasks
-        				/*for (int i = 0; i < systemTasks.size(); i++) {
-                            //TODO : remove first argument when SystemTask has a getPeriodicity() method
-                            initSystemTask((SingleInstanceConfiguration.SystemTaskConfig) systemTasksPeriods.get(i), (SystemTask)systemTasks.get(i));
-                        }
-		                systemTasksPeriods = null;*/
-
-        				/* TODO: end adam */
-
-                        //Create the minimal number of brokers required by the configuration
-                        for(int i = 1; i < minBrokers; i++) {
-                            createBroker();
+                        // remove temporary docs
+                        try {
+                            systemBroker.cleanUpTempResources(true);
+                        } catch(final PermissionDeniedException pde) {
+                            LOG.error(pde.getMessage(), pde);
                         }
 
-                        // register some MBeans to provide access to this instance
-                        AgentFactory.getInstance().initDBInstance(this);
+                        sync(systemBroker, Sync.MAJOR);
 
-                        if(LOG.isDebugEnabled()) {
-                            LOG.debug("database instance '" + instanceName + "' initialized");
+                        // we have completed all system mode operations
+                        // we can now prepare those services which need
+                        // system mode before entering multi-user mode
+                        try {
+                            servicesManager.startPreMultiUserSystemServices(systemBroker);
+                        } catch(final BrokerPoolServiceException e) {
+                            throw new EXistException(e);
                         }
-
-                        scheduler.run();    //TODO(AR) move this into the BrokerPoolService framework startMultiUser?
-
-                        statusReporter.setStatus(SIGNAL_STARTED);
-                    } catch(final Throwable t) {
-                        transactionManager.shutdown();
-                        throw t;
                     }
-                } catch(final EXistException /*| DatabaseConfigurationException*/ e) {
-                    throw e;
+
+                    //Create a default configuration file for the root collection
+                    //TODO : why can't we call this from within CollectionConfigurationManager ?
+                    //TODO : understand why we get a test suite failure
+                    //collectionConfigurationManager.checkRootCollectionConfigCollection(broker);
+                    //collectionConfigurationManager.checkRootCollectionConfig(broker);
+
+                    //Create the minimal number of brokers required by the configuration
+                    for(int i = 1; i < minBrokers; i++) {
+                        createBroker();
+                    }
+
+                    if(!status.compareAndSet(State.INITIALIZING_SYSTEM_MODE, State.INITIALIZING_MULTI_USER_MODE)) {
+                        throw new IllegalStateException("Invalid transition from '" + status.get().name() + "' to 'INITIALIZING_MULTI_USER_MODE'");
+                    }
+
+                    // register some MBeans to provide access to this instance
+                    AgentFactory.getInstance().initDBInstance(this);
+
+                    if(LOG.isDebugEnabled()) {
+                        LOG.debug("database instance '" + instanceName + "' initialized");
+                    }
+
+                    servicesManager.startMultiUserServices(this);
+
+                    if(!status.compareAndSet(State.INITIALIZING_MULTI_USER_MODE, State.OPERATIONAL)) {
+                        throw new IllegalStateException("Invalid transition from '" + status.get().name() + "' to 'OPERATIONAL'");
+                    }
+
+                    statusReporter.setStatus(SIGNAL_STARTED);
                 } catch(final Throwable t) {
-                    throw new EXistException(t.getMessage(), t);
+                    transactionManager.shutdown();
+                    throw t;
                 }
-            } finally {
-                if(statusReporter != null) {
-                    statusReporter.terminate();
-                    statusReporter = null;
-                }
+            } catch(final EXistException e) {
+                throw e;
+            } catch(final Throwable t) {
+                throw new EXistException(t.getMessage(), t);
+            }
+        } finally {
+            if(statusReporter != null) {
+                statusReporter.terminate();
+                statusReporter = null;
             }
         }
     }
-
-    //TODO : remove the period argument when SystemTask has a getPeriodicity() method
-    //TODO : make it protected ?
-    /*private void initSystemTask(SingleInstanceConfiguration.SystemTaskConfig config, SystemTask task) throws EXistException {
-        try {
-            if (config.getCronExpr() == null) {
-                LOG.debug("Scheduling system maintenance task " + task.getClass().getName() + " every " +
-                        config.getPeriod() + " ms");
-                scheduler.createPeriodicJob(config.getPeriod(), new SystemTaskJobImpl(task), config.getPeriod());
-            } else {
-                LOG.debug("Scheduling system maintenance task " + task.getClass().getName() +
-                        " with cron expression: " + config.getCronExpr());
-                scheduler.createCronJob(config.getCronExpr(), new SystemTaskJobImpl(task));
-            }
-        } catch (Exception e) {
-			LOG.warn(e.getMessage(), e);
-            throw new EXistException("Failed to initialize system maintenance task: " + e.getMessage());
-        }
-    }*/
 
     /**
      * Initialise system collections, if it doesn't exist yet
@@ -876,13 +791,13 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
     }
 
     /**
-     * Whether or not the database instance is being initialized.
+     * Whether or not the database instance is operational, i.e. initialization
+     * has completed
      *
-     * @return <code>true</code> is the database instance is being initialized
+     * @return <code>true</code> if the database instance is operational
      */
-    //TODO : let's be positive and rename it as isInitialized ? 
-    public boolean isInitializing() {
-        return status.get() == State.INITIALIZING;
+    public boolean isOperational() {
+        return status.get() == State.OPERATIONAL;
     }
 
     /**

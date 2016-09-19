@@ -57,7 +57,7 @@ public class CollectionCache extends LRUCache implements BrokerPoolService {
 
     public void add(Collection collection, int initialRefCount) {
         // don't cache the collection during initialization: SecurityManager is not yet online
-        if(pool.isInitializing()) return;
+        if(!pool.isOperational()) return;
 
         super.add(collection, initialRefCount);
         final String name = collection.getURI().getRawCollectionPath();
