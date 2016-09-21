@@ -21,6 +21,7 @@
  */
 package org.exist.xquery;
 
+import org.exist.dom.INode;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.xquery.value.Type;
@@ -71,6 +72,9 @@ public class TypeTest implements NodeTest {
                 break;
             case Type.PROCESSING_INSTRUCTION :
                 domType = Node.PROCESSING_INSTRUCTION_NODE;
+                break;
+            case Type.NAMESPACE :
+                domType = INode.NAMESPACE_NODE;
                 break;
             case Type.DOCUMENT:
                 domType = Node.DOCUMENT_NODE;
