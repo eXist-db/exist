@@ -53,30 +53,33 @@ public class FunEmpty extends Function {
             new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE,
                 "true() if the empty sequence, false() otherwise"));
 
-    public FunEmpty(XQueryContext context) {
+    public FunEmpty(final XQueryContext context) {
         super(context, signature);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.Expression#eval(org.exist.dom.persistent.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
-     */
-    public Sequence eval(Sequence contextSequence, Item contextItem)
+    @Override
+    public Sequence eval(final Sequence contextSequence, final Item contextItem)
             throws XPathException {
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);
             context.getProfiler().message(this, Profiler.DEPENDENCIES,
                 "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
-            if (contextSequence != null)
-                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                    "CONTEXT SEQUENCE", contextSequence);}
-            if (contextItem != null)
-                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                    "CONTEXT ITEM", contextItem.toSequence());}
+            if (contextSequence != null) {
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT SEQUENCE", contextSequence);
+            }
+            if (contextItem != null) {
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT ITEM", contextItem.toSequence());
+            }
         }
+
         final Sequence seq = getArgument(0).eval(contextSequence, contextItem);
         final Sequence result = seq.isEmpty() ? BooleanValue.TRUE : BooleanValue.FALSE;
-        if (context.getProfiler().isEnabled()) 
-            {context.getProfiler().end(this, "", result);} 
+
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().end(this, "", result);
+        }
         return result;
     }
 }
