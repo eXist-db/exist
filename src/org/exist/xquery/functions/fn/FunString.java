@@ -63,40 +63,47 @@ public class FunString extends Function {
 		)
 	};
 
-	public FunString(XQueryContext context, FunctionSignature signature) {
+	public FunString(final XQueryContext context, final FunctionSignature signature) {
 		super(context, signature);
 	}
 
-	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+	@Override
+	public Sequence eval(Sequence contextSequence, final Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
-            if (contextSequence != null)
-                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
-            if (contextItem != null)
-                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
+            if (contextSequence != null) {
+            	context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+            }
+            if (contextItem != null) {
+            	context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+            }
         }      
         
-		if (contextItem != null)
-			{contextSequence = contextItem.toSequence();}
+		if (contextItem != null) {
+			contextSequence = contextItem.toSequence();
+		}
 
         // if the function is called with an argument and it is empty,
         // return the empty string
         if(getArgumentCount() == 1) {
 			contextSequence = getArgument(0).eval(contextSequence);
-            if (contextSequence.isEmpty())
-                {return StringValue.EMPTY_STRING;}
+            if (contextSequence.isEmpty()) {
+            	return StringValue.EMPTY_STRING;
+            }
         } else if (contextSequence == null) {
 			throw new XPathException(this, ErrorCodes.XPDY0002, "Undefined context sequence for '" + this.toString() + "'");
 		}
         // no argument and the context sequence is empty: return the empty sequence
-        else if (contextSequence.isEmpty())
-            {return Sequence.EMPTY_SEQUENCE;}
+        else if (contextSequence.isEmpty()) {
+        	return Sequence.EMPTY_SEQUENCE;
+        }
         
         final Sequence result = contextSequence.convertTo(Type.STRING);        
 
-        if (context.getProfiler().isEnabled()) 
-            {context.getProfiler().end(this, "", result);} 
+        if (context.getProfiler().isEnabled()) {
+        	context.getProfiler().end(this, "", result);
+        }
         
         return result;           
 	}

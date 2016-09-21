@@ -40,7 +40,6 @@ import org.xmldb.api.modules.XPathQueryService;
 import org.xmldb.api.modules.XQueryService;
 
 import javax.xml.transform.OutputKeys;
-import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -138,7 +137,7 @@ public class XQueryTest {
         "<test att='b' />" +
         "<test att='c' />" +
         "</blob>";
-    private static String attributeXML;
+
     private static int stringSize = 512;
     private static int nbElem = 1;
     private String file_name = "detail_xml.xml";
@@ -1534,38 +1533,29 @@ public class XQueryTest {
     public void retrieveLargeAttribute() throws XMLDBException {
         createXMLContentWithLargeString();
         storeXMLStringAndGetQueryService(file_name, xml);
-        XMLResource res = (XMLResource) getTestCollection().getResource(file_name);
+        final XMLResource res = (XMLResource) getTestCollection().getResource(file_name);
+        assertTrue(res != null);
     }
 
-    /**
-     * This test is obsolete because testLargeAttributeSimple() reproduces the problem without a file,
-     * but I keep it to show how one can test with an XML file.
-     */
-    @Ignore
     @Test
-    public void largeAttributeRealFile() throws XMLDBException {
-        ResourceSet result;
-        String query;
-        @SuppressWarnings("unused")
-		XMLResource resu;
-
-        String large;
-        large = "challengesininformationretrievalandlanguagemodelingreportofaworkshopheldatthecenterforintelligentinformationretrievaluniversityofmassachusettsamherstseptember2002-extdocid-howardturtlemarksandersonnorbertfuhralansmeatonjayaslamdragomirradevwesselkraaijellenvoorheesamitsinghaldonnaharmanjaypontejamiecallannicholasbelkinjohnlaffertylizliddyronirosenfeldvictorlavrenkodavidjharperrichschwartzjohnpragerchengxiangzhaijinxixusalimroukosstephenrobertsonandrewmccallumbrucecroftrmanmathasuedumaisdjoerdhiemstraeduardhovyralphweischedelthomashofmannjamesallanchrisbuckleyphilipresnikdavidlewis2003";
-        if (attributeXML != null) {
-            large = attributeXML;
-        }
-        @SuppressWarnings("unused")
+    public void largeAttributeText() throws XMLDBException {
+        final String large = "challengesininformationretrievalandlanguagemodelingreportofaworkshopheldatthecenterforintelligentinformationretrievaluniversityofmassachusettsamherstseptember2002-extdocid-howardturtlemarksandersonnorbertfuhralansmeatonjayaslamdragomirradevwesselkraaijellenvoorheesamitsinghaldonnaharmanjaypontejamiecallannicholasbelkinjohnlaffertylizliddyronirosenfeldvictorlavrenkodavidjharperrichschwartzjohnpragerchengxiangzhaijinxixusalimroukosstephenrobertsonandrewmccallumbrucecroftrmanmathasuedumaisdjoerdhiemstraeduardhovyralphweischedelthomashofmannjamesallanchrisbuckleyphilipresnikdavidlewis2003";
         String xml = "<details format='xml'><metadata docid='" + large +
                 "'></metadata></details>";
         final String FILE_NAME = "detail_xml.xml";
-        XPathQueryService service =
-                storeXMLStringAndGetQueryService(FILE_NAME);
+        XPathQueryService service = storeXMLStringAndGetQueryService(FILE_NAME, xml);
 
-        query = "doc('" + FILE_NAME + "') / details/metadata[@docid= '" + large + "' ]"; // fails !!!
-        // query = "doc('"+ FILE_NAME+"') / details/metadata[ docid= '" + large + "' ]"; // test passes!
+        String query = "doc('" + FILE_NAME + "') / details/metadata[@docid= '" + large + "' ]";
+        ResourceSet result = service.queryResource(FILE_NAME, query);
+        assertEquals(1, result.getSize());
 
+        xml = "<details format='xml'><metadata><docid>" + large +
+                "</docid></metadata></details>";
+        service = storeXMLStringAndGetQueryService(FILE_NAME, xml);
+
+        query = "doc('"+ FILE_NAME+"') / details/metadata[ docid= '" + large + "' ]";
         result = service.queryResource(FILE_NAME, query);
-        assertEquals("XQuery: " + query, 2, result.getSize());
+        assertEquals(1, result.getSize());
     }
 
     @Ignore
@@ -2011,6 +2001,8 @@ public class XQueryTest {
      * Regression
      *
      * @see http://sourceforge.net/support/tracker.php?aid=1805612
+     *
+     * Same as {@link #asDouble_1840775()}
      */
     @Ignore
     @Test
@@ -2554,6 +2546,8 @@ public class XQueryTest {
 
     /**
      * @see http://sourceforge.net/support/tracker.php?aid=1840775
+     *
+     * Same as {@link #wrongAttributeTypeCheck_1805612()}
      */
     @Ignore
     @Test
@@ -2799,22 +2793,6 @@ public class XQueryTest {
                 (XPathQueryService) testCollection.getService(
                 "XPathQueryService",
                 "1.0");
-        return service;
-    }
-
-    /**
-     * @return
-     * @throws XMLDBException
-     */
-    private XPathQueryService storeXMLStringAndGetQueryService(String documentName) throws XMLDBException {
-        Collection testCollection = getTestCollection();
-        XMLResource doc =
-                (XMLResource) testCollection.createResource(
-                documentName, "XMLResource");
-        doc.setContent(new File(documentName));
-        testCollection.storeResource(doc);
-        XPathQueryService service = (XPathQueryService) testCollection.getService(
-                "XPathQueryService", "1.0");
         return service;
     }
 }
