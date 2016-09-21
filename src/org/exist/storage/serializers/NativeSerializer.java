@@ -62,10 +62,17 @@ public class NativeSerializer extends Serializer {
 
     // private final static AttributesImpl EMPTY_ATTRIBUTES = new AttributesImpl();
     
-    private final static QName TEXT_ELEMENT = new QName("text", Namespaces.EXIST_NS, "exist");
-    private final static QName ATTRIB_ELEMENT = new QName("attribute", Namespaces.EXIST_NS, "exist");
-    private final static QName SOURCE_ATTRIB = new QName("source", Namespaces.EXIST_NS, "exist");
-    private final static QName ID_ATTRIB = new QName("id", Namespaces.EXIST_NS, "exist");
+    private final static QName TEXT_ELEMENT = new QName("text", Namespaces.EXIST_NS, Namespaces.EXIST_NS_PREFIX);
+    private final static QName ATTRIB_ELEMENT = new QName("attribute", Namespaces.EXIST_NS, Namespaces.EXIST_NS_PREFIX);
+    private final static QName SOURCE_ATTRIB = new QName("source", Namespaces.EXIST_NS, Namespaces.EXIST_NS_PREFIX);
+    private final static QName ID_ATTRIB = new QName("id", Namespaces.EXIST_NS, Namespaces.EXIST_NS_PREFIX);
+
+    private final static QName MATCHES_ATTRIB = new QName("matches", Namespaces.EXIST_NS, Namespaces.EXIST_NS_PREFIX);
+    private final static QName MATCHES_OFFSET_ATTRIB = new QName("matches-offset", Namespaces.EXIST_NS, Namespaces.EXIST_NS_PREFIX);
+    private final static QName MATCHES_LENGTH_ATTRIB = new QName("matches-length", Namespaces.EXIST_NS, Namespaces.EXIST_NS_PREFIX);
+
+    private final static Pattern P_ZERO_VALUES = Pattern.compile("0(,0)?");
+    private final static Matcher M_ZERO_VALUES = P_ZERO_VALUES.matcher("");
 
     public NativeSerializer(DBBroker broker, Configuration config) {
         this(broker, config, null);
@@ -205,21 +212,56 @@ public class NativeSerializer extends Serializer {
             }
             final int children = node.getChildCount();
             int count = 0;
-            // int childLen;
             IStoredNode child = null;
+            StringBuilder matchAttrCdata = null;
+            StringBuilder matchAttrOffsetsCdata = null;
+            StringBuilder matchAttrLengthsCdata = null;
             while (count < children) {
                 child = iter.hasNext() ? iter.next() : null;
-                if (child!=null && child.getNodeType() == Node.ATTRIBUTE_NODE) {
-                    if ((getHighlightingMode() & TAG_ATTRIBUTE_MATCHES) > 0)
-                        {cdata = processAttribute(((AttrImpl) child).getValue(), node.getNodeId(), match);}
-                    else
-                        {cdata = ((AttrImpl) child).getValue();}
+                if (child != null && child.getNodeType() == Node.ATTRIBUTE_NODE) {
+                    if ((getHighlightingMode() & TAG_ATTRIBUTE_MATCHES) > 0) {
+                        cdata = processAttribute(((AttrImpl) child).getValue(), node.getNodeId(), match);
+                        if(match != null && child.getNodeId().equals(match.getNodeId())) {
+                            if(matchAttrCdata == null) {
+                                matchAttrCdata = new StringBuilder();
+                                matchAttrOffsetsCdata = new StringBuilder();
+                                matchAttrLengthsCdata = new StringBuilder();
+                            } else {
+                                matchAttrCdata.append(",");
+                                matchAttrOffsetsCdata.append(",");
+                                matchAttrLengthsCdata.append(",");
+                            }
+                            matchAttrCdata.append(child.getQName().toString());
+                            matchAttrOffsetsCdata.append(match.getOffset(0).getOffset());
+                            matchAttrLengthsCdata.append(match.getOffset(0).getLength());
+
+                            match = match.getNextMatch();
+                        }
+                    } else {
+                        cdata = ((AttrImpl) child).getValue();
+                    }
                     attribs.addAttribute(child.getQName(), cdata);
                     count++;
                     child.release();
-                } else
-                    {break;}
+                } else {
+                    break;
+                }
             }
+            if(matchAttrCdata != null) {
+                attribs.addAttribute(MATCHES_ATTRIB, matchAttrCdata.toString());
+
+                //mask the full-text index which doesn't provide offset and length
+                M_ZERO_VALUES.reset(matchAttrOffsetsCdata);
+                final boolean offsetsIsZero = M_ZERO_VALUES.matches();
+                M_ZERO_VALUES.reset(matchAttrLengthsCdata);
+                final boolean lengthsIsZero = M_ZERO_VALUES.matches();
+
+                if(!offsetsIsZero && !lengthsIsZero) {
+                    attribs.addAttribute(MATCHES_OFFSET_ATTRIB, matchAttrOffsetsCdata.toString());
+                    attribs.addAttribute(MATCHES_LENGTH_ATTRIB, matchAttrLengthsCdata.toString());
+                }
+            }
+
             receiver.setCurrentNode(node);
             receiver.startElement(node.getQName(), attribs);
             while (count < children) {
