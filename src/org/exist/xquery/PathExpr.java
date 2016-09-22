@@ -226,7 +226,9 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
             //To prevent processing nodes after atomic values...
             //TODO : let the parser do it ? -pb
             boolean gotAtomicResult = false;
+            Expression prev = null;
             for (final Iterator<Expression> iter = steps.iterator(); iter.hasNext(); ) {
+                prev = expr;
                 expr = iter.next();
                 context.getWatchDog().proceed(expr);
                 //TODO : maybe this could be detected by the parser ? -pb
@@ -290,7 +292,15 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                     currentContext = result;
                 }
             }
-            if (gotAtomicResult && !expr.allowMixedNodesInReturn() &&
+
+            final boolean allowMixedNodesInReturn;
+            if(prev != null) {
+                allowMixedNodesInReturn = prev.allowMixedNodesInReturn() | expr.allowMixedNodesInReturn();
+            } else {
+                allowMixedNodesInReturn = expr.allowMixedNodesInReturn();
+            }
+
+            if (gotAtomicResult && !allowMixedNodesInReturn &&
                     !Type.subTypeOf(result.getItemType(), Type.ATOMIC)) {
                 throw new XPathException(this, ErrorCodes.XPTY0018,
                         "Cannot mix nodes and atomic values in the result of a path expression.");
