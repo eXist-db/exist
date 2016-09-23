@@ -1345,6 +1345,17 @@ public class XQueryTest {
     }
 
     @Test
+    public void instanceOfNamespaceNode() throws XMLDBException {
+        ResourceSet result = existEmbeddedServer.executeQuery("namespace test { 'test' } instance of namespace-node()");
+        assertEquals(1,result.getSize());
+        assertEquals("true", result.getResource(0).getContent().toString());
+
+        result = existEmbeddedServer.executeQuery("<x/> instance of namespace-node()");
+        assertEquals(1, result.getSize());
+        assertEquals("false", result.getResource(0).getContent().toString());
+    }
+
+    @Test
     public void largeAttributeSimple() throws XMLDBException {
         ResourceSet result;
         String query;

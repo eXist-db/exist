@@ -33,7 +33,12 @@ package org.exist.dom;
  */
 public interface INode<D extends org.w3c.dom.Document, T extends INode> extends org.w3c.dom.Node,
     INodeHandle<D>, Comparable<T> {
-    
+
+    /**
+     * The node is a <code>Namespace</code>.
+     */
+    public static final short NAMESPACE_NODE              = 13;
+
     /**
      * Get the qualified name of the Node
      * 

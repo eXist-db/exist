@@ -1079,11 +1079,11 @@ relativePathExpr throws XPathException
 
 stepExpr throws XPathException
 :
-	( ( "text" | "node" | "element" | "attribute" | "comment" | "processing-instruction" | "document-node" ) LPAREN )
+	( ( "text" | "node" | "element" | "attribute" | "comment" | "namespace-node" | "processing-instruction" | "document-node" ) LPAREN )
 	=> axisStep
 	|
-	( ( "element" | "attribute" | "text" | "document" | "processing-instruction" | "namespace" |
-	"comment" | "ordered" | "unordered" | "map" | "array" ) LCURLY ) =>
+	( ( "element" | "attribute" | "text" | "document" | "comment" |
+	  "namespace-node" | "processing-instruction" | "namespace" | "ordered" | "unordered" | "map" | "array" ) LCURLY ) =>
 	postfixExpr
 	|
 	( ( "element" | "attribute" | "processing-instruction" | "namespace" ) eqName LCURLY ) => postfixExpr
@@ -1395,7 +1395,7 @@ contextItemExpr : SELF^ ;
 
 kindTest
 :
-	textTest | anyKindTest | elementTest | attributeTest | commentTest | piTest | documentTest
+	textTest | anyKindTest | elementTest | attributeTest | commentTest | namespaceNodeTest | piTest | documentTest
 	;
 
 textTest : "text"^ LPAREN! RPAREN! ;
@@ -1429,6 +1429,8 @@ attributeNameOrWildcard
 	;
 
 commentTest : "comment"^ LPAREN! RPAREN! ;
+
+namespaceNodeTest : "namespace-node"^ LPAREN! RPAREN! ;
 
 piTest : "processing-instruction"^ LPAREN! ( NCNAME | STRING_LITERAL )? RPAREN! ;
 
@@ -1884,8 +1886,10 @@ reservedKeywords returns [String name]
 	|
 	"variable" { name= "variable"; }
 	|
-	"namespace" { name= "namespace"; }
+	"namespace-node" { name= "namespace-node"; }
 	|
+    "namespace" { name= "namespace"; }
+    |
 	"if" { name= "if"; }
 	|
 	"then" { name= "then"; }
