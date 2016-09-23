@@ -23,6 +23,7 @@ import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 import net.jcip.annotations.ThreadSafe;
 import org.apache.logging.log4j.LogManager;
@@ -58,8 +59,8 @@ public class XQueryPool {
 
     private ConcurrentMap<Source, Deque<CompiledXQuery>> pool = new ConcurrentHashMap<>();
 
-    private long lastTimeOutCheck;
-    private long lastTimeOfCleanup;
+    private AtomicLong lastTimeOutCheck;
+    private AtomicLong lastTimeOfCleanup;
 
     @ConfigurationFieldAsAttribute("size")
     private final int maxPoolSize;
@@ -89,7 +90,10 @@ public class XQueryPool {
      */
     public XQueryPool(final Configuration conf) {
 
-        lastTimeOutCheck = lastTimeOfCleanup = System.currentTimeMillis();
+        long now = System.currentTimeMillis();
+
+        lastTimeOutCheck = new AtomicLong(now);
+        lastTimeOfCleanup = new AtomicLong(now);
 
         final Integer maxStSz = (Integer) conf.getProperty(PROPERTY_MAX_STACK_SIZE);
         final Integer maxPoolSz = (Integer) conf.getProperty(PROPERTY_POOL_SIZE);
@@ -134,7 +138,7 @@ public class XQueryPool {
 
     private void returnObject(final Source source, final CompiledXQuery xquery) {
         final long ts = source.getCacheTimestamp();
-        if (ts == 0 || ts > lastTimeOfCleanup) {
+        if (ts == 0 || ts > lastTimeOfCleanup.get()) {
             if (pool.size() >= maxPoolSize) {
                 timeoutCheck();
             }
@@ -142,7 +146,7 @@ public class XQueryPool {
             if (pool.size() < maxPoolSize) {
                 source.setCacheTimestamp(System.currentTimeMillis());
 
-                Deque<CompiledXQuery> stack = pool.computeIfAbsent(source, (k) -> new ArrayDeque<>());
+                final Deque<CompiledXQuery> stack = pool.computeIfAbsent(source, (k) -> new ArrayDeque<>());
 
                 if (stack.size() < maxStackSize) {
                     // check if the query is already in pool before adding,
@@ -155,7 +159,7 @@ public class XQueryPool {
         }
     }
 
-    private Object borrowObject(final Source source) {
+    private CompiledXQuery borrowObject(final Source source) {
 
         final Deque<CompiledXQuery> stack = pool.get(source);
         if (stack == null || stack.isEmpty()) {
@@ -191,7 +195,7 @@ public class XQueryPool {
         //check execution permission
         source.validate(broker.getCurrentSubject(), Permission.EXECUTE);
 
-        final CompiledXQuery query = (CompiledXQuery) borrowObject(source);
+        final CompiledXQuery query = borrowObject(source);
         if (query == null) {
             return null;
         }
@@ -204,7 +208,7 @@ public class XQueryPool {
     }
 
     public void clear() {
-        lastTimeOfCleanup = System.currentTimeMillis();
+        lastTimeOfCleanup.set(System.currentTimeMillis());
         pool.clear();
     }
 
@@ -214,9 +218,11 @@ public class XQueryPool {
         }
 
         final long currentTime = System.currentTimeMillis();
-        if (currentTime - lastTimeOutCheck < timeoutCheckInterval) {
+        if (currentTime - lastTimeOutCheck.get() < timeoutCheckInterval) {
             return;
         }
+
+        lastTimeOutCheck.set(currentTime);
 
         for (final Iterator it = pool.entrySet().iterator(); it.hasNext(); ) {
             final Source next = (Source) it.next();
@@ -224,7 +230,5 @@ public class XQueryPool {
                 it.remove();
             }
         }
-
-        lastTimeOutCheck = currentTime;
     }
 }
