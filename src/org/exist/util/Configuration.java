@@ -1168,7 +1168,7 @@ public class Configuration implements ErrorHandler
             }
         }
 
-        final String maxPoolSize = getConfigAttributeValue( queryPool, XQueryPool.POOL_SIZE_ATTTRIBUTE );
+        final String maxPoolSize = getConfigAttributeValue( queryPool, XQueryPool.POOL_SIZE_ATTRIBUTE );
 
         if( maxPoolSize != null ) {
 

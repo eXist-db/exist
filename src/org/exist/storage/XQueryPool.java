@@ -75,7 +75,7 @@ public class XQueryPool {
 
     public static final String CONFIGURATION_ELEMENT_NAME = "query-pool";
     public static final String MAX_STACK_SIZE_ATTRIBUTE = "max-stack-size";
-    public static final String POOL_SIZE_ATTTRIBUTE = "size";
+    public static final String POOL_SIZE_ATTRIBUTE = "size";
     public static final String TIMEOUT_ATTRIBUTE = "timeout";
     public static final String TIMEOUT_CHECK_INTERVAL_ATTRIBUTE = "timeout-check-interval";
 
