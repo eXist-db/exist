@@ -1,7 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 Wolfgang M. Meier
- *  wolfgang@exist-db.org
+ *  Copyright (C) 2001-2016 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -14,16 +13,16 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- * 
- *  $Id$
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.storage;
 
 import java.text.NumberFormat;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import net.jcip.annotations.ThreadSafe;
 import org.apache.logging.log4j.LogManager;
@@ -34,7 +33,6 @@ import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.source.Source;
 import org.exist.util.Configuration;
-import org.exist.util.hashtable.Object2ObjectHashMap;
 import org.exist.xquery.*;
 
 /**
@@ -49,7 +47,7 @@ import org.exist.xquery.*;
  */
 @ConfigurationClass("query-pool")
 @ThreadSafe
-public class XQueryPool extends Object2ObjectHashMap {
+public class XQueryPool {
 
     private final static int MAX_POOL_SIZE = 128;
     private final static int MAX_STACK_SIZE = 5;
@@ -57,6 +55,8 @@ public class XQueryPool extends Object2ObjectHashMap {
     private final static long TIMEOUT_CHECK_INTERVAL = 30000L;
 
     private final static Logger LOG = LogManager.getLogger(XQueryPool.class);
+
+    private ConcurrentMap<Source, Deque<CompiledXQuery>> pool = new ConcurrentHashMap<>();
 
     private long lastTimeOutCheck;
     private long lastTimeOfCleanup;
@@ -84,13 +84,11 @@ public class XQueryPool extends Object2ObjectHashMap {
     public static final String PROPERTY_TIMEOUT = "db-connection.query-pool.timeout";
     public static final String PROPERTY_TIMEOUT_CHECK_INTERVAL = "db-connection.query-pool.timeout-check-interval";
 
-    private final static int DEFAULT_SIZE = 27;
-
     /**
      * @param conf The configuration
      */
     public XQueryPool(final Configuration conf) {
-        super(DEFAULT_SIZE);
+
         lastTimeOutCheck = lastTimeOfCleanup = System.currentTimeMillis();
 
         final Integer maxStSz = (Integer) conf.getProperty(PROPERTY_MAX_STACK_SIZE);
@@ -134,20 +132,17 @@ public class XQueryPool extends Object2ObjectHashMap {
         returnObject(source, xquery);
     }
 
-    private synchronized void returnObject(final Source source, final CompiledXQuery xquery) {
+    private void returnObject(final Source source, final CompiledXQuery xquery) {
         final long ts = source.getCacheTimestamp();
         if (ts == 0 || ts > lastTimeOfCleanup) {
-            if (size() >= maxPoolSize) {
+            if (pool.size() >= maxPoolSize) {
                 timeoutCheck();
             }
 
-            if (size() < maxPoolSize) {
-                Deque<CompiledXQuery> stack = (Deque<CompiledXQuery>)get(source);
-                if (stack == null) {
-                    stack = new ArrayDeque<>();
-                    source.setCacheTimestamp(System.currentTimeMillis());
-                    put(source, stack);
-                }
+            if (pool.size() < maxPoolSize) {
+                source.setCacheTimestamp(System.currentTimeMillis());
+
+                Deque<CompiledXQuery> stack = pool.computeIfAbsent(source, (k) -> new ArrayDeque<>());
 
                 if (stack.size() < maxStackSize) {
                     // check if the query is already in pool before adding,
@@ -160,37 +155,22 @@ public class XQueryPool extends Object2ObjectHashMap {
         }
     }
 
-    private Object borrowObject(final DBBroker broker, final Source source) {
-        final Source key;
-        final CompiledXQuery query;
-        synchronized (this) {
-            final int idx = getIndex(source);
-            if (idx < 0) {
-                return null;
-            }
-            key = (Source) keys[idx];
-            int validity = key.isValid(broker);
-            if (validity == Source.UNKNOWN) {
-                validity = key.isValid(source);
-            }
+    private Object borrowObject(final Source source) {
 
-            if (validity == Source.INVALID || validity == Source.UNKNOWN) {
-                keys[idx] = REMOVED;
-                values[idx] = null;
-                LOG.debug(source.getKey() + " is invalid");
-                return null;
-            }
-            final Deque<CompiledXQuery> stack = (Deque<CompiledXQuery>)values[idx];
-            if (stack == null || stack.isEmpty()) {
-                return null;
-            }
-
-            // now check if the compiled expression is valid
-            // it might become invalid if an imported module has changed.
-            query = stack.pop();
-            final XQueryContext context = query.getContext();
-            //context.setBroker(broker);
+        final Deque<CompiledXQuery> stack = pool.get(source);
+        if (stack == null || stack.isEmpty()) {
+            return null;
         }
+
+        // now check if the compiled expression is valid
+        // it might become invalid if an imported module has changed.
+        final CompiledXQuery query = stack.pollFirst();
+        if (query == null) {
+            return null;
+        }
+
+        //final XQueryContext context = query.getContext();
+        //context.setBroker(broker);
 
         // query.isValid() may open collections which in turn tries to acquire
         // org.exist.storage.lock.ReentrantReadWriteLock. In order to avoid
@@ -198,25 +178,23 @@ public class XQueryPool extends Object2ObjectHashMap {
         // we must not hold onto the XQueryPool while calling isValid().
 
         if (!query.isValid()) {
-            synchronized (this) {
-                // the compiled query is no longer valid: one of the imported
-                // modules may have changed
-                remove(key);
-                return null;
-            }
-        } else {
-            return query;
-        }
-    }
-
-    public synchronized CompiledXQuery borrowCompiledXQuery(final DBBroker broker, final Source source) throws PermissionDeniedException {
-        final CompiledXQuery query = (CompiledXQuery) borrowObject(broker, source);
-        if (query == null) {
+            // the compiled query is no longer valid: one of the imported
+            // modules may have changed
+            pool.remove(source);
             return null;
         }
 
+        return query;
+    }
+
+    public CompiledXQuery borrowCompiledXQuery(final DBBroker broker, final Source source) throws PermissionDeniedException {
         //check execution permission
         source.validate(broker.getCurrentSubject(), Permission.EXECUTE);
+
+        final CompiledXQuery query = (CompiledXQuery) borrowObject(source);
+        if (query == null) {
+            return null;
+        }
 
         // now check if the compiled expression is valid
         // it might become invalid if an imported module has changed.
@@ -225,13 +203,9 @@ public class XQueryPool extends Object2ObjectHashMap {
         return query;
     }
 
-    public synchronized void clear() {
+    public void clear() {
         lastTimeOfCleanup = System.currentTimeMillis();
-
-        for (final Iterator i = iterator(); i.hasNext(); ) {
-            final Source next = (Source) i.next();
-            remove(next);
-        }
+        pool.clear();
     }
 
     private void timeoutCheck() {
@@ -244,10 +218,10 @@ public class XQueryPool extends Object2ObjectHashMap {
             return;
         }
 
-        for (final Iterator i = iterator(); i.hasNext(); ) {
-            final Source next = (Source) i.next();
+        for (final Iterator it = pool.entrySet().iterator(); it.hasNext(); ) {
+            final Source next = (Source) it.next();
             if (currentTime - next.getCacheTimestamp() > timeout) {
-                remove(next);
+                it.remove();
             }
         }
 
