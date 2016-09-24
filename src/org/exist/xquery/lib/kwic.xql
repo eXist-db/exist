@@ -3,8 +3,8 @@
     amount of text is displayed to the left and right of a matching keyword (or phrase).
     
     The module works with all indexes that support match highlighting (matches are tagged
-    with an &lt;exist:match&gt; element). This includes the old full text index, the new 
-    Lucene-based full text index, as well as the NGram index.
+    with an &lt;exist:match&gt; element or exist:matches attribute). This includes the old 
+    full text index, the new Lucene-based full text index, as well as the NGram index.
     
     The <b>kwic:summarize()</b> function represents the main entry point into the module.
     To have more control over the text extraction context, you can also call 
@@ -15,7 +15,7 @@
     let $matches := kwic:get-matches($hit)<br/>
     for $ancestor in $matches/ancestor::para | $matches/ancestor::title | $matches/ancestor::td<br/>
     return<br/>
-        kwic:get-summary($ancestor, ($ancestor//exist:match)[1], $config)
+        kwic:get-summary($ancestor, ($ancestor//exist:match, $ancestor//*[@exist:matches])[1], $config)
     </pre>
 :)  
 module namespace kwic="http://exist-db.org/xquery/kwic";
@@ -126,7 +126,7 @@ declare function kwic:string-length($nodes as item()*) as xs:integer {
 		0
 };
 
-declare function kwic:get-summary($root as node(), $node as element(exist:match), 
+declare function kwic:get-summary($root as node(), $node as element(), 
 	$config as element(config)?) as element() {
 	kwic:get-summary($root, $node, $config, ())
 };
@@ -137,7 +137,7 @@ declare function kwic:get-summary($root as node(), $node as element(exist:match)
 
 	@param $root root element which should be used as context for the match. It defines the
 	    boundaries for the text extraction. Text will be taken from this context. 
-	@param $node the exist:match element to process.
+	@param $node the exist:match element or the element with @exist:macthes attribute to process.
 	@param $config configuration element which determines the behaviour of the function
 	@param $callback (optional) reference to a callback function which will be called
 	once for every text node before it is appended to the displayed text. The function
@@ -147,7 +147,7 @@ declare function kwic:get-summary($root as node(), $node as element(exist:match)
 	to a "footnote" which should not be displayed). Otherwise it should return a single
 	string.
 :)
-declare function kwic:get-summary($root as node(), $node as element(exist:match), 
+declare function kwic:get-summary($root as node(), $node as element(), 
 	$config as element(config)?, 
     $callback as (function(node(), xs:string) as xs:string?)?
 ) as element() {
@@ -189,25 +189,26 @@ declare function kwic:get-summary($root as node(), $node as element(exist:match)
 
 (:~
     Expand the element in $hit. Creates an in-memory copy of the element and marks
-    all matches with an exist:match tag, which will be used by all other functions in
+    all element matches with an exist:match tag and attribute matches with an 
+    exist:matches tag, which will be used by all other functions in
     this module. You need to call kwic:expand before kwic:get-summary. 
     kwic:summarize will call it automatically.
 :)
 declare function kwic:expand($hit as element()) as element() {
-    util:expand($hit, "expand-xincludes=no")
+    util:expand($hit, "highlight-matches=both")
 };
 
 (:~
     Return all matches within the specified element, $hit. Matches are returned as
-    exist:match elements. The returned nodes are part of a new document whose
-    root element is a copy of the specified $hit element.
+    exist:match elements or elements with exist:matches attribute. The returned nodes 
+    are part of a new document whose root element is a copy of the specified $hit element.
     
     @param $hit an arbitrary XML element which has been selected by one of the full text
 		operations or an ngram search.
 :)
-declare function kwic:get-matches($hit as element()) as element(exist:match)* {
+declare function kwic:get-matches($hit as element()) as element()* {
     let $expanded := kwic:expand($hit)
-	return $expanded//exist:match
+	return ($expanded//exist:match, $expanded//*[@exist:matches])
 };
 
 declare function kwic:summarize($hit as element(), $config as element(config)?) as element()* {
@@ -240,8 +241,8 @@ declare function kwic:summarize($hit as element(), $config as element(config)?) 
 :)
 declare function kwic:summarize($hit as element(), $config as element(config)?, 
     $callback as (function(node(), xs:string) as xs:string?)?) as element()* {
-    let $expanded := util:expand($hit, "expand-xincludes=no")
-	for $match in $expanded//exist:match
+    let $expanded := util:expand($hit, "highlight-matches=both")
+	for $match in ($expanded//exist:match, $expanded//*[@exist:matches])
 	return
 		kwic:get-summary($expanded, $match, $config, $callback)
 };
