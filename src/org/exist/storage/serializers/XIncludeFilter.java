@@ -23,6 +23,7 @@ package org.exist.storage.serializers;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exist.EXistException;
 import org.exist.dom.INodeHandle;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
@@ -33,6 +34,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.source.DBSource;
 import org.exist.source.Source;
 import org.exist.source.StringSource;
+import org.exist.storage.DBBroker;
 import org.exist.storage.XQueryPool;
 import org.exist.util.function.Either;
 import org.exist.util.serializer.AttrList;
@@ -72,6 +74,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.StringTokenizer;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
  * A filter that listens for XInclude elements in the stream
@@ -468,8 +475,9 @@ public class XIncludeFilter implements Receiver {
                 Sequence contextSeq = null;
                 if (memtreeDoc != null)
                     {contextSeq = memtreeDoc;}
-                final Sequence seq = xquery.execute(serializer.broker, compiled, contextSeq);
-
+                
+                final Sequence seq = executeXQueryInSeparateThread(compiled, contextSeq);
+                
                 if(Type.subTypeOf(seq.getItemType(), Type.NODE)) {
                     if (LOG.isDebugEnabled())
                         {LOG.debug("xpointer found: " + seq.getItemCount());}
@@ -490,6 +498,12 @@ public class XIncludeFilter implements Receiver {
             } catch (final XPathException e) {
                 LOG.warn("xpointer error", e);
                 throw new SAXException("Error while processing XInclude expression: " + e.getMessage(), e);
+            } catch (final ExecutionException e) {
+                LOG.warn("eXist error", e);
+                throw new SAXException("Error while processing XInclude expression: " + e.getMessage(), e);
+            } catch (final InterruptedException e) {
+                LOG.warn("eXist error", e);
+                throw new SAXException("Processing of XInclude expression interrupted: " + e.getMessage(), e);
             } catch (final PermissionDeniedException e) {
                 LOG.warn("xpointer error", e);
                 throw new SAXException("Error while processing XInclude expression: " + e.getMessage(), e);
@@ -501,6 +515,40 @@ public class XIncludeFilter implements Receiver {
 
         return Optional.empty();
     }
+
+	/**
+	 * Executes the given compiled XQuery in a separate thread, using a separate
+	 * DBBroker.
+	 * 
+	 * @param compiled
+	 *            the query to execute
+	 * @param contextSeq
+	 *            the context sequence for the query
+	 * @return
+	 * @throws InterruptedException
+	 * @throws ExecutionException
+	 */
+	private Sequence executeXQueryInSeparateThread(final CompiledXQuery compiled, final Sequence contextSeq)
+	        throws InterruptedException, ExecutionException {
+		final Callable<Sequence> toExecute = new Callable<Sequence>() {
+			public Sequence call() throws EXistException, XPathException, PermissionDeniedException {
+				final XQuery xquery = serializer.broker.getBrokerPool().getXQueryService();
+				try (final DBBroker newBroker = serializer.broker.getBrokerPool().getBroker()) {
+					return xquery.execute(newBroker, compiled, contextSeq);
+				}
+			}
+		};
+		ExecutorService executor = null;
+		try {
+			executor = Executors.newSingleThreadExecutor();
+			final Future<Sequence> taskHandle = executor.submit(toExecute);
+			// wait synchronously
+			return taskHandle.get();
+		} finally {
+			if (executor != null)
+				executor.shutdown();
+		}
+	}
 
     private Either<ResourceError, org.exist.dom.memtree.DocumentImpl> parseExternal(final URI externalUri) throws IOException, PermissionDeniedException, ParserConfigurationException, SAXException {
         final URLConnection con = externalUri.toURL().openConnection();
