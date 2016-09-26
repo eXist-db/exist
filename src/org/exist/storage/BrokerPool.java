@@ -65,6 +65,7 @@ import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.*;
 import org.exist.util.Configuration.StartupTriggerConfig;
+import org.exist.util.function.ConsumerE;
 import org.exist.xmldb.ShutdownListener;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.PerformanceStats;
@@ -103,8 +104,9 @@ public class BrokerPool implements Database {
 
     private final static Logger LOG = LogManager.getLogger(BrokerPool.class);
 
-    private final static TreeMap<String, BrokerPool> instances = new TreeMap<>();
-    private final static Map<String, Throwable> instancesInitializtionException = new TreeMap<>();
+    private final static java.util.concurrent.locks.ReadWriteLock instancesLock = new java.util.concurrent.locks.ReentrantReadWriteLock();
+    @GuardedBy("instancesLock") private final static Map<String, BrokerPool> instances = new TreeMap<>();
+    @GuardedBy("instancesLock") private final static Map<String, Throwable> instancesInitializtionException = new TreeMap<>();
 
     //on-start, ready, go
     /*** initializing sub-components */
@@ -261,38 +263,45 @@ public class BrokerPool implements Database {
         final String instanceName, final int minBrokers, final int maxBrokers,
         final Configuration config) throws EXistException {
         //Check if there is a database instance in the pool with the same id
-        BrokerPool instance = instances.get(instanceName);
-        if(instance == null) {
-            LOG.debug("configuring database instance '" + instanceName + "'...");
-            try {
-                //Create the instance
-                instance = new BrokerPool(instanceName, minBrokers, maxBrokers, config);
-                //Add it to the pool
-                instances.put(instanceName, instance);
-                //We now have at least an instance...
-                if(instances.size() == 1) {
-                    //... so a ShutdownHook may be interesting
-                    if(registerShutdownHook) {
-                        try {
-                            //... currently an eXist specific one. TODO : make it configurable ?
-                            Runtime.getRuntime().addShutdownHook(shutdownHook);
-                            LOG.debug("shutdown hook registered");
-                        } catch(final IllegalArgumentException e) {
-                            LOG.warn("shutdown hook already registered");
+
+        final java.util.concurrent.locks.Lock lock = instancesLock.writeLock();
+        lock.lock();
+        try {
+            BrokerPool instance = instances.get(instanceName);
+            if (instance == null) {
+                LOG.debug("configuring database instance '" + instanceName + "'...");
+                try {
+                    //Create the instance
+                    instance = new BrokerPool(instanceName, minBrokers, maxBrokers, config);
+                    //Add it to the pool
+                    instances.put(instanceName, instance);
+                    //We now have at least an instance...
+                    if (instances.size() == 1) {
+                        //... so a ShutdownHook may be interesting
+                        if (registerShutdownHook) {
+                            try {
+                                //... currently an eXist specific one. TODO : make it configurable ?
+                                Runtime.getRuntime().addShutdownHook(shutdownHook);
+                                LOG.debug("shutdown hook registered");
+                            } catch (final IllegalArgumentException e) {
+                                LOG.warn("shutdown hook already registered");
+                            }
                         }
                     }
+                } catch (final Throwable ex) {
+                    // Catch all possible issues and report.
+                    LOG.error("Unable to initialize database instance '" + instanceName
+                            + "': " + ex.getMessage(), ex);
+                    instancesInitializtionException.put(instanceName, ex);
+                    // TODO: Add throw of exception? DW
                 }
-            } catch(final Throwable ex) {
-                // Catch all possible issues and report.
-                LOG.error("Unable to initialize database instance '" + instanceName
-                    + "': " + ex.getMessage(), ex);
-                instancesInitializtionException.put(instanceName, ex);
-                // TODO: Add throw of exception? DW
+                //TODO : throw an exception here rather than silently ignore an *explicit* parameter ?
+                // WM: maybe throw an exception. Users can check if a db is already configured.
+            } else {
+                LOG.warn("database instance '" + instanceName + "' is already configured");
             }
-            //TODO : throw an exception here rather than silently ignore an *explicit* parameter ?
-            // WM: maybe throw an exception. Users can check if a db is already configured.
-        } else {
-            LOG.warn("database instance '" + instanceName + "' is already configured");
+        } finally {
+            lock.unlock();
         }
     }
 
@@ -314,14 +323,21 @@ public class BrokerPool implements Database {
      */
     //TODO : in the future, we should implement a Configurable interface	
     public final static boolean isConfigured(final String id) {
-        //Check if there is a database instance in the pool with the same id
-        final BrokerPool instance = instances.get(id);
-        //No : it *can't* be configured
-        if(instance == null) {
-            return false;
+        final java.util.concurrent.locks.Lock lock = instancesLock.readLock();
+        lock.lock();
+        try {
+            //Check if there is a database instance in the pool with the same id
+            final BrokerPool instance = instances.get(id);
+            //No : it *can't* be configured
+            if (instance == null) {
+                return false;
+            } else {
+                //Yes : it *may* be configured
+                return instance.isInstanceConfigured();
+            }
+        } finally {
+            lock.unlock();
         }
-        //Yes : it *may* be configured
-        return instance.isInstanceConfigured();
     }
 
     /**
@@ -344,22 +360,28 @@ public class BrokerPool implements Database {
      */
     public final static BrokerPool getInstance(final String instanceName) throws EXistException {
         //Check if there is a database instance in the pool with the same id
-        final BrokerPool instance = instances.get(instanceName);
-        if(instance != null)
-        //TODO : call isConfigured(id) and throw an EXistException if relevant ?
-        {
-            return instance;
-        }
-
-        final Throwable exception = instancesInitializtionException.get(instanceName);
-        if(exception != null) {
-            if(exception instanceof EXistException) {
-                throw (EXistException) exception;
+        final java.util.concurrent.locks.Lock lock = instancesLock.readLock();
+        lock.lock();
+        try {
+            final BrokerPool instance = instances.get(instanceName);
+            //TODO : call isConfigured(id) and throw an EXistException if relevant ?
+            if (instance != null) {
+                return instance;
             }
-            throw new EXistException(exception);
-        }
 
-        throw new EXistException("database instance '" + instanceName + "' is not available");
+            final Throwable exception = instancesInitializtionException.get(instanceName);
+            if (exception != null) {
+                if (exception instanceof EXistException) {
+                    throw (EXistException) exception;
+                } else {
+                    throw new EXistException(exception);
+                }
+            } else {
+                throw new EXistException("database instance '" + instanceName + "' is not available");
+            }
+        } finally {
+            lock.unlock();
+        }
     }
 
     /**
@@ -367,12 +389,27 @@ public class BrokerPool implements Database {
      *
      * @return The iterator
      */
-    public final static Iterator<BrokerPool> getInstances() {
-        return instances.values().iterator();
+    public final static <E extends Exception> void readInstances(final ConsumerE<BrokerPool, E> reader) throws E {
+
+        final java.util.concurrent.locks.Lock lock = new java.util.concurrent.locks.ReentrantReadWriteLock().readLock();
+        lock.lock();
+        try {
+            for(final BrokerPool instance : instances.values()) {
+                reader.accept(instance);
+            }
+        } finally {
+            lock.unlock();
+        }
     }
 
     public final static boolean isInstancesEmpty() {
-        return instances.values().isEmpty();
+        final java.util.concurrent.locks.Lock lock = instancesLock.readLock();
+        lock.lock();
+        try {
+            return instances.isEmpty();
+        } finally {
+            lock.unlock();
+        }
     }
 
     /**
@@ -405,20 +442,25 @@ public class BrokerPool implements Database {
      * @param killed <code>true</code> when invoked by an exiting JVM
      */
     public final static void stopAll(final boolean killed) {
-        for(final BrokerPool instance : instances.values()) {
-            if(instance.conf != null) {
-                //Shut it down
-                instance.shutdown(killed);
+
+        final java.util.concurrent.locks.Lock lock = instancesLock.writeLock();
+        lock.lock();
+        try {
+            for (final BrokerPool instance : instances.values()) {
+                if (instance.conf != null) {
+                    //Shut it down
+                    instance.shutdown(killed);
+                }
             }
+            //Clear the living instances container : they are all sentenced to death...
+            instances.clear();
+        } finally {
+            lock.unlock();
         }
-        //Clear the living instances container : they are all sentenced to death...
-        instances.clear();
     }
 
     public final static void systemInfo() {
-        for(final BrokerPool instance : instances.values()) {
-            instance.printSystemInfo();
-        }
+        readInstances(brokerPool -> brokerPool.printSystemInfo());
     }
 
     public static void registerStatusObserver(final Observer observer) {
@@ -712,6 +754,8 @@ public class BrokerPool implements Database {
                 .map(v -> new BrokerWatchdog());
 
         //TODO : in the future, we should implement an Initializable interface
+        final java.util.concurrent.locks.Lock lock = instancesLock.writeLock();
+        lock.lock();
         try {
             initialize();
         } catch(final Throwable e) {
@@ -722,7 +766,7 @@ public class BrokerPool implements Database {
                 }
             }
 
-            if(!instances.containsKey(instanceName)) {
+            if (!instances.containsKey(instanceName)) {
                 instancesInitializtionException.put(instanceName, e);
             }
 
@@ -735,6 +779,8 @@ public class BrokerPool implements Database {
             }
 
             throw new EXistException(e);
+        } finally {
+            lock.unlock();
         }
 
         //TODO : move this to initialize ?
@@ -1005,7 +1051,14 @@ public class BrokerPool implements Database {
                             sync(broker, Sync.MAJOR);
 
                             //require to allow access by BrokerPool.getInstance();
-                            instances.put(instanceName, this);
+
+                            final java.util.concurrent.locks.Lock lock = instancesLock.writeLock();
+                            lock.lock();
+                            try {
+                                instances.put(instanceName, this);
+                            } finally {
+                                lock.unlock();
+                            }
 
                             callStartupTriggers((List<StartupTriggerConfig>) conf.getProperty(BrokerPool.PROPERTY_STARTUP_TRIGGERS), broker);
                         }
@@ -1948,11 +2001,11 @@ public class BrokerPool implements Database {
             //Shutdown the scheduler
             scheduler.shutdown(true);
 
-            final java.util.concurrent.locks.Lock lock = transactionManager.getLock();
+            final java.util.concurrent.locks.Lock transactionManagerLock = transactionManager.getLock();
             try {
                 // wait for currently running system tasks before we shutdown
                 // they will have a lock on the transactionManager
-                lock.lock();
+                transactionManagerLock.lock();
 
                 synchronized (this) {
                     // these may be used and set by other threads for the same or some other purpose
@@ -1966,7 +2019,7 @@ public class BrokerPool implements Database {
 
                     // release transaction log to allow remaining brokers to complete
                     // their job
-                    lock.unlock();
+                    transactionManagerLock.unlock();
 
                     // DW: only in debug mode
                     if (LOG.isDebugEnabled()) {
@@ -2058,33 +2111,41 @@ public class BrokerPool implements Database {
                     AgentFactory.getInstance().closeDBInstance(this);
 
                     //Clear the living instances container
-                    instances.remove(instanceName);
+                    final java.util.concurrent.locks.Lock lock = instancesLock.writeLock();
+                    lock.lock();
+                    try {
+                        instances.remove(instanceName);
+                        // NOTE: sadly we can't downgrade from a write lock to a read lock now, as this function is also called from `stopAll`
+                        // which needs to acquire a write lock
 
-                    synchronized (readOnly) {
-                        if (!readOnly) {
-                            // release the lock on the data directory
-                            dataLock.release();
+                        synchronized (readOnly) {
+                            if (!readOnly) {
+                                // release the lock on the data directory
+                                dataLock.release();
+                            }
                         }
-                    }
 
-                    //clearing additional resources, like ThreadLocal
-                    clearThreadLocals();
+                        //clearing additional resources, like ThreadLocal
+                        clearThreadLocals();
 
-                    LOG.info("shutdown complete !");
+                        LOG.info("shutdown complete !");
 
-                    //Last instance closes the house...
-                    //TOUNDERSTAND (pb) : !killed or, rather, killed ?
-                    // TODO: WM: check usage of killed!
-                    if (instances.size() == 0 && !killed) {
-                        LOG.debug("removing shutdown hook");
-                        try {
-                            Runtime.getRuntime().removeShutdownHook(shutdownHook);
-                        } catch (final IllegalStateException e) {
-                            //ignore IllegalStateException("Shutdown in progress");
+                        //Last instance closes the house...
+                        //TOUNDERSTAND (pb) : !killed or, rather, killed ?
+                        // TODO: WM: check usage of killed!
+                        if (instances.size() == 0 && !killed) {
+                            LOG.debug("removing shutdown hook");
+                            try {
+                                Runtime.getRuntime().removeShutdownHook(shutdownHook);
+                            } catch (final IllegalStateException e) {
+                                //ignore IllegalStateException("Shutdown in progress");
+                            }
                         }
-                    }
-                    if (shutdownListener != null) {
-                        shutdownListener.shutdown(instanceName, instances.size());
+                        if (shutdownListener != null) {
+                            shutdownListener.shutdown(instanceName, instances.size());
+                        }
+                    } finally {
+                        lock.unlock();
                     }
 
                     statusReporter.terminate();
