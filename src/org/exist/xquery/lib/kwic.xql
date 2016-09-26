@@ -195,7 +195,7 @@ declare function kwic:get-summary($root as node(), $node as element(),
     kwic:summarize will call it automatically.
 :)
 declare function kwic:expand($hit as element()) as element() {
-    util:expand($hit, "highlight-matches=both")
+    util:expand($hit, "expand-xincludes=no highlight-matches=both")
 };
 
 (:~
@@ -241,7 +241,7 @@ declare function kwic:summarize($hit as element(), $config as element(config)?) 
 :)
 declare function kwic:summarize($hit as element(), $config as element(config)?, 
     $callback as (function(node(), xs:string) as xs:string?)?) as element()* {
-    let $expanded := util:expand($hit, "highlight-matches=both")
+    let $expanded := util:expand($hit, "expand-xincludes=no highlight-matches=both")
 	for $match in ($expanded//exist:match, $expanded//*[@exist:matches])
 	return
 		kwic:get-summary($expanded, $match, $config, $callback)
