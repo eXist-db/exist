@@ -36,7 +36,7 @@ public class CollectionCacheManager implements CacheManager {
 
     private static final int DEFAULT_CACHE_SIZE = 8;
 
-    private int maxCacheSize;
+    private long maxCacheSize;
 
     private CollectionCache collectionCache;
 
@@ -47,8 +47,8 @@ public class CollectionCacheManager implements CacheManager {
             cacheSize = DEFAULT_CACHE_SIZE;
         }
 
-        this.maxCacheSize = cacheSize * 1024 * 1024;
-        
+        this.maxCacheSize = cacheSize * 1024L * 1024L;
+
         if(LOG.isDebugEnabled()){
             LOG.debug("collection collectionCache will be using " + this.maxCacheSize + " bytes max.");
         }
@@ -70,7 +70,7 @@ public class CollectionCacheManager implements CacheManager {
 
     @Override
     public int requestMem(Cache cache) {
-        final int realSize = collectionCache.getRealSize();
+        final long realSize = collectionCache.getRealSize();
         if (realSize < maxCacheSize) {
             synchronized (this) {
                 final int newCacheSize = (int)(collectionCache.getBuffers() * collectionCache.getGrowthFactor());
