@@ -23,7 +23,8 @@
     <config
         width="character width"
         table="yes|no"
-        link="URL to which the match is linked"/>
+        link="URL to which the match is linked"
+        whitespace-text-nodes="collapse|drop|leave"/>
 :)
 xquery version "3.0";
 
@@ -156,6 +157,40 @@ function kwic:string-length($nodes as item()*) as xs:integer {
 		0
 };
 
+declare
+    %private
+function kwic:collapse-whitespace-fn($callback as (function(text(), xs:string) as text()?)?) as (function(text(), xs:string) as text()) {
+    function($text as text(), $mode as xs:string) as text()? {
+        let $text :=
+            if(matches($text, "\s+")) then
+                text { " " }
+            else
+                $text
+        return
+            if(exists($callback))then
+                $callback($text, $mode)
+            else
+                $text
+    }
+};
+
+declare
+    %private
+function kwic:drop-whitespace-fn($callback as (function(text(), xs:string) as text()?)?) as (function(text(), xs:string) as text()?) {
+    function($text as text(), $mode as xs:string) as text()? {
+        let $text :=
+            if(matches($text, "\s+")) then
+                ()
+            else
+                $text
+        return
+            if(exists($text) and exists($callback))then
+                $callback($text, $mode)
+            else
+                $text
+    }
+};
+
 declare function kwic:get-summary($root as node(), $node as element(), 
 	$config as element(config)?) as element() {
 	kwic:get-summary($root, $node, $config, ())
@@ -183,6 +218,16 @@ declare function kwic:get-summary($root as node(), $node as element(),
 ) as element() {
 	let $chars := xs:integer(($config/@width, $kwic:CHARS_KWIC)[1])
 	let $table := $config/@table = ('yes', 'true')
+	let $whitespace-text-nodes := string($config/@whitespace-text-nodes) 
+	
+	let $callback :=
+	   if($whitespace-text-nodes = "collapse") then
+	       kwic:collapse-whitespace-fn($callback)
+	   else if($whitespace-text-nodes = "drop") then
+	       kwic:drop-whitespace-fn($callback)
+	   else
+	       $callback
+	
 	let $prevTrunc := kwic:truncate-previous($root, $node, (), $chars, 0, $callback)
 	let $remain := 
 		if (not($table)) then 
