@@ -48,7 +48,7 @@ declare %private variable $kwic:CHARS_KWIC := 40;
 :)
 declare
     %private
-function kwic:substring($node as item(), $start as xs:integer, $count as xs:integer) as item()? {
+function kwic:substring($node as item(), $start as xs:integer, $count as xs:integer) as node() {
 	let $str := substring($node, $start, $count)
 	return
 		if ($node instance of element()) then
@@ -162,12 +162,12 @@ declare
 function kwic:collapse-whitespace-fn($callback as (function(text(), xs:string) as text()?)?) as (function(text(), xs:string) as text()) {
     function($text as text(), $mode as xs:string) as text()? {
         let $text :=
-            if(matches($text, "\s+")) then
+            if (matches($text, "\s+")) then
                 text { " " }
             else
                 $text
         return
-            if(exists($callback))then
+            if (exists($callback)) then
                 $callback($text, $mode)
             else
                 $text
@@ -179,12 +179,12 @@ declare
 function kwic:drop-whitespace-fn($callback as (function(text(), xs:string) as text()?)?) as (function(text(), xs:string) as text()?) {
     function($text as text(), $mode as xs:string) as text()? {
         let $text :=
-            if(matches($text, "\s+")) then
+            if (matches($text, "\s+")) then
                 ()
             else
                 $text
         return
-            if(exists($text) and exists($callback))then
+            if (exists($text) and exists($callback)) then
                 $callback($text, $mode)
             else
                 $text
@@ -221,9 +221,9 @@ declare function kwic:get-summary($root as node(), $node as element(),
 	let $whitespace-text-nodes := string($config/@whitespace-text-nodes) 
 	
 	let $callback :=
-	   if($whitespace-text-nodes = "collapse") then
+	   if ($whitespace-text-nodes = "collapse") then
 	       kwic:collapse-whitespace-fn($callback)
-	   else if($whitespace-text-nodes = "drop") then
+	   else if ($whitespace-text-nodes = "drop") then
 	       kwic:drop-whitespace-fn($callback)
 	   else
 	       $callback
