@@ -31,6 +31,7 @@ import javax.xml.transform.TransformerException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.storage.serializers.EXistOutputKeys;
 
@@ -94,7 +95,7 @@ public class IndentingXMLWriter extends XMLWriter {
         endIndent(namespaceURI, localName);
         super.endElement(namespaceURI, localName, qname);
         popWhitespacePreserve(); // apply ancestor's xml:space value _after_ end element
-        sameline = false;
+        sameline = isInlineTag(namespaceURI, localName);
         afterTag = true;
     }
 
@@ -103,7 +104,7 @@ public class IndentingXMLWriter extends XMLWriter {
         endIndent(qname.getNamespaceURI(), qname.getLocalPart());
         super.endElement(qname);
         popWhitespacePreserve(); // apply ancestor's xml:space value _after_ end element
-        sameline = false;
+        sameline = isInlineTag(qname.getNamespaceURI(), qname.getLocalPart());
         afterTag = true;
     }
 
@@ -196,7 +197,11 @@ public class IndentingXMLWriter extends XMLWriter {
     }
 
     protected boolean isInlineTag(final String namespaceURI, final String localName) {
-        return false;
+        return isMatchTag(namespaceURI, localName);
+    }
+
+    private boolean isMatchTag(final String namespaceURI, final String localName) {
+        return namespaceURI != null && namespaceURI.equals(Namespaces.EXIST_NS) && localName.equals("match");
     }
 
     protected void indent() throws TransformerException {

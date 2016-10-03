@@ -80,6 +80,31 @@ public class LuceneMatchListenerTest {
             "   <p>Paragraphs with <s>mix</s><s>ed</s> content are <s>danger</s>ous.</p>" +
             "</article>";
 
+    private static String XML2 =
+            "<p xmlns=\"http://www.tei-c.org/ns/1.0\">\n" +
+            "    <s type=\"combo\"><w lemma=\"из\">из</w>\n" +
+            "        <w>новина</w>\n" +
+            "        <w lemma=\"и\">и</w>\n" +
+            "        <w lemma=\"од\">од</w>\n" +
+            "        <lb/>\n" +
+            "        <pb n=\"32\"/>\n" +
+            "        <w>других</w>\n" +
+            "        <w lemma=\"човек\">људи</w>\n" +
+            "        <w>дознајем</w>, <w xml:id=\"VSK.P13.t1.p4.w205\" lemma=\"ма\">ма</w>\n" +
+            "        <w>се</w>\n" +
+            "        <w lemma=\"не\">не</w>\n" +
+            "        <w>прорезује</w>\n" +
+            "        <w>право</w>\n" +
+            "        <w lemma=\"по\">по</w>\n" +
+            "        <w>имућству</w>, <w xml:id=\"VSK.P13.t1.p4.w219\" lemma=\"те\">те</w>\n" +
+            "        <w>се</w>\n" +
+            "        <w>на</w>\n" +
+            "        <w lemma=\"то\">то</w>\n" +
+            "        <w>видим</w>\n" +
+            "        <w>многи</w>\n" +
+            "        <w>љуте</w>.</s>\n" +
+            "</p>";
+
     private static String CONF1 =
         "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
         "   <index>" +
@@ -114,6 +139,18 @@ public class LuceneMatchListenerTest {
         "       </lucene>" +
         "   </index>" +
         "</collection>";
+
+
+    private static String CONF5 =
+            "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">\n" +
+            "    <index xmlns:tei=\"http://www.tei-c.org/ns/1.0\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\">" +
+            "        <lucene>" +
+            "            <text qname=\"tei:p\"/>" +
+            "            <text qname=\"tei:w\"/>" +
+            "            <text qname=\"@lemma\"/>" +
+            "        </lucene>" +
+            "    </index>" +
+            "</collection>";
 
     private static String MATCH_START = "<exist:match xmlns:exist=\"http://exist.sourceforge.net/NS/exist\">";
     private static String MATCH_END = "</exist:match>";
@@ -256,6 +293,50 @@ public class LuceneMatchListenerTest {
             result = queryResult2String(broker, seq);
             XMLAssert.assertEquals("<head>The <b>" + MATCH_START + "title" + MATCH_END + "</b>of it</head>",
                     result);
+        }
+    }
+
+    @Test
+    public void inlineMatchNodes_whenIndenting() throws EXistException, PermissionDeniedException, XPathException, SAXException, CollectionConfigurationException, LockException, IOException {
+        configureAndStore(CONF5, XML2);
+
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+            final XQuery xquery = pool.getXQueryService();
+            assertNotNull(xquery);
+            final String query =  "declare namespace tei=\"http://www.tei-c.org/ns/1.0\";" +
+                    "//tei:p[.//tei:w[ft:query(., <query><bool><term>дознајем</term></bool></query>)]] ! util:expand(.)";
+            final Sequence seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertEquals(1, seq.getItemCount());
+            final String result = queryResult2String(broker, seq, true);
+
+            final String expected =
+            "<p xmlns=\"http://www.tei-c.org/ns/1.0\">\n" +
+            "    <s type=\"combo\">\n" +
+            "        <w lemma=\"из\">из</w>\n" +
+            "        <w>новина</w>\n" +
+            "        <w lemma=\"и\">и</w>\n" +
+            "        <w lemma=\"од\">од</w>\n" +
+            "        <lb/>\n" +
+            "        <pb n=\"32\"/>\n" +
+            "        <w>других</w>\n" +
+            "        <w lemma=\"човек\">људи</w>\n" +
+            "        <w>" + MATCH_START + "дознајем" + MATCH_END + "</w>, <w xml:id=\"VSK.P13.t1.p4.w205\" lemma=\"ма\">ма</w>\n" +
+            "        <w>се</w>\n" +
+            "        <w lemma=\"не\">не</w>\n" +
+            "        <w>прорезује</w>\n" +
+            "        <w>право</w>\n" +
+            "        <w lemma=\"по\">по</w>\n" +
+            "        <w>имућству</w>, <w xml:id=\"VSK.P13.t1.p4.w219\" lemma=\"те\">те</w>\n" +
+            "        <w>се</w>\n" +
+            "        <w>на</w>\n" +
+            "        <w lemma=\"то\">то</w>\n" +
+            "        <w>видим</w>\n" +
+            "        <w>многи</w>\n" +
+            "        <w>љуте</w>.</s>\n" +
+            "</p>";
+
+            XMLAssert.assertEquals(expected, result);
         }
     }
 
