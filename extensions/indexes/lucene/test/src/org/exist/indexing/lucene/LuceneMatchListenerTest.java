@@ -25,10 +25,13 @@ import org.custommonkey.xmlunit.XMLAssert;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.exist.EXistException;
+import org.exist.Namespaces;
 import org.exist.TestUtils;
 import org.exist.collections.Collection;
+import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.IndexInfo;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -40,6 +43,7 @@ import org.exist.test.TestConstants;
 import org.exist.util.Configuration;
 import org.exist.util.ConfigurationHelper;
 import org.exist.util.DatabaseConfigurationException;
+import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
@@ -55,6 +59,7 @@ import javax.xml.transform.OutputKeys;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -120,7 +125,7 @@ public class LuceneMatchListenerTest {
      * &lt;create qname="a"/&gt;.
      */
     @Test
-    public void indexByQName() throws EXistException, PermissionDeniedException, XPathException, SAXException {
+    public void indexByQName() throws EXistException, PermissionDeniedException, XPathException, SAXException, CollectionConfigurationException, LockException, IOException {
 
         configureAndStore(CONF2, XML);
 
@@ -171,7 +176,7 @@ public class LuceneMatchListenerTest {
     }
 
     @Test
-    public void matchInAncestor() throws EXistException, PermissionDeniedException, XPathException, SAXException, IOException, XpathException {
+    public void matchInAncestor() throws EXistException, PermissionDeniedException, XPathException, SAXException, IOException, XpathException, LockException, CollectionConfigurationException {
         configureAndStore(CONF1, XML);
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             XQuery xquery = pool.getXQueryService();
@@ -191,7 +196,7 @@ public class LuceneMatchListenerTest {
     }
 
     @Test
-    public void matchInDescendant() throws EXistException, PermissionDeniedException, XPathException, SAXException, IOException, XpathException {
+    public void matchInDescendant() throws EXistException, PermissionDeniedException, XPathException, SAXException, IOException, XpathException, LockException, CollectionConfigurationException {
         configureAndStore(CONF3, XML);
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             XQuery xquery = pool.getXQueryService();
@@ -211,7 +216,7 @@ public class LuceneMatchListenerTest {
     }
 
     @Test
-    public void inlineNodes() throws EXistException, PermissionDeniedException, XPathException, SAXException {
+    public void inlineNodes_whenNotIndenting() throws EXistException, PermissionDeniedException, XPathException, SAXException, CollectionConfigurationException, LockException, IOException {
         configureAndStore(CONF4, XML1);
 
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
@@ -255,7 +260,7 @@ public class LuceneMatchListenerTest {
     }
 
     @BeforeClass
-    public static void startDB() throws DatabaseConfigurationException, EXistException {
+    public static void startDB() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, TriggerException {
         final Path confFile = ConfigurationHelper.lookup("conf.xml");
         final Configuration config = new Configuration(confFile.toAbsolutePath().toString());
         BrokerPool.configure(1, 5, config);
@@ -265,18 +270,16 @@ public class LuceneMatchListenerTest {
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn transaction = transact.beginTransaction()) {
 
-            Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
+            final Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
             assertNotNull(root);
             broker.saveCollection(transaction, root);
 
             transact.commit(transaction);
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
         }
-        HashMap<String, String> m = new HashMap<String, String>();
-        m.put("exist", "http://exist.sourceforge.net/NS/exist");
-        NamespaceContext ctx = new SimpleNamespaceContext(m);
+
+        final Map<String, String> m = new HashMap<>();
+        m.put(Namespaces.EXIST_NS_PREFIX, Namespaces.EXIST_NS);
+        final NamespaceContext ctx = new SimpleNamespaceContext(m);
         XMLUnit.setXpathNamespaceContext(ctx);
     }
 
@@ -287,30 +290,31 @@ public class LuceneMatchListenerTest {
         pool = null;
     }
 
-    private void configureAndStore(String config, String data) {
+    private void configureAndStore(final String config, final String data) throws EXistException, PermissionDeniedException, IOException, SAXException, CollectionConfigurationException, LockException {
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn transaction = transact.beginTransaction()) {
 
-            Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
+            final Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
             assertNotNull(root);
-            CollectionConfigurationManager mgr = pool.getConfigurationManager();
+            final CollectionConfigurationManager mgr = pool.getConfigurationManager();
             mgr.addConfiguration(transaction, broker, root, config);
 
-            IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("test_matches.xml"), XML);
+            final IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("test_matches.xml"), XML);
             assertNotNull(info);
             root.store(transaction, broker, info, data, false);
 
             transact.commit(transaction);
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
         }
     }
 
-    private String queryResult2String(DBBroker broker, Sequence seq) throws SAXException, XPathException {
-        Properties props = new Properties();
-        props.setProperty(OutputKeys.INDENT, "no");
+    private String queryResult2String(final DBBroker broker, final Sequence seq) throws SAXException, XPathException {
+        return queryResult2String(broker, seq, false);
+    }
+
+    private String queryResult2String(final DBBroker broker, final Sequence seq, final boolean indent) throws SAXException, XPathException {
+        final Properties props = new Properties();
+        props.setProperty(OutputKeys.INDENT, indent ? "yes" : "no");
         props.setProperty(EXistOutputKeys.HIGHLIGHT_MATCHES, "elements");
         Serializer serializer = broker.getSerializer();
         serializer.reset();

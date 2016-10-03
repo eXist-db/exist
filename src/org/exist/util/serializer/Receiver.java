@@ -38,7 +38,7 @@ import org.xml.sax.SAXException;
 public interface Receiver<T extends INodeHandle> {
 
     public final static QName MATCH_ELEMENT =
-            new QName("match", Namespaces.EXIST_NS, "exist");
+            new QName("match", Namespaces.EXIST_NS, Namespaces.EXIST_NS_PREFIX);
 
     public void startDocument() throws SAXException;
 

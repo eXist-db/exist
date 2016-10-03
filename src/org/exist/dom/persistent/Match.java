@@ -49,7 +49,7 @@ import org.exist.numbering.NodeId;
 public abstract class Match implements Comparable<Match> {
 
     public static final class Offset implements Comparable<Offset> {
-        private int offset;
+        private final int offset;
         private final int length;
 
         public Offset(final int offset, final int length) {
@@ -59,10 +59,6 @@ public abstract class Match implements Comparable<Match> {
 
         public int getOffset() {
             return offset;
-        }
-
-        public void setOffset(final int offset) {
-            this.offset = offset;
         }
 
         public int getLength() {
@@ -145,9 +141,7 @@ public abstract class Match implements Comparable<Match> {
     }
 
     private void addOffsets(final Collection<Offset> offsets) {
-        for(final Offset o : offsets) {
-            addOffset(o);
-        }
+        offsets.forEach(this::addOffset);
     }
 
     public Offset getOffset(final int pos) {
@@ -265,11 +259,7 @@ public abstract class Match implements Comparable<Match> {
 
     private Match filterOffsets(final Predicate<Offset> predicate) {
         final Match result = createInstance(context, nodeId, matchTerm);
-        for(final Offset o : getOffsets()) {
-            if(predicate.test(o)) {
-                result.addOffset(o);
-            }
-        }
+        getOffsets().stream().filter(predicate).forEach(result::addOffset);
         if(result.currentOffset == 0) {
             return null;
         } else {
@@ -426,12 +416,17 @@ public abstract class Match implements Comparable<Match> {
 
     @Override
     public String toString() {
-        final StringBuilder buf = new StringBuilder(matchTerm);
+        final StringBuilder buf = new StringBuilder();
+        if(matchTerm != null) {
+            buf.append(matchTerm);
+        }
+
         for(int i = 0; i < currentOffset; i++) {
             buf.append(" [");
             buf.append(offsets[i]).append(':').append(lengths[i]);
             buf.append("]");
         }
+
         if(nextMatch != null) {
             buf.append(' ').append(nextMatch.toString());
         }

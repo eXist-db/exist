@@ -33,55 +33,57 @@ import javax.xml.XMLConstants;
  */
 public interface Namespaces {
 
-    public final static String DTD_NS = XMLConstants.XML_DTD_NS_URI;
+    String DTD_NS = XMLConstants.XML_DTD_NS_URI;
 
-	public final static String SCHEMA_NS = XMLConstants.W3C_XML_SCHEMA_NS_URI;
-    public final static String SCHEMA_DATATYPES_NS = "http://www.w3.org/2001/XMLSchema-datatypes";
-	public final static String SCHEMA_INSTANCE_NS = XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI;
+	String SCHEMA_NS = XMLConstants.W3C_XML_SCHEMA_NS_URI;
+    String SCHEMA_DATATYPES_NS = "http://www.w3.org/2001/XMLSchema-datatypes";
+	String SCHEMA_INSTANCE_NS = XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI;
     
     // Move this here from Function.BUILTIN_FUNCTION_NS? /ljo
-	public final static String XPATH_FUNCTIONS_NS = "http://www.w3.org/2005/xpath-functions";	
-    public final static String XQUERY_LOCAL_NS = "http://www.w3.org/2005/xquery-local-functions";
-	public final static String XPATH_DATATYPES_NS = "http://www.w3.org/2003/05/xpath-datatypes";
+	String XPATH_FUNCTIONS_NS = "http://www.w3.org/2005/xpath-functions";	
+    String XQUERY_LOCAL_NS = "http://www.w3.org/2005/xquery-local-functions";
+	String XPATH_DATATYPES_NS = "http://www.w3.org/2003/05/xpath-datatypes";
         
-    public final static String XPATH_FUNCTIONS_MATH_NS = "http://www.w3.org/2005/xpath-functions/math";
-    public final static String XQUERY_OPTIONS_NS = "http://www.w3.org/2011/xquery-options";
+    String XPATH_FUNCTIONS_MATH_NS = "http://www.w3.org/2005/xpath-functions/math";
+    String XQUERY_OPTIONS_NS = "http://www.w3.org/2011/xquery-options";
         
-    public final static String XSLT_XQUERY_SERIALIZATION_NS = "http://www.w3.org/2010/xslt-xquery-serialization";
+    String XSLT_XQUERY_SERIALIZATION_NS = "http://www.w3.org/2010/xslt-xquery-serialization";
 
-    public final static String W3C_XQUERY_XPATH_ERROR_NS = "http://www.w3.org/2005/xqt-errors";
-    public final static String W3C_XQUERY_XPATH_ERROR_PREFIX = "err";
+    String W3C_XQUERY_XPATH_ERROR_NS = "http://www.w3.org/2005/xqt-errors";
+    String W3C_XQUERY_XPATH_ERROR_PREFIX = "err";
 
-	public final static String XSL_NS = "http://www.w3.org/1999/XSL/Transform";
-    public final static String EXIST_XQUERY_XPATH_ERROR_NS = "http://www.exist-db.org/xqt-errors/";
-    public final static String EXIST_XQUERY_XPATH_ERROR_PREFIX = "exerr";
+	String XSL_NS = "http://www.w3.org/1999/XSL/Transform";
+    String EXIST_XQUERY_XPATH_ERROR_NS = "http://www.exist-db.org/xqt-errors/";
+    String EXIST_XQUERY_XPATH_ERROR_PREFIX = "exerr";
         
-	public final static String EXIST_NS = "http://exist.sourceforge.net/NS/exist";
-	public final static String EXIST_NS_PREFIX = "exist";
-	public final static String RDF_NS = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
-	public final static String DC_NS = "http://purl.org/dc/elements/1.1/";
+	String EXIST_NS = "http://exist.sourceforge.net/NS/exist";
+	String EXIST_NS_PREFIX = "exist";
+	String RDF_NS = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
+	String DC_NS = "http://purl.org/dc/elements/1.1/";
 
-	public final static String EXIST_JAVA_BINDING_NS = "http://exist.sourceforge.net/NS/exist/java-binding";
-	public final static String EXIST_JAVA_BINDING_NS_PREFIX = "java";
+	String EXIST_JAVA_BINDING_NS = "http://exist.sourceforge.net/NS/exist/java-binding";
+	String EXIST_JAVA_BINDING_NS_PREFIX = "java";
 
 
-    public final static String XML_NS = XMLConstants.XML_NS_URI;
-	public final static String XMLNS_NS = XMLConstants.XMLNS_ATTRIBUTE_NS_URI;
+    String XML_NS = XMLConstants.XML_NS_URI;
+	String XMLNS_NS = XMLConstants.XMLNS_ATTRIBUTE_NS_URI;
 	
 	/** QName representing xml:id */
-	public final static QName XML_ID_QNAME = new QName("id", XML_NS, "xml");
+	QName XML_ID_QNAME = new QName("id", XML_NS, "xml");
 	
 	/** QName representing xml:space */
-	public final static QName XML_SPACE_QNAME = new QName("space", XML_NS, "xml");
+	QName XML_SPACE_QNAME = new QName("space", XML_NS, "xml");
 	
-	public final static String SOAP_ENVELOPE = "http://schemas.xmlsoap.org/soap/envelope/";
+	String SOAP_ENVELOPE = "http://schemas.xmlsoap.org/soap/envelope/";
 
 	//SAXfeatures / properties : move toadedicated package
-	public final static String SAX_LEXICAL_HANDLER = "http://xml.org/sax/properties/lexical-handler";
-	public final static String SAX_NAMESPACES = "http://xml.org/sax/features/namespaces";	
-	public final static String SAX_NAMESPACES_PREFIXES = "http://xml.org/sax/features/namespace-prefixes";	
-	public final static String SAX_VALIDATION = "http://xml.org/sax/features/validation";	
-	public final static String SAX_VALIDATION_DYNAMIC =  "http://apache.org/xml/features/validation/dynamic";
+	String SAX_LEXICAL_HANDLER = "http://xml.org/sax/properties/lexical-handler";
+	String SAX_NAMESPACES = "http://xml.org/sax/features/namespaces";	
+	String SAX_NAMESPACES_PREFIXES = "http://xml.org/sax/features/namespace-prefixes";	
+	String SAX_VALIDATION = "http://xml.org/sax/features/validation";	
+	String SAX_VALIDATION_DYNAMIC =  "http://apache.org/xml/features/validation/dynamic";
         
-    public final static String XHTML_NS = "http://www.w3.org/1999/xhtml";
+    String XHTML_NS = "http://www.w3.org/1999/xhtml";
+
+	String XINCLUDE_NS = "http://www.w3.org/2001/XInclude";
 }
