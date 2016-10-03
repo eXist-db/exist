@@ -70,7 +70,7 @@ import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.*;
-import org.exist.util.function.ConsumerE;
+import com.evolvedbinary.j8fu.function.ConsumerE;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.TerminatedException;
 import org.exist.xquery.value.Type;
@@ -93,7 +93,7 @@ import java.util.regex.Pattern;
 
 import org.exist.dom.persistent.StoredNode;
 import org.exist.storage.dom.INodeIterator;
-import org.exist.util.function.Tuple2;
+import com.evolvedbinary.j8fu.tuple.Tuple2;
 
 /**
  * Main class for the native XML storage backend.

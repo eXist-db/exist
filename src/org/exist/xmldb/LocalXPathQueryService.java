@@ -54,7 +54,7 @@ import org.exist.dom.persistent.MutableDocumentSet;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.security.Permission;
-import org.exist.util.function.Either;
+import com.evolvedbinary.j8fu.Either;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;

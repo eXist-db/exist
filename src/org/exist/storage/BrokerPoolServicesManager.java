@@ -21,6 +21,11 @@ package org.exist.storage;
 
 import net.jcip.annotations.NotThreadSafe;
 import org.exist.util.Configuration;
+import com.evolvedbinary.j8fu.fsm.AtomicFSM;
+import com.evolvedbinary.j8fu.fsm.FSM;
+
+import static com.evolvedbinary.j8fu.fsm.TransitionTable.transitionTable;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,7 +56,24 @@ class BrokerPoolServicesManager {
         MULTI_USER
     }
 
-    private ManagerState state = ManagerState.REGISTRATION;
+    private enum ManagerEvent {
+        CONFIGURE,
+        PREPARE,
+        ENTER_SYSTEM_MODE,
+        PREPARE_ENTER_MULTI_USER_MODE,
+        ENTER_MULTI_USER_MODE
+    }
+
+    @SuppressWarnings("unchecked")
+    private FSM<ManagerState, ManagerEvent> states = new AtomicFSM<>(ManagerState.REGISTRATION, transitionTable(ManagerState.class, ManagerEvent.class)
+            .when(ManagerState.REGISTRATION)
+                .on(ManagerEvent.CONFIGURE).switchTo(ManagerState.CONFIGURATION)
+                .on(ManagerEvent.PREPARE).switchTo(ManagerState.PREPARATION)
+                .on(ManagerEvent.ENTER_SYSTEM_MODE).switchTo(ManagerState.SYSTEM)
+                .on(ManagerEvent.PREPARE_ENTER_MULTI_USER_MODE).switchTo(ManagerState.PRE_MULTI_USER)
+                .on(ManagerEvent.ENTER_MULTI_USER_MODE).switchTo(ManagerState.MULTI_USER)
+            .build()
+    );
 
     final List<BrokerPoolService> brokerPoolServices = new ArrayList<>();
 
@@ -69,9 +91,10 @@ class BrokerPoolServicesManager {
      * after any other service has been configured.
      */
     <T extends BrokerPoolService> T register(final T brokerPoolService) {
-        if(state != ManagerState.REGISTRATION) {
+        final ManagerState currentState = states.getCurrentState();
+        if(currentState != ManagerState.REGISTRATION) {
             throw new IllegalStateException(
-                    "Services may only be registered during the registration state. Current state is: " + state.name());
+                    "Services may only be registered during the registration state. Current state is: " + currentState.name());
         }
 
         brokerPoolServices.add(brokerPoolService);
@@ -91,12 +114,7 @@ class BrokerPoolServicesManager {
      * after any other service has been prepared.
      */
     void configureServices(final Configuration configuration) throws BrokerPoolServiceException {
-        if(state != ManagerState.REGISTRATION) {
-            throw new IllegalStateException(
-                    "Services may only be configured after the registration state. Current state is: " + state.name());
-        } else {
-            state = ManagerState.CONFIGURATION;
-        }
+        states.process(ManagerEvent.CONFIGURE);
 
         for(final BrokerPoolService brokerPoolService : brokerPoolServices) {
             brokerPoolService.configure(configuration);
@@ -116,12 +134,7 @@ class BrokerPoolServicesManager {
      * after any other service has entered start system service.
      */
     void prepareServices(final BrokerPool brokerPool) throws BrokerPoolServiceException {
-        if(state != ManagerState.CONFIGURATION) {
-            throw new IllegalStateException(
-                    "Services may only be prepared after the configuration state. Current state is: " + state.name());
-        } else {
-            state = ManagerState.PREPARATION;
-        }
+        states.process(ManagerEvent.PREPARE);
 
         for(final BrokerPoolService brokerPoolService : brokerPoolServices) {
             brokerPoolService.prepare(brokerPool);
@@ -146,13 +159,7 @@ class BrokerPoolServicesManager {
      * after any other service has entered the start pre-multi-user system mode.
      */
     void startSystemServices(final DBBroker systemBroker) throws BrokerPoolServiceException {
-        if(state != ManagerState.PREPARATION) {
-            throw new IllegalStateException(
-                    "Services may only be started in system mode after the preparation state. Current state is: "
-                            + state.name());
-        } else {
-            this.state = ManagerState.SYSTEM;
-        }
+        states.process(ManagerEvent.ENTER_SYSTEM_MODE);
 
         for(final BrokerPoolService brokerPoolService : brokerPoolServices) {
             brokerPoolService.startSystem(systemBroker);
@@ -177,13 +184,7 @@ class BrokerPoolServicesManager {
      * after any other service has entered multi-user.
      */
     void startPreMultiUserSystemServices(final DBBroker systemBroker) throws BrokerPoolServiceException {
-        if(state != ManagerState.SYSTEM) {
-            throw new IllegalStateException(
-                    "Services may only be started in pre-multi-user mode after the system state. Current state is: "
-                            + state.name());
-        } else {
-            this.state = ManagerState.PRE_MULTI_USER;
-        }
+        states.process(ManagerEvent.PREPARE_ENTER_MULTI_USER_MODE);
 
         for(final BrokerPoolService brokerPoolService : brokerPoolServices) {
             brokerPoolService.startPreMultiUserSystem(systemBroker);
@@ -202,13 +203,7 @@ class BrokerPoolServicesManager {
      * before we have completed pre-multi-user mode
      */
     void startMultiUserServices(final BrokerPool brokerPool) throws BrokerPoolServiceException {
-        if(state != ManagerState.PRE_MULTI_USER) {
-            throw new IllegalStateException(
-                    "Services may only be started in pre-multi-user mode after the system state. Current state is: "
-                            + state.name());
-        } else {
-            this.state = ManagerState.MULTI_USER;
-        }
+        states.process(ManagerEvent.ENTER_MULTI_USER_MODE);
 
         for(final BrokerPoolService brokerPoolService : brokerPoolServices) {
             brokerPoolService.startMultiUser(brokerPool);

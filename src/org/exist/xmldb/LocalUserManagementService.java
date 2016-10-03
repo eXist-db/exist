@@ -35,7 +35,7 @@ import org.exist.security.SecurityManager;
 import org.exist.security.internal.aider.ACEAider;
 import org.exist.security.internal.aider.UserAider;
 import org.exist.storage.BrokerPool;
-import org.exist.util.function.FunctionE;
+import com.evolvedbinary.j8fu.function.FunctionE;
 import org.exist.xmldb.function.LocalXmldbCollectionFunction;
 import org.exist.xmldb.function.LocalXmldbDocumentFunction;
 import org.exist.xmldb.function.LocalXmldbFunction;

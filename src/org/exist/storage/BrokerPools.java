@@ -25,7 +25,7 @@ import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
-import org.exist.util.function.ConsumerE;
+import com.evolvedbinary.j8fu.function.ConsumerE;
 
 import java.util.*;
 import java.util.concurrent.locks.Lock;

@@ -21,7 +21,7 @@ package org.exist.util;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-import org.exist.util.function.Either;
+import com.evolvedbinary.j8fu.Either;
 import org.xml.sax.*;
 
 import java.util.Map;
