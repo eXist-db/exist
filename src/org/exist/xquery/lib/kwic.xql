@@ -17,34 +17,57 @@
     return<br/>
         kwic:get-summary($ancestor, ($ancestor//exist:match, $ancestor//*[@exist:matches])[1], $config)
     </pre>
-:)  
-module namespace kwic="http://exist-db.org/xquery/kwic";
+    
+    The configuration element used by some functions has the following structure:
+    
+    <config
+        width="character width"
+        table="yes|no"
+        link="URL to which the match is linked"/>
+:)
+xquery version "3.0";
 
-declare variable $kwic:CHARS_SUMMARY := 120;
-declare variable $kwic:CHARS_KWIC := 40;
+module namespace kwic = "http://exist-db.org/xquery/kwic";
+
+import module namespace util = "http://exist-db.org/xquery/util";
+
+declare namespace exist = "http://exist.sourceforge.net/NS/exist";
+
+declare variable $kwic:MODE_BEFORE := "before";
+declare variable $kwic:MODE_AFTER := "after";
+
+declare %private variable $kwic:CHARS_SUMMARY := 120;
+declare %private variable $kwic:CHARS_KWIC := 40;
+
 
 (:~
 	Like fn:substring, but takes a node argument. If the node is an element,
 	a new element is created with the same node-name as the old one and the
 	shortened text content.
 :)
-declare function kwic:substring($node as item(), $start as xs:int, $count as xs:int) as item()? {
+declare
+    %private
+function kwic:substring($node as item(), $start as xs:integer, $count as xs:integer) as item()? {
 	let $str := substring($node, $start, $count)
 	return
 		if ($node instance of element()) then
 			element { node-name($node) } { $str }
 		else
-			$str
+			text { $str }
 };
 
-declare function kwic:display-text($text as text()?) as node()? {
+declare
+    %private
+function kwic:display-text($text as text()?) as node()? {
     if ($text/parent::exist:match) then
     	<span class="hi">{$text}</span>
     else
         $text
 };
 
-declare function kwic:callback($callback as function(*)?, $node as node(), $mode as xs:string) as xs:string? {
+declare
+    %private
+function kwic:callback($callback as (function(text(), xs:string) as text()?)?, $node as text(), $mode as xs:string) as text()? {
     if (exists($callback)) then
         $callback($node, $mode)
     else
@@ -58,20 +81,22 @@ declare function kwic:callback($callback as function(*)?, $node as node(), $mode
 	Note: this function calls itself recursively until $nodes is empty or
 	the returned sequence has the desired total string length.
 :)
-declare function kwic:truncate-previous($root as node(), $node as node()?, $truncated as item()*, 
-	$max as xs:int, $chars as xs:int, $callback as (function(node(), xs:string) as xs:string?)?) {
+declare
+    %private
+function kwic:truncate-previous($root as node(), $node as node()?, $truncated as item()*, 
+	   $max as xs:integer, $chars as xs:integer, $callback as (function(text(), xs:string) as text()?)?) {
 	if ($node) then
 		let $next := $node/preceding::text()[1] intersect $root//text()
 		return
 			if (empty($next)) then
 				$truncated
 			else if ($chars + string-length($next) gt $max) then
-			    let $str := kwic:callback($callback, $next, "before")
+			    let $str := kwic:callback($callback, $next, $kwic:MODE_BEFORE)
 			    return
     			    if (exists($str)) then
         				let $remaining := $max - $chars
         				return (
-        				    "...",
+        				    text { "..." },
         				    kwic:substring($str, string-length($str) - $remaining + 1, $remaining),
         				    $truncated
         			    )
@@ -79,7 +104,7 @@ declare function kwic:truncate-previous($root as node(), $node as node()?, $trun
         			    kwic:truncate-previous($root, $next, $truncated, $max, $chars, $callback)
 			else
 				kwic:truncate-previous($root, $next, 
-				    (kwic:callback($callback, $next, "before"), $truncated),
+				    (kwic:callback($callback, $next, $kwic:MODE_BEFORE), $truncated),
 					$max, $chars + string-length($next), $callback)
 	else
 		$truncated
@@ -92,25 +117,28 @@ declare function kwic:truncate-previous($root as node(), $node as node()?, $trun
 	Note: this function calls itself recursively until $nodes is empty or
 	the returned sequence has the desired total string length.
 :)
-declare function kwic:truncate-following($root as node(), $node as node()?, $truncated as item()*, 
-	$max as xs:int, $chars as xs:int, $callback as (function(node(), xs:string) as xs:string?)?) {
+declare
+    %private
+function kwic:truncate-following($root as node(), $node as node()?, $truncated as item()*, 
+	$max as xs:integer, $chars as xs:integer, $callback as (function(text(), xs:string) as text()?)?) {
 	if ($node) then
 		let $next := $node/following::text()[1] intersect $root//text()
 		return
 			if (empty($next)) then
 				$truncated
 			else if ($chars + string-length($next) gt $max) then
-			    let $str := kwic:callback($callback, $next, "after")
+			    let $str := kwic:callback($callback, $next, $kwic:MODE_AFTER)
 			    return
     			    if (exists($str)) then
         				let $remaining := $max - $chars
-        				return
-        				    ($truncated, kwic:substring($next, 1, $remaining), "...")
+        				return (
+        				    $truncated, kwic:substring($next, 1, $remaining), text { "..." }
+        			    )
         			else
         			    kwic:truncate-following($root, $next, $truncated, $max, $chars, $callback)
 			else
 				kwic:truncate-following($root, $next, 
-				    ($truncated, kwic:callback($callback, $next, "after")),
+				    ($truncated, kwic:callback($callback, $next, $kwic:MODE_AFTER)),
 					$max, $chars + string-length($next), $callback)
 	else
 		$truncated
@@ -119,9 +147,11 @@ declare function kwic:truncate-following($root as node(), $node as node()?, $tru
 (:~
 	Computes the total string length of the nodes in the argument sequence
 :)
-declare function kwic:string-length($nodes as item()*) as xs:integer {
+declare
+    %private
+function kwic:string-length($nodes as item()*) as xs:integer {
 	if (exists($nodes)) then
-		sum(for $n in $nodes return string-length($n))
+		sum($nodes ! string-length(.))
 	else
 		0
 };
@@ -142,16 +172,16 @@ declare function kwic:get-summary($root as node(), $node as element(),
 	@param $callback (optional) reference to a callback function which will be called
 	once for every text node before it is appended to the displayed text. The function
 	should accept 2 parameters: 1) a single text node, 2) a string indicating the
-	current direction in which text is appended, i.e. "before" or "after". The function
-	may return the empty sequence if the current node should be ignore (e.g. if it belongs
-	to a "footnote" which should not be displayed). Otherwise it should return a single
-	string.
+	current direction in which text is appended, i.e. $kwic:MODE_BEFORE or $kwic:MODE_AFTER.
+	The function may return the empty sequence if the current node should be ignore
+	(e.g. if it belongs to a "footnote" which should not be displayed). Otherwise it should
+	return a single string.
 :)
 declare function kwic:get-summary($root as node(), $node as element(), 
 	$config as element(config)?, 
-    $callback as (function(node(), xs:string) as xs:string?)?
+    $callback as (function(text(), xs:string) as text()?)?
 ) as element() {
-	let $chars := xs:int(($config/@width, $kwic:CHARS_KWIC)[1])
+	let $chars := xs:integer(($config/@width, $kwic:CHARS_KWIC)[1])
 	let $table := $config/@table = ('yes', 'true')
 	let $prevTrunc := kwic:truncate-previous($root, $node, (), $chars, 0, $callback)
 	let $remain := 
@@ -240,7 +270,7 @@ declare function kwic:summarize($hit as element(), $config as element(config)?) 
 	@param $config configuration element to configure the behaviour of the function
 :)
 declare function kwic:summarize($hit as element(), $config as element(config)?, 
-    $callback as (function(node(), xs:string) as xs:string?)?) as element()* {
+    $callback as (function(text(), xs:string) as text()?)?) as element()* {
     let $expanded := util:expand($hit, "expand-xincludes=no highlight-matches=both")
 	for $match in ($expanded//exist:match, $expanded//*[@exist:matches])
 	return
