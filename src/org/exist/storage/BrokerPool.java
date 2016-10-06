@@ -19,6 +19,8 @@
  */
 package org.exist.storage;
 
+import com.evolvedbinary.j8fu.fsm.AtomicFSM;
+import com.evolvedbinary.j8fu.fsm.FSM;
 import net.jcip.annotations.GuardedBy;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -65,6 +67,7 @@ import org.exist.xmldb.ShutdownListener;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.PerformanceStats;
 import org.exist.xquery.XQuery;
+import org.omg.CORBA.INITIALIZE;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -81,9 +84,10 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+
+import static com.evolvedbinary.j8fu.fsm.TransitionTable.transitionTable;
 
 /**
  * This class controls all available instances of the database.
@@ -141,7 +145,26 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
         OPERATIONAL
     }
 
-    private final AtomicReference<State> status = new AtomicReference<>(State.SHUTDOWN);
+    private enum Event {
+        INITIALIZE,
+        INITIALIZE_SYSTEM_MODE,
+        INITIALIZE_MULTI_USER_MODE,
+        READY,
+        START_SHUTDOWN,
+        FINISHED_SHUTDOWN,
+    }
+
+    @SuppressWarnings("unchecked")
+    private final FSM<State, Event> status = new AtomicFSM<>(State.SHUTDOWN,
+            transitionTable(State.class, Event.class)
+                    .when(State.SHUTDOWN).on(Event.INITIALIZE).switchTo(State.INITIALIZING)
+                    .when(State.INITIALIZING).on(Event.INITIALIZE_SYSTEM_MODE).switchTo(State.INITIALIZING_SYSTEM_MODE)
+                    .when(State.INITIALIZING_SYSTEM_MODE).on(Event.INITIALIZE_MULTI_USER_MODE).switchTo(State.INITIALIZING_MULTI_USER_MODE)
+                    .when(State.INITIALIZING_MULTI_USER_MODE).on(Event.READY).switchTo(State.OPERATIONAL)
+                    .when(State.OPERATIONAL).on(Event.START_SHUTDOWN).switchTo(State.SHUTTING_DOWN)
+                    .when(State.SHUTTING_DOWN).on(Event.FINISHED_SHUTDOWN).switchTo(State.SHUTDOWN)
+            .build()
+    );
 
     /**
      * The number of brokers for the database instance
@@ -451,9 +474,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
      */
     private void _initialize() throws EXistException, DatabaseConfigurationException {
         //Flag to indicate that we are initializing
-        if(!status.compareAndSet(State.SHUTDOWN, State.INITIALIZING)) {
-            throw new IllegalStateException("Database is already initialized");
-        }
+        status.process(Event.INITIALIZE);
 
         if(LOG.isDebugEnabled()) {
             LOG.debug("initializing database instance '" + instanceName + "'...");
@@ -552,9 +573,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                     // Enter System Mode
                     try(final DBBroker systemBroker = get(Optional.of(securityManager.getSystemSubject()))) {
 
-                        if(!status.compareAndSet(State.INITIALIZING, State.INITIALIZING_SYSTEM_MODE)) {
-                            throw new IllegalStateException("Invalid transition from '" + status.get().name() + "' to 'INITIALIZING_SYSTEM_MODE'");
-                        }
+                        status.process(Event.INITIALIZE_SYSTEM_MODE);
 
                         if(isReadOnly()) {
                             journalManager.ifPresent(JournalManager::disableJournalling);
@@ -667,9 +686,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                         createBroker();
                     }
 
-                    if(!status.compareAndSet(State.INITIALIZING_SYSTEM_MODE, State.INITIALIZING_MULTI_USER_MODE)) {
-                        throw new IllegalStateException("Invalid transition from '" + status.get().name() + "' to 'INITIALIZING_MULTI_USER_MODE'");
-                    }
+                    status.process(Event.INITIALIZE_MULTI_USER_MODE);
 
                     // register some MBeans to provide access to this instance
                     AgentFactory.getInstance().initDBInstance(this);
@@ -680,9 +697,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
 
                     servicesManager.startMultiUserServices(this);
 
-                    if(!status.compareAndSet(State.INITIALIZING_MULTI_USER_MODE, State.OPERATIONAL)) {
-                        throw new IllegalStateException("Invalid transition from '" + status.get().name() + "' to 'OPERATIONAL'");
-                    }
+                    status.process(Event.READY);
 
                     statusReporter.setStatus(SIGNAL_STARTED);
                 } catch(final Throwable t) {
@@ -797,7 +812,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
      * @return <code>true</code> if the database instance is operational
      */
     public boolean isOperational() {
-        return status.get() == State.OPERATIONAL;
+        return status.getCurrentState() == State.OPERATIONAL;
     }
 
     /**
@@ -1456,7 +1471,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
      */
     public void triggerSync(final Sync syncEvent) {
         //TOUNDERSTAND (pb) : synchronized, so... "schedules" or, rather, "executes" ? "schedules" (WM)
-        final State s = status.get();
+        final State s = status.getCurrentState();
         if(s == State.SHUTDOWN || s == State.SHUTTING_DOWN) {
             return;
         }
@@ -1510,7 +1525,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
     }
 
     public boolean isShuttingDown() {
-        return status.get() == State.SHUTTING_DOWN;
+        return status.getCurrentState() == State.SHUTTING_DOWN;
     }
 
     /**
@@ -1519,8 +1534,11 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
      * @param killed <code>true</code> when the JVM is (cleanly) exiting
      */
     public void shutdown(final boolean killed) {
-        if(!status.compareAndSet(State.OPERATIONAL, State.SHUTTING_DOWN)) {
+        try {
+            status.process(Event.START_SHUTDOWN);
+        } catch(final IllegalStateException e) {
             // we are not operational!
+            LOG.warn(e);
             return;
         }
 
@@ -1681,7 +1699,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                 statusObservers.clear();
             }
         } finally {
-            status.set(State.SHUTDOWN);
+            status.process(Event.FINISHED_SHUTDOWN);
         }
     }
 
