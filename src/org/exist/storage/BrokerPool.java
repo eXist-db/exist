@@ -55,7 +55,7 @@ import org.exist.security.internal.SecurityManagerImpl;
 import org.exist.storage.btree.DBException;
 import org.exist.storage.journal.JournalManager;
 import org.exist.storage.lock.DeadlockDetection;
-import org.exist.storage.lock.FileLock;
+import org.exist.storage.lock.FileLockService;
 import org.exist.storage.recovery.RecoveryManager;
 import org.exist.storage.sync.Sync;
 import org.exist.storage.sync.SyncTask;
@@ -67,7 +67,6 @@ import org.exist.xmldb.ShutdownListener;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.PerformanceStats;
 import org.exist.xquery.XQuery;
-import org.omg.CORBA.INITIALIZE;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -76,9 +75,7 @@ import java.lang.ref.Reference;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.nio.file.FileStore;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.NumberFormat;
 import java.util.*;
 import java.util.Map.Entry;
@@ -231,7 +228,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
     @ConfigurationFieldAsAttribute("pageSize")
     private final int pageSize;
 
-    private FileLock dataLock;
+    private FileLockService dataLock;
 
     /**
      * The journal manager of the database instance.
@@ -407,45 +404,6 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                 .map(v -> new BrokerWatchdog());
     }
 
-    //TODO : create a canReadJournalDir() method in the *relevant* class. The two directories may be different.
-    private boolean canReadDataDir(final Configuration conf) throws EXistException {
-        final Path dataDir = Optional.ofNullable((Path) conf.getProperty(PROPERTY_DATA_DIR))
-                .orElse(Paths.get(NativeBroker.DEFAULT_DATA_DIR));
-
-        if(!Files.exists(dataDir)) {
-            try {
-                //TODO : shall we force the creation ? use a parameter to decide ?
-                LOG.info("Data directory '" + dataDir.toAbsolutePath().toString() + "' does not exist. Creating one ...");
-                Files.createDirectories(dataDir);
-            } catch(final SecurityException | IOException e) {
-                throw new EXistException("Cannot create data directory '" + dataDir.toAbsolutePath().toString() + "'", e);
-            }
-        }
-
-        //Save it for further use.
-        conf.setProperty(PROPERTY_DATA_DIR, dataDir);
-        if(!Files.isWritable(dataDir)) {
-            LOG.warn("Cannot write to data directory: " + dataDir.toAbsolutePath().toString());
-            return false;
-        }
-
-        // try to acquire lock on the data dir
-        dataLock = new FileLock(this, dataDir.resolve("dbx_dir.lck"));
-
-        try {
-            final boolean locked = dataLock.tryLock();
-            if(!locked) {
-                throw new EXistException("The database directory seems to be locked by another " +
-                    "database instance. Found a valid lock file: " + dataLock.getFile());
-            }
-        } catch(final ReadOnlyException e) {
-            LOG.warn(e);
-            return false;
-        }
-
-        return true;
-    }
-
     void initialize() throws EXistException, DatabaseConfigurationException {
         try {
             _initialize();
@@ -482,6 +440,10 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
 
         // register core broker pool services
         this.scheduler = servicesManager.register(new QuartzSchedulerImpl(this));
+
+        // NOTE: this must occur after the scheduler, and before any other service which requires access to the data directory
+        this.dataLock = servicesManager.register(new FileLockService("dbx_dir.lck", BrokerPool.PROPERTY_DATA_DIR, NativeBroker.DEFAULT_DATA_DIR));
+
         this.securityManager = servicesManager.register(new SecurityManagerImpl(this));
         this.cacheManager = servicesManager.register(new DefaultCacheManager(this));
         this.xQueryPool = servicesManager.register(new XQueryPool());
@@ -527,11 +489,6 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
             servicesManager.configureServices(conf);
         } catch(final BrokerPoolServiceException e) {
             throw new EXistException(e);
-        }
-
-        //TODO(AR) improve this and its' FileLockHeartbeat interaction with scheduler, then we can refactor QuartzSchedulerImpl with #perpare
-        if(!canReadDataDir(conf)) {
-            setReadOnly();
         }
 
         // calculate how much memory is reserved for caches to grow

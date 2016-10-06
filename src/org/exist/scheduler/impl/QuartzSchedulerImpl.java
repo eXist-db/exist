@@ -30,7 +30,6 @@ import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.exist.EXistException;
 import org.exist.scheduler.*;
 import org.exist.scheduler.Scheduler;
 import org.exist.security.Subject;
@@ -63,28 +62,23 @@ public class QuartzSchedulerImpl implements Scheduler, BrokerPoolService {
 
     private final static Logger LOG = LogManager.getLogger(QuartzSchedulerImpl.class);
 
-    //the scheduler
+    // the real scheduler
     private org.quartz.Scheduler scheduler;
 
     private final BrokerPool brokerPool;
     private Configuration config;
 
-    /**
-     * Create and Start a new Scheduler.
-     *
-     * @param   brokerpool  The broker pool for which this scheduler is intended
-     *
-     * @throws  EXistException  DOCUMENT ME!
-     */
-    public QuartzSchedulerImpl(final BrokerPool brokerpool) throws EXistException {
+    public QuartzSchedulerImpl(final BrokerPool brokerpool) {
         this.brokerPool = brokerpool;
     }
 
     @Override
     public void configure(final Configuration configuration) throws BrokerPoolServiceException {
         this.config = configuration;
+    }
 
-        //TODO(AR) move to start!
+    @Override
+    public void prepare(final BrokerPool brokerPool) throws BrokerPoolServiceException {
         try {
             final SchedulerFactory schedulerFactory = new StdSchedulerFactory(getQuartzProperties());
             this.scheduler = schedulerFactory.getScheduler();
