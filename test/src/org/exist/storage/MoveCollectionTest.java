@@ -51,8 +51,33 @@ import org.xmldb.api.base.XMLDBException;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 public class MoveCollectionTest {
+
+    @Test(expected = PermissionDeniedException.class)
+    public void moveToSubCollection() throws Exception {
+        final BrokerPool pool = startDB();
+        final TransactionManager transact = pool.getTransactionManager();
+
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+            final Txn transaction = transact.beginTransaction()) {
+
+            Collection src = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
+            assertNotNull(src);
+            broker.saveCollection(transaction, src);
+
+            Collection dst = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI2);
+            assertNotNull(dst);
+            broker.saveCollection(transaction, dst);
+
+            broker.moveCollection(transaction, src, dst, src.getURI().lastSegment());
+
+            fail("expect PermissionDeniedException: Cannot move collection '/db/test' to it child collection '/db/test/test2'");
+
+            transact.commit(transaction);
+        }
+    }
 
     @Test
     public void store() throws IllegalAccessException, DatabaseConfigurationException, InstantiationException, ClassNotFoundException, XMLDBException, EXistException, PermissionDeniedException, IOException, SAXException, LockException {

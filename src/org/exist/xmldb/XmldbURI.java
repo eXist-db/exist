@@ -123,6 +123,8 @@ public class XmldbURI implements Comparable<Object>, Serializable {
     public final static String API_REST = "rest-style";
     public final static String API_LOCAL = "local";
 
+    private final static XmldbURI[] NO_SEGMENTS = new XmldbURI[0];
+
     private String encodedCollectionPath;
     protected boolean hadXmldbPrefix = false;
 
@@ -543,9 +545,14 @@ public class XmldbURI implements Comparable<Object>, Serializable {
         final String name = getRawCollectionPath();
 
         if ((name == null) || name.isEmpty()) {
-            return new XmldbURI[0];
+            return NO_SEGMENTS;
         }
+        
         final String[] split = name.split("/");
+        if (split.length == 0) {
+            return NO_SEGMENTS;
+        }
+
         final int fix = ("".equals(split[0])) ? 1 : 0;
         final XmldbURI[] segments = new XmldbURI[split.length - fix];
 
@@ -801,15 +808,27 @@ public class XmldbURI implements Comparable<Object>, Serializable {
         return getXmldbURI().toURL();
     }
 
-    //TODO: add unit test for this
-    //TODO : come on ! use a URI method name.
-    //resolve() is a must here
-    public boolean startsWith(final XmldbURI xmldbUri) {
-        return xmldbUri == null ? false : toString().startsWith(xmldbUri.toString());
+    public boolean startsWith(final XmldbURI prefix) {
+        if (prefix == null) {
+            return false;
+        }
+
+        final XmldbURI[] segments = getPathSegments();
+        final XmldbURI[] prefix_segments = prefix.getPathSegments();
+
+        if (prefix_segments.length > segments.length) {
+            return false;
+        }
+
+        for (int i = 0; i < prefix_segments.length; i++) {
+            if (!prefix_segments[i].equalsInternal(segments[i])) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
-    //TODO : come on ! use a URI method name.
-    //resolve() is a must here
     public boolean startsWith(final String string) throws URISyntaxException {
         return startsWith(XmldbURI.xmldbUriFor(string));
     }
