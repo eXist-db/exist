@@ -1215,6 +1215,18 @@ public class Collection extends Observable implements Resource, Comparable<Colle
         }
     }
 
+    public void removeResource(final Txn transaction, final DBBroker broker, final DocumentImpl doc) throws PermissionDeniedException, LockException, IOException, TriggerException {
+        if (doc.getCollection() != this) {
+            throw new IOException("Document '" + doc.getURI() + "' does not belong to Collection '" + getURI() + "'.");
+        }
+
+        if(doc.getResourceType() == DocumentImpl.BINARY_FILE) {
+            removeBinaryResource(transaction, broker, doc);
+        } else {
+            removeXMLResource(transaction, broker, doc.getFileURI());
+        }
+    }
+
     /**
      * Remove the specified document from the collection.
      *
