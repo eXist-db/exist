@@ -14,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * A Simple Service wrapper for {@link FileLock}
@@ -27,7 +28,7 @@ public class FileLockService implements BrokerPoolService {
 
     private Path dataDir;
     private boolean writable;
-    private FileLock dataLock;
+    private AtomicReference<FileLock> dataLock = new AtomicReference<>();
 
     public FileLockService(final String lockFileName, final String confDirPropName, final String defaultDirName) {
         this.lockFileName = lockFileName;
@@ -64,13 +65,14 @@ public class FileLockService implements BrokerPoolService {
     @Override
     public void prepare(final BrokerPool brokerPool) throws BrokerPoolServiceException {
         // try to acquire lock on the data dir
-        this.dataLock = new FileLock(brokerPool, dataDir.resolve(lockFileName));
+        final FileLock fileLock = new FileLock(brokerPool, dataDir.resolve(lockFileName));
+        this.dataLock.compareAndSet(null, fileLock);
 
         try {
-            final boolean locked = dataLock.tryLock();
+            final boolean locked = fileLock.tryLock();
             if(!locked) {
                 throw new BrokerPoolServiceException(new EXistException("The directory seems to be locked by another " +
-                        "database instance. Found a valid lock file: " + dataLock.getFile().toAbsolutePath().toString()));
+                        "database instance. Found a valid lock file: " + fileLock.getFile().toAbsolutePath().toString()));
             }
         } catch(final ReadOnlyException e) {
             LOG.warn(e);
@@ -92,11 +94,20 @@ public class FileLockService implements BrokerPoolService {
     }
 
     public Path getFile() {
-        return dataLock.getFile();
+        final FileLock fileLock = dataLock.get();
+        if(fileLock == null) {
+            return null;
+        } else {
+            return fileLock.getFile();
+        }
     }
 
     //TODO(AR) instead we should implement a BrokerPoolService#shutdown() and BrokerPoolServicesManager#shutdown()
     public void release() {
-        dataLock.release();
+        final FileLock fileLock = dataLock.get();
+        if(fileLock != null) {
+            fileLock.release();
+        }
+        dataLock.compareAndSet(fileLock, null);
     }
 }

@@ -39,6 +39,7 @@ import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationFieldAsElement;
 import org.exist.config.annotation.ConfigurationReferenceBy;
 import org.exist.security.internal.GroupImpl;
+import org.exist.storage.DBBroker;
 
 @ConfigurationClass("")
 public abstract class AbstractGroup extends AbstractPrincipal implements Comparable<Object>, Group {
@@ -52,8 +53,8 @@ public abstract class AbstractGroup extends AbstractPrincipal implements Compara
     @ConfigurationFieldAsElement("metadata")
     private Map<String, String> metadata = new HashMap<String, String>();
 
-    public AbstractGroup(final AbstractRealm realm, final int id, final String name, final List<Account> managers) throws ConfigurationException {
-        super(realm, realm.collectionGroups, id, name);
+    public AbstractGroup(final DBBroker broker, final AbstractRealm realm, final int id, final String name, final List<Account> managers) throws ConfigurationException {
+        super(broker, realm, realm.collectionGroups, id, name);
         
         if(managers != null) {
             for(final Account manager : managers) {
@@ -62,8 +63,8 @@ public abstract class AbstractGroup extends AbstractPrincipal implements Compara
         }
     }
 
-    public AbstractGroup(final AbstractRealm realm, final String name) throws ConfigurationException {
-        super(realm, realm.collectionGroups, UNDEFINED_ID, name);
+    public AbstractGroup(final DBBroker broker, final AbstractRealm realm, final String name) throws ConfigurationException {
+        super(broker, realm, realm.collectionGroups, UNDEFINED_ID, name);
     }
 
     public AbstractGroup(final AbstractRealm realm, final Configuration configuration) throws ConfigurationException {

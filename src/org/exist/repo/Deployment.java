@@ -605,7 +605,7 @@ public class Deployment {
         try {
             if (group != null && !secman.hasGroup(group)) {
                 final GroupAider aider = new GroupAider(group);
-                secman.addGroup(aider);
+                secman.addGroup(broker, aider);
             }
             if (user != null && !secman.hasAccount(user)) {
                 final UserAider aider = new UserAider(user);

@@ -26,14 +26,14 @@ public class AutoDeploymentTrigger implements StartupTrigger {
     public final static String AUTODEPLOY_PROPERTY = "exist.autodeploy";
 
     @Override
-    public void execute(final DBBroker broker, final Map<String, List<? extends Object>> params) {
+    public void execute(final DBBroker sysBroker, final Map<String, List<? extends Object>> params) {
         // do not process if the system property exist.autodeploy=off
         final String property = System.getProperty(AUTODEPLOY_PROPERTY, "on");
         if (property.equalsIgnoreCase("off")) {
             return;
         }
 
-        final Optional<Path> homeDir = broker.getConfiguration().getExistHome();
+        final Optional<Path> homeDir = sysBroker.getConfiguration().getExistHome();
         final Path autodeployDir = FileUtils.resolve(homeDir, AUTODEPLOY_DIRECTORY);
         if (!Files.isReadable(autodeployDir) && Files.isDirectory(autodeployDir)) {
             return;
@@ -47,7 +47,7 @@ public class AutoDeploymentTrigger implements StartupTrigger {
 
             LOG.info("Scanning autodeploy directory. Found " + xars.size() + " app packages.");
 
-            final Deployment deployment = new Deployment(broker);
+            final Deployment deployment = new Deployment(sysBroker);
 
             // build a map with uri -> file so we can resolve dependencies
             final Map<String, Path> packages = new HashMap<>();
@@ -72,10 +72,10 @@ public class AutoDeploymentTrigger implements StartupTrigger {
                     deployment.installAndDeploy(xar, loader, false);
                 } catch (final PackageException e) {
                     LOG.warn("Exception during deployment of app " + FileUtils.fileName(xar) + ": " + e.getMessage(), e);
-                    broker.getBrokerPool().reportStatus("An error occurred during app deployment: " + e.getMessage());
+                    sysBroker.getBrokerPool().reportStatus("An error occurred during app deployment: " + e.getMessage());
                 } catch (final IOException e) {
                     LOG.warn("Exception during deployment of app " + FileUtils.fileName(xar) + ": " + e.getMessage(), e);
-                    broker.getBrokerPool().reportStatus("An error occurred during app deployment: " + e.getMessage());
+                    sysBroker.getBrokerPool().reportStatus("An error occurred during app deployment: " + e.getMessage());
                 }
             }
         } catch(final IOException ioe) {

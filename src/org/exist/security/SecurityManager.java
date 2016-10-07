@@ -73,10 +73,10 @@ public interface SecurityManager extends Configurable {
 
    Account getAccount(String name);
 
-   Group addGroup(Group group) throws PermissionDeniedException, EXistException;
+   Group addGroup(DBBroker broker, Group group) throws PermissionDeniedException, EXistException;
    
    @Deprecated
-   void addGroup(String group) throws PermissionDeniedException, EXistException;
+   void addGroup(DBBroker broker, String group) throws PermissionDeniedException, EXistException;
 
    boolean hasGroup(String name);
    boolean hasGroup(Group group);

@@ -51,15 +51,15 @@ public class StartupTriggerTest {
         }
 
         @Override
-        public void execute(DBBroker sysBroker, Map<String, List<? extends Object>> params) {
+        public void execute(final DBBroker sysBroker, final Map<String, List<? extends Object>> params) {
             final SecurityManager secman = sysBroker.getBrokerPool().getSecurityManager();
             if (!secman.hasAccount(USER)) {
                 final UserAider aider = new UserAider(USER);
                 aider.setPassword(PASSWORD);
 
                 try {
-                    secman.addAccount(aider);
-                } catch (PermissionDeniedException | EXistException e) {
+                    secman.addAccount(sysBroker, aider);
+                } catch (final PermissionDeniedException | EXistException e) {
                     fail(e.getMessage());
                 }
 
@@ -67,7 +67,7 @@ public class StartupTriggerTest {
 
                 try {
                     secman.deleteAccount(USER);
-                } catch (PermissionDeniedException | EXistException e) {
+                } catch (final PermissionDeniedException | EXistException e) {
                     fail(e.getMessage());
                 }
             }

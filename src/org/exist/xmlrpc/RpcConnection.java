@@ -2511,7 +2511,7 @@ public class RpcConnection implements RpcAPI {
                 }
             }
 
-            withDb((broker, transaction) -> manager.addGroup(role));
+            withDb((broker, transaction) -> manager.addGroup(broker, role));
 
             return true;
         }

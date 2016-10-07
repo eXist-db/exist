@@ -5,6 +5,7 @@ import org.exist.config.ConfigurationException;
 import org.exist.config.annotation.ConfigurationClass;
 import org.exist.security.AbstractGroup;
 import org.exist.security.AbstractRealm;
+import org.exist.storage.DBBroker;
 
 /**
  *
@@ -17,8 +18,8 @@ public class LDAPGroupImpl extends AbstractGroup {
         super(realm, configuration);
     }
 
-    public LDAPGroupImpl(AbstractRealm realm, int id, String name) throws ConfigurationException {
-        super(realm, id, name, null);
+    public LDAPGroupImpl(DBBroker broker, AbstractRealm realm, int id, String name) throws ConfigurationException {
+        super(broker, realm, id, name, null);
     }
 
     LDAPGroupImpl(AbstractRealm realm, Configuration config, boolean removed) throws ConfigurationException {
@@ -26,7 +27,7 @@ public class LDAPGroupImpl extends AbstractGroup {
         this.removed = removed;
     }
 
-    LDAPGroupImpl(AbstractRealm realm, String name) throws ConfigurationException {
-        super(realm, name);
+    LDAPGroupImpl(DBBroker broker, AbstractRealm realm, String name) throws ConfigurationException {
+        super(broker, realm, name);
     }
 }

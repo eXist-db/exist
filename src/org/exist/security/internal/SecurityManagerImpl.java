@@ -132,20 +132,13 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
     }
 
     @Override
-    public void configure(final org.exist.util.Configuration configuration) throws BrokerPoolServiceException {
+    public void prepare(final BrokerPool brokerPool) throws BrokerPoolServiceException {
         try {
-            this.defaultRealm = new RealmImpl(this, null); //TODO: in-memory configuration???
+            this.defaultRealm = new RealmImpl(null, this, null);
             realms.add(defaultRealm);
-        } catch(final ConfigurationException e) {
+        } catch(final EXistException e) {
             throw new BrokerPoolServiceException(e);
         }
-    }
-
-    @Override
-    public void prepare(final BrokerPool brokerPool) {
-        final Properties params = new Properties();
-        params.put(getClass().getName(), this);
-        db.getScheduler().createPeriodicJob(TIMEOUT_CHECK_PERIOD, new SessionsCheck(), TIMEOUT_CHECK_PERIOD, params, SimpleTrigger.REPEAT_INDEFINITELY, false);
     }
 
     @Override
@@ -155,6 +148,13 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
         } catch(final EXistException e) {
             throw new BrokerPoolServiceException(e);
         }
+    }
+
+    @Override
+    public void startPreMultiUserSystem(final DBBroker systemBroker) throws BrokerPoolServiceException {
+        final Properties params = new Properties();
+        params.put(getClass().getName(), this);
+        db.getScheduler().createPeriodicJob(TIMEOUT_CHECK_PERIOD, new SessionsCheck(), TIMEOUT_CHECK_PERIOD, params, SimpleTrigger.REPEAT_INDEFINITELY, false);
     }
 
     /**
@@ -553,12 +553,12 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
     }
     
     @Override
-    public void addGroup(final String name) throws PermissionDeniedException, EXistException {
-        addGroup(new GroupAider(name));
+    public void addGroup(final DBBroker broker, final String name) throws PermissionDeniedException, EXistException {
+        addGroup(broker, new GroupAider(name));
     }
 
     @Override
-    public Group addGroup(final Group group) throws PermissionDeniedException, EXistException {
+    public Group addGroup(final DBBroker broker, final Group group) throws PermissionDeniedException, EXistException {
         if(group.getRealmId() == null) {
             throw new ConfigurationException("Group must have realm id.");
         }
@@ -579,7 +579,7 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
             throw new ConfigurationException("The group '" + group.getName() + "' at realm '" + group.getRealmId() + "' already exist.");
         }
         
-        final GroupImpl newGroup = new GroupImpl(registeredRealm, id, group.getName(), group.getManagers());
+        final GroupImpl newGroup = new GroupImpl(broker, registeredRealm, id, group.getName(), group.getManagers());
         for(final SchemaType metadataKey : group.getMetadataKeys()) {
             final String metadataValue = group.getMetadataValue(metadataKey);
             newGroup.setMetadataValue(metadataKey, metadataValue);
@@ -602,41 +602,9 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
     }
 
     @Override
-    public final Account addAccount(final Account account) throws  PermissionDeniedException, EXistException{
-        if(account.getRealmId() == null) {
-            LOG.debug("Account must have realm id.");
-            throw new ConfigurationException("Account must have realm id.");
-        }
-
-        if(account.getName() == null || account.getName().isEmpty()) {
-            LOG.debug("Account must have name.");
-            throw new ConfigurationException("Account must have name.");
-        }
-
-        final int id;
-        if(account.getId() != Account.UNDEFINED_ID) {
-            id = account.getId();
-        } else {
-            id = getNextAccountId();
-        }
-
-        final AbstractRealm registeredRealm = (AbstractRealm) findRealmForRealmId(account.getRealmId());
-        final AccountImpl newAccount = new AccountImpl(registeredRealm, id, account);
-
-        final Lock lock = accountLocks.getWriteLock(newAccount);
-        lock.lock();
-        try {
-            usersById.modify(principalDb -> principalDb.put(id, newAccount));
-            
-            registeredRealm.registerAccount(newAccount);
-
-            //XXX: one transaction?
-            save();
-            newAccount.save();
-
-            return newAccount;
-        } finally {
-            lock.unlock();
+    public final Account addAccount(final Account account) throws  PermissionDeniedException, EXistException {
+        try(final DBBroker broker = db.getBroker()) {
+            return addAccount(broker, account);
         }
     }
     
@@ -731,7 +699,7 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
                 return;
             }
 
-            final SecurityManagerImpl sm = ( SecurityManagerImpl )params.get( SecurityManagerImpl.class.getName() );
+            final SecurityManagerImpl sm = (SecurityManagerImpl)params.get(SecurityManagerImpl.class.getName());
             if (sm == null) {
                 return;
             }

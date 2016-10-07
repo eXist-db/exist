@@ -319,7 +319,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
     }
 
     @Override
-    public Group addGroup(Group group) throws PermissionDeniedException, EXistException {
+    public Group addGroup(final DBBroker broker, final Group group) throws PermissionDeniedException, EXistException {
         
         if(group.getRealmId() == null) {
             throw new ConfigurationException("Group's realmId is null.");
@@ -329,7 +329,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
             throw new ConfigurationException("Group from different realm");
         }
 
-        return getSecurityManager().addGroup(group);
+        return getSecurityManager().addGroup(broker, group);
     }
 
     @Override

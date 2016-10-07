@@ -404,6 +404,12 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                 .map(v -> new BrokerWatchdog());
     }
 
+    /**
+     * Initializes the database instance.
+     *
+     * @throws EXistException
+     * @throws DatabaseConfigurationException
+     */
     void initialize() throws EXistException, DatabaseConfigurationException {
         try {
             _initialize();
@@ -425,11 +431,6 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
         }
     }
 
-    /**
-     * Initializes the database instance.
-     *
-     * @throws EXistException
-     */
     private void _initialize() throws EXistException, DatabaseConfigurationException {
         //Flag to indicate that we are initializing
         status.process(Event.INITIALIZE);
@@ -445,6 +446,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
         this.dataLock = servicesManager.register(new FileLockService("dbx_dir.lck", BrokerPool.PROPERTY_DATA_DIR, NativeBroker.DEFAULT_DATA_DIR));
 
         this.securityManager = servicesManager.register(new SecurityManagerImpl(this));
+
         this.cacheManager = servicesManager.register(new DefaultCacheManager(this));
         this.xQueryPool = servicesManager.register(new XQueryPool());
         this.processMonitor = servicesManager.register(new ProcessMonitor());

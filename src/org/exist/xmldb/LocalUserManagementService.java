@@ -86,7 +86,7 @@ public class LocalUserManagementService extends AbstractLocalService implements 
             if (manager.hasGroup(group.getName())) {
                 throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "group '" + group.getName() + "' already exists");
             } else {
-                return (broker, transaction) -> manager.addGroup(group);
+                return (broker, transaction) -> manager.addGroup(broker, group);
             }
         });
     }

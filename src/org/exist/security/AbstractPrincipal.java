@@ -55,20 +55,13 @@ public abstract class AbstractPrincipal implements Principal {
 
     protected Configuration configuration = null;
 
-    public AbstractPrincipal(Realm realm, Collection collection, int id, String name) throws ConfigurationException {
+    protected AbstractPrincipal(final DBBroker broker, final Realm realm, final Collection collection, final int id, final String name)
+            throws ConfigurationException {
         this.realm = realm;
         this.id = id;
         this.name = name;
-
-        if (collection != null) {
-            BrokerPool database;
+        if(collection != null) {
             try {
-                database = BrokerPool.getInstance();
-            } catch (final EXistException e) {
-                throw new ConfigurationException(e);
-            } 
-
-            try(final DBBroker broker = database.getBroker()) {
                 final Configuration _config_ = Configurator.parse(this, broker, collection, XmldbURI.create(name + ".xml"));
                 configuration = Configurator.configure(this, _config_);
             } catch (final EXistException e) {
@@ -77,20 +70,7 @@ public abstract class AbstractPrincipal implements Principal {
         }
     }
 
-    protected AbstractPrincipal(DBBroker broker, Realm realm, Collection collection, int id, String name)
-            throws ConfigurationException {
-        this.realm = realm;
-        this.id = id;
-        this.name = name;
-        try {
-            final Configuration _config_ = Configurator.parse(this, broker, collection, XmldbURI.create(name+".xml"));
-            configuration = Configurator.configure(this, _config_);
-        } catch (final EXistException e) {
-            throw new ConfigurationException(e);
-        }
-    }
-
-    public AbstractPrincipal(AbstractRealm realm, Configuration _config_) throws ConfigurationException {
+    public AbstractPrincipal(final AbstractRealm realm, final Configuration _config_) throws ConfigurationException {
         this.realm = realm;
 
         configuration = Configurator.configure(this, _config_);

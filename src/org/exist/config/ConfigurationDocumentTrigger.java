@@ -100,7 +100,7 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
             if (documentPath.toString().equals(ConverterFrom1_0.LEGACY_USERS_DOCUMENT_PATH)) {
                 try {
                 	final SecurityManager sm = broker.getBrokerPool().getSecurityManager();
-                    ConverterFrom1_0.convert(sm, document);
+                    ConverterFrom1_0.convert(broker, sm, document);
                 } catch (final PermissionDeniedException | EXistException e) {
                     LOG.error(e.getMessage(), e);
                     //TODO : raise exception ? -pb
@@ -120,7 +120,7 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
         if (uri.toString().equals(ConverterFrom1_0.LEGACY_USERS_DOCUMENT_PATH)) {
             try {
             	final SecurityManager sm = broker.getBrokerPool().getSecurityManager();
-                ConverterFrom1_0.convert(sm, document);
+                ConverterFrom1_0.convert(broker, sm, document);
             } catch (final PermissionDeniedException | EXistException e) {
                 LOG.error(e.getMessage(), e);
                 //TODO : raise exception ? -pb

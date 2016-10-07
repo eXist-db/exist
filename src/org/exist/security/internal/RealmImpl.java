@@ -90,7 +90,7 @@ public class RealmImpl extends AbstractRealm {
     //@ConfigurationFieldAsElement("allow-guest-authentication")
     public boolean allowGuestAuthentication = true;
 
-    protected RealmImpl(final SecurityManagerImpl sm, final Configuration config) throws ConfigurationException { //, Configuration conf
+    protected RealmImpl(final DBBroker broker, final SecurityManagerImpl sm, final Configuration config) throws ConfigurationException { //, Configuration conf
 
     	super(sm, config);
 
@@ -98,7 +98,7 @@ public class RealmImpl extends AbstractRealm {
     	sm.lastGroupId = INITIAL_LAST_GROUP_ID;    //TODO this is horrible!
         
         //DBA group
-        GROUP_DBA = new GroupImpl(this, DBA_GROUP_ID, SecurityManager.DBA_GROUP);
+        GROUP_DBA = new GroupImpl(broker, this, DBA_GROUP_ID, SecurityManager.DBA_GROUP);
         GROUP_DBA.setManagers(new ArrayList<Reference<SecurityManager, Account>>(){
             { add(new ReferenceImpl<>(sm, "getAccount", SecurityManager.DBA_USER)); }
         });
@@ -109,7 +109,7 @@ public class RealmImpl extends AbstractRealm {
     	//groupsByName.put(GROUP_DBA.getName(), GROUP_DBA);
         
         //System account
-    	ACCOUNT_SYSTEM = new AccountImpl(this, SYSTEM_ACCOUNT_ID, SecurityManager.SYSTEM, "", GROUP_DBA, true);
+    	ACCOUNT_SYSTEM = new AccountImpl(broker, this, SYSTEM_ACCOUNT_ID, SecurityManager.SYSTEM, "", GROUP_DBA, true);
         ACCOUNT_SYSTEM.setMetadataValue(AXSchemaType.FULLNAME, SecurityManager.SYSTEM);
         ACCOUNT_SYSTEM.setMetadataValue(EXistSchemaType.DESCRIPTION, "System Internals");
         sm.addUser(ACCOUNT_SYSTEM.getId(), ACCOUNT_SYSTEM);
@@ -118,7 +118,7 @@ public class RealmImpl extends AbstractRealm {
     	//usersByName.put(ACCOUNT_SYSTEM.getName(), ACCOUNT_SYSTEM);
         
         //guest group
-        GROUP_GUEST = new GroupImpl(this, GUEST_GROUP_ID, SecurityManager.GUEST_GROUP);
+        GROUP_GUEST = new GroupImpl(broker, this, GUEST_GROUP_ID, SecurityManager.GUEST_GROUP);
         GROUP_GUEST.setManagers(new ArrayList<Reference<SecurityManager, Account>>(){
             { add(new ReferenceImpl<>(sm, "getAccount", SecurityManager.DBA_USER)); }
         });
@@ -129,8 +129,8 @@ public class RealmImpl extends AbstractRealm {
     	//groupsByName.put(GROUP_GUEST.getName(), GROUP_GUEST);
         
         //unknown account and group
-        GROUP_UNKNOWN = new GroupImpl(this, UNKNOWN_GROUP_ID, "");
-    	ACCOUNT_UNKNOWN = new AccountImpl(this, UNKNOWN_ACCOUNT_ID, "", (String)null, GROUP_UNKNOWN);
+        GROUP_UNKNOWN = new GroupImpl(broker, this, UNKNOWN_GROUP_ID, "");
+    	ACCOUNT_UNKNOWN = new AccountImpl(broker, this, UNKNOWN_ACCOUNT_ID, "", (String)null, GROUP_UNKNOWN);
         
         //XXX: GROUP_DBA._addManager(ACCOUNT_ADMIN);
     	//XXX: GROUP_GUEST._addManager(ACCOUNT_ADMIN);

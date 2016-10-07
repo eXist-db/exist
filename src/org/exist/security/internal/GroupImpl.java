@@ -28,30 +28,29 @@ import org.exist.config.annotation.ConfigurationClass;
 import org.exist.security.AbstractGroup;
 import org.exist.security.AbstractRealm;
 import org.exist.security.Account;
+import org.exist.storage.DBBroker;
 
 @ConfigurationClass("group")
 public class GroupImpl extends AbstractGroup {
 
-    public GroupImpl(AbstractRealm realm, Configuration configuration) throws ConfigurationException {
+    public GroupImpl(final AbstractRealm realm, final Configuration configuration) throws ConfigurationException {
         super(realm, configuration);
     }
 
-    GroupImpl(AbstractRealm realm, Configuration configuration, boolean removed) throws ConfigurationException {
+    GroupImpl(final AbstractRealm realm, final Configuration configuration, final boolean removed) throws ConfigurationException {
         super(realm, configuration);
         this.removed = removed;
     }
 
-    public GroupImpl(AbstractRealm realm, int id, String name) throws ConfigurationException {
-        this(realm, id, name, null);
+    public GroupImpl(final DBBroker broker, final AbstractRealm realm, final int id, final String name) throws ConfigurationException {
+        this(broker, realm, id, name, null);
     }
 
-    public GroupImpl(AbstractRealm realm, int id, String name, List<Account> managers) throws ConfigurationException {
-        super(realm, id, name, managers);
+    public GroupImpl(final DBBroker broker, final AbstractRealm realm, final int id, final String name, final List<Account> managers) throws ConfigurationException {
+        super(broker, realm, id, name, managers);
     }
 
-    GroupImpl(AbstractRealm realm, String name) throws ConfigurationException {
-        super(realm, name);
+    GroupImpl(final DBBroker broker, final AbstractRealm realm, final String name) throws ConfigurationException {
+        super(broker, realm, name);
     }
-
-    
 }
