@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import javax.xml.XMLConstants;
-import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerException;
 import org.exist.Namespaces;
 import org.exist.dom.INodeHandle;
@@ -41,12 +40,10 @@ import org.xml.sax.helpers.NamespaceSupport;
 
 public class SAXSerializer extends AbstractSerializer implements ContentHandler, LexicalHandler, Receiver {
 
-    private final static String XHTML_NS = "http://www.w3.org/1999/xhtml";
-
-    protected NamespaceSupport nsSupport = new NamespaceSupport();
-    protected HashMap<String, String> namespaceDecls = new HashMap<String, String>();
-    protected HashMap<String, String> optionalNamespaceDecls = new HashMap<String, String>();
-    protected boolean enforceXHTML = false;
+    private final NamespaceSupport nsSupport = new NamespaceSupport();
+    private final Map<String, String> namespaceDecls = new HashMap<>();
+    private final Map<String, String> optionalNamespaceDecls = new HashMap<>();
+    private boolean enforceXHTML = false;
 
     public SAXSerializer() {
         super();
@@ -57,6 +54,7 @@ public class SAXSerializer extends AbstractSerializer implements ContentHandler,
         setOutput(writer, outputProperties);
     }
 
+    @Override
     public final void setOutput(final Writer writer, final Properties properties) {
         super.setOutput(writer, properties);
 
@@ -69,10 +67,11 @@ public class SAXSerializer extends AbstractSerializer implements ContentHandler,
         return receiver.getWriter();
     }
 
-    public void setReceiver(XMLWriter receiver) {
+    public void setReceiver(final XMLWriter receiver) {
         this.receiver = receiver;
     }
 
+    @Override
     public void reset() {
         super.reset();
         nsSupport.reset();
@@ -80,17 +79,11 @@ public class SAXSerializer extends AbstractSerializer implements ContentHandler,
         optionalNamespaceDecls.clear();
     }
 
-    /* (non-Javadoc)
-     * @see org.xml.sax.ContentHandler#setDocumentLocator(org.xml.sax.Locator)
-     */
     @Override
-    public void setDocumentLocator(Locator locator) {
+    public void setDocumentLocator(final Locator locator) {
         //Nothing to do ?
     }
 
-    /* (non-Javadoc)
-     * @see org.xml.sax.ContentHandler#startDocument()
-     */
     @Override
     public void startDocument() throws SAXException {
         try {
@@ -100,9 +93,6 @@ public class SAXSerializer extends AbstractSerializer implements ContentHandler,
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.xml.sax.ContentHandler#endDocument()
-     */
     @Override
     public void endDocument() throws SAXException {
         try {
@@ -112,9 +102,6 @@ public class SAXSerializer extends AbstractSerializer implements ContentHandler,
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.xml.sax.ContentHandler#startPrefixMapping(java.lang.String, java.lang.String)
-     */
     @Override
     public void startPrefixMapping(String prefix, String namespaceURI) throws SAXException {
         if (namespaceURI.equals(Namespaces.XML_NS)) {
@@ -124,25 +111,19 @@ public class SAXSerializer extends AbstractSerializer implements ContentHandler,
             prefix = XMLConstants.DEFAULT_NS_PREFIX;
         }
         final String ns = nsSupport.getURI(prefix);
-        if (enforceXHTML && !XHTML_NS.equals(namespaceURI)) {
-            namespaceURI = XHTML_NS;
+        if (enforceXHTML && !Namespaces.XHTML_NS.equals(namespaceURI)) {
+            namespaceURI = Namespaces.XHTML_NS;
         }
         if(ns == null || (!ns.equals(namespaceURI))) {
             optionalNamespaceDecls.put(prefix, namespaceURI);
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.xml.sax.ContentHandler#endPrefixMapping(java.lang.String)
-     */
     @Override
     public void endPrefixMapping(final String prefix) throws SAXException {
         optionalNamespaceDecls.remove(prefix);
     }
 
-    /* (non-Javadoc)
-     * @see org.xml.sax.ContentHandler#startElement(java.lang.String, java.lang.String, java.lang.String, org.xml.sax.Attributes)
-     */
     @Override
     public void startElement(String namespaceURI, final String localName, final String qname, final Attributes attribs) throws SAXException {
         try {
@@ -158,7 +139,7 @@ public class SAXSerializer extends AbstractSerializer implements ContentHandler,
                 namespaceURI = XMLConstants.NULL_NS_URI;
             }
             if (enforceXHTML && elemPrefix.length() == 0 && namespaceURI.length() == 0) {
-                namespaceURI = XHTML_NS;
+                namespaceURI = Namespaces.XHTML_NS;
             }
             if (nsSupport.getURI(elemPrefix) == null) {
                 namespaceDecls.put(elemPrefix, namespaceURI);
@@ -173,8 +154,8 @@ public class SAXSerializer extends AbstractSerializer implements ContentHandler,
                     if (XMLConstants.XMLNS_ATTRIBUTE.equals(attrName)) {
                         if (nsSupport.getURI(XMLConstants.DEFAULT_NS_PREFIX) == null) {
                             uri = attribs.getValue(i);
-                            if (enforceXHTML && !XHTML_NS.equals(uri)) {
-                                uri = XHTML_NS;
+                            if (enforceXHTML && !Namespaces.XHTML_NS.equals(uri)) {
+                                uri = Namespaces.XHTML_NS;
                             }
                             namespaceDecls.put(XMLConstants.DEFAULT_NS_PREFIX, uri);
                             nsSupport.declarePrefix(XMLConstants.DEFAULT_NS_PREFIX, uri);
@@ -217,9 +198,11 @@ public class SAXSerializer extends AbstractSerializer implements ContentHandler,
             }
             optionalNamespaceDecls.clear();
             // output attributes
-            for (int i = 0; i < attribs.getLength(); i++) {
-                if (!attribs.getQName(i).startsWith(XMLConstants.XMLNS_ATTRIBUTE)) {
-                    receiver.attribute(attribs.getQName(i), attribs.getValue(i));
+            if(attribs != null) {
+                for (int i = 0; i < attribs.getLength(); i++) {
+                    if (!attribs.getQName(i).startsWith(XMLConstants.XMLNS_ATTRIBUTE)) {
+                        receiver.attribute(attribs.getQName(i), attribs.getValue(i));
+                    }
                 }
             }
         } catch (final TransformerException e) {
@@ -227,9 +210,6 @@ public class SAXSerializer extends AbstractSerializer implements ContentHandler,
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.util.serializer.Receiver#startElement(org.exist.dom.QName)
-     */
     @Override
     public void startElement(final QName qname, final AttrList attribs) throws SAXException {
         try {
@@ -244,7 +224,7 @@ public class SAXSerializer extends AbstractSerializer implements ContentHandler,
                 namespaceURI = XMLConstants.NULL_NS_URI;
             }
             if(enforceXHTML && prefix.length() == 0 && namespaceURI.length() == 0) {
-                namespaceURI = XHTML_NS;
+                namespaceURI = Namespaces.XHTML_NS;
                 receiver.startElement(new QName(qname.getLocalPart(), namespaceURI, qname.getPrefix()));
             } else {
                 receiver.startElement(qname);
@@ -262,8 +242,8 @@ public class SAXSerializer extends AbstractSerializer implements ContentHandler,
                     if (XMLConstants.XMLNS_ATTRIBUTE.equals(attrQName.getLocalPart())) {
                         if (nsSupport.getURI(XMLConstants.DEFAULT_NS_PREFIX) == null) {
                             uri = attribs.getValue(i);
-                            if (enforceXHTML && !XHTML_NS.equals(uri)) {
-                                uri = XHTML_NS;
+                            if (enforceXHTML && !Namespaces.XHTML_NS.equals(uri)) {
+                                uri = Namespaces.XHTML_NS;
                             }
                             namespaceDecls.put(XMLConstants.DEFAULT_NS_PREFIX, uri);
                             nsSupport.declarePrefix(XMLConstants.DEFAULT_NS_PREFIX, uri);
@@ -324,9 +304,6 @@ public class SAXSerializer extends AbstractSerializer implements ContentHandler,
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.xml.sax.ContentHandler#endElement(java.lang.String, java.lang.String, java.lang.String)
-     */
     @Override
     public void endElement(final String namespaceURI, final String localName, final String qname) throws SAXException {
         try {
@@ -338,9 +315,6 @@ public class SAXSerializer extends AbstractSerializer implements ContentHandler,
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.util.serializer.Receiver#endElement(org.exist.dom.QName)
-     */
     @Override
     public void endElement(final QName qname) throws SAXException {
         try {
@@ -356,7 +330,7 @@ public class SAXSerializer extends AbstractSerializer implements ContentHandler,
             }
             
             if(enforceXHTML && prefix.length() == 0 && namespaceURI.length() == 0) {
-                namespaceURI = XHTML_NS;
+                namespaceURI = Namespaces.XHTML_NS;
                 receiver.endElement(new QName(qname.getLocalPart(), namespaceURI, qname.getPrefix()));
             } else {
                 receiver.endElement(qname);
@@ -367,9 +341,6 @@ public class SAXSerializer extends AbstractSerializer implements ContentHandler,
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.util.serializer.Receiver#attribute(org.exist.dom.QName, java.lang.String)
-     */
     @Override
     public void attribute(final QName qname, final String value) throws SAXException {
         // ignore namespace declaration attributes
@@ -384,9 +355,6 @@ public class SAXSerializer extends AbstractSerializer implements ContentHandler,
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.xml.sax.ContentHandler#characters(char[], int, int)
-     */
     @Override
     public void characters(final char[] ch, final int start, final int len) throws SAXException {
         try {
@@ -405,9 +373,6 @@ public class SAXSerializer extends AbstractSerializer implements ContentHandler,
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.xml.sax.ContentHandler#ignorableWhitespace(char[], int, int)
-     */
     @Override
     public void ignorableWhitespace(final char[] ch, final int start, final int len) throws SAXException {
         try {
@@ -417,9 +382,6 @@ public class SAXSerializer extends AbstractSerializer implements ContentHandler,
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.xml.sax.ContentHandler#processingInstruction(java.lang.String, java.lang.String)
-     */
     @Override
     public void processingInstruction(final String target, final String data) throws SAXException {
         try {
@@ -438,25 +400,16 @@ public class SAXSerializer extends AbstractSerializer implements ContentHandler,
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.xml.sax.ContentHandler#skippedEntity(java.lang.String)
-     */
     @Override
     public void skippedEntity(final String name) throws SAXException {
         //Nothing to do
     }
 
-    /* (non-Javadoc)
-     * @see org.xml.sax.ext.LexicalHandler#startDTD(java.lang.String, java.lang.String, java.lang.String)
-     */
     @Override
     public void startDTD(final String name, final String publicId, final String systemId) throws SAXException {
         //Nothing to do
     }
 
-    /* (non-Javadoc)
-     * @see org.xml.sax.ext.LexicalHandler#endDTD()
-     */
     @Override
     public void endDTD() throws SAXException {
         //Nothing to do
@@ -476,41 +429,26 @@ public class SAXSerializer extends AbstractSerializer implements ContentHandler,
         // not supported with this receiver
     }
 
-    /* (non-Javadoc)
-      * @see org.xml.sax.ext.LexicalHandler#startEntity(java.lang.String)
-      */
     @Override
     public void startEntity(final String name) throws SAXException {
         //Nothing to do
     }
 
-    /* (non-Javadoc)
-     * @see org.xml.sax.ext.LexicalHandler#endEntity(java.lang.String)
-     */
     @Override
     public void endEntity(final String name) throws SAXException {
         //Nothing to do
     }
 
-    /* (non-Javadoc)
-     * @see org.xml.sax.ext.LexicalHandler#startCDATA()
-     */
     @Override
     public void startCDATA() throws SAXException {
         //Nothing to do
     }
 
-    /* (non-Javadoc)
-     * @see org.xml.sax.ext.LexicalHandler#endCDATA()
-     */
     @Override
     public void endCDATA() throws SAXException {
         //Nothing to do
     }
 
-    /* (non-Javadoc)
-     * @see org.xml.sax.ext.LexicalHandler#comment(char[], int, int)
-     */
     @Override
     public void comment(final char[] ch, final int start, final int len) throws SAXException {
         try {

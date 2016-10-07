@@ -219,27 +219,25 @@ public class NativeSerializer extends Serializer {
             while (count < children) {
                 child = iter.hasNext() ? iter.next() : null;
                 if (child != null && child.getNodeType() == Node.ATTRIBUTE_NODE) {
-                    if ((getHighlightingMode() & TAG_ATTRIBUTE_MATCHES) > 0) {
-                        cdata = processAttribute(((AttrImpl) child).getValue(), node.getNodeId(), match);
-                        if(match != null && child.getNodeId().equals(match.getNodeId())) {
-                            if(matchAttrCdata == null) {
-                                matchAttrCdata = new StringBuilder();
-                                matchAttrOffsetsCdata = new StringBuilder();
-                                matchAttrLengthsCdata = new StringBuilder();
-                            } else {
-                                matchAttrCdata.append(",");
-                                matchAttrOffsetsCdata.append(",");
-                                matchAttrLengthsCdata.append(",");
-                            }
-                            matchAttrCdata.append(child.getQName().toString());
-                            matchAttrOffsetsCdata.append(match.getOffset(0).getOffset());
-                            matchAttrLengthsCdata.append(match.getOffset(0).getLength());
 
-                            match = match.getNextMatch();
+                    if ((getHighlightingMode() & TAG_ATTRIBUTE_MATCHES)  == TAG_ATTRIBUTE_MATCHES && match != null && child.getNodeId().equals(match.getNodeId())) {
+                        if(matchAttrCdata == null) {
+                            matchAttrCdata = new StringBuilder();
+                            matchAttrOffsetsCdata = new StringBuilder();
+                            matchAttrLengthsCdata = new StringBuilder();
+                        } else {
+                            matchAttrCdata.append(",");
+                            matchAttrOffsetsCdata.append(",");
+                            matchAttrLengthsCdata.append(",");
                         }
-                    } else {
-                        cdata = ((AttrImpl) child).getValue();
+                        matchAttrCdata.append(child.getQName().toString());
+                        matchAttrOffsetsCdata.append(match.getOffset(0).getOffset());
+                        matchAttrLengthsCdata.append(match.getOffset(0).getLength());
+
+                        match = match.getNextMatch();
                     }
+
+                    cdata = ((AttrImpl) child).getValue();
                     attribs.addAttribute(child.getQName(), cdata);
                     count++;
                     child.release();
@@ -300,10 +298,11 @@ public class NativeSerializer extends Serializer {
             node.release();
             break;
         case Node.ATTRIBUTE_NODE:
-            if ((getHighlightingMode() & TAG_ATTRIBUTE_MATCHES) == TAG_ATTRIBUTE_MATCHES)
-                {cdata = processAttribute(((AttrImpl) node).getValue(), node.getNodeId(), match);}
-            else
-                {cdata = ((AttrImpl) node).getValue();}
+            if ((getHighlightingMode() & TAG_ATTRIBUTE_MATCHES)  == TAG_ATTRIBUTE_MATCHES && match != null && node.getNodeId().equals(match.getNodeId())) {
+                //TODO(AR) do we need to expand attribute matches here also? see {@code matchAttrCdata} above
+            }
+
+            cdata = ((AttrImpl) node).getValue();
         	if(first) {
                 if (createContainerElements) {               
             		final AttrList tattribs = new AttrList();
@@ -360,30 +359,5 @@ public class NativeSerializer extends Serializer {
             break;
         //TODO : how to process other types ? -pb
         }
-    }
-
-    private String processAttribute(String data, NodeId nodeId, Match match) {
-        if (match == null) {return data;}
-        // prepare a regular expression to mark match-terms
-        StringBuilder expr = null;
-        Match next = match;
-        while (next != null) {
-            if (next.getNodeId().equals(nodeId)) {
-                if (expr == null) {
-                    expr = new StringBuilder();
-                    expr.append("\\b(");
-                }
-                if (expr.length() > 5) {expr.append('|');}
-                expr.append("");
-            }
-            next = next.getNextMatch();
-        }
-        if (expr != null) {
-            expr.append(")\\b");
-            final Pattern pattern = Pattern.compile(expr.toString(), Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
-            final Matcher matcher = pattern.matcher(data);
-            return matcher.replaceAll("||$1||");
-        }
-        return data;
     }
 }
