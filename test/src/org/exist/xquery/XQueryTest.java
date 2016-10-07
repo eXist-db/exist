@@ -2787,6 +2787,49 @@ public class XQueryTest {
         assertEquals("XQuery: " + query, 3, result.getSize());
     }
 
+    @Test(expected=XPathException.class)
+    public void pathOperatorContainingNodesAndNonNodes() throws XMLDBException, XPathException {
+        final String query = "declare function local:test() { (1,<n/>) };\n" +
+                "<x/>/local:test()";
+        try {
+            existEmbeddedServer.executeQuery(query);
+        } catch(final XMLDBException e) {
+            if(e.getCause() instanceof XPathException) {
+                final XPathException xpe = (XPathException)e.getCause();
+                assertEquals(ErrorCodes.XPTY0018, xpe.getErrorCode());
+                throw xpe;
+            } else {
+                throw e;
+            }
+        }
+    }
+
+    @Test
+    public void exprContainingNodesAndNonNodes() throws XMLDBException, XPathException {
+        final String query = "declare function local:test() { (1,<n/>) };\n" +
+                "local:test()";
+        final ResourceSet result = existEmbeddedServer.executeQuery(query);
+
+        assertEquals(2, result.getSize());
+        assertEquals("1", result.getResource(0).getContent().toString());
+        assertEquals("<n/>", result.getResource(1).getContent().toString());
+    }
+
+    /**
+     * @see https://github.com/eXist-db/exist/issues/1121
+     */
+    @Test
+    public void multipleExprsContainingNodesAndNonNodes() throws XMLDBException, XPathException {
+        final String query = "declare variable $a := 'a';\n" +
+                "declare function local:test() { (1,<n/>) };\n" +
+                "local:test()";
+        final ResourceSet result = existEmbeddedServer.executeQuery(query);
+
+        assertEquals(2, result.getSize());
+        assertEquals("1", result.getResource(0).getContent().toString());
+        assertEquals("<n/>", result.getResource(1).getContent().toString());
+    }
+
     // ======================================
     /**
      * @return
