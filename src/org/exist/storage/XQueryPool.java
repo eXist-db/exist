@@ -204,8 +204,8 @@ public class XQueryPool {
 
         lastTimeOutCheck.set(currentTime);
 
-        for (final Iterator it = pool.entrySet().iterator(); it.hasNext(); ) {
-            final Source next = (Source) it.next();
+        for (final Iterator<Map.Entry<Source, NavigableSet<CompiledXQuery>>> it = pool.entrySet().iterator(); it.hasNext(); ) {
+            final Source next = it.next().getKey();
             if (currentTime - next.getCacheTimestamp() > timeout) {
                 it.remove();
             }
