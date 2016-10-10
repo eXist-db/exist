@@ -23,6 +23,7 @@ import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.atomic.AtomicLong;
 
 import net.jcip.annotations.ThreadSafe;
@@ -57,7 +58,7 @@ public class XQueryPool {
 
     private final static Logger LOG = LogManager.getLogger(XQueryPool.class);
 
-    private ConcurrentMap<Source, Deque<CompiledXQuery>> pool = new ConcurrentHashMap<>();
+    private ConcurrentMap<Source, NavigableSet<CompiledXQuery>> pool = new ConcurrentHashMap<>();
 
     private AtomicLong lastTimeOutCheck;
     private AtomicLong lastTimeOfCleanup;
@@ -146,14 +147,10 @@ public class XQueryPool {
             if (pool.size() < maxPoolSize) {
                 source.setCacheTimestamp(System.currentTimeMillis());
 
-                final Deque<CompiledXQuery> stack = pool.computeIfAbsent(source, (k) -> new ArrayDeque<>());
+                final Set<CompiledXQuery> stack = pool.computeIfAbsent(source, (k) -> new ConcurrentSkipListSet<>());
 
                 if (stack.size() < maxStackSize) {
-                    // check if the query is already in pool before adding,
-                    // may happen for modules, don't add it a second time!
-                    if(!stack.contains(xquery)) {
-                        stack.push(xquery);
-                    }
+                    stack.add(xquery);
                 }
             }
         }
@@ -161,8 +158,8 @@ public class XQueryPool {
 
     private CompiledXQuery borrowObject(final Source source) {
 
-        final Deque<CompiledXQuery> stack = pool.get(source);
-        if (stack == null || stack.isEmpty()) {
+        final NavigableSet<CompiledXQuery> stack = pool.get(source);
+        if (stack == null) {
             return null;
         }
 
@@ -172,14 +169,6 @@ public class XQueryPool {
         if (query == null) {
             return null;
         }
-
-        //final XQueryContext context = query.getContext();
-        //context.setBroker(broker);
-
-        // query.isValid() may open collections which in turn tries to acquire
-        // org.exist.storage.lock.ReentrantReadWriteLock. In order to avoid
-        // deadlocks with concurrent queries holding that lock while borrowing
-        // we must not hold onto the XQueryPool while calling isValid().
 
         if (!query.isValid()) {
             // the compiled query is no longer valid: one of the imported
@@ -195,16 +184,7 @@ public class XQueryPool {
         //check execution permission
         source.validate(broker.getCurrentSubject(), Permission.EXECUTE);
 
-        final CompiledXQuery query = borrowObject(source);
-        if (query == null) {
-            return null;
-        }
-
-        // now check if the compiled expression is valid
-        // it might become invalid if an imported module has changed.
-        //final XQueryContext context = query.getContext();
-        //context.setBroker(broker);
-        return query;
+        return borrowObject(source);
     }
 
     public void clear() {
