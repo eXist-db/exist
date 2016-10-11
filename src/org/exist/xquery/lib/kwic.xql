@@ -134,7 +134,7 @@ function kwic:truncate-following($root as node(), $node as node()?, $truncated a
     			    if (exists($str)) then
         				let $remaining := $max - $chars
         				return (
-        				    $truncated, kwic:substring($next, 1, $remaining), text { "..." }
+                            $truncated, kwic:substring($str, 1, $remaining), text { "..." }
         			    )
         			else
         			    kwic:truncate-following($root, $next, $truncated, $max, $chars, $callback)
