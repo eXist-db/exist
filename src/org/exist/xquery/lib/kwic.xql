@@ -49,7 +49,7 @@ declare %private variable $kwic:CHARS_KWIC := 40;
 :)
 declare
     %private
-function kwic:substring($node as item(), $start as xs:integer, $count as xs:integer) as node() {
+function kwic:substring($node as text(), $start as xs:integer, $count as xs:integer) as node() {
 	let $str := substring($node, $start, $count)
 	return
 		if ($node instance of element()) then
@@ -93,13 +93,13 @@ function kwic:truncate-previous($root as node(), $node as node()?, $truncated as
 			if (empty($next)) then
 				$truncated
 			else if ($chars + string-length($next) gt $max) then
-			    let $str := kwic:callback($callback, $next, $kwic:MODE_BEFORE)
+			    let $text-node := kwic:callback($callback, $next, $kwic:MODE_BEFORE)
 			    return
-    			    if (exists($str)) then
+    			    if (exists($text-node)) then
         				let $remaining := $max - $chars
         				return (
         				    text { "..." },
-        				    kwic:substring($str, string-length($str) - $remaining + 1, $remaining),
+        				    kwic:substring($text-node, string-length($text-node) - $remaining + 1, $remaining),
         				    $truncated
         			    )
         			else
@@ -129,12 +129,14 @@ function kwic:truncate-following($root as node(), $node as node()?, $truncated a
 			if (empty($next)) then
 				$truncated
 			else if ($chars + string-length($next) gt $max) then
-			    let $str := kwic:callback($callback, $next, $kwic:MODE_AFTER)
+			    let $text-node := kwic:callback($callback, $next, $kwic:MODE_AFTER)
 			    return
-    			    if (exists($str)) then
+    			    if (exists($text-node)) then
         				let $remaining := $max - $chars
         				return (
-                            $truncated, kwic:substring($str, 1, $remaining), text { "..." }
+                            $truncated,
+                            kwic:substring($text-node, 1, $remaining),
+                            text { "..." }
         			    )
         			else
         			    kwic:truncate-following($root, $next, $truncated, $max, $chars, $callback)
