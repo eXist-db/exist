@@ -24,7 +24,8 @@
         width="character width"
         table="yes|no"
         link="URL to which the match is linked"
-        whitespace-text-nodes="collapse|drop|leave"/>
+        whitespace-text-nodes="collapse|drop|leave"
+        debug-text-nodes="yes|no"/>
 :)
 xquery version "3.0";
 
@@ -191,6 +192,15 @@ function kwic:drop-whitespace-fn($callback as (function(text(), xs:string) as te
     }
 };
 
+declare
+    %private
+function kwic:output-text($debug-text-nodes as xs:boolean, $text-nodes as text()*) as node()* {
+    if($debug-text-nodes) then
+        $text-nodes ! <text-node>{.}</text-node>
+    else
+        $text-nodes
+};
+
 declare function kwic:get-summary($root as node(), $node as element(), 
 	$config as element(config)?) as element() {
 	kwic:get-summary($root, $node, $config, ())
@@ -219,7 +229,8 @@ declare function kwic:get-summary($root as node(), $node as element(),
 	let $chars := xs:integer(($config/@width, $kwic:CHARS_KWIC)[1])
 	let $table := $config/@table = ('yes', 'true')
 	let $whitespace-text-nodes := string($config/@whitespace-text-nodes) 
-	
+	let $debug-text-nodes := $config/@debug-text-nodes = ('yes', 'true')
+
 	let $callback :=
 	   if ($whitespace-text-nodes = "collapse") then
 	       kwic:collapse-whitespace-fn($callback)
@@ -238,27 +249,27 @@ declare function kwic:get-summary($root as node(), $node as element(),
 	return
 		if (not($table)) then
 			<p>
-				<span class="previous">{$prevTrunc}</span>
+				<span class="previous">{kwic:output-text($debug-text-nodes, $prevTrunc)}</span>
 				{
 					if ($config/@link) then
-						<a class="hi" href="{$config/@link}">{ $node/text() }</a>
+						<a class="hi" href="{$config/@link}">{kwic:output-text($debug-text-nodes, $node/text())}</a>
 					else
-						<span class="hi">{ $node/text() }</span>
+						<span class="hi">{kwic:output-text($debug-text-nodes, $node/text())}</span>
 				}
-				<span class="following">{$followingTrunc}</span>
+				<span class="following">{kwic:output-text($debug-text-nodes, $followingTrunc)}</span>
 			</p>
 		else
 			<tr>
-				<td class="previous">{$prevTrunc}</td>
+				<td class="previous">{kwic:output-text($debug-text-nodes, $prevTrunc)}</td>
 				<td class="hi">
 				{
 					if ($config/@link) then
-						<a href="{$config/@link}">{$node/text()}</a>
+						<a href="{$config/@link}">{kwic:output-text($debug-text-nodes, $node/text())}</a>
 					else
-						$node/text()
+						kwic:output-text($debug-text-nodes, $node/text())
 				}
 				</td>
-				<td class="following">{$followingTrunc}</td>
+				<td class="following">{kwic:output-text($debug-text-nodes, $followingTrunc)}</td>
 			</tr>
 };
 
