@@ -232,9 +232,9 @@ declare function kwic:get-summary($root as node(), $node as element(),
 	let $debug-text-nodes := $config/@debug-text-nodes = ('yes', 'true')
 
 	let $callback :=
-	   if ($whitespace-text-nodes = "collapse") then
+	   if ($whitespace-text-nodes eq "collapse") then
 	       kwic:collapse-whitespace-fn($callback)
-	   else if ($whitespace-text-nodes = "drop") then
+	   else if ($whitespace-text-nodes eq "drop") then
 	       kwic:drop-whitespace-fn($callback)
 	   else
 	       $callback
