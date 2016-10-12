@@ -31,6 +31,23 @@ if [ ! -x "$PRGDIR"/"$EXECUTABLE" ]; then
   exit 1
 fi
 
-sudo "$PRGDIR"/"$EXECUTABLE"
-
- 
+if [ `pgrep -P 1 systemd | head -n 1` ]; then
+    echo -e "Detected systemd running.\n";
+    read -p "Did you install the service wrapper for non-privileged systemd (Y=uninstall non-privileged systemd/N=continue with uninstalling privileged systemV-init)? " systemd_response;
+    case $systemd_response in
+	[Yy][Ee][Ss]|[YyJj])
+	    echo "Stopping service ...";
+	    systemctl --user stop eXist-db;
+	    echo "Disabling service ...";
+	    systemctl --user disable eXist-db;
+	    if [ -e "$HOME/.local/share/systemd/user/eXist-db.service" ]; then 
+		rm -f "$HOME/.local/share/systemd/user/eXist-db.service";
+	    fi
+	    ;;
+	[Nn][Oo]|[Nn])
+	    sudo "$PRGDIR"/"$EXECUTABLE"
+	    ;;
+    esac
+else
+    sudo "$PRGDIR"/"$EXECUTABLE"
+fi

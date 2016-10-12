@@ -31,5 +31,8 @@ if [ ! -x "$PRGDIR"/"$EXECUTABLE" ]; then
   exit 1
 fi
 
+if [ `pgrep -P 1 systemd | head -n 1` ]; then
+    echo "You can also use the systemd template for privileged use"
+    echo -e "$(eval "echo -e \"`<$PRGDIR/../templates/systemd.vm`\"")";
+fi 
 exec "$PRGDIR"/"$EXECUTABLE" -i "$conf_file"
- 
