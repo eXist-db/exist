@@ -28,9 +28,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.*;
-import org.apache.lucene.facet.index.FacetFields;
-import org.apache.lucene.facet.taxonomy.CategoryPath;
-import org.apache.lucene.facet.taxonomy.TaxonomyWriter;
 import org.apache.lucene.index.*;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
@@ -42,7 +39,6 @@ import org.exist.collections.Collection;
 import org.exist.indexing.*;
 import org.exist.indexing.StreamListener.ReindexMode;
 import org.exist.indexing.lucene.PlainTextHighlighter.Offset;
-import org.exist.indexing.lucene.PlainTextIndexConfig.PlainTextDoc;
 import org.exist.indexing.lucene.PlainTextIndexConfig.PlainTextField;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
@@ -1235,7 +1231,6 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             IntField fDocIdIdx = new IntField(FIELD_DOC_ID, 0, IntField.TYPE_NOT_STORED);
 
             final List<Field> metas = new ArrayList<>();
-            final List<CategoryPath> paths = new ArrayList<>();
 
             broker.getIndexController().streamMetas(new MetaStreamListener() {
                 @Override
@@ -1245,14 +1240,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                         Field fld = new Field(name, value.toString(), Field.Store.NO, Field.Index.ANALYZED, Field.TermVector.YES);
                         metas.add(fld);
                         //System.out.println(" "+name+" = "+value.toString());
-                        
-                        paths.add(new CategoryPath(name, value.toString()));
                     }
                 }
             });
-            
-            TaxonomyWriter taxoWriter = index.getTaxonomyWriter();
-            FacetFields facetFields = new FacetFields(taxoWriter);
 
             for (PendingDoc pending : nodesToWrite) {
                 final Document doc = new Document();
@@ -1293,11 +1283,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 fDocIdIdx.setIntValue(currentDoc.getDocId());
                 doc.add(fDocIdIdx);
                 
-                for (Field meta : metas) {
+                for (final Field meta : metas) {
                     doc.add(meta);
-                }
-                if (!paths.isEmpty()) {
-                    facetFields.addFields(doc, paths);
                 }
 
                 final byte[] docNodeId = LuceneUtil.createId(currentDoc.getDocId(), pending.nodeId);

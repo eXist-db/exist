@@ -10,7 +10,6 @@
     <dependencies>
         <dependency org="org.apache.lucene" name="lucene-core" rev="&lucene.version;" conf="*->default"/>
         <dependency org="org.apache.lucene" name="lucene-analyzers-common" rev="&lucene.version;" conf="*->default"/>
-        <dependency org="org.apache.lucene" name="lucene-facet" rev="&lucene.version;" conf="*->default"/>
         <dependency org="org.apache.lucene" name="lucene-queries" rev="&lucene.version;" conf="*->default"/>
 	<dependency org="org.apache.lucene" name="lucene-queryparser" rev="&lucene.version;" conf="*->default"/>
     </dependencies>

@@ -23,9 +23,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.apache.lucene.facet.taxonomy.TaxonomyReader;
-import org.apache.lucene.facet.taxonomy.TaxonomyWriter;
-import org.apache.lucene.facet.taxonomy.directory.DirectoryTaxonomyWriter;
 import org.apache.lucene.index.*;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.SearcherManager;
@@ -69,13 +66,6 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
 
     protected SearcherManager searcherManager = null;
     protected ReaderManager readerManager = null;
-
-    //Taxonomy staff
-    protected Directory taxonomyDirectory;
-
-    protected TaxonomyWriter cachedTaxonomyWriter = null;
-
-    protected TaxonomyReader cachedTaxonomyReader = null;
 
     public LuceneIndex() {
         //Nothing special to do
@@ -131,7 +121,6 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
             }
 
             directory = FSDirectory.open(dir.toFile());
-            taxonomyDirectory = FSDirectory.open(dir.resolve("taxonomy").toFile());
 
             final IndexWriterConfig idxWriterConfig = new IndexWriterConfig(LUCENE_VERSION_IN_USE, defaultAnalyzer);
             idxWriterConfig.setRAMBufferSizeMB(bufferSize);
@@ -139,8 +128,6 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
 
             searcherManager = new SearcherManager(cachedWriter, true, null);
             readerManager = new ReaderManager(cachedWriter, true);
-
-            cachedTaxonomyWriter = new DirectoryTaxonomyWriter(taxonomyDirectory);
         } catch (IOException e) {
             throw new DatabaseConfigurationException("Exception while reading lucene index directory: " +
                 e.getMessage(), e);
@@ -162,14 +149,10 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
             }
             if (cachedWriter != null) {
             	commit();
-            	
-            	cachedTaxonomyWriter.close();
                 cachedWriter.close();
-                
-                cachedTaxonomyWriter = null;
                 cachedWriter = null;
             }
-            taxonomyDirectory.close();
+
             directory.close();
         } catch (IOException e) {
             throw new DBException("Caught exception while closing lucene indexes: " + e.getMessage());
@@ -235,7 +218,6 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
             }
             
         	if (cachedWriter != null) {
-        	    cachedTaxonomyWriter.commit();
                 cachedWriter.commit();
             }
             needsCommit = false;
@@ -264,14 +246,6 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
         } finally {
             searcherManager.release(searcher);
         }
-    }
-
-    public synchronized TaxonomyWriter getTaxonomyWriter() throws IOException {
-        return cachedTaxonomyWriter;
-    }
-
-    public synchronized TaxonomyReader getTaxonomyReader() throws IOException {
-        return cachedTaxonomyReader;
     }
 
 	@Override

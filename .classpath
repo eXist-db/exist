@@ -107,7 +107,6 @@
 	<classpathentry kind="lib" path="lib/core/quartz-2.2.1.jar"/>
 	<classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-analyzers-common-4.6.1.jar"/>
 	<classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-core-4.6.1.jar"/>
-	<classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-facet-4.6.1.jar"/>
 	<classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-queries-4.6.1.jar"/>
 	<classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-queryparser-4.6.1.jar"/>
 	<classpathentry kind="lib" path="tools/ant/lib/ant-1.9.7.jar"/>
