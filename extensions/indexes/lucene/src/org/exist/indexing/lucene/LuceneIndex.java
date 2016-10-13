@@ -49,7 +49,7 @@ import java.nio.file.Path;
 
 public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
     
-    public final static Version LUCENE_VERSION_IN_USE = Version.LUCENE_47;
+    public final static Version LUCENE_VERSION_IN_USE = Version.LUCENE_48;
 
     private static final Logger LOG = LogManager.getLogger(LuceneIndexWorker.class);
 

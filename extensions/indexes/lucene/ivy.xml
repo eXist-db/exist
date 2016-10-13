@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!DOCTYPE ivy-module [
-    <!ENTITY lucene.version "4.7.2">
+    <!ENTITY lucene.version "4.8.1">
 ]>
 <!--
     Ivy module to retrieve jars for Lucene 
