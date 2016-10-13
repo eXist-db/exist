@@ -312,9 +312,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     	IndexWriter writer = null;
         try {
             writer = index.getWriter();
-            BytesRef bytes = new BytesRef(NumericUtils.BUF_SIZE_INT);
+            final BytesRefBuilder bytes = new BytesRefBuilder();
             NumericUtils.intToPrefixCoded(docId, 0, bytes);
-            Term dt = new Term(FIELD_DOC_ID, bytes);
+            Term dt = new Term(FIELD_DOC_ID, bytes.toBytesRef());
             writer.deleteDocuments(dt);
         } catch (IOException e) {
             LOG.warn("Error while removing lucene index: " + e.getMessage(), e);
@@ -348,9 +348,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             writer = index.getWriter();
             for (Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
                 DocumentImpl doc = i.next();
-                BytesRef bytes = new BytesRef(NumericUtils.BUF_SIZE_INT);
+                final BytesRefBuilder bytes = new BytesRefBuilder();
                 NumericUtils.intToPrefixCoded(doc.getDocId(), 0, bytes);
-                Term dt = new Term(FIELD_DOC_ID, bytes);
+                Term dt = new Term(FIELD_DOC_ID, bytes.toBytesRef());
                 writer.deleteDocuments(dt);
             }
         } catch (IOException | PermissionDeniedException e) {
@@ -382,9 +382,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         try {
             writer = index.getWriter();
 
-            BytesRef bytes = new BytesRef(NumericUtils.BUF_SIZE_INT);
+            final BytesRefBuilder bytes = new BytesRefBuilder();
             NumericUtils.intToPrefixCoded(currentDoc.getDocId(), 0, bytes);
-            Term dt = new Term(FIELD_DOC_ID, bytes);
+            Term dt = new Term(FIELD_DOC_ID, bytes.toBytesRef());
             TermQuery tq = new TermQuery(dt);
             for (NodeId nodeId : nodesToRemove) {
                 // store the node id
@@ -784,9 +784,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
     
     public String getFieldContent(int docId, String field) throws IOException {
-        BytesRef bytes = new BytesRef(NumericUtils.BUF_SIZE_INT);
+        final BytesRefBuilder bytes = new BytesRefBuilder();
         NumericUtils.intToPrefixCoded(docId, 0, bytes);
-        Term dt = new Term(FIELD_DOC_ID, bytes);
+        Term dt = new Term(FIELD_DOC_ID, bytes.toBytesRef());
 
         return index.withReader(reader -> {
             List<AtomicReaderContext> leaves = reader.leaves();
@@ -806,9 +806,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     public boolean hasIndex(int docId) throws IOException {
-        BytesRef bytes = new BytesRef(NumericUtils.BUF_SIZE_INT);
+        final BytesRefBuilder bytes = new BytesRefBuilder();
         NumericUtils.intToPrefixCoded(docId, 0, bytes);
-        Term dt = new Term(FIELD_DOC_ID, bytes);
+        Term dt = new Term(FIELD_DOC_ID, bytes.toBytesRef());
 
         return index.withReader(reader -> {
             boolean found = false;

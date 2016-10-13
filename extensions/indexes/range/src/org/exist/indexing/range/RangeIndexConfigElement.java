@@ -4,6 +4,7 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.collation.CollationKeyAnalyzer;
 import org.apache.lucene.document.*;
 import org.apache.lucene.util.BytesRef;
+import org.apache.lucene.util.BytesRefBuilder;
 import org.apache.lucene.util.NumericUtils;
 import org.exist.dom.QName;
 import org.exist.indexing.lucene.LuceneIndexConfig;
@@ -146,53 +147,56 @@ public class RangeIndexConfigElement {
         return null;
     }
 
-    public static BytesRef convertToBytes(AtomicValue content) throws XPathException {
-        BytesRef bytes;
+    public static BytesRef convertToBytes(final AtomicValue content) throws XPathException {
+        final BytesRefBuilder bytes = new BytesRefBuilder();
         switch(content.getType()) {
             case Type.INTEGER:
             case Type.LONG:
             case Type.UNSIGNED_LONG:
-                bytes = new BytesRef(NumericUtils.BUF_SIZE_LONG);
                 NumericUtils.longToPrefixCoded(((IntegerValue)content).getLong(), 0, bytes);
-                return bytes;
+                break;
+
             case Type.SHORT:
             case Type.UNSIGNED_SHORT:
             case Type.INT:
             case Type.UNSIGNED_INT:
-                bytes = new BytesRef(NumericUtils.BUF_SIZE_INT);
                 NumericUtils.intToPrefixCoded(((IntegerValue)content).getInt(), 0, bytes);
-                return bytes;
+                break;
+
             case Type.DECIMAL:
-                long dv = NumericUtils.doubleToSortableLong(((DecimalValue)content).getDouble());
-                bytes = new BytesRef(NumericUtils.BUF_SIZE_LONG);
+                final long dv = NumericUtils.doubleToSortableLong(((DecimalValue)content).getDouble());
                 NumericUtils.longToPrefixCoded(dv, 0, bytes);
-                return bytes;
+                break;
+
             case Type.DOUBLE:
-                long lv = NumericUtils.doubleToSortableLong(((DoubleValue)content).getDouble());
-                bytes = new BytesRef(NumericUtils.BUF_SIZE_LONG);
+                final long lv = NumericUtils.doubleToSortableLong(((DoubleValue)content).getDouble());
                 NumericUtils.longToPrefixCoded(lv, 0, bytes);
-                return bytes;
+                break;
+
             case Type.FLOAT:
-                int iv = NumericUtils.floatToSortableInt(((FloatValue)content).getValue());
-                bytes = new BytesRef(NumericUtils.BUF_SIZE_INT);
+                final int iv = NumericUtils.floatToSortableInt(((FloatValue)content).getValue());
                 NumericUtils.longToPrefixCoded(iv, 0, bytes);
-                return bytes;
+                break;
+
             case Type.DATE:
-                long dl = dateToLong((DateValue)content);
-                bytes = new BytesRef(NumericUtils.BUF_SIZE_LONG);
+                final long dl = dateToLong((DateValue)content);
                 NumericUtils.longToPrefixCoded(dl, 0, bytes);
-                return bytes;
+                break;
+
             case Type.TIME:
-                long tl = timeToLong((TimeValue) content);
-                bytes = new BytesRef(NumericUtils.BUF_SIZE_LONG);
+                final long tl = timeToLong((TimeValue) content);
                 NumericUtils.longToPrefixCoded(tl, 0, bytes);
-                return bytes;
+                break;
+
             case Type.DATE_TIME:
-                String dt = dateTimeToString((DateTimeValue) content);
-                return new BytesRef(dt);
+                final String dt = dateTimeToString((DateTimeValue) content);
+                bytes.copyChars(dt);
+                break;
+
             default:
-                return new BytesRef(content.getStringValue());
+                bytes.copyChars(content.getStringValue());
         }
+        return bytes.toBytesRef();
     }
 
     public static long dateToLong(DateValue date) {

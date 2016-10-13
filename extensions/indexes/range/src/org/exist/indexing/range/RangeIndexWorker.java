@@ -21,6 +21,7 @@
  */
 package org.exist.indexing.range;
 
+import org.apache.lucene.util.BytesRefBuilder;
 import org.exist.dom.persistent.ElementImpl;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.persistent.NewArrayNodeSet;
@@ -353,9 +354,9 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             writer = index.getWriter();
             for (Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
                 DocumentImpl doc = i.next();
-                BytesRef bytes = new BytesRef(NumericUtils.BUF_SIZE_INT);
+                final BytesRefBuilder bytes = new BytesRefBuilder();
                 NumericUtils.intToPrefixCoded(doc.getDocId(), 0, bytes);
-                Term dt = new Term(FIELD_DOC_ID, bytes);
+                Term dt = new Term(FIELD_DOC_ID, bytes.toBytesRef());
                 writer.deleteDocuments(dt);
             }
         } catch (IOException e) {
@@ -381,9 +382,9 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         IndexWriter writer = null;
         try {
             writer = index.getWriter();
-            BytesRef bytes = new BytesRef(NumericUtils.BUF_SIZE_INT);
+            final BytesRefBuilder bytes = new BytesRefBuilder();
             NumericUtils.intToPrefixCoded(docId, 0, bytes);
-            Term dt = new Term(FIELD_DOC_ID, bytes);
+            Term dt = new Term(FIELD_DOC_ID, bytes.toBytesRef());
             writer.deleteDocuments(dt);
         } catch (IOException e) {
             LOG.warn("Error while removing lucene index: " + e.getMessage(), e);
