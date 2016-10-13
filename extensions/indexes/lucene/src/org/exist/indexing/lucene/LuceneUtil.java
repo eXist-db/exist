@@ -68,10 +68,8 @@ public class LuceneUtil {
     }
 
     public static NodeId readNodeId(int doc, BinaryDocValues nodeIdValues, BrokerPool pool) {
-        final byte[] buf = new byte[1024];
-        BytesRef ref = new BytesRef(buf);
-        nodeIdValues.get(doc, ref);
-        int units = ByteConversion.byteToShort(ref.bytes, ref.offset);
+        final BytesRef ref = nodeIdValues.get(doc);
+        final int units = ByteConversion.byteToShort(ref.bytes, ref.offset);
         return pool.getNodeFactory().createFromData(units, ref.bytes, ref.offset + 2);
     }
 

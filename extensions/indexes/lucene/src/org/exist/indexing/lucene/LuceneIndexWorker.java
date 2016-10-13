@@ -127,7 +127,6 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     public static final String FIELD_DOC_ID = "docId";
     public static final String FIELD_DOC_URI = "docUri";
 
-    private final byte[] buf = new byte[1024];
     private boolean isReindexing;
 
     public LuceneIndexWorker(LuceneIndex parent, DBBroker broker) {
@@ -411,9 +410,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     private NodeId readNodeId(int doc, BinaryDocValues nodeIdValues, BrokerPool pool) {
-        BytesRef ref = new BytesRef(buf);
-        nodeIdValues.get(doc, ref);
-        int units = ByteConversion.byteToShort(ref.bytes, ref.offset);
+        final BytesRef ref = nodeIdValues.get(doc);
+        final int units = ByteConversion.byteToShort(ref.bytes, ref.offset);
         return pool.getNodeFactory().createFromData(units, ref.bytes, ref.offset + 2);
     }
 
@@ -908,8 +906,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 DocumentImpl storedDocument = docs.getDoc(docId);
                 if (storedDocument == null)
                     return;
-                BytesRef ref = new BytesRef(buf);
-                this.nodeIdValues.get(doc, ref);
+                final BytesRef ref = this.nodeIdValues.get(doc);
                 int units = ByteConversion.byteToShort(ref.bytes, ref.offset);
                 NodeId nodeId = index.getBrokerPool().getNodeFactory().createFromData(units, ref.bytes, ref.offset + 2);
                 //LOG.info("doc: " + docId + "; node: " + nodeId.toString() + "; units: " + units);
@@ -1106,8 +1103,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                                     continue;
                                 NodeId nodeId = null;
                                 if (nodes != null) {
-                                    BytesRef nodeIdRef = new BytesRef(buf);
-                                    nodeIdValues.get(docsEnum.docID(), nodeIdRef);
+                                    final BytesRef nodeIdRef = nodeIdValues.get(docsEnum.docID());
                                     int units = ByteConversion.byteToShort(nodeIdRef.bytes, nodeIdRef.offset);
                                     nodeId = index.getBrokerPool().getNodeFactory().createFromData(units, nodeIdRef.bytes, nodeIdRef.offset + 2);
                                 }
