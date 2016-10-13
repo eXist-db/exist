@@ -33,7 +33,7 @@ fi
 # systemd stuff 20160901/ljo
 function use_systemd {
     echo "Using systemd with template non-privileged";
-    echo -e "\nPlease notice the environment variables JAVA_HOME, EXIST_HOME, and USER are used, so set these variables and rerun if they are not set to what you want.\n\n";
+    echo -e "\nPlease note that the environment variables JAVA_HOME, EXIST_HOME, and USER are used, so set these variables and rerun if they are not set to what you want.\n\n";
     # envsubst < $PRGDIR/../templates/systemd.vm
     echo -e "$(eval "echo -e \"`<$PRGDIR/../templates/systemd.vm`\"")";
     read -p "Continue (Y/n)? " eval_response;
@@ -49,7 +49,7 @@ function use_systemd {
 	    fi
 	    echo "Installing template $PRGDIR/../templates/systemd.vm as non-privileged service $HOME/.local/share/systemd/user/eXist-db.service";
 	    echo -e "$(eval "echo -e \"`<$PRGDIR/../templates/systemd.vm`\"")" > "$HOME/.local/share/systemd/user/eXist-db.service";
-	    echo -e "\nEnabling the service (systemctl --user enable eXist-db)...\n";
+	    echo -e "\nEnabling the service (systemctl --user enable eXist-db) ...\n";
 	    systemctl --user enable eXist-db;
 	    echo -e "\nStart it with: \n===============================";
 	    echo -e "systemctl --user start eXist-db\n===============================\n";

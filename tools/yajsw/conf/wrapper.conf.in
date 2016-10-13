@@ -7,7 +7,7 @@
 # Java Executable Properties
 #********************************************************************
 # Java Application
-wrapper.java.command=java
+wrapper.java.command=@java.vm@
 
 # or define conditions for YAJSW searching for a JVM
 # currently only valid for windows
@@ -38,7 +38,7 @@ wrapper.working.dir=../..
 # per default these are placed in jna.tmpdir.
 # jna.tmpdir is set in setenv batch file to <yajsw>/tmp
 #********************************************************************
-wrapper.tmp.path = tools/yajsw/tmp
+wrapper.tmp.path = @server.dir@/tools/yajsw/tmp
 
 
 #********************************************************************
@@ -86,7 +86,7 @@ wrapper.java.app.mainclass=org.exist.yajsw.Main
 # Java Classpath (include wrapper.jar)  Add class path elements as
 #  needed starting from 1
 # YAJSW: all libs required by YAJSW are in the manifest of the wrapper.jar -> only classpath of your application is required
-wrapper.java.classpath.1=tools/yajsw/classes
+wrapper.java.classpath.1=@server.dir@/tools/yajsw/classes
 wrapper.java.classpath.2=start.jar
 
 # Java Library Path
@@ -117,7 +117,7 @@ wrapper.java.initmemory=512
 
 # Maximum Java Heap Size (in MB)
 # alternative for wrapper.java.additional.<n>=-Xmx
-wrapper.java.maxmemory=1024
+wrapper.java.maxmemory=@memory.max@
 
 # % of total RAM
 #wrapper.java.maxmemory.relative=30
@@ -141,7 +141,7 @@ wrapper.java.maxmemory=1024
 wrapper.console.loglevel=INFO
 
 # Log file to use for wrapper output logging.
-wrapper.logfile=tools/yajsw/logs/wrapper.log
+wrapper.logfile=@server.dir@/tools/yajsw/logs/wrapper.log
 
 # Format of output for the log file.  (See docs for formats)
 #wrapper.logfile.format=LPTM
