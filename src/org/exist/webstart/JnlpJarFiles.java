@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.start.LatestFileResolver;
@@ -43,20 +44,20 @@ public class JnlpJarFiles {
     // Names of core jar files sans ".jar" extension.
     // Use %latest% token in place of a version string.
     private final String allJarNames[] = new String[]{
-        "xmldb",
-        "xmlrpc-common-%latest%",
-        "xmlrpc-client-%latest%",
-        "ws-commons-util-%latest%",
-        "commons-pool-%latest%",
-        "commons-io-%latest%",
-        "excalibur-cli-%latest%",
-        "rsyntaxtextarea-%latest%",
-        "jline-%latest%",
-        "log4j-api-%latest%",
-        "log4j-core-%latest%",
-        "log4j-jul-%latest%",
-        "log4j-slf4j-impl-%latest%",
-        "slf4j-api-%latest%"
+            "xmldb",
+            "xmlrpc-common-%latest%",
+            "xmlrpc-client-%latest%",
+            "ws-commons-util-%latest%",
+            "commons-pool-%latest%",
+            "commons-io-%latest%",
+            "excalibur-cli-%latest%",
+            "rsyntaxtextarea-%latest%",
+            "jline-%latest%",
+            "log4j-api-%latest%",
+            "log4j-core-%latest%",
+            "log4j-jul-%latest%",
+            "log4j-slf4j-impl-%latest%",
+            "slf4j-api-%latest%"
     };
 
     // Resolves jar file patterns from jars[].
@@ -65,9 +66,9 @@ public class JnlpJarFiles {
     /**
      * Get jar file specified by file pattern.
      *
-     * @param folder Directory containing the jars.
+     * @param folder          Directory containing the jars.
      * @param jarFileBaseName Name of jar file, including %latest% token if
-     * necessary sans .jar file extension.
+     *                        necessary sans .jar file extension.
      * @return File object of jar file, null if not found.
      */
     private File getJarFromLocation(File folder, String jarFileBaseName) {

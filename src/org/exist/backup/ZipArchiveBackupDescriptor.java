@@ -39,19 +39,19 @@ import java.util.zip.ZipFile;
 
 
 public class ZipArchiveBackupDescriptor extends AbstractBackupDescriptor {
-    
-    protected ZipFile  archive;
+
+    protected ZipFile archive;
     protected ZipEntry descriptor;
-    protected String   base;
+    protected String base;
 
     public ZipArchiveBackupDescriptor(Path fileArchive) throws ZipException, IOException, FileNotFoundException {
-        archive    = new ZipFile(fileArchive.toFile());
+        archive = new ZipFile(fileArchive.toFile());
 
         //is it full backup?
-        base       = "db/";
+        base = "db/";
         descriptor = archive.getEntry(base + BackupDescriptor.COLLECTION_DESCRIPTOR);
 
-        if((descriptor == null) || descriptor.isDirectory()) {
+        if ((descriptor == null) || descriptor.isDirectory()) {
 
             base = null;
 
@@ -60,14 +60,14 @@ public class ZipArchiveBackupDescriptor extends AbstractBackupDescriptor {
             ZipEntry item = null;
             final Enumeration<? extends ZipEntry> zipEnum = archive.entries();
 
-            while(zipEnum.hasMoreElements()) {
+            while (zipEnum.hasMoreElements()) {
                 item = zipEnum.nextElement();
 
-                if(!item.isDirectory()) {
+                if (!item.isDirectory()) {
 
-                    if(item.getName().endsWith( BackupDescriptor.COLLECTION_DESCRIPTOR)) {
+                    if (item.getName().endsWith(BackupDescriptor.COLLECTION_DESCRIPTOR)) {
 
-                        if((base == null) || (base.length() > item.getName().length())) {
+                        if ((base == null) || (base.length() > item.getName().length())) {
                             descriptor = item;
                             base = item.getName();
                         }
@@ -75,12 +75,12 @@ public class ZipArchiveBackupDescriptor extends AbstractBackupDescriptor {
                 }
             }
 
-            if(base != null) {
+            if (base != null) {
                 base = base.substring(0, base.length() - BackupDescriptor.COLLECTION_DESCRIPTOR.length());
             }
         }
 
-        if(descriptor == null) {
+        if (descriptor == null) {
             throw new FileNotFoundException("Archive " + fileArchive.toAbsolutePath().toString() + " is not a valid eXist backup archive");
         }
     }
@@ -88,10 +88,10 @@ public class ZipArchiveBackupDescriptor extends AbstractBackupDescriptor {
 
     private ZipArchiveBackupDescriptor(ZipFile archive, String base) throws FileNotFoundException {
         this.archive = archive;
-        this.base    = base;
-        descriptor   = archive.getEntry(base + BackupDescriptor.COLLECTION_DESCRIPTOR);
+        this.base = base;
+        descriptor = archive.getEntry(base + BackupDescriptor.COLLECTION_DESCRIPTOR);
 
-        if((descriptor == null) || descriptor.isDirectory()) {
+        if ((descriptor == null) || descriptor.isDirectory()) {
             throw new FileNotFoundException(archive.getName() + " is a bit corrupted (" + base + " descriptor not found): not a valid eXist backup archive");
         }
     }
@@ -101,8 +101,8 @@ public class ZipArchiveBackupDescriptor extends AbstractBackupDescriptor {
         BackupDescriptor bd = null;
 
         try {
-            bd = new ZipArchiveBackupDescriptor( archive, base + describedItem + "/" );
-        } catch(final FileNotFoundException fnfe) {
+            bd = new ZipArchiveBackupDescriptor(archive, base + describedItem + "/");
+        } catch (final FileNotFoundException fnfe) {
             // DoNothing(R)
         }
 
@@ -111,22 +111,22 @@ public class ZipArchiveBackupDescriptor extends AbstractBackupDescriptor {
 
     @Override
     public BackupDescriptor getBackupDescriptor(String describedItem) {
-        if((describedItem.length() > 0) && (describedItem.charAt(0) == '/')) {
+        if ((describedItem.length() > 0) && (describedItem.charAt(0) == '/')) {
             describedItem = describedItem.substring(1);
         }
 
-        if(!describedItem.endsWith("/")) {
+        if (!describedItem.endsWith("/")) {
             describedItem = describedItem + '/';
         }
-        
+
         BackupDescriptor bd = null;
 
         try {
             bd = new ZipArchiveBackupDescriptor(archive, describedItem);
-        } catch(final FileNotFoundException e) {
+        } catch (final FileNotFoundException e) {
             // DoNothing(R)
         }
-        
+
         return bd;
     }
 
@@ -141,7 +141,7 @@ public class ZipArchiveBackupDescriptor extends AbstractBackupDescriptor {
         final ZipEntry ze = archive.getEntry(base + describedItem);
         EXistInputSource retval = null;
 
-        if((ze != null) && !ze.isDirectory()) {
+        if ((ze != null) && !ze.isDirectory()) {
             retval = new ZipEntryInputSource(archive, ze);
         }
 
@@ -157,7 +157,7 @@ public class ZipArchiveBackupDescriptor extends AbstractBackupDescriptor {
     public String getSymbolicPath(String describedItem, boolean isChildDescriptor) {
         String retval = archive.getName() + "#" + base + describedItem;
 
-        if(isChildDescriptor) {
+        if (isChildDescriptor) {
             retval += "/" + BackupDescriptor.COLLECTION_DESCRIPTOR;
         }
         return retval;
@@ -168,9 +168,9 @@ public class ZipArchiveBackupDescriptor extends AbstractBackupDescriptor {
         Properties properties = null;
         final ZipEntry ze = archive.getEntry(BACKUP_PROPERTIES);
 
-        if(ze != null) {
+        if (ze != null) {
             properties = new Properties();
-            properties.load(archive.getInputStream( ze ));
+            properties.load(archive.getInputStream(ze));
         }
         return properties;
     }
@@ -183,7 +183,7 @@ public class ZipArchiveBackupDescriptor extends AbstractBackupDescriptor {
             return null;
         }
         final Path temp = Files.createTempFile("expathrepo", "zip");
-        try(final InputStream is = archive.getInputStream(ze)) {
+        try (final InputStream is = archive.getInputStream(ze)) {
             Files.copy(is, temp, StandardCopyOption.REPLACE_EXISTING);
         }
         return temp;

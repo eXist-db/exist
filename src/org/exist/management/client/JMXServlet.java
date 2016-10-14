@@ -43,6 +43,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerException;
+
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -54,24 +55,23 @@ import org.w3c.dom.Element;
  * A servlet to monitor the database. It returns status information for the database based on the JMX interface. For
  * simplicity, the JMX beans provided by eXist are organized into categories. One calls the servlet with one or more
  * categories in parameter "c", e.g.:
- *
+ * <p>
  * /exist/jmx?c=instances&c=memory
- *
+ * <p>
  * If no parameter is specified, all categories will be returned. Valid categories are "memory", "instances", "disk",
  * "system", "caches", "locking", "processes", "sanity", "all".
- *
+ * <p>
  * The servlet can also be used to test if the database is responsive by using parameter "operation=ping" and a timeout
  * (t=timeout-in-milliseconds). For example, the following call
- *
+ * <p>
  * /exist/jmx?operation=ping&t=1000
- *
+ * <p>
  * will wait for a response within 1000ms. If the ping returns within the specified timeout, the servlet returns the
  * attributes of the SanityReport JMX bean, which will include an element &lt;jmx:Status&gt;PING_OK&lt;/jmx:Status&gt;.
  * If the ping takes longer than the timeout, you'll instead find an element &lt;jmx:error&gt; in the returned XML. In
  * this case, additional information on running queries, memory consumption and database locks will be provided.
  *
  * @author wolf
- *
  */
 public class JMXServlet extends HttpServlet {
 
@@ -106,7 +106,7 @@ public class JMXServlet extends HttpServlet {
         } else if (hasSecretToken(request, getToken())) {
             // Correct token is provided
             LOG.debug("Correct token provided by " + request.getRemoteHost());
-            
+
         } else {
             // Check if user is already authorized, e.g. via MONEX allow user too
             response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access allowed for localhost, or when correct token has been provided.");
@@ -208,7 +208,7 @@ public class JMXServlet extends HttpServlet {
         obtainTokenFileReference();
 
         LOG.info(String.format("JMXservlet token: %s", getToken()));
-        
+
     }
 
     /**
@@ -286,7 +286,7 @@ public class JMXServlet extends HttpServlet {
                 token = props.getProperty(TOKEN_KEY);
             } catch (IOException ex) {
                 LOG.error(ex.getMessage());
-            } 
+            }
 
         }
 

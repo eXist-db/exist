@@ -47,15 +47,16 @@ import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+
 import org.exist.security.PermissionDeniedException;
 
 
 public class CreateBackupDialog extends JPanel {
     private static final long serialVersionUID = 4571248257313559856L;
 
-    JComboBox                 collections;
-    JTextField                backupTarget;
-    
+    JComboBox collections;
+    JTextField backupTarget;
+
     final String uri;
     final String user;
     final String passwd;
@@ -65,16 +66,16 @@ public class CreateBackupDialog extends JPanel {
     public CreateBackupDialog(final String uri, final String user, final String passwd, final File backupDir) throws HeadlessException {
         this(uri, user, passwd, backupDir, null);
     }
-    
+
     public CreateBackupDialog(final String uri, final String user, final String passwd, final File backupDir, final String defaultSelectedCollection) throws HeadlessException {
         super(false);
-        
+
         this.uri = uri;
         this.user = user;
         this.passwd = passwd;
         this.backupDir = backupDir;
         this.defaultSelectedCollection = defaultSelectedCollection;
-        
+
         setupComponents();
         setSize(new Dimension(350, 200));
     }
@@ -87,49 +88,49 @@ public class CreateBackupDialog extends JPanel {
 
 
         JLabel label = new JLabel(Messages.getString("CreateBackupDialog.1"));
-        c.gridx  = 0;
-        c.gridy  = 0;
+        c.gridx = 0;
+        c.gridy = 0;
         c.anchor = GridBagConstraints.WEST;
-        c.fill   = GridBagConstraints.NONE;
+        c.fill = GridBagConstraints.NONE;
         grid.setConstraints(label, c);
         add(label);
 
         final Vector<String> v = getAllCollections();
         Collections.sort(v);
         collections = new JComboBox(v);
-        c.gridx     = 1;
-        c.gridy     = 0;
+        c.gridx = 1;
+        c.gridy = 0;
         c.gridwidth = 2;
-        c.anchor    = GridBagConstraints.EAST;
-        c.fill      = GridBagConstraints.HORIZONTAL;
+        c.anchor = GridBagConstraints.EAST;
+        c.fill = GridBagConstraints.HORIZONTAL;
         grid.setConstraints(collections, c);
         add(collections);
 
-        if(defaultSelectedCollection != null) {
-            for(int i = 0; i < collections.getItemCount(); i++) {
+        if (defaultSelectedCollection != null) {
+            for (int i = 0; i < collections.getItemCount(); i++) {
                 final Object col = collections.getItemAt(i);
-                if(col.toString().equals(defaultSelectedCollection)) {
+                if (col.toString().equals(defaultSelectedCollection)) {
                     collections.setSelectedIndex(i);
                     break;
                 }
             }
         }
 
-        label       = new JLabel(Messages.getString("CreateBackupDialog.2"));
-        c.gridx     = 0;
-        c.gridy     = 1;
+        label = new JLabel(Messages.getString("CreateBackupDialog.2"));
+        c.gridx = 0;
+        c.gridy = 1;
         c.gridwidth = 1;
-        c.anchor    = GridBagConstraints.WEST;
-        c.fill      = GridBagConstraints.NONE;
+        c.anchor = GridBagConstraints.WEST;
+        c.fill = GridBagConstraints.NONE;
         grid.setConstraints(label, c);
         add(label);
 
         backupTarget = new JTextField(new File(backupDir, "eXist-backup.zip").getAbsolutePath(), 40);
-        c.gridx      = 1;
-        c.gridy      = 1;
-        c.anchor     = GridBagConstraints.EAST;
-        c.fill       = GridBagConstraints.HORIZONTAL;
-        grid.setConstraints( backupTarget, c );
+        c.gridx = 1;
+        c.gridy = 1;
+        c.anchor = GridBagConstraints.EAST;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        grid.setConstraints(backupTarget, c);
         add(backupTarget);
 
 
@@ -140,10 +141,10 @@ public class CreateBackupDialog extends JPanel {
                 actionSelect();
             }
         });
-        c.gridx  = 2;
-        c.gridy  = 1;
+        c.gridx = 2;
+        c.gridy = 1;
         c.anchor = GridBagConstraints.EAST;
-        c.fill   = GridBagConstraints.NONE;
+        c.fill = GridBagConstraints.NONE;
         grid.setConstraints(select, c);
 
         select.setToolTipText(Messages.getString("CreateBackupDialog.4"));
@@ -159,7 +160,7 @@ public class CreateBackupDialog extends JPanel {
         chooser.setSelectedFile(new File("eXist-backup.zip"));
         chooser.setCurrentDirectory(backupDir);
 
-        if(chooser.showDialog(this, Messages.getString("CreateBackupDialog.5")) == JFileChooser.APPROVE_OPTION) {
+        if (chooser.showDialog(this, Messages.getString("CreateBackupDialog.5")) == JFileChooser.APPROVE_OPTION) {
             backupTarget.setText(chooser.getSelectedFile().getAbsolutePath());
             backupDir = chooser.getCurrentDirectory();
         }
@@ -170,9 +171,9 @@ public class CreateBackupDialog extends JPanel {
         final Vector<String> list = new Vector<String>();
 
         try {
-            final Collection root = DatabaseManager.getCollection( uri + XmldbURI.ROOT_COLLECTION, user, passwd );
+            final Collection root = DatabaseManager.getCollection(uri + XmldbURI.ROOT_COLLECTION, user, passwd);
             getAllCollections(root, list);
-        } catch(final XMLDBException e) {
+        } catch (final XMLDBException e) {
             e.printStackTrace();
         }
         return list;
@@ -180,7 +181,7 @@ public class CreateBackupDialog extends JPanel {
 
 
     private void getAllCollections(final Collection collection, final Vector<String> collections) throws XMLDBException {
-        collections.add( collection.getName() );
+        collections.add(collection.getName());
         final String[] childCollections = collection.listChildCollections();
         Collection child = null;
 
@@ -208,7 +209,7 @@ public class CreateBackupDialog extends JPanel {
 
 
     public String getCollection() {
-        return (String)collections.getSelectedItem();
+        return (String) collections.getSelectedItem();
     }
 
 

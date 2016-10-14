@@ -91,19 +91,19 @@ import java.util.zip.GZIPInputStream;
  */
 public class XSLTServlet extends HttpServlet {
 
-	private static final long serialVersionUID = -7258405385386062151L;
+    private static final long serialVersionUID = -7258405385386062151L;
 
-	private final static String REQ_ATTRIBUTE_PREFIX = "xslt.";
-    
+    private final static String REQ_ATTRIBUTE_PREFIX = "xslt.";
+
     private final static String REQ_ATTRIBUTE_STYLESHEET = "xslt.stylesheet";
     private final static String REQ_ATTRIBUTE_INPUT = "xslt.input";
     private final static String REQ_ATTRIBUTE_OUTPUT = "xslt.output.";
     private final static String REQ_ATTRIBUTE_BASE = "xslt.base";
-    
+
     private final static Logger LOG = LogManager.getLogger(XSLTServlet.class);
 
     private BrokerPool pool;
-    
+
     private final Map<String, CachedStylesheet> cache = new HashMap<String, CachedStylesheet>();
     private Boolean caching = null;
 
@@ -111,15 +111,15 @@ public class XSLTServlet extends HttpServlet {
      * @return Value of TransformerFactoryAllocator.PROPERTY_CACHING_ATTRIBUTE or TRUE if not present.
      */
     private boolean isCaching() {
-    	if (caching == null) {
-    		final Object property = pool.getConfiguration().getProperty(TransformerFactoryAllocator.PROPERTY_CACHING_ATTRIBUTE);
-			if (property != null){
-				caching = (Boolean) property;
+        if (caching == null) {
+            final Object property = pool.getConfiguration().getProperty(TransformerFactoryAllocator.PROPERTY_CACHING_ATTRIBUTE);
+            if (property != null) {
+                caching = (Boolean) property;
             } else {
-				caching = true;
+                caching = true;
             }
-    	}
-    	return caching;
+        }
+        return caching;
     }
 
 
@@ -127,25 +127,25 @@ public class XSLTServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
         final String stylesheet = (String) request.getAttribute(REQ_ATTRIBUTE_STYLESHEET);
-        if (stylesheet == null){
+        if (stylesheet == null) {
             throw new ServletException("No stylesheet source specified!");
         }
 
         Item inputNode = null;
-        
+
         final String sourceAttrib = (String) request.getAttribute(REQ_ATTRIBUTE_INPUT);
         if (sourceAttrib != null) {
 
             Object sourceObj = request.getAttribute(sourceAttrib);
             if (sourceObj != null) {
-            	if (sourceObj instanceof ValueSequence) {
-					final ValueSequence seq = (ValueSequence) sourceObj;
-					
-					if (seq.size() == 1) {
-						sourceObj = seq.itemAt(0);
+                if (sourceObj instanceof ValueSequence) {
+                    final ValueSequence seq = (ValueSequence) sourceObj;
+
+                    if (seq.size() == 1) {
+                        sourceObj = seq.itemAt(0);
                     }
-				}
-            	
+                }
+
                 if (sourceObj instanceof Item) {
                     inputNode = (Item) sourceObj;
                     if (!Type.subTypeOf(inputNode.getType(), Type.NODE)) {
@@ -154,70 +154,73 @@ public class XSLTServlet extends HttpServlet {
                     }
 
                     LOG.debug("Taking XSLT input from request attribute " + sourceAttrib);
-                    
-                } else
-                    {throw new ServletException("Input for XSLT servlet is not a node. Read from attribute " +
-                            sourceAttrib);}
+
+                } else {
+                    throw new ServletException("Input for XSLT servlet is not a node. Read from attribute " +
+                            sourceAttrib);
+                }
             }
         }
 
-		try {
-			pool = BrokerPool.getInstance();
-		} catch (final EXistException e) {
-			throw new ServletException(e.getMessage(), e);
-		}
+        try {
+            pool = BrokerPool.getInstance();
+        } catch (final EXistException e) {
+            throw new ServletException(e.getMessage(), e);
+        }
 
-		Subject user = pool.getSecurityManager().getGuestSubject();
+        Subject user = pool.getSecurityManager().getGuestSubject();
 
-		Subject requestUser = HttpAccount.getUserFromServletRequest(request);
-        if (requestUser != null)
-        	{user = requestUser;}
+        Subject requestUser = HttpAccount.getUserFromServletRequest(request);
+        if (requestUser != null) {
+            user = requestUser;
+        }
 
         // Retrieve username / password from HTTP request attributes
         final String userParam = (String) request.getAttribute("xslt.user");
         final String passwd = (String) request.getAttribute("xslt.password");
 
-		if (userParam != null) {
-    		try {
-    			user = pool.getSecurityManager().authenticate(userParam, passwd);
-    		} catch (final AuthenticationException e1) {
-    			response.sendError(HttpServletResponse.SC_FORBIDDEN, "Wrong password or user");
-    			return;
-    		}
-    	}
+        if (userParam != null) {
+            try {
+                user = pool.getSecurityManager().authenticate(userParam, passwd);
+            } catch (final AuthenticationException e1) {
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Wrong password or user");
+                return;
+            }
+        }
 
         final SAXTransformerFactory factory = TransformerFactoryAllocator.getTransformerFactory(pool);
         final Templates templates = getSource(user, request, response, factory, stylesheet);
-        if (templates == null){
+        if (templates == null) {
             return;
         }
-        
+
         //do the transformation
-        try(final DBBroker broker = pool.get(Optional.of(user))) {
+        try (final DBBroker broker = pool.get(Optional.of(user))) {
 
             final TransformerHandler handler = factory.newTransformerHandler(templates);
             setTransformerParameters(request, handler.getTransformer());
-            
+
             final Properties properties = handler.getTransformer().getOutputProperties();
             setOutputProperties(request, properties);
 
             String encoding = properties.getProperty("encoding");
-            if (encoding == null){
+            if (encoding == null) {
                 encoding = "UTF-8";
             }
             response.setCharacterEncoding(encoding);
 
             final String mediaType = properties.getProperty("media-type");
             if (mediaType != null) {
-                if (encoding == null)
-                    {response.setContentType(mediaType);}
-                
+                if (encoding == null) {
+                    response.setContentType(mediaType);
+                }
+
                 //check, do mediaType have "charset"
-                else if (mediaType.indexOf("charset") == -1)
-                    {response.setContentType(mediaType + "; charset=" + encoding);}
-                
-                else 
-                    {response.setContentType(mediaType);}
+                else if (mediaType.indexOf("charset") == -1) {
+                    response.setContentType(mediaType + "; charset=" + encoding);
+                } else {
+                    response.setContentType(mediaType);
+                }
             }
 
             final SAXSerializer sax = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
@@ -226,10 +229,10 @@ public class XSLTServlet extends HttpServlet {
 
             final SAXResult result = new SAXResult(sax);
             handler.setResult(result);
-            
+
             final Serializer serializer = broker.getSerializer();
             serializer.reset();
-            
+
             Receiver receiver = new ReceiverToSAX(handler);
             try {
                 XIncludeFilter xinclude = new XIncludeFilter(serializer, receiver);
@@ -240,7 +243,7 @@ public class XSLTServlet extends HttpServlet {
                 if (base != null) {
                     moduleLoadPath = getServletContext().getRealPath(base);
                 } else if (stylesheet.startsWith("xmldb:exist://")) {
-                	moduleLoadPath = XmldbURI.xmldbUriFor(stylesheet).getCollectionPath();
+                    moduleLoadPath = XmldbURI.xmldbUriFor(stylesheet).getCollectionPath();
                 } else {
                     moduleLoadPath = getCurrentDir(request).getAbsolutePath();
                 }
@@ -248,25 +251,25 @@ public class XSLTServlet extends HttpServlet {
                 xinclude.setModuleLoadPath(moduleLoadPath);
 
                 serializer.setReceiver(receiver);
-                if (inputNode != null){
-                    serializer.toSAX((NodeValue)inputNode);
+                if (inputNode != null) {
+                    serializer.toSAX((NodeValue) inputNode);
 
                 } else {
                     final SAXToReceiver saxreceiver = new SAXToReceiver(receiver);
                     final XMLReader reader = pool.getParserPool().borrowXMLReader();
                     reader.setContentHandler(saxreceiver);
 
-                	//Handle gziped input stream
-                	InputStream stream;
-                    
-                	InputStream inStream = new BufferedInputStream(request.getInputStream());
-                	inStream.mark(10);
+                    //Handle gziped input stream
+                    InputStream stream;
+
+                    InputStream inStream = new BufferedInputStream(request.getInputStream());
+                    inStream.mark(10);
                     try {
-                    	stream = new GZIPInputStream(inStream);
+                        stream = new GZIPInputStream(inStream);
                     } catch (final IOException e) {
-                    	inStream.reset();
-                    	stream = inStream;
-					}
+                        inStream.reset();
+                        stream = inStream;
+                    }
 
                     reader.parse(new InputSource(stream));
                 }
@@ -281,7 +284,7 @@ public class XSLTServlet extends HttpServlet {
             } finally {
                 SerializerPool.getInstance().returnObject(sax);
             }
-            
+
             writer.flush();
             response.flushBuffer();
 
@@ -290,8 +293,8 @@ public class XSLTServlet extends HttpServlet {
 
         } catch (final TransformerException e) {
             throw new ServletException("Exception while transforming node: " + e.getMessage(), e);
-            
-        } catch (final Throwable e){
+
+        } catch (final Throwable e) {
             LOG.error(e);
             throw new ServletException("An error occurred: " + e.getMessage(), e);
 
@@ -303,10 +306,10 @@ public class XSLTServlet extends HttpServlet {
      */
     private Templates getSource(Subject user, HttpServletRequest request, HttpServletResponse response,
                                 SAXTransformerFactory factory, String stylesheet)
-        throws ServletException, IOException {
+            throws ServletException, IOException {
 
         // Check if stylesheet contains an URI. If not, try to resolve from file system
-        if(stylesheet.indexOf(':') == Constants.STRING_NOT_FOUND) {
+        if (stylesheet.indexOf(':') == Constants.STRING_NOT_FOUND) {
             // replace double slash
             stylesheet = stylesheet.replaceAll("//", "/");
             File f = new File(stylesheet);
@@ -319,25 +322,25 @@ public class XSLTServlet extends HttpServlet {
                 // f.isAbsolute is problematic on windows.
                 if (stylesheet.startsWith("/")) {
 
-                	final String url = getServletContext().getRealPath(stylesheet);
-                	if (url == null) {
+                    final String url = getServletContext().getRealPath(stylesheet);
+                    if (url == null) {
                         response.sendError(HttpServletResponse.SC_NOT_FOUND,
-                                "Stylesheet not found (URL: "+stylesheet+")");
+                                "Stylesheet not found (URL: " + stylesheet + ")");
                         return null;
-                	}
-                		
+                    }
+
                     f = new File(url);
                     stylesheet = f.toURI().toASCIIString();
-                    
+
                 } else {
                     // relative path is relative to the current working directory
                     f = new File(getCurrentDir(request), stylesheet);
                     stylesheet = f.toURI().toASCIIString();
                 }
-                
+
                 if (!f.canRead()) {
                     response.sendError(HttpServletResponse.SC_NOT_FOUND,
-                            "Stylesheet not found (URL: "+stylesheet+")");
+                            "Stylesheet not found (URL: " + stylesheet + ")");
                     return null;
                 }
             }
@@ -347,18 +350,18 @@ public class XSLTServlet extends HttpServlet {
         // This is required to locate resources imported within the stylesheet.
         String base;
         final int p = stylesheet.lastIndexOf("/");
-        if(p != Constants.STRING_NOT_FOUND) {
+        if (p != Constants.STRING_NOT_FOUND) {
             base = stylesheet.substring(0, p);
         } else {
             base = stylesheet;
         }
-        
-        if (LOG.isDebugEnabled()){
+
+        if (LOG.isDebugEnabled()) {
             LOG.debug("Loading stylesheet from " + stylesheet);
         }
-        
+
         CachedStylesheet cached = cache.get(stylesheet);
-        if(cached == null) {
+        if (cached == null) {
             cached = new CachedStylesheet(factory, user, stylesheet, base);
             cache.put(stylesheet, cached);
         }
@@ -373,14 +376,14 @@ public class XSLTServlet extends HttpServlet {
         if (path == null) {
             path = request.getRequestURI().substring(request.getContextPath().length());
             final int p = path.lastIndexOf('/');
-            if(p != Constants.STRING_NOT_FOUND) {
+            if (p != Constants.STRING_NOT_FOUND) {
                 path = path.substring(0, p);
             }
             path = getServletContext().getRealPath(path);
         }
-        
+
         final File file = new File(path);
-        if (file.isDirectory()){
+        if (file.isDirectory()) {
             return file;
         } else {
             return file.getParentFile();
@@ -388,17 +391,17 @@ public class XSLTServlet extends HttpServlet {
     }
 
     /**
-     *  Copy "xslt." attributes from HTTP request to transformer. Does not copy 'input', 'output'
+     * Copy "xslt." attributes from HTTP request to transformer. Does not copy 'input', 'output'
      * and 'styleheet' attributes.
      */
     private void setTransformerParameters(HttpServletRequest request, Transformer transformer) throws XPathException {
-        
+
         for (final Enumeration<String> e = request.getAttributeNames(); e.hasMoreElements(); ) {
 
             final String name = e.nextElement();
             if (name.startsWith(REQ_ATTRIBUTE_PREFIX) &&
-                !(name.startsWith(REQ_ATTRIBUTE_OUTPUT) || REQ_ATTRIBUTE_INPUT.equals(name)
-                                                            || REQ_ATTRIBUTE_STYLESHEET.equals(name))) {
+                    !(name.startsWith(REQ_ATTRIBUTE_OUTPUT) || REQ_ATTRIBUTE_INPUT.equals(name)
+                            || REQ_ATTRIBUTE_STYLESHEET.equals(name))) {
                 Object value = request.getAttribute(name);
                 if (value instanceof NodeValue) {
                     final NodeValue nv = (NodeValue) value;
@@ -420,7 +423,7 @@ public class XSLTServlet extends HttpServlet {
             final String name = e.nextElement();
             if (name.startsWith(REQ_ATTRIBUTE_OUTPUT)) {
                 final Object value = request.getAttribute(name);
-                if (value != null){
+                if (value != null) {
                     properties.setProperty(name.substring(REQ_ATTRIBUTE_OUTPUT.length()), value.toString());
                 }
             }
@@ -448,7 +451,7 @@ public class XSLTServlet extends HttpServlet {
                 final String docPath = uri.substring("xmldb:exist://".length());
 
 
-                try(final DBBroker broker = pool.get(Optional.of(user))) {
+                try (final DBBroker broker = pool.get(Optional.of(user))) {
                     DocumentImpl doc = null;
                     try {
                         doc = broker.getXMLResource(XmldbURI.create(docPath), Lock.READ_LOCK);
@@ -479,8 +482,8 @@ public class XSLTServlet extends HttpServlet {
                     final URL url = new URL(uri);
                     final URLConnection connection = url.openConnection();
                     long modified = connection.getLastModified();
-                    
-                    if(!isCaching() || (templates == null || modified > lastModified || modified == 0)) {
+
+                    if (!isCaching() || (templates == null || modified > lastModified || modified == 0)) {
                         LOG.debug("compiling stylesheet " + url.toString());
                         templates = factory.newTemplates(new StreamSource(connection.getInputStream()));
                     }
@@ -510,11 +513,11 @@ public class XSLTServlet extends HttpServlet {
                 serializer.setSAXHandlers(handler, null);
                 serializer.toSAX(stylesheet);
 
-                handler.endDocument();       
+                handler.endDocument();
                 return handler.getTemplates();
 
             } catch (final SAXException e) {
-                throw new ServletException("A SAX exception occurred while compiling the stylesheet: " 
+                throw new ServletException("A SAX exception occurred while compiling the stylesheet: "
                         + e.getMessage(), e);
 
             } catch (final TransformerConfigurationException e) {
@@ -544,10 +547,10 @@ public class XSLTServlet extends HttpServlet {
             URL url;
             try {
                 //TODO : use dedicated function in XmldbURI
-                url = new URL(baseURI + "/"  + href);
+                url = new URL(baseURI + "/" + href);
                 final URLConnection connection = url.openConnection();
                 return new StreamSource(connection.getInputStream());
-                
+
             } catch (final MalformedURLException e) {
                 return null;
 
@@ -579,9 +582,9 @@ public class XSLTServlet extends HttpServlet {
                 throws TransformerException {
             final Collection collection = doc.getCollection();
             String path;
-            
+
             //TODO : use dedicated function in XmldbURI
-            if(href.startsWith("/")){
+            if (href.startsWith("/")) {
                 path = href;
             } else {
                 path = collection.getURI() + "/" + href;
@@ -594,15 +597,15 @@ public class XSLTServlet extends HttpServlet {
                 throw new TransformerException(e.getMessage(), e);
             }
 
-            if(xslDoc == null) {
+            if (xslDoc == null) {
                 LOG.debug("Document " + href + " not found in collection " + collection.getURI());
                 return null;
             }
 
-            if(!xslDoc.getPermissions().validate(broker.getCurrentSubject(), Permission.READ)){
+            if (!xslDoc.getPermissions().validate(broker.getCurrentSubject(), Permission.READ)) {
                 throw new TransformerException("Insufficient privileges to read resource " + path);
             }
-            
+
             final DOMSource source = new DOMSource(xslDoc);
             return source;
         }

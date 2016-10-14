@@ -87,109 +87,111 @@ import org.xml.sax.SAXException;
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
 public class Transform extends BasicFunction {
-	
-	private static final Logger logger = LogManager.getLogger(Transform.class);
 
-	public final static FunctionSignature signatures[] = {
-		new FunctionSignature(
-			new QName("transform", TransformModule.NAMESPACE_URI, TransformModule.PREFIX),
-			"Applies an XSL stylesheet to the node tree passed as first argument. The stylesheet " +
-			"is specified in the second argument. This should either be an URI or a node. If it is an " +
-			"URI, it can either point to an external location or to an XSL stored in the db by using the " +
-			"'xmldb:' scheme. Stylesheets are cached unless they were just created from an XML " +
-			"fragment and not from a complete document. " +
-			"Stylesheet parameters " +
-			"may be passed in the third argument using an XML fragment with the following structure: " +
-			"<parameters><param name=\"param-name1\" value=\"param-value1\"/>" +
-			"</parameters>. There are two special parameters named \"exist:stop-on-warn\" and " +
-            "\"exist:stop-on-error\". If set to value \"yes\", eXist will generate an XQuery error " +
-            "if the XSL processor reports a warning or error.",
-			new SequenceType[] {
-				new FunctionParameterSequenceType("node-tree", Type.NODE, Cardinality.ZERO_OR_MORE, "The source-document (node tree)"),
-				new FunctionParameterSequenceType("stylesheet", Type.ITEM, Cardinality.EXACTLY_ONE, "The XSL stylesheet"),
-				new FunctionParameterSequenceType("parameters", Type.NODE, Cardinality.ZERO_OR_ONE, "The transformer parameters")
-				},
-			new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_ONE, "the transformed result (node tree)")),
-        new FunctionSignature(
-			new QName("transform", TransformModule.NAMESPACE_URI, TransformModule.PREFIX),
-			"Applies an XSL stylesheet to the node tree passed as first argument. The stylesheet " +
-			"is specified in the second argument. This should either be an URI or a node. If it is an " +
-			"URI, it can either point to an external location or to an XSL stored in the db by using the " +
-			"'xmldb:' scheme. Stylesheets are cached unless they were just created from an XML " +
-			"fragment and not from a complete document. " +
-			"Stylesheet parameters " +
-			"may be passed in the third argument using an XML fragment with the following structure: " +
-			"<parameters><param name=\"param-name1\" value=\"param-value1\"/>" +
-			"</parameters>. There are two special parameters named \"exist:stop-on-warn\" and " +
-            "\"exist:stop-on-error\". If set to value \"yes\", eXist will generate an XQuery error " +
-            "if the XSL processor reports a warning or error. The fourth argument specifies serialization " +
-            "options in the same way as if they " +
-            "were passed to \"declare option exist:serialize\" expression. An additional serialization option, " +
-            "xinclude-path, is supported, which specifies a base path against which xincludes will be expanded " +
-            "(if there are xincludes in the document). A relative path will be relative to the current " +
-            "module load path.",
-			new SequenceType[] {
-				new FunctionParameterSequenceType("node-tree", Type.NODE, Cardinality.ZERO_OR_MORE, "The source-document (node tree)"),
-				new FunctionParameterSequenceType("stylesheet", Type.ITEM, Cardinality.EXACTLY_ONE, "The XSL stylesheet"),
-				new FunctionParameterSequenceType("parameters", Type.NODE, Cardinality.ZERO_OR_ONE, "The transformer parameters"),
-                new FunctionParameterSequenceType("attributes", Type.NODE, Cardinality.ZERO_OR_ONE, "Attributes to pass to the transformation factory"),
-                new FunctionParameterSequenceType("serialization-options", Type.STRING, Cardinality.ZERO_OR_ONE, "The serialization options")},
-			new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_ONE, "the transformed result (node tree)")),
-        new FunctionSignature(
-            new QName("stream-transform", TransformModule.NAMESPACE_URI, TransformModule.PREFIX),
-            "Applies an XSL stylesheet to the node tree passed as first argument. The parameters are the same " +
-            "as for the transform function. stream-transform can only be used within a servlet context. Instead " +
-            "of returning the transformed document fragment, it directly streams its output to the servlet's output stream. " +
-            "It should thus be the last statement in the XQuery.",
-            new SequenceType[] {
-				new FunctionParameterSequenceType("node-tree", Type.NODE, Cardinality.ZERO_OR_MORE, "The source-document (node tree)"),
-				new FunctionParameterSequenceType("stylesheet", Type.ITEM, Cardinality.EXACTLY_ONE, "The XSL stylesheet"),
-				new FunctionParameterSequenceType("parameters", Type.NODE, Cardinality.ZERO_OR_ONE, "The transformer parameters")
-            },
-            new SequenceType(Type.ITEM, Cardinality.EMPTY)),
-        new FunctionSignature(
-            new QName("stream-transform", TransformModule.NAMESPACE_URI, TransformModule.PREFIX),
-            "Applies an XSL stylesheet to the node tree passed as first argument. The parameters are the same " +
-            "as for the transform function. stream-transform can only be used within a servlet context. Instead " +
-            "of returning the transformed document fragment, it directly streams its output to the servlet's output stream. " +
-            "It should thus be the last statement in the XQuery.",
-            new SequenceType[] {
-				new FunctionParameterSequenceType("node-tree", Type.NODE, Cardinality.ZERO_OR_MORE, "The source-document (node tree)"),
-				new FunctionParameterSequenceType("stylesheet", Type.ITEM, Cardinality.EXACTLY_ONE, "The XSL stylesheet"),
-				new FunctionParameterSequenceType("parameters", Type.NODE, Cardinality.ZERO_OR_ONE, "The transformer parameters"),
-                new FunctionParameterSequenceType("serialization-options", Type.STRING, Cardinality.EXACTLY_ONE, "The serialization options")},
-            new SequenceType(Type.ITEM, Cardinality.EMPTY))
+    private static final Logger logger = LogManager.getLogger(Transform.class);
+
+    public final static FunctionSignature signatures[] = {
+            new FunctionSignature(
+                    new QName("transform", TransformModule.NAMESPACE_URI, TransformModule.PREFIX),
+                    "Applies an XSL stylesheet to the node tree passed as first argument. The stylesheet " +
+                            "is specified in the second argument. This should either be an URI or a node. If it is an " +
+                            "URI, it can either point to an external location or to an XSL stored in the db by using the " +
+                            "'xmldb:' scheme. Stylesheets are cached unless they were just created from an XML " +
+                            "fragment and not from a complete document. " +
+                            "Stylesheet parameters " +
+                            "may be passed in the third argument using an XML fragment with the following structure: " +
+                            "<parameters><param name=\"param-name1\" value=\"param-value1\"/>" +
+                            "</parameters>. There are two special parameters named \"exist:stop-on-warn\" and " +
+                            "\"exist:stop-on-error\". If set to value \"yes\", eXist will generate an XQuery error " +
+                            "if the XSL processor reports a warning or error.",
+                    new SequenceType[]{
+                            new FunctionParameterSequenceType("node-tree", Type.NODE, Cardinality.ZERO_OR_MORE, "The source-document (node tree)"),
+                            new FunctionParameterSequenceType("stylesheet", Type.ITEM, Cardinality.EXACTLY_ONE, "The XSL stylesheet"),
+                            new FunctionParameterSequenceType("parameters", Type.NODE, Cardinality.ZERO_OR_ONE, "The transformer parameters")
+                    },
+                    new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_ONE, "the transformed result (node tree)")),
+            new FunctionSignature(
+                    new QName("transform", TransformModule.NAMESPACE_URI, TransformModule.PREFIX),
+                    "Applies an XSL stylesheet to the node tree passed as first argument. The stylesheet " +
+                            "is specified in the second argument. This should either be an URI or a node. If it is an " +
+                            "URI, it can either point to an external location or to an XSL stored in the db by using the " +
+                            "'xmldb:' scheme. Stylesheets are cached unless they were just created from an XML " +
+                            "fragment and not from a complete document. " +
+                            "Stylesheet parameters " +
+                            "may be passed in the third argument using an XML fragment with the following structure: " +
+                            "<parameters><param name=\"param-name1\" value=\"param-value1\"/>" +
+                            "</parameters>. There are two special parameters named \"exist:stop-on-warn\" and " +
+                            "\"exist:stop-on-error\". If set to value \"yes\", eXist will generate an XQuery error " +
+                            "if the XSL processor reports a warning or error. The fourth argument specifies serialization " +
+                            "options in the same way as if they " +
+                            "were passed to \"declare option exist:serialize\" expression. An additional serialization option, " +
+                            "xinclude-path, is supported, which specifies a base path against which xincludes will be expanded " +
+                            "(if there are xincludes in the document). A relative path will be relative to the current " +
+                            "module load path.",
+                    new SequenceType[]{
+                            new FunctionParameterSequenceType("node-tree", Type.NODE, Cardinality.ZERO_OR_MORE, "The source-document (node tree)"),
+                            new FunctionParameterSequenceType("stylesheet", Type.ITEM, Cardinality.EXACTLY_ONE, "The XSL stylesheet"),
+                            new FunctionParameterSequenceType("parameters", Type.NODE, Cardinality.ZERO_OR_ONE, "The transformer parameters"),
+                            new FunctionParameterSequenceType("attributes", Type.NODE, Cardinality.ZERO_OR_ONE, "Attributes to pass to the transformation factory"),
+                            new FunctionParameterSequenceType("serialization-options", Type.STRING, Cardinality.ZERO_OR_ONE, "The serialization options")},
+                    new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_ONE, "the transformed result (node tree)")),
+            new FunctionSignature(
+                    new QName("stream-transform", TransformModule.NAMESPACE_URI, TransformModule.PREFIX),
+                    "Applies an XSL stylesheet to the node tree passed as first argument. The parameters are the same " +
+                            "as for the transform function. stream-transform can only be used within a servlet context. Instead " +
+                            "of returning the transformed document fragment, it directly streams its output to the servlet's output stream. " +
+                            "It should thus be the last statement in the XQuery.",
+                    new SequenceType[]{
+                            new FunctionParameterSequenceType("node-tree", Type.NODE, Cardinality.ZERO_OR_MORE, "The source-document (node tree)"),
+                            new FunctionParameterSequenceType("stylesheet", Type.ITEM, Cardinality.EXACTLY_ONE, "The XSL stylesheet"),
+                            new FunctionParameterSequenceType("parameters", Type.NODE, Cardinality.ZERO_OR_ONE, "The transformer parameters")
+                    },
+                    new SequenceType(Type.ITEM, Cardinality.EMPTY)),
+            new FunctionSignature(
+                    new QName("stream-transform", TransformModule.NAMESPACE_URI, TransformModule.PREFIX),
+                    "Applies an XSL stylesheet to the node tree passed as first argument. The parameters are the same " +
+                            "as for the transform function. stream-transform can only be used within a servlet context. Instead " +
+                            "of returning the transformed document fragment, it directly streams its output to the servlet's output stream. " +
+                            "It should thus be the last statement in the XQuery.",
+                    new SequenceType[]{
+                            new FunctionParameterSequenceType("node-tree", Type.NODE, Cardinality.ZERO_OR_MORE, "The source-document (node tree)"),
+                            new FunctionParameterSequenceType("stylesheet", Type.ITEM, Cardinality.EXACTLY_ONE, "The XSL stylesheet"),
+                            new FunctionParameterSequenceType("parameters", Type.NODE, Cardinality.ZERO_OR_ONE, "The transformer parameters"),
+                            new FunctionParameterSequenceType("serialization-options", Type.STRING, Cardinality.EXACTLY_ONE, "The serialization options")},
+                    new SequenceType(Type.ITEM, Cardinality.EMPTY))
     };
 
-	private final Map<String, CachedStylesheet> cache = new HashMap<String, CachedStylesheet>();
+    private final Map<String, CachedStylesheet> cache = new HashMap<String, CachedStylesheet>();
     private boolean caching = true;
 
     private boolean stopOnError = true;
     private boolean stopOnWarn = false;
-    
-	/**
-	 * @param context
-	 * @param signature
-	 */
-	public Transform(XQueryContext context, FunctionSignature signature) {
-		super(context, signature);
-		
-		final Object property = context.getBroker().getConfiguration().getProperty(TransformerFactoryAllocator.PROPERTY_CACHING_ATTRIBUTE);
-		if (property != null)
-			{caching = (Boolean) property;}
-	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
-	 */
-	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+    /**
+     * @param context
+     * @param signature
+     */
+    public Transform(XQueryContext context, FunctionSignature signature) {
+        super(context, signature);
 
-		final Sequence inputNode = args[0];
-		final Item stylesheetItem = args[1].itemAt(0);
-		
-		Node options = null;
-		if(!args[2].isEmpty())
-			{options = ((NodeValue)args[2].itemAt(0)).getNode();}
+        final Object property = context.getBroker().getConfiguration().getProperty(TransformerFactoryAllocator.PROPERTY_CACHING_ATTRIBUTE);
+        if (property != null) {
+            caching = (Boolean) property;
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
+     */
+    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+
+        final Sequence inputNode = args[0];
+        final Item stylesheetItem = args[1].itemAt(0);
+
+        Node options = null;
+        if (!args[2].isEmpty()) {
+            options = ((NodeValue) args[2].itemAt(0)).getNode();
+        }
 
         final Properties attributes = new Properties();
         final Properties serializationProps = new Properties();
@@ -215,89 +217,87 @@ public class Transform extends BasicFunction {
         final TransformerHandler handler = createHandler(stylesheetItem, stylesheetParams, attributes);
         final TransformErrorListener errorListener = new TransformErrorListener();
         handler.getTransformer().setErrorListener(errorListener);
-        if (isCalledAs("transform"))
-        {
-        	//transform:transform()
+        if (isCalledAs("transform")) {
+            //transform:transform()
 
-        	final Transformer transformer = handler.getTransformer();
-        	if ("org.exist.xslt.TransformerImpl".equals(transformer.getClass().getName())) {
-        		context.pushDocumentContext();
+            final Transformer transformer = handler.getTransformer();
+            if ("org.exist.xslt.TransformerImpl".equals(transformer.getClass().getName())) {
+                context.pushDocumentContext();
 
-        		final Sequence seq = ((org.exist.xslt.Transformer)transformer).transform(args[0]);
+                final Sequence seq = ((org.exist.xslt.Transformer) transformer).transform(args[0]);
 
-        		context.popDocumentContext();
-        		return seq;
-        	} else {
-            final ValueSequence seq = new ValueSequence();
-    		context.pushDocumentContext();
-    		final MemTreeBuilder builder = context.getDocumentBuilder();
-    		final DocumentBuilderReceiver builderReceiver = new DocumentBuilderReceiver(builder, true);
-    		final SAXResult result = new SAXResult(builderReceiver);
-    		result.setLexicalHandler(builderReceiver);		//preserve comments etc... from xslt output
-    		handler.setResult(result);
-            final Receiver receiver = new ReceiverToSAX(handler);
-            final Serializer serializer = context.getBroker().getSerializer();
-            serializer.reset();
-            try {
-                serializer.setProperties(serializationProps);
-                serializer.setReceiver(receiver, true);
-                if (expandXIncludes) {
-                    String xipath = serializationProps.getProperty(EXistOutputKeys.XINCLUDE_PATH);
-                    if (xipath != null) {
-                        final File f = new File(xipath);
-                        if (!f.isAbsolute())
-                            {xipath = new File(context.getModuleLoadPath(), xipath).getAbsolutePath();}
-                    } else
-                        {xipath = context.getModuleLoadPath();}
-                    serializer.getXIncludeFilter().setModuleLoadPath(xipath);
+                context.popDocumentContext();
+                return seq;
+            } else {
+                final ValueSequence seq = new ValueSequence();
+                context.pushDocumentContext();
+                final MemTreeBuilder builder = context.getDocumentBuilder();
+                final DocumentBuilderReceiver builderReceiver = new DocumentBuilderReceiver(builder, true);
+                final SAXResult result = new SAXResult(builderReceiver);
+                result.setLexicalHandler(builderReceiver);        //preserve comments etc... from xslt output
+                handler.setResult(result);
+                final Receiver receiver = new ReceiverToSAX(handler);
+                final Serializer serializer = context.getBroker().getSerializer();
+                serializer.reset();
+                try {
+                    serializer.setProperties(serializationProps);
+                    serializer.setReceiver(receiver, true);
+                    if (expandXIncludes) {
+                        String xipath = serializationProps.getProperty(EXistOutputKeys.XINCLUDE_PATH);
+                        if (xipath != null) {
+                            final File f = new File(xipath);
+                            if (!f.isAbsolute()) {
+                                xipath = new File(context.getModuleLoadPath(), xipath).getAbsolutePath();
+                            }
+                        } else {
+                            xipath = context.getModuleLoadPath();
+                        }
+                        serializer.getXIncludeFilter().setModuleLoadPath(xipath);
+                    }
+                    serializer.toSAX(inputNode, 1, inputNode.getItemCount(), false, false, 0, 0);
+                } catch (final Exception e) {
+                    throw new XPathException(this, "Exception while transforming node: " + e.getMessage(), e);
                 }
-    			serializer.toSAX(inputNode, 1, inputNode.getItemCount(), false, false, 0, 0);
-    		} catch (final Exception e) {
-    			throw new XPathException(this, "Exception while transforming node: " + e.getMessage(), e);
-    		}
-            errorListener.checkForErrors();
-    		Node next = builder.getDocument().getFirstChild();
-            while (next != null) {
-                seq.add((NodeValue) next);
-                next = next.getNextSibling();
+                errorListener.checkForErrors();
+                Node next = builder.getDocument().getFirstChild();
+                while (next != null) {
+                    seq.add((NodeValue) next);
+                    next = next.getNextSibling();
+                }
+                context.popDocumentContext();
+                return seq;
             }
-    		context.popDocumentContext();
-    		return seq;
-        	}
-        }
-        else
-        {
-        	//transform:stream-transform()
-        	
-            final ResponseModule myModule = (ResponseModule)context.getModule(ResponseModule.NAMESPACE_URI);
+        } else {
+            //transform:stream-transform()
+
+            final ResponseModule myModule = (ResponseModule) context.getModule(ResponseModule.NAMESPACE_URI);
             // response object is read from global variable $response
             final Variable respVar = myModule.resolveVariable(ResponseModule.RESPONSE_VAR);
-            if(respVar == null)
-                {throw new XPathException(this, ErrorCodes.XPDY0002, "No response object found in the current XQuery context.");}
-            if(respVar.getValue().getItemType() != Type.JAVA_OBJECT)
-                {throw new XPathException(this, ErrorCodes.XPDY0002, "Variable $response is not bound to an Java object.");}
+            if (respVar == null) {
+                throw new XPathException(this, ErrorCodes.XPDY0002, "No response object found in the current XQuery context.");
+            }
+            if (respVar.getValue().getItemType() != Type.JAVA_OBJECT) {
+                throw new XPathException(this, ErrorCodes.XPDY0002, "Variable $response is not bound to an Java object.");
+            }
             final JavaObjectValue respValue = (JavaObjectValue)
-                respVar.getValue().itemAt(0);
-            if (!"org.exist.http.servlets.HttpResponseWrapper".equals(respValue.getObject().getClass().getName()))
-                {throw new XPathException(this, ErrorCodes.XPDY0002, signatures[1].toString() +
-                        " can only be used within the EXistServlet or XQueryServlet");}
+                    respVar.getValue().itemAt(0);
+            if (!"org.exist.http.servlets.HttpResponseWrapper".equals(respValue.getObject().getClass().getName())) {
+                throw new XPathException(this, ErrorCodes.XPDY0002, signatures[1].toString() +
+                        " can only be used within the EXistServlet or XQueryServlet");
+            }
             final ResponseWrapper response = (ResponseWrapper) respValue.getObject();
-            
+
             //setup the response correctly
             final String mediaType = handler.getTransformer().getOutputProperty("media-type");
             final String encoding = handler.getTransformer().getOutputProperty("encoding");
-            if(mediaType != null)
-            {
-            	if(encoding == null)
-            	{
-            		response.setContentType(mediaType);
-            	}
-            	else
-            	{
-            		response.setContentType(mediaType + "; charset=" + encoding);
-            	}
+            if (mediaType != null) {
+                if (encoding == null) {
+                    response.setContentType(mediaType);
+                } else {
+                    response.setContentType(mediaType + "; charset=" + encoding);
+                }
             }
-            
+
             //do the transformation
             try {
                 final OutputStream os = new BufferedOutputStream(response.getOutputStream());
@@ -313,10 +313,12 @@ public class Transform extends BasicFunction {
                         String xipath = serializationProps.getProperty(EXistOutputKeys.XINCLUDE_PATH);
                         if (xipath != null) {
                             final File f = new File(xipath);
-                            if (!f.isAbsolute())
-                                {xipath = new File(context.getModuleLoadPath(), xipath).getAbsolutePath();}
-                        } else
-                            {xipath = context.getModuleLoadPath();}
+                            if (!f.isAbsolute()) {
+                                xipath = new File(context.getModuleLoadPath(), xipath).getAbsolutePath();
+                            }
+                        } else {
+                            xipath = context.getModuleLoadPath();
+                        }
                         xinclude.setModuleLoadPath(xipath);
                         receiver = xinclude;
                     }
@@ -327,7 +329,7 @@ public class Transform extends BasicFunction {
                 }
                 errorListener.checkForErrors();
                 os.close();
-                
+
                 //commit the response
                 response.flushBuffer();
             } catch (final IOException e) {
@@ -335,90 +337,81 @@ public class Transform extends BasicFunction {
             }
             return Sequence.EMPTY_SEQUENCE;
         }
-	}
+    }
 
     /**
      * @param stylesheetItem
      * @param options
-     * @param attributes Attributes to set on the Transformer Factory
+     * @param attributes     Attributes to set on the Transformer Factory
      * @throws TransformerFactoryConfigurationError
      * @throws XPathException
      */
-    private TransformerHandler createHandler(Item stylesheetItem, Properties options, Properties attributes) throws TransformerFactoryConfigurationError, XPathException
-    {
-    	final SAXTransformerFactory factory = TransformerFactoryAllocator.getTransformerFactory(context.getBroker().getBrokerPool());
+    private TransformerHandler createHandler(Item stylesheetItem, Properties options, Properties attributes) throws TransformerFactoryConfigurationError, XPathException {
+        final SAXTransformerFactory factory = TransformerFactoryAllocator.getTransformerFactory(context.getBroker().getBrokerPool());
 
         //set any attributes
-        for(final Map.Entry<Object, Object> attribute : attributes.entrySet()) {
-            factory.setAttribute((String)attribute.getKey(), (String)attribute.getValue());
+        for (final Map.Entry<Object, Object> attribute : attributes.entrySet()) {
+            factory.setAttribute((String) attribute.getKey(), (String) attribute.getValue());
         }
 
-		TransformerHandler handler;
-		try
-		{
-			Templates templates = null;
-			if(Type.subTypeOf(stylesheetItem.getType(), Type.NODE))
-			{
-				final NodeValue stylesheetNode = (NodeValue)stylesheetItem;
-				// if the passed node is a document node or document root element,
-				// we construct an XMLDB URI and use the caching implementation. 
-				if(stylesheetNode.getImplementationType() == NodeValue.PERSISTENT_NODE)
-				{
-					final NodeProxy root = (NodeProxy) stylesheetNode;
-                    if (root.getNodeId() == NodeId.DOCUMENT_NODE || root.getNodeId().getTreeLevel() == 1)
-                    {
-						//as this is a persistent node (e.g. a stylesheet stored in the db)
-						//set the URI Resolver as a DatabaseResolver
-						factory.setURIResolver(new EXistURIResolver(context.getBroker(), root.getOwnerDocument().getCollection().getURI().toString()));
-					
-						final String uri = XmldbURI.XMLDB_URI_PREFIX + context.getBroker().getBrokerPool().getId() + "://" + root.getOwnerDocument().getURI();
-						templates = getSource(factory, uri);
-					}
-				}
-				if(templates == null)
-				{
-					if (stylesheetItem instanceof Document) {
-						String uri = ((Document) stylesheetItem).getDocumentURI();
-						
+        TransformerHandler handler;
+        try {
+            Templates templates = null;
+            if (Type.subTypeOf(stylesheetItem.getType(), Type.NODE)) {
+                final NodeValue stylesheetNode = (NodeValue) stylesheetItem;
+                // if the passed node is a document node or document root element,
+                // we construct an XMLDB URI and use the caching implementation.
+                if (stylesheetNode.getImplementationType() == NodeValue.PERSISTENT_NODE) {
+                    final NodeProxy root = (NodeProxy) stylesheetNode;
+                    if (root.getNodeId() == NodeId.DOCUMENT_NODE || root.getNodeId().getTreeLevel() == 1) {
+                        //as this is a persistent node (e.g. a stylesheet stored in the db)
+                        //set the URI Resolver as a DatabaseResolver
+                        factory.setURIResolver(new EXistURIResolver(context.getBroker(), root.getOwnerDocument().getCollection().getURI().toString()));
+
+                        final String uri = XmldbURI.XMLDB_URI_PREFIX + context.getBroker().getBrokerPool().getId() + "://" + root.getOwnerDocument().getURI();
+                        templates = getSource(factory, uri);
+                    }
+                }
+                if (templates == null) {
+                    if (stylesheetItem instanceof Document) {
+                        String uri = ((Document) stylesheetItem).getDocumentURI();
+
 						/*
 						 * This must be checked because in the event the stylesheet is 
 						 * an in-memory document, it will cause an NPE
 						 */
-						if(uri != null){
-							uri = uri.substring(0, uri.lastIndexOf('/'));
-							factory.setURIResolver(new EXistURIResolver(context.getBroker(), uri));
-						}
-					}
-					templates = getSource(factory, stylesheetNode);
-				}
-			}
-			else
-			{
-				if (stylesheetItem instanceof Document) {
-					String uri = ((Document) stylesheetItem).getDocumentURI();
+                        if (uri != null) {
+                            uri = uri.substring(0, uri.lastIndexOf('/'));
+                            factory.setURIResolver(new EXistURIResolver(context.getBroker(), uri));
+                        }
+                    }
+                    templates = getSource(factory, stylesheetNode);
+                }
+            } else {
+                if (stylesheetItem instanceof Document) {
+                    String uri = ((Document) stylesheetItem).getDocumentURI();
 
 					/*
 					 * This must be checked because in the event the stylesheet is 
 					 * an in-memory document, it will cause an NPE
 					 */
-					if(uri != null){
-						uri = uri.substring(0, uri.lastIndexOf('/'));
-						factory.setURIResolver(new EXistURIResolver(context.getBroker(), uri));
-					}
-				}
+                    if (uri != null) {
+                        uri = uri.substring(0, uri.lastIndexOf('/'));
+                        factory.setURIResolver(new EXistURIResolver(context.getBroker(), uri));
+                    }
+                }
 
-				final String stylesheet = stylesheetItem.getStringValue();
-				templates = getSource(factory, stylesheet);
-			}
-			handler = factory.newTransformerHandler(templates);
-			
-			if(options != null)
-			{
-				setParameters(options, handler.getTransformer());
-			}
-		} catch (final TransformerConfigurationException e) {
-			throw new XPathException(this, "Unable to set up transformer: " + e.getMessage(), e);
-		}
+                final String stylesheet = stylesheetItem.getStringValue();
+                templates = getSource(factory, stylesheet);
+            }
+            handler = factory.newTransformerHandler(templates);
+
+            if (options != null) {
+                setParameters(options, handler.getTransformer());
+            }
+        } catch (final TransformerConfigurationException e) {
+            throw new XPathException(this, "Unable to set up transformer: " + e.getMessage(), e);
+        }
         return handler;
     }
 
@@ -439,30 +432,30 @@ public class Transform extends BasicFunction {
     }
 
     private Properties extractAttributes(final Sequence attrs) throws XPathException {
-        if(attrs.isEmpty()) {
+        if (attrs.isEmpty()) {
             return new Properties();
         } else {
-            return parseElementParam(((NodeValue)attrs.itemAt(0)).getNode(), "attributes", "attr");
+            return parseElementParam(((NodeValue) attrs.itemAt(0)).getNode(), "attributes", "attr");
         }
     }
 
-	private Properties parseParameters(final Node options) throws XPathException {
-		return parseElementParam(options, "parameters", "param");
-	}
+    private Properties parseParameters(final Node options) throws XPathException {
+        return parseElementParam(options, "parameters", "param");
+    }
 
     private Properties parseElementParam(final Node elementParam, final String container, final String param) throws XPathException {
         final Properties props = new Properties();
-        if(elementParam.getNodeType() == Node.ELEMENT_NODE && elementParam.getLocalName().equals(container)) {
+        if (elementParam.getNodeType() == Node.ELEMENT_NODE && elementParam.getLocalName().equals(container)) {
             Node child = elementParam.getFirstChild();
-            while(child != null) {
-                if(child.getNodeType() == Node.ELEMENT_NODE && child.getLocalName().equals(param)) {
-                    final Element elem = (Element)child;
+            while (child != null) {
+                if (child.getNodeType() == Node.ELEMENT_NODE && child.getLocalName().equals(param)) {
+                    final Element elem = (Element) child;
                     final String name = elem.getAttribute("name");
                     final String value = elem.getAttribute("value");
-                    if(name == null || value == null) {
+                    if (name == null || value == null) {
                         throw new XPathException(this, "Name or value attribute missing");
                     }
-                    if("exist:stop-on-warn".equals(name)) {
+                    if ("exist:stop-on-warn".equals(name)) {
                         stopOnWarn = "yes".equals(value);
                     } else if ("exist:stop-on-error".equals(name)) {
                         stopOnError = "yes".equals(value);
@@ -477,152 +470,159 @@ public class Transform extends BasicFunction {
     }
 
     private void setParameters(Properties parameters, Transformer handler) {
-        for (final Iterator i = parameters.keySet().iterator(); i.hasNext();) {
+        for (final Iterator i = parameters.keySet().iterator(); i.hasNext(); ) {
             final String key = (String) i.next();
             handler.setParameter(key, parameters.getProperty(key));
         }
     }
 
-	private Templates getSource(SAXTransformerFactory factory, String stylesheet) 
-	throws XPathException, TransformerConfigurationException {
-		String base;
-		if(stylesheet.indexOf(':') == Constants.STRING_NOT_FOUND) {
-			File f = new File(stylesheet);
-			if(f.canRead()) 
-				{stylesheet = f.toURI().toASCIIString();}
-			else {
-				stylesheet = context.getModuleLoadPath() + File.separatorChar + stylesheet;
-				f = new File(stylesheet);
-				if(f.canRead()) {stylesheet = f.toURI().toASCIIString();}
-			}
-		}
+    private Templates getSource(SAXTransformerFactory factory, String stylesheet)
+            throws XPathException, TransformerConfigurationException {
+        String base;
+        if (stylesheet.indexOf(':') == Constants.STRING_NOT_FOUND) {
+            File f = new File(stylesheet);
+            if (f.canRead()) {
+                stylesheet = f.toURI().toASCIIString();
+            } else {
+                stylesheet = context.getModuleLoadPath() + File.separatorChar + stylesheet;
+                f = new File(stylesheet);
+                if (f.canRead()) {
+                    stylesheet = f.toURI().toASCIIString();
+                }
+            }
+        }
         //TODO : use dedicated function in XmldbURI
-		final int p = stylesheet.lastIndexOf("/");
-		if(p != Constants.STRING_NOT_FOUND)
-			{base = stylesheet.substring(0, p);}
-		else
-			{base = stylesheet;}
-		CachedStylesheet cached = (CachedStylesheet)cache.get(stylesheet);
-		try {
-			if(cached == null) {
-				cached = new CachedStylesheet(factory, stylesheet, base);
-				cache.put(stylesheet, cached);
-			}
-			return cached.getTemplates();
-		} catch (final MalformedURLException e) {
-			LOG.debug(e.getMessage(), e);
-			throw new XPathException(this, "Malformed URL for stylesheet: " + stylesheet, e);
-		} catch (final IOException e) {
-			throw new XPathException(this, "IO error while loading stylesheet: " + stylesheet, e);
-		}
-	}
-	
-	private Templates getSource(SAXTransformerFactory factory, NodeValue stylesheetRoot) throws XPathException, TransformerConfigurationException
-	{
-		final TemplatesHandler handler = factory.newTemplatesHandler();
-		try {
-			handler.startDocument();
-			stylesheetRoot.toSAX(context.getBroker(), handler, null);
-			handler.endDocument();
-			return handler.getTemplates();
-		} catch (final SAXException e) {
-			throw new XPathException(this,
-				"A SAX exception occurred while compiling the stylesheet: " + e.getMessage(), e);
-		}
-	}
-	
-	//TODO: revisit this class with XmldbURI in mind
-	private class CachedStylesheet {
-		
-		SAXTransformerFactory factory;
-		long lastModified = -1;
-		Templates templates = null;
-		String uri;
-		
-		public CachedStylesheet(SAXTransformerFactory factory, String uri, String baseURI) 
-		throws TransformerConfigurationException, IOException, XPathException {
-			this.factory = factory;
-			this.uri = uri;
-			if (!baseURI.startsWith(XmldbURI.EMBEDDED_SERVER_URI_PREFIX))
-				{factory.setURIResolver(new ExternalResolver(baseURI));}
-			getTemplates();
-		}
-		
-		public Templates getTemplates() throws TransformerConfigurationException, IOException, XPathException {
-			if (uri.startsWith(XmldbURI.EMBEDDED_SERVER_URI_PREFIX)) {
-				final String docPath = uri.substring(XmldbURI.EMBEDDED_SERVER_URI_PREFIX.length());
-				DocumentImpl doc = null;
-				try {
-					doc = context.getBroker().getXMLResource(XmldbURI.create(docPath), Lock.READ_LOCK);
-					if (!caching || (doc != null && (templates == null || doc.getMetadata().getLastModified() > lastModified)))
-						{templates = getSource(doc);}
-					lastModified = doc.getMetadata().getLastModified();
-				} catch (final PermissionDeniedException e) {
-					throw new XPathException(Transform.this, "Permission denied to read stylesheet: " + uri);
-				} finally {
-					if (doc != null) {doc.getUpdateLock().release(Lock.READ_LOCK);}
-				}
-			} else {
-				final URL url = new URL(uri);
-				final URLConnection connection = url.openConnection();
-				long modified = connection.getLastModified();
-				if(!caching || (templates == null || modified > lastModified || modified == 0)) {
-					LOG.debug("compiling stylesheet " + url.toString());
-					try (final InputStream is = connection.getInputStream()) {
-						templates = factory.newTemplates(new StreamSource(is));
-					}
-				}
-				lastModified = modified;
-			}
-			return templates;
-		}
-		
-		private Templates getSource(DocumentImpl stylesheet)
-		throws XPathException, TransformerConfigurationException {
-			factory.setURIResolver(new EXistURIResolver(context.getBroker(), stylesheet.getCollection().getURI().toString()));
+        final int p = stylesheet.lastIndexOf("/");
+        if (p != Constants.STRING_NOT_FOUND) {
+            base = stylesheet.substring(0, p);
+        } else {
+            base = stylesheet;
+        }
+        CachedStylesheet cached = (CachedStylesheet) cache.get(stylesheet);
+        try {
+            if (cached == null) {
+                cached = new CachedStylesheet(factory, stylesheet, base);
+                cache.put(stylesheet, cached);
+            }
+            return cached.getTemplates();
+        } catch (final MalformedURLException e) {
+            LOG.debug(e.getMessage(), e);
+            throw new XPathException(this, "Malformed URL for stylesheet: " + stylesheet, e);
+        } catch (final IOException e) {
+            throw new XPathException(this, "IO error while loading stylesheet: " + stylesheet, e);
+        }
+    }
+
+    private Templates getSource(SAXTransformerFactory factory, NodeValue stylesheetRoot) throws XPathException, TransformerConfigurationException {
+        final TemplatesHandler handler = factory.newTemplatesHandler();
+        try {
+            handler.startDocument();
+            stylesheetRoot.toSAX(context.getBroker(), handler, null);
+            handler.endDocument();
+            return handler.getTemplates();
+        } catch (final SAXException e) {
+            throw new XPathException(this,
+                    "A SAX exception occurred while compiling the stylesheet: " + e.getMessage(), e);
+        }
+    }
+
+    //TODO: revisit this class with XmldbURI in mind
+    private class CachedStylesheet {
+
+        SAXTransformerFactory factory;
+        long lastModified = -1;
+        Templates templates = null;
+        String uri;
+
+        public CachedStylesheet(SAXTransformerFactory factory, String uri, String baseURI)
+                throws TransformerConfigurationException, IOException, XPathException {
+            this.factory = factory;
+            this.uri = uri;
+            if (!baseURI.startsWith(XmldbURI.EMBEDDED_SERVER_URI_PREFIX)) {
+                factory.setURIResolver(new ExternalResolver(baseURI));
+            }
+            getTemplates();
+        }
+
+        public Templates getTemplates() throws TransformerConfigurationException, IOException, XPathException {
+            if (uri.startsWith(XmldbURI.EMBEDDED_SERVER_URI_PREFIX)) {
+                final String docPath = uri.substring(XmldbURI.EMBEDDED_SERVER_URI_PREFIX.length());
+                DocumentImpl doc = null;
+                try {
+                    doc = context.getBroker().getXMLResource(XmldbURI.create(docPath), Lock.READ_LOCK);
+                    if (!caching || (doc != null && (templates == null || doc.getMetadata().getLastModified() > lastModified))) {
+                        templates = getSource(doc);
+                    }
+                    lastModified = doc.getMetadata().getLastModified();
+                } catch (final PermissionDeniedException e) {
+                    throw new XPathException(Transform.this, "Permission denied to read stylesheet: " + uri);
+                } finally {
+                    if (doc != null) {
+                        doc.getUpdateLock().release(Lock.READ_LOCK);
+                    }
+                }
+            } else {
+                final URL url = new URL(uri);
+                final URLConnection connection = url.openConnection();
+                long modified = connection.getLastModified();
+                if (!caching || (templates == null || modified > lastModified || modified == 0)) {
+                    LOG.debug("compiling stylesheet " + url.toString());
+                    try (final InputStream is = connection.getInputStream()) {
+                        templates = factory.newTemplates(new StreamSource(is));
+                    }
+                }
+                lastModified = modified;
+            }
+            return templates;
+        }
+
+        private Templates getSource(DocumentImpl stylesheet)
+                throws XPathException, TransformerConfigurationException {
+            factory.setURIResolver(new EXistURIResolver(context.getBroker(), stylesheet.getCollection().getURI().toString()));
             final TransformErrorListener errorListener = new TransformErrorListener();
             factory.setErrorListener(errorListener);
-			final TemplatesHandler handler = factory.newTemplatesHandler();
-			try {
-				handler.startDocument();
-				final Serializer serializer = context.getBroker().getSerializer();
-				serializer.reset();
-				serializer.setSAXHandlers(handler, null);
-				serializer.toSAX(stylesheet);
-				handler.endDocument();
-				final Templates t = handler.getTemplates();
+            final TemplatesHandler handler = factory.newTemplatesHandler();
+            try {
+                handler.startDocument();
+                final Serializer serializer = context.getBroker().getSerializer();
+                serializer.reset();
+                serializer.setSAXHandlers(handler, null);
+                serializer.toSAX(stylesheet);
+                handler.endDocument();
+                final Templates t = handler.getTemplates();
                 errorListener.checkForErrors();
                 return t;
-			} catch (final Exception e) {
-                if (e instanceof XPathException)
-                    {throw (XPathException) e;}
-				throw new XPathException(Transform.this,
-					"An exception occurred while compiling the stylesheet: " + stylesheet.getURI() +
-                        ": " + e.getMessage(), e);
-			}
-		}
-	}
-	
-	public static class ExternalResolver implements URIResolver {
-		private final String baseURI;
-		
-		public ExternalResolver(final String base) {
-			this.baseURI = base;
-		}
-		
-		@Override
-		public Source resolve(final String href, final String base) throws TransformerException {
-			try {
+            } catch (final Exception e) {
+                if (e instanceof XPathException) {
+                    throw (XPathException) e;
+                }
+                throw new XPathException(Transform.this,
+                        "An exception occurred while compiling the stylesheet: " + stylesheet.getURI() +
+                                ": " + e.getMessage(), e);
+            }
+        }
+    }
+
+    public static class ExternalResolver implements URIResolver {
+        private final String baseURI;
+
+        public ExternalResolver(final String base) {
+            this.baseURI = base;
+        }
+
+        @Override
+        public Source resolve(final String href, final String base) throws TransformerException {
+            try {
                 //TODO : use dedicated function in XmldbURI
-				final URL url = new URL(baseURI + "/"  + href);
-				final URLConnection connection = url.openConnection();
-				return new StreamSource(connection.getInputStream());
-			} catch (final IOException e) {
-				LOG.warn(e);
-				return null;
-			}
-		}
-	}
+                final URL url = new URL(baseURI + "/" + href);
+                final URLConnection connection = url.openConnection();
+                return new StreamSource(connection.getInputStream());
+            } catch (final IOException e) {
+                LOG.warn(e);
+                return null;
+            }
+        }
+    }
 
     private class TransformErrorListener implements ErrorListener {
 
@@ -637,13 +637,15 @@ public class Transform extends BasicFunction {
         protected void checkForErrors() throws XPathException {
             switch (errcode) {
                 case WARNING:
-                    if (stopOnWarn)
-                        {throw new XPathException("XSL transform reported warning: " + exception.getMessage(),
-                                exception);}
+                    if (stopOnWarn) {
+                        throw new XPathException("XSL transform reported warning: " + exception.getMessage(),
+                                exception);
+                    }
                     break;
                 case ERROR:
-                    if (stopOnError)
-                        {throw new XPathException("XSL transform reported error: " + exception.getMessage(), exception);}
+                    if (stopOnError) {
+                        throw new XPathException("XSL transform reported error: " + exception.getMessage(), exception);
+                    }
                     break;
                 case FATAL:
                     throw new XPathException("XSL transform reported error: " + exception.getMessage(), exception);
@@ -654,16 +656,18 @@ public class Transform extends BasicFunction {
             LOG.warn("XSL transform reports warning: " + except.getMessage(), except);
             errcode = WARNING;
             exception = except;
-            if (stopOnWarn)
-                {throw except;}
+            if (stopOnWarn) {
+                throw except;
+            }
         }
 
         public void error(TransformerException except) throws TransformerException {
             LOG.warn("XSL transform reports recoverable error: " + except.getMessage(), except);
             errcode = ERROR;
             exception = except;
-            if (stopOnError)
-                {throw except;}
+            if (stopOnError) {
+                throw except;
+            }
         }
 
         public void fatalError(TransformerException except) throws TransformerException {
