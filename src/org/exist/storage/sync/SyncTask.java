@@ -90,9 +90,12 @@ public class SyncTask implements SystemTask {
         }
     }
 
+    /**
+     * @return true if there is enough disk space, false otherwis
+     */
     private boolean checkDiskSpace() {
         final long space = FileUtils.measureFileStore(dataDir, FileStore::getUsableSpace);
         //LOG.info("Usable space on partition containing DATA_DIR: " + dataDir.getAbsolutePath() + ": " + (space / 1024 / 1024) + "mb");
-        return space > diskSpaceMin;
+        return space > diskSpaceMin || space == -1;
     }
 }
