@@ -41,7 +41,7 @@ import org.exist.dom.memtree.DocumentImpl;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.memtree.SAXAdapter;
 import org.exist.util.HtmlToXmlParser;
-import org.exist.util.function.Either;
+import com.evolvedbinary.j8fu.Either;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.NodeValue;
 import org.w3c.dom.Document;

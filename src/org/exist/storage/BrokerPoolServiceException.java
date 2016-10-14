@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2015 The eXist Project
+ * Copyright (C) 2001-2016 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -17,31 +17,19 @@
  * along with this program; if not, write to the Free Software Foundation
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.exist.util.function;
+package org.exist.storage;
 
 /**
- * A tuple of two values
+ * Exception caused by a BrokerPoolService
  *
  * @author Adam Retter <adam.retter@googlemail.com>
- *
- * @param <T1> The type of the first value
- * @param <T2> The type of the second value
  */
-public class Tuple2<T1, T2> {
-    public final T1 _1;
-    public final T2 _2;
-
-    public Tuple2(final T1 _1, final T2 _2) {
-        this._1 = _1;
-        this._2 = _2;
+public class BrokerPoolServiceException extends Exception {
+    public BrokerPoolServiceException(final String message, final Throwable cause) {
+        super(message, cause);
     }
 
-    @Override
-    public boolean equals(final Object obj) {
-        if (obj instanceof Tuple2) {
-            final Tuple2 other = (Tuple2)obj;
-            return _1.equals(other._1) && _2.equals(other._2);
-        }
-        return false;
+    public BrokerPoolServiceException(final Throwable cause) {
+        super(cause);
     }
 }

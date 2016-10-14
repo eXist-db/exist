@@ -1036,7 +1036,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
 			final String group = element.getAttribute("group");
 			if (!securityMan.hasGroup(group))
 				try {
-					securityMan.addGroup(group);
+					securityMan.addGroup(broker, group);
 				} catch (final ConfigurationException e) {
 					throw new EXistException(e.getMessage(), e);
 				}
@@ -1075,7 +1075,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
 			final String group = element.getAttribute("group");
 			if (!securityMan.hasGroup(group))
 				try {
-					securityMan.addGroup(group);
+					securityMan.addGroup(broker, group);
 				} catch (final ConfigurationException e) {
 					throw new EXistException(e.getMessage(), e);
 				}

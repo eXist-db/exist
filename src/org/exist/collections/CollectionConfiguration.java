@@ -95,9 +95,9 @@ public class CollectionConfiguration {
 
     private XMLReaderObjectFactory.VALIDATION_SETTING validationMode=XMLReaderObjectFactory.VALIDATION_SETTING.UNKNOWN;
 
-    private BrokerPool pool;
+    private final BrokerPool pool;
 
-    public CollectionConfiguration(BrokerPool pool) {
+    public CollectionConfiguration(final BrokerPool pool) {
         this.pool = pool;
     }
 

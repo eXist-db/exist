@@ -34,7 +34,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.journal.Journal;
 import org.exist.util.Configuration;
 import org.exist.util.FileUtils;
-import org.exist.util.function.FunctionE;
+import com.evolvedbinary.j8fu.function.FunctionE;
 
 /**
  * Class DiskUsage. Retrieves data from the java File object

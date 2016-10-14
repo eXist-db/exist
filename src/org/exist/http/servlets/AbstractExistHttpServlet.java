@@ -96,7 +96,7 @@ public abstract class AbstractExistHttpServlet extends HttpServlet {
     private BrokerPool getOrCreateBrokerPool(final ServletConfig config) throws EXistException, DatabaseConfigurationException, ServletException {
 
         // Configure BrokerPool
-        if(BrokerPool.isConfigured(BrokerPool.DEFAULT_INSTANCE_NAME)) {
+        if(BrokerPool.isConfigured()) {
             getLog().info("Database already started. Skipping configuration ...");
         } else {
             final String confFile = Optional.ofNullable(config.getInitParameter("configuration")).orElse("conf.xml");
@@ -138,7 +138,7 @@ public abstract class AbstractExistHttpServlet extends HttpServlet {
         getLog().info("Configuring eXist instance");
         
         try {
-            if(!BrokerPool.isConfigured(BrokerPool.DEFAULT_INSTANCE_NAME)) {
+            if(!BrokerPool.isConfigured()) {
                 BrokerPool.configure(1, 5, configuration);
             }
         } catch(final EXistException e) {

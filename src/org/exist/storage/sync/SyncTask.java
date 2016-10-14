@@ -25,6 +25,8 @@ import java.nio.file.FileStore;
 import java.nio.file.Path;
 import java.util.Properties;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.scheduler.JobDescription;
 import org.exist.storage.BrokerPool;
@@ -34,6 +36,8 @@ import org.exist.util.Configuration;
 import org.exist.util.FileUtils;
 
 public class SyncTask implements SystemTask {
+
+    private final static Logger LOG = LogManager.getLogger(SyncTask.class);
 
     private final static String JOB_NAME = "Sync";
 
@@ -55,7 +59,12 @@ public class SyncTask implements SystemTask {
     }
 
     @Override
-    public void configure(Configuration config, Properties properties) throws EXistException {
+    public String getName() {
+        return getJobName();
+    }
+
+    @Override
+    public void configure(final Configuration config, final Properties properties) throws EXistException {
         this.diskSpaceMin = 1024l * 1024l * config.getProperty(BrokerPool.DISK_SPACE_MIN_PROPERTY, BrokerPool.DEFAULT_DISK_SPACE_MIN);
 
         // fixme! - Shouldn't it be data dir AND journal dir we check
@@ -68,13 +77,14 @@ public class SyncTask implements SystemTask {
     }
 
     @Override
-    public void execute(DBBroker broker) throws EXistException {
+    public void execute(final DBBroker broker) throws EXistException {
         final BrokerPool pool = broker.getBrokerPool();
         if (!checkDiskSpace()) {
             LOG.fatal("Partition containing DATA_DIR: " + dataDir.toAbsolutePath().toString() + " is running out of disk space. " +
                 "Switching eXist-db to read only to prevent data loss!");
             pool.setReadOnly();
         }
+
         if(System.currentTimeMillis() - pool.getLastMajorSync() >
                 pool.getMajorSyncPeriod()) {
             pool.sync(broker, Sync.MAJOR);
@@ -83,9 +93,12 @@ public class SyncTask implements SystemTask {
         }
     }
 
+    /**
+     * @return true if there is enough disk space, false otherwis
+     */
     private boolean checkDiskSpace() {
         final long space = FileUtils.measureFileStore(dataDir, FileStore::getUsableSpace);
         //LOG.info("Usable space on partition containing DATA_DIR: " + dataDir.getAbsolutePath() + ": " + (space / 1024 / 1024) + "mb");
-        return space > diskSpaceMin;
+        return space > diskSpaceMin || space == -1;
     }
 }

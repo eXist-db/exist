@@ -27,6 +27,7 @@ import org.apache.logging.log4j.Logger;
 import org.exist.management.Agent;
 import org.exist.management.AgentFactory;
 import org.exist.storage.cache.Cache;
+import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
 
 import java.text.NumberFormat;
@@ -44,7 +45,7 @@ import java.util.List;
  *
  * @author  wolf
  */
-public class DefaultCacheManager implements CacheManager
+public class DefaultCacheManager implements CacheManager, BrokerPoolService
 {
     private final static Logger LOG                             = LogManager.getLogger( DefaultCacheManager.class );
 
@@ -109,23 +110,24 @@ public class DefaultCacheManager implements CacheManager
     public DefaultCacheManager( BrokerPool pool )
     {
         this.instanceName = pool.getId();
+        final Configuration configuration = pool.getConfiguration();
         int cacheSize;
 
-        if( ( pageSize = pool.getConfiguration().getInteger( BrokerPool.PROPERTY_PAGE_SIZE ) ) < 0 ) {
+        if( ( pageSize = configuration.getInteger( BrokerPool.PROPERTY_PAGE_SIZE ) ) < 0 ) {
 
             //TODO : should we share the page size with the native broker ?
             pageSize = BrokerPool.DEFAULT_PAGE_SIZE;
         }
 
-        if( ( cacheSize = pool.getConfiguration().getInteger( PROPERTY_CACHE_SIZE ) ) < 0 ) {
+        if( ( cacheSize = configuration.getInteger( PROPERTY_CACHE_SIZE ) ) < 0 ) {
             cacheSize = DEFAULT_CACHE_SIZE;
         }
 
-        shrinkThreshold = pool.getConfiguration().getInteger( SHRINK_THRESHOLD_PROPERTY );
+        shrinkThreshold = configuration.getInteger( SHRINK_THRESHOLD_PROPERTY );
 
         totalMem        = cacheSize * 1024L * 1024L;
         
-        final Boolean checkMaxCache = (Boolean)pool.getConfiguration().getProperty( PROPERTY_CACHE_CHECK_MAX_SIZE );
+        final Boolean checkMaxCache = (Boolean)configuration.getProperty( PROPERTY_CACHE_CHECK_MAX_SIZE );
         
         if( checkMaxCache == null || checkMaxCache.booleanValue() ) {
 			final long max        = Runtime.getRuntime().maxMemory();

@@ -29,14 +29,9 @@ import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
 import org.exist.xquery.TerminatedException;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
+import java.io.*;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
@@ -582,14 +577,12 @@ public class ExportGUI extends javax.swing.JFrame
     }
 
 
-    private void openLog( String dir )
+    private void openLog(final String dir)
     {
+        final Path file = SystemExport.getUniqueFile("report", ".log", dir);
         try {
-            final File         file = SystemExport.getUniqueFile( "report", ".log", dir );
-            final OutputStream os   = new BufferedOutputStream( new FileOutputStream( file ) );
-            logWriter = new PrintWriter( new OutputStreamWriter( os, UTF_8 ) );
-        }
-        catch( final FileNotFoundException e ) {
+            logWriter = new PrintWriter(Files.newBufferedWriter(file, UTF_8));
+        } catch( final IOException e ) {
             System.err.println( "ERROR: failed to create log file" );
         }
     }

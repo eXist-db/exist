@@ -26,6 +26,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Namespaces;
 import org.exist.storage.BrokerPool;
+import org.exist.storage.BrokerPoolService;
 import org.exist.validation.GrammarPool;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
@@ -38,13 +39,11 @@ import org.xml.sax.ext.DefaultHandler2;
  * 
  * @author wolf
  */
-public class XMLReaderPool extends StackObjectPool<XMLReader> {
+public class XMLReaderPool extends StackObjectPool<XMLReader> implements BrokerPoolService {
 
     private final static Logger LOG = LogManager.getLogger(XMLReaderPool.class);
 
     private final static DefaultHandler2 DUMMY_HANDLER = new DefaultHandler2();
-
-	private final Configuration config;
 
     /**
      * 
@@ -53,9 +52,8 @@ public class XMLReaderPool extends StackObjectPool<XMLReader> {
      * @param maxIdle 
      * @param initIdleCapacity 
      */
-    public XMLReaderPool(Configuration config, PoolableObjectFactory<XMLReader> factory, int maxIdle, int initIdleCapacity) {
+    public XMLReaderPool(PoolableObjectFactory<XMLReader> factory, int maxIdle, int initIdleCapacity) {
         super(factory, maxIdle, initIdleCapacity);
-        this.config = config;
     }
 
     public synchronized XMLReader borrowXMLReader() {

@@ -47,7 +47,8 @@ public class LowLevelText {
 
 		//BUG: need to be released!
 		broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));
-		pool = new XQueryPool(configuration);
+		pool = new XQueryPool();
+		pool.configure(configuration);
 		stringSource = new StringSource(TEST_XQUERY_SOURCE);
 
 		XQuery xquery = brokerPool.getXQueryService();

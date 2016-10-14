@@ -26,10 +26,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.security.PermissionDeniedException;
-import org.exist.storage.BrokerPool;
-import org.exist.storage.DBBroker;
-import org.exist.storage.SystemTask;
-import org.exist.storage.SystemTaskManager;
+import org.exist.storage.*;
 import org.exist.storage.journal.JournalException;
 import org.exist.storage.journal.JournalManager;
 import org.exist.xmldb.XmldbURI;
@@ -55,7 +52,7 @@ import java.util.function.Function;
  * @author wolf
  *
  */
-public class TransactionManager {
+public class TransactionManager implements BrokerPoolService {
 
     /**
      * Logger for this class
@@ -67,7 +64,7 @@ public class TransactionManager {
     private final BrokerPool pool;
     private final Optional<JournalManager> journalManager;
 
-    private final SystemTaskManager taskManager;
+    private final SystemTaskManager systemTaskManager;
 
     private final Map<Long, TxnCounter> transactions = new HashMap<>();
 
@@ -78,26 +75,16 @@ public class TransactionManager {
      * 
      * @param pool
      * @param journalManager
+     * @param systemTaskManager
      * @throws EXistException
      */
-    public TransactionManager(final BrokerPool pool, final Optional<JournalManager> journalManager) throws EXistException {
-    	this(
-            pool,
-            journalManager,
-            new SystemTaskManager(pool)
-        );
-    }
-
-    TransactionManager(final BrokerPool pool, final Optional<JournalManager> journal, final SystemTaskManager taskManager) {
+    public TransactionManager(final BrokerPool pool, final Optional<JournalManager> journalManager,
+            final SystemTaskManager systemTaskManager) {
         this.pool = pool;
-        this.journalManager = journal;
-        this.taskManager = taskManager;
+        this.journalManager = journalManager;
+        this.systemTaskManager = systemTaskManager;
     }
 
-    public void initialize() {
-        transactions.clear();
-    }
-	
     /**
      * Create a new transaction. Creates a new transaction id that will
      * be logged to disk immediately. 
@@ -295,14 +282,14 @@ public class TransactionManager {
 
     public void triggerSystemTask(final SystemTask task) {
         withLock(broker -> {
-            taskManager.triggerSystemTask(task);
+            systemTaskManager.triggerSystemTask(task);
     	});
     }
 
     public void processSystemTasks() {
         withLock(broker -> {
            if(transactions.isEmpty()) {
-               taskManager.processTasks();
+               systemTaskManager.processTasks();
            }
         });
     }

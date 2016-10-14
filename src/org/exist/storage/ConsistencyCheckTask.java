@@ -21,13 +21,16 @@
  */
 package org.exist.storage;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.backup.ConsistencyCheck;
 import org.exist.backup.ErrorReport;
@@ -42,6 +45,8 @@ import org.exist.xquery.TerminatedException;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class ConsistencyCheckTask implements SystemTask {
+
+    private final static Logger LOG = LogManager.getLogger(ConsistencyCheckTask.class);
 
     private String exportDir;
     private boolean createBackup = false;
@@ -70,9 +75,14 @@ public class ConsistencyCheckTask implements SystemTask {
     public boolean afterCheckpoint() {
     	return false;
     }
-    
-    public void configure(Configuration config, Properties properties) throws EXistException {
-        
+
+    @Override
+    public String getName() {
+        return "Consistency Check Task";
+    }
+
+    @Override
+    public void configure(final Configuration config, final Properties properties) throws EXistException {
         exportDir = properties.getProperty(OUTPUT_PROP_NAME, "export");
         Path dir = Paths.get(exportDir);
         if (!dir.isAbsolute()) {
@@ -115,7 +125,7 @@ public class ConsistencyCheckTask implements SystemTask {
     }
 
     @Override
-    public void execute(DBBroker broker) throws EXistException {
+    public void execute(final DBBroker broker) throws EXistException {
         final Agent agentInstance = AgentFactory.getInstance();
         final BrokerPool brokerPool = broker.getBrokerPool();
         final TaskStatus endStatus = new TaskStatus(TaskStatus.Status.STOPPED_OK);
@@ -177,13 +187,8 @@ public class ConsistencyCheckTask implements SystemTask {
                 LOG.info("Finished backup");
             }
 
-        } catch (final TerminatedException e) {
+        } catch (final TerminatedException | PermissionDeniedException e) {
             throw new EXistException(e.getMessage(), e);
-            
-        } catch (final PermissionDeniedException e) {
-            //TODO should maybe throw PermissionDeniedException instead!
-            throw new EXistException(e.getMessage(), e);
-            
         } finally {
             if (report != null) {
                 report.close();
@@ -202,14 +207,14 @@ public class ConsistencyCheckTask implements SystemTask {
         return lastExportedBackup;
     }
 
-    private boolean fatalErrorsFound(List<ErrorReport> errors) {
+    private boolean fatalErrorsFound(final List<ErrorReport> errors) {
         for (final ErrorReport error : errors) {
             switch (error.getErrcode()) {
-            // the following errors are considered fatal: export the db and
+                // the following errors are considered fatal: export the db and
                 // stop the task
-            case ErrorReport.CHILD_COLLECTION:
-            case ErrorReport.RESOURCE_ACCESS_FAILED:
-                return true;
+                case ErrorReport.CHILD_COLLECTION:
+                case ErrorReport.RESOURCE_ACCESS_FAILED:
+                    return true;
             }
         }
         // no fatal errors
@@ -218,43 +223,41 @@ public class ConsistencyCheckTask implements SystemTask {
 
     private PrintWriter openLog() throws EXistException {
         try {
-            final File file = SystemExport.getUniqueFile("report", ".log", exportDir);
-            final OutputStream os = new BufferedOutputStream(new FileOutputStream(file));
-            return new PrintWriter(new OutputStreamWriter(os, UTF_8));
-        } catch (final FileNotFoundException e) {
+            final Path file = SystemExport.getUniqueFile("report", ".log", exportDir);
+            return new PrintWriter(Files.newBufferedWriter(file, UTF_8));
+        } catch (final IOException e) {
             throw new EXistException("ERROR: failed to create report file in " + exportDir, e);
         }
     }
 
     private static class LoggingCallback implements SystemExport.StatusCallback {
 
-		public void startCollection(String path) throws TerminatedException {
+        @Override
+		public void startCollection(final String path) throws TerminatedException {
 						
 		}
 
-		public void startDocument(String name, int current, int count)
-				throws TerminatedException {			
+		@Override
+		public void startDocument(final String name, final int current, final int count) throws TerminatedException {
 		}
 
-		public void error(String message, Throwable exception) {
+		@Override
+		public void error(final String message, final Throwable exception) {
 			LOG.error(message, exception);			
 		}
     	
     }
     
     private class CheckCallback implements ConsistencyCheck.ProgressCallback, SystemExport.StatusCallback {
-
-        private PrintWriter log;
+        private final PrintWriter log;
         private boolean errorFound = false;
 
-        private CheckCallback(PrintWriter log) {
+        private CheckCallback(final PrintWriter log) {
             this.log = log;
         }
 
-//        public void startDocument(String path) {
-//        }
-
-        public void startDocument(String name, int current, int count) throws TerminatedException {
+        @Override
+        public void startDocument(final String name, final int current, final int count) throws TerminatedException {
             if (!monitor.proceed()) {
                 throw new TerminatedException("consistency check terminated");
             }
@@ -268,7 +271,8 @@ public class ConsistencyCheckTask implements SystemTask {
             }
         }
 
-        public void startCollection(String path) throws TerminatedException {
+        @Override
+        public void startCollection(final String path) throws TerminatedException {
             if (!monitor.proceed()) {
                 throw new TerminatedException("consistency check terminated");
             }
@@ -282,14 +286,16 @@ public class ConsistencyCheckTask implements SystemTask {
             log.flush();
         }
 
-        public void error(ErrorReport error) {
+        @Override
+        public void error(final ErrorReport error) {
             log.write("----------------------------------------------\n");
             log.write(error.toString());
             log.write('\n');
             log.flush();
         }
 
-        public void error(String message, Throwable exception) {
+        @Override
+        public void error(final String message, final Throwable exception) {
             log.write("----------------------------------------------\n");
             log.write("EXPORT ERROR: ");
             log.write(message);

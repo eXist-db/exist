@@ -62,10 +62,6 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
      * Indicates if the user belongs to the dba group, i.e. is a superuser.
      */
     protected boolean hasDbaRole = false;
-
-    public AbstractAccount(final AbstractRealm realm, final int id, final String name) throws ConfigurationException {
-        super(realm, realm.collectionAccounts, id, name);
-    }
 	
     protected AbstractAccount(final DBBroker broker, final AbstractRealm realm, final int id, final String name) throws ConfigurationException {
         super(broker, realm, realm.collectionAccounts, id, name);

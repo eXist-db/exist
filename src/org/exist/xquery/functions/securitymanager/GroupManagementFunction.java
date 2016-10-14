@@ -141,7 +141,7 @@ public class GroupManagementFunction extends BasicFunction {
                     group.setMetadataValue(EXistSchemaType.DESCRIPTION, args[getSignature().getArgumentCount() - 1].toString());
                 }
 
-                securityManager.addGroup(group);
+                securityManager.addGroup(context.getBroker(), group);
 
             } else if(isCalledAs(qnRemoveGroup.getLocalPart()) || isCalledAs(qnDeleteGroup.getLocalPart())) {
 

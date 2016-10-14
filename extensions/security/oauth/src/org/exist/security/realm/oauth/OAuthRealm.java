@@ -44,7 +44,7 @@ import org.exist.security.internal.SecurityManagerImpl;
 import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.internal.aider.UserAider;
 import org.exist.storage.DBBroker;
-import org.exist.util.function.Function2E;
+import com.evolvedbinary.j8fu.function.Function2E;
 import org.scribe.exceptions.OAuthException;
 
 /**

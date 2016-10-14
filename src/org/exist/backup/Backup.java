@@ -22,7 +22,7 @@
 package org.exist.backup;
 
 import org.exist.util.FileUtils;
-import org.exist.util.function.FunctionE;
+import com.evolvedbinary.j8fu.function.FunctionE;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 

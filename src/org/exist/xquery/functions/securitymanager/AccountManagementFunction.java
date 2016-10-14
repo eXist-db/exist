@@ -201,7 +201,7 @@ public class AccountManagementFunction extends BasicFunction {
                         final Group group = new GroupAider(username);
                         group.setMetadataValue(EXistSchemaType.DESCRIPTION, "Personal group for " + username);
                         group.addManager(currentUser);
-                        securityManager.addGroup(group);
+                        securityManager.addGroup(broker, group);
 
                         //add the personal group as the primary group
                         user.addGroup(username);

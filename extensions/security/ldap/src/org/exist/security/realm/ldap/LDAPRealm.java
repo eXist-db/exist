@@ -154,15 +154,15 @@ public class LDAPRealm extends AbstractRealm {
         }
     }
     
-    private List<Group> getGroupMembershipForLdapUser(final LdapContext ctx, final SearchResult ldapUser) throws NamingException {
+    private List<Group> getGroupMembershipForLdapUser(final LdapContext ctx, final DBBroker broker, final SearchResult ldapUser) throws NamingException {
         
-        final List<Group> memberOf_groups = new ArrayList<Group>();
+        final List<Group> memberOf_groups = new ArrayList<>();
         
         final LDAPSearchContext search = ensureContextFactory().getSearch();
         final String userDistinguishedName = (String)ldapUser.getAttributes().get(search.getSearchAccount().getSearchAttribute(LDAPSearchAttributeKey.DN)).get();
         final List<String> memberOf_groupNames = findGroupnamesForUserDistinguishedName(ctx, userDistinguishedName);
         for(final String memberOf_groupName : memberOf_groupNames) {
-            memberOf_groups.add(getGroup(ctx, memberOf_groupName));
+            memberOf_groups.add(getGroup(ctx, broker, memberOf_groupName));
         }
         
         //TODO expand to a general method that rewrites the useraider based on the realTransformation
@@ -230,14 +230,14 @@ public class LDAPRealm extends AbstractRealm {
                     int update = UPDATE_NONE;
                     
                     //1) get the ldap group membership
-                    final List<Group> memberOf_groups = getGroupMembershipForLdapUser(ctx, ldapUser);
+                    final List<Group> memberOf_groups = getGroupMembershipForLdapUser(ctx, broker, ldapUser);
                     
                     //2) get the ldap primary group
                     final String primaryGroup = findGroupBySID(ctx, getPrimaryGroupSID(ldapUser));
                     
                     //append the ldap primaryGroup to the head of the ldap group list, and compare
                     //to the account group list
-                    memberOf_groups.add(0, getGroup(ctx, primaryGroup));
+                    memberOf_groups.add(0, getGroup(ctx, broker, primaryGroup));
 
                     final String accountGroups[] = account.getGroups();
                     
@@ -345,7 +345,7 @@ public class LDAPRealm extends AbstractRealm {
                         }
                 	
                     //get (or create) the primary group if it doesnt exist
-                    final Group primaryGroup = getGroup(ctx, primaryGroupName);
+                    final Group primaryGroup = getGroup(ctx, broker, primaryGroupName);
 
                     //get (or create) member groups
                     /*LDAPSearchContext search = ensureContextFactory().getSearch();
@@ -361,7 +361,7 @@ public class LDAPRealm extends AbstractRealm {
                     final UserAider userAider = new UserAider(ID, username, primaryGroup);
 
                     //add the member groups
-                    for(final Group memberOf_group : getGroupMembershipForLdapUser(ctx, ldapUser)) {
+                    for(final Group memberOf_group : getGroupMembershipForLdapUser(ctx, broker, ldapUser)) {
                         userAider.addGroup(memberOf_group);
                     }
 
@@ -416,10 +416,10 @@ public class LDAPRealm extends AbstractRealm {
         }
     }
     
-    private Group createGroupInDatabase(final String groupname) throws AuthenticationException {
+    private Group createGroupInDatabase(final DBBroker broker, final String groupname) throws AuthenticationException {
         try {
             //return sm.addGroup(instantiateGroup(this, groupname));
-            return getSecurityManager().addGroup(new GroupAider(ID, groupname));
+            return getSecurityManager().addGroup(broker, new GroupAider(ID, groupname));
 
         } catch(Exception e) {
             throw new AuthenticationException(AuthenticationException.UNNOWN_EXCEPTION, e.getMessage(), e);
@@ -587,7 +587,7 @@ public class LDAPRealm extends AbstractRealm {
         return strObjectSid.substring(0, strObjectSid.lastIndexOf('-') + 1) + strPrimaryGroupID;
     }
     
-    public final synchronized Group getGroup(final Subject invokingUser, String name) {
+    public final synchronized Group getGroup(final Subject invokingUser, final DBBroker broker, String name) {
         name = ensureCase(name);
         
         final Group grp = getGroup(name);
@@ -599,7 +599,7 @@ public class LDAPRealm extends AbstractRealm {
             try {
                 ctx = getContext(invokingUser);
                 
-                return getGroup(ctx, name);
+                return getGroup(ctx, broker, name);
             } catch(final NamingException ne) {
                 LOG.error(new AuthenticationException(AuthenticationException.UNNOWN_EXCEPTION, ne.getMessage()));
                 return null;
@@ -611,7 +611,7 @@ public class LDAPRealm extends AbstractRealm {
         }
     }
 
-    public final synchronized Group getGroup(final LdapContext ctx, final String name) {
+    public final synchronized Group getGroup(final LdapContext ctx, final DBBroker broker, final String name) {
     	
     	if(name == null){
             return null;
@@ -632,7 +632,7 @@ public class LDAPRealm extends AbstractRealm {
                 } else {
                     //found a group from ldap so cache them and return
                     try {
-                        return createGroupInDatabase(gName);
+                        return createGroupInDatabase(broker, gName);
                         //registerGroup(grp); //TODO do we need to do this?
                     } catch(final AuthenticationException ae) {
                         LOG.error(ae.getMessage(), ae);

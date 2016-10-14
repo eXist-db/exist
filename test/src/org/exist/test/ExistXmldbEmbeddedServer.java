@@ -5,7 +5,9 @@ import org.exist.xmldb.XmldbURI;
 import org.junit.rules.ExternalResource;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.*;
-import org.xmldb.api.modules.XQueryService;
+import org.exist.xmldb.XQueryService;
+
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -63,7 +65,17 @@ public class ExistXmldbEmbeddedServer extends ExternalResource {
 
     public ResourceSet executeQuery(final String query) throws XMLDBException {
         final CompiledExpression compiledQuery = xpathQueryService.compile(query);
-        ResourceSet result = xpathQueryService.execute(compiledQuery);
+        final ResourceSet result = xpathQueryService.execute(compiledQuery);
+        return result;
+    }
+
+    public ResourceSet executeQuery(final String query, final Map<String, Object> externalVariables) throws XMLDBException {
+        for(final Map.Entry<String, Object> externalVariable : externalVariables.entrySet()) {
+            xpathQueryService.declareVariable(externalVariable.getKey(), externalVariable.getValue());
+        }
+        final CompiledExpression compiledQuery = xpathQueryService.compile(query);
+        final ResourceSet result = xpathQueryService.execute(compiledQuery);
+        xpathQueryService.clearVariables();
         return result;
     }
 

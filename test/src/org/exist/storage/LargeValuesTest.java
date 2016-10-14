@@ -17,19 +17,23 @@ import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.TestUtils;
-import org.junit.After;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.*;
+
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Random;
 
@@ -49,47 +53,19 @@ public class LargeValuesTest {
 
     private static final int KEY_LENGTH = 5000;
 
+    private static BrokerPool pool = null;
+
     @Test
     public void storeAndRecover() throws PermissionDeniedException, DatabaseConfigurationException, IOException, LockException, CollectionConfigurationException, SAXException, EXistException {
-        for (int i = 0; i < 1; i++) {
-            storeDocuments();
-            restart();
-            remove();
-        }
-    }
-
-    private File createDocument() throws IOException {
-        final File file = File.createTempFile("eXistTest", ".xml");
-
-        try(final Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "UTF-8"))) {
-            final Random r = new Random();
-            writer.write("<test>");
-            for(int i = 0; i < KEY_COUNT; i++) {
-                writer.write("<key id=\"");
-                int keySize = r.nextInt(KEY_LENGTH);
-                if(keySize == 0) {
-                    keySize = 1;
-                }
-                for(int j = 0; j < keySize; j++) {
-                    char ch;
-                    do {
-                        ch = (char) r.nextInt(0x5A);
-                    } while(ch < 0x41);
-                    writer.write(ch);
-                }
-                writer.write("\"/>");
-            }
-            writer.write("</test>");
-        }
-
-        return file;
+        storeDocuments();
+        restart();
+        remove();
     }
 
     /**
      * Store some documents, reindex the collection and crash without commit.
      */
     private void storeDocuments() throws EXistException, DatabaseConfigurationException, PermissionDeniedException, IOException, SAXException, CollectionConfigurationException, LockException {
-        final BrokerPool pool = startDB();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
@@ -110,19 +86,20 @@ public class LargeValuesTest {
 
             BrokerPool.FORCE_CORRUPTION = true;
 
-            final File file = createDocument();
+            final Path file = createDocument();
             try(final Txn transaction = transact.beginTransaction()) {
                 final IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"),
-                        new InputSource(file.toURI().toASCIIString()));
+                        new InputSource(file.toUri().toASCIIString()));
                 assertNotNull(info);
-                root.store(transaction, broker, info, new InputSource(file.toURI().toASCIIString()), false);
+                root.store(transaction, broker, info, new InputSource(file.toUri().toASCIIString()), false);
                 broker.saveCollection(transaction, root);
 
                 transact.commit(transaction);
+            } finally {
+                Files.delete(file);
             }
 
             pool.getJournalManager().get().flush(true, false);
-            file.delete();
         }
     }
 
@@ -132,7 +109,6 @@ public class LargeValuesTest {
     private void restart() throws EXistException, DatabaseConfigurationException, PermissionDeniedException, IOException, SAXException {
 
         BrokerPool.FORCE_CORRUPTION = false;
-        final BrokerPool pool = startDB();
 
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
             final Collection root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, Lock.READ_LOCK);
@@ -164,8 +140,6 @@ public class LargeValuesTest {
     }
 
     private void remove() throws EXistException, PermissionDeniedException, DatabaseConfigurationException, IOException, TriggerException {
-
-        final BrokerPool pool = startDB();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                 final Txn transaction = transact.beginTransaction()) {
@@ -178,15 +152,43 @@ public class LargeValuesTest {
         }
     }
 
-    @After
-    public void closeDB() {
-        TestUtils.cleanupDB();
-        BrokerPool.stopAll(false);
+    private Path createDocument() throws IOException {
+        final Path file = Files.createTempFile("eXistTest", ".xml");
+        try(final Writer writer = Files.newBufferedWriter(file, UTF_8)) {
+            final Random r = new Random();
+            writer.write("<test>");
+            for(int i = 0; i < KEY_COUNT; i++) {
+                writer.write("<key id=\"");
+                int keySize = r.nextInt(KEY_LENGTH);
+                if(keySize == 0) {
+                    keySize = 1;
+                }
+                for(int j = 0; j < keySize; j++) {
+                    char ch;
+                    do {
+                        ch = (char) r.nextInt(0x5A);
+                    } while(ch < 0x41);
+                    writer.write(ch);
+                }
+                writer.write("\"/>");
+            }
+            writer.write("</test>");
+        }
+
+        return file;
     }
 
-    protected BrokerPool startDB() throws DatabaseConfigurationException, EXistException {
+
+    @BeforeClass
+    public static void startDB() throws DatabaseConfigurationException, EXistException {
         final Configuration config = new Configuration();
-        BrokerPool.configure(1, 5, config);
-        return BrokerPool.getInstance();
+        BrokerPool.configure(1, 5, config, Optional.empty());
+        pool = BrokerPool.getInstance();
+    }
+
+    @AfterClass
+    public static void closeDB() {
+        TestUtils.cleanupDB();
+        pool.shutdown();
     }
 }

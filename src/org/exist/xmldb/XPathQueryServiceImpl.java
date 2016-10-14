@@ -111,7 +111,12 @@ public interface XPathQueryServiceImpl extends XPathQueryService {
      * @throws XMLDBException
      */
     public void declareVariable(String qname, Object initialValue) throws XMLDBException;
-    
+
+	/**
+	 * Clears any previously declared variables
+	 */
+	public void clearVariables() throws XMLDBException;
+
     /**
 	 * Execute all following queries in a protected environment. Acquire a write lock
      * on all resources in the current collection (i.e. the one from which this service

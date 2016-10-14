@@ -71,19 +71,26 @@ public class BackupSystemTask implements SystemTask {
     // purge old zip backup files
     private int zipFilesMax = -1;
 
-    public void configure(Configuration config, Properties properties) throws EXistException {
+    @Override
+    public String getName() {
+        return "Backup Task";
+    }
+
+    @Override
+    public void configure(final Configuration config, final Properties properties) throws EXistException {
         user = properties.getProperty("user", "guest");
         password = properties.getProperty("password", "guest");
         String collName = properties.getProperty("collection", "xmldb:exist:///db");
-        if (!collName.startsWith("xmldb:exist:"))
-            {collName = "xmldb:exist://" + collName;}
+        if (!collName.startsWith("xmldb:exist:")) {
+            collName = "xmldb:exist://" + collName;
+        }
         collection = XmldbURI.create(collName);
         LOG.debug("Collection to backup: " + collection.toString() + ". User: " + user);
 
         suffix = properties.getProperty("suffix", "");
         prefix = properties.getProperty("prefix", "");
         
-        String dir = properties.getProperty("dir", "backup");
+        final String dir = properties.getProperty("dir", "backup");
         directory = Paths.get(dir);
         if (!directory.isAbsolute()) {
             directory = ((Path)config.getProperty(BrokerPool.PROPERTY_DATA_DIR)).resolve(dir);
@@ -107,21 +114,15 @@ public class BackupSystemTask implements SystemTask {
         }
     }
 
-
-    public void execute(DBBroker broker) throws EXistException {
+    @Override
+    public void execute(final DBBroker broker) throws EXistException {
         final String dateTime = creationDateFormat.format(Calendar.getInstance().getTime());
         final Path dest = directory.resolve(prefix + dateTime + suffix);
 
         final Backup backup = new Backup(user, password, dest, collection);
         try {
             backup.backup(false, null);
-        } catch (final XMLDBException e) {
-            LOG.debug(e.getMessage(), e);
-            throw new EXistException(e.getMessage(), e);
-        } catch (final IOException e) {
-            LOG.debug(e.getMessage(), e);
-            throw new EXistException(e.getMessage(), e);
-        } catch (final SAXException e) {
+        } catch (final XMLDBException | SAXException | IOException e) {
             LOG.debug(e.getMessage(), e);
             throw new EXistException(e.getMessage(), e);
         }

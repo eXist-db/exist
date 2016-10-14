@@ -210,10 +210,9 @@ public abstract class Modification {
 	protected final StoredNode[] selectAndLock(Txn transaction)
 			throws LockException, PermissionDeniedException, EXistException,
 			XPathException, TriggerException {
-	    final Lock globalLock = broker.getBrokerPool().getGlobalUpdateLock();
+		final java.util.concurrent.locks.Lock globalLock = broker.getBrokerPool().getGlobalUpdateLock();
+		globalLock.lock();
 	    try {
-	        globalLock.acquire(Lock.READ_LOCK);
-	        
 	        final NodeList nl = select(docs);
 	        lockedDocuments = ((NodeSet)nl).getDocumentSet();
 	        
@@ -235,10 +234,10 @@ public abstract class Modification {
 			}
 			return ql;
 	    } finally {
-	        globalLock.release(Lock.READ_LOCK);
+	        globalLock.unlock();
 	    }
 	}
-	
+
 	/**
 	 * Release all acquired document locks;
 	 * feature trigger_update :

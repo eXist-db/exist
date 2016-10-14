@@ -25,7 +25,7 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.util.SyntaxException;
-import org.exist.util.function.TriFunctionE;
+import com.evolvedbinary.j8fu.function.TriFunctionE;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 

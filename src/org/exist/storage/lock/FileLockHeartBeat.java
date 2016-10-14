@@ -39,23 +39,27 @@ public class FileLockHeartBeat implements JobDescription, Job {
         JOB_NAME = "FileLockHeartBeat";
     }
 
-    public FileLockHeartBeat(String lockName) {
+    public FileLockHeartBeat(final String lockName) {
         JOB_NAME = "FileLockHeartBeat: " + lockName;
     }
 
+    @Override
     public String getName() {
         return JOB_NAME;
     }
 
-    public void setName(String name) {
+    @Override
+    public void setName(final String name) {
         //Nothing to do
     }
 
+    @Override
     public String getGroup() {
         return EXIST_INTERNAL_GROUP;
     }
 
-    public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
+    @Override
+    public void execute(final JobExecutionContext jobExecutionContext) throws JobExecutionException {
         //get the file lock
         final JobDataMap jobDataMap = jobExecutionContext.getJobDetail().getJobDataMap();
         final Map<String, FileLock> params = (Map<String, FileLock>) jobDataMap.get(PARAMS);

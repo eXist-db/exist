@@ -25,6 +25,7 @@ import org.exist.EXistException;
 import org.exist.config.ConfigurationException;
 import org.exist.security.Group;
 import org.exist.security.PermissionDeniedException;
+import org.exist.storage.DBBroker;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -32,7 +33,7 @@ import org.exist.security.PermissionDeniedException;
  */
 public interface GroupsManagement {
 
-	public Group addGroup(Group group) throws PermissionDeniedException, EXistException, ConfigurationException;
+	public Group addGroup(DBBroker broker, Group group) throws PermissionDeniedException, EXistException, ConfigurationException;
 	
 	public Group getGroup(String name);
 

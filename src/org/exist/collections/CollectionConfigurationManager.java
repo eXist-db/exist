@@ -24,10 +24,9 @@ import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.memtree.SAXAdapter;
+import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
-import org.exist.storage.BrokerPool;
-import org.exist.storage.DBBroker;
-import org.exist.storage.IndexSpec;
+import org.exist.storage.*;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.Locked;
 import org.exist.storage.txn.TransactionManager;
@@ -56,7 +55,7 @@ import java.util.concurrent.Callable;
  * 
  * @author wolf
  */
-public class CollectionConfigurationManager {
+public class CollectionConfigurationManager implements BrokerPoolService {
 
     private static final Logger LOG = LogManager.getLogger(CollectionConfigurationManager.class);
 
@@ -78,15 +77,20 @@ public class CollectionConfigurationManager {
 
     private CollectionConfiguration defaultConfig;
 
-    public CollectionConfigurationManager(DBBroker broker) throws EXistException, CollectionConfigurationException, PermissionDeniedException, LockException {
+    public CollectionConfigurationManager(final BrokerPool brokerPool) {
+        this.defaultConfig = new CollectionConfiguration(brokerPool);
+    }
 
-        checkCreateCollection(broker, CONFIG_COLLECTION_URI);
-        checkCreateCollection(broker, ROOT_COLLECTION_CONFIG_URI);
-
-        loadAllConfigurations(broker);
-
-        defaultConfig = new CollectionConfiguration(broker.getBrokerPool());
-        defaultConfig.setIndexConfiguration(broker.getIndexConfiguration());
+    @Override
+    public void startSystem(final DBBroker systemBroker) throws BrokerPoolServiceException {
+        try {
+            checkCreateCollection(systemBroker, CONFIG_COLLECTION_URI);
+            checkCreateCollection(systemBroker, ROOT_COLLECTION_CONFIG_URI);
+            loadAllConfigurations(systemBroker);
+            defaultConfig.setIndexConfiguration(systemBroker.getIndexConfiguration());
+        } catch(final EXistException | CollectionConfigurationException | PermissionDeniedException | LockException e) {
+            throw new BrokerPoolServiceException(e);
+        }
     }
 
     /**

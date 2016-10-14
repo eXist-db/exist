@@ -35,7 +35,7 @@ import org.exist.source.DBSource;
 import org.exist.source.Source;
 import org.exist.source.StringSource;
 import org.exist.storage.XQueryPool;
-import org.exist.util.function.Either;
+import com.evolvedbinary.j8fu.Either;
 import org.exist.util.serializer.AttrList;
 import org.exist.util.serializer.Receiver;
 import org.exist.xmldb.XmldbURI;

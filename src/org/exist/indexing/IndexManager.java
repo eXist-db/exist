@@ -23,6 +23,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.backup.RawDataBackup;
 import org.exist.storage.BrokerPool;
+import org.exist.storage.BrokerPoolService;
 import org.exist.storage.DBBroker;
 import org.exist.storage.btree.DBException;
 import org.exist.util.Configuration;
@@ -37,7 +38,7 @@ import java.util.stream.Collectors;
 /**
  * Manages all custom indexes registered with the database instance.
  */
-public class IndexManager {
+public class IndexManager implements BrokerPoolService {
 
     private final static Logger LOG = LogManager.getLogger(IndexManager.class);
 
