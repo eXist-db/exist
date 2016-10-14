@@ -655,7 +655,7 @@ public class Main {
     public void shutdown() {
         // only used in test suite
         try {
-            final Class brokerPool = Class.forName("org.exist.storage.BrokerPool");
+            final Class brokerPool = Class.forName("org.exist.storage.BrokerPools");
             final Method stopAll = brokerPool.getDeclaredMethod("stopAll", boolean.class);
             stopAll.invoke(null, false);
         } catch (final ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {

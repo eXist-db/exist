@@ -49,7 +49,7 @@ public class DatabaseAdminServlet extends AbstractExistHttpServlet {
         try {
             if ( action != null ) {
                 if ( action.equalsIgnoreCase( "start" ) ) {
-                    if ( !BrokerPool.isConfigured(BrokerPool.DEFAULT_INSTANCE_NAME) ) {
+                    if ( !BrokerPool.isConfigured() ) {
                         BrokerPool.configure( 1, 5, configuration );
                         output.println( "<p>Server has been started...</p>" );
                     }

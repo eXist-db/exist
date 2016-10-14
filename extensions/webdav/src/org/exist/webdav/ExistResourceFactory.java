@@ -83,7 +83,7 @@ public class ExistResourceFactory implements ResourceFactory {
     public ExistResourceFactory() {
 
         try {
-            brokerPool = BrokerPool.getInstance(BrokerPool.DEFAULT_INSTANCE_NAME);
+            brokerPool = BrokerPool.getInstance();
 
         } catch (EXistException e) {
             LOG.error("Unable to initialize WebDAV interface.", e);

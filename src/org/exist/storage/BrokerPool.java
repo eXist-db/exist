@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2003-2015 The eXist-db Project
+ * Copyright (C) 2003-2016 The eXist-db Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -16,7 +16,6 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; if not, write to the Free Software Foundation
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
  */
 package org.exist.storage;
 
@@ -55,8 +54,6 @@ import org.exist.storage.btree.DBException;
 import org.exist.storage.journal.JournalManager;
 import org.exist.storage.lock.DeadlockDetection;
 import org.exist.storage.lock.FileLock;
-import org.exist.storage.lock.Lock;
-import org.exist.storage.lock.ReentrantReadWriteLock;
 import org.exist.storage.recovery.RecoveryManager;
 import org.exist.storage.sync.Sync;
 import org.exist.storage.sync.SyncTask;
@@ -85,136 +82,32 @@ import java.text.NumberFormat;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * This class controls all available instances of the database.
  * Use it to configure, start and stop database instances.
  * You may have multiple instances defined, each using its own configuration.
- * To define multiple instances, pass an identification string to {@link #configure(String, int, int, Configuration)}
+ * To define multiple instances, pass an identification string to
+ * {@link #configure(String, int, int, Configuration, Optional<Observer>)}
  * and use {@link #getInstance(String)} to retrieve an instance.
  *
  * @author Wolfgang Meier <wolfgang@exist-db.org>
  * @author Pierrick Brihaye <pierrick.brihaye@free.fr>
+ * @author Adam Retter <adam@exist-db.org>
  */
-//TODO : in the future, separate the design between the Map of DBInstances and their non static implementation
 @ConfigurationClass("pool")
-public class BrokerPool implements Database {
+public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Database {
 
     private final static Logger LOG = LogManager.getLogger(BrokerPool.class);
 
-    private final static TreeMap<String, BrokerPool> instances = new TreeMap<>();
-    private final static Map<String, Throwable> instancesInitializtionException = new TreeMap<>();
-
-    //on-start, ready, go
-    /*** initializing sub-components */
-    public final static String SIGNAL_STARTUP = "startup";
-    /*** ready for recovery & read-only operations */
-    public final static String SIGNAL_READINESS = "ready";
-    /*** ready for writable operations */
-    public final static String SIGNAL_WRITABLE = "writable";
-    /*** ready for writable operations */
-    public final static String SIGNAL_STARTED = "started";
-    /*** running shutdown sequence */
-    public final static String SIGNAL_SHUTDOWN = "shutdown";
-    /*** recovery aborted, db stopped */
-    public final static String SIGNAL_ABORTED = "aborted";
-
-    /**
-     * The name of a default database instance for those who are too lazy to provide parameters ;-).
-     */
-    public static final String DEFAULT_INSTANCE_NAME = "exist";
-    public static final String CONFIGURATION_CONNECTION_ELEMENT_NAME = "db-connection";
-    public static final String CONFIGURATION_STARTUP_ELEMENT_NAME = "startup";
-    public static final String CONFIGURATION_POOL_ELEMENT_NAME = "pool";
-    public static final String CONFIGURATION_SECURITY_ELEMENT_NAME = "security";
-    public static final String CONFIGURATION_RECOVERY_ELEMENT_NAME = "recovery";
-    public static final String DISK_SPACE_MIN_ATTRIBUTE = "minDiskSpace";
-
-    public static final String DATA_DIR_ATTRIBUTE = "files";
-    //TODO : move elsewhere ?
-    public final static String RECOVERY_ENABLED_ATTRIBUTE = "enabled";
-    public final static String RECOVERY_POST_RECOVERY_CHECK = "consistency-check";
-    //TODO : move elsewhere ?
-    public final static String COLLECTION_CACHE_SIZE_ATTRIBUTE = "collectionCacheSize";
-    public final static String MIN_CONNECTIONS_ATTRIBUTE = "min";
-    public final static String MAX_CONNECTIONS_ATTRIBUTE = "max";
-    public final static String SYNC_PERIOD_ATTRIBUTE = "sync-period";
-    public final static String SHUTDOWN_DELAY_ATTRIBUTE = "wait-before-shutdown";
-    public final static String NODES_BUFFER_ATTRIBUTE = "nodesBuffer";
-
-    //Various configuration property keys (set by the configuration manager)
-    public final static String PROPERTY_STARTUP_TRIGGERS = "startup.triggers";
-    public final static String PROPERTY_DATA_DIR = "db-connection.data-dir";
-    public final static String PROPERTY_MIN_CONNECTIONS = "db-connection.pool.min";
-    public final static String PROPERTY_MAX_CONNECTIONS = "db-connection.pool.max";
-    public final static String PROPERTY_SYNC_PERIOD = "db-connection.pool.sync-period";
-    public final static String PROPERTY_SHUTDOWN_DELAY = "wait-before-shutdown";
-    public final static String DISK_SPACE_MIN_PROPERTY = "db-connection.diskSpaceMin";
-
-    //TODO : move elsewhere ?
-    public final static String PROPERTY_COLLECTION_CACHE_SIZE = "db-connection.collection-cache-size";
-    //TODO : move elsewhere ? Get fully qualified class name ?
-    public final static String DEFAULT_SECURITY_CLASS = "org.exist.security.internal.SecurityManagerImpl";
-    public final static String PROPERTY_SECURITY_CLASS = "db-connection.security.class";
-    public final static String PROPERTY_RECOVERY_ENABLED = "db-connection.recovery.enabled";
-    public final static String PROPERTY_RECOVERY_CHECK = "db-connection.recovery.consistency-check";
-    public final static String PROPERTY_SYSTEM_TASK_CONFIG = "db-connection.system-task-config";
-    public final static String PROPERTY_NODES_BUFFER = "db-connection.nodes-buffer";
-    public final static String PROPERTY_EXPORT_ONLY = "db-connection.emergency";
-
-    public final static String PROPERTY_RECOVERY_GROUP_COMMIT = "db-connection.recovery.group-commit";
-    public final static String RECOVERY_GROUP_COMMIT_ATTRIBUTE = "group-commit";
-    public final static String PROPERTY_RECOVERY_FORCE_RESTART = "db-connection.recovery.force-restart";
-    public final static String RECOVERY_FORCE_RESTART_ATTRIBUTE = "force-restart";
-
-
-    public static final String DOC_ID_MODE_ATTRIBUTE = "doc-ids";
-
-    public static final String DOC_ID_MODE_PROPERTY = "db-connection.doc-ids.mode";
-
-    //TODO : inline the class ? or... make it configurable ?
-    // WM: inline. I don't think users need to be able to overwrite this.
-    // They can register their own shutdown hooks any time.
-    private final static Thread shutdownHook = new Thread() {
-        /**
-         * Make sure that all instances are cleanly shut down.
-         */
-        @Override
-        public void run() {
-            LOG.info("Executing shutdown thread");
-            BrokerPool.stopAll(true);
-        }
-    };
-
-    //TODO : make this default value configurable ? useless if we have a registerShutdownHook(Thread aThread) method (null = deregister)
-    private static boolean registerShutdownHook = true;
-
-    private static Observer statusObserver = null;
     private StatusReporter statusReporter = null;
 
     private final XQuery xqueryService = new XQuery();
 
-
-
-    /**
-     * Whether of not the JVM should run the shutdown thread.
-     *
-     * @param register <code>true</code> if the JVM should run the thread
-     */
-    //TODO : rename as activateShutdownHook ? or registerShutdownHook(Thread aThread)
-    // WM: it is probably not necessary to allow users to register their own hook. This method
-    // is only used once, by class org.exist.jetty.JettyStart, which registers its own hook.
-    public final static void setRegisterShutdownHook(final boolean register) {
-        /*
-         * TODO : call Runtime.getRuntime().removeShutdownHook or Runtime.getRuntime().registerShutdownHook 
-         * depending of the value of register
-         * Since Java doesn't provide a convenient way to know if a shutdown hook has been registrered, 
-         * we may have to catch IllegalArgumentException
-         */
-        //TODO : check that the JVM is not shutting down
-        registerShutdownHook = register;
-    }
 
     //TODO : make it non-static since every database instance may have its own policy.
     //TODO : make a default value that could be overwritten by the configuration
@@ -225,219 +118,6 @@ public class BrokerPool implements Database {
      * junit tests to test the recovery process.
      */
     public static boolean FORCE_CORRUPTION = false;
-
-    /**
-     * Creates and configures a default database instance and adds it to the pool.
-     * Call this before calling {link #getInstance()}.
-     * If a default database instance already exists, the new configuration is ignored.
-     *
-     * @param minBrokers The minimum number of concurrent brokers for handling requests on the database instance.
-     * @param maxBrokers The maximum number of concurrent brokers for handling requests on the database instance.
-     * @param config     The configuration object for the database instance
-     *
-     * @throws EXistException If the initialization fails.
-     */
-    //TODO : in the future, we should implement a Configurable interface	
-    public final static void configure(final int minBrokers, final int maxBrokers, final Configuration config)
-        throws EXistException, DatabaseConfigurationException {
-        configure(DEFAULT_INSTANCE_NAME, minBrokers, maxBrokers, config);
-    }
-
-    /**
-     * Creates and configures a database instance and adds it to the pool.
-     * Call this before calling {link #getInstance()}.
-     * If a database instance with the same name already exists, the new configuration is ignored.
-     *
-     * @param instanceName A <strong>unique</strong> name for the database instance.
-     *                     It is possible to have more than one database instance (with different configurations for example).
-     * @param minBrokers   The minimum number of concurrent brokers for handling requests on the database instance.
-     * @param maxBrokers   The maximum number of concurrent brokers for handling requests on the database instance.
-     * @param config       The configuration object for the database instance
-     *
-     * @throws EXistException If the initialization fails.
-     */
-    //TODO : in the future, we should implement a Configurable interface
-    public final static void configure(
-        final String instanceName, final int minBrokers, final int maxBrokers,
-        final Configuration config) throws EXistException {
-        //Check if there is a database instance in the pool with the same id
-        BrokerPool instance = instances.get(instanceName);
-        if(instance == null) {
-            LOG.debug("configuring database instance '" + instanceName + "'...");
-            try {
-                //Create the instance
-                instance = new BrokerPool(instanceName, minBrokers, maxBrokers, config);
-                //Add it to the pool
-                instances.put(instanceName, instance);
-                //We now have at least an instance...
-                if(instances.size() == 1) {
-                    //... so a ShutdownHook may be interesting
-                    if(registerShutdownHook) {
-                        try {
-                            //... currently an eXist specific one. TODO : make it configurable ?
-                            Runtime.getRuntime().addShutdownHook(shutdownHook);
-                            LOG.debug("shutdown hook registered");
-                        } catch(final IllegalArgumentException e) {
-                            LOG.warn("shutdown hook already registered");
-                        }
-                    }
-                }
-            } catch(final Throwable ex) {
-                // Catch all possible issues and report.
-                LOG.error("Unable to initialize database instance '" + instanceName
-                    + "': " + ex.getMessage(), ex);
-                instancesInitializtionException.put(instanceName, ex);
-                // TODO: Add throw of exception? DW
-            }
-            //TODO : throw an exception here rather than silently ignore an *explicit* parameter ?
-            // WM: maybe throw an exception. Users can check if a db is already configured.
-        } else {
-            LOG.warn("database instance '" + instanceName + "' is already configured");
-        }
-    }
-
-    /**
-     * Returns whether or not the default database instance is configured.
-     *
-     * @return <code>true</code> if it is configured
-     */
-    //TODO : in the future, we should implement a Configurable interface
-    public final static boolean isConfigured() {
-        return isConfigured(DEFAULT_INSTANCE_NAME);
-    }
-
-    /**
-     * Returns whether or not a database instance is configured.
-     *
-     * @param id The name of the database instance
-     * @return <code>true</code> if it is configured
-     */
-    //TODO : in the future, we should implement a Configurable interface	
-    public final static boolean isConfigured(final String id) {
-        //Check if there is a database instance in the pool with the same id
-        final BrokerPool instance = instances.get(id);
-        //No : it *can't* be configured
-        if(instance == null) {
-            return false;
-        }
-        //Yes : it *may* be configured
-        return instance.isInstanceConfigured();
-    }
-
-    /**
-     * Returns a broker pool for the default database instance.
-     *
-     * @return The broker pool
-     * @throws EXistException If the database instance is not available (not created, stopped or not configured)
-     */
-    public final static BrokerPool getInstance() throws EXistException {
-        return getInstance(DEFAULT_INSTANCE_NAME);
-    }
-
-    /**
-     * Returns a broker pool for a database instance.
-     *
-     * @param instanceName The name of the database instance
-     * @return The broker pool
-     *
-     * @throws EXistException If the instance is not available (not created, stopped or not configured)
-     */
-    public final static BrokerPool getInstance(final String instanceName) throws EXistException {
-        //Check if there is a database instance in the pool with the same id
-        final BrokerPool instance = instances.get(instanceName);
-        if(instance != null)
-        //TODO : call isConfigured(id) and throw an EXistException if relevant ?
-        {
-            return instance;
-        }
-
-        final Throwable exception = instancesInitializtionException.get(instanceName);
-        if(exception != null) {
-            if(exception instanceof EXistException) {
-                throw (EXistException) exception;
-            }
-            throw new EXistException(exception);
-        }
-
-        throw new EXistException("database instance '" + instanceName + "' is not available");
-    }
-
-    /**
-     * Returns an iterator over the database instances.
-     *
-     * @return The iterator
-     */
-    public final static Iterator<BrokerPool> getInstances() {
-        return instances.values().iterator();
-    }
-
-    public final static boolean isInstancesEmpty() {
-        return instances.values().isEmpty();
-    }
-
-    /**
-     * Stops the default database instance. After calling this method, it is
-     * no longer configured.
-     *
-     * @throws EXistException If the default database instance is not available (not created, stopped or not configured)
-     */
-    public final static void stop() throws EXistException {
-        stop(DEFAULT_INSTANCE_NAME);
-    }
-
-    /**
-     * Stops the given database instance. After calling this method, it is
-     * no longer configured.
-     *
-     * @param id The name of the database instance
-     *
-     * @throws EXistException If the database instance is not available (not created, stopped or not configured)
-     */
-    public final static void stop(final String id) throws EXistException {
-        final BrokerPool instance = getInstance(id);
-        instance.shutdown();
-    }
-
-    /**
-     * Stops all the database instances. After calling this method, the database instances are
-     * no longer configured.
-     *
-     * @param killed <code>true</code> when invoked by an exiting JVM
-     */
-    public final static void stopAll(final boolean killed) {
-        for(final BrokerPool instance : instances.values()) {
-            if(instance.conf != null) {
-                //Shut it down
-                instance.shutdown(killed);
-            }
-        }
-        //Clear the living instances container : they are all sentenced to death...
-        instances.clear();
-    }
-
-    public final static void systemInfo() {
-        for(final BrokerPool instance : instances.values()) {
-            instance.printSystemInfo();
-        }
-    }
-
-    public static void registerStatusObserver(final Observer observer) {
-        statusObserver = observer;
-        LOG.debug("registering observer: " + observer.getClass().getName());
-    }
-
-	/* END OF STATIC IMPLEMENTATION */
-
-    /**
-     * Default values
-     */
-    public static final long DEFAULT_SYNCH_PERIOD = 120000;
-    public static final long DEFAULT_MAX_SHUTDOWN_WAIT = 45000;
-    //TODO : move this default setting to org.exist.collections.CollectionCache ?
-    public final int DEFAULT_COLLECTION_BUFFER_SIZE = 64;
-
-    public static final String PROPERTY_PAGE_SIZE = "db-connection.page-size";
-    public static final int DEFAULT_PAGE_SIZE = 4096;
 
     /**
      * <code>true</code> if the database instance is able to perform recovery.
@@ -499,7 +179,9 @@ public class BrokerPool implements Database {
     /**
      * The configuration object for the database instance
      */
-    protected final Configuration conf;
+    private final Configuration conf;
+
+    private final ConcurrentSkipListSet<Observer> statusObservers = new ConcurrentSkipListSet<>();
 
     /**
      * <code>true</code> if a cache synchronization event is scheduled
@@ -565,7 +247,6 @@ public class BrokerPool implements Database {
     private final long majorSyncPeriod;        //the period after which a major sync should occur
     private long lastMajorSync = System.currentTimeMillis();    //time the last major sync occurred
 
-    public static final short DEFAULT_DISK_SPACE_MIN = 64; // 64 MB
     private final long diskSpaceMin;
 
     /**
@@ -625,18 +306,16 @@ public class BrokerPool implements Database {
      * The cache in which the database instance's collections are stored.
      */
     //TODO : rename as collectionsCache ?
-    protected CollectionCache collectionCache;
+    private CollectionCache collectionCache;
 
     /**
      * The pool in which the database instance's readers are stored.
      */
-    protected XMLReaderPool xmlReaderPool;
+    private XMLReaderPool xmlReaderPool;
 
     private final NodeIdFactory nodeFactory = new DLNFactory();
 
-    //TODO : is another value possible ? If no, make it static
-    // WM: no, we need one lock per database instance. Otherwise we would lock another database.
-    private final Lock globalXUpdateLock = new ReentrantReadWriteLock("xupdate");
+    private final Lock globalXUpdateLock = new ReentrantLock();
 
     private Subject serviceModeUser = null;
     private boolean inServiceMode = false;
@@ -657,12 +336,13 @@ public class BrokerPool implements Database {
      * @param minBrokers   The minimum number of concurrent brokers for handling requests on the database instance.
      * @param maxBrokers   The maximum number of concurrent brokers for handling requests on the database instance.
      * @param conf         The configuration object for the database instance
+     * @param statusObserver    Observes the status of this database instance
      *
      * @throws EXistException If the initialization fails.
      */
     //TODO : Then write a configure(int minBrokers, int maxBrokers, Configuration conf) method
-    private BrokerPool(final String instanceName, final int minBrokers, final int maxBrokers, final Configuration conf)
-        throws EXistException, DatabaseConfigurationException {
+    BrokerPool(final String instanceName, final int minBrokers, final int maxBrokers, final Configuration conf,
+            final Optional<Observer> statusObserver) throws EXistException, DatabaseConfigurationException {
 
         final NumberFormat nf = NumberFormat.getNumberInstance();
 
@@ -707,6 +387,8 @@ public class BrokerPool implements Database {
         //Configuration is valid, save it
         this.conf = conf;
 
+        statusObserver.ifPresent(this.statusObservers::add);
+
         this.watchdog = Optional.ofNullable(System.getProperty("trace.brokers"))
                 .filter(v -> v.equals("yes"))
                 .map(v -> new BrokerWatchdog());
@@ -722,19 +404,13 @@ public class BrokerPool implements Database {
                 }
             }
 
-            if(!instances.containsKey(instanceName)) {
-                instancesInitializtionException.put(instanceName, e);
-            }
-
             if(e instanceof EXistException) {
                 throw (EXistException) e;
-            }
-
-            if(e instanceof DatabaseConfigurationException) {
+            } else if(e instanceof DatabaseConfigurationException) {
                 throw (DatabaseConfigurationException) e;
+            } else {
+                throw new EXistException(e);
             }
-
-            throw new EXistException(e);
         }
 
         //TODO : move this to initialize ?
@@ -749,7 +425,7 @@ public class BrokerPool implements Database {
     }
 
     //TODO : create a canReadJournalDir() method in the *relevant* class. The two directories may be different.
-    protected boolean canReadDataDir(final Configuration conf) throws EXistException {
+    private boolean canReadDataDir(final Configuration conf) throws EXistException {
         final Path dataDir = Optional.ofNullable((Path) conf.getProperty(PROPERTY_DATA_DIR))
                 .orElse(Paths.get(NativeBroker.DEFAULT_DATA_DIR));
 
@@ -792,7 +468,7 @@ public class BrokerPool implements Database {
      *
      * @throws EXistException
      */
-    protected void initialize() throws EXistException, DatabaseConfigurationException {
+    private void initialize() throws EXistException, DatabaseConfigurationException {
         if(LOG.isDebugEnabled()) {
             LOG.debug("initializing database instance '" + instanceName + "'...");
         }
@@ -807,9 +483,8 @@ public class BrokerPool implements Database {
         synchronized(this) {
             try {
                 statusReporter = new StatusReporter(SIGNAL_STARTUP);
-                if(statusObserver != null) {
-                    statusReporter.addObserver(statusObserver);
-                }
+                statusObservers.forEach(statusReporter::addObserver);
+
                 final Thread statusThread = new Thread(statusReporter);
                 statusThread.start();
 
@@ -1003,11 +678,6 @@ public class BrokerPool implements Database {
                             }
 
                             sync(broker, Sync.MAJOR);
-
-                            //require to allow access by BrokerPool.getInstance();
-                            instances.put(instanceName, this);
-
-                            callStartupTriggers((List<StartupTriggerConfig>) conf.getProperty(BrokerPool.PROPERTY_STARTUP_TRIGGERS), broker);
                         }
 
                         //Create a default configuration file for the root collection
@@ -1086,7 +756,8 @@ public class BrokerPool implements Database {
         }
     }*/
 
-    private void callStartupTriggers(final List<StartupTriggerConfig> startupTriggerConfigs, final DBBroker sysBroker) {
+    protected void callStartupTriggers(final List<StartupTriggerConfig> startupTriggerConfigs, final DBBroker
+            sysBroker) {
         if(startupTriggerConfigs == null) {
             return;
         }
@@ -1958,9 +1629,8 @@ public class BrokerPool implements Database {
                     // these may be used and set by other threads for the same or some other purpose
                     // (unlikely). Take no chances.
                     statusReporter = new StatusReporter(SIGNAL_SHUTDOWN);
-                    if (statusObserver != null) {
-                        statusReporter.addObserver(statusObserver);
-                    }
+                    statusObservers.forEach(statusReporter::addObserver);
+
                     final Thread statusThread = new Thread(statusReporter);
                     statusThread.start();
 
@@ -2058,7 +1728,7 @@ public class BrokerPool implements Database {
                     AgentFactory.getInstance().closeDBInstance(this);
 
                     //Clear the living instances container
-                    instances.remove(instanceName);
+                    removeInstance(instanceName);
 
                     synchronized (readOnly) {
                         if (!readOnly) {
@@ -2072,19 +1742,8 @@ public class BrokerPool implements Database {
 
                     LOG.info("shutdown complete !");
 
-                    //Last instance closes the house...
-                    //TOUNDERSTAND (pb) : !killed or, rather, killed ?
-                    // TODO: WM: check usage of killed!
-                    if (instances.size() == 0 && !killed) {
-                        LOG.debug("removing shutdown hook");
-                        try {
-                            Runtime.getRuntime().removeShutdownHook(shutdownHook);
-                        } catch (final IllegalStateException e) {
-                            //ignore IllegalStateException("Shutdown in progress");
-                        }
-                    }
                     if (shutdownListener != null) {
-                        shutdownListener.shutdown(instanceName, instances.size());
+                        shutdownListener.shutdown(instanceName, instancesCount());
                     }
 
                     statusReporter.terminate();
@@ -2106,10 +1765,19 @@ public class BrokerPool implements Database {
                 shutdownListener = null;
                 securityManager = null;
                 notificationService = null;
+                statusObservers.clear();
             }
         } finally {
             status.set(State.SHUTDOWN);
         }
+    }
+
+    public void addStatusObserver(final Observer statusObserver) {
+        this.statusObservers.add(statusObserver);
+    }
+
+    public boolean removeStatusObserver(final Observer statusObserver) {
+        return this.statusObservers.remove(statusObserver);
     }
 
     private void clearThreadLocals() {

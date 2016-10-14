@@ -59,32 +59,32 @@ public class XMLStatistics {
         this.contentHandler.startElement(NAMESPACE, "database-instances", 
             PREFIX + ":database-instances", atts);
         atts.clear();
-        BrokerPool instance;
-        for(final Iterator<BrokerPool> i = BrokerPool.getInstances(); i.hasNext(); ) {
-            instance = i.next();
-            atts.addAttribute("", "name", "name", "CDATA", instance.getId());
-            this.contentHandler.startElement(NAMESPACE, "database-instance",
-                    PREFIX + ":database-instance", atts);
-            atts.clear();
-            final Optional<Path> configPath = instance.getConfiguration().getConfigFilePath();
-            if(configPath.isPresent()) {
-                addValue("configuration", configPath.get().toAbsolutePath().toString());
-            }
-            addValue("data-directory", ((Path)instance.getConfiguration().getProperty(BrokerPool.PROPERTY_DATA_DIR)).toAbsolutePath().toString());
-            addValue("cache-size", String.valueOf(instance.getConfiguration().getInteger("db-connection.cache-size")));
-            addValue("page-size", String.valueOf(instance.getConfiguration().getInteger("db-connection.page-size")));
-            addValue("collection-cache-mem", String.valueOf(instance.getConfiguration().getInteger("db-connection.collection-cache-mem")));
-            this.contentHandler.startElement(NAMESPACE, "pool", PREFIX + ":pool", atts);
-            addValue("max", String.valueOf(instance.getMax()));
-            addValue("active", String.valueOf(instance.countActiveBrokers()));
-            addValue("available", String.valueOf(instance.available()));
-            this.contentHandler.endElement(NAMESPACE, "pool", PREFIX + ":pool");
-            genBufferStatus(instance);
-            this.contentHandler.endElement(NAMESPACE, "database-instance",
-                PREFIX + ":database-instance");
-        }
+        BrokerPool.readInstances(brokerPool -> getInstanceStatus(atts, brokerPool));
         this.contentHandler.endElement(NAMESPACE, "database-instances",
             PREFIX + ":database-instances");
+    }
+
+    private void getInstanceStatus(final AttributesImpl atts, final BrokerPool instance) throws SAXException {
+        atts.addAttribute("", "name", "name", "CDATA", instance.getId());
+        this.contentHandler.startElement(NAMESPACE, "database-instance",
+                PREFIX + ":database-instance", atts);
+        atts.clear();
+        final Optional<Path> configPath = instance.getConfiguration().getConfigFilePath();
+        if(configPath.isPresent()) {
+            addValue("configuration", configPath.get().toAbsolutePath().toString());
+        }
+        addValue("data-directory", ((Path)instance.getConfiguration().getProperty(BrokerPool.PROPERTY_DATA_DIR)).toAbsolutePath().toString());
+        addValue("cache-size", String.valueOf(instance.getConfiguration().getInteger("db-connection.cache-size")));
+        addValue("page-size", String.valueOf(instance.getConfiguration().getInteger("db-connection.page-size")));
+        addValue("collection-cache-mem", String.valueOf(instance.getConfiguration().getInteger("db-connection.collection-cache-mem")));
+        this.contentHandler.startElement(NAMESPACE, "pool", PREFIX + ":pool", atts);
+        addValue("max", String.valueOf(instance.getMax()));
+        addValue("active", String.valueOf(instance.countActiveBrokers()));
+        addValue("available", String.valueOf(instance.available()));
+        this.contentHandler.endElement(NAMESPACE, "pool", PREFIX + ":pool");
+        genBufferStatus(instance);
+        this.contentHandler.endElement(NAMESPACE, "database-instance",
+                PREFIX + ":database-instance");
     }
 
     private void genBufferStatus(BrokerPool instance) throws SAXException {
