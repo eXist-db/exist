@@ -43,6 +43,11 @@ public class ShutdownTask implements SystemTask {
     }
 
     @Override
+    public String getName() {
+        return "Database Shutdown";
+    }
+
+    @Override
     public void configure(final Configuration config, final Properties properties) throws EXistException {
     }
 

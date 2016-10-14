@@ -21,6 +21,7 @@
  */
 package org.exist.storage;
 
+import net.jcip.annotations.GuardedBy;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
@@ -37,6 +38,7 @@ public class SystemTaskManager implements BrokerPoolService {
     /**
 	 * The pending system maintenance tasks of the database instance.
 	 */
+    @GuardedBy("itself")
 	private final Deque<SystemTask> waitingSystemTasks = new ArrayDeque<>();
 
     private final BrokerPool pool;
@@ -54,18 +56,25 @@ public class SystemTaskManager implements BrokerPoolService {
 
     public void processTasks() {
         //dont run the task if we are shutting down
-        if (pool.isShuttingDown()) {
+        if (pool.isShuttingDown() || pool.isShutDown()) {
             return;
         }
 
         synchronized (waitingSystemTasks) {
             try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
                 while (!waitingSystemTasks.isEmpty()) {
-                	final SystemTask task = waitingSystemTasks.pop();
-                	if (task.afterCheckpoint()) {
-                        pool.sync(broker, Sync.MAJOR);
+                    final SystemTask task = waitingSystemTasks.pop();
+
+                    if(pool.isShuttingDown()) {
+                        LOG.info("Skipping SystemTask: '" + task.getName() + "' as database is shutting down...");
+                    } else if(pool.isShutDown()) {
+                        LOG.warn("Unable to execute SystemTask: '" + task.getName() + "' as database is shut down!");
+                    } else {
+                        if (task.afterCheckpoint()) {
+                            pool.sync(broker, Sync.MAJOR);
+                        }
+                        runSystemTask(task, broker);
                     }
-                    runSystemTask(task, broker);
                 }
             } catch (final Exception e) {
                 LOG.error("System maintenance task reported error: " + e.getMessage(), e);

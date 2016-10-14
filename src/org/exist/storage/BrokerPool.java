@@ -1473,6 +1473,15 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
      */
     //TOUNDERSTAND (pb) : synchronized, so... "schedules" or, rather, "executes" ?
     public void triggerSystemTask(final SystemTask task) {
+        final State s = status.getCurrentState();
+        if(s == State.SHUTTING_DOWN) {
+            LOG.info("Skipping SystemTask: '" + task.getName() + "' as database is shutting down...");
+            return;
+        } else if(s == State.SHUTDOWN) {
+            LOG.warn("Unable to execute SystemTask: '" + task.getName() + "' as database is shut down!");
+            return;
+        }
+
         transactionManager.triggerSystemTask(task);
     }
 
@@ -1485,6 +1494,10 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
 
     public boolean isShuttingDown() {
         return status.getCurrentState() == State.SHUTTING_DOWN;
+    }
+
+    public boolean isShutDown() {
+        return status.getCurrentState() == State.SHUTDOWN;
     }
 
     /**

@@ -77,6 +77,11 @@ public class ConsistencyCheckTask implements SystemTask {
     }
 
     @Override
+    public String getName() {
+        return "Consistency Check Task";
+    }
+
+    @Override
     public void configure(final Configuration config, final Properties properties) throws EXistException {
         exportDir = properties.getProperty(OUTPUT_PROP_NAME, "export");
         Path dir = Paths.get(exportDir);

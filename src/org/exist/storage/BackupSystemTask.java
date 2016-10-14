@@ -72,6 +72,11 @@ public class BackupSystemTask implements SystemTask {
     private int zipFilesMax = -1;
 
     @Override
+    public String getName() {
+        return "Backup Task";
+    }
+
+    @Override
     public void configure(final Configuration config, final Properties properties) throws EXistException {
         user = properties.getProperty("user", "guest");
         password = properties.getProperty("password", "guest");

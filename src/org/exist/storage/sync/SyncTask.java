@@ -59,6 +59,9 @@ public class SyncTask implements SystemTask {
     }
 
     @Override
+    public String getName() {
+        return getJobName();
+    }
 
     @Override
     public void configure(final Configuration config, final Properties properties) throws EXistException {

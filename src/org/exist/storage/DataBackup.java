@@ -63,6 +63,11 @@ public class DataBackup implements SystemTask {
     }
 
     @Override
+    public String getName() {
+        return "Data Backup Task";
+    }
+
+    @Override
     public void configure(final Configuration config, final Properties properties) throws EXistException {
         dest = Paths.get(properties.getProperty("output-dir", "backup"));
         if (!dest.isAbsolute()) {

@@ -49,6 +49,7 @@ import org.exist.util.Configuration;
  */
 public interface SystemTask {
 
+	String getName();
 
     void configure(Configuration config, Properties properties) throws EXistException;
     
