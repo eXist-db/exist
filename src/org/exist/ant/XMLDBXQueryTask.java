@@ -57,6 +57,8 @@ import java.util.Properties;
 
 import javax.xml.transform.OutputKeys;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 
 /**
  * Ant task to execute an XQuery.
@@ -73,19 +75,12 @@ public class XMLDBXQueryTask extends AbstractXMLDBTask {
     private File queryFile = null;
     private File destDir = null;
     private String outputproperty;
-    private List<Variable> variables = new ArrayList<Variable>();
+    private List<Variable> variables = new ArrayList<>();
 
-    // output encoding
-    private String encoding = "UTF-8";
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.apache.tools.ant.Task#execute()
-     */
+    @Override
     public void execute() throws BuildException {
         if (uri == null) {
-            throw (new BuildException("you have to specify an XMLDB collection URI"));
+            throw new BuildException("you have to specify an XMLDB collection URI");
         }
 
         if (text != null) {
@@ -93,8 +88,8 @@ public class XMLDBXQueryTask extends AbstractXMLDBTask {
             query = helper.replaceProperties(null, text, null);
         }
 
-        if ((queryFile == null) && (query == null) && (queryUri == null)) {
-            throw (new BuildException("you have to specify a query either as attribute, text, URI or in a file"));
+        if (queryFile == null && query == null && queryUri == null) {
+            throw new BuildException("you have to specify a query either as attribute, text, URI or in a file");
         }
 
         registerDatabase();
@@ -107,7 +102,7 @@ public class XMLDBXQueryTask extends AbstractXMLDBTask {
                 final String msg = "Collection " + uri + " could not be found.";
 
                 if (failonerror) {
-                    throw (new BuildException(msg));
+                    throw new BuildException(msg);
                 } else {
                     log(msg, Project.MSG_ERR);
                 }
@@ -125,9 +120,7 @@ public class XMLDBXQueryTask extends AbstractXMLDBTask {
                     service.declareVariable(var.name, var.value);
                 }
 
-                ResourceSet results = null;
-                Source source = null;
-
+                final Source source;
                 if (queryUri != null) {
                     log("XQuery url " + queryUri, Project.MSG_DEBUG);
 
@@ -137,39 +130,35 @@ public class XMLDBXQueryTask extends AbstractXMLDBTask {
                     } else {
                         source = new URLSource(new URL(queryUri));
                     }
-
                 } else if (queryFile != null) {
                     log("XQuery file " + queryFile.getAbsolutePath(), Project.MSG_DEBUG);
                     source = new FileSource(queryFile.toPath(), true);
-
                 } else {
                     log("XQuery string: " + query, Project.MSG_DEBUG);
                     source = new StringSource(query);
                 }
 
-                results = service.execute(source);
+                final ResourceSet results = service.execute(source);
                 log("Found " + results.getSize() + " results", Project.MSG_INFO);
 
                 if ((destDir != null) && (results != null)) {
                     log("write results to directory " + destDir.getAbsolutePath(), Project.MSG_INFO);
                     final ResourceIterator iter = results.getIterator();
-                    XMLResource res = null;
 
                     log("Writing results to directory " + destDir.getAbsolutePath(), Project.MSG_DEBUG);
 
                     while (iter.hasMoreResources()) {
-                        res = (XMLResource) iter.nextResource();
+                        final XMLResource res = (XMLResource) iter.nextResource();
                         log("Writing resource " + res.getId(), Project.MSG_DEBUG);
                         writeResource(res, destDir);
                     }
 
                 } else if (outputproperty != null) {
                     final ResourceIterator iter = results.getIterator();
-                    XMLResource res = null;
                     String result = null;
 
                     while (iter.hasMoreResources()) {
-                        res = (XMLResource) iter.nextResource();
+                        final XMLResource res = (XMLResource) iter.nextResource();
                         result = res.getContent().toString();
                     }
                     getProject().setNewProperty(outputproperty, result);
@@ -180,7 +169,7 @@ public class XMLDBXQueryTask extends AbstractXMLDBTask {
             final String msg = "XMLDB exception caught while executing query: " + e.getMessage();
 
             if (failonerror) {
-                throw (new BuildException(msg, e));
+                throw new BuildException(msg, e);
             } else {
                 log(msg, e, Project.MSG_ERR);
             }
@@ -189,23 +178,21 @@ public class XMLDBXQueryTask extends AbstractXMLDBTask {
             final String msg = "XMLDB exception caught while writing destination file: " + e.getMessage();
 
             if (failonerror) {
-                throw (new BuildException(msg, e));
+                throw new BuildException(msg, e);
             } else {
                 log(msg, e, Project.MSG_ERR);
             }
         }
     }
 
-
-    private void writeResource(XMLResource resource, File dest) throws IOException, XMLDBException {
+    private void writeResource(final XMLResource resource, final File dest) throws IOException, XMLDBException {
         if (dest != null) {
             final Properties outputProperties = new Properties();
             outputProperties.setProperty(OutputKeys.INDENT, "yes");
 
             final SAXSerializer serializer = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
 
-            Writer writer = null;
-
+            final Writer writer;
             if (dest.isDirectory()) {
 
                 if (!dest.exists()) {
@@ -219,10 +206,10 @@ public class XMLDBXQueryTask extends AbstractXMLDBTask {
                 }
 
                 final File file = new File(dest, fname);
-                writer = new OutputStreamWriter(new FileOutputStream(file), encoding);
+                writer = new OutputStreamWriter(new FileOutputStream(file), UTF_8);
 
             } else {
-                writer = new OutputStreamWriter(new FileOutputStream(dest), encoding);
+                writer = new OutputStreamWriter(new FileOutputStream(dest), UTF_8);
             }
 
             serializer.setOutput(writer, outputProperties);
@@ -234,7 +221,7 @@ public class XMLDBXQueryTask extends AbstractXMLDBTask {
             final String msg = "Destination target does not exist.";
 
             if (failonerror) {
-                throw (new BuildException(msg));
+                throw new BuildException(msg);
             } else {
                 log(msg, Project.MSG_ERR);
             }
@@ -242,37 +229,31 @@ public class XMLDBXQueryTask extends AbstractXMLDBTask {
     }
 
 
-    public void addText(String text) {
+    public void addText(final String text) {
         this.text = text;
     }
 
-
-    public void setQuery(String query) {
+    public void setQuery(final String query) {
         this.query = query;
     }
 
-
-    public void setQueryFile(File queryFile) {
+    public void setQueryFile(final File queryFile) {
         this.queryFile = queryFile;
     }
 
-
-    public void setQueryUri(String queryUri) {
+    public void setQueryUri(final String queryUri) {
         this.queryUri = queryUri;
     }
 
-
-    public void setDestDir(File destDir) {
+    public void setDestDir(final File destDir) {
         this.destDir = destDir;
     }
 
-
-    public void addVariable(Variable variable) {
+    public void addVariable(final Variable variable) {
         variables.add(variable);
     }
 
-
-    public void setOutputproperty(String outputproperty) {
+    public void setOutputproperty(final String outputproperty) {
         this.outputproperty = outputproperty;
     }
 
@@ -286,12 +267,12 @@ public class XMLDBXQueryTask extends AbstractXMLDBTask {
         public Variable() {
         }
 
-        public void setName(String name) {
+        public void setName(final String name) {
             this.name = name;
         }
 
 
-        public void setValue(String value) {
+        public void setValue(final String value) {
             this.value = value;
         }
     }

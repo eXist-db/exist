@@ -46,6 +46,8 @@ import java.util.Properties;
 
 import javax.xml.transform.OutputKeys;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 
 /**
  * an ant task to execute an query using XPath.
@@ -67,17 +69,10 @@ public class XMLDBXPathTask extends AbstractXMLDBTask {
     private File destDir = null;
     private String outputproperty;
 
-    // output encoding
-    private String encoding = "UTF-8";
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.apache.tools.ant.Task#execute()
-     */
+    @Override
     public void execute() throws BuildException {
         if (uri == null) {
-            throw (new BuildException("you have to specify an XMLDB collection URI"));
+            throw new BuildException("you have to specify an XMLDB collection URI");
         }
 
         if (text != null) {
@@ -86,7 +81,7 @@ public class XMLDBXPathTask extends AbstractXMLDBTask {
         }
 
         if (query == null) {
-            throw (new BuildException("you have to specify a query"));
+            throw new BuildException("you have to specify a query");
         }
 
         log("XPath is: " + query, org.apache.tools.ant.Project.MSG_DEBUG);
@@ -101,7 +96,7 @@ public class XMLDBXPathTask extends AbstractXMLDBTask {
                 final String msg = "Collection " + uri + " could not be found.";
 
                 if (failonerror) {
-                    throw (new BuildException(msg));
+                    throw new BuildException(msg);
                 } else {
                     log(msg, Project.MSG_ERR);
                 }
@@ -118,8 +113,7 @@ public class XMLDBXPathTask extends AbstractXMLDBTask {
                     service.setNamespace("ns", namespace);
                 }
 
-                ResourceSet results = null;
-
+                final ResourceSet results;
                 if (resource != null) {
                     log("Query resource: " + resource, Project.MSG_DEBUG);
                     results = service.queryResource(resource, query);
@@ -132,12 +126,11 @@ public class XMLDBXPathTask extends AbstractXMLDBTask {
                 if ((destDir != null) && (results != null)) {
                     log("write results to directory " + destDir.getAbsolutePath(), Project.MSG_INFO);
                     final ResourceIterator iter = results.getIterator();
-                    XMLResource res = null;
 
                     log("Writing results to directory " + destDir.getAbsolutePath(), Project.MSG_DEBUG);
 
                     while (iter.hasMoreResources()) {
-                        res = (XMLResource) iter.nextResource();
+                        final XMLResource res = (XMLResource) iter.nextResource();
                         log("Writing resource " + res.getId(), Project.MSG_DEBUG);
                         writeResource(res, destDir);
                     }
@@ -148,11 +141,10 @@ public class XMLDBXPathTask extends AbstractXMLDBTask {
                         getProject().setNewProperty(outputproperty, String.valueOf(results.getSize()));
                     } else {
                         final ResourceIterator iter = results.getIterator();
-                        XMLResource res = null;
                         final StringBuilder result = new StringBuilder();
 
                         while (iter.hasMoreResources()) {
-                            res = (XMLResource) iter.nextResource();
+                            final XMLResource res = (XMLResource) iter.nextResource();
                             result.append(res.getContent().toString());
                             result.append("\n");
                         }
@@ -164,7 +156,7 @@ public class XMLDBXPathTask extends AbstractXMLDBTask {
             final String msg = "XMLDB exception caught while executing query: " + e.getMessage();
 
             if (failonerror) {
-                throw (new BuildException(msg, e));
+                throw new BuildException(msg, e);
             } else {
                 log(msg, e, Project.MSG_ERR);
             }
@@ -173,23 +165,21 @@ public class XMLDBXPathTask extends AbstractXMLDBTask {
             final String msg = "XMLDB exception caught while writing destination file: " + e.getMessage();
 
             if (failonerror) {
-                throw (new BuildException(msg, e));
+                throw new BuildException(msg, e);
             } else {
                 log(msg, e, Project.MSG_ERR);
             }
         }
     }
 
-
-    private void writeResource(XMLResource resource, File dest) throws IOException, XMLDBException {
+    private void writeResource(final XMLResource resource, final File dest) throws IOException, XMLDBException {
         if (dest != null) {
             final Properties outputProperties = new Properties();
             outputProperties.setProperty(OutputKeys.INDENT, "yes");
 
             final SAXSerializer serializer = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
 
-            Writer writer = null;
-
+            final Writer writer;
             if (dest.isDirectory()) {
 
                 if (!dest.exists()) {
@@ -201,9 +191,9 @@ public class XMLDBXPathTask extends AbstractXMLDBTask {
                     fname += ".xml";
                 }
                 final File file = new File(dest, fname);
-                writer = new OutputStreamWriter(new FileOutputStream(file), encoding);
+                writer = new OutputStreamWriter(new FileOutputStream(file), UTF_8);
             } else {
-                writer = new OutputStreamWriter(new FileOutputStream(dest), encoding);
+                writer = new OutputStreamWriter(new FileOutputStream(dest), UTF_8 );
             }
 
             serializer.setOutput(writer, outputProperties);
@@ -216,50 +206,43 @@ public class XMLDBXPathTask extends AbstractXMLDBTask {
             final String msg = "Destination target does not exist.";
 
             if (failonerror) {
-                throw (new BuildException(msg));
+                throw new BuildException(msg);
             } else {
                 log(msg, Project.MSG_ERR);
             }
         }
     }
 
-
     /**
      * DOCUMENT ME!
      *
      * @param query
      */
-    public void setQuery(String query) {
+    public void setQuery(final String query) {
         this.query = query;
     }
 
-
-    public void addText(String text) {
+    public void addText(final String text) {
         this.text = text;
     }
 
-
-    public void setResource(String resource) {
+    public void setResource(final String resource) {
         this.resource = resource;
     }
 
-
-    public void setNamespace(String namespace) {
+    public void setNamespace(final String namespace) {
         this.namespace = namespace;
     }
 
-
-    public void setDestDir(File destDir) {
+    public void setDestDir(final File destDir) {
         this.destDir = destDir;
     }
 
-
-    public void setOutputproperty(String outputproperty) {
+    public void setOutputproperty(final String outputproperty) {
         this.outputproperty = outputproperty;
     }
 
-
-    public void setCount(boolean count) {
+    public void setCount(final boolean count) {
         this.count = count;
     }
 }

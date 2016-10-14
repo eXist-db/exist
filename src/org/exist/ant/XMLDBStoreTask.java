@@ -36,6 +36,8 @@ import org.exist.util.MimeType;
 import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
+import org.xmldb.api.modules.BinaryResource;
+import org.xmldb.api.modules.XMLResource;
 
 import java.io.File;
 
@@ -68,30 +70,26 @@ public class XMLDBStoreTask extends AbstractXMLDBTask {
     private String forceMimeType = null;
     private MimeTable mtable = null;
 
-    /* (non-Javadoc)
-     * @see org.apache.tools.ant.Task#execute()
-     */
+    @Override
     public void execute() throws BuildException {
         if (uri == null) {
-            throw (new BuildException("you have to specify an XMLDB collection URI"));
+            throw new BuildException("you have to specify an XMLDB collection URI");
         }
 
         if ((fileSetList == null) && (srcFile == null)) {
-            throw (new BuildException("no file set specified"));
+            throw new BuildException("no file set specified");
         }
 
         registerDatabase();
 
-        //try {
         int p = uri.indexOf(XmldbURI.ROOT_COLLECTION);
-
         if (p == Constants.STRING_NOT_FOUND) {
-            throw (new BuildException("invalid uri: '" + uri + "'"));
+            throw new BuildException("invalid uri: '" + uri + "'");
         }
 
         final String baseURI = uri.substring(0, p);
-        String path;
 
+        final String path;
         if (p == (uri.length() - 3)) {
             path = "";
         } else {
@@ -99,7 +97,6 @@ public class XMLDBStoreTask extends AbstractXMLDBTask {
         }
 
         Collection root = null;
-
         try {
 
             if (createCollection) {
@@ -112,7 +109,7 @@ public class XMLDBStoreTask extends AbstractXMLDBTask {
             final String msg = "XMLDB exception caught: " + e.getMessage();
 
             if (failonerror) {
-                throw (new BuildException(msg, e));
+                throw new BuildException(msg, e);
             } else {
                 log(msg, e, Project.MSG_ERR);
                 return;
@@ -123,7 +120,7 @@ public class XMLDBStoreTask extends AbstractXMLDBTask {
             final String msg = "Collection " + uri + " could not be found.";
 
             if (failonerror) {
-                throw (new BuildException(msg));
+                throw new BuildException(msg);
             } else {
                 log(msg, Project.MSG_ERR);
             }
@@ -133,7 +130,6 @@ public class XMLDBStoreTask extends AbstractXMLDBTask {
             Collection col = root;
             String relDir;
             String prevDir = null;
-            String resourceType = "XMLResource";
 
             if (srcFile != null) {
                 log("Storing " + srcFile.getName());
@@ -167,7 +163,7 @@ public class XMLDBStoreTask extends AbstractXMLDBTask {
                     mime = (baseMimeType != null) ? (new MimeType(baseMimeType, MimeType.BINARY)) : MimeType.BINARY_TYPE;
                 }
 
-                resourceType = mime.isXMLType() ? "XMLResource" : "BinaryResource";
+                final String resourceType = mime.isXMLType() ? XMLResource.RESOURCE_TYPE : BinaryResource.RESOURCE_TYPE;
 
                 if (targetFile == null) {
                     targetFile = srcFile.getName();
@@ -192,7 +188,7 @@ public class XMLDBStoreTask extends AbstractXMLDBTask {
                     final String msg = "XMLDB exception caught: " + e.getMessage();
 
                     if (failonerror) {
-                        throw (new BuildException(msg, e));
+                        throw new BuildException(msg, e);
                     } else {
                         log(msg, e, Project.MSG_ERR);
                     }
@@ -243,7 +239,7 @@ public class XMLDBStoreTask extends AbstractXMLDBTask {
                                 final String msg = "XMLDB exception caught: " + e.getMessage();
 
                                 if (failonerror) {
-                                    throw (new BuildException(msg, e));
+                                    throw new BuildException(msg, e);
                                 } else {
                                     log(msg, e, Project.MSG_ERR);
                                 }
@@ -310,7 +306,7 @@ public class XMLDBStoreTask extends AbstractXMLDBTask {
                                 currentMime = (currentBaseMimeType != null) ? (new MimeType(currentBaseMimeType, MimeType.BINARY)) : MimeType.BINARY_TYPE;
                             }
 
-                            resourceType = currentMime.isXMLType() ? "XMLResource" : "BinaryResource";
+                            final String resourceType = currentMime.isXMLType() ? XMLResource.RESOURCE_TYPE : BinaryResource.RESOURCE_TYPE;
                             log("Creating resource " + file.getName() + " in collection " + col.getName() + " of type " + resourceType + " with mime-type: " + currentMime.getName(), Project.MSG_DEBUG);
                             res = col.createResource(file.getName(), resourceType);
                             res.setContent(file);
@@ -325,7 +321,7 @@ public class XMLDBStoreTask extends AbstractXMLDBTask {
                             final String msg = "XMLDB exception caught: " + e.getMessage();
 
                             if (failonerror) {
-                                throw (new BuildException(msg, e));
+                                throw new BuildException(msg, e);
                             } else {
                                 log(msg, e, Project.MSG_ERR);
                             }
@@ -336,70 +332,58 @@ public class XMLDBStoreTask extends AbstractXMLDBTask {
         }
     }
 
-
     /**
      * This method allows more than one Fileset per store task!
      *
      * @param set DOCUMENT ME!
      */
-    public void addFileset(FileSet set) {
+    public void addFileset(final FileSet set) {
         if (fileSetList == null) {
-            fileSetList = new ArrayList<FileSet>();
+            fileSetList = new ArrayList<>();
         }
 
         fileSetList.add(set);
     }
 
-
-    public void setSrcFile(File file) {
+    public void setSrcFile(final File file) {
         this.srcFile = file;
     }
 
-
-    public void setTargetFile(String name) {
+    public void setTargetFile(final String name) {
         this.targetFile = name;
     }
 
-
-    public void setCreatecollection(boolean create) {
+    public void setCreatecollection(final boolean create) {
         this.createCollection = create;
     }
 
-
-    public void setCreatesubcollections(boolean create) {
+    public void setCreatesubcollections(final boolean create) {
         this.createSubcollections = create;
     }
 
-
-    public void setIncludeEmptyDirs(boolean create) {
+    public void setIncludeEmptyDirs(final boolean create) {
         this.includeEmptyDirs = create;
     }
 
-
-    public void setMimeTypesFile(File file) {
+    public void setMimeTypesFile(final File file) {
         this.mimeTypesFile = file;
     }
 
-
-    public void setType(String type) {
+    public void setType(final String type) {
         this.type = type;
     }
 
-
-    public void setDefaultMimeType(String mimeType) {
+    public void setDefaultMimeType(final String mimeType) {
         this.defaultMimeType = mimeType;
     }
 
-
-    public void setForceMimeType(String mimeType) {
+    public void setForceMimeType(final String mimeType) {
         this.forceMimeType = mimeType;
     }
 
-
     private MimeTable getMimeTable() throws BuildException {
         if (mtable == null) {
-
-            if ((mimeTypesFile != null) && mimeTypesFile.exists()) {
+            if (mimeTypesFile != null && mimeTypesFile.exists()) {
                 log("Trying to use MIME Types file " + mimeTypesFile.getAbsolutePath(), Project.MSG_DEBUG);
                 mtable = MimeTable.getInstance(mimeTypesFile.toPath());
             } else {
@@ -408,6 +392,6 @@ public class XMLDBStoreTask extends AbstractXMLDBTask {
             }
         }
 
-        return (mtable);
+        return mtable;
     }
 }
