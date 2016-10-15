@@ -22,6 +22,7 @@
 package org.exist.xquery.modules.file;
 
 import java.io.IOException;
+import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -43,7 +44,7 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
 /**
- * @see java.io.File#renameTo(java.io.File)
+ * @see java.nio.file.Files#move(Path, Path, CopyOption...)
  * 
  * @author Dannes Wessels
  *

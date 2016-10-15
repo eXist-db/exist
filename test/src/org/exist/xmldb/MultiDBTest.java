@@ -21,6 +21,7 @@
  */
 package org.exist.xmldb;
 
+import org.exist.util.FileUtils;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
 import org.exist.util.SingleInstanceConfiguration;
@@ -32,11 +33,11 @@ import org.xmldb.api.base.*;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 
-import java.io.File;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -72,15 +73,17 @@ public class MultiDBTest {
                 test = service.createCollection("test");
             }
 
-                 String existHome = System.getProperty("exist.home");
-                 File existDir = existHome==null ? new File(".") : new File(existHome);
-            File samples = new File(existDir,"samples/shakespeare");
-            File[] files = samples.listFiles();
-            MimeTable mimeTab = MimeTable.getInstance();
-            for (int j = 0; j < files.length; j++) {
-                MimeType mime = mimeTab.getContentTypeFor(files[j].getName());
-                if(mime != null && mime.isXMLType())
-                    loadFile(test, files[j].getAbsolutePath());
+            String existHome = System.getProperty("exist.home");
+            Path existDir = existHome == null ? Paths.get(".") : Paths.get(existHome);
+            existDir = existDir.normalize();
+            final Path samples = existDir.resolve("samples/shakespeare");
+            final List<Path> files = FileUtils.list(samples);
+            final MimeTable mimeTab = MimeTable.getInstance();
+            for (final Path file : files) {
+                final MimeType mime = mimeTab.getContentTypeFor(FileUtils.fileName(file));
+                if(mime != null && mime.isXMLType()) {
+                    loadFile(test, file.toAbsolutePath().toString());
+                }
             }
 
             doQuery(test, "//SPEECH[SPEAKER='HAMLET']");
@@ -90,9 +93,9 @@ public class MultiDBTest {
     protected static void loadFile(Collection collection, String path) throws XMLDBException {
         // create new XMLResource; an id will be assigned to the new resource
         XMLResource document = (XMLResource)
-            collection.createResource(path.substring(path.lastIndexOf(File.separatorChar)),
+            collection.createResource(path.substring(path.lastIndexOf(java.io.File.separatorChar)),
                 "XMLResource");
-        document.setContent(new File(path));
+        document.setContent(Paths.get(path));
         collection.storeResource(document);
     }
     

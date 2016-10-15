@@ -21,7 +21,9 @@
 package org.exist.xmldb.concurrent;
 
 import java.io.File;
+import java.nio.file.Path;
 
+import org.exist.util.FileUtils;
 import org.exist.xmldb.IndexQueryService;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xmldb.concurrent.action.RemoveAppendAction;
@@ -49,7 +51,7 @@ public class ConcurrentXUpdateTest extends ConcurrentTestBase {
     	"	</index>" + 
     	"</collection>";
 
-	private File tempFile;
+	private Path tempFile;
 	
 	public ConcurrentXUpdateTest() {
 		super(URI, "C1");
@@ -84,6 +86,6 @@ public class ConcurrentXUpdateTest extends ConcurrentTestBase {
 	public void tearDown() throws XMLDBException {
         //super.tearDown();
         DBUtils.shutdownDB(URI);
-        tempFile.delete();
+		FileUtils.deleteQuietly(tempFile);
 	}
 }

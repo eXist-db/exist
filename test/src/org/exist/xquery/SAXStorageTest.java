@@ -4,7 +4,8 @@ $Id$
  */
 package org.exist.xquery;
 
-import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.xmldb.LocalCollection;
@@ -113,9 +114,10 @@ public class SAXStorageTest {
             long t0 = System.currentTimeMillis();
             LocalCollection coll = (LocalCollection)testCollection;
             coll.setReader(dataSource);
-                            String existHome = System.getProperty("exist.home");
-                            File existDir = existHome==null ? new File(".") : new File(existHome);
-            doc.setContent(new File(existDir,FILE_STORED));
+			String existHome = System.getProperty("exist.home");
+			Path existDir = existHome == null ? Paths.get(".") : Paths.get(existHome);
+			existDir = existDir.normalize();
+            doc.setContent(existDir.resolve(FILE_STORED));
             coll.storeResource(doc);
         }
 	}

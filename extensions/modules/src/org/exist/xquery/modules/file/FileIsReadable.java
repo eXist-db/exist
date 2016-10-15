@@ -41,7 +41,7 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
 /**
- * @see java.io.File#canRead() 
+ * @see java.nio.file.Files#isReadable(Path)
  * @author Andrzej Taramina
  * @author Loren Cahlander
  *

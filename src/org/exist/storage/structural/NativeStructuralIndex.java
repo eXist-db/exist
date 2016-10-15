@@ -119,8 +119,10 @@ public class NativeStructuralIndex extends AbstractIndex implements RawBackupSup
 
 	@Override
 	public void backupToArchive(RawDataBackup backup) throws IOException {
-        final OutputStream os = backup.newEntry(FileUtils.fileName(btree.getFile()));
-        btree.backupToStream(os);
-        backup.closeEntry();
+        try(final OutputStream os = backup.newEntry(FileUtils.fileName(btree.getFile()))) {
+            btree.backupToStream(os);
+        } finally {
+            backup.closeEntry();
+        }
 	}
 }

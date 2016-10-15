@@ -23,8 +23,10 @@ package org.exist.config;
 
 import org.apache.commons.io.output.ByteArrayOutputStream;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Optional;
 
 import org.exist.EXistException;
@@ -66,9 +68,9 @@ public class TwoDatabasesTest {
         // Setup the log4j configuration
         String log4j = System.getProperty("log4j.configurationFile");
         if (log4j == null) {
-            File lf = new File("log42j.xml");
-            if (lf.canRead()) {
-                System.setProperty("log4j.configurationFile", lf.toURI().toASCIIString());
+            Path lf = Paths.get("log42j.xml");
+            if (Files.isReadable(lf)) {
+                System.setProperty("log4j.configurationFile", lf.toUri().toASCIIString());
             }
         }
 
@@ -79,16 +81,20 @@ public class TwoDatabasesTest {
         if (existHome == null) {
             existHome = ".";
         }
-        File config1File = new File(existHome + "/test/src/" + packagePath + "/conf1.xml");
-        File data1Dir = new File(existHome + "/test/temp/" + packagePath + "/data1");
-        assertTrue(data1Dir.exists() || data1Dir.mkdirs());
+        Path config1File = Paths.get(existHome + "/test/src/" + packagePath + "/conf1.xml");
+        Path data1Dir = Paths.get(existHome + "/test/temp/" + packagePath + "/data1");
+        if(!Files.exists(data1Dir)) {
+            Files.createDirectories(data1Dir);
+        }
 
-        File config2File = new File(existHome + "/test/src/" + packagePath + "/conf2.xml");
-        File data2Dir = new File(existHome + "/test/temp/" + packagePath + "/data2");
-        assertTrue(data2Dir.exists() || data2Dir.mkdirs());
+        Path config2File = Paths.get(existHome + "/test/src/" + packagePath + "/conf2.xml");
+        Path data2Dir = Paths.get(existHome + "/test/temp/" + packagePath + "/data2");
+        if(!Files.exists(data2Dir)) {
+            Files.createDirectories(data2Dir);
+        }
 
         // Configure the database
-        Configuration config1 = new Configuration(config1File.getAbsolutePath());
+        Configuration config1 = new Configuration(config1File.toAbsolutePath().toString());
         BrokerPool.configure("db1", 1, threads, config1);
         pool1 = BrokerPool.getInstance("db1");
         user1 = pool1.getSecurityManager().getSystemSubject();
@@ -104,7 +110,7 @@ public class TwoDatabasesTest {
             }
         }
 
-        Configuration config2 = new Configuration(config2File.getAbsolutePath());
+        Configuration config2 = new Configuration(config2File.toAbsolutePath().toString());
         BrokerPool.configure("db2", 1, threads, config2);
         pool2 = BrokerPool.getInstance("db2");
         user2 = pool2.getSecurityManager().getSystemSubject();

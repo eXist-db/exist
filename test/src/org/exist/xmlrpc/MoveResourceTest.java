@@ -30,7 +30,9 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -44,6 +46,7 @@ import java.util.concurrent.Executors;
 import org.junit.ClassRule;
 import org.junit.Test;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -98,20 +101,13 @@ public class MoveResourceTest {
     }
 
     private String readData() throws IOException {
-        String existHome = System.getProperty("exist.home");
-        File existDir = existHome == null ? new File(".") : new File(existHome);
-        File f = new File(existDir, "samples/shakespeare/r_and_j.xml");
+        final String existHome = System.getProperty("exist.home");
+        Path existDir = existHome == null ? Paths.get(".") : Paths.get(existHome);
+        existDir = existDir.normalize();
+        final Path f = existDir.resolve("samples/shakespeare/r_and_j.xml");
         assertNotNull(f);
 
-        final StringBuilder buf = new StringBuilder();
-        try(final Reader reader = new BufferedReader(new InputStreamReader(new FileInputStream(f), "UTF-8"))) {
-            char[] ch = new char[1024];
-            int len;
-            while ((len = reader.read(ch)) > 0) {
-                buf.append(ch, 0, len);
-            }
-        }
-        return buf.toString();
+        return new String(Files.readAllBytes(f), UTF_8);
     }
 
     private class MoveThread implements Callable<Void> {
@@ -201,7 +197,7 @@ public class MoveResourceTest {
 
         private String readResponse(final InputStream is) throws IOException {
             final StringBuilder out = new StringBuilder();
-            try(final BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
+            try(final BufferedReader reader = new BufferedReader(new InputStreamReader(is, UTF_8))) {
                 String line;
                 while ((line = reader.readLine()) != null) {
                     out.append(line);

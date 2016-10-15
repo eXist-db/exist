@@ -9,8 +9,8 @@ import org.xmldb.api.base.*;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XQueryService;
 
-import java.io.File;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -133,7 +133,7 @@ public class QuerySessionTest {
         idxs.configureCollection(COLLECTION_CONFIG);
 
         Resource resource = test.createResource("strings.xml", "XMLResource");
-        resource.setContent(new File("samples/shakespeare/macbeth.xml"));
+        resource.setContent(Paths.get("samples/shakespeare/macbeth.xml"));
         test.storeResource(resource);
         
         TestDataGenerator generator = new TestDataGenerator("xdb", DOC_COUNT);

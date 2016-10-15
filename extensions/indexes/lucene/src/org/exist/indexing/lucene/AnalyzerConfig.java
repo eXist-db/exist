@@ -19,9 +19,6 @@
  */
 package org.exist.indexing.lucene;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.Reader;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -383,7 +380,7 @@ public class AnalyzerConfig {
                     LOG.info(String.format("Type '%s' has been deprecated in recent Lucene versions, "
                             + "please use 'java.io.FileReader' (short 'file') instead.", type));
 
-                    parameter = new KeyTypedValue(name, new File(value), File.class);
+                    parameter = new KeyTypedValue(name, new java.io.File(value), java.io.File.class);
                     break;
                 }
 
@@ -396,10 +393,10 @@ public class AnalyzerConfig {
 
                     try {
                         // ToDo: check where to close reade to prevent resource leakage
-                        Reader fileReader = new FileReader(value);
+                        Reader fileReader = new java.io.FileReader(value);
                         parameter = new KeyTypedValue(name, fileReader, Reader.class);
 
-                    } catch (FileNotFoundException ex) {
+                    } catch (java.io.FileNotFoundException ex) {
                         LOG.error(String.format("File '%s' could not be found.", value), ex);
                     }
                     break;

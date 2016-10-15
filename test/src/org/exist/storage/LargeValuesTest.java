@@ -14,28 +14,27 @@ import org.exist.storage.txn.Txn;
 import org.exist.test.TestConstants;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
+import org.exist.util.FileUtils;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.TestUtils;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.*;
-
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Random;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.Assert.*;
 
 /**
  * Test indexing and recovery of large string sequences.
@@ -96,7 +95,7 @@ public class LargeValuesTest {
 
                 transact.commit(transaction);
             } finally {
-                Files.delete(file);
+                FileUtils.deleteQuietly(file);
             }
 
             pool.getJournalManager().get().flush(true, false);
@@ -120,11 +119,12 @@ public class LargeValuesTest {
             final Serializer serializer = broker.getSerializer();
             serializer.reset();
 
-            final File tempFile = File.createTempFile("eXist", ".xml");
-            try(final Writer writer = new OutputStreamWriter(new FileOutputStream(tempFile), "UTF-8")) {
+            final Path tempFile = Files.createTempFile("eXist", ".xml");
+            try(final Writer writer = Files.newBufferedWriter(tempFile, UTF_8)) {
                 serializer.serialize(doc, writer);
-                tempFile.delete();
             }
+            FileUtils.deleteQuietly(tempFile);
+
 //            XQuery xquery = broker.getXQueryService();
 //            DocumentSet docs = broker.getAllXMLResources(new DefaultDocumentSet());
 //            Sequence result = xquery.execute(broker, "//key/@id/string()", docs.docsToNodeSet(), AccessContext.TEST);

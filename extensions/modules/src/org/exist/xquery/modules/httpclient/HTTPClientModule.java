@@ -21,10 +21,11 @@
  */
 package org.exist.xquery.modules.httpclient;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -113,11 +114,11 @@ public class HTTPClientModule extends AbstractInternalModule
         //config from file if present
         final String configFile = System.getProperty("http.configfile");
         if(configFile != null) {
-            final File f = new File(configFile);
-            if(f.exists()) {
+            final Path f = Paths.get(configFile);
+            if(Files.exists(f)) {
                 setConfigFromFile(f, client);
             } else {
-                LOG.warn("http.configfile '" + f.getAbsolutePath() + "' does not exist!");
+                LOG.warn("http.configfile '" + f.toAbsolutePath() + "' does not exist!");
             }
         }
         
@@ -132,15 +133,15 @@ public class HTTPClientModule extends AbstractInternalModule
         return client;
     }
 
-    private static void setConfigFromFile(final File configFile, final HttpClient http) {
+    private static void setConfigFromFile(final Path configFile, final HttpClient http) {
         if(LOG.isDebugEnabled()) {
-            LOG.debug("http.configfile='" + configFile.getAbsolutePath() + "'");
+            LOG.debug("http.configfile='" + configFile.toAbsolutePath() + "'");
         }
 
         final Properties props = new Properties();
-        try(final InputStream is = new FileInputStream(configFile)) {
+        try(final InputStream is = Files.newInputStream(configFile)) {
             if(LOG.isDebugEnabled()) {
-                LOG.debug("Loading proxy settings from " + configFile.getAbsolutePath());
+                LOG.debug("Loading proxy settings from " + configFile.toAbsolutePath());
             }
 
             props.load(is);

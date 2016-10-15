@@ -22,10 +22,10 @@ package org.exist.indexing.lucene;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.ParserConfigurationException;
@@ -51,13 +51,7 @@ import org.exist.storage.ElementValue;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.test.TestConstants;
-import org.exist.util.Configuration;
-import org.exist.util.ConfigurationHelper;
-import org.exist.util.DatabaseConfigurationException;
-import org.exist.util.LockException;
-import org.exist.util.MimeTable;
-import org.exist.util.MimeType;
-import org.exist.util.Occurrences;
+import org.exist.util.*;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
@@ -1191,16 +1185,16 @@ public class LuceneIndexTest {
                 mgr.addConfiguration(transaction, broker, root, configuration);
             }
 
-            final File file = new File(directory);
-            final File[] files = file.listFiles();
+            final Path file = Paths.get(directory);
+            final List<Path> files = FileUtils.list(file);
             final MimeTable mimeTab = MimeTable.getInstance();
-            for (final File f : files) {
-                MimeType mime = mimeTab.getContentTypeFor(f.getName());
+            for (final Path f : files) {
+                MimeType mime = mimeTab.getContentTypeFor(FileUtils.fileName(f));
                 if(mime != null && mime.isXMLType()) {
-                    InputSource is = new InputSource(f.getAbsolutePath());
-                    final IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create(f.getName()), is);
+                    InputSource is = new FileInputSource(f);
+                    final IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create(FileUtils.fileName(f)), is);
                     assertNotNull(info);
-                    is = new InputSource(f.getAbsolutePath());
+                    is = new FileInputSource(f);
                     root.store(transaction, broker, info, is, false);
                     docs.add(info.getDocument());
                 }

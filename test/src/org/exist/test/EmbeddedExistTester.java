@@ -23,14 +23,12 @@ package org.exist.test;
 
 import static org.junit.Assert.*;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.junit.*;
 
-import java.io.File;
-import java.io.FileInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import javax.xml.transform.OutputKeys;
 
@@ -39,8 +37,6 @@ import org.exist.util.MimeType;
 
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.XmldbURI;
-
-import org.apache.commons.io.output.ByteArrayOutputStream;
 
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.xmldb.api.DatabaseManager;
@@ -51,10 +47,7 @@ import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 
-import org.xmldb.api.modules.CollectionManagementService;
-import org.xmldb.api.modules.XMLResource;
-import org.xmldb.api.modules.XPathQueryService;
-import org.xmldb.api.modules.XQueryService;
+import org.xmldb.api.modules.*;
 
 /**
  *
@@ -104,11 +97,10 @@ public class EmbeddedExistTester {
         return newCollection;
     }
 
-    protected static void storeResource(Collection collection, String documentName, byte[] content) throws XMLDBException {
-        MimeType mime = MimeTable.getInstance().getContentTypeFor(documentName);
-
-        String type = mime.isXMLType() ? "XMLResource" : "BinaryResource";
-        Resource resource = collection.createResource(documentName, type);
+    protected static void storeResource(final Collection collection, final String documentName, final byte[] content) throws XMLDBException {
+        final MimeType mime = MimeTable.getInstance().getContentTypeFor(documentName);
+        final String type = mime.isXMLType() ? XMLResource.RESOURCE_TYPE : BinaryResource.RESOURCE_TYPE;
+        final Resource resource = collection.createResource(documentName, type);
         resource.setContent(content);
         collection.storeResource(resource);
         collection.close();
@@ -127,23 +119,13 @@ public class EmbeddedExistTester {
     }
     
 
-    protected static byte[] readFile(File directory, String filename) throws IOException {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
+    protected static byte[] readFile(final Path directory, final String filename) throws IOException {
+        return readFile(directory.resolve(filename));
+    }
 
-        File src = new File(directory, filename);
-
-        assertTrue(src.canRead());
-
-        try(final InputStream in = new FileInputStream(src)) {
-            // Transfer bytes from in to out
-            byte[] buf = new byte[4096];
-            int len;
-            while ((len = in.read(buf)) > 0) {
-                out.write(buf, 0, len);
-            }
-        }
-
-        return out.toByteArray();
+    protected static byte[] readFile(final Path file) throws IOException {
+        assertTrue(Files.isReadable(file));
+        return Files.readAllBytes(file);
     }
 
     protected String getXMLResource(Collection collection, String resource) throws XMLDBException{

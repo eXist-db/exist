@@ -21,7 +21,6 @@
  */
 package org.exist.xquery.modules.file;
 
-import java.io.File;
 import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;

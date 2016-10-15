@@ -551,7 +551,7 @@ public class LocalCollection extends AbstractLocal implements CollectionImpl {
         modify().apply((collection, broker, transaction) -> {
             String uri = null;
             if(res.file != null) {
-                uri = res.file.toURI().toASCIIString();
+                uri = res.file.toUri().toASCIIString();
             }
 
 //          for(final Observer observer : observers) {

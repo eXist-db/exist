@@ -43,9 +43,9 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.Optional;
 
@@ -176,7 +176,7 @@ public class RemoveCollectionTest {
             final CollectionConfigurationManager mgr = broker.getBrokerPool().getConfigurationManager();
             mgr.addConfiguration(transaction, broker, test, COLLECTION_CONFIG);
 
-            final InputSource is = new InputSource(new File("samples/shakespeare/hamlet.xml").toURI().toASCIIString());
+            final InputSource is = new InputSource(Paths.get("samples/shakespeare/hamlet.xml").toUri().toASCIIString());
             assertNotNull(is);
             final IndexInfo info = test.validateXMLResource(transaction, broker, XmldbURI.create("hamlet.xml"), is);
             assertNotNull(info);

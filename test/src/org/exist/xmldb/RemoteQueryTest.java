@@ -21,7 +21,8 @@
  */
 package org.exist.xmldb;
 
-import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.exist.test.TestConstants;
 import org.exist.util.MimeType;
@@ -108,8 +109,9 @@ public class RemoteQueryTest extends RemoteDBTest {
 
         Resource xr = testCollection.createResource("hamlet.xml", "XMLResource");
         String existHome = System.getProperty("exist.home");
-        File existDir = existHome == null ? new File(".") : new File(existHome);
-        File f = new File(existDir,"samples/shakespeare/hamlet.xml");
+        Path existDir = existHome == null ? Paths.get(".") : Paths.get(existHome);
+        existDir = existDir.normalize();
+        Path f = existDir.resolve("samples/shakespeare/hamlet.xml");
         xr.setContent(f);
         testCollection.storeResource(xr);
 

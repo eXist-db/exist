@@ -25,6 +25,7 @@ import org.exist.performance.AbstractAction;
 import org.exist.performance.Runner;
 import org.exist.performance.Connection;
 import org.exist.EXistException;
+import org.exist.util.FileUtils;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xmldb.XQueryService;
 import org.exist.util.serializer.DOMSerializer;
@@ -40,12 +41,14 @@ import org.xmldb.api.base.Resource;
 
 import javax.xml.transform.TransformerException;
 import java.io.StringWriter;
-import java.io.File;
 import java.io.Writer;
-import java.io.OutputStreamWriter;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Properties;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class DataGenerator extends AbstractAction {
 
@@ -59,7 +62,7 @@ public class DataGenerator extends AbstractAction {
 
     private String prefix = "";
 
-    private File directory;
+    private Path directory;
 
     private int count = 1;
 
@@ -74,14 +77,17 @@ public class DataGenerator extends AbstractAction {
             }
         }
         
-        if (!config.hasAttribute("todir"))
+        if (!config.hasAttribute("todir")) {
             throw new EXistException("generate requires an attribute 'todir'");
-        directory = new File(config.getAttribute("todir"));
-        if (!(directory.exists() && directory.isDirectory()))
-            throw new EXistException(directory.getAbsolutePath() + " does not exist or is not a directory");
+        }
+        directory = Paths.get(config.getAttribute("todir")).normalize();
+        if (!(Files.exists(directory) && Files.isDirectory(directory))) {
+            throw new EXistException(directory.toAbsolutePath() + " does not exist or is not a directory");
+        }
 
-        if (config.hasAttribute("prefix"))
+        if (config.hasAttribute("prefix")) {
             prefix = config.getAttribute("prefix");
+        }
         
         NodeList children = config.getChildNodes();
         Element root = null;
@@ -104,7 +110,7 @@ public class DataGenerator extends AbstractAction {
         xqueryContent = writer.toString();
     }
 
-
+    @Override
     public void execute(Connection connection) throws XMLDBException, EXistException {
         Collection collection = connection.getCollection("/db");
         XQueryService service = (XQueryService) collection.getService("XQueryService", "1.0");
@@ -114,18 +120,18 @@ public class DataGenerator extends AbstractAction {
         CompiledExpression compiled = service.compile(query);
         try {
             for (int i = 0; i < count; i++) {
-                File nextFile = new File(directory, prefix + i + ".xml");
+                final Path nextFile = directory.resolve(prefix + i + ".xml");
                 
-                service.declareVariable("filename", nextFile.getName());
+                service.declareVariable("filename", FileUtils.fileName(nextFile));
                 service.declareVariable("count", new IntegerValue(i));
                 ResourceSet results = service.execute(compiled);
 
-                Writer out = new OutputStreamWriter(new FileOutputStream(nextFile), "UTF-8");
-                for (ResourceIterator iter = results.getIterator(); iter.hasMoreResources(); ) {
-                    Resource r = iter.nextResource();
-                    out.write(r.getContent().toString());
+                try(final Writer out = Files.newBufferedWriter(nextFile, UTF_8)) {
+                    for (final ResourceIterator iter = results.getIterator(); iter.hasMoreResources(); ) {
+                        final Resource r = iter.nextResource();
+                        out.write(r.getContent().toString());
+                    }
                 }
-                out.close();
             }
         } catch (IOException e) {
             throw new EXistException("exception while storing generated data: " + e.getMessage(), e);

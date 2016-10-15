@@ -21,7 +21,7 @@
 */
 package org.exist.xmldb.concurrent;
 
-import java.io.File;
+import java.nio.file.Path;
 
 import org.exist.xmldb.XmldbURI;
 import org.exist.xmldb.concurrent.action.XQueryAction;
@@ -36,7 +36,7 @@ public class ConcurrentQueryTest extends ConcurrentTestBase {
 
 	private final static String URI = XmldbURI.LOCAL_DB;
 	
-	private File tempFile;
+	private Path tempFile;
 	
 	private XQueryAction action0, action1, action2;
 

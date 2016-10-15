@@ -22,11 +22,14 @@
 
 package org.exist.netedit;
 
-import java.io.File;
-import java.io.FileInputStream;
+import org.exist.util.FileUtils;
+
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.InvalidPropertiesFormatException;
 import java.util.List;
 import java.util.Properties;
 import java.util.Timer;
@@ -71,16 +74,15 @@ public class TaskManager extends TimerTask{
 	 * Load tasks from local file system
 	 * and start listeners for them
 	 */
-	public void load(){
-		File metaFolder = netEdit.getMeta();
-		if (metaFolder.isDirectory()){
-			for(File meta: metaFolder.listFiles()){
-				try {
+	public void load() throws IOException {
+		Path metaFolder = netEdit.getMeta();
+		if (Files.isDirectory(metaFolder)) {
+			for(Path meta: FileUtils.list(metaFolder)){
+				try(final InputStream in = Files.newInputStream(meta)) {
 					Properties prop = new Properties();
-					FileInputStream in = new FileInputStream(meta);
 					prop.loadFromXML(in);
-					File tmp = new File(prop.getProperty("file"));
-					if (tmp.exists()){
+					Path tmp = Paths.get(prop.getProperty("file"));
+					if (Files.exists(tmp)){
 						String downloadFrom = prop.getProperty("download-from");
 						String uploadTo = prop.getProperty("upload-to");
 						long modified = new Long(prop.getProperty("modified")).longValue();
@@ -91,10 +93,8 @@ public class TaskManager extends TimerTask{
 						timer.schedule(listener, NetEditApplet.PERIOD, NetEditApplet.PERIOD);
 						in.close();
 					} else {
-						meta.delete();
+						FileUtils.deleteQuietly(meta);
 					}
-				} catch (InvalidPropertiesFormatException e) {
-					e.printStackTrace();
 				} catch (IOException e) {
 					e.printStackTrace();
 				}

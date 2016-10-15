@@ -33,93 +33,91 @@ import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.xquery.TerminatedException;
 
-import java.io.File;
-
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 
 import org.exist.security.PermissionDeniedException;
 
 
-public class ExportMain
-{
+public class ExportMain {
     // command-line options
-    private final static int                  HELP_OPT          = 'h';
-    private final static int                  EXPORT_OPT        = 'x';
-    private final static int                  OUTPUT_DIR_OPT    = 'd';
-    private final static int                  CONFIG_OPT        = 'c';
-    private final static int                  INCREMENTAL_OPT   = 'i';
-    private final static int                  NO_CHECK_OPT      = 'n';
-    private final static int                  DIRECT_ACCESS_OPT = 'D';
-    private final static int                  ZIP_OPT           = 'z';
-    private final static int                  CHECK_DOCS_OPT    = 's';
-    private final static int                  VERBOSE_OPT       = 'v';
+    private final static int HELP_OPT = 'h';
+    private final static int EXPORT_OPT = 'x';
+    private final static int OUTPUT_DIR_OPT = 'd';
+    private final static int CONFIG_OPT = 'c';
+    private final static int INCREMENTAL_OPT = 'i';
+    private final static int NO_CHECK_OPT = 'n';
+    private final static int DIRECT_ACCESS_OPT = 'D';
+    private final static int ZIP_OPT = 'z';
+    private final static int CHECK_DOCS_OPT = 's';
+    private final static int VERBOSE_OPT = 'v';
 
-    private final static CLOptionDescriptor[] OPTIONS           = new CLOptionDescriptor[] {
-        new CLOptionDescriptor( "help", CLOptionDescriptor.ARGUMENT_DISALLOWED, HELP_OPT, "print help on command line options and exit." ),
-        new CLOptionDescriptor( "dir", CLOptionDescriptor.ARGUMENT_REQUIRED, OUTPUT_DIR_OPT, "the directory to which all output will be written." ),
-        new CLOptionDescriptor( "config", CLOptionDescriptor.ARGUMENT_REQUIRED, CONFIG_OPT, "the database configuration (conf.xml) file to use " + "for launching the db." ),
-        new CLOptionDescriptor( "direct", CLOptionDescriptor.ARGUMENT_DISALLOWED, DIRECT_ACCESS_OPT, "use an (even more) direct access to the db, bypassing some " + "index structures" ),
-        new CLOptionDescriptor( "export", CLOptionDescriptor.ARGUMENT_DISALLOWED, EXPORT_OPT, "export database contents while preserving as much data as possible" ),
-        new CLOptionDescriptor( "incremental", CLOptionDescriptor.ARGUMENT_DISALLOWED, INCREMENTAL_OPT, "create incremental backup (use with --export|-x)" ),
-        new CLOptionDescriptor( "nocheck", CLOptionDescriptor.ARGUMENT_DISALLOWED, NO_CHECK_OPT, "do not run a consistency check. Just export the data." ),
-        new CLOptionDescriptor( "check-docs", CLOptionDescriptor.ARGUMENT_DISALLOWED, CHECK_DOCS_OPT, "scan every document to find errors in the " +
-                "the nodes stored (costs time)" ),
-        new CLOptionDescriptor( "zip", CLOptionDescriptor.ARGUMENT_DISALLOWED, ZIP_OPT, "write output to a ZIP instead of a file system directory" ),
-        new CLOptionDescriptor( "verbose", CLOptionDescriptor.ARGUMENT_DISALLOWED, VERBOSE_OPT, "print processed resources " +
-                "to stdout" )
+    private final static CLOptionDescriptor[] OPTIONS = new CLOptionDescriptor[]{
+            new CLOptionDescriptor("help", CLOptionDescriptor.ARGUMENT_DISALLOWED, HELP_OPT, "print help on command line options and exit."),
+            new CLOptionDescriptor("dir", CLOptionDescriptor.ARGUMENT_REQUIRED, OUTPUT_DIR_OPT, "the directory to which all output will be written."),
+            new CLOptionDescriptor("config", CLOptionDescriptor.ARGUMENT_REQUIRED, CONFIG_OPT, "the database configuration (conf.xml) file to use " + "for launching the db."),
+            new CLOptionDescriptor("direct", CLOptionDescriptor.ARGUMENT_DISALLOWED, DIRECT_ACCESS_OPT, "use an (even more) direct access to the db, bypassing some " + "index structures"),
+            new CLOptionDescriptor("export", CLOptionDescriptor.ARGUMENT_DISALLOWED, EXPORT_OPT, "export database contents while preserving as much data as possible"),
+            new CLOptionDescriptor("incremental", CLOptionDescriptor.ARGUMENT_DISALLOWED, INCREMENTAL_OPT, "create incremental backup (use with --export|-x)"),
+            new CLOptionDescriptor("nocheck", CLOptionDescriptor.ARGUMENT_DISALLOWED, NO_CHECK_OPT, "do not run a consistency check. Just export the data."),
+            new CLOptionDescriptor("check-docs", CLOptionDescriptor.ARGUMENT_DISALLOWED, CHECK_DOCS_OPT, "scan every document to find errors in the " +
+                    "the nodes stored (costs time)"),
+            new CLOptionDescriptor("zip", CLOptionDescriptor.ARGUMENT_DISALLOWED, ZIP_OPT, "write output to a ZIP instead of a file system directory"),
+            new CLOptionDescriptor("verbose", CLOptionDescriptor.ARGUMENT_DISALLOWED, VERBOSE_OPT, "print processed resources " +
+                    "to stdout")
     };
 
-    protected static BrokerPool startDB( String configFile )
-    {
+    protected static BrokerPool startDB(String configFile) {
         try {
             Configuration config;
 
-            if( configFile == null ) {
+            if (configFile == null) {
                 config = new Configuration();
             } else {
-                config = new Configuration( configFile, Optional.empty() );
+                config = new Configuration(configFile, Optional.empty());
             }
             config.setProperty(BrokerPool.PROPERTY_EXPORT_ONLY, Boolean.TRUE);
-            BrokerPool.configure( 1, 5, config );
-            return( BrokerPool.getInstance() );
+            BrokerPool.configure(1, 5, config);
+            return (BrokerPool.getInstance());
+        } catch (final DatabaseConfigurationException | EXistException e) {
+            System.err.println("ERROR: Failed to open database: " + e.getMessage());
         }
-        catch( final DatabaseConfigurationException | EXistException e ) {
-            System.err.println( "ERROR: Failed to open database: " + e.getMessage() );
-        }
-        return( null );
+        return (null);
     }
 
 
-    @SuppressWarnings( "unchecked" )
-    public static void main( String[] args )
-    {
-        final CLArgsParser optParser = new CLArgsParser( args, OPTIONS );
+    @SuppressWarnings("unchecked")
+    public static void main(String[] args) {
+        final CLArgsParser optParser = new CLArgsParser(args, OPTIONS);
 
-        if( optParser.getErrorString() != null ) {
-            System.err.println( "ERROR: " + optParser.getErrorString() );
+        if (optParser.getErrorString() != null) {
+            System.err.println("ERROR: " + optParser.getErrorString());
             return;
         }
-        boolean        export       = false;
-        boolean        incremental  = false;
-        boolean        direct       = false;
-        boolean        zip          = false;
-        boolean        nocheck      = false;
-        boolean        verbose      = false;
-        boolean        checkDocs    = false;
-        String         exportTarget = "export/";
-        String         dbConfig     = null;
+        boolean export = false;
+        boolean incremental = false;
+        boolean direct = false;
+        boolean zip = false;
+        boolean nocheck = false;
+        boolean verbose = false;
+        boolean checkDocs = false;
+        String exportTarget = "export/";
+        String dbConfig = null;
 
-        final List<CLOption> opts         = optParser.getArguments();
+        final List<CLOption> opts = optParser.getArguments();
 
-        for( final CLOption option : opts ) {
+        for (final CLOption option : opts) {
 
-            switch( option.getId() ) {
+            switch (option.getId()) {
 
                 case HELP_OPT: {
-                    System.out.println( "Usage: java " + ExportMain.class.getName() + " [options]" );
-                    System.out.println( CLUtil.describeOptions( OPTIONS ).toString() );
-                    System.exit( 0 );
+                    System.out.println("Usage: java " + ExportMain.class.getName() + " [options]");
+                    System.out.println(CLUtil.describeOptions(OPTIONS).toString());
+                    System.exit(0);
                     break;
                 }
 
@@ -147,7 +145,7 @@ public class ExportMain
                     incremental = true;
                     break;
                 }
-                
+
                 case ZIP_OPT: {
                     zip = true;
                     break;
@@ -170,53 +168,53 @@ public class ExportMain
             }
         }
 
-        final BrokerPool pool = startDB( dbConfig );
+        final BrokerPool pool = startDB(dbConfig);
 
-        if( pool == null ) {
-            System.exit( 1 );
+        if (pool == null) {
+            System.exit(1);
         }
-        int      retval = 0; // return value
+        int retval = 0; // return value
 
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-            List<ErrorReport> errors  = null;
-            
-            if(!nocheck) {
-                final ConsistencyCheck  checker = new ConsistencyCheck( broker, direct, checkDocs );
-                errors = checker.checkAll( new CheckCallback() );
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+            List<ErrorReport> errors = null;
+
+            if (!nocheck) {
+                final ConsistencyCheck checker = new ConsistencyCheck(broker, direct, checkDocs);
+                errors = checker.checkAll(new CheckCallback());
             }
 
-            if( errors != null && errors.size() > 0 ) {
-                System.err.println( "ERRORS FOUND." );
+            if (errors != null && errors.size() > 0) {
+                System.err.println("ERRORS FOUND.");
                 retval = 1;
             } else {
-                System.out.println( "No errors." );
+                System.out.println("No errors.");
             }
 
-            if( export ) {
-                final File dir = new File( exportTarget );
+            if (export) {
+                final Path dir = Paths.get(exportTarget);
 
-                if( !dir.exists() ) {
-                    dir.mkdirs();
+                if (!Files.exists(dir)) {
+                    Files.createDirectories(dir);
                 }
-                final SystemExport sysexport = new SystemExport( broker, new Callback(verbose), null, direct );
-                sysexport.export( exportTarget, incremental, zip, errors );
+                final SystemExport sysexport = new SystemExport(broker, new Callback(verbose), null, direct);
+                sysexport.export(exportTarget, incremental, zip, errors);
             }
-        }
-        catch( final EXistException e ) {
-            System.err.println( "ERROR: Failed to retrieve database broker: " + e.getMessage() );
+        } catch (final EXistException e) {
+            System.err.println("ERROR: Failed to retrieve database broker: " + e.getMessage());
             retval = 2;
-        }
-        catch( final TerminatedException e ) {
-            System.err.println( "WARN: Export was terminated by db." );
+        } catch (final TerminatedException e) {
+            System.err.println("WARN: Export was terminated by db.");
             retval = 3;
-        }
-        catch(final PermissionDeniedException pde) {
-            System.err.println( "ERROR: Failed to retrieve database data: " + pde.getMessage() );
+        } catch (final PermissionDeniedException pde) {
+            System.err.println("ERROR: Failed to retrieve database data: " + pde.getMessage());
             retval = 4;
+        } catch (final IOException pde) {
+            System.err.println("ERROR: Failed to retrieve database data: " + pde.getMessage());
+            retval = 5;
         } finally {
-            BrokerPool.stopAll( false );
+            BrokerPool.stopAll(false);
         }
-        System.exit( retval );
+        System.exit(retval);
     }
 
     private static class Callback implements SystemExport.StatusCallback {
@@ -227,48 +225,41 @@ public class ExportMain
             this.verbose = verbose;
         }
 
-        public void startCollection( String path )
-        {
+        public void startCollection(String path) {
             if (verbose) {
                 System.out.println("Entering collection " + path + " ...");
             }
         }
 
 
-        public void startDocument( String name, int count, int docsCount )
-        {
+        public void startDocument(String name, int count, int docsCount) {
             if (verbose) {
                 System.out.println("Writing document " + name + " [" + (count + 1) + " of " + docsCount + ']');
             }
         }
 
 
-        public void error( String message, Throwable exception )
-        {
-            System.err.println( message );
+        public void error(String message, Throwable exception) {
+            System.err.println(message);
 
-            if( exception != null ) {
+            if (exception != null) {
                 exception.printStackTrace();
             }
         }
     }
 
 
-    private static class CheckCallback implements org.exist.backup.ConsistencyCheck.ProgressCallback
-    {
-        public void startDocument( String name, int current, int count )
-        {
+    private static class CheckCallback implements org.exist.backup.ConsistencyCheck.ProgressCallback {
+        public void startDocument(String name, int current, int count) {
         }
 
 
-        public void startCollection( String path )
-        {
+        public void startCollection(String path) {
         }
 
 
-        public void error( ErrorReport error )
-        {
-            System.out.println( error.toString() );
+        public void error(ErrorReport error) {
+            System.out.println(error.toString());
         }
     }
 }

@@ -32,6 +32,7 @@ import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.base.XMLDBException;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -122,11 +123,17 @@ public class Runner {
     }
 
     public void shutdown() {
-        if (resultWriter != null)
-            resultWriter.close();
+        try {
+            if (resultWriter != null) {
+                resultWriter.close();
+            }
+        } catch(final IOException e) {
+            e.printStackTrace();
+        }
+
         try {
             shutdownDb();
-        } catch (XMLDBException e) {
+        } catch (final XMLDBException e) {
             e.printStackTrace();
         }
     }

@@ -23,13 +23,17 @@
  */
 package org.exist.indexing.spatial;
 
-import java.io.File;
+import java.io.IOException;
 import java.io.StringReader;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Optional;
 
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
@@ -39,17 +43,18 @@ import org.exist.EXistException;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.indexing.spatial.AbstractGMLJDBCIndex.SpatialOperator;
 import org.exist.dom.memtree.SAXAdapter;
+import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.IndexQueryService;
 import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Sequence;
 import org.geotools.gml.GMLFilterDocument;
 import org.geotools.gml.GMLFilterGeometry;
 import org.geotools.gml.GMLHandlerJTS;
-import org.xml.sax.InputSource;
-import org.xml.sax.XMLReader;
+import org.xml.sax.*;
 import org.xml.sax.helpers.XMLFilterImpl;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -66,13 +71,14 @@ import com.vividsolutions.jts.geom.Geometry;
 public class GMLIndexTest extends TestCase {
 
     private final static String FILES[] = { "15385-SS7886-5i1.gml" };
-    static File existDir;
+    static Path existDir;
     static {
         String existHome = System.getProperty("exist.home");
-        existDir = existHome == null ? new File(".") : new File(existHome);
+        existDir = existHome == null ? Paths.get(".") : Paths.get(existHome);
+        existDir = existDir.normalize();
     }
     
-    private final static File RESOURCE_DIR_DIR = new File(existDir, "extensions/indexes/spatial/test/resources");
+    private final static Path RESOURCE_DIR_DIR = existDir.resolve("extensions/indexes/spatial/test/resources");
     private static final String TEST_COLLECTION_NAME = "test-spatial-index";
 
     private static String COLLECTION_CONFIG =
@@ -103,941 +109,885 @@ public class GMLIndexTest extends TestCase {
     private Collection testCollection;
     private Geometry currentGeometry;
 
-    public void testIndexDocument() {
+    public void testIndexDocument() throws XMLDBException, EXistException {
+        for (int i = 0; i < FILES.length; i++) {
+            XMLResource doc =
+                (XMLResource) testCollection.createResource(
+                        FILES[i], "XMLResource" );
+            //Doh ! Setting a new content doesn't remove the old one if any !
+            if (testCollection.getResource(FILES[i]) != null)
+                testCollection.removeResource(doc);
+            doc.setContent(RESOURCE_DIR_DIR.resolve(FILES[i]));
+            testCollection.storeResource(doc);
+            assertNotNull(testCollection.getResource(FILES[i]));
+        }
 
-        try {
-            for (int i = 0; i < FILES.length; i++) {
-                XMLResource doc =
-                    (XMLResource) testCollection.createResource(
-                            FILES[i], "XMLResource" );
-                //Doh ! Setting a new content doesn't remove the old one if any !
-                if (testCollection.getResource(FILES[i]) != null)
-                    testCollection.removeResource(doc);
-                doc.setContent(new File(RESOURCE_DIR_DIR, FILES[i]));
-                testCollection.storeResource(doc);
-                assertNotNull(testCollection.getResource(FILES[i]));
-            }
-
-            try {
-                final BrokerPool pool = BrokerPool.getInstance();
-                try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-                    GMLHSQLIndexWorker indexWorker = (GMLHSQLIndexWorker) broker.getIndexController().getWorkerByIndexId(AbstractGMLJDBCIndex.ID);
-                    //Unplugged
-                    if (indexWorker != null) {
-                        try {
-                            Connection conn = null;
-                            try {
-                                conn = indexWorker.acquireConnection();
-                                for (int i = 0; i < FILES.length; i++) {
-                                    XMLResource doc =
-                                            (XMLResource) testCollection.getResource(FILES[i]);
-                                    PreparedStatement ps = conn.prepareStatement(
-                                            "SELECT * FROM " + GMLHSQLIndex.TABLE_NAME + " WHERE DOCUMENT_URI = ?;"
-                                    );
-                                    ps.setString(1, testCollection.getName() + "/" + doc.getDocumentId());
-                                    ResultSet rs = ps.executeQuery();
-                                    while (rs.next()) {
-                                        //Let be sure we have the right count
-                                    }
-                                    int count = rs.getRow();
-                                    ps.close();
-                                    assertTrue(count > 0);
-                                }
-                            } finally {
-                                indexWorker.releaseConnection(conn);
+        final BrokerPool pool = BrokerPool.getInstance();
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+            GMLHSQLIndexWorker indexWorker = (GMLHSQLIndexWorker) broker.getIndexController().getWorkerByIndexId(AbstractGMLJDBCIndex.ID);
+            //Unplugged
+            if (indexWorker != null) {
+                try {
+                    Connection conn = null;
+                    try {
+                        conn = indexWorker.acquireConnection();
+                        for (int i = 0; i < FILES.length; i++) {
+                            XMLResource doc =
+                                    (XMLResource) testCollection.getResource(FILES[i]);
+                            PreparedStatement ps = conn.prepareStatement(
+                                    "SELECT * FROM " + GMLHSQLIndex.TABLE_NAME + " WHERE DOCUMENT_URI = ?;"
+                            );
+                            ps.setString(1, testCollection.getName() + "/" + doc.getDocumentId());
+                            ResultSet rs = ps.executeQuery();
+                            while (rs.next()) {
+                                //Let be sure we have the right count
                             }
-                        } catch (SQLException e) {
-                            e.printStackTrace();
-                            fail(e.getMessage());
+                            int count = rs.getRow();
+                            ps.close();
+                            assertTrue(count > 0);
                         }
+                    } finally {
+                        indexWorker.releaseConnection(conn);
                     }
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    fail(e.getMessage());
                 }
             }
-        } catch (XMLDBException e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } catch (EXistException e) {
-            e.printStackTrace();
-            fail(e.getMessage());
         }
     }
     
-    public void testCheckIndex() {
-        try {
-            final BrokerPool pool = BrokerPool.getInstance();
-            assertNotNull(pool);
-            try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-                AbstractGMLJDBCIndex index = (AbstractGMLJDBCIndex) pool.getIndexManager().getIndexById(AbstractGMLJDBCIndex.ID);
-                //Unplugged
-                if (index != null) {
-                    assertTrue(index.checkIndex(broker));
-                }
+    public void testCheckIndex() throws EXistException {
+        final BrokerPool pool = BrokerPool.getInstance();
+        assertNotNull(pool);
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+            AbstractGMLJDBCIndex index = (AbstractGMLJDBCIndex) pool.getIndexManager().getIndexById(AbstractGMLJDBCIndex.ID);
+            //Unplugged
+            if (index != null) {
+                assertTrue(index.checkIndex(broker));
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
         }
     }
     
-    public void testScanIndex() {
-        try {
-            final BrokerPool pool = BrokerPool.getInstance();
-            try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-                XQuery xquery = pool.getXQueryService();
-                assertNotNull(xquery);
-                Sequence seq = xquery.execute(
-                        broker,
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                                "declare function local:key-callback($term as xs:string, $data as xs:int+) as element() { " +
-                                "   <entry>" +
-                                "     <term>{$term}</term>" +
-                                "     <frequency>{$data[1]}</frequency>" +
-                                "     <documents>{$data[2]}</documents>" +
-                                "     <position>{$data[3]}</position>" +
-                                "   </entry> " +
-                                "}; " +
-                                //"util:index-keys(//gml:*, '', util:function(xs:QName('local:key-callback'), 2), 1000, 'spatial-index')[entry/frequency > 1] ",
-                                "util:index-keys(//gml:*, '', util:function(xs:QName('local:key-callback'), 2), 1000, 'spatial-index') ",
-                        null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 1);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
+    public void testScanIndex() throws EXistException, PermissionDeniedException, XPathException {
+        final BrokerPool pool = BrokerPool.getInstance();
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+            XQuery xquery = pool.getXQueryService();
+            assertNotNull(xquery);
+            Sequence seq = xquery.execute(
+                    broker,
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                            "declare function local:key-callback($term as xs:string, $data as xs:int+) as element() { " +
+                            "   <entry>" +
+                            "     <term>{$term}</term>" +
+                            "     <frequency>{$data[1]}</frequency>" +
+                            "     <documents>{$data[2]}</documents>" +
+                            "     <position>{$data[3]}</position>" +
+                            "   </entry> " +
+                            "}; " +
+                            //"util:index-keys(//gml:*, '', util:function(xs:QName('local:key-callback'), 2), 1000, 'spatial-index')[entry/frequency > 1] ",
+                            "util:index-keys(//gml:*, '', util:function(xs:QName('local:key-callback'), 2), 1000, 'spatial-index') ",
+                    null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 1);
         }
     }
     
-    public void testLowLevelSearch() {
+    public void testLowLevelSearch() throws EXistException, SAXException, ParserConfigurationException, SpatialIndexException, IOException {
     	GMLHandlerJTS geometryHandler = new GeometryHandler();
         GMLFilterGeometry geometryFilter = new GMLFilterGeometry(geometryHandler);
         GMLFilterDocument handler = new GMLFilterDocument(geometryFilter);
-        try {
-            final BrokerPool pool = BrokerPool.getInstance();
-            try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-                AbstractGMLJDBCIndexWorker indexWorker = (AbstractGMLJDBCIndexWorker) broker.getIndexController().getWorkerByIndexId(AbstractGMLJDBCIndex.ID);
-                //Unplugged
-                if (indexWorker != null) {
-                    SAXParserFactory factory = SAXParserFactory.newInstance();
-                    factory.setNamespaceAware(true);
-                    InputSource src = new InputSource(new StringReader(IN_MEMORY_GML));
-                    SAXParser parser = factory.newSAXParser();
-                    XMLReader reader = parser.getXMLReader();
-                    SAXAdapter adapter = new SAXAdapter();
-                    reader.setContentHandler(handler);
-                    reader.setProperty("http://xml.org/sax/properties/lexical-handler", adapter);
-                    reader.parse(src);
 
-                    Geometry EPSG4326_geometry = indexWorker.transformGeometry(currentGeometry, "osgb:BNG", "EPSG:4326");
-                    assertNotNull(EPSG4326_geometry);
+        final BrokerPool pool = BrokerPool.getInstance();
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+            AbstractGMLJDBCIndexWorker indexWorker = (AbstractGMLJDBCIndexWorker) broker.getIndexController().getWorkerByIndexId(AbstractGMLJDBCIndex.ID);
+            //Unplugged
+            if (indexWorker != null) {
+                SAXParserFactory factory = SAXParserFactory.newInstance();
+                factory.setNamespaceAware(true);
+                InputSource src = new InputSource(new StringReader(IN_MEMORY_GML));
+                SAXParser parser = factory.newSAXParser();
+                XMLReader reader = parser.getXMLReader();
+                SAXAdapter adapter = new SAXAdapter();
+                reader.setContentHandler(handler);
+                reader.setProperty("http://xml.org/sax/properties/lexical-handler", adapter);
+                reader.parse(src);
 
-                    NodeSet ns = indexWorker.search(broker, null, EPSG4326_geometry, SpatialOperator.EQUALS);
-                    assertTrue(ns.getLength() > 0);
-                    ns = indexWorker.search(broker, null, EPSG4326_geometry, SpatialOperator.DISJOINT);
-                    assertTrue(ns.getLength() > 0);
-                    ns = indexWorker.search(broker, null, EPSG4326_geometry, SpatialOperator.INTERSECTS);
-                    assertTrue(ns.getLength() > 0);
-                    ns = indexWorker.search(broker, null, EPSG4326_geometry, SpatialOperator.TOUCHES);
-                    //assertTrue(ns.getLength() > 0);
-                    ns = indexWorker.search(broker, null, EPSG4326_geometry, SpatialOperator.CROSSES);
-                    //assertTrue(ns.getLength() > 0);
-                    ns = indexWorker.search(broker, null, EPSG4326_geometry, SpatialOperator.WITHIN);
-                    assertTrue(ns.getLength() > 0);
-                    ns = indexWorker.search(broker, null, EPSG4326_geometry, SpatialOperator.CONTAINS);
-                    assertTrue(ns.getLength() > 0);
-                    //ns = ((GMLIndexWorker)index.getWorker()).search(broker, EPSG4326_geometry, SpatialOperator.OVERLAPS);
-                    //assertTrue(ns.getLength() > 0);
-                }
+                Geometry EPSG4326_geometry = indexWorker.transformGeometry(currentGeometry, "osgb:BNG", "EPSG:4326");
+                assertNotNull(EPSG4326_geometry);
+
+                NodeSet ns = indexWorker.search(broker, null, EPSG4326_geometry, SpatialOperator.EQUALS);
+                assertTrue(ns.getLength() > 0);
+                ns = indexWorker.search(broker, null, EPSG4326_geometry, SpatialOperator.DISJOINT);
+                assertTrue(ns.getLength() > 0);
+                ns = indexWorker.search(broker, null, EPSG4326_geometry, SpatialOperator.INTERSECTS);
+                assertTrue(ns.getLength() > 0);
+                ns = indexWorker.search(broker, null, EPSG4326_geometry, SpatialOperator.TOUCHES);
+                //assertTrue(ns.getLength() > 0);
+                ns = indexWorker.search(broker, null, EPSG4326_geometry, SpatialOperator.CROSSES);
+                //assertTrue(ns.getLength() > 0);
+                ns = indexWorker.search(broker, null, EPSG4326_geometry, SpatialOperator.WITHIN);
+                assertTrue(ns.getLength() > 0);
+                ns = indexWorker.search(broker, null, EPSG4326_geometry, SpatialOperator.CONTAINS);
+                assertTrue(ns.getLength() > 0);
+                //ns = ((GMLIndexWorker)index.getWorker()).search(broker, EPSG4326_geometry, SpatialOperator.OVERLAPS);
+                //assertTrue(ns.getLength() > 0);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage()); 
         }
     }
   
-    public void testHighLevelSearch() {
-        try {
-            final BrokerPool pool = BrokerPool.getInstance();
-            try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-                XQuery xquery = pool.getXQueryService();
-                assertNotNull(xquery);
-                String query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:equals(//gml:*, //gml:Point[gml:coordinates[. = '278697.450,187740.900']])";
-                Sequence seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:disjoint(//gml:*, //gml:Point[gml:coordinates[. = '278697.450,187740.900']])";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:intersects(//gml:*, //gml:Point[gml:coordinates[. = '278697.450,187740.900']])";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:touches(//gml:*, //gml:Point[gml:coordinates[. = '278697.450,187740.900']])";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                //assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:crosses(//gml:*, //gml:Point[gml:coordinates[. = '278697.450,187740.900']])";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                //assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:within(//gml:*, //gml:Point[gml:coordinates[. = '278697.450,187740.900']])";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:contains(//gml:*, //gml:Point[gml:coordinates[. = '278697.450,187740.900']])";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:overlaps(//gml:*, //gml:Point[gml:coordinates[. = '278697.450,187740.900']])";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                //assertTrue(seq.getItemCount() > 0);
+    public void testHighLevelSearch() throws EXistException, PermissionDeniedException, XPathException {
+        final BrokerPool pool = BrokerPool.getInstance();
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+            XQuery xquery = pool.getXQueryService();
+            assertNotNull(xquery);
+            String query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:equals(//gml:*, //gml:Point[gml:coordinates[. = '278697.450,187740.900']])";
+            Sequence seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:disjoint(//gml:*, //gml:Point[gml:coordinates[. = '278697.450,187740.900']])";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:intersects(//gml:*, //gml:Point[gml:coordinates[. = '278697.450,187740.900']])";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:touches(//gml:*, //gml:Point[gml:coordinates[. = '278697.450,187740.900']])";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            //assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:crosses(//gml:*, //gml:Point[gml:coordinates[. = '278697.450,187740.900']])";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            //assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:within(//gml:*, //gml:Point[gml:coordinates[. = '278697.450,187740.900']])";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:contains(//gml:*, //gml:Point[gml:coordinates[. = '278697.450,187740.900']])";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:overlaps(//gml:*, //gml:Point[gml:coordinates[. = '278697.450,187740.900']])";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            //assertTrue(seq.getItemCount() > 0);
 
-                //Tests with empty sequences
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:equals(//gml:*, ())";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:overlaps((), //gml:Point[gml:coordinates[. = '278697.450,187740.900']])";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() == 0);
+            //Tests with empty sequences
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:equals(//gml:*, ())";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:overlaps((), //gml:Point[gml:coordinates[. = '278697.450,187740.900']])";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() == 0);
 
-                //In-memory test
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:equals(//gml:*, " + IN_MEMORY_GML + ")";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
+            //In-memory test
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:equals(//gml:*, " + IN_MEMORY_GML + ")";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
         }
     }
     
-    public void testGeometricProperties() {
-        try {
-            final BrokerPool pool = BrokerPool.getInstance();
-            try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-                XQuery xquery = pool.getXQueryService();
-                assertNotNull(xquery);
-                String query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:getWKT((//gml:Polygon)[1])";
-                Sequence seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:getWKB((//gml:Polygon)[1])";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:getMinX((//gml:Polygon)[1])";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:getMaxX((//gml:Polygon)[1])";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:getMinY((//gml:Polygon)[1])";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:getMaxY((//gml:Polygon)[1])";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:getCentroidX((//gml:Polygon)[1])";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:getCentroidY((//gml:Polygon)[1])";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:getArea((//gml:Polygon)[1])";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:getEPSG4326WKT((//gml:Polygon)[1])";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:getEPSG4326WKB((//gml:Polygon)[1])";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:getEPSG4326MinX((//gml:Polygon)[1])";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:getEPSG4326MaxX((//gml:Polygon)[1])";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:getEPSG4326MinY((//gml:Polygon)[1])";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:getEPSG4326MaxY((//gml:Polygon)[1])";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:getEPSG4326CentroidX((//gml:Polygon)[1])";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:getEPSG4326CentroidY((//gml:Polygon)[1])";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:getEPSG4326Area((//gml:Polygon)[1])";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:getSRS((//gml:Polygon)[1])";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:getGeometryType((//gml:Polygon)[1])";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:isClosed((//gml:Polygon)[1])";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:isSimple((//gml:Polygon)[1])";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:isValid((//gml:Polygon)[1])";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
+    public void testGeometricProperties() throws EXistException, PermissionDeniedException, XPathException {
+        final BrokerPool pool = BrokerPool.getInstance();
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+            XQuery xquery = pool.getXQueryService();
+            assertNotNull(xquery);
+            String query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:getWKT((//gml:Polygon)[1])";
+            Sequence seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:getWKB((//gml:Polygon)[1])";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:getMinX((//gml:Polygon)[1])";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:getMaxX((//gml:Polygon)[1])";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:getMinY((//gml:Polygon)[1])";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:getMaxY((//gml:Polygon)[1])";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:getCentroidX((//gml:Polygon)[1])";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:getCentroidY((//gml:Polygon)[1])";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:getArea((//gml:Polygon)[1])";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:getEPSG4326WKT((//gml:Polygon)[1])";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:getEPSG4326WKB((//gml:Polygon)[1])";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:getEPSG4326MinX((//gml:Polygon)[1])";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:getEPSG4326MaxX((//gml:Polygon)[1])";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:getEPSG4326MinY((//gml:Polygon)[1])";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:getEPSG4326MaxY((//gml:Polygon)[1])";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:getEPSG4326CentroidX((//gml:Polygon)[1])";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:getEPSG4326CentroidY((//gml:Polygon)[1])";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:getEPSG4326Area((//gml:Polygon)[1])";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:getSRS((//gml:Polygon)[1])";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:getGeometryType((//gml:Polygon)[1])";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:isClosed((//gml:Polygon)[1])";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:isSimple((//gml:Polygon)[1])";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:isValid((//gml:Polygon)[1])";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
 
-                //Tests with empty sequences
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:getWKT(())";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() == 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:getArea(())";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() == 0);
-                //In-memory tests
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:getWKT(" + IN_MEMORY_GML + ")";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:getWKB(" + IN_MEMORY_GML + ")";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:getMinX(" + IN_MEMORY_GML + ")";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:getMaxX(" + IN_MEMORY_GML + ")";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:getMinY(" + IN_MEMORY_GML + ")";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:getMaxY(" + IN_MEMORY_GML + ")";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:getCentroidX(" + IN_MEMORY_GML + ")";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:getCentroidY(" + IN_MEMORY_GML + ")";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:getArea(" + IN_MEMORY_GML + ")";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:getEPSG4326WKT(" + IN_MEMORY_GML + ")";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:getEPSG4326WKB(" + IN_MEMORY_GML + ")";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:getEPSG4326MinX(" + IN_MEMORY_GML + ")";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:getEPSG4326MaxX(" + IN_MEMORY_GML + ")";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:getEPSG4326MinY(" + IN_MEMORY_GML + ")";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:getEPSG4326MaxY(" + IN_MEMORY_GML + ")";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:getEPSG4326CentroidX(" + IN_MEMORY_GML + ")";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:getEPSG4326CentroidY(" + IN_MEMORY_GML + ")";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:getEPSG4326Area(" + IN_MEMORY_GML + ")";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:getSRS(" + IN_MEMORY_GML + ")";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:getGeometryType(" + IN_MEMORY_GML + ")";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:isClosed(" + IN_MEMORY_GML + ")";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:isSimple(" + IN_MEMORY_GML + ")";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:isValid(" + IN_MEMORY_GML + ")";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage()); 
+            //Tests with empty sequences
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:getWKT(())";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() == 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:getArea(())";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() == 0);
+            //In-memory tests
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:getWKT(" + IN_MEMORY_GML + ")";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:getWKB(" + IN_MEMORY_GML + ")";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:getMinX(" + IN_MEMORY_GML + ")";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:getMaxX(" + IN_MEMORY_GML + ")";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:getMinY(" + IN_MEMORY_GML + ")";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:getMaxY(" + IN_MEMORY_GML + ")";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:getCentroidX(" + IN_MEMORY_GML + ")";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:getCentroidY(" + IN_MEMORY_GML + ")";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:getArea(" + IN_MEMORY_GML + ")";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:getEPSG4326WKT(" + IN_MEMORY_GML + ")";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:getEPSG4326WKB(" + IN_MEMORY_GML + ")";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:getEPSG4326MinX(" + IN_MEMORY_GML + ")";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:getEPSG4326MaxX(" + IN_MEMORY_GML + ")";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:getEPSG4326MinY(" + IN_MEMORY_GML + ")";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:getEPSG4326MaxY(" + IN_MEMORY_GML + ")";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:getEPSG4326CentroidX(" + IN_MEMORY_GML + ")";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:getEPSG4326CentroidY(" + IN_MEMORY_GML + ")";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:getEPSG4326Area(" + IN_MEMORY_GML + ")";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:getSRS(" + IN_MEMORY_GML + ")";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:getGeometryType(" + IN_MEMORY_GML + ")";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:isClosed(" + IN_MEMORY_GML + ")";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:isSimple(" + IN_MEMORY_GML + ")";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:isValid(" + IN_MEMORY_GML + ")";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
         }
     }
     
-    public void testGMLProducers() {
-        try {
-            final BrokerPool pool = BrokerPool.getInstance();
-            try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-                XQuery xquery = pool.getXQueryService();
-                assertNotNull(xquery);
-                String query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:transform((//gml:Polygon)[1], 'EPSG:4326')";
-                Sequence seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:getWKT((//gml:Polygon)[1])";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:buffer((//gml:Polygon)[1], 100)";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:buffer((//gml:Polygon)[1], 100, 1)";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:getBbox((//gml:Polygon)[1])";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:convexHull((//gml:Polygon)[1])";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:boundary((//gml:Polygon)[1])";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:intersection((//gml:Polygon)[1], (//gml:Polygon)[2])";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:union((//gml:Polygon)[1], (//gml:Polygon)[2])";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:difference((//gml:Polygon)[1], (//gml:Polygon)[2])";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:symetricDifference((//gml:Polygon)[1], (//gml:Polygon)[2])";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
+    public void testGMLProducers() throws PermissionDeniedException, XPathException, EXistException {
+        final BrokerPool pool = BrokerPool.getInstance();
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+            XQuery xquery = pool.getXQueryService();
+            assertNotNull(xquery);
+            String query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:transform((//gml:Polygon)[1], 'EPSG:4326')";
+            Sequence seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:getWKT((//gml:Polygon)[1])";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:buffer((//gml:Polygon)[1], 100)";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:buffer((//gml:Polygon)[1], 100, 1)";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:getBbox((//gml:Polygon)[1])";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:convexHull((//gml:Polygon)[1])";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:boundary((//gml:Polygon)[1])";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:intersection((//gml:Polygon)[1], (//gml:Polygon)[2])";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:union((//gml:Polygon)[1], (//gml:Polygon)[2])";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:difference((//gml:Polygon)[1], (//gml:Polygon)[2])";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:symetricDifference((//gml:Polygon)[1], (//gml:Polygon)[2])";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
 
-                //Tests with empty sequences
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:transform((), 'EPSG:4326')";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() == 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:getWKT(())";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() == 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:buffer((), 100)";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() == 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:buffer((), 100, 1)";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() == 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:getBbox(())";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() == 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:convexHull(())";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() == 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:boundary(())";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() == 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:union((), ())";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() == 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:union((//gml:Polygon)[1], ())";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() == 1);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:union((), (//gml:Polygon)[1])";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() == 1);
+            //Tests with empty sequences
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:transform((), 'EPSG:4326')";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() == 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:getWKT(())";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() == 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:buffer((), 100)";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() == 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:buffer((), 100, 1)";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() == 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:getBbox(())";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() == 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:convexHull(())";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() == 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:boundary(())";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() == 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:union((), ())";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() == 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:union((//gml:Polygon)[1], ())";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() == 1);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:union((), (//gml:Polygon)[1])";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() == 1);
 
-                //In-memory tests
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:transform(" + IN_MEMORY_GML + ", 'EPSG:4326')";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:buffer(" + IN_MEMORY_GML + ", 100)";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:buffer(" + IN_MEMORY_GML + ", 100, 1)";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:getBbox(" + IN_MEMORY_GML + ")";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:convexHull(" + IN_MEMORY_GML + ")";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:boundary(" + IN_MEMORY_GML + ")";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:intersection(" + IN_MEMORY_GML + ", (//gml:Polygon)[2])";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:union(" + IN_MEMORY_GML + ", (//gml:Polygon)[2])";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:difference(" + IN_MEMORY_GML + ", (//gml:Polygon)[2])";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:symetricDifference(" + IN_MEMORY_GML + ", (//gml:Polygon)[2])";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:intersection((//gml:Polygon)[1]," + IN_MEMORY_GML + ")";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:union((//gml:Polygon)[1]," + IN_MEMORY_GML + ")";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:difference((//gml:Polygon)[1]," + IN_MEMORY_GML + ")";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "spatial:symetricDifference((//gml:Polygon)[1]," + IN_MEMORY_GML + ")";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() > 0);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage()); 
+            //In-memory tests
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:transform(" + IN_MEMORY_GML + ", 'EPSG:4326')";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:buffer(" + IN_MEMORY_GML + ", 100)";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:buffer(" + IN_MEMORY_GML + ", 100, 1)";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:getBbox(" + IN_MEMORY_GML + ")";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:convexHull(" + IN_MEMORY_GML + ")";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:boundary(" + IN_MEMORY_GML + ")";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:intersection(" + IN_MEMORY_GML + ", (//gml:Polygon)[2])";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:union(" + IN_MEMORY_GML + ", (//gml:Polygon)[2])";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:difference(" + IN_MEMORY_GML + ", (//gml:Polygon)[2])";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:symetricDifference(" + IN_MEMORY_GML + ", (//gml:Polygon)[2])";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:intersection((//gml:Polygon)[1]," + IN_MEMORY_GML + ")";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:union((//gml:Polygon)[1]," + IN_MEMORY_GML + ")";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:difference((//gml:Polygon)[1]," + IN_MEMORY_GML + ")";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "spatial:symetricDifference((//gml:Polygon)[1]," + IN_MEMORY_GML + ")";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() > 0);
         }
     }    
 
-    public void testUpdate() {
-        try {
-            final BrokerPool pool = BrokerPool.getInstance();
-            try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-                XQuery xquery = pool.getXQueryService();
-                assertNotNull(xquery);
-                String query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "(# exist:force-index-use #) { " +
-                        "spatial:getArea((//gml:Polygon)[1]) " +
-                        "}";
-                Sequence seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() == 1);
-                String area1 = seq.toString();
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "update value (//gml:Polygon)[1]/gml:outerBoundaryIs/gml:LinearRing/gml:coordinates " +
-                        "(: strip decimals :) " +
-                        "with fn:replace((//gml:Polygon)[1], '(\\d+).(\\d+)', '$1')";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() == 0);
-                query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
-                        "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
-                        "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                        "(# exist:force-index-use #) { " +
-                        "spatial:getArea((//gml:Polygon)[1])" +
-                        "}";
-                seq = xquery.execute(broker, query, null);
-                assertNotNull(seq);
-                assertTrue(seq.getItemCount() == 1);
-                String area2 = seq.toString();
-                assertFalse(area1.equals(area2));
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
+    public void testUpdate() throws PermissionDeniedException, XPathException, EXistException {
+        final BrokerPool pool = BrokerPool.getInstance();
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+            XQuery xquery = pool.getXQueryService();
+            assertNotNull(xquery);
+            String query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "(# exist:force-index-use #) { " +
+                    "spatial:getArea((//gml:Polygon)[1]) " +
+                    "}";
+            Sequence seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() == 1);
+            String area1 = seq.toString();
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "update value (//gml:Polygon)[1]/gml:outerBoundaryIs/gml:LinearRing/gml:coordinates " +
+                    "(: strip decimals :) " +
+                    "with fn:replace((//gml:Polygon)[1], '(\\d+).(\\d+)', '$1')";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() == 0);
+            query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
+                    "at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
+                    "declare namespace gml = 'http://www.opengis.net/gml'; " +
+                    "(# exist:force-index-use #) { " +
+                    "spatial:getArea((//gml:Polygon)[1])" +
+                    "}";
+            seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertTrue(seq.getItemCount() == 1);
+            String area2 = seq.toString();
+            assertFalse(area1.equals(area2));
         }
     }
 
     @Override
-    protected void setUp() {
-        try {
-            // initialize driver
-            Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
-            database = (Database) cl.newInstance();
-            database.setProperty("create-database", "true");
-            DatabaseManager.registerDatabase(database);
-            
-            Collection root =
-                DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
-            CollectionManagementService service =
-                (CollectionManagementService) root.getService(
-                        "CollectionManagementService",
-                "1.0");
-            testCollection = root.getChildCollection(TEST_COLLECTION_NAME);
-            if (testCollection == null) {
-                testCollection = service.createCollection(TEST_COLLECTION_NAME);
-                assertNotNull(testCollection);
-                IndexQueryService idxConf = (IndexQueryService)
-                testCollection.getService("IndexQueryService", "1.0");
-                idxConf.configureCollection(COLLECTION_CONFIG);
-            }
-            
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (XMLDBException e) {
-            e.printStackTrace();
+    protected void setUp() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
+        // initialize driver
+        Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
+        database = (Database) cl.newInstance();
+        database.setProperty("create-database", "true");
+        DatabaseManager.registerDatabase(database);
+
+        Collection root =
+            DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
+        CollectionManagementService service =
+            (CollectionManagementService) root.getService(
+                    "CollectionManagementService",
+            "1.0");
+        testCollection = root.getChildCollection(TEST_COLLECTION_NAME);
+        if (testCollection == null) {
+            testCollection = service.createCollection(TEST_COLLECTION_NAME);
+            assertNotNull(testCollection);
+            IndexQueryService idxConf = (IndexQueryService)
+            testCollection.getService("IndexQueryService", "1.0");
+            idxConf.configureCollection(COLLECTION_CONFIG);
         }
     }
 

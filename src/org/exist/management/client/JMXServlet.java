@@ -21,9 +21,6 @@
  */
 package org.exist.management.client;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -31,6 +28,9 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
@@ -43,6 +43,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerException;
+
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -54,24 +55,23 @@ import org.w3c.dom.Element;
  * A servlet to monitor the database. It returns status information for the database based on the JMX interface. For
  * simplicity, the JMX beans provided by eXist are organized into categories. One calls the servlet with one or more
  * categories in parameter "c", e.g.:
- *
+ * <p>
  * /exist/jmx?c=instances&c=memory
- *
+ * <p>
  * If no parameter is specified, all categories will be returned. Valid categories are "memory", "instances", "disk",
  * "system", "caches", "locking", "processes", "sanity", "all".
- *
+ * <p>
  * The servlet can also be used to test if the database is responsive by using parameter "operation=ping" and a timeout
  * (t=timeout-in-milliseconds). For example, the following call
- *
+ * <p>
  * /exist/jmx?operation=ping&t=1000
- *
+ * <p>
  * will wait for a response within 1000ms. If the ping returns within the specified timeout, the servlet returns the
  * attributes of the SanityReport JMX bean, which will include an element &lt;jmx:Status&gt;PING_OK&lt;/jmx:Status&gt;.
  * If the ping takes longer than the timeout, you'll instead find an element &lt;jmx:error&gt; in the returned XML. In
  * this case, additional information on running queries, memory consumption and database locks will be provided.
  *
  * @author wolf
- *
  */
 public class JMXServlet extends HttpServlet {
 
@@ -91,8 +91,8 @@ public class JMXServlet extends HttpServlet {
     private JMXtoXML client;
     private final Set<String> localhostAddresses = new HashSet<>();
 
-    private File dataDir;
-    private File tokenFile;
+    private Path dataDir;
+    private Path tokenFile;
 
 
     @Override
@@ -106,7 +106,7 @@ public class JMXServlet extends HttpServlet {
         } else if (hasSecretToken(request, getToken())) {
             // Correct token is provided
             LOG.debug("Correct token provided by " + request.getRemoteHost());
-            
+
         } else {
             // Check if user is already authorized, e.g. via MONEX allow user too
             response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access allowed for localhost, or when correct token has been provided.");
@@ -196,11 +196,11 @@ public class JMXServlet extends HttpServlet {
         // Get directory for token file
         final String jmxDataDir = client.getDataDir();
         if (jmxDataDir == null) {
-            dataDir = new File(config.getServletContext().getRealPath(WEBINF_DATA_DIR));
+            dataDir = Paths.get(config.getServletContext().getRealPath(WEBINF_DATA_DIR)).normalize();
         } else {
-            dataDir = new File(jmxDataDir);
+            dataDir = Paths.get(jmxDataDir).normalize();
         }
-        if (!dataDir.isDirectory() || !dataDir.canWrite()) {
+        if (!Files.isDirectory(dataDir) || !Files.isWritable(dataDir)) {
             LOG.error("Cannot access directory " + WEBINF_DATA_DIR);
         }
 
@@ -208,7 +208,7 @@ public class JMXServlet extends HttpServlet {
         obtainTokenFileReference();
 
         LOG.info(String.format("JMXservlet token: %s", getToken()));
-        
+
     }
 
     /**
@@ -263,8 +263,8 @@ public class JMXServlet extends HttpServlet {
     private void obtainTokenFileReference() {
 
         if (tokenFile == null) {
-            tokenFile = new File(dataDir, TOKEN_FILE);
-            LOG.info(String.format("Token file:  %s", tokenFile.getAbsolutePath()));
+            tokenFile = dataDir.resolve(TOKEN_FILE);
+            LOG.info(String.format("Token file:  %s", tokenFile.toAbsolutePath().toAbsolutePath()));
         }
     }
 
@@ -279,19 +279,19 @@ public class JMXServlet extends HttpServlet {
         String token = null;
 
         // Read if possible
-        if (tokenFile.exists()) {
+        if (Files.exists(tokenFile)) {
 
-            try (InputStream is = new FileInputStream(tokenFile)) {
+            try (final InputStream is = Files.newInputStream(tokenFile)) {
                 props.load(is);
                 token = props.getProperty(TOKEN_KEY);
             } catch (IOException ex) {
                 LOG.error(ex.getMessage());
-            } 
+            }
 
         }
 
         // Create and write when needed
-        if (!tokenFile.exists() || token == null) {
+        if (!Files.exists(tokenFile) || token == null) {
 
             // Create random token
             token = UUID.randomUUID().toString();
@@ -300,13 +300,13 @@ public class JMXServlet extends HttpServlet {
             props.setProperty(TOKEN_KEY, token);
 
             // Write data to file
-            try (OutputStream os = new FileOutputStream(tokenFile)) {
+            try (final OutputStream os = Files.newOutputStream(tokenFile)) {
                 props.store(os, "JMXservlet token: http://localhost:8080/exist/status?token=......");
             } catch (IOException ex) {
                 LOG.error(ex.getMessage());
             }
 
-            LOG.debug(String.format("Token written to file %s", tokenFile.getAbsolutePath()));
+            LOG.debug(String.format("Token written to file %s", tokenFile.toAbsolutePath().toString()));
 
         }
 

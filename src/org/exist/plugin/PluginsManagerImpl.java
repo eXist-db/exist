@@ -25,6 +25,7 @@ import java.io.*;
 import java.lang.reflect.Constructor;
 import java.net.URL;
 import java.util.*;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Database;
@@ -53,38 +54,37 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
 /**
- * Plugins manager. 
+ * Plugins manager.
  * It control search procedure, activation and de-actication (including runtime).
- * 
+ *
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
- * 
  */
 @ConfigurationClass("plugin-manager")
 public class PluginsManagerImpl implements Configurable, BrokerPoolService, PluginsManager, LifeCycle {
 
-	private final static Logger LOG = LogManager.getLogger(PluginsManagerImpl.class);
+    private final static Logger LOG = LogManager.getLogger(PluginsManagerImpl.class);
 
-	public final static XmldbURI COLLETION_URI = XmldbURI.SYSTEM.append("plugins");
-	public final static XmldbURI CONFIG_FILE_URI = XmldbURI.create("config.xml");
+    public final static XmldbURI COLLETION_URI = XmldbURI.SYSTEM.append("plugins");
+    public final static XmldbURI CONFIG_FILE_URI = XmldbURI.create("config.xml");
 
-	@ConfigurationFieldAsAttribute("version")
-	private String version = "1.0";
+    @ConfigurationFieldAsAttribute("version")
+    private String version = "1.0";
 
-	@ConfigurationFieldAsElement("plugin")
-	private List<String> runPlugins = new ArrayList<String>();
+    @ConfigurationFieldAsElement("plugin")
+    private List<String> runPlugins = new ArrayList<String>();
 
 //	@ConfigurationFieldAsElement("search-path")
 //	private Map<String, File> placesToSearch = new LinkedHashMap<String, File>();
 
 //	private Map<String, PluginInfo> foundClasses = new LinkedHashMap<String, PluginInfo>();
-	
-	private Map<String, Plug> jacks = new HashMap<String, Plug>();
-	
-	private Configuration configuration = null;
-	
-	private Collection collection;
 
-	private Database db;
+    private Map<String, Plug> jacks = new HashMap<>();
+
+    private Configuration configuration = null;
+
+    private Collection collection;
+
+    private Database db;
 
 	@Override
 	public void prepare(final BrokerPool brokerPool) {
@@ -109,73 +109,72 @@ public class PluginsManagerImpl implements Configurable, BrokerPoolService, Plug
 	public void start(DBBroker broker) throws EXistException {
         final TransactionManager transaction = broker.getBrokerPool().getTransactionManager();
 
-        try(final Txn txn = transaction.beginTransaction()) {
-	        collection = broker.getCollection(COLLETION_URI);
-			if (collection == null) {
-				collection = broker.getOrCreateCollection(txn, COLLETION_URI);
-				if (collection == null) {return;}
-					//if db corrupted it can lead to unrunnable issue
-					//throw new ConfigurationException("Collection '/db/system/plugins' can't be created.");
-				
-				collection.setPermissions(Permission.DEFAULT_SYSTEM_SECURITY_COLLECTION_PERM);
-				broker.saveCollection(txn, collection);
-			}
+        try (final Txn txn = transaction.beginTransaction()) {
+            collection = broker.getCollection(COLLETION_URI);
+            if (collection == null) {
+                collection = broker.getOrCreateCollection(txn, COLLETION_URI);
+                if (collection == null) {
+                    return;
+                }
+                //if db corrupted it can lead to unrunnable issue
+                //throw new ConfigurationException("Collection '/db/system/plugins' can't be created.");
 
-			transaction.commit(txn);
+                collection.setPermissions(Permission.DEFAULT_SYSTEM_SECURITY_COLLECTION_PERM);
+                broker.saveCollection(txn, collection);
+            }
+
+            transaction.commit(txn);
         } catch (final Exception e) {
-			e.printStackTrace();
-			LOG.debug("loading configuration failed: " + e.getMessage());
-		}
+            e.printStackTrace();
+            LOG.debug("loading configuration failed: " + e.getMessage());
+        }
 
         final Configuration _config_ = Configurator.parse(this, broker, collection, CONFIG_FILE_URI);
-		configuration = Configurator.configure(this, _config_);
-		
-		//load plugins by META-INF/services/
-		try {
-//			File libFolder = new File(((BrokerPool)db).getConfiguration().getExistHome(), "lib");
-//			File pluginsFolder = new File(libFolder, "plugins");
-//			placesToSearch.put(pluginsFolder.getAbsolutePath(), pluginsFolder);
-			
-			for (final Class<? extends Plug> plugin : listServices(Plug.class)) {
-				//System.out.println("found plugin "+plugin);
-				
-				try {
-					final Constructor<? extends Plug> ctor = plugin.getConstructor(PluginsManager.class);
-					final Plug plgn = ctor.newInstance(this);
-					
-					jacks.put(plugin.getName(), plgn);
-				} catch (final Throwable e) {
-					e.printStackTrace();
-				}
-			}
-		} catch (final Throwable e) {
-			e.printStackTrace();
-		}
-		//UNDERSTAND: call save?
+        configuration = Configurator.configure(this, _config_);
+
+        //load plugins by META-INF/services/
+        try {
+
+            for (final Class<? extends Plug> plugin : listServices(Plug.class)) {
+                //System.out.println("found plugin "+plugin);
+
+                try {
+                    final Constructor<? extends Plug> ctor = plugin.getConstructor(PluginsManager.class);
+                    final Plug plgn = ctor.newInstance(this);
+
+                    jacks.put(plugin.getName(), plgn);
+                } catch (final Throwable e) {
+                    e.printStackTrace();
+                }
+            }
+        } catch (final Throwable e) {
+            e.printStackTrace();
+        }
+        //UNDERSTAND: call save?
 
 //		try {
 //			configuration.save(broker);
 //		} catch (PermissionDeniedException e) {
 //			//LOG?
 //		}
-		
-		for (final Plug jack : jacks.values()) {
-			if (jack instanceof LifeCycle) {
-				((LifeCycle) jack).start(broker);
-			}
-		}
-	}
-	
-	@Override
-	public void sync(DBBroker broker) {
-		for (final Plug plugin : jacks.values()) {
-			try {
-				plugin.sync(broker);
-			} catch (final Throwable e) {
-				LOG.error(e);
-			}
-		}
-	}
+
+        for (final Plug jack : jacks.values()) {
+            if (jack instanceof LifeCycle) {
+                ((LifeCycle) jack).start(broker);
+            }
+        }
+    }
+
+    @Override
+    public void sync(DBBroker broker) {
+        for (final Plug plugin : jacks.values()) {
+            try {
+                plugin.sync(broker);
+            } catch (final Throwable e) {
+                LOG.error(e);
+            }
+        }
+    }
 
 	@Override
 	public void stop(DBBroker broker) throws EXistException {
@@ -217,255 +216,255 @@ public class PluginsManagerImpl implements Configurable, BrokerPoolService, Plug
 //			e.printStackTrace();
 		}
 	}
-	
-	/*
-	 * Generate list of service implementations 
-	 */
-	private <S> Iterable<Class<? extends S>> listServices(Class<S> ifc) throws Exception {
-		final ClassLoader ldr = Thread.currentThread().getContextClassLoader();
-		final Enumeration<URL> e = ldr.getResources("META-INF/services/" + ifc.getName());
-		final Set<Class<? extends S>> services = new HashSet<Class<? extends S>>();
-		while (e.hasMoreElements()) {
-			final URL url = e.nextElement();
-			try (final InputStream is = url.openStream() ;
-				final BufferedReader r = new BufferedReader(new InputStreamReader(is, "UTF-8")) ){
-				String line;
-				while ((line = r.readLine()) != null) {
 
-					final int comment = line.indexOf('#');
-					if (comment >= 0) {
-						line = line.substring(0, comment);
-					}
-					final String name = line.trim();
-					if (name.length() == 0) {
-						continue;
-					}
-					final Class<?> clz = Class.forName(name, true, ldr);
-					final Class<? extends S> impl = clz.asSubclass(ifc);
-					services.add(impl);
-				}
-			}
-		}
-		return services;
-	}
+    /*
+     * Generate list of service implementations
+     */
+    private <S> Iterable<Class<? extends S>> listServices(Class<S> ifc) throws Exception {
+        final ClassLoader ldr = Thread.currentThread().getContextClassLoader();
+        final Enumeration<URL> e = ldr.getResources("META-INF/services/" + ifc.getName());
+        final Set<Class<? extends S>> services = new HashSet<Class<? extends S>>();
+        while (e.hasMoreElements()) {
+            final URL url = e.nextElement();
+            try (final InputStream is = url.openStream();
+                 final BufferedReader r = new BufferedReader(new InputStreamReader(is, "UTF-8"))) {
+                String line;
+                while ((line = r.readLine()) != null) {
 
-	@Override
-	public boolean isConfigured() {
-		return configuration != null;
-	}
+                    final int comment = line.indexOf('#');
+                    if (comment >= 0) {
+                        line = line.substring(0, comment);
+                    }
+                    final String name = line.trim();
+                    if (name.length() == 0) {
+                        continue;
+                    }
+                    final Class<?> clz = Class.forName(name, true, ldr);
+                    final Class<? extends S> impl = clz.asSubclass(ifc);
+                    services.add(impl);
+                }
+            }
+        }
+        return services;
+    }
 
-	@Override
-	public Configuration getConfiguration() {
-		return configuration;
-	}
-	
-	@Override
-	public BackupHandler getBackupHandler(Logger logger) {
-		return new BH(logger);
-	}
-	
-	class BH implements BackupHandler {
-		Logger LOG;
-		
-		public BH(Logger logger) {
-			LOG = logger;
-		}
+    @Override
+    public boolean isConfigured() {
+        return configuration != null;
+    }
 
-		@Override
-		public void backup(Collection colection, AttributesImpl attrs) {
-			for (final Plug plugin : jacks.values()) {
-				if (plugin instanceof BackupHandler) {
-					try {
-						((BackupHandler) plugin).backup(colection, attrs);
-					} catch (final Exception e) {
-						LOG.error(e.getMessage(), e);
-					}
-				}
-			}
-		}
+    @Override
+    public Configuration getConfiguration() {
+        return configuration;
+    }
 
-		@Override
-		public void backup(Collection colection, SAXSerializer serializer) throws SAXException {
-			for (final Plug plugin : jacks.values()) {
-				if (plugin instanceof BackupHandler) {
-					try {
-						((BackupHandler) plugin).backup(colection, serializer);
-					} catch (final Exception e) {
-						LOG.error(e.getMessage(), e);
-					}
-				}
-			}
-		}
+    @Override
+    public BackupHandler getBackupHandler(Logger logger) {
+        return new BH(logger);
+    }
 
-		@Override
-		public void backup(Document document, AttributesImpl attrs) {
-			for (final Plug plugin : jacks.values()) {
-				if (plugin instanceof BackupHandler) {
-					try {
-						((BackupHandler) plugin).backup(document, attrs);
-					} catch (final Exception e) {
-						LOG.error(e.getMessage(), e);
-					}
-				}
-			}
-		}
+    class BH implements BackupHandler {
+        Logger LOG;
 
-		@Override
-		public void backup(Document document, SAXSerializer serializer) throws SAXException {
-			for (final Plug plugin : jacks.values()) {
-				if (plugin instanceof BackupHandler) {
-					try {
-						((BackupHandler) plugin).backup(document, serializer);
-					} catch (final Exception e) {
-						LOG.error(e.getMessage(), e);
-					}
-				}
-			}
-		}
-	}
+        public BH(Logger logger) {
+            LOG = logger;
+        }
 
-	private RestoreHandler rh = new RH();
+        @Override
+        public void backup(Collection colection, AttributesImpl attrs) {
+            for (final Plug plugin : jacks.values()) {
+                if (plugin instanceof BackupHandler) {
+                    try {
+                        ((BackupHandler) plugin).backup(colection, attrs);
+                    } catch (final Exception e) {
+                        LOG.error(e.getMessage(), e);
+                    }
+                }
+            }
+        }
 
-	@Override
-	public RestoreHandler getRestoreHandler() {
-		return rh;
-	}
+        @Override
+        public void backup(Collection colection, SAXSerializer serializer) throws SAXException {
+            for (final Plug plugin : jacks.values()) {
+                if (plugin instanceof BackupHandler) {
+                    try {
+                        ((BackupHandler) plugin).backup(colection, serializer);
+                    } catch (final Exception e) {
+                        LOG.error(e.getMessage(), e);
+                    }
+                }
+            }
+        }
 
-	class RH implements RestoreHandler {
+        @Override
+        public void backup(Document document, AttributesImpl attrs) {
+            for (final Plug plugin : jacks.values()) {
+                if (plugin instanceof BackupHandler) {
+                    try {
+                        ((BackupHandler) plugin).backup(document, attrs);
+                    } catch (final Exception e) {
+                        LOG.error(e.getMessage(), e);
+                    }
+                }
+            }
+        }
 
-		@Override
-		public void setDocumentLocator(Locator locator) {
-			for (final Plug plugin : jacks.values()) {
-				if (plugin instanceof RestoreHandler) {
-					((RestoreHandler) plugin).setDocumentLocator(locator);
-				}
-			}
-		}
+        @Override
+        public void backup(Document document, SAXSerializer serializer) throws SAXException {
+            for (final Plug plugin : jacks.values()) {
+                if (plugin instanceof BackupHandler) {
+                    try {
+                        ((BackupHandler) plugin).backup(document, serializer);
+                    } catch (final Exception e) {
+                        LOG.error(e.getMessage(), e);
+                    }
+                }
+            }
+        }
+    }
 
-		@Override
-		public void startDocument() throws SAXException {
-			for (final Plug plugin : jacks.values()) {
-				if (plugin instanceof RestoreHandler) {
-					((RestoreHandler) plugin).startDocument();
-				}
-			}
-		}
+    private RestoreHandler rh = new RH();
 
-		@Override
-		public void endDocument() throws SAXException {
-			for (final Plug plugin : jacks.values()) {
-				if (plugin instanceof RestoreHandler) {
-					((RestoreHandler) plugin).endDocument();
-				}
-			}
-		}
+    @Override
+    public RestoreHandler getRestoreHandler() {
+        return rh;
+    }
 
-		@Override
-		public void startPrefixMapping(String prefix, String uri) throws SAXException {
-			for (final Plug plugin : jacks.values()) {
-				if (plugin instanceof RestoreHandler) {
-					((RestoreHandler) plugin).startPrefixMapping(prefix, uri);
-				}
-			}
-		}
+    class RH implements RestoreHandler {
 
-		@Override
-		public void endPrefixMapping(String prefix) throws SAXException {
-			for (final Plug plugin : jacks.values()) {
-				if (plugin instanceof RestoreHandler) {
-					((RestoreHandler) plugin).endPrefixMapping(prefix);
-				}
-			}
-		}
+        @Override
+        public void setDocumentLocator(Locator locator) {
+            for (final Plug plugin : jacks.values()) {
+                if (plugin instanceof RestoreHandler) {
+                    ((RestoreHandler) plugin).setDocumentLocator(locator);
+                }
+            }
+        }
 
-		@Override
-		public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
-			for (final Plug plugin : jacks.values()) {
-				if (plugin instanceof RestoreHandler) {
-					((RestoreHandler) plugin).startElement(uri, localName, qName, atts);
-				}
-			}
-		}
+        @Override
+        public void startDocument() throws SAXException {
+            for (final Plug plugin : jacks.values()) {
+                if (plugin instanceof RestoreHandler) {
+                    ((RestoreHandler) plugin).startDocument();
+                }
+            }
+        }
 
-		@Override
-		public void endElement(String uri, String localName, String qName) throws SAXException {
-			for (final Plug plugin : jacks.values()) {
-				if (plugin instanceof RestoreHandler) {
-					((RestoreHandler) plugin).endElement(uri, localName, qName);
-				}
-			}
-		}
+        @Override
+        public void endDocument() throws SAXException {
+            for (final Plug plugin : jacks.values()) {
+                if (plugin instanceof RestoreHandler) {
+                    ((RestoreHandler) plugin).endDocument();
+                }
+            }
+        }
 
-		@Override
-		public void characters(char[] ch, int start, int length) throws SAXException {
-			for (final Plug plugin : jacks.values()) {
-				if (plugin instanceof RestoreHandler) {
-					((RestoreHandler) plugin).characters(ch, start, length);
-				}
-			}
-		}
+        @Override
+        public void startPrefixMapping(String prefix, String uri) throws SAXException {
+            for (final Plug plugin : jacks.values()) {
+                if (plugin instanceof RestoreHandler) {
+                    ((RestoreHandler) plugin).startPrefixMapping(prefix, uri);
+                }
+            }
+        }
 
-		@Override
-		public void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {
-			for (final Plug plugin : jacks.values()) {
-				if (plugin instanceof RestoreHandler) {
-					((RestoreHandler) plugin).ignorableWhitespace(ch, start, length);
-				}
-			}
-		}
+        @Override
+        public void endPrefixMapping(String prefix) throws SAXException {
+            for (final Plug plugin : jacks.values()) {
+                if (plugin instanceof RestoreHandler) {
+                    ((RestoreHandler) plugin).endPrefixMapping(prefix);
+                }
+            }
+        }
 
-		@Override
-		public void processingInstruction(String target, String data) throws SAXException {
-			for (final Plug plugin : jacks.values()) {
-				if (plugin instanceof RestoreHandler) {
-					((RestoreHandler) plugin).processingInstruction(target, data);
-				}
-			}
-		}
+        @Override
+        public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
+            for (final Plug plugin : jacks.values()) {
+                if (plugin instanceof RestoreHandler) {
+                    ((RestoreHandler) plugin).startElement(uri, localName, qName, atts);
+                }
+            }
+        }
 
-		@Override
-		public void skippedEntity(String name) throws SAXException {
-			for (final Plug plugin : jacks.values()) {
-				if (plugin instanceof RestoreHandler) {
-					((RestoreHandler) plugin).skippedEntity(name);
-				}
-			}
-		}
+        @Override
+        public void endElement(String uri, String localName, String qName) throws SAXException {
+            for (final Plug plugin : jacks.values()) {
+                if (plugin instanceof RestoreHandler) {
+                    ((RestoreHandler) plugin).endElement(uri, localName, qName);
+                }
+            }
+        }
 
-		@Override
-		public void startCollectionRestore(Collection colection, Attributes atts) {
-			for (final Plug plugin : jacks.values()) {
-				if (plugin instanceof RestoreHandler) {
-					((RestoreHandler) plugin).startCollectionRestore(colection, atts);
-				}
-			}
-		}
+        @Override
+        public void characters(char[] ch, int start, int length) throws SAXException {
+            for (final Plug plugin : jacks.values()) {
+                if (plugin instanceof RestoreHandler) {
+                    ((RestoreHandler) plugin).characters(ch, start, length);
+                }
+            }
+        }
 
-		@Override
-		public void endCollectionRestore(Collection colection) {
-			for (final Plug plugin : jacks.values()) {
-				if (plugin instanceof RestoreHandler) {
-					((RestoreHandler) plugin).endCollectionRestore(colection);
-				}
-			}
-		}
+        @Override
+        public void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {
+            for (final Plug plugin : jacks.values()) {
+                if (plugin instanceof RestoreHandler) {
+                    ((RestoreHandler) plugin).ignorableWhitespace(ch, start, length);
+                }
+            }
+        }
 
-		@Override
-		public void startDocumentRestore(Document document, Attributes atts) {
-			for (final Plug plugin : jacks.values()) {
-				if (plugin instanceof RestoreHandler) {
-					((RestoreHandler) plugin).startDocumentRestore(document, atts);
-				}
-			}
-		}
+        @Override
+        public void processingInstruction(String target, String data) throws SAXException {
+            for (final Plug plugin : jacks.values()) {
+                if (plugin instanceof RestoreHandler) {
+                    ((RestoreHandler) plugin).processingInstruction(target, data);
+                }
+            }
+        }
 
-		@Override
-		public void endDocumentRestore(Document document) {
-			for (final Plug plugin : jacks.values()) {
-				if (plugin instanceof RestoreHandler) {
-					((RestoreHandler) plugin).endDocumentRestore(document);
-				}
-			}
-		}
-	}
+        @Override
+        public void skippedEntity(String name) throws SAXException {
+            for (final Plug plugin : jacks.values()) {
+                if (plugin instanceof RestoreHandler) {
+                    ((RestoreHandler) plugin).skippedEntity(name);
+                }
+            }
+        }
+
+        @Override
+        public void startCollectionRestore(Collection colection, Attributes atts) {
+            for (final Plug plugin : jacks.values()) {
+                if (plugin instanceof RestoreHandler) {
+                    ((RestoreHandler) plugin).startCollectionRestore(colection, atts);
+                }
+            }
+        }
+
+        @Override
+        public void endCollectionRestore(Collection colection) {
+            for (final Plug plugin : jacks.values()) {
+                if (plugin instanceof RestoreHandler) {
+                    ((RestoreHandler) plugin).endCollectionRestore(colection);
+                }
+            }
+        }
+
+        @Override
+        public void startDocumentRestore(Document document, Attributes atts) {
+            for (final Plug plugin : jacks.values()) {
+                if (plugin instanceof RestoreHandler) {
+                    ((RestoreHandler) plugin).startDocumentRestore(document, atts);
+                }
+            }
+        }
+
+        @Override
+        public void endDocumentRestore(Document document) {
+            for (final Plug plugin : jacks.values()) {
+                if (plugin instanceof RestoreHandler) {
+                    ((RestoreHandler) plugin).endDocumentRestore(document);
+                }
+            }
+        }
+    }
 }

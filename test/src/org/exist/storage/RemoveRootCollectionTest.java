@@ -2,7 +2,7 @@ package org.exist.storage;
 
 import static org.junit.Assert.*;
 
-import java.io.File;
+import java.nio.file.Paths;
 import java.util.Optional;
 
 import org.exist.collections.*;
@@ -68,7 +68,7 @@ public class RemoveRootCollectionTest {
 	
 	private void addDocumentToRoot() throws Exception {
 		try(final Txn transaction = transact.beginTransaction()) {
-            final InputSource is = new InputSource(new File("samples/shakespeare/hamlet.xml").toURI().toASCIIString());
+            final InputSource is = new InputSource(Paths.get("samples/shakespeare/hamlet.xml").toUri().toASCIIString());
             assertNotNull(is);
             final IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("hamlet.xml"), is);
             assertNotNull(info);

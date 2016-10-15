@@ -22,13 +22,15 @@
 package org.exist.xquery.functions.validate;
 
 import org.custommonkey.xmlunit.exceptions.XpathException;
+import org.exist.util.FileUtils;
 import org.junit.*;
 import static org.junit.Assert.*;
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 
-import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.function.Predicate;
 
 import org.exist.test.EmbeddedExistTester;
 
@@ -53,25 +55,23 @@ public class ParseXsdTestNOK extends EmbeddedExistTester {
     public static void prepareResources() throws Exception {
 
         // Switch off validation
-        Collection conf = createCollection(rootCollection, "system/config/db/addressbook");
+        final Collection conf = createCollection(rootCollection, "system/config/db/addressbook");
         storeResource(conf, "collection.xconf", noValidation.getBytes());
 
         // Create filter
-        FilenameFilter filter = new FilenameFilter() {
-            public boolean accept(File dir, String name) {
-                return (name.endsWith("xml") || name.startsWith("address"));
-            }
+        final Predicate<Path> filter = path -> {
+            final String fileName = FileUtils.fileName(path);
+            return fileName.endsWith("xml") || fileName.startsWith("address");
         };
 
         // Store schematron 1.5 test files
-        Collection collection = createCollection(rootCollection, "addressbook");
-        File sources = new File("samples/validation/addressbook");
+        final Collection collection = createCollection(rootCollection, "addressbook");
+        final Path sources = Paths.get("samples/validation/addressbook");
 
-        for (File file : sources.listFiles(filter)) {
-            byte[] data = readFile(sources, file.getName());
-            storeResource(collection, file.getName(), data);
+        for (final Path file : FileUtils.list(sources, filter)) {
+            final byte[] data = readFile(file);
+            storeResource(collection, FileUtils.fileName(file), data);
         }
-
     }
 
     @Test

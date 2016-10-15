@@ -50,12 +50,10 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
 
 import javax.xml.transform.TransformerException;
-import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.lang.reflect.Method;
-import java.net.URISyntaxException;
-import java.util.Date;
+import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Stream;
@@ -75,7 +73,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
     // those are the different types of content this resource
     // may have to deal with
     protected String content = null;
-    protected File file = null;
+    protected Path file = null;
     protected InputSource inputSource = null;
     protected Node root = null;
     protected AtomicValue value = null;
@@ -338,8 +336,10 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
         inputSource = null;
         root = null;
 
-        if (obj instanceof File) {
-            file = (File) obj;
+        if (obj instanceof Path) {
+            file = (Path) obj;
+        } else if (obj instanceof java.io.File) {
+            file = ((java.io.File) obj).toPath();
         } else if (obj instanceof AtomicValue) {
             value = (AtomicValue) obj;
         } else if (obj instanceof InputSource) {

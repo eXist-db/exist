@@ -37,11 +37,11 @@ import java.net.URL;
 import java.net.MalformedURLException;
 import java.net.URLConnection;
 import java.net.URLDecoder;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 /**
  * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
@@ -100,9 +100,9 @@ public class Source extends Command {
         	
         	if (fileURI.toLowerCase().startsWith("dbgp://")) {
         		String uri = fileURI.substring(7);
-        		if (uri.toLowerCase().startsWith("file/")) {
+        		if (uri.toLowerCase().startsWith("file:/")) {
         			uri = fileURI.substring(5);
-        			is = new FileInputStream(new File(uri));
+        			is = Files.newInputStream(Paths.get(uri));
         		} else {
 	        		XmldbURI pathUri = XmldbURI.create( URLDecoder.decode( fileURI.substring(15) , "UTF-8" ) );
 	
@@ -136,11 +136,7 @@ public class Source extends Command {
     		source = baos.toByteArray();
     		success = true;
 
-        } catch (MalformedURLException e) {
-            exception = e;
-        } catch (IOException e) {
-            exception = e;
-        } catch (PermissionDeniedException e) {
+        } catch (PermissionDeniedException | IOException e) {
             exception = e;
         } finally {
         	if (is != null)

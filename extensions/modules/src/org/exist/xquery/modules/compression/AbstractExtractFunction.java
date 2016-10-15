@@ -22,15 +22,17 @@
 package org.exist.xquery.modules.compression;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.charset.UnsupportedCharsetException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.apache.commons.io.output.ByteArrayOutputStream;
 
+import org.exist.util.FileUtils;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
 import org.exist.xmldb.EXistResource;
@@ -186,9 +188,9 @@ public abstract class AbstractExtractFunction extends BasicFunction
 
                         Resource resource;
 
-                        File file = new File(path);
-                        name = file.getName();
-                        path = file.getParent();
+                        Path file = Paths.get(path).normalize();
+                        name = FileUtils.fileName(file);
+                        path = file.getParent().toAbsolutePath().toString();
 
                         Collection target = (path == null) ? root : XMLDBAbstractCollectionManipulator.createCollection(root, path);
 

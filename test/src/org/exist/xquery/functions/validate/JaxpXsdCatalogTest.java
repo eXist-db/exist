@@ -22,13 +22,15 @@
 package org.exist.xquery.functions.validate;
 
 import org.custommonkey.xmlunit.exceptions.XpathException;
+import org.exist.util.FileUtils;
 import org.junit.*;
 import static org.junit.Assert.*;
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 
-import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.function.Predicate;
 
 import org.exist.test.EmbeddedExistTester;
 
@@ -53,37 +55,32 @@ public class JaxpXsdCatalogTest extends EmbeddedExistTester {
     public static void prepareResources() throws XMLDBException, IOException {
 
         // Switch off validation
-        Collection conf = createCollection(rootCollection, "system/config/db/parse");
+        final Collection conf = createCollection(rootCollection, "system/config/db/parse");
         storeResource(conf, "collection.xconf", noValidation.getBytes());
 
         // Create filter
-        FilenameFilter filter = new FilenameFilter() {
+        final Predicate<Path> filter = path -> FileUtils.fileName(path).endsWith(".xsd");
 
-            public boolean accept(File dir, String name) {
-                return (name.endsWith(".xsd"));
-            }
-        };
+        final Collection schemasCollection = createCollection(rootCollection, "parse/schemas");
+        final Path schemas = Paths.get("samples/validation/parse/schemas");
 
-        Collection schemasCollection = createCollection(rootCollection, "parse/schemas");
-        File schemas = new File("samples/validation/parse/schemas");
-
-        for (File file : schemas.listFiles(filter)) {
-            byte[] data = readFile(schemas, file.getName());
-            storeResource(schemasCollection, file.getName(), data);
+        for (final Path file : FileUtils.list(schemas, filter)) {
+            final byte[] data = readFile(file);
+            storeResource(schemasCollection, FileUtils.fileName(file), data);
         }
 
-        File catalog = new File("samples/validation/parse");
-        Collection parseCollection = createCollection(rootCollection, "parse");
-        byte[] data = readFile(catalog, "catalog.xml");
+        final Path catalog = Paths.get("samples/validation/parse");
+        final Collection parseCollection = createCollection(rootCollection, "parse");
+        final byte[] data = readFile(catalog, "catalog.xml");
         storeResource(parseCollection, "catalog.xml", data);
 
-        File instance = new File("samples/validation/parse/instance");
-        Collection instanceCollection = createCollection(rootCollection, "parse/instance");
+        final Path instance = Paths.get("samples/validation/parse/instance");
+        final Collection instanceCollection = createCollection(rootCollection, "parse/instance");
 
-        byte[] valid = readFile(instance, "valid.xml");
+        final byte[] valid = readFile(instance, "valid.xml");
         storeResource(instanceCollection, "valid.xml", valid);
 
-        byte[] invalid = readFile(instance, "invalid.xml");
+        final byte[] invalid = readFile(instance, "invalid.xml");
         storeResource(instanceCollection, "invalid.xml", invalid);
     }
 

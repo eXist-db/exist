@@ -21,14 +21,14 @@
  */
 package org.exist.storage;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Optional;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
-import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock;
@@ -113,10 +113,10 @@ public class CopyCollectionTest {
             final Collection test = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI.append("test2"));
             broker.saveCollection(transaction, test);
 
-            final File f = getSampleData();
+            final Path f = getSampleData();
             final IndexInfo info = test.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"),
-                    new InputSource(f.toURI().toASCIIString()));
-            test.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
+                    new InputSource(f.toUri().toASCIIString()));
+            test.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()), false);
             
             final Collection dest = broker.getOrCreateCollection(transaction, XmldbURI.ROOT_COLLECTION_URI.append("destination"));
             broker.saveCollection(transaction, dest);
@@ -168,10 +168,10 @@ public class CopyCollectionTest {
                 assertNotNull(test2);
                 broker.saveCollection(transaction, test2);
 
-                final File f = getSampleData();
+                final Path f = getSampleData();
 
-                IndexInfo info = test2.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"), new InputSource(f.toURI().toASCIIString()));
-                test2.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
+                IndexInfo info = test2.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"), new InputSource(f.toUri().toASCIIString()));
+                test2.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()), false);
 
                 transact.commit(transaction);
             }
@@ -224,7 +224,7 @@ public class CopyCollectionTest {
         }
         assertNotNull(test2);
 
-        final File f = getSampleData();
+        final Path f = getSampleData();
         final Resource res = test2.createResource("test_xmldb.xml", "XMLResource");
         assertNotNull(res);
         res.setContent(f);
@@ -257,10 +257,10 @@ public class CopyCollectionTest {
         mgr.removeCollection("destination");
     }
 
-    private File getSampleData() {
+    private Path getSampleData() {
         final String existHome = System.getProperty("exist.home");
-        final File existDir = existHome == null ? new File(".") : new File(existHome);
-        final File f = new File(existDir, "samples/biblio.rdf");
+        final Path existDir = existHome == null ? Paths.get(".") : Paths.get(existHome);
+        final Path f = existDir.resolve("samples/biblio.rdf");
         assertNotNull(f);
         return f;
     }

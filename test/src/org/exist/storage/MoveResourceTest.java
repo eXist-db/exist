@@ -21,8 +21,9 @@
  */
 package org.exist.storage;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Optional;
 
 import org.exist.EXistException;
@@ -79,12 +80,13 @@ public class MoveResourceTest {
             broker.saveCollection(transaction, test2);
 
             final String existHome = System.getProperty("exist.home");
-            final File existDir = existHome==null ? new File(".") : new File(existHome);
-            final File f = new File(existDir,"samples/shakespeare/r_and_j.xml");
+            Path existDir = existHome == null ? Paths.get(".") : Paths.get(existHome);
+            existDir = existDir.normalize();
+            final Path f = existDir.resolve("samples/shakespeare/r_and_j.xml");
 
-            final IndexInfo info = test2.validateXMLResource(transaction, broker, TestConstants.TEST_XML_URI, new InputSource(f.toURI().toASCIIString()));
+            final IndexInfo info = test2.validateXMLResource(transaction, broker, TestConstants.TEST_XML_URI, new InputSource(f.toUri().toASCIIString()));
             assertNotNull(info);
-            test2.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
+            test2.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()), false);
 
             final DocumentImpl doc = test2.getDocument(broker, TestConstants.TEST_XML_URI);
             assertNotNull(doc);
@@ -144,12 +146,13 @@ public class MoveResourceTest {
                 broker.saveCollection(transaction, test2);
 
                 final String existHome = System.getProperty("exist.home");
-                final File existDir = existHome == null ? new File(".") : new File(existHome);
-                final File f = new File(existDir, "samples/shakespeare/r_and_j.xml");
+                Path existDir = existHome == null ? Paths.get(".") : Paths.get(existHome);
+                existDir = existDir.normalize();
+                final Path f = existDir.resolve("samples/shakespeare/r_and_j.xml");
 
                 final IndexInfo info = test2.validateXMLResource(transaction, broker, XmldbURI.create("new_test2.xml"),
-                        new InputSource(f.toURI().toASCIIString()));
-                test2.store(transaction, broker, info, new InputSource(f.toURI()
+                        new InputSource(f.toUri().toASCIIString()));
+                test2.store(transaction, broker, info, new InputSource(f.toUri()
                         .toASCIIString()), false);
 
                 transact.commit(transaction);
@@ -227,8 +230,9 @@ public class MoveResourceTest {
         }
 
         final String existHome = System.getProperty("exist.home");
-        final File existDir = existHome==null ? new File(".") : new File(existHome);
-        final File f = new File(existDir,"samples/shakespeare/r_and_j.xml");
+        Path existDir = existHome == null ? Paths.get(".") : Paths.get(existHome);
+        existDir = existDir.normalize();
+        final Path f = existDir.resolve("samples/shakespeare/r_and_j.xml");
 
         final Resource res = test2.createResource("test3.xml", "XMLResource");
         res.setContent(f);

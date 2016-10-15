@@ -22,9 +22,9 @@
 
 package org.exist.xmldb;
 
-import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Path;
 
 import org.xmldb.api.base.XMLDBException;
 
@@ -55,7 +55,7 @@ public interface ExtendedResource
      * It saves the resource to the local file given as input parameter.
      * Do NOT confuse with set content.
      */
-    public void getContentIntoAFile(File localfile)  throws XMLDBException;
+    public void getContentIntoAFile(Path localfile)  throws XMLDBException;
 
     /**
      * It saves the resource to the local stream given as input parameter.

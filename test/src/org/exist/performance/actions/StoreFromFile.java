@@ -19,13 +19,10 @@
  */
 package org.exist.performance.actions;
 
+import org.exist.util.*;
 import org.w3c.dom.Element;
 import org.exist.EXistException;
 import org.exist.xmldb.EXistResource;
-import org.exist.util.DirectoryScanner;
-import org.exist.util.MimeTable;
-import org.exist.util.MimeType;
-import org.exist.util.ProgressIndicator;
 import org.exist.performance.Connection;
 import org.exist.performance.Runner;
 import org.exist.performance.AbstractAction;
@@ -34,7 +31,10 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.modules.CollectionManagementService;
 
-import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
 import java.util.StringTokenizer;
 import java.util.Observer;
 import java.util.Observable;
@@ -61,6 +61,7 @@ public class StoreFromFile extends AbstractAction {
         overwrite = getBooleanValue(config, "overwrite", true);
     }
 
+    @Override
     public void execute(Connection connection) throws XMLDBException, EXistException {
         Collection collection = connection.getCollection(collectionPath);
         if (collection == null)
@@ -69,30 +70,34 @@ public class StoreFromFile extends AbstractAction {
         if (collection instanceof Observable)
             ((Observable)collection).addObserver(observer);
         String resourceType = getResourceType();
-        File baseDir = new File(dir);
-        File[] files = DirectoryScanner.scanDir(baseDir, includes);
-        Collection col = collection;
-        String relDir, prevDir = null;
-        for(int j = 0; j < files.length; j++) {
-            String relPath = files[j].toString().substring( baseDir.toString().length() );
-            int p = relPath.lastIndexOf( File.separatorChar );
-            relDir = relPath.substring( 0, p );
-            relDir = relDir.replace(File.separatorChar, '/');
-            if (prevDir == null || ( !relDir.equals(prevDir) ) ) {
-                col = makeColl(collection, relDir);
-                if (col instanceof Observable)
-                    ((Observable)col).addObserver(observer);
-                prevDir = relDir;
+        final Path baseDir = Paths.get(dir);
+        try {
+            final List<Path> files = DirectoryScanner.scanDir(baseDir, includes);
+            Collection col = collection;
+            String relDir, prevDir = null;
+            for (final Path file : files) {
+                String relPath = file.toString().substring(baseDir.toString().length());
+                int p = relPath.lastIndexOf(java.io.File.separatorChar);
+                relDir = relPath.substring(0, p);
+                relDir = relDir.replace(java.io.File.separatorChar, '/');
+                if (prevDir == null || (!relDir.equals(prevDir))) {
+                    col = makeColl(collection, relDir);
+                    if (col instanceof Observable)
+                        ((Observable) col).addObserver(observer);
+                    prevDir = relDir;
+                }
+                if (col.getResource(FileUtils.fileName(file)) == null || overwrite) {
+                    //TODO  : these probably need to be encoded and check mime via MimeTable
+                    Resource resource =
+                            col.createResource(FileUtils.fileName(file), resourceType);
+                    resource.setContent(file);
+                    ((EXistResource) resource).setMimeType(mimeType);
+                    LOG.debug("Storing " + col.getName() + "/" + resource.getId());
+                    col.storeResource(resource);
+                }
             }
-            if (col.getResource(files[j].getName()) == null || overwrite) {
-                //TODO  : these probably need to be encoded and check mime via MimeTable
-                Resource resource =
-                        col.createResource(files[j].getName(), resourceType);
-                resource.setContent(files[j]);
-                ((EXistResource)resource).setMimeType(mimeType);
-                LOG.debug("Storing " + col.getName() + "/" + resource.getId());
-                col.storeResource(resource);
-            }
+        } catch(final IOException ioe) {
+            throw new EXistException(ioe);
         }
     }
 

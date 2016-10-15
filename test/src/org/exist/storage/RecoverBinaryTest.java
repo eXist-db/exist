@@ -21,12 +21,12 @@
  */
 package org.exist.storage;
 
-import org.apache.commons.io.output.ByteArrayOutputStream;
-
-import java.io.File;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.FileInputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Optional;
 
 import org.exist.EXistException;
@@ -76,13 +76,10 @@ public class RecoverBinaryTest {
             	broker.saveCollection(transaction, root);
     
 	            final String existHome = System.getProperty("exist.home");
-    	        final File existDir = existHome==null ? new File(".") : new File(existHome);
-        	    try(final InputStream is = new FileInputStream(new File(existDir,"LICENSE")); final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            	    byte[] buf = new byte[512];
-	                int count = 0;
-    	            while((count = is.read(buf)) > -1) {
-        	            os.write(buf, 0, count);
-            	    }
+                Path existDir = existHome == null ? Paths.get(".") : Paths.get(existHome);
+                existDir = existDir.normalize();
+        	    try(final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+                    Files.copy(existDir.resolve("LICENSE"), os);
                 	BinaryDocument doc =
                     	root.addBinaryResource(transaction, broker, TestConstants.TEST_BINARY_URI, os.toByteArray(), "text/text");
 	                assertNotNull(doc);

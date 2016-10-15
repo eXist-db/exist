@@ -398,8 +398,6 @@ public class GetParameterTest extends RESTTest {
 
             assertEquals(expectedResponse.toString(), responseBody.toString());
 
-        } catch(HttpException he) {
-            fail(he.getMessage());
         } catch(IOException ioe) {
             fail(ioe.getMessage());
         } finally {
@@ -407,12 +405,11 @@ public class GetParameterTest extends RESTTest {
         }
     }
 
-    private NameValuePair[] convertNameValuesToNameValuePairs(NameValues nameValues[], StringBuilder expectedResponse) {
-
-        List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
+    private NameValuePair[] convertNameValuesToNameValuePairs(final NameValues nameValues[], final StringBuilder expectedResponse) {
+        final List<NameValuePair> nameValuePairs = new ArrayList<>();
 
         if(nameValues != null) {
-            for(NameValues param : nameValues) {
+            for(final NameValues param : nameValues) {
                 nameValuePairs.addAll(convertNameValueToNameValuePairs(param, expectedResponse));
             }
         }
@@ -420,11 +417,10 @@ public class GetParameterTest extends RESTTest {
         return nameValuePairs.toArray(new NameValuePair[nameValuePairs.size()]);
     }
 
-    private List<NameValuePair> convertNameValueToNameValuePairs(NameValues nameValues, StringBuilder expectedResponse) {
+    private List<NameValuePair> convertNameValueToNameValuePairs(final NameValues nameValues, final StringBuilder expectedResponse) {
+        final List<NameValuePair> nameValuePairs = new ArrayList<>();
 
-        List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
-
-        for(String paramValue : nameValues.getData()) {
+        for(final String paramValue : nameValues.getData()) {
             nameValuePairs.add(new NameValuePair(nameValues.getName(), paramValue));
 
             expectedResponse.append(nameValues.getName());
@@ -435,11 +431,11 @@ public class GetParameterTest extends RESTTest {
         return nameValuePairs;
     }
 
-    private FilePart convertFileUploadToFilePart(final TextFileUpload txtFileUpload, StringBuilder expectedResponse) {
+    private FilePart convertFileUploadToFilePart(final TextFileUpload txtFileUpload, final StringBuilder expectedResponse) {
 
         final String filePartName = "fileUpload";
 
-        FilePart filePart = new FilePart(filePartName, new PartSource() {
+        final FilePart filePart = new FilePart(filePartName, new PartSource() {
             private byte data[] = txtFileUpload.getData().getBytes();
 
             @Override
@@ -470,7 +466,7 @@ public class GetParameterTest extends RESTTest {
         final String name;
         final String values[];
 
-        public NameValues(String name, String values[]) {
+        public NameValues(final String name, final String values[]) {
             this.name = name;
             this.values = values;
         }
@@ -480,6 +476,7 @@ public class GetParameterTest extends RESTTest {
             return name;
         }
 
+        @Override
         public String[] getData() {
             return values;
         }
@@ -489,7 +486,7 @@ public class GetParameterTest extends RESTTest {
         final String name;
         final String content;
 
-        public TextFileUpload(String name, String content) {
+        public TextFileUpload(final String name, final String content) {
             this.name = name;
             this.content = content;
         }
@@ -506,7 +503,7 @@ public class GetParameterTest extends RESTTest {
     }
 
     public interface Param<T> {
-        public String getName();
-        public T getData();
+        String getName();
+        T getData();
     }
 }

@@ -25,13 +25,13 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Properties;
 
 import javax.xml.transform.OutputKeys;
@@ -55,129 +55,113 @@ import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
-import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class Serialize extends BasicFunction {
 
-	protected static final Logger logger = LogManager.getLogger(Serialize.class);
+    protected static final Logger logger = LogManager.getLogger(Serialize.class);
 
-	public final static FunctionSignature signatures[] = {
-        new FunctionSignature(
-            new QName("serialize", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-            "Writes the node set passed in parameter $a into a file on the file system. The " +
-            "full path to the file is specified in parameter $b. $c contains a " +
-            "sequence of zero or more serialization parameters specified as key=value pairs. The " +
-            "serialization options are the same as those recognized by \"declare option exist:serialize\". " +
-            "The function does NOT automatically inherit the serialization options of the XQuery it is " +
-            "called from. False is returned if the " +
-            "specified file can not be created or is not writable, true on success. The empty " +
-            "sequence is returned if the argument sequence is empty.",
-            new SequenceType[] { 
-                new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
-                new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-                new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE)
-            },
-            new SequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE),
-            "Use the file:serialize() function in the file extension module instead!"
-        ),
-        new FunctionSignature(
-                new QName("serialize", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-                "Returns the Serialized node set passed in parameter $node-set. $parameters contains a " +
-                "sequence of zero or more serialization parameters specified as key=value pairs. The " +
-                "serialization options are the same as those recognized by \"declare option exist:serialize\". " +
-                "The function does NOT automatically inherit the serialization options of the XQuery it is " +
-                "called from.",
-                new SequenceType[] { 
-                    new FunctionParameterSequenceType("node-set", Type.NODE, Cardinality.ZERO_OR_MORE, "The node set to serialize"),
-                    new FunctionParameterSequenceType("parameters", Type.ITEM, Cardinality.ZERO_OR_MORE,
-                            "The serialization parameters: either a sequence of key=value pairs or an output:serialization-parameters " +
-                            "element as defined by the standard fn:serialize function.")
-                },
-                new FunctionParameterSequenceType("result", Type.STRING, Cardinality.ZERO_OR_ONE, "the string containing the serialized node set.")
-        )
+    public final static FunctionSignature signatures[] = {
+            new FunctionSignature(
+                    new QName("serialize", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+                    "Writes the node set passed in parameter $a into a file on the file system. The " +
+                            "full path to the file is specified in parameter $b. $c contains a " +
+                            "sequence of zero or more serialization parameters specified as key=value pairs. The " +
+                            "serialization options are the same as those recognized by \"declare option exist:serialize\". " +
+                            "The function does NOT automatically inherit the serialization options of the XQuery it is " +
+                            "called from. False is returned if the " +
+                            "specified file can not be created or is not writable, true on success. The empty " +
+                            "sequence is returned if the argument sequence is empty.",
+                    new SequenceType[]{
+                            new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
+                            new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+                            new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE)
+                    },
+                    new SequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE),
+                    "Use the file:serialize() function in the file extension module instead!"
+            ),
+            new FunctionSignature(
+                    new QName("serialize", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+                    "Returns the Serialized node set passed in parameter $node-set. $parameters contains a " +
+                            "sequence of zero or more serialization parameters specified as key=value pairs. The " +
+                            "serialization options are the same as those recognized by \"declare option exist:serialize\". " +
+                            "The function does NOT automatically inherit the serialization options of the XQuery it is " +
+                            "called from.",
+                    new SequenceType[]{
+                            new FunctionParameterSequenceType("node-set", Type.NODE, Cardinality.ZERO_OR_MORE, "The node set to serialize"),
+                            new FunctionParameterSequenceType("parameters", Type.ITEM, Cardinality.ZERO_OR_MORE,
+                                    "The serialization parameters: either a sequence of key=value pairs or an output:serialization-parameters " +
+                                            "element as defined by the standard fn:serialize function.")
+                    },
+                    new FunctionParameterSequenceType("result", Type.STRING, Cardinality.ZERO_OR_ONE, "the string containing the serialized node set.")
+            )
     };
-        
-    
-    public Serialize(XQueryContext context, FunctionSignature signature)
-    {
+
+
+    public Serialize(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
     }
 
-    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
-    {
-        if(args[0].isEmpty()) {
+    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+        if (args[0].isEmpty()) {
             return Sequence.EMPTY_SEQUENCE;
         }
-        
-        
+
+
         Properties outputProperties = null;
-        OutputStream os = null;
-        
-        if(args.length == 3)
-        {
-        	// TODO: Remove this conditional in eXist 2.0 since the function has been deprecated.
-        	/** serialize to disk **/
-        	
-	        // check the file output path
-	        final String path = args[1].itemAt(0).getStringValue();
-	        final File file = new File(path);
-	        if (file.isDirectory()) {
-	            logger.debug("Output file is a directory: " + file.getAbsolutePath());
-	            return BooleanValue.FALSE;
-	        }
-	        if (file.exists() && !file.canWrite()) {
-	            logger.debug("Cannot write to file " + file.getAbsolutePath());
-	            return BooleanValue.FALSE;
-	        }
-	        
-	        //parse serialization options from third argument to function
-	        outputProperties = parseSerializationOptions(args[2]);
-	        
-	        //setup output stream for file
-	        try
-	        {
-	        	os = new FileOutputStream(file);
-	        }
-	        catch(final IOException e)
-	        {
-	        	throw new XPathException(this, "A problem occurred while serializing the node set: " + e.getMessage(), e);
-	        }
-	        
-	        //do the serialization
-	        serialize(args[0].iterate(), outputProperties, os);
-	    
-	        return BooleanValue.TRUE;
-        }
-        else
-        {
-        	/** serialize to string **/
 
-	        //parse serialization options from second argument to function        	
-        	outputProperties = parseSerializationOptions(args[1]);
-        	
-        	//setup output stream for byte array
-        	os = new ByteArrayOutputStream();
+        if (args.length == 3) {
+            // TODO: Remove this conditional in eXist 2.0 since the function has been deprecated.
+            /** serialize to disk **/
 
-	        //do the serialization
-        	serialize(args[0].iterate(), outputProperties, os);
-        	
-        	try
-        	{
-        		final String encoding = outputProperties.getProperty(OutputKeys.ENCODING, "UTF-8");
-        		return new StringValue(new String(((ByteArrayOutputStream)os).toByteArray(), encoding));
-        	}
-        	catch(final UnsupportedEncodingException e)
-        	{
-        		throw new XPathException(this, "A problem occurred while serializing the node set: " + e.getMessage(), e);
-        	}
+            // check the file output path
+            final String path = args[1].itemAt(0).getStringValue();
+            final Path file = Paths.get(path).normalize();
+            if (Files.isDirectory(file)) {
+                logger.debug("Output file is a directory: " + file.toAbsolutePath().toString());
+                return BooleanValue.FALSE;
+            }
+            if (Files.exists(file) && !Files.isWritable(file)) {
+                logger.debug("Cannot write to file " + file.toAbsolutePath().toString());
+                return BooleanValue.FALSE;
+            }
+
+            //parse serialization options from third argument to function
+            outputProperties = parseSerializationOptions(args[2]);
+
+            //setup output stream for file
+            try(final OutputStream os = Files.newOutputStream(file)) {
+                //do the serialization
+                serialize(args[0].iterate(), outputProperties, os);
+            } catch (final IOException e) {
+                throw new XPathException(this, "A problem occurred while serializing the node set: " + e.getMessage(), e);
+            }
+
+            return BooleanValue.TRUE;
+        } else {
+            /** serialize to string **/
+
+            //parse serialization options from second argument to function
+            outputProperties = parseSerializationOptions(args[1]);
+
+            try(final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+                //do the serialization
+                serialize(args[0].iterate(), outputProperties, os);
+
+
+                final String encoding = outputProperties.getProperty(OutputKeys.ENCODING, UTF_8.name());
+                return new StringValue(new String(os.toByteArray(), encoding));
+            } catch (final IOException  e) {
+                throw new XPathException(this, "A problem occurred while serializing the node set: " + e.getMessage(), e);
+            }
         }
-        
+
     }
-    
-    private Properties parseSerializationOptions(Sequence sSerializeParams) throws XPathException
-    {
-    	//parse serialization options
+
+    private Properties parseSerializationOptions(Sequence sSerializeParams) throws XPathException {
+        //parse serialization options
         final Properties outputProperties = new Properties();
         if (sSerializeParams.hasOne() && Type.subTypeOf(sSerializeParams.getItemType(), Type.NODE)) {
             SerializerUtils.getSerializationOptions(this, (NodeValue) sSerializeParams.itemAt(0), outputProperties);
@@ -185,12 +169,10 @@ public class Serialize extends BasicFunction {
             SequenceIterator siSerializeParams = sSerializeParams.iterate();
             outputProperties.setProperty(OutputKeys.INDENT, "yes");
             outputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-            while(siSerializeParams.hasNext())
-            {
+            while (siSerializeParams.hasNext()) {
                 final String serializeParams = siSerializeParams.nextItem().getStringValue();
                 final String params[] = serializeParams.split(" ");
-                for(final String param : params)
-                {
+                for (final String param : params) {
                     final String opt[] = Option.parseKeyValuePair(param);
                     outputProperties.setProperty(opt[0], opt[1]);
                 }
@@ -198,15 +180,13 @@ public class Serialize extends BasicFunction {
         }
         return outputProperties;
     }
-    
-    private void serialize(SequenceIterator siNode, Properties outputProperties, OutputStream os) throws XPathException
-    {
+
+    private void serialize(SequenceIterator siNode, Properties outputProperties, OutputStream os) throws XPathException {
         // serialize the node set
         final SAXSerializer sax = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
         outputProperties.setProperty(Serializer.GENERATE_DOC_EVENTS, "false");
         final String encoding = outputProperties.getProperty(OutputKeys.ENCODING, "UTF-8");
-        try(final Writer writer = new OutputStreamWriter(os, encoding))
-        {
+        try (final Writer writer = new OutputStreamWriter(os, encoding)) {
             sax.setOutput(writer, outputProperties);
             final Serializer serializer = context.getBroker().getSerializer();
             serializer.reset();
@@ -214,21 +194,17 @@ public class Serialize extends BasicFunction {
             serializer.setSAXHandlers(sax, sax);
 
             sax.startDocument();
-            
-            while(siNode.hasNext())
-            {
-        	   final NodeValue next = (NodeValue)siNode.nextItem();
-               serializer.toSAX(next);	
+
+            while (siNode.hasNext()) {
+                final NodeValue next = (NodeValue) siNode.nextItem();
+                serializer.toSAX(next);
             }
-            
+
             sax.endDocument();
             writer.close();
-        }
-        catch(final SAXException | IOException e)
-        {
+        } catch (final SAXException | IOException e) {
             throw new XPathException(this, "A problem occurred while serializing the node set: " + e.getMessage(), e);
-        } finally
-        {
+        } finally {
             SerializerPool.getInstance().returnObject(sax);
         }
     }

@@ -1,6 +1,6 @@
 package org.exist.examples.xmldb;
 
-import java.io.File;
+import java.nio.file.Paths;
 
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.XQueryService;
@@ -92,7 +92,7 @@ public class MultipleDatabases {
 		XMLResource document = (XMLResource) 
 			collection.createResource(path.substring(path.lastIndexOf('/')), 
 				"XMLResource");
-		document.setContent(new File(path));
+		document.setContent(Paths.get(path));
 		collection.storeResource(document);
 	}
 

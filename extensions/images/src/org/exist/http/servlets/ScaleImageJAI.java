@@ -1,21 +1,18 @@
 package org.exist.http.servlets;
 
-import java.awt.Color;
-import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.awt.image.renderable.ParameterBlock;
 import java.io.BufferedOutputStream;
-import org.apache.commons.io.output.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -30,11 +27,10 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.exist.collections.Collection;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.NativeBroker;
-import org.exist.storage.txn.Txn;
+import org.exist.util.FileUtils;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
 import org.exist.xmldb.XmldbURI;
@@ -83,10 +79,11 @@ public class ScaleImageJAI extends HttpServlet {
 	
 	private Storage store;
 	
-	private File outputDir;
+	private Path outputDir;
 	private String defaultMimeType;
 	private boolean caching = true;
-	
+
+	@Override
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
 		
@@ -96,7 +93,7 @@ public class ScaleImageJAI extends HttpServlet {
 		if (baseDirStr.startsWith("xmldb:")) {
 			store = new DBStorage(baseDirStr);
 		} else {
-			File baseDir = getAbsolutePath(baseDirStr);
+			Path baseDir = getAbsolutePath(baseDirStr);
 			store = new FileSystemStorage(baseDir);
 		}
 		
@@ -105,8 +102,13 @@ public class ScaleImageJAI extends HttpServlet {
 			outputDirStr = "scaled";
 		
 		outputDir = getAbsolutePath(outputDirStr);
-		if (!outputDir.exists())
-			outputDir.mkdirs();
+		if (!Files.exists(outputDir)) {
+			try {
+				Files.createDirectories(outputDir);
+			} catch(final IOException e) {
+				throw new ServletException(e);
+			}
+		}
 		
 		log("baseDir = " + baseDirStr);
 		log("outputDir = " + outputDir);
@@ -119,19 +121,21 @@ public class ScaleImageJAI extends HttpServlet {
 			caching = cacheStr.equalsIgnoreCase("yes") || cacheStr.equalsIgnoreCase("true");
 	}
 
-	private File getAbsolutePath(String dirStr) {
-		File dir = new File(dirStr);
+	private Path getAbsolutePath(String dirStr) {
+		Path dir = Paths.get(dirStr);
 		if (!dir.isAbsolute()) {
 			String path = getServletConfig().getServletContext().getRealPath(".");
-			return new File(path, dirStr);
+			return Paths.get(path, dirStr);
 		}
 		return dir;
 	}
-	
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+
+	@Override
+	protected void doGet(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
         String filePath = request.getPathInfo();
-        if (filePath.startsWith("/"))
-        	filePath = filePath.substring(1);
+        if (filePath.startsWith("/")) {
+			filePath = filePath.substring(1);
+		}
         filePath = URIUtils.urlDecodeUtf8(filePath);
         
         String action = "scale";
@@ -142,17 +146,17 @@ public class ScaleImageJAI extends HttpServlet {
         action = matcher.group(1);
         filePath = matcher.group(2);
         
-        File file = store.getFile(filePath);
+        Path file = store.getFile(filePath);
     	
-    	log("action: " + action + " path: " + file.getAbsolutePath());
+    	log("action: " + action + " path: " + file.toAbsolutePath());
     	
-        String name = file.getName();
-        File dir = file.getParentFile();
+        String name = FileUtils.fileName(file);
+        Path dir = file.getParent();
         
         file = findFile(dir, name);
         
-        if (file != null && !(file.canRead() && file.isFile())) {
-    		log("Cannot read image file: " + file.getAbsolutePath());
+        if (file != null && !(Files.isReadable(file) && Files.isRegularFile(file))) {
+    		log("Cannot read image file: " + file.toAbsolutePath());
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
             return;
         }
@@ -182,9 +186,9 @@ public class ScaleImageJAI extends HttpServlet {
 		if ("scale".equals(action)) {
 			float size = getParameter(request, "s");
 			if (file != null) {
-				File scaled = getFile(dir, file, mime,
+				Path scaled = getFile(dir, file, mime,
 						size < 0 ? "" : Integer.toString((int) size));
-				log("thumb = " + scaled.getAbsolutePath());
+				log("thumb = " + scaled.toAbsolutePath());
 				if (useScaled(file, scaled)) {
 					streamScaled(scaled, response.getOutputStream());
 				} else {
@@ -210,8 +214,8 @@ public class ScaleImageJAI extends HttpServlet {
 			suffix.append("x").append((int) x).append("y").append((int) y)
 					.append("+").append((int) width).append("y")
 					.append((int) height);
-			File scaled = getFile(dir, file, mime, suffix.toString());
-			log("thumb = " + scaled.getAbsolutePath());
+			Path scaled = getFile(dir, file, mime, suffix.toString());
+			log("thumb = " + scaled.toAbsolutePath());
 			if (useScaled(file, scaled)) {
 				streamScaled(scaled, response.getOutputStream());
 			} else {
@@ -224,11 +228,11 @@ public class ScaleImageJAI extends HttpServlet {
     }
 
 	private void writeToResponse(HttpServletResponse response, MimeType mime,
-			File scaled, RenderedImage bufferedImage, boolean cache) throws IOException {
+			Path scaled, RenderedImage bufferedImage, boolean cache) throws IOException {
 		boolean writeOk = cache ? writeScaled(bufferedImage, scaled, mime) : false;
-		if (writeOk)
+		if (writeOk) {
 			streamScaled(scaled, response.getOutputStream());
-		else {
+		} else {
 			BufferedOutputStream os = new BufferedOutputStream(
 					response.getOutputStream(), 512);
 			writeImage(bufferedImage, os, mime);
@@ -249,10 +253,11 @@ public class ScaleImageJAI extends HttpServlet {
 		return -1;
 	}
 	
-    private RenderedOp loadImage(File file) throws IOException {
-    	if (file == null)
-    		return null;
-        FileSeekableStream fss = new FileSeekableStream(file);
+    private RenderedOp loadImage(final Path file) throws IOException {
+    	if (file == null) {
+			return null;
+		}
+        final FileSeekableStream fss = new FileSeekableStream(file.toFile());
         return JAI.create("stream", fss);
     }
 
@@ -320,135 +325,116 @@ public class ScaleImageJAI extends HttpServlet {
         return JAI.create("SubsampleAverage", params);
      }
 
-    private File getFile(File dir, File file, MimeType mime, String suffix) {
+    private Path getFile(final Path dir, final Path file, final MimeType mime, final String suffix) throws IOException {
     	String dirName = store.getRelativePath(dir);
     	
-        File scaledDir = new File(outputDir, dirName);
-        if (!scaledDir.exists())
-            scaledDir.mkdirs();
-        String name = file.getName();
+        final Path scaledDir = outputDir.resolve(dirName);
+        if (!Files.exists(scaledDir)) {
+			Files.createDirectories(scaledDir);
+		}
+
+        String name = FileUtils.fileName(file);
         int p = name.lastIndexOf('.');
         if (p > 0) {
             name = name.substring(0, p);
         }
 
-        StringBuilder nameBuilder = new StringBuilder();
+        final StringBuilder nameBuilder = new StringBuilder();
         nameBuilder.append(name);
-        if (suffix != null)
-        	nameBuilder.append('-').append(suffix);
+        if (suffix != null) {
+			nameBuilder.append('-').append(suffix);
+		}
         nameBuilder.append(MimeTable.getInstance().getPreferredExtension(mime)); 
-        return new File(scaledDir, nameBuilder.toString());
+        return scaledDir.resolve(nameBuilder.toString());
     }
     
-    private boolean useScaled(File image, File scaled) {
-        if (!(scaled.exists() && scaled.canRead()))
-            return false;
-        return scaled.lastModified() >= image.lastModified();
+    private boolean useScaled(final Path image, final Path scaled) throws IOException {
+        if (!(Files.exists(scaled) && Files.isReadable(scaled))) {
+			return false;
+		}
+
+        return Files.getLastModifiedTime(scaled).compareTo(Files.getLastModifiedTime(image)) >= 0;
     }
 
-    private boolean writeScaled(RenderedImage image, File scaled, MimeType mime) {
-        try {
-            OutputStream os = new FileOutputStream(scaled);
+    private boolean writeScaled(final RenderedImage image, final Path scaled, final MimeType mime) {
+        try(final OutputStream os = Files.newOutputStream(scaled)) {
             writeImage(image, os, mime);
-            os.flush();
-            os.close();
             return true;
-        } catch (IOException e) {
+        } catch (final IOException e) {
         	log(e.getMessage(), e);
             return false;
         }
     }
 
-    private void streamScaled(File thumb, OutputStream os) throws IOException {
-        InputStream is = new FileInputStream(thumb);
-        byte[] buf = new byte[128];
-        int b;
-        while ((b = is.read(buf)) > -1) {
-            os.write(buf, 0, b);
-        }
-        is.close();
-        os.flush();
+    private void streamScaled(final Path thumb, final OutputStream os) throws IOException {
+		Files.copy(thumb, os);
     }
     
-    private File findFile(File dir, String name) {
-    	ImageFilter filter = new ImageFilter();
-    	filter.setSearchString(name);
-    	File[] files = dir.listFiles(filter);
-    	if (files != null && files.length > 0)
-    		return files[0];
+    private Path findFile(final Path dir, final String name) throws IOException {
+    	final List<Path> files = FileUtils.list(dir, imageFilter(name));
+    	if (files != null && !files.isEmpty()) {
+			return files.get(0);
+		}
     	return null;
     }
-    
-    private class ImageFilter implements FileFilter {
 
-    	private String searchString;
-    	
-    	public void setSearchString(String str) {
-    		this.searchString = str;
-    	}
-    	
-		@Override
-		public boolean accept(File pathname) {
-			return (pathname.getName().contains(searchString));
-		}
-    }
+    private static Predicate<Path> imageFilter(final String searchString) {
+		return path -> FileUtils.fileName(path).contains(searchString);
+	}
     
-    private static interface Storage {
-    	
-    	public File getFile(String path);
-    	
-    	public String getRelativePath(File dir);
+    private interface Storage {
+    	Path getFile(String path);
+		String getRelativePath(Path dir);
     }
     
     private static class FileSystemStorage implements Storage {
-    	
-    	private File baseDir;
+    	private final Path baseDir;
 
-		public FileSystemStorage(File baseDir) {
+		public FileSystemStorage(final Path baseDir) {
     		this.baseDir = baseDir;
     	}
 		
 		@Override
-		public File getFile(String path) {
-			return new File(baseDir, path);
+		public Path getFile(final String path) {
+			return baseDir.resolve(path);
 		}
-		
-		public String getRelativePath(File dir) {
-			return
-				dir.getAbsolutePath().substring(baseDir.getAbsolutePath().length());
+
+		@Override
+		public String getRelativePath(Path dir) {
+			return dir.toAbsolutePath().toString().substring(baseDir.toAbsolutePath().toString().length());
 		}
     }
     
     private class DBStorage implements Storage {
+    	private Path baseDir;
     	
-    	private File baseDir;
-    	
-    	public DBStorage(String baseCollection) throws ServletException {
+    	public DBStorage(final String baseCollection) throws ServletException {
     		try {
     			final BrokerPool pool = BrokerPool.getInstance();
 
-    			try(final DBBroker broker = pool.get(pool.getSecurityManager().getGuestSubject())) {
+    			try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getGuestSubject()))) {
 					XmldbURI uri = XmldbURI.xmldbUriFor(baseCollection);
 					this.baseDir = ((NativeBroker) broker).getCollectionBinaryFileFsPath(uri.toCollectionPathURI());
-					log("baseDir = " + baseDir.getAbsolutePath());
+					log("baseDir = " + baseDir.toAbsolutePath());
 				}
     			
     		} catch (Exception e) {
     			throw new ServletException("Unable to access image collection: " + baseCollection, e);
     		}
     	}
-    	
-    	public String getRelativePath(File dir) {
-			return
-				dir.getAbsolutePath().substring(baseDir.getAbsolutePath().length());
+
+    	@Override
+    	public String getRelativePath(final Path dir) {
+			return dir.toAbsolutePath().toString().substring(baseDir.toAbsolutePath().toString().length());
 		}
 
 		@Override
-		public File getFile(String path) {
-			if (!baseDir.canRead())
+		public Path getFile(String path) {
+			if (!Files.isReadable(baseDir)) {
 				return null;
+			}
 			path = URIUtils.urlEncodePartsUtf8(path);
-			return new File(baseDir, path);
+			return baseDir.resolve(path);
 		}
     }
 }
