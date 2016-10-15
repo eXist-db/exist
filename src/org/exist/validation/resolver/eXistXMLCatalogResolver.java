@@ -22,9 +22,11 @@
 
 package org.exist.validation.resolver;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
@@ -33,6 +35,7 @@ import org.apache.xerces.util.XMLCatalogResolver;
 import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLInputSource;
+import org.exist.util.FileUtils;
 import org.w3c.dom.ls.LSInput;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -115,14 +118,14 @@ public class eXistXMLCatalogResolver extends XMLCatalogResolver {
         final URL url = new URL(systemId);
         if ("file".equals(url.getProtocol())) {
             final String path = url.getPath();
-            final File f = new File(path);
-            if (!f.canRead()) {
-                return resolveEntity(null, f.getName());
+            final Path f = Paths.get(path).normalize();
+            if (!Files.isReadable(f)) {
+                return resolveEntity(null, FileUtils.fileName(f));
             } else {
-                return new InputSource(f.getAbsolutePath());
+                return new InputSource(f.toAbsolutePath().toString());
             }
         } else {
-            return new InputSource(url.openStream());
+            return new InputSource(url.openStream());       //TODO(AR) stream is never closed!
         }
     }
 

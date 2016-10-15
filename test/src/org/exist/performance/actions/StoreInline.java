@@ -40,6 +40,7 @@ public class StoreInline extends AbstractAction {
     private String content;
     private MimeType type = MimeType.XML_TYPE;
 
+    @Override
     public void configure(Runner runner, Action parent, Element config) throws EXistException {
         super.configure(runner, parent, config);
 
@@ -59,6 +60,7 @@ public class StoreInline extends AbstractAction {
         content = type.isXMLType() ? getContent(config) : getContentValue(config);
     }
 
+    @Override
     public void execute(Connection connection) throws XMLDBException, EXistException {
         Collection collection = connection.getCollection(collectionPath);
         if (collection == null)

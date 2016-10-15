@@ -39,8 +39,8 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 
-import java.io.File;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Random;
 
 public class ProtectedModeTest {
@@ -139,7 +139,7 @@ public class ProtectedModeTest {
         final IndexQueryService idxConf = (IndexQueryService) collection.getService("IndexQueryService", "1.0");
         idxConf.configureCollection(COLLECTION_CONFIG);
         final XMLResource hamlet = (XMLResource) collection.createResource("hamlet.xml", "XMLResource");
-        hamlet.setContent(new File("samples/shakespeare/hamlet.xml"));
+        hamlet.setContent(Paths.get("samples/shakespeare/hamlet.xml"));
         collection.storeResource(hamlet);
 
         mgmt = (CollectionManagementService) collection.getService("CollectionManagementService", "1.0");

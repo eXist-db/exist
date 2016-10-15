@@ -21,9 +21,6 @@
  */
 package org.exist.management.client;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -31,6 +28,9 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
@@ -91,8 +91,8 @@ public class JMXServlet extends HttpServlet {
     private JMXtoXML client;
     private final Set<String> localhostAddresses = new HashSet<>();
 
-    private File dataDir;
-    private File tokenFile;
+    private Path dataDir;
+    private Path tokenFile;
 
 
     @Override
@@ -196,11 +196,11 @@ public class JMXServlet extends HttpServlet {
         // Get directory for token file
         final String jmxDataDir = client.getDataDir();
         if (jmxDataDir == null) {
-            dataDir = new File(config.getServletContext().getRealPath(WEBINF_DATA_DIR));
+            dataDir = Paths.get(config.getServletContext().getRealPath(WEBINF_DATA_DIR)).normalize();
         } else {
-            dataDir = new File(jmxDataDir);
+            dataDir = Paths.get(jmxDataDir).normalize();
         }
-        if (!dataDir.isDirectory() || !dataDir.canWrite()) {
+        if (!Files.isDirectory(dataDir) || !Files.isWritable(dataDir)) {
             LOG.error("Cannot access directory " + WEBINF_DATA_DIR);
         }
 
@@ -263,8 +263,8 @@ public class JMXServlet extends HttpServlet {
     private void obtainTokenFileReference() {
 
         if (tokenFile == null) {
-            tokenFile = new File(dataDir, TOKEN_FILE);
-            LOG.info(String.format("Token file:  %s", tokenFile.getAbsolutePath()));
+            tokenFile = dataDir.resolve(TOKEN_FILE);
+            LOG.info(String.format("Token file:  %s", tokenFile.toAbsolutePath().toAbsolutePath()));
         }
     }
 
@@ -279,9 +279,9 @@ public class JMXServlet extends HttpServlet {
         String token = null;
 
         // Read if possible
-        if (tokenFile.exists()) {
+        if (Files.exists(tokenFile)) {
 
-            try (InputStream is = new FileInputStream(tokenFile)) {
+            try (final InputStream is = Files.newInputStream(tokenFile)) {
                 props.load(is);
                 token = props.getProperty(TOKEN_KEY);
             } catch (IOException ex) {
@@ -291,7 +291,7 @@ public class JMXServlet extends HttpServlet {
         }
 
         // Create and write when needed
-        if (!tokenFile.exists() || token == null) {
+        if (!Files.exists(tokenFile) || token == null) {
 
             // Create random token
             token = UUID.randomUUID().toString();
@@ -300,13 +300,13 @@ public class JMXServlet extends HttpServlet {
             props.setProperty(TOKEN_KEY, token);
 
             // Write data to file
-            try (OutputStream os = new FileOutputStream(tokenFile)) {
+            try (final OutputStream os = Files.newOutputStream(tokenFile)) {
                 props.store(os, "JMXservlet token: http://localhost:8080/exist/status?token=......");
             } catch (IOException ex) {
                 LOG.error(ex.getMessage());
             }
 
-            LOG.debug(String.format("Token written to file %s", tokenFile.getAbsolutePath()));
+            LOG.debug(String.format("Token written to file %s", tokenFile.toAbsolutePath().toString()));
 
         }
 

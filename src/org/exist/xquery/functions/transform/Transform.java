@@ -22,13 +22,15 @@
 package org.exist.xquery.functions.transform;
 
 import java.io.BufferedOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -245,9 +247,9 @@ public class Transform extends BasicFunction {
                     if (expandXIncludes) {
                         String xipath = serializationProps.getProperty(EXistOutputKeys.XINCLUDE_PATH);
                         if (xipath != null) {
-                            final File f = new File(xipath);
+                            final Path f = Paths.get(xipath).normalize();
                             if (!f.isAbsolute()) {
-                                xipath = new File(context.getModuleLoadPath(), xipath).getAbsolutePath();
+                                xipath = Paths.get(context.getModuleLoadPath(), xipath).normalize().toAbsolutePath().toString();
                             }
                         } else {
                             xipath = context.getModuleLoadPath();
@@ -312,9 +314,9 @@ public class Transform extends BasicFunction {
                         XIncludeFilter xinclude = new XIncludeFilter(serializer, receiver);
                         String xipath = serializationProps.getProperty(EXistOutputKeys.XINCLUDE_PATH);
                         if (xipath != null) {
-                            final File f = new File(xipath);
+                            final Path f = Paths.get(xipath).normalize();
                             if (!f.isAbsolute()) {
-                                xipath = new File(context.getModuleLoadPath(), xipath).getAbsolutePath();
+                                xipath = Paths.get(context.getModuleLoadPath(), xipath).normalize().toAbsolutePath().toString();
                             }
                         } else {
                             xipath = context.getModuleLoadPath();
@@ -480,14 +482,14 @@ public class Transform extends BasicFunction {
             throws XPathException, TransformerConfigurationException {
         String base;
         if (stylesheet.indexOf(':') == Constants.STRING_NOT_FOUND) {
-            File f = new File(stylesheet);
-            if (f.canRead()) {
-                stylesheet = f.toURI().toASCIIString();
+            Path f = Paths.get(stylesheet).normalize();
+            if (Files.isReadable(f)) {
+                stylesheet = f.toUri().toASCIIString();
             } else {
-                stylesheet = context.getModuleLoadPath() + File.separatorChar + stylesheet;
-                f = new File(stylesheet);
-                if (f.canRead()) {
-                    stylesheet = f.toURI().toASCIIString();
+                stylesheet = context.getModuleLoadPath() + java.io.File.separatorChar + stylesheet;
+                f = Paths.get(stylesheet).normalize();
+                if (Files.isReadable(f)) {
+                    stylesheet = f.toUri().toASCIIString();
                 }
             }
         }

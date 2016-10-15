@@ -23,8 +23,8 @@ package org.exist.storage.lock;
 
 import static org.junit.Assert.*;
 
-import java.io.File;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -165,8 +165,8 @@ public class DeadlockTest {
 			CollectionConfigurationManager mgr = pool.getConfigurationManager();
             mgr.addConfiguration(transaction, broker, test, COLLECTION_CONFIG);
             
-			InputSource is = new InputSource(new File(
-					"samples/shakespeare/hamlet.xml").toURI().toASCIIString());
+			InputSource is = new InputSource(Paths.get(
+					"samples/shakespeare/hamlet.xml").toUri().toASCIIString());
 			assertNotNull(is);
 			IndexInfo info = test.validateXMLResource(transaction, broker,
 					XmldbURI.create("hamlet.xml"), is);

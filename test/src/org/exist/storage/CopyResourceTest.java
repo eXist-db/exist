@@ -21,8 +21,9 @@
  */
 package org.exist.storage;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Optional;
 
 import org.exist.EXistException;
@@ -96,12 +97,13 @@ public class CopyResourceTest {
                 broker.saveCollection(transaction, subTestCollection);
 
                 final String existHome = System.getProperty("exist.home");
-                final File existDir = existHome == null ? new File(".") : new File(existHome);
-                final File f = new File(existDir, "samples/shakespeare/r_and_j.xml");
+                Path existDir = existHome == null ? Paths.get(".") : Paths.get(existHome);
+                existDir = existDir.normalize();
+                final Path f = existDir.resolve("samples/shakespeare/r_and_j.xml");
                 assertNotNull(f);
-                info = subTestCollection.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"), new InputSource(f.toURI().toASCIIString()));
+                info = subTestCollection.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"), new InputSource(f.toUri().toASCIIString()));
                 assertNotNull(info);
-                subTestCollection.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
+                subTestCollection.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()), false);
 
                 transact.commit(transaction);
             }
@@ -166,12 +168,13 @@ public class CopyResourceTest {
                 broker.saveCollection(transaction, subTestCollection);
 
                 final String existHome = System.getProperty("exist.home");
-                final File existDir = existHome == null ? new File(".") : new File(existHome);
-                final File f = new File(existDir, "samples/shakespeare/r_and_j.xml");
+                Path existDir = existHome == null ? Paths.get(".") : Paths.get(existHome);
+                existDir = existDir.normalize();
+                final Path f = existDir.resolve("samples/shakespeare/r_and_j.xml");
                 assertNotNull(f);
-                info = subTestCollection.validateXMLResource(transaction, broker, XmldbURI.create("test2.xml"), new InputSource(f.toURI().toASCIIString()));
+                info = subTestCollection.validateXMLResource(transaction, broker, XmldbURI.create("test2.xml"), new InputSource(f.toUri().toASCIIString()));
                 assertNotNull(info);
-                subTestCollection.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
+                subTestCollection.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()), false);
 
                 transact.commit(transaction);
             }

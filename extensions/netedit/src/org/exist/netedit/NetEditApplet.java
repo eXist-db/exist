@@ -23,12 +23,11 @@
 package org.exist.netedit;
 
 import java.applet.Applet;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Timer;
 
 import org.apache.commons.httpclient.HttpClient;
@@ -59,11 +58,11 @@ public class NetEditApplet extends Applet {
 	private String sessionid;
 	private String opencmd;
 	
-	private File user;   // user home folder
-	private File exist;  // eXist's folder
-	private File etc;    // Gate's folder
-	private File meta;   // Task's meta storage folder
-	private File cache;  // Cache folder
+	private Path user;   // user home folder
+	private Path exist;  // eXist's folder
+	private Path etc;    // Gate's folder
+	private Path meta;   // Task's meta storage folder
+	private Path cache;  // Cache folder
 
 	
 	public final static long PERIOD = 1000; // Default period/delay for different operations
@@ -72,17 +71,17 @@ public class NetEditApplet extends Applet {
 		
 		sessionid = getParameter("sessionid");
 		
-		user  = new File(System.getProperty("user.home"));
-		exist = new File(user, ".eXist");
-		etc   = new File(exist, "gate");
+		user  = Paths.get(System.getProperty("user.home"));
+		exist = user.resolve(".eXist");
+		etc   = exist.resolve("gate");
 
 		String host = getParameter("host");
 		if (host != null) {
-			etc = new File(etc, host);
+			etc = etc.resolve(host);
 		}
 		
-		meta  = new File(etc, "meta");
-		cache = new File(etc, "cache");
+		meta  = etc.resolve("meta");
+		cache = etc.resolve("cache");
 		
 		// Setup HTTP proxy
 		String proxyHost = System.getProperty( "http.proxyHost"); 
@@ -102,8 +101,12 @@ public class NetEditApplet extends Applet {
         }
         
         // Load tasks of old applet's sessions
-        manager.load();
-        
+		try {
+			manager.load();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+
 		// Start main trusted thread
         Timer timer = new Timer();
 		timer.schedule(manager, PERIOD, PERIOD);
@@ -133,27 +136,22 @@ public class NetEditApplet extends Applet {
 	 * @param downloadFrom URL of remote doc for download * @return downloaded file
 	 * @throws IOException
 	 */
-	public File download(String downloadFrom) throws IOException{
-		File file = null;
+	public Path download(String downloadFrom) throws IOException{
+		Path file = null;
 		GetMethod get = new GetMethod(downloadFrom);
-		useCurrentSession(get);
-		http.executeMethod(get);
-		long contentLength = get.getResponseContentLength();
-		
-        if (contentLength < Integer.MAX_VALUE) {
-        	InputStream is = get.getResponseBodyAsStream();
-    		file = createFile(getCodeBase().getAuthority(), get.getPath());
-    		OutputStream os = new FileOutputStream(file);
-    		byte[] data = new byte[1024];
-    		int read = 0;
-    		while((read = is.read(data)) > -1) {
-    			os.write(data, 0, read);
-    		}
-    		os.flush();
-    		is.close();
-    		os.close();
-        }
-		get.releaseConnection();
+		try {
+			useCurrentSession(get);
+			http.executeMethod(get);
+			long contentLength = get.getResponseContentLength();
+
+			if (contentLength < Integer.MAX_VALUE) {
+				InputStream is = get.getResponseBodyAsStream();
+				file = createFile(get.getPath());
+				Files.copy(is, file);
+			}
+		} finally {
+			get.releaseConnection();
+		}
         return file;
 	}
 	
@@ -164,15 +162,16 @@ public class NetEditApplet extends Applet {
 	 * @throws HttpException
 	 * @throws IOException
 	 */
-	public void upload(File file, String uploadTo) throws HttpException, IOException{ 
+	public void upload(Path file, String uploadTo) throws HttpException, IOException{
 		PutMethod put = new PutMethod(uploadTo);
 		useCurrentSession(put);
-		InputStream is = new FileInputStream(file);
-		RequestEntity entity = new InputStreamRequestEntity(is);
-		put.setRequestEntity(entity);
-		http.executeMethod(put);
-		is.close();
-		put.releaseConnection();
+		try(final InputStream is = Files.newInputStream(file)) {
+			RequestEntity entity = new InputStreamRequestEntity(is);
+			put.setRequestEntity(entity);
+			http.executeMethod(put);
+		} finally {
+			put.releaseConnection();
+		}
 	}
 	
 	/**
@@ -180,24 +179,24 @@ public class NetEditApplet extends Applet {
 	 * @param file opened file
 	 * @throws IOException
 	 */
-	public void open(File file) throws IOException{
-    	String cmd = String.format(opencmd, file.toURI().toURL());
+	public void open(Path file) throws IOException{
+    	String cmd = String.format(opencmd, file.toUri().toURL());
     	Runtime.getRuntime().exec(cmd);
     }
 	
 	/**
 	 * Create file in local cache
-	 * @param name name of file
+	 * @param path name of file
 	 * @return file in cache
 	 * @throws IOException
 	 */
-	public File createFile(String host, String path) throws IOException{
-		File tmp = new File(cache, path);
-		File fld = tmp.getParentFile();
-		if (!fld.isDirectory()){
-			fld.mkdirs();
+	public Path createFile(String path) throws IOException{
+		Path tmp = cache.resolve(path);
+		Path fld = tmp.getParent();
+		if (!Files.isDirectory(fld)){
+			Files.createDirectories(fld);
 		}
-		tmp.createNewFile();
+		Files.createFile(tmp);
 		return tmp;
 	}
 	
@@ -211,21 +210,21 @@ public class NetEditApplet extends Applet {
 	/**
 	 * @return folder of GateApplet in local FS
 	 */
-	public File getEtc(){
+	public Path getEtc(){
 		return etc;
 	}
 	
 	/**
 	 * @return "meta" folder of in local FS
 	 */
-	public File getMeta(){
+	public Path getMeta(){
 		return meta;
 	}
 	
 	/**
 	 * @return "cache" folder in local FS
 	 */
-	public File getCache(){
+	public Path getCache(){
 		return cache;
 	}
 

@@ -37,6 +37,7 @@ import java.io.StringWriter;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.nio.file.Paths;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Properties;
@@ -415,7 +416,7 @@ class DocumentView extends JFrame {
         final JFileChooser chooser = new JFileChooser(workDir);
         chooser.setMultiSelectionEnabled(false);
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        chooser.setSelectedFile(new File(resource.getId()));
+        chooser.setSelectedFile(Paths.get(resource.getId()).toFile());
         if (chooser.showDialog(this, Messages.getString("DocumentView.44")) == JFileChooser.APPROVE_OPTION) { //$NON-NLS-1$
             final File file = chooser.getSelectedFile();
             if (file.exists()

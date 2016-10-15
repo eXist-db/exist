@@ -25,13 +25,13 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Properties;
 
 import javax.xml.transform.OutputKeys;
@@ -55,8 +55,9 @@ import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
-import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class Serialize extends BasicFunction {
 
@@ -110,7 +111,6 @@ public class Serialize extends BasicFunction {
 
 
         Properties outputProperties = null;
-        OutputStream os = null;
 
         if (args.length == 3) {
             // TODO: Remove this conditional in eXist 2.0 since the function has been deprecated.
@@ -118,13 +118,13 @@ public class Serialize extends BasicFunction {
 
             // check the file output path
             final String path = args[1].itemAt(0).getStringValue();
-            final File file = new File(path);
-            if (file.isDirectory()) {
-                logger.debug("Output file is a directory: " + file.getAbsolutePath());
+            final Path file = Paths.get(path).normalize();
+            if (Files.isDirectory(file)) {
+                logger.debug("Output file is a directory: " + file.toAbsolutePath().toString());
                 return BooleanValue.FALSE;
             }
-            if (file.exists() && !file.canWrite()) {
-                logger.debug("Cannot write to file " + file.getAbsolutePath());
+            if (Files.exists(file) && !Files.isWritable(file)) {
+                logger.debug("Cannot write to file " + file.toAbsolutePath().toString());
                 return BooleanValue.FALSE;
             }
 
@@ -132,14 +132,12 @@ public class Serialize extends BasicFunction {
             outputProperties = parseSerializationOptions(args[2]);
 
             //setup output stream for file
-            try {
-                os = new FileOutputStream(file);
+            try(final OutputStream os = Files.newOutputStream(file)) {
+                //do the serialization
+                serialize(args[0].iterate(), outputProperties, os);
             } catch (final IOException e) {
                 throw new XPathException(this, "A problem occurred while serializing the node set: " + e.getMessage(), e);
             }
-
-            //do the serialization
-            serialize(args[0].iterate(), outputProperties, os);
 
             return BooleanValue.TRUE;
         } else {
@@ -148,16 +146,14 @@ public class Serialize extends BasicFunction {
             //parse serialization options from second argument to function
             outputProperties = parseSerializationOptions(args[1]);
 
-            //setup output stream for byte array
-            os = new ByteArrayOutputStream();
+            try(final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+                //do the serialization
+                serialize(args[0].iterate(), outputProperties, os);
 
-            //do the serialization
-            serialize(args[0].iterate(), outputProperties, os);
 
-            try {
-                final String encoding = outputProperties.getProperty(OutputKeys.ENCODING, "UTF-8");
-                return new StringValue(new String(((ByteArrayOutputStream) os).toByteArray(), encoding));
-            } catch (final UnsupportedEncodingException e) {
+                final String encoding = outputProperties.getProperty(OutputKeys.ENCODING, UTF_8.name());
+                return new StringValue(new String(os.toByteArray(), encoding));
+            } catch (final IOException  e) {
                 throw new XPathException(this, "A problem occurred while serializing the node set: " + e.getMessage(), e);
             }
         }

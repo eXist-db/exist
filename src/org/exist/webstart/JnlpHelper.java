@@ -20,7 +20,8 @@
 
 package org.exist.webstart;
 
-import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -38,50 +39,50 @@ public class JnlpHelper {
 
     private static final Logger LOGGER = LogManager.getLogger(JnlpHelper.class);
 
-    private File coreJarsFolder = null;
-    private File existJarFolder = null;
-    private File webappsFolder = null;
+    private Path coreJarsFolder = null;
+    private Path existJarFolder = null;
+    private Path webappsFolder = null;
 
 
-    private boolean isInWarFile(File existHome) {
-        return !new File(existHome, LIB_CORE).isDirectory();
+    private boolean isInWarFile(final Path existHome) {
+        return !Files.isDirectory(existHome.resolve(LIB_CORE));
     }
 
     /**
      * Creates a new instance of JnlpHelper
      */
-    public JnlpHelper(File contextRoot) {
+    public JnlpHelper(final Path contextRoot) {
 
         // Setup path based on installation (in jetty, container)
         if (isInWarFile(contextRoot)) {
             // all files mixed in contextRoot/WEB-INF/lib
             LOGGER.debug("eXist is running in servlet container (.war).");
-            coreJarsFolder = new File(contextRoot, LIB_WEBINF);
+            coreJarsFolder = contextRoot.resolve(LIB_WEBINF).normalize();
             existJarFolder = coreJarsFolder;
             webappsFolder = contextRoot;
 
         } else {
             //files located in contextRoot/lib/core and contextRoot
             LOGGER.debug("eXist is running private jetty server.");
-            coreJarsFolder = new File(contextRoot, LIB_CORE);
-            existJarFolder = new File(contextRoot, LIB_EXIST);
+            coreJarsFolder = contextRoot.resolve(LIB_CORE).normalize();
+            existJarFolder = contextRoot.resolve(LIB_EXIST).normalize();
             webappsFolder = contextRoot;
         }
 
-        LOGGER.debug(String.format("CORE jars location=%s", coreJarsFolder.getAbsolutePath()));
-        LOGGER.debug(String.format("EXIST jars location=%s", existJarFolder.getAbsolutePath()));
-        LOGGER.debug(String.format("WEBAPP location=%s", webappsFolder.getAbsolutePath()));
+        LOGGER.debug(String.format("CORE jars location=%s", coreJarsFolder.toAbsolutePath().toString()));
+        LOGGER.debug(String.format("EXIST jars location=%s", existJarFolder.toAbsolutePath().toString()));
+        LOGGER.debug(String.format("WEBAPP location=%s", webappsFolder.toAbsolutePath().toString()));
     }
 
-    public File getWebappFolder() {
+    public Path getWebappFolder() {
         return webappsFolder;
     }
 
-    public File getCoreJarsFolder() {
+    public Path getCoreJarsFolder() {
         return coreJarsFolder;
     }
 
-    public File getExistJarFolder() {
+    public Path getExistJarFolder() {
         return existJarFolder;
     }
 

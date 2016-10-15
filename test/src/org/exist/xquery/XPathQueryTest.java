@@ -24,6 +24,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -1677,14 +1679,8 @@ public class XPathQueryTest {
         final Object rawContent = r.getContent();
         String content = null;
         if(rawContent instanceof File) {
-            final FileInputStream fis = new FileInputStream((File)rawContent);
-            final ByteArrayOutputStream bos = new ByteArrayOutputStream(2048);
-            byte[] temp = new byte[1024];
-            int count = 0;
-            while((count = fis.read(temp)) > -1) {
-                bos.write(temp, 0, count);
-            }
-            content = new String(bos.toByteArray(),UTF_8);
+            final Path p = ((File) rawContent).toPath();
+            content = new String(Files.readAllBytes(p), UTF_8);
         } else {
             content = (String)r.getContent();
         }

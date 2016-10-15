@@ -21,8 +21,13 @@
  */
 package org.exist.xmldb.concurrent.action;
 
-import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
 
+import org.exist.util.FileUtils;
 import org.exist.xmldb.concurrent.DBUtils;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -56,20 +61,21 @@ public class MultiResourcesAction extends Action {
     }
 
 	/**
-	 * @param files
 	 * @param col
 	 * @throws XMLDBException
 	 */
-	private void addFiles(Collection col) throws XMLDBException {
-		File d = new File(dirPath);
-        if(!(d.canRead() && d.isDirectory()))
+    private void addFiles(final Collection col) throws XMLDBException, IOException {
+        final Path d = Paths.get(dirPath);
+        if(!(Files.isReadable(d) && Files.isDirectory(d))) {
             throw new RuntimeException("Cannot read directory: " + dirPath);
-        File[] files = d.listFiles();
-		for(int i = 0; i < files.length; i++) {
-            if(files[i].isFile()) {
-            	DBUtils.addXMLResource(col, files[i].getName(), files[i]);
+        }
+
+        final List<Path> files = FileUtils.list(d);
+        for(final Path file : files) {
+            if(Files.isRegularFile(file)) {
+                DBUtils.addXMLResource(col, FileUtils.fileName(file), file);
             }
         }
-	}
+    }
 
 }

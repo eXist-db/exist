@@ -23,10 +23,12 @@ package org.exist.backup;
 
 import org.exist.repo.RepoBackup;
 import org.exist.util.EXistInputSource;
+import org.exist.util.FileUtils;
 import org.exist.util.ZipEntryInputSource;
 
-import java.io.*;
-
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -34,7 +36,6 @@ import java.nio.file.StandardCopyOption;
 import java.util.Enumeration;
 import java.util.Properties;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
 
@@ -44,7 +45,7 @@ public class ZipArchiveBackupDescriptor extends AbstractBackupDescriptor {
     protected ZipEntry descriptor;
     protected String base;
 
-    public ZipArchiveBackupDescriptor(Path fileArchive) throws ZipException, IOException, FileNotFoundException {
+    public ZipArchiveBackupDescriptor(Path fileArchive) throws IOException {
         archive = new ZipFile(fileArchive.toFile());
 
         //is it full backup?
@@ -196,6 +197,6 @@ public class ZipArchiveBackupDescriptor extends AbstractBackupDescriptor {
 
     @Override
     public String getName() {
-        return new File(archive.getName()).getName();
+        return FileUtils.fileName(Paths.get(archive.getName()));
     }
 }

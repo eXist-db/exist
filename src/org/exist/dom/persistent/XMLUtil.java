@@ -28,12 +28,14 @@ import org.w3c.dom.DocumentFragment;
 import org.xml.sax.InputSource;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Optional;
+
 import static java.nio.charset.StandardCharsets.UTF_8;
 import javax.xml.transform.TransformerException;
 
@@ -126,14 +128,14 @@ public final class XMLUtil {
         return out.toString();
     }
 
-    public static final String getEncoding(final String xmlDecl) {
+    public static final Optional<Charset> getEncoding(final String xmlDecl) {
         if(xmlDecl == null) {
-            return null;
+            return Optional.empty();
         }
         final StringBuilder buf = new StringBuilder();
         final int p0 = xmlDecl.indexOf("encoding");
         if(p0 == Constants.STRING_NOT_FOUND) {
-            return null;
+            return Optional.empty();
         }
         for(int i = p0 + 8; i < xmlDecl.length(); i++) {
             if(Character.isWhitespace(xmlDecl.charAt(i))
@@ -143,12 +145,12 @@ public final class XMLUtil {
                 while(xmlDecl.charAt(++i) != '"' && i < xmlDecl.length()) {
                     buf.append(xmlDecl.charAt(i));
                 }
-                return buf.toString();
+                return Optional.of(Charset.forName(buf.toString()));
             } else {
-                return null;
+                return Optional.empty();
             }
         }
-        return null;
+        return Optional.empty();
     }
 
     public static final String getXMLDecl(final byte[] data) {
@@ -232,49 +234,41 @@ public final class XMLUtil {
     }
 
     @Deprecated
-    public static final String readFile(final File file) throws IOException {
-        return readFile(file, UTF_8.name());
+    public static final String readFile(final Path file) throws IOException {
+        return readFile(file, UTF_8);
     }
 
     @Deprecated
-    public static String readFile(final File file, final String defaultEncoding)
+    public static String readFile(final Path file, final Charset defaultEncoding)
         throws IOException {
         // read the file into a string
-        return readFile(new FileInputStream(file), defaultEncoding);
+        return readFile(Files.readAllBytes(file), defaultEncoding);
     }
 
     @Deprecated
-    public static String readFile(final InputSource is) throws IOException {
+    public static String readFile(final InputSource inSrc) throws IOException {
         // read the file into a string
-        return readFile(is.getByteStream(), is.getEncoding());
+        try(final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            try(final InputStream is = inSrc.getByteStream()) {
+
+                final byte[] buf = new byte[2048];
+                int read = -1;
+                while ((read = is.read(buf)) != -1) {
+                    os.write(buf, 0, read);
+                }
+            }
+            return readFile(os.toByteArray(), Charset.forName(inSrc.getEncoding()));
+        }
     }
 
     //TODO if needed, replace with a decent NIO implementation
     @Deprecated
-    public static String readFile(final InputStream in, final String defaultEncoding)
+    public static String readFile(final byte[] in, final Charset defaultEncoding)
         throws IOException {
-        final byte[] chunk = new byte[512];
-        final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        int l;
-        do {
-            l = in.read(chunk);
-            if(l > 0) {
-                out.write(chunk, 0, l);
-            }
-        } while(l > -1);
-        in.close();
-        final byte[] data = out.toByteArray();
-        final String xmlDecl = getXMLDecl(data);
-        String enc = getEncoding(xmlDecl);
-        if(enc == null) {
-            enc = defaultEncoding;
-        }
-        try {
-            return new String(out.toByteArray(), enc);
-        } catch(final UnsupportedEncodingException e) {
-            LOG.warn(e);
-            return new String(out.toByteArray());
-        }
+
+        final String xmlDecl = getXMLDecl(in);
+        final Charset enc = getEncoding(xmlDecl).orElse(defaultEncoding);
+        return new String(in, enc);
     }
 
     public static String parseValue(final String value, final String key) {

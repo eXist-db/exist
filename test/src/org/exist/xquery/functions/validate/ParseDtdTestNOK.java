@@ -22,13 +22,15 @@
 package org.exist.xquery.functions.validate;
 
 import org.custommonkey.xmlunit.exceptions.XpathException;
+import org.exist.util.FileUtils;
+import org.exist.util.XMLFilenameFilter;
 import org.junit.*;
 import static org.junit.Assert.*;
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 
-import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.exist.test.EmbeddedExistTester;
 
@@ -53,29 +55,21 @@ public class ParseDtdTestNOK extends EmbeddedExistTester {
     public static void prepareResources() throws Exception {
 
         // Switch off validation
-        Collection conf = createCollection(rootCollection, "system/config/db/hamlet");
+        final Collection conf = createCollection(rootCollection, "system/config/db/hamlet");
         storeResource(conf, "collection.xconf", noValidation.getBytes());
 
-        // Create filter
-        FilenameFilter filter = new FilenameFilter() {
-
-            public boolean accept(File dir, String name) {
-                return (name.endsWith("xml"));
-            }
-        };
-
         // Store dtd test files
-        Collection collection = createCollection(rootCollection, "hamlet");
-        File sources = new File("samples/validation/dtd");
+        final Collection collection = createCollection(rootCollection, "hamlet");
+        final Path sources = Paths.get("samples/validation/dtd");
 
-        for (File file : sources.listFiles(filter)) {
-            byte[] data = readFile(sources, file.getName());
-            storeResource(collection, file.getName(), data);
+        for (final Path file : FileUtils.list(sources, XMLFilenameFilter.asPredicate())) {
+            final byte[] data = readFile(file);
+            storeResource(collection, FileUtils.fileName(file), data);
         }
 
-        File dtd = new File("samples/validation/dtd");
-        Collection collection1 = createCollection(rootCollection, "hamlet/dtd");
-        byte[] data = readFile(dtd, "hamlet.dtd");
+        final Path dtd = Paths.get("samples/validation/dtd");
+        final Collection collection1 = createCollection(rootCollection, "hamlet/dtd");
+        final byte[] data = readFile(dtd, "hamlet.dtd");
         storeResource(collection1, "hamlet.dtd", data);
 
     }

@@ -20,16 +20,17 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
-import javax.servlet.FilterConfig;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -208,9 +209,9 @@ public class RewriteConfig {
             }
         } else {
             try {
-                final File d = new File(urlRewrite.getConfig().getServletContext().getRealPath("/"));
-                final File configFile = new File(d, controllerConfig);
-                if (configFile.canRead()) {
+                final Path d = Paths.get(urlRewrite.getConfig().getServletContext().getRealPath("/")).normalize();
+                final Path configFile = d.resolve(controllerConfig);
+                if (Files.isReadable(configFile)) {
                     final Document doc = parseConfig(configFile);
                     parse(doc);
                 }
@@ -272,17 +273,19 @@ public class RewriteConfig {
         return rewrite;
     }
 
-    private Document parseConfig(File file) throws ParserConfigurationException, SAXException, IOException {
+    private Document parseConfig(final Path file) throws ParserConfigurationException, SAXException, IOException {
         final SAXParserFactory factory = SAXParserFactory.newInstance();
         factory.setNamespaceAware(true);
-        final InputSource src = new InputSource(new FileInputStream(file));
-        final SAXParser parser = factory.newSAXParser();
-        final XMLReader xr = parser.getXMLReader();
-        final SAXAdapter adapter = new SAXAdapter();
-        xr.setContentHandler(adapter);
-        xr.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
-        xr.parse(src);
 
-        return adapter.getDocument();
+        try(final InputStream is = Files.newInputStream(file)) {
+            final InputSource src = new InputSource(is);
+            final SAXParser parser = factory.newSAXParser();
+            final XMLReader xr = parser.getXMLReader();
+            final SAXAdapter adapter = new SAXAdapter();
+            xr.setContentHandler(adapter);
+            xr.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
+            xr.parse(src);
+            return adapter.getDocument();
+        }
     }
 }

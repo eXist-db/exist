@@ -33,8 +33,10 @@ import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.xquery.TerminatedException;
 
-import java.io.File;
-
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 
@@ -189,10 +191,10 @@ public class ExportMain {
             }
 
             if (export) {
-                final File dir = new File(exportTarget);
+                final Path dir = Paths.get(exportTarget);
 
-                if (!dir.exists()) {
-                    dir.mkdirs();
+                if (!Files.exists(dir)) {
+                    Files.createDirectories(dir);
                 }
                 final SystemExport sysexport = new SystemExport(broker, new Callback(verbose), null, direct);
                 sysexport.export(exportTarget, incremental, zip, errors);
@@ -206,6 +208,9 @@ public class ExportMain {
         } catch (final PermissionDeniedException pde) {
             System.err.println("ERROR: Failed to retrieve database data: " + pde.getMessage());
             retval = 4;
+        } catch (final IOException pde) {
+            System.err.println("ERROR: Failed to retrieve database data: " + pde.getMessage());
+            retval = 5;
         } finally {
             BrokerPool.stopAll(false);
         }

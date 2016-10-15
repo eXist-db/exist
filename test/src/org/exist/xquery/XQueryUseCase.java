@@ -22,17 +22,16 @@
  */
 package org.exist.xquery;
 
-import org.apache.commons.io.output.ByteArrayOutputStream;
-
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
+import org.exist.util.FileUtils;
+import org.exist.util.XMLFilenameFilter;
 import org.exist.xmldb.XQueryService;
-import org.exist.xmldb.XmldbURI;
 
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -40,6 +39,8 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
@@ -65,23 +66,24 @@ public class XQueryUseCase {
 				"1.0");
 		root = service.createCollection(useCase);
 
-		File file = new File(baseDir + File.separatorChar + useCase);
-		if (!(file.canRead() && file.isDirectory()))
+		final Path file = Paths.get(baseDir).resolve(useCase);
+		if (!(Files.isReadable(file) && Files.isDirectory(file))) {
 			throw new RuntimeException("Cannot read data for use-case " + useCase);
+		}
 		setupData(file);
 		processQueries(file);
 	}
 
-	protected void processQueries(File file) throws Exception {
-		File[] files = file.listFiles(new FileFilter() {
-			public boolean accept(File pathname) {
-				return pathname.getName().startsWith("q") && pathname.getName().endsWith(".xq");
-			}
+	protected void processQueries(final Path file) throws Exception {
+		final List<Path> paths = FileUtils.list(file, f -> {
+			final String fileName = FileUtils.fileName(f);
+			return fileName.startsWith("q") && fileName.endsWith(".xq");
 		});
-		for(int i = 0; i < files.length; i++) {
-			System.out.println("processing use-case: " + files[i].getAbsolutePath());
+
+		for(final Path path : paths) {
+			System.out.println("processing use-case: " + path.toAbsolutePath());
 			System.out.println("========================================================================");
-			String query = readQuery(files[i]);
+			String query = readQuery(path);
 			System.out.println(query);
 			System.out.println("_________________________________________________________________________________");
 			XQueryService service = (XQueryService)root.getService("XQueryService", "1.0");
@@ -109,33 +111,17 @@ public class XQueryUseCase {
 		}
 	}
 	
-	protected void setupData(File file) throws Exception {
-		File[] files = file.listFiles(new FileFilter() {
-			public boolean accept(File pathname) {
-				return pathname.getName().endsWith(".xml");
-			}
-		});
-		for (int i = 0; i < files.length; i++) {
-			XMLResource res =
-				(XMLResource) root.createResource(files[i].getName(), "XMLResource");
-			res.setContent(files[i]);
+	protected void setupData(final Path file) throws Exception {
+		final List<Path> paths = FileUtils.list(file, XMLFilenameFilter.asPredicate());
+		for (final Path path : paths) {
+			final XMLResource res =
+				(XMLResource) root.createResource(FileUtils.fileName(path), XMLResource.RESOURCE_TYPE);
+			res.setContent(path);
 			root.storeResource(res);
 		}
 	}
 	
-	protected String readQuery(File f) throws IOException {
-			ByteArrayOutputStream os = new ByteArrayOutputStream();
-			byte[] t = new byte[512];
-			InputStream is = new FileInputStream(f);
-			try {
-				int count = 0;
-				while((count = is.read(t)) != -1) {
-					os.write(t, 0, count);
-				}
-				return new String(os.toString("UTF-8"));
-			} finally {
-				is.close();
-				os.close();
-			}
-		}
+	protected String readQuery(final Path f) throws IOException {
+		return new String(Files.readAllBytes(f), UTF_8);
+	}
 }

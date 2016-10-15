@@ -1,12 +1,17 @@
 package org.exist.util;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.List;
 
 public class DirectoryScanner {
 
 
-    private final static String extractBaseDir(String pattern) {
+    private final static String extractBaseDir(final String pattern) {
         int p = 0;
         char ch;
         for (int i = 0; i < pattern.length(); i++) {
@@ -23,7 +28,7 @@ public class DirectoryScanner {
         return null;
     }
 
-    public final static File[] scanDir(String pattern) {
+    public final static List<Path> scanDir(String pattern) throws IOException {
         //TODO : why this test ? File should make it ! -pb
         pattern = pattern.replace('/', File.separatorChar).replace('\\', File.separatorChar);
         String baseDir = extractBaseDir(pattern);
@@ -33,31 +38,23 @@ public class DirectoryScanner {
             pattern = baseDir + File.separator + pattern;
         }
 
-        final File base = new File(baseDir);
+        final Path base = Paths.get(baseDir).normalize();
         return scanDir(base, pattern.substring(baseDir.length()));
     }
 
-    public final static File[] scanDir(File baseDir, String pattern) {
+    public final static List<Path> scanDir(final Path baseDir, String pattern) throws IOException {
         ///TODO : why this test ? File should make it ! -pb
         pattern = pattern.replace('/', File.separatorChar).replace('\\', File.separatorChar);
-        final ArrayList<File> list = new ArrayList<File>();
+        final List<Path> list = new ArrayList<>();
         scanDir(list, baseDir, "", pattern);
-        final File[] files = new File[list.size()];
-        return (File[]) list.toArray(files);
+        return list;
     }
 
-    private final static void scanDir(ArrayList<File> list, File dir, String vpath, String pattern) {
-        final String fileNames[] = dir.list();
-        if (fileNames == null) {
-            return;
-        }
-
-        File file;
-        String name;
-        for (String fileName : fileNames) {
-            file = new File(dir, fileName);
-            name = vpath + fileName;
-            if (file.isDirectory() && matchStart(pattern, name)) {
+    private final static void scanDir(final List<Path> list, final Path dir, final String vpath, final String pattern) throws IOException {
+        final List<Path> files = FileUtils.list(dir);
+        for (final Path file : files) {
+            final String name = vpath + FileUtils.fileName(file);
+            if (Files.isDirectory(file) && matchStart(pattern, name)) {
                 scanDir(list, file, name + File.separator, pattern);
             } else if (match(pattern, name)) {
                 list.add(file);
@@ -73,13 +70,16 @@ public class DirectoryScanner {
         return SelectorUtils.matchPatternStart(pattern, name);
     }
 
-    public static void main(String args[]) {
-        File files[] = scanDir("/home/*/xml/**/*.xml");
-        for (File file : files) System.out.println(file.getAbsolutePath());
+    public static void main(final String args[]) throws IOException {
+        List<Path> files = scanDir("/home/*/xml/**/*.xml");
+        for (Path file : files) {
+            System.out.println(file.toAbsolutePath().toString());
+        }
 
         files = scanDir("/does-not-exist/*.xml");
-        for (int i = 0; i < files.length; i++)
-            System.out.println(files[i].getAbsolutePath());
+        for (final Path file : files) {
+            System.out.println(file.toAbsolutePath().toString());
+        }
     }
 }
 

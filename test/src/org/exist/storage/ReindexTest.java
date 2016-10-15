@@ -9,6 +9,7 @@ import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.test.TestConstants;
 import org.exist.util.Configuration;
+import org.exist.util.FileUtils;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
 import org.exist.xmldb.XmldbURI;
@@ -18,7 +19,9 @@ import org.junit.Test;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -28,11 +31,12 @@ public class ReindexTest {
 
     private static String directory = "samples/shakespeare";
 
-    private static File dir = null;
+    private static Path dir = null;
     static {
-      String existHome = System.getProperty("exist.home");
-      File existDir = existHome==null ? new File(".") : new File(existHome);
-      dir = new File(existDir,directory);
+        final String existHome = System.getProperty("exist.home");
+        Path existDir = existHome == null ? Paths.get(".") : Paths.get(existHome);
+        existDir = existDir.normalize();
+        dir = existDir.resolve(directory);
     }
 
     @Test
@@ -64,20 +68,16 @@ public class ReindexTest {
                 assertNotNull(root);
                 broker.saveCollection(transaction, root);
 
-                File files[] = dir.listFiles();
-                assertNotNull(files);
-                File f;
-                IndexInfo info;
-                for (int i = 0; i < files.length; i++) {
-                    f = files[i];
-                    MimeType mime = MimeTable.getInstance().getContentTypeFor(f.getName());
+                final List<Path> files = FileUtils.list(dir);
+                for (final Path f : files) {
+                    final MimeType mime = MimeTable.getInstance().getContentTypeFor(FileUtils.fileName(f));
                     if (mime == null || mime.isXMLType()) {
                         try {
-                            info = root.validateXMLResource(transaction, broker, XmldbURI.create(f.getName()), new InputSource(f.toURI().toASCIIString()));
+                            final IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create(FileUtils.fileName(f)), new InputSource(f.toUri().toASCIIString()));
                             assertNotNull(info);
-                            root.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
+                            root.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()), false);
                         } catch (SAXException e) {
-                            System.err.println("Error found while parsing document: " + f.getName() + ": " + e.getMessage());
+                            System.err.println("Error found while parsing document: " + FileUtils.fileName(f) + ": " + e.getMessage());
                         }
                     }
                 }

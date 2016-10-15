@@ -24,6 +24,7 @@ import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.txn.TransactionException;
+import org.exist.util.FileUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.exist.EXistException;
@@ -55,7 +56,6 @@ import org.exist.xquery.value.Type;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -442,14 +442,15 @@ public class BasicNodeSetTest {
             broker.saveCollection(transaction, root);
 
             String existHome = System.getProperty("exist.home");
-            File existDir = existHome==null ? new File(".") : new File(existHome);
+            Path existDir = existHome==null ? Paths.get(".") : Paths.get(existHome);
+            existDir = existDir.normalize();
             String directory = "samples/shakespeare";
-            File dir = new File(existDir, directory);
+            Path dir = existDir.resolve(directory);
 
             // store some documents.
-            for(File f : dir.listFiles(new XMLFilenameFilter())) {
-                IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create(f.getName()), new InputSource(f.toURI().toASCIIString()));
-                root.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
+            for(final Path f : FileUtils.list(dir, XMLFilenameFilter.asPredicate())) {
+                final IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create(FileUtils.fileName(f)), new InputSource(f.toUri().toASCIIString()));
+                root.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()), false);
             }
 
             IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("nested.xml"), NESTED_XML);

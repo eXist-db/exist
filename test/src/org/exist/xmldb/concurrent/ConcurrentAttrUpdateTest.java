@@ -6,8 +6,9 @@
  */
 package org.exist.xmldb.concurrent;
 
-import java.io.File;
+import java.nio.file.Path;
 
+import org.exist.util.FileUtils;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xmldb.concurrent.action.AttributeUpdateAction;
 import org.junit.After;
@@ -27,7 +28,7 @@ public class ConcurrentAttrUpdateTest extends ConcurrentTestBase {
 	private final static String QUERY =
 		"//ELEMENT[@attribute-1]";
 	
-	private File tempFile;
+	private Path tempFile;
 
 	public ConcurrentAttrUpdateTest() {
 		super(URI, "C1");
@@ -49,7 +50,7 @@ public class ConcurrentAttrUpdateTest extends ConcurrentTestBase {
     @Override
     public void tearDown() throws XMLDBException {
         super.tearDown();
-        tempFile.delete();
+        FileUtils.deleteQuietly(tempFile);
     }
 }
 

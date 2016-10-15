@@ -36,7 +36,8 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collections;
 
 import java.util.Vector;
@@ -60,14 +61,14 @@ public class CreateBackupDialog extends JPanel {
     final String uri;
     final String user;
     final String passwd;
-    File backupDir;
+    Path backupDir;
     final String defaultSelectedCollection;
 
-    public CreateBackupDialog(final String uri, final String user, final String passwd, final File backupDir) throws HeadlessException {
+    public CreateBackupDialog(final String uri, final String user, final String passwd, final Path backupDir) throws HeadlessException {
         this(uri, user, passwd, backupDir, null);
     }
 
-    public CreateBackupDialog(final String uri, final String user, final String passwd, final File backupDir, final String defaultSelectedCollection) throws HeadlessException {
+    public CreateBackupDialog(final String uri, final String user, final String passwd, final Path backupDir, final String defaultSelectedCollection) throws HeadlessException {
         super(false);
 
         this.uri = uri;
@@ -125,7 +126,7 @@ public class CreateBackupDialog extends JPanel {
         grid.setConstraints(label, c);
         add(label);
 
-        backupTarget = new JTextField(new File(backupDir, "eXist-backup.zip").getAbsolutePath(), 40);
+        backupTarget = new JTextField(backupDir.resolve("eXist-backup.zip").toAbsolutePath().toString(), 40);
         c.gridx = 1;
         c.gridy = 1;
         c.anchor = GridBagConstraints.EAST;
@@ -157,12 +158,12 @@ public class CreateBackupDialog extends JPanel {
         chooser.setMultiSelectionEnabled(false);
         chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         chooser.addChoosableFileFilter(new MimeTypeFileFilter("application/zip"));
-        chooser.setSelectedFile(new File("eXist-backup.zip"));
-        chooser.setCurrentDirectory(backupDir);
+        chooser.setSelectedFile(Paths.get("eXist-backup.zip").toFile());
+        chooser.setCurrentDirectory(backupDir.toFile());
 
         if (chooser.showDialog(this, Messages.getString("CreateBackupDialog.5")) == JFileChooser.APPROVE_OPTION) {
             backupTarget.setText(chooser.getSelectedFile().getAbsolutePath());
-            backupDir = chooser.getCurrentDirectory();
+            backupDir = chooser.getCurrentDirectory().toPath();
         }
     }
 
@@ -218,7 +219,7 @@ public class CreateBackupDialog extends JPanel {
     }
 
 
-    public File getBackupDir() {
+    public Path getBackupDir() {
         return backupDir;
     }
 }

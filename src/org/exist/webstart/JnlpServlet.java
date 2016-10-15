@@ -21,9 +21,10 @@
 package org.exist.webstart;
 
 import java.io.EOFException;
-import java.io.File;
 import java.io.IOException;
 import java.net.SocketException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -59,7 +60,7 @@ public class JnlpServlet extends HttpServlet {
             throw new ServletException(txt);
 
         } else {
-            final File contextRoot = new File(realPath);
+            final Path contextRoot = Paths.get(realPath).normalize();
             jh = new JnlpHelper(contextRoot);
             jf = new JnlpJarFiles(jh);
         }
@@ -115,8 +116,13 @@ public class JnlpServlet extends HttpServlet {
     }
 
     @Override
-    protected long getLastModified(HttpServletRequest req) {
-        return jf.getLastModified();
+    protected long getLastModified(final HttpServletRequest req) {
+        try {
+            return jf.getLastModified();
+        } catch (final IOException e) {
+            LOGGER.error(e);
+            return -1l;
+        }
     }
 
 

@@ -20,23 +20,7 @@
 package org.exist.client;
 
 import java.awt.Dimension;
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.EOFException;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.LineNumberReader;
-import java.io.OutputStreamWriter;
-import java.io.PrintStream;
-import java.io.StreamTokenizer;
-import java.io.StringReader;
-import java.io.Writer;
+import java.io.*;
 import java.lang.reflect.Field;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
@@ -46,7 +30,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import javax.swing.ImageIcon;
@@ -94,13 +78,9 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 import org.xmldb.api.DatabaseManager;
+import org.xmldb.api.base.*;
 import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.Database;
-import org.xmldb.api.base.Resource;
-import org.xmldb.api.base.ResourceSet;
-import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.BinaryResource;
-import org.xmldb.api.modules.XPathQueryService;
 import org.xmldb.api.modules.XUpdateQueryService;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -653,8 +633,7 @@ public class InteractiveClient {
                     messageln("please specify a query file.");
                     return true;
                 }
-                try {
-                    final BufferedReader reader = new BufferedReader(new FileReader(args[1]));
+                try(final BufferedReader reader = Files.newBufferedReader(Paths.get(args[1]))) {
                     final StringBuilder buf = new StringBuilder();
                     String nextLine;
                     while ((nextLine = reader.readLine()) != null) {
@@ -1174,68 +1153,6 @@ public class InteractiveClient {
         return (sortBy == null) ? service.query(xpath) : service.query(xpath, sortBy);
     }
 
-    /**
-     * unused, for testing purposes ??
-     */
-    private void testQuery(final String queryFile) {
-        try {
-            final File f = new File(queryFile);
-            if (!f.canRead()) {
-                System.err.println("can't read query file: " + queryFile);
-                return;
-            }
-            final BufferedReader reader = new BufferedReader(new FileReader(f));
-            String line;
-            final ArrayList<String> queries = new ArrayList<String>(10);
-            QueryThread thread = null;
-            while ((line = reader.readLine()) != null) {
-                queries.add(line);
-            }
-
-            for (int i = 0; i < PARALLEL_THREADS; i++) {
-                thread = new QueryThread(queries);
-                thread.setName("QueryThread" + i);
-                thread.start();
-            }
-            try {
-                thread.join();
-            } catch (final InterruptedException e) {
-            }
-        } catch (final IOException e) {
-            System.err.println("ERROR: " + e);
-        }
-    }
-
-    private class QueryThread extends Thread {
-
-        private final ArrayList<String> queries;
-
-        public QueryThread(final ArrayList<String> queries) {
-            this.queries = queries;
-        }
-
-        @Override
-        public void run() {
-            try {
-                // Collection collection =
-                DatabaseManager.getCollection(properties.getProperty("uri") + path, properties.getProperty("user"), properties.getProperty("password"));
-                final XPathQueryService service = (XPathQueryService) current.getService("XPathQueryService", "1.0");
-                service.setProperty(OutputKeys.INDENT, "yes");
-                service.setProperty(OutputKeys.ENCODING, properties.getProperty("encoding"));
-                final Random r = new Random(System.currentTimeMillis());
-                for (int i = 0; i < 10; i++) {
-                    final String query = queries.get(r.nextInt(queries.size()));
-                    System.out.println(getName() + " query: " + query);
-                    final ResourceSet result = service.query(query);
-                    System.out.println(getName() + " found: " + result.getSize());
-                }
-            } catch (final XMLDBException e) {
-                System.err.println("ERROR: " + e.getMessage());
-            }
-            System.out.println(getName() + " finished.");
-        }
-    }
-
     protected final Resource retrieve(final XmldbURI resource) throws XMLDBException {
         return retrieve(resource, properties.getProperty("indent"));
     }
@@ -1272,12 +1189,12 @@ public class InteractiveClient {
     }
 
     private void xupdate(final String resource, final String filename) throws XMLDBException, IOException {
-        final File file = new File(filename);
-        if (!(file.exists() && file.canRead())) {
+        final Path file = Paths.get(filename);
+        if (!(Files.exists(file) && Files.isReadable(file))) {
             messageln("cannot read file " + filename);
             return;
         }
-        final String commands = XMLUtil.readFile(file, "UTF-8");
+        final String commands = XMLUtil.readFile(file, UTF_8);
         final XUpdateQueryService service = (XUpdateQueryService) current.getService("XUpdateQueryService", "1.0");
         final long modifications;
         if (resource == null) {
@@ -1326,60 +1243,67 @@ public class InteractiveClient {
     }
 
     private void storeBinary(final String fileName) throws XMLDBException {
-        final File file = new File(fileName);
-        if (file.canRead()) {
-            final MimeType mime = MimeTable.getInstance().getContentTypeFor(file.getName());
-            final BinaryResource resource = (BinaryResource) current.createResource(file.getName(), "BinaryResource");
+        final Path file = Paths.get(fileName).normalize();
+        if (Files.isReadable(file)) {
+            final MimeType mime = MimeTable.getInstance().getContentTypeFor(FileUtils.fileName(file));
+            final BinaryResource resource = (BinaryResource) current.createResource(FileUtils.fileName(file), BinaryResource.RESOURCE_TYPE);
             resource.setContent(file);
             ((EXistResource) resource).setMimeType(mime == null ? "application/octet-stream" : mime.getName());
             current.storeResource(resource);
         }
     }
 
-    private synchronized boolean findRecursive(final Collection collection, final File dir, final XmldbURI base) throws XMLDBException {
-        final File files[] = dir.listFiles();
+    private synchronized boolean findRecursive(final Collection collection, final Path dir, final XmldbURI base) throws XMLDBException {
         Collection c;
         Resource document;
         CollectionManagementServiceImpl mgtService;
         //The XmldbURIs here aren't really used...
         XmldbURI next;
         MimeType mimeType;
-        for (int i = 0; i < files.length; i++) {
-            next = base.append(files[i].getName());
-            try {
-                if (files[i].isDirectory()) {
-                    messageln("entering directory " + files[i].getAbsolutePath());
-                    c = collection.getChildCollection(files[i].getName());
-                    if (c == null) {
-                        mgtService = (CollectionManagementServiceImpl) collection.getService("CollectionManagementService", "1.0");
-                        c = mgtService.createCollection(URIUtils.encodeXmldbUriFor(files[i].getName()));
-                    }
 
-                    if (c instanceof Observable && verbose) {
-                        final ProgressObserver observer = new ProgressObserver();
-                        ((Observable) c).addObserver(observer);
+        try {
+            final List<Path> files = FileUtils.list(dir);
+            int i = 0;
+            for (final Path file : files) {
+                next = base.append(FileUtils.fileName(file));
+                try {
+                    if (Files.isDirectory(file)) {
+                        messageln("entering directory " + file.toAbsolutePath());
+                        c = collection.getChildCollection(FileUtils.fileName(file));
+                        if (c == null) {
+                            mgtService = (CollectionManagementServiceImpl) collection.getService("CollectionManagementService", "1.0");
+                            c = mgtService.createCollection(URIUtils.encodeXmldbUriFor(FileUtils.fileName(file)));
+                        }
+
+                        if (c instanceof Observable && verbose) {
+                            final ProgressObserver observer = new ProgressObserver();
+                            ((Observable) c).addObserver(observer);
+                        }
+                        findRecursive(c, file, next);
+                    } else {
+                        final long start1 = System.currentTimeMillis();
+                        mimeType = MimeTable.getInstance().getContentTypeFor(FileUtils.fileName(file));
+                        if (mimeType == null) {
+                            messageln("File " + FileUtils.fileName(file) + " has an unknown suffix. Cannot determine file type.");
+                            mimeType = MimeType.BINARY_TYPE;
+                        }
+                        message("storing document " + FileUtils.fileName(file) + " (" + i + " of " + files.size() + ") " + "...");
+                        document = collection.createResource(URIUtils.urlEncodeUtf8(FileUtils.fileName(file)), mimeType.getXMLDBType());
+                        document.setContent(file);
+                        ((EXistResource) document).setMimeType(mimeType.getName());
+                        collection.storeResource(document);
+                        ++filesCount;
+                        messageln(" " + FileUtils.sizeQuietly(file) + " bytes in " + (System.currentTimeMillis() - start1) + "ms.");
                     }
-                    findRecursive(c, files[i], next);
-                } else {
-                    final long start1 = System.currentTimeMillis();
-                    mimeType = MimeTable.getInstance().getContentTypeFor(files[i].getName());
-                    if (mimeType == null) {
-                        messageln("File " + files[i].getName() + " has an unknown suffix. Cannot determine file type.");
-                        mimeType = MimeType.BINARY_TYPE;
-                    }
-                    message("storing document " + files[i].getName() + " (" + i + " of " + files.length + ") " + "...");
-                    document = collection.createResource(URIUtils.urlEncodeUtf8(files[i].getName()), mimeType.getXMLDBType());
-                    document.setContent(files[i]);
-                    ((EXistResource) document).setMimeType(mimeType.getName());
-                    collection.storeResource(document);
-                    ++filesCount;
-                    messageln(" " + files[i].length() + " bytes in " + (System.currentTimeMillis() - start1) + "ms.");
+                } catch (final URISyntaxException e) {
+                    errorln("uri syntax exception parsing " + file.toAbsolutePath() + ": " + e.getMessage());
                 }
-            } catch (final URISyntaxException e) {
-                errorln("uri syntax exception parsing " + files[i].getAbsolutePath() + ": " + e.getMessage());
+                i++;
             }
+            return true;
+        } catch(final IOException e) {
+            throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e);
         }
-        return true;
     }
 
     /**
@@ -1389,60 +1313,64 @@ public class InteractiveClient {
      * @throws XMLDBException
      */
     protected synchronized boolean parse(String fileName) throws XMLDBException {
-        //TODO : why is this test for ? File should make it, shouldn't it ? -pb
-        fileName = fileName.replace('/', File.separatorChar).replace('\\', File.separatorChar);
-        final File file = new File(fileName);
-        Resource document;
-        // String xml;
+        try {
+            //TODO : why is this test for ? File should make it, shouldn't it ? -pb
+            fileName = fileName.replace('/', java.io.File.separatorChar).replace('\\', java.io.File.separatorChar);
+            final Path file = Paths.get(fileName).normalize();
+            Resource document;
+            // String xml;
 
-        if (current instanceof Observable && verbose) {
-            final ProgressObserver observer = new ProgressObserver();
-            ((Observable) current).addObserver(observer);
-        }
+            if (current instanceof Observable && verbose) {
+                final ProgressObserver observer = new ProgressObserver();
+                ((Observable) current).addObserver(observer);
+            }
 
-        final File files[];
-        if (file.canRead()) {
-            // TODO, same logic as for the graphic client
-            if (file.isDirectory()) {
-                if (recurseDirs) {
-                    filesCount = 0;
-                    final long start = System.currentTimeMillis();
-                    final boolean result = findRecursive(current, file, path);
-                    messageln("storing " + filesCount + " files took " + ((System.currentTimeMillis() - start) / 1000) + "sec.");
-                    return result;
+            List<Path> files = new ArrayList<>();
+            if (Files.isReadable(file)) {
+                // TODO, same logic as for the graphic client
+                if (Files.isDirectory(file)) {
+                    if (recurseDirs) {
+                        filesCount = 0;
+                        final long start = System.currentTimeMillis();
+                        final boolean result = findRecursive(current, file, path);
+                        messageln("storing " + filesCount + " files took " + ((System.currentTimeMillis() - start) / 1000) + "sec.");
+                        return result;
+                    }
+                    files = FileUtils.list(file);
+                } else {
+                    files.add(file);
                 }
-                files = file.listFiles();
             } else {
-                files = new File[1];
-                files[0] = file;
+                files = DirectoryScanner.scanDir(fileName);
             }
-        } else {
-            files = DirectoryScanner.scanDir(fileName);
-        }
 
-        final long start0 = System.currentTimeMillis();
-        long bytes = 0;
-        MimeType mimeType;
-        for (int i = 0; i < files.length; i++) {
-            if (files[i].isDirectory()) {
-                continue;
+            final long start0 = System.currentTimeMillis();
+            long bytes = 0;
+            MimeType mimeType;
+            for (int i = 0; i < files.size(); i++) {
+                if (Files.isDirectory(files.get(i))) {
+                    continue;
+                }
+                final long start = System.currentTimeMillis();
+                mimeType = MimeTable.getInstance().getContentTypeFor(FileUtils.fileName(files.get(i)));
+                if (mimeType == null) {
+                    mimeType = MimeType.BINARY_TYPE;
+                }
+                document = current.createResource(FileUtils.fileName(files.get(i)), mimeType.getXMLDBType());
+                message("storing document " + FileUtils.fileName(files.get(i)) + " (" + (i + 1) + " of " + files.size() + ") ...");
+                document.setContent(files.get(i));
+                ((EXistResource) document).setMimeType(mimeType.getName());
+                current.storeResource(document);
+                messageln("done.");
+                messageln("parsing " + FileUtils.sizeQuietly(files.get(i)) + " bytes took " + (System.currentTimeMillis() - start) + "ms." + EOL);
+                bytes += FileUtils.sizeQuietly(files.get(i));
             }
-            final long start = System.currentTimeMillis();
-            mimeType = MimeTable.getInstance().getContentTypeFor(files[i].getName());
-            if (mimeType == null) {
-                mimeType = MimeType.BINARY_TYPE;
-            }
-            document = current.createResource(files[i].getName(), mimeType.getXMLDBType());
-            message("storing document " + files[i].getName() + " (" + (i + 1) + " of " + files.length + ") ...");
-            document.setContent(files[i]);
-            ((EXistResource) document).setMimeType(mimeType.getName());
-            current.storeResource(document);
-            messageln("done.");
-            messageln("parsing " + files[i].length() + " bytes took " + (System.currentTimeMillis() - start) + "ms." + EOL);
-            bytes += files[i].length();
+            messageln("parsed " + bytes + " bytes in " + (System.currentTimeMillis() - start0) + "ms.");
+            return true;
+        } catch (final IOException e) {
+            e.printStackTrace();
+            throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e);
         }
-        messageln("parsed " + bytes + " bytes in " + (System.currentTimeMillis() - start0) + "ms.");
-        return true;
     }
 
 
@@ -1516,8 +1444,8 @@ public class InteractiveClient {
      */
     protected synchronized boolean parseGZip(String fileName) throws XMLDBException, IOException {
         //TODO : why is this test for ? Fileshould make it, shouldn't it ? -pb
-        fileName = fileName.replace('/', File.separatorChar).replace('\\',
-                File.separatorChar);
+        fileName = fileName.replace('/', java.io.File.separatorChar).replace('\\',
+                java.io.File.separatorChar);
         final Path file = Paths.get(fileName);
         Resource document;
         // String xml;
@@ -1544,7 +1472,7 @@ public class InteractiveClient {
                 files.add(file);
             }
         } else {
-            files = Arrays.asList(DirectoryScanner.scanDir(fileName)).stream().map(File::toPath).collect(Collectors.toList());
+            files = DirectoryScanner.scanDir(fileName);
         }
 
         final long start0 = System.currentTimeMillis();
@@ -1597,7 +1525,7 @@ public class InteractiveClient {
      * @throws XMLDBException
      */
     protected synchronized boolean parseZip(String fileName) throws XMLDBException {
-        fileName = fileName.replace('/', File.separatorChar).replace('\\', File.separatorChar);
+        fileName = fileName.replace('/', java.io.File.separatorChar).replace('\\', java.io.File.separatorChar);
 
         try {
             final ZipFile zfile = new ZipFile(fileName);
@@ -1680,7 +1608,7 @@ public class InteractiveClient {
      * @param upload : GUI object
      * @throws XMLDBException
      */
-    protected synchronized boolean parse(final File[] files, final UploadDialog upload) throws XMLDBException {
+    protected synchronized boolean parse(final List<Path> files, final UploadDialog upload) throws XMLDBException {
         final Collection uploadRootCollection = current;
         if (!upload.isVisible()) {
             upload.setVisible(true);
@@ -1689,13 +1617,13 @@ public class InteractiveClient {
         if (uploadRootCollection instanceof Observable) {
             ((Observable) uploadRootCollection).addObserver(upload.getObserver());
         }
-        upload.setTotalSize(calculateFileSizes(files));
-        for (int i = 0; i < files.length; i++) {
+        upload.setTotalSize(FileUtils.sizeQuietly(files));
+        for (final Path file : files) {
             if (upload.isCancelled()) {
                 break;
             }
             // should replace the lines above
-            store(uploadRootCollection, files[i], upload);
+            store(uploadRootCollection, file, upload);
         }
         if (uploadRootCollection instanceof Observable) {
             ((Observable) uploadRootCollection).deleteObservers();
@@ -1704,37 +1632,6 @@ public class InteractiveClient {
         return true;
     }
 
-    private long calculateFileSizes(final File[] files) throws XMLDBException {
-        long size = 0;
-        for (int i = 0; i < files.length; i++) {
-            if (!files[i].canRead()) {
-                continue;
-            }
-            if (files[i].isDirectory()) {
-                size += calculateFileSizes(files[i].listFiles());
-            } else {
-                size += files[i].length();
-            }
-        }
-        return size;
-    }
-    
-    /*
-     * This is for a future GUI implementation of ZIP archive loads
-     */
-    /*private long calculateFileSizes(final ZipFile file) throws XMLDBException {
-        final Enumeration<? extends ZipEntry> e = file.entries();
-        long size = 0;
-    	while(e.hasMoreElements()) {
-            final ZipEntry ze=(ZipEntry)e.nextElement();
-            if(!ze.isDirectory()) {
-                    size += ze.getSize();
-            }
-    	}
-    	
-        return size;
-    }*/
-
     /**
      * Pass to this method a java file object
      * (may be a file or a directory), GUI object
@@ -1742,7 +1639,7 @@ public class InteractiveClient {
      * recursively
      */
 
-    private void store(final Collection collection, final File file, final UploadDialog upload) {
+    private void store(final Collection collection, final Path file, final UploadDialog upload) {
 
         // cancel, stop crawl
         if (upload.isCancelled()) {
@@ -1750,21 +1647,21 @@ public class InteractiveClient {
         }
 
         // can't read there, inform client
-        if (!file.canRead()) {
-            upload.showMessage(file.getAbsolutePath() + " impossible to read ");
+        if (!Files.isReadable(file)) {
+            upload.showMessage(file.toAbsolutePath() + " impossible to read ");
             return;
         }
 
         final XmldbURI filenameUri;
         try {
-            filenameUri = URIUtils.encodeXmldbUriFor(file.getName());
+            filenameUri = URIUtils.encodeXmldbUriFor(FileUtils.fileName(file));
         } catch (final URISyntaxException e1) {
-            upload.showMessage(file.getAbsolutePath() + " could not be encoded as a URI");
+            upload.showMessage(file.toAbsolutePath() + " could not be encoded as a URI");
             return;
         }
 
         // Directory, create collection, and crawl it
-        if (file.isDirectory()) {
+        if (Files.isDirectory(file)) {
             Collection c = null;
             try {
                 c = collection.getChildCollection(filenameUri.toString());
@@ -1773,34 +1670,38 @@ public class InteractiveClient {
                     c = mgtService.createCollection(filenameUri);
                 }
             } catch (final XMLDBException e) {
-                upload.showMessage("Impossible to create a collection " + file.getAbsolutePath() + ": " + e.getMessage());
+                upload.showMessage("Impossible to create a collection " + file.toAbsolutePath() + ": " + e.getMessage());
+                e.printStackTrace();
             }
 
             // change displayed collection if it's OK
-            upload.setCurrentDir(file.getAbsolutePath());
+            upload.setCurrentDir(file.toAbsolutePath().toString());
             if (c instanceof Observable) {
                 ((Observable) c).addObserver(upload.getObserver());
             }
             // maybe a depth or recurs flag could be added here
-            final File temp[] = file.listFiles();
-            if (temp != null) {
-                for (int i = 0; i < temp.length; i++) {
-                    store(c, temp[i], upload);
-                }
+            final Collection childCollection = c;
+            try(final Stream<Path> children = Files.list(file)) {
+                children.forEach(child -> store(childCollection, child, upload));
+            } catch (final IOException e) {
+                upload.showMessage("Impossible to upload " + file.toAbsolutePath() + ": " + e.getMessage());
+                e.printStackTrace();
             }
+
             return;
         }
 
         // File, create and store resource
-        if (file.isFile()) {
+        if (!Files.isDirectory(file)) {
             upload.reset();
-            upload.setCurrent(file.getName());
-            upload.setCurrentSize(file.length());
+            upload.setCurrent(FileUtils.fileName(file));
+            final long fileSize = FileUtils.sizeQuietly(file);
+            upload.setCurrentSize(fileSize);
 
-            MimeType mimeType = MimeTable.getInstance().getContentTypeFor(file.getName());
+            MimeType mimeType = MimeTable.getInstance().getContentTypeFor(FileUtils.fileName(file));
             // unknown mime type, here prefered is to do nothing
             if (mimeType == null) {
-                upload.showMessage(file.getAbsolutePath() +
+                upload.showMessage(file.toAbsolutePath() +
                         " - unknown suffix. No matching mime-type found in : " +
                         MimeTable.getInstance().getSrc());
 
@@ -1814,11 +1715,11 @@ public class InteractiveClient {
                 res.setContent(file);
                 collection.storeResource(res);
                 ++filesCount;
-                this.totalLength += file.length();
+                this.totalLength += fileSize;
                 upload.setStoredSize(this.totalLength);
             } catch (final XMLDBException e) {
                 upload.showMessage("Impossible to store a resource "
-                        + file.getAbsolutePath() + ": " + e.getMessage());
+                        + file.toAbsolutePath() + ": " + e.getMessage());
             }
         }
     }
@@ -2077,15 +1978,14 @@ public class InteractiveClient {
                     break;
                 case CommandlineOptions.TRACE_QUERIES_OPT:
                     final String traceFile = option.getArgument();
-                    final File f = new File(traceFile);
+                    final Path f = Paths.get(traceFile).normalize();
                     try {
-                        traceWriter = new OutputStreamWriter(new FileOutputStream(f, false), UTF_8);
+                        traceWriter = Files.newBufferedWriter(f, UTF_8);
                         traceWriter.write("<?xml version=\"1.0\"?>" + EOL);
                         traceWriter.write("<query-log>" + EOL);
-                    } catch (final FileNotFoundException e1) {
+                    } catch (final IOException e1) {
                         errorln("Cannot open file " + traceFile);
                         return null;
-                    } catch (final IOException e) {
                     }
                     break;
                 case CommandlineOptions.REINDEX_OPT:
@@ -2166,7 +2066,7 @@ public class InteractiveClient {
                         }
                     } else {
                         if (cOpt.optionOutputFile != null) {
-                            ((ExtendedResource) res).getContentIntoAFile(new File(cOpt.optionOutputFile));
+                            ((ExtendedResource) res).getContentIntoAFile(Paths.get(cOpt.optionOutputFile).normalize());
                             ((EXistResource) res).freeResources();
                         } else {
                             ((ExtendedResource) res).getContentIntoAStream(System.out);
@@ -2207,7 +2107,7 @@ public class InteractiveClient {
             }
         } else if (cOpt.optionXpath != null || cOpt.optionQueryFile != null) {
             if (cOpt.optionQueryFile != null) {
-                try (final BufferedReader reader = new BufferedReader(new FileReader(cOpt.optionQueryFile))) {
+                try (final BufferedReader reader = Files.newBufferedReader(Paths.get(cOpt.optionQueryFile))) {
                     final StringBuilder buf = new StringBuilder();
                     String line;
                     while ((line = reader.readLine()) != null) {
@@ -2250,20 +2150,20 @@ public class InteractiveClient {
                             }
                         }
                     } else {
-                        final FileOutputStream fos = new FileOutputStream(cOpt.optionOutputFile);
-                        final BufferedOutputStream bos = new BufferedOutputStream(fos);
-                        final PrintStream ps = new PrintStream(bos);
-                        for (int i = 0; i < maxResults && i < result.getSize(); i++) {
-                            final Resource res = result.getResource(i);
-                            if (res instanceof ExtendedResource) {
-                                ((ExtendedResource) res).getContentIntoAStream(ps);
-                            } else {
-                                ps.print(res.getContent().toString());
+                        try(final OutputStream fos = Files.newOutputStream(Paths.get(cOpt.optionOutputFile));
+                            final BufferedOutputStream bos = new BufferedOutputStream(fos);
+                            final PrintStream ps = new PrintStream(bos)
+                        ) {
+
+                            for (int i = 0; i < maxResults && i < result.getSize(); i++) {
+                                final Resource res = result.getResource(i);
+                                if (res instanceof ExtendedResource) {
+                                    ((ExtendedResource) res).getContentIntoAStream(ps);
+                                } else {
+                                    ps.print(res.getContent().toString());
+                                }
                             }
                         }
-                        ps.close();
-                        bos.close();
-                        fos.close();
                     }
                 } catch (final XMLDBException e) {
                     System.err.println("XMLDBException during query: " + getExceptionMessage(e));
@@ -2771,15 +2671,16 @@ public class InteractiveClient {
     }
 
     private void writeOutputFile(final String fileName, final Object data) throws Exception {
-        final File file = new File(fileName);
-        final FileOutputStream os = new FileOutputStream(file);
-        if (data instanceof byte[]) {
-            os.write((byte[]) data);
-            os.close();
-        } else {
-            final OutputStreamWriter writer = new OutputStreamWriter(os, Charset.forName(properties.getProperty("encoding")));
-            writer.write(data.toString());
-            writer.close();
+        final Path file = Paths.get(fileName).normalize();
+
+        try (final OutputStream os = Files.newOutputStream(file)) {
+            if (data instanceof byte[]) {
+                os.write((byte[]) data);
+            } else {
+                try(final Writer writer = new OutputStreamWriter(os, Charset.forName(properties.getProperty("encoding")))) {
+                    writer.write(data.toString());
+                }
+            }
         }
     }
 

@@ -23,18 +23,13 @@ package org.exist.client;
 import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.StringWriter;
+import java.io.*;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -393,21 +388,21 @@ public class QueryDialog extends JFrame {
     private void open() {
         final String workDir = properties.getProperty("working-dir", System.getProperty("user.dir"));
         final JFileChooser chooser = new JFileChooser();
-        chooser.setCurrentDirectory(new File(workDir));
+        chooser.setCurrentDirectory(Paths.get(workDir).toFile());
         chooser.setMultiSelectionEnabled(false);
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         chooser.addChoosableFileFilter(new MimeTypeFileFilter("application/xquery"));
 
         if (chooser.showDialog(this, Messages.getString("QueryDialog.opendialog")) == JFileChooser.APPROVE_OPTION) {
-            final File selectedDir = chooser.getCurrentDirectory();
-            properties.setProperty("working-dir", selectedDir.getAbsolutePath());
-            final File file = chooser.getSelectedFile();
-            if (!file.canRead()) {
-                JOptionPane.showInternalMessageDialog(this, Messages.getString("QueryDialog.cannotreadmessage") + " " + file.getAbsolutePath(),
+            final Path selectedDir = chooser.getCurrentDirectory().toPath();
+            properties.setProperty("working-dir", selectedDir.toAbsolutePath().toString());
+            final Path file = chooser.getSelectedFile().toPath();
+            if (!Files.isReadable(file)) {
+                JOptionPane.showInternalMessageDialog(this, Messages.getString("QueryDialog.cannotreadmessage") + " " + file.toAbsolutePath(),
                         Messages.getString("QueryDialog.Error"), JOptionPane.ERROR_MESSAGE);
             }
 
-            try (final BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            try (final BufferedReader reader = Files.newBufferedReader(file)) {
                 final StringBuilder buf = new StringBuilder();
                 String line;
                 while ((line = reader.readLine()) != null) {
@@ -429,7 +424,7 @@ public class QueryDialog extends JFrame {
         final String workDir = properties.getProperty("working-dir", System.getProperty("user.dir"));
         final JFileChooser chooser = new JFileChooser();
         chooser.setMultiSelectionEnabled(false);
-        chooser.setCurrentDirectory(new File(workDir));
+        chooser.setCurrentDirectory(Paths.get(workDir).toFile());
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         if ("result".equals(fileCategory)) {
             chooser.addChoosableFileFilter(new MimeTypeFileFilter("application/xhtml+xml"));
@@ -439,24 +434,20 @@ public class QueryDialog extends JFrame {
         }
         if (chooser.showDialog(this, Messages.getString("QueryDialog.savedialogpre") + " " + fileCategory + " " + Messages.getString("QueryDialog.savedialogpost"))
                 == JFileChooser.APPROVE_OPTION) {
-            final File selectedDir = chooser.getCurrentDirectory();
-            properties.setProperty("working-dir", selectedDir.getAbsolutePath());
-            final File file = chooser.getSelectedFile();
-            if (file.exists() && (!file.canWrite())) {
-                JOptionPane.showMessageDialog(this, Messages.getString("QueryDialog.cannotsavemessagepre") + " " + fileCategory + " " + Messages.getString("QueryDialog.cannotsavemessageinf") + " " + file.getAbsolutePath(),
+            final Path selectedDir = chooser.getCurrentDirectory().toPath();
+            properties.setProperty("working-dir", selectedDir.toAbsolutePath().toString());
+            final Path file = chooser.getSelectedFile().toPath();
+            if (Files.exists(file) && (!Files.isWritable(file))) {
+                JOptionPane.showMessageDialog(this, Messages.getString("QueryDialog.cannotsavemessagepre") + " " + fileCategory + " " + Messages.getString("QueryDialog.cannotsavemessageinf") + " " + file.toAbsolutePath(),
                         Messages.getString("QueryDialog.Error"), JOptionPane.ERROR_MESSAGE);
             }
-            if (file.exists() &&
+            if (Files.exists(file) &&
                     JOptionPane.showConfirmDialog(this, Messages.getString("QueryDialog.savedialogconfirm"), "Overwrite?",
                             JOptionPane.YES_NO_OPTION) == JOptionPane.NO_OPTION) {
                 return;
             }
-            try {
-                final FileWriter writer = new FileWriter(file);
+            try(final Writer writer = Files.newBufferedWriter(file)) {
                 writer.write(stringToSave);
-                writer.close();
-            } catch (final FileNotFoundException e) {
-                ClientFrame.showErrorMessage(e.getMessage(), e);
             } catch (final IOException e) {
                 ClientFrame.showErrorMessage(e.getMessage(), e);
             }
@@ -464,7 +455,7 @@ public class QueryDialog extends JFrame {
     }
 
     private QueryThread doQuery() {
-        final String xpath = (String) query.getText();
+        final String xpath = query.getText();
         if (xpath.length() == 0) {
             return null;
         }

@@ -1,6 +1,7 @@
 package org.exist.http.realm;
 
-import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -211,10 +212,10 @@ public class XmldbRealm extends org.apache.catalina.realm.RealmBase {
 				this.log("Starting Database");
 				
 				this.log("exist.home=" + basedir);
-				File f = new File(basedir, configuration);
+				Path f = Paths.get(basedir, configuration);
 				
-				this.log("reading configuration from " + f.getAbsolutePath());
-				if (!f.canRead())
+				this.log("reading configuration from " + f.toAbsolutePath());
+				if (!Files.isReadable(f))
 					throw new LifecycleException("configuration file "
 							+ configuration + " not found or not readable");
 				Configuration conf = new Configuration(configuration, Optional.ofNullable(basedir).map(Paths::get));

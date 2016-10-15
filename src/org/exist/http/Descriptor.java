@@ -22,8 +22,6 @@
 package org.exist.http;
 
 import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -130,8 +128,8 @@ public class Descriptor implements ErrorHandler {
 
             //load <xquery-app> attribue settings
             if ("true".equals(doc.getDocumentElement().getAttribute("request-replay-log"))) {
-                final File logFile = new File("request-replay-log.txt");
-                bufWriteReplayLog = new BufferedWriter(new FileWriter(logFile));
+                final Path logFile = Paths.get("request-replay-log.txt");
+                bufWriteReplayLog = Files.newBufferedWriter(logFile);
                 final String attr = doc.getDocumentElement().getAttribute("filtered");
                 if (attr != null)
                     requestsFiltered = "true".equals(attr);

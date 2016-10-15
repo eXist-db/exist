@@ -21,9 +21,11 @@
  */
 package org.exist.xquery.modules.file;
 
-import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Date;
+import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -31,6 +33,7 @@ import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.util.DirectoryScanner;
+import org.exist.util.FileUtils;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -121,56 +124,59 @@ public class DirectoryList extends BasicFunction {
         builder.startDocument();
         builder.startElement(new QName("list", NAMESPACE_URI, PREFIX), null);
         builder.addAttribute(new QName("directory", null, null), baseDir.toString());
+        try {
+            for (final SequenceIterator i = patterns.iterate(); i.hasNext(); ) {
+                final String pattern = i.nextItem().getStringValue();
+                final List<Path> scannedFiles = DirectoryScanner.scanDir(baseDir, pattern);
 
-        for (final SequenceIterator i = patterns.iterate(); i.hasNext();) {
-            final String pattern = i.nextItem().getStringValue();
-            final File[] scannedFiles = DirectoryScanner.scanDir(baseDir.toFile(), pattern);
-
-            if (logger.isDebugEnabled()) {
-                logger.debug("Found: " + scannedFiles.length);
-            }
-
-            for (File file : scannedFiles) {
                 if (logger.isDebugEnabled()) {
-                    logger.debug("Found: " + file.getAbsolutePath());
+                    logger.debug("Found: " + scannedFiles.size());
                 }
 
-                String relPath = file.toString().substring(baseDir.toString().length() + 1);
+                for (final Path file : scannedFiles) {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Found: " + file.toAbsolutePath());
+                    }
 
-                int lastSeparatorPosition = relPath.lastIndexOf(File.separatorChar);
+                    String relPath = file.toString().substring(baseDir.toString().length() + 1);
 
-                String relDir = null;
-                if (lastSeparatorPosition >= 0) {
-                    relDir = relPath.substring(0, lastSeparatorPosition);
-                    relDir = relDir.replace(File.separatorChar, '/');
+                    int lastSeparatorPosition = relPath.lastIndexOf(java.io.File.separatorChar);
+
+                    String relDir = null;
+                    if (lastSeparatorPosition >= 0) {
+                        relDir = relPath.substring(0, lastSeparatorPosition);
+                        relDir = relDir.replace(java.io.File.separatorChar, '/');
+                    }
+
+                    builder.startElement(new QName("file", NAMESPACE_URI, PREFIX), null);
+
+                    builder.addAttribute(new QName("name", null, null), FileUtils.fileName(file));
+
+                    Long sizeLong = FileUtils.sizeQuietly(file);
+                    String sizeString = Long.toString(sizeLong);
+                    String humanSize = getHumanSize(sizeLong, sizeString);
+
+                    builder.addAttribute(new QName("size", null, null), sizeString);
+                    builder.addAttribute(new QName("human-size", null, null), humanSize);
+                    builder.addAttribute(new QName("modified", null, null), new DateTimeValue(new Date(Files.getLastModifiedTime(file).toMillis())).getStringValue());
+
+                    if (relDir != null && relDir.length() > 0) {
+                        builder.addAttribute(new QName("subdir", null, null), relDir);
+                    }
+
+                    builder.endElement();
+
                 }
-
-                builder.startElement(new QName("file", NAMESPACE_URI, PREFIX), null);
-
-                builder.addAttribute(new QName("name", null, null), file.getName());
-
-                Long sizeLong = file.length();
-                String sizeString = Long.toString(sizeLong);
-                String humanSize = getHumanSize(sizeLong, sizeString);
-
-                builder.addAttribute(new QName("size", null, null), sizeString);
-                builder.addAttribute(new QName("human-size", null, null), humanSize);
-                builder.addAttribute(new QName("modified", null, null), new DateTimeValue(new Date(file.lastModified())).getStringValue());
-
-                if (relDir != null && relDir.length() > 0) {
-                    builder.addAttribute(new QName("subdir", null, null), relDir);
-                }
-
-                builder.endElement();
-
             }
+
+            builder.endElement();
+
+            Sequence xmlResponse = (NodeValue) builder.getDocument().getDocumentElement();
+
+            return (xmlResponse);
+        } catch (final IOException e) {
+            throw new XPathException(this, e.getMessage());
         }
-
-        builder.endElement();
-
-        Sequence xmlResponse = (NodeValue) builder.getDocument().getDocumentElement();
-
-        return (xmlResponse);
     }
 
     private String getHumanSize(final Long sizeLong, final String sizeString) {

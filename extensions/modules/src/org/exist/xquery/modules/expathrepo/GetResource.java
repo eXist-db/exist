@@ -20,7 +20,6 @@
  */
 package org.exist.xquery.modules.expathrepo;
 
-import java.io.File;
 import java.util.Optional;
 
 import javax.xml.transform.stream.StreamSource;
@@ -66,14 +65,12 @@ public class GetResource extends BasicFunction {
 		throws XPathException {
 		String pkgName = args[0].getStringValue();
 		String path = args[1].getStringValue();
-		File packageDir = null;
 
 		Optional<ExistRepository> repo = context.getRepository();
 		if (repo.isPresent()) {
-		    Package pkg = null;
 		    try {
 			for (Packages pp : repo.get().getParentRepo().listPackages()) {
-			    pkg = pp.latest();
+			    final Package pkg = pp.latest();
 			    if (pkg.getName().equals(pkgName)) {
 				try {
 				    StreamSource source = pkg.getResolver().resolveResource(path);

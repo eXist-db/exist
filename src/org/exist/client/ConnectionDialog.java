@@ -22,8 +22,10 @@
 package org.exist.client;
 
 import java.awt.Graphics;
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.prefs.BackingStoreException;
@@ -45,7 +47,7 @@ public class ConnectionDialog extends javax.swing.JDialog implements DialogWithR
     private DefaultListModel favouritesModel = null;
     private final DefaultConnectionSettings defaultConnectionSettings;
     private final boolean disableEmbeddedConnectionType;
-    private File config;
+    private Path config;
 
     private final List<DialogCompleteWithResponse<Connection>> dialogCompleteWithResponseCallbacks = new ArrayList<DialogCompleteWithResponse<Connection>>();
 
@@ -60,7 +62,7 @@ public class ConnectionDialog extends javax.swing.JDialog implements DialogWithR
     public ConnectionDialog(final java.awt.Frame parent, final boolean modal, final DefaultConnectionSettings defaultConnectionSettings, final boolean embeddedByDefault, final boolean disableEmbeddedConnectionType) {
         super(parent, modal);
         this.defaultConnectionSettings = defaultConnectionSettings;
-        this.config = new File(defaultConnectionSettings.getConfiguration());
+        this.config = Paths.get(defaultConnectionSettings.getConfiguration());
         this.disableEmbeddedConnectionType = disableEmbeddedConnectionType;
         this.setIconImage(InteractiveClient.getExistIcon(getClass()).getImage());
         initComponents();
@@ -282,7 +284,7 @@ public class ConnectionDialog extends javax.swing.JDialog implements DialogWithR
         lblConfiguration.setText(getLabelText("LoginPanel.8"));
 
         txtConfiguration.setEditable(false);
-        txtConfiguration.setText(config.getAbsolutePath());
+        txtConfiguration.setText(config.toAbsolutePath().toString());
         txtConfiguration.setToolTipText(getLabel("LoginPanel.9"));
 
         btnSelectConfiguration.setText("...");
@@ -487,10 +489,10 @@ public class ConnectionDialog extends javax.swing.JDialog implements DialogWithR
         final JFileChooser chooser = new JFileChooser();
         chooser.setMultiSelectionEnabled(false);
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        chooser.setCurrentDirectory(config.getParentFile());
+        chooser.setCurrentDirectory(config.getParent().toFile());
         if (chooser.showDialog(this, Messages.getString("LoginPanel.37")) == JFileChooser.APPROVE_OPTION) {
-            config = chooser.getSelectedFile();
-            txtConfiguration.setText(config.getAbsolutePath());
+            config = chooser.getSelectedFile().toPath();
+            txtConfiguration.setText(config.toAbsolutePath().toString());
         }
     }//GEN-LAST:event_btnSelectConfigurationActionPerformed
 
@@ -523,7 +525,7 @@ public class ConnectionDialog extends javax.swing.JDialog implements DialogWithR
                         favouriteName,
                         txtUsername.getText(),
                         new String(txtPassword.getPassword()),
-                        config.getAbsolutePath()
+                        config.toAbsolutePath().toString()
                 );
             }
             getFavouritesModel().addElement(favourite);
@@ -570,18 +572,18 @@ public class ConnectionDialog extends javax.swing.JDialog implements DialogWithR
     }//GEN-LAST:event_lstFavouritesMouseClicked
 
     private void miImportFavouritesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miImportFavouritesActionPerformed
-        final File file = new File("favourites.xml"); //$NON-NLS-1$
+        final Path file = Paths.get("favourites.xml"); //$NON-NLS-1$
         final JFileChooser chooser = new JFileChooser();
-        chooser.setSelectedFile(file);
+        chooser.setSelectedFile(file.toFile());
         chooser.showOpenDialog(this);
-        final File selectedImportFile = chooser.getSelectedFile();
+        final Path selectedImportFile = chooser.getSelectedFile().toPath();
 
         if (selectedImportFile == null) {
             JOptionPane.showMessageDialog(this, Messages.getString("LoginPanel.33"), Messages.getString("LoginPanel.34"), JOptionPane.ERROR_MESSAGE);
             return;
         }
 
-        if (!selectedImportFile.canRead()) {
+        if (!Files.isReadable(selectedImportFile)) {
             JOptionPane.showMessageDialog(this, Messages.getString("LoginPanel.35"), Messages.getString("LoginPanel.36"), JOptionPane.ERROR_MESSAGE);
             return;
         }
@@ -595,26 +597,26 @@ public class ConnectionDialog extends javax.swing.JDialog implements DialogWithR
                 getFavouritesModel().addElement(favourite);
             }
         } catch (final IOException ioe) {
-            JOptionPane.showMessageDialog(this, "Unable to read preferences file: " + selectedImportFile.getAbsolutePath() + ": " + ioe.getMessage(), "Error Importing Preferences", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Unable to read preferences file: " + selectedImportFile.toAbsolutePath() + ": " + ioe.getMessage(), "Error Importing Preferences", JOptionPane.ERROR_MESSAGE);
         } catch (final InvalidPreferencesFormatException ipfe) {
-            JOptionPane.showMessageDialog(this, "Invalid format for preferences file: " + selectedImportFile.getAbsolutePath() + ": " + ipfe.getMessage(), "Error Importing Preferences", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Invalid format for preferences file: " + selectedImportFile.toAbsolutePath() + ": " + ipfe.getMessage(), "Error Importing Preferences", JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_miImportFavouritesActionPerformed
 
     private void miExportFavouritesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miExportFavouritesActionPerformed
-        final File file = new File(Messages.getString("LoginPanel.25")); //$NON-NLS-1$
+        final Path file = Paths.get(Messages.getString("LoginPanel.25")); //$NON-NLS-1$
         final JFileChooser chooser = new JFileChooser();
-        chooser.setSelectedFile(file);
+        chooser.setSelectedFile(file.toFile());
         chooser.showSaveDialog(this);
 
-        final File selectedExportFile = chooser.getSelectedFile();
+        final Path selectedExportFile = chooser.getSelectedFile().toPath();
 
         if (selectedExportFile == null) {
             JOptionPane.showMessageDialog(this, Messages.getString("LoginPanel.26"), Messages.getString("LoginPanel.27"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$ //$NON-NLS-2$
             return;
         }
 
-        if (selectedExportFile.exists() && !selectedExportFile.canWrite()) {
+        if (Files.exists(selectedExportFile) && !Files.isReadable(selectedExportFile)) {
             JOptionPane.showMessageDialog(this, Messages.getString("LoginPanel.28"), Messages.getString("LoginPanel.29"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$ //$NON-NLS-2$
             return;
         }
@@ -622,9 +624,9 @@ public class ConnectionDialog extends javax.swing.JDialog implements DialogWithR
         try {
             FavouriteConnections.exportToFile(selectedExportFile);
         } catch (final IOException ioe) {
-            JOptionPane.showMessageDialog(this, "Unable to write preferences file: " + selectedExportFile.getAbsolutePath() + ": " + ioe.getMessage(), "Error Importing Preferences", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Unable to write preferences file: " + selectedExportFile.toAbsolutePath() + ": " + ioe.getMessage(), "Error Importing Preferences", JOptionPane.ERROR_MESSAGE);
         } catch (final BackingStoreException bse) {
-            JOptionPane.showMessageDialog(this, "Backing store error for export to file: " + selectedExportFile.getAbsolutePath() + ": " + bse.getMessage(), "Error Importing Preferences", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Backing store error for export to file: " + selectedExportFile.toAbsolutePath() + ": " + bse.getMessage(), "Error Importing Preferences", JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_miExportFavouritesActionPerformed
 

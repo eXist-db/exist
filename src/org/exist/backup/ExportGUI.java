@@ -29,10 +29,12 @@ import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
 import org.exist.xquery.TerminatedException;
 
-import java.io.*;
-
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 
@@ -88,48 +90,54 @@ public class ExportGUI extends javax.swing.JFrame {
         super("Consistency Check and Repair");
         initComponents();
         final String existHome = System.getProperty("exist.home", "./");
-        final File home = new File(existHome);
-        dbConfig.setText(new File(home, "conf.xml").getAbsolutePath());
-        outputDir.setText(new File(home, "export").getAbsolutePath());
+        final Path home = Paths.get(existHome).normalize();
+        dbConfig.setText(home.resolve("conf.xml").toAbsolutePath().toString());
+        outputDir.setText(home.resolve("export").toAbsolutePath().toString());
     }
 
     protected boolean checkOutputDir() {
-        final File dir = new File(outputDir.getText());
+        final Path dir = Paths.get(outputDir.getText()).normalize();
 
-        if (!dir.exists()) {
+        if (!Files.exists(dir)) {
 
-            if (JOptionPane.showConfirmDialog(this, "The output directory " + dir.getAbsolutePath() + " does not exist. Create it?", "Confirm", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-                dir.mkdirs();
+            if (JOptionPane.showConfirmDialog(this, "The output directory " + dir.toAbsolutePath().toString() + " does not exist. Create it?", "Confirm", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+                try {
+                    Files.createDirectories(dir);
+                } catch (final IOException e) {
+                    JOptionPane.showMessageDialog(this, "Could not create output dir: " + dir.toAbsolutePath().toString(), "Configuration Error", JOptionPane.ERROR_MESSAGE);
+                    e.printStackTrace();
+                    System.err.println("ERROR: Failed to create output dir: " + e.getMessage());
+                }
             } else {
-                return (false);
+                return false;
             }
         }
-        return (true);
+        return true;
     }
 
 
     protected boolean startDB() {
         if (pool != null) {
-            return (true);
+            return true;
         }
-        final File confFile = new File(dbConfig.getText());
+        final Path confFile = Paths.get(dbConfig.getText()).normalize();
 
-        if (!(confFile.exists() && confFile.canRead())) {
-            JOptionPane.showMessageDialog(this, "The selected database configuration file " + confFile.getAbsolutePath() + " does not exist or is not readable.", "Configuration Error", JOptionPane.ERROR_MESSAGE);
-            return (false);
+        if (!(Files.exists(confFile) && Files.isReadable(confFile))) {
+            JOptionPane.showMessageDialog(this, "The selected database configuration file " + confFile.toAbsolutePath().toString() + " does not exist or is not readable.", "Configuration Error", JOptionPane.ERROR_MESSAGE);
+            return false;
         }
 
         try {
-            final Configuration config = new Configuration(confFile.getAbsolutePath(), Optional.empty());
+            final Configuration config = new Configuration(confFile.toAbsolutePath().toString(), Optional.empty());
             BrokerPool.configure(1, 5, config);
             pool = BrokerPool.getInstance();
-            return (true);
+            return true;
         } catch (final Exception e) {
             JOptionPane.showMessageDialog(this, "Could not start the database instance. Please remember\n" + "that this tool tries to launch an embedded db instance. No other db instance should\n" + "be running on the same data.", "DB Error", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
             System.err.println("ERROR: Failed to open database: " + e.getMessage());
         }
-        return (false);
+        return false;
     }
 
 
@@ -353,12 +361,12 @@ public class ExportGUI extends javax.swing.JFrame {
 
 
     private void btnChangeDirActionPerformed(java.awt.event.ActionEvent evt) { // GEN-FIRST:event_btnChangeDirActionPerformed
-        final File dir = new File(outputDir.getText());
+        final Path dir = Paths.get(outputDir.getText());
         final JFileChooser chooser = new JFileChooser();
         chooser.setMultiSelectionEnabled(false);
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        chooser.setSelectedFile(new File(dir, "export"));
-        chooser.setCurrentDirectory(dir);
+        chooser.setSelectedFile(dir.resolve("export").toFile());
+        chooser.setCurrentDirectory(dir.toFile());
 
         if (chooser.showDialog(this, "Export") == JFileChooser.APPROVE_OPTION) {
             outputDir.setText(chooser.getSelectedFile().getAbsolutePath());
@@ -373,12 +381,12 @@ public class ExportGUI extends javax.swing.JFrame {
 
 
     private void btnConfSelectActionPerformed(java.awt.event.ActionEvent evt) { // GEN-FIRST:event_btnConfSelectActionPerformed
-        final File dir = new File(dbConfig.getText()).getParentFile();
+        final Path dir = Paths.get(dbConfig.getText()).normalize().getParent();
         final JFileChooser chooser = new JFileChooser();
         chooser.setMultiSelectionEnabled(false);
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        chooser.setSelectedFile(new File(dir, "conf.xml"));
-        chooser.setCurrentDirectory(dir);
+        chooser.setSelectedFile(dir.resolve("conf.xml").toFile());
+        chooser.setCurrentDirectory(dir.toFile());
         chooser.setFileFilter(new FileFilter() {
             public boolean accept(File f) {
                 if (f.isDirectory()) {
@@ -387,9 +395,9 @@ public class ExportGUI extends javax.swing.JFrame {
                 final MimeType mime = MimeTable.getInstance().getContentTypeFor(f.getName());
 
                 if (mime == null) {
-                    return (false);
+                    return false;
                 }
-                return (mime.isXMLType());
+                return mime.isXMLType();
             }
 
 

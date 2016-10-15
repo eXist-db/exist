@@ -24,6 +24,7 @@ package org.exist.xquery;
 import org.exist.TestUtils;
 import org.exist.storage.BrokerPool;
 import org.exist.util.Configuration;
+import org.exist.util.FileUtils;
 import org.exist.util.XMLFilenameFilter;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.IndexQueryService;
@@ -42,8 +43,11 @@ import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XQueryService;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
 
 /**
  * 
@@ -269,13 +273,15 @@ public class OptimizerTest {
             testCollection.storeResource(resource);
 
             String existHome = System.getProperty("exist.home");
-            File existDir = existHome==null ? new File(".") : new File(existHome);
-            File dir = new File(existDir, "samples/shakespeare");
-            if (!dir.canRead())
+            Path existDir = existHome == null ? Paths.get(".") : Paths.get(existHome);
+            existDir = existDir.normalize();
+            Path dir = existDir.resolve("samples/shakespeare");
+            if (!Files.isReadable(dir)) {
                 throw new IOException("Unable to read samples directory");
-            File[] files = dir.listFiles(new XMLFilenameFilter());
-            for (File file : files) {
-                resource = (XMLResource) testCollection.createResource(file.getName(), "XMLResource");
+            }
+            final List<Path> files = FileUtils.list(dir, XMLFilenameFilter.asPredicate());
+            for (Path file : files) {
+                resource = (XMLResource) testCollection.createResource(FileUtils.fileName(file), XMLResource.RESOURCE_TYPE);
                 resource.setContent(file);
                 testCollection.storeResource(resource);
             }

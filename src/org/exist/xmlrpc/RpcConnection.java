@@ -72,17 +72,7 @@ import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.Txn;
-import org.exist.util.Compressor;
-import org.exist.util.LockException;
-import org.exist.util.MimeTable;
-import org.exist.util.MimeType;
-import org.exist.util.Occurrences;
-import org.exist.util.SyntaxException;
-import org.exist.util.VirtualTempFile;
-import org.exist.util.VirtualTempFileInputSource;
-import com.evolvedbinary.j8fu.function.Function2E;
-import com.evolvedbinary.j8fu.function.Function3E;
-import com.evolvedbinary.j8fu.function.SupplierE;
+import org.exist.util.*;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
 import org.exist.validation.ValidationReport;
@@ -101,6 +91,10 @@ import org.w3c.dom.DocumentType;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
+
+import com.evolvedbinary.j8fu.function.Function2E;
+import com.evolvedbinary.j8fu.function.Function3E;
+import com.evolvedbinary.j8fu.function.SupplierE;
 
 import java.io.*;
 import java.net.URISyntaxException;
@@ -3002,16 +2996,15 @@ public class RpcConnection implements RpcAPI {
     @Override
     public byte[] getDocumentChunk(final String name, final int start, final int len)
             throws EXistException, PermissionDeniedException, IOException {
-        final File file = new File(System.getProperty("java.io.tmpdir")
-                + File.separator + name);
-        if (!file.canRead()) {
+        final Path file = Paths.get(System.getProperty("java.io.tmpdir")).resolve(name);
+        if (!Files.isReadable(file)) {
             throw new EXistException("unable to read file " + name);
         }
-        if (file.length() < start + len) {
+        if (FileUtils.sizeQuietly(file) < start + len) {
             throw new EXistException("address too big " + name);
         }
         final byte buffer[] = new byte[len];
-        try (final RandomAccessFile os = new RandomAccessFile(file.getAbsolutePath(), "r")) {
+        try (final RandomAccessFile os = new RandomAccessFile(file.toFile(), "r")) {
             LOG.debug("Read from: " + start + " to: " + (start + len));
             os.seek(start);
             os.read(buffer);

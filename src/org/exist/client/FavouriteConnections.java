@@ -21,12 +21,11 @@
  */
 package org.exist.client;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -162,41 +161,17 @@ public class FavouriteConnections {
         //TODO hash passwords before storing - need to implement server-side login with hashes
     }
     
-    public static void importFromFile(final File f) throws IOException, InvalidPreferencesFormatException {
-        
+    public static void importFromFile(final Path f) throws IOException, InvalidPreferencesFormatException {
         final Preferences prefs = Preferences.userNodeForPackage(FavouriteConnections.class);
-        
-        InputStream is = null;
-        try{
-            is = new FileInputStream(f);
+        try(final InputStream is = Files.newInputStream(f)) {
             prefs.importPreferences(is);
-        } finally {
-            if(is != null) {
-                try {
-                   is.close(); 
-                } catch(final IOException ioe) {
-                    ioe.printStackTrace();
-                }
-            }
         }
     }
     
-    public static void exportToFile(final File f) throws IOException, BackingStoreException {
-        
+    public static void exportToFile(final Path f) throws IOException, BackingStoreException {
         final Preferences prefs = Preferences.userNodeForPackage(FavouriteConnections.class);
-        
-        OutputStream os = null;
-        try {
-            os = new FileOutputStream(f);
+        try(final OutputStream os = Files.newOutputStream(f)) {
             prefs.exportSubtree(os);
-        } finally {
-            if(os != null) {
-                try {
-                   os.close(); 
-                } catch(final IOException ioe) {
-                    ioe.printStackTrace();
-                }
-            }
         }
     }
 }

@@ -22,7 +22,8 @@
  */
 package org.exist.xmldb;
 
-import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.exist.xmldb.concurrent.DBUtils;
 import org.junit.After;
@@ -96,7 +97,7 @@ public class ShutdownTest {
 				i + "\">" + XML + "</data>";
 			DBUtils.addXMLResource(testCol, "R1.xml", xml);
 
-			File tempFile = DBUtils.generateXMLFile(5000, 7, wordList);
+			Path tempFile = DBUtils.generateXMLFile(5000, 7, wordList);
 			DBUtils.addXMLResource(testCol, "R2.xml", tempFile);
 
 			DBUtils.shutdownDB(URI);
@@ -112,8 +113,9 @@ public class ShutdownTest {
             assertNotNull(testCol);
         }
                     String existHome = System.getProperty("exist.home");
-                    File existDir = existHome==null ? new File(".") : new File(existHome);
-        DBUtils.addXMLResource(rootCol, "biblio.rdf", new File(existDir,"samples/biblio.rdf"));
+		Path existDir = existHome == null ? Paths.get(".") : Paths.get(existHome);
+		existDir = existDir.normalize();
+        DBUtils.addXMLResource(rootCol, "biblio.rdf", existDir.resolve("samples/biblio.rdf"));
         wordList = DBUtils.wordList(rootCol);
 
         // store the data files
@@ -121,7 +123,7 @@ public class ShutdownTest {
             "<data now=\"" + System.currentTimeMillis() + "\" count=\"1\">" + XML + "</data>";
         DBUtils.addXMLResource(testCol, "R1.xml", xml);
 
-        File tempFile = DBUtils.generateXMLFile(5000, 7, wordList);
+        Path tempFile = DBUtils.generateXMLFile(5000, 7, wordList);
         DBUtils.addXMLResource(testCol, "R2.xml", tempFile);
 
         DBUtils.shutdownDB(URI);

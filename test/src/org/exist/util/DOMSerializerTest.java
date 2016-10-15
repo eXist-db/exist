@@ -21,9 +21,10 @@
  */
 package org.exist.util;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -44,12 +45,13 @@ import static org.junit.Assert.assertNotNull;
  */
 public class DOMSerializerTest {
 
-    static File existDir;
+    static Path existDir;
     static {
         String existHome = System.getProperty("exist.home");
-        existDir = existHome==null ? new File(".") : new File(existHome);
+		existDir = existHome == null ? Paths.get(".") : Paths.get(existHome);
+		existDir = existDir.normalize();
     }
-    private final static String file = (new File(existDir,"samples/biblio.rdf")).getAbsolutePath();
+    private final static String file = existDir.resolve("samples/biblio.rdf").toAbsolutePath().toString();
 
 	@Test
 	public void serialize() throws ParserConfigurationException, IOException, SAXException, TransformerException {

@@ -21,10 +21,12 @@
  */
 package org.exist.storage;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
 import java.util.Optional;
 
 import org.exist.EXistException;
@@ -41,6 +43,7 @@ import org.exist.storage.txn.Txn;
 import org.exist.test.TestConstants;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
+import org.exist.util.FileUtils;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.junit.After;
@@ -87,23 +90,17 @@ public class RecoveryTest2 {
 
             DOMFile domDb = ((NativeBroker) broker).getDOMFile();
             assertNotNull(domDb);
-            Writer writer = new StringWriter();
-            domDb.dump(writer);
-
-            File f;
-            IndexInfo info;
+            try(final Writer writer = new StringWriter()) {
+                domDb.dump(writer);
+            }
 
             // store some documents. Will be replaced below
-            File dir = new File(xmlDir);
-            assertNotNull(dir);
-            File[] docs = dir.listFiles();
-            assertNotNull(docs);
-            for (int i = 0; i < docs.length; i++) {
-                f = docs[i];
-                assertNotNull(f);
-                info = test2.validateXMLResource(transaction, broker, XmldbURI.create(f.getName()), new InputSource(f.toURI().toASCIIString()));
+            final Path dir = Paths.get(xmlDir);
+            final List<Path> docs = FileUtils.list(dir);
+            for (final Path f : docs) {
+                final IndexInfo info = test2.validateXMLResource(transaction, broker, XmldbURI.create(FileUtils.fileName(f)), new InputSource(f.toUri().toASCIIString()));
                 assertNotNull(info);
-                test2.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
+                test2.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()), false);
             }
 
             transact.commit(transaction);

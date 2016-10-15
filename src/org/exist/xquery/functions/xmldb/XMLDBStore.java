@@ -21,15 +21,15 @@
  */
 package org.exist.xquery.functions.xmldb;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.InputStream;;
 import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Properties;
 
 import org.apache.logging.log4j.LogManager;
@@ -37,6 +37,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.exist.dom.QName;
 import org.exist.storage.serializers.EXistOutputKeys;
+import org.exist.util.FileUtils;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
 import org.exist.util.serializer.SAXSerializer;
@@ -60,6 +61,7 @@ import org.xml.sax.SAXException;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.modules.BinaryResource;
 import org.xmldb.api.modules.XMLResource;
 
 /**
@@ -149,9 +151,7 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
         super(context, signature);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.Expression#eval(org.exist.dom.persistent.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
-     */
+    @Override
     public Sequence evalWithCollection(Collection collection, Sequence args[], Sequence contextSequence) throws XPathException {
 
         String docName = args[1].isEmpty() ? null : args[1].getStringValue();
@@ -188,11 +188,14 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
         try {
             if (Type.subTypeOf(item.getType(), Type.JAVA_OBJECT)) {
                 final Object obj = ((JavaObjectValue) item).getObject();
-                if (!(obj instanceof File)) {
-                    logger.error("Passed java object should be a File");
-                    throw new XPathException(this, "Passed java object should be a File");
+                if(obj instanceof java.io.File) {
+                    resource = loadFromFile(collection, ((java.io.File)obj).toPath(), docName, binary, mimeType);
+                } else if(obj instanceof java.nio.file.Path) {
+                    resource = loadFromFile(collection, (Path)obj, docName, binary, mimeType);
+                } else {
+                    logger.error("Passed java object should be either a java.nio.file.Path or java.io.File");
+                    throw new XPathException(this, "Passed java object should be either a java.nio.file.Path or java.io.File");
                 }
-                resource = loadFromFile(collection, (File) obj, docName, binary, mimeType);
 
             } else if (Type.subTypeOf(item.getType(), Type.ANY_URI)) {
                 try {
@@ -274,57 +277,48 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
             if (path == null) {
                 throw new XPathException(this, "Cannot read from URI: " + uri.toASCIIString());
             }
-            final File file = new File(path);
-            if (!file.canRead()) {
+            final Path file = Paths.get(path);
+            if (!Files.isReadable(file)) {
                 throw new XPathException(this, "Cannot read path: " + path);
             }
             resource = loadFromFile(collection, file, docName, binary, mimeType);
 
         } else {
-            File temp = null;
+            Path temp = null;
             try {
-                temp = File.createTempFile("existDBS", ".xml");
-                // This is deleted later; is this necessary?
-                temp.deleteOnExit();
-                final OutputStream os = new FileOutputStream(temp);
-                final InputStream is = uri.toURL().openStream();
-                final byte[] data = new byte[1024];
-                int read = 0;
-                while ((read = is.read(data)) > -1) {
-                    os.write(data, 0, read);
+                temp = Files.createTempFile("existDBS", ".xml");
+                try(final InputStream is = uri.toURL().openStream()) {
+                    Files.copy(is, temp);
+                    resource = loadFromFile(collection, temp, docName, binary, mimeType);
+                } finally {
+                    if(temp != null) {
+                        FileUtils.deleteQuietly(temp);
+                    }
                 }
-                is.close();
-                os.close();
-                resource = loadFromFile(collection, temp, docName, binary, mimeType);
-                temp.delete();
-
             } catch (final MalformedURLException e) {
                 throw new XPathException(this, "Malformed URL: " + uri.toString(), e);
 
             } catch (final IOException e) {
                 throw new XPathException(this, "IOException while reading from URL: "
                         + uri.toString(), e);
-            } finally {
-                if (temp != null) {
-                    temp.delete();
-                }
             }
         }
         return resource;
     }
 
-    private Resource loadFromFile(Collection collection, File file, String docName, boolean binary, String mimeType)
+    private Resource loadFromFile(final Collection collection, final Path file, String docName, final boolean binary, final String mimeType)
             throws XPathException {
-        if (file.isFile()) {
+        if (!Files.isDirectory(file)) {
             if (docName == null) {
-                docName = file.getName();
+                docName = FileUtils.fileName(file);
             }
+
             try {
-                Resource resource;
+                final Resource resource;
                 if (binary) {
-                    resource = collection.createResource(docName, "BinaryResource");
+                    resource = collection.createResource(docName, BinaryResource.RESOURCE_TYPE);
                 } else {
-                    resource = collection.createResource(docName, "XMLResource");
+                    resource = collection.createResource(docName, XMLResource.RESOURCE_TYPE);
                 }
                 ((EXistResource) resource).setMimeType(mimeType);
                 resource.setContent(file);
@@ -332,12 +326,12 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
                 return resource;
 
             } catch (final XMLDBException e) {
-                throw new XPathException(this, "Could not store file " + file.getAbsolutePath()
+                throw new XPathException(this, "Could not store file " + file.toAbsolutePath()
                         + ": " + e.getMessage(), e);
             }
 
         } else {
-            throw new XPathException(this, file.getAbsolutePath() + " does not point to a file");
+            throw new XPathException(this, file.toAbsolutePath() + " does not point to a file");
         }
     }
 }

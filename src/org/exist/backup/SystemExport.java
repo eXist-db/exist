@@ -72,12 +72,18 @@ import org.xml.sax.helpers.NamespaceSupport;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.transform.OutputKeys;
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.*;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 
 /**
@@ -320,8 +326,7 @@ public class SystemExport {
     private void exportOrphans(BackupWriter output, DocumentSet docs, List<ErrorReport> errorList) throws IOException {
         output.newCollection("/db/__lost_and_found__");
 
-        try {
-            final Writer contents = output.newContents();
+        try(final Writer contents = output.newContents()) {
 
             // serializer writes to __contents__.xml
             final SAXSerializer serializer = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
@@ -343,7 +348,6 @@ public class SystemExport {
             serializer.endElement(Namespaces.EXIST_NS, "collection", "collection");
             serializer.endPrefixMapping("");
             serializer.endDocument();
-            output.closeContents();
         } catch (final Exception e) {
             e.printStackTrace();
 
@@ -489,30 +493,28 @@ public class SystemExport {
         final boolean needsBackup = (prevBackup == null) || (date.getTime() < doc.getMetadata().getLastModified());
 
         if (needsBackup) {
-            final OutputStream os = output.newEntry(Backup.encode(URIUtils.urlDecodeUtf8(doc.getFileURI())));
-
-            try {
+            try(final OutputStream os = output.newEntry(Backup.encode(URIUtils.urlDecodeUtf8(doc.getFileURI())))) {
 
                 if (doc.getResourceType() == DocumentImpl.BINARY_FILE) {
                     broker.readBinaryResource((BinaryDocument) doc, os);
                 } else {
-                    final BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));
+                    try(final Writer writer = new BufferedWriter(new OutputStreamWriter(os, UTF_8))) {
 
-                    // write resource to contentSerializer
-                    final SAXSerializer contentSerializer = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
-                    contentSerializer.setOutput(writer, defaultOutputProperties);
+                        // write resource to contentSerializer
+                        final SAXSerializer contentSerializer = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
+                        contentSerializer.setOutput(writer, defaultOutputProperties);
 
-                    final Receiver receiver;
-                    if (chainFactory != null) {
-                        chainFactory.getLast().setNextInChain(contentSerializer);
-                        receiver = chainFactory.getFirst();
-                    } else {
-                        receiver = contentSerializer;
+                        final Receiver receiver;
+                        if (chainFactory != null) {
+                            chainFactory.getLast().setNextInChain(contentSerializer);
+                            receiver = chainFactory.getFirst();
+                        } else {
+                            receiver = contentSerializer;
+                        }
+
+                        writeXML(doc, receiver);
+                        SerializerPool.getInstance().returnObject(contentSerializer);
                     }
-
-                    writeXML(doc, receiver);
-                    SerializerPool.getInstance().returnObject(contentSerializer);
-                    writer.flush();
                 }
             } catch (final Exception e) {
                 reportError("A write error occurred while exporting document: '" + doc.getFileURI() + "'. Continuing with next document.", e);
@@ -692,9 +694,9 @@ public class SystemExport {
         final SimpleDateFormat creationDateFormat = new SimpleDateFormat(DataBackup.DATE_FORMAT_PICTURE);
         final String filename = base + '-' + creationDateFormat.format(Calendar.getInstance().getTime());
         Path file = Paths.get(dir, filename + extension);
-        int version  = 0;
+        int version = 0;
 
-        while(Files.exists(file)) {
+        while (Files.exists(file)) {
             file = Paths.get(dir, filename + '_' + version++ + extension);
         }
         return file;

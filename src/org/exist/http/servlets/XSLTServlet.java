@@ -76,11 +76,13 @@ import javax.xml.transform.stream.StreamSource;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
 import java.net.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.zip.GZIPInputStream;
 
@@ -245,7 +247,7 @@ public class XSLTServlet extends HttpServlet {
                 } else if (stylesheet.startsWith("xmldb:exist://")) {
                     moduleLoadPath = XmldbURI.xmldbUriFor(stylesheet).getCollectionPath();
                 } else {
-                    moduleLoadPath = getCurrentDir(request).getAbsolutePath();
+                    moduleLoadPath = getCurrentDir(request).toAbsolutePath().toString();
                 }
 
                 xinclude.setModuleLoadPath(moduleLoadPath);
@@ -312,10 +314,10 @@ public class XSLTServlet extends HttpServlet {
         if (stylesheet.indexOf(':') == Constants.STRING_NOT_FOUND) {
             // replace double slash
             stylesheet = stylesheet.replaceAll("//", "/");
-            File f = new File(stylesheet);
-            if (f.canRead()) {
+            Path f = Paths.get(stylesheet).normalize();
+            if (Files.isReadable(f)) {
                 // Found file, get URI
-                stylesheet = f.toURI().toASCIIString();
+                stylesheet = f.toUri().toASCIIString();
 
             } else {
                 // if the stylesheet path is absolute, it must be resolved relative to the webapp root
@@ -329,16 +331,16 @@ public class XSLTServlet extends HttpServlet {
                         return null;
                     }
 
-                    f = new File(url);
-                    stylesheet = f.toURI().toASCIIString();
+                    f = Paths.get(url);
+                    stylesheet = f.toUri().toASCIIString();
 
                 } else {
                     // relative path is relative to the current working directory
-                    f = new File(getCurrentDir(request), stylesheet);
-                    stylesheet = f.toURI().toASCIIString();
+                    f = getCurrentDir(request).resolve(stylesheet);
+                    stylesheet = f.toUri().toASCIIString();
                 }
 
-                if (!f.canRead()) {
+                if (!Files.isReadable(f)) {
                     response.sendError(HttpServletResponse.SC_NOT_FOUND,
                             "Stylesheet not found (URL: " + stylesheet + ")");
                     return null;
@@ -371,7 +373,7 @@ public class XSLTServlet extends HttpServlet {
     /*
      * Please explain what this method is about. Write about assumptions / input.
      */
-    private File getCurrentDir(HttpServletRequest request) {
+    private Path getCurrentDir(HttpServletRequest request) {
         String path = request.getPathTranslated();
         if (path == null) {
             path = request.getRequestURI().substring(request.getContextPath().length());
@@ -382,11 +384,11 @@ public class XSLTServlet extends HttpServlet {
             path = getServletContext().getRealPath(path);
         }
 
-        final File file = new File(path);
-        if (file.isDirectory()) {
+        final Path file = Paths.get(path).normalize();
+        if (Files.isDirectory(file)) {
             return file;
         } else {
-            return file.getParentFile();
+            return file.getParent();
         }
     }
 

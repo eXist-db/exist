@@ -30,14 +30,16 @@ import org.exist.dom.QName;
 import org.xml.sax.SAXException;
 
 import javax.xml.transform.OutputKeys;
-import java.io.File;
+import java.io.Closeable;
+import java.io.IOException;
 import java.io.Writer;
-import java.io.OutputStreamWriter;
-import java.io.BufferedOutputStream;
-import java.io.FileOutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Properties;
 
-public class TestResultWriter {
+import static java.nio.charset.StandardCharsets.UTF_8;
+
+public class TestResultWriter implements Closeable {
 
     private static final QName ROOT_ELEMENT = new QName("test-result", Namespaces.EXIST_NS, "");
     private static final QName ACTION_ELEMENT = new QName("action", Namespaces.EXIST_NS, "");
@@ -58,19 +60,18 @@ public class TestResultWriter {
         defaultProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
     }
 
-    private SAXSerializer serializer;
-    private Writer writer;
+    private final Writer writer;
+    private final SAXSerializer serializer;
 
-    public TestResultWriter(String outFile) throws EXistException {
-        File file = new File(outFile);
+    public TestResultWriter(Path file) throws EXistException {
         try {
-            writer = new OutputStreamWriter(new BufferedOutputStream(new FileOutputStream(file)), "UTF-8");
+            writer = Files.newBufferedWriter(file, UTF_8);
             serializer = new SAXSerializer(writer, defaultProperties);
             serializer.startDocument();
             AttrList attribs = new AttrList();
             serializer.startElement(ROOT_ELEMENT, attribs);
         } catch (Exception e) {
-            throw new EXistException("error while configuring test output file: " + file.getAbsolutePath(), e);
+            throw new EXistException("error while configuring test output file: " + file.toAbsolutePath(), e);
         }
     }
 
@@ -125,11 +126,14 @@ public class TestResultWriter {
         }
     }
 
-    public void close() {
+    @Override
+    public void close() throws IOException {
         try {
             serializer.endElement(ROOT_ELEMENT);
+        } catch (final SAXException e) {
+            throw new IOException(e);
+        } finally {
             writer.close();
-        } catch (Exception e) {
         }
     }
 }

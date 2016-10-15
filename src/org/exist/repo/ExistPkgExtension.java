@@ -9,11 +9,13 @@
 
 package org.exist.repo;
 
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Set;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
@@ -132,16 +134,19 @@ public class ExistPkgExtension
         // TODO: FIXME: Bad, BAD design!  But will be resolved naturally by moving the
         // install code within the storage class (because we are writing on disk)...
         final FileSystemResolver res = (FileSystemResolver) pkg.getResolver();
-        final File classpath = res.resolveResourceAsFile(".exist/classpath.txt");
+        final Path classpath = res.resolveResourceAsFile(".exist/classpath.txt").toPath();
 
         // create [pkg_dir]/.exist/classpath.txt if not already
-        final File exist = classpath.getParentFile();
-        if (!exist.exists() && !exist.mkdir()) {
-            throw new PackageException("Impossible to create directory: " + exist);
+        final Path exist = classpath.getParent();
+        if (!Files.exists(exist)) {
+            try {
+                Files.createDirectories(exist);
+            } catch (final IOException e) {
+                throw new PackageException("Impossible to create directory: " + exist);
+            }
         }
         final Set<String> jars = info.getJars();
-        try {
-            final FileWriter out = new FileWriter(classpath);
+        try(final Writer out = Files.newBufferedWriter(classpath)) {
             for (final String jar : jars) {
                 StreamSource jar_src;
                 try {
@@ -151,11 +156,10 @@ public class ExistPkgExtension
                     throw new PackageException(msg + jar, ex);
                 }
                 final URI uri = URI.create(jar_src.getSystemId());
-                final File file = new File(uri);
-                out.write(file.getCanonicalPath());
+                final Path file = Paths.get(uri);
+                out.write(file.normalize().toString());
                 out.write("\n");
             }
-            out.close();
         } catch (final IOException ex) {
             throw new PackageException("Error writing the eXist classpath file: " + classpath, ex);
         }

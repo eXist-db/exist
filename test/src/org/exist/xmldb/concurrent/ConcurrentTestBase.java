@@ -20,7 +20,8 @@
  */
 package org.exist.xmldb.concurrent;
 
-import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -121,8 +122,9 @@ public abstract class ConcurrentTestBase {
         assertNotNull(testCol);
 
         String existHome = System.getProperty("exist.home");
-        File existDir = existHome==null ? new File(".") : new File(existHome);
-        DBUtils.addXMLResource(rootCol, "biblio.rdf", new File(existDir,"samples/biblio.rdf"));
+        Path existDir = existHome == null ? Paths.get(".") : Paths.get(existHome);
+        existDir = existDir.normalize();
+        DBUtils.addXMLResource(rootCol, "biblio.rdf", existDir.resolve("samples/biblio.rdf"));
     }
 
     public void tearDown() throws XMLDBException {

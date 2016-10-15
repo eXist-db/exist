@@ -49,31 +49,21 @@ import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-import java.util.Properties;
-import java.util.StringTokenizer;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.prefs.Preferences;
+import java.util.stream.Collectors;
 import javax.swing.BorderFactory;
 import javax.swing.DropMode;
 import javax.swing.ImageIcon;
@@ -124,6 +114,7 @@ import org.exist.security.SecurityManager;
 import org.exist.security.internal.aider.PermissionAider;
 import org.exist.security.internal.aider.PermissionAiderFactory;
 import org.exist.storage.serializers.EXistOutputKeys;
+import org.exist.util.FileUtils;
 import org.exist.util.MimeTable;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
@@ -135,6 +126,8 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Main frame of the eXist GUI
@@ -1021,13 +1014,12 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
             // remember directory in preferences
             preferences.put("directory.last", chooser.getCurrentDirectory().getAbsolutePath());
 
-            final File[] files = chooser.getSelectedFiles();
-            uploadFiles(files);
+            uploadFiles(FileUtils.asPathsList(chooser.getSelectedFiles()));
         }
     }
 
-    private void uploadFiles(final File[] files) {
-        if (files != null && files.length > 0) {
+    private void uploadFiles(final List<Path> files) {
+        if (files != null && !files.isEmpty()) {
             new Thread() {
                 @Override
                 public void run() {
@@ -1043,19 +1035,14 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         }
     }
 
-    private boolean deleteDirectory(final File target) {
-        if (target.isDirectory()) {
-            final String[] children = target.list();
-            for (int i = 0; i < children.length; i++) {
-                final boolean success = deleteDirectory(new File(target, children[i]));
-                if (!success) {
-                    return false;
-                }
-            }
+    private boolean deleteDirectory(final Path target) {
+        try {
+            FileUtils.delete(target);
+            return true;
+        } catch (final IOException e) {
+            return false;
         }
 
-        // The directory is now empty so delete it
-        return target.delete();
     }
 
     private void backupAction(final ActionEvent ev) {
@@ -1079,7 +1066,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
                 properties.getProperty(InteractiveClient.URI, "xmldb:exist://"),
                 properties.getProperty(InteractiveClient.USER, SecurityManager.DBA_USER),
                 properties.getProperty(InteractiveClient.PASSWORD, null),
-                new File(preferences.get("directory.backup", System.getProperty("user.home"))),
+                Paths.get(preferences.get("directory.backup", System.getProperty("user.home"))),
                 defaultSelectedCollection
         );
 
@@ -1089,8 +1076,8 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
             final String backuptarget = dialog.getBackupTarget();
 
             // DWES add check here?
-            final File target = new File(backuptarget);
-            if (target.exists()) {
+            final Path target = Paths.get(backuptarget).normalize();
+            if (Files.exists(target)) {
                 if (JOptionPane.showConfirmDialog(this,
                         Messages.getString("CreateBackupDialog.6a") + " "
                                 + backuptarget + " "
@@ -1112,14 +1099,8 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
                                 + collection)
                 );
                 backup.backup(true, this);
-            } catch (final XMLDBException e) {
-                showErrorMessage("XMLDBException: " + e.getMessage(), e); //$NON-NLS-1$
-            } catch (final IOException e) {
-                showErrorMessage("IOException: " + e.getMessage(), e); //$NON-NLS-1$
-            } catch (final SAXException e) {
-                showErrorMessage("SAXException: " + e.getMessage(), e); //$NON-NLS-1$
-            } catch (final URISyntaxException e) {
-                showErrorMessage("URISyntaxException: " + e.getMessage(), e); //$NON-NLS-1$
+            } catch (final XMLDBException | IOException | SAXException | URISyntaxException e) {
+                showErrorMessage(e.getClass().getSimpleName() + ": " + e.getMessage(), e);
             }
         }
     }
@@ -1133,7 +1114,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         chooser.addChoosableFileFilter(new ZipFilter());
 
         if (chooser.showDialog(null, Messages.getString("ClientFrame.169")) == JFileChooser.APPROVE_OPTION) { //$NON-NLS-1$
-            final File f = chooser.getSelectedFile();
+            final Path f = chooser.getSelectedFile().toPath();
             preferences.put("directory.backup", chooser.getCurrentDirectory().getAbsolutePath());
             final JPanel askPass = new JPanel(new BorderLayout());
             askPass.add(new JLabel(Messages.getString("ClientFrame.170")), BorderLayout.NORTH); //$NON-NLS-1$
@@ -1143,7 +1124,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
                     JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
                     null, null, null) == JOptionPane.YES_OPTION) {
                 final String newDbaPass = passInput.getPassword().length == 0 ? null : new String(passInput.getPassword());
-                final String restoreFile = f.getAbsolutePath();
+                final String restoreFile = f.toAbsolutePath().toString();
 
                 final GuiRestoreListener listener = new GuiRestoreListener(this);
                 doRestore(listener, properties.getProperty(InteractiveClient.USER, SecurityManager.DBA_USER), properties.getProperty(InteractiveClient.PASSWORD, null), newDbaPass, Paths.get(restoreFile), properties.getProperty(InteractiveClient.URI, "xmldb:exist://"));
@@ -1235,32 +1216,28 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
             final JFileChooser chooser = new JFileChooser(preferences.get("directory.last", System.getProperty("user.dir")));
             chooser.setMultiSelectionEnabled(false);
             chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-            chooser.setSelectedFile(new File(desc.getName().getCollectionPath()));
+            chooser.setSelectedFile(Paths.get(desc.getName().getCollectionPath()).toFile());
             if (chooser.showDialog(this, "Select file for export") == JFileChooser.APPROVE_OPTION) {
                 preferences.put("directory.last", chooser.getCurrentDirectory().getAbsolutePath());
-                final File file = chooser.getSelectedFile();
-                if (file.exists()
+                final Path file = chooser.getSelectedFile().toPath();
+                if (Files.exists(file)
                         && JOptionPane.showConfirmDialog(this,
                         "File exists. Overwrite?", "Overwrite?",
                         JOptionPane.YES_NO_OPTION) == JOptionPane.NO_OPTION) {
                     return;
                 }
                 final Resource resource;
-                final FileOutputStream os;
-                final BufferedWriter writer;
                 final SAXSerializer contentSerializer;
                 try {
                     final Collection collection = client.getCollection();
-
-                    try {
-                        resource = collection
-                                .getResource(desc.getName().toString());
-                        os = new FileOutputStream(file);
-                        if (resource instanceof ExtendedResource) {
+                    resource = collection
+                            .getResource(desc.getName().toString());
+                    if (resource instanceof ExtendedResource) {
+                        try(final OutputStream os = Files.newOutputStream(file)) {
                             ((ExtendedResource) resource).getContentIntoAStream(os);
-                        } else {
-
-                            writer = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));
+                        }
+                    } else {
+                        try(final Writer writer = Files.newBufferedWriter(file, UTF_8)) {
                             // write resource to contentSerializer
                             contentSerializer = (SAXSerializer) SerializerPool
                                     .getInstance()
@@ -1271,14 +1248,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
                             ((XMLResource) resource)
                                     .getContentAsSAX(contentSerializer);
                             SerializerPool.getInstance().returnObject(contentSerializer);
-                            writer.close();
                         }
-                    } catch (final Exception e) {
-                        System.err
-                                .println("An exception occurred while writing the resource: "
-                                        + e.getMessage());
-                        e.printStackTrace();
-
                     }
                     //TODO finally close os
                 } catch (final Exception e) {
@@ -1921,7 +1891,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
                 final Transferable transferable = dtde.getTransferable();
 
                 //should work for Win32 systems
-                List<File> files = getFilesWin32(transferable);
+                List<Path> files = getFilesWin32(transferable);
 
                 //should work for *nix systems
                 if (files == null) {
@@ -1929,7 +1899,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
                 }
 
                 if (files != null) {
-                    uploadFiles(files.toArray(new File[files.size()]));
+                    uploadFiles(files);
                 }
             } catch (final URISyntaxException | IOException | UnsupportedFlavorException | ClassNotFoundException use) {
                 System.err.println("An exception occurred while dragging and dropping files: " + use.getMessage());
@@ -1937,14 +1907,13 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
             }
         }
 
-        private List<File> getFilesWin32(final Transferable transferable) throws UnsupportedFlavorException, IOException {
-            return (List<File>) transferable.getTransferData(DataFlavor.javaFileListFlavor);
+        private List<Path> getFilesWin32(final Transferable transferable) throws UnsupportedFlavorException, IOException {
+            return ((List<File>) transferable.getTransferData(DataFlavor.javaFileListFlavor)).stream().map(File::toPath).collect(Collectors.toList());
         }
 
-        private List<File> getFilesUnix(final Transferable transferable) throws ClassNotFoundException, UnsupportedFlavorException, IOException, URISyntaxException {
+        private List<Path> getFilesUnix(final Transferable transferable) throws ClassNotFoundException, UnsupportedFlavorException, IOException, URISyntaxException {
 
-            List<File> files = null;
-
+            List<Path> files = null;
             final DataFlavor unixFileDataFlavour = new DataFlavor("text/uri-list;class=java.lang.String");
             final String data = (String) transferable.getTransferData(unixFileDataFlavour);
             for (final StringTokenizer st = new StringTokenizer(data, "\r\n"); st.hasMoreTokens(); ) {
@@ -1956,10 +1925,10 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
 
                 //lazy
                 if (files == null) {
-                    files = new ArrayList<File>();
+                    files = new ArrayList<>();
                 }
 
-                files.add(new File(new URI(token)));
+                files.add(Paths.get(new URI(token)));
             }
 
             return files;

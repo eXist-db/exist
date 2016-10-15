@@ -42,8 +42,6 @@ import org.exist.util.ConfigurationHelper;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.XmldbURI;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -253,7 +251,7 @@ public class Main {
             if (optionBackup == null) {
 
                 if (guiMode) {
-                    final CreateBackupDialog dialog = new CreateBackupDialog(properties.getProperty("uri", "xmldb:exist://"), properties.getProperty("user", "admin"), properties.getProperty("password", ""), new File(preferences.get("directory.backup", System.getProperty("user.dir"))));
+                    final CreateBackupDialog dialog = new CreateBackupDialog(properties.getProperty("uri", "xmldb:exist://"), properties.getProperty("user", "admin"), properties.getProperty("password", ""), Paths.get(preferences.get("directory.backup", System.getProperty("user.dir"))));
 
                     if (JOptionPane.showOptionDialog(null, dialog, "Create Backup", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, null, null) == JOptionPane.YES_OPTION) {
                         optionBackup = dialog.getCollection();
@@ -283,8 +281,8 @@ public class Main {
                 chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 
                 if (chooser.showDialog(null, "Select backup file for restore") == JFileChooser.APPROVE_OPTION) {
-                    final File f = chooser.getSelectedFile();
-                    optionRestore = f.getAbsolutePath();
+                    final Path f = chooser.getSelectedFile().toPath();
+                    optionRestore = f.toAbsolutePath().toString();
                 }
             }
 
@@ -328,18 +326,8 @@ public class Main {
 
         try {
             restore.restore(listener, username, password, dbaPassword, f, uri);
-        } catch (final FileNotFoundException fnfe) {
-            listener.error(fnfe.getMessage());
-        } catch (final IOException ioe) {
+        } catch (final IOException | URISyntaxException | ParserConfigurationException | XMLDBException | SAXException ioe) {
             listener.error(ioe.getMessage());
-        } catch (final SAXException saxe) {
-            listener.error(saxe.getMessage());
-        } catch (final XMLDBException xmldbe) {
-            listener.error(xmldbe.getMessage());
-        } catch (final ParserConfigurationException pce) {
-            listener.error(pce.getMessage());
-        } catch (final URISyntaxException use) {
-            listener.error(use.getMessage());
         }
 
         if (listener.hasProblems()) {
