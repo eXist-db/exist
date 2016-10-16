@@ -19,6 +19,7 @@ exist.jar
 extensions/**/build/
 extensions/contentextraction/lib/
 extensions/lib/
+extensions/indexes/lucene/lib/
 extensions/modules/lib/
 extensions/security/oauth/lib/
 extensions/security/openid/lib/

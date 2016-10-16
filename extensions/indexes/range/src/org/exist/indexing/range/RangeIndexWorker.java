@@ -21,6 +21,7 @@
  */
 package org.exist.indexing.range;
 
+import org.apache.lucene.util.BytesRefBuilder;
 import org.exist.dom.persistent.ElementImpl;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.persistent.NewArrayNodeSet;
@@ -103,8 +104,6 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     private int cachedNodesSize = 0;
 
     private int maxCachedNodesSize = 4096 * 1024;
-
-    private final byte[] buf = new byte[1024];
 
     public RangeIndexWorker(RangeIndex index, DBBroker broker) {
         this.index = index;
@@ -355,9 +354,9 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             writer = index.getWriter();
             for (Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
                 DocumentImpl doc = i.next();
-                BytesRef bytes = new BytesRef(NumericUtils.BUF_SIZE_INT);
+                final BytesRefBuilder bytes = new BytesRefBuilder();
                 NumericUtils.intToPrefixCoded(doc.getDocId(), 0, bytes);
-                Term dt = new Term(FIELD_DOC_ID, bytes);
+                Term dt = new Term(FIELD_DOC_ID, bytes.toBytesRef());
                 writer.deleteDocuments(dt);
             }
         } catch (IOException e) {
@@ -383,9 +382,9 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         IndexWriter writer = null;
         try {
             writer = index.getWriter();
-            BytesRef bytes = new BytesRef(NumericUtils.BUF_SIZE_INT);
+            final BytesRefBuilder bytes = new BytesRefBuilder();
             NumericUtils.intToPrefixCoded(docId, 0, bytes);
-            Term dt = new Term(FIELD_DOC_ID, bytes);
+            Term dt = new Term(FIELD_DOC_ID, bytes.toBytesRef());
             writer.deleteDocuments(dt);
         } catch (IOException e) {
             LOG.warn("Error while removing lucene index: " + e.getMessage(), e);
@@ -636,8 +635,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             if (storedDocument == null) {
                 return;
             }
-            BytesRef ref = new BytesRef(buf);
-            this.nodeIdValues.get(doc, ref);
+            final BytesRef ref = this.nodeIdValues.get(doc);
 
             int units = ByteConversion.byteToShort(ref.bytes, ref.offset);
             NodeId nodeId = index.getBrokerPool().getNodeFactory().createFromData(units, ref.bytes, ref.offset + 2);
@@ -674,8 +672,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
         private void getAddress(int doc, NodeHandle storedNode) {
             if (addressValues != null) {
-                BytesRef ref = new BytesRef(buf);
-                addressValues.get(doc, ref);
+                final BytesRef ref = addressValues.get(doc);
                 if (ref.offset < ref.bytes.length) {
                     final long address = ByteConversion.byteToLong(ref.bytes, ref.offset);
                     storedNode.setInternalAddress(address);
@@ -1021,8 +1018,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                             continue;
                         NodeId nodeId = null;
                         if (nodes != null) {
-                            BytesRef nodeIdRef = new BytesRef(buf);
-                            nodeIdValues.get(docsEnum.docID(), nodeIdRef);
+                            final BytesRef nodeIdRef = nodeIdValues.get(docsEnum.docID());
                             int units = ByteConversion.byteToShort(nodeIdRef.bytes, nodeIdRef.offset);
                             nodeId = index.getBrokerPool().getNodeFactory().createFromData(units, nodeIdRef.bytes, nodeIdRef.offset + 2);
                         }
