@@ -58,10 +58,9 @@ public class XQueryPool {
 
     private final static Logger LOG = LogManager.getLogger(XQueryPool.class);
 
-    private ConcurrentMap<Source, NavigableSet<CompiledXQuery>> pool = new ConcurrentHashMap<>();
+    private ConcurrentMap<Source, NavigableSet<Entry>> pool = new ConcurrentHashMap<>();
 
     private AtomicLong lastTimeOutCheck;
-    private AtomicLong lastTimeOfCleanup;
 
     @ConfigurationFieldAsAttribute("size")
     private final int maxPoolSize;
@@ -91,10 +90,7 @@ public class XQueryPool {
      */
     public XQueryPool(final Configuration conf) {
 
-        long now = System.currentTimeMillis();
-
-        lastTimeOutCheck = new AtomicLong(now);
-        lastTimeOfCleanup = new AtomicLong(now);
+        lastTimeOutCheck = new AtomicLong(System.currentTimeMillis());
 
         final Integer maxStSz = (Integer) conf.getProperty(PROPERTY_MAX_STACK_SIZE);
         final Integer maxPoolSz = (Integer) conf.getProperty(PROPERTY_POOL_SIZE);
@@ -138,37 +134,35 @@ public class XQueryPool {
     }
 
     private void returnObject(final Source source, final CompiledXQuery xquery) {
-        final long ts = source.getCacheTimestamp();
-        if (ts == 0 || ts > lastTimeOfCleanup.get()) {
-            if (pool.size() >= maxPoolSize) {
-                timeoutCheck();
-            }
+        if (pool.size() >= maxPoolSize) {
+            timeoutCheck();
+        }
 
-            if (pool.size() < maxPoolSize) {
-                source.setCacheTimestamp(System.currentTimeMillis());
+        if (pool.size() < maxPoolSize) {
 
-                final Set<CompiledXQuery> stack = pool.computeIfAbsent(source, (k) -> new ConcurrentSkipListSet<>());
+            final Set<Entry> stack = pool.computeIfAbsent(source, (k) -> new ConcurrentSkipListSet<>());
 
-                if (stack.size() < maxStackSize) {
-                    stack.add(xquery);
-                }
+            if (stack.size() < maxStackSize) {
+                stack.add(new Entry(xquery, System.currentTimeMillis()));
             }
         }
     }
 
     private CompiledXQuery borrowObject(final Source source) {
 
-        final NavigableSet<CompiledXQuery> stack = pool.get(source);
+        final NavigableSet<Entry> stack = pool.get(source);
         if (stack == null) {
             return null;
         }
 
         // now check if the compiled expression is valid
         // it might become invalid if an imported module has changed.
-        final CompiledXQuery query = stack.pollFirst();
-        if (query == null) {
+        final Entry entry = stack.pollFirst();
+        if (entry == null) {
             return null;
         }
+
+        final CompiledXQuery query = entry.script;
 
         if (!query.isValid()) {
             // the compiled query is no longer valid: one of the imported
@@ -188,7 +182,6 @@ public class XQueryPool {
     }
 
     public void clear() {
-        lastTimeOfCleanup.set(System.currentTimeMillis());
         pool.clear();
     }
 
@@ -204,11 +197,32 @@ public class XQueryPool {
 
         lastTimeOutCheck.set(currentTime);
 
-        for (final Iterator<Map.Entry<Source, NavigableSet<CompiledXQuery>>> it = pool.entrySet().iterator(); it.hasNext(); ) {
-            final Source next = it.next().getKey();
-            if (currentTime - next.getCacheTimestamp() > timeout) {
+        long until = currentTime + timeout;
+
+        for (final Iterator<Map.Entry<Source, NavigableSet<Entry>>> it = pool.entrySet().iterator(); it.hasNext(); ) {
+            final NavigableSet<Entry> next = it.next().getValue();
+
+            Entry entry = next.pollLast();
+            
+            if (until < entry.ts) {
                 it.remove();
             }
+        }
+    }
+
+    static class Entry implements Comparable<Entry> {
+
+        CompiledXQuery script;
+        long ts;
+
+        Entry(CompiledXQuery script, long ts) {
+            this.script = script;
+            this.ts = ts;
+        }
+
+        @Override
+        public int compareTo(Entry o) {
+            return Long.compare(ts, o.ts);
         }
     }
 }
