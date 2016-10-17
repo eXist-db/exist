@@ -40,9 +40,6 @@ import antlr.TokenStreamException;
  */
 public abstract class AbstractSource implements Source {
 
-    private long cacheTime = 0;
-
-    
     /* (non-Javadoc)
      * @see java.lang.Object#equals(java.lang.Object)
      */
@@ -62,21 +59,6 @@ public abstract class AbstractSource implements Source {
         return getKey().hashCode();
     }
     
-    /* (non-Javadoc)
-     * @see org.exist.source.Source#getCacheTimestamp()
-     */
-    public long getCacheTimestamp() {
-        return cacheTime;
-    }
-    
-    
-    /* (non-Javadoc)
-     * @see org.exist.source.Source#setCacheTimestamp(long)
-     */
-    public void setCacheTimestamp(long timestamp) {
-        cacheTime = timestamp;
-    }
-
     @Override
     public QName isModule() throws IOException {
         return null;
