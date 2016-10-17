@@ -130,9 +130,6 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
                 addObserver(observer);
             }
 
-            // configure database
-            logger.info("Configuring eXist from {}", SingleInstanceConfiguration.getPath());
-
             logger.info("Running with Java {} [{} ({}) in {}]",
                 System.getProperty("java.version", "(unknown java.version)"),
                 System.getProperty("java.vendor", "(unknown java.vendor)"),
@@ -159,6 +156,10 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
             } else {
                 config = new SingleInstanceConfiguration();
             }
+            logger.info("Configuring eXist from {}",
+                    config.getConfigFilePath()
+                        .map(Path::normalize).map(Path::toAbsolutePath).map(Path::toString)
+                        .orElse("<UNKNOWN>"));
 
             BrokerPool.configure(1, 5, config, Optional.ofNullable(observer));
 
