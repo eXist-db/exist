@@ -489,7 +489,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
      * @see org.exist.xquery.CompiledXQuery#isValid()
      */
     public boolean isValid() {
-        return context.checkModulesValid();
+        return context.isSourceAndModulesValid();
     }
 
     /* (non-Javadoc)

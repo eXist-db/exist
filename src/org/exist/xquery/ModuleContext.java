@@ -90,10 +90,6 @@ public class ModuleContext extends XQueryContext {
         this.moduleNamespace = namespaceURI;
     }
 
-	void setModulesChanged() {
-		parentContext.setModulesChanged();
-	}
-	
 	private void setParentContext(XQueryContext parentContext) {
         this.parentContext = parentContext;
         //XXX: raise error on null!
