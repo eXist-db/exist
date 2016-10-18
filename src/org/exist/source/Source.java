@@ -1,7 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 Wolfgang M. Meier
- *  wolfgang@exist-db.org
+ *  Copyright (C) 2001-2016 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -14,11 +13,9 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- * 
- *  $Id$
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.source;
 
@@ -94,17 +91,6 @@ public interface Source {
     public InputStream getInputStream() throws IOException;
 
     public String getContent() throws IOException;
-    
-    /**
-     * Set a timestamp for this source. This is used
-     * by {@link org.exist.storage.XQueryPool} to
-     * check if a source has timed out.
-     * 
-     * @param timestamp
-     */
-    public void setCacheTimestamp(long timestamp);
-    
-    public long getCacheTimestamp();
     
     /**
      * Check: has subject requested permissions for this resource?
