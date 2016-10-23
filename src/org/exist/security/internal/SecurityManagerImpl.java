@@ -592,8 +592,8 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
             
             registeredRealm.registerGroup(newGroup);
 
-            save();
-            newGroup.save();
+            save(broker);
+            newGroup.save(broker);
 
             return newGroup;
         } finally {
