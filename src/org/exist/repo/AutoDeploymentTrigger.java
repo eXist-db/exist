@@ -1,3 +1,22 @@
+/*
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2001-2016 The eXist Project
+ *  http://exist-db.org
+ *
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 package org.exist.repo;
 
 import java.io.IOException;
@@ -42,7 +61,7 @@ public class AutoDeploymentTrigger implements StartupTrigger {
         try {
             final List<Path> xars = Files
                     .find(autodeployDir, 1, (path, attrs) -> (!attrs.isDirectory()) && FileUtils.fileName(path).endsWith(".xar"))
-                    .sorted((o1, o2) -> o1.getFileName().compareTo(o2.getFileName()))
+                    .sorted(Comparator.comparing(Path::getFileName))
                     .collect(Collectors.toList());
 
             LOG.info("Scanning autodeploy directory. Found " + xars.size() + " app packages.");
@@ -53,11 +72,13 @@ public class AutoDeploymentTrigger implements StartupTrigger {
             final Map<String, Path> packages = new HashMap<>();
             for (final Path xar : xars) {
                 try {
-                    final String name = deployment.getNameFromDescriptor(xar);
-                    packages.put(name, xar);
-                } catch (final IOException e) {
-                    LOG.warn("Caught exception while reading app package " + xar.toAbsolutePath().toString(), e);
-                } catch (final PackageException e) {
+                    final Optional<String> name = deployment.getNameFromDescriptor(xar);
+                    if(name.isPresent()) {
+                        packages.put(name.get(), xar);
+                    } else {
+                        LOG.warn("No descriptor name for: " + xar.toAbsolutePath().toString());
+                    }
+                } catch (final IOException | PackageException e) {
                     LOG.warn("Caught exception while reading app package " + xar.toAbsolutePath().toString(), e);
                 }
             }
@@ -70,10 +91,7 @@ public class AutoDeploymentTrigger implements StartupTrigger {
             for (final Path xar : xars) {
                 try {
                     deployment.installAndDeploy(xar, loader, false);
-                } catch (final PackageException e) {
-                    LOG.warn("Exception during deployment of app " + FileUtils.fileName(xar) + ": " + e.getMessage(), e);
-                    sysBroker.getBrokerPool().reportStatus("An error occurred during app deployment: " + e.getMessage());
-                } catch (final IOException e) {
+                } catch (final PackageException | IOException e) {
                     LOG.warn("Exception during deployment of app " + FileUtils.fileName(xar) + ": " + e.getMessage(), e);
                     sysBroker.getBrokerPool().reportStatus("An error occurred during app deployment: " + e.getMessage());
                 }
@@ -82,6 +100,4 @@ public class AutoDeploymentTrigger implements StartupTrigger {
             LOG.error(ioe);
         }
     }
-
-
 }
