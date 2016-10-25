@@ -32,9 +32,7 @@ import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.QName;
 import org.exist.indexing.IndexWorker;
 import org.exist.indexing.OrderedValuesIndex;
-import org.exist.storage.Indexable;
 import org.exist.util.Occurrences;
-import org.exist.util.ValueOccurrences;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
@@ -64,11 +62,6 @@ public class IndexKeyDocuments extends BasicFunction {
 		new FunctionSignature(
 				new QName("index-key-documents", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 				"Return the number of documents for an indexed value.",
-				new SequenceType[] { nodeParam, valueParam },
-				result),
-		new FunctionSignature(
-				new QName("index-key-documents", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-				"Return the number of documents for an indexed value.",
 				new SequenceType[] { nodeParam, valueParam, indexParam },
 				result)				
 	};
@@ -92,30 +85,22 @@ public class IndexKeyDocuments extends BasicFunction {
     	else {
 	        final NodeSet nodes = args[0].toNodeSet();
 	        final DocumentSet docs = nodes.getDocumentSet();	        
-	        if (this.getArgumentCount() == 3) {
-	        	final IndexWorker indexWorker = context.getBroker().getIndexController().getWorkerByIndexName(args[2].itemAt(0).getStringValue());
-	        	//Alternate design
-	        	//IndexWorker indexWorker = context.getBroker().getBrokerPool().getIndexManager().getIndexByName(args[2].itemAt(0).getStringValue()).getWorker();	        	
-	        	if (indexWorker == null)
-	        		{throw new XPathException(this, "Unknown index: " + args[2].itemAt(0).getStringValue());}
-	        	final Map<String, Object> hints = new HashMap<String, Object>();
-	        	if (indexWorker instanceof OrderedValuesIndex)
-	        		{hints.put(OrderedValuesIndex.START_VALUE, args[1]);}
-	        	else
-	        		{logger.warn(indexWorker.getClass().getName() + " isn't an instance of org.exist.indexing.OrderedIndexWorker. Start value '" + args[1] + "' ignored." );}
-	        	final Occurrences[] occur = indexWorker.scanIndex(context, docs, nodes, hints);
-		        if (occur.length == 0)
-		        	{result= Sequence.EMPTY_SEQUENCE;}
-		        else
-		        	{result = new IntegerValue(occur[0].getDocuments());}
-	        } else {
-		        final ValueOccurrences occur[] = context.getBroker().getValueIndex()
-                .scanIndexKeys(docs, nodes, (Indexable) args[1]);
-		        if (occur.length == 0)
-		        	{result= Sequence.EMPTY_SEQUENCE;}
-		        else
-		        	{result = new IntegerValue(occur[0].getDocuments());}        	
-	        }
+
+			final IndexWorker indexWorker = context.getBroker().getIndexController().getWorkerByIndexName(args[2].itemAt(0).getStringValue());
+			//Alternate design
+			//IndexWorker indexWorker = context.getBroker().getBrokerPool().getIndexManager().getIndexByName(args[2].itemAt(0).getStringValue()).getWorker();
+			if (indexWorker == null)
+				{throw new XPathException(this, "Unknown index: " + args[2].itemAt(0).getStringValue());}
+			final Map<String, Object> hints = new HashMap<String, Object>();
+			if (indexWorker instanceof OrderedValuesIndex)
+				{hints.put(OrderedValuesIndex.START_VALUE, args[1]);}
+			else
+				{logger.warn(indexWorker.getClass().getName() + " isn't an instance of org.exist.indexing.OrderedIndexWorker. Start value '" + args[1] + "' ignored." );}
+			final Occurrences[] occur = indexWorker.scanIndex(context, docs, nodes, hints);
+			if (occur.length == 0)
+				{result= Sequence.EMPTY_SEQUENCE;}
+			else
+				{result = new IntegerValue(occur[0].getDocuments());}
     	}
     	
         if (context.getProfiler().isEnabled()) 

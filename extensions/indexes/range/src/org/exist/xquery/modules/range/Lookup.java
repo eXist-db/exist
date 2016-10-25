@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2013 The eXist Project
+ *  Copyright (C) 2001-2015 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -26,15 +26,18 @@ import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.QName;
 import org.exist.dom.persistent.VirtualNodeSet;
-import org.exist.indexing.range.RangeIndex;
-import org.exist.indexing.range.RangeIndexConfig;
-import org.exist.indexing.range.RangeIndexConfigElement;
-import org.exist.indexing.range.RangeIndexWorker;
+import org.exist.indexing.QueryableRangeIndex;
+import org.exist.indexing.range.*;
+import org.exist.indexing.range.config.ComplexGeneralRangeIndexConfigElement;
+import org.exist.indexing.range.config.RangeIndexConfig;
+import org.exist.indexing.range.config.RangeIndexConfigElement;
 import org.exist.storage.ElementValue;
 import org.exist.storage.IndexSpec;
 import org.exist.storage.NodePath;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
+import org.exist.xquery.regex.JDK15RegexTranslator;
+import org.exist.xquery.regex.RegexSyntaxException;
 import org.exist.xquery.value.*;
 
 import java.io.IOException;
@@ -129,13 +132,26 @@ public class Lookup extends Function implements Optimizable {
                     "The regular expression.")
             },
             new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
-                "all nodes from the input node set whose node value matches the regular expression. Regular expression " +
-                "syntax is limited to what Lucene supports. See http://lucene.apache.org/core/4_5_1/core/org/apache/lucene/util/automaton/RegExp.html")
+                "all nodes from the input node set whose node value matches the regular expression.")
+        ),
+        new FunctionSignature(
+                new QName("matches", RangeIndexModule.NAMESPACE_URI, RangeIndexModule.PREFIX),
+                DESCRIPTION,
+                new SequenceType[] {
+                        new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE,
+                                "The node set to search using a range index which is defined on those nodes"),
+                        new FunctionParameterSequenceType("regex", Type.STRING, Cardinality.ZERO_OR_MORE,
+                                "The regular expression."),
+                        new FunctionParameterSequenceType("flags", Type.STRING, Cardinality.ZERO_OR_MORE,
+                                "The regular expression.")
+                },
+                new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
+                        "all nodes from the input node set whose node value matches the regular expression")
         )
     };
 
-    public static Lookup create(XQueryContext context, RangeIndex.Operator operator, NodePath contextPath) {
-        for (FunctionSignature sig: signatures) {
+    public static Lookup create(final XQueryContext context, final QueryableRangeIndex.Operator operator, final NodePath contextPath) {
+        for (final FunctionSignature sig: signatures) {
             if (sig.getName().getLocalPart().equals(operator.toString())) {
                 return new Lookup(context, sig, contextPath);
             }
@@ -176,6 +192,7 @@ public class Lookup extends Function implements Optimizable {
         return fallback;
     }
 
+    @Override
     public void setArguments(List<Expression> arguments) throws XPathException {
         steps.clear();
         Expression path = arguments.get(0);
@@ -267,7 +284,7 @@ public class Lookup extends Function implements Optimizable {
             qnames.add(contextQName);
         }
 
-        final RangeIndex.Operator operator = getOperator();
+        final QueryableRangeIndex.Operator operator = getOperator(contextSequence);
 
         try {
             preselectResult = index.query(getExpressionId(), docs, contextSequence.toNodeSet(), qnames, keys, operator, NodeSet.DESCENDANT);
@@ -285,16 +302,22 @@ public class Lookup extends Function implements Optimizable {
         return preselectResult;
     }
 
-    private RangeIndex.Operator getOperator() {
+    private QueryableRangeIndex.Operator getOperator(Sequence contextSequence) throws XPathException {
         final String calledAs = getSignature().getName().getLocalPart();
-        return RangeIndexModule.OPERATOR_MAP.get(calledAs);
+        if(calledAs.equals("matches") && getArgumentCount() == 3) {
+            final String flags = getArgument(2).eval(contextSequence).itemAt(0).getStringValue();
+            return QueryableRangeIndex.OperatorFactory.match(flags);
+        } else {
+            return QueryableRangeIndex.OperatorFactory.fromName(calledAs);
+        }
     }
 
-    private AtomicValue[] getKeys(Sequence contextSequence) throws XPathException {
-        RangeIndexConfigElement config = findConfiguration(contextSequence);
-        int targetType = config != null ? config.getType() : Type.ITEM;
-        Sequence keySeq = Atomize.atomize(getArgument(1).eval(contextSequence));
-        AtomicValue[] keys = new AtomicValue[keySeq.getItemCount()];
+    private AtomicValue[] getKeys(final Sequence contextSequence) throws XPathException {
+        final RangeIndexConfigElement config = findConfiguration(contextSequence);
+        final int targetType = config != null ? config.getType() : Type.ITEM;
+        final Sequence keySeq = Atomize.atomize(getArgument(1).eval(contextSequence));
+
+        final AtomicValue[] keys = new AtomicValue[keySeq.getItemCount()];
         for (int i = 0; i < keys.length; i++) {
             if (targetType == Type.ITEM) {
                 keys[i] = (AtomicValue) keySeq.itemAt(i);
@@ -335,10 +358,10 @@ public class Lookup extends Function implements Optimizable {
                 }
                 List<QName> qnames = null;
                 if (contextQName != null) {
-                    qnames = new ArrayList<QName>(1);
+                    qnames = new ArrayList<>(1);
                     qnames.add(contextQName);
                 }
-                final RangeIndex.Operator operator = getOperator();
+                final QueryableRangeIndex.Operator operator = getOperator(contextSequence);
 
                 try {
                     NodeSet inNodes = input.toNodeSet();
@@ -408,7 +431,7 @@ public class Lookup extends Function implements Optimizable {
                 RangeIndexConfig config = (RangeIndexConfig) idxConf.getCustomIndexSpec(RangeIndex.ID);
                 if (config != null) {
                     RangeIndexConfigElement rice = config.find(path);
-                    if (rice != null && !rice.isComplex()) {
+                    if (rice != null && !(rice instanceof ComplexGeneralRangeIndexConfigElement)) {
                         return rice;
                     }
                 }
@@ -442,6 +465,7 @@ public class Lookup extends Function implements Optimizable {
         }
     }
 
+    @Override
     public int returnsType() {
         return Type.NODE;
     }

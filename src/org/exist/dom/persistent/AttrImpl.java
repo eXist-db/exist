@@ -25,7 +25,6 @@ import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
-import org.exist.storage.RangeIndexSpec;
 import org.exist.storage.Signatures;
 import org.exist.util.ByteArrayPool;
 import org.exist.util.ByteConversion;
@@ -57,7 +56,6 @@ public class AttrImpl extends NamedNode implements Attr {
     private static final int DEFAULT_ATTRIBUTE_TYPE = CDATA;
 
     private int attributeType = DEFAULT_ATTRIBUTE_TYPE;
-    private int indexType = RangeIndexSpec.NO_INDEX;
     private XMLString value = null;
 
     public AttrImpl() {
@@ -281,14 +279,6 @@ public class AttrImpl extends NamedNode implements Attr {
             default:
                 return null;
         }
-    }
-
-    public void setIndexType(final int idxType) {
-        this.indexType = idxType;
-    }
-
-    public int getIndexType() {
-        return indexType;
     }
 
     @Override

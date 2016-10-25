@@ -17,9 +17,9 @@ public class AnyURITest {
 
 	@Test
     public void fullyEscapedStringToXmldbURI() throws XPathException {
-        String escaped = TestConstants.SPECIAL_NAME;
-        AnyURIValue anyUri = new AnyURIValue(escaped);
-        assertEquals(anyUri.toXmldbURI(),TestConstants.SPECIAL_URI);
+    	String escaped = TestConstants.SPECIAL_NAME;
+    	AnyURIValue anyUri = new AnyURIValue(escaped);
+    	assertEquals(anyUri.toXmldbURI(),TestConstants.SPECIAL_URI);
     }
 
     @Test

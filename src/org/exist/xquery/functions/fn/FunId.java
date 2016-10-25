@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2009 The eXist Project
+ * Copyright (C) 2001-2015 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -33,6 +33,9 @@ import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.DocumentImpl;
 import org.exist.dom.memtree.NodeImpl;
+import org.exist.indexing.QueryableRangeIndex;
+import org.exist.storage.ElementValue;
+import org.exist.storage.NodePath;
 import org.exist.util.XMLChar;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Constants;
@@ -44,22 +47,15 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
+import org.exist.xquery.value.*;
 import org.w3c.dom.Node;
 
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.TreeSet;
+import java.io.IOException;
+import java.util.*;
+
 import org.exist.xquery.ErrorCodes;
+
+import javax.xml.XMLConstants;
 
 /**
  *
@@ -165,11 +161,16 @@ public class FunId extends Function {
                     {processInMem = true;}
             }
 
-            if (processInMem)
-                {result = new ValueSequence();}
-            else
-                {result = new ExtArrayNodeSet();}
+            if (processInMem) {
+                result = new ValueSequence();
+            }
+            else  {
+                result = new ExtArrayNodeSet();
+            }
 
+            //TODO(AR) may be able to remove single stepping for persistent nodes
+            //as the new Lucene Range Index allows us to test many atomic values
+            //in one call to {@link org.exist.indexing.QueryableRangeIndex#query}
             for(final SequenceIterator i = idval.iterate(); i.hasNext(); ) {
     			nextId = i.nextItem().getStringValue();
                 if (nextId.length() == 0)
@@ -183,7 +184,7 @@ public class FunId extends Function {
                             if (processInMem)
                                 {getId(result, contextSequence, nextId);}
                             else
-                                {getId((NodeSet)result, docs, nextId);}
+                                {getId(contextSequence, (NodeSet)result, docs, nextId);}
                         }
     				}
     			} else {
@@ -191,7 +192,7 @@ public class FunId extends Function {
                         if (processInMem)
                             {getId(result, contextSequence, nextId);}
                         else
-                            {getId((NodeSet)result, docs, nextId);}
+                            {getId(contextSequence, (NodeSet)result, docs, nextId);}
                     }
     			}
     		}
@@ -206,13 +207,30 @@ public class FunId extends Function {
 
 	}
 
-	private void getId(NodeSet result, DocumentSet docs, String id) throws XPathException {
-		final NodeSet attribs = context.getBroker().getValueIndex().find(context.getWatchDog(), Comparison.EQ, docs, null, -1, null, new StringValue(id, Type.ID));
-		NodeProxy p;
-		for (final NodeProxy n : attribs) {
-			p = new NodeProxy(n.getOwnerDocument(), n.getNodeId().getParentId(), Node.ELEMENT_NODE);
-			result.add(p);
-		}
+    private final static QName XML_ID = new QName("id", XMLConstants.XML_NS_URI, ElementValue.ATTRIBUTE);
+    private final static NodePath XML_ID_PATH = new NodePath(XML_ID);
+
+	private void getId(final Sequence contextSequence, final NodeSet result, final DocumentSet docs, final String id) throws XPathException {
+
+        final QueryableRangeIndex rangeIndexWorker = (QueryableRangeIndex)context.getBroker().getIndexController().getWorkerByIndexId("org.exist.indexing.range.RangeIndex");
+        if(rangeIndexWorker == null) {
+            throw new XPathException(this, "Using fn:id requires Range Indexes to be enabled");
+        } else {
+            final boolean isConfiguredFor = rangeIndexWorker.isConfiguredFor(context.getBroker(), contextSequence, XML_ID_PATH);
+            if (!isConfiguredFor) {
+                throw new XPathException(this, "Using fn:id requires a Range Index qname definition on @xml:id");
+            } else {
+                try {
+                    final NodeSet attribs = rangeIndexWorker.query(getExpressionId(), docs, null, Arrays.asList(XML_ID), new AtomicValue[]{new StringValue(id)}, QueryableRangeIndex.OperatorFactory.EQ, NodeSet.ANCESTOR);
+                    for (final NodeProxy n : attribs) {
+                        final NodeProxy p = new NodeProxy(n.getOwnerDocument(), n.getNodeId().getParentId(), Node.ELEMENT_NODE);
+                        result.add(p);
+                    }
+                } catch(final IOException e) {
+                    throw new XPathException(this, e.getMessage(), e);
+                }
+            }
+        }
 	}
 
     private void getId(Sequence result, Sequence seq, String id) throws XPathException {

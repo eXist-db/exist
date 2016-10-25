@@ -49,7 +49,6 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.DefaultCacheManager;
 import org.exist.storage.IndexSpec;
 import org.exist.storage.NativeBroker;
-import org.exist.storage.NativeValueIndex;
 import org.exist.storage.XQueryPool;
 import org.exist.storage.journal.Journal;
 import org.exist.storage.serializers.CustomMatchListenerFactory;
@@ -1355,13 +1354,6 @@ public class Configuration implements ErrorHandler
 
     private void configureIndexer( final Optional<Path> dbHome, Document doc, Element indexer ) throws DatabaseConfigurationException, MalformedURLException
     {
-        final String caseSensitive = getConfigAttributeValue( indexer, NativeValueIndex.INDEX_CASE_SENSITIVE_ATTRIBUTE );
-
-        if( caseSensitive != null ) {
-            config.put( NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE, parseBoolean( caseSensitive, false ) );
-            LOG.debug( NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE + ": " + config.get( NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE ) );
-        }
-
         int    depth      = 3;
         final String indexDepth = getConfigAttributeValue( indexer, NativeBroker.INDEX_DEPTH_ATTRIBUTE );
 

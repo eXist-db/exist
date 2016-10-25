@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2013 The eXist Project
+ *  Copyright (C) 2001-2015 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -25,8 +25,9 @@ import org.exist.collections.Collection;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.QName;
+import org.exist.indexing.QueryableRangeIndex;
 import org.exist.indexing.range.RangeIndex;
-import org.exist.indexing.range.RangeIndexConfig;
+import org.exist.indexing.range.config.RangeIndexConfig;
 import org.exist.indexing.range.RangeIndexWorker;
 import org.exist.storage.IndexSpec;
 import org.exist.xmldb.XmldbURI;
@@ -199,19 +200,19 @@ public class FieldLookup extends Function implements Optimizable {
         preselectResult = null;
 
         Sequence fieldSeq = getArgument(0).eval(contextSequence);
-        RangeIndex.Operator[] operators = null;
+        QueryableRangeIndex.Operator[] operators = null;
         int j = 1;
         if (isCalledAs("field")) {
             Sequence operatorSeq = getArgument(1).eval(contextSequence);
-            operators = new RangeIndex.Operator[operatorSeq.getItemCount()];
+            operators = new QueryableRangeIndex.Operator[operatorSeq.getItemCount()];
             int i = 0;
             for (SequenceIterator si = operatorSeq.iterate(); si.hasNext(); i++) {
-                operators[i] = RangeIndexModule.OPERATOR_MAP.get(si.nextItem().getStringValue());
+                operators[i] = QueryableRangeIndex.OperatorFactory.fromName(si.nextItem().getStringValue());
             }
             j++;
         } else {
-            RangeIndex.Operator operator = getOperator();
-            operators = new RangeIndex.Operator[fieldSeq.getItemCount()];
+            QueryableRangeIndex.Operator operator = getOperator();
+            operators = new QueryableRangeIndex.Operator[fieldSeq.getItemCount()];
             for (int i = 0; i < operators.length; i++) {
                 operators[i] = operator;
             }
@@ -265,19 +266,19 @@ public class FieldLookup extends Function implements Optimizable {
                 contextSet = contextSequence.toNodeSet();
 
             Sequence fields = getArgument(0).eval(contextSequence);
-            RangeIndex.Operator[] operators = null;
+            QueryableRangeIndex.Operator[] operators = null;
             int j = 1;
             if (isCalledAs("field")) {
                 Sequence operatorSeq = getArgument(1).eval(contextSequence);
-                operators = new RangeIndex.Operator[operatorSeq.getItemCount()];
+                operators = new QueryableRangeIndex.Operator[operatorSeq.getItemCount()];
                 int i = 0;
                 for (SequenceIterator si = operatorSeq.iterate(); si.hasNext(); i++) {
-                    operators[i] = RangeIndexModule.OPERATOR_MAP.get(si.nextItem().getStringValue());
+                    operators[i] = QueryableRangeIndex.OperatorFactory.fromName(si.nextItem().getStringValue());
                 }
                 j++;
             } else {
-                RangeIndex.Operator operator = getOperator();
-                operators = new RangeIndex.Operator[fields.getItemCount()];
+                QueryableRangeIndex.Operator operator = getOperator();
+                operators = new QueryableRangeIndex.Operator[fields.getItemCount()];
                 for (int i = 0; i < operators.length; i++) {
                     operators[i] = operator;
                 }
@@ -335,9 +336,9 @@ public class FieldLookup extends Function implements Optimizable {
         return result;
     }
 
-    private RangeIndex.Operator getOperator() {
+    private QueryableRangeIndex.Operator getOperator() {
         final String calledAs = getSignature().getName().getLocalPart();
-        return RangeIndexModule.OPERATOR_MAP.get(calledAs.substring("field-".length()));
+        return QueryableRangeIndex.OperatorFactory.fromName(calledAs.substring("field-".length()));
     }
 
     public int getType(Sequence contextSequence, String field) {

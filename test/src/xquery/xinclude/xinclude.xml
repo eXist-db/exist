@@ -6,6 +6,17 @@
         <author>Wolfgang Meier</author>
     </description>
     <setup>
+        <create-collection parent="/db/system/config/db" name="test"/>
+        <store collection="/db/system/config/db/test" name="collection.xconf"><![CDATA[
+            <collection xmlns="http://exist-db.org/collection-config/1.0">
+                <index>
+                    <!-- Range index for fn:id (needed by XPointer) -->
+                    <range>
+                        <ID/>
+                    </range>
+                </index>
+            </collection>
+        ]]></store>
         <create-collection parent="/db" name="test"/>
         <store collection="/db/test" name="include.xml"><![CDATA[
             <para>Included paragraph</para>

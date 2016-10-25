@@ -518,13 +518,13 @@ public class Database {
 		public void dropIndex(DocumentImpl doc) throws ReadOnlyException {
 			stale(normalizePath(doc.getURI().getCollectionPath()));
 		}
-                @Override
-		public void removeNode(NodeHandle node, NodePath currentPath, String content) {
+		@Override
+		public void removeNode(NodeHandle node, NodePath currentPath) {
 			stale(normalizePath((node.getOwnerDocument()).getURI().getCollectionPath()) + "#" + node.getNodeId());
 		}
 		public void flush() {}
 		public void setDocument(DocumentImpl document) {}
-		public void storeAttribute(AttrImpl node, NodePath currentPath, RangeIndexSpec spec, boolean remove) {}
+		public void storeAttribute(AttrImpl node, NodePath currentPath, boolean remove) {}
 		public void storeText(TextImpl node, NodePath currentPath) {}
 		public void sync() {}
 		public void printStatistics() {}

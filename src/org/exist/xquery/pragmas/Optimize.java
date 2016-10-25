@@ -22,18 +22,13 @@ package org.exist.xquery.pragmas;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Namespaces;
-import org.exist.collections.Collection;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.QName;
 import org.exist.indexing.StructuralIndex;
-import org.exist.storage.QNameRangeIndexSpec;
-import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.Type;
 
-import java.util.Iterator;
 import java.util.List;
 
 public class Optimize extends Pragma {
@@ -260,54 +255,5 @@ public class Optimize extends Pragma {
     public void resetState(boolean postOptimization) {
         super.resetState(postOptimization);
         cachedContext = null;
-    }
-
-    /**
-     * Check every collection in the context sequence for an existing range index by QName.
-     *
-     * @param contextSequence
-     * @return the type of a usable index or {@link org.exist.xquery.value.Type#ITEM} if there is no common
-     *  index.
-     */
-    public static int getQNameIndexType(XQueryContext context, Sequence contextSequence, QName qname) {
-        if (contextSequence == null || qname == null)
-            {return Type.ITEM;}
-        
-        final String enforceIndexUse = 
-        		(String) context.getBroker().getConfiguration().getProperty(XQueryContext.PROPERTY_ENFORCE_INDEX_USE);
-        int indexType = Type.ITEM;
-        for (final Iterator<Collection> i = contextSequence.getCollectionIterator(); i.hasNext(); ) {
-            final Collection collection = i.next();
-            if (collection.getURI().startsWith(XmldbURI.SYSTEM_COLLECTION_URI))
-                {continue;}
-            final QNameRangeIndexSpec config = collection.getIndexByQNameConfiguration(context.getBroker(), qname);
-            if (config == null) {
-                // no index found for this collection
-                if (LOG.isTraceEnabled())
-                    {LOG.trace("Cannot optimize: collection " + collection.getURI() + " does not define an index " +
-                        "on " + qname);}
-                // if enfoceIndexUse == "always", continue to check other collections
-                // for indexes. It is sufficient if one collection defines an index
-                if (enforceIndexUse == null || !"always".equals(enforceIndexUse))
-                    {return Type.ITEM;}   // found a collection without index
-            } else {
-            int type = config.getType();
-                if (indexType == Type.ITEM) {
-                    indexType = type;
-                    // if enforceIndexUse == "always", it is sufficient if one collection
-                    // defines an index. Just return it.
-                    if (enforceIndexUse != null && "always".equals(enforceIndexUse))
-                        {return indexType;}
-                } else if (indexType != type) {
-                    // found an index with a bad type. cannot optimize.
-                    // TODO: should this continue checking other collections?
-                    if (LOG.isTraceEnabled())
-                        {LOG.trace("Cannot optimize: collection " + collection.getURI() + " does not define an index " +
-                            "with the required type " + Type.getTypeName(type) + " on " + qname);}
-                    return Type.ITEM;   // found a collection with a different type
-                }
-            }
-        }
-        return indexType;
     }
 }

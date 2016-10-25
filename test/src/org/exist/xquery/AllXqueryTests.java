@@ -37,7 +37,6 @@ import org.junit.runners.Suite;
         AnnotationsTest.class,
         EntitiesTest.class,
         SpecialNamesTest.class,
-        ValueIndexTest.class,
         LexerTest.class,
         DeepEqualTest.class,
         SeqOpTest.class,

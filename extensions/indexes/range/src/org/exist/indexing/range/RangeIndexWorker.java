@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2013 The eXist Project
+ *  Copyright (C) 2001-2015 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -21,7 +21,6 @@
  */
 package org.exist.indexing.range;
 
-import org.apache.lucene.util.BytesRefBuilder;
 import org.exist.dom.persistent.ElementImpl;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.persistent.NewArrayNodeSet;
@@ -41,8 +40,11 @@ import org.apache.lucene.analysis.tokenattributes.TermToBytesRefAttribute;
 import org.apache.lucene.document.*;
 import org.apache.lucene.index.*;
 import org.apache.lucene.search.*;
+import org.apache.lucene.sandbox.queries.regex.JavaUtilRegexCapabilities;
+import org.apache.lucene.sandbox.queries.regex.RegexQuery;
 import org.apache.lucene.util.Bits;
 import org.apache.lucene.util.BytesRef;
+import org.apache.lucene.util.BytesRefBuilder;
 import org.apache.lucene.util.NumericUtils;
 import org.exist.collections.Collection;
 import org.exist.indexing.*;
@@ -50,6 +52,8 @@ import org.exist.indexing.StreamListener.ReindexMode;
 import org.exist.indexing.lucene.BinaryTokenStream;
 import org.exist.indexing.lucene.LuceneIndexWorker;
 import org.exist.indexing.lucene.LuceneUtil;
+import org.exist.indexing.range.config.*;
+import org.exist.indexing.range.conversion.TypeConversion;
 import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
@@ -61,8 +65,11 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.ByteConversion;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.Occurrences;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
 import org.exist.xquery.modules.range.RangeQueryRewriter;
+import org.exist.xquery.regex.JDK15RegexTranslator;
+import org.exist.xquery.regex.RegexSyntaxException;
 import org.exist.xquery.value.*;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -70,13 +77,16 @@ import org.w3c.dom.NodeList;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.*;
+import java.util.regex.Pattern;
+
+import static org.exist.indexing.QueryableRangeIndex.OperatorType.*;
 
 /**
  * The main worker class for the range index.
  *
  * @author Wolfgang Meier
  */
-public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
+public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex, QueryableRangeIndex {
 
     private static final Logger LOG = LogManager.getLogger(RangeIndexWorker.class);
 
@@ -110,63 +120,72 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         this.broker = broker;
     }
 
-    public Query toQuery(String field, QName qname, AtomicValue content, RangeIndex.Operator operator, DocumentSet docs) throws XPathException {
+    public Query toQuery(final String field, final QName qname, final AtomicValue content, final Operator operator, final DocumentSet docs) throws XPathException {
         final int type = content.getType();
-        BytesRef bytes;
+        final OperatorType operatorType = operator.getType();
+
         if (Type.subTypeOf(type, Type.STRING)) {
-            BytesRef key = null;
-            if (operator != RangeIndex.Operator.MATCH) {
-                key = analyzeContent(field, qname, content.getStringValue(), docs);
-            }
-            WildcardQuery query;
-            switch (operator) {
+            final BytesRef key = operatorType != OperatorType.MATCH ? analyzeContent(field, qname, content.getStringValue(), docs) : null;
+
+            switch (operatorType) {
                 case EQ:
                     return new TermQuery(new Term(field, key));
                 case NE:
                     final BooleanQuery qnot = new BooleanQuery();
-                    bytes = new BytesRef("*");
-                    query = new WildcardQuery(new Term(field, bytes));
+                    final BytesRef bytes = new BytesRef("*");
+                    final WildcardQuery query = new WildcardQuery(new Term(field, bytes));
                     query.setRewriteMethod(MultiTermQuery.CONSTANT_SCORE_FILTER_REWRITE);
                     qnot.add(query, BooleanClause.Occur.MUST);
                     qnot.add(new TermQuery(new Term(field, key)), BooleanClause.Occur.MUST_NOT);
                     return qnot;
                 case STARTS_WITH:
                     return new PrefixQuery(new Term(field, key));
+
                 case ENDS_WITH:
-                    bytes = new BytesRef("*");
-                    bytes.append(key);
-                    query = new WildcardQuery(new Term(field, bytes));
-                    query.setRewriteMethod(MultiTermQuery.CONSTANT_SCORE_FILTER_REWRITE);
-                    return query;
+                    final BytesRef endsWithBytes = new BytesRef("*");
+                    endsWithBytes.append(key);
+                    final WildcardQuery wildcardEndsWithQuery = new WildcardQuery(new Term(field, endsWithBytes));
+                    wildcardEndsWithQuery.setRewriteMethod(MultiTermQuery.CONSTANT_SCORE_FILTER_REWRITE);
+                    return wildcardEndsWithQuery;
+
                 case CONTAINS:
-                    bytes = new BytesRef("*");
-                    bytes.append(key);
-                    bytes.append(new BytesRef("*"));
-                    query = new WildcardQuery(new Term(field, bytes));
-                    query.setRewriteMethod(MultiTermQuery.CONSTANT_SCORE_FILTER_REWRITE);
-                    return query;
+                    final BytesRef containsBytes = new BytesRef("*");
+                    containsBytes.append(key);
+                    containsBytes.append(new BytesRef("*"));
+                    final WildcardQuery wildcardContatinsQuery = new WildcardQuery(new Term(field, containsBytes));
+                    wildcardContatinsQuery.setRewriteMethod(MultiTermQuery.CONSTANT_SCORE_FILTER_REWRITE);
+                    return wildcardContatinsQuery;
+
                 case MATCH:
-                    RegexpQuery regexQuery = new RegexpQuery(new Term(field, content.getStringValue()));
+                    final RegexQuery regexQuery = new RegexQuery(new Term(field, translateRegexp(content.getStringValue())));
+                    final int flags;
+                    if(((MatchOperator)operator).getRegexFlags().isPresent()) {
+                        flags = parseRegexFlags(((MatchOperator)operator).getRegexFlags().get());
+                    } else {
+                        flags = 0;
+                    }
+                    regexQuery.setRegexImplementation(new JavaUtilRegexCapabilities(flags));
                     regexQuery.setRewriteMethod(MultiTermQuery.CONSTANT_SCORE_FILTER_REWRITE);
                     return regexQuery;
             }
         }
-        if (operator == RangeIndex.Operator.EQ) {
-            return new TermQuery(new Term(field, RangeIndexConfigElement.convertToBytes(content)));
+
+        if (operatorType == EQ) {
+            return new TermQuery(new Term(field, TypeConversion.convertToBytes(content)));
         }
-        if (operator == RangeIndex.Operator.NE) {
+        if (operatorType == NE) {
             final BooleanQuery nq = new BooleanQuery();
             nq.add(new MatchAllDocsQuery(), BooleanClause.Occur.MUST);
-            nq.add(new TermQuery(new Term(field, RangeIndexConfigElement.convertToBytes(content))), BooleanClause.Occur.MUST_NOT);
+            nq.add(new TermQuery(new Term(field, TypeConversion.convertToBytes(content))), BooleanClause.Occur.MUST_NOT);
             return nq;
         }
-        final boolean includeUpper = operator == RangeIndex.Operator.LE;
-        final boolean includeLower = operator == RangeIndex.Operator.GE;
+        final boolean includeUpper = operatorType == LE;
+        final boolean includeLower = operatorType == GE;
         switch (type) {
             case Type.INTEGER:
             case Type.LONG:
             case Type.UNSIGNED_LONG:
-                if (operator == RangeIndex.Operator.LT || operator == RangeIndex.Operator.LE) {
+                if (operatorType == LT || operatorType == LE) {
                     return NumericRangeQuery.newLongRange(field, null, ((NumericValue)content).getLong(), includeLower, includeUpper);
                 } else {
                     return NumericRangeQuery.newLongRange(field, ((NumericValue)content).getLong(), null, includeLower, includeUpper);
@@ -175,46 +194,89 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             case Type.UNSIGNED_INT:
             case Type.SHORT:
             case Type.UNSIGNED_SHORT:
-                if (operator == RangeIndex.Operator.LT || operator == RangeIndex.Operator.LE) {
+                if (operatorType == LT || operatorType == LE) {
                     return NumericRangeQuery.newIntRange(field, null, ((NumericValue) content).getInt(), includeLower, includeUpper);
                 } else {
                     return NumericRangeQuery.newIntRange(field, ((NumericValue) content).getInt(), null, includeLower, includeUpper);
                 }
             case Type.DECIMAL:
             case Type.DOUBLE:
-                if (operator == RangeIndex.Operator.LT || operator == RangeIndex.Operator.LE) {
+                if (operatorType == LT || operatorType == LE) {
                     return NumericRangeQuery.newDoubleRange(field, null, ((NumericValue) content).getDouble(), includeLower, includeUpper);
                 } else {
                     return NumericRangeQuery.newDoubleRange(field, ((NumericValue) content).getDouble(), null, includeLower, includeUpper);
                 }
             case Type.FLOAT:
-                if (operator == RangeIndex.Operator.LT || operator == RangeIndex.Operator.LE) {
+                if (operatorType == LT || operatorType == LE) {
                     return NumericRangeQuery.newFloatRange(field, null, (float) ((NumericValue) content).getDouble(), includeLower, includeUpper);
                 } else {
                     return NumericRangeQuery.newFloatRange(field, (float) ((NumericValue) content).getDouble(), null, includeLower, includeUpper);
                 }
             case Type.DATE:
-                long dl = RangeIndexConfigElement.dateToLong((DateValue) content);
-                if (operator == RangeIndex.Operator.LT || operator == RangeIndex.Operator.LE) {
+                long dl = TypeConversion.dateToLong((DateValue) content);
+                if (operatorType == LT || operatorType == LE) {
                     return NumericRangeQuery.newLongRange(field, null, dl, includeLower, includeUpper);
                 } else {
                     return NumericRangeQuery.newLongRange(field, dl, null, includeLower, includeUpper);
                 }
             case Type.TIME:
-                long tl = RangeIndexConfigElement.timeToLong((TimeValue) content);
-                if (operator == RangeIndex.Operator.LT || operator == RangeIndex.Operator.LE) {
+                long tl = TypeConversion.timeToLong((TimeValue) content);
+                if (operatorType == LT || operatorType == LE) {
                     return NumericRangeQuery.newLongRange(field, null, tl, includeLower, includeUpper);
                 } else {
                     return NumericRangeQuery.newLongRange(field, tl, null, includeLower, includeUpper);
                 }
             case Type.DATE_TIME:
             default:
-                if (operator == RangeIndex.Operator.LT || operator == RangeIndex.Operator.LE) {
-                    return new TermRangeQuery(field, null, RangeIndexConfigElement.convertToBytes(content), includeLower, includeUpper);
+                if (operatorType == LT || operatorType == LE) {
+                    return new TermRangeQuery(field, null, TypeConversion.convertToBytes(content), includeLower, includeUpper);
                 } else {
-                    return new TermRangeQuery(field, RangeIndexConfigElement.convertToBytes(content), null, includeLower, includeUpper);
+                    return new TermRangeQuery(field, TypeConversion.convertToBytes(content), null, includeLower, includeUpper);
                 }
         }
+    }
+
+    /**
+     * Translates fn:matches style regex into
+     * regex suitable for {@link java.util.regex.Pattern}
+     */
+    private String translateRegexp(final String pattern) throws XPathException {
+        try {
+            final int xmlVersion = 11;
+            final boolean ignoreWhitespace = false;
+            final boolean caseBlind = false;
+            return JDK15RegexTranslator.translate(pattern, xmlVersion, true, ignoreWhitespace, caseBlind);
+        } catch (final RegexSyntaxException e) {
+            throw new XPathException("Conversion from XPath2 to Java regular expression syntax failed: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Parses XPath fn:matches style regex flags
+     * into flags suitable for {@link java.util.regex.Pattern}
+     */
+    private int parseRegexFlags(final String s) throws XPathException {
+        int flags = 0;
+        for(int i = 0; i < s.length(); i++) {
+            final char ch = s.charAt(i);
+            switch(ch) {
+                case 'm':
+                    flags |= Pattern.MULTILINE;
+                    break;
+                case 'i':
+                    flags = flags | Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
+                    break;
+                case 'x':
+                    flags |= Pattern.COMMENTS;
+                    break;
+                case 's':
+                    flags |= Pattern.DOTALL;
+                    break;
+                default:
+                    throw new XPathException("err:FORX0001: Invalid regular expression flag: " + ch);
+            }
+        }
+        return flags;
     }
 
     @Override
@@ -427,7 +489,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     @Override
     public boolean checkIndex(DBBroker broker) {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        return false;
     }
 
     protected void indexText(NodeHandle nodeHandle, QName qname, NodePath path, RangeIndexConfigElement config, TextCollector collector) {
@@ -481,10 +543,11 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
                 for (TextCollector.Field field : pending.getCollector().getFields()) {
                     String contentField;
-                    if (field.isNamed())
+                    if (field.isNamed()) {
                         contentField = field.getName();
-                    else
+                    } else {
                         contentField = LuceneUtil.encodeQName(pending.getQName(), index.getBrokerPool().getSymbols());
+                    }
                     Field fld = pending.getConfig().convertToField(contentField, field.getContent().toString());
                     if (fld != null) {
                         doc.add(fld);
@@ -508,16 +571,17 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         }
     }
 
-    public NodeSet query(int contextId, DocumentSet docs, NodeSet contextSet, List<QName> qnames, AtomicValue[] keys, RangeIndex.Operator operator, int axis) throws IOException, XPathException {
+    @Override
+    public NodeSet query(final int contextId, final DocumentSet docs, final NodeSet contextSet, final List<QName> qnames, final AtomicValue[] keys, final Operator operator, final int axis) throws IOException, XPathException {
         return index.withSearcher(searcher -> {
-            List<QName> definedIndexes = getDefinedIndexes(qnames);
-            NodeSet resultSet = new NewArrayNodeSet();
-            for (QName qname : definedIndexes) {
-                Query query;
-                String field = LuceneUtil.encodeQName(qname, index.getBrokerPool().getSymbols());
+            final List<QName> definedIndexes = getDefinedIndexes(qnames);
+        	final NodeSet resultSet = new NewArrayNodeSet();
+            for (final QName qname : definedIndexes) {
+                final Query query;
+                final String field = LuceneUtil.encodeQName(qname, index.getBrokerPool().getSymbols());
                 if (keys.length > 1) {
                     BooleanQuery bool = new BooleanQuery();
-                    for (AtomicValue key : keys) {
+                    for (final AtomicValue key : keys) {
                         bool.add(toQuery(field, qname, key, operator, docs), BooleanClause.Occur.SHOULD);
                     }
                     query = bool;
@@ -526,9 +590,9 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 }
 
                 if (contextSet != null && contextSet.hasOne() && contextSet.getItemType() != Type.DOCUMENT) {
-                    NodesFilter filter = new NodesFilter(contextSet);
+                    final NodesFilter filter = new NodesFilter(contextSet);
                     filter.init(searcher.getIndexReader());
-                    FilteredQuery filtered = new FilteredQuery(query, filter, FilteredQuery.LEAP_FROG_FILTER_FIRST_STRATEGY);
+                    final FilteredQuery filtered = new FilteredQuery(query, filter, FilteredQuery.LEAP_FROG_FILTER_FIRST_STRATEGY);
                     resultSet.addAll(doQuery(contextId, docs, contextSet, axis, searcher, null, filtered, null));
                 } else {
                     resultSet.addAll(doQuery(contextId, docs, contextSet, axis, searcher, null, query, null));
@@ -538,7 +602,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         });
     }
 
-    public NodeSet queryField(int contextId, DocumentSet docs, NodeSet contextSet, Sequence fields, Sequence[] keys, RangeIndex.Operator[] operators, int axis) throws IOException, XPathException {
+    public NodeSet queryField(final int contextId, final DocumentSet docs, final NodeSet contextSet, final Sequence fields, final Sequence[] keys, final Operator[] operators, final int axis) throws IOException, XPathException {
         return index.withSearcher(searcher -> {
             BooleanQuery query = new BooleanQuery();
             int j = 0;
@@ -814,7 +878,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 }
                 Iterator<RangeIndexConfigElement> configIter = config.getConfig(path);
                 if (configIter != null) {
-                    if (contentStack == null) contentStack = new Stack<TextCollector>();
+                    if (contentStack == null) contentStack = new Stack<>();
                     while (configIter.hasNext()) {
                         RangeIndexConfigElement configuration = configIter.next();
                         if (configuration.match(path)) {
@@ -829,25 +893,37 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         }
 
         @Override
-        public void attribute(Txn transaction, AttrImpl attrib, NodePath path) {
+        public void attribute(final Txn transaction, final AttrImpl attrib, final NodePath path) {
             path.addComponent(attrib.getQName());
             if (contentStack != null && !contentStack.isEmpty()) {
                 for (TextCollector collector : contentStack) {
                     collector.attribute(attrib, path);
                 }
             }
+
             Iterator<RangeIndexConfigElement> configIter = null;
-            if (config != null)
-                configIter = config.getConfig(path);
+            if (config != null) {
+                configIter = config.getConfig(path, attrib);
+            }
             if (mode != ReindexMode.REMOVE_ALL_NODES && configIter != null) {
                 if (mode == ReindexMode.REMOVE_SOME_NODES) {
                     nodesToRemove.add(attrib.getNodeId());
                 } else {
                     while (configIter.hasNext()) {
-                        RangeIndexConfigElement configuration = configIter.next();
-                        if (configuration.match(path)) {
-                            SimpleTextCollector collector = new SimpleTextCollector(attrib.getValue());
-                            indexText(attrib, attrib.getQName(), path, configuration, collector);
+                        final RangeIndexConfigElement configuration = configIter.next();
+                        if (configuration.match(path, attrib)) {
+                            final SimpleTextCollector collector = new SimpleTextCollector(attrib.getValue());
+
+                            final QName qn;
+                            if(configuration instanceof IdIndexConfigElement) {
+                                qn = IdIndexConfigElement.ID_QN;
+                            } else if(configuration instanceof IdRefIndexConfigElement) {
+                                qn = IdRefIndexConfigElement.IDREF_QN;
+                            } else {
+                                qn = attrib.getQName();
+                            }
+
+                            indexText(attrib, qn, path, configuration, collector);
                         }
                     }
                 }
@@ -1035,5 +1111,33 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 }
             } while(termsIter.next() != null);
         }
+    }
+
+    /**
+     * Determine if there is an index configuration
+     * for the node path
+     */
+    @Override
+    public boolean isConfiguredFor(final DBBroker broker, final Sequence contextSequence, final NodePath path) {
+        for (final Iterator<Collection> i = contextSequence.getCollectionIterator(); i.hasNext(); ) {
+            final Collection collection = i.next();
+            if (collection.getURI().startsWith(XmldbURI.SYSTEM_COLLECTION_URI)) {
+                continue;
+            }
+
+            final boolean isConfigured = Optional.ofNullable(collection.getIndexConfiguration(broker))
+                    .flatMap(idxConf ->
+                                    Optional.ofNullable((RangeIndexConfig) idxConf.getCustomIndexSpec(RangeIndex.ID))
+                                            .map(config -> config.find(path))
+                                            .filter(rice -> !(rice instanceof ComplexGeneralRangeIndexConfigElement))
+                    )
+                    .isPresent();
+
+            if(isConfigured) {
+                return isConfigured;
+            }
+        }
+
+        return false;
     }
 }

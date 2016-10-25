@@ -22,6 +22,7 @@
 package org.exist.indexing.range;
 
 import org.exist.dom.QName;
+import org.exist.indexing.range.config.RangeIndexConfigElement;
 import org.exist.numbering.NodeId;
 import org.exist.storage.NodePath;
 

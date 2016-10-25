@@ -4,14 +4,14 @@ import org.exist.test.ExistXmldbEmbeddedServer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
-import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.ResourceSet;
-import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.DatabaseManager;
+import org.xmldb.api.base.*;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XQueryService;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * @author Adam Retter <adam@exist-db.org>
@@ -22,12 +22,28 @@ public abstract class AbstractTestUpdate {
 
     private Collection testCollection;
 
+    private final static String COLLECTION_CONF = "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
+            "    <index>\n" +
+            "        <!-- Range index for fn:id and fn:idref -->" +
+            "        <range>" +
+            "            <ID/>" +
+            "            <IDREF/>" +
+            "        </range>" +
+            "    </index>" +
+            "</collection>";
+
     @Before
     public void setUp() throws Exception {
         CollectionManagementService service =
             (CollectionManagementService) existEmbeddedServer.getRoot().getService(
                 "CollectionManagementService",
                 "1.0");
+
+        final Collection testCollection_confCollection = service.createCollection("system/config/db/test");
+        final Resource conf = testCollection_confCollection.createResource("collection.xconf", "XMLResource");
+        conf.setContent(COLLECTION_CONF);
+        testCollection_confCollection.storeResource(conf);
+
         testCollection = service.createCollection("test");
     }
 

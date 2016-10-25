@@ -622,16 +622,15 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
                         DOMException.INVALID_MODIFICATION_ERR,
                         "A node replacing the document root needs to be an element");
                 }
-                broker.removeNode(transaction, oldNode, oldNode.getPath(), null);
+                broker.removeNode(transaction, oldNode, oldNode.getPath());
                 broker.endRemove(transaction);
                 newNode.setNodeId(oldNode.getNodeId());
                 broker.insertNodeAfter(null, previousNode, newNode);
                 final NodePath path = newNode.getPath();
                 broker.indexNode(transaction, newNode, path);
-                broker.endElement(newNode, path, null);
                 broker.flush();
             } else {
-                broker.removeNode(transaction, oldNode, oldNode.getPath(), null);
+                broker.removeNode(transaction, oldNode, oldNode.getPath());
                 broker.endRemove(transaction);
                 newNode.setNodeId(oldNode.getNodeId());
                 broker.insertNodeAfter(transaction, previousNode, newNode);

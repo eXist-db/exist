@@ -40,7 +40,6 @@ import org.exist.indexing.StreamListener.ReindexMode;
 import org.exist.storage.DBBroker;
 import org.exist.storage.IndexSpec;
 import org.exist.storage.NodePath;
-import org.exist.storage.RangeIndexSpec;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 import org.exist.util.ProgressIndicator;
@@ -401,14 +400,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
         if (last.getNodeName().equals(qname)) {
             processText(last, ProcessTextParent.ELEMENT_END);
             stack.pop();
-            XMLString elemContent = null;
-            if (!validate && RangeIndexSpec.hasQNameOrValueIndex(last.getIndexType())) {
-                elemContent = nodeContentStack.pop();
-            }
             if (!validate) {
-                final String content = elemContent == null ? null : elemContent.toString();
-                broker.endElement(last, currentPath, content);
-
                 if (indexListener != null) {
                     indexListener.endElement(transaction, last, currentPath);
                 }
@@ -707,10 +699,6 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
         }
 
         node.setChildCount(0);
-        if (RangeIndexSpec.hasQNameOrValueIndex(node.getIndexType())) {
-            final XMLString contentBuf = new XMLString();
-            nodeContentStack.push(contentBuf);
-        }
     }
 
     @Override

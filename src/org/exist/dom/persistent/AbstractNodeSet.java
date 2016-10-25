@@ -51,10 +51,6 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 
     protected static final Logger LOG = LogManager.getLogger(AbstractNodeSet.class);
 
-    // indicates the type of an optional value index that may have
-    // been defined on the nodes in this set.
-    protected int indexType = Type.ANY_TYPE;
-
     private boolean isCached = false;
     private boolean processInReverseOrder = false;
     private boolean trackMatches = true;
@@ -601,43 +597,6 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
     @Override
     public boolean getTrackMatches() {
         return trackMatches;
-    }
-
-    /**
-     * If all nodes in this set have an index, returns the common
-     * super type used to build the index, e.g. xs:integer or xs:string.
-     * If the nodes have different index types or no node has been indexed,
-     * returns {@link Type#ITEM}.
-     *
-     * @see org.exist.xquery.GeneralComparison
-     * @see org.exist.xquery.ValueComparison
-     */
-    @Override
-    public int getIndexType() {
-        //Is the index type initialized ?
-        if(indexType == Type.ANY_TYPE) {
-            for(final Iterator<NodeProxy> i = iterator(); i.hasNext(); ) {
-                final NodeProxy node = i.next();
-                if(node.getOwnerDocument().getCollection().isTempCollection()) {
-                    //Temporary nodes return default values
-                    indexType = Type.ITEM;
-                    break;
-                }
-                final int nodeIndexType = node.getIndexType();
-                //Refine type
-                //TODO : use common subtype
-                if(indexType == Type.ANY_TYPE) {
-                    indexType = nodeIndexType;
-                } else {
-                    //Broaden type
-                    //TODO : use common supertype
-                    if(indexType != nodeIndexType) {
-                        indexType = Type.ITEM;
-                    }
-                }
-            }
-        }
-        return indexType;
     }
 
     @Override

@@ -21,7 +21,6 @@ package org.exist.collections;
 
 import net.jcip.annotations.GuardedBy;
 import org.exist.Resource;
-import org.exist.dom.QName;
 import org.exist.dom.persistent.DocumentMetadata;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.DocumentImpl;
@@ -2440,13 +2439,30 @@ public class Collection extends Observable implements Resource, Comparable<Colle
         return conf.getIndexConfiguration();
     }
 
-    public GeneralRangeIndexSpec getIndexByPathConfiguration(final DBBroker broker, final NodePath path) {
-        final IndexSpec idxSpec = getIndexConfiguration(broker);
-        return (idxSpec == null) ? null : idxSpec.getIndexByPath(path);
+    /*
+    public DocumentTrigger getDocumentTrigger(DBBroker broker) {
+        if (triggersEnabled) {
+            CollectionConfiguration config = getConfiguration(broker);
+            if (config != null)
+                try {
+                    return config.newDocumentTrigger(broker, this);
+                } catch (CollectionConfigurationException e) {
+                    LOG.debug("An error occurred while initializing a trigger for collection " + getURI() + ": " + e.getMessage(), e);
+                }
+        }
+        return null;
     }
 
-    public QNameRangeIndexSpec getIndexByQNameConfiguration(final DBBroker broker, final QName qname) {
-        final IndexSpec idxSpec = getIndexConfiguration(broker);
-        return (idxSpec == null) ? null : idxSpec.getIndexByQName(qname);
-    }
+    public CollectionTrigger getCollectionTrigger(DBBroker broker) {
+        if (triggersEnabled) {
+            CollectionConfiguration config = getConfiguration(broker);
+            if (config != null)
+                try {
+                    return config.newCollectionTrigger(broker, this);
+                } catch (CollectionConfigurationException e) {
+                    LOG.debug("An error occurred while initializing a trigger for collection " + getURI() + ": " + e.getMessage(), e);
+                }
+        }
+        return null;
+    }*/
 }

@@ -21,8 +21,6 @@ package org.exist.storage;
 
 import org.exist.Namespaces;
 import org.exist.collections.CollectionConfiguration;
-import org.exist.dom.QName;
-import org.exist.dom.TypedQNameComparator;
 import org.exist.util.DatabaseConfigurationException;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
@@ -31,10 +29,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 /**
  * Top class for index definitions as specified in a collection configuration
@@ -54,57 +50,28 @@ import java.util.stream.Collectors;
 @SuppressWarnings("ForLoopReplaceableByForEach")
 public class IndexSpec {
 
-    private static final String TYPE_ATTRIB = "type";
-    private static final String PATH_ATTRIB = "path";
-    private static final String CREATE_ELEMENT = "create";
-    private static final String QNAME_ATTRIB = "qname";
-
-    private GeneralRangeIndexSpec specs[] = null;
-    private Map<QName, QNameRangeIndexSpec> qnameSpecs = new TreeMap<>(new TypedQNameComparator());
-
-    private Map<String, Object> customIndexSpecs = null;
+    private Optional<Map<String, Object>> customIndexSpecs = Optional.empty();
 
     public IndexSpec(DBBroker broker, Element index) throws DatabaseConfigurationException {
         read(broker, index);
     }
 
     /**
-     * Read index configurations from an "index" element node.
-     * The node should have zero or more "create" nodes.
-     * The "create" elements add a {@link GeneralRangeIndexSpec} to the current configuration.
-     *  
+     * Read index configurations from an "index" element node
+     *
+     * @param broker
      * @param index
      * @throws DatabaseConfigurationException
      */
-    public void read(DBBroker broker, Element index) throws DatabaseConfigurationException {
+    public void read(final DBBroker broker, final Element index) throws DatabaseConfigurationException {
         final Map<String, String> namespaces = getNamespaceMap(index);
         final NodeList childNodes = index.getChildNodes();
-        for (int i = 0; i < childNodes.getLength(); i++) {
-            final Node node = childNodes.item(i);
-            if (node.getNodeType() == Node.ELEMENT_NODE) {
-                if (CREATE_ELEMENT.equals(node.getLocalName())) {
-                    final Element elem = (Element) node;
-                    final String type = elem.getAttribute(TYPE_ATTRIB);
-                    if (elem.hasAttribute(QNAME_ATTRIB)) {
-                        final String qname = elem.getAttribute(QNAME_ATTRIB);
-                        final QNameRangeIndexSpec qnIdx = new QNameRangeIndexSpec(namespaces, qname, type);
-                        qnameSpecs.put(qnIdx.getQName(), qnIdx);
-                    } else if (elem.hasAttribute(PATH_ATTRIB)) {
-                        final String path = elem.getAttribute(PATH_ATTRIB);
-                        final GeneralRangeIndexSpec valueIdx = new GeneralRangeIndexSpec(namespaces, path, type);
-                        addValueIndex(valueIdx);
-                    } else {
-                        final String error_message = "Configuration error: element " + elem.getNodeName() +
-                            " must have attribute " + PATH_ATTRIB + " or " + QNAME_ATTRIB;
-                        throw new DatabaseConfigurationException(error_message);
-                    }
-                }
-            }
-        }
+
         // configure custom indexes, but not if broker is null (which means we are reading
         // the default index config from conf.xml)
-        if (broker != null)
-            {customIndexSpecs = broker.getIndexController().configure(childNodes, namespaces);}
+        if (broker != null) {
+            customIndexSpecs = Optional.of(broker.getIndexController().configure(childNodes, namespaces));
+        }
     }
 
     /**
@@ -114,58 +81,8 @@ public class IndexSpec {
      * @param id the id used to identify this index.
      * @return the configuration object registered for the index or null.
      */
-    public Object getCustomIndexSpec(String id) {
-        return customIndexSpecs == null ? null : customIndexSpecs.get(id);
-    }
-
-    /**
-     * Returns the {@link GeneralRangeIndexSpec} defined for the given
-     * node path or null if no index has been configured.
-     * 
-     * @param path
-     */
-    public GeneralRangeIndexSpec getIndexByPath(NodePath path) {
-        if(specs != null) {
-            for (GeneralRangeIndexSpec spec : specs) {
-                if (spec.matches(path)) {
-                    return spec;
-                }
-            }
-        }
-        return null;
-    }
-
-    public QNameRangeIndexSpec getIndexByQName(QName name) {
-        return qnameSpecs.get(name);
-    }
-
-    public boolean hasIndexesByPath() {
-        return specs != null && specs.length > 0;
-    }
-
-    public boolean hasIndexesByQName() {
-        return qnameSpecs.size() > 0;
-    }
-
-    public List<QName> getIndexedQNames() {
-        return qnameSpecs.keySet().stream().collect(Collectors.toList());
-    }
-
-    /**
-     * Add a {@link GeneralRangeIndexSpec}.
-     * 
-     * @param valueIdx
-     */
-    private void addValueIndex(GeneralRangeIndexSpec valueIdx) {
-        if(specs == null) {
-            specs = new GeneralRangeIndexSpec[1];
-            specs[0] = valueIdx;
-        } else {
-            GeneralRangeIndexSpec nspecs[] = new GeneralRangeIndexSpec[specs.length + 1];
-            System.arraycopy(specs, 0, nspecs, 0, specs.length);
-            nspecs[specs.length] = valueIdx;
-            specs = nspecs;
-        }
+    public Object getCustomIndexSpec(final String id) {
+        return customIndexSpecs.map(m -> m.get(id)).orElse(null);
     }
 
     /**
@@ -177,15 +94,16 @@ public class IndexSpec {
      */
     private Map<String, String> getNamespaceMap(Element elem) {
         final Node parent = elem.getParentNode();
-        if (parent != null)
-            {elem = (Element) parent;}
-        final HashMap<String, String> map = new HashMap<>();
+        if (parent != null) {
+            elem = (Element) parent;
+        }
+        final Map<String, String> map = new HashMap<>();
         map.put("xml", Namespaces.XML_NS);
         getNamespaceMap(elem, map);
         return map;
     }
 
-    private void getNamespaceMap(Element elem, Map<String, String> map) {
+    private void getNamespaceMap(final Element elem, final Map<String, String> map) {
         final NamedNodeMap attrs = elem.getAttributes();
         for(int i = 0; i < attrs.getLength(); i++) {
             final Attr attr = (Attr) attrs.item(i);
@@ -198,24 +116,10 @@ public class IndexSpec {
         }
         Node child = elem.getFirstChild();
         while (child != null) {
-            if (child.getNodeType() == Node.ELEMENT_NODE)
-                {getNamespaceMap((Element) child, map);}
+            if (child.getNodeType() == Node.ELEMENT_NODE) {
+                getNamespaceMap((Element) child, map);
+            }
             child = child.getNextSibling();
         }
-    }
-
-    public String toString() {
-        final StringBuilder result = new StringBuilder();
-        if (specs!= null) {
-            for (final GeneralRangeIndexSpec spec : specs) {
-                if (spec != null) {
-                    result.append(spec.toString()).append('\n');
-                }
-            }
-        }
-        for (final Map.Entry<QName, QNameRangeIndexSpec> qNameSpec : qnameSpecs.entrySet()) {
-            result.append(qNameSpec.getValue().toString()).append('\n');
-        }
-        return result.toString();
     }
 }

@@ -32,9 +32,7 @@ import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.QName;
 import org.exist.indexing.IndexWorker;
 import org.exist.indexing.OrderedValuesIndex;
-import org.exist.storage.Indexable;
 import org.exist.util.Occurrences;
-import org.exist.util.ValueOccurrences;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
@@ -60,12 +58,7 @@ public class IndexKeyOccurrences extends BasicFunction {
 	protected static final FunctionParameterSequenceType indexParam = new FunctionParameterSequenceType("index", Type.STRING, Cardinality.EXACTLY_ONE, "The index in which the search is made");
 	protected static final FunctionReturnSequenceType result = new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "the number of occurrences for the indexed value");
 
-	public final static FunctionSignature signatures[] = { 
-		new FunctionSignature(
-				new QName("index-key-occurrences", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-				"Return the number of occurrences for an indexed value.",
-				new SequenceType[] { nodeParam, valueParam },
-				result),
+	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 				new QName("index-key-occurrences", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 				"Return the number of occurrences for an indexed value.",
@@ -92,32 +85,22 @@ public class IndexKeyOccurrences extends BasicFunction {
     	else {
 	        final NodeSet nodes = args[0].toNodeSet();
 	        final DocumentSet docs = nodes.getDocumentSet();
-	        
-	        if (this.getArgumentCount() == 3){
-	        	final IndexWorker indexWorker = context.getBroker().getIndexController().getWorkerByIndexName(args[2].itemAt(0).getStringValue());
-	        	//Alternate design
-	        	//IndexWorker indexWorker = context.getBroker().getBrokerPool().getIndexManager().getIndexByName(args[2].itemAt(0).getStringValue()).getWorker();
-	        	if (indexWorker == null)
-	        		{throw new XPathException(this, "Unknown index: " + args[2].itemAt(0).getStringValue());}
-	        	final Map<String, Object> hints = new HashMap<String, Object>();
-	        	if (indexWorker instanceof OrderedValuesIndex)
-	        		{hints.put(OrderedValuesIndex.START_VALUE, args[1]);}
-	        	else
-	        		{logger.warn(indexWorker.getClass().getName() + " isn't an instance of org.exist.indexing.OrderedIndexWorker. Start value '" + args[1] + "' ignored." );}
-	        	final Occurrences[] occur = indexWorker.scanIndex(context, docs, nodes, hints);
-		        if (occur.length == 0)
-		        	{result= Sequence.EMPTY_SEQUENCE;}
-		        else
-		        	{result = new IntegerValue(occur[0].getOccurrences());}
-	        } else {
-	        	ValueOccurrences occur[] = context.getBroker().getValueIndex().scanIndexKeys(docs, nodes, (Indexable) (args[1].itemAt(0)));
-		        if (occur.length == 0)
-		        	{occur = context.getBroker().getValueIndex().scanIndexKeys(docs, nodes, null, (Indexable) (args[1].itemAt(0)));}
-		        if (occur.length == 0)
-                    {result = Sequence.EMPTY_SEQUENCE;}
-                else
-                    {result = new IntegerValue(occur[0].getOccurrences());}
-	        }
+
+			final IndexWorker indexWorker = context.getBroker().getIndexController().getWorkerByIndexName(args[2].itemAt(0).getStringValue());
+			//Alternate design
+			//IndexWorker indexWorker = context.getBroker().getBrokerPool().getIndexManager().getIndexByName(args[2].itemAt(0).getStringValue()).getWorker();
+			if (indexWorker == null)
+				{throw new XPathException(this, "Unknown index: " + args[2].itemAt(0).getStringValue());}
+			final Map<String, Object> hints = new HashMap<String, Object>();
+			if (indexWorker instanceof OrderedValuesIndex)
+				{hints.put(OrderedValuesIndex.START_VALUE, args[1]);}
+			else
+				{logger.warn(indexWorker.getClass().getName() + " isn't an instance of org.exist.indexing.OrderedIndexWorker. Start value '" + args[1] + "' ignored." );}
+			final Occurrences[] occur = indexWorker.scanIndex(context, docs, nodes, hints);
+			if (occur.length == 0)
+				{result= Sequence.EMPTY_SEQUENCE;}
+			else
+				{result = new IntegerValue(occur[0].getOccurrences());}
     	}
     	
         if (context.getProfiler().isEnabled()) 

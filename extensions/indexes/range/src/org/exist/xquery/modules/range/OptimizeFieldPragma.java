@@ -23,14 +23,13 @@ package org.exist.xquery.modules.range;
 
 import org.exist.Namespaces;
 import org.exist.collections.Collection;
-import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.QName;
 import org.exist.indexing.range.*;
+import org.exist.indexing.range.config.*;
 import org.exist.storage.IndexSpec;
 import org.exist.storage.NodePath;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
-import org.exist.xquery.pragmas.*;
 import org.exist.xquery.value.*;
 
 import java.util.ArrayList;
@@ -130,9 +129,9 @@ public class OptimizeFieldPragma extends Pragma {
                     // find a range index configuration matching the full path to the predicate expression
                     RangeIndexConfigElement rice = findConfiguration(path, true, configs);
                     // found index configuration with sub-fields
-                    if (rice != null && rice.isComplex() && rice.getNodePath().match(contextPath) && findConfiguration(path, false, configs) == null) {
+                    if (rice != null && rice instanceof GeneralRangeIndexConfigElement && ((GeneralRangeIndexConfigElement)rice).getNodePath().match(contextPath) && findConfiguration(path, false, configs) == null) {
                         // check for a matching sub-path and retrieve field information
-                        RangeIndexConfigField field = ((ComplexRangeIndexConfigElement) rice).getField(path);
+                        RangeIndexConfigField field = ((ComplexGeneralRangeIndexConfigElement) rice).getField(path);
                         if (field != null) {
                             if (args == null) {
                                 // initialize args
@@ -203,8 +202,8 @@ public class OptimizeFieldPragma extends Pragma {
     private RangeIndexConfigElement findConfiguration(NodePath path, boolean complex, List<RangeIndexConfig> configs) {
         for (RangeIndexConfig config : configs) {
             final RangeIndexConfigElement rice = config.find(path);
-            if (rice != null && ((complex && rice.isComplex()) ||
-                    (!complex && !rice.isComplex()))) {
+            if (rice != null && ((complex && rice instanceof ComplexGeneralRangeIndexConfigElement) ||
+                    (!complex && !(rice instanceof ComplexGeneralRangeIndexConfigElement)))) {
                 return rice;
             }
         }

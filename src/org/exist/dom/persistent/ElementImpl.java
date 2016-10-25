@@ -88,7 +88,6 @@ public class ElementImpl extends NamedNode implements Element {
 
     private int position = 0;
     private Map<String, String> namespaceMappings = null;
-    private int indexType = RangeIndexSpec.NO_INDEX;
     private boolean preserveWS = false;
     private boolean isDirty = false;
 
@@ -115,7 +114,6 @@ public class ElementImpl extends NamedNode implements Element {
         this.children = other.children;
         this.attributes = other.attributes;
         this.namespaceMappings = other.namespaceMappings;
-        this.indexType = other.indexType;
         this.position = other.position;
     }
 
@@ -129,17 +127,6 @@ public class ElementImpl extends NamedNode implements Element {
         children = 0;
         position = 0;
         namespaceMappings = null;
-        //TODO : reset below as well ? -pb
-        //indexType
-        //preserveWS
-    }
-
-    public void setIndexType(final int idxType) {
-        this.indexType = idxType;
-    }
-
-    public int getIndexType() {
-        return indexType;
     }
 
     @Override
@@ -654,7 +641,6 @@ public class ElementImpl extends NamedNode implements Element {
                         last.setNode(elem);
                         //process child nodes
                         elem.appendChildren(transaction, newNodeId.newChild(), null, last, lastPath, ch, listener);
-                        broker.endElement(elem, lastPath, null);
                         indexes.endElement(transaction, elem, lastPath, listener);
                     } finally {
                         indexes.endIndexDocument(transaction, listener);
@@ -689,7 +675,7 @@ public class ElementImpl extends NamedNode implements Element {
                     if(name == null) {
                         name = attr.getName();
                     }
-                    final QName attrName = new QName(name, ns, prefix);
+                    final QName attrName = new QName(name, ns, prefix, ElementValue.ATTRIBUTE);
                     final AttrImpl attrib = new AttrImpl(attrName, attr.getValue(), broker.getBrokerPool().getSymbols());
                     attrib.setNodeId(newNodeId);
                     attrib.setOwnerDocument(owner);
@@ -697,8 +683,6 @@ public class ElementImpl extends NamedNode implements Element {
                         // an xml:id attribute. Normalize the attribute and set its type to ID
                         attrib.setValue(StringValue.trimWhitespace(StringValue.collapseWhitespace(attrib.getValue())));
                         attrib.setType(AttrImpl.ID);
-                    } else {
-                        attrib.setQName(new QName(attrib.getQName(), ElementValue.ATTRIBUTE));
                     }
                     broker.insertNodeAfter(transaction, last.getNode(), attrib);
                     broker.indexNode(transaction, attrib, lastPath);
@@ -1310,9 +1294,6 @@ public class ElementImpl extends NamedNode implements Element {
                 listener = null;
                 indexes.reindex(transaction, reindexRoot, ReindexMode.REMOVE_SOME_NODES);
             }
-            // TODO: fix once range index has been moved to new architecture
-            final IStoredNode valueReindexRoot = broker.getValueIndex().getReindexRoot(this, path);
-            broker.getValueIndex().reindex(valueReindexRoot);
             IStoredNode last = this;
             int i = nodes.getLength();
             for(; i > 0; i--) {
@@ -1339,7 +1320,6 @@ public class ElementImpl extends NamedNode implements Element {
             appendChildren(transaction, newNodeId, null, new NodeImplRef(last), path, newContent, listener);
             broker.updateNode(transaction, this, false);
             indexes.reindex(transaction, reindexRoot, ReindexMode.STORE);
-            broker.getValueIndex().reindex(valueReindexRoot);
             broker.flush();
         } catch(final EXistException e) {
             LOG.warn("Exception while inserting node: " + e.getMessage(), e);
@@ -1395,12 +1375,8 @@ public class ElementImpl extends NamedNode implements Element {
                 reindexRoot = oldNode;
             }
             indexes.reindex(transaction, reindexRoot, ReindexMode.REMOVE_SOME_NODES);
-            //TODO: fix once range index has been moved to new architecture
-            final NativeValueIndex valueIndex = broker.getValueIndex();
-            final IStoredNode valueReindexRoot = valueIndex.getReindexRoot(this, oldPath);
-            valueIndex.reindex(valueReindexRoot);
             //Remove the actual node data
-            broker.removeNode(transaction, oldNode, oldPath, null);
+            broker.removeNode(transaction, oldNode, oldPath);
             broker.endRemove(transaction);
             newNode.setNodeId(oldNode.getNodeId());
 
@@ -1408,14 +1384,10 @@ public class ElementImpl extends NamedNode implements Element {
             broker.insertNodeAfter(transaction, previousNode, newNode);
             final NodePath path = newNode.getPath(currentPath);
             broker.indexNode(transaction, newNode, path);
-            if(newNode.getNodeType() == Node.ELEMENT_NODE) {
-                broker.endElement(newNode, path, null);
-            }
             broker.updateNode(transaction, this, true);
 
             //Recreate indexes on ancestor nodes
             indexes.reindex(transaction, reindexRoot, ReindexMode.STORE);
-            valueIndex.reindex(valueReindexRoot);
             broker.flush();
         } catch(final EXistException e) {
             LOG.warn("Exception while inserting node: " + e.getMessage(), e);
@@ -1487,7 +1459,7 @@ public class ElementImpl extends NamedNode implements Element {
                         // remove old custom indexes
                         indexes.reindex(transaction, old,
                                 ReindexMode.REMOVE_SOME_NODES);
-                        broker.removeNode(transaction, old, oldPath, null);
+                        broker.removeNode(transaction, old, oldPath);
                         children--;
                         attributes--;
                     }

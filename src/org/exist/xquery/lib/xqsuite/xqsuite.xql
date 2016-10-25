@@ -634,8 +634,7 @@ declare %private function test:assertXPath($annotation as element(annotation), $
             ()
         else
             <report>
-                <failure message="assertXPath failed."
-                    type="failure-error-code-1">{ $expr }</failure>,
+                <failure message="assertXPath failed." type="failure-error-code-1">{ $expr }</failure>
                 <output>{ $result }</output>
             </report>
 };
