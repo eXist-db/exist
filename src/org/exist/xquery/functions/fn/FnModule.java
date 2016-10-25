@@ -131,6 +131,7 @@ public class FnModule extends AbstractInternalModule {
         new FunctionDef(FunImplicitTimezone.signature, FunImplicitTimezone.class),
         new FunctionDef(FunIndexOf.fnIndexOf[0], FunIndexOf.class),
         new FunctionDef(FunIndexOf.fnIndexOf[1], FunIndexOf.class),
+        new FunctionDef(FnInnerMost.FNS_INNERMOST, FnInnerMost.class),
         new FunctionDef(FunIRIToURI.signature, FunIRIToURI.class),
         new FunctionDef(FunInScopePrefixes.signature, FunInScopePrefixes.class),
         new FunctionDef(FunInsertBefore.signature, FunInsertBefore.class),

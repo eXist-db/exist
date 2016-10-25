@@ -69,3 +69,30 @@ declare
 function fnt:has-children-empty() {
     has-children(())
 };
+
+
+declare
+    %test:assertEquals("b,e,h")
+function fnt:innermost() {
+    let $doc := document {
+        <a>
+            <b/>
+            <c>
+                <d/>
+                <e/>
+            </c>
+            <f>
+                <g>
+                    <h/>
+                </g>
+            </f>
+        </a>
+    } return
+        string-join(
+            for $inner in fn:innermost($doc/a/b, $doc/a/c, $doc/a/c/e, $doc/a/f, $doc/a/f/g/h, $doc/a/b)
+            return
+                local-name($inner)
+            ,
+            ","
+        )
+};
