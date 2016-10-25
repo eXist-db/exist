@@ -122,6 +122,8 @@ public class FnModule extends AbstractInternalModule {
         new FunctionDef(FunAdjustTimezone.fnAdjustTimeToTimezone[1], FunAdjustTimezone.class),
         new FunctionDef(FunAdjustTimezone.fnAdjustDateTimeToTimezone[0], FunAdjustTimezone.class),
         new FunctionDef(FunAdjustTimezone.fnAdjustDateTimeToTimezone[1], FunAdjustTimezone.class),
+        new FunctionDef(FnHasChildren.FNS_HAS_CHILDREN_0, FnHasChildren.class),
+        new FunctionDef(FnHasChildren.FNS_HAS_CHILDREN_1, FnHasChildren.class),
         new FunctionDef(FunId.signature[0], FunId.class),
         new FunctionDef(FunId.signature[1], FunId.class),
         new FunctionDef(FunIdRef.signature[0], FunIdRef.class),
