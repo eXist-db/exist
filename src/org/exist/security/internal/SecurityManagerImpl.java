@@ -32,6 +32,8 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
@@ -592,8 +594,8 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
             
             registeredRealm.registerGroup(newGroup);
 
-            save();
-            newGroup.save();
+            save(broker);
+            newGroup.save(broker);
 
             return newGroup;
         } finally {
@@ -939,8 +941,9 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
     }
 
     private static class PrincipalLocks<T extends Principal> {
-        private final Map<Integer, ReentrantReadWriteLock> locks = new HashMap<Integer, ReentrantReadWriteLock>();
-        private synchronized ReentrantReadWriteLock getLock(T principal) {
+        private final Map<Integer, ReentrantReadWriteLock> locks = new HashMap<>();
+
+        private synchronized ReentrantReadWriteLock getLock(final T principal) {
             ReentrantReadWriteLock lock = locks.get(principal.getId());
             if(lock == null) {
                 lock = new ReentrantReadWriteLock();
@@ -964,31 +967,23 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
         private final ReadLock readLock = lock.readLock();
         private final WriteLock writeLock = lock.writeLock();
 
-        public <R> R read(final SessionDbRead<R> readOp) {
+        public <R> R read(final Function<Map<String, Session>, R> readFn) {
             readLock.lock();
             try {
-                return readOp.execute(db);
+                return readFn.apply(db);
             } finally {
                 readLock.unlock();
             }
         }
 
-        public final void modify(final SessionDbModify writeOp) {
+        public final void modify(final Consumer<Map<String, Session>> modifyFn) {
             writeLock.lock();
             try {
-                writeOp.execute(db);
+                modifyFn.accept(db);
             } finally {
                 writeLock.unlock();
             }
         }
-    }
-    
-    protected interface SessionDbRead<R> {
-       R execute(final Map<String, Session> db);
-    }
-
-    protected interface SessionDbModify {
-        void execute(final Map<String, Session> db);
     }
    
     protected static class PrincipalDbById<V extends Principal> {
@@ -998,31 +993,23 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
         private final ReadLock readLock = lock.readLock();
         private final WriteLock writeLock = lock.writeLock();
 
-        public <R> R read(final PrincipalDbRead<V, R> readOp) {
+        public <R> R read(final Function<Int2ObjectHashMap<V>, R> readFn) {
             readLock.lock();
             try {
-                return readOp.execute(db);
+                return readFn.apply(db);
             } finally {
                 readLock.unlock();
             }
         }
 
-        public final void modify(final PrincipalDbModify<V> writeOp) {
+        public final void modify(final Consumer<Int2ObjectHashMap<V>> writeOp) {
             writeLock.lock();
             try {
-                writeOp.execute(db);
+                writeOp.accept(db);
             } finally {
                 writeLock.unlock();
             }
         }
-    }
-
-    protected interface PrincipalDbRead<V extends Principal, R> {
-        R execute(final Int2ObjectHashMap<V> principalDb);
-    }
-
-    protected interface PrincipalDbModify<V extends Principal> {
-        void execute(final Int2ObjectHashMap<V> principalDb);
     }
 
     @Override
