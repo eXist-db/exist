@@ -49,20 +49,33 @@ public class JnlpJarFiles {
     // Names of core jar files sans ".jar" extension.
     // Use %latest% token in place of a version string.
     private final String allJarNames[] = new String[]{
-            "xmldb",
-            "xmlrpc-common-%latest%",
-            "xmlrpc-client-%latest%",
-            "ws-commons-util-%latest%",
-            "commons-pool-%latest%",
+            "antlr-%latest%.jar",
+            "cglib-nodep-%latest%.jar",
+            "clj-ds-%latest%.jar",
+            "commons-codec-%latest%.jar",
+            "commons-collections-%latest%.jar",
             "commons-io-%latest%",
+            "commons-logging-%latest%.jar",
+            "commons-pool-%latest%",
             "excalibur-cli-%latest%",
-            "rsyntaxtextarea-%latest%",
+            "gnu-crypto-%latest%.jar",
+            "j8fu-%latest%.jar",
+            "jackson-core-%latest%.jar",
+            "jcip-annotations-%latest%.jar",
             "jline-%latest%",
+            "jta-%latest%.jar",
             "log4j-api-%latest%",
             "log4j-core-%latest%",
             "log4j-jul-%latest%",
             "log4j-slf4j-impl-%latest%",
-            "slf4j-api-%latest%"
+            "pkg-repo.jar",
+            "quartz-%latest%.jar",
+            "rsyntaxtextarea-%latest%",
+            "slf4j-api-%latest%",
+            "ws-commons-util-%latest%",
+            "xmldb",
+            "xmlrpc-client-%latest%",
+            "xmlrpc-common-%latest%"
     };
 
     // Resolves jar file patterns from jars[].
