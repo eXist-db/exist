@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -115,7 +116,8 @@ public class JnlpJarFiles {
 
         // Setup CORE jars
         for (final String jarname : allJarNames) {
-            addToJars(jnlpHelper.getCoreJarsFolder().resolve(jarname));
+            Path location = getJarFromLocation(jnlpHelper.getCoreJarsFolder(), jarname);
+            addToJars(location);
         }
 
         // Setup exist.jar
@@ -129,11 +131,7 @@ public class JnlpJarFiles {
      * @return list of jar files.
      */
     public List<Path> getAllWebstartJars() {
-        final List<Path> corejars = new ArrayList<>();
-
-        allFiles.values().stream().filter((file) -> (FileUtils.fileName(file).endsWith(".jar"))).forEach(corejars::add);
-
-        return corejars;
+        return allFiles.values().stream().filter((file) -> (FileUtils.fileName(file).endsWith(".jar"))).collect(Collectors.toList());
     }
 
     /**
