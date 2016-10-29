@@ -35,6 +35,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exist.SystemProperties;
 import org.exist.util.FileUtils;
 
 /**
@@ -98,6 +99,11 @@ public class JnlpWriter {
             writer.writeAttribute("spec", "7.0");
             writer.writeAttribute("codebase", codeBase);
             writer.writeAttribute("href", "exist.jnlp");
+
+            String version = SystemProperties.getInstance().getSystemProperty("product-version", null);
+            if(version!=null){
+                writer.writeAttribute("version", version);
+            }
 
             writer.writeStartElement("information");
 
@@ -166,6 +172,11 @@ public class JnlpWriter {
             writer.writeStartElement("property");
             writer.writeAttribute("name", "jnlp.packEnabled");
             writer.writeAttribute("value", "true");
+            writer.writeEndElement();
+
+            writer.writeStartElement("property");
+            writer.writeAttribute("name", "java.util.logging.manager");
+            writer.writeAttribute("value", "org.apache.logging.log4j.jul.LogManager");
             writer.writeEndElement();
 
             writer.writeStartElement("java");

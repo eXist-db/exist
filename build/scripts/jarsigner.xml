@@ -103,8 +103,11 @@
     <target name="jnlp-unsign-all"
             description="Unsign all jar files.">
         <taskdef name="unsignjar" 
-                 classname="nl.ow.dilemma.ant.jar.UnsignJarTask" 
-                 classpath="${asocat-exist.jar}"/>
+                 classname="nl.ow.dilemma.ant.jar.UnsignJarTask">
+            <classpath>
+                <pathelement location="${asocat-exist.jar}"/>
+            </classpath>
+        </taskdef>
         <unsignjar>
             <fileset dir=".">
                 <include name="exist*.jar"/>
@@ -133,8 +136,11 @@
         
         <!-- Secondly pack-unpack the jar files (normalize) -->
         <taskdef name="repack" 
-                 classname="nl.ow.dilemma.ant.jar.RepackJarTask" 
-                 classpath="${asocat-exist.jar}"/>
+                 classname="nl.ow.dilemma.ant.jar.RepackJarTask">
+            <classpath>
+                <pathelement location="${asocat-exist.jar}"/>
+            </classpath>
+        </taskdef>
         <repack>
             <fileset dir=".">
                 <include name="exist*.jar"/>
@@ -151,8 +157,11 @@
         
         <!-- Create jar.pack.gz files -->
         <taskdef name="pack" 
-                 classname="nl.ow.dilemma.ant.jar.Pack200Task" 
-                 classpath="${asocat-exist.jar}"/>
+                 classname="nl.ow.dilemma.ant.jar.Pack200Task">
+            <classpath>
+                <pathelement location="${asocat-exist.jar}"/>
+            </classpath>
+        </taskdef>
         <pack>
             <fileset dir=".">
                 <include name="exist*.jar"/>
