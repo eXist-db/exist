@@ -168,6 +168,11 @@ public class JnlpWriter {
             writer.writeAttribute("value", "true");
             writer.writeEndElement();
 
+            writer.writeStartElement("property");
+            writer.writeAttribute("name", "java.util.logging.manager");
+            writer.writeAttribute("value", "org.apache.logging.log4j.jul.LogManager");
+            writer.writeEndElement();
+
             writer.writeStartElement("java");
             writer.writeAttribute("version", "1.8+");
             writer.writeEndElement();
