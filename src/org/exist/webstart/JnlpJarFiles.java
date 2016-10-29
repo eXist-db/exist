@@ -49,27 +49,27 @@ public class JnlpJarFiles {
     // Names of core jar files sans ".jar" extension.
     // Use %latest% token in place of a version string.
     private final String allJarNames[] = new String[]{
-            "antlr-%latest%.jar",
-            "cglib-nodep-%latest%.jar",
-            "clj-ds-%latest%.jar",
-            "commons-codec-%latest%.jar",
-            "commons-collections-%latest%.jar",
+            "antlr-%latest%",
+            "cglib-nodep-%latest%",
+            "clj-ds-%latest%",
+            "commons-codec-%latest%",
+            "commons-collections-%latest%",
             "commons-io-%latest%",
-            "commons-logging-%latest%.jar",
+            "commons-logging-%latest%",
             "commons-pool-%latest%",
             "excalibur-cli-%latest%",
-            "gnu-crypto-%latest%.jar",
-            "j8fu-%latest%.jar",
-            "jackson-core-%latest%.jar",
-            "jcip-annotations-%latest%.jar",
+            "gnu-crypto-%latest%",
+            "j8fu-%latest%",
+            "jackson-core-%latest%",
+            "jcip-annotations-%latest%",
             "jline-%latest%",
-            "jta-%latest%.jar",
+            "jta-%latest%",
             "log4j-api-%latest%",
             "log4j-core-%latest%",
             "log4j-jul-%latest%",
             "log4j-slf4j-impl-%latest%",
-            "pkg-repo.jar",
-            "quartz-%latest%.jar",
+            "pkg-repo",
+            "quartz-%latest%",
             "rsyntaxtextarea-%latest%",
             "slf4j-api-%latest%",
             "ws-commons-util-%latest%",
@@ -98,7 +98,7 @@ public class JnlpJarFiles {
             return jar;
 
         } else {
-            LOGGER.warn(String.format("Could not resolve file pattern: %s", fileToFind));
+            LOGGER.error(String.format("Could not resolve file pattern: %s", fileToFind));
             return null;
         }
     }
