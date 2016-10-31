@@ -72,3 +72,5 @@ webapp/WEB-INF/logs/*.log
 webapp/WEB-INF/logs/*.log.*
 webapp/WEB-INF/web.xml
 webapp/xqts/config.xml
+tools/yajsw/logs/wrapper.log
+tools/yajsw/logs/wrapper.log.lck
