@@ -36,9 +36,13 @@
     <!-- Creating conf files for installer and direct local repo use         -->
     <!-- =================================================================== -->
     <target name="create-conf" unless="conf.available">
+        
+        <property environment="env." name="env.EXIST_HOME"  value="${basedir}/../.." />
+        
         <echo message="Creating wrapper config files for installer and direct local repo use..."/>
-	<fail unless="env.EXIST_HOME" message="EXIST_HOME environment variable not set. Please set it and start the build again. If run from commandline just prepend it."/>
-	<fail unless="env.JAVA_HOME" message="JAVA_HOME environment variable not set. Please set it and start the build again. If run from commandline just prepend it."/>
+        
+	    <fail unless="env.EXIST_HOME" message="EXIST_HOME environment variable not set. Please set it and start the build again. If run from commandline just prepend it."/>
+	    <fail unless="env.JAVA_HOME" message="JAVA_HOME environment variable not set. Please set it and start the build again. If run from commandline just prepend it."/>
 
         <filter token="app.name" value="eXist-db"/>
         <filter token="app.long.name" value="eXist-db Native XML Database"/>
