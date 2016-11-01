@@ -37,6 +37,8 @@
     <property name="jvmarg" value="-Xmx128000k -Xms32000k -Djetty.home=${jetty.dir} -Dexist.home=${basedir}"/>
     <property name="xmldb.src" value="undefined"/>
     <property name="dist.dir" value="${dist}/${project.name}-${project.version}"/>
+    
+   
 
     <!-- import common targets -->
     <!-- <import file="../../build.xml"/> -->
@@ -674,7 +676,9 @@
     </target>
 
     <target name="wrapper" depends="jar">
-        <ant antfile="build.xml" dir="tools/yajsw" inheritall="false"/>
+        <ant antfile="build.xml" dir="tools/yajsw" inheritall="false">
+             <property environment="env." name="env.EXIST_HOME"  value="${basedir}" />
+        </ant>
     </target>
 
     <target name="extension-betterform" depends="jar">
