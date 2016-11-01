@@ -53,11 +53,11 @@
         <filter token="java.vm" value="${env.JAVA_HOME}/bin/java"/>
         <filter token="server.dir" value="${env.EXIST_HOME}"/>
         <filter token="memory.max" value="${memory.max}"/>
-        <copy file="${conf}/wrapper.conf.in" tofile="${conf}/wrapper.conf" filtering="true" overwrite="false" />
+        <copy file="${conf}/wrapper.conf.in" tofile="${conf}/wrapper.conf" filtering="true" overwrite="true" />
         <filter token="java.vm" value="${JAVA_HOME}/bin/java"/>
         <filter token="server.dir" value="${INSTALL_PATH}"/>
         <filter token="memory.max" value="${MAX_MEMORY}"/>
-        <copy file="${conf}/wrapper.conf.in" tofile="${conf}/wrapper.conf.install" filtering="true"/>
+        <copy file="${conf}/wrapper.conf.in" tofile="${conf}/wrapper.conf.install" filtering="true" overwrite="true"/>
 
         <!-- Create log4j config based on general config file -->
         <xslt in="${server.dir}/log4j2.xml" out="${conf}/log4j2.xml" style="${wrapper.dir}/wrapper-log4j.xsl"/>
@@ -79,5 +79,7 @@
 	
 	<target name="clean">
 		<delete dir="${classes}"/>
+        <delete file="${conf}/wrapper.conf"/>
+        <delete file="${conf}/wrapper.conf.install"/>
 	</target>
 </project>
