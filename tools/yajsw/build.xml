@@ -37,8 +37,9 @@
     <!-- =================================================================== -->
     <target name="create-conf" unless="conf.available">
         <echo message="Creating wrapper config files for installer and direct local repo use..."/>
-	<fail unless="env.EXIST_HOME" message="EXIST_HOME environment variable not set. Please set it and start the build again. If run from commandline just prepend it."/>
-	<fail unless="env.JAVA_HOME" message="JAVA_HOME environment variable not set. Please set it and start the build again. If run from commandline just prepend it."/>
+        
+	    <fail unless="env.EXIST_HOME" message="EXIST_HOME environment variable not set. Please set it and start the build again. If run from commandline just prepend it."/>
+	    <fail unless="env.JAVA_HOME" message="JAVA_HOME environment variable not set. Please set it and start the build again. If run from commandline just prepend it."/>
 
         <filter token="app.name" value="eXist-db"/>
         <filter token="app.long.name" value="eXist-db Native XML Database"/>
@@ -48,11 +49,12 @@
         <filter token="java.vm" value="${env.JAVA_HOME}/bin/java"/>
         <filter token="server.dir" value="${env.EXIST_HOME}"/>
         <filter token="memory.max" value="${memory.max}"/>
-        <copy file="${conf}/wrapper.conf.in" tofile="${conf}/wrapper.conf" filtering="true" overwrite="false" />
+        <copy file="${conf}/wrapper.conf.in" tofile="${conf}/wrapper.conf" filtering="true" overwrite="true" />
+        
         <filter token="java.vm" value="${JAVA_HOME}/bin/java"/>
         <filter token="server.dir" value="${INSTALL_PATH}"/>
         <filter token="memory.max" value="${MAX_MEMORY}"/>
-        <copy file="${conf}/wrapper.conf.in" tofile="${conf}/wrapper.conf.install" filtering="true"/>
+        <copy file="${conf}/wrapper.conf.in" tofile="${conf}/wrapper.conf.install" filtering="true" overwrite="true"/>
     </target>
 
 
@@ -91,5 +93,7 @@
 	
 	<target name="clean">
 		<delete dir="${classes}"/>
+        <delete file="${conf}/wrapper.conf.install"/>
+        <delete file="${conf}/wrapper.conf"/>
 	</target>
 </project>
