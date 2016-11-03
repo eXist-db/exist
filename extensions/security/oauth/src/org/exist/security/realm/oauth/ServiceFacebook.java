@@ -102,7 +102,7 @@ public class ServiceFacebook  {
 		
 		String accountName = id + "@facebook.com";
 
-		Account found = OAuthRealm._.getAccount(accountName);
+		Account found = OAuthRealm.instance.getAccount(accountName);
 		
 		if (found == null) {
 			Map<SchemaType, String> metadata = new HashMap<SchemaType, String>();
@@ -112,7 +112,7 @@ public class ServiceFacebook  {
 			metadata.put(AXSchemaType.FULLNAME, responseAttributes.get("name"));
 			metadata.put(AXSchemaType.TIMEZONE, responseAttributes.get("timezone"));
 			
-			found = OAuthRealm._.createAccountInDatabase(accountName, metadata);
+			found = OAuthRealm.instance.createAccountInDatabase(accountName, metadata);
 		}
 		
 		Account principal = new SubjectAccreditedImpl((AbstractAccount) found, accessToken);

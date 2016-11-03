@@ -57,7 +57,7 @@ public class OAuthRealm extends AbstractRealm {
     protected final static Logger LOG = LogManager.getLogger(OAuthRealm.class);
     private final static String OAUTH = "OAuth";
     
-    protected static OAuthRealm _ = null;
+    protected static OAuthRealm instance = null;
     
     @ConfigurationFieldAsAttribute("id")
     public final static String ID = "OAuth";
@@ -74,7 +74,7 @@ public class OAuthRealm extends AbstractRealm {
 
     public OAuthRealm(final SecurityManagerImpl sm, Configuration config) throws ConfigurationException {
         super(sm, config);
-        _ = this;
+        instance = this;
         
 		configuration = Configurator.configure(this, config);
     }
@@ -89,7 +89,7 @@ public class OAuthRealm extends AbstractRealm {
 			primaryGroup = getGroup(OAUTH);
 			if (primaryGroup == null)
 				try {
-					primaryGroup = this.<Group, PermissionDeniedException>withDbAsSystem(broker -> addGroup(new GroupAider(ID, OAUTH)));
+					primaryGroup = this.<Group, PermissionDeniedException>withDbAsSystem(broker -> addGroup(broker, new GroupAider(ID, OAUTH)));
 					if (primaryGroup == null) {
 						throw new ConfigurationException("OAuth realm can not create primary group 'OAuth'.");
                                         }
