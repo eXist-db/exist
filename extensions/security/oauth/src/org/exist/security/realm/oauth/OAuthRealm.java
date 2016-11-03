@@ -89,7 +89,7 @@ public class OAuthRealm extends AbstractRealm {
 			primaryGroup = getGroup(OAUTH);
 			if (primaryGroup == null)
 				try {
-					primaryGroup = this.<Group, PermissionDeniedException>withDbAsSystem(broker -> addGroup(new GroupAider(ID, OAUTH)));
+					primaryGroup = this.<Group, PermissionDeniedException>withDbAsSystem(broker -> addGroup(broker, new GroupAider(ID, OAUTH)));
 					if (primaryGroup == null) {
 						throw new ConfigurationException("OAuth realm can not create primary group 'OAuth'.");
                                         }
