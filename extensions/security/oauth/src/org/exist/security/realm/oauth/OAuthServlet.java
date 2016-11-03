@@ -78,7 +78,7 @@ public class OAuthServlet extends HttpServlet {
         	OAuthRealm.LOG.trace("the " + request.getMethod() + " method, path info "+path);
         
         OAuthService service = 
-    		OAuthRealm._.getServiceBulderByPath(path)
+    		OAuthRealm.instance.getServiceBulderByPath(path)
     			.getServiceBuilder()
     			.callback(request.getRequestURL().toString())
     			.build();
@@ -98,10 +98,10 @@ public class OAuthServlet extends HttpServlet {
         Verifier verifier = new Verifier(verification);
         Token accessToken = null;
         //workaround google API
-        if (OAuthRealm._.getServiceBulderByPath(path).provider.equalsIgnoreCase("google")) {
+        if (OAuthRealm.instance.getServiceBulderByPath(path).provider.equalsIgnoreCase("google")) {
         	Google2Api api = new Google2Api();
         	
-        	Service config = OAuthRealm._.getServiceBulderByPath(path);
+        	Service config = OAuthRealm.instance.getServiceBulderByPath(path);
 
 	        OAuthRequest req = new OAuthRequest(api.getAccessTokenVerb(), api.getAccessTokenEndpoint());
 	        req.addBodyParameter(OAuthConstants.CLIENT_ID, config.getApiKey());
@@ -130,7 +130,7 @@ public class OAuthServlet extends HttpServlet {
             accessToken = service.getAccessToken(EMPTY_TOKEN, verifier);
         
         try {
-            OAuthRealm._.getServiceBulderByPath(path).saveAccessToken(request, service, accessToken);
+            OAuthRealm.instance.getServiceBulderByPath(path).saveAccessToken(request, service, accessToken);
         } catch (Exception e) {
             throw new ServletException(e);
         }

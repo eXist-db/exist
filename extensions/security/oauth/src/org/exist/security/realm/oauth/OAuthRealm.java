@@ -57,7 +57,7 @@ public class OAuthRealm extends AbstractRealm {
     protected final static Logger LOG = LogManager.getLogger(OAuthRealm.class);
     private final static String OAUTH = "OAuth";
     
-    protected static OAuthRealm _ = null;
+    protected static OAuthRealm instance = null;
     
     @ConfigurationFieldAsAttribute("id")
     public final static String ID = "OAuth";
@@ -74,7 +74,7 @@ public class OAuthRealm extends AbstractRealm {
 
     public OAuthRealm(final SecurityManagerImpl sm, Configuration config) throws ConfigurationException {
         super(sm, config);
-        _ = this;
+        instance = this;
         
 		configuration = Configurator.configure(this, config);
     }
