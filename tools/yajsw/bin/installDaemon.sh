@@ -55,7 +55,7 @@ function review_systemd_config {
     read -p "Would you like to review the systemd config (Y/n)? " eval_response;
     case $eval_response in
         [Yy])
-            echo -e "$(eval "echo -e \"`<$PRGDIR/../templates/systemd.vm`\"")";
+            echo -e "$(eval "echo -e \"`<${wrapper_home}/templates/systemd.vm`\"")";
 
             read -p "Continue (Y/n)? " eval_response;
             case $eval_response in
@@ -79,9 +79,9 @@ function install_systemd_config {
     if [ ! -d "$HOME/.local/share/systemd/user" ]; then
         echo "Creating directory \"$HOME/.local/share/systemd/user\"";
         mkdir -p "$HOME/.local/share/systemd/user";
-    fi 
-    echo "Installing template $PRGDIR/../templates/systemd.vm as non-privileged service $HOME/.local/share/systemd/user/eXist-db.service";
-    echo -e "$(eval "echo -e \"`<$PRGDIR/../templates/systemd.vm`\"")" > "$HOME/.local/share/systemd/user/eXist-db.service";
+    fi
+    echo "Installing template ${wrapper_home}/templates/systemd.vm as non-privileged service $HOME/.local/share/systemd/user/eXist-db.service";
+    echo -e "$(eval "echo -e \"`<${wrapper_home}/templates/systemd.vm`\"")" > "$HOME/.local/share/systemd/user/eXist-db.service";
     echo -e "\nEnabling the service (systemctl --user enable eXist-db) ...\n";
     systemctl --user enable eXist-db;
     echo -e "\nStart it with: \n===============================";
