@@ -62,7 +62,7 @@ function use_systemd {
     esac	
 }
 
-w_wrapper_pid_file="$EXIST_HOME/tools/yajsw/work/wrapper.eXist-db.pid";
+w_wrapper_pid_file="${wrapper_home}/work/wrapper.eXist-db.pid";
 if [ ! -e "$w_wrapper_pid_file" ]; then
     mkdir "$w_wrapper_pid_file";
 fi
