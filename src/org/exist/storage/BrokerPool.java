@@ -476,7 +476,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
         }
         servicesManager.register(new ClasspathHelper());
 
-        this.indexManager = servicesManager.register(new IndexManager(this, conf));
+        this.indexManager = servicesManager.register(new IndexManager(this));
 
         //prepare those services that require system (single-user) mode
         this.pluginManager = servicesManager.register(new PluginsManagerImpl());
