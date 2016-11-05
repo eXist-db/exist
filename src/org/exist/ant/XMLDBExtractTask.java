@@ -312,6 +312,15 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
         this.resource = resource;
     }
 
+    public void setDestFile(final File destFile) {
+        this.destFile = destFile;
+    }
+
+    public void setDestDir(final File destDir) {
+        this.destDir = destDir;
+    }
+
+
     /**
      * @deprecated Not used anymore
      */
