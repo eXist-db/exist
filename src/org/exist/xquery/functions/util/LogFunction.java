@@ -22,7 +22,6 @@
  */
 package org.exist.xquery.functions.util;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
@@ -83,9 +82,6 @@ public class LogFunction extends BasicFunction {
         super(context, signature);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
-     */
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
 
         SequenceIterator i;
@@ -174,7 +170,7 @@ public class LogFunction extends BasicFunction {
                 final String logname = args[1].getStringValue();
 
                 // Use specific logger when provided
-                Logger logger = StringUtils.isBlank(logname) ? LOG : LogManager.getLogger(logname);
+                Logger logger = (logname == null || logname.isEmpty()) ? LOG : LogManager.getLogger(logname);
 
                 writeLog(buf, loglevelapp, logger);
                 break;
