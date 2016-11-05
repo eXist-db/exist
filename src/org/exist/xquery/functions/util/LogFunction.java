@@ -22,6 +22,7 @@
  */
 package org.exist.xquery.functions.util;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
@@ -173,10 +174,7 @@ public class LogFunction extends BasicFunction {
                 final String logname = args[1].getStringValue();
 
                 // Use specific logger when provided
-                Logger logger = LOG;
-                if (logname != null && logname.length() > 0) {
-                    logger = LogManager.getLogger(logname);
-                }
+                Logger logger = StringUtils.isBlank(logname) ? LOG : LogManager.getLogger(logname);
 
                 writeLog(buf, loglevelapp, logger);
                 break;
@@ -187,11 +185,11 @@ public class LogFunction extends BasicFunction {
     }
 
     /**
-     *  Write log message to logger with a priority.
+     * Write log message to logger with a priority.
      *
-     * @param buffer    The log text
-     * @param loglevel  The priority of the log message
-     * @param logger    The actual logger
+     * @param buffer   The log text
+     * @param loglevel The priority of the log message
+     * @param logger   The actual logger
      */
     private void writeLog(StringBuilder buffer, String loglevel, Logger logger) {
         switch (loglevel) {
