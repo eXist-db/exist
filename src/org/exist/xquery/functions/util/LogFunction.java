@@ -26,6 +26,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import org.exist.dom.QName;
+import org.exist.source.StringSource;
 import org.exist.storage.serializers.Serializer;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -120,9 +121,15 @@ public class LogFunction extends BasicFunction
                 //add the source to the log statement
                 if(getSource() != null && getSource().getKey() != null) {
                     buf.append(" ");
-                    buf.append(getSource().getKey());
+
+                    // Do not write content of query from String into log.
+                    if (getSource() instanceof StringSource) {
+                        buf.append(getSource().type());
+                    } else {
+                        buf.append(getSource().getKey());
+                    }
                 }
-                
+
 		buf.append(") ");
 		
 		while(i.hasNext()) {
