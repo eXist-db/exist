@@ -72,31 +72,49 @@ function review_systemd_config {
 }
 
 function install_systemd_config {
-    if [ ! -d "$HOME/.config/systemd/user" ]; then
-        echo "Creating directory \"$HOME/.config/systemd/user\"";
-        mkdir -p "$HOME/.config/systemd/user";
-    fi 
-    if [ ! -d "$HOME/.local/share/systemd/user" ]; then
-        echo "Creating directory \"$HOME/.local/share/systemd/user\"";
-        mkdir -p "$HOME/.local/share/systemd/user";
+    systemd_sys_dir="/etc/systemd/system"
+    if [ ! -d "${systemd_sys_dir}" ]; then
+        echo "Creating directory \"${systemd_sys_dir}\"";
+        sudo mkdir -p "${systemd_sys_dir}";
     fi
-    echo "Installing template ${wrapper_home}/templates/systemd.vm as non-privileged service $HOME/.local/share/systemd/user/eXist-db.service";
-    echo -e "$(eval "echo -e \"`<${wrapper_home}/templates/systemd.vm`\"")" > "$HOME/.local/share/systemd/user/eXist-db.service";
-    echo -e "\nEnabling the service (systemctl --user enable eXist-db) ...\n";
-    systemctl --user enable eXist-db;
-    echo -e "\nStart it with: \n===============================";
-    echo -e "systemctl --user start eXist-db\n===============================\n";
+    systemd_service="${systemd_sys_dir}/eXist-db.service"
+    echo "Installing template ${wrapper_home}/templates/systemd.vm as non-privileged service ${systemd_service}";
+    sudo echo -e "$(eval "echo -e \"`<${wrapper_home}/templates/systemd.vm`\"")" > "${systemd_service}";
+    sudo chmod 664 "${systemd_service}"
+    echo -e "\nEnabling the service...\n";
+    sudo systemctl daemon-reload
+    sudo systemctl enable eXist-db;
+    echo -e "\nYou can now start it with: \n===============================";
+    echo -e "sudo systemctl start eXist-db\n===============================\n";
+}
+
+function systemd_user {
+    if [ -z "${RUN_AS_USER}" ]; then
+        echo -e "\nNo RUN_AS_USER environment variable found!"
+        read -p "Which user should eXist run as for the systemd service (${USER})? " eval_response;
+        case $eval_response in
+            "")
+                RUN_AS_USER="${USER}"
+                ;;
+             *)
+                RUN_AS_USER="${eval_response}"
+                ;;
+        esac
+    fi
 }
 
 # systemd stuff 20160901/ljo
 function use_systemd {
-    echo "Using systemd with template non-privileged";
-    echo -e "\nPlease note that the environment variables JAVA_HOME, EXIST_HOME, and USER are used for the systemd service setup."
-    echo -e "Please review them below and if they are not set correctly, please exit and set them in your environment before rerunning this script.\n\n";
+    echo "Using systemd with template non-privileged"
+
+    systemd_user;
+
+    echo -e "\nPlease note that the environment variables JAVA_HOME, EXIST_HOME, and RUN_AS_USER are used for the systemd service setup."
+    echo -e "Please review them below and if they are not set correctly, please exit and set them in your environment before rerunning this script.\n\n"
 
     echo "JAVA_HOME=${JAVA_HOME}"
     echo "EXIST_HOME=${EXIST_HOME}"
-    echo -e "USER=${USER}\n"
+    echo -e "RUN_AS_USER=${RUN_AS_USER}\n"
 
     read -p "Continue (Y/n)? " eval_response;
     case $eval_response in
