@@ -170,7 +170,7 @@ public class LogFunction extends BasicFunction {
                 final String logname = args[1].getStringValue();
 
                 // Use specific logger when provided
-                Logger logger = (logname == null || logname.isEmpty()) ? LOG : LogManager.getLogger(logname);
+                final Logger logger = (logname == null || logname.isEmpty()) ? LOG : LogManager.getLogger(logname);
 
                 writeLog(buf, loglevelapp, logger);
                 break;
@@ -187,7 +187,7 @@ public class LogFunction extends BasicFunction {
      * @param loglevel The priority of the log message
      * @param logger   The actual logger
      */
-    private void writeLog(StringBuilder buffer, String loglevel, Logger logger) {
+    private void writeLog(final StringBuilder buffer, final String loglevel, final Logger logger) {
         switch (loglevel) {
             case "error":
                 logger.error(buffer);
