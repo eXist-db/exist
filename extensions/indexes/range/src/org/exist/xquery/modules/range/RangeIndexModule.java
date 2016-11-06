@@ -21,8 +21,10 @@
  */
 package org.exist.xquery.modules.range;
 
+import org.exist.dom.QName;
 import org.exist.indexing.range.RangeIndex;
 import org.exist.xquery.AbstractInternalModule;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.FunctionDef;
 
 import java.util.HashMap;
@@ -76,6 +78,17 @@ public class RangeIndexModule extends AbstractInternalModule {
         OPERATOR_MAP.put("matches", RangeIndex.Operator.MATCH);
 
     }
+
+    protected final static class RangeIndexErrorCode extends ErrorCodes.ErrorCode {
+
+        public RangeIndexErrorCode(String code, String description) {
+            super(new QName(code, NAMESPACE_URI, PREFIX), description);
+        }
+
+    }
+
+    public final static ErrorCodes.ErrorCode EXXQDYFT0001 = new RangeIndexErrorCode("EXXQDYFT0001", "Collation not " +
+            "supported");
 
     public RangeIndexModule(Map<String, List<? extends Object>> parameters) {
         super(functions, parameters, false);

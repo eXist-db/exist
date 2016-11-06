@@ -150,6 +150,7 @@ public class Lookup extends Function implements Optimizable {
     protected boolean canOptimize = false;
     protected boolean optimizeSelf = false;
     protected boolean optimizeChild = false;
+    protected boolean usesCollation = false;
     protected Expression fallback = null;
     protected NodePath contextPath = null;
 
@@ -248,6 +249,13 @@ public class Lookup extends Function implements Optimizable {
             // in-memory docs won't have an index
             return NodeSet.EMPTY_SET;
 
+        // throw an exception if substring match operation is applied to collated index
+        final RangeIndex.Operator operator = getOperator();
+        if (usesCollation && !operator.supportsCollation()) {
+            throw new XPathException(this, RangeIndexModule.EXXQDYFT0001, "Index defines a collation which cannot be " +
+                    "used with the '" + operator + "' operation.");
+        }
+
         long start = System.currentTimeMillis();
 
         // the expression can be called multiple times, so we need to clear the previous preselectResult
@@ -266,8 +274,6 @@ public class Lookup extends Function implements Optimizable {
             qnames = new ArrayList<QName>(1);
             qnames.add(contextQName);
         }
-
-        final RangeIndex.Operator operator = getOperator();
 
         try {
             preselectResult = index.query(getExpressionId(), docs, contextSequence.toNodeSet(), qnames, keys, operator, NodeSet.DESCENDANT);
@@ -340,6 +346,12 @@ public class Lookup extends Function implements Optimizable {
                 }
                 final RangeIndex.Operator operator = getOperator();
 
+                // throw an exception if substring match operation is applied to collated index
+                if (usesCollation && !operator.supportsCollation()) {
+                    throw new XPathException(this, RangeIndexModule.EXXQDYFT0001, "Index defines a collation which cannot be " +
+                            "used with the '" + operator + "' operation.");
+                }
+
                 try {
                     NodeSet inNodes = input.toNodeSet();
                     DocumentSet docs = inNodes.getDocumentSet();
@@ -386,6 +398,7 @@ public class Lookup extends Function implements Optimizable {
             }
             return false;
         }
+        usesCollation = rice.usesCollation();
         canOptimize = true;
         return canOptimize;
     }

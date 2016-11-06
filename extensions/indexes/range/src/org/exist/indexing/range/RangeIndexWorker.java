@@ -112,9 +112,9 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     public Query toQuery(String field, QName qname, AtomicValue content, RangeIndex.Operator operator, DocumentSet docs) throws XPathException {
         final int type = content.getType();
-        BytesRef bytes;
+        BytesRefBuilder bytes;
+        BytesRef key = null;
         if (Type.subTypeOf(type, Type.STRING)) {
-            BytesRef key = null;
             if (operator != RangeIndex.Operator.MATCH) {
                 key = analyzeContent(field, qname, content.getStringValue(), docs);
             }
@@ -124,8 +124,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     return new TermQuery(new Term(field, key));
                 case NE:
                     final BooleanQuery qnot = new BooleanQuery();
-                    bytes = new BytesRef("*");
-                    query = new WildcardQuery(new Term(field, bytes));
+                    query = new WildcardQuery(new Term(field, new BytesRef("*")));
                     query.setRewriteMethod(MultiTermQuery.CONSTANT_SCORE_FILTER_REWRITE);
                     qnot.add(query, BooleanClause.Occur.MUST);
                     qnot.add(new TermQuery(new Term(field, key)), BooleanClause.Occur.MUST_NOT);
@@ -133,16 +132,18 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 case STARTS_WITH:
                     return new PrefixQuery(new Term(field, key));
                 case ENDS_WITH:
-                    bytes = new BytesRef("*");
+                    bytes = new BytesRefBuilder();
+                    bytes.append((byte)'*');
                     bytes.append(key);
-                    query = new WildcardQuery(new Term(field, bytes));
+                    query = new WildcardQuery(new Term(field, bytes.toBytesRef()));
                     query.setRewriteMethod(MultiTermQuery.CONSTANT_SCORE_FILTER_REWRITE);
                     return query;
                 case CONTAINS:
-                    bytes = new BytesRef("*");
+                    bytes = new BytesRefBuilder();
+                    bytes.append((byte)'*');
                     bytes.append(key);
-                    bytes.append(new BytesRef("*"));
-                    query = new WildcardQuery(new Term(field, bytes));
+                    bytes.append((byte)'*');
+                    query = new WildcardQuery(new Term(field, bytes.toBytesRef()));
                     query.setRewriteMethod(MultiTermQuery.CONSTANT_SCORE_FILTER_REWRITE);
                     return query;
                 case MATCH:
@@ -209,10 +210,13 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 }
             case Type.DATE_TIME:
             default:
+                if (type == Type.DATE_TIME) {
+                    key = RangeIndexConfigElement.convertToBytes(content);
+                }
                 if (operator == RangeIndex.Operator.LT || operator == RangeIndex.Operator.LE) {
-                    return new TermRangeQuery(field, null, RangeIndexConfigElement.convertToBytes(content), includeLower, includeUpper);
+                    return new TermRangeQuery(field, null, key, includeLower, includeUpper);
                 } else {
-                    return new TermRangeQuery(field, RangeIndexConfigElement.convertToBytes(content), null, includeLower, includeUpper);
+                    return new TermRangeQuery(field, key, null, includeLower, includeUpper);
                 }
         }
     }
@@ -743,7 +747,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 stream.reset();
                 if (stream.incrementToken()) {
                     termAttr.fillBytesRef();
-                    token = termAttr.getBytesRef();
+                    token = BytesRef.deepCopyOf(termAttr.getBytesRef());
                 }
                 stream.end();
             } finally {

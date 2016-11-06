@@ -15,6 +15,7 @@ import org.exist.util.XMLString;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.*;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.io.IOException;
@@ -22,13 +23,16 @@ import java.util.Map;
 
 public class RangeIndexConfigElement {
 
+    protected final static String FILTER_ELEMENT = "filter";
+
     protected NodePath path = null;
     private int type = Type.STRING;
     private RangeIndexConfigElement nextConfig = null;
     protected boolean isQNameIndex = false;
-    protected Analyzer analyzer = null;
+    protected RangeIndexAnalyzer analyzer = new RangeIndexAnalyzer();
     protected boolean includeNested = false;
     protected boolean caseSensitive = true;
+    protected boolean usesCollation = false;
     protected int wsTreatment = XMLString.SUPPRESS_NONE;
     private org.exist.indexing.range.conversion.TypeConverter typeConverter = null;
 
@@ -56,13 +60,13 @@ public class RangeIndexConfigElement {
                 throw new DatabaseConfigurationException("Invalid type declared for range index on " + match + ": " + typeStr);
             }
         }
+
+        parseChildren(node);
+
         String collation = node.getAttribute("collation");
         if (collation != null && collation.length() > 0) {
-            try {
-                analyzer = new CollationKeyAnalyzer(RangeIndex.LUCENE_VERSION_IN_USE, Collations.getCollationFromURI(null, collation));
-            } catch (XPathException e) {
-                throw new DatabaseConfigurationException(e.getMessage(), e);
-            }
+            analyzer.addCollation(collation);
+            usesCollation = true;
         }
         String nested = node.getAttribute("nested");
         includeNested = (nested == null || nested.equalsIgnoreCase("yes"));
@@ -93,6 +97,18 @@ public class RangeIndexConfigElement {
             } catch (IllegalAccessException e) {
                 RangeIndex.LOG.warn("Failed to initialize custom-type: " + custom, e);
             }
+        }
+    }
+
+    private void parseChildren(Node root) throws DatabaseConfigurationException {
+        Node child = root.getFirstChild();
+        while (child != null) {
+            if (child.getNodeType() == Node.ELEMENT_NODE) {
+                if (FILTER_ELEMENT.equals(child.getLocalName())) {
+                    analyzer.addFilter((Element) child);
+                }
+            }
+            child = child.getNextSibling();
         }
     }
 
@@ -254,6 +270,10 @@ public class RangeIndexConfigElement {
 
     public boolean isCaseSensitive(String fieldName) {
         return caseSensitive;
+    }
+
+    public boolean usesCollation() {
+        return usesCollation;
     }
 
     public boolean isComplex() {
