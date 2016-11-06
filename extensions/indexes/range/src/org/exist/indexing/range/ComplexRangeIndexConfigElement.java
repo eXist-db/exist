@@ -50,8 +50,10 @@ public class ComplexRangeIndexConfigElement extends RangeIndexConfigElement {
             Node child = children.item(i);
             if (child.getNodeType() == Node.ELEMENT_NODE) {
                 if (FIELD_ELEMENT.equals(child.getLocalName())) {
-                    RangeIndexConfigField field = new RangeIndexConfigField(path, (Element)child, namespaces);
+                    RangeIndexConfigField field = new RangeIndexConfigField(path, (Element) child, namespaces);
                     fields.put(field.getName(), field);
+                } else if (FILTER_ELEMENT.equals(child.getLocalName())) {
+                    analyzer.addFilter((Element) child);
                 } else {
                     LOG.warn("Invalid element encountered for range index configuration: " + child.getLocalName());
                 }
