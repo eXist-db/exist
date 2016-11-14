@@ -669,9 +669,10 @@
             <fileset dir="${junit.reports}/external" includes="*"/>
         </delete>
         <delete failonerror="no">
-            <fileset dir="${jetty.dir}/tmp" includes="*"/>
+            <fileset dir="${jetty.dir}/tmp">
+                <exclude name=".DO_NOT_DELETE"/>
+            </fileset>
         </delete>
-        <mkdir dir="${jetty.dir}/tmp"/>
 		<ant antfile="build.xml" dir="extensions/modules" target="clean-all" inheritall="false"/>
     </target>
 
