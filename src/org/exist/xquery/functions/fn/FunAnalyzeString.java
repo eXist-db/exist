@@ -195,7 +195,7 @@ public class FunAnalyzeString extends BasicFunction {
                 break;
                 
             case 'x' :
-                iFlags |= Pattern.COMMENT;
+                iFlags |= Pattern.COMMENTS;
                 break;
                 
             case 'q' :
