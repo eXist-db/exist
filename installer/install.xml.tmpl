@@ -179,6 +179,10 @@
                 <exclude name="**/*~"/>
             </fileset>
             <fileset targetdir="$INSTALL_PATH/tools" dir="tools">
+                <include name="jetty/tmp/.DO_NOT_DELETE"/>
+                <include name="yajsw/tmp/.DO_NOT_DELETE"/>
+            </fileset>
+            <fileset targetdir="$INSTALL_PATH/tools" dir="tools">
                 <include name="**/*.jar"/>
                 <include name="yajsw/**"/>
                 <exclude name="yajsw/log/*"/>
@@ -198,6 +202,10 @@
                 <exclude name="ant/lib/svnkit*.jar"/>
                 <include name="jmx/**"/>
                 <exclude name="jmx/classes/**"/>
+            </fileset>
+            <fileset targetdir="$INSTALL_PATH/webapp" dir="webapp">
+                <include name="WEB-INF/data/.DO_NOT_DELETE"/>
+                <include name="WEB-INF/logs/.DO_NOT_DELETE"/>
             </fileset>
             <fileset targetdir="$INSTALL_PATH/webapp" dir="webapp">
                 <exclude name="**/*.dbx"/>
