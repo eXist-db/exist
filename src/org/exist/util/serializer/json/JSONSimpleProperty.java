@@ -51,7 +51,14 @@ public class JSONSimpleProperty extends JSONNode {
     public void serialize(final Writer writer, final boolean isRoot) throws IOException {
         writer.write('"');
         writer.write(getName());
-        writer.write("\" : ");
+        writer.write("\"");
+        if(isIndent()) {
+            writer.write(' ');
+        }
+        writer.write(':');
+        if(isIndent()) {
+            writer.write(' ');
+        }
         
         if(getSerializationDataType() != SerializationDataType.AS_LITERAL) {
             writer.write('"');
