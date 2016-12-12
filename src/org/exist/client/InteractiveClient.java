@@ -45,9 +45,6 @@ import jline.Completor;
 import jline.ConsoleReader;
 import jline.History;
 import jline.Terminal;
-import org.apache.avalon.excalibur.cli.CLArgsParser;
-import org.apache.avalon.excalibur.cli.CLOption;
-import org.apache.avalon.excalibur.cli.CLUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.SystemProperties;
@@ -82,6 +79,7 @@ import org.xmldb.api.base.*;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.modules.BinaryResource;
 import org.xmldb.api.modules.XUpdateQueryService;
+import se.softhouse.jargo.ArgumentException;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -120,7 +118,6 @@ public class InteractiveClient {
     protected static final String LOCAL_MODE_DEFAULT = "FALSE";
     protected static final String NO_EMBED_MODE_DEFAULT = "FALSE";
     protected static final String USER_DEFAULT = SecurityManager.DBA_USER;
-    protected static int PARALLEL_THREADS = 5;
 
     // Set
     protected final static Properties defaultProps = new Properties();
@@ -152,34 +149,23 @@ public class InteractiveClient {
 
     protected Collection current = null;
     protected int nextInSet = 1;
-    protected int maxResults = 10;
-    protected XmldbURI path = XmldbURI.ROOT_COLLECTION_URI;
     protected Properties properties;
 
     protected String[] resources = null;
     protected ResourceSet result = null;
-    protected final HashMap<String, String> namespaceMappings = new HashMap<>();
+    protected final Map<String, String> namespaceMappings = new HashMap<>();
+
     /**
      * number of files of a recursive store
      */
     protected int filesCount = 0;
+
     /**
      * total length of a recursive store
      */
     protected long totalLength = 0;
 
-    protected boolean quiet = false;
-    protected boolean verbose = false;
-    /**
-     * default recursive, maybe override by client.properties
-     */
-    protected boolean recurseDirs = true;
-    protected boolean startGUI = true;
-
-    protected Writer traceWriter = null;
     protected ClientFrame frame;
-
-    private final static Logger LOG = LogManager.getLogger(InteractiveClient.class.getName());
 
     //XXX:make pluggable
     private static boolean havePluggableCommands = false;
@@ -195,7 +181,13 @@ public class InteractiveClient {
 
     //*************************************
 
-    public InteractiveClient() {
+    private final CommandlineOptions options;
+    protected XmldbURI path = XmldbURI.ROOT_COLLECTION_URI;
+    private Optional<Writer> lazyTraceWriter = Optional.empty();
+
+    public InteractiveClient(final CommandlineOptions options) {
+        this.options = options;
+        this.path = options.setCol.orElse(XmldbURI.ROOT_COLLECTION_URI);
     }
 
     /**
@@ -246,10 +238,18 @@ public class InteractiveClient {
      */
     public static void main(final String[] args) {
         try {
-            final InteractiveClient client = new InteractiveClient();
-            if (!client.run(args)) {
+            // parse command-line options
+            final CommandlineOptions options = CommandlineOptions.parse(args);
+
+            final InteractiveClient client = new InteractiveClient(options);
+            if (!client.run()) {
                 System.exit(1); // return non-zero exit status on failure
             }
+
+        } catch(final ArgumentException e) {
+            System.out.println(e.getMessageAndUsage());
+            System.exit(2);
+
         } catch (final Exception e) {
             e.printStackTrace();
             System.exit(1); // return non-zero exit status on exception
@@ -265,7 +265,7 @@ public class InteractiveClient {
         System.out.println("Connecting to database...");
 
         final String uri = properties.getProperty(InteractiveClient.URI);
-        if (startGUI && frame != null) {
+        if (options.startGUI && frame != null) {
             frame.setStatus("connecting to " + uri);
         }
 
@@ -288,7 +288,7 @@ public class InteractiveClient {
 
         final String collectionUri = uri + path;
         current = DatabaseManager.getCollection(collectionUri, properties.getProperty("user"), properties.getProperty("password"));
-        if (startGUI && frame != null) {
+        if (options.startGUI && frame != null) {
             frame.setStatus("connected to " + uri + " as user " + properties.getProperty("user"));
         }
 
@@ -379,7 +379,7 @@ public class InteractiveClient {
 
             final Date created = mgtService.getSubCollectionCreationTime(current, childCollections[i]);
 
-            if (startGUI) {
+            if (options.startGUI) {
                 tableData.add(new ResourceDescriptor.Collection(
                         XmldbURI.create(childCollections[i]),
                         getOwnerName(perm),
@@ -407,7 +407,7 @@ public class InteractiveClient {
             final Date lastModificationTime = ((EXistResource) res).getLastModificationTime();
             resources[i] += "\t" + lastModificationTime;
 
-            if (startGUI) {
+            if (options.startGUI) {
                 tableData.add(new ResourceDescriptor.Document(
                         XmldbURI.create(childResources[j]),
                         getOwnerName(perm),
@@ -417,7 +417,7 @@ public class InteractiveClient {
             }
             completitions.add(childResources[j]);
         }
-        if (startGUI) {
+        if (options.startGUI) {
             frame.setResources(tableData);
         }
     }
@@ -460,7 +460,7 @@ public class InteractiveClient {
      * @return true if command != quit
      */
     protected boolean process(final String line) {
-        if (startGUI) {
+        if (options.startGUI) {
             frame.setPath(path);
         }
         final String args[];
@@ -543,7 +543,7 @@ public class InteractiveClient {
                 if (temp != null) {
                     current = temp;
                     newPath = collectionPath.toCollectionPathURI();
-                    if (startGUI) {
+                    if (options.startGUI) {
                         frame.setPath(collectionPath.toCollectionPathURI());
                     }
                 } else {
@@ -600,7 +600,7 @@ public class InteractiveClient {
                     } else {
                         data = new String((byte[]) res.getContent());
                     }
-                    if (startGUI) {
+                    if (options.startGUI) {
                         frame.setEditable(false);
                         frame.display(data);
                         frame.setEditable(true);
@@ -684,7 +684,7 @@ public class InteractiveClient {
                     nextInSet = start + count + 1;
                     for (int i = start; i < start + count; i++) {
                         final Resource r = result.getResource(i);
-                        if (startGUI) {
+                        if (options.startGUI) {
                             frame.display((String) r.getContent());
                         } else {
                             more((String) r.getContent());
@@ -732,7 +732,7 @@ public class InteractiveClient {
                     messageln("missing argument.");
                     return true;
                 }
-                final boolean r = parse(args[1]);
+                final boolean r = parse(Paths.get(args[1]));
                 getResources();
                 return r;
 
@@ -806,7 +806,7 @@ public class InteractiveClient {
                     System.err.println("Usage: adduser name");
                     return true;
                 }
-                if (startGUI) {
+                if (options.startGUI) {
                     messageln("command not supported in GUI mode. Please use the \"Edit users\" menu option.");
                     return true;
                 }
@@ -865,7 +865,7 @@ public class InteractiveClient {
                     System.out.println();
                 }
             } else if (args[0].equalsIgnoreCase("passwd")) {
-                if (startGUI) {
+                if (options.startGUI) {
                     messageln("command not supported in GUI mode. Please use the \"Edit users\" menu option.");
                     return true;
                 }
@@ -1011,7 +1011,7 @@ public class InteractiveClient {
                 return true;
 
             } else if (args[0].equalsIgnoreCase("xupdate")) {
-                if (startGUI) {
+                if (options.startGUI) {
                     messageln("command not supported in GUI mode.");
                     return true;
                 }
@@ -1094,7 +1094,7 @@ public class InteractiveClient {
             path = newPath;
             return true;
         } catch (final Throwable e) {
-            if (startGUI) {
+            if (options.startGUI) {
                 ClientFrame.showErrorMessage(getExceptionMessage(e), e);
             } else {
                 errorln(getExceptionMessage(e));
@@ -1118,20 +1118,48 @@ public class InteractiveClient {
         }
     }
 
+    private Optional<Writer> getTraceWriter() {
+
+        //should there be a trace writer?
+        if(options.traceQueriesFile.isPresent()) {
+
+            //lazy initialization
+            if(!lazyTraceWriter.isPresent()) {
+                try {
+                    final Writer traceWriter = Files.newBufferedWriter(options.traceQueriesFile.get(), UTF_8);
+                    traceWriter.write("<?xml version=\"1.0\"?>" + EOL);
+                    traceWriter.write("<query-log>" + EOL);
+                    this.lazyTraceWriter = Optional.of(traceWriter);
+                } catch(final IOException ioe) {
+                    errorln("Cannot open file " + options.traceQueriesFile.get());
+                    return Optional.empty();
+                }
+            }
+
+            return lazyTraceWriter;
+
+        } else {
+            return Optional.empty();
+        }
+    }
+
     private ResourceSet find(String xpath) throws XMLDBException {
         if (xpath.substring(xpath.length() - EOL.length()).equals(EOL)) {
             xpath = xpath.substring(0, xpath.length() - EOL.length());
         }
-        if (traceWriter != null) {
+
+        final String xpathCopy = xpath;
+        getTraceWriter().ifPresent(writer -> {
             try {
-                traceWriter.write("<query>");
-                traceWriter.write(xpath);
-                traceWriter.write("</query>");
-                traceWriter.write(EOL);
+                writer.write("<query>");
+                writer.write(xpathCopy);
+                writer.write("</query>");
+                writer.write(EOL);
             } catch (final IOException e) {
                 //TODO report error?
             }
-        }
+        });
+
         String sortBy = null;
         final int p = xpath.indexOf(" sort by ");
         if (p != Constants.STRING_NOT_FOUND) {
@@ -1188,19 +1216,19 @@ public class InteractiveClient {
         }
     }
 
-    private void xupdate(final String resource, final String filename) throws XMLDBException, IOException {
-        final Path file = Paths.get(filename);
+    private void xupdate(final Optional<String> resource, final Path file) throws XMLDBException, IOException {
         if (!(Files.exists(file) && Files.isReadable(file))) {
-            messageln("cannot read file " + filename);
+            messageln("cannot read file " + file.normalize().toAbsolutePath().toString());
             return;
         }
         final String commands = XMLUtil.readFile(file, UTF_8);
         final XUpdateQueryService service = (XUpdateQueryService) current.getService("XUpdateQueryService", "1.0");
         final long modifications;
-        if (resource == null) {
-            modifications = service.update(commands);
+        if (resource.isPresent()) {
+            modifications = service.updateResource(resource.get(), commands);
         } else {
-            modifications = service.updateResource(resource, commands);
+            modifications = service.update(commands);
+
         }
         messageln(modifications + " modifications processed " + "successfully.");
     }
@@ -1275,7 +1303,7 @@ public class InteractiveClient {
                             c = mgtService.createCollection(URIUtils.encodeXmldbUriFor(FileUtils.fileName(file)));
                         }
 
-                        if (c instanceof Observable && verbose) {
+                        if (c instanceof Observable && options.verbose) {
                             final ProgressObserver observer = new ProgressObserver();
                             ((Observable) c).addObserver(observer);
                         }
@@ -1309,18 +1337,15 @@ public class InteractiveClient {
     /**
      * stores given Resource
      *
-     * @param fileName simple file or directory
+     * @param file file or directory
      * @throws XMLDBException
      */
-    protected synchronized boolean parse(String fileName) throws XMLDBException {
+    protected synchronized boolean parse(final Path file) throws XMLDBException {
         try {
-            //TODO : why is this test for ? File should make it, shouldn't it ? -pb
-            fileName = fileName.replace('/', java.io.File.separatorChar).replace('\\', java.io.File.separatorChar);
-            final Path file = Paths.get(fileName).normalize();
             Resource document;
             // String xml;
 
-            if (current instanceof Observable && verbose) {
+            if (current instanceof Observable && options.verbose) {
                 final ProgressObserver observer = new ProgressObserver();
                 ((Observable) current).addObserver(observer);
             }
@@ -1329,7 +1354,7 @@ public class InteractiveClient {
             if (Files.isReadable(file)) {
                 // TODO, same logic as for the graphic client
                 if (Files.isDirectory(file)) {
-                    if (recurseDirs) {
+                    if (options.reindexRecurse) {
                         filesCount = 0;
                         final long start = System.currentTimeMillis();
                         final boolean result = findRecursive(current, file, path);
@@ -1341,7 +1366,7 @@ public class InteractiveClient {
                     files.add(file);
                 }
             } else {
-                files = DirectoryScanner.scanDir(fileName);
+                files = DirectoryScanner.scanDir(file.toString());
             }
 
             final long start0 = System.currentTimeMillis();
@@ -1395,7 +1420,7 @@ public class InteractiveClient {
                         mgtService = (CollectionManagementServiceImpl) collection.getService("CollectionManagementService", "1.0");
                         c = mgtService.createCollection(URIUtils.encodeXmldbUriFor(FileUtils.fileName(file)));
                     }
-                    if (c instanceof Observable && verbose) {
+                    if (c instanceof Observable && options.verbose) {
                         final ProgressObserver observer = new ProgressObserver();
                         ((Observable) c).addObserver(observer);
                     }
@@ -1449,7 +1474,7 @@ public class InteractiveClient {
         final Path file = Paths.get(fileName);
         Resource document;
         // String xml;
-        if (current instanceof Observable && verbose) {
+        if (current instanceof Observable && options.verbose) {
             final ProgressObserver observer = new ProgressObserver();
             ((Observable) current).addObserver(observer);
         }
@@ -1457,7 +1482,7 @@ public class InteractiveClient {
         if (Files.isReadable(file)) {
             // TODO, same logic as for the graphic client
             if (Files.isDirectory(file)) {
-                if (recurseDirs) {
+                if (options.reindexRecurse) {
                     filesCount = 0;
                     final long start = System.currentTimeMillis();
                     final boolean result = findGZipRecursive(current, file, path);
@@ -1531,7 +1556,7 @@ public class InteractiveClient {
             final ZipFile zfile = new ZipFile(fileName);
             Resource document;
             // String xml;
-            if (current instanceof Observable && verbose) {
+            if (current instanceof Observable && options.verbose) {
                 final ProgressObserver observer = new ProgressObserver();
                 ((Observable) current).addObserver(observer);
             }
@@ -1565,7 +1590,7 @@ public class InteractiveClient {
                         }
                         base = c;
                     }
-                    if (base instanceof Observable && verbose) {
+                    if (base instanceof Observable && options.verbose) {
                         final ProgressObserver observer = new ProgressObserver();
                         ((Observable) base).addObserver(observer);
                     }
@@ -1795,226 +1820,59 @@ public class InteractiveClient {
     }*/
 
     private Properties loadClientProperties() {
-
-        final Properties clientProps = new Properties();
         final Path propFile = ConfigurationHelper.lookup("client.properties");
-        InputStream pin = null;
-
-        // Try to load from file
+        final Properties properties = new Properties();
         try {
-            pin = Files.newInputStream(propFile);
-        } catch (final IOException ex) {
-            // File not found, no exception handling
-        }
-
-        if (pin == null) {
-            // Try to load via classloader
-            pin = InteractiveClient.class.getResourceAsStream("client.properties");
-        }
-
-        if (pin != null) {
-            // Try to load properties from stream
-            try {
-                try {
-                    clientProps.load(pin);
-                } finally {
-                    pin.close();
+            if (Files.isReadable(propFile)) {
+                try(final InputStream pin = Files.newInputStream(propFile)) {
+                    properties.load(pin);
                 }
-            } catch (final IOException ex) {
-                //
+            } else {
+                try(final InputStream pin = InteractiveClient.class.getResourceAsStream("client.properties")) {
+                    properties.load(pin);
+                }
             }
+        } catch (final IOException e) {
+            System.err.println("WARN - Unable to load properties from: " + propFile.toAbsolutePath().toString());
         }
-
-        return clientProps;
+        return properties;
     }
 
     /**
-     * Parse command line options, store into dedicated object
+     * Set any relevant properties from command line arguments
      *
-     * @param args  Arguments
+     * @param options  CommandLineOptions
      * @param props Client configuration
-     * @return Object representing commandline parametres.
      */
-    protected CommandlineOptions getCommandlineOptions(final String args[], final Properties props) {
+    protected void setPropertiesFromCommandLine(final CommandlineOptions options, final Properties props) {
+        options.options.forEach(properties::setProperty);
 
-        // parse command-line options
-        final CLArgsParser optParser = new CLArgsParser(args, CommandlineOptions.OPTIONS);
-
-        if (optParser.getErrorString() != null) {
-            System.err.println("ERROR: " + optParser.getErrorString());
-            return null;
+        options.username.ifPresent(username -> props.setProperty(InteractiveClient.USER, username));
+        options.password.ifPresent(password -> props.setProperty(InteractiveClient.USER, password));
+        boolean needPassword = options.username.isPresent() && !options.password.isPresent();
+        if(options.useSSL) {
+            props.setProperty(InteractiveClient.SSL_ENABLE, "TRUE");
         }
-
-        final List<CLOption> opt = optParser.getArguments();
-
-        final CommandlineOptions cOpt = new CommandlineOptions();
-
-        for (final CLOption option : opt) {
-            switch (option.getId()) {
-                case CommandlineOptions.HELP_OPT:
-                    printUsage();
-                    return null;
-                case CommandlineOptions.NO_GUI_OPT:
-                    startGUI = false;
-                    break;
-                //
-                case CommandlineOptions.NO_EMBED_OPT:
-                    props.setProperty(InteractiveClient.NO_EMBED_MODE, "TRUE");
-                    break;
-                case CommandlineOptions.USE_SSL_OPT:
-                    props.setProperty(InteractiveClient.SSL_ENABLE, "TRUE");
-                    break;
-                case CommandlineOptions.QUIET_OPT:
-                    quiet = true;
-                    break;
-                case CommandlineOptions.VERBOSE_OPT:
-                    verbose = true;
-                    break;
-                case CommandlineOptions.LOCAL_OPT:
-                    props.setProperty(InteractiveClient.LOCAL_MODE, "TRUE");
-                    props.setProperty(InteractiveClient.URI, XmldbURI.EMBEDDED_SERVER_URI.toString());
-                    break;
-                case CommandlineOptions.USER_OPT:
-                    props.setProperty(InteractiveClient.USER, option.getArgument());
-                    if (!cOpt.passwdSpecified) {
-                        cOpt.needPasswd = true;
-                    }
-                    break;
-                case CommandlineOptions.PASS_OPT:
-                    props.setProperty(InteractiveClient.PASSWORD, option.getArgument());
-                    cOpt.needPasswd = false;
-                    cOpt.passwdSpecified = true;
-                    break;
-                case CommandlineOptions.CONFIG_OPT:
-                    properties.setProperty(InteractiveClient.CONFIGURATION, option.getArgument());
-                    break;
-                case CommandlineOptions.COLLECTION_OPT:
-                    try {
-                        path = URIUtils.encodeXmldbUriFor(option.getArgument());
-                        cOpt.foundCollection = true;
-                    } catch (final URISyntaxException e) {
-                        System.err.println("Invalid collection path specified: " + e.getMessage());
-                        return null;
-                    }
-                    break;
-                case CommandlineOptions.RESOURCE_OPT:
-                    cOpt.optionResource = option.getArgument();
-                    break;
-                case CommandlineOptions.OUTPUT_FILE_OPT:
-                    cOpt.optionOutputFile = option.getArgument();
-                    break;
-                case CommandlineOptions.PARSE_OPT:
-                    cOpt.doStore = true;
-                    if (option.getArgumentCount() == 1) {
-                        cOpt.optionalArgs.add(option.getArgument());
-                    }
-                    cOpt.interactive = false;
-                    break;
-                case CommandlineOptions.RECURSE_DIRS_OPT:
-                    recurseDirs = true;
-                    break;
-                case CommandlineOptions.REMOVE_OPT:
-                    cOpt.optionRemove = option.getArgument();
-                    cOpt.interactive = false;
-                    break;
-                case CommandlineOptions.GET_OPT:
-                    try {
-                        cOpt.optionGet = URIUtils.encodeXmldbUriFor(option.getArgument());
-                        cOpt.interactive = false;
-                    } catch (final URISyntaxException e) {
-                        System.err.println("Invalid collection path specified: " + e.getMessage());
-                        return null;
-                    }
-                    break;
-                case CommandlineOptions.MKCOL_OPT:
-                    try {
-                        cOpt.optionMkcol = URIUtils.encodeXmldbUriFor(option.getArgument());
-                        cOpt.foundCollection = true;
-                    } catch (final URISyntaxException e) {
-                        System.err.println("Invalid collection path specified: " + e.getMessage());
-                        return null;
-                    }
-                    break;
-                case CommandlineOptions.RMCOL_OPT:
-                    try {
-                        cOpt.optionRmcol = URIUtils.encodeXmldbUriFor(option.getArgument());
-                        cOpt.foundCollection = true;
-                        cOpt.interactive = false;
-                    } catch (final URISyntaxException e) {
-                        System.err.println("Invalid collection path specified: " + e.getMessage());
-                        return null;
-                    }
-                    break;
-                case CommandlineOptions.FIND_OPT:
-                    cOpt.optionXpath = (option.getArgumentCount() == 1 ? option.getArgument() : "stdin");
-                    cOpt.interactive = false;
-                    break;
-                case CommandlineOptions.RESULTS_OPT:
-                    try {
-                        maxResults = Integer.parseInt(option.getArgument());
-                    } catch (final NumberFormatException e) {
-                        System.err.println("parameter -n needs a valid number");
-                        return null;
-                    }
-                    break;
-                case CommandlineOptions.OPTION_OPT:
-                    properties.setProperty(option.getArgument(0), option.getArgument(1));
-                    break;
-                case CommandlineOptions.QUERY_FILE_OPT:
-                    cOpt.optionQueryFile = option.getArgument();
-                    cOpt.interactive = false;
-                    break;
-                case CommandlineOptions.THREADS_OPT:
-                    try {
-                        PARALLEL_THREADS = Integer.parseInt(option.getArgument());
-                    } catch (final NumberFormatException e) {
-                        System.err.println("parameter -t needs a valid number");
-                        return null;
-                    }
-                    break;
-                case CommandlineOptions.XUPDATE_OPT:
-                    cOpt.optionXUpdate = option.getArgument();
-                    cOpt.interactive = false;
-                    break;
-                case CommandlineOptions.TRACE_QUERIES_OPT:
-                    final String traceFile = option.getArgument();
-                    final Path f = Paths.get(traceFile).normalize();
-                    try {
-                        traceWriter = Files.newBufferedWriter(f, UTF_8);
-                        traceWriter.write("<?xml version=\"1.0\"?>" + EOL);
-                        traceWriter.write("<query-log>" + EOL);
-                    } catch (final IOException e1) {
-                        errorln("Cannot open file " + traceFile);
-                        return null;
-                    }
-                    break;
-                case CommandlineOptions.REINDEX_OPT:
-                    cOpt.doReindex = true;
-                    cOpt.interactive = false;
-                    break;
-                case CommandlineOptions.QUERY_GUI_OPT:
-                    cOpt.openQueryGui = true;
-                    break;
-                case CLOption.TEXT_ARGUMENT:
-                    cOpt.optionalArgs.add(option.getArgument());
-                    break;
-            }
+        if(options.embedded) {
+            props.setProperty(InteractiveClient.LOCAL_MODE, "TRUE");
+            props.setProperty(InteractiveClient.URI, XmldbURI.EMBEDDED_SERVER_URI.toString());
         }
-
-        return cOpt;
+        options.embeddedConfig.ifPresent(config -> properties.setProperty(InteractiveClient.CONFIGURATION, config.toAbsolutePath().toString()));
+        if(options.noEmbeddedMode) {
+            props.setProperty(InteractiveClient.NO_EMBED_MODE, "TRUE");
+        }
     }
 
     /**
      * Process the command line options
      *
-     * @param cOpt Object representing commandline options
-     * @return TRUE is all successfull, FALSE of not.
+     * @return true if all are successful, otherwise false
      * @throws java.lang.Exception
      */
-    private boolean processCommandLineActions(final CommandlineOptions cOpt) throws Exception {
+    private boolean processCommandLineActions() throws Exception {
         // process command-line actions
-        if (cOpt.doReindex) {
-            if (!cOpt.foundCollection) {
+        if (options.reindex) {
+            if (!options.setCol.isPresent()) {
                 System.err.println("Please specify target collection with --collection");
                 shutdown(false);
                 return false;
@@ -2028,14 +1886,9 @@ public class InteractiveClient {
             }
         }
 
-        if (cOpt.optionRmcol != null) {
-            if (!cOpt.foundCollection) {
-                System.err.println("Please specify target collection with --collection");
-                shutdown(false);
-                return false;
-            }
+        if (options.rmCol.isPresent()) {
             try {
-                rmcol(cOpt.optionRmcol);
+                rmcol(options.rmCol.get());
             } catch (final XMLDBException e) {
                 System.err.println("XMLDBException while removing collection: " + getExceptionMessage(e));
                 e.printStackTrace();
@@ -2043,9 +1896,9 @@ public class InteractiveClient {
             }
         }
 
-        if (cOpt.optionMkcol != null) {
+        if (options.mkCol.isPresent()) {
             try {
-                mkcol(cOpt.optionMkcol);
+                mkcol(options.mkCol.get());
             } catch (final XMLDBException e) {
                 System.err.println("XMLDBException during mkcol: " + getExceptionMessage(e));
                 e.printStackTrace();
@@ -2053,20 +1906,22 @@ public class InteractiveClient {
             }
         }
 
-        if (cOpt.optionGet != null) {
+        final boolean foundCollection = !options.setCol.isPresent();
+
+        if (options.getDoc.isPresent()) {
             try {
-                final Resource res = retrieve(cOpt.optionGet);
+                final Resource res = retrieve(options.getDoc.get());
                 if (res != null) {
                     // String data;
                     if ("XMLResource".equals(res.getResourceType())) {
-                        if (cOpt.optionOutputFile != null) {
-                            writeOutputFile(cOpt.optionOutputFile, res.getContent());
+                        if (options.outputFile.isPresent()) {
+                            writeOutputFile(options.outputFile.get(), res.getContent());
                         } else {
                             System.out.println(res.getContent().toString());
                         }
                     } else {
-                        if (cOpt.optionOutputFile != null) {
-                            ((ExtendedResource) res).getContentIntoAFile(Paths.get(cOpt.optionOutputFile).normalize());
+                        if (options.outputFile.isPresent()) {
+                            ((ExtendedResource) res).getContentIntoAFile(options.outputFile.get());
                             ((EXistResource) res).freeResources();
                         } else {
                             ((ExtendedResource) res).getContentIntoAStream(System.out);
@@ -2079,25 +1934,25 @@ public class InteractiveClient {
                 e.printStackTrace();
                 return false;
             }
-        } else if (cOpt.optionRemove != null) {
-            if (!cOpt.foundCollection) {
+        } else if (options.rmDoc.isPresent()) {
+            if (!foundCollection) {
                 System.err.println("Please specify target collection with --collection");
             } else {
                 try {
-                    remove(cOpt.optionRemove);
+                    remove(options.rmDoc.get());
                 } catch (final XMLDBException e) {
                     System.err.println("XMLDBException during parse: " + getExceptionMessage(e));
                     e.printStackTrace();
                     return false;
                 }
             }
-        } else if (cOpt.doStore) {
-            if (!cOpt.foundCollection) {
+        } else if (!options.parseDocs.isEmpty()) {
+            if (!foundCollection) {
                 System.err.println("Please specify target collection with --collection");
             } else {
-                for (final String arg : cOpt.optionalArgs) {
+                for (final Path path : options.parseDocs) {
                     try {
-                        parse(arg);
+                        parse(path);
                     } catch (final XMLDBException e) {
                         System.err.println("XMLDBException during parse: " + getExceptionMessage(e));
                         e.printStackTrace();
@@ -2105,52 +1960,53 @@ public class InteractiveClient {
                     }
                 }
             }
-        } else if (cOpt.optionXpath != null || cOpt.optionQueryFile != null) {
-            if (cOpt.optionQueryFile != null) {
-                try (final BufferedReader reader = Files.newBufferedReader(Paths.get(cOpt.optionQueryFile))) {
+        } else if (options.xpath.isPresent() || !options.queryFiles.isEmpty()) {
+
+            String xpath = null;
+
+            if (!options.queryFiles.isEmpty()) {
+                try (final BufferedReader reader = Files.newBufferedReader(options.queryFiles.get(0))) {
                     final StringBuilder buf = new StringBuilder();
                     String line;
                     while ((line = reader.readLine()) != null) {
                         buf.append(line);
                         buf.append(EOL);
                     }
-                    cOpt.optionXpath = buf.toString();
+                    xpath = buf.toString();
                 }
             }
-            // if no argument has been found, read query from stdin
-            if ("stdin".equals(cOpt.optionXpath)) {
-                try (final BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in))) {
 
-                    final StringBuilder buf = new StringBuilder();
-                    String line;
-                    while ((line = stdin.readLine()) != null) {
-                        buf.append(line);
-                        buf.append(EOL);
+            // if no argument has been found, read query from stdin
+            if (options.xpath.isPresent()) {
+
+                final String xpathStr = options.xpath.get();
+                if(!xpathStr.equals(CommandlineOptions.XPATH_STDIN)) {
+                    xpath = xpathStr;
+                } else {
+                    // read from stdin
+                    try (final BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in))) {
+                        final StringBuilder buf = new StringBuilder();
+                        String line;
+                        while ((line = stdin.readLine()) != null) {
+                            buf.append(line);
+                            buf.append(EOL);
+                        }
+                        xpath = buf.toString();
+                    } catch (final IOException e) {
+                        System.err.println("failed to read query from stdin");
+                        xpath = null;
+                        return false;
                     }
-                    cOpt.optionXpath = buf.toString();
-                } catch (final IOException e) {
-                    System.err.println("failed to read query from stdin");
-                    cOpt.optionXpath = null;
-                    return false;
                 }
             }
-            if (cOpt.optionXpath != null) {
+
+            if (xpath != null) {
                 try {
-                    final ResourceSet result = find(cOpt.optionXpath);
-                    if (maxResults <= 0) {
-                        maxResults = (int) result.getSize();
-                    }
-                    if (cOpt.optionOutputFile == null) {
-                        for (int i = 0; i < maxResults && i < result.getSize(); i++) {
-                            final Resource res = result.getResource(i);
-                            if (res instanceof ExtendedResource) {
-                                ((ExtendedResource) res).getContentIntoAStream(System.out);
-                            } else {
-                                System.out.println(res.getContent());
-                            }
-                        }
-                    } else {
-                        try(final OutputStream fos = Files.newOutputStream(Paths.get(cOpt.optionOutputFile));
+                    final ResourceSet result = find(xpath);
+
+                    final int maxResults = options.howManyResults.filter(n -> n > 0).orElse((int)result.getSize());
+                    if (options.outputFile.isPresent()) {
+                        try(final OutputStream fos = Files.newOutputStream(options.outputFile.get());
                             final BufferedOutputStream bos = new BufferedOutputStream(fos);
                             final PrintStream ps = new PrintStream(bos)
                         ) {
@@ -2164,6 +2020,15 @@ public class InteractiveClient {
                                 }
                             }
                         }
+                    } else {
+                        for (int i = 0; i < maxResults && i < result.getSize(); i++) {
+                            final Resource res = result.getResource(i);
+                            if (res instanceof ExtendedResource) {
+                                ((ExtendedResource) res).getContentIntoAStream(System.out);
+                            } else {
+                                System.out.println(res.getContent());
+                            }
+                        }
                     }
                 } catch (final XMLDBException e) {
                     System.err.println("XMLDBException during query: " + getExceptionMessage(e));
@@ -2171,11 +2036,10 @@ public class InteractiveClient {
                     return false;
                 }
             }
-            //		} else if (optionQueryFile != null) {
-            //			testQuery(optionQueryFile);
-        } else if (cOpt.optionXUpdate != null) {
+
+        } else if (options.xupdateFile.isPresent()) {
             try {
-                xupdate(cOpt.optionResource, cOpt.optionXUpdate);
+                xupdate(options.setDoc, options.xupdateFile.get());
             } catch (final XMLDBException e) {
                 System.err.println("XMLDBException during xupdate: " + getExceptionMessage(e));
                 return false;
@@ -2213,7 +2077,7 @@ public class InteractiveClient {
         try {
             connect();
         } catch (final Exception cnf) {
-            if (startGUI && frame != null) {
+            if (options.startGUI && frame != null) {
                 frame.setStatus("Connection to database failed; message: " + cnf.getMessage());
             } else {
                 System.err.println("Connection to database failed; message: " + cnf.getMessage());
@@ -2226,10 +2090,9 @@ public class InteractiveClient {
     /**
      * Main processing method for the InteractiveClient object
      *
-     * @param args arguments from main()
      * @return true on success, false on failure
      */
-    public boolean run(final String args[]) throws Exception {
+    public boolean run() throws Exception {
         // Get exist home directory
         final Optional<Path> home = ConfigurationHelper.getExistHome();
 
@@ -2246,30 +2109,32 @@ public class InteractiveClient {
 
         properties.putAll(loadClientProperties());
 
-        // parse command-line options
-        final CommandlineOptions cOpt = getCommandlineOptions(args, properties);
-        if (cOpt == null) {
-            // An error occured during parsing. exit program.
-            return false;
-        }
+        setPropertiesFromCommandLine(options, properties);
 
         // print copyright notice - after parsing command line options, or it can't be silenced!
-        if (!quiet) {
+        if (!options.quiet) {
             printNotice();
         }
 
         // Fix "uri" property: Excalibur CLI can't parse dashes, so we need to URL encode them:
         properties.setProperty("uri", URLDecoder.decode(properties.getProperty("uri"), "UTF-8"));
 
+        boolean interactive = true;
+        if((!options.parseDocs.isEmpty()) || options.rmDoc.isPresent() || options.getDoc.isPresent()
+                || options.rmCol.isPresent() || options.xpath.isPresent() || (!options.queryFiles.isEmpty())
+                || options.xupdateFile.isPresent() || options.reindex) {
+            interactive = false;
+        }
+
         // prompt for password if needed
-        if (cOpt.interactive && startGUI) {
+        if (interactive && options.startGUI) {
 
             final boolean haveLoginData = getGuiLoginData(properties);
             if (!haveLoginData) {
                 return false;
             }
 
-        } else if (cOpt.needPasswd) {
+        } else if (options.username.isPresent() && !options.password.isPresent()) {
             try {
                 properties.setProperty("password", console.readLine("password: ", Character.valueOf('*')));
             } catch (final Exception e) {
@@ -2284,7 +2149,7 @@ public class InteractiveClient {
             readQueryHistory();
         }
 
-        if (cOpt.interactive) {
+        if (interactive) {
             // in gui mode we use Readline for history management
             // initialize Readline library
             Terminal.setupTerminal();
@@ -2302,7 +2167,7 @@ public class InteractiveClient {
         connectToDatabase();
 
         if (current == null) {
-            if (startGUI && frame != null) {
+            if (options.startGUI && frame != null) {
                 frame.setStatus("Could not retrieve collection " + path);
             } else {
                 System.err.println("Could not retrieve collection " + path);
@@ -2311,13 +2176,13 @@ public class InteractiveClient {
             return false;
         }
 
-        final boolean processingOK = processCommandLineActions(cOpt);
+        final boolean processingOK = processCommandLineActions();
         if (!processingOK) {
             return false;
         }
 
-        if (cOpt.interactive) {
-            if (startGUI) {
+        if (interactive) {
+            if (options.startGUI) {
                 try {
                     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
                 } catch (final UnsupportedLookAndFeelException ulafe) {
@@ -2331,7 +2196,7 @@ public class InteractiveClient {
             }
 
             // enter interactive mode
-            if ((!startGUI) || (frame == null)) {
+            if ((!options.startGUI) || (frame == null)) {
 
                 // No gui
                 try {
@@ -2396,11 +2261,11 @@ public class InteractiveClient {
 
             messageln(EOL + "type help or ? for help.");
 
-            if (cOpt.openQueryGui) {
+            if (options.openQueryGUI) {
                 final QueryDialog qd = new QueryDialog(this, current, properties);
                 qd.setLocation(100, 100);
                 qd.setVisible(true);
-            } else if (!startGUI) {
+            } else if (!options.startGUI) {
                 readlineInputLoop();
             } else {
                 frame.displayPrompt();
@@ -2439,7 +2304,7 @@ public class InteractiveClient {
                 queryHistory.addLast(value.toString());
             }
         } catch (final Exception e) {
-            if (startGUI) {
+            if (options.startGUI) {
                 ClientFrame.showErrorMessage(
                         "Error while reading query history: " + e.getMessage(),
                         e);
@@ -2519,13 +2384,14 @@ public class InteractiveClient {
     }
 
     protected final void shutdown(final boolean force) {
-        if (traceWriter != null) {
+        lazyTraceWriter.ifPresent(writer -> {
             try {
-                traceWriter.write("</query-log>");
-                traceWriter.close();
+                writer.write("</query-log>");
+                writer.close();
             } catch (final IOException e1) {
             }
-        }
+        });
+
         try {
             final DatabaseInstanceManager mgr = (DatabaseInstanceManager) current.getService("DatabaseInstanceManager", "1.0");
             if (mgr == null) {
@@ -2538,12 +2404,6 @@ public class InteractiveClient {
             System.err.println("database shutdown failed: ");
             e.printStackTrace();
         }
-    }
-
-    private void printUsage() {
-        System.out.println("Usage: java " + InteractiveClient.class.getName()
-                + " [options]");
-        System.out.println(CLUtil.describeOptions(CommandlineOptions.OPTIONS).toString());
     }
 
     public void printNotice() {
@@ -2574,8 +2434,8 @@ public class InteractiveClient {
     }
 
     private void message(final String msg) {
-        if (!quiet) {
-            if (startGUI && frame != null) {
+        if (!options.quiet) {
+            if (options.startGUI && frame != null) {
                 frame.display(msg);
             } else {
                 System.out.print(msg);
@@ -2584,8 +2444,8 @@ public class InteractiveClient {
     }
 
     private void messageln(final String msg) {
-        if (!quiet) {
-            if (startGUI && frame != null) {
+        if (!options.quiet) {
+            if (options.startGUI && frame != null) {
                 frame.display(msg + EOL);
             } else {
                 System.out.println(msg);
@@ -2594,7 +2454,7 @@ public class InteractiveClient {
     }
 
     private void errorln(final String msg) {
-        if (startGUI && frame != null) {
+        if (options.startGUI && frame != null) {
             frame.display(msg + EOL);
         } else {
             System.err.println(msg);
@@ -2651,7 +2511,6 @@ public class InteractiveClient {
         final ProgressBar elementsProgress = new ProgressBar("storing elements");
         Observable lastObservable = null;
         final ProgressBar parseProgress = new ProgressBar("storing nodes   ");
-        final ProgressBar wordsProgress = new ProgressBar("storing words   ");
 
         @Override
         public void update(final Observable o, final Object obj) {
@@ -2670,9 +2529,7 @@ public class InteractiveClient {
         }
     }
 
-    private void writeOutputFile(final String fileName, final Object data) throws Exception {
-        final Path file = Paths.get(fileName).normalize();
-
+    private void writeOutputFile(final Path file, final Object data) throws Exception {
         try (final OutputStream os = Files.newOutputStream(file)) {
             if (data instanceof byte[]) {
                 os.write((byte[]) data);

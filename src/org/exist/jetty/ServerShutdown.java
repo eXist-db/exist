@@ -5,13 +5,7 @@
  */
 package org.exist.jetty;
 
-import org.apache.avalon.excalibur.cli.CLArgsParser;
-import org.apache.avalon.excalibur.cli.CLOption;
-import org.apache.avalon.excalibur.cli.CLOptionDescriptor;
-import org.apache.avalon.excalibur.cli.CLUtil;
-
 import org.apache.xmlrpc.XmlRpcException;
-
 import org.exist.util.ConfigurationHelper;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.XmldbURI;
@@ -20,14 +14,21 @@ import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.base.XMLDBException;
+import se.softhouse.jargo.Argument;
+import se.softhouse.jargo.ArgumentException;
+import se.softhouse.jargo.CommandLineParser;
+import se.softhouse.jargo.ParsedArguments;
 
 import java.io.IOException;
 import java.io.InputStream;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.Properties;
+
+import static org.exist.util.ArgumentUtil.getOpt;
+import static se.softhouse.jargo.Arguments.helpArgument;
+import static se.softhouse.jargo.Arguments.stringArgument;
 
 /**
  * Call the main method of this class to shut down a running database instance.
@@ -36,67 +37,58 @@ import java.util.Properties;
  */
 public class ServerShutdown {
 
-    // command-line options
-    private final static int HELP_OPT = 'h';
+    /* general arguments */
+    private static final Argument<?> helpArg = helpArgument("-h", "--help");
 
-    private final static int URI_OPT = 'l';
-
-    private final static int USER_OPT = 'u';
-
-    private final static int PASSWORD_OPT = 'p';
-
-    private final static CLOptionDescriptor OPTIONS[] = new CLOptionDescriptor[] {
-            new CLOptionDescriptor("help",
-                    CLOptionDescriptor.ARGUMENT_DISALLOWED, HELP_OPT,
-                    "print help on command line options and exit."),
-            new CLOptionDescriptor("user",
-                    CLOptionDescriptor.ARGUMENT_REQUIRED, USER_OPT,
-                    "specify username (has to be a member of group dba)."),
-            new CLOptionDescriptor("password",
-                    CLOptionDescriptor.ARGUMENT_REQUIRED, PASSWORD_OPT,
-                    "specify password for the user."),
-            new CLOptionDescriptor("uri", CLOptionDescriptor.ARGUMENT_REQUIRED,
-                    URI_OPT,
-                    "the XML:DB URI of the database instance to be shut down.") };
+    /* database connection arguments */
+    private static final Argument<String> userArg = stringArgument("-u", "--user")
+            .description("specify username (has to be a member of group dba).")
+            .required()
+            .defaultValue("admin")
+            .build();
+    private static final Argument<String> passwordArg = stringArgument("-p", "--password")
+            .description("specify password for the user.")
+            .required()
+            .defaultValue("")
+            .build();
+    private static final Argument<String> uriArg = stringArgument("-u", "--uri")
+            .description("the XML:DB URI of the database instance to be shut down.")
+            .build();
 
     @SuppressWarnings("unchecked")
-	public static void main(String[] args) {
-        final CLArgsParser optParser = new CLArgsParser(args, OPTIONS);
-        if (optParser.getErrorString() != null) {
-            System.err.println("ERROR: " + optParser.getErrorString());
-            return;
+	public static void main(final String[] args) {
+        try {
+            final ParsedArguments arguments = CommandLineParser
+                    .withArguments(userArg, passwordArg, uriArg)
+                    .andArguments(helpArg)
+                    .parse(args);
+
+            process(arguments);
+        } catch (final ArgumentException e) {
+            System.out.println(e.getMessageAndUsage());
+            System.exit(2);
+
         }
+    }
+
+    private static void process(final ParsedArguments arguments) {
         final Properties properties = loadProperties();
-        String user = "admin";
-        String passwd = "";
-        String uri = properties.getProperty("uri", "xmldb:exist://localhost:8080/exist/xmlrpc");
-        final List<CLOption> opts = optParser.getArguments();
-        for (final CLOption option : opts) {
-            switch (option.getId()) {
-                case HELP_OPT:
-                    System.out.println("Usage: java "
-                            + ServerShutdown.class.getName() + " [options]");
-                    System.out.println(CLUtil.describeOptions(OPTIONS)
-                            .toString());
-                    return;
-                case USER_OPT:
-                    user = option.getArgument();
-                    break;
-                case PASSWORD_OPT:
-                    passwd = option.getArgument();
-                    break;
-                case URI_OPT:
-                    uri = option.getArgument();
-            }
-        }
+
+        final String user = arguments.get(userArg);
+        final String passwd = arguments.get(passwordArg);
+
+        String uri = getOpt(arguments, uriArg)
+                .orElseGet(() -> properties.getProperty("uri", "xmldb:exist://localhost:8080/exist/xmlrpc"));
+
         try {
             // initialize database drivers
             final Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
             // create the default database
             final Database database = (Database) cl.newInstance();
             DatabaseManager.registerDatabase(database);
-            if (!uri.endsWith(XmldbURI.ROOT_COLLECTION))
-                {uri = uri + XmldbURI.ROOT_COLLECTION;}
+            if (!uri.endsWith(XmldbURI.ROOT_COLLECTION)) {
+                uri = uri + XmldbURI.ROOT_COLLECTION;
+            }
             final Collection root = DatabaseManager.getCollection(uri, user, passwd);
             final DatabaseInstanceManager manager = (DatabaseInstanceManager) root
                     .getService("DatabaseInstanceManager", "1.0");
@@ -120,35 +112,21 @@ public class ServerShutdown {
     }
 
     private static Properties loadProperties() {
-
-        final Properties clientProps = new Properties();
         final Path propFile = ConfigurationHelper.lookup("client.properties");
-        InputStream pin = null;
-
-        // Try to load from file
+        final Properties properties = new Properties();
         try {
-            pin = Files.newInputStream(propFile);
-        } catch (final IOException ex) {
-            // File not found, no exception handling
-        }
-
-        if (pin == null) {
-            // Try to load via classloader
-            pin = ServerShutdown.class.getResourceAsStream("client.properties");
-        }
-
-        if (pin != null) {
-            // Try to load properties from stream
-            try {
-            	try {
-            		clientProps.load(pin);
-            	} finally {
-            		pin.close();
-            	}
-            } catch (final IOException ex) {
-                //
+            if (Files.isReadable(propFile)) {
+                try(final InputStream pin = Files.newInputStream(propFile)) {
+                    properties.load(pin);
+                }
+            } else {
+                try(final InputStream pin = ServerShutdown.class.getResourceAsStream("client.properties")) {
+                    properties.load(pin);
+                }
             }
+        } catch (final IOException e) {
+            System.err.println("WARN - Unable to load properties from: " + propFile.toAbsolutePath().toString());
         }
-        return clientProps;
+        return properties;
     }
 }

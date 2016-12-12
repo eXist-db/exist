@@ -21,20 +21,22 @@
  */
 package xquery;
 
+import static org.exist.util.ArgumentUtil.getOpt;
 import static org.junit.Assert.fail;
+import static se.softhouse.jargo.Arguments.fileArgument;
+import static se.softhouse.jargo.Arguments.helpArgument;
+import static se.softhouse.jargo.Arguments.stringArgument;
 
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
-import org.apache.avalon.excalibur.cli.CLArgsParser;
-import org.apache.avalon.excalibur.cli.CLOption;
-import org.apache.avalon.excalibur.cli.CLOptionDescriptor;
-import org.apache.avalon.excalibur.cli.CLUtil;
 import org.exist.source.FileSource;
 import org.exist.source.Source;
+import org.exist.util.FileUtils;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.XQueryService;
 import org.exist.xmldb.XmldbURI;
@@ -47,67 +49,65 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.modules.XMLResource;
+import se.softhouse.jargo.Argument;
+import se.softhouse.jargo.ArgumentException;
+import se.softhouse.jargo.CommandLineParser;
+import se.softhouse.jargo.ParsedArguments;
 
 public class TestRunnerMain {
 
-	private final static int HELP_OPT = 'h';
-	private final static int SINGLE_OPT = 's';
-	
-	private final static CLOptionDescriptor[] OPTIONS = new CLOptionDescriptor[] {
-		new CLOptionDescriptor( "help", CLOptionDescriptor.ARGUMENT_DISALLOWED, HELP_OPT, "print help on command line options and exit." ),
-		new CLOptionDescriptor( "single", CLOptionDescriptor.ARGUMENT_REQUIRED, SINGLE_OPT, "run a single test identified by its id attribute." )
-	};
-	
+	/* general arguments */
+	private static final Argument<?> helpArg = helpArgument("-h", "--help");
+
+    /* control arguments */
+	private static final Argument<String> singleTestArg = stringArgument("-s", "--single")
+			.description("run a single test identified by its id attribute.")
+			.build();
+	private static final Argument<List<File>> fileArg = fileArgument()
+			.description("files containing tests to run")
+			.variableArity()
+			.build();
+
 	private static Collection rootCollection;
 
 	/**
 	 * @param args
 	 */
-	public static void main(String[] args) {
-		init();
-	
-		CLArgsParser optParser = new CLArgsParser( args, OPTIONS );
+	public static void main(final String[] args) {
+		try {
+			final ParsedArguments arguments = CommandLineParser
+					.withArguments(singleTestArg)
+					.andArguments(helpArg)
+					.parse(args);
 
-        if( optParser.getErrorString() != null ) {
-            System.err.println( "ERROR: " + optParser.getErrorString() );
-            return;
-        }
-        List<String> files = new ArrayList<String>();
-        String id = null;
-        
-        List<CLOption> opts = optParser.getArguments();
+			process(arguments);
+		} catch (final ArgumentException e) {
+			System.out.println(e.getMessageAndUsage());
+			System.exit(2);
 
-        for( CLOption option : opts ) {
-
-            switch( option.getId() ) {
-	            case HELP_OPT:
-	                System.out.println( "Usage: java " + TestRunnerMain.class.getName() + " [options]" );
-	                System.out.println( CLUtil.describeOptions( OPTIONS ).toString() );
-	                System.exit( 0 );
-	                break;
-	            case SINGLE_OPT: 
-	            	id = option.getArgument();
-	            	break;
-	            case CLOption.TEXT_ARGUMENT :
-                    files.add(option.getArgument());
-                    break;
-            }
-        }
-        
-		runTests(files, id);
-		
-		shutdown();
+		}
 	}
 
-	private static void runTests(List<String> files, String id) {
+	private static void process(final ParsedArguments arguments) {
+		final String id = getOpt(arguments, singleTestArg).orElse(null);
+		final List<Path> files = arguments.get(fileArg).stream().map(File::toPath).collect(Collectors.toList());
+
+		init();
+		try {
+			runTests(files, id);
+		} finally {
+			shutdown();
+		}
+	}
+
+	private static void runTests(final List<Path> files, final String id) {
 		try {
 			StringBuilder results = new StringBuilder();
 			XQueryService xqs = (XQueryService) rootCollection.getService("XQueryService", "1.0");
 			Source query = new FileSource(Paths.get("test/src/xquery/runTests.xql"), false);
-			for (String fileName : files) {
-				final Path file = Paths.get(fileName);
+			for (final Path file : files) {
 				if (!Files.isReadable(file)) {
-					System.console().printf("Test file not found: %s\n", fileName);
+					System.console().printf("Test file not found: %s\n", file.normalize().toAbsolutePath().toString());
 					return;
 				}
 				
