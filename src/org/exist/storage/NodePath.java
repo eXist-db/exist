@@ -53,11 +53,11 @@ public class NodePath implements Comparable<NodePath> {
         //Nothing to do
     }
 
-    public NodePath(NodePath other) {
+    public NodePath(final NodePath other) {
         this(other, other.includeDescendants);
     }
 
-    public NodePath(NodePath other, boolean includeDescendants) {
+    public NodePath(final NodePath other, final boolean includeDescendants) {
         components = new QName[other.components.length];
         System.arraycopy(other.components, 0, components, 0, other.components.length);
         pos = other.pos;
@@ -67,43 +67,43 @@ public class NodePath implements Comparable<NodePath> {
     /**
      * 
      */
-    public NodePath(Map<String, String> namespaces, String path) {
+    public NodePath(final Map<String, String> namespaces, final String path) {
         init(namespaces, path);
     }
 
-    public NodePath(Map<String, String> namespaces, String path, boolean includeDescendants) {
+    public NodePath(final Map<String, String> namespaces, final String path, final boolean includeDescendants) {
         this.includeDescendants = includeDescendants;
         init(namespaces, path);
     }
 
-    public NodePath(QName qname) {
+    public NodePath(final QName qname) {
     	addComponent(qname);
     }
 
-    public void setIncludeDescendants(boolean includeDescendants) {
+    public void setIncludeDescendants(final boolean includeDescendants) {
         this.includeDescendants = includeDescendants;
     }
 
-    public void append(NodePath other) {
-        QName[] newComponents = new QName[length() + other.length()];
+    public void append(final NodePath other) {
+        final QName[] newComponents = new QName[length() + other.length()];
         System.arraycopy(components, 0, newComponents, 0, pos);
         System.arraycopy(other.components, 0, newComponents, pos, other.length());
         pos = newComponents.length;
         components = newComponents;
     }
 
-    public void addComponent(QName component) {
+    public void addComponent(final QName component) {
         if (pos == components.length) {
-            QName[] t = new QName[pos + 1];
+            final QName[] t = new QName[pos + 1];
             System.arraycopy(components, 0, t, 0, pos);
             components = t;
         }
         components[pos++] = component;
     }
 
-    public void addComponentAtStart(QName component) {
+    public void addComponentAtStart(final QName component) {
         if (pos == components.length) {
-            QName[] t = new QName[pos + 1];
+            final QName[] t = new QName[pos + 1];
             System.arraycopy(components, 0, t, 1, pos);
             components = t;
             components[0] = component;
@@ -115,17 +115,22 @@ public class NodePath implements Comparable<NodePath> {
     }
 
     public void removeLastComponent() {
-        if (pos > 0)
-            {components[--pos] = null;}
+        if (pos > 0) {
+            components[--pos] = null;
+        }
     }
 
     public int length() {
         return pos;
     }
 
-    public QName getComponent(int at) {
-        if (at < 0 || at >= pos)
-            {throw new ArrayIndexOutOfBoundsException(at);}
+    /**
+     * @throws ArrayIndexOutOfBoundsException
+     */
+    public QName getComponent(final int at) {
+        if (at < 0 || at >= pos) {
+            throw new ArrayIndexOutOfBoundsException(at);
+        }
         return components[at];
     }
 
@@ -138,31 +143,33 @@ public class NodePath implements Comparable<NodePath> {
 
     public boolean hasWildcard() {
         for (int i = 0; i < pos; i++) {
-            if (components[i] == WILDCARD)
-                {return true;}
+            if (components[i] == WILDCARD) {
+                return true;
+            }
         }
         return false;
     }
 
-    public boolean match(QName qname) {
+    public boolean match(final QName qname) {
         if (pos > 0) {
             return components[pos - 1].equals(qname);
         }
         return false;
     }
 
-    public final boolean match(NodePath other) {
+    public final boolean match(final NodePath other) {
     	return match(other, 0);
     }
 
-    public final boolean match(NodePath other, int j) {
+    public final boolean match(final NodePath other, int j) {
         boolean skip = false;
         int i = 0;
         for( ; j < other.pos; j++) {
             if(i == pos) {
-                if(includeDescendants)
-                    {return true;}
-                return j == other.pos ? true : false;
+                if(includeDescendants) {
+                    return true;
+                }
+                return j == other.pos;
             }
             if(components[i] == SKIP) {
                 ++i;
@@ -174,23 +181,27 @@ public class NodePath implements Comparable<NodePath> {
                 skip = false;
             } else if(skip) {
                 continue;
-            } else
-                {return false;}
+            } else {
+                return false;
+            }
         }
         if(i == pos) {
-            if(includeDescendants)
-                {return true;}
-            return j == other.pos ? true : false;
+            if(includeDescendants) {
+                return true;
+            }
+            return j == other.pos;
         }
         return false;
     }
 
     public void reset() {
-        for(int i = 0;  i < pos; i++)
+        for(int i = 0;  i < pos; i++) {
             components[i] = null;
+        }
         pos = 0;
     }
-    
+
+    @Override
     public String toString() {
         final StringBuilder buf = new StringBuilder();
         for(int i = 0; i < pos; i++) {
@@ -201,8 +212,8 @@ public class NodePath implements Comparable<NodePath> {
         }
         return buf.toString();
     }
-    
-    private void addComponent(Map<String, String> namespaces, String component) {
+
+    private void addComponent(final Map<String, String> namespaces, String component) {
         boolean isAttribute = false;
         if (component.startsWith("@")) {
             isAttribute = true;
@@ -235,7 +246,7 @@ public class NodePath implements Comparable<NodePath> {
         addComponent(qn);
     }
 
-    private void init( Map<String, String> namespaces, String path ) {
+    private void init(final Map<String, String> namespaces, final String path) {
         //TODO : compute better length
         final FastStringBuffer token = new FastStringBuffer(path.length());
         int pos = 0;
@@ -250,21 +261,25 @@ public class NodePath implements Comparable<NodePath> {
             case '/':
                 final String next = token.toString();
                 token.setLength(0);
-                if (next.length() > 0)
-                    {addComponent(namespaces, next);}
-                if (path.charAt(++pos ) == '/')
-                    {addComponent(SKIP);}
+                if (next.length() > 0) {
+                    addComponent(namespaces, next);
+                }
+                if (path.charAt(++pos ) == '/') {
+                    addComponent(SKIP);
+                }
                 break;
             default:
                 token.append(ch);
                 pos++;
             }
         }
-        if (token.length() > 0)
-            {addComponent(namespaces, token.toString());}
+        if (token.length() > 0) {
+            addComponent(namespaces, token.toString());
+        }
     }
 
-    public boolean equals(Object obj) {
+    @Override
+    public boolean equals(final Object obj) {
         if (obj != null && obj instanceof NodePath) {
             final NodePath nodePath = (NodePath) obj;
             if (nodePath.pos == pos) {
@@ -279,6 +294,7 @@ public class NodePath implements Comparable<NodePath> {
         return false;
     }
 
+    @Override
     public int hashCode() {
         int h = 0;
         for(int i = 0; i < pos; i++) {
@@ -288,7 +304,7 @@ public class NodePath implements Comparable<NodePath> {
     }
 
     @Override
-    public int compareTo(NodePath o) {
-        return toString().compareTo(o.toString()); //TODO: optimize
+    public int compareTo(final NodePath other) {
+        return toString().compareTo(other.toString()); //TODO: optimize
     }
 }
