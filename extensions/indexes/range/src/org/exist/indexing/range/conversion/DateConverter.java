@@ -42,13 +42,13 @@ public class DateConverter implements TypeConverter {
 
     protected static final Logger LOG = LogManager.getLogger(DateConverter.class);
 
-    private final static Pattern DATE_REGEX = Pattern.compile("(\\d+)-(\\d+)-(\\d+)");
+    private final static Pattern DATE_REGEX = Pattern.compile("(-?\\d+)-(\\d+)-(\\d+)");
 
     @Override
     public Field toField(String fieldName, String content) {
         try {
             DateValue dv;
-            if (content.indexOf('-') < 0) {
+            if (content.indexOf('-') < 1) {
                 // just year
                 int year = Integer.parseInt(content);
                 XMLGregorianCalendar calendar = TimeUtils.getInstance().newXMLGregorianCalendar();
@@ -61,7 +61,8 @@ public class DateConverter implements TypeConverter {
                 Matcher matcher = DATE_REGEX.matcher(content);
                 if (matcher.matches()) {
                     try {
-                        content = String.format("%04d-%02d-%02d", Integer.parseInt(matcher.group(1)), Integer.parseInt(matcher.group(2)), Integer.parseInt(matcher.group(3)));
+                        int year = Integer.parseInt(matcher.group(1));
+                        content = (year < 0 ? "-" : "") + String.format("%04d-%02d-%02d", Math.abs(year), Integer.parseInt(matcher.group(2)), Integer.parseInt(matcher.group(3)));
                     } catch (NumberFormatException e) {
                         // invalid content: ignore
                     }
