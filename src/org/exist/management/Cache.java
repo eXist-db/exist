@@ -55,7 +55,7 @@ public class Cache implements CacheMBean {
     }
 
     @Override
-    public String getFileName() {
-        return cache.getFileName();
+    public String getName() {
+        return cache.getName();
     }
 }
