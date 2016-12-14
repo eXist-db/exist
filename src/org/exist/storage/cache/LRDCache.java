@@ -40,7 +40,7 @@ import org.apache.logging.log4j.Logger;
  * @author wolf
  */
 @NotThreadSafe
-public class LRDCache extends GClockCache {
+public class LRDCache<T extends Cacheable> extends GClockCache<T> {
 	private final static Logger LOG = LogManager.getLogger(LRDCache.class);
 	
 	private final int maxReferences;
@@ -48,15 +48,15 @@ public class LRDCache extends GClockCache {
     private int totalReferences = 0;
     private int nextCleanup;
 	
-	public LRDCache(final String name, int size, double growthFactor, double growthThreshold, String type) {
-		super(name, size, growthFactor, growthThreshold, type);
+	public LRDCache(final String name, final Class<T> cacheableClazz, final int size, final double growthFactor, final double growthThreshold, final String type) {
+		super(name, cacheableClazz, size, growthFactor, growthThreshold, type);
 		maxReferences = size * 10000;
 		ageingPeriod = size * 5000;
 	}
 	
 	@Override
-	public void add(final Cacheable item, final int initialRefCount) {
-		final Cacheable old = map.get(item.getKey());
+	public void add(final T item, final int initialRefCount) {
+		final T old = map.get(item.getKey());
 		if (old != null) {
 			old.incReferenceCount();
 			totalReferences++;
@@ -80,8 +80,8 @@ public class LRDCache extends GClockCache {
 	}
 
 	@Override
-	protected Cacheable removeOne(final Cacheable item) {
-		Cacheable old;
+	protected T removeOne(final T item) {
+		T old;
 		double rd = 0, minRd = -1;
 		int bucket = -1;
         final int len = items.length;
@@ -131,7 +131,7 @@ public class LRDCache extends GClockCache {
 	private void ageReferences() {
 		final int limit = ageingPeriod / 10;
         for(int i = 0; i < count; i++) {
-            final Cacheable item = items[i];
+            final T item = items[i];
 			if(item != null) {
 				final int refCount = item.getReferenceCount();
 				if(refCount > limit) {
@@ -153,7 +153,7 @@ public class LRDCache extends GClockCache {
         }
 		totalReferences = count;
         for(int i = 0; i < count; i++) {
-            final Cacheable item = items[i];
+            final T item = items[i];
 			if(item != null) {
 				item.setReferenceCount(1);
 				item.setTimestamp(1);

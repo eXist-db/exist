@@ -25,6 +25,8 @@ import org.apache.logging.log4j.Logger;
 import org.exist.storage.CacheManager;
 import org.exist.util.hashtable.Long2ObjectHashMap;
 
+import java.lang.reflect.Array;
+
 /**
  * Cache implementation based on the GClock algorithm. 
  * 
@@ -41,30 +43,37 @@ import org.exist.util.hashtable.Long2ObjectHashMap;
  * @author wolf
  */
 @NotThreadSafe
-public class GClockCache implements Cache {
+public class GClockCache<T extends Cacheable> implements Cache<T> {
 	private final static Logger LOG = LogManager.getLogger(GClockCache.class);
 
 	private final String name;
+    private final Class<T> cacheableClazz;
     protected int size;
     private final double growthFactor;
     Accounting accounting;
     private final String type;
-	protected Cacheable[] items;
-    protected Long2ObjectHashMap<Cacheable> map;
+	protected T[] items;
+    protected Long2ObjectHashMap<T> map;
 	protected int count = 0;
 	protected int used = 0;
     private int hitsOld = 0;
 	protected CacheManager cacheManager = null;
 
-    public GClockCache(final String name, final int size, final double growthFactor, final double growthThreshold, final String type) {
+    public GClockCache(final String name, final Class<T> cacheableClazz, final int size, final double growthFactor, final double growthThreshold, final String type) {
 		this.name = name;
+		this.cacheableClazz = cacheableClazz;
     	this.size = size;
         this.growthFactor = growthFactor;
         accounting = new Accounting(growthThreshold);
         accounting.setTotalSize(size);
         this.type = type;
-        this.items = new Cacheable[size];
+        this.items = createArray(cacheableClazz, size);
 		this.map = new Long2ObjectHashMap<>(size * 2);
+    }
+
+    @SuppressWarnings("unchecked")
+    private T[] createArray(final Class<T> clazz, final int size) {
+        return (T[])Array.newInstance(clazz, size);
     }
 
     @Override
@@ -78,13 +87,13 @@ public class GClockCache implements Cache {
     }
 
     @Override
-    public void add(final Cacheable item) {
+    public void add(final T item) {
 		add(item, 1);
 	}
 
 	@Override
-	public void add(final Cacheable item, final int initialRefCount) {
-		final Cacheable old = map.get(item.getKey());
+	public void add(final T item, final int initialRefCount) {
+		final T old = map.get(item.getKey());
 		if (old != null) {
 			old.incReferenceCount();
 			return;
@@ -100,13 +109,13 @@ public class GClockCache implements Cache {
 	}
 
 	@Override
-	public Cacheable get(final Cacheable item) {
+	public T get(final T item) {
 		return get(item.getKey());
 	}
 
 	@Override
-	public Cacheable get(final long key) {
-		final Cacheable item = map.get(key);
+	public T get(final long key) {
+		final T item = map.get(key);
 		if (item == null) {
 			accounting.missesIncrement();
 		} else {
@@ -116,9 +125,9 @@ public class GClockCache implements Cache {
 	}
 
 	@Override
-	public void remove(final Cacheable item) {
+	public void remove(final T item) {
 		final long key = item.getKey();
-		final Cacheable cacheable = map.remove(key);
+		final T cacheable = map.remove(key);
 		if (cacheable == null) {
 		    return;
 		}
@@ -158,8 +167,8 @@ public class GClockCache implements Cache {
 	    return false;
 	}
 
-	protected Cacheable removeOne(final Cacheable item) {
-		Cacheable old = null;
+	protected T removeOne(final T item) {
+		T old = null;
 		boolean removed = false;
 		int bucket;
 		do {
@@ -239,8 +248,8 @@ public class GClockCache implements Cache {
         if (newSize < size) {
             shrink(newSize);
         } else {
-            final Cacheable[] newItems = new Cacheable[newSize];
-            final Long2ObjectHashMap<Cacheable> newMap = new Long2ObjectHashMap<>(newSize * 2);
+            final T[] newItems = createArray(cacheableClazz, newSize);
+            final Long2ObjectHashMap<T> newMap = new Long2ObjectHashMap<>(newSize * 2);
             for (int i = 0; i < count; i++) {
                 newItems[i] = items[i];
                 newMap.put(items[i].getKey(), items[i]);
@@ -255,7 +264,7 @@ public class GClockCache implements Cache {
     
     private void shrink(final int newSize) {
         flush();
-        items = new Cacheable[newSize];
+        items = createArray(cacheableClazz, newSize);
         map = new Long2ObjectHashMap<>(newSize * 2);
         size = newSize;
         count = 0;

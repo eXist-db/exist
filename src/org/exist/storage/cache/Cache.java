@@ -26,8 +26,10 @@ import org.exist.storage.CacheManager;
  * buffering btree and data pages.
  * 
  * @author Wolfgang <wolfgang@exist-db.org>
+ *
+ * @param <T> The type that implements {@link Cacheable}
  */
-public interface Cache {
+public interface Cache<T extends Cacheable> {
 
     /**
      * Returns the type of this cache. Should be one of the
@@ -43,7 +45,7 @@ public interface Cache {
      * 
      * @param item The item to add to the cache
      */
-    void add(Cacheable item);
+    void add(T item);
 
     /**
      * Add the item to the cache. If it is already in the cache,
@@ -52,7 +54,7 @@ public interface Cache {
      * @param item The item to add to the cache
      * @param initialRefCount the initial reference count for the item
      */
-    void add(Cacheable item, int initialRefCount);
+    void add(T item, int initialRefCount);
 
     /**
      * Retrieve an item from the cache.
@@ -60,7 +62,7 @@ public interface Cache {
      * @param item The item to retrieve from the cache
      * @return the item in the cache or null if it does not exist.
      */
-    Cacheable get(Cacheable item);
+    T get(T item);
 
     /**
      * Retrieve an item by its key.
@@ -68,14 +70,14 @@ public interface Cache {
      * @param key a unique key, usually the page number
      * @return the item in the cache or null if it does not exist.
      */
-    Cacheable get(long key);
+    T get(long key);
 
     /**
      * Remove an item from the cache.
      * 
      * @param item The item to remove from the cache
      */
-    void remove(Cacheable item);
+    void remove(T item);
 
     /**
      * Returns true if the cache contains any dirty

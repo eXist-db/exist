@@ -35,14 +35,14 @@ import org.exist.util.hashtable.SequencedLongHashMap;
  * @author wolf
  */
 @NotThreadSafe
-public class LRUCache implements Cache {
+public class LRUCache<T extends Cacheable> implements Cache<T> {
     private final static Logger LOG = LogManager.getLogger(LRUCache.class);
 
 	private final String name;
 	protected int max;
     protected final double growthFactor;
     protected final Accounting accounting;
-	protected SequencedLongHashMap<Cacheable> map;
+	protected SequencedLongHashMap<T> map;
     private final String type;
     private int hitsOld = -1;
     protected CacheManager cacheManager = null;
@@ -63,8 +63,8 @@ public class LRUCache implements Cache {
 	}
 
 	@Override
-	public void add(final Cacheable item, final int initialRefCount) {
-		add(item);
+	public void add(final T item, final int initialRefCount) {
+		_add(item);
 	}
 
 	@Override
@@ -73,21 +73,29 @@ public class LRUCache implements Cache {
     }
 
     @Override
-	public void add(final Cacheable item) {
-		if(map.size() == max) {
-			removeOne(item);
-		}
-		map.put(item.getKey(), item);
+	public void add(final T item) {
+        _add(item);
 	}
 
+	/**
+     * Avoids StackOverflow through
+     * base/sub-class overriding add(T)
+     */
+	private void _add(final T item) {
+        if(map.size() == max) {
+            removeOne(item);
+        }
+        map.put(item.getKey(), item);
+    }
+
 	@Override
-	public Cacheable get(final Cacheable item) {
+	public T get(final T item) {
 		return get(item.getKey());
 	}
 
 	@Override
-	public Cacheable get(final long key) {
-		final Cacheable obj = map.get(key);
+	public T get(final long key) {
+		final T obj = map.get(key);
 		if(obj == null) {
 		    accounting.missesIncrement();
 		} else {
@@ -97,15 +105,15 @@ public class LRUCache implements Cache {
 	}
 
 	@Override
-	public void remove(final Cacheable item) {
+	public void remove(final T item) {
 		map.remove(item.getKey());
 	}
 
 	@Override
 	public boolean flush() {
 		boolean flushed = false;
-		for(SequencedLongHashMap.Entry<Cacheable> next = map.getFirstEntry(); next != null; next = next.getNext()) {
-			final Cacheable cacheable = next.getValue();
+		for(SequencedLongHashMap.Entry<T> next = map.getFirstEntry(); next != null; next = next.getNext()) {
+			final T cacheable = next.getValue();
 			if(cacheable.isDirty()) {
 				flushed = flushed | cacheable.sync(false);
 			}
@@ -116,8 +124,8 @@ public class LRUCache implements Cache {
 	
     @Override
     public boolean hasDirtyItems() {
-        for(SequencedLongHashMap.Entry<Cacheable> next = map.getFirstEntry(); next != null; next = next.getNext()) {
-            final Cacheable cacheable = next.getValue();
+        for(SequencedLongHashMap.Entry<T> next = map.getFirstEntry(); next != null; next = next.getNext()) {
+            final T cacheable = next.getValue();
             if(cacheable.isDirty()) {
                 return true;
             }
@@ -149,11 +157,11 @@ public class LRUCache implements Cache {
         return accounting.getThrashing();
     }
 
-	protected void removeOne(final Cacheable item) {
+	protected void removeOne(final T item) {
         boolean removed = false;
-        SequencedLongHashMap.Entry<Cacheable> next = map.getFirstEntry();
+        SequencedLongHashMap.Entry<T> next = map.getFirstEntry();
         do {
-            final Cacheable cached = next.getValue();
+            final T cached = next.getValue();
             if(cached.allowUnload() && cached.getKey() != item.getKey()) {
                 cached.sync(true);
                 map.remove(next.getKey());
@@ -189,9 +197,9 @@ public class LRUCache implements Cache {
         if (newSize < max) {
             shrink(newSize);
         } else {
-            final SequencedLongHashMap<Cacheable> newMap = new SequencedLongHashMap<>(newSize * 2);
-            for(SequencedLongHashMap.Entry<Cacheable> next = map.getFirstEntry(); next != null; next = next.getNext()) {
-                final Cacheable cacheable = next.getValue();
+            final SequencedLongHashMap<T> newMap = new SequencedLongHashMap<>(newSize * 2);
+            for(SequencedLongHashMap.Entry<T> next = map.getFirstEntry(); next != null; next = next.getNext()) {
+                final T cacheable = next.getValue();
                 newMap.put(cacheable.getKey(), cacheable);
             }
             max = newSize;

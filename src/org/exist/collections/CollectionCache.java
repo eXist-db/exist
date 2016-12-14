@@ -27,7 +27,6 @@ import org.apache.logging.log4j.Logger;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.BrokerPoolService;
 import org.exist.storage.CacheManager;
-import org.exist.storage.cache.Cacheable;
 import org.exist.storage.cache.LRUCache;
 import org.exist.storage.lock.Lock;
 import org.exist.util.hashtable.Object2LongHashMap;
@@ -43,7 +42,7 @@ import org.exist.xmldb.XmldbURI;
  * @author wolf
  */
 @NotThreadSafe
-public class CollectionCache extends LRUCache implements BrokerPoolService {
+public class CollectionCache extends LRUCache<Collection> implements BrokerPoolService {
     private final static Logger LOG = LogManager.getLogger(CollectionCache.class);
 
     private final BrokerPool pool;
@@ -55,10 +54,12 @@ public class CollectionCache extends LRUCache implements BrokerPoolService {
         this.names = new Object2LongHashMap<>(blockBuffers);
     }
 
+    @Override
     public void add(final Collection collection) {
         add(collection, 1);
     }
 
+    @Override
     public void add(final Collection collection, final int initialRefCount) {
         // don't cache the collection during initialization: SecurityManager is not yet online
         if(!pool.isOperational()) {
@@ -70,8 +71,9 @@ public class CollectionCache extends LRUCache implements BrokerPoolService {
         names.put(name, collection.getKey());
     }
 
+    @Override
     public Collection get(final Collection collection) {
-        return (Collection) get(collection.getKey());
+        return get(collection.getKey());
     }
 
     public Collection get(final XmldbURI name) {
@@ -79,7 +81,7 @@ public class CollectionCache extends LRUCache implements BrokerPoolService {
         if (key < 0) {
             return null;
         }
-        return (Collection) get(key);
+        return get(key);
     }
 
     // TODO(AR) we have a mix of concerns here, we should not involve collection locking in the operation of the cache  or invalidating the collectionConfiguration
@@ -87,22 +89,21 @@ public class CollectionCache extends LRUCache implements BrokerPoolService {
      * Overwritten to lock collections before they are removed.
      */
     @Override
-    protected void removeOne(final Cacheable item) {
+    protected void removeOne(final Collection item) {
         boolean removed = false;
-        SequencedLongHashMap.Entry<Cacheable> next = map.getFirstEntry();
+        SequencedLongHashMap.Entry<Collection> next = map.getFirstEntry();
         int tries = 0;
         do {
-            final Cacheable cached = next.getValue();
+            final Collection cached = next.getValue();
             if(cached.getKey() != item.getKey()) {
-                final Collection old = (Collection) cached;
-                final Lock lock = old.getLock();
+                final Lock lock = cached.getLock();
                 if (lock.attempt(Lock.READ_LOCK)) {
                     try {
                         if (cached.allowUnload()) {
                             if(pool.getConfigurationManager() != null) { // might be null during db initialization
-                                pool.getConfigurationManager().invalidate(old.getURI(), null);
+                                pool.getConfigurationManager().invalidate(cached.getURI(), null);
                             }
-                            names.remove(old.getURI().getRawCollectionPath());
+                            names.remove(cached.getURI().getRawCollectionPath());
                             cached.sync(true);
                             map.remove(cached.getKey());
                             removed = true;
@@ -127,14 +128,13 @@ public class CollectionCache extends LRUCache implements BrokerPoolService {
     }
 
     @Override
-    public void remove(final Cacheable item) {
-        final Collection col = (Collection) item;
+    public void remove(final Collection item) {
         super.remove(item);
-        names.remove(col.getURI().getRawCollectionPath());
+        names.remove(item.getURI().getRawCollectionPath());
 
         // might be null during db initialization
         if(pool.getConfigurationManager() != null) {
-            pool.getConfigurationManager().invalidate(col.getURI(), null);
+            pool.getConfigurationManager().invalidate(item.getURI(), null);
         }
     }
 
@@ -148,7 +148,7 @@ public class CollectionCache extends LRUCache implements BrokerPoolService {
     public int getRealSize() {
         int size = 0;
         for (final Iterator<Long> i = names.valueIterator(); i.hasNext(); ) {
-            final Collection collection = (Collection) get(i.next());
+            final Collection collection = get(i.next());
             if (collection != null) {
                 size += collection.getMemorySize();
             }
@@ -164,12 +164,12 @@ public class CollectionCache extends LRUCache implements BrokerPoolService {
             if(LOG.isDebugEnabled()) {
                 LOG.debug("Growing collection cache to " + newSize);
             }
-            final SequencedLongHashMap<Cacheable> newMap = new SequencedLongHashMap<>(newSize * 2);
+            final SequencedLongHashMap<Collection> newMap = new SequencedLongHashMap<>(newSize * 2);
             final Object2LongHashMap<String> newNames = new Object2LongHashMap<>(newSize);
-            for(SequencedLongHashMap.Entry<Cacheable> next = map.getFirstEntry(); next != null; next = next.getNext()) {
-                final Cacheable cacheable = next.getValue();
+            for(SequencedLongHashMap.Entry<Collection> next = map.getFirstEntry(); next != null; next = next.getNext()) {
+                final Collection cacheable = next.getValue();
                 newMap.put(cacheable.getKey(), cacheable);
-                newNames.put(((Collection) cacheable).getURI().getRawCollectionPath(), cacheable.getKey());
+                newNames.put(cacheable.getURI().getRawCollectionPath(), cacheable.getKey());
             }
             max = newSize;
             map = newMap;

@@ -27,31 +27,31 @@ import org.exist.util.hashtable.SequencedLongHashMap;
  * cache, while the leaf pages can be removed.
  */
 @NotThreadSafe
-public class BTreeCache extends LRUCache {
+public class BTreeCache<T extends BTreeCacheable> extends LRUCache<T> {
 
     public BTreeCache(final String name, final int size, final double growthFactor, final double growthThreshold, final String type) {
         super(name, size, growthFactor, growthThreshold, type);
     }
 
     @Override
-    public void add(final Cacheable item, final int initialRefCount) {
+    public void add(final T item, final int initialRefCount) {
         add(item);
     }
 
     @Override
-    public void add(final Cacheable item) {
+    public void add(final T item) {
         map.put(item.getKey(), item);
         if (map.size() >= max + 1) {
-            removeNext((BTreeCacheable) item);
+            removeNext(item);
         }
     }
 
-    private void removeNext(final BTreeCacheable item) {
+    private void removeNext(final T item) {
         boolean removed = false;
         boolean mustRemoveInner = false;
-        SequencedLongHashMap.Entry<Cacheable> next = map.getFirstEntry();
+        SequencedLongHashMap.Entry<T> next = map.getFirstEntry();
         do {
-            final BTreeCacheable cached = (BTreeCacheable)next.getValue();
+            final T cached = next.getValue();
             if(cached.allowUnload() && cached.getKey() != item.getKey() &&
                     (mustRemoveInner || !cached.isInnerPage())) {
                 cached.sync(true);
