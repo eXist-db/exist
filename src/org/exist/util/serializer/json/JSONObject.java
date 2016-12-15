@@ -96,20 +96,30 @@ public class JSONObject extends JSONNode {
         if(!isRoot && isNamed()) {
             writer.write('"');
             writer.write(getName());
-            writer.write("\" : ");
+            writer.write('"');
+            if(isIndent()) {
+                writer.write(' ');
+            }
+            writer.write(':');
+            if(isIndent()) {
+                writer.write(' ');
+            }
         }
         
         if(getNextOfSame() != null || getSerializationType() == SerializationType.AS_ARRAY) {
-            writer.write("[");
+            writer.write('[');
             JSONNode next = this;
             while(next != null) {
                 next.serializeContent(writer);
                 next = next.getNextOfSame();
                 if (next != null) {
-                    writer.write(", ");
+                    writer.write(',');
+                    if(isIndent()) {
+                        writer.write(' ');
+                    }
                 }
             }
-            writer.write("]");
+            writer.write(']');
         } else {
             serializeContent(writer);
         }
@@ -128,7 +138,10 @@ public class JSONObject extends JSONNode {
                 firstChild.serialize(writer, false);
         } else {
             // complex object
-            writer.write("{ ");
+            writer.write('{');
+            if(isIndent()) {
+                writer.write(' ');
+            }
 
             JSONNode next = firstChild;
             boolean allowText = false;
@@ -141,7 +154,14 @@ public class JSONObject extends JSONNode {
                      Text in mixed content nodes is ignored though.
                     */
                     if(allowText) {
-                        writer.write("\"#text\" : ");
+                        writer.write("\"#text\"");
+                        if(isIndent()) {
+                            writer.write(' ');
+                        }
+                        writer.write(':');
+                        if(isIndent()) {
+                            writer.write(' ');
+                        }
                         next.serialize(writer, false);
                         allowText = false;
                     } else {
@@ -159,12 +179,18 @@ public class JSONObject extends JSONNode {
                 next = next.getNext();
 
                 if(next != null && !skipMixedContentText && !isMixedContentTextLast(next, allowText)) {
-                    writer.write(", ");
+                    writer.write(',');
+                    if(isIndent()) {
+                        writer.write(' ');
+                    }
                 }
 
                 skipMixedContentText = false;
             }
-            writer.write(" }");
+            if(isIndent()) {
+                writer.write(' ');
+            }
+            writer.write('}');
         }
     }
  

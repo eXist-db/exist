@@ -37,6 +37,7 @@ public abstract class JSONNode {
     private String name;
     private SerializationType serializationType = SerializationType.AS_OBJECT;
     private SerializationDataType serializationDataType = SerializationDataType.AS_STRING;
+    private boolean indent = false;
 
     private JSONNode next = null;
     private JSONNode nextOfSame = null;
@@ -108,5 +109,13 @@ public abstract class JSONNode {
 
     public void setName(final String name) {
         this.name = name;
+    }
+
+    public void setIndent(final boolean indent) {
+        this.indent = indent;
+    }
+
+    public boolean isIndent() {
+        return indent;
     }
 }
