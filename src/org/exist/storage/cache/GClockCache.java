@@ -1,29 +1,31 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist.sourceforge.net
- *  
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *  
- *  $Id$
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2016 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 package org.exist.storage.cache;
 
+import net.jcip.annotations.NotThreadSafe;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.storage.CacheManager;
 import org.exist.util.hashtable.Long2ObjectHashMap;
+
+import java.lang.reflect.Array;
 
 /**
  * Cache implementation based on the GClock algorithm. 
@@ -40,44 +42,58 @@ import org.exist.util.hashtable.Long2ObjectHashMap;
  * 
  * @author wolf
  */
-public class GClockCache implements Cache {
+@NotThreadSafe
+public class GClockCache<T extends Cacheable> implements Cache<T> {
+	private final static Logger LOG = LogManager.getLogger(GClockCache.class);
 
-	protected Cacheable[] items;
+	private final String name;
+    private final Class<T> cacheableClazz;
+    protected int size;
+    private final double growthFactor;
+    Accounting accounting;
+    private final String type;
+	protected T[] items;
+    protected Long2ObjectHashMap<T> map;
 	protected int count = 0;
-	protected int size;
-	protected Long2ObjectHashMap<Cacheable> map;
 	protected int used = 0;
-
-    protected int hitsOld = 0;
-
-    protected Accounting accounting;
-    protected double growthFactor;
-
+    private int hitsOld = 0;
 	protected CacheManager cacheManager = null;
-    private String fileName = "unknown";
 
-    private String type;
-
-    public GClockCache(int size, double growthFactor, double growthThreshold, String type) {
-		this.size = size;
+    public GClockCache(final String name, final Class<T> cacheableClazz, final int size, final double growthFactor, final double growthThreshold, final String type) {
+		this.name = name;
+		this.cacheableClazz = cacheableClazz;
+    	this.size = size;
         this.growthFactor = growthFactor;
-		this.items = new Cacheable[size];
-		this.map = new Long2ObjectHashMap<Cacheable>(size * 2);
         accounting = new Accounting(growthThreshold);
         accounting.setTotalSize(size);
         this.type = type;
+        this.items = createArray(cacheableClazz, size);
+		this.map = new Long2ObjectHashMap<>(size * 2);
     }
 
+    @SuppressWarnings("unchecked")
+    private T[] createArray(final Class<T> clazz, final int size) {
+        return (T[])Array.newInstance(clazz, size);
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
     public String getType() {
         return type;
     }
 
-    public void add(Cacheable item) {
+    @Override
+    public void add(final T item) {
 		add(item, 1);
 	}
 
-	public void add(Cacheable item, int initialRefCount) {
-		final Cacheable old = map.get(item.getKey());
+	@Override
+	public void add(final T item, final int initialRefCount) {
+		final T old = map.get(item.getKey());
 		if (old != null) {
 			old.incReferenceCount();
 			return;
@@ -92,24 +108,29 @@ public class GClockCache implements Cache {
 		}
 	}
 
-	public Cacheable get(Cacheable item) {
+	@Override
+	public T get(final T item) {
 		return get(item.getKey());
 	}
 
-	public Cacheable get(long key) {
-		final Cacheable item = map.get(key);
+	@Override
+	public T get(final long key) {
+		final T item = map.get(key);
 		if (item == null) {
 			accounting.missesIncrement();
-		} else
-			{accounting.hitIncrement();}
+		} else {
+		    accounting.hitIncrement();
+		}
 		return item;
 	}
 
-	public void remove(Cacheable item) {
+	@Override
+	public void remove(final T item) {
 		final long key = item.getKey();
-		final Cacheable cacheable = map.remove(key);
-		if (cacheable == null)
-			{return;}
+		final T cacheable = map.remove(key);
+		if (cacheable == null) {
+		    return;
+		}
 		for (int i = 0; i < count; i++) {
 			if (items[i] != null && items[i].getKey() == key) {
 				items[i] = null;
@@ -120,6 +141,7 @@ public class GClockCache implements Cache {
 		LOG.error("item not found in list");
 	}
 
+	@Override
 	public boolean flush() {
 		boolean flushed = false;
 	    int written = 0;
@@ -129,20 +151,24 @@ public class GClockCache implements Cache {
 			    flushed = true;
 			}
 		}
-		//LOG.debug(written + " pages written to disk");
+		if(LOG.isTraceEnabled()) {
+            LOG.trace(written + " pages written to disk");
+        }
 		return flushed;
 	}
 
+	@Override
 	public boolean hasDirtyItems() {
 	    for(int i = 0; i < count; i++) {
-			if(items[i] != null && items[i].isDirty())
-				{return true;}
+			if(items[i] != null && items[i].isDirty()) {
+			    return true;
+			}
 		}
 	    return false;
 	}
-	
-	protected Cacheable removeOne(Cacheable item) {
-		Cacheable old = null;
+
+	protected T removeOne(final T item) {
+		T old = null;
 		boolean removed = false;
 		int bucket;
 		do {
@@ -160,7 +186,9 @@ public class GClockCache implements Cache {
 			if (bucket > -1) {
 				old = items[bucket];
 				if (old != null) {
-					//LOG.debug(fileName + " replacing " + old.getKey() + " for " + item.getKey());
+				    if(LOG.isTraceEnabled()) {
+                        LOG.trace(name + " replacing " + old.getKey() + " for " + item.getKey());
+                    }
 					map.remove(old.getKey());
 					old.sync(true);
 				} else {
@@ -181,22 +209,27 @@ public class GClockCache implements Cache {
 		return old;
 	}
 
+	@Override
 	public int getBuffers() {
 		return size;
 	}
 
+    @Override
 	public int getUsedBuffers() {
 		return used;
 	}
 
+    @Override
     public double getGrowthFactor() {
         return growthFactor;
     }
-    
+
+    @Override
 	public int getHits() {
 		return accounting.getHits();
 	}
 
+    @Override
 	public int getFails() {
 		return accounting.getMisses();
 	}
@@ -204,17 +237,19 @@ public class GClockCache implements Cache {
     public int getThrashing() {
         return accounting.getThrashing();
     }
-    
-    public void setCacheManager(CacheManager manager) {
+
+    @Override
+    public void setCacheManager(final CacheManager manager) {
         this.cacheManager = manager;
     }
-    
-    public void resize(int newSize) {
+
+    @Override
+    public void resize(final int newSize) {
         if (newSize < size) {
             shrink(newSize);
         } else {
-            Cacheable[] newItems = new Cacheable[newSize];
-            Long2ObjectHashMap<Cacheable> newMap = new Long2ObjectHashMap<Cacheable>(newSize * 2);
+            final T[] newItems = createArray(cacheableClazz, newSize);
+            final Long2ObjectHashMap<T> newMap = new Long2ObjectHashMap<>(newSize * 2);
             for (int i = 0; i < count; i++) {
                 newItems[i] = items[i];
                 newMap.put(items[i].getKey(), items[i]);
@@ -227,10 +262,10 @@ public class GClockCache implements Cache {
         }
     }
     
-    protected void shrink(int newSize) {
+    private void shrink(final int newSize) {
         flush();
-        items = new Cacheable[newSize];
-        map = new Long2ObjectHashMap<Cacheable>(newSize * 2);
+        items = createArray(cacheableClazz, newSize);
+        map = new Long2ObjectHashMap<>(newSize * 2);
         size = newSize;
         count = 0;
         used = 0;
@@ -238,6 +273,7 @@ public class GClockCache implements Cache {
         accounting.setTotalSize(size);
     }
 
+    @Override
     public int getLoad() {
         if (hitsOld == 0) {
             hitsOld = accounting.getHits();
@@ -246,13 +282,5 @@ public class GClockCache implements Cache {
         final int load = accounting.getHits() - hitsOld;
         hitsOld = accounting.getHits();
         return load;
-    }
-  
-    public void setFileName(String name) {
-        fileName = name;
-    }
-    
-    public String getFileName() {
-        return fileName;
     }
 }

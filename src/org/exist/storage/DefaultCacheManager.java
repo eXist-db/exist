@@ -196,7 +196,7 @@ public class DefaultCacheManager implements CacheManager, BrokerPoolService
             }
 
             // no free pages available
-//            LOG.debug("Cache " + cache.getFileName() + " cannot be resized");
+//            LOG.debug("Cache " + cache.getName() + " cannot be resized");
             return( -1 );
         }
 
@@ -227,7 +227,7 @@ public class DefaultCacheManager implements CacheManager, BrokerPoolService
 
                 if( LOG.isDebugEnabled() ) {
                     final NumberFormat nf = NumberFormat.getNumberInstance();
-                    LOG.debug( "Growing cache " + cache.getFileName() + " (a " + cache.getClass().getName() + ") from " + nf.format( cache.getBuffers() ) + " to " + nf.format( newCacheSize ) );
+                    LOG.debug( "Growing cache " + cache.getName() + " (a " + cache.getClass().getName() + ") from " + nf.format( cache.getBuffers() ) + " to " + nf.format( newCacheSize ) );
                 }
                 currentPageCount -= cache.getBuffers();
 
@@ -267,7 +267,7 @@ public class DefaultCacheManager implements CacheManager, BrokerPoolService
 
                         if( LOG.isDebugEnabled() ) {
                             final NumberFormat nf = NumberFormat.getNumberInstance();
-                            LOG.debug( "Shrinking cache: " + cache.getFileName() + " (a " + cache.getClass().getName() + ") to " + nf.format( cache.getBuffers() ) );
+                            LOG.debug( "Shrinking cache: " + cache.getName() + " (a " + cache.getClass().getName() + ") to " + nf.format( cache.getBuffers() ) );
                         }
                         currentPageCount -= cache.getBuffers();
                         cache.resize( getDefaultInitialSize() );
@@ -296,7 +296,7 @@ public class DefaultCacheManager implements CacheManager, BrokerPoolService
 
                 if( LOG.isDebugEnabled() ) {
                     final NumberFormat nf = NumberFormat.getNumberInstance();
-                    LOG.debug( "Shrinking cache: " + cache.getFileName() + " (a " + cache.getClass().getName() + ") to " + nf.format( newSize ) );
+                    LOG.debug( "Shrinking cache: " + cache.getName() + " (a " + cache.getClass().getName() + ") to " + nf.format( newSize ) );
                 }
                 currentPageCount -= cache.getBuffers();
                 cache.resize( newSize );
@@ -368,7 +368,7 @@ public class DefaultCacheManager implements CacheManager, BrokerPoolService
         final Agent agent = AgentFactory.getInstance();
 
         try {
-            agent.addMBean( instanceName, "org.exist.management." + instanceName + ":type=CacheManager.Cache,name=" + cache.getFileName() + ",cache-type=" + cache.getType(), new org.exist.management.Cache( cache ) );
+            agent.addMBean( instanceName, "org.exist.management." + instanceName + ":type=CacheManager.Cache,name=" + cache.getName() + ",cache-type=" + cache.getType(), new org.exist.management.Cache( cache ) );
         }
         catch( final DatabaseConfigurationException e ) {
             LOG.warn( "Exception while registering cache mbean.", e );
