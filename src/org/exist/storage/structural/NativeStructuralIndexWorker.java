@@ -19,6 +19,8 @@
  */
 package org.exist.storage.structural;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.TypedQNameComparator;
 import org.exist.dom.persistent.AttrImpl;
 import org.exist.dom.persistent.NodeProxy;
@@ -60,6 +62,8 @@ import org.exist.security.PermissionDeniedException;
  * long pointing to the storage address of the actual node in dom.dbx.
  */
 public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex {
+
+    private final static Logger LOG = LogManager.getLogger(NativeStructuralIndexWorker.class);
 
     private NativeStructuralIndex index;
     private ReindexMode mode = ReindexMode.STORE;
@@ -582,9 +586,13 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
 
     @Override
     public void removeCollection(Collection collection, DBBroker broker, boolean reindex) throws PermissionDeniedException {
-        for (final Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
-            final DocumentImpl doc = i.next();
-            removeDocument(doc);
+        try {
+            for (final Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
+                final DocumentImpl doc = i.next();
+                removeDocument(doc);
+            }
+        } catch(final LockException e) {
+            LOG.error(e);
         }
     }
 

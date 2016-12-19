@@ -195,13 +195,13 @@ public class RangeIndexUpdateTest {
 
             IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("test_string.xml"), XML);
             assertNotNull(info);
-            root.store(transaction, broker, info, XML, false);
+            root.store(transaction, broker, info, XML);
 
             docs.add(info.getDocument());
 
             info = root.validateXMLResource(transaction, broker, XmldbURI.create("test_string2.xml"), XML2);
             assertNotNull(info);
-            root.store(transaction, broker, info, XML2, false);
+            root.store(transaction, broker, info, XML2);
 
             docs.add(info.getDocument());
 

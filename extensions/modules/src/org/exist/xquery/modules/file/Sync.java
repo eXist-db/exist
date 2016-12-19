@@ -29,6 +29,7 @@ import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.FileUtils;
+import org.exist.util.LockException;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
 import org.exist.xmldb.XmldbURI;
@@ -113,15 +114,15 @@ public class Sync extends BasicFunction {
 			
 			output.endElement();
 			output.endDocument();
-        } catch(final PermissionDeniedException pde) {
-            throw new XPathException(this, pde);
+        } catch(final PermissionDeniedException | LockException e) {
+            throw new XPathException(this, e);
 		} finally {
 			context.popDocumentContext();
 		}
 		return output.getDocument();
 	}
 
-	private void saveCollection(final XmldbURI collectionPath, Path targetDir, final Date startDate, final MemTreeBuilder output) throws PermissionDeniedException {
+	private void saveCollection(final XmldbURI collectionPath, Path targetDir, final Date startDate, final MemTreeBuilder output) throws PermissionDeniedException, LockException {
 		try {
 			targetDir = Files.createDirectories(targetDir);
 		} catch(final IOException ioe) {

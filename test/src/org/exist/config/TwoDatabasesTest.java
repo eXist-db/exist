@@ -167,7 +167,7 @@ public class TwoDatabasesTest {
         }
     }
 
-    private void get() throws EXistException, IOException, PermissionDeniedException {
+    private void get() throws EXistException, IOException, PermissionDeniedException, LockException {
         try (final DBBroker broker1 = pool1.get(Optional.of(user1))) {
             assertTrue(getBin(broker1, "1"));
         }
@@ -186,7 +186,7 @@ public class TwoDatabasesTest {
         return top;
     }
 
-    private boolean getBin(final DBBroker broker, final String suffix) throws PermissionDeniedException, IOException {
+    private boolean getBin(final DBBroker broker, final String suffix) throws PermissionDeniedException, IOException, LockException {
         BinaryDocument binDoc = null;
         try {
             Collection top = broker.getCollection(XmldbURI.create("xmldb:exist:///"));

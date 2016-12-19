@@ -185,7 +185,7 @@ public class QT3TS_To_junit {
 
         if (mime != null && mime.isXMLType()) {
             final IndexInfo info = col.validateXMLResource(txn, broker, XmldbURI.create(fileName), new FileInputSource(file));
-            col.store(txn, broker, info, new FileInputSource(file), false);
+            col.store(txn, broker, info, new FileInputSource(file));
         } else {
             try(final InputStream is = Files.newInputStream(file)) {
                 col.addBinaryResource(txn, broker,

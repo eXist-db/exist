@@ -107,7 +107,7 @@ public class ConstructedNodesRecoveryTest {
             //store test document
             IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create(documentName), testDocument);
             assertNotNull(info);
-            root.store(transaction, broker, info, new InputSource(new StringReader(testDocument)), false);
+            root.store(transaction, broker, info, new InputSource(new StringReader(testDocument)));
 
             //commit the transaction
             transact.commit(transaction);

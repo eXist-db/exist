@@ -522,9 +522,9 @@ public class MatchDocumentsTest {
 
             //store test data
             IndexInfo info = root.validateXMLResource(txn, broker, doc1uri.lastSegment(), XML1);
-            root.store(txn, broker, info, XML1, false);
+            root.store(txn, broker, info, XML1);
             info = root.validateXMLResource(txn, broker, doc2uri.lastSegment(), XML2);
-            root.store(txn, broker, info, XML2, false);
+            root.store(txn, broker, info, XML2);
             root.addBinaryResource(txn, broker, doc3uri.lastSegment(), BINARY.getBytes(), null);
 
             txnManager.commit(txn);

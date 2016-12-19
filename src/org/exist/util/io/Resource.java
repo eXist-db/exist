@@ -469,7 +469,7 @@ public class Resource extends File {
 //	        info.getDocument().getMetadata().setMimeType(mimeType.getName());
 
             is = new FileInputSource(file);
-            collection.store(txn, broker, info, is, false);
+            collection.store(txn, broker, info, is);
 
             tm.commit(txn);
 
@@ -510,7 +510,7 @@ public class Resource extends File {
                 info.getDocument().getMetadata().setMimeType(mimeType.getName());
 
                 is = new FileInputSource(file);
-                destination.store(txn, broker, info, is, false);
+                destination.store(txn, broker, info, is);
 
                 source.removeBinaryResource(txn, broker, doc);
             }
@@ -547,7 +547,7 @@ public class Resource extends File {
                     final Date created = new Date(meta.getCreated());
                     final Date lastModified = new Date(meta.getLastModified());
 
-                    BinaryDocument binary = destination.validateBinaryResource(txn, broker, newName, is, mimeType.getName(), -1, created, lastModified);
+                    BinaryDocument binary = destination.validateBinaryResource(txn, broker, newName);
 
                     binary = destination.addBinaryResource(txn, broker, binary, is, mimeType.getName(), -1, created, lastModified);
 
@@ -679,7 +679,7 @@ public class Resource extends File {
                     final IndexInfo info = collection.validateXMLResource(transaction, broker, fileName, str);
                     info.getDocument().getMetadata().setMimeType(mimeType.getName());
                     info.getDocument().getPermissions().setMode(DEFAULT_RESOURCE_PERM);
-                    collection.store(transaction, broker, info, str, false);
+                    collection.store(transaction, broker, info, str);
 
                 } else {
                     // store as binary resource

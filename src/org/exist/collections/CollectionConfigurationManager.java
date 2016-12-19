@@ -132,7 +132,7 @@ public class CollectionConfigurationManager implements BrokerPoolService {
             broker.saveCollection(txn, confCol);
             final IndexInfo info = confCol.validateXMLResource(txn, broker, configurationDocumentName, config);
             // TODO : unlock the collection here ?
-            confCol.store(txn, broker, info, config, false);
+            confCol.store(txn, broker, info, config);
             // broker.sync(Sync.MAJOR_SYNC);
         } catch (final CollectionConfigurationException e) {
             throw e;

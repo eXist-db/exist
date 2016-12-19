@@ -367,7 +367,7 @@ public class SystemImportHandler extends DefaultHandler {
             
             listener.setCurrentResource(name);
             if(currentCollection != null) {
-                listener.observe(currentCollection);
+                listener.observe(currentCollection.getObservable());
             }
 
 			final TransactionManager txnManager = broker.getDatabase().getTransactionManager();
@@ -392,11 +392,11 @@ public class SystemImportHandler extends DefaultHandler {
 
 					rh.startDocumentRestore(resource, atts);
 
-					currentCollection.store(txn, broker, info, is, false);
+					currentCollection.store(txn, broker, info, is);
 	
 				} else {
 					// store as binary resource
-					resource = currentCollection.validateBinaryResource(txn, broker, docUri, is.getByteStream(), mimetype, is.getByteStreamLength() , date_created, date_modified);
+					resource = currentCollection.validateBinaryResource(txn, broker, docUri);
 					
 					rh.startDocumentRestore(resource, atts);
 

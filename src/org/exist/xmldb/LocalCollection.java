@@ -172,7 +172,7 @@ public class LocalCollection extends AbstractLocal implements CollectionImpl {
                     ok = false;
                 }
 
-                if (collection.hasSubcollection(broker, id)) {
+                if (collection.hasChildCollection(broker, id)) {
                     ok = false;
                 }
 
@@ -579,11 +579,11 @@ public class LocalCollection extends AbstractLocal implements CollectionImpl {
                 }
 
                 if (uri != null || res.inputSource != null) {
-                    collection.store(transaction, broker, info, (uri != null) ? new InputSource(uri) : res.inputSource, false);
+                    collection.store(transaction, broker, info, (uri != null) ? new InputSource(uri) : res.inputSource);
                 } else if (res.root != null) {
-                    collection.store(transaction, broker, info, res.root, false);
+                    collection.store(transaction, broker, info, res.root);
                 } else {
-                    collection.store(transaction, broker, info, res.content, false);
+                    collection.store(transaction, broker, info, res.content);
                 }
 
                 return null;

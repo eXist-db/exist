@@ -80,7 +80,7 @@ public class DocTypeTest {
                 final IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("test2.xml"), is);
 
                 assertNotNull(info);
-                root.store(transaction, broker, info, is, false);
+                root.store(transaction, broker, info, is);
 
                 transact.commit(transaction);
             }
@@ -152,7 +152,7 @@ public class DocTypeTest {
             IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"), XML);
             //TODO : unlock the collection here ?
             assertNotNull(info);
-            root.store(transaction, broker, info, XML, false);
+            root.store(transaction, broker, info, XML);
             
             transact.commit(transaction);
         }

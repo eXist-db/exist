@@ -103,7 +103,7 @@ public class CopyResourceTest {
                 assertNotNull(f);
                 info = subTestCollection.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"), new InputSource(f.toUri().toASCIIString()));
                 assertNotNull(info);
-                subTestCollection.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()), false);
+                subTestCollection.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()));
 
                 transact.commit(transaction);
             }
@@ -174,7 +174,7 @@ public class CopyResourceTest {
                 assertNotNull(f);
                 info = subTestCollection.validateXMLResource(transaction, broker, XmldbURI.create("test2.xml"), new InputSource(f.toUri().toASCIIString()));
                 assertNotNull(info);
-                subTestCollection.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()), false);
+                subTestCollection.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()));
 
                 transact.commit(transaction);
             }

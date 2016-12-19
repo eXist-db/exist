@@ -21,6 +21,8 @@ package org.exist.storage;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exist.collections.*;
+import org.exist.collections.Collection;
 import org.exist.dom.memtree.DOMIndexer;
 import org.exist.dom.persistent.AttrImpl;
 import org.exist.dom.persistent.BinaryDocument;
@@ -38,12 +40,8 @@ import org.exist.dom.persistent.TextImpl;
 import org.exist.EXistException;
 import org.exist.Indexer;
 import org.exist.backup.RawDataBackup;
-import org.exist.collections.Collection;
 import org.exist.collections.Collection.CollectionEntry;
 import org.exist.collections.Collection.SubCollectionEntry;
-import org.exist.collections.CollectionCache;
-import org.exist.collections.CollectionConfigurationException;
-import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.triggers.*;
 import org.exist.indexing.StreamListener;
 import org.exist.indexing.StreamListener.ReindexMode;
@@ -691,7 +689,7 @@ public class NativeBroker extends DBBroker {
                     final CollectionTrigger trigger = new CollectionTriggers(this);
                     trigger.beforeCreateCollection(this, transaction, XmldbURI.ROOT_COLLECTION_URI);
 
-                    current = new Collection(this, XmldbURI.ROOT_COLLECTION_URI);
+                    current = new MutableCollection(this, XmldbURI.ROOT_COLLECTION_URI);
                     current.setId(getNextCollectionId(transaction));
                     current.setCreationTime(System.currentTimeMillis());
 
@@ -734,7 +732,7 @@ public class NativeBroker extends DBBroker {
                 for(int i = 1; i < segments.length; i++) {
                     final XmldbURI temp = segments[i];
                     path = path.append(temp);
-                    if(current.hasSubcollectionNoLock(this, temp)) {
+                    if(current.hasChildCollectionNoLock(this, temp)) {
                         current = getCollection(path);
                         if(current == null) {
                             LOG.error("Collection '" + path + "' found in subCollections set but is missing from collections.dbx!");
@@ -767,7 +765,7 @@ public class NativeBroker extends DBBroker {
                         final CollectionTrigger trigger = new CollectionTriggers(this, current);
                         trigger.beforeCreateCollection(this, transaction, path);
 
-                        sub = new Collection(this, path);
+                        sub = new MutableCollection(this, path);
                         //inherit the group to the sub-collection if current collection is setGid
                         if(current.getPermissions().isSetGid()) {
                             sub.getPermissions().setGroupFrom(current.getPermissions()); //inherit group
@@ -933,8 +931,7 @@ public class NativeBroker extends DBBroker {
                     if(is == null) {
                         return null;
                     }
-                    collection = new Collection(this, uri);
-                    collection.read(this, is);
+                    collection = MutableCollection.load(this, uri, is);
 
                     collectionsCache.add(collection);
 
@@ -1494,22 +1491,27 @@ public class NativeBroker extends DBBroker {
                     LOG.debug("Removing children collections from their parent '" + collName + "'...");
                 }
 
-                for(final Iterator<XmldbURI> i = collection.collectionIterator(this); i.hasNext(); ) {
-                    final XmldbURI childName = i.next();
-                    //TODO : resolve from collection's base URI
-                    //TODO : resolve URIs !!! (uri.resolve(childName))
-                    final Collection childCollection = openCollection(uri.append(childName), Lock.WRITE_LOCK);
-                    try {
-                        removeCollection(transaction, childCollection);
-                    } catch(NullPointerException npe) {
-                        LOG.error("childCollection '" + childName + "' is corrupted. Caught NPE to be able to actually remove the parent.");
-                    } finally {
-                        if(childCollection != null) {
-                            childCollection.getLock().release(Lock.WRITE_LOCK);
-                        } else {
-                            LOG.warn("childCollection is null !");
+                try {
+                    for (final Iterator<XmldbURI> i = collection.collectionIterator(this); i.hasNext(); ) {
+                        final XmldbURI childName = i.next();
+                        //TODO : resolve from collection's base URI
+                        //TODO : resolve URIs !!! (uri.resolve(childName))
+                        final Collection childCollection = openCollection(uri.append(childName), Lock.WRITE_LOCK);
+                        try {
+                            removeCollection(transaction, childCollection);
+                        } catch (final NullPointerException npe) {
+                            LOG.error("childCollection '" + childName + "' is corrupted. Caught NPE to be able to actually remove the parent.");
+                        } finally {
+                            if (childCollection != null) {
+                                childCollection.getLock().release(Lock.WRITE_LOCK);
+                            } else {
+                                LOG.warn("childCollection is null !");
+                            }
                         }
                     }
+                } catch(final LockException e) {
+                    LOG.error("LockException while removing collection '" + collName + "'", e);
+                    return false;
                 }
 
                 //Drop all index entries
@@ -1586,53 +1588,58 @@ public class NativeBroker extends DBBroker {
 
                 final DocumentTrigger docTrigger = new DocumentTriggers(this, collection);
 
-                for(final Iterator<DocumentImpl> i = collection.iterator(this); i.hasNext(); ) {
-                    final DocumentImpl doc = i.next();
+                try {
+                    for (final Iterator<DocumentImpl> i = collection.iterator(this); i.hasNext(); ) {
+                        final DocumentImpl doc = i.next();
 
-                    docTrigger.beforeDeleteDocument(this, transaction, doc);
+                        docTrigger.beforeDeleteDocument(this, transaction, doc);
 
-                    //Remove doc's metadata
-                    // WM: now removed in one step. see above.
-                    //removeResourceMetadata(transaction, doc);
-                    //Remove document nodes' index entries
-                    new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
-                        @Override
-                        public Object start() {
-                            try {
-                                final Value ref = new NodeRef(doc.getDocId());
-                                final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
-                                domDb.remove(transaction, query, null);
-                            } catch(final BTreeException e) {
-                                LOG.warn("btree error while removing document", e);
-                            } catch(final IOException e) {
-                                LOG.warn("io error while removing document", e);
-                            } catch(final TerminatedException e) {
-                                LOG.warn("method terminated", e);
-                            }
-                            return null;
-                        }
-                    }.run();
-                    //Remove nodes themselves
-                    new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
-                        @Override
-                        public Object start() {
-                            if(doc.getResourceType() == DocumentImpl.BINARY_FILE) {
-                                final long page = ((BinaryDocument) doc).getPage();
-                                if(page > Page.NO_PAGE) {
-                                    domDb.removeOverflowValue(transaction, page);
+                        //Remove doc's metadata
+                        // WM: now removed in one step. see above.
+                        //removeResourceMetadata(transaction, doc);
+                        //Remove document nodes' index entries
+                        new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
+                            @Override
+                            public Object start() {
+                                try {
+                                    final Value ref = new NodeRef(doc.getDocId());
+                                    final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
+                                    domDb.remove(transaction, query, null);
+                                } catch (final BTreeException e) {
+                                    LOG.warn("btree error while removing document", e);
+                                } catch (final IOException e) {
+                                    LOG.warn("io error while removing document", e);
+                                } catch (final TerminatedException e) {
+                                    LOG.warn("method terminated", e);
                                 }
-                            } else {
-                                final NodeHandle node = (NodeHandle) doc.getFirstChild();
-                                domDb.removeAll(transaction, node.getInternalAddress());
+                                return null;
                             }
-                            return null;
-                        }
-                    }.run();
+                        }.run();
+                        //Remove nodes themselves
+                        new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
+                            @Override
+                            public Object start() {
+                                if (doc.getResourceType() == DocumentImpl.BINARY_FILE) {
+                                    final long page = ((BinaryDocument) doc).getPage();
+                                    if (page > Page.NO_PAGE) {
+                                        domDb.removeOverflowValue(transaction, page);
+                                    }
+                                } else {
+                                    final NodeHandle node = (NodeHandle) doc.getFirstChild();
+                                    domDb.removeAll(transaction, node.getInternalAddress());
+                                }
+                                return null;
+                            }
+                        }.run();
 
-                    docTrigger.afterDeleteDocument(this, transaction, doc.getURI());
+                        docTrigger.afterDeleteDocument(this, transaction, doc.getURI());
 
-                    //Make doc's id available again
-                    collectionsDb.freeResourceId(doc.getDocId());
+                        //Make doc's id available again
+                        collectionsDb.freeResourceId(doc.getDocId());
+                    }
+                } catch(final LockException e) {
+                    LOG.error("LockException while removing documents from collection '" + collection.getURI() + "'.", e);
+                    return false;
                 }
 
                 //now that the database has been updated, update the binary collections on disk
@@ -1708,7 +1715,7 @@ public class NativeBroker extends DBBroker {
             }
             final Value name = new CollectionStore.CollectionKey(collection.getURI().toString());
             final VariableByteOutputStream os = new VariableByteOutputStream(8);
-            collection.write(this, os);
+            collection.serialize(os);
             final long address = collectionsDb.put(transaction, name, os.data(), true);
             if(address == BFile.UNKNOWN_ADDRESS) {
                 //TODO : exception !!! -pb
@@ -1805,19 +1812,28 @@ public class NativeBroker extends DBBroker {
             if(mode == IndexMode.STORE) {
                 dropCollectionIndex(transaction, collection, true);
             }
-            for(final Iterator<DocumentImpl> i = collection.iterator(this); i.hasNext(); ) {
-                final DocumentImpl next = i.next();
-                reindexXMLResource(transaction, next, mode);
-            }
-            for(final Iterator<XmldbURI> i = collection.collectionIterator(this); i.hasNext(); ) {
-                final XmldbURI next = i.next();
-                //TODO : resolve URIs !!! (collection.getURI().resolve(next))
-                final Collection child = getCollection(collection.getURI().append(next));
-                if(child == null) {
-                    LOG.warn("Collection '" + next + "' not found");
-                } else {
-                    reindexCollection(transaction, child, mode);
+            try {
+                for (final Iterator<DocumentImpl> i = collection.iterator(this); i.hasNext(); ) {
+                    final DocumentImpl next = i.next();
+                    reindexXMLResource(transaction, next, mode);
                 }
+            } catch(final LockException e) {
+                LOG.error("LockException while reindexing documents of collection '" + collection.getURI() + ". Skipping...", e);
+            }
+
+            try {
+                for (final Iterator<XmldbURI> i = collection.collectionIterator(this); i.hasNext(); ) {
+                    final XmldbURI next = i.next();
+                    //TODO : resolve URIs !!! (collection.getURI().resolve(next))
+                    final Collection child = getCollection(collection.getURI().append(next));
+                    if (child == null) {
+                        LOG.warn("Collection '" + next + "' not found");
+                    } else {
+                        reindexCollection(transaction, child, mode);
+                    }
+                }
+            } catch(final LockException e) {
+                LOG.error("LockException while reindexing child collections of collection '" + collection.getURI() + ". Skipping...", e);
             }
         }
     }
@@ -1835,31 +1851,34 @@ public class NativeBroker extends DBBroker {
         }
         notifyDropIndex(collection);
         indexController.removeCollection(collection, this, reindex);
-        for(final Iterator<DocumentImpl> i = collection.iterator(this); i.hasNext(); ) {
-            final DocumentImpl doc = i.next();
-            LOG.debug("Dropping index for document " + doc.getFileURI());
-            new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
-                @Override
-                public Object start() {
-                    try {
-                        final Value ref = new NodeRef(doc.getDocId());
-                        final IndexQuery query =
-                            new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
-                        domDb.remove(transaction, query, null);
-                        domDb.flush();
-                    } catch(final BTreeException e) {
-                        LOG.warn("btree error while removing document", e);
-                    } catch(final DBException e) {
-                        LOG.warn("db error while removing document", e);
-                    } catch(final IOException e) {
-                        LOG.warn("io error while removing document", e);
-                    } catch(final TerminatedException e) {
-                        LOG.warn("method terminated", e);
+        try {
+            for (final Iterator<DocumentImpl> i = collection.iterator(this); i.hasNext(); ) {
+                final DocumentImpl doc = i.next();
+                LOG.debug("Dropping index for document " + doc.getFileURI());
+                new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
+                    @Override
+                    public Object start() {
+                        try {
+                            final Value ref = new NodeRef(doc.getDocId());
+                            final IndexQuery query =
+                                    new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
+                            domDb.remove(transaction, query, null);
+                            domDb.flush();
+                        } catch (final BTreeException e) {
+                            LOG.warn("btree error while removing document", e);
+                        } catch (final DBException e) {
+                            LOG.warn("db error while removing document", e);
+                        } catch (final IOException e) {
+                            LOG.warn("io error while removing document", e);
+                        } catch (final TerminatedException e) {
+                            LOG.warn("method terminated", e);
+                        }
+                        return null;
                     }
-                    return null;
-                }
+                }.run();
             }
-                .run();
+        } catch(final LockException e) {
+            LOG.error("LockException while removing index of collection '" + collection.getURI(), e);
         }
     }
 

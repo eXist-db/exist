@@ -221,7 +221,7 @@ public class RpcConnection implements RpcAPI {
                     ok = false;
                 }
 
-                if (collection.hasSubcollection(broker, id)) {
+                if (collection.hasChildCollection(broker, id)) {
                     ok = false;
                 }
 
@@ -943,7 +943,7 @@ public class RpcConnection implements RpcAPI {
                     ok = false;
                 }
 
-                if (collection.hasSubcollection(broker, id)) {
+                if (collection.hasChildCollection(broker, id)) {
                     ok = false;
                 }
 
@@ -1015,7 +1015,7 @@ public class RpcConnection implements RpcAPI {
     public Map<String, Object> getSubCollectionPermissions(final String parentPath, final String name) throws EXistException, PermissionDeniedException, URISyntaxException {
 
         final XmldbURI uri = XmldbURI.xmldbUriFor(parentPath);
-        final Permission perm = this.<Permission>readCollection(uri).apply((collection, broker, transaction) -> collection.getSubCollectionEntry(broker, name).getPermissions());
+        final Permission perm = this.<Permission>readCollection(uri).apply((collection, broker, transaction) -> collection.getChildCollectionEntry(broker, name).getPermissions());
 
         final Map<String, Object> result = new HashMap<>();
         result.put("owner", perm.getOwner().getName());
@@ -1047,7 +1047,7 @@ public class RpcConnection implements RpcAPI {
     @Override
     public long getSubCollectionCreationTime(final String parentPath, final String name) throws EXistException, PermissionDeniedException, URISyntaxException {
         final XmldbURI uri = XmldbURI.xmldbUriFor(parentPath);
-        return this.<Long>readCollection(uri).apply((collection, broker, transaction) -> collection.getSubCollectionEntry(broker, name).getCreated());
+        return this.<Long>readCollection(uri).apply((collection, broker, transaction) -> collection.getChildCollectionEntry(broker, name).getCreated());
     }
 
     private List<ACEAider> getACEs(final Permission perm) {
@@ -1313,7 +1313,7 @@ public class RpcConnection implements RpcAPI {
                     info.getDocument().getMetadata().setLastModified(modified.getTime());
                 }
 
-                collection.store(transaction, broker, info, source, false);
+                collection.store(transaction, broker, info, source);
 
                 LOG.debug("parsing " + docUri + " took " + (System.currentTimeMillis() - startTime) + "ms.");
                 return true;
@@ -1433,7 +1433,7 @@ public class RpcConnection implements RpcAPI {
                     if (modified != null) {
                         info.getDocument().getMetadata().setLastModified(modified.getTime());
                     }
-                    collection.store(transaction, broker, info, source, false);
+                    collection.store(transaction, broker, info, source);
                 } else {
                     try (final InputStream is = source.getByteStream()) {
                         final DocumentImpl doc = collection.addBinaryResource(transaction, broker, docUri.lastSegment(), is, mime.getName(), source.getByteStreamLength());

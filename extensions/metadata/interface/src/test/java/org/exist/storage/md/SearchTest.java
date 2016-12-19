@@ -212,7 +212,7 @@ public class SearchTest {
 	private static DocumentImpl storeDocument(Txn txn, DBBroker broker, Collection col, XmldbURI uri, String data) throws TriggerException, EXistException, PermissionDeniedException, SAXException, LockException, IOException {
         IndexInfo info = col.validateXMLResource(txn, broker, uri.lastSegment(), data);
         assertNotNull(info);
-        col.store(txn, broker, info, data, false);
+        col.store(txn, broker, info, data);
         assertNotNull(info.getDocument());
 
         return info.getDocument();

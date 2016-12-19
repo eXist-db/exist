@@ -171,7 +171,7 @@ public class XQTS_To_junit {
                         new FileInputSource(file)
                     );
                 //info.getDocument().getMetadata().setMimeType();
-                col.store(txn, broker, info, new FileInputSource(file), false);
+                col.store(txn, broker, info, new FileInputSource(file));
             } else {
                 try(final InputStream is = Files.newInputStream(file)) {
                     col.addBinaryResource(txn, broker,

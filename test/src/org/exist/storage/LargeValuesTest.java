@@ -90,7 +90,7 @@ public class LargeValuesTest {
                 final IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"),
                         new InputSource(file.toUri().toASCIIString()));
                 assertNotNull(info);
-                root.store(transaction, broker, info, new InputSource(file.toUri().toASCIIString()), false);
+                root.store(transaction, broker, info, new InputSource(file.toUri().toASCIIString()));
                 broker.saveCollection(transaction, root);
 
                 transact.commit(transaction);

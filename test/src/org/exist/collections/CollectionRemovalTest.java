@@ -201,7 +201,7 @@ public class CollectionRemovalTest {
 			IndexInfo info = test.validateXMLResource(transaction, broker,
 					XmldbURI.create("document.xml"), DATA);
 			assertNotNull(info);
-			test.store(transaction, broker, info, DATA, false);
+			test.store(transaction, broker, info, DATA);
 
             Collection childCol1 = broker.getOrCreateCollection(transaction,
                     TestConstants.TEST_COLLECTION_URI2.append("test4"));
@@ -214,7 +214,7 @@ public class CollectionRemovalTest {
             info = childCol1.validateXMLResource(transaction, broker,
 					XmldbURI.create("document.xml"), DATA);
 			assertNotNull(info);
-			childCol1.store(transaction, broker, info, DATA, false);
+			childCol1.store(transaction, broker, info, DATA);
 
             Collection childCol = broker.getOrCreateCollection(transaction,
                     TestConstants.TEST_COLLECTION_URI3);
@@ -227,7 +227,7 @@ public class CollectionRemovalTest {
             info = childCol.validateXMLResource(transaction, broker,
 					XmldbURI.create("document.xml"), DATA);
 			assertNotNull(info);
-			childCol.store(transaction, broker, info, DATA, false);
+			childCol.store(transaction, broker, info, DATA);
 
             transact.commit(transaction);
 		}

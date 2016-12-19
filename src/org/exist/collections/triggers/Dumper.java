@@ -27,6 +27,7 @@ import org.exist.dom.persistent.DefaultDocumentSet;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
+import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 
 import java.util.Iterator;
@@ -63,8 +64,8 @@ public class Dumper extends FilteringTrigger implements DocumentTrigger {
         
         try {
             getCollection().getDocuments(broker, docs);
-        } catch (final PermissionDeniedException pde) {
-            throw new TriggerException(pde.getMessage(), pde);
+        } catch (final PermissionDeniedException | LockException e) {
+            throw new TriggerException(e.getMessage(), e);
         }
         
         for (final Iterator<DocumentImpl> i = docs.getDocumentIterator(); i.hasNext(); ) {

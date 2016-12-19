@@ -7,6 +7,7 @@ import java.util.regex.Pattern;
 import org.exist.collections.Collection;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
+import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 
 /**
@@ -81,9 +82,9 @@ public abstract class Name {
                 DBBroker _broker = null;
                 try {
                     _broker = db.acquireBroker();
-                    return context.hasDocument(_broker, proposedUri) || context.hasSubcollection(_broker, proposedUri);
-                } catch(PermissionDeniedException pde) {
-                    throw new DatabaseException(pde.getMessage(), pde);
+                    return context.hasDocument(_broker, proposedUri) || context.hasChildCollection(_broker, proposedUri);
+                } catch(final PermissionDeniedException | LockException e) {
+                    throw new DatabaseException(e.getMessage(), e);
                 } finally {
                     if(_broker != null) {
                         db.releaseBroker(_broker);

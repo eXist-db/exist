@@ -96,7 +96,7 @@ public abstract class AbstractUpdateTest {
 	        
 	        info = test.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"), TEST_XML);
 	        //TODO : unlock the collection here ?
-	        test.store(transaction, broker, info, TEST_XML, false);
+	        test.store(transaction, broker, info, TEST_XML);
 	
 	        transact.commit(transaction);	
 	    }

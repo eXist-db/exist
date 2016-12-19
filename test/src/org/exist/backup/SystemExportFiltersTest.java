@@ -197,7 +197,7 @@ public class SystemExportFiltersTest {
         IndexInfo info = col.validateXMLResource(txn, broker, name, data);
         assertNotNull(info);
 
-        col.store(txn, broker, info, data, false);
+        col.store(txn, broker, info, data);
 
         return info.getDocument();
     }

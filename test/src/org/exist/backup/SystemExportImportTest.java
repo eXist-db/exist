@@ -189,15 +189,15 @@ public class SystemExportImportTest {
 
             IndexInfo info = test.validateXMLResource(transaction, broker, doc01uri.lastSegment(), XML1);
             assertNotNull(info);
-            test.store(transaction, broker, info, XML1, false);
+            test.store(transaction, broker, info, XML1);
 
             info = test.validateXMLResource(transaction, broker, doc02uri.lastSegment(), XML2);
             assertNotNull(info);
-            test.store(transaction, broker, info, XML2, false);
+            test.store(transaction, broker, info, XML2);
 
             info = test.validateXMLResource(transaction, broker, doc03uri.lastSegment(), XML3);
             assertNotNull(info);
-            test.store(transaction, broker, info, XML3, false);
+            test.store(transaction, broker, info, XML3);
 
             test.addBinaryResource(transaction, broker, doc11uri.lastSegment(), BINARY.getBytes(), null);
 

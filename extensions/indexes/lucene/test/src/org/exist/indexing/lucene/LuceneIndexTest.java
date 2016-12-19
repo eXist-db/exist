@@ -1163,7 +1163,7 @@ public class LuceneIndexTest {
 
             final IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create(docName), data);
             assertNotNull(info);
-            root.store(transaction, broker, info, data, false);
+            root.store(transaction, broker, info, data);
 
             docs.add(info.getDocument());
             transact.commit(transaction);
@@ -1195,7 +1195,7 @@ public class LuceneIndexTest {
                     final IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create(FileUtils.fileName(f)), is);
                     assertNotNull(info);
                     is = new FileInputSource(f);
-                    root.store(transaction, broker, info, is, false);
+                    root.store(transaction, broker, info, is);
                     docs.add(info.getDocument());
                 }
             }

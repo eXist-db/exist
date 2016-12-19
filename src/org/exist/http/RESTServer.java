@@ -1071,7 +1071,7 @@ public class RESTServer {
                 try(final VirtualTempFileInputSource vtfis = new VirtualTempFileInputSource(vtempFile, charset)) {
                     final IndexInfo info = collection.validateXMLResource(transaction, broker, docUri, vtfis);
                     info.getDocument().getMetadata().setMimeType(contentType);
-                    collection.store(transaction, broker, info, vtfis, false);
+                    collection.store(transaction, broker, info, vtfis);
                     response.setStatus(HttpServletResponse.SC_CREATED);
                 }
             } else {

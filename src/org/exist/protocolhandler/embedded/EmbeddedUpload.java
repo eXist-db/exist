@@ -173,7 +173,7 @@ public class EmbeddedUpload {
                         doc.getMetadata().setMimeType(contentType);
                         collection.release(Lock.READ_LOCK);
                         collectionLocked = false;
-                        collection.store(txn, broker, info, inputsource, false);
+                        collection.store(txn, broker, info, inputsource);
                         LOG.debug("done");
 
                     } else {

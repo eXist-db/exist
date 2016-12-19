@@ -38,6 +38,7 @@ import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
+import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.junit.After;
 import org.junit.Test;
@@ -63,7 +64,7 @@ public class CollectionTest {
         "</test>";
 
     @Test
-    public void storeRead() throws EXistException, IOException, PermissionDeniedException, BTreeException, DatabaseConfigurationException, TriggerException  {
+    public void storeRead() throws EXistException, IOException, PermissionDeniedException, BTreeException, DatabaseConfigurationException, TriggerException, LockException {
         store();
         BrokerPool.stopAll(false);
         read();
@@ -87,7 +88,7 @@ public class CollectionTest {
         }
     }
     
-    public void read() throws EXistException, IOException, PermissionDeniedException, BTreeException, DatabaseConfigurationException {
+    public void read() throws EXistException, IOException, PermissionDeniedException, BTreeException, DatabaseConfigurationException, LockException {
         BrokerPool.FORCE_CORRUPTION = false;
         BrokerPool pool = startDB();
 

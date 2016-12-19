@@ -36,10 +36,7 @@ import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
-import org.exist.util.Configuration;
-import org.exist.util.DatabaseConfigurationException;
-import org.exist.util.FileUtils;
-import org.exist.util.XMLFilenameFilter;
+import org.exist.util.*;
 import org.exist.xmldb.XmldbURI;
 import org.junit.After;
 import org.junit.Test;
@@ -79,7 +76,7 @@ public class ConcurrentStoreTest {
     }
 
     @Test
-    public void read() throws EXistException, PermissionDeniedException, DatabaseConfigurationException {
+    public void read() throws EXistException, PermissionDeniedException, DatabaseConfigurationException, LockException {
         BrokerPool.FORCE_CORRUPTION = false;
         pool = startDB();
 
@@ -137,7 +134,7 @@ public class ConcurrentStoreTest {
                 for (final Path f : files) {
                     try {
                         info = test.validateXMLResource(transaction, broker, XmldbURI.create(FileUtils.fileName(f)), new InputSource(f.toUri().toASCIIString()));
-                        test.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()), false);
+                        test.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()));
                     } catch (SAXException e) {
                         System.err.println("Error found while parsing document: " + FileUtils.fileName(f) + ": " + e.getMessage());
                     }
@@ -173,7 +170,7 @@ public class ConcurrentStoreTest {
                 Path f = dir.resolve("hamlet.xml");
                 try {
                     IndexInfo info = test.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"), new InputSource(f.toUri().toASCIIString()));
-                    test.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()), false);
+                    test.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()));
                 } catch (SAXException e) {
                     System.err.println("Error found while parsing document: " + FileUtils.fileName(f) + ": " + e.getMessage());
                 }

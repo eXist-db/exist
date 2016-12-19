@@ -93,7 +93,7 @@ public class ExampleTrigger extends FilteringTrigger implements DocumentTrigger 
                 parent.setTriggersEnabled(false);
                 IndexInfo info = parent.validateXMLResource(null, broker, contentsFile, "<?xml version=\"1.0\"?><contents></contents>");
                 //TODO : unlock the collection here ?
-                parent.store(null, broker, info, "<?xml version=\"1.0\"?><contents></contents>", false);
+                parent.store(null, broker, info, "<?xml version=\"1.0\"?><contents></contents>");
                 this.doc = info.getDocument();
             } catch (Exception e) {
                 throw new TriggerException(e.getMessage(), e);

@@ -154,7 +154,7 @@ public class RemoveCollectionTest {
                     assertNotNull(is);
                     final IndexInfo info = test.validateXMLResource(transaction, broker, doc.getURI(), is);
                     assertNotNull(info);
-                    test.store(transaction, broker, info, is, false);
+                    test.store(transaction, broker, info, is);
                 }
                 generator.releaseAll();
                 transact.commit(transaction);
@@ -180,7 +180,7 @@ public class RemoveCollectionTest {
             assertNotNull(is);
             final IndexInfo info = test.validateXMLResource(transaction, broker, XmldbURI.create("hamlet.xml"), is);
             assertNotNull(info);
-            test.store(transaction, broker, info, is, false);
+            test.store(transaction, broker, info, is);
             transact.commit(transaction);
         }
 
@@ -192,7 +192,7 @@ public class RemoveCollectionTest {
                 assertNotNull(is);
                 final IndexInfo info = test.validateXMLResource(transaction, broker, XmldbURI.create(file.getFileName().toString()), is);
                 assertNotNull(info);
-                test.store(transaction, broker, info, is, false);
+                test.store(transaction, broker, info, is);
             }
             generator.releaseAll();
             transact.commit(transaction);
