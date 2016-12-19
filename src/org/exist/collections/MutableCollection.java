@@ -544,7 +544,7 @@ public class MutableCollection implements Collection {
     private void addDocumentsToSet(final DBBroker broker, final MutableDocumentSet docs, final LockedDocumentMap lockMap, final int lockType) throws LockException {
     	for(final DocumentImpl doc : copyOfDocs()) {
             if(doc.getPermissions().validate(broker.getCurrentSubject(), Permission.WRITE)) {
-                doc.getUpdateLock().acquire(Lock.WRITE_LOCK);
+                doc.getUpdateLock().acquire(lockType);
 
                 docs.add(doc);
                 lockMap.add(doc);
