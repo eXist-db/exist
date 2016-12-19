@@ -376,15 +376,16 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
      * public abstract Document getXMLResource(String path) throws
      * PermissionDeniedException;
      */
-
     public abstract Document getXMLResource(XmldbURI docURI) throws PermissionDeniedException;
-    
+
     /**
-     * Return the document stored at the specified path. The path should be
-     * absolute, e.g. /db/shakespeare/plays/hamlet.xml.
-     * 
-     * @return the document or null if no document could be found at the
-     *         specified location.
+     * Get a document by its file name. The document's file name is used to
+     * identify a document.
+     *
+     * @param docURI absolute file name in the database;
+     *                 name can be given with or without the leading path /db/shakespeare.
+     * @param accessType The access mode for the resource e.g. {@link org.exist.security.Permission#READ}
+     * @return The document value or null if no document could be found
      */
     public abstract DocumentImpl getResource(XmldbURI docURI, int accessType) throws PermissionDeniedException;
 

@@ -2171,19 +2171,11 @@ public class NativeBroker extends DBBroker {
         }
     }
 
+    @Override
     public Document getXMLResource(final XmldbURI fileName) throws PermissionDeniedException {
         return getResource(fileName, Permission.READ);
     }
 
-    /**
-     * get a document by its file name. The document's file name is used to
-     * identify a document.
-     *
-     * @param fileName absolute file name in the database;
-     *                 name can be given with or without the leading path /db/shakespeare.
-     * @return The document value
-     * @throws PermissionDeniedException
-     */
     @Override
     public DocumentImpl getResource(XmldbURI fileName, final int accessType) throws PermissionDeniedException {
         fileName = prepend(fileName.toCollectionPathURI());

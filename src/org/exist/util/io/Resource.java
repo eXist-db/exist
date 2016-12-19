@@ -652,11 +652,10 @@ public class Resource extends File {
 //			}
 //			
             try {
-                resource = broker.getResource(uri, LockMode.READ_LOCK);
+                resource = broker.getResource(uri, Permission.READ);
             } catch (final PermissionDeniedException e1) {
             } finally {
                 if (resource != null) {
-                    resource.getUpdateLock().release(LockMode.READ_LOCK);
                     collection = resource.getCollection();
                     initialized = true;
 
