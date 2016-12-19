@@ -25,7 +25,7 @@ import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.security.PermissionDeniedException;
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.FileUtils;
@@ -139,7 +139,7 @@ public class Sync extends BasicFunction {
 		List<XmldbURI> subcollections = null;
 		Collection collection = null;
 		try {
-			collection = context.getBroker().openCollection(collectionPath, Lock.READ_LOCK);
+			collection = context.getBroker().openCollection(collectionPath, LockMode.READ_LOCK);
 			if (collection == null) {
 				reportError(output, "Collection not found: " + collectionPath);
 				return;
@@ -161,7 +161,7 @@ public class Sync extends BasicFunction {
 			}
 		} finally {
 			if (collection != null)
-				collection.getLock().release(Lock.READ_LOCK);
+				collection.getLock().release(LockMode.READ_LOCK);
 		}
 		
 		for (final XmldbURI childURI : subcollections) {

@@ -21,17 +21,13 @@ package org.exist.xmldb;
 
 import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.CollectionConfigurationManager;
-import org.exist.dom.persistent.DefaultDocumentSet;
 import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.MutableDocumentSet;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.sync.Sync;
 import org.exist.util.Occurrences;
-import org.exist.xquery.XQuery;
-import org.exist.xquery.value.Sequence;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 
@@ -87,13 +83,13 @@ public class LocalIndexQueryService extends AbstractLocalService implements Inde
         withDb((broker, transaction) -> {
             DocumentImpl doc = null;
             try {
-                doc = broker.getXMLResource(collectionPath.append(docName), Lock.READ_LOCK);
+                doc = broker.getXMLResource(collectionPath.append(docName), LockMode.READ_LOCK);
                 broker.reindexXMLResource(transaction, doc, DBBroker.IndexMode.STORE);
                 broker.sync(Sync.MAJOR);
                 return null;
             } finally {
                 if(doc != null) {
-                    doc.getUpdateLock().release(Lock.READ_LOCK);
+                    doc.getUpdateLock().release(LockMode.READ_LOCK);
                 }
             }
         });

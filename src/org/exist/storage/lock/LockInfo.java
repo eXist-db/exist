@@ -25,7 +25,7 @@ import java.util.Arrays;
 import org.exist.Debuggable;
 
 /**
- * Encapsulates debug information about a log. This information can be exported
+ * Encapsulates debug information about a lock. This information can be exported
  * via the JMX management interface, if enabled.
  */
 public class LockInfo implements Debuggable {

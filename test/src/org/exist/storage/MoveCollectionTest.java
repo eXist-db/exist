@@ -31,7 +31,7 @@ import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
@@ -124,11 +124,11 @@ public class MoveCollectionTest {
             Serializer serializer = broker.getSerializer();
             serializer.reset();
             
-            DocumentImpl doc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("/destination1/test3/test.xml"), Lock.READ_LOCK);
+            DocumentImpl doc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("/destination1/test3/test.xml"), LockMode.READ_LOCK);
             assertNotNull("Document should not be null", doc);
             String data = serializer.serialize(doc);
             assertNotNull(data);
-            doc.getUpdateLock().release(Lock.READ_LOCK);
+            doc.getUpdateLock().release(LockMode.READ_LOCK);
         }
     }
 
@@ -185,7 +185,7 @@ public class MoveCollectionTest {
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             Serializer serializer = broker.getSerializer();
             serializer.reset();            
-            DocumentImpl doc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("destination2/test3/test.xml"), Lock.READ_LOCK);
+            DocumentImpl doc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("destination2/test3/test.xml"), LockMode.READ_LOCK);
             assertNull("Document should be null", doc);
         }
     }

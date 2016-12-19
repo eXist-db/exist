@@ -29,7 +29,7 @@ import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.util.Base64Encoder;
 import org.exist.xmldb.XmldbURI;
 
@@ -108,7 +108,7 @@ public class Source extends Command {
 	
 	        		Database db = getJoint().getContext().getDatabase();
 	        		try(final DBBroker broker = db.getBroker()) {
-		    			DocumentImpl resource = broker.getXMLResource(pathUri, Lock.READ_LOCK);
+		    			DocumentImpl resource = broker.getXMLResource(pathUri, LockMode.READ_LOCK);
 		
 		    			if (resource.getResourceType() == DocumentImpl.BINARY_FILE) {
 		    				is = broker.getBinaryResource((BinaryDocument) resource);

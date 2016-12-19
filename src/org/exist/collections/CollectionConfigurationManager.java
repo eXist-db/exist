@@ -24,10 +24,9 @@ import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.memtree.SAXAdapter;
-import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.*;
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.lock.Locked;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
@@ -447,7 +446,7 @@ public class CollectionConfigurationManager implements BrokerPoolService {
         try(final Txn txn = transact.beginTransaction()) {
             Collection collection = null;
             try {
-                collection = broker.openCollection(XmldbURI.ROOT_COLLECTION_URI, Lock.READ_LOCK);
+                collection = broker.openCollection(XmldbURI.ROOT_COLLECTION_URI, LockMode.READ_LOCK);
                 if (collection == null) {
                     transact.abort(txn);
                     throw new EXistException("collection " + XmldbURI.ROOT_COLLECTION_URI + " not found!");
@@ -463,7 +462,7 @@ public class CollectionConfigurationManager implements BrokerPoolService {
                 }
             } finally {
                 if (collection != null) {
-                    collection.release(Lock.READ_LOCK);
+                    collection.release(LockMode.READ_LOCK);
                 }
             }
             // Configure the root collection

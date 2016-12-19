@@ -7,6 +7,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.NativeBroker;
 import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.structural.NativeStructuralIndexWorker;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
@@ -54,13 +55,13 @@ public class Repair {
             }
             final Lock lock = btree.getLock();
             try {
-                lock.acquire(Lock.WRITE_LOCK);
+                lock.acquire(LockMode.WRITE_LOCK);
 
                 System.console().printf("Rebuilding %15s ...", FileUtils.fileName(btree.getFile()));
                 btree.rebuild();
                 System.out.println("Done");
             } finally {
-                lock.release(Lock.WRITE_LOCK);
+                lock.release(LockMode.WRITE_LOCK);
             }
 
         } catch (Exception e) {

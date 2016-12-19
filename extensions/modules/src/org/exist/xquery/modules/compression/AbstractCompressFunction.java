@@ -30,7 +30,7 @@ import org.exist.dom.persistent.DefaultDocumentSet;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.MutableDocumentSet;
 import org.exist.security.PermissionDeniedException;
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.Base64Decoder;
 import org.exist.util.LockException;
@@ -165,7 +165,7 @@ public abstract class AbstractCompressFunction extends BasicFunction
                     try
                     {
                         XmldbURI xmldburi = XmldbURI.create(uri);
-                        doc = context.getBroker().getXMLResource(xmldburi, Lock.READ_LOCK);
+                        doc = context.getBroker().getXMLResource(xmldburi, LockMode.READ_LOCK);
 
                         if(doc == null)
                         {
@@ -195,7 +195,7 @@ public abstract class AbstractCompressFunction extends BasicFunction
                     } finally
                     {
                         if(doc != null)
-                            doc.getUpdateLock().release(Lock.READ_LOCK);
+                            doc.getUpdateLock().release(LockMode.READ_LOCK);
                     }
                 }
 
@@ -479,11 +479,11 @@ public abstract class AbstractCompressFunction extends BasicFunction
 		col.getDocuments(context.getBroker(), childDocs);
 		for (Iterator<DocumentImpl> itChildDocs = childDocs.getDocumentIterator(); itChildDocs.hasNext();) {
 			DocumentImpl childDoc = itChildDocs.next();
-			childDoc.getUpdateLock().acquire(Lock.READ_LOCK);
+			childDoc.getUpdateLock().acquire(LockMode.READ_LOCK);
 			try {
 				compressResource(os, childDoc, useHierarchy, stripOffset, "", null);
 			} finally {
-				childDoc.getUpdateLock().release(Lock.READ_LOCK);
+				childDoc.getUpdateLock().release(LockMode.READ_LOCK);
 			}
 		}
 		// iterate over child collections

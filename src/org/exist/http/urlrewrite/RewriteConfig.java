@@ -8,7 +8,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.xmldb.XmldbURI;
 import org.exist.storage.DBBroker;
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.dom.memtree.SAXAdapter;
 import org.exist.xquery.regex.JDK15RegexTranslator;
 import org.exist.xquery.regex.RegexSyntaxException;
@@ -193,13 +193,13 @@ public class RewriteConfig {
             try (final DBBroker broker = urlRewrite.pool.get(Optional.ofNullable(urlRewrite.defaultUser))) {
                 DocumentImpl doc = null;
                 try {
-                    doc = broker.getXMLResource(XmldbURI.create(controllerConfig), Lock.READ_LOCK);
+                    doc = broker.getXMLResource(XmldbURI.create(controllerConfig), LockMode.READ_LOCK);
                     if (doc != null) {
                         parse(doc);
                     }
                 } finally {
                     if (doc != null) {
-                        doc.getUpdateLock().release(Lock.READ_LOCK);
+                        doc.getUpdateLock().release(LockMode.READ_LOCK);
                     }
                 }
             } catch (final EXistException e) {

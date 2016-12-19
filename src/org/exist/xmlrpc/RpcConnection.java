@@ -66,7 +66,7 @@ import org.exist.source.DBSource;
 import org.exist.source.Source;
 import org.exist.source.StringSource;
 import org.exist.storage.*;
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.lock.LockedDocumentMap;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
@@ -268,7 +268,7 @@ public class RpcConnection implements RpcAPI {
             try {
                 final Collection coll = broker.getCollection(XmldbURI.createInternal(protectColl));
                 docs = new DefaultDocumentSet();
-                coll.allDocs(broker, docs, true, lockedDocuments, Lock.WRITE_LOCK);
+                coll.allDocs(broker, docs, true, lockedDocuments, LockMode.WRITE_LOCK);
                 return lockedDocuments;
             } catch (final LockException e) {
                 LOG.debug("Deadlock detected. Starting over again. Docs: " + docs.getDocumentCount() + "; locked: "
@@ -428,11 +428,11 @@ public class RpcConnection implements RpcAPI {
         return withDb((broker, transaction) -> {
             Collection collection = null;
             try {
-                collection = broker.openCollection(uri, Lock.READ_LOCK);
+                collection = broker.openCollection(uri, LockMode.READ_LOCK);
                 return collection != null;
             } finally {
                 if (collection != null) {
-                    collection.release(Lock.READ_LOCK);
+                    collection.release(LockMode.READ_LOCK);
                 }
             }
         });
@@ -975,19 +975,19 @@ public class RpcConnection implements RpcAPI {
         return withDb((broker, transaction) -> {
             Collection collection = null;
             try {
-                collection = broker.openCollection(uri, Lock.READ_LOCK);
+                collection = broker.openCollection(uri, LockMode.READ_LOCK);
                 final Permission perm;
                 if (collection == null) {
                     DocumentImpl doc = null;
                     try {
-                        doc = broker.getXMLResource(uri, Lock.READ_LOCK);
+                        doc = broker.getXMLResource(uri, LockMode.READ_LOCK);
                         if (doc == null) {
                             throw new EXistException("document or collection " + uri + " not found");
                         }
                         perm = doc.getPermissions();
                     } finally {
                         if (doc != null) {
-                            doc.getUpdateLock().release(Lock.READ_LOCK);
+                            doc.getUpdateLock().release(LockMode.READ_LOCK);
                         }
                     }
                 } else {
@@ -1005,7 +1005,7 @@ public class RpcConnection implements RpcAPI {
                 return result;
             } finally {
                 if (collection != null) {
-                    collection.release(Lock.READ_LOCK);
+                    collection.release(LockMode.READ_LOCK);
                 }
             }
         });
@@ -1471,7 +1471,7 @@ public class RpcConnection implements RpcAPI {
                                 final int overwrite, final Date created, final Date modified) throws EXistException, PermissionDeniedException {
         return this.<Boolean>writeCollection(docUri.removeLastSegment()).apply((collection, broker, transaction) -> {
             // keep the write lock in the transaction
-            transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);
+            transaction.registerLock(collection.getLock(), LockMode.WRITE_LOCK);
             if (overwrite == 0) {
                 final DocumentImpl old = collection.getDocument(broker, docUri.lastSegment());
                 if (old != null) {
@@ -1849,7 +1849,7 @@ public class RpcConnection implements RpcAPI {
     private boolean remove(final XmldbURI docUri) throws EXistException, PermissionDeniedException {
         return this.<Boolean>writeCollection(docUri.removeLastSegment()).apply((collection, broker, transaction) -> {
             // keep the write lock in the transaction
-            transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);
+            transaction.registerLock(collection.getLock(), LockMode.WRITE_LOCK);
 
             final DocumentImpl doc = collection.getDocument(broker, docUri.lastSegment());
             if (doc == null) {
@@ -1874,7 +1874,7 @@ public class RpcConnection implements RpcAPI {
         try {
             return this.<Boolean>writeCollection(collURI).apply((collection, broker, transaction) -> {
                 // keep the write lock in the transaction
-                transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);
+                transaction.registerLock(collection.getLock(), LockMode.WRITE_LOCK);
                 LOG.debug("removing collection " + collURI);
                 return broker.removeCollection(transaction, collection);
             });
@@ -3024,7 +3024,7 @@ public class RpcConnection implements RpcAPI {
             throws EXistException, PermissionDeniedException {
 
         return withDb((broker, transaction) ->
-                this.<Boolean>withCollection(move ? Lock.WRITE_LOCK : Lock.READ_LOCK, broker, transaction, docUri.removeLastSegment()).apply((source, broker1, transaction1) ->
+                this.<Boolean>withCollection(move ? LockMode.WRITE_LOCK : LockMode.READ_LOCK, broker, transaction, docUri.removeLastSegment()).apply((source, broker1, transaction1) ->
                         this.<Boolean>writeDocument(broker1, transaction1, source, docUri).apply((document, broker2, transaction2) ->
                                 this.<Boolean>writeCollection(broker2, transaction2, destUri).apply((destination, broker3, transaction3) -> {
                                     if (move) {
@@ -3051,7 +3051,7 @@ public class RpcConnection implements RpcAPI {
                                          final XmldbURI newName, final boolean move)
             throws EXistException, PermissionDeniedException {
         return withDb((broker, transaction) ->
-                this.<Boolean>withCollection(move ? Lock.WRITE_LOCK : Lock.READ_LOCK, broker, transaction, collUri).apply((source, broker1, transaction1) ->
+                this.<Boolean>withCollection(move ? LockMode.WRITE_LOCK : LockMode.READ_LOCK, broker, transaction, collUri).apply((source, broker1, transaction1) ->
                         this.<Boolean>writeCollection(broker1, transaction1, destUri).apply((destination, broker2, transaction2) -> {
                             if (move) {
                                 broker2.moveCollection(transaction2, source, destination, newName);
@@ -3083,13 +3083,13 @@ public class RpcConnection implements RpcAPI {
         withDb((broker, transaction) -> {
             DocumentImpl doc = null;
             try {
-                doc = broker.getXMLResource(XmldbURI.create(docUri), Lock.READ_LOCK);
+                doc = broker.getXMLResource(XmldbURI.create(docUri), LockMode.READ_LOCK);
                 broker.reindexXMLResource(transaction, doc, DBBroker.IndexMode.STORE);
                 LOG.debug("document " + docUri + " reindexed");
                 return null;
             } finally {
                 if (doc != null) {
-                    doc.getUpdateLock().release(Lock.READ_LOCK);
+                    doc.getUpdateLock().release(LockMode.READ_LOCK);
                 }
             }
         });
@@ -3538,7 +3538,7 @@ public class RpcConnection implements RpcAPI {
      * @throws org.exist.security.PermissionDeniedException
      */
     private <R> Function2E<XmlRpcCollectionFunction<R>, R, EXistException, PermissionDeniedException> readCollection(final DBBroker broker, final Txn transaction, final XmldbURI uri) throws EXistException, PermissionDeniedException {
-        return withCollection(Lock.READ_LOCK, broker, transaction, uri);
+        return withCollection(LockMode.READ_LOCK, broker, transaction, uri);
     }
 
     /**
@@ -3564,7 +3564,7 @@ public class RpcConnection implements RpcAPI {
      * @throws org.exist.security.PermissionDeniedException
      */
     private <R> Function2E<XmlRpcCollectionFunction<R>, R, EXistException, PermissionDeniedException> writeCollection(final DBBroker broker, final Txn transaction, final XmldbURI uri) throws EXistException, PermissionDeniedException {
-        return withCollection(Lock.WRITE_LOCK, broker, transaction, uri);
+        return withCollection(LockMode.WRITE_LOCK, broker, transaction, uri);
     }
 
     /**
@@ -3578,7 +3578,7 @@ public class RpcConnection implements RpcAPI {
      * @throws org.exist.EXistException
      * @throws org.exist.security.PermissionDeniedException
      */
-    private <R> Function2E<XmlRpcCollectionFunction<R>, R, EXistException, PermissionDeniedException> withCollection(final int lockMode, final DBBroker broker, final Txn transaction, final XmldbURI uri) throws EXistException, PermissionDeniedException {
+    private <R> Function2E<XmlRpcCollectionFunction<R>, R, EXistException, PermissionDeniedException> withCollection(final LockMode lockMode, final DBBroker broker, final Txn transaction, final XmldbURI uri) throws EXistException, PermissionDeniedException {
         return readOp -> {
             Collection collection = null;
             try {
@@ -3622,7 +3622,7 @@ public class RpcConnection implements RpcAPI {
      * @throws org.exist.security.PermissionDeniedException
      */
     private <R> Function2E<XmlRpcDocumentFunction<R>, R, EXistException, PermissionDeniedException> readDocument(final DBBroker broker, final Txn transaction, final XmldbURI uri) throws EXistException, PermissionDeniedException {
-        return withDocument(Lock.READ_LOCK, broker, transaction, uri);
+        return withDocument(LockMode.READ_LOCK, broker, transaction, uri);
     }
 
     /**
@@ -3648,7 +3648,7 @@ public class RpcConnection implements RpcAPI {
      * @throws org.exist.security.PermissionDeniedException
      */
     private <R> Function2E<XmlRpcDocumentFunction<R>, R, EXistException, PermissionDeniedException> writeDocument(final DBBroker broker, final Txn transaction, final XmldbURI uri) throws EXistException, PermissionDeniedException {
-        return withDocument(Lock.WRITE_LOCK, broker, transaction, uri);
+        return withDocument(LockMode.WRITE_LOCK, broker, transaction, uri);
     }
 
     /**
@@ -3663,7 +3663,7 @@ public class RpcConnection implements RpcAPI {
      * @throws org.exist.security.PermissionDeniedException
      */
     private <R> Function2E<XmlRpcDocumentFunction<R>, R, EXistException, PermissionDeniedException> writeDocument(final DBBroker broker, final Txn transaction, final Collection collection, final XmldbURI uri) throws EXistException, PermissionDeniedException {
-        return withDocument(Lock.WRITE_LOCK, broker, transaction, collection, uri);
+        return withDocument(LockMode.WRITE_LOCK, broker, transaction, collection, uri);
     }
 
     //TODO(AR) consider interleaving the collection and document access, i.e. we could be finished with (and release the lock on) the collection once we have access to a handle to the document
@@ -3679,7 +3679,7 @@ public class RpcConnection implements RpcAPI {
      * @throws org.exist.EXistException
      * @throws org.exist.security.PermissionDeniedException
      */
-    private <R> Function2E<XmlRpcDocumentFunction<R>, R, EXistException, PermissionDeniedException> withDocument(final int lockMode, final DBBroker broker, final Txn transaction, final XmldbURI uri) throws EXistException, PermissionDeniedException {
+    private <R> Function2E<XmlRpcDocumentFunction<R>, R, EXistException, PermissionDeniedException> withDocument(final LockMode lockMode, final DBBroker broker, final Txn transaction, final XmldbURI uri) throws EXistException, PermissionDeniedException {
         return withOp -> this.<R>readCollection(broker, transaction, uri.removeLastSegment()).apply((collection, broker1, transaction1) -> this.<R>withDocument(lockMode, broker1, transaction1, collection, uri).apply(withOp));
     }
 
@@ -3695,7 +3695,7 @@ public class RpcConnection implements RpcAPI {
      * @throws org.exist.EXistException
      * @throws org.exist.security.PermissionDeniedException
      */
-    private <R> Function2E<XmlRpcDocumentFunction<R>, R, EXistException, PermissionDeniedException> withDocument(final int lockMode, final DBBroker broker, final Txn transaction, final Collection collection, final XmldbURI uri) throws EXistException, PermissionDeniedException {
+    private <R> Function2E<XmlRpcDocumentFunction<R>, R, EXistException, PermissionDeniedException> withDocument(final LockMode lockMode, final DBBroker broker, final Txn transaction, final Collection collection, final XmldbURI uri) throws EXistException, PermissionDeniedException {
         return readOp -> {
             DocumentImpl document = null;
             try {

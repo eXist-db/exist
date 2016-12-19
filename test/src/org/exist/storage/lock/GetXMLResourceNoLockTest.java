@@ -16,6 +16,7 @@ import org.exist.collections.Collection;
 import org.exist.start.Main;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.junit.Test;
@@ -44,12 +45,12 @@ public class GetXMLResourceNoLockTest {
         final BrokerPool pool = BrokerPool.getInstance();
 
 		try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-			Collection testCollection = broker.openCollection(TestConstants.TEST_COLLECTION_URI, Lock.READ_LOCK);
+			Collection testCollection = broker.openCollection(TestConstants.TEST_COLLECTION_URI, LockMode.READ_LOCK);
 			try {
 
 				XmldbURI docPath = TestConstants.TEST_COLLECTION_URI.append(DOCUMENT_NAME_URI);
 				
-				BinaryDocument binDoc = (BinaryDocument) broker.getXMLResource(docPath, Lock.NO_LOCK);
+				BinaryDocument binDoc = (BinaryDocument) broker.getXMLResource(docPath, LockMode.NO_LOCK);
 				
 				// if document is not present, null is returned
 				if(binDoc == null)
@@ -60,7 +61,7 @@ public class GetXMLResourceNoLockTest {
 				
 			} finally {
 	    		if(testCollection != null) {
-					testCollection.getLock().release(Lock.READ_LOCK);
+					testCollection.getLock().release(LockMode.READ_LOCK);
 				}
 			}
 			

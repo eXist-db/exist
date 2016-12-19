@@ -11,7 +11,7 @@ import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
 import org.exist.source.*;
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xqdoc.XQDocHelper;
@@ -93,12 +93,12 @@ public class Scan extends BasicFunction {
                 DocumentImpl doc = null;
                 try {
                     XmldbURI resourceURI = XmldbURI.xmldbUriFor(uri);
-                    collection = context.getBroker().openCollection(resourceURI.removeLastSegment(), Lock.READ_LOCK);
+                    collection = context.getBroker().openCollection(resourceURI.removeLastSegment(), LockMode.READ_LOCK);
                     if (collection == null) {
                         LOG.warn("collection not found: " + resourceURI.getCollectionPath());
                         return Sequence.EMPTY_SEQUENCE;
                     }
-                    doc = collection.getDocumentWithLock(context.getBroker(), resourceURI.lastSegment(), Lock.READ_LOCK);
+                    doc = collection.getDocumentWithLock(context.getBroker(), resourceURI.lastSegment(), LockMode.READ_LOCK);
                     if (doc == null)
                         return Sequence.EMPTY_SEQUENCE;
                     if (doc.getResourceType() != DocumentImpl.BINARY_FILE ||
@@ -116,9 +116,9 @@ public class Scan extends BasicFunction {
                     throw new XPathException(this, pde.getMessage(), pde);
                 } finally {
                     if (doc != null)
-                        doc.getUpdateLock().release(Lock.READ_LOCK);
+                        doc.getUpdateLock().release(LockMode.READ_LOCK);
                     if(collection != null)
-                        collection.release(Lock.READ_LOCK);
+                        collection.release(LockMode.READ_LOCK);
                 }
             } else {
                 // first check if the URI points to a registered module

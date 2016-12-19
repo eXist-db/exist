@@ -16,6 +16,7 @@ import org.exist.dom.persistent.TextImpl;
 import org.exist.security.*;
 import org.exist.storage.*;
 import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.util.*;
@@ -382,7 +383,7 @@ public class Database {
                     if (broker.getCollection(XmldbURI.create(path)) != null) return true;
                     String folderPath = path.substring(0, i);
                     String name = path.substring(i+1);			
-                    Collection collection = broker.openCollection(XmldbURI.create(folderPath), Lock.NO_LOCK);
+                    Collection collection = broker.openCollection(XmldbURI.create(folderPath), LockMode.NO_LOCK);
                     if (collection == null) return false;
                     return collection.getDocument(broker, XmldbURI.create(name)) != null;
                 } catch(PermissionDeniedException pde) {
@@ -603,7 +604,7 @@ public class Database {
 							it.remove();
 						} else {
 							// Must hold write lock on doc before checking stale map to avoid race condition
-							if (doc.getUpdateLock().attempt(Lock.WRITE_LOCK)) try {
+							if (doc.getUpdateLock().attempt(LockMode.WRITE_LOCK)) try {
 								String docPath = normalizePath(doc.getURI().getCollectionPath());
 								if (!staleMap.containsKey(docPath)) {
 									LOG.debug("defragmenting " + docPath);
@@ -618,7 +619,7 @@ public class Database {
 									}
 								}
 							} finally {
-								doc.getUpdateLock().release(Lock.WRITE_LOCK);
+								doc.getUpdateLock().release(LockMode.WRITE_LOCK);
 							}
 						}
 					}

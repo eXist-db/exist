@@ -42,6 +42,7 @@ import org.exist.security.Subject;
 import org.exist.stax.IEmbeddedXMLStreamReader;
 import org.exist.storage.btree.BTreeCallback;
 import org.exist.storage.dom.INodeIterator;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.Txn;
@@ -293,7 +294,7 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
      * 
      * deprecated Use XmldbURI instead!
      * 
-     * public abstract Collection openCollection(String name, int lockMode);
+     * public abstract Collection openCollection(String name, LockMode lockMode);
      */
 
     /**
@@ -311,7 +312,7 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
      * @return collection or null if no collection matches the path
      * 
      */
-    public abstract Collection openCollection(XmldbURI uri, int lockMode) throws PermissionDeniedException;
+    public abstract Collection openCollection(XmldbURI uri, LockMode lockMode) throws PermissionDeniedException;
 
     public abstract List<String> findCollectionsMatching(String regexp);
     
@@ -392,7 +393,7 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
     /**
      * deprecated Use XmldbURI instead!
      * 
-     * public abstract DocumentImpl getXMLResource(String docPath, int lockMode)
+     * public abstract DocumentImpl getXMLResource(String docPath, LockMode lockMode)
      * throws PermissionDeniedException;
      */
 
@@ -403,7 +404,7 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
      * @return the document or null if no document could be found at the
      *         specified location.
      */
-    public abstract DocumentImpl getXMLResource(XmldbURI docURI, int lockMode)
+    public abstract DocumentImpl getXMLResource(XmldbURI docURI, LockMode lockMode)
         throws PermissionDeniedException;
 
     /**

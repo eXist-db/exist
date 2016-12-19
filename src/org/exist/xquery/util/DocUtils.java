@@ -36,7 +36,7 @@ import org.exist.dom.memtree.SAXAdapter;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
@@ -142,7 +142,7 @@ public class DocUtils {
 
 			// check if the loaded documents should remain locked
 			boolean lockOnLoad = context.lockDocumentsOnLoad();
-            final int lockType = lockOnLoad ? Lock.WRITE_LOCK : Lock.READ_LOCK;
+            final LockMode lockType = lockOnLoad ? LockMode.WRITE_LOCK : LockMode.READ_LOCK;
 			DocumentImpl doc = null;
 			try
 			{

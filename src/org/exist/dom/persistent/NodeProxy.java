@@ -29,6 +29,7 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.RangeIndexSpec;
 import org.exist.storage.StorageAddress;
 import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
@@ -1421,16 +1422,16 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
     @Override
     public void lock(final DBBroker broker, final boolean exclusive, final boolean checkExisting) throws LockException {
         final Lock docLock = doc.getUpdateLock();
-        docLock.acquire(exclusive ? Lock.WRITE_LOCK : Lock.READ_LOCK);
+        docLock.acquire(exclusive ? LockMode.WRITE_LOCK : LockMode.READ_LOCK);
     }
 
     @Override
     public void unlock(final boolean exclusive) {
         final Lock docLock = doc.getUpdateLock();
         if(exclusive) {
-            docLock.release(Lock.WRITE_LOCK);
+            docLock.release(LockMode.WRITE_LOCK);
         } else if(docLock.isLockedForRead(Thread.currentThread())) {
-            docLock.release(Lock.READ_LOCK);
+            docLock.release(LockMode.READ_LOCK);
         }
     }
 

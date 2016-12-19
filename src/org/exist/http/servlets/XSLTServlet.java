@@ -34,7 +34,7 @@ import org.exist.security.Subject;
 import org.exist.security.internal.web.HttpAccount;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.serializers.XIncludeFilter;
 import org.exist.util.serializer.Receiver;
@@ -456,7 +456,7 @@ public class XSLTServlet extends HttpServlet {
                 try (final DBBroker broker = pool.get(Optional.of(user))) {
                     DocumentImpl doc = null;
                     try {
-                        doc = broker.getXMLResource(XmldbURI.create(docPath), Lock.READ_LOCK);
+                        doc = broker.getXMLResource(XmldbURI.create(docPath), LockMode.READ_LOCK);
                         if (doc == null) {
                             throw new ServletException("Stylesheet not found: " + docPath);
                         }
@@ -469,7 +469,7 @@ public class XSLTServlet extends HttpServlet {
                         lastModified = doc.getMetadata().getLastModified();
                     } finally {
                         if (doc != null) {
-                            doc.getUpdateLock().release(Lock.READ_LOCK);
+                            doc.getUpdateLock().release(LockMode.READ_LOCK);
                         }
                     }
                 } catch (final PermissionDeniedException e) {

@@ -27,7 +27,7 @@ import org.exist.dom.QName;
 import org.exist.indexing.lucene.LuceneIndex;
 import org.exist.indexing.lucene.LuceneIndexWorker;
 import org.exist.security.PermissionDeniedException;
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -68,7 +68,7 @@ public class InspectIndex extends BasicFunction {
 		
         try {
 			// Retrieve document from database
-			DocumentImpl doc = context.getBroker().getXMLResource(XmldbURI.xmldbUriFor(path), Lock.READ_LOCK);
+			DocumentImpl doc = context.getBroker().getXMLResource(XmldbURI.xmldbUriFor(path), LockMode.READ_LOCK);
 
 			// Verify the document actually exists
 			if (doc == null) {

@@ -29,7 +29,7 @@ import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.txn.Txn;
 import org.exist.xmldb.XmldbURI;
 import org.exist.util.LockException;
@@ -106,14 +106,14 @@ public class CollectionEvents implements CollectionTrigger {
 		for(Iterator<XmldbURI> i = collection.collectionIterator(broker); i.hasNext(); ) {
             final XmldbURI childName = i.next();
             //TODO : resolve URIs !!! name.resolve(childName)
-            final Collection child = broker.openCollection(uri.append(childName), Lock.NO_LOCK);
+            final Collection child = broker.openCollection(uri.append(childName), LockMode.NO_LOCK);
             if(child == null) {
 //                LOG.warn("Child collection " + childName + " not found");
             } else {
                 try {
                 	deleteCollectionRecursive(broker, child);
                 } finally {
-                    child.release(Lock.NO_LOCK);
+                    child.release(LockMode.NO_LOCK);
                 }
             }
         }

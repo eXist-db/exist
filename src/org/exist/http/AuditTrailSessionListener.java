@@ -31,7 +31,7 @@ import org.exist.source.Source;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.XQueryPool;
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XQuery;
@@ -114,7 +114,7 @@ public class AuditTrailSessionListener implements HttpSessionListener {
                     final XmldbURI pathUri = XmldbURI.create(xqueryResourcePath);
 
 
-                    resource = broker.getXMLResource(pathUri, Lock.READ_LOCK);
+                    resource = broker.getXMLResource(pathUri, LockMode.READ_LOCK);
 
                     if (resource != null) {
                         LOG.info("Resource [" + xqueryResourcePath + "] exists.");

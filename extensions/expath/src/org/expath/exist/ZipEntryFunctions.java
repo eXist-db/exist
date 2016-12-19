@@ -33,7 +33,7 @@ import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.QName;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -242,13 +242,13 @@ public class ZipEntryFunctions extends BasicFunction {
         @Override
         public void close() {
             if(binaryDoc != null) {
-               binaryDoc.getUpdateLock().release(Lock.READ_LOCK);
+               binaryDoc.getUpdateLock().release(LockMode.READ_LOCK);
             }
         }
 
         private BinaryDocument getDoc() throws PermissionDeniedException {
 
-            DocumentImpl doc = context.getBroker().getXMLResource(uri, Lock.READ_LOCK);
+            DocumentImpl doc = context.getBroker().getXMLResource(uri, LockMode.READ_LOCK);
             if(doc == null || doc.getResourceType() != DocumentImpl.BINARY_FILE) {
                 return null;
             }

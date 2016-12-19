@@ -15,6 +15,7 @@ import org.exist.storage.cache.Cacheable;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.lock.LockedDocumentMap;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
@@ -37,8 +38,8 @@ import java.util.Observable;
  * child Collections and documents, and provides the methods to store/remove resources.
  *
  * Collections are shared between {@link org.exist.storage.DBBroker} instances. The caller
- * is responsible to lock/unlock the collection. Call {@link DBBroker#openCollection(XmldbURI, int)}
- * to get a collection with a read or write lock and {@link #release(int)} to release the lock.
+ * is responsible to lock/unlock the collection. Call {@link DBBroker#openCollection(XmldbURI, LockMode)}
+ * to get a collection with a read or write lock and {@link #release(LockMode)} to release the lock.
  */
 public interface Collection extends Resource, Comparable<Collection>, Cacheable {
 
@@ -56,7 +57,7 @@ public interface Collection extends Resource, Comparable<Collection>, Cacheable 
      * Get's the lock for this Collection
      * <p>
      * Note - this does not actually acquire the lock
-     * for that you must subsequently call {@link Lock#acquire(int)}
+     * for that you must subsequently call {@link Lock#acquire(LockMode)}
      *
      * @return The lock for the Collection
      */
@@ -66,11 +67,11 @@ public interface Collection extends Resource, Comparable<Collection>, Cacheable 
      * Closes the Collection, i.e. releases the lock held by
      * the current thread.
      * <p>
-     * This is a shortcut for {@code getLock().release(int)}
+     * This is a shortcut for {@code getLock().release(LockMode)}
      *
      * @param mode The mode of the Lock to release
      */
-    void release(int mode);
+    void release(LockMode mode);
 
     /**
      * Get the internal id.
@@ -496,7 +497,7 @@ public interface Collection extends Resource, Comparable<Collection>, Cacheable 
      * @return The mutable document set provided in {@param docs}
      */
     DocumentSet allDocs(DBBroker broker, MutableDocumentSet docs, boolean recursive, LockedDocumentMap lockMap,
-                        int lockType) throws LockException, PermissionDeniedException;
+                        LockMode lockType) throws LockException, PermissionDeniedException;
 
     /**
      * Gets all of the documents from the Collection
@@ -530,7 +531,7 @@ public interface Collection extends Resource, Comparable<Collection>, Cacheable 
      * @param lockType The type of lock to acquire on the documents
      * @return The mutable document set provided in {@param docs}
      */
-    DocumentSet getDocuments(DBBroker broker, MutableDocumentSet docs, LockedDocumentMap lockMap, int lockType)
+    DocumentSet getDocuments(DBBroker broker, MutableDocumentSet docs, LockedDocumentMap lockMap, LockMode lockType)
             throws LockException, PermissionDeniedException;
 
     /**
@@ -566,7 +567,7 @@ public interface Collection extends Resource, Comparable<Collection>, Cacheable 
      * @param lockMode The mode of the lock to acquire
      * @return The locked document or null if it doesn't exist
      */
-    DocumentImpl getDocumentWithLock(DBBroker broker, XmldbURI name, int lockMode)
+    DocumentImpl getDocumentWithLock(DBBroker broker, XmldbURI name, LockMode lockMode)
             throws LockException, PermissionDeniedException;
 
     /**
@@ -586,7 +587,7 @@ public interface Collection extends Resource, Comparable<Collection>, Cacheable 
      * Release any locks held on the document
      *
      * @param doc The document to release locks on
-     * @deprecated Use {@link #releaseDocument(DocumentImpl, int)} instead
+     * @deprecated Use {@link #releaseDocument(DocumentImpl, LockMode)} instead
      */
     @Deprecated
     void releaseDocument(DocumentImpl doc);
@@ -597,7 +598,7 @@ public interface Collection extends Resource, Comparable<Collection>, Cacheable 
      * @param doc  The document to release locks on
      * @param mode The lock mode to release
      */
-    void releaseDocument(DocumentImpl doc, int mode);
+    void releaseDocument(DocumentImpl doc, LockMode mode);
 
     /**
      * Remove the specified child Collection

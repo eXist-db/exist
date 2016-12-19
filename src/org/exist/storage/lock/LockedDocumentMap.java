@@ -27,6 +27,7 @@ import org.exist.dom.persistent.DefaultDocumentSet;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.MutableDocumentSet;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.util.hashtable.Int2ObjectHashMap;
 
 /**
@@ -106,7 +107,7 @@ public class LockedDocumentMap extends Int2ObjectHashMap<Object> {
 
     private void unlockDocument(final LockedDocument lockedDocument) {
         final Lock documentLock = lockedDocument.document.getUpdateLock();
-        documentLock.release(Lock.WRITE_LOCK, lockedDocument.locksAcquired);
+        documentLock.release(LockMode.WRITE_LOCK, lockedDocument.locksAcquired);
     }
 
     private static class LockedDocument {

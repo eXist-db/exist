@@ -25,6 +25,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.util.FileUtils;
 import org.exist.util.LockException;
 import org.exist.util.ReadOnlyException;
@@ -41,20 +42,18 @@ import org.exist.util.ReadOnlyException;
  */
 public abstract class DOMTransaction {
 
-    private final static Logger LOG = LogManager.getLogger(DOMTransaction.class);
+    private static final Logger LOG = LogManager.getLogger(DOMTransaction.class);
 
-    private Object ownerObject;
-    private DOMFile file;
-    private DocumentImpl document = null;
-    private int mode;
+    private final Object ownerObject;
+    private final DOMFile file;
+    private final LockMode mode;
+    private final DocumentImpl document;
 
     /**
      * @deprecated : use other constructors
      */
-    public DOMTransaction(Object owner, DOMFile file) {
-        this.ownerObject = owner;
-        this.file = file;
-        this.mode = Lock.READ_LOCK;
+    public DOMTransaction(final Object owner, final DOMFile file) {
+        this(owner, file, LockMode.READ_LOCK);
     }
 
     /**
@@ -64,9 +63,8 @@ public abstract class DOMTransaction {
      * @param file a <code>DOMFile</code> value
      * @param mode an <code>int</code> value
      */
-    public DOMTransaction(Object owner, DOMFile file, int mode) {
-        this(owner, file);
-        this.mode = mode;
+    public DOMTransaction(final Object owner, final DOMFile file, final LockMode mode) {
+        this(owner, file, mode, null);
     }
 
     /**
@@ -77,8 +75,10 @@ public abstract class DOMTransaction {
      * @param mode an <code>int</code> value
      * @param doc a <code>DocumentImpl</code> value
      */
-    public DOMTransaction(Object owner, DOMFile file, int mode, DocumentImpl doc) {
-        this(owner, file, mode);
+    public DOMTransaction(final Object owner, final DOMFile file, final LockMode mode, final DocumentImpl doc) {
+        this.ownerObject = owner;
+        this.file = file;
+        this.mode = mode;
         this.document = doc;
     }
 

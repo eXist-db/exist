@@ -7,7 +7,7 @@ import org.exist.collections.triggers.TriggerException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
-import org.exist.Indexer;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -56,7 +55,7 @@ public class NodeTest {
     public void document() throws EXistException, LockException, PermissionDeniedException {
         DocumentImpl doc = null;
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-            doc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"),Lock.READ_LOCK);
+            doc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"),LockMode.READ_LOCK);
             NodeList children = doc.getChildNodes();
             for (int i = 0; i < children.getLength(); i++) {
                 IStoredNode node = (IStoredNode<?>) children.item(i);
@@ -65,7 +64,7 @@ public class NodeTest {
             }
         } finally {
             if (doc != null) {
-                doc.getUpdateLock().release(Lock.READ_LOCK);
+                doc.getUpdateLock().release(LockMode.READ_LOCK);
             }
         }
     }
@@ -74,7 +73,7 @@ public class NodeTest {
 	public void childAxis() throws EXistException, LockException, PermissionDeniedException {
 		DocumentImpl doc = null;
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-            doc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"),Lock.READ_LOCK);
+            doc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"),LockMode.READ_LOCK);
             Element rootNode = doc.getDocumentElement();
             
             //Testing getChildNodes()
@@ -106,7 +105,7 @@ public class NodeTest {
         	assertEquals(parent.getNodeName(), "test");
         } finally {
         	if (doc != null) {
-                doc.getUpdateLock().release(Lock.READ_LOCK);
+                doc.getUpdateLock().release(LockMode.READ_LOCK);
             }
         }
 	}
@@ -116,7 +115,7 @@ public class NodeTest {
         DocumentImpl doc = null;
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             
-            doc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"),Lock.READ_LOCK);
+            doc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"),LockMode.READ_LOCK);
             Element rootNode = doc.getDocumentElement();
             Element child = (Element) rootNode.getFirstChild();
             assertNotNull(child);
@@ -142,7 +141,7 @@ public class NodeTest {
             assertEquals(count, 4);
         } finally {
             if (doc != null) {
-                doc.getUpdateLock().release(Lock.READ_LOCK);
+                doc.getUpdateLock().release(LockMode.READ_LOCK);
             }
         }
     }
@@ -151,7 +150,7 @@ public class NodeTest {
 	public void attributeAxis() throws EXistException, LockException, PermissionDeniedException {
 		DocumentImpl doc = null;
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-            doc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"),Lock.READ_LOCK);
+            doc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"),LockMode.READ_LOCK);
             Element rootNode = doc.getDocumentElement();
             Element first = (Element) rootNode.getFirstChild();
             assertEquals(first.getNodeName(), "a");
@@ -188,7 +187,7 @@ public class NodeTest {
             assertEquals(attr.getNamespaceURI(), "http://foo.org");
             assertEquals(attr.getValue(), "m");
         } finally {
-        	if (doc != null) doc.getUpdateLock().release(Lock.READ_LOCK);
+        	if (doc != null) doc.getUpdateLock().release(LockMode.READ_LOCK);
         }
 	}
 
@@ -212,7 +211,7 @@ public class NodeTest {
             rootNode.accept(visitor);
         } finally {
             if (doc != null) {
-                doc.getUpdateLock().release(Lock.READ_LOCK);
+                doc.getUpdateLock().release(LockMode.READ_LOCK);
             }
         }
     }

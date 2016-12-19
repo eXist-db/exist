@@ -4,7 +4,7 @@ import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.security.PermissionDeniedException;
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.test.TestConstants;
@@ -107,9 +107,9 @@ public class ReindexTest {
 
             BrokerPool.FORCE_CORRUPTION = true;
 
-            Collection root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, Lock.WRITE_LOCK);
+            Collection root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, LockMode.WRITE_LOCK);
             assertNotNull(root);
-            transaction.registerLock(root.getLock(), Lock.WRITE_LOCK);
+            transaction.registerLock(root.getLock(), LockMode.WRITE_LOCK);
             broker.removeCollection(transaction, root);
             pool.getJournalManager().get().flush(true, false);
             transact.commit(transaction);
@@ -126,7 +126,7 @@ public class ReindexTest {
         BrokerPool.FORCE_CORRUPTION = false;
         final BrokerPool pool = startDB();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-            Collection root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, Lock.READ_LOCK);
+            Collection root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, LockMode.READ_LOCK);
             assertNull("Removed collection does still exist", root);
         }
     }

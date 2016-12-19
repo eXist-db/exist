@@ -11,7 +11,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -260,13 +260,13 @@ public class ZipFileFunctions extends BasicFunction {
         @Override
         public void close() {
             if (binaryDoc != null) {
-                binaryDoc.getUpdateLock().release(Lock.READ_LOCK);
+                binaryDoc.getUpdateLock().release(LockMode.READ_LOCK);
             }
         }
 
         private BinaryDocument getDoc() throws PermissionDeniedException {
 
-            DocumentImpl doc = context.getBroker().getXMLResource(uri, Lock.READ_LOCK);
+            DocumentImpl doc = context.getBroker().getXMLResource(uri, LockMode.READ_LOCK);
             if (doc == null || doc.getResourceType() != DocumentImpl.BINARY_FILE) {
                 return null;
             }
