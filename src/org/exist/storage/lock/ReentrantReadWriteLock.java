@@ -31,7 +31,8 @@
 package org.exist.storage.lock;
 
 import java.io.PrintStream;
-import java.util.Stack;
+import java.util.ArrayDeque;
+import java.util.Deque;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -68,20 +69,23 @@ public class ReentrantReadWriteLock implements Lock {
 
     private final Object id_;
 	private Thread owner_ = null;
-    private final Stack<SuspendedWaiter> suspendedThreads = new Stack<>();
+    private final Deque<SuspendedWaiter> suspendedThreads = new ArrayDeque<>();
 
     private int holds_ = 0;
     private LockMode mode_ = LockMode.NO_LOCK;
-    private Stack<LockMode> modeStack = new Stack<>();
+    private final Deque<LockMode> modeStack = new ArrayDeque<>();
     private int writeLocks = 0;
-    private boolean DEBUG = false;
-    private Stack<StackTraceElement[]> seStack;
     private LockListener listener = null;
+
+    private final boolean DEBUG = false;
+    private final Deque<StackTraceElement[]> seStack;
 
     public ReentrantReadWriteLock(final Object id) {
         this.id_ = id;
         if (DEBUG) {
-            seStack = new Stack<>();
+            seStack = new ArrayDeque<>();
+        } else {
+            seStack = null;
         }
     }
 
