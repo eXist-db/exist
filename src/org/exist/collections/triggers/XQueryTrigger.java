@@ -509,8 +509,9 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
         	TriggerStatePerThread.setTriggerRunningState(TriggerStatePerThread.NO_TRIGGER_RUNNING, this, null);
         	TriggerStatePerThread.setTransaction(null);
         	LOG.debug("Trigger fired 'after'");
-        } else
-        	{LOG.debug("Trigger fired 'before'");}
+        } else {
+			LOG.debug("Trigger fired 'before'");
+		}
 	}
 
 //	public void startDocument() throws SAXException

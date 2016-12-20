@@ -40,7 +40,6 @@ import java.util.*;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.Delayed;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.StreamSupport;
 
 /**
  * Class to keep track of all running queries in a database instance. The main
@@ -71,12 +70,12 @@ public class ProcessMonitor implements BrokerPoolService {
     public final static long QUERY_HISTORY_TIMEOUT = 2 * 60 * 1000; // 2 minutes
     public final static long MIN_TIME = 100;
 
-    private final Set<XQueryWatchDog> runningQueries = new HashSet<XQueryWatchDog>();
+    private final Set<XQueryWatchDog> runningQueries = new HashSet<>();
     private final DelayQueue<QueryHistory> history = new DelayQueue<>();
 
-    private Map<Thread, JobInfo> processes = new HashMap<Thread, JobInfo>();
+    private final Map<Thread, JobInfo> processes = new HashMap<>();
 
-    private long maxShutdownWait;
+    private final long maxShutdownWait;
 
     private long historyTimespan = QUERY_HISTORY_TIMEOUT;
 
@@ -89,44 +88,40 @@ public class ProcessMonitor implements BrokerPoolService {
         this.maxShutdownWait = configuration.getProperty(BrokerPool.PROPERTY_SHUTDOWN_DELAY, BrokerPool.DEFAULT_MAX_SHUTDOWN_WAIT);
     }
 
-    public void startJob(String action) {
+    public void startJob(final String action) {
         startJob(action, null);
     }
 
-    public void startJob(String action, Object addInfo) {
+    public void startJob(final String action, Object addInfo) {
         startJob(action, addInfo, null);
     }
 
     //TODO: addInfo = XmldbURI ? -shabanovd
-    public void startJob(String action, Object addInfo, Monitor monitor) {
+    public void startJob(final String action, final Object addInfo, final Monitor monitor) {
         final JobInfo info = new JobInfo(action, monitor);
         info.setAddInfo(addInfo);
-        synchronized (this) {
+        synchronized (processes) {
             processes.put(info.getThread(), info);
         }
     }
 
-    public synchronized void endJob() {
-        processes.remove(Thread.currentThread());
-        notifyAll();
+    public void endJob() {
+        synchronized (processes) {
+            processes.remove(Thread.currentThread());
+            processes.notifyAll();
+        }
     }
 
     public JobInfo[] runningJobs() {
-        synchronized (this) {
-            final JobInfo jobs[] = new JobInfo[processes.size()];
-            int j = 0;
-            for (final Iterator<JobInfo> i = processes.values().iterator(); i.hasNext(); j++) {
-                //BUG: addInfo = XmldbURI ? -shabanovd
-                jobs[j] = i.next();
-            }
-            return jobs;
+        synchronized (processes) {
+            return processes.values().toArray(new JobInfo[processes.size()]);
         }
     }
 
     public void stopRunningJobs() {
         final long waitStart = System.currentTimeMillis();
-        synchronized (this) {
-            if (maxShutdownWait > -1) {
+        synchronized (processes) {
+            if (maxShutdownWait > 0) {
                 while (processes.size() > 0) {
                     try {
                         //Wait until they become inactive...
@@ -134,26 +129,24 @@ public class ProcessMonitor implements BrokerPoolService {
                     } catch (final InterruptedException e) {
                     }
                     //...or force the shutdown
-                    if(maxShutdownWait > -1 && System.currentTimeMillis() - waitStart > maxShutdownWait){
+                    if(System.currentTimeMillis() - waitStart > maxShutdownWait) {
                         break;
                     }
                 }
             }
-            for (final JobInfo job : processes.values()) {
-                job.stop();
-            }
+            processes.values().forEach(JobInfo::stop);
         }
     }
 
-    public void queryStarted(XQueryWatchDog watchdog) {
+    public void queryStarted(final XQueryWatchDog watchdog) {
         synchronized (runningQueries) {
             watchdog.setRunningThread(Thread.currentThread().getName());
             runningQueries.add(watchdog);
         }
     }
 	
-    public void queryCompleted(XQueryWatchDog watchdog) {
-        boolean found;
+    public void queryCompleted(final XQueryWatchDog watchdog) {
+        final boolean found;
         synchronized (runningQueries) {
             found = runningQueries.remove(watchdog);
         }
@@ -163,7 +156,7 @@ public class ProcessMonitor implements BrokerPoolService {
         if (found && elapsed > minTime) {
             synchronized (history) {
                 final String sourceKey = watchdog.getContext().getSource().path();
-                QueryHistory qh = new QueryHistory(sourceKey, historyTimespan);
+                final QueryHistory qh = new QueryHistory(sourceKey, historyTimespan);
                 qh.setMostRecentExecutionTime(watchdog.getStartTime());
                 qh.setMostRecentExecutionDuration(elapsed);
                 qh.incrementInvocationCount();

@@ -1068,36 +1068,40 @@ public class NativeBroker extends DBBroker {
             throw new PermissionDeniedException("Cannot copy collection '" + collection.getURI() + "' to it child collection '"+destination.getURI()+"'.");
         }
 
-        final CollectionCache collectionsCache = pool.getCollectionsCache();
-        synchronized(collectionsCache) {
-            final Lock lock = collectionsDb.getLock();
-            try {
-                pool.getProcessMonitor().startJob(ProcessMonitor.ACTION_COPY_COLLECTION, collection.getURI());
-                lock.acquire(Lock.WRITE_LOCK);
+        try {
+            pool.getProcessMonitor().startJob(ProcessMonitor.ACTION_COPY_COLLECTION, collection.getURI());
 
-                //recheck here because now under 'synchronized(collectionsCache)'
-                if(isSubCollection(collection, destination)) {
-                    throw new PermissionDeniedException("Cannot copy collection '" + collection.getURI() + "' to it child collection '"+destination.getURI()+"'.");
+            final CollectionCache collectionsCache = pool.getCollectionsCache();
+            synchronized (collectionsCache) {
+                final Lock lock = collectionsDb.getLock();
+                try {
+                    lock.acquire(Lock.WRITE_LOCK);
+
+                    //recheck here because now under 'synchronized(collectionsCache)'
+                    if(isSubCollection(collection, destination)) {
+                         throw new PermissionDeniedException("Cannot copy collection '" + collection.getURI() + "' to it child collection '"+destination.getURI()+"'.");
+                    }
+
+                    final XmldbURI parentName = collection.getParentURI();
+                    final Collection parent = parentName == null ? collection : getCollection(parentName);
+
+                    final CollectionTrigger trigger = new CollectionTriggers(this, parent);
+                    trigger.beforeCopyCollection(this, transaction, collection, dstURI);
+
+                    //atomically check all permissions in the tree to ensure a copy operation will succeed before starting copying
+                    checkPermissionsForCopy(collection, destination.getURI(), newName);
+
+                    final DocumentTrigger docTrigger = new DocumentTriggers(this);
+
+                    final Collection newCollection = doCopyCollection(transaction, docTrigger, collection, destination, newName, false);
+
+                    trigger.afterCopyCollection(this, transaction, newCollection, srcURI);
+                } finally {
+                    lock.release(Lock.WRITE_LOCK);
                 }
-
-                final XmldbURI parentName = collection.getParentURI();
-                final Collection parent = parentName == null ? collection : getCollection(parentName);
-
-                final CollectionTrigger trigger = new CollectionTriggers(this, parent);
-                trigger.beforeCopyCollection(this, transaction, collection, dstURI);
-
-                //atomically check all permissions in the tree to ensure a copy operation will succeed before starting copying
-                checkPermissionsForCopy(collection, destination.getURI(), newName);
-
-                final DocumentTrigger docTrigger = new DocumentTriggers(this);
-
-                final Collection newCollection = doCopyCollection(transaction, docTrigger, collection, destination, newName, false);
-
-                trigger.afterCopyCollection(this, transaction, newCollection, srcURI);
-            } finally {
-                lock.release(Lock.WRITE_LOCK);
-                pool.getProcessMonitor().endJob();
             }
+        } finally {
+            pool.getProcessMonitor().endJob();
         }
     }
 
@@ -1470,16 +1474,13 @@ public class NativeBroker extends DBBroker {
         }
 
         try {
-
             pool.getProcessMonitor().startJob(ProcessMonitor.ACTION_REMOVE_COLLECTION, collection.getURI());
+            final long start = System.currentTimeMillis();
 
             final CollectionTrigger colTrigger = new CollectionTriggers(this, parent);
-
             colTrigger.beforeDeleteCollection(this, transaction, collection);
 
-            final long start = System.currentTimeMillis();
             final CollectionCache collectionsCache = pool.getCollectionsCache();
-
             synchronized(collectionsCache) {
                 final XmldbURI uri = collection.getURI();
                 final String collName = uri.getRawCollectionPath();
@@ -1777,21 +1778,19 @@ public class NativeBroker extends DBBroker {
     public void reindexCollection(final Collection collection, final IndexMode mode) throws PermissionDeniedException {
         final TransactionManager transact = pool.getTransactionManager();
 
+        pool.getProcessMonitor().startJob(ProcessMonitor.ACTION_REINDEX_COLLECTION, collection.getURI());
         final long start = System.currentTimeMillis();
 
         try(final Txn transaction = transact.beginTransaction()) {
             LOG.info(String.format("Start indexing collection %s", collection.getURI().toString()));
-            pool.getProcessMonitor().startJob(ProcessMonitor.ACTION_REINDEX_COLLECTION, collection.getURI());
             reindexCollection(transaction, collection, mode);
             transact.commit(transaction);
-
+            LOG.info(String.format("Finished indexing collection %s in %s ms.",
+                    collection.getURI().toString(), System.currentTimeMillis() - start));
         } catch(final Exception e) {
-            LOG.warn("An error occurred during reindex: " + e.getMessage(), e);
-
+            LOG.error("An error occurred during reindex: " + e.getMessage(), e);
         } finally {
             pool.getProcessMonitor().endJob();
-            LOG.info(String.format("Finished indexing collection %s in %s ms.",
-                collection.getURI().toString(), System.currentTimeMillis() - start));
         }
     }
 
