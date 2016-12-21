@@ -16,7 +16,7 @@ import org.exist.collections.IndexInfo;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
@@ -80,12 +80,12 @@ public class DocTypeTest {
                 final IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("test2.xml"), is);
 
                 assertNotNull(info);
-                root.store(transaction, broker, info, is, false);
+                root.store(transaction, broker, info, is);
 
                 transact.commit(transaction);
             }
 
-			doc = broker.getXMLResource(root.getURI().append(XmldbURI.create("test2.xml")),Lock.READ_LOCK);
+			doc = broker.getXMLResource(root.getURI().append(XmldbURI.create("test2.xml")),LockMode.READ_LOCK);
 
 			final DocumentType docType = doc.getDoctype();
 			assertNotNull(docType);
@@ -102,7 +102,7 @@ public class DocTypeTest {
 
 		} finally {
 		    if (doc != null) {
-                doc.getUpdateLock().release(Lock.READ_LOCK);
+                doc.getUpdateLock().release(LockMode.READ_LOCK);
             }
 		}
 	}
@@ -112,7 +112,7 @@ public class DocTypeTest {
 		DocumentImpl doc = null;
 		try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
-            doc = broker.getXMLResource(root.getURI().append(XmldbURI.create("test.xml")), Lock.READ_LOCK);
+            doc = broker.getXMLResource(root.getURI().append(XmldbURI.create("test.xml")), LockMode.READ_LOCK);
 
             DocumentType docType = doc.getDoctype();
 
@@ -131,7 +131,7 @@ public class DocTypeTest {
 
         } finally {
 		    if (doc != null) {
-                doc.getUpdateLock().release(Lock.READ_LOCK);
+                doc.getUpdateLock().release(LockMode.READ_LOCK);
             }
 		}
 	}
@@ -152,7 +152,7 @@ public class DocTypeTest {
             IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"), XML);
             //TODO : unlock the collection here ?
             assertNotNull(info);
-            root.store(transaction, broker, info, XML, false);
+            root.store(transaction, broker, info, XML);
             
             transact.commit(transaction);
         }

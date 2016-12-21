@@ -320,7 +320,7 @@ public class LocalUserManagementService extends AbstractLocalService implements 
     @Override
     public Permission getSubCollectionPermissions(final Collection parent, final String name) throws XMLDBException {
         if(parent instanceof LocalCollection) {
-            return this.<Permission>read(((LocalCollection) parent).getPathURI()).apply((collection, broker, transaction) -> collection.getSubCollectionEntry(broker, name).getPermissions());
+            return this.<Permission>read(((LocalCollection) parent).getPathURI()).apply((collection, broker, transaction) -> collection.getChildCollectionEntry(broker, name).getPermissions());
         } else {
             return null;
         }
@@ -338,7 +338,7 @@ public class LocalUserManagementService extends AbstractLocalService implements 
     @Override
     public Date getSubCollectionCreationTime(final Collection parent, final String name) throws XMLDBException {
         if(parent instanceof LocalCollection) {
-            return this.<Date>read(((LocalCollection) parent).getPathURI()).apply((collection, broker, transaction) -> new Date(collection.getSubCollectionEntry(broker, name).getCreated()));
+            return this.<Date>read(((LocalCollection) parent).getPathURI()).apply((collection, broker, transaction) -> new Date(collection.getChildCollectionEntry(broker, name).getCreated()));
         } else {
             return null;
         }

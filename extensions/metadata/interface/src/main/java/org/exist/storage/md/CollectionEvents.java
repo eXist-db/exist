@@ -29,9 +29,10 @@ import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.txn.Txn;
 import org.exist.xmldb.XmldbURI;
+import org.exist.util.LockException;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -83,7 +84,7 @@ public class CollectionEvents implements CollectionTrigger {
             		newUri.append(doc.getFileURI())
         		);
 	        }
-		} catch (PermissionDeniedException e) {
+		} catch (PermissionDeniedException | LockException e) {
 			throw new TriggerException(e);
 		}
 	}
@@ -94,7 +95,7 @@ public class CollectionEvents implements CollectionTrigger {
 		MDStorageManager.inst.md.moveMetas(oldUri, collection.getURI());
 	}
 	
-	private void deleteCollectionRecursive(DBBroker broker, Collection collection) throws PermissionDeniedException {
+	private void deleteCollectionRecursive(DBBroker broker, Collection collection) throws PermissionDeniedException, LockException {
         for(Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
             DocumentImpl doc = i.next();
             MDStorageManager.inst.md.delMetas(doc.getURI());
@@ -105,14 +106,14 @@ public class CollectionEvents implements CollectionTrigger {
 		for(Iterator<XmldbURI> i = collection.collectionIterator(broker); i.hasNext(); ) {
             final XmldbURI childName = i.next();
             //TODO : resolve URIs !!! name.resolve(childName)
-            final Collection child = broker.openCollection(uri.append(childName), Lock.NO_LOCK);
+            final Collection child = broker.openCollection(uri.append(childName), LockMode.NO_LOCK);
             if(child == null) {
 //                LOG.warn("Child collection " + childName + " not found");
             } else {
                 try {
                 	deleteCollectionRecursive(broker, child);
                 } finally {
-                    child.release(Lock.NO_LOCK);
+                    child.release(LockMode.NO_LOCK);
                 }
             }
         }
@@ -124,7 +125,7 @@ public class CollectionEvents implements CollectionTrigger {
 //		System.out.println("beforeDeleteCollection "+collection.getURI());
 		try {
 			deleteCollectionRecursive(broker, collection);
-		} catch (PermissionDeniedException e) {
+		} catch (PermissionDeniedException | LockException e) {
 			throw new TriggerException(e);
 		}
 	}

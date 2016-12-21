@@ -26,7 +26,7 @@ import org.exist.dom.QName;
 import org.exist.indexing.lucene.LuceneIndex;
 import org.exist.indexing.lucene.LuceneIndexWorker;
 import org.exist.security.PermissionDeniedException;
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -67,7 +67,7 @@ public class GetField extends BasicFunction {
 		
 		DocumentImpl doc = null;
 		try {
-			doc = context.getBroker().getXMLResource(uri, Lock.READ_LOCK);
+			doc = context.getBroker().getXMLResource(uri, LockMode.READ_LOCK);
 			if (doc == null) {
                 return Sequence.EMPTY_SEQUENCE;
             }
@@ -81,7 +81,7 @@ public class GetField extends BasicFunction {
 			throw new XPathException(this, LuceneModule.EXXQDYFT0002, "IO error while reading document " + args[0].getStringValue());
 		} finally {
 			if (doc != null)
-				doc.getUpdateLock().release(Lock.READ_LOCK);
+				doc.getUpdateLock().release(LockMode.READ_LOCK);
 		}
 	}
 

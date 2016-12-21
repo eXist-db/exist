@@ -36,7 +36,7 @@ import org.exist.source.SourceFactory;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.XQueryPool;
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XPathException;
@@ -158,7 +158,7 @@ public class UserXQueryJob extends UserJob {
                 source = SourceFactory.getSource(broker, "", xqueryresource, true);
             } else {
                 final XmldbURI pathUri = XmldbURI.create(xqueryresource);
-                resource = broker.getXMLResource(pathUri, Lock.READ_LOCK);
+                resource = broker.getXMLResource(pathUri, LockMode.READ_LOCK);
 
                 if(resource != null) {
                     source = new DBSource(broker, (BinaryDocument)resource, true);
@@ -240,7 +240,7 @@ public class UserXQueryJob extends UserJob {
 
             //release the lock on the xquery resource
             if(resource != null) {
-                resource.getUpdateLock().release(Lock.READ_LOCK);
+                resource.getUpdateLock().release(LockMode.READ_LOCK);
             }
         }
     }

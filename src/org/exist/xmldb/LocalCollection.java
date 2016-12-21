@@ -35,6 +35,7 @@ import org.exist.security.Permission;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.Txn;
@@ -172,7 +173,7 @@ public class LocalCollection extends AbstractLocal implements CollectionImpl {
                     ok = false;
                 }
 
-                if (collection.hasSubcollection(broker, id)) {
+                if (collection.hasChildCollection(broker, id)) {
                     ok = false;
                 }
 
@@ -568,7 +569,7 @@ public class LocalCollection extends AbstractLocal implements CollectionImpl {
                 } else {
                     info = collection.validateXMLResource(transaction, broker, resURI, res.content);
                 }
-                //Notice : the document should now have a Lock.WRITE_LOCK update lock
+                //Notice : the document should now have a LockMode.WRITE_LOCK update lock
                 //TODO : check that no exception occurs in order to allow it to be released
                 info.getDocument().getMetadata().setMimeType(res.getMimeType());
                 if (res.datecreated != null) {
@@ -579,11 +580,11 @@ public class LocalCollection extends AbstractLocal implements CollectionImpl {
                 }
 
                 if (uri != null || res.inputSource != null) {
-                    collection.store(transaction, broker, info, (uri != null) ? new InputSource(uri) : res.inputSource, false);
+                    collection.store(transaction, broker, info, (uri != null) ? new InputSource(uri) : res.inputSource);
                 } else if (res.root != null) {
-                    collection.store(transaction, broker, info, res.root, false);
+                    collection.store(transaction, broker, info, res.root);
                 } else {
-                    collection.store(transaction, broker, info, res.content, false);
+                    collection.store(transaction, broker, info, res.content);
                 }
 
                 return null;
@@ -753,7 +754,7 @@ public class LocalCollection extends AbstractLocal implements CollectionImpl {
      * @param transaction The transaction to use for the operation
      * @return A function to receive an operation to perform on the locked database collection
      */
-    protected <R> FunctionE<LocalXmldbCollectionFunction<R>, R, XMLDBException> with(final int lockMode, final DBBroker broker, final Txn transaction) throws XMLDBException {
+    protected <R> FunctionE<LocalXmldbCollectionFunction<R>, R, XMLDBException> with(final LockMode lockMode, final DBBroker broker, final Txn transaction) throws XMLDBException {
         return op -> this.<R>with(lockMode, broker, transaction, path).apply((collection, broker1, transaction1) -> {
             collection.setReader(userReader);
             return op.apply(collection, broker1, transaction1);

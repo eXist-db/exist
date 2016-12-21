@@ -611,7 +611,7 @@ public class Deployment {
             final Permission permission = info.getDocument().getPermissions();
             setPermissions(requestedPerms, false, MimeType.XML_TYPE, permission);
 
-            collection.store(transaction, broker, info, updatedXML, false);
+            collection.store(transaction, broker, info, updatedXML);
 
             mgr.commit(transaction);
         } catch (final Exception e) {
@@ -769,7 +769,7 @@ public class Deployment {
                             final Permission permission = info.getDocument().getPermissions();
                             setPermissions(requestedPerms, false, mime, permission);
 
-                            targetCollection.store(transaction, broker, info, is, false);
+                            targetCollection.store(transaction, broker, info, is);
                         } catch (Exception e) {
                             //check for .html ending
                             if(mime.getName().equals(MimeType.HTML_TYPE.getName())){

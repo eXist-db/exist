@@ -31,7 +31,7 @@ import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -96,7 +96,7 @@ public class BinaryDoc extends BasicFunction {
         final String path = args[0].getStringValue();
         DocumentImpl doc = null;
         try {
-            doc = context.getBroker().getXMLResource(XmldbURI.xmldbUriFor(path), Lock.READ_LOCK);
+            doc = context.getBroker().getXMLResource(XmldbURI.xmldbUriFor(path), LockMode.READ_LOCK);
             if(doc == null)
             {
                 return defaultReturn;
@@ -135,7 +135,7 @@ public class BinaryDoc extends BasicFunction {
             throw new XPathException(this, path + ": I/O error while reading resource",e);
         } finally {
             if (doc != null)
-                {doc.getUpdateLock().release(Lock.READ_LOCK);}
+                {doc.getUpdateLock().release(LockMode.READ_LOCK);}
         }
     }
 }

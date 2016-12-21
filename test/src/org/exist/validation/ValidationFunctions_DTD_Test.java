@@ -263,7 +263,7 @@ public class ValidationFunctions_DTD_Test {
     private static void storeDocument(DBBroker broker, Txn txn, org.exist.collections.Collection collection, String name, String data) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException {
         XmldbURI docUri  = XmldbURI.create(name);
         IndexInfo info = collection.validateXMLResource(txn, broker, docUri, data);
-        collection.store(txn, broker, info, data, false);
+        collection.store(txn, broker, info, data);
     }
 
     private static void storeTextDocument(DBBroker broker, Txn txn, org.exist.collections.Collection collection, String name, String data) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException {

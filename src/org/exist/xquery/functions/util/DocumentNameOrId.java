@@ -34,7 +34,7 @@ import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
@@ -127,11 +127,11 @@ public class DocumentNameOrId extends BasicFunction {
                 if (node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
                     final NodeProxy proxy = (NodeProxy) node;
                     doc = proxy.getOwnerDocument();
-                    doc.getUpdateLock().acquire(Lock.READ_LOCK);
+                    doc.getUpdateLock().acquire(LockMode.READ_LOCK);
                 }
             } else if(Type.subTypeOf(args[0].getItemType(), Type.STRING)) {
                 final String path = args[0].getStringValue();
-                doc = context.getBroker().getXMLResource(XmldbURI.xmldbUriFor(path), Lock.READ_LOCK);
+                doc = context.getBroker().getXMLResource(XmldbURI.xmldbUriFor(path), LockMode.READ_LOCK);
             }
 
             final QName fnName = getSignature().getName();
@@ -183,7 +183,7 @@ public class DocumentNameOrId extends BasicFunction {
             throw new XPathException(this, args[0].getStringValue() + ": permission denied to read resource");
         } finally {
             if(doc != null) { 
-                doc.getUpdateLock().release(Lock.READ_LOCK);
+                doc.getUpdateLock().release(LockMode.READ_LOCK);
             }
         }
         

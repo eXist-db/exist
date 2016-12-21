@@ -78,7 +78,7 @@ public class ShutdownTest {
                     try {
                         final IndexInfo info = test.validateXMLResource(transaction, broker, XmldbURI.create(FileUtils.fileName(f)), new InputSource(f.toUri().toASCIIString()));
                         assertNotNull(info);
-                        test.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()), false);
+                        test.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()));
                     } catch (SAXException e) {
                         System.err.println("Error found while parsing document: " + FileUtils.fileName(f) + ": " + e.getMessage());
                     }

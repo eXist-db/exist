@@ -266,7 +266,7 @@ public class SimpleMDTest {
 
 		    	IndexInfo info = col.validateXMLResource(txn, broker, doc1uri.lastSegment(), XML1);
 	            assertNotNull(info);
-	            col.store(txn, broker, info, XML1, false);
+	            col.store(txn, broker, info, XML1);
 	            
 	            //XXX: need to simulate unfinished transaction & crash
 	            txnManager.commit(txn);
@@ -294,7 +294,7 @@ public class SimpleMDTest {
 
 		    	IndexInfo info = root.validateXMLResource(txn, broker, doc1uri.lastSegment(), XML1);
 	            assertNotNull(info);
-	            root.store(txn, broker, info, XML1, false);
+	            root.store(txn, broker, info, XML1);
 
 	            txnManager.commit(txn);
 	            
@@ -715,7 +715,7 @@ public class SimpleMDTest {
 
                     final IndexInfo info = root.validateXMLResource(txn, broker, doc1uri.lastSegment(), XML1);
                     assertNotNull(info);
-                    root.store(txn, broker, info, XML1, false);
+                    root.store(txn, broker, info, XML1);
 
                     txnManager.commit(txn);
                 } catch (Exception e) {
@@ -739,7 +739,7 @@ public class SimpleMDTest {
 
                     final IndexInfo info = root.validateXMLResource(txn, broker, doc1uri.lastSegment(), wrongXML);
                     assertNotNull(info);
-                    root.store(txn, broker, info, wrongXML, false);
+                    root.store(txn, broker, info, wrongXML);
 
                     txnManager.commit(txn);
                 } catch (Exception e) {
@@ -772,7 +772,7 @@ public class SimpleMDTest {
 	private static DocumentImpl storeDocument(Txn txn, DBBroker broker, Collection col, XmldbURI uri, String data) throws TriggerException, EXistException, PermissionDeniedException, SAXException, LockException, IOException {
         IndexInfo info = col.validateXMLResource(txn, broker, uri.lastSegment(), data);
         assertNotNull(info);
-        col.store(txn, broker, info, data, false);
+        col.store(txn, broker, info, data);
         assertNotNull(info.getDocument());
 
         return info.getDocument();

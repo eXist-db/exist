@@ -60,6 +60,7 @@ import org.exist.storage.btree.DBException;
 import org.exist.storage.txn.Txn;
 import org.exist.util.ByteConversion;
 import org.exist.util.DatabaseConfigurationException;
+import org.exist.util.LockException;
 import org.exist.util.Occurrences;
 import org.exist.xquery.*;
 import org.exist.xquery.modules.range.RangeQueryRewriter;
@@ -363,9 +364,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 Term dt = new Term(FIELD_DOC_ID, bytes.toBytesRef());
                 writer.deleteDocuments(dt);
             }
-        } catch (IOException e) {
-            LOG.error("Error while removing lucene index: " + e.getMessage(), e);
-        } catch (PermissionDeniedException e) {
+        } catch (IOException | PermissionDeniedException | LockException e) {
             LOG.error("Error while removing lucene index: " + e.getMessage(), e);
         } finally {
             index.releaseWriter(writer);

@@ -62,7 +62,7 @@ import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
@@ -1282,14 +1282,14 @@ public class Configurator {
         try {
             broker.pushSubject(pool.getSecurityManager().getSystemSubject());
             txn = transact.beginTransaction();
-            txn.acquireLock(collection.getLock(), Lock.WRITE_LOCK);
+            txn.acquireLock(collection.getLock(), LockMode.WRITE_LOCK);
             final IndexInfo info = collection.validateXMLResource(txn, broker, uri, data);
             final DocumentImpl doc = info.getDocument();
             doc.getMetadata().setMimeType(MimeType.XML_TYPE.getName());
             doc.getPermissions().setMode(Permission.DEFAULT_SYSTSEM_RESOURCE_PERM);
             fullURI = getFullURI(pool, doc.getURI());
             saving.add(fullURI);
-            collection.store(txn, broker, info, data, false);
+            collection.store(txn, broker, info, data);
             broker.saveCollection(txn, doc.getCollection());
             transact.commit(txn);
             saving.remove(fullURI);

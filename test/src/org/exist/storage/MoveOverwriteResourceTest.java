@@ -126,7 +126,7 @@ public class MoveOverwriteResourceTest {
 
     private void store(Txn txn, DBBroker broker, Collection col, XmldbURI name, String data) throws LockException, SAXException, PermissionDeniedException, EXistException, IOException {
         IndexInfo info = col.validateXMLResource(txn, broker, name, data);
-        col.store(txn, broker, info, data, false);
+        col.store(txn, broker, info, data);
     }
 
     private void move(final DBBroker broker) throws Exception {

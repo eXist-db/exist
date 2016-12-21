@@ -38,7 +38,7 @@ import org.exist.repo.Deployment;
 import org.exist.repo.PackageLoader;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.NativeBroker;
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
@@ -200,7 +200,7 @@ public class Deploy extends BasicFunction {
         final XmldbURI docPath = XmldbURI.createInternal(path);
         DocumentImpl doc = null;
         try {
-            doc = context.getBroker().getXMLResource(docPath, Lock.READ_LOCK);
+            doc = context.getBroker().getXMLResource(docPath, LockMode.READ_LOCK);
             if (doc.getResourceType() != DocumentImpl.BINARY_FILE)
                 throw new XPathException(this, EXPathErrorCode.EXPDY001, path + " is not a valid .xar", new StringValue(path));
 
@@ -216,7 +216,7 @@ public class Deploy extends BasicFunction {
             throw new XPathException(this, EXPathErrorCode.EXPDY007, e.getMessage());
         } finally {
             if (doc != null)
-                doc.getUpdateLock().release(Lock.READ_LOCK);
+                doc.getUpdateLock().release(LockMode.READ_LOCK);
         }
     }
 

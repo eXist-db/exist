@@ -19,6 +19,7 @@
  */
 package org.exist.backup;
 
+import org.exist.collections.MutableCollection;
 import org.exist.dom.QName;
 import org.exist.dom.persistent.DocumentMetadata;
 import org.exist.dom.persistent.DocumentSet;
@@ -764,9 +765,10 @@ public class SystemExport {
                     if (callback != null) {
                         callback.startCollection(uri);
                     }
-                    final Collection collection = new Collection(broker, XmldbURI.createInternal(uri));
+
                     final VariableByteInput istream = store.getAsStream(pointer);
-                    collection.read(broker, istream);
+                    final Collection collection = MutableCollection.load(broker, XmldbURI.createInternal(uri), istream);
+
                     BackupDescriptor bd = null;
 
                     if (prevBackup != null) {

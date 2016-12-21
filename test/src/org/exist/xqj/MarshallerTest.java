@@ -153,7 +153,7 @@ public class MarshallerTest {
             broker.saveCollection(transaction, root);
 
             final IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"), TEST_DOC);
-            root.store(transaction, broker, info, TEST_DOC, false);
+            root.store(transaction, broker, info, TEST_DOC);
 
             transact.commit(transaction);
         } catch (Exception e) {

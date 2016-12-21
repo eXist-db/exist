@@ -50,6 +50,7 @@ import org.exist.storage.journal.JournalManager;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.FileUtils;
+import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -316,8 +317,8 @@ public class GetThumbnailsFunction extends BasicFunction {
                             result.add(new StringValue(docImage.getFileURI().toString()));
                         }
                     }
-                } catch (PermissionDeniedException pde) {
-                    throw new XPathException(this, pde.getMessage(), pde);
+                } catch (final PermissionDeniedException | LockException e) {
+                    throw new XPathException(this, e.getMessage(), e);
                 }
                 try {
                     transact.commit(transaction);

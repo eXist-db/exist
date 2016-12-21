@@ -105,7 +105,7 @@ public class RecoverBinaryTest2 {
     }
 
     //@Test
-    public void read2() throws EXistException, DatabaseConfigurationException, PermissionDeniedException, IOException, TriggerException {
+    public void read2() throws EXistException, DatabaseConfigurationException, PermissionDeniedException, IOException, TriggerException, LockException {
 
         BrokerPool.FORCE_CORRUPTION = false;
         final BrokerPool pool = startDB();

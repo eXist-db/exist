@@ -25,6 +25,7 @@ import org.exist.collections.Collection;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.util.ArrayUtils;
 import org.exist.util.FastQSort;
 import org.exist.util.LockException;
@@ -460,7 +461,7 @@ public class ExtArrayNodeSet extends AbstractArrayNodeSet implements DocumentSet
         for (int i = 0; i < partCount; i++) {
             final DocumentImpl doc = parts[i].getOwnerDocument();
             final Lock docLock = doc.getUpdateLock();
-            docLock.acquire(exclusive ? Lock.WRITE_LOCK : Lock.READ_LOCK);
+            docLock.acquire(exclusive ? LockMode.WRITE_LOCK : LockMode.READ_LOCK);
         }
     }
 
@@ -471,9 +472,9 @@ public class ExtArrayNodeSet extends AbstractArrayNodeSet implements DocumentSet
             final DocumentImpl doc = parts[i].getOwnerDocument();
             final Lock docLock = doc.getUpdateLock();
             if(exclusive) {
-                docLock.release(Lock.WRITE_LOCK);
+                docLock.release(LockMode.WRITE_LOCK);
             } else if(docLock.isLockedForRead(thread)) {
-                docLock.release(Lock.READ_LOCK);
+                docLock.release(LockMode.READ_LOCK);
             }
         }
     }

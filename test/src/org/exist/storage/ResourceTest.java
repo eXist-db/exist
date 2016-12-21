@@ -31,7 +31,7 @@ import org.exist.collections.Collection;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.security.PermissionDeniedException;
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.test.TestConstants;
@@ -112,7 +112,7 @@ public class ResourceTest {
             
             BinaryDocument binDoc = null;
             try {
-                binDoc = (BinaryDocument) broker.getXMLResource(docPath, Lock.READ_LOCK);
+                binDoc = (BinaryDocument) broker.getXMLResource(docPath, LockMode.READ_LOCK);
 
                 // if document is not present, null is returned
                 if(binDoc == null) {
@@ -125,7 +125,7 @@ public class ResourceTest {
                 }
             } finally {
                 if(binDoc != null) {
-                    binDoc.getUpdateLock().release(Lock.READ_LOCK);
+                    binDoc.getUpdateLock().release(LockMode.READ_LOCK);
                 }
             }
             
@@ -161,7 +161,7 @@ public class ResourceTest {
             
             BinaryDocument binDoc = null;
             try {
-                binDoc = (BinaryDocument) broker.getXMLResource(docPath, Lock.READ_LOCK);
+                binDoc = (BinaryDocument) broker.getXMLResource(docPath, LockMode.READ_LOCK);
 
                 // if document is not present, null is returned
                 if(binDoc == null) {
@@ -174,7 +174,7 @@ public class ResourceTest {
                 }
             } finally {
                 if(binDoc != null) {
-                    binDoc.getUpdateLock().release(Lock.READ_LOCK);
+                    binDoc.getUpdateLock().release(LockMode.READ_LOCK);
                 }
             }
             

@@ -31,7 +31,7 @@ import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
@@ -116,7 +116,7 @@ public class CopyCollectionTest {
             final Path f = getSampleData();
             final IndexInfo info = test.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"),
                     new InputSource(f.toUri().toASCIIString()));
-            test.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()), false);
+            test.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()));
             
             final Collection dest = broker.getOrCreateCollection(transaction, XmldbURI.ROOT_COLLECTION_URI.append("destination"));
             broker.saveCollection(transaction, dest);
@@ -138,12 +138,12 @@ public class CopyCollectionTest {
             
             DocumentImpl doc = null;
             try {
-                doc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("destination/test3/test.xml"), Lock.READ_LOCK);
+                doc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("destination/test3/test.xml"), LockMode.READ_LOCK);
                 assertNotNull("Document should not be null", doc);
                 final String data = serializer.serialize(doc);
             } finally {
                 if(doc != null) {
-                    doc.getUpdateLock().release(Lock.READ_LOCK);
+                    doc.getUpdateLock().release(LockMode.READ_LOCK);
                 }
             }
         }
@@ -171,7 +171,7 @@ public class CopyCollectionTest {
                 final Path f = getSampleData();
 
                 IndexInfo info = test2.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"), new InputSource(f.toUri().toASCIIString()));
-                test2.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()), false);
+                test2.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()));
 
                 transact.commit(transaction);
             }
@@ -196,7 +196,7 @@ public class CopyCollectionTest {
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
             final Serializer serializer = broker.getSerializer();
             serializer.reset();
-            final DocumentImpl doc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("destination/test3/test.xml"), Lock.READ_LOCK);
+            final DocumentImpl doc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("destination/test3/test.xml"), LockMode.READ_LOCK);
             assertNotNull("Document should be null", doc);
         }
     }

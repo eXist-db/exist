@@ -39,7 +39,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.security.Subject;
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 import org.exist.util.LockException;
@@ -105,7 +105,7 @@ public class TwoDatabasesTest {
                 assertTrue(top1 != null);
             } finally {
                 if (top1 != null) {
-                    top1.getLock().release(Lock.READ_LOCK);
+                    top1.getLock().release(LockMode.READ_LOCK);
                 }
             }
         }
@@ -121,7 +121,7 @@ public class TwoDatabasesTest {
                 assertTrue(top2 != null);
             } finally {
                 if(top2 != null) {
-                    top2.getLock().release(Lock.READ_LOCK);
+                    top2.getLock().release(LockMode.READ_LOCK);
                 }
             }
         }
@@ -148,7 +148,7 @@ public class TwoDatabasesTest {
                 pool1.getTransactionManager().commit(transaction1);
             } finally {
                 if(top1 != null) {
-                    top1.release(Lock.READ_LOCK);
+                    top1.release(LockMode.READ_LOCK);
                 }
             }
         }
@@ -161,13 +161,13 @@ public class TwoDatabasesTest {
                 pool2.getTransactionManager().commit(transaction2);
             } finally {
                 if(top2 != null) {
-                    top2.release(Lock.READ_LOCK);
+                    top2.release(LockMode.READ_LOCK);
                 }
             }
         }
     }
 
-    private void get() throws EXistException, IOException, PermissionDeniedException {
+    private void get() throws EXistException, IOException, PermissionDeniedException, LockException {
         try (final DBBroker broker1 = pool1.get(Optional.of(user1))) {
             assertTrue(getBin(broker1, "1"));
         }
@@ -186,7 +186,7 @@ public class TwoDatabasesTest {
         return top;
     }
 
-    private boolean getBin(final DBBroker broker, final String suffix) throws PermissionDeniedException, IOException {
+    private boolean getBin(final DBBroker broker, final String suffix) throws PermissionDeniedException, IOException, LockException {
         BinaryDocument binDoc = null;
         try {
             Collection top = broker.getCollection(XmldbURI.create("xmldb:exist:///"));
@@ -194,9 +194,9 @@ public class TwoDatabasesTest {
             MutableDocumentSet docs = new DefaultDocumentSet();
             top.getDocuments(broker, docs);
             XmldbURI[] uris = docs.getNames();
-            //binDoc = (BinaryDocument)broker.getXMLResource(XmldbURI.create("xmldb:exist:///bin"),Lock.READ_LOCK);
+            //binDoc = (BinaryDocument)broker.getXMLResource(XmldbURI.create("xmldb:exist:///bin"),LockMode.READ_LOCK);
             binDoc = (BinaryDocument) top.getDocument(broker, XmldbURI.create("xmldb:exist:///bin"));
-            top.release(Lock.READ_LOCK);
+            top.release(LockMode.READ_LOCK);
             assertTrue(binDoc != null);
             ByteArrayOutputStream os = new ByteArrayOutputStream();
             broker.readBinaryResource(binDoc, os);
@@ -204,7 +204,7 @@ public class TwoDatabasesTest {
             return comp.equals(bin + suffix);
         } finally {
             if (binDoc != null) {
-                binDoc.getUpdateLock().release(Lock.READ_LOCK);
+                binDoc.getUpdateLock().release(LockMode.READ_LOCK);
             }
         }
     }

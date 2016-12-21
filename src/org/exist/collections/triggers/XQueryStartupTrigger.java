@@ -36,7 +36,7 @@ import org.exist.source.Source;
 import org.exist.source.SourceFactory;
 import org.exist.storage.DBBroker;
 import org.exist.storage.StartupTrigger;
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.xmldb.XmldbURI;
@@ -109,7 +109,7 @@ public class XQueryStartupTrigger implements StartupTrigger {
         Collection collection = null;
 
         try {
-            collection = broker.openCollection(uri, Lock.READ_LOCK);
+            collection = broker.openCollection(uri, LockMode.READ_LOCK);
 
             if (collection == null) {
                 LOG.debug(String.format("Collection '%s' not found.", AUTOSTART_COLLECTION));
@@ -155,7 +155,7 @@ public class XQueryStartupTrigger implements StartupTrigger {
         } finally {
             // Clean up resources
             if (collection != null) {
-                collection.release(Lock.READ_LOCK);
+                collection.release(LockMode.READ_LOCK);
             }
         }
 

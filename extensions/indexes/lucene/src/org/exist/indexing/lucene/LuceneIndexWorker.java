@@ -57,10 +57,11 @@ import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.*;
 import org.exist.storage.btree.DBException;
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.txn.Txn;
 import org.exist.util.ByteConversion;
 import org.exist.util.DatabaseConfigurationException;
+import org.exist.util.LockException;
 import org.exist.util.Occurrences;
 import org.exist.util.pool.NodePool;
 import org.exist.xmldb.XmldbURI;
@@ -353,7 +354,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 Term dt = new Term(FIELD_DOC_ID, bytes.toBytesRef());
                 writer.deleteDocuments(dt);
             }
-        } catch (IOException | PermissionDeniedException e) {
+        } catch (IOException | PermissionDeniedException | LockException e) {
             LOG.error("Error while removing lucene index: " + e.getMessage(), e);
         } finally {
             index.releaseWriter(writer);
@@ -720,7 +721,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                         DocumentImpl storedDoc = null;
                         try {
                             // try to read document to check if user is allowed to access it
-                            storedDoc = context.getBroker().getXMLResource(XmldbURI.createInternal(fDocUri), Lock.READ_LOCK);
+                            storedDoc = context.getBroker().getXMLResource(XmldbURI.createInternal(fDocUri), LockMode.READ_LOCK);
                             if (storedDoc == null) {
                                 return;
                             }
@@ -755,7 +756,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                             // not allowed to read the document: ignore the match.
                         } finally {
                             if (storedDoc != null) {
-                                storedDoc.getUpdateLock().release(Lock.READ_LOCK);
+                                storedDoc.getUpdateLock().release(LockMode.READ_LOCK);
                             }
                         }
                     }

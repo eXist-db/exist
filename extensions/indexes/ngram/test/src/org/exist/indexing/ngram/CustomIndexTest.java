@@ -31,7 +31,7 @@ import org.exist.dom.persistent.MutableDocumentSet;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.test.TestConstants;
@@ -492,7 +492,7 @@ public class CustomIndexTest {
             checkIndex(broker, docs, "cha", 1);
             checkIndex(broker, docs, "le8", 1);
 
-            Collection root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, Lock.WRITE_LOCK);
+            Collection root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, LockMode.WRITE_LOCK);
             assertNotNull(root);
 
             root.removeXMLResource(transaction, broker, XmldbURI.create("test_string.xml"));
@@ -624,13 +624,13 @@ public class CustomIndexTest {
 
             IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("test_string.xml"), XML);
             assertNotNull(info);
-            root.store(transaction, broker, info, XML, false);
+            root.store(transaction, broker, info, XML);
 
             docs.add(info.getDocument());
 
             info = root.validateXMLResource(transaction, broker, XmldbURI.create("test_string2.xml"), XML2);
             assertNotNull(info);
-            root.store(transaction, broker, info, XML2, false);
+            root.store(transaction, broker, info, XML2);
 
             docs.add(info.getDocument());
 

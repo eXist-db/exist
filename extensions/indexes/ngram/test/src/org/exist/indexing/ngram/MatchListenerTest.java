@@ -558,7 +558,7 @@ public class MatchListenerTest {
 
             final IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("test_matches.xml"), xml);
             assertNotNull(info);
-            root.store(transaction, broker, info, xml, false);
+            root.store(transaction, broker, info, xml);
             
             transact.commit(transaction);
         }

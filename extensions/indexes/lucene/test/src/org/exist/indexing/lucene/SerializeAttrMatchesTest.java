@@ -111,7 +111,7 @@ public class SerializeAttrMatchesTest {
 
             final IndexInfo info = test.validateXMLResource(transaction, broker, XmldbURI.create(docName), data);
             assertNotNull(info);
-            test.store(transaction, broker, info, data, false);
+            test.store(transaction, broker, info, data);
 
             docs.add(info.getDocument());
             transact.commit(transaction);

@@ -29,7 +29,7 @@ import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
@@ -123,12 +123,12 @@ public class CollectionRemovalTest {
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().authenticate(user, password)));
             final Txn transaction = transact.beginTransaction()) {
 
-            test = broker.openCollection(uri, Lock.WRITE_LOCK);
+            test = broker.openCollection(uri, LockMode.WRITE_LOCK);
             broker.removeCollection(transaction, test);
             transact.commit(transaction);
 		} finally {
             if (test != null) {
-                test.release(Lock.WRITE_LOCK);
+                test.release(LockMode.WRITE_LOCK);
             }
 		}
     }
@@ -137,7 +137,7 @@ public class CollectionRemovalTest {
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             Collection test = null;
             try {
-                test = broker.openCollection(uri, Lock.WRITE_LOCK);
+                test = broker.openCollection(uri, LockMode.WRITE_LOCK);
                 assertNotNull(test);
 
                 DocumentImpl doc = test.getDocument(broker, XmldbURI.createInternal("document.xml"));
@@ -148,7 +148,7 @@ public class CollectionRemovalTest {
                 String xml = serializer.serialize(doc);
             } finally {
                 if (test != null) {
-                    test.release(Lock.WRITE_LOCK);
+                    test.release(LockMode.WRITE_LOCK);
                 }
             }
         }
@@ -201,7 +201,7 @@ public class CollectionRemovalTest {
 			IndexInfo info = test.validateXMLResource(transaction, broker,
 					XmldbURI.create("document.xml"), DATA);
 			assertNotNull(info);
-			test.store(transaction, broker, info, DATA, false);
+			test.store(transaction, broker, info, DATA);
 
             Collection childCol1 = broker.getOrCreateCollection(transaction,
                     TestConstants.TEST_COLLECTION_URI2.append("test4"));
@@ -214,7 +214,7 @@ public class CollectionRemovalTest {
             info = childCol1.validateXMLResource(transaction, broker,
 					XmldbURI.create("document.xml"), DATA);
 			assertNotNull(info);
-			childCol1.store(transaction, broker, info, DATA, false);
+			childCol1.store(transaction, broker, info, DATA);
 
             Collection childCol = broker.getOrCreateCollection(transaction,
                     TestConstants.TEST_COLLECTION_URI3);
@@ -227,7 +227,7 @@ public class CollectionRemovalTest {
             info = childCol.validateXMLResource(transaction, broker,
 					XmldbURI.create("document.xml"), DATA);
 			assertNotNull(info);
-			childCol.store(transaction, broker, info, DATA, false);
+			childCol.store(transaction, broker, info, DATA);
 
             transact.commit(transaction);
 		}

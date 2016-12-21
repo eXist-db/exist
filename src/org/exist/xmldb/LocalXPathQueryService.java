@@ -31,7 +31,7 @@ import org.exist.source.Source;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.XQueryPool;
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.lock.LockedDocumentMap;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
@@ -368,7 +368,7 @@ public class LocalXPathQueryService extends AbstractLocalService implements XPat
                     final org.exist.collections.Collection coll = reservedBroker.getCollection(collection.getPathURI());
                     lockedDocuments = new LockedDocumentMap();
                     docs = new DefaultDocumentSet();
-                    coll.allDocs(reservedBroker, docs, true, lockedDocuments, Lock.WRITE_LOCK);
+                    coll.allDocs(reservedBroker, docs, true, lockedDocuments, LockMode.WRITE_LOCK);
                 } catch (final LockException e) {
                     LOG.debug("Deadlock detected. Starting over again. Docs: " + docs.getDocumentCount() + "; locked: " +
                             lockedDocuments.size());

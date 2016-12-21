@@ -23,6 +23,7 @@ package org.exist.storage.lock;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.util.LockException;
 import org.exist.util.DeadlockException;
 
@@ -31,25 +32,21 @@ import org.exist.util.DeadlockException;
  * for a lock.
  */
 public class WaitingThread implements LockListener {
+    private static final Logger LOG = LogManager.getLogger(WaitingThread.class);
 
-    private final static Logger LOG = LogManager.getLogger(WaitingThread.class);
-    
-    private Object monitor;
-    private MultiReadReentrantLock lock;
-
-    private int lockType;
-
-    private Thread thread;
+    private final Thread thread;
+    private final Object monitor;
+    private final MultiReadReentrantLock lock;
+    private final LockMode lockMode;
 
     private boolean suspended = false;
-
     private boolean deadlocked = false;
 
-    public WaitingThread(Thread thread, Object monitor, MultiReadReentrantLock lock, int lockType) {
+    public WaitingThread(final Thread thread, final Object monitor, final MultiReadReentrantLock lock, final LockMode lockMode) {
         this.monitor = monitor;
         this.lock = lock;
         this.thread = thread;
-        this.lockType = lockType;
+        this.lockMode = lockMode;
     }
 
     /**
@@ -92,6 +89,7 @@ public class WaitingThread implements LockListener {
     /**
      * Wake the thread from suspended mode.
      */
+    @Override
     public void lockReleased() {
 //        LOG.debug("Reactivate suspended lock: " + thread.getName());
         suspended = false;
@@ -112,11 +110,16 @@ public class WaitingThread implements LockListener {
         return lock;
     }
 
-    public int getLockType() {
-        return lockType;
+    public LockMode getLockMode() {
+        return lockMode;
     }
 
-    public boolean equals(Object obj) {
+    @Override
+    public boolean equals(final Object obj) {
+        if(obj == null || !(obj instanceof WaitingThread)) {
+         return false;
+        }
+
         return thread == ((WaitingThread)obj).getThread();
     }
 }

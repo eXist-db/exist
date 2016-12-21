@@ -63,7 +63,7 @@ public class TestTrigger extends SAXTrigger implements DocumentTrigger {
                 parent.setTriggersEnabled(false);
                 IndexInfo info = parent.validateXMLResource(transaction, broker, docPath, TEMPLATE);
                 //TODO : unlock the collection here ?
-                parent.store(transaction, broker, info, TEMPLATE, false);
+                parent.store(transaction, broker, info, TEMPLATE);
                 this.doc = info.getDocument();
             }
             transactMgr.commit(transaction);

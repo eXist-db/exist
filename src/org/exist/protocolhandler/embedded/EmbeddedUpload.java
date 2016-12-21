@@ -37,7 +37,7 @@ import org.exist.protocolhandler.xmldb.XmldbURL;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.MimeTable;
@@ -144,7 +144,7 @@ public class EmbeddedUpload {
                 final XmldbURI collectionUri = XmldbURI.create(xmldbURL.getCollection());
                 final XmldbURI documentUri = XmldbURI.create(xmldbURL.getDocumentName());
 
-                collection = broker.openCollection(collectionUri, Lock.READ_LOCK);
+                collection = broker.openCollection(collectionUri, LockMode.READ_LOCK);
 
                 if (collection == null) {
                     throw new IOException("Resource " + collectionUri.toString() + " is not a collection.");
@@ -171,9 +171,9 @@ public class EmbeddedUpload {
                         final IndexInfo info = collection.validateXMLResource(txn, broker, documentUri, inputsource);
                         final DocumentImpl doc = info.getDocument();
                         doc.getMetadata().setMimeType(contentType);
-                        collection.release(Lock.READ_LOCK);
+                        collection.release(LockMode.READ_LOCK);
                         collectionLocked = false;
-                        collection.store(txn, broker, info, inputsource, false);
+                        collection.store(txn, broker, info, inputsource);
                         LOG.debug("done");
 
                     } else {
@@ -200,7 +200,7 @@ public class EmbeddedUpload {
         } finally {
             LOG.debug("Done.");
             if(collectionLocked && collection != null){
-                collection.release(Lock.READ_LOCK);
+                collection.release(LockMode.READ_LOCK);
             }
         }
     }

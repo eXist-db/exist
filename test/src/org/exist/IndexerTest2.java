@@ -134,7 +134,7 @@ public class IndexerTest2 {
             Collection collection = broker.getOrCreateCollection(txn, TestConstants.TEST_COLLECTION_URI);
             IndexInfo info = collection.validateXMLResource(txn, broker, TestConstants.TEST_XML_URI2, XML);
             //TODO : unlock the collection here ?
-            collection.store(txn, broker, info, XML, false);
+            collection.store(txn, broker, info, XML);
             @SuppressWarnings("unused")
             org.exist.dom.persistent.DocumentImpl doc = info.getDocument();
             broker.flush();

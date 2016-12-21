@@ -29,7 +29,7 @@ import org.exist.collections.IndexInfo;
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.test.TestConstants;
@@ -154,7 +154,7 @@ public class RemoveCollectionTest {
                     assertNotNull(is);
                     final IndexInfo info = test.validateXMLResource(transaction, broker, doc.getURI(), is);
                     assertNotNull(info);
-                    test.store(transaction, broker, info, is, false);
+                    test.store(transaction, broker, info, is);
                 }
                 generator.releaseAll();
                 transact.commit(transaction);
@@ -180,7 +180,7 @@ public class RemoveCollectionTest {
             assertNotNull(is);
             final IndexInfo info = test.validateXMLResource(transaction, broker, XmldbURI.create("hamlet.xml"), is);
             assertNotNull(info);
-            test.store(transaction, broker, info, is, false);
+            test.store(transaction, broker, info, is);
             transact.commit(transaction);
         }
 
@@ -192,7 +192,7 @@ public class RemoveCollectionTest {
                 assertNotNull(is);
                 final IndexInfo info = test.validateXMLResource(transaction, broker, XmldbURI.create(file.getFileName().toString()), is);
                 assertNotNull(info);
-                test.store(transaction, broker, info, is, false);
+                test.store(transaction, broker, info, is);
             }
             generator.releaseAll();
             transact.commit(transaction);
@@ -208,12 +208,12 @@ public class RemoveCollectionTest {
         DocumentImpl doc = null;
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
             if (checkResource) {
-                doc = broker.getXMLResource(TestConstants.TEST_COLLECTION_URI.append("hamlet.xml"), Lock.READ_LOCK);
+                doc = broker.getXMLResource(TestConstants.TEST_COLLECTION_URI.append("hamlet.xml"), LockMode.READ_LOCK);
                 assertNull("Resource should have been removed", doc);
             }
 	    } finally {
             if (doc != null) {
-                doc.getUpdateLock().release(Lock.READ_LOCK);
+                doc.getUpdateLock().release(LockMode.READ_LOCK);
             }
             stopDB();
         }

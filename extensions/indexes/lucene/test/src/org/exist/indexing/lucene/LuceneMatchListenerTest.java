@@ -383,7 +383,7 @@ public class LuceneMatchListenerTest {
 
             final IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("test_matches.xml"), XML);
             assertNotNull(info);
-            root.store(transaction, broker, info, data, false);
+            root.store(transaction, broker, info, data);
 
             transact.commit(transaction);
         }

@@ -115,7 +115,7 @@ public class DLNStorageTest {
             //TODO : unlock the collection here ?
             assertNotNull(info);
 
-            test.store(transaction, broker, info, TEST_XML, false);
+            test.store(transaction, broker, info, TEST_XML);
 
             transact.commit(transaction);
         }

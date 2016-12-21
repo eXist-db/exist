@@ -32,7 +32,7 @@ import org.exist.collections.IndexInfo;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.test.TestConstants;
@@ -98,7 +98,7 @@ public class MatchDocumentsTest {
 
         Collection col1 = null;
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-            col1 = broker.openCollection(col1uri, Lock.READ_LOCK);
+            col1 = broker.openCollection(col1uri, LockMode.READ_LOCK);
 
             final DocumentImpl doc2 = col1.getDocument(broker, doc2uri.lastSegment());
 
@@ -138,7 +138,7 @@ public class MatchDocumentsTest {
 
         } finally {
             if(col1 != null) {
-                col1.release(Lock.READ_LOCK);
+                col1.release(LockMode.READ_LOCK);
             }
         }
     }
@@ -157,8 +157,8 @@ public class MatchDocumentsTest {
         Collection col1 = null;
         Collection parentCol = null;
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-            col1 = broker.openCollection(col1uri, Lock.WRITE_LOCK);
-            parentCol = broker.openCollection(col2uri.removeLastSegment(), Lock.WRITE_LOCK);
+            col1 = broker.openCollection(col1uri, LockMode.WRITE_LOCK);
+            parentCol = broker.openCollection(col2uri.removeLastSegment(), LockMode.WRITE_LOCK);
 
             final DocumentImpl doc2 = col1.getDocument(broker, doc2uri.lastSegment());
 
@@ -197,10 +197,10 @@ public class MatchDocumentsTest {
 
         } finally {
             if(parentCol != null) {
-                parentCol.release(Lock.WRITE_LOCK);
+                parentCol.release(LockMode.WRITE_LOCK);
             }
             if(col1 != null) {
-                col1.release(Lock.WRITE_LOCK);
+                col1.release(LockMode.WRITE_LOCK);
             }
         }
     }
@@ -215,7 +215,7 @@ public class MatchDocumentsTest {
 
         Collection col1 = null;
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-            col1 = broker.openCollection(col1uri, Lock.WRITE_LOCK);
+            col1 = broker.openCollection(col1uri, LockMode.WRITE_LOCK);
 
             final DocumentImpl doc2 = col1.getDocument(broker, doc2uri.lastSegment());
 
@@ -248,7 +248,7 @@ public class MatchDocumentsTest {
 
         } finally {
             if(col1 != null) {
-                col1.release(Lock.WRITE_LOCK);
+                col1.release(LockMode.WRITE_LOCK);
             }
         }
     }
@@ -263,7 +263,7 @@ public class MatchDocumentsTest {
 
         Collection col1 = null;
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-            col1 = broker.openCollection(col1uri, Lock.WRITE_LOCK);
+            col1 = broker.openCollection(col1uri, LockMode.WRITE_LOCK);
 
             DocumentImpl doc2 = col1.getDocument(broker, doc2uri.lastSegment());
 
@@ -297,7 +297,7 @@ public class MatchDocumentsTest {
 
         } finally {
             if(col1 != null) {
-                col1.release(Lock.WRITE_LOCK);
+                col1.release(LockMode.WRITE_LOCK);
             }
         }
     }
@@ -321,7 +321,7 @@ public class MatchDocumentsTest {
         //add some test key-values to metadata of doc1
         Collection col1 = null;
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-            col1 = broker.openCollection(col1uri, Lock.WRITE_LOCK);
+            col1 = broker.openCollection(col1uri, LockMode.WRITE_LOCK);
 
             final DocumentImpl doc2 = col1.getDocument(broker, doc2uri.lastSegment());
 
@@ -352,7 +352,7 @@ public class MatchDocumentsTest {
 
         } finally {
             if(col1 != null) {
-                col1.release(Lock.WRITE_LOCK);
+                col1.release(LockMode.WRITE_LOCK);
             }
         }
     }
@@ -367,7 +367,7 @@ public class MatchDocumentsTest {
 
         Collection col1 = null;
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-            col1 = broker.openCollection(col1uri, Lock.WRITE_LOCK);
+            col1 = broker.openCollection(col1uri, LockMode.WRITE_LOCK);
 
             DocumentImpl doc2 = col1.getDocument(broker, doc2uri.lastSegment());
 	    	//add first key-value
@@ -400,7 +400,7 @@ public class MatchDocumentsTest {
 
         } finally {
             if(col1 != null) {
-                col1.release(Lock.WRITE_LOCK);
+                col1.release(LockMode.WRITE_LOCK);
             }
         }
     }
@@ -415,7 +415,7 @@ public class MatchDocumentsTest {
 
         Collection col1 = null;
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-            col1 = broker.openCollection(col1uri, Lock.WRITE_LOCK);
+            col1 = broker.openCollection(col1uri, LockMode.WRITE_LOCK);
 
             DocumentImpl doc2 = col1.getDocument(broker, doc2uri.lastSegment());
 
@@ -449,7 +449,7 @@ public class MatchDocumentsTest {
 
         } finally {
             if(col1 != null) {
-                col1.release(Lock.WRITE_LOCK);
+                col1.release(LockMode.WRITE_LOCK);
             }
         }
     }
@@ -465,7 +465,7 @@ public class MatchDocumentsTest {
         Collection col1 = null;
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
-            col1 = broker.openCollection(col1uri, Lock.WRITE_LOCK);
+            col1 = broker.openCollection(col1uri, LockMode.WRITE_LOCK);
 
             DocumentImpl doc2 = col1.getDocument(broker, doc2uri.lastSegment());
 
@@ -495,7 +495,7 @@ public class MatchDocumentsTest {
 
         } finally {
             if(col1 != null) {
-                col1.release(Lock.WRITE_LOCK);
+                col1.release(LockMode.WRITE_LOCK);
             }
         }
     }
@@ -522,9 +522,9 @@ public class MatchDocumentsTest {
 
             //store test data
             IndexInfo info = root.validateXMLResource(txn, broker, doc1uri.lastSegment(), XML1);
-            root.store(txn, broker, info, XML1, false);
+            root.store(txn, broker, info, XML1);
             info = root.validateXMLResource(txn, broker, doc2uri.lastSegment(), XML2);
-            root.store(txn, broker, info, XML2, false);
+            root.store(txn, broker, info, XML2);
             root.addBinaryResource(txn, broker, doc3uri.lastSegment(), BINARY.getBytes(), null);
 
             txnManager.commit(txn);
@@ -553,12 +553,12 @@ public class MatchDocumentsTest {
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn txn = txnManager.beginTransaction()) {
 
-            col1 = broker.openCollection(col1uri, Lock.WRITE_LOCK);
+            col1 = broker.openCollection(col1uri, LockMode.WRITE_LOCK);
             if(col1 != null) {
             	broker.removeCollection(txn, col1);
             }
 
-            col2 = broker.openCollection(col2uri, Lock.WRITE_LOCK);
+            col2 = broker.openCollection(col2uri, LockMode.WRITE_LOCK);
             if(col2 != null) {
             	broker.removeCollection(txn, col2);
             }
@@ -569,10 +569,10 @@ public class MatchDocumentsTest {
             fail(e.getMessage());
         } finally {
             if(col2 != null) {
-                col2.release(Lock.WRITE_LOCK);
+                col2.release(LockMode.WRITE_LOCK);
             }
             if(col1 != null) {
-                col1.release(Lock.WRITE_LOCK);
+                col1.release(LockMode.WRITE_LOCK);
             }
         }
     }

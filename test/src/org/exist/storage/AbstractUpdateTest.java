@@ -26,7 +26,7 @@ import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
@@ -67,12 +67,12 @@ public abstract class AbstractUpdateTest {
 
             DocumentImpl doc = null;
             try {
-                doc = broker.getXMLResource(TEST_COLLECTION_URI.append("test2/test.xml"), Lock.READ_LOCK);
+                doc = broker.getXMLResource(TEST_COLLECTION_URI.append("test2/test.xml"), LockMode.READ_LOCK);
                 assertNotNull("Document '" + TEST_COLLECTION_URI.append("test2/test.xml") + "' should not be null", doc);
                 final String data = serializer.serialize(doc);
             } finally {
                 if(doc != null) {
-                    doc.getUpdateLock().release(Lock.READ_LOCK);
+                    doc.getUpdateLock().release(LockMode.READ_LOCK);
                 }
             }
             
@@ -96,7 +96,7 @@ public abstract class AbstractUpdateTest {
 	        
 	        info = test.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"), TEST_XML);
 	        //TODO : unlock the collection here ?
-	        test.store(transaction, broker, info, TEST_XML, false);
+	        test.store(transaction, broker, info, TEST_XML);
 	
 	        transact.commit(transaction);	
 	    }

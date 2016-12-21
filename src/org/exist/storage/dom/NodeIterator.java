@@ -12,6 +12,7 @@ import org.exist.storage.btree.BTree;
 import org.exist.storage.btree.BTreeException;
 import org.exist.storage.btree.Paged.Page;
 import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.util.ByteConversion;
 import org.exist.util.FileUtils;
 import org.exist.util.LockException;
@@ -72,7 +73,7 @@ public final class NodeIterator implements INodeIterator {
         final Lock lock = db.getLock();
         try {
             try {
-                lock.acquire(Lock.READ_LOCK);
+                lock.acquire(LockMode.READ_LOCK);
             } catch (final LockException e) {
                 LOG.warn("Failed to acquire read lock on " + FileUtils.fileName(db.getFile()));
                 //TODO : throw exception here ? -pb
@@ -97,7 +98,7 @@ public final class NodeIterator implements INodeIterator {
             LOG.warn(e);
             //TODO : throw exception here ? -pb
         } finally {
-            lock.release(Lock.READ_LOCK);
+            lock.release(LockMode.READ_LOCK);
         }
         return false;
     }
@@ -110,7 +111,7 @@ public final class NodeIterator implements INodeIterator {
         final Lock lock = db.getLock();
         try {
             try {
-                lock.acquire(Lock.READ_LOCK);
+                lock.acquire(LockMode.READ_LOCK);
             } catch (final LockException e) {
                 LOG.warn("Failed to acquire read lock on " + FileUtils.fileName(db.getFile()));
                 //TODO : throw exception here ? -pb
@@ -217,7 +218,7 @@ public final class NodeIterator implements INodeIterator {
             LOG.error(e.getMessage(), e);
             //TODO : re-throw exception ? -pb
         } finally {
-            lock.release(Lock.READ_LOCK);
+            lock.release(LockMode.READ_LOCK);
         }
         return null;
     }

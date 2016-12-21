@@ -32,6 +32,7 @@ import org.exist.storage.btree.BTreeException;
 import org.exist.storage.btree.Paged;
 import org.exist.storage.btree.Value;
 import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.util.ByteConversion;
 import org.exist.util.FileUtils;
 import org.exist.util.LockException;
@@ -76,7 +77,7 @@ public class RawNodeIterator implements IRawNodeIterator {
     public final void seek(final NodeHandle node) throws IOException {
         final Lock lock = db.getLock();
         try {
-            lock.acquire(Lock.READ_LOCK);
+            lock.acquire(LockMode.READ_LOCK);
             RecordPos rec = null;
             if (StorageAddress.hasAddress(node.getInternalAddress()))
                 {rec = db.findRecord(node.getInternalAddress());}
@@ -97,7 +98,7 @@ public class RawNodeIterator implements IRawNodeIterator {
         } catch (final LockException e) {
             throw new IOException("Exception while scanning document: " + e.getMessage());
         } finally {
-            lock.release(Lock.READ_LOCK);
+            lock.release(LockMode.READ_LOCK);
         }
     }
 
@@ -107,7 +108,7 @@ public class RawNodeIterator implements IRawNodeIterator {
         final Lock lock = db.getLock();
         try {
             try {
-                lock.acquire(Lock.READ_LOCK);
+                lock.acquire(LockMode.READ_LOCK);
             } catch (final LockException e) {
                 LOG.error("Failed to acquire read lock on " + FileUtils.fileName(db.getFile()));
                 //TODO : throw exception here ? -pb
@@ -199,7 +200,7 @@ public class RawNodeIterator implements IRawNodeIterator {
             } while (nextValue == null);
             return nextValue;
         } finally {
-            lock.release(Lock.READ_LOCK);
+            lock.release(LockMode.READ_LOCK);
         }
     }
 

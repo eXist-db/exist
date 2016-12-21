@@ -450,11 +450,11 @@ public class BasicNodeSetTest {
             // store some documents.
             for(final Path f : FileUtils.list(dir, XMLFilenameFilter.asPredicate())) {
                 final IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create(FileUtils.fileName(f)), new InputSource(f.toUri().toASCIIString()));
-                root.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()), false);
+                root.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()));
             }
 
             IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("nested.xml"), NESTED_XML);
-            root.store(transaction, broker, info, NESTED_XML, false);
+            root.store(transaction, broker, info, NESTED_XML);
             transact.commit(transaction);
             
             

@@ -67,7 +67,7 @@ public class DirtyShutdownTest {
                     IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"),
                             new InputSource(f.toUri().toASCIIString()));
                     assertNotNull(info);
-                    root.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()), false);
+                    root.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()));
 
                     transact.commit(transaction);
                 }
@@ -90,7 +90,7 @@ public class DirtyShutdownTest {
                 IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"),
                         new InputSource(f.toUri().toASCIIString()));
                 assertNotNull(info);
-                root.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()), false);
+                root.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()));
 
                 transact.commit(transaction);
             }

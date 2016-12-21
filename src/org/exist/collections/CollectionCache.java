@@ -29,6 +29,7 @@ import org.exist.storage.BrokerPoolService;
 import org.exist.storage.CacheManager;
 import org.exist.storage.cache.LRUCache;
 import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.util.hashtable.Object2LongHashMap;
 import org.exist.util.hashtable.SequencedLongHashMap;
 import org.exist.xmldb.XmldbURI;
@@ -97,7 +98,7 @@ public class CollectionCache extends LRUCache<Collection> implements BrokerPoolS
             final Collection cached = next.getValue();
             if(cached.getKey() != item.getKey()) {
                 final Lock lock = cached.getLock();
-                if (lock.attempt(Lock.READ_LOCK)) {
+                if (lock.attempt(LockMode.READ_LOCK)) {
                     try {
                         if (cached.allowUnload()) {
                             if(pool.getConfigurationManager() != null) { // might be null during db initialization
@@ -109,7 +110,7 @@ public class CollectionCache extends LRUCache<Collection> implements BrokerPoolS
                             removed = true;
                         }
                     } finally {
-                        lock.release(Lock.READ_LOCK);
+                        lock.release(LockMode.READ_LOCK);
                     }
                 }
             }

@@ -29,8 +29,7 @@ import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.storage.lock.Lock;
-import org.exist.storage.txn.TransactionManager;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.txn.Txn;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
@@ -138,7 +137,7 @@ public class XMLDBSetMimeType extends BasicFunction {
             pathUri = context.getBaseURI().toXmldbURI().resolveCollectionPath(pathUri);
 
             // try to open the document and acquire a lock
-            doc = (DocumentImpl) broker.getXMLResource(pathUri, Lock.WRITE_LOCK);
+            doc = (DocumentImpl) broker.getXMLResource(pathUri, LockMode.WRITE_LOCK);
             if (doc == null) {
                 // no document selected, abort
                 txn.abort();
@@ -161,7 +160,7 @@ public class XMLDBSetMimeType extends BasicFunction {
         } finally {
             //release all locks
             if (doc != null) {
-                doc.getUpdateLock().release(Lock.WRITE_LOCK);
+                doc.getUpdateLock().release(LockMode.WRITE_LOCK);
             }
         }
 
@@ -186,7 +185,7 @@ public class XMLDBSetMimeType extends BasicFunction {
 
         try {
             // try to open the document and acquire a lock
-            doc = (DocumentImpl) context.getBroker().getXMLResource(pathUri, Lock.READ_LOCK);
+            doc = (DocumentImpl) context.getBroker().getXMLResource(pathUri, LockMode.READ_LOCK);
             if (doc == null) {
                 throw new XPathException("Resource '" + pathUri + "' does not exist.");
             } else {
@@ -200,7 +199,7 @@ public class XMLDBSetMimeType extends BasicFunction {
         } finally {
 
             if (doc != null) {
-                doc.getUpdateLock().release(Lock.READ_LOCK);
+                doc.getUpdateLock().release(LockMode.READ_LOCK);
             }
         }
 
