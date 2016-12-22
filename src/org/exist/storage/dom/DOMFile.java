@@ -172,7 +172,7 @@ public class DOMFile extends BTree implements Lockable {
 
     public final static long DATA_SYNC_PERIOD = 4200;
 
-    private final Cache dataCache;
+    private final Cache<DOMPage> dataCache;
 
     private final BTreeFileHeader fileHeader;
 
@@ -192,7 +192,7 @@ public class DOMFile extends BTree implements Lockable {
         fileHeader = (BTreeFileHeader)getFileHeader();
         fileHeader.setPageCount(0);
         fileHeader.setTotalCount(0);
-        dataCache = new LRUCache(getFileName(), 256, 0.0, 1.0, CacheManager.DATA_CACHE);
+        dataCache = new LRUCache<>(getFileName(), 256, 0.0, 1.0, CacheManager.DATA_CACHE);
         cacheManager.registerCache(dataCache);
         final Path file = dataDir.resolve(getFileName());
         setFile(file);
@@ -249,7 +249,7 @@ public class DOMFile extends BTree implements Lockable {
      * @return The current page
      */
     protected final DOMPage getDOMPage(final long pointer) {
-        DOMPage page = (DOMPage) dataCache.get(pointer);
+        DOMPage page = dataCache.get(pointer);
         if (page == null) {
             page = new DOMPage(pointer);
         }
@@ -3190,6 +3190,10 @@ public class DOMFile extends BTree implements Lockable {
 
         @Override
         public boolean equals(final Object obj) {
+            if(obj == null || !(obj instanceof DOMPage)) {
+                return false;
+            }
+
             final DOMPage other = (DOMPage) obj;
             return page.equals(other.page);
         }
