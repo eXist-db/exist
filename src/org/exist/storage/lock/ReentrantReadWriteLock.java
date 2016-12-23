@@ -102,7 +102,7 @@ public class ReentrantReadWriteLock implements Lock {
     @Override
     public boolean acquire(final LockMode mode) throws LockException {
         if (mode == LockMode.NO_LOCK) {
-            LOG.warn("acquired with no lock !");
+            LOG.warn("Acquired with LockMode.NO_LOCK!");
             return true;
         }
 
@@ -215,6 +215,11 @@ public class ReentrantReadWriteLock implements Lock {
 
     @Override
     public boolean attempt(final LockMode mode) {
+        if (mode == LockMode.NO_LOCK) {
+            LOG.warn("Attempted acquire with LockMode.NO_LOCK!");
+            return true;
+        }
+
         final Thread caller = Thread.currentThread();
         synchronized (this) {
             if (caller == owner_) {
@@ -275,6 +280,11 @@ public class ReentrantReadWriteLock implements Lock {
 
     @Override
     public synchronized void release(final LockMode mode) {
+        if(mode == LockMode.NO_LOCK) {
+            LOG.warn("Released with LockMode.NO_LOCK!");
+            return;
+        }
+
         if (Thread.currentThread() != owner_) {
             
             if(LOG.isDebugEnabled()){
