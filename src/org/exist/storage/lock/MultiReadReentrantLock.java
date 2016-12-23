@@ -296,6 +296,7 @@ public class MultiReadReentrantLock implements Lock {
         switch (mode) {
             case NO_LOCK:
                 LOG.warn("Released with LockMode.NO_LOCK and count=" + count + "!");
+                break;
 
             case READ_LOCK:
                 releaseRead(count);
