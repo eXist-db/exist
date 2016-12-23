@@ -57,7 +57,9 @@ public class MultiReadReentrantLock implements Lock {
 
     private final static Logger LOG = LogManager.getLogger(MultiReadReentrantLock.class);
 
-    private final Object id;
+    private final static LockTable lockTable = LockTable.getInstance();
+
+    private final String id;
 
     /**
      * Number of threads waiting to read.
@@ -89,13 +91,13 @@ public class MultiReadReentrantLock implements Lock {
     /**
      * Default constructor.
      */
-    public MultiReadReentrantLock(final Object id) {
+    public MultiReadReentrantLock(final String id) {
         this.id = id;
     }
 
     @Override
     public String getId() {
-        return id.toString();
+        return id;
     }
 
     /**
@@ -108,19 +110,31 @@ public class MultiReadReentrantLock implements Lock {
 
     @Override
     public boolean acquire(final LockMode mode) throws LockException {
-        switch (mode) {
-            case NO_LOCK:
-                LOG.warn("Acquired with LockMode.NO_LOCK!");
-                return true;
 
-            case READ_LOCK:
-                return readLock(true);
+        try {
+            switch (mode) {
+                case NO_LOCK:
+                    LOG.warn("Acquired with LockMode.NO_LOCK!");
+                    return true;
 
-            case WRITE_LOCK:
-                return writeLock(true);
+                case READ_LOCK:
+                    lockTable.attempt(id, getClass(), mode);
+                    final boolean readLockResult = readLock(true);
+                    lockTable.acquired(id, getClass(), mode);
+                    return readLockResult;
 
-            default:
-                throw new IllegalStateException();
+                case WRITE_LOCK:
+                    lockTable.attempt(id, getClass(), mode);
+                    final boolean writeLockResult = writeLock(true);
+                    lockTable.acquired(id, getClass(), mode);
+                    return writeLockResult;
+
+                default:
+                    throw new IllegalStateException();
+            }
+        } catch(final LockException e) {
+            lockTable.attemptFailed(id, getClass(), mode);
+            throw e;
         }
     }
 
@@ -133,15 +147,22 @@ public class MultiReadReentrantLock implements Lock {
                     return true;
 
                 case READ_LOCK:
-                    return readLock(false);
+                    lockTable.attempt(id, getClass(), mode);
+                    final boolean readLockResult = readLock(false);
+                    lockTable.acquired(id, getClass(), mode);
+                    return readLockResult;
 
                 case WRITE_LOCK:
-                    return writeLock(false);
+                    lockTable.attempt(id, getClass(), mode);
+                    final boolean writeLockResult = writeLock(false);
+                    lockTable.acquired(id, getClass(), mode);
+                    return writeLockResult;
 
                 default:
                     throw new IllegalStateException();
             }
         } catch (final LockException e) {
+            lockTable.attemptFailed(id, getClass(), LockMode.READ_LOCK);
             return false;
         }
     }
@@ -280,10 +301,12 @@ public class MultiReadReentrantLock implements Lock {
 
             case READ_LOCK:
                 releaseRead(1);
+                lockTable.released(id, getClass(), mode);
                 break;
 
             case WRITE_LOCK:
                 releaseWrite(1);
+                lockTable.released(id, getClass(), mode);
                 break;
 
             default:
@@ -300,10 +323,12 @@ public class MultiReadReentrantLock implements Lock {
 
             case READ_LOCK:
                 releaseRead(count);
+                lockTable.released(id, getClass(), mode, count);
                 break;
 
             case WRITE_LOCK:
                 releaseWrite(count);
+                lockTable.released(id, getClass(), mode, count);
                 break;
 
             default:

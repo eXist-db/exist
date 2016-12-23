@@ -414,7 +414,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
      */
     public synchronized Lock getUpdateLock() {
         if(updateLock == null) {
-            updateLock = new MultiReadReentrantLock(fileURI);
+            updateLock = new MultiReadReentrantLock(fileURI.toString());
         }
         return updateLock;
     }

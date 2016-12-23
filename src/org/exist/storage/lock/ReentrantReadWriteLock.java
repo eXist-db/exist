@@ -66,8 +66,9 @@ public class ReentrantReadWriteLock implements Lock {
     }
 
     private final static Logger LOG = LogManager.getLogger(ReentrantReadWriteLock.class);
+    private final static LockTable lockTable = LockTable.getInstance();
 
-    private final Object id_;
+    private final String id_;
 	private Thread owner_ = null;
     private final Deque<SuspendedWaiter> suspendedThreads = new ArrayDeque<>();
 
@@ -80,7 +81,7 @@ public class ReentrantReadWriteLock implements Lock {
     private final boolean DEBUG = false;
     private final Deque<StackTraceElement[]> seStack;
 
-    public ReentrantReadWriteLock(final Object id) {
+    public ReentrantReadWriteLock(final String id) {
         this.id_ = id;
         if (DEBUG) {
             seStack = new ArrayDeque<>();
@@ -91,7 +92,7 @@ public class ReentrantReadWriteLock implements Lock {
 
     @Override
     public String getId() {
-        return id_.toString();
+        return id_;
     }
 
     @Override
@@ -106,6 +107,18 @@ public class ReentrantReadWriteLock implements Lock {
             return true;
         }
 
+        lockTable.attempt(id_, getClass(), mode);
+        try {
+            final boolean result = _acquire(mode);
+            lockTable.acquired(id_, getClass(), mode);
+            return result;
+        } catch(final LockException e) {
+            lockTable.attemptFailed(id_, getClass(), mode);
+            throw e;
+        }
+    }
+
+    private boolean _acquire(final LockMode mode) throws LockException {
         if (Thread.interrupted()) {
             throw new LockException();
         }
@@ -138,7 +151,7 @@ public class ReentrantReadWriteLock implements Lock {
                 }
                 mode_ = mode;
                 return true;
-            } else if ((waitingOnResource = 
+            } else if ((waitingOnResource =
                     DeadlockDetection.deadlockCheckResource(caller, owner_)) != null) {
                 waitingOnResource.suspendWaiting();
                 final SuspendedWaiter suspended = new SuspendedWaiter(owner_, mode_, holds_);
@@ -220,6 +233,18 @@ public class ReentrantReadWriteLock implements Lock {
             return true;
         }
 
+        lockTable.attempt(id_, getClass(), mode);
+        try {
+            final boolean result = _attempt(mode);
+            lockTable.acquired(id_, getClass(), mode);
+            return result;
+        } catch(final Throwable t) {
+            lockTable.attemptFailed(id_, getClass(), mode);
+            throw t;
+        }
+    }
+
+    private boolean _attempt(final LockMode mode) {
         final Thread caller = Thread.currentThread();
         synchronized (this) {
             if (caller == owner_) {
@@ -285,6 +310,11 @@ public class ReentrantReadWriteLock implements Lock {
             return;
         }
 
+        _release(mode);
+        lockTable.released(id_, getClass(), mode);
+    }
+
+    private void _release(final LockMode mode) {
         if (Thread.currentThread() != owner_) {
             
             if(LOG.isDebugEnabled()){
