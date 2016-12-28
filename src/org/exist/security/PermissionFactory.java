@@ -149,8 +149,6 @@ public class PermissionFactory {
                             doc.getUpdateLock().release(LockMode.WRITE_LOCK);
                         }
                     }
-                    transact.commit(transaction);
-                    broker.flush();
                 } else {
                     // keep a write lock in the transaction
                     transaction.acquireLock(collection.getLock(), LockMode.WRITE_LOCK);
@@ -159,9 +157,10 @@ public class PermissionFactory {
                     permissionModifier.accept(permissions);
 
                     broker.saveCollection(transaction, collection);
-                    transact.commit(transaction);
-                    broker.flush();
                 }
+
+                transact.commit(transaction);
+                broker.flush();
             } finally {
                 if(collection != null) {
                     collection.release(LockMode.WRITE_LOCK);

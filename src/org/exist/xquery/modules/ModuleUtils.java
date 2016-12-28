@@ -28,9 +28,8 @@ import java.io.StringReader;
 import java.math.BigInteger;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 import javax.xml.transform.Source;
 import javax.xml.transform.sax.SAXSource;
 
@@ -40,6 +39,8 @@ import org.exist.dom.memtree.DocumentBuilderReceiver;
 import org.exist.dom.memtree.DocumentImpl;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.memtree.SAXAdapter;
+import org.exist.storage.lock.Lock.LockMode;
+import org.exist.storage.lock.ManagedLock;
 import org.exist.util.HtmlToXmlParser;
 import com.evolvedbinary.j8fu.Either;
 import org.exist.xquery.XQueryContext;
@@ -284,23 +285,15 @@ public class ModuleUtils {
     }
 
     private static class ContextMapLocks {
-        private final Map<String, ReentrantReadWriteLock> locks = new HashMap<String, ReentrantReadWriteLock>();
+        private final Map<String, ReentrantReadWriteLock> locks = new HashMap<>();
         
-        private synchronized ReentrantReadWriteLock getLock(String contextMapName) {
+        public synchronized ReentrantReadWriteLock getLock(final String contextMapName) {
             ReentrantReadWriteLock lock = locks.get(contextMapName);
             if(lock == null) {
                 lock = new ReentrantReadWriteLock();
                 locks.put(contextMapName, lock);
             }
             return lock;
-        }
-        
-        public ReadLock getReadLock(String contextMapName) {
-            return getLock(contextMapName).readLock();
-        }
-
-        public WriteLock getWriteLock(String contextMapName) {
-            return getLock(contextMapName).writeLock();
         }
     }    
     
@@ -316,9 +309,7 @@ public class ModuleUtils {
      * @return  DOCUMENT ME!
      */        
     public static <T> T retrieveObjectFromContextMap(XQueryContext context, String contextMapName, long objectUID) {
-        
-        contextMapLocks.getReadLock(contextMapName).lock();
-        try{
+        try(final ManagedLock<ReadWriteLock> readLock = ManagedLock.acquire(contextMapLocks.getLock(contextMapName), LockMode.READ_LOCK)){
             // get the existing object map from the context
             final Map<Long, T> map = (HashMap<Long, T>)context.getXQueryContextVar(contextMapName);
 
@@ -328,14 +319,11 @@ public class ModuleUtils {
 
             // get the connection
             return map.get(objectUID);
-        } finally {
-            contextMapLocks.getReadLock(contextMapName).unlock();
         }
     }
     
     public static <T> void modifyContextMap(XQueryContext context, String contextMapName, ContextMapModifier<T> modifier) {
-        contextMapLocks.getWriteLock(contextMapName).lock();
-        try {
+        try(final ManagedLock<ReadWriteLock> writeLock = ManagedLock.acquire(contextMapLocks.getLock(contextMapName), LockMode.WRITE_LOCK)) {
             // get the existing map from the context
             Map<Long, T> map = (Map<Long, T>)context.getXQueryContextVar(contextMapName);
             if(map == null) {
@@ -347,8 +335,6 @@ public class ModuleUtils {
             //modify the map
             modifier.modify(map);
             
-        } finally {
-            contextMapLocks.getWriteLock(contextMapName).unlock();
         }
     }
     
@@ -378,9 +364,8 @@ public class ModuleUtils {
      * @return  A unique ID representing the Object
      */
     public static <T> long storeObjectInContextMap(XQueryContext context, String contextMapName, T o) {
-        
-        contextMapLocks.getWriteLock(contextMapName).lock();
-        try{
+
+        try(final ManagedLock<ReadWriteLock> writeLock = ManagedLock.acquire(contextMapLocks.getLock(contextMapName), LockMode.WRITE_LOCK)) {
 
             // get the existing map from the context
             Map<Long, T> map = (Map<Long, T>)context.getXQueryContextVar(contextMapName);
@@ -403,8 +388,6 @@ public class ModuleUtils {
             context.setXQueryContextVar(contextMapName, map);
 
             return (uid);
-        } finally {
-            contextMapLocks.getWriteLock(contextMapName).unlock();
         }
     }
     

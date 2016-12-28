@@ -22,6 +22,8 @@ package org.exist.util;
 import com.evolvedbinary.j8fu.function.Consumer2E;
 import com.evolvedbinary.j8fu.function.ConsumerE;
 import net.jcip.annotations.ThreadSafe;
+import org.exist.storage.lock.Lock.LockMode;
+import org.exist.storage.lock.ManagedLock;
 
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -53,11 +55,8 @@ public class ConcurrentValueWrapper<T> {
      *     and returns a result.
      */
     public <U> U read(final Function<T, U> readFn) {
-        lock.readLock().lock();
-        try {
+        try (final ManagedLock<ReadWriteLock> readLock = ManagedLock.acquire(lock, LockMode.READ_LOCK)) {
             return readFn.apply(value);
-        } finally {
-            lock.readLock().unlock();
         }
     }
 
@@ -67,11 +66,8 @@ public class ConcurrentValueWrapper<T> {
      * @param writeFn A function which writes to the value.
      */
     public void write(final Consumer<T> writeFn) {
-        lock.writeLock().lock();
-        try {
+        try (final ManagedLock<ReadWriteLock> writeLock = ManagedLock.acquire(lock, LockMode.WRITE_LOCK)) {
             writeFn.accept(value);
-        } finally {
-            lock.writeLock().unlock();
         }
     }
 
@@ -84,11 +80,8 @@ public class ConcurrentValueWrapper<T> {
      * @return the result of the write function.
      */
     public <U> U writeAndReturn(final Function<T, U> writeFn) {
-        lock.writeLock().lock();
-        try {
+        try (final ManagedLock<ReadWriteLock> writeLock = ManagedLock.acquire(lock, LockMode.WRITE_LOCK)) {
             return writeFn.apply(value);
-        } finally {
-            lock.writeLock().unlock();
         }
     }
 
@@ -102,11 +95,8 @@ public class ConcurrentValueWrapper<T> {
      * @throws E if an exception is thrown by the {@code writeFn}.
      */
     public final <E extends Throwable> void writeE(final ConsumerE<T, E> writeFn) throws E {
-        lock.writeLock().lock();
-        try {
+        try (final ManagedLock<ReadWriteLock> writeLock = ManagedLock.acquire(lock, LockMode.WRITE_LOCK)) {
             writeFn.accept(value);
-        } finally {
-            lock.writeLock().unlock();
         }
     }
 
@@ -122,11 +112,8 @@ public class ConcurrentValueWrapper<T> {
      * @throws E2 if an exception is thrown by the {@code writeFn}.
      */
     public final <E1 extends Exception, E2 extends Exception> void write2E(final Consumer2E<T, E1, E2> writeFn) throws E1, E2 {
-        lock.writeLock().lock();
-        try {
+        try (final ManagedLock<ReadWriteLock> writeLock = ManagedLock.acquire(lock, LockMode.WRITE_LOCK)) {
             writeFn.accept(value);
-        } finally {
-            lock.writeLock().unlock();
         }
     }
 }

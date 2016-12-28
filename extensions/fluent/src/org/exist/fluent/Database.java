@@ -17,6 +17,7 @@ import org.exist.security.*;
 import org.exist.storage.*;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.Lock.LockMode;
+import org.exist.storage.lock.ManagedLock;
 import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.util.*;
@@ -604,7 +605,7 @@ public class Database {
 							it.remove();
 						} else {
 							// Must hold write lock on doc before checking stale map to avoid race condition
-							if (doc.getUpdateLock().attempt(LockMode.WRITE_LOCK)) try {
+							try(final ManagedLock<Lock> updateLock = ManagedLock.attempt(doc.getUpdateLock(), LockMode.WRITE_LOCK)) {
 								String docPath = normalizePath(doc.getURI().getCollectionPath());
 								if (!staleMap.containsKey(docPath)) {
 									LOG.debug("defragmenting " + docPath);
@@ -618,8 +619,8 @@ public class Database {
 										tx.abortIfIncomplete();
 									}
 								}
-							} finally {
-								doc.getUpdateLock().release(LockMode.WRITE_LOCK);
+							} catch(final LockException e) {
+								// not a problem, we only attempted the lock!
 							}
 						}
 					}

@@ -64,6 +64,8 @@ import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.journal.*;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.Lock.LockMode;
+import org.exist.storage.lock.ManagedLock;
+import org.exist.storage.lock.ReentrantReadWriteLock;
 import org.exist.storage.serializers.NativeSerializer;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.sync.Sync;
@@ -838,9 +840,7 @@ public class NativeBroker extends DBBroker {
         final Pattern p = Pattern.compile(regexp);
         final Matcher m = p.matcher("");
 
-        final Lock lock = collectionsDb.getLock();
-        try {
-            lock.acquire(LockMode.READ_LOCK);
+        try(final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.READ_LOCK)) {
 
             //TODO write a regexp lookup for key data in BTree.query
             //final IndexQuery idxQuery = new IndexQuery(IndexQuery.REGEXP, regexp);
@@ -867,8 +867,6 @@ public class NativeBroker extends DBBroker {
         } catch(final TerminatedException | IOException | BTreeException e) {
             LOG.error(e.getMessage(), e);
             //return null;
-        } finally {
-            lock.release(LockMode.READ_LOCK);
         }
 
         return collections;
@@ -884,9 +882,7 @@ public class NativeBroker extends DBBroker {
         synchronized(collectionsCache) {
             collection = collectionsCache.get(uri);
             if(collection == null) {
-                final Lock lock = collectionsDb.getLock();
-                try {
-                    lock.acquire(LockMode.READ_LOCK);
+                try(final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.READ_LOCK)) {
 
                     final Value key = new CollectionStore.CollectionKey(uri.toString());
                     final VariableByteInput is = collectionsDb.getAsStream(key);
@@ -904,8 +900,6 @@ public class NativeBroker extends DBBroker {
                     LOG.error("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()));
                 } catch(final IOException e) {
                     LOG.error(e.getMessage(), e);
-                } finally {
-                    lock.release(LockMode.READ_LOCK);
                 }
             } else {
 
@@ -937,9 +931,7 @@ public class NativeBroker extends DBBroker {
         synchronized(collectionsCache) {
             collection = collectionsCache.get(uri);
             if(collection == null) {
-                final Lock lock = collectionsDb.getLock();
-                try {
-                    lock.acquire(LockMode.READ_LOCK);
+                try(final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.READ_LOCK)) {
                     VariableByteInput is;
                     if(address == BFile.UNKNOWN_ADDRESS) {
                         final Value key = new CollectionStore.CollectionKey(uri.toString());
@@ -964,8 +956,6 @@ public class NativeBroker extends DBBroker {
                 } catch(final IOException e) {
                     LOG.error(e.getMessage(), e);
                     return null;
-                } finally {
-                    lock.release(LockMode.READ_LOCK);
                 }
             } else {
                 if(!collection.getURI().equalsInternal(uri)) {
@@ -1087,32 +1077,31 @@ public class NativeBroker extends DBBroker {
 
         final CollectionCache collectionsCache = pool.getCollectionsCache();
         synchronized(collectionsCache) {
-            final Lock lock = collectionsDb.getLock();
             try {
                 pool.getProcessMonitor().startJob(ProcessMonitor.ACTION_COPY_COLLECTION, collection.getURI());
-                lock.acquire(LockMode.WRITE_LOCK);
+                try(final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.WRITE_LOCK)) {
 
-                //recheck here because now under 'synchronized(collectionsCache)'
-                if(isSubCollection(collection, destination)) {
-                    throw new PermissionDeniedException("Cannot copy collection '" + collection.getURI() + "' to it child collection '"+destination.getURI()+"'.");
+                    //recheck here because now under 'synchronized(collectionsCache)'
+                    if (isSubCollection(collection, destination)) {
+                        throw new PermissionDeniedException("Cannot copy collection '" + collection.getURI() + "' to it child collection '" + destination.getURI() + "'.");
+                    }
+
+                    final XmldbURI parentName = collection.getParentURI();
+                    final Collection parent = parentName == null ? collection : getCollection(parentName);
+
+                    final CollectionTrigger trigger = new CollectionTriggers(this, parent);
+                    trigger.beforeCopyCollection(this, transaction, collection, dstURI);
+
+                    //atomically check all permissions in the tree to ensure a copy operation will succeed before starting copying
+                    checkPermissionsForCopy(collection, destination.getURI(), newName);
+
+                    final DocumentTrigger docTrigger = new DocumentTriggers(this);
+
+                    final Collection newCollection = doCopyCollection(transaction, docTrigger, collection, destination, newName, true, preserve);
+
+                    trigger.afterCopyCollection(this, transaction, newCollection, srcURI);
                 }
-
-                final XmldbURI parentName = collection.getParentURI();
-                final Collection parent = parentName == null ? collection : getCollection(parentName);
-
-                final CollectionTrigger trigger = new CollectionTriggers(this, parent);
-                trigger.beforeCopyCollection(this, transaction, collection, dstURI);
-
-                //atomically check all permissions in the tree to ensure a copy operation will succeed before starting copying
-                checkPermissionsForCopy(collection, destination.getURI(), newName);
-
-                final DocumentTrigger docTrigger = new DocumentTriggers(this);
-
-                final Collection newCollection = doCopyCollection(transaction, docTrigger, collection, destination, newName, true, preserve);
-
-                trigger.afterCopyCollection(this, transaction, newCollection, srcURI);
             } finally {
-                lock.release(LockMode.WRITE_LOCK);
                 pool.getProcessMonitor().endJob();
             }
         }
@@ -1423,9 +1412,7 @@ public class NativeBroker extends DBBroker {
                 }
             }
 
-            final Lock lock = collectionsDb.getLock();
-            try {
-                lock.acquire(LockMode.WRITE_LOCK);
+            try(final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.WRITE_LOCK)) {
                 collectionsCache.remove(collection);
                 final Value key = new CollectionStore.CollectionKey(uri.toString());
                 collectionsDb.remove(transaction, key);
@@ -1441,8 +1428,6 @@ public class NativeBroker extends DBBroker {
                 saveCollection(transaction, collection);
                 //} catch (ReadOnlyException e) {
                 //throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
-            } finally {
-                lock.release(LockMode.WRITE_LOCK);
             }
 
             if(fireTrigger) {
@@ -1594,9 +1579,7 @@ public class NativeBroker extends DBBroker {
                 }
 
                 //Update current state
-                final Lock lock = collectionsDb.getLock();
-                try {
-                    lock.acquire(LockMode.WRITE_LOCK);
+                try(final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.WRITE_LOCK)) {
                     // remove the metadata of all documents in the collection
                     final Value docKey = new CollectionStore.DocumentKey(collection.getId());
                     final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, docKey);
@@ -1624,8 +1607,6 @@ public class NativeBroker extends DBBroker {
                 //}
                 catch(final BTreeException | IOException e) {
                     LOG.error("Exception while removing collection: " + e.getMessage(), e);
-                } finally {
-                    lock.release(LockMode.WRITE_LOCK);
                 }
 
                 //Remove child resources
@@ -1751,11 +1732,16 @@ public class NativeBroker extends DBBroker {
             throw new IOException(DATABASE_IS_READ_ONLY);
         }
 
-        pool.getCollectionsCache().add(collection);
+        // TODO(AR) this should likely be locked
+//        try(final ManagedLock managedLock = ManagedLock.acquire(pool.getCollectionCacheLock(), LockMode.WRITE_LOCK)) {
 
-        final Lock lock = collectionsDb.getLock();
-        try {
-            lock.acquire(LockMode.WRITE_LOCK);
+            pool.getCollectionsCache().add(collection);
+
+//        } catch(final LockException e) {
+//            throw new IOException(e);
+//        }
+
+        try(final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.WRITE_LOCK)) {
 
             if(collection.getId() == Collection.UNKNOWN_COLLECTION_ID) {
                 collection.setId(getNextCollectionId(transaction));
@@ -1775,8 +1761,6 @@ public class NativeBroker extends DBBroker {
             LOG.warn(DATABASE_IS_READ_ONLY);
         } catch(final LockException e) {
             LOG.error("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()), e);
-        } finally {
-            lock.release(LockMode.WRITE_LOCK);
         }
     }
 
@@ -1791,9 +1775,7 @@ public class NativeBroker extends DBBroker {
         if(nextCollectionId != Collection.UNKNOWN_COLLECTION_ID) {
             return nextCollectionId;
         }
-        final Lock lock = collectionsDb.getLock();
-        try {
-            lock.acquire(LockMode.WRITE_LOCK);
+        try(final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.WRITE_LOCK)) {
             final Value key = new CollectionStore.CollectionKey(CollectionStore.NEXT_COLLECTION_ID_KEY);
             final Value data = collectionsDb.get(key);
             if(data != null) {
@@ -1808,8 +1790,6 @@ public class NativeBroker extends DBBroker {
             LOG.error("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()), e);
             return Collection.UNKNOWN_COLLECTION_ID;
             //TODO : rethrow ? -pb
-        } finally {
-            lock.release(LockMode.WRITE_LOCK);
         }
     }
 
@@ -2029,9 +2009,7 @@ public class NativeBroker extends DBBroker {
     @Override
     public DocumentImpl getResourceById(final int collectionId, final byte resourceType, final int documentId) throws PermissionDeniedException {
         XmldbURI uri = null;
-        final Lock lock = collectionsDb.getLock();
-        try {
-            lock.acquire(LockMode.READ_LOCK);
+        try(final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.READ_LOCK)) {
             //final VariableByteOutputStream os = new VariableByteOutputStream(8);
             //doc.write(os);
             //Value key = new CollectionStore.DocumentKey(doc.getCollection().getId(), doc.getResourceType(), doc.getDocId());
@@ -2081,8 +2059,6 @@ public class NativeBroker extends DBBroker {
         } catch(final IOException e) {
             LOG.error("IOException while reading resource data", e);
             return null;
-        } finally {
-            lock.release(LockMode.READ_LOCK);
         }
 
         return getResource(uri, Permission.READ);
@@ -2093,11 +2069,8 @@ public class NativeBroker extends DBBroker {
      */
     @Override
     public void storeXMLResource(final Txn transaction, final DocumentImpl doc) {
-
-
-        final Lock lock = collectionsDb.getLock();
-        try(final VariableByteOutputStream os = new VariableByteOutputStream(8)) {
-            lock.acquire(LockMode.WRITE_LOCK);
+        try(final VariableByteOutputStream os = new VariableByteOutputStream(8);
+				final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.WRITE_LOCK)) {
             doc.write(os);
             final Value key = new CollectionStore.DocumentKey(doc.getCollection().getId(), doc.getResourceType(), doc.getDocId());
             collectionsDb.put(transaction, key, os.data(), true);
@@ -2107,8 +2080,6 @@ public class NativeBroker extends DBBroker {
             LOG.error("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()));
         } catch(final IOException e) {
             LOG.error("IOException while writing document data: " + doc.getURI(), e);
-        } finally {
-            lock.release(LockMode.WRITE_LOCK);
         }
     }
 
@@ -2333,9 +2304,7 @@ public class NativeBroker extends DBBroker {
     //TODO : consider a better cooperation with Collection -pb
     @Override
     public void getCollectionResources(final Collection.InternalAccess collectionInternalAccess) {
-        final Lock lock = collectionsDb.getLock();
-        try {
-            lock.acquire(LockMode.READ_LOCK);
+        try(final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.READ_LOCK)) {
             final Value key = new CollectionStore.DocumentKey(collectionInternalAccess.getId());
             final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, key);
 
@@ -2344,16 +2313,12 @@ public class NativeBroker extends DBBroker {
             LOG.error("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()));
         } catch(final IOException | BTreeException | TerminatedException e) {
             LOG.error("Exception while reading document data", e);
-        } finally {
-            lock.release(LockMode.READ_LOCK);
         }
     }
 
     @Override
     public void getResourcesFailsafe(final BTreeCallback callback, final boolean fullScan) throws TerminatedException {
-        final Lock lock = collectionsDb.getLock();
-        try {
-            lock.acquire(LockMode.READ_LOCK);
+        try(final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.READ_LOCK)) {
             final Value key = new CollectionStore.DocumentKey();
             final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, key);
             if(fullScan) {
@@ -2365,16 +2330,12 @@ public class NativeBroker extends DBBroker {
             LOG.error("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()));
         } catch(final IOException | BTreeException e) {
             LOG.error("Exception while reading document data", e);
-        } finally {
-            lock.release(LockMode.READ_LOCK);
         }
     }
 
     @Override
     public void getCollectionsFailsafe(final BTreeCallback callback) throws TerminatedException {
-        final Lock lock = collectionsDb.getLock();
-        try {
-            lock.acquire(LockMode.READ_LOCK);
+        try(final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.READ_LOCK)) {
             final Value key = new CollectionStore.CollectionKey();
             final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, key);
             collectionsDb.query(query, callback);
@@ -2382,8 +2343,6 @@ public class NativeBroker extends DBBroker {
             LOG.error("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()));
         } catch(final IOException | BTreeException e) {
             LOG.error("Exception while reading document data", e);
-        } finally {
-            lock.release(LockMode.READ_LOCK);
         }
     }
 
@@ -2467,9 +2426,7 @@ public class NativeBroker extends DBBroker {
 
         final CollectionCache collectionsCache = pool.getCollectionsCache();
         synchronized(collectionsCache) {
-            final Lock lock = collectionsDb.getLock();
-            try {
-                lock.acquire(LockMode.WRITE_LOCK);
+            try(final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.WRITE_LOCK)) {
                 final DocumentImpl oldDoc = destination.getDocument(this, newName);
 
                 if(!destination.getPermissionsNoLock().validate(getCurrentSubject(), Permission.EXECUTE)) {
@@ -2549,16 +2506,13 @@ public class NativeBroker extends DBBroker {
                     }
                     newDoc.copyOf(this, doc, oldDoc);
                     newDoc.setDocId(getNextResourceId(transaction, destination));
-                    newDoc.getUpdateLock().acquire(LockMode.WRITE_LOCK);
-                    try {
+                    try(final ManagedLock<Lock> newDocLock = ManagedLock.acquire(newDoc.getUpdateLock(), LockMode.WRITE_LOCK)) {
                         copyXMLResource(transaction, doc, newDoc);
                         if (preserveOnCopy(preserve)) {
                             copyResource_preserve(this, doc, newDoc, oldDoc != null);
                         }
                         destination.addDocument(transaction, this, newDoc);
                         storeXMLResource(transaction, newDoc);
-                    } finally {
-                        newDoc.getUpdateLock().release(LockMode.WRITE_LOCK);
                     }
                     newDocument = newDoc;
                 }
@@ -2569,8 +2523,6 @@ public class NativeBroker extends DBBroker {
                 LOG.error("An error occurred while copying resource", e);
             } catch(final TriggerException e) {
                 throw new PermissionDeniedException(e.getMessage(), e);
-            } finally {
-                lock.release(LockMode.WRITE_LOCK);
             }
         }
     }
@@ -2898,9 +2850,7 @@ public class NativeBroker extends DBBroker {
      */
     private void removeResourceMetadata(final Txn transaction, final DocumentImpl document) {
         // remove document metadata
-        final Lock lock = collectionsDb.getLock();
-        try {
-            lock.acquire(LockMode.WRITE_LOCK);
+        try(final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.WRITE_LOCK)) {
             if(LOG.isDebugEnabled()) {
                 LOG.debug("Removing resource metadata for " + document.getDocId());
             }
@@ -2908,8 +2858,6 @@ public class NativeBroker extends DBBroker {
             collectionsDb.remove(transaction, key);
         } catch(final LockException e) {
             LOG.error("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()));
-        } finally {
-            lock.release(LockMode.WRITE_LOCK);
         }
     }
 
@@ -2933,9 +2881,7 @@ public class NativeBroker extends DBBroker {
             return nextDocId;
         }
         nextDocId = 1;
-        final Lock lock = collectionsDb.getLock();
-        try {
-            lock.acquire(LockMode.WRITE_LOCK);
+        try(final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.WRITE_LOCK)) {
             final Value key = new CollectionStore.CollectionKey(CollectionStore.NEXT_DOC_ID_KEY);
             final Value data = collectionsDb.get(key);
             if(data != null) {
@@ -2958,8 +2904,6 @@ public class NativeBroker extends DBBroker {
         } catch(final LockException e) {
             LOG.error("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()), e);
             //TODO : rethrow ? -pb
-        } finally {
-            lock.release(LockMode.WRITE_LOCK);
         }
         return nextDocId;
     }
@@ -3697,16 +3641,13 @@ public class NativeBroker extends DBBroker {
     protected void rebuildIndex(final byte indexId) {
         final BTree btree = getStorage(indexId);
         final Lock lock = btree.getLock();
-        try {
-            lock.acquire(LockMode.WRITE_LOCK);
+        try(final ManagedLock<Lock> btreeLock = ManagedLock.acquire(lock, LockMode.WRITE_LOCK)) {
 
             LOG.info("Rebuilding index " + FileUtils.fileName(btree.getFile()));
             btree.rebuild();
             LOG.info("Index " + FileUtils.fileName(btree.getFile()) + " was rebuilt.");
         } catch(LockException | IOException | TerminatedException | DBException e) {
             LOG.error("Caught error while rebuilding core index " + FileUtils.fileName(btree.getFile()) + ": " + e.getMessage(), e);
-        } finally {
-            lock.release(LockMode.WRITE_LOCK);
         }
     }
 
@@ -3742,14 +3683,10 @@ public class NativeBroker extends DBBroker {
                 }
             }.run();
             if(syncEvent == Sync.MAJOR) {
-                final Lock lock = collectionsDb.getLock();
-                try {
-                    lock.acquire(LockMode.WRITE_LOCK);
+                try(final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.WRITE_LOCK)) {
                     collectionsDb.flush();
                 } catch(final LockException e) {
                     LOG.error("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()), e);
-                } finally {
-                    lock.release(LockMode.WRITE_LOCK);
                 }
                 notifySync();
                 pool.getIndexManager().sync();

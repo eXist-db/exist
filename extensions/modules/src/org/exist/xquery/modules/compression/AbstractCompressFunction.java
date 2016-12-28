@@ -29,7 +29,9 @@ import org.exist.dom.persistent.DefaultDocumentSet;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.MutableDocumentSet;
 import org.exist.security.PermissionDeniedException;
+import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.Lock.LockMode;
+import org.exist.storage.lock.ManagedLock;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.Base64Decoder;
 import org.exist.util.FileUtils;
@@ -473,11 +475,8 @@ public abstract class AbstractCompressFunction extends BasicFunction
 		col.getDocuments(context.getBroker(), childDocs);
 		for (Iterator<DocumentImpl> itChildDocs = childDocs.getDocumentIterator(); itChildDocs.hasNext();) {
 			DocumentImpl childDoc = itChildDocs.next();
-			childDoc.getUpdateLock().acquire(LockMode.READ_LOCK);
-			try {
+			try(final ManagedLock<Lock> updateLock = ManagedLock.acquire(childDoc.getUpdateLock(), LockMode.READ_LOCK)) {
 				compressResource(os, childDoc, useHierarchy, stripOffset, "", null);
-			} finally {
-				childDoc.getUpdateLock().release(LockMode.READ_LOCK);
 			}
 		}
 		// iterate over child collections

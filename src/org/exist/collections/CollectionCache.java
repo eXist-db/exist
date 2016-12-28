@@ -30,6 +30,8 @@ import org.exist.storage.CacheManager;
 import org.exist.storage.cache.LRUCache;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.Lock.LockMode;
+import org.exist.storage.lock.ManagedLock;
+import org.exist.util.LockException;
 import org.exist.util.hashtable.Object2LongHashMap;
 import org.exist.util.hashtable.SequencedLongHashMap;
 import org.exist.xmldb.XmldbURI;
@@ -97,21 +99,18 @@ public class CollectionCache extends LRUCache<Collection> implements BrokerPoolS
         do {
             final Collection cached = next.getValue();
             if(cached.getKey() != item.getKey()) {
-                final Lock lock = cached.getLock();
-                if (lock.attempt(LockMode.READ_LOCK)) {
-                    try {
-                        if (cached.allowUnload()) {
-                            if(pool.getConfigurationManager() != null) { // might be null during db initialization
-                                pool.getConfigurationManager().invalidate(cached.getURI(), null);
-                            }
-                            names.remove(cached.getURI().getRawCollectionPath());
-                            cached.sync(true);
-                            map.remove(cached.getKey());
-                            removed = true;
+                try(final ManagedLock<Lock> cachedReadLock = ManagedLock.attempt(cached.getLock(), LockMode.READ_LOCK)) {
+                    if (cached.allowUnload()) {
+                        if(pool.getConfigurationManager() != null) { // might be null during db initialization
+                            pool.getConfigurationManager().invalidate(cached.getURI(), null);
                         }
-                    } finally {
-                        lock.release(LockMode.READ_LOCK);
+                        names.remove(cached.getURI().getRawCollectionPath());
+                        cached.sync(true);
+                        map.remove(cached.getKey());
+                        removed = true;
                     }
+                } catch(final LockException e) {
+                    // not a problem, we only attempted the lock!
                 }
             }
             if (!removed) {

@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.Properties;
 
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.BiFunction;
@@ -62,6 +61,8 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.BrokerPoolService;
 import org.exist.storage.BrokerPoolServiceException;
 import org.exist.storage.DBBroker;
+import org.exist.storage.lock.Lock.LockMode;
+import org.exist.storage.lock.ManagedLock;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.ConcurrentValueWrapper;
@@ -227,12 +228,8 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
             throw new ConfigurationException("Account must have realm id.");
         }
 
-        final Lock lock = accountLocks.getWriteLock(account);
-        lock.lock();
-        try {
+        try (final ManagedLock<ReadWriteLock> lock = ManagedLock.acquire(accountLocks.getLock(account), LockMode.WRITE_LOCK)) {
             return findRealmForRealmId(account.getRealmId()).updateAccount(account);
-        } finally {
-            lock.unlock();
         }
     }
 
@@ -246,12 +243,8 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
             throw new ConfigurationException("Group must have realm id.");
         }
 
-        final Lock lock = groupLocks.getWriteLock(group);
-        lock.lock();
-        try {
+        try (final ManagedLock<ReadWriteLock> lock = ManagedLock.acquire(groupLocks.getLock(group), LockMode.WRITE_LOCK)) {
             return findRealmForRealmId(group.getRealmId()).updateGroup(group);
-        } finally {
-            lock.unlock();
         }
     }
 
@@ -266,12 +259,8 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
             throw new ConfigurationException("Group must have realm id.");
         }
 
-        final Lock lock = groupLocks.getWriteLock(group);
-        lock.lock();
-        try {
+        try (final ManagedLock<ReadWriteLock> lock = ManagedLock.acquire(groupLocks.getLock(group), LockMode.WRITE_LOCK)) {
             return findRealmForRealmId(group.getRealmId()).deleteGroup(group);
-        } finally {
-            lock.unlock();
         }
     }
 
@@ -290,12 +279,8 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
             throw new ConfigurationException("Account must have realm id.");
         }
 
-        final Lock lock = accountLocks.getWriteLock(account);
-        lock.lock();
-        try {
+        try (final ManagedLock<ReadWriteLock> lock = ManagedLock.acquire(accountLocks.getLock(account), LockMode.WRITE_LOCK)) {
             return findRealmForRealmId(account.getRealmId()).deleteAccount(account);
-        } finally {
-            lock.unlock();
         }
     }
 
@@ -352,12 +337,8 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
 
     @Override
     public boolean hasAdminPrivileges(final Account user) {
-        final Lock lock = accountLocks.getReadLock(user);
-        lock.lock();
-        try {
+        try (final ManagedLock<ReadWriteLock> lock = ManagedLock.acquire(accountLocks.getLock(user), LockMode.READ_LOCK)) {
             return user.hasDbaRole();
-        } finally {
-            lock.unlock();
         }
     }
 
@@ -566,17 +547,13 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
             newGroup.setMetadataValue(metadataKey, metadataValue);
         }
 
-        final Lock lock = groupLocks.getWriteLock(newGroup);
-        lock.lock();
-        try {
+        try(final ManagedLock<ReadWriteLock> lock = ManagedLock.acquire(groupLocks.getLock(newGroup), LockMode.WRITE_LOCK)) {
             registerGroup(newGroup);
             registeredRealm.registerGroup(newGroup);
 
             newGroup.save(broker);
 
             return newGroup;
-        } finally {
-            lock.unlock();
         }
     }
 
@@ -607,17 +584,13 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
         final AbstractRealm registeredRealm = (AbstractRealm) findRealmForRealmId(account.getRealmId());
         final AccountImpl newAccount = new AccountImpl(broker, registeredRealm, id, account);
 
-        final Lock lock = accountLocks.getWriteLock(newAccount);
-        lock.lock();
-        try {
+        try (final ManagedLock<ReadWriteLock> lock = ManagedLock.acquire(accountLocks.getLock(newAccount), LockMode.WRITE_LOCK)) {
             registerAccount(newAccount);
             registeredRealm.registerAccount(newAccount);
 
             newAccount.save(broker);
 
             return newAccount;
-        } finally {
-            lock.unlock();
         }
     }
 
@@ -871,14 +844,11 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
             			
             			if (!newId.equals(oldId)) {
                     		final Account current = realm.getAccount(name);
-	            	        accountLocks.getWriteLock(current).lock();
-	            	        try {
+                            try (final ManagedLock<ReadWriteLock> lock = ManagedLock.acquire(accountLocks.getLock(current), LockMode.WRITE_LOCK)) {
 	            	            usersById.write(principalDb -> {
                                     principalDb.remove(oldId);
                                     principalDb.put(newId, current);
                                 });
-	            	        } finally {
-	            	            accountLocks.getWriteLock(current).unlock();
 	            	        }
             			}
                 	} else {
@@ -919,16 +889,8 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
     private static class PrincipalLocks<T extends Principal> {
         private final WeakLazyStripes<Integer, ReadWriteLock> lockStripes = new WeakLazyStripes<>(id -> new ReentrantReadWriteLock());
 
-        private ReadWriteLock getLock(final T principal) {
+        public ReadWriteLock getLock(final T principal) {
             return lockStripes.get(principal.getId());
-        }
-
-        public Lock getReadLock(final T principal) {
-            return getLock(principal).readLock();
-        }
-
-        public Lock getWriteLock(final T principal) {
-            return getLock(principal).writeLock();
         }
     }
 

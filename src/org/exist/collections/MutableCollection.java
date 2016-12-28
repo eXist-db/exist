@@ -176,13 +176,10 @@ public class MutableCollection implements Collection {
         
         final XmldbURI childName = child.getURI().lastSegment();
 
-        getLock().acquire(LockMode.WRITE_LOCK);
-        try {
+        try(final ManagedLock<Lock> collectionLock = ManagedLock.acquire(getLock(), LockMode.WRITE_LOCK)) {
             if (!subCollections.contains(childName)) {
                 subCollections.add(childName);
             }
-        } finally {
-            getLock().release(LockMode.WRITE_LOCK);
         }
     }
 
@@ -194,11 +191,8 @@ public class MutableCollection implements Collection {
         final List<CollectionEntry> list = new ArrayList<>();
 
         final Iterator<XmldbURI> subCollectionIterator;
-        getLock().acquire(LockMode.READ_LOCK);
-        try {
+        try(final ManagedLock<Lock> collectionLock = ManagedLock.acquire(getLock(), LockMode.READ_LOCK)) {
             subCollectionIterator = subCollections.stableIterator();
-        } finally {
-            getLock().release(LockMode.READ_LOCK);
         }
         while(subCollectionIterator.hasNext()) {
             final XmldbURI subCollectionURI = subCollectionIterator.next();
@@ -237,11 +231,8 @@ public class MutableCollection implements Collection {
         }
 
         final CollectionEntry entry;
-        getLock().acquire(LockMode.READ_LOCK);
-        try {
+        try(final ManagedLock<Lock> collectionLock = ManagedLock.acquire(getLock(), LockMode.READ_LOCK)) {
             entry = new DocumentEntry(documents.get(name));
-        }  finally {
-            getLock().release(LockMode.READ_LOCK);
         }
 
         entry.readMetadata(broker);
@@ -261,12 +252,9 @@ public class MutableCollection implements Collection {
     @Override
     public void update(final DBBroker broker, final Collection child) throws PermissionDeniedException, LockException {
         final XmldbURI childName = child.getURI().lastSegment();
-        getLock().acquire(LockMode.WRITE_LOCK);
-        try {
+        try(final ManagedLock<Lock> collectionLock = ManagedLock.acquire(getLock(), LockMode.WRITE_LOCK)) {
             subCollections.remove(childName);
             subCollections.add(childName);
-        } finally {
-            getLock().release(LockMode.WRITE_LOCK);
         }
     }
 
@@ -306,11 +294,8 @@ public class MutableCollection implements Collection {
             }
         }
 
-        getLock().acquire(LockMode.WRITE_LOCK);
-        try {
+        try(final ManagedLock<Lock> collectionLock = ManagedLock.acquire(getLock(), LockMode.WRITE_LOCK)) {
             documents.put(doc.getFileURI().getRawCollectionPath(), doc);
-        } finally {
-            getLock().release(LockMode.WRITE_LOCK);
         }
     }
 
@@ -321,11 +306,8 @@ public class MutableCollection implements Collection {
             throw new PermissionDeniedException("Permission denied to remove document from collection: " + path);
         }
 
-        getLock().acquire(LockMode.WRITE_LOCK);
-        try {
+        try(final ManagedLock<Lock> collectionLock = ManagedLock.acquire(getLock(), LockMode.WRITE_LOCK)) {
             documents.remove(doc.getFileURI().getRawCollectionPath());
-        } finally {
-            getLock().release(LockMode.WRITE_LOCK);
         }
     }
 
@@ -335,11 +317,8 @@ public class MutableCollection implements Collection {
             throw new PermissionDeniedException("Permission to list sub-collections denied on " + this.getURI());
         }
 
-        getLock().acquire(LockMode.READ_LOCK);
-        try {
+        try(final ManagedLock<Lock> collectionLock = ManagedLock.acquire(getLock(), LockMode.READ_LOCK)) {
             return subCollections.stableIterator();
-        } finally {
-            getLock().release(LockMode.READ_LOCK);
         }
     }
 
@@ -359,14 +338,9 @@ public class MutableCollection implements Collection {
 
         final ArrayList<Collection> collectionList;
         final Iterator<XmldbURI> i;
-        try {
-            getLock().acquire(LockMode.READ_LOCK);
-            try {
-                collectionList = new ArrayList<>(subCollections.size());
-                i = subCollections.stableIterator();
-            } finally {
-                getLock().release(LockMode.READ_LOCK);
-            }
+        try(final ManagedLock<Lock> collectionLock = ManagedLock.acquire(getLock(), LockMode.READ_LOCK)) {
+            collectionList = new ArrayList<>(subCollections.size());
+            i = subCollections.stableIterator();
         } catch(final LockException e) {
             LOG.error(e.getMessage(), e);
             return Collections.emptyList();
@@ -399,17 +373,12 @@ public class MutableCollection implements Collection {
             final LockedDocumentMap lockMap) throws PermissionDeniedException {
         List<XmldbURI> subColls = null;
         if(getPermissionsNoLock().validate(broker.getCurrentSubject(), Permission.READ)) {
-            try {
-                getLock().acquire(LockMode.READ_LOCK);
-                try {
+            try(final ManagedLock<Lock> collectionLock = ManagedLock.acquire(getLock(), LockMode.READ_LOCK)) {
                     //Add all docs in this collection to the returned set
                     getDocuments(broker, docs);
                     //Get a list of sub-collection URIs. We will process them
                     //after unlocking this collection. otherwise we may deadlock ourselves
                     subColls = subCollections.keys();
-                } finally {
-                    getLock().release(LockMode.READ_LOCK);
-                }
             } catch(final LockException e) {
                 LOG.error(e.getMessage(), e);
             }
@@ -440,8 +409,7 @@ public class MutableCollection implements Collection {
         
         XmldbURI uris[] = null;
         if(getPermissionsNoLock().validate(broker.getCurrentSubject(), Permission.READ)) {
-            getLock().acquire(LockMode.READ_LOCK);
-            try {
+            try(final ManagedLock<Lock> collectionLock = ManagedLock.acquire(getLock(), LockMode.READ_LOCK)) {
                 //Add all documents in this collection to the returned set
                 getDocuments(broker, docs, lockMap, lockType);
                 //Get a list of sub-collection URIs. We will process them
@@ -454,8 +422,6 @@ public class MutableCollection implements Collection {
                         uris[i] = path.appendInternal(subColls.get(i));
                     }
                 }
-            } finally {
-                getLock().release(LockMode.READ_LOCK);
             }
         }
 
@@ -485,13 +451,10 @@ public class MutableCollection implements Collection {
         if(!getPermissionsNoLock().validate(broker.getCurrentSubject(), Permission.READ)) {
             throw new PermissionDeniedException("Permission denied to read collection: " + path);
         }
-        
-        try {
-            getLock().acquire(LockMode.READ_LOCK);
+
+        try(final ManagedLock<Lock> collectionLock = ManagedLock.acquire(getLock(), LockMode.READ_LOCK)) {
             docs.addCollection(this);
             addDocumentsToSet(broker, docs);
-        } finally {
-            getLock().release(LockMode.READ_LOCK);
         }
         
         return docs;
@@ -510,13 +473,10 @@ public class MutableCollection implements Collection {
         if(!getPermissionsNoLock().validate(broker.getCurrentSubject(), Permission.READ)) {
             throw new PermissionDeniedException("Permission denied to read collection: " + path);
         }
-        
-        try {
-            getLock().acquire(LockMode.READ_LOCK);
+
+        try(final ManagedLock<Lock> collectionLock = ManagedLock.acquire(getLock(), LockMode.READ_LOCK)) {
             docs.addCollection(this);
             addDocumentsToSet(broker, docs, lockMap, lockType);
-        } finally {
-            getLock().release(LockMode.READ_LOCK);
         }
         return docs;
     }
@@ -528,11 +488,8 @@ public class MutableCollection implements Collection {
      * @return A stable list of the document objects
      */
     private List<DocumentImpl> copyOfDocs() throws LockException {
-        getLock().acquire(LockMode.READ_LOCK);
-        try {
+        try(final ManagedLock<Lock> collectionLock = ManagedLock.acquire(getLock(), LockMode.READ_LOCK)) {
             return new ArrayList<>(documents.values());
-        } finally {
-            getLock().release(LockMode.READ_LOCK);
         }
     }
 
@@ -543,15 +500,12 @@ public class MutableCollection implements Collection {
      * @return A stable set of the document names
      */
     private Set<String> copyOfDocNames() throws LockException {
-        getLock().acquire(LockMode.READ_LOCK);
-        try {
+        try(final ManagedLock<Lock> collectionLock = ManagedLock.acquire(getLock(), LockMode.READ_LOCK)) {
             return new TreeSet<>(documents.keySet());
-        } finally {
-            getLock().release(LockMode.READ_LOCK);
         }
     }
 
-    private void addDocumentsToSet(final DBBroker broker, final MutableDocumentSet docs, final LockedDocumentMap lockMap, LockMode lockType) throws LockException {
+    private void addDocumentsToSet(final DBBroker broker, final MutableDocumentSet docs, final LockedDocumentMap lockMap, final LockMode lockType) throws LockException {
     	for(final DocumentImpl doc : copyOfDocs()) {
             if(doc.getPermissions().validate(broker.getCurrentSubject(), Permission.WRITE)) {
                 doc.getUpdateLock().acquire(lockType);
@@ -580,18 +534,13 @@ public class MutableCollection implements Collection {
             return false;
         }
 
-        try {
-            getLock().acquire(LockMode.READ_LOCK);
-            try {
-                for (final DocumentImpl doc : documents.values()) {
-                    if (doc.isLockedForWrite()) {
-                        return false;
-                    }
+        try(final ManagedLock<Lock> collectionLock = ManagedLock.acquire(getLock(), LockMode.READ_LOCK)) {
+            for (final DocumentImpl doc : documents.values()) {
+                if (doc.isLockedForWrite()) {
+                    return false;
                 }
-                return true;
-            } finally {
-                getLock().release(LockMode.READ_LOCK);
             }
+            return true;
         } catch(final LockException e) {
             LOG.error(e);
             return false;
@@ -622,13 +571,8 @@ public class MutableCollection implements Collection {
 
     @Override
     public int getMemorySize() {
-        try {
-            getLock().acquire(LockMode.READ_LOCK);
-            try {
-                return SHALLOW_SIZE + documents.size() * DOCUMENT_SIZE;
-            } finally {
-                getLock().release(LockMode.READ_LOCK);
-            }
+        try(final ManagedLock<Lock> collectionLock = ManagedLock.acquire(getLock(), LockMode.READ_LOCK)) {
+            return SHALLOW_SIZE + documents.size() * DOCUMENT_SIZE;
         } catch(final LockException e) {
             LOG.error(e);
             return -1;
@@ -641,13 +585,8 @@ public class MutableCollection implements Collection {
             throw new PermissionDeniedException("Permission denied to read collection: " + path);
         }
 
-        try {
-            getLock().acquire(LockMode.READ_LOCK);
-            try {
-                return subCollections.size();
-            } finally {
-                getLock().release(LockMode.READ_LOCK);
-            }
+        try(final ManagedLock<Lock> collectionLock = ManagedLock.acquire(getLock(), LockMode.READ_LOCK)) {
+            return subCollections.size();
         } catch(final LockException e) {
             LOG.error(e.getMessage(), e);
             return 0;
@@ -660,13 +599,8 @@ public class MutableCollection implements Collection {
             throw new PermissionDeniedException("Permission denied to read collection: " + path);
         }
 
-        try {
-            getLock().acquire(LockMode.READ_LOCK);
-            try {
-                return documents.isEmpty() && subCollections.isEmpty();
-            } finally {
-                getLock().release(LockMode.READ_LOCK);
-            }
+        try(final ManagedLock<Lock> collectionLock = ManagedLock.acquire(getLock(), LockMode.READ_LOCK)) {
+            return documents.isEmpty() && subCollections.isEmpty();
         } catch(final LockException e) {
             LOG.error(e.getMessage(), e);
             return false;
@@ -675,22 +609,17 @@ public class MutableCollection implements Collection {
 
     @Override
     public DocumentImpl getDocument(final DBBroker broker, final XmldbURI name) throws PermissionDeniedException {
-        try {
-            getLock().acquire(LockMode.READ_LOCK);
-            try {
-                final DocumentImpl doc = documents.get(name.getRawCollectionPath());
-                if (doc != null) {
-                    if (!doc.getPermissions().validate(broker.getCurrentSubject(), Permission.READ)) {
-                        throw new PermissionDeniedException("Permission denied to read document: " + name.toString());
-                    }
-                } else {
-                    LOG.debug("Document " + name + " not found!");
+        try(final ManagedLock<Lock> collectionLock = ManagedLock.acquire(getLock(), LockMode.READ_LOCK)) {
+            final DocumentImpl doc = documents.get(name.getRawCollectionPath());
+            if (doc != null) {
+                if (!doc.getPermissions().validate(broker.getCurrentSubject(), Permission.READ)) {
+                    throw new PermissionDeniedException("Permission denied to read document: " + name.toString());
                 }
-
-                return doc;
-            } finally {
-                getLock().release(LockMode.READ_LOCK);
+            } else {
+                LOG.debug("Document " + name + " not found!");
             }
+
+            return doc;
         } catch(final LockException e) {
             LOG.error(e.getMessage(), e);
             return null;
@@ -704,8 +633,7 @@ public class MutableCollection implements Collection {
 
     @Override
     public DocumentImpl getDocumentWithLock(final DBBroker broker, final XmldbURI name, final LockMode lockMode) throws LockException, PermissionDeniedException {
-        getLock().acquire(LockMode.READ_LOCK);
-        try {
+        try(final ManagedLock<Lock> collectionLock = ManagedLock.acquire(getLock(), LockMode.READ_LOCK)) {
             final DocumentImpl doc = documents.get(name.getRawCollectionPath());
             if(doc != null) {
                 if(!doc.getPermissions().validate(broker.getCurrentSubject(), Permission.READ)) {
@@ -714,8 +642,6 @@ public class MutableCollection implements Collection {
             	doc.getUpdateLock().acquire(lockMode);
             }
             return doc;
-        } finally {
-            getLock().release(LockMode.READ_LOCK);
         }
     }
 
@@ -750,13 +676,8 @@ public class MutableCollection implements Collection {
             throw new PermissionDeniedException("Permission denied to read collection: " + path);
         }
 
-        try {
-            getLock().acquire(LockMode.READ_LOCK);
-            try {
-                return documents.size();
-            } finally {
-                getLock().release(LockMode.READ_LOCK);
-            }
+        try(final ManagedLock<Lock> collectionLock = ManagedLock.acquire(getLock(), LockMode.READ_LOCK)) {
+            return documents.size();
         } catch(final LockException e) {
             LOG.warn(e.getMessage(), e);
             return -1;
@@ -797,14 +718,11 @@ public class MutableCollection implements Collection {
 
     @Override
     final public Permission getPermissions() {
-        try {
-            getLock().acquire(LockMode.READ_LOCK);
+        try(final ManagedLock<Lock> collectionLock = ManagedLock.acquire(getLock(), LockMode.READ_LOCK)) {
             return permissions;
         } catch(final LockException e) {
             LOG.error(e.getMessage(), e);
             return permissions;
-        } finally {
-            getLock().release(LockMode.READ_LOCK);
         }
     }
 
@@ -824,13 +742,8 @@ public class MutableCollection implements Collection {
             throw new PermissionDeniedException("Permission denied to read collection: " + path);
         }
 
-        try {
-            getLock().acquire(LockMode.READ_LOCK);
-            try {
-                return documents.containsKey(name.getRawCollectionPath());
-            } finally {
-                getLock().release(LockMode.READ_LOCK);
-            }
+        try(final ManagedLock<Lock> collectionLock = ManagedLock.acquire(getLock(), LockMode.READ_LOCK)) {
+            return documents.containsKey(name.getRawCollectionPath());
         } catch(final LockException e) {
             LOG.warn(e.getMessage(), e);
             //TODO : ouch ! Should we return at any price ? Xithout even logging ? -pb
@@ -844,11 +757,8 @@ public class MutableCollection implements Collection {
             throw new PermissionDeniedException("Permission denied to read collection: " + path);
         }
 
-        getLock().acquire(LockMode.READ_LOCK);
-        try {
+        try(final ManagedLock<Lock> collectionLock = ManagedLock.acquire(getLock(), LockMode.READ_LOCK)) {
             return subCollections.contains(name);
-        } finally {
-            getLock().release(LockMode.READ_LOCK);
         }
     }
 
@@ -893,12 +803,9 @@ public class MutableCollection implements Collection {
         final int size;
         final Iterator<XmldbURI> i;
 
-        getLock().acquire(LockMode.READ_LOCK);
-        try {
+        try(final ManagedLock<Lock> collectionLock = ManagedLock.acquire(getLock(), LockMode.READ_LOCK)) {
             size = subCollections.size();
             i = subCollections.stableIterator();
-        } finally {
-            getLock().release(LockMode.READ_LOCK);
         }
 
         outputStream.writeInt(size);
@@ -924,10 +831,9 @@ public class MutableCollection implements Collection {
         if (collectionId < 0) {
             throw new IOException("Internal error reading collection: invalid collection id");
         }
-        final int collLen = istream.readInt();
 
-        getLock().acquire(LockMode.WRITE_LOCK);
-        try {
+        final int collLen = istream.readInt();
+        try(final ManagedLock<Lock> collectionLock = ManagedLock.acquire(getLock(), LockMode.WRITE_LOCK)) {
             subCollections = new ObjectHashSet<>(collLen == 0 ? 19 : collLen); //TODO(AR) why is this number 19?
             for (int i = 0; i < collLen; i++) {
                 subCollections.add(XmldbURI.create(istream.readUTF()));
@@ -961,8 +867,6 @@ public class MutableCollection implements Collection {
                     return col.getId();
                 }
             });
-        } finally {
-            getLock().release(LockMode.WRITE_LOCK);
         }
     }
 
@@ -973,11 +877,8 @@ public class MutableCollection implements Collection {
             throw new PermissionDeniedException("Permission denied to read collection: " + path);
         }
 
-        getLock().acquire(LockMode.WRITE_LOCK);
-        try {
+        try(final ManagedLock<Lock> collectionLock = ManagedLock.acquire(getLock(), LockMode.WRITE_LOCK)) {
             subCollections.remove(name);
-        } finally {
-            getLock().release(LockMode.WRITE_LOCK);
         }
     }
 
@@ -1007,44 +908,42 @@ public class MutableCollection implements Collection {
         final BrokerPool db = broker.getBrokerPool();
 
         db.getProcessMonitor().startJob(ProcessMonitor.ACTION_REMOVE_XML, name);
-        getLock().acquire(LockMode.WRITE_LOCK);
+        try(final ManagedLock<Lock> collectionLock = ManagedLock.acquire(getLock(), LockMode.WRITE_LOCK)) {
 
-        try {
             doc = documents.get(name.getRawCollectionPath());
-            
+
             if (doc == null) {
                 return; //TODO should throw an exception!!! Otherwise we dont know if the document was removed
             }
-            
-            doc.getUpdateLock().acquire(LockMode.WRITE_LOCK);
-            
-            boolean useTriggers = isTriggersEnabled();
-            if (CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE_URI.equals(name)) {
-                // we remove a collection.xconf configuration file: tell the configuration manager to
-                // reload the configuration.
-                useTriggers = false;
-                final CollectionConfigurationManager confMgr = broker.getBrokerPool().getConfigurationManager();
-                if (confMgr != null) {
-                    confMgr.invalidate(getURI(), broker.getBrokerPool());
+
+            try(final ManagedLock<Lock> docUpdateLock = ManagedLock.acquire(doc.getUpdateLock(), LockMode.WRITE_LOCK)) {
+
+                try {
+                    boolean useTriggers = isTriggersEnabled();
+                    if (CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE_URI.equals(name)) {
+                        // we remove a collection.xconf configuration file: tell the configuration manager to
+                        // reload the configuration.
+                        useTriggers = false;
+                        final CollectionConfigurationManager confMgr = broker.getBrokerPool().getConfigurationManager();
+                        if (confMgr != null) {
+                            confMgr.invalidate(getURI(), broker.getBrokerPool());
+                        }
+                    }
+
+                    DocumentTriggers trigger = new DocumentTriggers(broker, null, this, useTriggers ? getConfiguration(broker) : null);
+
+                    trigger.beforeDeleteDocument(broker, transaction, doc);
+
+                    broker.removeXMLResource(transaction, doc);
+                    documents.remove(name.getRawCollectionPath());
+
+                    trigger.afterDeleteDocument(broker, transaction, getURI().append(name));
+
+                    broker.getBrokerPool().getNotificationService().notifyUpdate(doc, UpdateListener.REMOVE);
+                } finally {
+                    broker.getBrokerPool().getProcessMonitor().endJob();
                 }
             }
-            
-            DocumentTriggers trigger = new DocumentTriggers(broker, null, this, useTriggers ? getConfiguration(broker) : null);
-            
-            trigger.beforeDeleteDocument(broker, transaction, doc);
-            
-            broker.removeXMLResource(transaction, doc);
-            documents.remove(name.getRawCollectionPath());
-            
-            trigger.afterDeleteDocument(broker, transaction, getURI().append(name));
-            
-            broker.getBrokerPool().getNotificationService().notifyUpdate(doc, UpdateListener.REMOVE);
-        } finally {
-            broker.getBrokerPool().getProcessMonitor().endJob();
-            if(doc != null) {
-                doc.getUpdateLock().release(LockMode.WRITE_LOCK);
-            }
-            getLock().release(LockMode.WRITE_LOCK);
         }
     }
 
@@ -1054,9 +953,8 @@ public class MutableCollection implements Collection {
         if(!getPermissionsNoLock().validate(broker.getCurrentSubject(), Permission.WRITE)) {
             throw new PermissionDeniedException("Permission denied to write collection: " + path);
         }
-        
-        try {
-            getLock().acquire(LockMode.READ_LOCK);
+
+        try(final ManagedLock<Lock> collectionLock = ManagedLock.acquire(getLock(), LockMode.READ_LOCK)) {
             final DocumentImpl doc = getDocument(broker, name);
             
             if(doc.isLockedForWrite()) {
@@ -1064,8 +962,6 @@ public class MutableCollection implements Collection {
             }
             
             removeBinaryResource(transaction, broker, doc);
-        } finally {
-            getLock().release(LockMode.READ_LOCK);
         }
     }
 
@@ -1081,45 +977,43 @@ public class MutableCollection implements Collection {
         }
 
         broker.getBrokerPool().getProcessMonitor().startJob(ProcessMonitor.ACTION_REMOVE_BINARY, doc.getFileURI());
-        getLock().acquire(LockMode.WRITE_LOCK);
+        try(final ManagedLock<Lock> collectionLock = ManagedLock.acquire(getLock(), LockMode.WRITE_LOCK)) {
 
-        try {
-            
-            if(doc.getResourceType() != DocumentImpl.BINARY_FILE) {
+            if (doc.getResourceType() != DocumentImpl.BINARY_FILE) {
                 throw new PermissionDeniedException("document " + doc.getFileURI() + " is not a binary object");
             }
-            
-            if(doc.isLockedForWrite()) {
+
+            if (doc.isLockedForWrite()) {
                 throw new PermissionDeniedException("Document " + doc.getFileURI() + " is locked for write");
             }
-            
-            doc.getUpdateLock().acquire(LockMode.WRITE_LOCK);
-            
-            DocumentTriggers trigger = new DocumentTriggers(broker, null, this, isTriggersEnabled() ? getConfiguration(broker) : null);
 
-            trigger.beforeDeleteDocument(broker, transaction, doc);
-
-            final IndexController indexController = broker.getIndexController();
-            final StreamListener listener = indexController.getStreamListener(doc, StreamListener.ReindexMode.REMOVE_BINARY);
-            try {
-                indexController.startIndexDocument(transaction, listener);
-
+            try(final ManagedLock<Lock> docUpdateLock = ManagedLock.acquire(doc.getUpdateLock(), LockMode.WRITE_LOCK)) {
                 try {
-                    broker.removeBinaryResource(transaction, (BinaryDocument) doc);
-                } catch (final IOException ex) {
-                    throw new PermissionDeniedException("Cannot delete file: " + doc.getURI().toString() + ": " + ex.getMessage(), ex);
+                    DocumentTriggers trigger = new DocumentTriggers(broker, null, this, isTriggersEnabled() ? getConfiguration(broker) : null);
+
+                    trigger.beforeDeleteDocument(broker, transaction, doc);
+
+                    final IndexController indexController = broker.getIndexController();
+                    final StreamListener listener = indexController.getStreamListener(doc, StreamListener.ReindexMode.REMOVE_BINARY);
+                    try {
+                        indexController.startIndexDocument(transaction, listener);
+
+                        try {
+                            broker.removeBinaryResource(transaction, (BinaryDocument) doc);
+                        } catch (final IOException ex) {
+                            throw new PermissionDeniedException("Cannot delete file: " + doc.getURI().toString() + ": " + ex.getMessage(), ex);
+                        }
+                        documents.remove(doc.getFileURI().getRawCollectionPath());
+                    } finally {
+                        indexController.endIndexDocument(transaction, listener);
+                    }
+
+                    trigger.afterDeleteDocument(broker, transaction, doc.getURI());
+
+                } finally {
+                    broker.getBrokerPool().getProcessMonitor().endJob();
                 }
-                documents.remove(doc.getFileURI().getRawCollectionPath());
-            } finally {
-                indexController.endIndexDocument(transaction, listener);
             }
-
-            trigger.afterDeleteDocument(broker, transaction, doc.getURI());
-
-        } finally {
-            broker.getBrokerPool().getProcessMonitor().endJob();
-            doc.getUpdateLock().release(LockMode.WRITE_LOCK);
-            getLock().release(LockMode.WRITE_LOCK);
         }
     }
 
@@ -1405,46 +1299,48 @@ public class MutableCollection implements Collection {
         boolean oldDocLocked = false;
 
         db.getProcessMonitor().startJob(ProcessMonitor.ACTION_VALIDATE_DOC, name);
-        getLock().acquire(LockMode.WRITE_LOCK);
         try {
-            DocumentImpl document = new DocumentImpl((BrokerPool) db, this, name);
-            oldDoc = documents.get(name.getRawCollectionPath());
-            checkPermissionsForAddDocument(broker, oldDoc);
-            checkCollectionConflict(name);
-            manageDocumentInformation(oldDoc, document);
-            final Indexer indexer = new Indexer(broker, transaction);
-            
-            final IndexInfo info = new IndexInfo(indexer, config);
-            info.setCreating(oldDoc == null);
-            info.setOldDocPermissions(oldDoc != null ? oldDoc.getPermissions() : null);
-            indexer.setDocument(document, config);
-            addObserversToIndexer(broker, indexer);
-            indexer.setValidating(true);
-            
-            final DocumentTriggers trigger = new DocumentTriggers(broker, indexer, this, isTriggersEnabled() ? config : null);
-            trigger.setValidating(true);
-            
-            info.setTriggers(trigger);
+            try(final ManagedLock<Lock> collectionLock = ManagedLock.acquire(getLock(), LockMode.WRITE_LOCK)) {
+                DocumentImpl document = new DocumentImpl((BrokerPool) db, this, name);
+                oldDoc = documents.get(name.getRawCollectionPath());
+                checkPermissionsForAddDocument(broker, oldDoc);
+                checkCollectionConflict(name);
+                manageDocumentInformation(oldDoc, document);
+                final Indexer indexer = new Indexer(broker, transaction);
 
-            if(oldDoc == null) {
-                trigger.beforeCreateDocument(broker, transaction, getURI().append(name));
-            } else {
-                trigger.beforeUpdateDocument(broker, transaction, oldDoc);
-            }
+                final IndexInfo info = new IndexInfo(indexer, config);
+                info.setCreating(oldDoc == null);
+                info.setOldDocPermissions(oldDoc != null ? oldDoc.getPermissions() : null);
+                indexer.setDocument(document, config);
+                addObserversToIndexer(broker, indexer);
+                indexer.setValidating(true);
 
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Scanning document " + getURI().append(name));
-            }
-            
-            validator.accept(info);
-            // new document is valid: remove old document
-            if (oldDoc != null) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("removing old document " + oldDoc.getFileURI());
+                final DocumentTriggers trigger = new DocumentTriggers(broker, indexer, this, isTriggersEnabled() ? config : null);
+                trigger.setValidating(true);
+
+                info.setTriggers(trigger);
+
+                if (oldDoc == null) {
+                    trigger.beforeCreateDocument(broker, transaction, getURI().append(name));
+                } else {
+                    trigger.beforeUpdateDocument(broker, transaction, oldDoc);
                 }
-                updateModificationTime(document);
-                oldDoc.getUpdateLock().acquire(LockMode.WRITE_LOCK);
-                oldDocLocked = true;
+
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Scanning document " + getURI().append(name));
+                }
+
+                validator.accept(info);
+                // new document is valid: remove old document
+                if (oldDoc != null) {
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("removing old document " + oldDoc.getFileURI());
+                    }
+                    updateModificationTime(document);
+
+                    //TODO(AR) this code could be refactored so that we use a ManagedLock here
+                    oldDoc.getUpdateLock().acquire(LockMode.WRITE_LOCK);
+                    oldDocLocked = true;
 
                 /**
                  * Matching {@link StreamListener#endReplaceDocument(Txn)} call is in
@@ -1453,52 +1349,52 @@ public class MutableCollection implements Collection {
                 final StreamListener listener = broker.getIndexController().getStreamListener(document, StreamListener.ReindexMode.REPLACE_DOCUMENT);
                 listener.startReplaceDocument(transaction);
 
-                if (oldDoc.getResourceType() == DocumentImpl.BINARY_FILE) {
-                    //TODO : use a more elaborated method ? No triggers...
-                    broker.removeBinaryResource(transaction, (BinaryDocument) oldDoc);
-                    documents.remove(oldDoc.getFileURI().getRawCollectionPath());
-                    //This lock is released in storeXMLInternal()
-                    //TODO : check that we go until there to ensure the lock is released
+                    if (oldDoc.getResourceType() == DocumentImpl.BINARY_FILE) {
+                        //TODO : use a more elaborated method ? No triggers...
+                        broker.removeBinaryResource(transaction, (BinaryDocument) oldDoc);
+                        documents.remove(oldDoc.getFileURI().getRawCollectionPath());
+                        //This lock is released in storeXMLInternal()
+                        //TODO : check that we go until there to ensure the lock is released
 //                    if (transaction != null)
 //                    	transaction.acquireLock(document.getUpdateLock(), LockMode.WRITE_LOCK);
 //                	else
-                    document.getUpdateLock().acquire(LockMode.WRITE_LOCK);
-                    
-                    document.setDocId(broker.getNextResourceId(transaction, this));
-                    addDocument(transaction, broker, document);
+                        document.getUpdateLock().acquire(LockMode.WRITE_LOCK);
+
+                        document.setDocId(broker.getNextResourceId(transaction, this));
+                        addDocument(transaction, broker, document);
+                    } else {
+                        //TODO : use a more elaborated method ? No triggers...
+                        broker.removeXMLResource(transaction, oldDoc, false);
+                        oldDoc.copyOf(broker, document, oldDoc);
+                        indexer.setDocumentObject(oldDoc);
+                        //old has become new at this point
+                        document = oldDoc;
+                        oldDocLocked = false;
+                    }
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("removed old document " + oldDoc.getFileURI());
+                    }
                 } else {
-                    //TODO : use a more elaborated method ? No triggers...
-                    broker.removeXMLResource(transaction, oldDoc, false);
-                    oldDoc.copyOf(broker, document, oldDoc);
-                    indexer.setDocumentObject(oldDoc);
-                    //old has become new at this point
-                    document = oldDoc;
-                    oldDocLocked = false;		
-                }
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("removed old document " + oldDoc.getFileURI());
-                }
-            } else {
-                //This lock is released in storeXMLInternal()
-                //TODO : check that we go until there to ensure the lock is released
+                    //This lock is released in storeXMLInternal()
+                    //TODO : check that we go until there to ensure the lock is released
 //            	if (transaction != null)
 //                	transaction.acquireLock(document.getUpdateLock(), LockMode.WRITE_LOCK);
 //            	else
-                document.getUpdateLock().acquire(LockMode.WRITE_LOCK);
-            	
-                document.setDocId(broker.getNextResourceId(transaction, this));
-                addDocument(transaction, broker, document);
-            }
-            
-            trigger.setValidating(false);
+                    document.getUpdateLock().acquire(LockMode.WRITE_LOCK);
 
-            return info;
-        } finally {
-            if (oldDoc != null && oldDocLocked) {
-                oldDoc.getUpdateLock().release(LockMode.WRITE_LOCK);
+                    document.setDocId(broker.getNextResourceId(transaction, this));
+                    addDocument(transaction, broker, document);
+                }
+
+                trigger.setValidating(false);
+
+                return info;
+            } finally {
+                if (oldDoc != null && oldDocLocked) {
+                    oldDoc.getUpdateLock().release(LockMode.WRITE_LOCK);
+                }
             }
-            getLock().release(LockMode.WRITE_LOCK);
-            
+        } finally {
             db.getProcessMonitor().endJob();
         }
     }
@@ -1668,56 +1564,58 @@ public class MutableCollection implements Collection {
         final DocumentImpl oldDoc = getDocument(broker, docUri);
         final DocumentTriggers trigger = new DocumentTriggers(broker, null, this, isTriggersEnabled() ? getConfiguration(broker) : null);
 
-        getLock().acquire(LockMode.WRITE_LOCK);
-        try {
-            db.getProcessMonitor().startJob(ProcessMonitor.ACTION_STORE_BINARY, docUri);
-            checkPermissionsForAddDocument(broker, oldDoc);
-            checkCollectionConflict(docUri);
-            //manageDocumentInformation(oldDoc, blob);
-            if (!broker.preserveOnCopy(preserve)) {
-                blob.copyOf(broker, blob, oldDoc);
-            }
-            final DocumentMetadata metadata = blob.getMetadata();
-            metadata.setMimeType(mimeType == null ? MimeType.BINARY_TYPE.getName() : mimeType);
-            if (created != null) {
-                metadata.setCreated(created.getTime());
-            }
-            if (modified != null) {
-                metadata.setLastModified(modified.getTime());
-            }
-            blob.setContentLength(size);
-            
-            if (oldDoc == null) {
-                trigger.beforeCreateDocument(broker, transaction, blob.getURI());
-            } else {
-                trigger.beforeUpdateDocument(broker, transaction, oldDoc);
-            }
-
-            if (oldDoc != null) {
-                LOG.debug("removing old document " + oldDoc.getFileURI());
-                if (!broker.preserveOnCopy(preserve)) {
-                    updateModificationTime(blob);
-                }
-                broker.removeResource(transaction, oldDoc);
-            }
-
-            broker.storeBinaryResource(transaction, blob, is);
-            addDocument(transaction, broker, blob, oldDoc);
-
-            final IndexController indexController = broker.getIndexController();
-            final StreamListener listener = indexController.getStreamListener(blob, StreamListener.ReindexMode.STORE);
-            indexController.startIndexDocument(transaction, listener);
+        try(final ManagedLock<Lock> collectionLock = ManagedLock.acquire(getLock(), LockMode.WRITE_LOCK)) {
             try {
-                broker.storeXMLResource(transaction, blob);
-            } finally {
-                indexController.endIndexDocument(transaction, listener);
-            }
+                db.getProcessMonitor().startJob(ProcessMonitor.ACTION_STORE_BINARY, docUri);
+                checkPermissionsForAddDocument(broker, oldDoc);
+                checkCollectionConflict(docUri);
+                //manageDocumentInformation(oldDoc, blob);
+                if (!broker.preserveOnCopy(preserve)) {
+                    blob.copyOf(broker, blob, oldDoc);
+                }
+                final DocumentMetadata metadata = blob.getMetadata();
+                metadata.setMimeType(mimeType == null ? MimeType.BINARY_TYPE.getName() : mimeType);
+                if (created != null) {
+                    metadata.setCreated(created.getTime());
+                }
+                if (modified != null) {
+                    metadata.setLastModified(modified.getTime());
+                }
+                blob.setContentLength(size);
 
-            blob.getUpdateLock().acquire(LockMode.READ_LOCK);
-        } finally {
-            broker.getBrokerPool().getProcessMonitor().endJob();
-            getLock().release(LockMode.WRITE_LOCK);
+                if (oldDoc == null) {
+                    trigger.beforeCreateDocument(broker, transaction, blob.getURI());
+                } else {
+                    trigger.beforeUpdateDocument(broker, transaction, oldDoc);
+                }
+
+                if (oldDoc != null) {
+                    LOG.debug("removing old document " + oldDoc.getFileURI());
+                    if (!broker.preserveOnCopy(preserve)) {
+                        updateModificationTime(blob);
+                    }
+                    broker.removeResource(transaction, oldDoc);
+                }
+
+                broker.storeBinaryResource(transaction, blob, is);
+                addDocument(transaction, broker, blob, oldDoc);
+
+                final IndexController indexController = broker.getIndexController();
+                final StreamListener listener = indexController.getStreamListener(blob, StreamListener.ReindexMode.STORE);
+                indexController.startIndexDocument(transaction, listener);
+                try {
+                    broker.storeXMLResource(transaction, blob);
+                } finally {
+                    indexController.endIndexDocument(transaction, listener);
+                }
+
+                blob.getUpdateLock().acquire(LockMode.READ_LOCK);
+            } finally {
+                broker.getBrokerPool().getProcessMonitor().endJob();
+            }
         }
+
+        //TODO(AR) the current acquire/release of blob#updateLock is asymmetrical. This looks incorrect!
         try {
             if (oldDoc == null) {
                 trigger.afterCreateDocument(broker, transaction, blob);
@@ -1737,11 +1635,8 @@ public class MutableCollection implements Collection {
 
     @Override
     public void setPermissions(final DBBroker broker, final int mode) throws LockException, PermissionDeniedException {
-        try {
-            getLock().acquire(LockMode.WRITE_LOCK);
+        try(final ManagedLock<Lock> collectionLock = ManagedLock.acquire(getLock(), LockMode.WRITE_LOCK)) {
             PermissionFactory.chmod(broker, this, Optional.of(mode), Optional.empty());
-        } finally {
-            getLock().release(LockMode.WRITE_LOCK);
         }
     }
 
@@ -1777,15 +1672,12 @@ public class MutableCollection implements Collection {
 
     @Override
     public void setTriggersEnabled(final boolean enabled) {
-        try {
-            getLock().acquire(LockMode.WRITE_LOCK);
+        try(final ManagedLock<Lock> collectionLock = ManagedLock.acquire(getLock(), LockMode.WRITE_LOCK)) {
             this.triggersEnabled = enabled;
         } catch(final LockException e) {
             LOG.warn(e.getMessage(), e);
             //Ouch ! -pb
             this.triggersEnabled = enabled;
-        } finally {
-            getLock().release(LockMode.WRITE_LOCK);
         }
     }
 

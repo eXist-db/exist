@@ -49,7 +49,9 @@ import org.exist.security.PermissionFactory;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
+import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.Lock.LockMode;
+import org.exist.storage.lock.ManagedLock;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
@@ -881,8 +883,8 @@ public class Resource extends File {
 
         try {
             final BrokerPool db = BrokerPool.getInstance();
-            try (final DBBroker broker = db.getBroker()) {
-                collection.getLock().acquire(LockMode.READ_LOCK);
+            try (final DBBroker broker = db.getBroker();
+                    final ManagedLock<Lock> collectionLock = ManagedLock.acquire(collection.getLock(), LockMode.READ_LOCK)) {
 
                 final File[] children = new File[collection.getChildCollectionCount(broker) +
                         collection.getDocumentCount(broker)];
@@ -893,7 +895,7 @@ public class Resource extends File {
                     children[j] = new Resource(collection.getURI().append(i.next()));
 
                 //collections
-                final List<XmldbURI> allresources = new ArrayList<XmldbURI>();
+                final List<XmldbURI> allresources = new ArrayList<>();
                 DocumentImpl doc = null;
                 for (final Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
                     doc = i.next();
@@ -912,15 +914,8 @@ public class Resource extends File {
                 }
 
                 return children;
-            } catch (final LockException e) {
-                //throw new IOException("Failed to acquire lock on collection '" + uri + "'");
-                return null;
-
             } catch (final Exception e) {
                 return null;
-
-            } finally {
-                collection.release(LockMode.READ_LOCK);
             }
 
         } catch (final Exception e) {

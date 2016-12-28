@@ -24,6 +24,8 @@ package org.exist.backup.restore;
 import java.io.IOException;
 
 import org.exist.security.PermissionFactory;
+import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.ManagedLock;
 import org.w3c.dom.DocumentType;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -61,7 +63,6 @@ import org.exist.backup.BackupDescriptor;
 import org.exist.backup.restore.listener.RestoreListener;
 import org.exist.security.ACLPermission.ACE_ACCESS_TYPE;
 import org.exist.security.ACLPermission.ACE_TARGET;
-import org.exist.security.internal.aider.ACEAider;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.txn.TransactionManager;
@@ -542,20 +543,16 @@ public class SystemImportHandler extends DefaultHandler {
 
         @Override
         public void apply() {
-            try {
-            	getTarget().getLock().acquire(LockMode.WRITE_LOCK);
+            final TransactionManager txnManager = broker.getDatabase().getTransactionManager();
 
-                final TransactionManager txnManager = broker.getDatabase().getTransactionManager();
-                try(final Txn txn = txnManager.beginTransaction()) {
-                    final Permission permission = getTarget().getPermissions();
-                    PermissionFactory.chown(broker, permission, Optional.ofNullable(getOwner()), Optional.ofNullable(getGroup()));
-                    PermissionFactory.chmod(broker, permission, Optional.of(getMode()), Optional.ofNullable(permission instanceof ACLPermission ? getAces() : null));
-	                broker.saveCollection(txn, getTarget());
-	                txnManager.commit(txn);
-            	} finally {
-                	getTarget().release(LockMode.WRITE_LOCK);
-                }
-                
+            try(final ManagedLock<Lock> targetLock = ManagedLock.acquire(getTarget().getLock(), LockMode.WRITE_LOCK);
+                final Txn txn = txnManager.beginTransaction()) {
+                final Permission permission = getTarget().getPermissions();
+                PermissionFactory.chown(broker, permission, Optional.ofNullable(getOwner()), Optional.ofNullable(getGroup()));
+                PermissionFactory.chmod(broker, permission, Optional.of(getMode()), Optional.ofNullable(permission instanceof ACLPermission ? getAces() : null));
+                broker.saveCollection(txn, getTarget());
+
+                txnManager.commit(txn);
             } catch (final Exception xe) {
                 final String msg = "ERROR: Failed to set permissions on Collection '" + getTarget().getURI() + "'.";
                 LOG.error(msg, xe);
@@ -572,21 +569,14 @@ public class SystemImportHandler extends DefaultHandler {
 
         @Override
         public void apply() {
-            try {
-            	getTarget().getUpdateLock().acquire(LockMode.WRITE_LOCK);
-
-            	final TransactionManager txnManager = broker.getDatabase().getTransactionManager();
-
-                try(final Txn txn = txnManager.beginTransaction()) {
-	            	final Permission permission = getTarget().getPermissions();
-                    PermissionFactory.chown(broker, permission, Optional.ofNullable(getOwner()), Optional.ofNullable(getGroup()));
-                    PermissionFactory.chmod(broker, permission, Optional.of(getMode()), Optional.ofNullable(permission instanceof ACLPermission ? getAces() : null));
-	                broker.storeXMLResource(txn, getTarget());
-	                txnManager.commit(txn);
-	            } finally {
-	                getTarget().getUpdateLock().release(LockMode.WRITE_LOCK);
-	            }
-            
+            final TransactionManager txnManager = broker.getDatabase().getTransactionManager();
+            try(final ManagedLock<Lock> targetLock = ManagedLock.acquire(getTarget().getUpdateLock(), LockMode.WRITE_LOCK);
+                    final Txn txn = txnManager.beginTransaction()) {
+                final Permission permission = getTarget().getPermissions();
+                PermissionFactory.chown(broker, permission, Optional.ofNullable(getOwner()), Optional.ofNullable(getGroup()));
+                PermissionFactory.chmod(broker, permission, Optional.of(getMode()), Optional.ofNullable(permission instanceof ACLPermission ? getAces() : null));
+                broker.storeXMLResource(txn, getTarget());
+                txnManager.commit(txn);
             } catch (final Exception xe) {
                 final String msg = "ERROR: Failed to set permissions on Document '" + getTarget().getURI() + "'.";
                 LOG.error(msg, xe);

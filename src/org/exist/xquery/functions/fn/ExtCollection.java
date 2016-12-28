@@ -174,8 +174,9 @@ public class ExtCollection extends Function {
             } catch (final LockException e) {
                 throw new XPathException(e.getMessage());
             } finally {
-                if (lockAcquired)
-                    {dlock.release(LockMode.READ_LOCK);}
+                if (lockAcquired) {
+                    dlock.release(LockMode.READ_LOCK);
+                }
             }
         }
         registerUpdateListener();

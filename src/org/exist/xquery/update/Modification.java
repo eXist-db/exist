@@ -41,6 +41,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.Lock.LockMode;
+import org.exist.storage.lock.ManagedLock;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
@@ -267,13 +268,10 @@ public abstract class Modification extends AbstractExpression
             for (final Iterator<DocumentImpl> i = docs.getDocumentIterator(); i.hasNext(); ) {
                 final DocumentImpl next = i.next();
                 if(next.getMetadata().getSplitCount() > splitCount) {
-                    Lock lock = next.getUpdateLock();
-                    try {
-                        lock.acquire(LockMode.WRITE_LOCK);
+                    try(final ManagedLock<Lock> nextLock = ManagedLock.acquire(next.getUpdateLock(), LockMode.WRITE_LOCK)) {
                         broker.defragXMLResource(transaction, next);
-                    } finally {
-                        lock.release(LockMode.WRITE_LOCK);
-                    }}
+                    }
+                }
                 broker.checkXMLResourceConsistency(next);
             }
 

@@ -26,6 +26,7 @@ import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.Lock.LockMode;
+import org.exist.storage.lock.ManagedLock;
 import org.exist.util.FileUtils;
 import org.exist.util.LockException;
 import org.exist.util.ReadOnlyException;
@@ -96,22 +97,16 @@ public abstract class DOMTransaction {
      * @return an <code>Object</code> value
      */
     public Object run() {
-        final Lock lock = file.getLock();
-        try {
-            // try to acquire a lock on the file
-            try {
-                lock.acquire( mode );
-            } catch( final LockException e ) {
-                LOG.error("Failed to acquire read lock on " + FileUtils.fileName(file.getFile()), e);
-                return null;
-            }
+        // try to acquire a lock on the file
+        try(final ManagedLock<Lock> domFileLock = ManagedLock.acquire(file.getLock(), mode)) {
             file.setOwnerObject(ownerObject);
             file.setCurrentDocument(document);
             return start();
+        } catch(final LockException e) {
+            LOG.error("Failed to acquire read lock on " + FileUtils.fileName(file.getFile()), e);
+            return null;
         } catch(final ReadOnlyException e) {
             LOG.error(e.getMessage(), e);
-        } finally {
-            lock.release(mode);
         }
         return null;
     }

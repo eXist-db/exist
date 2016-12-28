@@ -12,6 +12,7 @@ import org.exist.storage.btree.DBException;
 import org.exist.storage.btree.Value;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.Lock.LockMode;
+import org.exist.storage.lock.ManagedLock;
 import org.exist.util.*;
 
 import java.io.IOException;
@@ -80,24 +81,16 @@ public class CollectionStore extends BFile {
     }
 
     public void freeResourceId(int id) {
-        final Lock lock = getLock();
-        try {
-            lock.acquire(LockMode.WRITE_LOCK);
-
+        try(final ManagedLock<Lock> bfileLock = ManagedLock.acquire(getLock(), LockMode.WRITE_LOCK)) {
             freeResourceIds.push(id);
         } catch (LockException e) {
             LOG.warn("Failed to acquire lock on " + FileUtils.fileName(getFile()), e);
-        } finally {
-            lock.release(LockMode.WRITE_LOCK);
         }
     }
 
     public int getFreeResourceId() {
         int freeDocId = DocumentImpl.UNKNOWN_DOCUMENT_ID;
-        final Lock lock = getLock();
-        try {
-            lock.acquire(LockMode.WRITE_LOCK);
-
+        try(final ManagedLock<Lock> bfileLock = ManagedLock.acquire(getLock(), LockMode.WRITE_LOCK)) {
             if (!freeResourceIds.isEmpty()) {
                 freeDocId = freeResourceIds.pop();
             }
@@ -105,31 +98,21 @@ public class CollectionStore extends BFile {
             LOG.warn("Failed to acquire lock on " + FileUtils.fileName(getFile()), e);
             return DocumentImpl.UNKNOWN_DOCUMENT_ID;
             //TODO : rethrow ? -pb
-        } finally {
-            lock.release(LockMode.WRITE_LOCK);
         }
         return freeDocId;
     }
 
     public void freeCollectionId(int id) {
-        final Lock lock = getLock();
-        try {
-            lock.acquire(LockMode.WRITE_LOCK);
-
+        try(final ManagedLock<Lock> bfileLock = ManagedLock.acquire(getLock(), LockMode.WRITE_LOCK)) {
             freeCollectionIds.push(id);
         } catch (LockException e) {
             LOG.warn("Failed to acquire lock on " + FileUtils.fileName(getFile()), e);
-        } finally {
-            lock.release(LockMode.WRITE_LOCK);
         }
     }
 
     public int getFreeCollectionId() {
         int freeCollectionId = Collection.UNKNOWN_COLLECTION_ID;
-        final Lock lock = getLock();
-        try {
-            lock.acquire(LockMode.WRITE_LOCK);
-
+        try(final ManagedLock<Lock> bfileLock = ManagedLock.acquire(getLock(), LockMode.WRITE_LOCK)) {
             if (!freeCollectionIds.isEmpty()) {
                 freeCollectionId = freeCollectionIds.pop();
             }
@@ -137,8 +120,6 @@ public class CollectionStore extends BFile {
             LOG.warn("Failed to acquire lock on " + FileUtils.fileName(getFile()), e);
             return Collection.UNKNOWN_COLLECTION_ID;
             //TODO : rethrow ? -pb
-        } finally {
-            lock.release(LockMode.WRITE_LOCK);
         }
         return freeCollectionId;
     }
