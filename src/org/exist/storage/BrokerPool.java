@@ -56,6 +56,7 @@ import org.exist.security.internal.SecurityManagerImpl;
 import org.exist.storage.journal.JournalManager;
 import org.exist.storage.lock.DeadlockDetection;
 import org.exist.storage.lock.FileLockService;
+import org.exist.storage.lock.ReentrantReadWriteLock;
 import org.exist.storage.recovery.RecoveryManager;
 import org.exist.storage.sync.Sync;
 import org.exist.storage.sync.SyncTask;

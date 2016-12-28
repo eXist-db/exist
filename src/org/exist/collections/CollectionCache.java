@@ -31,6 +31,7 @@ import org.exist.storage.cache.LRUCache;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.lock.ManagedLock;
+import org.exist.storage.lock.ReentrantReadWriteLock;
 import org.exist.util.LockException;
 import org.exist.util.hashtable.Object2LongHashMap;
 import org.exist.util.hashtable.SequencedLongHashMap;
@@ -38,15 +39,19 @@ import org.exist.xmldb.XmldbURI;
 
 /**
  * Global cache for {@link org.exist.collections.Collection} objects. The
- * cache is owned by {@link org.exist.storage.index.CollectionStore}. It is not
- * synchronized. Thus a lock should be obtained on the collection store before
- * accessing the cache.
+ * cache is owned by {@link org.exist.storage.index.CollectionStore}.
+ *
+ * It is not synchronized. Thus a lock should be obtained on the collection store before
+ * accessing the cache. For the synchronization purposes of this object, {@link #getLock()}
+ * may be used
  * 
  * @author wolf
  */
 @NotThreadSafe
 public class CollectionCache extends LRUCache<Collection> implements BrokerPoolService {
     private final static Logger LOG = LogManager.getLogger(CollectionCache.class);
+
+    private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock(getClass().getSimpleName());
 
     private final BrokerPool pool;
     private Object2LongHashMap<String> names;
@@ -55,6 +60,10 @@ public class CollectionCache extends LRUCache<Collection> implements BrokerPoolS
         super("collection cache", blockBuffers, 2.0, growthThreshold, CacheManager.DATA_CACHE);
         this.pool = pool;
         this.names = new Object2LongHashMap<>(blockBuffers);
+    }
+
+    public Lock getLock() {
+        return lock;
     }
 
     @Override
@@ -87,7 +96,7 @@ public class CollectionCache extends LRUCache<Collection> implements BrokerPoolS
         return get(key);
     }
 
-    // TODO(AR) we have a mix of concerns here, we should not involve collection locking in the operation of the cache  or invalidating the collectionConfiguration
+    // TODO(AR) we have a mix of concerns here, we should not involve collection locking in the operation of the cache or invalidating the collectionConfiguration
     /**
      * Overwritten to lock collections before they are removed.
      */
