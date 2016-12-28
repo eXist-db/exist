@@ -399,9 +399,9 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
 
         statusObserver.ifPresent(this.statusObservers::add);
 
-        this.watchdog = Optional.ofNullable(System.getProperty("trace.brokers"))
-                .filter(v -> v.equals("yes"))
-                .map(v -> new BrokerWatchdog());
+        this.watchdog = Optional.ofNullable(System.getProperty(BrokerWatchdog.TRACE_BROKERS_PROPERTY_NAME))
+                .filter(value -> value.equals("yes"))
+                .map(value -> new BrokerWatchdog());
     }
 
     /**

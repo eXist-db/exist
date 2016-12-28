@@ -1,3 +1,22 @@
+/*
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2003-2016 The eXist-db Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ */
 package org.exist.storage;
 
 import java.io.PrintWriter;
@@ -8,10 +27,19 @@ import java.util.Map;
 
 import org.exist.EXistException;
 
+/**
+ * Traces the lease of a Broker
+ *
+ * Note that tracing the stack is expensive
+ * this should only be done in debug mode by
+ * enabling the System Property {@link #TRACE_BROKERS_PROPERTY_NAME}
+ */
 public class BrokerWatchdog {
 
-	private static DateFormat df = DateFormat.getDateTimeInstance();
-	private final static String EOL = System.getProperty("line.separator");
+	public static final String TRACE_BROKERS_PROPERTY_NAME = "trace.brokers";
+
+	private static final DateFormat df = DateFormat.getDateTimeInstance();
+	private static final String EOL = System.getProperty("line.separator");
 
 	private static class WatchedBroker {
 		private final DBBroker broker;
@@ -24,7 +52,7 @@ public class BrokerWatchdog {
 			this.trace = new StringBuilder();
 			trace();
 		}
-		
+
 		void trace() {
 			trace.append("Reference count: ").append(broker.getReferenceCount()).append(EOL);
 			final StackTraceElement[] stack = Thread.currentThread().getStackTrace();
