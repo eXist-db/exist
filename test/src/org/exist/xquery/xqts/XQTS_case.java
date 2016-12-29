@@ -36,6 +36,7 @@ import org.exist.dom.persistent.ElementImpl;
 import org.exist.dom.NodeListImpl;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.source.FileSource;
+import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.util.FileUtils;
 import org.exist.w3c.tests.TestCase;
@@ -137,11 +138,12 @@ public class XQTS_case extends TestCase {
 
         XQuery xquery = null;
 
-        try(final DBBroker broker = db.get(Optional.of(db.getSecurityManager().getSystemSubject()))) {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             broker.getConfiguration().setProperty( XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, true);
 
-            xquery = db.getXQueryService();
+            xquery = pool.getXQueryService();
 
             prepare(broker, xquery);
 

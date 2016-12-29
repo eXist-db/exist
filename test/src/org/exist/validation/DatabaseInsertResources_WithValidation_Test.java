@@ -21,7 +21,6 @@
  */
 package org.exist.validation;
 
-import org.exist.security.Subject;
 import java.io.IOException;
 import java.util.Optional;
 
@@ -30,13 +29,16 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
-import org.exist.util.Configuration;
+import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.XMLReaderObjectFactory;
 import org.exist.xmldb.XmldbURI;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
+
+import static org.exist.util.PropertiesBuilder.propertiesBuilder;
 
 /**
  *  Insert documents for validation tests.
@@ -44,8 +46,6 @@ import org.junit.Test;
  * @author Dannes Wessels (dizzzz@exist-db.org)
  */
 public class DatabaseInsertResources_WithValidation_Test {
-    
-    private static Configuration config;
 
     private final static String TEST_COLLECTION = "testValidationInsert";
 
@@ -112,24 +112,22 @@ public class DatabaseInsertResources_WithValidation_Test {
         }
     }
 
+    @ClassRule
+    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(propertiesBuilder()
+            .set(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, "auto").build());
+
     @BeforeClass
     public static void startup() throws Exception {
-        config = new Configuration();
-        config.setProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, "auto");
-        BrokerPool.configure(1, 5, config);
         createTestCollections();
-
     }
 
     @AfterClass
     public static void shutdown() throws Exception {
         removeTestCollections();
-        BrokerPool.stopAll(true);
     }
 
     private static void createTestCollections() throws Exception {
-
-        final BrokerPool pool = BrokerPool.getInstance();
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
 
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().authenticate(ADMIN_UID, ADMIN_PWD)));
@@ -150,8 +148,7 @@ public class DatabaseInsertResources_WithValidation_Test {
     }
 
     private static void removeTestCollections() throws Exception {
-
-        final BrokerPool pool = BrokerPool.getInstance();
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
 
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().authenticate(ADMIN_UID, ADMIN_PWD)));

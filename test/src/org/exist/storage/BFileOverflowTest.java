@@ -27,11 +27,9 @@ import org.exist.storage.index.BFile;
 import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
-import org.exist.util.Configuration;
-import org.exist.util.DatabaseConfigurationException;
+import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.FixedByteArray;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -45,11 +43,13 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class BFileOverflowTest {
 
-    private BrokerPool pool;
+    @Rule
+    public final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer();
 
     @Test
     public void add() throws EXistException, IOException {
-        TransactionManager mgr = pool.getTransactionManager();
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        final TransactionManager mgr = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             broker.flush();
@@ -93,6 +93,7 @@ public class BFileOverflowTest {
     @Test
     public void read() throws EXistException {
         BrokerPool.FORCE_CORRUPTION = false;
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             BFile collectionsDb = (BFile)((NativeBroker)broker).getStorage(NativeBroker.COLLECTIONS_DBX_ID);
             
@@ -100,17 +101,4 @@ public class BFileOverflowTest {
             Value val = collectionsDb.get(key);
         }
     }
-
-    @Before
-    public void setUp() throws DatabaseConfigurationException, EXistException {
-        Configuration config = new Configuration();
-        BrokerPool.configure(1, 5, config);
-        pool = BrokerPool.getInstance();
-    }
-
-    @After
-    public void tearDown() {
-        BrokerPool.stopAll(false);
-    }
-
 }

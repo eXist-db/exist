@@ -45,13 +45,14 @@ import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.Txn;
 import static org.exist.test.TestConstants.TEST_COLLECTION_URI;
-import org.exist.util.Configuration;
-import org.exist.util.ConfigurationHelper;
+
+import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -110,12 +111,10 @@ public class SystemExportImportTest {
 
     private static String BINARY = "test";
 
-    private static BrokerPool pool;
-
     @Test
     public void exportImport() throws Exception {
         Path file;
-
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             final Collection test = broker.getCollection(TEST_COLLECTION_URI);
@@ -166,16 +165,14 @@ public class SystemExportImportTest {
 		serializer.setProperties(contentsOutputProps);
 		return serializer.serialize(document);
 	}
-    
+
+    @Rule
+    public final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer();
+
 	@Before
     public void startDB() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, SAXException, CollectionConfigurationException, LockException, ClassNotFoundException, InstantiationException, XMLDBException, IllegalAccessException {
-
-        final Path confFile = ConfigurationHelper.lookup("conf.xml");
-        final Configuration config = new Configuration(confFile.toAbsolutePath().toString());
-        BrokerPool.configure(1, 5, config);
-        pool = BrokerPool.getInstance();
-        assertNotNull(pool);
-        pool.getPluginsManager().addPlugin("org.exist.storage.md.Plugin");
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+	    pool.getPluginsManager().addPlugin("org.exist.storage.md.Plugin");
 
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                 final Txn transaction = pool.getTransactionManager().beginTransaction()) {
@@ -218,11 +215,10 @@ public class SystemExportImportTest {
     @After
     public void cleanup() throws PermissionDeniedException, IOException, TriggerException, EXistException {
     	clean();
-        BrokerPool.stopAll(false);
-        pool = null;
     }
 
     private void clean() throws PermissionDeniedException, IOException, TriggerException, EXistException {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                 final Txn transaction = pool.getTransactionManager().beginTransaction()) {
 

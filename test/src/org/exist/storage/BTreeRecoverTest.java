@@ -36,11 +36,13 @@ import org.exist.storage.btree.Value;
 import org.exist.storage.dom.DOMFile;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.xquery.TerminatedException;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -53,19 +55,21 @@ import static org.junit.Assert.assertEquals;
  */
 public class BTreeRecoverTest {
 
-    private BrokerPool pool;
+    @Rule
+    public final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer();
     private int count = 0;
 
     @Test
     public void add() throws EXistException, IOException, BTreeException, TerminatedException {
         //Add some random data and force db corruption
-        
-        TransactionManager mgr = pool.getTransactionManager();
-        NodeIdFactory idFact = pool.getNodeFactory();
+
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        final TransactionManager mgr = pool.getTransactionManager();
+        final NodeIdFactory idFact = pool.getNodeFactory();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             broker.flush();
-            DOMFile domDb = ((NativeBroker) broker).getDOMFile();
+            final DOMFile domDb = ((NativeBroker) broker).getDOMFile();
             domDb.setOwnerObject(this);
 
             BrokerPool.FORCE_CORRUPTION = true;
@@ -108,31 +112,20 @@ public class BTreeRecoverTest {
     public void get() throws EXistException, TerminatedException, IOException, BTreeException {
         //Recover and read the data
         @SuppressWarnings("unused")
-		TransactionManager mgr = pool.getTransactionManager();
-        NodeIdFactory idFact = pool.getNodeFactory();
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+		final TransactionManager mgr = pool.getTransactionManager();
+        final NodeIdFactory idFact = pool.getNodeFactory();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-            DOMFile domDb = ((NativeBroker) broker).getDOMFile();
+            final DOMFile domDb = ((NativeBroker) broker).getDOMFile();
             domDb.setOwnerObject(this);
             
-            IndexQuery query = new IndexQuery(IndexQuery.GEQ, new NativeBroker.NodeRef(500, idFact.createInstance(1)));
+            final IndexQuery query = new IndexQuery(IndexQuery.GEQ, new NativeBroker.NodeRef(500, idFact.createInstance(1)));
             domDb.query(query, new IndexCallback());
             assertEquals(count, 800);
             
             Writer writer = new StringWriter();
             domDb.dump(writer);
         }
-    }
-
-    @Before
-    public void setUp() throws DatabaseConfigurationException, EXistException {
-        Configuration config = new Configuration();
-        BrokerPool.configure(1, 5, config);
-        pool = BrokerPool.getInstance();
-    }
-
-    @After
-    protected void tearDown() {
-        BrokerPool.stopAll(false);
     }
     
     private final class IndexCallback implements BTreeCallback {

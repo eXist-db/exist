@@ -41,12 +41,11 @@ import org.exist.storage.DBBroker;
 import org.exist.security.Subject;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.txn.Txn;
-import org.exist.util.Configuration;
+import org.exist.test.ExistEmbeddedServer;
+import org.exist.util.FileUtils;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 
 import static org.junit.Assert.assertTrue;
 
@@ -55,18 +54,15 @@ import static org.junit.Assert.assertTrue;
  */
 public class TwoDatabasesTest {
 
-    final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
+    private static Path config1File;
+    private static Path dataDir1;
 
-    BrokerPool pool1;
-    Subject user1;
+    private static Path config2File;
+    private static Path dataDir2;
 
-    BrokerPool pool2;
-    Subject user2;
-
-    @Before
-    public void setUp() throws Exception {
-        // Setup the log4j configuration
-        String log4j = System.getProperty("log4j.configurationFile");
+    @BeforeClass
+    public static void prepare() {
+        final String log4j = System.getProperty("log4j.configurationFile");
         if (log4j == null) {
             Path lf = Paths.get("log42j.xml");
             if (Files.isReadable(lf)) {
@@ -74,29 +70,38 @@ public class TwoDatabasesTest {
             }
         }
 
-        int threads = 5;
+        final String packagePath = TwoDatabasesTest.class.getPackage().getName().replace('.', '/');
+        final Path existHome = Optional.ofNullable(System.getProperty("exist.home", System.getProperty("user.dir"))).map(Paths::get).orElse(Paths.get("."));
+        final Path testConfigPkg = existHome.resolve("test").resolve("src").resolve(packagePath);
+        final Path tmpTest = existHome.resolve("test").resolve("temp").resolve(packagePath);
 
-        String packagePath = TwoDatabasesTest.class.getPackage().getName().replace('.', '/');
-        String existHome = System.getProperty("exist.home");
-        if (existHome == null) {
-            existHome = ".";
-        }
-        Path config1File = Paths.get(existHome + "/test/src/" + packagePath + "/conf1.xml");
-        Path data1Dir = Paths.get(existHome + "/test/temp/" + packagePath + "/data1");
-        if(!Files.exists(data1Dir)) {
-            Files.createDirectories(data1Dir);
-        }
+        config1File = testConfigPkg.resolve("conf1.xml");
+        dataDir1 = tmpTest.resolve("data1");
+        FileUtils.mkdirsQuietly(dataDir1);
 
-        Path config2File = Paths.get(existHome + "/test/src/" + packagePath + "/conf2.xml");
-        Path data2Dir = Paths.get(existHome + "/test/temp/" + packagePath + "/data2");
-        if(!Files.exists(data2Dir)) {
-            Files.createDirectories(data2Dir);
-        }
+        config2File = testConfigPkg.resolve("conf2.xml");
+        dataDir2 = tmpTest.resolve("data2");
+        FileUtils.mkdirsQuietly(dataDir2);
+    }
 
-        // Configure the database
-        Configuration config1 = new Configuration(config1File.toAbsolutePath().toString());
-        BrokerPool.configure("db1", 1, threads, config1);
-        pool1 = BrokerPool.getInstance("db1");
+    @AfterClass
+    public static void cleanup() {
+        FileUtils.deleteQuietly(dataDir2);
+        FileUtils.deleteQuietly(dataDir1);
+    }
+
+    @Rule
+    public final ExistEmbeddedServer existEmbeddedServer1 = new ExistEmbeddedServer("db1", config1File);
+
+    @Rule
+    public final ExistEmbeddedServer existEmbeddedServer2 = new ExistEmbeddedServer("db2", config2File);
+
+    private Subject user1;
+    private Subject user2;
+
+    @Before
+    public void setUp() throws Exception {
+        final BrokerPool pool1 = existEmbeddedServer1.getBrokerPool();
         user1 = pool1.getSecurityManager().getSystemSubject();
         try(final DBBroker broker1 = pool1.get(Optional.of(user1))) {
             Collection top1 = null;
@@ -110,9 +115,7 @@ public class TwoDatabasesTest {
             }
         }
 
-        Configuration config2 = new Configuration(config2File.toAbsolutePath().toString());
-        BrokerPool.configure("db2", 1, threads, config2);
-        pool2 = BrokerPool.getInstance("db2");
+        final BrokerPool pool2 = existEmbeddedServer2.getBrokerPool();
         user2 = pool2.getSecurityManager().getSystemSubject();
         try(final DBBroker broker2 = pool2.get(Optional.of(user2))) {
             Collection top2 = null;
@@ -127,12 +130,6 @@ public class TwoDatabasesTest {
         }
     }
 
-    @After
-    public void tearDown() {
-        pool1.shutdown();
-        pool2.shutdown();
-    }
-
     @Test
     public void putGet() throws LockException, TriggerException, PermissionDeniedException, EXistException, IOException {
         put();
@@ -140,6 +137,7 @@ public class TwoDatabasesTest {
     }
 
     private void put() throws EXistException, LockException, TriggerException, PermissionDeniedException, IOException {
+        final BrokerPool pool1 = existEmbeddedServer1.getBrokerPool();
         try (final DBBroker broker1 = pool1.get(Optional.of(user1));
              final Txn transaction1 = pool1.getTransactionManager().beginTransaction()) {
             Collection top1 = null;
@@ -153,6 +151,7 @@ public class TwoDatabasesTest {
             }
         }
 
+        final BrokerPool pool2 = existEmbeddedServer2.getBrokerPool();
         try (final DBBroker broker2 = pool2.get(Optional.of(user1));
              final Txn transaction2 = pool2.getTransactionManager().beginTransaction()) {
             Collection top2 = null;
@@ -168,10 +167,12 @@ public class TwoDatabasesTest {
     }
 
     private void get() throws EXistException, IOException, PermissionDeniedException, LockException {
+        final BrokerPool pool1 = existEmbeddedServer1.getBrokerPool();
         try (final DBBroker broker1 = pool1.get(Optional.of(user1))) {
             assertTrue(getBin(broker1, "1"));
         }
 
+        final BrokerPool pool2 = existEmbeddedServer2.getBrokerPool();
         try (final DBBroker broker2 = pool2.get(Optional.of(user2))) {
             assertTrue(getBin(broker2, "2"));
         }

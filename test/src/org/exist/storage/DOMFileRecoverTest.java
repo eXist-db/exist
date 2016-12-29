@@ -38,12 +38,10 @@ import org.exist.storage.btree.Value;
 import org.exist.storage.dom.DOMFile;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
-import org.exist.util.Configuration;
-import org.exist.util.DatabaseConfigurationException;
+import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.ReadOnlyException;
 import org.exist.xquery.TerminatedException;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 
 import static org.junit.Assert.assertNotNull;
@@ -55,13 +53,15 @@ import static org.junit.Assert.assertNotNull;
  *
  */
 public class DOMFileRecoverTest {
-	
-	private BrokerPool pool;
+
+    @Rule
+    public final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer();
 
     @Test
 	public void add() throws EXistException, ReadOnlyException, TerminatedException, IOException, BTreeException {
 		BrokerPool.FORCE_CORRUPTION = false;
 
+		final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final NodeIdFactory idFact = pool.getNodeFactory();
 
 		try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
@@ -147,6 +147,7 @@ public class DOMFileRecoverTest {
 
     @Test
     public void get() throws EXistException, IOException, BTreeException {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
         	//Recover and read the data
 
@@ -174,16 +175,4 @@ public class DOMFileRecoverTest {
             domDb.dump(writer);
 	    }
     }
-
-    @Before
-	public void setUp() throws DatabaseConfigurationException, EXistException {
-        Configuration config = new Configuration();
-        BrokerPool.configure(1, 5, config);
-        pool = BrokerPool.getInstance();
-	}
-
-    @After
-	protected void tearDown() {
-		BrokerPool.stopAll(false);
-	}
 }

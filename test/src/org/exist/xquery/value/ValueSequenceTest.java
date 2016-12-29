@@ -11,15 +11,10 @@ import org.exist.security.*;
 import org.exist.security.SecurityManager;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.util.Configuration;
-import org.exist.util.DatabaseConfigurationException;
+import org.exist.test.ExistEmbeddedServer;
 import org.exist.xmldb.XmldbURI;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Optional;
 
 /**
@@ -28,7 +23,8 @@ import java.util.Optional;
  */
 public class ValueSequenceTest {
 
-    private static BrokerPool pool;
+    @ClassRule
+    public final static ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer();
 
     @Test
     public void sortInDocumentOrder() throws EXistException, PermissionDeniedException, AuthenticationException {
@@ -45,6 +41,7 @@ public class ValueSequenceTest {
             memtree.endElement();
         memtree.endDocument();
 
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final Subject admin = pool.getSecurityManager().authenticate("admin", "");
         try(final DBBroker broker = pool.get(Optional.of(admin))) {
 
@@ -63,20 +60,5 @@ public class ValueSequenceTest {
             //call sort
             seq.sortInDocumentOrder();
         }
-    }
-
-    @BeforeClass
-    public static void startDb() throws EXistException, DatabaseConfigurationException {
-        final String conf = "conf.xml";
-        final Optional<Path> home = Optional.ofNullable(System.getProperty("exist.home", System.getProperty("user.dir"))).map(Paths::get);
-        final Configuration config = new Configuration(conf, home);
-        BrokerPool.configure(1, 5, config);
-        pool = BrokerPool.getInstance();
-    }
-
-    @AfterClass
-    public static void stopDb() {
-        pool = null;
-        BrokerPool.stopAll(false);
     }
 }
