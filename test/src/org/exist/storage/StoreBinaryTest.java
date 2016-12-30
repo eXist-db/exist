@@ -5,10 +5,9 @@ import java.util.Optional;
 
 import org.exist.collections.triggers.TriggerException;
 import org.exist.security.PermissionDeniedException;
+import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.*;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.*;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.EXistException;
 import org.exist.xmldb.XmldbURI;
@@ -16,7 +15,7 @@ import org.exist.test.TestConstants;
 import org.exist.collections.Collection;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
-import org.junit.Test;
+
 import static org.junit.Assert.*;
 
 /**
@@ -24,8 +23,6 @@ import static org.junit.Assert.*;
  * @author aretter
  */
 public class StoreBinaryTest {
-
-    private static BrokerPool pool = null;
 
     @Test
     public void check_MimeType_is_preserved() throws EXistException, InterruptedException, PermissionDeniedException, LockException, IOException, TriggerException, DatabaseConfigurationException {
@@ -43,7 +40,7 @@ public class StoreBinaryTest {
         final XmldbURI binaryDocUri = binaryDoc.getFileURI();
 
         //restart the database
-        restartDatabase();
+        existEmbeddedServer.restart();
 
         //retrieve the xquery document
         binaryDoc = getBinary(binaryDocUri);
@@ -53,20 +50,12 @@ public class StoreBinaryTest {
         assertEquals(xqueryMimeType, binaryDoc.getMetadata().getMimeType());
     }
 
-    @BeforeClass
-    public static void startupDatabase() throws DatabaseConfigurationException, EXistException {
-        final Configuration config = new Configuration();
-        BrokerPool.configure(1, 5, config);
-        pool = BrokerPool.getInstance();
-    }
-
-    private static void restartDatabase() throws EXistException, DatabaseConfigurationException {
-        stopDatabase();
-        startupDatabase();
-    }
+    @ClassRule
+    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer();
 
     @After
     public void removeTestResources() throws EXistException, PermissionDeniedException, IOException, TriggerException {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                 final Txn transaction = transact.beginTransaction()) {
@@ -76,14 +65,10 @@ public class StoreBinaryTest {
         }
     }
 
-    @AfterClass
-    public static void stopDatabase() {
-        pool.shutdown();
-    }
-
     private BinaryDocument getBinary(final XmldbURI uri) throws EXistException, PermissionDeniedException {
         BinaryDocument binaryDoc = null;
 
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
             assertNotNull(broker);
 
@@ -98,6 +83,7 @@ public class StoreBinaryTest {
     }
 
     private BinaryDocument storeBinary(String name,  String data, String mimeType) throws EXistException, PermissionDeniedException, IOException, TriggerException, LockException {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
 
         BinaryDocument binaryDoc = null;

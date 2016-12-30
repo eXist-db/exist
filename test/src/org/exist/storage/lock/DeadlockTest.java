@@ -23,6 +23,7 @@ package org.exist.storage.lock;
 
 import static org.junit.Assert.*;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -33,8 +34,10 @@ import java.util.concurrent.TimeUnit;
 import org.exist.EXistException;
 import org.exist.TestDataGenerator;
 import org.exist.collections.Collection;
+import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.IndexInfo;
+import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
@@ -42,6 +45,7 @@ import org.exist.storage.txn.Txn;
 import org.exist.test.TestConstants;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
+import org.exist.util.LockException;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.XPathQueryServiceImpl;
 import org.exist.xmldb.XmldbURI;
@@ -54,6 +58,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.base.ResourceSet;
@@ -136,14 +141,14 @@ public class DeadlockTest {
 
 	private final Random random = new Random();
 
-        @Parameter
-        public String testName;
+	@Parameter
+	public String testName;
         
-        @Parameter(value = 1)
+	@Parameter(value = 1)
 	public int mode;
 	
 	@BeforeClass
-	public static void startDB() throws DatabaseConfigurationException, EXistException {
+	public static void startDB() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, SAXException, CollectionConfigurationException, LockException, ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
         final Configuration config = new Configuration();
         BrokerPool.configure(1, 40, config);
         pool = BrokerPool.getInstance();
@@ -152,68 +157,55 @@ public class DeadlockTest {
 		try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                 final Txn transaction = transact.beginTransaction();) {
 
-			Collection root = broker.getOrCreateCollection(transaction,
+			final Collection root = broker.getOrCreateCollection(transaction,
 					XmldbURI.ROOT_COLLECTION_URI);
 			assertNotNull(root);
 			broker.saveCollection(transaction, root);
 
-			Collection test = broker.getOrCreateCollection(transaction,
+			final Collection test = broker.getOrCreateCollection(transaction,
 					TestConstants.TEST_COLLECTION_URI);
 			assertNotNull(test);
 			broker.saveCollection(transaction, test);
 
-			CollectionConfigurationManager mgr = pool.getConfigurationManager();
-            mgr.addConfiguration(transaction, broker, test, COLLECTION_CONFIG);
-            
-			InputSource is = new InputSource(Paths.get(
+			final CollectionConfigurationManager mgr = pool.getConfigurationManager();
+			mgr.addConfiguration(transaction, broker, test, COLLECTION_CONFIG);
+
+			final InputSource is = new InputSource(Paths.get(
 					"samples/shakespeare/hamlet.xml").toUri().toASCIIString());
 			assertNotNull(is);
-			IndexInfo info = test.validateXMLResource(transaction, broker,
+			final IndexInfo info = test.validateXMLResource(transaction, broker,
 					XmldbURI.create("hamlet.xml"), is);
 			assertNotNull(info);
 			test.store(transaction, broker, info, is);
 			transact.commit(transaction);
 
 			// initialize XML:DB driver
-			Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
-			Database database = (Database) cl.newInstance();
+			final Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
+			final Database database = (Database) cl.newInstance();
 			DatabaseManager.registerDatabase(database);
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail(e.getMessage());
 		}
-	}
-
-	@AfterClass
-	public static void stopDB() {
-		try {
-			org.xmldb.api.base.Collection root = DatabaseManager.getCollection(
-					"xmldb:exist:///db", "admin", null);
-
-			DatabaseInstanceManager dim = (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
-			dim.shutdown();
-		} catch (XMLDBException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
-		pool = null;
 	}
 
     @After
-    public void clearDB() {
-        try {
-			org.xmldb.api.base.Collection root = DatabaseManager.getCollection("xmldb:exist:///db/test", "admin", "");
-			CollectionManagementService service = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
-			service.removeCollection(".");
-        } catch (XMLDBException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
+    public void clearDB() throws XMLDBException {
+		final org.xmldb.api.base.Collection root = DatabaseManager.getCollection("xmldb:exist:///db/test", "admin", "");
+		CollectionManagementService service = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
+		service.removeCollection(".");
     }
+
+	@AfterClass
+	public static void stopDB() throws XMLDBException {
+		org.xmldb.api.base.Collection root = DatabaseManager.getCollection(
+				"xmldb:exist:///db", "admin", null);
+
+		DatabaseInstanceManager dim = (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
+		dim.shutdown();
+		pool = null;
+	}
 
     @Test
 	public void runTasks() {
-		ExecutorService executor = Executors.newFixedThreadPool(N_THREADS);
+		final ExecutorService executor = Executors.newFixedThreadPool(N_THREADS);
         executor.submit(new StoreTask("store", COLL_COUNT, DOC_COUNT));
         synchronized (this) {
             try {
@@ -242,21 +234,22 @@ public class DeadlockTest {
 	private static class StoreTask implements Runnable {
 
 		@SuppressWarnings("unused")
-		private String id;
-		private int docCount;
-		private int collectionCount;
+		private final String id;
+		private final int docCount;
+		private final int collectionCount;
 
-		public StoreTask(String id, int collectionCount, int docCount) {
+		public StoreTask(final String id, final int collectionCount, final int docCount) {
 			this.id = id;
 			this.collectionCount = collectionCount;
 			this.docCount = docCount;
 		}
 
+		@Override
 		public void run() {
 			final TransactionManager transact = pool.getTransactionManager();
 			try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
-				TestDataGenerator generator = new TestDataGenerator("xdb", docCount);
+				final TestDataGenerator generator = new TestDataGenerator("xdb", docCount);
 				Collection coll;
 				int fileCount = 0;
 				for (int i = 0; i < collectionCount; i++) {
@@ -301,7 +294,7 @@ public class DeadlockTest {
 		}
 
 		public void run() {
-			StringBuilder buf = new StringBuilder();
+			final StringBuilder buf = new StringBuilder();
 			String collection = "/db";
 			int currentMode = mode;
 			if (mode == TEST_MIXED || currentMode == TEST_REMOVE)
@@ -360,30 +353,30 @@ public class DeadlockTest {
 	}
 
     private class RemoveDocumentTask implements Runnable {
+        private final int collectionCount;
+        private final int documentCount;
 
-        private int collectionCount;
-        private int documentCount;
-
-        public RemoveDocumentTask(int collectionCount, int documentCount) {
+        public RemoveDocumentTask(final int collectionCount, final int documentCount) {
             this.collectionCount = collectionCount;
             this.documentCount = documentCount;
         }
 
+        @Override
         public void run() {
             boolean removed = false;
             do {
-                int collectionId = random.nextInt(collectionCount);
-                String collection = "/db/test/" + collectionId;
-                int docId = random.nextInt(documentCount) * collectionId;
-                String document = "test" + docId + ".xml";
+                final int collectionId = random.nextInt(collectionCount);
+                final String collection = "/db/test/" + collectionId;
+                final int docId = random.nextInt(documentCount) * collectionId;
+                final String document = "test" + docId + ".xml";
                 try {
-                    org.xmldb.api.base.Collection testCollection = DatabaseManager.getCollection("xmldb:exist://" + collection, "admin", "");
-                    Resource resource = testCollection.getResource(document);
+                    final org.xmldb.api.base.Collection testCollection = DatabaseManager.getCollection("xmldb:exist://" + collection, "admin", "");
+                    final Resource resource = testCollection.getResource(document);
                     if (resource != null) {
                         testCollection.removeResource(resource);
                         removed = true;
                     }
-                } catch (XMLDBException e) {
+                } catch (final XMLDBException e) {
                     e.printStackTrace();
                     fail(e.getMessage());
                 }

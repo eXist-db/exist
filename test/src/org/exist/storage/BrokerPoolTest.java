@@ -2,14 +2,11 @@ package org.exist.storage;
 
 import org.exist.EXistException;
 import org.exist.security.Subject;
-import org.exist.util.Configuration;
-import org.exist.util.DatabaseConfigurationException;
+import org.exist.test.ExistEmbeddedServer;
 import org.exist.xmldb.LocalCollection;
 import org.exist.xmldb.XmldbURI;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
-import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.XMLDBException;
 
 import java.util.Optional;
@@ -21,11 +18,13 @@ import static org.junit.Assert.assertEquals;
  */
 public class BrokerPoolTest {
 
-    private BrokerPool pool;
+    @Rule
+    public final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer();
 
     @Test
     public void noPrivilegeEscalationThroughBrokerRelease() throws EXistException {
         //take a broker with the guest user
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final Subject guestUser = pool.getSecurityManager().getGuestSubject();
         try(final DBBroker broker1 = pool.get(Optional.of(guestUser))) {
 
@@ -45,6 +44,7 @@ public class BrokerPoolTest {
     @Test
     public void privilegeStableWhenSubjectNull() throws EXistException {
         //take a broker with the SYSTEM user
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final Subject sysUser = pool.getSecurityManager().getSystemSubject();
         try(final DBBroker broker1 = pool.get(Optional.of(sysUser))) {
 
@@ -63,6 +63,7 @@ public class BrokerPoolTest {
     @Test
     public void guestDefaultPriviledge() throws EXistException {
         //take a broker with default perms
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker1 = pool.getBroker()) {
 
             final Subject guestUser = pool.getSecurityManager().getGuestSubject();
@@ -82,6 +83,7 @@ public class BrokerPoolTest {
     @Test
     public void noPrivilegeEscalationThroughBrokerRelease_xmldb() throws EXistException, XMLDBException {
         //take a broker with the guest user
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final Subject guestUser = pool.getSecurityManager().getGuestSubject();
         try(final DBBroker broker1 = pool.get(Optional.of(guestUser))) {
 
@@ -94,23 +96,5 @@ public class BrokerPoolTest {
             //ensure that after releasing the broker, the user has been returned to the guest user
             assertEquals("Expected `guest` user, but was: " + broker1.getCurrentSubject().getName(), guestUser.getId(), broker1.getCurrentSubject().getId());
         }
-    }
-
-
-
-    @Before
-    public void setUp() throws DatabaseConfigurationException, EXistException {
-        Configuration config = new Configuration();
-        BrokerPool.configure(1, 5, config);
-        pool = BrokerPool.getInstance();
-    }
-
-    @After
-    public void tearDown() {
-        BrokerPool.stopAll(false);
-    }
-
-    private class TestableDatabaseManager extends DatabaseManager {
-
     }
 }

@@ -8,7 +8,6 @@ import org.exist.security.internal.aider.UserAider;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;

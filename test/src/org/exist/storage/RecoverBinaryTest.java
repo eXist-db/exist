@@ -37,12 +37,11 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
-import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import static org.junit.Assert.assertNotNull;
 
@@ -52,13 +51,13 @@ import static org.junit.Assert.assertNotNull;
  */
 public class RecoverBinaryTest {
 
-    private BrokerPool pool;
+    @Rule
+    public final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer();
 
     @Test
     public void storeAndLoad() throws LockException, TriggerException, PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException {
         store();
-        tearDown();
-        setUp();
+        existEmbeddedServer.restart();
         load();
     }
 
@@ -66,6 +65,7 @@ public class RecoverBinaryTest {
 
     	BrokerPool.FORCE_CORRUPTION = true;
 
+    	final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
 
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
@@ -101,6 +101,7 @@ public class RecoverBinaryTest {
 
         BrokerPool.FORCE_CORRUPTION = false;
 
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
             final BinaryDocument binDoc = (BinaryDocument) broker.getXMLResource(TestConstants.TEST_COLLECTION_URI.append(TestConstants.TEST_BINARY_URI), LockMode.READ_LOCK);
             assertNotNull("Binary document is null", binDoc);
@@ -112,18 +113,5 @@ public class RecoverBinaryTest {
                 assertNotNull(data);
             }
 	    }
-    }
-
-    @Before
-    public void setUp() throws DatabaseConfigurationException, EXistException {
-        final Configuration config = new Configuration();
-        BrokerPool.configure(1, 5, config);
-        pool = BrokerPool.getInstance();
-    }
-
-    @After
-    public void tearDown() {
-        BrokerPool.stopAll(false);
-        pool = null;
     }
 }

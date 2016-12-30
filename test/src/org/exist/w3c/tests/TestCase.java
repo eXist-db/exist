@@ -50,7 +50,7 @@ import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.EXistOutputKeys;
-import org.exist.util.Configuration;
+import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.FileUtils;
 import org.exist.xmldb.LocalCollection;
 import org.exist.xmldb.LocalXMLResource;
@@ -59,10 +59,7 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
+import org.junit.*;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
@@ -77,51 +74,46 @@ import org.xmldb.api.base.XMLDBException;
  *
  */
 public abstract class TestCase {
-	
-    protected static BrokerPool db = null;
     protected static DBBroker broker = null;
     protected static Collection testCollection = null;
 
 	public static final String testLocation = "test/external/";
 
+	@ClassRule
+	public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer();
+
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-	    Configuration configuration = new Configuration();
-        BrokerPool.configure(1, 10, configuration);
-
-        db = BrokerPool.getInstance();
-        
-        broker = db.get(Optional.of(db.getSecurityManager().getSystemSubject()));
+		final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
         Assert.assertNotNull(broker);
 	}
 
-	public abstract void loadTS() throws Exception;
-	
-	@AfterClass
-	public static void tearDownAfterClass() throws Exception {
-		if(broker != null) {
-			broker.close();
-		}
-	}
-
-	/**
-	 * @throws java.lang.Exception
-	 */
 	@Before
 	public void setUp() throws Exception {
 		if (testCollection == null) {
-			synchronized (db) {
+			final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+			synchronized (pool) {
 				if (testCollection == null) {
 					testCollection = broker.getCollection(getCollection());
 					if (testCollection == null) {
 						loadTS();
-	                    testCollection = broker.getCollection(getCollection());
+						testCollection = broker.getCollection(getCollection());
 						if (testCollection == null) {
 							Assert.fail("There is no Test Suite data at database");
 						}
 					}
 				}
 			}
+		}
+	}
+
+	public abstract void loadTS() throws Exception;
+
+	@AfterClass
+	public static void tearDownAfterClass() throws Exception {
+		if(broker != null) {
+			broker.close();
 		}
 	}
 	
@@ -312,14 +304,15 @@ public abstract class TestCase {
 		Subject user = null;
 		
 		LocalXMLResource res = null;
+		final BrokerPool pool = existEmbeddedServer.getBrokerPool();
 		if (r instanceof NodeProxy) {
 			NodeProxy p = (NodeProxy) r;
-			res = new LocalXMLResource(user, db, collection, p);
+			res = new LocalXMLResource(user, pool, collection, p);
 		} else if (r instanceof Node) {
-			res = new LocalXMLResource(user, db, collection, XmldbURI.EMPTY_URI);
+			res = new LocalXMLResource(user, pool, collection, XmldbURI.EMPTY_URI);
 			res.setContentAsDOM((Node)r);
 		} else if (r instanceof AtomicValue) {
-			res = new LocalXMLResource(user, db, collection, XmldbURI.EMPTY_URI);
+			res = new LocalXMLResource(user, pool, collection, XmldbURI.EMPTY_URI);
 			res.setContent(r);
 		} else if (r instanceof LocalXMLResource)
 			res = (LocalXMLResource) r;

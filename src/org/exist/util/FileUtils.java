@@ -224,6 +224,31 @@ public class FileUtils {
     }
 
     /**
+     * Makes directories on the filesystem the filesystem
+     *
+     * This method will never throw an IOException, it
+     * instead returns `false` if an error occurs
+     * whilst creating a file or directory
+     *
+     * Note that creation of a directory is not an atomic-operation
+     * and so if an error occurs during creation, some of the directories
+     * descendants may have already been created
+     *
+     * @return false if an error occurred, true otherwise
+     */
+    public static boolean mkdirsQuietly(final Path dir) {
+        try {
+            if (!Files.exists(dir)) {
+                Files.createDirectories(dir);
+            }
+            return true;
+        } catch (final IOException ioe) {
+            LOG.error("Unable to mkdirs: " + dir.toAbsolutePath().toString(), ioe);
+            return false;
+        }
+    }
+
+    /**
      * Attempts to resolve the child
      * against the parent.
      *

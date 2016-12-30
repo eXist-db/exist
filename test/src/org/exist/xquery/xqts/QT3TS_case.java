@@ -31,6 +31,7 @@ import java.util.*;
 import junit.framework.Assert;
 
 import org.custommonkey.xmlunit.Diff;
+import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.w3c.tests.TestCase;
@@ -75,7 +76,8 @@ public class QT3TS_case extends TestCase {
     }
 
     private Sequence enviroment(String file) throws Exception {
-        try(final DBBroker broker = db.get(Optional.of(db.getSecurityManager().getSystemSubject()))) {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             final XQuery xquery = broker.getBrokerPool().getXQueryService();
 
             broker.getConfiguration().setProperty(XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, true);
@@ -87,10 +89,10 @@ public class QT3TS_case extends TestCase {
         }
     }
 
-    private HashMap<String, Sequence> enviroments(String file) {
-        HashMap<String, Sequence> enviroments = new HashMap<String, Sequence>();
-
-        try(final DBBroker broker = db.get(Optional.of(db.getSecurityManager().getSystemSubject()))) {
+    private Map<String, Sequence> enviroments(String file) {
+        final Map<String, Sequence> enviroments = new HashMap<>();
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             XQuery xquery = broker.getBrokerPool().getXQueryService();
 
             broker.getConfiguration().setProperty(XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, true);
@@ -135,7 +137,8 @@ public class QT3TS_case extends TestCase {
     private String getEnviroment(String file, String name) {
         String enviroment = null;
 
-        try(final DBBroker broker = db.get(Optional.of(db.getSecurityManager().getSystemSubject()))) {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             XQuery xquery = broker.getBrokerPool().getXQueryService();
 
             broker.getConfiguration().setProperty(XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, true);
@@ -186,11 +189,12 @@ public class QT3TS_case extends TestCase {
         XQuery xquery = null;
 
         // try {
-        Set<String> extectedError = new HashSet<String>();
-        try(final DBBroker broker = db.get(Optional.of(db.getSecurityManager().getSystemSubject()))) {
+        Set<String> extectedError = new HashSet<>();
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             xquery = broker.getBrokerPool().getXQueryService();
 
-            final XQueryContext context = new XQueryContext(db);
+            final XQueryContext context = new XQueryContext(pool);
 
             broker.getConfiguration().setProperty(XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, true);
 

@@ -33,19 +33,16 @@ import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
-import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
-import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.XPathQueryServiceImpl;
 import org.exist.xmldb.XmldbURI;
-import org.junit.After;
-import org.junit.AfterClass;
+import org.junit.*;
+
 import static org.junit.Assert.*;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+
 import org.xml.sax.SAXException;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Database;
@@ -75,7 +72,8 @@ public class CollectionRemovalTest {
     private final static String QUERY1 = "/document/chapter";
     private final static String QUERY2 = "//chapter[title = 'Chapter 1']";
 
-    private static BrokerPool pool;
+    @ClassRule
+    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer();
 
     @Test
     public void failingRemoveCollection()
@@ -119,6 +117,7 @@ public class CollectionRemovalTest {
     private void removeCollection(final String user, final String password, final XmldbURI uri)
             throws AuthenticationException, EXistException, PermissionDeniedException, IOException, TriggerException {
         Collection test = null;
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().authenticate(user, password)));
             final Txn transaction = transact.beginTransaction()) {
@@ -134,6 +133,7 @@ public class CollectionRemovalTest {
     }
 
     private void retrieveDoc(final XmldbURI uri) throws EXistException, PermissionDeniedException, SAXException {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             Collection test = null;
             try {
@@ -169,16 +169,17 @@ public class CollectionRemovalTest {
         assertEquals(expected, result.getSize());
     }
 
-    @After
-    public void clearDB() throws XMLDBException {
-        final org.xmldb.api.base.Collection root =
-                DatabaseManager.getCollection("xmldb:exist://" + TestConstants.TEST_COLLECTION_URI.toString(), "admin", "");
-        final CollectionManagementService service = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
-        service.removeCollection(".");
+    @BeforeClass
+    public static void startDB() throws DatabaseConfigurationException, EXistException, ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
+        // initialize XML:DB driver
+        final Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
+        final Database database = (Database) cl.newInstance();
+        DatabaseManager.registerDatabase(database);
     }
 
     @Before
 	public void initDB() throws EXistException, DatabaseConfigurationException, PermissionDeniedException, IOException, SAXException, LockException, ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn transaction = transact.beginTransaction()) {
@@ -233,23 +234,11 @@ public class CollectionRemovalTest {
 		}
 	}
 
-    @BeforeClass
-    public static void startDB() throws DatabaseConfigurationException, EXistException, ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
-        final Configuration config = new Configuration();
-        BrokerPool.configure(1, 40, config, Optional.empty());
-        pool = BrokerPool.getInstance();
-
-        // initialize XML:DB driver
-        final Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
-        final Database database = (Database) cl.newInstance();
-        DatabaseManager.registerDatabase(database);
+    @After
+    public void clearDB() throws XMLDBException {
+        final org.xmldb.api.base.Collection root =
+                DatabaseManager.getCollection("xmldb:exist://" + TestConstants.TEST_COLLECTION_URI.toString(), "admin", "");
+        final CollectionManagementService service = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
+        service.removeCollection(".");
     }
-    @AfterClass
-	public static void stopDB() throws XMLDBException {
-        org.xmldb.api.base.Collection root = DatabaseManager.getCollection(
-                "xmldb:exist:///db", "admin", "");
-        final DatabaseInstanceManager dim = (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
-        dim.shutdown();
-		pool = null;
-	}
 }

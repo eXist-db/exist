@@ -13,7 +13,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 /**
- * Exist embedded XML:DB Server Rule to JUnit
+ * Exist embedded XML:DB Server Rule for JUnit
  */
 public class ExistXmldbEmbeddedServer extends ExternalResource {
 
