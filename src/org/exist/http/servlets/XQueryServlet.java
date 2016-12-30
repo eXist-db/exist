@@ -126,15 +126,13 @@ public class XQueryServlet extends AbstractExistHttpServlet {
     
     private String encoding = null;
     private String contentType = null;
+    private boolean hideErrorMessages = false;
 
     @Override
     public Logger getLog() {
         return LOG;
     }
 
-    /* (non-Javadoc)
-     * @see javax.servlet.GenericServlet#init(javax.servlet.ServletConfig)
-     */
     @Override
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
@@ -162,19 +160,16 @@ public class XQueryServlet extends AbstractExistHttpServlet {
         if(contentType == null) {
             contentType = DEFAULT_CONTENT_TYPE;
         }
+
+        hideErrorMessages = Optional.ofNullable(config.getInitParameter("hide-error-messages")).map(Boolean::parseBoolean)
+                .orElse(false);
     }
-    
-    /* (non-Javadoc)
-     * @see javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
-     */
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         process(request, response);
     }
-    
-    /* (non-Javadoc)
-     * @see javax.servlet.http.HttpServlet#doPost(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
-     */
+
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse response) throws ServletException, IOException {
         HttpServletRequest request = null;
@@ -204,10 +199,7 @@ public class XQueryServlet extends AbstractExistHttpServlet {
     // NOTE: The XQuery referenced in the target URL of the request will be executed and the PUT/DELETE request will be passed to it
     //
     //-------------------------------
-    
-     /* (non-Javadoc)
-     * @see javax.servlet.http.HttpServlet#doPut(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
-     */
+
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse response) throws ServletException, IOException {
         HttpServletRequest request = null;
@@ -228,17 +220,12 @@ public class XQueryServlet extends AbstractExistHttpServlet {
         
         process(request, response);
     }
-    
-    
-    /* (non-Javadoc)
-     * @see javax.servlet.http.HttpServlet#doDelete(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
-     */
+
     @Override
     protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         process(request, response);
     }
-    
-    
+
     /**
      * Processes incoming HTTP requests for XQuery
      */
@@ -536,18 +523,18 @@ public class XQueryServlet extends AbstractExistHttpServlet {
                 logger.debug(e.getMessage(),e);
             }          
             
-            if (reportErrors)
-            	{writeError(output, e);}
-            else {
+            if (reportErrors) {
+                writeError(output, e);
+            } else {
             	response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             	sendError(output, "Error", e.getMessage());
             }
             
         } catch (final Throwable e){
             getLog().error(e.getMessage(), e);
-            if (reportErrors)
-            	{writeError(output, e);}
-            else {
+            if (reportErrors) {
+                writeError(output, e);
+            } else {
             	response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             	sendError(output, "Error", e.getMessage());
             }
@@ -557,7 +544,7 @@ public class XQueryServlet extends AbstractExistHttpServlet {
         output.flush();
         output.close();
     }
-    
+
     private String getSessionAttribute(HttpSession session, String attribute) {
         final Object obj = session.getAttribute(attribute);
         return getValue(obj);
@@ -576,29 +563,30 @@ public class XQueryServlet extends AbstractExistHttpServlet {
         return obj.toString();
     }
 
-    private void writeError(PrintWriter out, Throwable e) {
+    private void writeError(final PrintWriter out, final Throwable e) {
         out.print("<error>");
-//        Throwable t = e.getCause();
-//        if (t != null)
-//            out.print(XMLUtil.encodeAttrMarkup(t.getMessage()));
-//        else
-        if (e.getMessage() != null)
-        	{out.print(XMLUtil.encodeAttrMarkup(e.getMessage()));}
+        if (e.getMessage() != null && !hideErrorMessages) {
+            out.print(XMLUtil.encodeAttrMarkup(e.getMessage()));
+        }
         out.println("</error>");
     }
 
-    private void sendError(PrintWriter out, String message, String description) {
+    private void sendError(final PrintWriter out, final String message, final String description) {
         out.print("<html><head>");
         out.print("<title>XQueryServlet Error</title>");
         out.print("<link rel=\"stylesheet\" type=\"text/css\" href=\"error.css\"></link></head>");
         out.println("<body><h1>Error found</h1>");
         out.print("<div class='message'><b>Message: </b>");
         out.print(message);
-        out.print("</div><div class='description'>");
-        out.print("<pre>");
-        out.print(description);
-        out.print("</pre>");
-        out.print("</div></body></html>");
+        out.print("</div>");
+
+        if(!hideErrorMessages) {
+            out.print("<div class='description'><pre>");
+            out.print(description);
+            out.print("</pre></div>");
+        }
+
+        out.print("</body></html>");
         out.flush();
     }
 }
