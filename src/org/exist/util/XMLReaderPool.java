@@ -27,11 +27,15 @@ import org.apache.logging.log4j.Logger;
 import org.exist.Namespaces;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.BrokerPoolService;
+import org.exist.storage.BrokerPoolServiceException;
 import org.exist.validation.GrammarPool;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.ext.DefaultHandler2;
+
+import javax.xml.parsers.ParserConfigurationException;
+import java.util.Map;
 
 /**
  * Maintains a pool of XMLReader objects. The pool is available through
@@ -45,6 +49,8 @@ public class XMLReaderPool extends StackObjectPool<XMLReader> implements BrokerP
 
     private final static DefaultHandler2 DUMMY_HANDLER = new DefaultHandler2();
 
+    private Configuration configuration = null;
+
     /**
      * 
      * 
@@ -52,15 +58,34 @@ public class XMLReaderPool extends StackObjectPool<XMLReader> implements BrokerP
      * @param maxIdle 
      * @param initIdleCapacity 
      */
-    public XMLReaderPool(PoolableObjectFactory<XMLReader> factory, int maxIdle, int initIdleCapacity) {
+    public XMLReaderPool(final PoolableObjectFactory<XMLReader> factory, final int maxIdle, final int initIdleCapacity) {
         super(factory, maxIdle, initIdleCapacity);
+    }
+
+    @Override
+    public void configure(final Configuration configuration) throws BrokerPoolServiceException {
+        this.configuration = configuration;
     }
 
     public synchronized XMLReader borrowXMLReader() {
         try {
-            return super.borrowObject();
+            final XMLReader reader = super.borrowObject();
+            setParserConfigFeatures(reader);
+            return reader;
         } catch (final Exception e) {
             throw new IllegalStateException("error while returning XMLReader: " + e.getMessage(), e );
+        }
+    }
+
+    /**
+     * Sets any features for the parser which were defined in conf.xml
+     */
+    private void setParserConfigFeatures(final XMLReader xmlReader) throws ParserConfigurationException, SAXNotRecognizedException, SAXNotSupportedException {
+        final Map<String, Boolean> parserFeatures = (Map<String, Boolean>)configuration.getProperty(XmlParser.XML_PARSER_FEATURES_PROPERTY);
+        if(parserFeatures != null) {
+            for(final Map.Entry<String, Boolean> feature : parserFeatures.entrySet()) {
+                xmlReader.setFeature(feature.getKey(), feature.getValue());
+            }
         }
     }
 
@@ -115,6 +140,12 @@ public class XMLReaderPool extends StackObjectPool<XMLReader> implements BrokerP
         return object;
     }
 
- 
+
+    // just used for config properties
+    public interface XmlParser {
+        String XML_PARSER_ELEMENT = "xml";
+        String XML_PARSER_FEATURES_ELEMENT = "features";
+        String XML_PARSER_FEATURES_PROPERTY = "parser.xml-parser.features";
+    }
     
 }
