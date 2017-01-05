@@ -31,10 +31,10 @@ import java.util.concurrent.locks.ReentrantLock;
  * @author Adam Retter <adam.retter@googlemail.com>
  */
 public class ManagedLock<T> implements AutoCloseable {
-    private final T lock;
+    protected final T lock;
     private final Runnable closer;
 
-    private ManagedLock(final T lock, final Runnable closer) {
+    ManagedLock(final T lock, final Runnable closer) {
         this.lock = lock;
         this.closer = closer;
     }

@@ -19,6 +19,8 @@
  */
 package org.exist.storage.lock;
 
+import com.evolvedbinary.j8fu.Either;
+import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.util.LockException;
@@ -71,6 +73,7 @@ public class LockManager {
      *
      * @return A lock for the Collection
      */
+    //TODO(AR) make package private / protected
     public ReentrantReadWriteLock getCollectionLock(final String collectionPath) {
         // calculate a value if not present or if the weak reference has expired
         final WeakReference<ReentrantReadWriteLock> collectionLockRef =
@@ -91,6 +94,100 @@ public class LockManager {
 
         // weak reference has expired in the mean time, regenerate
         return getCollectionLock(collectionPath);
+    }
+
+    //TODO(AR) Collection locks should be switched to Java's ReentrantReadWriteLock and must use the Fair Scheduler to get FIFO like ordering
+
+    //See Concurrency of Operations on B-Trees - Bayer and Schkolnick 1977 - Solution 2
+    public ManagedCollectionLock acquireCollectionReadLock(final XmldbURI collectionPath) throws LockException {
+        final XmldbURI[] segments = collectionPath.getPathSegments();
+
+        String path = '/' + segments[0].toString();
+        final ReentrantReadWriteLock root = getCollectionLock(path);
+        if(!root.acquire(Lock.LockMode.READ_LOCK)) {
+            throw new LockException("Unable to acquire READ_LOCK for: " + path);
+        }
+
+        ReentrantReadWriteLock current = root;
+
+        for(int i = 1; i < segments.length; i++) {
+            path += '/' + segments[i].toString();
+            final ReentrantReadWriteLock son = getCollectionLock(path);
+            if(!son.acquire(Lock.LockMode.READ_LOCK)) {
+                current.release(Lock.LockMode.READ_LOCK);
+                throw new LockException("Unable to acquire READ_LOCK for: " + path);
+            }
+
+            current.release(Lock.LockMode.READ_LOCK);
+            current = son;
+        }
+
+        final ReentrantReadWriteLock collectionReadLock = current;
+
+        return new ManagedCollectionLock(Either.Left(collectionReadLock), () -> collectionReadLock.release(Lock.LockMode.READ_LOCK));
+    }
+
+    //TODO(AR) there are several reasons we might lock a collection for writes
+        // 1) When we also need to modify its parent:
+            // 1.1) to remove a collection (which requires also modifying its parent)
+            // 1.2) to add a new collection (which also requires modifying its parent)
+            // 1.3) to rename a collection (which also requires modifying its parent)
+            //... So we take read locks all the way down, util the parent collection which we write lock, and then we write lock the collection
+
+        // 2) When we just need to modify its properties:
+            // 2.1) to add/remove/rename the child documents of the collection
+            // 2.2) to modify the collections metadata (permissions, timestamps etc)
+            //... So we read lock all the way down until the actual collection which we write lock
+
+    public ManagedCollectionLock acquireCollectionWriteLock(final XmldbURI collectionPath, final boolean lockParent) throws LockException {
+        final XmldbURI[] segments = collectionPath.getPathSegments();
+
+        String path = '/' + segments[0].toString();
+        final Lock.LockMode rootMode = segments.length == 1 || (segments.length == 2 && lockParent) ? Lock.LockMode.WRITE_LOCK : Lock.LockMode.READ_LOCK;
+
+        final ReentrantReadWriteLock root = getCollectionLock(path);
+        if(!root.acquire(rootMode)) {
+            throw new LockException("Unable to acquire " + rootMode.name() + " for: " + path);
+        }
+
+        Lock.LockMode currentMode = rootMode;
+        ReentrantReadWriteLock current = root;
+        ReentrantReadWriteLock parent = null;
+
+        final int lastSegmentIdx = segments.length - 1;
+
+        for(int i = 1; i < segments.length; i++) {
+            path += '/' + segments[i].toString();
+            final Lock.LockMode sonMode = i == lastSegmentIdx || (i == segments.length - 2 && lockParent) ? Lock.LockMode.WRITE_LOCK : Lock.LockMode.READ_LOCK;
+            final ReentrantReadWriteLock son = getCollectionLock(path);
+            if(!son.acquire(sonMode)) {
+                current.release(currentMode);
+                throw new LockException("Unable to acquire " + currentMode.name() + " for: " + path);
+            }
+
+            if(!(i == lastSegmentIdx && lockParent)) {
+                current.release(currentMode);
+            } else {
+                parent = current;
+            }
+
+            currentMode = sonMode;
+            current = son;
+        }
+
+        if(lockParent && parent != null) {
+            //we return two locks as a single managed lock, the first lock is the parent collection and the second is the actual collection
+            final ReentrantReadWriteLock parentCollectionLock = parent;
+            final ReentrantReadWriteLock collectionLock = current;
+            return new ManagedCollectionLock(Either.Right(new Tuple2<>(parentCollectionLock, collectionLock)), () -> {
+                    //TODO(AR) should this order be inverted?
+                    collectionLock.release(Lock.LockMode.WRITE_LOCK);
+                    parentCollectionLock.release(Lock.LockMode.WRITE_LOCK);
+            });
+        } else {
+            final ReentrantReadWriteLock collectionLock = current;
+            return new ManagedCollectionLock(Either.Left(collectionLock), () -> collectionLock.release(Lock.LockMode.WRITE_LOCK));
+        }
     }
 
     /**
