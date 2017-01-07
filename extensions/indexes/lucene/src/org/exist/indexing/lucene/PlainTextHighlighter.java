@@ -103,25 +103,24 @@ public class PlainTextHighlighter {
                                 }
                             }
                             if (stateList.size() == terms.length) {
-                            	if (offsets == null)
-                            		offsets = new ArrayList<>();
-                            	
-                                
-                                
+                                if (offsets == null)
+                                    offsets = new ArrayList<>();
+
+
                                 stream.restoreState(stateList.get(0));
                                 int start = stream.getAttribute(OffsetAttribute.class).startOffset();
                                 stream.restoreState(stateList.get(terms.length - 1));
-                            	int end = stream.getAttribute(OffsetAttribute.class).endOffset();
-                            	offsets.add(new Offset(start, end));
-                                
+                                int end = stream.getAttribute(OffsetAttribute.class).endOffset();
+                                offsets.add(new Offset(start, end));
+
                                 //restore state as before
-                                stream.restoreState(stateList.get(stateList.size() -1));
+                                stream.restoreState(stateList.get(stateList.size() - 1));
                             }
                         }
                     } else {
-                    	if (offsets == null)
-                    		offsets = new ArrayList<>();
-                        
+                        if (offsets == null)
+                            offsets = new ArrayList<>();
+
                         OffsetAttribute offsetAttr = stream.getAttribute(OffsetAttribute.class);
                         offsets.add(new Offset(offsetAttr.startOffset(), offsetAttr.endOffset()));
                     }
@@ -129,6 +128,8 @@ public class PlainTextHighlighter {
             }
         } catch (IOException e) {
         	e.printStackTrace();
+        } finally {
+            stream.close();
         }
         return offsets;
 	}
