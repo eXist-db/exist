@@ -19,32 +19,17 @@
  */
 package org.exist.repo;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.*;
-import java.util.jar.JarEntry;
-import java.util.jar.JarInputStream;
-import java.util.stream.Stream;
-
 import com.evolvedbinary.j8fu.Either;
-import org.exist.SystemProperties;
-import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.memtree.DocumentBuilderReceiver;
-import org.exist.dom.memtree.InMemoryNodeSet;
-import org.exist.dom.memtree.DocumentImpl;
-import org.exist.dom.memtree.ElementImpl;
-import org.exist.dom.memtree.NodeImpl;
-import org.exist.dom.memtree.MemTreeBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
+import org.exist.SystemProperties;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
-import org.exist.dom.persistent.BinaryDocument;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.QName;
+import org.exist.dom.memtree.*;
+import org.exist.dom.persistent.BinaryDocument;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.internal.aider.GroupAider;
@@ -70,6 +55,16 @@ import org.w3c.dom.Element;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
+import java.util.jar.JarEntry;
+import java.util.jar.JarInputStream;
+import java.util.stream.Stream;
 
 /**
  * Deploy a .xar package into the database using the information provided
@@ -700,7 +695,7 @@ public class Deployment {
             try {
                 storeBinaryResources(directory, collection, requestedPerms);
             } catch (Exception e) {
-                e.printStackTrace();
+                LOG.error(e.getMessage(), e); 
             }
         } else {
             storeFiles(directory, collection, inRootDir, requestedPerms);
@@ -791,7 +786,7 @@ public class Deployment {
                     }
                     mgr.commit(transaction);
                 } catch (final Exception e) {
-                    e.printStackTrace();
+                    LOG.error(e.getMessage(), e); 
                 }
             }
         }
@@ -822,7 +817,7 @@ public class Deployment {
                         storeBinary(targetCollection, entry, MimeType.BINARY_TYPE, name, requestedPerms, transaction);
                         mgr.commit(transaction);
                     } catch (final Exception e) {
-                        e.printStackTrace();
+                        LOG.error(e.getMessage(), e); 
                     }
                 }  
             }
