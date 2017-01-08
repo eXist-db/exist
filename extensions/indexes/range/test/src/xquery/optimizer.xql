@@ -149,12 +149,12 @@ function ot:setup() {
     xmldb:store($ot:COLLECTION, "diacritics.xml", $ot:DATA_SR_WITH_DIACRITICS)
 };
 
-(: declare
+declare
     %test:tearDown
 function ot:cleanup() {
     xmldb:remove($ot:COLLECTION),
     xmldb:remove("/db/system/config/db/" || $ot:COLLECTION_NAME)
-}; :)
+};
 
 declare
     %test:stats
