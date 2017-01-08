@@ -161,6 +161,7 @@ public class ExportGUI extends javax.swing.JFrame {
         scanBtn = new JCheckBox("Scan docs");
         directAccessBtn = new JCheckBox("Direct access");
         zipBtn = new JCheckBox("Create ZIP");
+        zipBtn.setSelected(true);
         outputDir = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
         btnChangeDir = new javax.swing.JButton();

@@ -70,11 +70,13 @@ import org.xmldb.api.base.XMLDBException;
 @RunWith(Parameterized.class)
 public class SystemExportImportTest {
 
-    @Parameters(name = "{0}")
+    @Parameters(name = "{0} zip:{2}")
     public static java.util.Collection<Object[]> data() {
         return Arrays.asList(new Object[][]{
-                {"direct", true},
-                {"non-direct", false}
+                {"direct", true, false},
+                {"non-direct", false, false},
+                {"direct", true, true},
+                {"non-direct", false, true}
         });
     }
 
@@ -83,6 +85,9 @@ public class SystemExportImportTest {
 
     @Parameter(value = 1)
     public boolean direct;
+
+    @Parameter(value = 2)
+    public boolean zip;
 
     private static String COLLECTION_CONFIG =
             "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
@@ -121,7 +126,7 @@ public class SystemExportImportTest {
             assertNotNull(test);
 
             final SystemExport sysexport = new SystemExport(broker, null, null, direct);
-            file = sysexport.export("backup", false, false, null);
+            file = sysexport.export("backup", false, zip, null);
         }
 
         clean();

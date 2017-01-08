@@ -494,12 +494,14 @@ public class SystemExport {
         final boolean needsBackup = (prevBackup == null) || (date.getTime() < doc.getMetadata().getLastModified());
 
         if (needsBackup) {
-            try(final OutputStream os = output.newEntry(Backup.encode(URIUtils.urlDecodeUtf8(doc.getFileURI())))) {
-
+            // Note: do not auto-close the output stream or the zip will be closed!
+            try {
+                final OutputStream os = output.newEntry(Backup.encode(URIUtils.urlDecodeUtf8(doc.getFileURI())));
                 if (doc.getResourceType() == DocumentImpl.BINARY_FILE) {
                     broker.readBinaryResource((BinaryDocument) doc, os);
                 } else {
-                    try(final Writer writer = new BufferedWriter(new OutputStreamWriter(os, UTF_8))) {
+                    final Writer writer = new BufferedWriter(new OutputStreamWriter(os, UTF_8));
+                    try {
 
                         // write resource to contentSerializer
                         final SAXSerializer contentSerializer = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
@@ -515,6 +517,8 @@ public class SystemExport {
 
                         writeXML(doc, receiver);
                         SerializerPool.getInstance().returnObject(contentSerializer);
+                    } finally {
+                        writer.flush();
                     }
                 }
             } catch (final Exception e) {
