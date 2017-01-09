@@ -49,7 +49,7 @@ goto :eof
 
 :gotExistHome
 
-set MX=1024
+set MX=2048
 rem @WINDOWS_INSTALLER_3@
 
 set JAVA_ENDORSED_DIRS="%EXIST_HOME%\lib\endorsed"
