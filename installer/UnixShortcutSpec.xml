@@ -3,7 +3,7 @@
 	<programGroup defaultName="eXist-db XML Database" location="applications"/>
 	
 	<shortcut 
-		name="org-exist-start-Main"
+		name="eXist-db Database"
 		genericName="eXist-db"
 		type="Application"
 		encoding="UTF-8"
