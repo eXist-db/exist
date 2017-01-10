@@ -28,11 +28,11 @@
         <field type="space"/>
         <field type="text" variable="MAX_MEMORY">
           <description align="left" txt="Configure the maximum amount of memory to be used by eXist-db. The recommended minimum memory setting is 1024m. If your machine has enough memory, using 2048m should be sufficient for most data sets. Note: 1200m is usually the limit on 32-bit systems."/>
-          <spec txt="Maximum memory in mb:" size="5" set="1024"/>
+          <spec txt="Maximum memory in MB:" size="5" set="2048"/>
         </field>
         <field type="text" variable="cacheSize">
             <description align="left" txt="Configure the amount of memory to be reserved for internal caches. If the maximum memory is set above to 1024m, 128m is a good value; for 2048m, use 256m; for 512m, not more than 64mb. Too small settings may lead to bad upload/indexing performance."/>
-          <spec txt="Cache memory in mb:" size="5" set="128"/>
+          <spec txt="Cache memory in MB:" size="5" set="256"/>
         </field>
     </panel>
 </userInput>
