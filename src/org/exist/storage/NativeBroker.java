@@ -2764,6 +2764,7 @@ public class NativeBroker extends DBBroker {
 
     private void dropIndex(final Txn transaction, final DocumentImpl document) throws ReadOnlyException {
         final StreamListener listener = indexController.getStreamListener(document, ReindexMode.REMOVE_ALL_NODES);
+        listener.startIndexDocument(transaction);
         final NodeList nodes = document.getChildNodes();
         for(int i = 0; i < nodes.getLength(); i++) {
             final IStoredNode<?> node = (IStoredNode<?>) nodes.item(i);
@@ -2774,6 +2775,7 @@ public class NativeBroker extends DBBroker {
                 LOG.warn("Unable to close node iterator", ioe);
             }
         }
+        listener.endIndexDocument(transaction);
         notifyDropIndex(document);
         indexController.flush();
     }

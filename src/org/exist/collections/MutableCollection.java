@@ -1258,6 +1258,9 @@ public class MutableCollection implements Collection {
         if(info.isCreating()) {
             info.getTriggers().afterCreateDocument(broker, transaction, document);
         } else {
+            final StreamListener listener = broker.getIndexController().getStreamListener(document, StreamListener.ReindexMode.REPLACE_DOCUMENT);
+            listener.endReplaceDocument(transaction);
+
             info.getTriggers().afterUpdateDocument(broker, transaction, document);
         }
         
@@ -1441,6 +1444,14 @@ public class MutableCollection implements Collection {
                 updateModificationTime(document);
                 oldDoc.getUpdateLock().acquire(LockMode.WRITE_LOCK);
                 oldDocLocked = true;
+
+                /**
+                 * Matching {@link StreamListener#endReplaceDocument(Txn)} call is in
+                 * {@link #storeXMLInternal(Txn, DBBroker, IndexInfo, Consumer2E)}
+                 */
+                final StreamListener listener = broker.getIndexController().getStreamListener(document, StreamListener.ReindexMode.REPLACE_DOCUMENT);
+                listener.startReplaceDocument(transaction);
+
                 if (oldDoc.getResourceType() == DocumentImpl.BINARY_FILE) {
                     //TODO : use a more elaborated method ? No triggers...
                     broker.removeBinaryResource(transaction, (BinaryDocument) oldDoc);
