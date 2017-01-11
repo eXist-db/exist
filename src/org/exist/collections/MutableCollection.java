@@ -1258,7 +1258,7 @@ public class MutableCollection implements Collection {
         if(info.isCreating()) {
             info.getTriggers().afterCreateDocument(broker, transaction, document);
         } else {
-            final StreamListener listener = broker.getIndexController().getStreamListener(document, StreamListener.ReindexMode.REPLACE_DOCUMENT);
+            final StreamListener listener = broker.getIndexController().getStreamListener();
             listener.endReplaceDocument(transaction);
 
             info.getTriggers().afterUpdateDocument(broker, transaction, document);
