@@ -45,6 +45,8 @@ import org.exist.xmldb.CollectionManagementServiceImpl;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Test;
+import org.junit.FixMethodOrder;
+import org.junit.runners.MethodSorters;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import org.xml.sax.InputSource;
@@ -54,10 +56,11 @@ import org.xmldb.api.base.Database;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class MoveResourceTest {
 
     @Test
-    public void store() throws LockException, SAXException, PermissionDeniedException, EXistException, IOException {
+    public void store1() throws LockException, SAXException, PermissionDeniedException, EXistException, IOException {
         doStore();
         tearDown();
         doRead();
@@ -126,7 +129,7 @@ public class MoveResourceTest {
     }
 
     @Test
-    public void aborted() throws Exception {
+    public void store3Aborted() throws Exception {
         storeAborted();
         tearDown();
         readAborted();
@@ -204,7 +207,7 @@ public class MoveResourceTest {
     }
 
     @Test
-    public void xmldbStore() throws XMLDBException {
+    public void store2XMLDB() throws XMLDBException {
         doXmldbStore();
         tearDown();
         doXmldbRead();
