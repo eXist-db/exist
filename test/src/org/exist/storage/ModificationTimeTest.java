@@ -1,30 +1,27 @@
 package org.exist.storage;
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.Optional;
-
-import org.exist.collections.triggers.TriggerException;
-import org.exist.security.PermissionDeniedException;
-import org.exist.test.ExistEmbeddedServer;
-import org.exist.util.Configuration;
-import org.exist.util.FileUtils;
-import org.exist.util.LockException;
-import org.junit.*;
-import org.exist.dom.persistent.BinaryDocument;
 import org.exist.EXistException;
-import org.exist.xmldb.XmldbURI;
-import org.exist.test.TestConstants;
 import org.exist.collections.Collection;
-import static org.exist.TestUtils.cleanupDataDir;
 import org.exist.collections.IndexInfo;
+import org.exist.collections.triggers.TriggerException;
+import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
+import org.exist.security.PermissionDeniedException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.test.ExistEmbeddedServer;
+import org.exist.test.TestConstants;
+import org.exist.util.DatabaseConfigurationException;
+import org.exist.util.LockException;
+import org.exist.xmldb.XmldbURI;
+import org.junit.ClassRule;
+import org.junit.Test;
+import org.xml.sax.SAXException;
+
+import java.io.IOException;
+import java.util.Optional;
 
 import static org.junit.Assert.*;
-import org.exist.util.DatabaseConfigurationException;
-import org.xml.sax.SAXException;
 
 
 public class ModificationTimeTest {
@@ -123,16 +120,6 @@ public class ModificationTimeTest {
 
     @ClassRule
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer();
-
-    @BeforeClass
-    public static void cleanupDb() throws DatabaseConfigurationException, EXistException, IOException {
-        cleanupDataDir();
-
-        final Configuration conf = new Configuration();
-        final Path data = (Path) conf.getProperty(BrokerPool.PROPERTY_DATA_DIR);
-        FileUtils.mkdirsQuietly(data.resolve("fs"));
-        FileUtils.mkdirsQuietly(data.resolve("fs.journal"));
-    }
 
     private DocumentImpl getDocument(final XmldbURI uri) throws EXistException, PermissionDeniedException, DatabaseConfigurationException {
         DocumentImpl doc = null;
