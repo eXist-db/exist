@@ -39,6 +39,7 @@ import org.exist.storage.btree.DBException;
 import org.exist.util.DatabaseConfigurationException;
 import com.evolvedbinary.j8fu.function.Function2E;
 import com.evolvedbinary.j8fu.function.FunctionE;
+import org.exist.util.FileUtils;
 import org.exist.xquery.XPathException;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -167,13 +168,14 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
 
     @Override
     public void remove() throws DBException {
+        close();
+        Path dir = getDataDir().resolve(getDirName());
         try {
-            String[] files = directory.listAll();
-            for (String file : files) {
-                directory.deleteFile(file);
-            }
-            close();
+            Files.list(dir).forEach(path -> {
+                FileUtils.deleteQuietly(path);
+            });
         } catch (Exception e) {
+            // never abort at this point, so recovery can continue
             LOG.warn(e.getMessage(), e);
         }
     }
