@@ -55,6 +55,7 @@ import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import java.io.BufferedOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -283,9 +284,9 @@ public class Transform extends BasicFunction {
                 throw new XPathException(this, ErrorCodes.XPDY0002, "Variable $response is not bound to an Java object.");
             }
 
-            final JavaObjectValue respValue = (JavaObjectValue)respVar .getValue().itemAt(0);
+            final JavaObjectValue respValue = (JavaObjectValue) respVar.getValue().itemAt(0);
             if (!"org.exist.http.servlets.HttpResponseWrapper".equals(respValue.getObject().getClass().getName())) {
-                throw new XPathException(this, ErrorCodes.XPDY0002, signatures[1].toString() +
+                throw new XPathException(this, ErrorCodes.XPDY0002, signatures[1] +
                         " can only be used within the EXistServlet or XQueryServlet");
             }
 
@@ -387,7 +388,7 @@ public class Transform extends BasicFunction {
                         String uri = ((Document) stylesheetItem).getDocumentURI();
 
 						/*
-						 * This must be checked because in the event the stylesheet is 
+                         * This must be checked because in the event the stylesheet is
 						 * an in-memory document, it will cause an NPE
 						 */
                         if (uri != null) {
@@ -496,7 +497,7 @@ public class Transform extends BasicFunction {
             if (Files.isReadable(f)) {
                 stylesheet = f.toUri().toASCIIString();
             } else {
-                stylesheet = context.getModuleLoadPath() + java.io.File.separatorChar + stylesheet;
+                stylesheet = context.getModuleLoadPath() + File.separatorChar + stylesheet;
                 f = Paths.get(stylesheet).normalize();
                 if (Files.isReadable(f)) {
                     stylesheet = f.toUri().toASCIIString();
@@ -602,7 +603,7 @@ public class Transform extends BasicFunction {
                 final URLConnection connection = url.openConnection();
                 long modified = connection.getLastModified();
                 if (!caching || (templates == null || modified > lastModified || modified == 0)) {
-                    LOG.debug("compiling stylesheet " + url.toString());
+                    LOG.debug("compiling stylesheet " + url);
                     try (final InputStream is = connection.getInputStream()) {
                         templates = factory.newTemplates(new StreamSource(is));
                     }
