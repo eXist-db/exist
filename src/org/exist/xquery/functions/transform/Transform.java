@@ -21,10 +21,43 @@
  */
 package org.exist.xquery.functions.transform;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.exist.dom.QName;
+import org.exist.dom.memtree.DocumentBuilderReceiver;
+import org.exist.dom.memtree.MemTreeBuilder;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.http.servlets.ResponseWrapper;
+import org.exist.numbering.NodeId;
+import org.exist.security.PermissionDeniedException;
+import org.exist.storage.lock.Lock.LockMode;
+import org.exist.storage.serializers.EXistOutputKeys;
+import org.exist.storage.serializers.Serializer;
+import org.exist.storage.serializers.XIncludeFilter;
+import org.exist.util.serializer.Receiver;
+import org.exist.util.serializer.ReceiverToSAX;
+import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.*;
+import org.exist.xquery.functions.response.ResponseModule;
+import org.exist.xquery.value.*;
+import org.exist.xslt.TransformerFactoryAllocator;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.xml.sax.SAXException;
+
+import javax.xml.transform.*;
+import javax.xml.transform.sax.SAXResult;
+import javax.xml.transform.sax.SAXTransformerFactory;
+import javax.xml.transform.sax.TemplatesHandler;
+import javax.xml.transform.sax.TransformerHandler;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -32,65 +65,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Iterator;
-
-import javax.xml.transform.Source;
-import javax.xml.transform.Templates;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactoryConfigurationError;
-import javax.xml.transform.URIResolver;
-import javax.xml.transform.ErrorListener;
-import javax.xml.transform.sax.SAXResult;
-import javax.xml.transform.sax.SAXTransformerFactory;
-import javax.xml.transform.sax.TemplatesHandler;
-import javax.xml.transform.sax.TransformerHandler;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.stream.StreamSource;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.NodeProxy;
-import org.exist.dom.QName;
-import org.exist.http.servlets.ResponseWrapper;
-import org.exist.dom.memtree.DocumentBuilderReceiver;
-import org.exist.dom.memtree.MemTreeBuilder;
-import org.exist.numbering.NodeId;
-import org.exist.security.PermissionDeniedException;
-import org.exist.storage.lock.Lock.LockMode;
-import org.exist.storage.serializers.Serializer;
-import org.exist.storage.serializers.XIncludeFilter;
-import org.exist.storage.serializers.EXistOutputKeys;
-import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.*;
-import org.exist.xquery.functions.response.ResponseModule;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.JavaObjectValue;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
-import org.exist.xslt.TransformerFactoryAllocator;
-import org.exist.util.serializer.ReceiverToSAX;
-import org.exist.util.serializer.Receiver;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.xml.sax.SAXException;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
 public class Transform extends BasicFunction {
-
-    private static final Logger logger = LogManager.getLogger(Transform.class);
 
     public final static FunctionSignature signatures[] = {
             new FunctionSignature(
@@ -162,7 +144,7 @@ public class Transform extends BasicFunction {
                             new FunctionParameterSequenceType("serialization-options", Type.STRING, Cardinality.EXACTLY_ONE, "The serialization options")},
                     new SequenceType(Type.ITEM, Cardinality.EMPTY))
     };
-
+    private static final Logger logger = LogManager.getLogger(Transform.class);
     private final Map<String, CachedStylesheet> cache = new HashMap<String, CachedStylesheet>();
     private boolean caching = true;
 
@@ -528,6 +510,27 @@ public class Transform extends BasicFunction {
         }
     }
 
+    public static class ExternalResolver implements URIResolver {
+        private final String baseURI;
+
+        public ExternalResolver(final String base) {
+            this.baseURI = base;
+        }
+
+        @Override
+        public Source resolve(final String href, final String base) throws TransformerException {
+            try {
+                //TODO : use dedicated function in XmldbURI
+                final URL url = new URL(baseURI + "/" + href);
+                final URLConnection connection = url.openConnection();
+                return new StreamSource(connection.getInputStream());
+            } catch (final IOException e) {
+                LOG.warn(e);
+                return null;
+            }
+        }
+    }
+
     //TODO: revisit this class with XmldbURI in mind
     private class CachedStylesheet {
 
@@ -601,27 +604,6 @@ public class Transform extends BasicFunction {
                 throw new XPathException(Transform.this,
                         "An exception occurred while compiling the stylesheet: " + stylesheet.getURI() +
                                 ": " + e.getMessage(), e);
-            }
-        }
-    }
-
-    public static class ExternalResolver implements URIResolver {
-        private final String baseURI;
-
-        public ExternalResolver(final String base) {
-            this.baseURI = base;
-        }
-
-        @Override
-        public Source resolve(final String href, final String base) throws TransformerException {
-            try {
-                //TODO : use dedicated function in XmldbURI
-                final URL url = new URL(baseURI + "/" + href);
-                final URLConnection connection = url.openConnection();
-                return new StreamSource(connection.getInputStream());
-            } catch (final IOException e) {
-                LOG.warn(e);
-                return null;
             }
         }
     }
