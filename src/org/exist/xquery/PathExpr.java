@@ -277,16 +277,18 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                 }
                 //TOUNDERSTAND : why did I have to write this test :-) ? -pb
                 //it looks like an empty sequence could be considered as a sub-type of Type.NODE
-                //well, no so stupid I think...    
-                if (steps.size() > 1 && !(result instanceof VirtualNodeSet) &&
-                        !(expr instanceof EnclosedExpr) && !result.isEmpty() &&
-                        !Type.subTypeOf(result.getItemType(), Type.NODE)) {
-                    gotAtomicResult = true;
-                }
-                if (steps.size() > 1 && getLastExpression() instanceof Step) {
-                    // remove duplicate nodes if this is a path
-                    // expression with more than one step
-                    result.removeDuplicates();
+                //well, no so stupid I think...
+                if (result != null) {
+                    if (steps.size() > 1 && !(result instanceof VirtualNodeSet) &&
+                            !(expr instanceof EnclosedExpr) && !result.isEmpty() &&
+                            !Type.subTypeOf(result.getItemType(), Type.NODE)) {
+                        gotAtomicResult = true;
+                    }
+                    if (steps.size() > 1 && getLastExpression() instanceof Step) {
+                        // remove duplicate nodes if this is a path
+                        // expression with more than one step
+                        result.removeDuplicates();
+                    }
                 }
                 if (!staticContext) {
                     currentContext = result;
@@ -300,7 +302,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                 allowMixedNodesInReturn = expr.allowMixedNodesInReturn();
             }
 
-            if (gotAtomicResult && !allowMixedNodesInReturn &&
+            if (gotAtomicResult && result != null && !allowMixedNodesInReturn &&
                     !Type.subTypeOf(result.getItemType(), Type.ATOMIC)) {
                 throw new XPathException(this, ErrorCodes.XPTY0018,
                         "Cannot mix nodes and atomic values in the result of a path expression.");
