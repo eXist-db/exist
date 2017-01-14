@@ -142,7 +142,7 @@ public class Transform extends BasicFunction {
                             new FunctionParameterSequenceType("stylesheet", Type.ITEM, Cardinality.EXACTLY_ONE, "The XSL stylesheet"),
                             new FunctionParameterSequenceType("parameters", Type.NODE, Cardinality.ZERO_OR_ONE, "The transformer parameters"),
                             new FunctionParameterSequenceType("attributes", Type.NODE, Cardinality.ZERO_OR_ONE, "Attributes to pass to the transformation factory"),
-                            new FunctionParameterSequenceType("serialization-options", Type.STRING, Cardinality.EXACTLY_ONE, "The serialization options")},
+                            new FunctionParameterSequenceType("serialization-options", Type.STRING, Cardinality.ZERO_OR_ONE, "The serialization options")},
                     new SequenceType(Type.ITEM, Cardinality.EMPTY))
     };
 
