@@ -141,7 +141,7 @@ public class VariableDeclaration extends AbstractExpression implements Rewritabl
             context.popInScopeNamespaces();
         }
 
-        return Sequence.EMPTY_SEQUENCE;
+        return null;
 	}
 	
 	/* (non-Javadoc)

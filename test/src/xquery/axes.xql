@@ -72,3 +72,26 @@ function axes:descendant-axis-except-nested2() {
     return
         ($node//div except $node//div//div)/head
 };
+
+declare
+%test:assertError("err:XPDY0002")
+%test:name("expect error because variable declaration should not change context sequence")
+function axes:context-self() {
+util:eval("
+        declare variable $foo := 123;
+
+        .
+    ")
+};
+
+declare
+%test:assertError("err:XPDY0002")
+%test:name("expect error because preceding let should not change context sequence")
+function axes:context-let-self() {
+util:eval("
+        let $a := 123
+        let $b := .
+        return
+            $b
+    ")
+};
