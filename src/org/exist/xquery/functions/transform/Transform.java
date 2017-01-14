@@ -241,16 +241,16 @@ public class Transform extends BasicFunction {
                     serializer.setProperties(serializationProps);
                     serializer.setReceiver(receiver, true);
                     if (expandXIncludes) {
-                        String xipath = serializationProps.getProperty(EXistOutputKeys.XINCLUDE_PATH);
-                        if (xipath != null) {
-                            final Path f = Paths.get(xipath).normalize();
+                        String xiPath = serializationProps.getProperty(EXistOutputKeys.XINCLUDE_PATH);
+                        if (xiPath != null) {
+                            final Path f = Paths.get(xiPath).normalize();
                             if (!f.isAbsolute()) {
-                                xipath = Paths.get(context.getModuleLoadPath(), xipath).normalize().toAbsolutePath().toString();
+                                xiPath = Paths.get(context.getModuleLoadPath(), xiPath).normalize().toAbsolutePath().toString();
                             }
                         } else {
-                            xipath = context.getModuleLoadPath();
+                            xiPath = context.getModuleLoadPath();
                         }
-                        serializer.getXIncludeFilter().setModuleLoadPath(xipath);
+                        serializer.getXIncludeFilter().setModuleLoadPath(xiPath);
                     }
                     serializer.toSAX(inputNode, 1, inputNode.getItemCount(), false, false, 0, 0);
 
@@ -316,18 +316,18 @@ public class Transform extends BasicFunction {
                     serializer.setProperties(serializationProps);
                     if (expandXIncludes) {
                         XIncludeFilter xinclude = new XIncludeFilter(serializer, receiver);
-                        String xipath = serializationProps.getProperty(EXistOutputKeys.XINCLUDE_PATH);
-                        if (xipath != null) {
-                            final Path f = Paths.get(xipath).normalize();
+                        String xiPath = serializationProps.getProperty(EXistOutputKeys.XINCLUDE_PATH);
+                        if (xiPath != null) {
+                            final Path f = Paths.get(xiPath).normalize();
                             if (!f.isAbsolute()) {
-                                xipath = Paths.get(context.getModuleLoadPath(), xipath).normalize().toAbsolutePath().toString();
+                                xiPath = Paths.get(context.getModuleLoadPath(), xiPath).normalize().toAbsolutePath().toString();
                             }
 
                         } else {
-                            xipath = context.getModuleLoadPath();
+                            xiPath = context.getModuleLoadPath();
                         }
 
-                        xinclude.setModuleLoadPath(xipath);
+                        xinclude.setModuleLoadPath(xiPath);
                         receiver = xinclude;
                     }
                     serializer.setReceiver(receiver);
@@ -524,6 +524,7 @@ public class Transform extends BasicFunction {
         } catch (final MalformedURLException e) {
             LOG.debug(e.getMessage(), e);
             throw new XPathException(this, "Malformed URL for stylesheet: " + stylesheet, e);
+
         } catch (final IOException e) {
             throw new XPathException(this, "IO error while loading stylesheet: " + stylesheet, e);
         }
@@ -536,6 +537,7 @@ public class Transform extends BasicFunction {
             stylesheetRoot.toSAX(context.getBroker(), handler, null);
             handler.endDocument();
             return handler.getTemplates();
+
         } catch (final SAXException e) {
             throw new XPathException(this,
                     "A SAX exception occurred while compiling the stylesheet: " + e.getMessage(), e);
@@ -598,6 +600,7 @@ public class Transform extends BasicFunction {
                         doc.getUpdateLock().release(LockMode.READ_LOCK);
                     }
                 }
+
             } else {
                 final URL url = new URL(uri);
                 final URLConnection connection = url.openConnection();
@@ -619,6 +622,7 @@ public class Transform extends BasicFunction {
             final TransformErrorListener errorListener = new TransformErrorListener();
             factory.setErrorListener(errorListener);
             final TemplatesHandler handler = factory.newTemplatesHandler();
+
             try {
                 handler.startDocument();
                 final Serializer serializer = context.getBroker().getSerializer();
@@ -629,6 +633,7 @@ public class Transform extends BasicFunction {
                 final Templates t = handler.getTemplates();
                 errorListener.checkForErrors();
                 return t;
+
             } catch (final Exception e) {
                 if (e instanceof XPathException) {
                     throw (XPathException) e;
@@ -647,11 +652,11 @@ public class Transform extends BasicFunction {
         private final static int ERROR = 2;
         private final static int FATAL = 3;
 
-        private int errcode = NO_ERROR;
+        private int errorCode = NO_ERROR;
         private Exception exception;
 
         protected void checkForErrors() throws XPathException {
-            switch (errcode) {
+            switch (errorCode) {
                 case WARNING:
                     if (stopOnWarn) {
                         throw new XPathException("XSL transform reported warning: " + exception.getMessage(),
@@ -670,7 +675,7 @@ public class Transform extends BasicFunction {
 
         public void warning(TransformerException except) throws TransformerException {
             LOG.warn("XSL transform reports warning: " + except.getMessage(), except);
-            errcode = WARNING;
+            errorCode = WARNING;
             exception = except;
             if (stopOnWarn) {
                 throw except;
@@ -679,7 +684,7 @@ public class Transform extends BasicFunction {
 
         public void error(TransformerException except) throws TransformerException {
             LOG.warn("XSL transform reports recoverable error: " + except.getMessage(), except);
-            errcode = ERROR;
+            errorCode = ERROR;
             exception = except;
             if (stopOnError) {
                 throw except;
@@ -688,7 +693,7 @@ public class Transform extends BasicFunction {
 
         public void fatalError(TransformerException except) throws TransformerException {
             LOG.warn("XSL transform reports fatal error: " + except.getMessage(), except);
-            errcode = FATAL;
+            errorCode = FATAL;
             exception = except;
             throw except;
         }
