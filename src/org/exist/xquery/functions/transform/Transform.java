@@ -140,6 +140,7 @@ public class Transform extends BasicFunction {
                             new FunctionParameterSequenceType("node-tree", Type.NODE, Cardinality.ZERO_OR_MORE, "The source-document (node tree)"),
                             new FunctionParameterSequenceType("stylesheet", Type.ITEM, Cardinality.EXACTLY_ONE, "The XSL stylesheet"),
                             new FunctionParameterSequenceType("parameters", Type.NODE, Cardinality.ZERO_OR_ONE, "The transformer parameters"),
+                            new FunctionParameterSequenceType("attributes", Type.NODE, Cardinality.ZERO_OR_ONE, "Attributes to pass to the transformation factory"),
                             new FunctionParameterSequenceType("serialization-options", Type.STRING, Cardinality.EXACTLY_ONE, "The serialization options")},
                     new SequenceType(Type.ITEM, Cardinality.EMPTY))
     };
@@ -169,24 +170,32 @@ public class Transform extends BasicFunction {
      */
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
 
+        final Properties attributes = new Properties();
+        final Properties serializationProps = new Properties();
+        final Properties stylesheetParams = new Properties();
+
+        // Parameter 1 & 2
         final Sequence inputNode = args[0];
         final Item stylesheetItem = args[1].itemAt(0);
 
-        Node options = null;
-        if (!args[2].isEmpty()) {
-            options = ((NodeValue) args[2].itemAt(0)).getNode();
+        // Parse 3rd parameter
+        final Node options = args[2].isEmpty() ? null : ((NodeValue) args[2].itemAt(0)).getNode();
+        if (options != null) {
+            stylesheetParams.putAll(parseParameters(options));
         }
 
-        final Properties attributes = new Properties();
-        final Properties serializationProps = new Properties();
-        if (getArgumentCount() == 5) {
-
+        // Parameter 4 when present
+        if (getArgumentCount() >= 4) {
             final Sequence attrs = args[3];
             attributes.putAll(extractAttributes(attrs));
+        }
 
+        // Parameter 5 when present
+        if (getArgumentCount() >= 5) {
             //extract serialization options
             final Sequence serOpts = args[4];
             serializationProps.putAll(extractSerializationProperties(serOpts));
+
         } else {
             context.checkOptions(serializationProps);
         }
@@ -194,13 +203,13 @@ public class Transform extends BasicFunction {
         boolean expandXIncludes =
                 "yes".equals(serializationProps.getProperty(EXistOutputKeys.EXPAND_XINCLUDES, "yes"));
 
-        final Properties stylesheetParams = new Properties();
-        if (options != null) {
-            stylesheetParams.putAll(parseParameters(options));
-        }
+
+        // Setup handler and error listener
         final TransformerHandler handler = createHandler(stylesheetItem, stylesheetParams, attributes);
         final TransformErrorListener errorListener = new TransformErrorListener();
         handler.getTransformer().setErrorListener(errorListener);
+
+
         if (isCalledAs("transform")) {
             //transform:transform()
 
@@ -212,9 +221,12 @@ public class Transform extends BasicFunction {
 
                 context.popDocumentContext();
                 return seq;
+
             } else {
+
                 final ValueSequence seq = new ValueSequence();
                 context.pushDocumentContext();
+
                 final MemTreeBuilder builder = context.getDocumentBuilder();
                 final DocumentBuilderReceiver builderReceiver = new DocumentBuilderReceiver(builder, true);
                 final SAXResult result = new SAXResult(builderReceiver);
@@ -223,6 +235,7 @@ public class Transform extends BasicFunction {
                 final Receiver receiver = new ReceiverToSAX(handler);
                 final Serializer serializer = context.getBroker().getSerializer();
                 serializer.reset();
+
                 try {
                     serializer.setProperties(serializationProps);
                     serializer.setReceiver(receiver, true);
@@ -239,36 +252,43 @@ public class Transform extends BasicFunction {
                         serializer.getXIncludeFilter().setModuleLoadPath(xipath);
                     }
                     serializer.toSAX(inputNode, 1, inputNode.getItemCount(), false, false, 0, 0);
+
                 } catch (final Exception e) {
                     throw new XPathException(this, "Exception while transforming node: " + e.getMessage(), e);
                 }
+
                 errorListener.checkForErrors();
                 Node next = builder.getDocument().getFirstChild();
                 while (next != null) {
                     seq.add((NodeValue) next);
                     next = next.getNextSibling();
                 }
+
                 context.popDocumentContext();
                 return seq;
             }
+
         } else {
             //transform:stream-transform()
 
             final ResponseModule myModule = (ResponseModule) context.getModule(ResponseModule.NAMESPACE_URI);
             // response object is read from global variable $response
             final Variable respVar = myModule.resolveVariable(ResponseModule.RESPONSE_VAR);
+
             if (respVar == null) {
                 throw new XPathException(this, ErrorCodes.XPDY0002, "No response object found in the current XQuery context.");
             }
+
             if (respVar.getValue().getItemType() != Type.JAVA_OBJECT) {
                 throw new XPathException(this, ErrorCodes.XPDY0002, "Variable $response is not bound to an Java object.");
             }
-            final JavaObjectValue respValue = (JavaObjectValue)
-                    respVar.getValue().itemAt(0);
+
+            final JavaObjectValue respValue = (JavaObjectValue)respVar .getValue().itemAt(0);
             if (!"org.exist.http.servlets.HttpResponseWrapper".equals(respValue.getObject().getClass().getName())) {
                 throw new XPathException(this, ErrorCodes.XPDY0002, signatures[1].toString() +
                         " can only be used within the EXistServlet or XQueryServlet");
             }
+
             final ResponseWrapper response = (ResponseWrapper) respValue.getObject();
 
             //setup the response correctly
@@ -290,6 +310,7 @@ public class Transform extends BasicFunction {
                 final Serializer serializer = context.getBroker().getSerializer();
                 serializer.reset();
                 Receiver receiver = new ReceiverToSAX(handler);
+
                 try {
                     serializer.setProperties(serializationProps);
                     if (expandXIncludes) {
@@ -300,22 +321,27 @@ public class Transform extends BasicFunction {
                             if (!f.isAbsolute()) {
                                 xipath = Paths.get(context.getModuleLoadPath(), xipath).normalize().toAbsolutePath().toString();
                             }
+
                         } else {
                             xipath = context.getModuleLoadPath();
                         }
+
                         xinclude.setModuleLoadPath(xipath);
                         receiver = xinclude;
                     }
                     serializer.setReceiver(receiver);
                     serializer.toSAX(inputNode);
+
                 } catch (final Exception e) {
                     throw new XPathException(this, "Exception while transforming node: " + e.getMessage(), e);
                 }
+
                 errorListener.checkForErrors();
                 os.close();
 
                 //commit the response
                 response.flushBuffer();
+
             } catch (final IOException e) {
                 throw new XPathException(this, "IO exception while transforming node: " + e.getMessage(), e);
             }
@@ -393,6 +419,7 @@ public class Transform extends BasicFunction {
             if (options != null) {
                 setParameters(options, handler.getTransformer());
             }
+
         } catch (final TransformerConfigurationException e) {
             throw new XPathException(this, "Unable to set up transformer: " + e.getMessage(), e);
         }
@@ -439,6 +466,7 @@ public class Transform extends BasicFunction {
                     if (name == null || value == null) {
                         throw new XPathException(this, "Name or value attribute missing");
                     }
+
                     if ("exist:stop-on-warn".equals(name)) {
                         stopOnWarn = "yes".equals(value);
                     } else if ("exist:stop-on-error".equals(name)) {
@@ -475,6 +503,7 @@ public class Transform extends BasicFunction {
                 }
             }
         }
+
         //TODO : use dedicated function in XmldbURI
         final int p = stylesheet.lastIndexOf("/");
         if (p != Constants.STRING_NOT_FOUND) {
@@ -482,6 +511,7 @@ public class Transform extends BasicFunction {
         } else {
             base = stylesheet;
         }
+
         CachedStylesheet cached = cache.get(stylesheet);
         try {
             if (cached == null) {
@@ -489,6 +519,7 @@ public class Transform extends BasicFunction {
                 cache.put(stylesheet, cached);
             }
             return cached.getTemplates();
+
         } catch (final MalformedURLException e) {
             LOG.debug(e.getMessage(), e);
             throw new XPathException(this, "Malformed URL for stylesheet: " + stylesheet, e);
