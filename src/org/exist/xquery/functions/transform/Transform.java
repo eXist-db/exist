@@ -144,8 +144,9 @@ public class Transform extends BasicFunction {
                             new FunctionParameterSequenceType("serialization-options", Type.STRING, Cardinality.EXACTLY_ONE, "The serialization options")},
                     new SequenceType(Type.ITEM, Cardinality.EMPTY))
     };
+
     private static final Logger logger = LogManager.getLogger(Transform.class);
-    private final Map<String, CachedStylesheet> cache = new HashMap<String, CachedStylesheet>();
+    private final Map<String, CachedStylesheet> cache = new HashMap<>();
     private boolean caching = true;
 
     private boolean stopOnError = true;
@@ -403,10 +404,10 @@ public class Transform extends BasicFunction {
         final Properties serializationProps = new Properties();
         if (!serOpts.isEmpty()) {
             final String[] contents = Option.tokenize(serOpts.getStringValue());
-            for (int i = 0; i < contents.length; i++) {
-                final String[] pair = Option.parseKeyValuePair(contents[i]);
+            for (String content : contents) {
+                final String[] pair = Option.parseKeyValuePair(content);
                 if (pair == null) {
-                    throw new XPathException(this, "Found invalid serialization option: " + contents[i]);
+                    throw new XPathException(this, "Found invalid serialization option: " + content);
                 }
                 logger.info("Setting serialization property: " + pair[0] + " = " + pair[1]);
                 serializationProps.setProperty(pair[0], pair[1]);
@@ -454,8 +455,8 @@ public class Transform extends BasicFunction {
     }
 
     private void setParameters(Properties parameters, Transformer handler) {
-        for (final Iterator i = parameters.keySet().iterator(); i.hasNext(); ) {
-            final String key = (String) i.next();
+        for (Object o : parameters.keySet()) {
+            final String key = (String) o;
             handler.setParameter(key, parameters.getProperty(key));
         }
     }
