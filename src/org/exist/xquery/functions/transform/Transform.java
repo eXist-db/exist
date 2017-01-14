@@ -65,7 +65,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
@@ -336,7 +335,7 @@ public class Transform extends BasicFunction {
 
         //set any attributes
         for (final Map.Entry<Object, Object> attribute : attributes.entrySet()) {
-            factory.setAttribute((String) attribute.getKey(), (String) attribute.getValue());
+            factory.setAttribute((String) attribute.getKey(), attribute.getValue());
         }
 
         TransformerHandler handler;
@@ -483,7 +482,7 @@ public class Transform extends BasicFunction {
         } else {
             base = stylesheet;
         }
-        CachedStylesheet cached = (CachedStylesheet) cache.get(stylesheet);
+        CachedStylesheet cached = cache.get(stylesheet);
         try {
             if (cached == null) {
                 cached = new CachedStylesheet(factory, stylesheet, base);
