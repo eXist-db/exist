@@ -26,6 +26,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.http.servlets.RequestWrapper;
 import org.exist.http.urlrewrite.XQueryURLRewrite;
+import org.exist.source.Source;
 import org.exist.util.Configuration;
 import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
@@ -162,7 +163,8 @@ public class ProcessMonitor implements BrokerPoolService {
         final long elapsed = System.currentTimeMillis() - watchdog.getStartTime();
         if (found && elapsed > minTime) {
             synchronized (history) {
-                final String sourceKey = watchdog.getContext().getSource().path();
+                final Source source = watchdog.getContext().getSource();
+                final String sourceKey = source == null ? "unknown" : source.path();
                 QueryHistory qh = new QueryHistory(sourceKey, historyTimespan);
                 qh.setMostRecentExecutionTime(watchdog.getStartTime());
                 qh.setMostRecentExecutionDuration(elapsed);
