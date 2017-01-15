@@ -103,13 +103,16 @@ public class Transform extends BasicFunction {
                             "fragment and not from a complete document. " +
                             "Stylesheet parameters " +
                             "may be passed in the third argument using an XML fragment with the following structure: " +
-                            "<parameters><param name=\"param-name1\" value=\"param-value1\"/>" +
+                            "<parameters><param name=\"param-name\" value=\"param-value\"/>" +
                             "</parameters>. There are two special parameters named \"exist:stop-on-warn\" and " +
                             "\"exist:stop-on-error\". If set to value \"yes\", eXist will generate an XQuery error " +
-                            "if the XSL processor reports a warning or error. The fourth argument specifies serialization " +
+                            "if the XSL processor reports a warning or error. " +
+                            "The fourth argument specifies attributes to be set on the used Java TransformerFactory with the following structure: " +
+                            "<attributes><attr name=\"attr-name\" value=\"attr-value\"/></attributes>.  " +
+                            "The fifth argument specifies serialization " +
                             "options in the same way as if they " +
                             "were passed to \"declare option exist:serialize\" expression. An additional serialization option, " +
-                            "xinclude-path, is supported, which specifies a base path against which xincludes will be expanded " +
+                            "\"xinclude-path\", is supported, which specifies a base path against which xincludes will be expanded " +
                             "(if there are xincludes in the document). A relative path will be relative to the current " +
                             "module load path.",
                     new SequenceType[]{
