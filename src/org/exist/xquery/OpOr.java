@@ -63,20 +63,14 @@ public class OpOr extends LogicalOp {
         // first check if left operand is a persistent set
         doOptimize = doOptimize && (ls.isPersistentSet() || ls.isEmpty());
         if (doOptimize) {
-            // yes: try to optimize by looking at right operand
             final Sequence rs = right.eval(contextSequence, null);
-            if (rs.isPersistentSet() || rs.isEmpty()) {
-                NodeSet rl = ls.toNodeSet();
-                rl = rl.getContextNodes(contextId);
+            if (inPredicate) {
+                NodeSet lr = ls.toNodeSet();
+                lr = lr.getContextNodes(getContextId());
+
                 NodeSet rr = rs.toNodeSet();
                 rr = rr.getContextNodes(contextId);
-                result = rl.union(rr);
-                //<test>{() or ()}</test> should return <test>false</test>			
-                if (getParent() instanceof EnclosedExpr ||
-                    //First, the intermediate PathExpr
-                    (getParent() != null && getParent().getParent() == null)) {
-                    result = result.isEmpty() ? BooleanValue.FALSE : BooleanValue.TRUE;
-                }
+                result = lr.union(rr);
             } else {
                 // fall back
                 final boolean rl = ls.effectiveBooleanValue();
