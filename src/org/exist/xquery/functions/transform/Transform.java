@@ -108,7 +108,7 @@ public class Transform extends BasicFunction {
                             "\"exist:stop-on-error\". If set to value \"yes\", eXist will generate an XQuery error " +
                             "if the XSL processor reports a warning or error. " +
                             "The fourth argument specifies attributes to be set on the used Java TransformerFactory with the following structure: " +
-                            "<attributes><attr name=\"attr-name\" value=\"attr-value\"/></attributes>  " +
+                            "<attributes><attr name=\"attr-name\" value=\"attr-value\"/></attributes>.  " +
                             "The fifth argument specifies serialization " +
                             "options in the same way as if they " +
                             "were passed to \"declare option exist:serialize\" expression. An additional serialization option, " +
