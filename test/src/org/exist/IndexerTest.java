@@ -26,8 +26,6 @@ import java.util.Optional;
 import java.util.Properties;
 import javax.xml.transform.OutputKeys;
 
-import org.exist.EXistException;
-import org.exist.Indexer;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.security.AuthenticationException;
@@ -36,22 +34,20 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
-import org.exist.util.Configuration;
-import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
 import org.exist.util.serializer.SAXSerializer;
-import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
-import org.junit.AfterClass;
+import org.junit.*;
+
+import static org.exist.util.PropertiesBuilder.propertiesBuilder;
 import static org.junit.Assert.assertEquals;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+
 import org.xml.sax.SAXException;
 
 /**
@@ -60,6 +56,11 @@ import org.xml.sax.SAXException;
  * @author ljo
  */
 public class IndexerTest {
+
+	@ClassRule
+	public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(propertiesBuilder()
+            .set(Indexer.PROPERTY_SUPPRESS_WHITESPACE, "none")
+            .build());
 
     private final static String XML =
         "<?xml version=\"1.0\"?>\n" +
@@ -161,20 +162,20 @@ public class IndexerTest {
 	"    <result>{$test}</result>";
 
     private void store_preserve_ws_mixed_content_value(final boolean propValue, final String xml) throws PermissionDeniedException, IOException, EXistException, SAXException, LockException, AuthenticationException {
-    	final BrokerPool pool = BrokerPool.getInstance();
-	pool.getConfiguration().setProperty(Indexer.PROPERTY_PRESERVE_WS_MIXED_CONTENT, propValue);
+    	final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+		pool.getConfiguration().setProperty(Indexer.PROPERTY_PRESERVE_WS_MIXED_CONTENT, propValue);
 
         final TransactionManager txnMgr = pool.getTransactionManager();
 
     	try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().authenticate("admin", "")));
-	    final Txn txn = txnMgr.beginTransaction()) {
+	    		final Txn txn = txnMgr.beginTransaction()) {
 
-            Collection collection = broker.getOrCreateCollection(txn, TestConstants.TEST_COLLECTION_URI);
-            IndexInfo info = collection.validateXMLResource(txn, broker, TestConstants.TEST_XML_URI, xml);
+            final Collection collection = broker.getOrCreateCollection(txn, TestConstants.TEST_COLLECTION_URI);
+            final IndexInfo info = collection.validateXMLResource(txn, broker, TestConstants.TEST_XML_URI, xml);
             //TODO : unlock the collection here ?
-            collection.store(txn, broker, info, xml, false);
+            collection.store(txn, broker, info, xml);
             @SuppressWarnings("unused")
-		org.exist.dom.persistent.DocumentImpl doc = info.getDocument();
+			final org.exist.dom.persistent.DocumentImpl doc = info.getDocument();
             broker.flush();
             broker.saveCollection(txn, collection);
             txnMgr.commit(txn);
@@ -183,29 +184,30 @@ public class IndexerTest {
     }
     
     private String store_and_retrieve_ws_mixed_content_value(final boolean preserve, final String typeXml, final String typeXquery) throws EXistException, IOException, LockException, AuthenticationException, PermissionDeniedException, SAXException, XPathException {
-	store_preserve_ws_mixed_content_value(preserve, typeXml);
-        final BrokerPool pool = BrokerPool.getInstance();
+		store_preserve_ws_mixed_content_value(preserve, typeXml);
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-            XQuery xquery = broker.getBrokerPool().getXQueryService();
-            Sequence result = xquery.execute(broker, typeXquery, null);
-            StringWriter out = new StringWriter();
-            Properties props = new Properties();
-            props.setProperty(OutputKeys.INDENT, "yes");
-            SAXSerializer serializer = new SAXSerializer(out, props);
-            serializer.startDocument();
-            for (SequenceIterator i = result.iterate(); i.hasNext(); ) {
-                Item next = i.nextItem();
-                next.toSAX(broker, serializer, props);
-            }
-            serializer.endDocument();
-            return out.toString();
+            final XQuery xquery = pool.getXQueryService();
+            final Sequence result = xquery.execute(broker, typeXquery, null);
+            try(final StringWriter out = new StringWriter()) {
+				final Properties props = new Properties();
+				props.setProperty(OutputKeys.INDENT, "yes");
+				final SAXSerializer serializer = new SAXSerializer(out, props);
+				serializer.startDocument();
+				for (final SequenceIterator i = result.iterate(); i.hasNext(); ) {
+					final Item next = i.nextItem();
+					next.toSAX(broker, serializer, props);
+				}
+				serializer.endDocument();
+				return out.toString();
+			}
         }
     }
 
     @Ignore
     @Test
     public void retrieve_preserve_mixed_ws() throws EXistException, IOException, LockException, AuthenticationException, PermissionDeniedException, SAXException, XPathException {
-	//Nodes 1, 7 and 13 are not in mixed-contents and should not be preserved. They are the spaces between elements x and y, y and z, and z and x.
+		//Nodes 1, 7 and 13 are not in mixed-contents and should not be preserved. They are the spaces between elements x and y, y and z, and z and x.
         assertEquals(RESULT_PRESERVE_MIXED_WS_XML, store_and_retrieve_ws_mixed_content_value(true, XML, XQUERY));
     }
 
@@ -218,19 +220,5 @@ public class IndexerTest {
     @Test
     public void retrieve_xslt_preserve_mixed_ws() throws EXistException, PermissionDeniedException, IOException, LockException, AuthenticationException, SAXException, XPathException {
         assertEquals(RESULT_XML_XSLT, store_and_retrieve_ws_mixed_content_value(true, XML_XSLT, XQUERY_XSLT));
-    }
-
-    @BeforeClass
-    public static void setUp() throws DatabaseConfigurationException, EXistException {
-        Configuration config = new Configuration();
-	// fixme! default is both, which should be tested too.
-	config.setProperty(Indexer.PROPERTY_SUPPRESS_WHITESPACE, "none");
-        BrokerPool.configure(1, 5, config);
-
-    }  
-
-    @AfterClass
-    public static void tearDown() {
-        BrokerPool.stopAll(false);
     }
 }

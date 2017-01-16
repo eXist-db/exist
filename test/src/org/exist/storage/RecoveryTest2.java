@@ -21,10 +21,12 @@
  */
 package org.exist.storage;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
 import java.util.Optional;
 
 import org.exist.EXistException;
@@ -34,13 +36,14 @@ import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.btree.BTreeException;
 import org.exist.storage.dom.DOMFile;
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.test.TestConstants;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
+import org.exist.util.FileUtils;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.junit.After;
@@ -87,23 +90,17 @@ public class RecoveryTest2 {
 
             DOMFile domDb = ((NativeBroker) broker).getDOMFile();
             assertNotNull(domDb);
-            Writer writer = new StringWriter();
-            domDb.dump(writer);
-
-            File f;
-            IndexInfo info;
+            try(final Writer writer = new StringWriter()) {
+                domDb.dump(writer);
+            }
 
             // store some documents. Will be replaced below
-            File dir = new File(xmlDir);
-            assertNotNull(dir);
-            File[] docs = dir.listFiles();
-            assertNotNull(docs);
-            for (int i = 0; i < docs.length; i++) {
-                f = docs[i];
-                assertNotNull(f);
-                info = test2.validateXMLResource(transaction, broker, XmldbURI.create(f.getName()), new InputSource(f.toURI().toASCIIString()));
+            final Path dir = Paths.get(xmlDir);
+            final List<Path> docs = FileUtils.list(dir);
+            for (final Path f : docs) {
+                final IndexInfo info = test2.validateXMLResource(transaction, broker, XmldbURI.create(FileUtils.fileName(f)), new InputSource(f.toUri().toASCIIString()));
                 assertNotNull(info);
-                test2.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
+                test2.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()));
             }
 
             transact.commit(transaction);
@@ -120,11 +117,11 @@ public class RecoveryTest2 {
             Serializer serializer = broker.getSerializer();
             serializer.reset();
             
-            DocumentImpl doc = broker.getXMLResource(TestConstants.TEST_COLLECTION_URI2.append("terms-eng.xml"), Lock.READ_LOCK);
+            DocumentImpl doc = broker.getXMLResource(TestConstants.TEST_COLLECTION_URI2.append("terms-eng.xml"), LockMode.READ_LOCK);
             assertNotNull("Document should not be null", doc);
             String data = serializer.serialize(doc);
             assertNotNull(data);
-            doc.getUpdateLock().release(Lock.READ_LOCK);
+            doc.getUpdateLock().release(LockMode.READ_LOCK);
         }
     }
     

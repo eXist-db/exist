@@ -10,6 +10,7 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.btree.DBException;
 import org.exist.storage.index.BTreeStore;
 import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.FileUtils;
 import org.exist.util.LockException;
@@ -65,7 +66,7 @@ public class SortIndex extends AbstractIndex implements RawBackupSupport {
             return;
         final Lock lock = btree.getLock();
         try {
-            lock.acquire(Lock.WRITE_LOCK);
+            lock.acquire(LockMode.WRITE_LOCK);
             btree.flush();
         } catch (final LockException e) {
             LOG.warn("Failed to acquire lock for '" + FileUtils.fileName(btree.getFile()) + "'", e);
@@ -74,7 +75,7 @@ public class SortIndex extends AbstractIndex implements RawBackupSupport {
             LOG.error(e.getMessage(), e);
             //TODO : throw an exception ? -pb
         } finally {
-            lock.release(Lock.WRITE_LOCK);
+            lock.release(LockMode.WRITE_LOCK);
         }
     }
 

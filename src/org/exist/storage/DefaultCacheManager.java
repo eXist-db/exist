@@ -27,6 +27,7 @@ import org.apache.logging.log4j.Logger;
 import org.exist.management.Agent;
 import org.exist.management.AgentFactory;
 import org.exist.storage.cache.Cache;
+import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
 
 import java.text.NumberFormat;
@@ -44,7 +45,7 @@ import java.util.List;
  *
  * @author  wolf
  */
-public class DefaultCacheManager implements CacheManager
+public class DefaultCacheManager implements CacheManager, BrokerPoolService
 {
     private final static Logger LOG                             = LogManager.getLogger( DefaultCacheManager.class );
 
@@ -109,23 +110,24 @@ public class DefaultCacheManager implements CacheManager
     public DefaultCacheManager( BrokerPool pool )
     {
         this.instanceName = pool.getId();
+        final Configuration configuration = pool.getConfiguration();
         int cacheSize;
 
-        if( ( pageSize = pool.getConfiguration().getInteger( BrokerPool.PROPERTY_PAGE_SIZE ) ) < 0 ) {
+        if( ( pageSize = configuration.getInteger( BrokerPool.PROPERTY_PAGE_SIZE ) ) < 0 ) {
 
             //TODO : should we share the page size with the native broker ?
             pageSize = BrokerPool.DEFAULT_PAGE_SIZE;
         }
 
-        if( ( cacheSize = pool.getConfiguration().getInteger( PROPERTY_CACHE_SIZE ) ) < 0 ) {
+        if( ( cacheSize = configuration.getInteger( PROPERTY_CACHE_SIZE ) ) < 0 ) {
             cacheSize = DEFAULT_CACHE_SIZE;
         }
 
-        shrinkThreshold = pool.getConfiguration().getInteger( SHRINK_THRESHOLD_PROPERTY );
+        shrinkThreshold = configuration.getInteger( SHRINK_THRESHOLD_PROPERTY );
 
         totalMem        = cacheSize * 1024L * 1024L;
         
-        final Boolean checkMaxCache = (Boolean)pool.getConfiguration().getProperty( PROPERTY_CACHE_CHECK_MAX_SIZE );
+        final Boolean checkMaxCache = (Boolean)configuration.getProperty( PROPERTY_CACHE_CHECK_MAX_SIZE );
         
         if( checkMaxCache == null || checkMaxCache.booleanValue() ) {
 			final long max        = Runtime.getRuntime().maxMemory();
@@ -194,7 +196,7 @@ public class DefaultCacheManager implements CacheManager
             }
 
             // no free pages available
-//            LOG.debug("Cache " + cache.getFileName() + " cannot be resized");
+//            LOG.debug("Cache " + cache.getName() + " cannot be resized");
             return( -1 );
         }
 
@@ -225,7 +227,7 @@ public class DefaultCacheManager implements CacheManager
 
                 if( LOG.isDebugEnabled() ) {
                     final NumberFormat nf = NumberFormat.getNumberInstance();
-                    LOG.debug( "Growing cache " + cache.getFileName() + " (a " + cache.getClass().getName() + ") from " + nf.format( cache.getBuffers() ) + " to " + nf.format( newCacheSize ) );
+                    LOG.debug( "Growing cache " + cache.getName() + " (a " + cache.getClass().getName() + ") from " + nf.format( cache.getBuffers() ) + " to " + nf.format( newCacheSize ) );
                 }
                 currentPageCount -= cache.getBuffers();
 
@@ -265,7 +267,7 @@ public class DefaultCacheManager implements CacheManager
 
                         if( LOG.isDebugEnabled() ) {
                             final NumberFormat nf = NumberFormat.getNumberInstance();
-                            LOG.debug( "Shrinking cache: " + cache.getFileName() + " (a " + cache.getClass().getName() + ") to " + nf.format( cache.getBuffers() ) );
+                            LOG.debug( "Shrinking cache: " + cache.getName() + " (a " + cache.getClass().getName() + ") to " + nf.format( cache.getBuffers() ) );
                         }
                         currentPageCount -= cache.getBuffers();
                         cache.resize( getDefaultInitialSize() );
@@ -294,7 +296,7 @@ public class DefaultCacheManager implements CacheManager
 
                 if( LOG.isDebugEnabled() ) {
                     final NumberFormat nf = NumberFormat.getNumberInstance();
-                    LOG.debug( "Shrinking cache: " + cache.getFileName() + " (a " + cache.getClass().getName() + ") to " + nf.format( newSize ) );
+                    LOG.debug( "Shrinking cache: " + cache.getName() + " (a " + cache.getClass().getName() + ") to " + nf.format( newSize ) );
                 }
                 currentPageCount -= cache.getBuffers();
                 cache.resize( newSize );
@@ -366,7 +368,7 @@ public class DefaultCacheManager implements CacheManager
         final Agent agent = AgentFactory.getInstance();
 
         try {
-            agent.addMBean( instanceName, "org.exist.management." + instanceName + ":type=CacheManager.Cache,name=" + cache.getFileName() + ",cache-type=" + cache.getType(), new org.exist.management.Cache( cache ) );
+            agent.addMBean( instanceName, "org.exist.management." + instanceName + ":type=CacheManager.Cache,name=" + cache.getName() + ",cache-type=" + cache.getType(), new org.exist.management.Cache( cache ) );
         }
         catch( final DatabaseConfigurationException e ) {
             LOG.warn( "Exception while registering cache mbean.", e );

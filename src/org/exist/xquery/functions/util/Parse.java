@@ -29,7 +29,7 @@ import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.memtree.NodeImpl;
 import org.exist.dom.memtree.SAXAdapter;
 import org.exist.util.HtmlToXmlParser;
-import org.exist.util.function.Either;
+import com.evolvedbinary.j8fu.Either;
 import org.exist.validation.ValidationReport;
 import org.exist.xquery.*;
 import org.exist.xquery.functions.validation.Shared;

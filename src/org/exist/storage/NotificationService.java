@@ -37,7 +37,7 @@ import org.exist.dom.persistent.IStoredNode;
  * @author wolf
  *
  */
-public class NotificationService extends IdentityHashMap<UpdateListener, Object> {
+public class NotificationService extends IdentityHashMap<UpdateListener, Object> implements BrokerPoolService {
 
 	private static final long serialVersionUID = -3629584664969740903L;
 

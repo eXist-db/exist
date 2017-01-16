@@ -19,7 +19,6 @@
  */
 package org.exist.xmldb;
 
-import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 
@@ -80,8 +79,8 @@ public class RemoteBinaryResource
 
         if (vfile != null) {
             final Object content = vfile.getContent();
-            if (content instanceof File) {
-                retval = ((File) content).getAbsolutePath();
+            if (content instanceof java.io.File) {
+                retval = ((java.io.File) content).getAbsolutePath();
             }
         } else if (inputSource != null && inputSource instanceof EXistInputSource) {
             retval = ((EXistInputSource) inputSource).getSymbolicPath();

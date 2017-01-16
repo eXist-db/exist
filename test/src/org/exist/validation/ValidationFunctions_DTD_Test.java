@@ -27,10 +27,13 @@ import java.util.Optional;
 import org.exist.EXistException;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.security.PermissionDeniedException;
+import org.exist.test.ExistEmbeddedServer;
+import org.exist.util.Configuration;
 import org.exist.util.LockException;
 
 import org.junit.*;
 
+import static org.exist.util.PropertiesBuilder.propertiesBuilder;
 import static org.junit.Assert.*;
 
 import org.exist.collections.IndexInfo;
@@ -39,7 +42,6 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
-import org.exist.util.Configuration;
 import org.exist.util.XMLReaderObjectFactory;
 import org.exist.xmldb.XmldbURI;
 import org.xml.sax.SAXException;
@@ -52,14 +54,12 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XPathQueryService;
 
 /**
- *  Set of Tests for validation:validate($a) and validation:validate($a, $b)
- * regaring validatin using DTD's.
+ * Set of Tests for validation:validate($a) and validation:validate($a, $b)
+ * regarding validating using DTD's.
  *
  * @author Dannes Wessels (dizzzz@exist-db.org)
  */
 public class ValidationFunctions_DTD_Test {
-    
-    private static Configuration config = null;
     
     private final static String TEST_COLLECTION = "testValidationFunctionsDTD";
 
@@ -155,19 +155,12 @@ public class ValidationFunctions_DTD_Test {
         assertEquals( "invalid document", "false", r );
     }
 
-    @Before
-    public void clearGrammarCache() throws XMLDBException {
-        service.query("validation:clear-grammar-cache()");
-    }
-    
+    @ClassRule
+    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(propertiesBuilder()
+            .set(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, "auto").build());
 
     @BeforeClass
     public static void startup() throws Exception {
-        config = new Configuration();
-        config.setProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, "auto");
-
-        BrokerPool.configure(1, 5, config);
-
         //create the collections we need for these tests
         createTestCollections();
 
@@ -178,11 +171,14 @@ public class ValidationFunctions_DTD_Test {
         service = getXPathService();
     }
 
+    @Before
+    public void clearGrammarCache() throws XMLDBException {
+        service.query("validation:clear-grammar-cache()");
+    }
 
     @AfterClass
     public static void shutdown() throws Exception {
         removeTestCollections();
-        BrokerPool.stopAll(true);
     }
 
     private static XPathQueryService getXPathService() throws Exception {
@@ -196,7 +192,7 @@ public class ValidationFunctions_DTD_Test {
 
     private static void createTestCollections() throws Exception {
 
-        final BrokerPool pool = BrokerPool.getInstance();
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
 
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().authenticate(ADMIN_UID, ADMIN_PWD)));
@@ -225,7 +221,8 @@ public class ValidationFunctions_DTD_Test {
 
     private static void createTestDocuments() throws Exception {
 
-        final BrokerPool pool = BrokerPool.getInstance();
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        final Configuration config = pool.getConfiguration();
         final TransactionManager transact = pool.getTransactionManager();
 
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getGuestSubject()));
@@ -263,7 +260,7 @@ public class ValidationFunctions_DTD_Test {
     private static void storeDocument(DBBroker broker, Txn txn, org.exist.collections.Collection collection, String name, String data) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException {
         XmldbURI docUri  = XmldbURI.create(name);
         IndexInfo info = collection.validateXMLResource(txn, broker, docUri, data);
-        collection.store(txn, broker, info, data, false);
+        collection.store(txn, broker, info, data);
     }
 
     private static void storeTextDocument(DBBroker broker, Txn txn, org.exist.collections.Collection collection, String name, String data) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException {
@@ -273,7 +270,7 @@ public class ValidationFunctions_DTD_Test {
 
     private static void removeTestCollections() throws Exception {
 
-        final BrokerPool pool = BrokerPool.getInstance();
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
 
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().authenticate(ADMIN_UID, ADMIN_PWD)));

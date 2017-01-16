@@ -45,13 +45,14 @@ import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.Txn;
 import static org.exist.test.TestConstants.TEST_COLLECTION_URI;
-import org.exist.util.Configuration;
-import org.exist.util.ConfigurationHelper;
+
+import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -69,11 +70,13 @@ import org.xmldb.api.base.XMLDBException;
 @RunWith(Parameterized.class)
 public class SystemExportImportTest {
 
-    @Parameters(name = "{0}")
+    @Parameters(name = "{0} zip:{2}")
     public static java.util.Collection<Object[]> data() {
         return Arrays.asList(new Object[][]{
-                {"direct", true},
-                {"non-direct", false}
+                {"direct", true, false},
+                {"non-direct", false, false},
+                {"direct", true, true},
+                {"non-direct", false, true}
         });
     }
 
@@ -82,6 +85,9 @@ public class SystemExportImportTest {
 
     @Parameter(value = 1)
     public boolean direct;
+
+    @Parameter(value = 2)
+    public boolean zip;
 
     private static String COLLECTION_CONFIG =
             "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
@@ -110,19 +116,17 @@ public class SystemExportImportTest {
 
     private static String BINARY = "test";
 
-    private static BrokerPool pool;
-
     @Test
     public void exportImport() throws Exception {
         Path file;
-
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             final Collection test = broker.getCollection(TEST_COLLECTION_URI);
             assertNotNull(test);
 
             final SystemExport sysexport = new SystemExport(broker, null, null, direct);
-            file = sysexport.export("backup", false, false, null);
+            file = sysexport.export("backup", false, zip, null);
         }
 
         clean();
@@ -166,16 +170,14 @@ public class SystemExportImportTest {
 		serializer.setProperties(contentsOutputProps);
 		return serializer.serialize(document);
 	}
-    
+
+    @Rule
+    public final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer();
+
 	@Before
     public void startDB() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, SAXException, CollectionConfigurationException, LockException, ClassNotFoundException, InstantiationException, XMLDBException, IllegalAccessException {
-
-        final Path confFile = ConfigurationHelper.lookup("conf.xml");
-        final Configuration config = new Configuration(confFile.toAbsolutePath().toString());
-        BrokerPool.configure(1, 5, config);
-        pool = BrokerPool.getInstance();
-        assertNotNull(pool);
-        pool.getPluginsManager().addPlugin("org.exist.storage.md.Plugin");
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+	    pool.getPluginsManager().addPlugin("org.exist.storage.md.Plugin");
 
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                 final Txn transaction = pool.getTransactionManager().beginTransaction()) {
@@ -189,15 +191,15 @@ public class SystemExportImportTest {
 
             IndexInfo info = test.validateXMLResource(transaction, broker, doc01uri.lastSegment(), XML1);
             assertNotNull(info);
-            test.store(transaction, broker, info, XML1, false);
+            test.store(transaction, broker, info, XML1);
 
             info = test.validateXMLResource(transaction, broker, doc02uri.lastSegment(), XML2);
             assertNotNull(info);
-            test.store(transaction, broker, info, XML2, false);
+            test.store(transaction, broker, info, XML2);
 
             info = test.validateXMLResource(transaction, broker, doc03uri.lastSegment(), XML3);
             assertNotNull(info);
-            test.store(transaction, broker, info, XML3, false);
+            test.store(transaction, broker, info, XML3);
 
             test.addBinaryResource(transaction, broker, doc11uri.lastSegment(), BINARY.getBytes(), null);
 
@@ -218,11 +220,10 @@ public class SystemExportImportTest {
     @After
     public void cleanup() throws PermissionDeniedException, IOException, TriggerException, EXistException {
     	clean();
-        BrokerPool.stopAll(false);
-        pool = null;
     }
 
     private void clean() throws PermissionDeniedException, IOException, TriggerException, EXistException {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                 final Txn transaction = pool.getTransactionManager().beginTransaction()) {
 

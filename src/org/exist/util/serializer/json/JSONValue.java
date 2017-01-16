@@ -59,16 +59,19 @@ public class JSONValue extends JSONNode {
     @Override
     public void serialize(final Writer writer, final boolean isRoot) throws IOException {
         if(getNextOfSame() != null) {
-            writer.write("[");
+            writer.write('[');
             JSONNode next = this;
             while(next != null) {
                 next.serializeContent(writer);
                 next = next.getNextOfSame();
                 if(next != null) {
-                    writer.write(", ");
+                    writer.write(',');
+                }
+                if(isIndent()) {
+                    writer.write(' ');
                 }
             }
-            writer.write("]");
+            writer.write(']');
         } else {
             serializeContent(writer);
         }		

@@ -16,36 +16,20 @@
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
  */
 package org.exist.repo;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.*;
-import java.util.jar.JarEntry;
-import java.util.jar.JarInputStream;
-import java.util.stream.Stream;
-
-import org.exist.SystemProperties;
-import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.memtree.DocumentBuilderReceiver;
-import org.exist.dom.memtree.InMemoryNodeSet;
-import org.exist.dom.memtree.DocumentImpl;
-import org.exist.dom.memtree.ElementImpl;
-import org.exist.dom.memtree.NodeImpl;
-import org.exist.dom.memtree.MemTreeBuilder;
+import com.evolvedbinary.j8fu.Either;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
+import org.exist.SystemProperties;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
-import org.exist.config.ConfigurationException;
-import org.exist.dom.persistent.BinaryDocument;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.QName;
+import org.exist.dom.memtree.*;
+import org.exist.dom.persistent.BinaryDocument;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.internal.aider.GroupAider;
@@ -71,6 +55,16 @@ import org.w3c.dom.Element;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
+import java.util.jar.JarEntry;
+import java.util.jar.JarInputStream;
+import java.util.stream.Stream;
 
 /**
  * Deploy a .xar package into the database using the information provided
@@ -100,11 +94,21 @@ public class Deployment {
 
     private final DBBroker broker;
 
-    private String user = null;
-    private String password = null;
-    private String group = null;
-    private int perms = -1;
-    private String permsStr = null;
+    private static class RequestedPerms {
+        final String user;
+        final String password;
+        final Optional<String> group;
+        final Either<Integer, String> permissions;
+
+        private RequestedPerms(final String user, final String password, final Optional<String> group, final Either<Integer, String> permissions) {
+            this.user = user;
+            this.password = password;
+            this.group = group;
+            this.permissions = permissions;
+        }
+    }
+
+//    private Optional<RequestedPerms> requestedPerms = Optional.empty();
 
     public Deployment(final DBBroker broker) {
         this.broker = broker;
@@ -168,7 +172,12 @@ public class Deployment {
      *                    or an older version of the required dependency is installed and needs to be replaced.
      */
     public Optional<String> installAndDeploy(final Path xar, final PackageLoader loader, boolean enforceDeps) throws PackageException, IOException {
-        final DocumentImpl document = getDescriptor(xar);
+        final Optional<DocumentImpl> descriptor = getDescriptor(xar);
+        if(!descriptor.isPresent()) {
+            throw new PackageException("Missing descriptor from package: " + xar.toAbsolutePath());
+        }
+        final DocumentImpl document = descriptor.get();
+
         final ElementImpl root = (ElementImpl) document.getDocumentElement();
         final String name = root.getAttribute("name");
         final String pkgVersion = root.getAttribute("version");
@@ -296,22 +305,18 @@ public class Deployment {
         final DocumentImpl repoXML = getRepoXML(packageDir);
         final Optional<Package> pkg = getPackage(pkgName, repo);
         if (repoXML != null) {
-            ElementImpl target = null;
             try {
-                target = findElement(repoXML, TARGET_COLL_ELEMENT);
-                final ElementImpl cleanup = findElement(repoXML, CLEANUP_ELEMENT);
-                if (cleanup != null) {
-                    runQuery(null, packageDir, cleanup.getStringValue(), false);
+                final Optional<ElementImpl> cleanup = findElement(repoXML, CLEANUP_ELEMENT);
+                if(cleanup.isPresent()) {
+                    runQuery(null, packageDir, cleanup.get().getStringValue(), false);
                 }
+
+                final Optional<ElementImpl> target = findElement(repoXML, TARGET_COLL_ELEMENT);
                 if (pkg.isPresent()) {
                     uninstall(pkg.get(), target);
                 }
-                if (target == null) {
-                    // a library package does not have a target collection, but we still return
-                    // the temporary location of the package in /db/system
-                    return Optional.of(getTargetFallback(pkg.get()).getCollectionPath());
-                }
-                return Optional.ofNullable(target.getStringValue());
+
+                return target.map(e -> Optional.ofNullable(e.getStringValue())).orElseGet(() -> Optional.of(getTargetFallback(pkg.get()).getCollectionPath()));
             } catch (final XPathException e) {
                 throw new PackageException("Error found while processing repo.xml: " + e.getMessage(), e);
             } catch (final IOException e) {
@@ -340,10 +345,11 @@ public class Deployment {
         }
         try {
             // if there's a <setup> element, run the query it points to
-            final ElementImpl setup = findElement(repoXML, SETUP_ELEMENT);
-            String path = setup == null ? null : setup.getStringValue();
-            if (path != null && path.length() > 0) {
-                runQuery(null, packageDir, path, true);
+            final Optional<ElementImpl> setup = findElement(repoXML, SETUP_ELEMENT);
+            final Optional<String> setupPath = setup.map(ElementImpl::getStringValue).filter(s -> !s.isEmpty());
+
+            if (setupPath.isPresent()) {
+                runQuery(null, packageDir, setupPath.get(), true);
                 return Optional.empty();
             } else {
                 // otherwise copy all child directories to the target collection
@@ -355,19 +361,19 @@ public class Deployment {
                         throw new PackageException("Bad collection URI: " + userTarget, e);
                     }
                 } else {
-                    final ElementImpl target = findElement(repoXML, TARGET_COLL_ELEMENT);
-                    if (target != null) {
-                        final String targetPath = target.getStringValue();
-                        if (targetPath.length() > 0) {
-                            // determine target collection
-                            try {
-                                targetCollection = XmldbURI.create(getTargetCollection(targetPath));
-                            } catch (final Exception e) {
-                                throw new PackageException("Bad collection URI for <target> element: " + target.getStringValue(), e);
-                            }
+                    final Optional<ElementImpl> target = findElement(repoXML, TARGET_COLL_ELEMENT);
+                    final Optional<String> targetPath = target.map(ElementImpl::getStringValue).filter(s -> !s.isEmpty());
+
+                    if (targetPath.isPresent()) {
+                        // determine target collection
+                        try {
+                            targetCollection = XmldbURI.create(getTargetCollection(targetPath.get()));
+                        } catch (final Exception e) {
+                            throw new PackageException("Bad collection URI for <target> element: " + targetPath.get(), e);
                         }
                     }
                 }
+
                 if (targetCollection == null) {
                     // no target means: package does not need to be deployed into database
                     // however, we need to preserve a copy for backup purposes
@@ -376,48 +382,64 @@ public class Deployment {
                     final String pkgColl = pkg.get().getAbbrev() + "-" + pkg.get().getVersion();
                     targetCollection = XmldbURI.SYSTEM.append("repo/" + pkgColl);
                 }
-                final ElementImpl permissions = findElement(repoXML, PERMISSIONS_ELEMENT);
-                if (permissions != null) {
-                    // get user, group and default permissions
-                    user = permissions.getAttribute("user");
-                    group = permissions.getAttribute("group");
-                    password = permissions.getAttribute("password");
-                    String mode = permissions.getAttribute("mode");
-                    try {
-                        perms = Integer.parseInt(mode, 8);
-                    } catch (final NumberFormatException e) {
-                        permsStr = mode;
-                        if (!permsStr.matches("^[rwx-]{9}"))
-                            {throw new PackageException("Bad format for mode attribute in <permissions>: " + mode);}
-                    }
+
+                // extract the permissions (if any)
+                final Optional<ElementImpl> permissions = findElement(repoXML, PERMISSIONS_ELEMENT);
+                final Optional<RequestedPerms> requestedPerms = permissions.flatMap(elem -> {
+                    final Optional<Either<Integer, String>> perms = Optional.ofNullable(elem.getAttribute("mode")).flatMap(mode -> {
+                        try {
+                            return Optional.of(Either.Left(Integer.parseInt(mode, 8)));
+                        } catch(final NumberFormatException e) {
+                            if(mode.matches("^[rwx-]{9}")) {
+                                return Optional.of(Either.Right(mode));
+                            } else {
+                                return Optional.empty();
+                            }
+                        }
+                    });
+
+                    return perms.map(p -> new RequestedPerms(
+                        elem.getAttribute("user"),
+                        elem.getAttribute("password"),
+                        Optional.ofNullable(elem.getAttribute("group")),
+                        p
+                    ));
+                });
+
+                //check that if there were permissions then we were able to parse them, a failure would be related to the mode string
+                if(permissions.isPresent() && !requestedPerms.isPresent()) {
+                    final String mode = permissions.map(elem -> elem.getAttribute("mode")).orElse(null);
+                    throw new PackageException("Bad format for mode attribute in <permissions>: " + mode);
                 }
 
                 // run the pre-setup query if present
-                final ElementImpl preSetup = findElement(repoXML, PRE_SETUP_ELEMENT);
-                if (preSetup != null) {
-                    path = preSetup.getStringValue();
-                    if (path.length() > 0)
-                        {runQuery(targetCollection, packageDir, path, true);}
+                final Optional<ElementImpl> preSetup = findElement(repoXML, PRE_SETUP_ELEMENT);
+                final Optional<String> preSetupPath = preSetup.map(ElementImpl::getStringValue).filter(s -> !s.isEmpty());
+
+                if(preSetupPath.isPresent()) {
+                    runQuery(targetCollection, packageDir, preSetupPath.get(), true);
                 }
 
                 // any required users and group should have been created by the pre-setup query.
                 // check for invalid users now.
-                checkUserSettings();
+                if(requestedPerms.isPresent()) {
+                    checkUserSettings(requestedPerms.get());
+                }
 
                 final InMemoryNodeSet resources = findElements(repoXML,RESOURCES_ELEMENT);
 
                 // install
-                scanDirectory(packageDir, targetCollection, resources, true, false);
+                scanDirectory(packageDir, targetCollection, resources, true, false, requestedPerms);
 
                 // run the post-setup query if present
-                final ElementImpl postSetup = findElement(repoXML, POST_SETUP_ELEMENT);
-                if (postSetup != null) {
-                    path = postSetup.getStringValue();
-                    if (path.length() > 0)
-                        {runQuery(targetCollection, packageDir, path, false);}
+                final Optional<ElementImpl> postSetup = findElement(repoXML, POST_SETUP_ELEMENT);
+                final Optional<String> postSetupPath = postSetup.map(ElementImpl::getStringValue).filter(s -> !s.isEmpty());
+
+                if(postSetupPath.isPresent()) {
+                    runQuery(targetCollection, packageDir, postSetupPath.get(), false);
                 }
 
-                storeRepoXML(repoXML, targetCollection);
+                storeRepoXML(repoXML, targetCollection, requestedPerms);
 
                 // TODO: it should be safe to clean up the file system after a package
                 // has been deployed. Might be enabled after 2.0
@@ -489,12 +511,9 @@ public class Deployment {
         final DocumentImpl repoXML = getRepoXML(pkgDir);
         if (repoXML != null) {
             try {
-                final ElementImpl target = findElement(repoXML, TARGET_COLL_ELEMENT);
-                if (target == null) {
-                    return getTargetFallback(pkg).getCollectionPath();
-                }
-                final XmldbURI targetCollection = XmldbURI.create(getTargetCollection(target.getStringValue()));
-                return targetCollection.getCollectionPath();
+                final Optional<ElementImpl> target = findElement(repoXML, TARGET_COLL_ELEMENT);
+                return target.map(ElementImpl::getStringValue).map(this::getTargetCollection).map(XmldbURI::create).map(XmldbURI::getCollectionPath)
+                        .orElseGet(() -> getTargetFallback(pkg).getCollectionPath());
             } catch (XPathException e) {
                 throw new PackageException("Failed to determine target collection");
             }
@@ -531,32 +550,27 @@ public class Deployment {
      * @param target
      * @throws PackageException
      */
-    private void uninstall(final Package pkg, final ElementImpl target)
+    private void uninstall(final Package pkg, final Optional<ElementImpl> target)
             throws PackageException {
         // determine target collection
-        XmldbURI targetCollection;
-        if (target == null || target.getStringValue().length() == 0) {
-            targetCollection = getTargetFallback(pkg);
-        } else {
-            final String targetPath = target.getStringValue();
-            try {
-                targetCollection = XmldbURI.create(getTargetCollection(targetPath));
-            } catch (final Exception e) {
-                throw new PackageException("Bad collection URI for <target> element: " + targetPath);
-            }
-        }
+        final Optional<String> targetPath = target.map(ElementImpl::getStringValue).filter(s -> !s.isEmpty());
+        final XmldbURI targetCollection = targetPath.map(s -> XmldbURI.create(getTargetCollection(s)))
+                .orElseGet(() -> getTargetFallback(pkg));
+
         final TransactionManager mgr = broker.getBrokerPool().getTransactionManager();
-        try(final Txn txn = mgr.beginTransaction()) {
-            Collection collection = broker.getOrCreateCollection(txn, targetCollection);
-            if (collection != null)
-                {broker.removeCollection(txn, collection);}
+        try(final Txn transaction = mgr.beginTransaction()) {
+            Collection collection = broker.getOrCreateCollection(transaction, targetCollection);
+            if (collection != null) {
+                broker.removeCollection(transaction, collection);
+            }
             if (target != null) {
                 final XmldbURI configCollection = XmldbURI.CONFIG_COLLECTION_URI.append(targetCollection);
-                collection = broker.getOrCreateCollection(txn, configCollection);
-                if (collection != null)
-                    {broker.removeCollection(txn, collection);}
+                collection = broker.getOrCreateCollection(transaction, configCollection);
+                if (collection != null) {
+                    broker.removeCollection(transaction, collection);
+                }
             }
-            mgr.commit(txn);
+            mgr.commit(transaction);
         } catch (final Exception e) {
             LOG.error("Exception occurred while removing package.", e);
         }
@@ -569,7 +583,7 @@ public class Deployment {
      * @param targetCollection
      * @throws XPathException
      */
-    private void storeRepoXML(final DocumentImpl repoXML, final XmldbURI targetCollection)
+    private void storeRepoXML(final DocumentImpl repoXML, final XmldbURI targetCollection, final Optional<RequestedPerms> requestedPerms)
             throws PackageException, XPathException {
         // Store repo.xml
         final DateTimeValue time = new DateTimeValue(new Date());
@@ -585,43 +599,37 @@ public class Deployment {
         final DocumentImpl updatedXML = builder.getDocument();
 
         final TransactionManager mgr = broker.getBrokerPool().getTransactionManager();
-        try(final Txn txn = mgr.beginTransaction()) {
-            final Collection collection = broker.getOrCreateCollection(txn, targetCollection);
+        try(final Txn transaction = mgr.beginTransaction()) {
+            final Collection collection = broker.getOrCreateCollection(transaction, targetCollection);
             final XmldbURI name = XmldbURI.createInternal("repo.xml");
-            final IndexInfo info = collection.validateXMLResource(txn, broker, name, updatedXML);
+            final IndexInfo info = collection.validateXMLResource(transaction, broker, name, updatedXML);
             final Permission permission = info.getDocument().getPermissions();
-            setPermissions(false, MimeType.XML_TYPE, permission);
+            setPermissions(requestedPerms, false, MimeType.XML_TYPE, permission);
 
-            collection.store(txn, broker, info, updatedXML, false);
+            collection.store(transaction, broker, info, updatedXML);
 
-            mgr.commit(txn);
+            mgr.commit(transaction);
         } catch (final Exception e) {
             LOG.warn(e);
         }
     }
 
-    private void checkUserSettings() throws PackageException {
+    private void checkUserSettings(final RequestedPerms requestedPerms) throws PackageException {
+        Objects.requireNonNull(requestedPerms);
         final org.exist.security.SecurityManager secman = broker.getBrokerPool().getSecurityManager();
         try {
-            if (group != null && !secman.hasGroup(group)) {
-                final GroupAider aider = new GroupAider(group);
-                secman.addGroup(aider);
+            if (requestedPerms.group.filter(g -> !secman.hasGroup(g)).isPresent()) {
+                secman.addGroup(broker, new GroupAider(requestedPerms.group.get()));
             }
-            if (user != null && !secman.hasAccount(user)) {
-                final UserAider aider = new UserAider(user);
-                aider.setPassword(password);
-                if (group != null) {
-                    aider.addGroup(group);
-                }
 
-                secman.addAccount(aider);
+            if (!secman.hasAccount(requestedPerms.user)) {
+                final UserAider aider = new UserAider(requestedPerms.user);
+                aider.setPassword(requestedPerms.password);
+                requestedPerms.group.ifPresent(groupName -> aider.addGroup(groupName));
+                secman.addAccount(broker, aider);
             }
-        } catch (final ConfigurationException e) {
-            throw new PackageException("Failed to create user: " + user, e);
-        } catch (final PermissionDeniedException e) {
-            throw new PackageException("Failed to create user: " + user, e);
-        } catch (final EXistException e) {
-            throw new PackageException("Failed to create user: " + user, e);
+        } catch (final PermissionDeniedException | EXistException e) {
+            throw new PackageException("Failed to create user: " + requestedPerms.user, e);
         }
     }
 
@@ -668,14 +676,14 @@ public class Deployment {
      * @param target
      */
     private void scanDirectory(final Path directory, final XmldbURI target, final InMemoryNodeSet resources,
-                               final boolean inRootDir, final boolean isResourcesDir) {
+                               final boolean inRootDir, final boolean isResourcesDir, final Optional<RequestedPerms> requestedPerms) {
         final TransactionManager mgr = broker.getBrokerPool().getTransactionManager();
         Collection collection = null;
-        try(final Txn txn = mgr.beginTransaction()) {
-            collection = broker.getOrCreateCollection(txn, target);
-            setPermissions(true, null, collection.getPermissionsNoLock());
-            broker.saveCollection(txn, collection);
-            mgr.commit(txn);
+        try(final Txn transaction = mgr.beginTransaction()) {
+            collection = broker.getOrCreateCollection(transaction, target);
+            setPermissions(requestedPerms, true, null, collection.getPermissionsNoLock());
+            broker.saveCollection(transaction, collection);
+            mgr.commit(transaction);
         } catch (final Exception e) {
             LOG.warn(e);
         }
@@ -685,18 +693,18 @@ public class Deployment {
         // the root dir is not allowed to be a resources directory
         if (!inRootDir && isResources) {
             try {
-                storeBinaryResources(directory, collection);
+                storeBinaryResources(directory, collection, requestedPerms);
             } catch (Exception e) {
-                e.printStackTrace();
+                LOG.error(e.getMessage(), e); 
             }
         } else {
-            storeFiles(directory, collection, inRootDir);
+            storeFiles(directory, collection, inRootDir, requestedPerms);
         }
 
         // scan sub directories
         try(final Stream<Path> subDirs = Files.find(directory, 1, (path, attrs) -> (!path.equals(directory)) && attrs.isDirectory())) {
             subDirs.forEach(path -> scanDirectory(path, target.append(FileUtils.fileName(path)), resources, false,
-                    isResources));
+                    isResources, requestedPerms));
         } catch(final IOException ioe) {
             LOG.warn("Unable to scan sub-directories", ioe);
         }
@@ -724,7 +732,7 @@ public class Deployment {
      * @param directory
      * @param targetCollection
      */
-    private void storeFiles(final Path directory, final Collection targetCollection, final boolean inRootDir) {
+    private void storeFiles(final Path directory, final Collection targetCollection, final boolean inRootDir, final Optional<RequestedPerms> requestedPerms) {
         List<Path> files;
         try {
             files = FileUtils.list(directory);
@@ -747,69 +755,69 @@ public class Deployment {
                 }
                 final XmldbURI name = XmldbURI.create(FileUtils.fileName(file));
 
-                try(final Txn txn = mgr.beginTransaction()) {
+                try(final Txn transaction = mgr.beginTransaction()) {
                     if (mime.isXMLType()) {
                         try {
                             final InputSource is = new InputSource(file.toUri().toASCIIString());
-                            final IndexInfo info = targetCollection.validateXMLResource(txn, broker, name, is);
+                            final IndexInfo info = targetCollection.validateXMLResource(transaction, broker, name, is);
                             info.getDocument().getMetadata().setMimeType(mime.getName());
                             final Permission permission = info.getDocument().getPermissions();
-                            setPermissions(false, mime, permission);
+                            setPermissions(requestedPerms, false, mime, permission);
 
-                            targetCollection.store(txn, broker, info, is, false);
+                            targetCollection.store(transaction, broker, info, is);
                         } catch (Exception e) {
                             //check for .html ending
                             if(mime.getName().equals(MimeType.HTML_TYPE.getName())){
                                 //store it
-                                storeBinary(targetCollection, file, mime, name, txn);
+                                storeBinary(targetCollection, file, mime, name, requestedPerms, transaction);
                             }
                         }
                     } else {
                         final long size = Files.size(file);
                         try(final InputStream is = Files.newInputStream(file)) {
                             final BinaryDocument doc =
-                                    targetCollection.addBinaryResource(txn, broker, name, is, mime.getName(), size);
+                                    targetCollection.addBinaryResource(transaction, broker, name, is, mime.getName(), size);
 
                             final Permission permission = doc.getPermissions();
-                            setPermissions(false, mime, permission);
+                            setPermissions(requestedPerms, false, mime, permission);
                             doc.getMetadata().setMimeType(mime.getName());
-                            broker.storeXMLResource(txn, doc);
+                            broker.storeXMLResource(transaction, doc);
                         }
                     }
-                    mgr.commit(txn);
+                    mgr.commit(transaction);
                 } catch (final Exception e) {
-                    e.printStackTrace();
+                    LOG.error(e.getMessage(), e); 
                 }
             }
         }
     }
 
-    private void storeBinary(Collection targetCollection, Path file, MimeType mime, XmldbURI name, Txn txn) throws
+    private void storeBinary(final Collection targetCollection, final Path file, final MimeType mime, final XmldbURI name, final Optional<RequestedPerms> requestedPerms, final Txn transaction) throws
             IOException, EXistException, PermissionDeniedException, LockException, TriggerException {
         final long size = Files.size(file);
         try (final InputStream is = Files.newInputStream(file)) {
             final BinaryDocument doc =
-                    targetCollection.addBinaryResource(txn, broker, name, is, mime.getName(), size);
+                    targetCollection.addBinaryResource(transaction, broker, name, is, mime.getName(), size);
 
             final Permission permission = doc.getPermissions();
-            setPermissions(false, mime, permission);
+            setPermissions(requestedPerms, false, mime, permission);
             doc.getMetadata().setMimeType(mime.getName());
-            broker.storeXMLResource(txn, doc);
+            broker.storeXMLResource(transaction, doc);
         }
     }
 
-    private void storeBinaryResources(Path directory, Collection targetCollection) throws IOException, EXistException,
+    private void storeBinaryResources(final Path directory, final Collection targetCollection, final Optional<RequestedPerms> requestedPerms) throws IOException, EXistException,
             PermissionDeniedException, LockException, TriggerException {
         final TransactionManager mgr = broker.getBrokerPool().getTransactionManager();
         try(DirectoryStream<Path> stream = Files.newDirectoryStream(directory)) {
-            for (Path entry: stream) {
+            for (final Path entry: stream) {
                 if (!Files.isDirectory(entry)) {
                     final XmldbURI name = XmldbURI.create(FileUtils.fileName(entry));
-                    try(final Txn txn = mgr.beginTransaction()) {
-                        storeBinary(targetCollection, entry, MimeType.BINARY_TYPE, name, txn);
-                        mgr.commit(txn);
+                    try(final Txn transaction = mgr.beginTransaction()) {
+                        storeBinary(targetCollection, entry, MimeType.BINARY_TYPE, name, requestedPerms, transaction);
+                        mgr.commit(transaction);
                     } catch (final Exception e) {
-                        e.printStackTrace();
+                        LOG.error(e.getMessage(), e); 
                     }
                 }  
             }
@@ -821,27 +829,25 @@ public class Deployment {
      * @param mime
      * @param permission
      */
-    private void setPermissions(final boolean isCollection, final MimeType mime, final Permission permission) throws PermissionDeniedException {
-        if (user != null){
-            permission.setOwner(user);
-        }
-        if (group != null){
-            permission.setGroup(group);
-        }
+    private void setPermissions(final Optional<RequestedPerms> requestedPerms, final boolean isCollection, final MimeType mime, final Permission permission) throws PermissionDeniedException {
+        int mode = permission.getMode();
+        if(requestedPerms.isPresent()) {
+            final RequestedPerms perms = requestedPerms.get();
+            permission.setOwner(perms.user);
 
-        int mode;
-        if (permsStr != null) {
-            try {
-                permission.setMode(permsStr);
-                mode = permission.getMode();
-            } catch (final SyntaxException e) {
-                LOG.warn("Incorrect permissions string: " + permsStr + ". Falling back to default.");
-                mode = permission.getMode();
+            if(perms.group.isPresent()) {
+                permission.setGroup(perms.group.get());
             }
-        } else if (perms > -1) {
-            mode = perms;
-        } else {
-            mode = permission.getMode();
+
+            mode = perms.permissions.map(permStr -> {
+                try {
+                    permission.setMode(permStr);
+                    return permission.getMode();
+                } catch (final PermissionDeniedException | SyntaxException e) {
+                    LOG.warn("Unable to set permissions string: " + permStr + ". Falling back to default.");
+                    return permission.getMode();
+                }
+            }).fold(l -> l, r -> r);
         }
 
         if (isCollection || (mime != null && mime.getName().equals(MimeType.XQUERY_TYPE.getName()))) {
@@ -850,13 +856,13 @@ public class Deployment {
         permission.setMode(mode);
     }
 
-    private ElementImpl findElement(final NodeImpl root, final QName qname) throws XPathException {
+    private Optional<ElementImpl> findElement(final NodeImpl root, final QName qname) throws XPathException {
         final InMemoryNodeSet setupNodes = new InMemoryNodeSet();
         root.selectDescendants(false, new NameTest(Type.ELEMENT, qname), setupNodes);
         if (setupNodes.getItemCount() == 0) {
-            return null;
+            return Optional.empty();
         }
-        return (ElementImpl) setupNodes.itemAt(0);
+        return Optional.of((ElementImpl) setupNodes.itemAt(0));
     }
 
     private InMemoryNodeSet findElements(final NodeImpl root, final QName qname) throws XPathException {
@@ -865,27 +871,25 @@ public class Deployment {
         return setupNodes;
     }
 
-    public String getNameFromDescriptor(final Path xar) throws IOException, PackageException {
-        final DocumentImpl doc = getDescriptor(xar);
-        final Element root = doc.getDocumentElement();
-        return root.getAttribute("name");
+    public Optional<String> getNameFromDescriptor(final Path xar) throws IOException, PackageException {
+        final Optional<DocumentImpl> doc = getDescriptor(xar);
+        return doc.map(DocumentImpl::getDocumentElement).map(root -> root.getAttribute("name"));
     }
 
-    //TODO(AR) should return Optional or throw exception
-    public DocumentImpl getDescriptor(final Path jar) throws IOException, PackageException {
+    public Optional<DocumentImpl> getDescriptor(final Path jar) throws IOException, PackageException {
         try(final JarInputStream jis = new JarInputStream(Files.newInputStream(jar))) {
             JarEntry entry;
             while ((entry = jis.getNextJarEntry()) != null) {
                 if (!entry.isDirectory() && "expath-pkg.xml".equals(entry.getName())) {
                     try {
-                        return DocUtils.parse(broker.getBrokerPool(), null, jis);
+                        return Optional.of(DocUtils.parse(broker.getBrokerPool(), null, jis));
                     } catch (final XPathException e) {
                         throw new PackageException("Error while parsing expath-pkg.xml: " + e.getMessage(), e);
                     }
                 }
             }
         }
-        return null;
+        return Optional.empty();
     }
 
     /**

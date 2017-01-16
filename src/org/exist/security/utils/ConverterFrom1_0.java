@@ -31,6 +31,7 @@ import org.exist.security.Subject;
 import org.exist.security.internal.RealmImpl;
 import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.internal.aider.UserAider;
+import org.exist.storage.DBBroker;
 import org.exist.util.EXistInputSource;
 import org.exist.xmldb.XmldbURI;
 import org.w3c.dom.Attr;
@@ -58,7 +59,7 @@ public class ConverterFrom1_0 {
 	public static void convert(EXistInputSource is) {
 	}
 	
-	public static void convert(SecurityManager sm, Document acl) throws PermissionDeniedException, EXistException {
+	public static void convert(final DBBroker broker, final SecurityManager sm, final Document acl) throws PermissionDeniedException, EXistException {
 		Element docElement = null;
 		if (acl != null)
 			{docElement = acl.getDocumentElement();}
@@ -123,7 +124,7 @@ public class ConverterFrom1_0 {
 							if (sm.hasGroup(group.getName())) {
 								sm.updateGroup(group);
 							} else {
-								sm.addGroup(group);
+								sm.addGroup(broker, group);
 							}
 						}
 					}

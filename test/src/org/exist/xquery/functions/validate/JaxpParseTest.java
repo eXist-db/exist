@@ -21,12 +21,14 @@
  */
 package org.exist.xquery.functions.validate;
 
+import org.exist.util.FileUtils;
 import org.junit.*;
 import static org.junit.Assert.*;
 
-import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.function.Predicate;
 
 import org.custommonkey.xmlunit.XMLAssert;
 import org.exist.test.EmbeddedExistTester;
@@ -52,23 +54,18 @@ public class JaxpParseTest extends EmbeddedExistTester {
     public static void prepareResources() throws Exception {
 
         // Switch off validation
-        Collection conf = createCollection(rootCollection, "system/config/db/parse_validate");
+        final Collection conf = createCollection(rootCollection, "system/config/db/parse_validate");
         storeResource(conf, "collection.xconf", noValidation.getBytes());
 
         // Create filter
-        FilenameFilter filter = new FilenameFilter() {
+        final Predicate<Path> filter = path -> FileUtils.fileName(path).startsWith("default");
 
-            public boolean accept(File dir, String name) {
-                return (name.startsWith("default"));
-            }
-        };
+        final Collection schemasCollection = createCollection(rootCollection, "parse_validate");
+        final Path schemas = Paths.get("samples/validation/parse_validate");
 
-        Collection schemasCollection = createCollection(rootCollection, "parse_validate");
-        File schemas = new File("samples/validation/parse_validate");
-
-        for (File file : schemas.listFiles(filter)) {
-            byte[] data = readFile(schemas, file.getName());
-            storeResource(schemasCollection, file.getName(), data);
+        for (final Path file : FileUtils.list(schemas, filter)) {
+            final byte[] data = readFile(file);
+            storeResource(schemasCollection, FileUtils.fileName(file), data);
         }
 
     }

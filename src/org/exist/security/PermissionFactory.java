@@ -29,11 +29,11 @@ import org.exist.collections.Collection;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.storage.DBBroker;
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
-import org.exist.util.function.ConsumerE;
+import com.evolvedbinary.j8fu.function.ConsumerE;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 
@@ -113,9 +113,9 @@ public class PermissionFactory {
         DocumentImpl doc = null;
         final TransactionManager transact = broker.getBrokerPool().getTransactionManager();
         try(final Txn transaction = transact.beginTransaction()) {
-            final Collection collection = broker.openCollection(pathUri, Lock.WRITE_LOCK);
+            final Collection collection = broker.openCollection(pathUri, LockMode.WRITE_LOCK);
             if (collection == null) {
-                doc = broker.getXMLResource(pathUri, Lock.WRITE_LOCK);
+                doc = broker.getXMLResource(pathUri, LockMode.WRITE_LOCK);
                 if(doc == null) {
                     transact.abort(transaction);
                     throw new XPathException("Resource or collection '" + pathUri.toString() + "' does not exist.");
@@ -129,7 +129,7 @@ public class PermissionFactory {
                 broker.flush();
             } else {
                 // keep the write lock in the transaction
-                transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);
+                transaction.registerLock(collection.getLock(), LockMode.WRITE_LOCK);
 
                 final Permission permissions = collection.getPermissionsNoLock();
                 permissionModifier.accept(permissions);
@@ -142,7 +142,7 @@ public class PermissionFactory {
             throw new PermissionDeniedException("Permission to modify permissions is denied for user '" + broker.getCurrentSubject().getName() + "' on '" + pathUri.toString() + "': " + e.getMessage(), e);
         } finally {
             if(doc != null) {
-                doc.getUpdateLock().release(Lock.WRITE_LOCK);
+                doc.getUpdateLock().release(LockMode.WRITE_LOCK);
             }
         }
     }

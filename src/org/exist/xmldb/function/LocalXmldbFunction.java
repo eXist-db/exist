@@ -23,7 +23,7 @@ import org.exist.EXistException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
-import org.exist.util.function.BiFunctionE;
+import com.evolvedbinary.j8fu.function.BiFunctionE;
 import org.exist.xquery.XPathException;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;

@@ -21,10 +21,13 @@
  */
 package org.exist.storage;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Optional;
 
 import org.exist.EXistException;
@@ -45,8 +48,6 @@ import static org.junit.Assert.assertNotNull;
 public class RecoverBinaryTest2 {
     
     private static String directory = "webapp/resources";
-    
-    //private static File dir = new File(directory);
 
     @Test
     public void storeAndRead() throws TriggerException, PermissionDeniedException, DatabaseConfigurationException, IOException, LockException, EXistException {
@@ -104,7 +105,7 @@ public class RecoverBinaryTest2 {
     }
 
     //@Test
-    public void read2() throws EXistException, DatabaseConfigurationException, PermissionDeniedException, IOException, TriggerException {
+    public void read2() throws EXistException, DatabaseConfigurationException, PermissionDeniedException, IOException, TriggerException, LockException {
 
         BrokerPool.FORCE_CORRUPTION = false;
         final BrokerPool pool = startDB();
@@ -130,19 +131,19 @@ public class RecoverBinaryTest2 {
     private void storeFiles(final DBBroker broker, final Txn transaction, final Collection test2) throws IOException, EXistException, PermissionDeniedException, LockException, TriggerException {
         // Get files in directory
         final Path dir = FileUtils.resolve(ConfigurationHelper.getExistHome(), directory);
-        final File files[] = dir.toFile().listFiles();
+        final List<Path> files = FileUtils.list(dir);
         assertNotNull("Check directory '"+dir.toAbsolutePath().toString()+"'.",files);
         
         // store some documents.
         for (int j = 0; j < 10; j++) {
-            for (final File f : files) {
+            for (final Path f : files) {
                 assertNotNull(f);
-                if (f.isFile()) {
-                    final XmldbURI uri = test2.getURI().append(j + "_" + f.getName());
-                    try(final InputStream is = new FileInputStream(f)) {
+                if (Files.isRegularFile(f)) {
+                    final XmldbURI uri = test2.getURI().append(j + "_" + FileUtils.fileName(f));
+                    try(final InputStream is = Files.newInputStream(f)) {
                         final BinaryDocument doc =
                             test2.addBinaryResource(transaction, broker, uri, is, MimeType.BINARY_TYPE.getName(),
-                                f.length(), new Date(), new Date());
+                                FileUtils.sizeQuietly(f), new Date(), new Date());
                         assertNotNull(doc);
                     }
                 }

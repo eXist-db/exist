@@ -1,9 +1,8 @@
 package org.exist.xqdoc.ant;
 
-import org.apache.commons.io.output.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,6 +13,7 @@ import org.apache.tools.ant.types.FileSet;
 import org.exist.ant.AbstractXMLDBTask;
 import org.exist.source.Source;
 import org.exist.source.StringSource;
+import org.exist.util.FileUtils;
 import org.exist.xmldb.XQueryService;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
@@ -82,13 +82,13 @@ public class XQDocTask extends AbstractXMLDBTask {
                     String[] files = scanner.getIncludedFiles();
                     log("Found " + files.length + " files to upload.\n");
 
-                    File baseDir=scanner.getBasedir();
+                    Path baseDir=scanner.getBasedir().toPath();
                     for (int i = 0; i < files.length; i++) {
-                        File file = new File(baseDir , files[i]);
+                        Path file = baseDir.resolve(files[i]);
                         log("Storing " + files[i] + " ...\n");
                         byte[] data = read(file);
                         try {
-                            service.declareVariable("name", file.getName());
+                            service.declareVariable("name", FileUtils.fileName(file));
                             service.declareVariable("data", data);
                             service.execute(source);
                         } catch (XMLDBException e) {
@@ -124,18 +124,11 @@ public class XQDocTask extends AbstractXMLDBTask {
         fileSets.add(set);
     }
 
-    private byte[] read(File file) throws BuildException {
+    private byte[] read(Path file) throws BuildException {
         try {
-            ByteArrayOutputStream bos = new ByteArrayOutputStream(4096);
-            FileInputStream fis = new FileInputStream(file);
-            byte[] buf = new byte[4096];
-            int l;
-            while ((l = fis.read(buf)) > -1) {
-                bos.write(buf, 0, l);
-            }
-            return bos.toByteArray();
+            return Files.readAllBytes(file);
         } catch (IOException e) {
-            throw new BuildException("IO error while reading XQuery source: " + file.getAbsolutePath() +
+            throw new BuildException("IO error while reading XQuery source: " + file.toAbsolutePath() +
                 ": " + e.getMessage(), e);
         }
     }

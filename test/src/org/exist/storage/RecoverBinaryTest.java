@@ -21,12 +21,12 @@
  */
 package org.exist.storage;
 
-import org.apache.commons.io.output.ByteArrayOutputStream;
-
-import java.io.File;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.FileInputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Optional;
 
 import org.exist.EXistException;
@@ -34,15 +34,14 @@ import org.exist.collections.Collection;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.security.PermissionDeniedException;
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
-import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import static org.junit.Assert.assertNotNull;
 
@@ -52,13 +51,13 @@ import static org.junit.Assert.assertNotNull;
  */
 public class RecoverBinaryTest {
 
-    private BrokerPool pool;
+    @Rule
+    public final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer();
 
     @Test
     public void storeAndLoad() throws LockException, TriggerException, PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException {
         store();
-        tearDown();
-        setUp();
+        existEmbeddedServer.restart();
         load();
     }
 
@@ -66,6 +65,7 @@ public class RecoverBinaryTest {
 
     	BrokerPool.FORCE_CORRUPTION = true;
 
+    	final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
 
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
@@ -76,13 +76,10 @@ public class RecoverBinaryTest {
             	broker.saveCollection(transaction, root);
     
 	            final String existHome = System.getProperty("exist.home");
-    	        final File existDir = existHome==null ? new File(".") : new File(existHome);
-        	    try(final InputStream is = new FileInputStream(new File(existDir,"LICENSE")); final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            	    byte[] buf = new byte[512];
-	                int count = 0;
-    	            while((count = is.read(buf)) > -1) {
-        	            os.write(buf, 0, count);
-            	    }
+                Path existDir = existHome == null ? Paths.get(".") : Paths.get(existHome);
+                existDir = existDir.normalize();
+        	    try(final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+                    Files.copy(existDir.resolve("LICENSE"), os);
                 	BinaryDocument doc =
                     	root.addBinaryResource(transaction, broker, TestConstants.TEST_BINARY_URI, os.toByteArray(), "text/text");
 	                assertNotNull(doc);
@@ -104,8 +101,9 @@ public class RecoverBinaryTest {
 
         BrokerPool.FORCE_CORRUPTION = false;
 
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
-            final BinaryDocument binDoc = (BinaryDocument) broker.getXMLResource(TestConstants.TEST_COLLECTION_URI.append(TestConstants.TEST_BINARY_URI), Lock.READ_LOCK);
+            final BinaryDocument binDoc = (BinaryDocument) broker.getXMLResource(TestConstants.TEST_COLLECTION_URI.append(TestConstants.TEST_BINARY_URI), LockMode.READ_LOCK);
             assertNotNull("Binary document is null", binDoc);
 
             try(final InputStream is = broker.getBinaryResource(binDoc)) {
@@ -115,18 +113,5 @@ public class RecoverBinaryTest {
                 assertNotNull(data);
             }
 	    }
-    }
-
-    @Before
-    public void setUp() throws DatabaseConfigurationException, EXistException {
-        final Configuration config = new Configuration();
-        BrokerPool.configure(1, 5, config);
-        pool = BrokerPool.getInstance();
-    }
-
-    @After
-    public void tearDown() {
-        BrokerPool.stopAll(false);
-        pool = null;
     }
 }

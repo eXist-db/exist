@@ -5,7 +5,6 @@ import org.exist.collections.triggers.TriggerException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -16,16 +15,15 @@ import org.exist.collections.IndexInfo;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.*;
 import org.exist.xmldb.XmldbURI;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 import org.w3c.dom.DocumentType;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -60,13 +58,13 @@ public class DocTypeTest {
 		"	<shortdesc>def</shortdesc>" +
         "   <body><p>ghi</p></body>" +
 		"</topic>";
-	
-	private BrokerPool pool = null;
-	private Collection root = null;
+
+	private static Collection root = null;
 
     @Test
 	public void docType_usingInputSource() throws Exception{
 		DocumentImpl doc = null;
+		final BrokerPool pool = existEmbeddedServer.getBrokerPool();
 		final TransactionManager transact = pool.getTransactionManager();
 
 		try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
@@ -80,12 +78,12 @@ public class DocTypeTest {
                 final IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("test2.xml"), is);
 
                 assertNotNull(info);
-                root.store(transaction, broker, info, is, false);
+                root.store(transaction, broker, info, is);
 
                 transact.commit(transaction);
             }
 
-			doc = broker.getXMLResource(root.getURI().append(XmldbURI.create("test2.xml")),Lock.READ_LOCK);
+			doc = broker.getXMLResource(root.getURI().append(XmldbURI.create("test2.xml")),LockMode.READ_LOCK);
 
 			final DocumentType docType = doc.getDoctype();
 			assertNotNull(docType);
@@ -102,7 +100,7 @@ public class DocTypeTest {
 
 		} finally {
 		    if (doc != null) {
-                doc.getUpdateLock().release(Lock.READ_LOCK);
+                doc.getUpdateLock().release(LockMode.READ_LOCK);
             }
 		}
 	}
@@ -110,9 +108,10 @@ public class DocTypeTest {
     @Test
 	public void docType_usingString() throws Exception{
 		DocumentImpl doc = null;
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
 		try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
-            doc = broker.getXMLResource(root.getURI().append(XmldbURI.create("test.xml")), Lock.READ_LOCK);
+            doc = broker.getXMLResource(root.getURI().append(XmldbURI.create("test.xml")), LockMode.READ_LOCK);
 
             DocumentType docType = doc.getDoctype();
 
@@ -131,17 +130,18 @@ public class DocTypeTest {
 
         } finally {
 		    if (doc != null) {
-                doc.getUpdateLock().release(Lock.READ_LOCK);
+                doc.getUpdateLock().release(LockMode.READ_LOCK);
             }
 		}
 	}
-    
-    
-	@Before
-    public void setUp() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException, DatabaseConfigurationException {
-        pool = startDB();
-        final TransactionManager transact = pool.getTransactionManager();
 
+    @ClassRule
+    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer();
+
+	@BeforeClass
+    public static void setUp() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException, DatabaseConfigurationException {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+	    final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn transaction = transact.beginTransaction()) {
             
@@ -152,25 +152,16 @@ public class DocTypeTest {
             IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"), XML);
             //TODO : unlock the collection here ?
             assertNotNull(info);
-            root.store(transaction, broker, info, XML, false);
+            root.store(transaction, broker, info, XML);
             
             transact.commit(transaction);
         }
 	}
-	
-	protected BrokerPool startDB() throws DatabaseConfigurationException, EXistException {
-        final String file = "conf.xml";
-        final Optional<Path> home = Optional.ofNullable(System.getProperty("exist.home", System.getProperty("user.dir"))).map(Paths::get);
 
-        final Configuration config = new Configuration(file, home);
-        BrokerPool.configure(1, 5, config);
-        return BrokerPool.getInstance();
-
-    }
-
-    @After
-    public void tearDown() throws PermissionDeniedException, IOException, TriggerException, EXistException {
-        final TransactionManager transact = pool.getTransactionManager();
+    @AfterClass
+    public static void tearDown() throws PermissionDeniedException, IOException, TriggerException, EXistException {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+	    final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn transaction = transact.beginTransaction()) {
             
@@ -179,8 +170,6 @@ public class DocTypeTest {
             broker.removeCollection(transaction, root);
             
             transact.commit(transaction);
-        } finally {
-            BrokerPool.stopAll(false);
         }
     }
 }

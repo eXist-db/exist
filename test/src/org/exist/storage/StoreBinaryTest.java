@@ -1,30 +1,22 @@
 package org.exist.storage;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 import org.exist.collections.triggers.TriggerException;
 import org.exist.security.PermissionDeniedException;
-import org.exist.util.LockException;
-import org.junit.BeforeClass;
+import org.exist.test.ExistEmbeddedServer;
+import org.exist.util.*;
+import org.junit.*;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.EXistException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.test.TestConstants;
 import org.exist.collections.Collection;
-import org.exist.Database;
-import static org.exist.TestUtils.cleanupDataDir;
-import org.exist.start.Main;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
-import org.exist.util.FileUtils;
-import org.junit.Test;
+
 import static org.junit.Assert.*;
-import org.exist.util.ConfigurationHelper;
-import org.exist.util.DatabaseConfigurationException;
 
 /**
  *
@@ -32,64 +24,51 @@ import org.exist.util.DatabaseConfigurationException;
  */
 public class StoreBinaryTest {
 
-    @BeforeClass
-    public static void setup() throws IOException, DatabaseConfigurationException {
-        cleanupDataDir();
-    }
-
     @Test
-    public void check_MimeType_is_preserved() throws EXistException, InterruptedException, PermissionDeniedException, LockException, IOException, TriggerException {
+    public void check_MimeType_is_preserved() throws EXistException, InterruptedException, PermissionDeniedException, LockException, IOException, TriggerException, DatabaseConfigurationException {
 
         final String xqueryMimeType = "application/xquery";
         final String xqueryFilename = "script.xql";
         final String xquery = "current-dateTime()";
 
-        Main database = startupDatabase();
-        try {
-            //store the xquery document
-            BinaryDocument binaryDoc = storeBinary(xqueryFilename, xquery, xqueryMimeType);
-            assertNotNull(binaryDoc);
-            assertEquals(xqueryMimeType, binaryDoc.getMetadata().getMimeType());
+        //store the xquery document
+        BinaryDocument binaryDoc = storeBinary(xqueryFilename, xquery, xqueryMimeType);
+        assertNotNull(binaryDoc);
+        assertEquals(xqueryMimeType, binaryDoc.getMetadata().getMimeType());
 
-            //make a note of the binary documents uri
-            final XmldbURI binaryDocUri = binaryDoc.getFileURI();
+        //make a note of the binary documents uri
+        final XmldbURI binaryDocUri = binaryDoc.getFileURI();
 
-            //restart the database
-            stopDatabase(database);
-            Thread.sleep(3000);
-            database = startupDatabase();
+        //restart the database
+        existEmbeddedServer.restart();
 
-            //retrieve the xquery document
-            binaryDoc = getBinary(binaryDocUri);
-            assertNotNull(binaryDoc);
+        //retrieve the xquery document
+        binaryDoc = getBinary(binaryDocUri);
+        assertNotNull(binaryDoc);
 
-            //check the mimetype has been preserved across database restarts
-            assertEquals(xqueryMimeType, binaryDoc.getMetadata().getMimeType());
-
-        } finally {
-            stopDatabase(database);
-        }
+        //check the mimetype has been preserved across database restarts
+        assertEquals(xqueryMimeType, binaryDoc.getMetadata().getMimeType());
     }
 
-    private Main startupDatabase() {
-        Main database = new org.exist.start.Main("jetty");
-        database.run(new String[]{"jetty"});
-        return database;
-    }
+    @ClassRule
+    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer();
 
-    private void stopDatabase(final Main database) {
-        try {
-            database.shutdown();
-        } catch (Exception e) {
-            // do not fail. exceptions may occur at this point.
-            e.printStackTrace();
+    @After
+    public void removeTestResources() throws EXistException, PermissionDeniedException, IOException, TriggerException {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        final TransactionManager transact = pool.getTransactionManager();
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+                final Txn transaction = transact.beginTransaction()) {
+            final Collection testCollection = broker.getCollection(TestConstants.TEST_COLLECTION_URI);
+            broker.removeCollection(transaction, testCollection);
+            transaction.commit();
         }
     }
 
     private BinaryDocument getBinary(final XmldbURI uri) throws EXistException, PermissionDeniedException {
         BinaryDocument binaryDoc = null;
-        final Database pool = BrokerPool.getInstance();
 
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
             assertNotNull(broker);
 
@@ -104,7 +83,7 @@ public class StoreBinaryTest {
     }
 
     private BinaryDocument storeBinary(String name,  String data, String mimeType) throws EXistException, PermissionDeniedException, IOException, TriggerException, LockException {
-        final Database pool = BrokerPool.getInstance();;
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
 
         BinaryDocument binaryDoc = null;

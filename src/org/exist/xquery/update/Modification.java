@@ -40,6 +40,7 @@ import org.exist.dom.persistent.NodeHandle;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
@@ -135,10 +136,9 @@ public abstract class Modification extends AbstractExpression
      */
     protected StoredNode[] selectAndLock(Txn transaction, Sequence nodes) throws LockException, PermissionDeniedException,
         XPathException, TriggerException {
-        final Lock globalLock = context.getBroker().getBrokerPool().getGlobalUpdateLock();
+        final java.util.concurrent.locks.Lock globalLock = context.getBroker().getBrokerPool().getGlobalUpdateLock();
+        globalLock.lock();
         try {
-            globalLock.acquire(Lock.READ_LOCK);
-
             lockedDocuments = nodes.getDocumentSet();
 
             // acquire a lock on all documents
@@ -168,7 +168,7 @@ public abstract class Modification extends AbstractExpression
             }
             return ql;
         } finally {
-            globalLock.release(Lock.READ_LOCK);
+            globalLock.unlock();
         }
     }
 
@@ -269,10 +269,10 @@ public abstract class Modification extends AbstractExpression
                 if(next.getMetadata().getSplitCount() > splitCount) {
                     Lock lock = next.getUpdateLock();
                     try {
-                        lock.acquire(Lock.WRITE_LOCK);
+                        lock.acquire(LockMode.WRITE_LOCK);
                         broker.defragXMLResource(transaction, next);
                     } finally {
-                        lock.release(Lock.WRITE_LOCK);
+                        lock.release(LockMode.WRITE_LOCK);
                     }}
                 broker.checkXMLResourceConsistency(next);
             }

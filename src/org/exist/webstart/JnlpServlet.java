@@ -21,13 +21,15 @@
 package org.exist.webstart;
 
 import java.io.EOFException;
-import java.io.File;
 import java.io.IOException;
 import java.net.SocketException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -35,14 +37,14 @@ import org.apache.logging.log4j.Logger;
  * Dedicated servlet for Webstart.
  */
 public class JnlpServlet extends HttpServlet {
-    
-	private static final long serialVersionUID = 1238966115449192258L;
 
-	private static final Logger LOGGER = LogManager.getLogger(JnlpServlet.class);
-    
-    private JnlpJarFiles jf=null;
-    private JnlpHelper jh=null;
-    
+    private static final long serialVersionUID = 1238966115449192258L;
+
+    private static final Logger LOGGER = LogManager.getLogger(JnlpServlet.class);
+
+    private JnlpJarFiles jf = null;
+    private JnlpHelper jh = null;
+
     /**
      * Initialize servlet.
      */
@@ -56,46 +58,46 @@ public class JnlpServlet extends HttpServlet {
                     + "value. Webstart is not available.";
             LOGGER.error(txt);
             throw new ServletException(txt);
-            
+
         } else {
-            final File contextRoot = new File(realPath);
+            final Path contextRoot = Paths.get(realPath).normalize();
             jh = new JnlpHelper(contextRoot);
             jf = new JnlpJarFiles(jh);
         }
-        
+
     }
-    
-    private String stripFilename(String URI){
-        final int lastPos=URI.lastIndexOf('/');
-        return URI.substring(lastPos+1);
+
+    private String stripFilename(String URI) {
+        final int lastPos = URI.lastIndexOf('/');
+        return URI.substring(lastPos + 1);
     }
-    
+
     /**
-     *  Handle webstart request for JNLP file, jar file or image.
+     * Handle webstart request for JNLP file, jar file or image.
      *
-     * @param request   Object representing http request.
-     * @param response  Object representing http response.
-     * @throws ServletException  Standard servlet exception
-     * @throws IOException       Standard IO exception
+     * @param request  Object representing http request.
+     * @param response Object representing http response.
+     * @throws ServletException Standard servlet exception
+     * @throws IOException      Standard IO exception
      */
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response)
-                                           throws ServletException, IOException{
+            throws ServletException, IOException {
 
         try {
-            final JnlpWriter jw=new JnlpWriter();
+            final JnlpWriter jw = new JnlpWriter();
 
             final String requestURI = request.getRequestURI();
-            final String filename = stripFilename( request.getPathInfo() );
-            LOGGER.debug("Requested URI="+requestURI);
+            final String filename = stripFilename(request.getPathInfo());
+            LOGGER.debug("Requested URI=" + requestURI);
 
-            if(requestURI.endsWith(".jnlp")){
+            if (requestURI.endsWith(".jnlp")) {
                 jw.writeJnlpXML(jf, request, response);
 
-            } else if (requestURI.endsWith(".jar") || requestURI.endsWith(".jar.pack.gz") ){
+            } else if (requestURI.endsWith(".jar") || requestURI.endsWith(".jar.pack.gz")) {
                 jw.sendJar(jf, filename, request, response);
 
-            } else if ( requestURI.endsWith(".gif") || requestURI.endsWith(".jpg") ){
+            } else if (requestURI.endsWith(".gif") || requestURI.endsWith(".jpg")) {
                 jw.sendImage(jh, jf, filename, response);
 
             } else {
@@ -103,20 +105,25 @@ public class JnlpServlet extends HttpServlet {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND, filename + " not found.");
             }
 
-        } catch(final EOFException | SocketException ex) {
+        } catch (final EOFException | SocketException ex) {
             LOGGER.debug(ex.getMessage());
 
-        } catch (final Throwable e){
+        } catch (final Throwable e) {
             LOGGER.error(e);
             throw new ServletException("An error occurred: " + e.getMessage());
         }
-        
+
     }
 
     @Override
-    protected long getLastModified(HttpServletRequest req) {     
-        return jf.getLastModified();
+    protected long getLastModified(final HttpServletRequest req) {
+        try {
+            return jf.getLastModified();
+        } catch (final IOException e) {
+            LOGGER.error(e);
+            return -1l;
+        }
     }
-    
-    
+
+
 }

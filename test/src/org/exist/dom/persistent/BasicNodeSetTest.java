@@ -24,9 +24,10 @@ import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.txn.TransactionException;
+import org.exist.test.ExistEmbeddedServer;
+import org.exist.util.FileUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.storage.BrokerPool;
@@ -35,8 +36,6 @@ import org.exist.storage.ElementValue;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
-import org.exist.util.Configuration;
-import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.XMLFilenameFilter;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.AncestorSelector;
@@ -52,10 +51,10 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
+import org.junit.ClassRule;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -89,9 +88,7 @@ public class BasicNodeSetTest {
                 "<para n='1.2.1'/>" +
             "</section>" +
         "</section>";
-    
 
-    private static BrokerPool pool = null;
     private static Collection root = null;
     private static DBBroker broker = null;
     private static Sequence seqSpeech = null;
@@ -404,24 +401,23 @@ public class BasicNodeSetTest {
         executeQuery(broker, "//SPEECH[fn:contains(LINE, 'perturbed spirit')]/following-sibling::*", 1, null);
     }
     
-    private static Sequence executeQuery(DBBroker broker, String query, int expected, String expectedResult) throws XPathException, SAXException, PermissionDeniedException {
-        XQuery xquery = broker.getBrokerPool().getXQueryService();
-        Sequence seq = xquery.execute(broker, query, null);
+    private static Sequence executeQuery(final DBBroker broker, final String query, final int expected, final String expectedResult) throws XPathException, SAXException, PermissionDeniedException {
+        final XQuery xquery = broker.getBrokerPool().getXQueryService();
+        final Sequence seq = xquery.execute(broker, query, null);
         assertEquals(expected, seq.getItemCount());
         
         if (expectedResult != null) {
-            Item item = seq.itemAt(0);
-            String value = serialize(broker, item);
+            final Item item = seq.itemAt(0);
+            final String value = serialize(broker, item);
             assertEquals(expectedResult, value);
         }
         return seq;
     }
 
-    private static String serialize(DBBroker broker, Item item) throws SAXException, XPathException {
-        Serializer serializer = broker.getSerializer();
-	
+    private static String serialize(final DBBroker broker, final Item item) throws SAXException, XPathException {
+        final Serializer serializer = broker.getSerializer();
         serializer.reset();
-        String value;
+        final String value;
         if(Type.subTypeOf(item.getType(), Type.NODE)) {
             value = serializer.serialize((NodeValue) item);
         } else {	
@@ -429,11 +425,13 @@ public class BasicNodeSetTest {
         }
         return value;
     }
-	
+
+    @ClassRule
+    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer();
+
     @BeforeClass
     public static void setUp() throws Exception {
-        pool = startDB();
-
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final Txn transaction = transact.beginTransaction()) {
 
@@ -441,21 +439,21 @@ public class BasicNodeSetTest {
             root = broker.getOrCreateCollection(transaction, XmldbURI.create(XmldbURI.ROOT_COLLECTION + "/test"));
             broker.saveCollection(transaction, root);
 
-            String existHome = System.getProperty("exist.home");
-            File existDir = existHome==null ? new File(".") : new File(existHome);
-            String directory = "samples/shakespeare";
-            File dir = new File(existDir, directory);
+            final String existHome = System.getProperty("exist.home");
+            Path existDir = existHome == null ? Paths.get(".") : Paths.get(existHome);
+            existDir = existDir.normalize();
+            final String directory = "samples/shakespeare";
+            final Path dir = existDir.resolve(directory);
 
             // store some documents.
-            for(File f : dir.listFiles(new XMLFilenameFilter())) {
-                IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create(f.getName()), new InputSource(f.toURI().toASCIIString()));
-                root.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
+            for(final Path f : FileUtils.list(dir, XMLFilenameFilter.asPredicate())) {
+                final IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create(FileUtils.fileName(f)), new InputSource(f.toUri().toASCIIString()));
+                root.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()));
             }
 
-            IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("nested.xml"), NESTED_XML);
-            root.store(transaction, broker, info, NESTED_XML, false);
+            final IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("nested.xml"), NESTED_XML);
+            root.store(transaction, broker, info, NESTED_XML);
             transact.commit(transaction);
-            
             
             //for the tests
             docs = root.allDocs(broker, new DefaultDocumentSet(), true);
@@ -472,30 +470,20 @@ public class BasicNodeSetTest {
             throw e;
         }
     }
-	
-    private static BrokerPool startDB() throws DatabaseConfigurationException, EXistException {
-        final String file = "conf.xml";
-        final Optional<Path> home = Optional.ofNullable(System.getProperty("exist.home", System.getProperty("user.dir"))).map(Paths::get);
-        
-        final Configuration config = new Configuration(file, home);
-        BrokerPool.configure(1, 5, config);
-        return BrokerPool.getInstance();
-    }
 
     @AfterClass
     public static void tearDown() throws PermissionDeniedException, IOException, TriggerException, TransactionException {
-        
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final Txn transaction = transact.beginTransaction()) {
             root = broker.getOrCreateCollection(transaction, XmldbURI.create(XmldbURI.ROOT_COLLECTION + "/test"));
-//          broker.removeCollection(transaction, root);
+            broker.removeCollection(transaction, root);
 
             transact.commit(transaction);
         } finally {
             if(broker != null) {
                 broker.close();
             }
-            BrokerPool.stopAll(false);
         }
     }
 }

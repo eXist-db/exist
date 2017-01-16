@@ -21,8 +21,9 @@
  */
 package org.exist.storage;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Optional;
 
 import org.exist.EXistException;
@@ -30,7 +31,7 @@ import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
@@ -96,12 +97,13 @@ public class CopyResourceTest {
                 broker.saveCollection(transaction, subTestCollection);
 
                 final String existHome = System.getProperty("exist.home");
-                final File existDir = existHome == null ? new File(".") : new File(existHome);
-                final File f = new File(existDir, "samples/shakespeare/r_and_j.xml");
+                Path existDir = existHome == null ? Paths.get(".") : Paths.get(existHome);
+                existDir = existDir.normalize();
+                final Path f = existDir.resolve("samples/shakespeare/r_and_j.xml");
                 assertNotNull(f);
-                info = subTestCollection.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"), new InputSource(f.toURI().toASCIIString()));
+                info = subTestCollection.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"), new InputSource(f.toUri().toASCIIString()));
                 assertNotNull(info);
-                subTestCollection.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
+                subTestCollection.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()));
 
                 transact.commit(transaction);
             }
@@ -127,13 +129,13 @@ public class CopyResourceTest {
 
 			DocumentImpl doc = null;
 			try {
-				doc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("test").append(testCollectionName).append("new_test.xml"), Lock.READ_LOCK);
+				doc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("test").append(testCollectionName).append("new_test.xml"), LockMode.READ_LOCK);
 				assertNotNull("Document should not be null", doc);
 				final String data = serializer.serialize(doc);
 				assertNotNull(data);
 			} finally {
 				if(doc != null) {
-					doc.getUpdateLock().release(Lock.READ_LOCK);
+					doc.getUpdateLock().release(LockMode.READ_LOCK);
 				}
 			}
 		}
@@ -166,12 +168,13 @@ public class CopyResourceTest {
                 broker.saveCollection(transaction, subTestCollection);
 
                 final String existHome = System.getProperty("exist.home");
-                final File existDir = existHome == null ? new File(".") : new File(existHome);
-                final File f = new File(existDir, "samples/shakespeare/r_and_j.xml");
+                Path existDir = existHome == null ? Paths.get(".") : Paths.get(existHome);
+                existDir = existDir.normalize();
+                final Path f = existDir.resolve("samples/shakespeare/r_and_j.xml");
                 assertNotNull(f);
-                info = subTestCollection.validateXMLResource(transaction, broker, XmldbURI.create("test2.xml"), new InputSource(f.toURI().toASCIIString()));
+                info = subTestCollection.validateXMLResource(transaction, broker, XmldbURI.create("test2.xml"), new InputSource(f.toUri().toASCIIString()));
                 assertNotNull(info);
-                subTestCollection.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
+                subTestCollection.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()));
 
                 transact.commit(transaction);
             }
@@ -197,17 +200,17 @@ public class CopyResourceTest {
 
 			DocumentImpl doc = null;
 			try {
-				doc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("test").append(testCollectionName).append(subCollection).append("test2.xml"), Lock.READ_LOCK);
+				doc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("test").append(testCollectionName).append(subCollection).append("test2.xml"), LockMode.READ_LOCK);
 				assertNotNull("Document should not be null", doc);
 				final String data = serializer.serialize(doc);
 				assertNotNull(data);
 			} finally {
 				if(doc != null) {
-					doc.getUpdateLock().release(Lock.READ_LOCK);
+					doc.getUpdateLock().release(LockMode.READ_LOCK);
 				}
 			}
 
-			doc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("test").append(testCollectionName).append("new_test2.xml"), Lock.READ_LOCK);
+			doc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("test").append(testCollectionName).append("new_test2.xml"), LockMode.READ_LOCK);
 			assertNull("Document should not exist", doc);
 		}
 	}

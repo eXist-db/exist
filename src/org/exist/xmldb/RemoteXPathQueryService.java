@@ -325,6 +325,11 @@ public class RemoteXPathQueryService extends AbstractRemote implements XPathQuer
     }
 
     @Override
+    public void clearVariables() throws XMLDBException {
+        variableDecls.clear();
+    }
+
+    @Override
     public ResourceSet execute(final CompiledExpression expression) throws XMLDBException {
         return query(((RemoteCompiledExpression) expression).getQuery());
     }

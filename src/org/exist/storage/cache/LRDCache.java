@@ -1,26 +1,27 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist.sourceforge.net
- *  
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *  
- *  $Id$
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2016 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 package org.exist.storage.cache;
+
+import net.jcip.annotations.NotThreadSafe;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * A cache implementation based on a Least Reference Density (LRD)
@@ -38,26 +39,24 @@ package org.exist.storage.cache;
  * 
  * @author wolf
  */
-public class LRDCache extends GClockCache {
+@NotThreadSafe
+public class LRDCache<T extends Cacheable> extends GClockCache<T> {
+	private final static Logger LOG = LogManager.getLogger(LRDCache.class);
 	
-	protected int totalReferences = 0;
-
-	private int nextCleanup;
+	private final int maxReferences;
+	private final int ageingPeriod;
+    private int totalReferences = 0;
+    private int nextCleanup;
 	
-	private int maxReferences;
-	private int ageingPeriod;
-	
-	public LRDCache(int size, double growthFactor, double growthThreshold, String type) {
-		super(size, growthFactor, growthThreshold, type);
+	public LRDCache(final String name, final Class<T> cacheableClazz, final int size, final double growthFactor, final double growthThreshold, final String type) {
+		super(name, cacheableClazz, size, growthFactor, growthThreshold, type);
 		maxReferences = size * 10000;
 		ageingPeriod = size * 5000;
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.exist.storage.cache.LFUCache#add(org.exist.storage.cache.Cacheable, int)
-	 */
-	public void add(Cacheable item, int initialRefCount) {
-		final Cacheable old = map.get(item.getKey());
+	@Override
+	public void add(final T item, final int initialRefCount) {
+		final T old = map.get(item.getKey());
 		if (old != null) {
 			old.incReferenceCount();
 			totalReferences++;
@@ -68,21 +67,21 @@ public class LRDCache extends GClockCache {
 				items[count++] = item;
 				map.put(item.getKey(), item);
 				used++;
-			} else
-				{removeOne(item);}
+			} else {
+			    removeOne(item);
+			}
 			totalReferences += initialRefCount;
 		}
-		if(totalReferences > maxReferences)
-			{cleanup();}
-		else if (totalReferences > nextCleanup)
-			{ageReferences();}
+		if(totalReferences > maxReferences) {
+		    cleanup();
+		} else if (totalReferences > nextCleanup) {
+		    ageReferences();
+		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.storage.cache.LFUCache#removeOne(org.exist.storage.cache.Cacheable)
-	 */
-	protected Cacheable removeOne(Cacheable item) {
-		Cacheable old;
+	@Override
+	protected T removeOne(final T item) {
+		T old;
 		double rd = 0, minRd = -1;
 		int bucket = -1;
         final int len = items.length;
@@ -102,8 +101,9 @@ public class LRDCache extends GClockCache {
 				}
 			}
 		}
-		if (bucket < 0)
-			{bucket = 0;}
+		if (bucket < 0) {
+		    bucket = 0;
+		}
 		old = items[bucket];
 		if (old != null) {
 			map.remove(old.getKey());
@@ -128,18 +128,17 @@ public class LRDCache extends GClockCache {
 	 * Periodically adjust items with large reference counts to give
 	 * younger items a chance to survive.
 	 */
-	protected void ageReferences() {
-		Cacheable item;
-		int refCount;
+	private void ageReferences() {
 		final int limit = ageingPeriod / 10;
-		for(int i = 0; i < count; i++) {
-			item = items[i];
+        for(int i = 0; i < count; i++) {
+            final T item = items[i];
 			if(item != null) {
-				refCount = item.getReferenceCount();
+				final int refCount = item.getReferenceCount();
 				if(refCount > limit) {
 					item.setReferenceCount(refCount - limit);
-				} else
-					{item.setReferenceCount(1);}
+				} else {
+				    item.setReferenceCount(1);
+				}
 			}
 		}
 		nextCleanup += ageingPeriod;
@@ -149,11 +148,12 @@ public class LRDCache extends GClockCache {
 	 * Periodically reset all reference counts to 1.
 	 */
 	protected void cleanup() {
-		Cacheable item;
-		LOG.debug("totalReferences = " + totalReferences + "; maxReferences = " + maxReferences);
+	    if(LOG.isDebugEnabled()) {
+            LOG.debug("totalReferences = " + totalReferences + "; maxReferences = " + maxReferences);
+        }
 		totalReferences = count;
-		for(int i = 0; i < count; i++) {
-			item = items[i];
+        for(int i = 0; i < count; i++) {
+            final T item = items[i];
 			if(item != null) {
 				item.setReferenceCount(1);
 				item.setTimestamp(1);

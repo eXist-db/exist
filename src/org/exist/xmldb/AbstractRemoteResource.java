@@ -19,15 +19,12 @@
  */
 package org.exist.xmldb;
 
-import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
@@ -86,8 +83,11 @@ public abstract class AbstractRemoteResource extends AbstractRemote
         if (isLocal) {
             return res;
         } else if (res != null) {
-            if (res instanceof File) {
-                return readFile((File) res);
+
+            if (res instanceof Path) {
+                return readFile((Path)res);
+            } else if (res instanceof java.io.File) {
+                return readFile(((java.io.File) res).toPath());
             } else if (res instanceof InputSource) {
                 return readFile((InputSource) res);
             }
@@ -124,8 +124,10 @@ public abstract class AbstractRemoteResource extends AbstractRemote
             throws XMLDBException {
         final Object res = getExtendedContent();
         if (res != null) {
-            if (res instanceof File) {
-                return readFile((File) res);
+            if (res instanceof Path) {
+                return readFile((Path)res);
+            } else if (res instanceof java.io.File) {
+                return readFile(((java.io.File) res).toPath());
             } else if (res instanceof InputSource) {
                 return readFile((InputSource) res);
             } else if (res instanceof String) {
@@ -210,8 +212,12 @@ public abstract class AbstractRemoteResource extends AbstractRemote
             }
             setExtendendContentLength(vfile.length());
             wasSet = true;
-        } else if (value instanceof File) {
-            vfile = new VirtualTempFile((File) value);
+        } else if (value instanceof Path) {
+            vfile = new VirtualTempFile(((Path) value).toFile());
+            setExtendendContentLength(vfile.length());
+            wasSet = true;
+        } else if (value instanceof java.io.File) {
+            vfile = new VirtualTempFile((java.io.File) value);
             setExtendendContentLength(vfile.length());
             wasSet = true;
         } else if (value instanceof InputSource) {
@@ -252,9 +258,9 @@ public abstract class AbstractRemoteResource extends AbstractRemote
     }
 
     @Override
-    public void getContentIntoAFile(final File localfile)
+    public void getContentIntoAFile(final Path localfile)
             throws XMLDBException {
-        try(final OutputStream os = new BufferedOutputStream(new FileOutputStream(localfile))) {
+        try(final OutputStream os = Files.newOutputStream(localfile)) {
             getContentIntoAStream(os);
         } catch (final IOException ioe) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
@@ -510,10 +516,11 @@ public abstract class AbstractRemoteResource extends AbstractRemote
     }
 
 
-    protected byte[] readFile(final File file)
+    protected byte[] readFile(final Path file)
             throws XMLDBException {
-        try(final InputStream is = new FileInputStream(file)) {
-            return readFile(is);
+        try(final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            Files.copy(file, os);
+            return os.toByteArray();
         } catch (final IOException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         }
@@ -524,6 +531,8 @@ public abstract class AbstractRemoteResource extends AbstractRemote
         try {
             return readFile(bis);
         } finally {
+            //TODO(AR) why do we do this? should probably close it?
+
             // As it comes from an input source, we cannot blindly close it,
             // but at least let's reset it! (if it is possible)
             if (bis.markSupported()) {

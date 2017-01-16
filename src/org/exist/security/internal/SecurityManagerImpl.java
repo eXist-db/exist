@@ -32,6 +32,8 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
@@ -57,6 +59,8 @@ import org.exist.security.SchemaType;
 import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.realm.Realm;
 import org.exist.storage.BrokerPool;
+import org.exist.storage.BrokerPoolService;
+import org.exist.storage.BrokerPoolServiceException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
@@ -80,7 +84,7 @@ import org.quartz.SimpleTrigger;
  */
 //<!-- Central user configuration. Editing this document will cause the security to reload and update its internal database. Please handle with care! -->
 @ConfigurationClass("security-manager")
-public class SecurityManagerImpl implements SecurityManager {
+public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
 
 
     public final static int MAX_USER_ID = 1048571;  //1 less than RealmImpl.UNKNOWN_ACCOUNT_ID
@@ -125,12 +129,31 @@ public class SecurityManagerImpl implements SecurityManager {
     
     private Configuration configuration = null;
     
-    public SecurityManagerImpl(final Database db) throws ConfigurationException {
+    public SecurityManagerImpl(final Database db) {
         this.db = db;
+    }
 
-        defaultRealm = new RealmImpl(this, null); //TODO: in-memory configuration???
-        realms.add(defaultRealm);
+    @Override
+    public void prepare(final BrokerPool brokerPool) throws BrokerPoolServiceException {
+        try {
+            this.defaultRealm = new RealmImpl(null, this, null);
+            realms.add(defaultRealm);
+        } catch(final EXistException e) {
+            throw new BrokerPoolServiceException(e);
+        }
+    }
 
+    @Override
+    public void startSystem(final DBBroker systemBroker) throws BrokerPoolServiceException {
+        try {
+            attach(systemBroker);
+        } catch(final EXistException e) {
+            throw new BrokerPoolServiceException(e);
+        }
+    }
+
+    @Override
+    public void startPreMultiUserSystem(final DBBroker systemBroker) throws BrokerPoolServiceException {
         final Properties params = new Properties();
         params.put(getClass().getName(), this);
         db.getScheduler().createPeriodicJob(TIMEOUT_CHECK_PERIOD, new SessionsCheck(), TIMEOUT_CHECK_PERIOD, params, SimpleTrigger.REPEAT_INDEFINITELY, false);
@@ -532,12 +555,12 @@ public class SecurityManagerImpl implements SecurityManager {
     }
     
     @Override
-    public void addGroup(final String name) throws PermissionDeniedException, EXistException {
-        addGroup(new GroupAider(name));
+    public void addGroup(final DBBroker broker, final String name) throws PermissionDeniedException, EXistException {
+        addGroup(broker, new GroupAider(name));
     }
 
     @Override
-    public Group addGroup(final Group group) throws PermissionDeniedException, EXistException {
+    public Group addGroup(final DBBroker broker, final Group group) throws PermissionDeniedException, EXistException {
         if(group.getRealmId() == null) {
             throw new ConfigurationException("Group must have realm id.");
         }
@@ -558,7 +581,7 @@ public class SecurityManagerImpl implements SecurityManager {
             throw new ConfigurationException("The group '" + group.getName() + "' at realm '" + group.getRealmId() + "' already exist.");
         }
         
-        final GroupImpl newGroup = new GroupImpl(registeredRealm, id, group.getName(), group.getManagers());
+        final GroupImpl newGroup = new GroupImpl(broker, registeredRealm, id, group.getName(), group.getManagers());
         for(final SchemaType metadataKey : group.getMetadataKeys()) {
             final String metadataValue = group.getMetadataValue(metadataKey);
             newGroup.setMetadataValue(metadataKey, metadataValue);
@@ -571,8 +594,8 @@ public class SecurityManagerImpl implements SecurityManager {
             
             registeredRealm.registerGroup(newGroup);
 
-            save();
-            newGroup.save();
+            save(broker);
+            newGroup.save(broker);
 
             return newGroup;
         } finally {
@@ -581,41 +604,9 @@ public class SecurityManagerImpl implements SecurityManager {
     }
 
     @Override
-    public final Account addAccount(final Account account) throws  PermissionDeniedException, EXistException{
-        if(account.getRealmId() == null) {
-            LOG.debug("Account must have realm id.");
-            throw new ConfigurationException("Account must have realm id.");
-        }
-
-        if(account.getName() == null || account.getName().isEmpty()) {
-            LOG.debug("Account must have name.");
-            throw new ConfigurationException("Account must have name.");
-        }
-
-        final int id;
-        if(account.getId() != Account.UNDEFINED_ID) {
-            id = account.getId();
-        } else {
-            id = getNextAccountId();
-        }
-
-        final AbstractRealm registeredRealm = (AbstractRealm) findRealmForRealmId(account.getRealmId());
-        final AccountImpl newAccount = new AccountImpl(registeredRealm, id, account);
-
-        final Lock lock = accountLocks.getWriteLock(newAccount);
-        lock.lock();
-        try {
-            usersById.modify(principalDb -> principalDb.put(id, newAccount));
-            
-            registeredRealm.registerAccount(newAccount);
-
-            //XXX: one transaction?
-            save();
-            newAccount.save();
-
-            return newAccount;
-        } finally {
-            lock.unlock();
+    public final Account addAccount(final Account account) throws  PermissionDeniedException, EXistException {
+        try(final DBBroker broker = db.getBroker()) {
+            return addAccount(broker, account);
         }
     }
     
@@ -710,7 +701,7 @@ public class SecurityManagerImpl implements SecurityManager {
                 return;
             }
 
-            final SecurityManagerImpl sm = ( SecurityManagerImpl )params.get( SecurityManagerImpl.class.getName() );
+            final SecurityManagerImpl sm = (SecurityManagerImpl)params.get(SecurityManagerImpl.class.getName());
             if (sm == null) {
                 return;
             }
@@ -950,8 +941,9 @@ public class SecurityManagerImpl implements SecurityManager {
     }
 
     private static class PrincipalLocks<T extends Principal> {
-        private final Map<Integer, ReentrantReadWriteLock> locks = new HashMap<Integer, ReentrantReadWriteLock>();
-        private synchronized ReentrantReadWriteLock getLock(T principal) {
+        private final Map<Integer, ReentrantReadWriteLock> locks = new HashMap<>();
+
+        private synchronized ReentrantReadWriteLock getLock(final T principal) {
             ReentrantReadWriteLock lock = locks.get(principal.getId());
             if(lock == null) {
                 lock = new ReentrantReadWriteLock();
@@ -975,31 +967,23 @@ public class SecurityManagerImpl implements SecurityManager {
         private final ReadLock readLock = lock.readLock();
         private final WriteLock writeLock = lock.writeLock();
 
-        public <R> R read(final SessionDbRead<R> readOp) {
+        public <R> R read(final Function<Map<String, Session>, R> readFn) {
             readLock.lock();
             try {
-                return readOp.execute(db);
+                return readFn.apply(db);
             } finally {
                 readLock.unlock();
             }
         }
 
-        public final void modify(final SessionDbModify writeOp) {
+        public final void modify(final Consumer<Map<String, Session>> modifyFn) {
             writeLock.lock();
             try {
-                writeOp.execute(db);
+                modifyFn.accept(db);
             } finally {
                 writeLock.unlock();
             }
         }
-    }
-    
-    protected interface SessionDbRead<R> {
-       R execute(final Map<String, Session> db);
-    }
-
-    protected interface SessionDbModify {
-        void execute(final Map<String, Session> db);
     }
    
     protected static class PrincipalDbById<V extends Principal> {
@@ -1009,31 +993,23 @@ public class SecurityManagerImpl implements SecurityManager {
         private final ReadLock readLock = lock.readLock();
         private final WriteLock writeLock = lock.writeLock();
 
-        public <R> R read(final PrincipalDbRead<V, R> readOp) {
+        public <R> R read(final Function<Int2ObjectHashMap<V>, R> readFn) {
             readLock.lock();
             try {
-                return readOp.execute(db);
+                return readFn.apply(db);
             } finally {
                 readLock.unlock();
             }
         }
 
-        public final void modify(final PrincipalDbModify<V> writeOp) {
+        public final void modify(final Consumer<Int2ObjectHashMap<V>> writeOp) {
             writeLock.lock();
             try {
-                writeOp.execute(db);
+                writeOp.accept(db);
             } finally {
                 writeLock.unlock();
             }
         }
-    }
-
-    protected interface PrincipalDbRead<V extends Principal, R> {
-        R execute(final Int2ObjectHashMap<V> principalDb);
-    }
-
-    protected interface PrincipalDbModify<V extends Principal> {
-        void execute(final Int2ObjectHashMap<V> principalDb);
     }
 
     @Override

@@ -21,6 +21,7 @@
  */
 package org.exist.xquery;
 
+import org.exist.dom.INode;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.xquery.value.Type;
@@ -38,24 +39,27 @@ public class TypeTest implements NodeTest {
 
     protected int nodeType = 0;
 	
-    public TypeTest(int nodeType) {
+    public TypeTest(final int nodeType) {
         setType(nodeType);
     }
 
-    public void setType(int nodeType) {
+    @Override
+    public void setType(final int nodeType) {
         this.nodeType = nodeType;
     }
-	
+
+    @Override
     public int getType() {
         return nodeType;
     }
-	
+
+    @Override
     public QName getName() {
         return null;
     }
 	
     protected boolean isOfType(short type) {
-        int domType;
+        final int domType;
         switch (nodeType) {
             case Type.ELEMENT :
                 domType = Node.ELEMENT_NODE;
@@ -72,6 +76,9 @@ public class TypeTest implements NodeTest {
             case Type.PROCESSING_INSTRUCTION :
                 domType = Node.PROCESSING_INSTRUCTION_NODE;
                 break;
+            case Type.NAMESPACE :
+                domType = INode.NAMESPACE_NODE;
+                break;
             case Type.DOCUMENT:
                 domType = Node.DOCUMENT_NODE;
                 break;
@@ -79,58 +86,56 @@ public class TypeTest implements NodeTest {
             default :
                 return true;
         }
-        if (type == Node.CDATA_SECTION_NODE)
-            {type = Node.TEXT_NODE;}
-        return (type == domType);
+
+        if (type == Node.CDATA_SECTION_NODE) {
+            type = Node.TEXT_NODE;
+        }
+
+        return type == domType;
     }
 
-    protected boolean isOfEventType(int type) {
-        if (nodeType == Type.NODE)
-            {return true;}
+    public boolean isOfEventType(final int type) {
+        if (nodeType == Type.NODE) {
+            return true;
+        }
         final int xpathType = StaXUtil.streamType2Type(type);
         return xpathType == nodeType;
     }
 
+    @Override
     public String toString() {
         return Type.getTypeName(nodeType);
     }
 	
-    /* (non-Javadoc)
-     * @see org.exist.xquery.NodeTest#matches(org.exist.dom.persistent.NodeProxy)
-     */
-    public boolean matches(NodeProxy proxy) {
+    @Override
+    public boolean matches(final NodeProxy proxy) {
         final short otherNodeType = proxy.getNodeType();
         if(otherNodeType == Type.ITEM || otherNodeType == Type.NODE) {
             //TODO : what are the semantics of Type.NODE ?
-            if (this.nodeType == Type.NODE)
-                {return true;}	
-            return isOfType(proxy.getNode().getNodeType());
-        } else
-            {return isOfType(otherNodeType);}
-    }
-    /* (non-Javadoc)
-     * @see org.exist.xquery.NodeTest#matches(org.exist.dom.persistent.NodeProxy)
-     */
-    public boolean matches(Node other) {
-        if(other == null)
-            {return false;}
-        return isOfType(other.getNodeType());
+            return this.nodeType == Type.NODE || isOfType(proxy.getNode().getNodeType());
+        } else {
+            return isOfType(otherNodeType);
+        }
     }
 
-    public boolean matches(XMLStreamReader reader) {
+    @Override
+    public boolean matches(final Node other) {
+        return other != null && isOfType(other.getNodeType());
+    }
+
+    @Override
+    public boolean matches(final XMLStreamReader reader) {
         return isOfEventType(reader.getEventType());
     }
 
-    public boolean matches(QName name) {
+    @Override
+    public boolean matches(final QName name) {
     	// always false because there's no name
     	return false;
     }
     
-    /* (non-Javadoc)
-     * @see org.exist.xquery.NodeTest#isWildcardTest()
-     */
+    @Override
     public boolean isWildcardTest() {
         return true;
     }
-
 }

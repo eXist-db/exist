@@ -24,7 +24,7 @@ import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
-import org.exist.util.function.TriFunction2E;
+import com.evolvedbinary.j8fu.function.TriFunction2E;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;

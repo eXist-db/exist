@@ -21,9 +21,13 @@
  */
 package org.exist.xquery.xqts;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
 import java.util.Optional;
 
 import junit.framework.Assert;
@@ -44,7 +48,6 @@ import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Sequence;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
-import org.xml.sax.InputSource;
 
 /**
  * JUnit tests generator from QT3 test suite catalog.
@@ -54,7 +57,7 @@ import org.xml.sax.InputSource;
  */
 public class QT3TS_To_junit {
 
-    private static final String sep = File.separator;
+    private static final String sep = java.io.File.separator;
     
     /**
      * @param args
@@ -113,25 +116,23 @@ public class QT3TS_To_junit {
     }
 
     public void load() throws Exception {
-        File folder = new File(QT3TS_case.FOLDER);
-        File[] files = folder.listFiles();
-
+        final Path folder = Paths.get(QT3TS_case.FOLDER);
+        final List<Path> files = FileUtils.list(folder);
 
         final TransactionManager txnMgr = broker.getBrokerPool().getTransactionManager();
         try(final Txn txn = txnMgr.beginTransaction()) {
-
-
-            for(File file : files) {
-                if(file.isDirectory()) {
-                    if(file.getName().equals("CVS")
-                        || file.getName().equals("drivers")
-                        )
+            for(final Path file : files) {
+                final String fileName = FileUtils.fileName(file);
+                if(Files.isDirectory(file)) {
+                    if(fileName.equals("CVS") || fileName.equals("drivers")) {
                         continue; //ignore
+                    }
 
                     loadDirectory(txn, file, collection);
                 } else {
-                    if(file.getName().equals(".project"))
+                    if(fileName.equals(".project")) {
                         continue; //ignore
+                    }
 
                     loadFile(txn, file, collection);
                 }
@@ -141,18 +142,20 @@ public class QT3TS_To_junit {
         }
     }
 
-    private void loadDirectory(Txn txn, File folder, Collection col) throws Exception {
-    	if (!(folder.exists() && folder.canRead()))
-    		return;
+    private void loadDirectory(final Txn txn, final Path folder, final Collection col) throws Exception {
+    	if (!(Files.exists(folder) && Files.isReadable(folder))) {
+            return;
+        }
     	
-    	Collection current = broker.getOrCreateCollection(null, col.getURI().append(folder.getName()));
+    	final Collection current = broker.getOrCreateCollection(null, col.getURI().append(FileUtils.fileName(folder)));
 		broker.saveCollection(null, current);
     		
-        File[] files = folder.listFiles();
-        for (File file : files) {
-        	if (file.isDirectory()) {
-        		if (file.getName().equals("CVS"))
-            		continue; //ignore
+        final List<Path> files = FileUtils.list(folder);
+        for (final Path file : files) {
+        	if (Files.isDirectory(file)) {
+        		if (FileUtils.fileName(file).equals("CVS")) {
+                    continue; //ignore
+                }
         		
         		loadDirectory(txn, file, current);
         	} else {
@@ -161,44 +164,34 @@ public class QT3TS_To_junit {
         }
     }
 
-    private void loadFile(Txn txn, File file, Collection col) throws Exception {
-    	if (file.getName().endsWith(".html") 
-    			|| file.getName().endsWith(".xsd")
-    			|| file.getName().equals("badxml.xml")
-    			|| file.getName().equals("BCisInvalid.xml")
-    			|| file.getName().equals("InvalidUmlaut.xml")
-    			|| file.getName().equals("InvalidXMLId.xml")
-    			|| file.getName().equals("invalid-xml.xml")
+    private void loadFile(final Txn txn, final Path file, final Collection col) throws Exception {
+        final String fileName = FileUtils.fileName(file);
+
+    	if (fileName.endsWith(".html")
+    			|| fileName.endsWith(".xsd")
+    			|| fileName.equals("badxml.xml")
+    			|| fileName.equals("BCisInvalid.xml")
+    			|| fileName.equals("InvalidUmlaut.xml")
+    			|| fileName.equals("InvalidXMLId.xml")
+    			|| fileName.equals("invalid-xml.xml")
 			)
     		return;
     	
-    	if (!(file.exists() && file.canRead()))
-    		return;
-    	
-        MimeType mime = getMimeTable().getContentTypeFor( file.getName() );
+    	if (!(Files.exists(file) && Files.isReadable(file))) {
+            return;
+        }
+
+        final MimeType mime = getMimeTable().getContentTypeFor(fileName);
 
         if (mime != null && mime.isXMLType()) {
-            IndexInfo info = col.validateXMLResource(txn, broker,
-                    XmldbURI.create(file.getName()),
-                    new InputSource(new FileInputStream(file))
-                );
-            //info.getDocument().getMetadata().setMimeType();
-
-            FileInputStream is = new FileInputStream(file);
-            try {
-                col.store(txn, broker, info, new InputSource(is), false);
-            } finally {
-                is.close();
-            }
+            final IndexInfo info = col.validateXMLResource(txn, broker, XmldbURI.create(fileName), new FileInputSource(file));
+            col.store(txn, broker, info, new FileInputSource(file));
         } else {
-            FileInputStream is = new FileInputStream(file);
-            try {
+            try(final InputStream is = Files.newInputStream(file)) {
                 col.addBinaryResource(txn, broker,
-                        XmldbURI.create(file.getName()),
+                        XmldbURI.create(FileUtils.fileName(file)),
                         is,
-                        MimeType.BINARY_TYPE.getName(), file.length());
-            } finally {
-                is.close();
+                        MimeType.BINARY_TYPE.getName(), FileUtils.sizeQuietly(file));
             }
         }
     }
@@ -272,45 +265,44 @@ public class QT3TS_To_junit {
     		subPath.append(sep).append(strs[i]);
     		_package_.append(".").append(strs[i]);
     	}
-    	File folder = new File(subPath.toString());
-    	folder.mkdirs();
+    	final Path folder = Paths.get(subPath.toString());
+        Files.createDirectories(folder);
     	
-        File jTest = new File(folder, className+".java");
-        FileWriter fstream = new FileWriter(jTest.getAbsoluteFile());
-        BufferedWriter out = new BufferedWriter(fstream);
-        
-        out.write("package org.exist.xquery.xqts.qt3"+_package_+";\n\n"+
-            "import org.exist.xquery.xqts.QT3TS_case;\n" +
-            "import org.junit.*;\n\n" +
-            "public class "+className+" extends QT3TS_case {\n" +
-        	"    private String file = \""+file+"\";\n\n");
+        final Path jTest = folder.resolve(className + ".java");
+        try(final Writer out = Files.newBufferedWriter(jTest.toAbsolutePath())) {
 
-        for (NodeProxy p : results.toNodeSet()) {
-        	Node testSet = p.getNode();
-        	NamedNodeMap attrs = testSet.getAttributes();
-        	
-        	String testName = attrs.getNamedItem("name").getNodeValue();
-        	
-        	String adoptTestName = adoptString(testName);
-            out.write(
-        		"    /* "+testName+" */\n" +
-                "    @Test\n");
-            if (adoptTestName.contains("fold_left_008") 
-        		||adoptTestName.contains("fold_left_020")
-        		||adoptTestName.contains("fn_deep_equal_node_args_3")
-        		||adoptTestName.contains("fn_deep_equal_node_args_4")
-        		||adoptTestName.contains("fn_deep_equal_node_args_5")
-        		||adoptTestName.contains("fold_right_013")
-            		) {
-                out.write("    @Ignore\n");
+            out.write("package org.exist.xquery.xqts.qt3" + _package_ + ";\n\n" +
+                    "import org.exist.xquery.xqts.QT3TS_case;\n" +
+                    "import org.junit.*;\n\n" +
+                    "public class " + className + " extends QT3TS_case {\n" +
+                    "    private String file = \"" + file + "\";\n\n");
+
+            for (final NodeProxy p : results.toNodeSet()) {
+                Node testSet = p.getNode();
+                NamedNodeMap attrs = testSet.getAttributes();
+
+                String testName = attrs.getNamedItem("name").getNodeValue();
+
+                String adoptTestName = adoptString(testName);
+                out.write(
+                        "    /* " + testName + " */\n" +
+                                "    @Test\n");
+                if (adoptTestName.contains("fold_left_008")
+                        || adoptTestName.contains("fold_left_020")
+                        || adoptTestName.contains("fn_deep_equal_node_args_3")
+                        || adoptTestName.contains("fn_deep_equal_node_args_4")
+                        || adoptTestName.contains("fn_deep_equal_node_args_5")
+                        || adoptTestName.contains("fold_right_013")
+                        ) {
+                    out.write("    @Ignore\n");
+                }
+                out.write(
+                        "    public void test_" + adoptTestName + "() {\n" +
+                                "        testCase(file, \"" + testName + "\");\n" +
+                                "    }\n\n");
             }
-            out.write(
-        		"    public void test_"+adoptTestName+"() {\n" +
-                "        testCase(file, \""+testName+"\");\n"+
-                "    }\n\n");
+            out.write("}");
         }
-        out.write("}");
-        out.close();
     	
     }
 

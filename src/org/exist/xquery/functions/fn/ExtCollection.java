@@ -38,6 +38,7 @@ import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.UpdateListener;
 import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Cardinality;
@@ -166,7 +167,7 @@ public class ExtCollection extends Function {
             boolean lockAcquired = false;
             try {
                 if (!context.inProtectedMode() && !dlock.hasLock()) {
-                    dlock.acquire(Lock.READ_LOCK);
+                    dlock.acquire(LockMode.READ_LOCK);
                     lockAcquired = true;
                 }
                 result.add(new NodeProxy(doc)); // , -1, Node.DOCUMENT_NODE));
@@ -174,7 +175,7 @@ public class ExtCollection extends Function {
                 throw new XPathException(e.getMessage());
             } finally {
                 if (lockAcquired)
-                    {dlock.release(Lock.READ_LOCK);}
+                    {dlock.release(LockMode.READ_LOCK);}
             }
         }
         registerUpdateListener();

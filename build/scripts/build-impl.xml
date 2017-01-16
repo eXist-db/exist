@@ -37,6 +37,8 @@
     <property name="jvmarg" value="-Xmx128000k -Xms32000k -Djetty.home=${jetty.dir} -Dexist.home=${basedir}"/>
     <property name="xmldb.src" value="undefined"/>
     <property name="dist.dir" value="${dist}/${project.name}-${project.version}"/>
+    
+   
 
     <!-- import common targets -->
     <!-- <import file="../../build.xml"/> -->
@@ -137,7 +139,7 @@
         <copy file="${basedir}/conf.xml.tmpl" tofile="${basedir}/conf.xml" filtering="true">
 			<filterset>
 				<filter token="dataDir" value="webapp/WEB-INF/data"/>
-                <filter token="cacheSize" value="128"/>
+                <filter token="cacheSize" value="256"/>
 			</filterset>
 		</copy>
         <copy file="${basedir}/conf.xml.tmpl" tofile="${basedir}/installer/conf.xml" filtering="true">
@@ -667,14 +669,17 @@
             <fileset dir="${junit.reports}/external" includes="*"/>
         </delete>
         <delete failonerror="no">
-            <fileset dir="${jetty.dir}/tmp" includes="*"/>
+            <fileset dir="${jetty.dir}/tmp">
+                <exclude name=".DO_NOT_DELETE"/>
+            </fileset>
         </delete>
-        <mkdir dir="${jetty.dir}/tmp"/>
 		<ant antfile="build.xml" dir="extensions/modules" target="clean-all" inheritall="false"/>
     </target>
 
     <target name="wrapper" depends="jar">
-        <ant antfile="build.xml" dir="tools/yajsw" inheritall="false"/>
+        <ant antfile="build.xml" dir="tools/yajsw" inheritall="false">
+             <property environment="env." name="env.EXIST_HOME"  value="${basedir}" />
+        </ant>
     </target>
 
     <target name="extension-betterform" depends="jar">

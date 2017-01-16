@@ -21,29 +21,33 @@
  */
 package org.exist.storage;
 
+import net.jcip.annotations.GuardedBy;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
-import org.exist.security.Subject;
 import org.exist.storage.sync.Sync;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.Optional;
-import java.util.Stack;
 
-public class SystemTaskManager {
+public class SystemTaskManager implements BrokerPoolService {
 
-    //private final static Logger LOG = LogManager.getLogger(SystemTaskManager.class);
+    private final static Logger LOG = LogManager.getLogger(SystemTaskManager.class);
 
     /**
 	 * The pending system maintenance tasks of the database instance.
 	 */
-	private final Stack<SystemTask> waitingSystemTasks = new Stack<SystemTask>();
+    @GuardedBy("itself")
+	private final Deque<SystemTask> waitingSystemTasks = new ArrayDeque<>();
 
-    private BrokerPool pool;
+    private final BrokerPool pool;
     
-    public SystemTaskManager(BrokerPool pool) {
+    public SystemTaskManager(final BrokerPool pool) {
         this.pool = pool;
     }
 
-    public void triggerSystemTask(SystemTask task) {
+    public void triggerSystemTask(final SystemTask task) {
         synchronized (waitingSystemTasks) {
             waitingSystemTasks.push(task);
             pool.getTransactionManager().processSystemTasks();
@@ -52,41 +56,41 @@ public class SystemTaskManager {
 
     public void processTasks() {
         //dont run the task if we are shutting down
-        if (pool.isShuttingDown()) {
+        if (pool.isShuttingDown() || pool.isShutDown()) {
             return;
         }
 
         synchronized (waitingSystemTasks) {
             try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
                 while (!waitingSystemTasks.isEmpty()) {
-                	final SystemTask task = waitingSystemTasks.pop();
-                	if (task.afterCheckpoint()) {
-                        pool.sync(broker, Sync.MAJOR);
+                    final SystemTask task = waitingSystemTasks.pop();
+
+                    if(pool.isShuttingDown()) {
+                        LOG.info("Skipping SystemTask: '" + task.getName() + "' as database is shutting down...");
+                    } else if(pool.isShutDown()) {
+                        LOG.warn("Unable to execute SystemTask: '" + task.getName() + "' as database is shut down!");
+                    } else {
+                        if (task.afterCheckpoint()) {
+                            pool.sync(broker, Sync.MAJOR);
+                        }
+                        runSystemTask(task, broker);
                     }
-                    runSystemTask(task, broker);
                 }
             } catch (final Exception e) {
-                SystemTask.LOG.warn("System maintenance task reported error: " + e.getMessage(), e);
-                
+                LOG.error("System maintenance task reported error: " + e.getMessage(), e);
             }
         }
     }
 
-    private void runSystemTask(SystemTask task, DBBroker broker) throws EXistException {
-        if (SystemTask.LOG.isDebugEnabled())
-            {SystemTask.LOG.debug("Running system maintenance task: " + task.getClass().getName());}
+    private void runSystemTask(final SystemTask task, final DBBroker broker) throws EXistException {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Running system maintenance task: " + task.getClass().getName());
+        }
+
         task.execute(broker);
-        if (SystemTask.LOG.isDebugEnabled())
-            {SystemTask.LOG.debug("System task completed.");}
-    }
 
-    public void initialize() {
-        waitingSystemTasks.clear();
-    }
-
-    public void shutdown() {
-        synchronized (waitingSystemTasks) {
-            waitingSystemTasks.clear();
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("System task completed.");
         }
     }
 }

@@ -1,24 +1,21 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist.sourceforge.net
- *  
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *  
- *  $Id$
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2016 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 package org.exist.storage.cache;
 
@@ -34,7 +31,7 @@ package org.exist.storage.cache;
  */
 public interface Cacheable {
 
-	public final static int MAX_REF = 10000;
+	int MAX_REF = 10000;
 	
 	/**
 	 * Get a unique key for the object.
@@ -43,14 +40,14 @@ public interface Cacheable {
 	 * 
 	 * @return unique key
 	 */
-	public long getKey();
+	long getKey();
 	
 	/**
 	 * Get the current reference count.
 	 * 
 	 * @return The count value. 
 	 */
-	public int getReferenceCount();
+	int getReferenceCount();
 
 	/**
 	 * Increase the reference count of this object by one
@@ -58,7 +55,7 @@ public interface Cacheable {
 	 * 
 	 * @return the reference count
 	 */
-	public int incReferenceCount();
+	int incReferenceCount();
 	
 	/**
 	 * Decrease the reference count of this object by one
@@ -66,28 +63,28 @@ public interface Cacheable {
 	 * 
 	 * @return the reference count
 	 */
-	public int decReferenceCount();
+	int decReferenceCount();
 	
 	/**
 	 * Set the reference count of this object.
 	 * 
-	 * @param count
+	 * @param count A reference count
 	 */
-	public void setReferenceCount(int count);
+	void setReferenceCount(int count);
 	
 	/**
 	 * Set the timestamp marker.
 	 * 
-	 * @param timestamp
+	 * @param timestamp A timestamp marker
 	 */
-	public void setTimestamp(int timestamp);
+	void setTimestamp(int timestamp);
 	
 	/**
 	 * Get the current timestamp marker.
 	 * 
 	 * @return timestamp marker
 	 */
-	public int getTimestamp();
+	int getTimestamp();
 
 	/**
 	 * Called before the object is released by the
@@ -95,7 +92,7 @@ public interface Cacheable {
 	 * collected. All unwritten data should be flushed
 	 * to disk.
 	 */
-	public boolean sync(boolean syncJournal);
+	boolean sync(boolean syncJournal);
 	
 	/**
 	 * Is it safe to unload the Cacheable from the cache?
@@ -105,7 +102,12 @@ public interface Cacheable {
 	 * 
 	 * @return A boolean where true indicates it can be unloaded.
 	 */
-	public boolean allowUnload();
-	
-	public boolean isDirty();
+	boolean allowUnload();
+
+	/**
+	 * Indicates whether the cacheable is dirty
+	 *
+	 * @return true if the cacheable is dirty
+	 */
+	boolean isDirty();
 }

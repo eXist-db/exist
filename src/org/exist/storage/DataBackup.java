@@ -61,11 +61,14 @@ public class DataBackup implements SystemTask {
     public boolean afterCheckpoint() {
     	return true;
     }
-    
-    /* (non-Javadoc)
-     * @see org.exist.storage.SystemTask#configure(java.util.Properties)
-     */
-    public void configure(Configuration config, Properties properties) throws EXistException { 
+
+    @Override
+    public String getName() {
+        return "Data Backup Task";
+    }
+
+    @Override
+    public void configure(final Configuration config, final Properties properties) throws EXistException {
         dest = Paths.get(properties.getProperty("output-dir", "backup"));
         if (!dest.isAbsolute()) {
             dest = ((Path)config.getProperty(BrokerPool.PROPERTY_DATA_DIR)).resolve(dest);
@@ -83,12 +86,12 @@ public class DataBackup implements SystemTask {
 
         LOG.debug("Setting backup data directory: " + dest);
     }
-    
-	public void execute(DBBroker broker) throws EXistException {
-		if (!(broker instanceof NativeBroker))
-			{throw new EXistException("DataBackup system task can only be used " +
-					"with the native storage backend");}
-//		NativeBroker nbroker = (NativeBroker) broker;
+
+    @Override
+	public void execute(final DBBroker broker) throws EXistException {
+		if (!(broker instanceof NativeBroker)) {
+            throw new EXistException("DataBackup system task can only be used with the native storage backend");
+		}
 		
 		LOG.debug("Backing up data files ...");
 		
@@ -109,18 +112,19 @@ public class DataBackup implements SystemTask {
 	}
 
     private static class Callback implements RawDataBackup {
+        final private ZipOutputStream zout;
 
-        private ZipOutputStream zout;
-
-        private Callback(ZipOutputStream out) {
+        private Callback(final ZipOutputStream out) {
             zout = out;
         }
 
-        public OutputStream newEntry(String name) throws IOException {
+        @Override
+        public OutputStream newEntry(final String name) throws IOException {
             zout.putNextEntry(new ZipEntry(name));
             return zout;
         }
 
+        @Override
         public void closeEntry() throws IOException {
             zout.closeEntry();
         }

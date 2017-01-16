@@ -41,7 +41,7 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
 /**
- * @see java.io.File#delete() 
+ * @see org.exist.util.FileUtils#deleteQuietly(Path)
  *
  * @author Andrzej Taramina
  *

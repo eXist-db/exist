@@ -21,12 +21,13 @@
  */
 package org.exist.xquery.xqts;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
 import java.util.Optional;
 
 import junit.framework.Assert;
@@ -41,7 +42,6 @@ import org.exist.util.*;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Sequence;
-import org.xml.sax.InputSource;
 
 /**
  * JUnit tests generator from XQTS Catalog.
@@ -50,8 +50,6 @@ import org.xml.sax.InputSource;
  *
  */
 public class XQTS_To_junit {
-
-    private String sep = File.separator;
 
     /**
      * @param args
@@ -105,41 +103,46 @@ public class XQTS_To_junit {
     }
 
     public void load() throws Exception {
-        File folder = new File(XQTS_case.XQTS_folder);
+        final Path folder = Paths.get(XQTS_case.XQTS_folder);
         
-        File[] files = folder.listFiles();
-        for (File file : files) {
-            if (file.isDirectory()) {
-                if (file.getName().equals("CVS") 
-                        || file.getName().equals("drivers")
-                    )
+        final List<Path> files = FileUtils.list(folder);
+        for (final Path file : files) {
+            final String fileName = FileUtils.fileName(file);
+            if (Files.isDirectory(file)) {
+                if (fileName.equals("CVS") || fileName.equals("drivers")) {
                     continue; //ignore
+                }
                 
                 loadDirectory(file, collection);
             } else {
-                if (file.getName().equals(".project"))
+                if (fileName.equals(".project")) {
                     continue; //ignore
+                }
                 
                 loadFile(file, collection);
             }
         }
     }
 
-    private void loadDirectory(File folder, Collection col) throws Exception {
-        if (!(folder.exists() && folder.canRead()))
+    private void loadDirectory(final Path folder, final Collection col) throws Exception {
+        if (!(Files.exists(folder) && Files.isReadable(folder))) {
             return;
-        
-        Collection current = broker.getOrCreateCollection(null, col.getURI().append(folder.getName()));
+        }
+
+        final Collection current = broker.getOrCreateCollection(null, col.getURI().append(FileUtils.fileName(folder)));
         broker.saveCollection(null, current);
             
-        File[] files = folder.listFiles();
+        final List<Path> files = FileUtils.list(folder);
         
-        if (files == null) return;
+        if (files == null) {
+            return;
+        }
         
-        for (File file : files) {
-            if (file.isDirectory()) {
-                if (file.getName().equals("CVS"))
+        for (final Path file : files) {
+            if (Files.isDirectory(file)) {
+                if (FileUtils.fileName(file).equals("CVS")) {
                     continue; //ignore
+                }
                 
                 loadDirectory(file, current);
             } else {
@@ -148,36 +151,38 @@ public class XQTS_To_junit {
         }
     }
 
-    private void loadFile(File file, Collection col) throws Exception {
-        if (file.getName().endsWith(".html") 
-                || file.getName().endsWith(".xsd")
-//                || file.getName().equals("")
-            )
+    private void loadFile(final Path file, final Collection col) throws Exception {
+        final String fileName = FileUtils.fileName(file);
+
+        if (fileName.endsWith(".html") || fileName.endsWith(".xsd")) {
             return;
+        }
         
-        if (!(file.exists() && file.canRead()))
+        if (!(Files.exists(file) && Files.isReadable(file))) {
             return;
+        }
         
-        TransactionManager txManager = db.getTransactionManager();
-        try(final Txn txn = txManager.beginTransaction();
-                final FileInputStream is = new FileInputStream(file)) {
-            final MimeType mime = getMimeTable().getContentTypeFor( file.getName() );
+        final TransactionManager txManager = db.getTransactionManager();
+        try(final Txn txn = txManager.beginTransaction()) {
+            final MimeType mime = getMimeTable().getContentTypeFor(FileUtils.fileName(file));
             if (mime != null && mime.isXMLType()) {
-                IndexInfo info = col.validateXMLResource(txn, broker, 
-                        XmldbURI.create(file.getName()), 
-                        new InputSource(new FileInputStream(file))
+                final IndexInfo info = col.validateXMLResource(txn, broker,
+                        XmldbURI.create(FileUtils.fileName(file)),
+                        new FileInputSource(file)
                     );
                 //info.getDocument().getMetadata().setMimeType();
-                col.store(txn, broker, info, new InputSource(is), false);
+                col.store(txn, broker, info, new FileInputSource(file));
             } else {
-                col.addBinaryResource(txn, broker,
-                        XmldbURI.create(file.getName()),
-                        is,
-                        MimeType.BINARY_TYPE.getName(), file.length());
+                try(final InputStream is = Files.newInputStream(file)) {
+                    col.addBinaryResource(txn, broker,
+                            XmldbURI.create(FileUtils.fileName(file)),
+                            is,
+                            MimeType.BINARY_TYPE.getName(), FileUtils.sizeQuietly(file));
+                }
             }
             txManager.commit(txn);
         } catch (Exception e) {
-            System.out.println("fail to load file "+file.getName());
+            System.out.println("fail to load file "+ FileUtils.fileName(file));
             e.printStackTrace();
         }
     }
@@ -269,46 +274,46 @@ public class XQTS_To_junit {
                 //subPackage = _package_+"."+adoptString(parentName);
             //}
 
-            BufferedWriter allTests = startAllTests(folder, _package_);
-
-            boolean first = true;
-            if (testCases(parentName, folder, _package_)) {
-                if (!first)
-                    allTests.write(",\n");
-                else
-                    first = false;
-                allTests.write("\t\tC_"+adoptString(parentName)+".class");
-            }
-
-            for (int i = 0; i < results.getItemCount(); i++) {
-                String groupName = results.itemAt(i).getStringValue();
-                subfolder = folder.resolve(groupName);
-                subPackage = _package_+"."+adoptString(groupName);
-
-                if (processGroups(groupName, subfolder, subPackage)) { 
+            try(final Writer allTests = startAllTests(folder, _package_)) {
+                boolean first = true;
+                if (testCases(parentName, folder, _package_)) {
                     if (!first)
                         allTests.write(",\n");
                     else
                         first = false;
-                    allTests.write("\t\torg.exist.xquery.xqts"+subPackage+".AllTests.class");
-                } else if (testCases(groupName, folder, _package_)) {
-                    if (!first)
-                        allTests.write(",\n");
-                    else
-                        first = false;
-                    allTests.write("\t\tC_"+adoptString(groupName)+".class");
+                    allTests.write("\t\tC_" + adoptString(parentName) + ".class");
                 }
+
+                for (int i = 0; i < results.getItemCount(); i++) {
+                    String groupName = results.itemAt(i).getStringValue();
+                    subfolder = folder.resolve(groupName);
+                    subPackage = _package_ + "." + adoptString(groupName);
+
+                    if (processGroups(groupName, subfolder, subPackage)) {
+                        if (!first)
+                            allTests.write(",\n");
+                        else
+                            first = false;
+                        allTests.write("\t\torg.exist.xquery.xqts" + subPackage + ".AllTests.class");
+                    } else if (testCases(groupName, folder, _package_)) {
+                        if (!first)
+                            allTests.write(",\n");
+                        else
+                            first = false;
+                        allTests.write("\t\tC_" + adoptString(groupName) + ".class");
+                    }
+                }
+                endAllTests(allTests);
             }
-            endAllTests(allTests);
             return true;
        	}
         return false;
     }
 
-    private BufferedWriter startAllTests(Path folder, String _package_) throws IOException {
+    private Writer startAllTests(Path folder, String _package_) throws IOException {
         Files.createDirectories(folder);
         Path jTest = folder.resolve("AllTests.java");
-        BufferedWriter out = Files.newBufferedWriter(jTest);
+        Writer out = Files.newBufferedWriter(jTest);
 
         out.write("package org.exist.xquery.xqts" + _package_ + ";\n\n" +
                 "import org.junit.runner.RunWith;\n" +
@@ -318,11 +323,10 @@ public class XQTS_To_junit {
         return out;
     }
 
-    private void endAllTests(BufferedWriter out) throws IOException {
+    private void endAllTests(final Writer out) throws IOException {
         out.write("\n})\n\n"+
             "public class AllTests {\n\n" +
         "}");
-        out.close();
     }
 
     private boolean testCases(String testGroup, Path folder, String _package_) throws Exception {
@@ -338,7 +342,7 @@ public class XQTS_To_junit {
         if (!results.isEmpty()) {
             Files.createDirectories(folder);
             Path jTest = folder.resolve("C_"+adoptString(testGroup)+".java");
-            try(BufferedWriter out = Files.newBufferedWriter(jTest)) {
+            try(final Writer out = Files.newBufferedWriter(jTest)) {
 
                 out.write("package org.exist.xquery.xqts" + _package_ + ";\n\n" +
                         "import org.exist.xquery.xqts.XQTS_case;\n" +

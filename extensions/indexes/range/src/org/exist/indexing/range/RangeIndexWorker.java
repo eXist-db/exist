@@ -21,6 +21,7 @@
  */
 package org.exist.indexing.range;
 
+import org.apache.lucene.util.BytesRefBuilder;
 import org.exist.dom.persistent.ElementImpl;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.persistent.NewArrayNodeSet;
@@ -59,6 +60,7 @@ import org.exist.storage.btree.DBException;
 import org.exist.storage.txn.Txn;
 import org.exist.util.ByteConversion;
 import org.exist.util.DatabaseConfigurationException;
+import org.exist.util.LockException;
 import org.exist.util.Occurrences;
 import org.exist.xquery.*;
 import org.exist.xquery.modules.range.RangeQueryRewriter;
@@ -104,8 +106,6 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     private int maxCachedNodesSize = 4096 * 1024;
 
-    private final byte[] buf = new byte[1024];
-
     public RangeIndexWorker(RangeIndex index, DBBroker broker) {
         this.index = index;
         this.broker = broker;
@@ -113,9 +113,9 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     public Query toQuery(String field, QName qname, AtomicValue content, RangeIndex.Operator operator, DocumentSet docs) throws XPathException {
         final int type = content.getType();
-        BytesRef bytes;
+        BytesRefBuilder bytes;
+        BytesRef key = null;
         if (Type.subTypeOf(type, Type.STRING)) {
-            BytesRef key = null;
             if (operator != RangeIndex.Operator.MATCH) {
                 key = analyzeContent(field, qname, content.getStringValue(), docs);
             }
@@ -125,8 +125,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     return new TermQuery(new Term(field, key));
                 case NE:
                     final BooleanQuery qnot = new BooleanQuery();
-                    bytes = new BytesRef("*");
-                    query = new WildcardQuery(new Term(field, bytes));
+                    query = new WildcardQuery(new Term(field, new BytesRef("*")));
                     query.setRewriteMethod(MultiTermQuery.CONSTANT_SCORE_FILTER_REWRITE);
                     qnot.add(query, BooleanClause.Occur.MUST);
                     qnot.add(new TermQuery(new Term(field, key)), BooleanClause.Occur.MUST_NOT);
@@ -134,16 +133,18 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 case STARTS_WITH:
                     return new PrefixQuery(new Term(field, key));
                 case ENDS_WITH:
-                    bytes = new BytesRef("*");
+                    bytes = new BytesRefBuilder();
+                    bytes.append((byte)'*');
                     bytes.append(key);
-                    query = new WildcardQuery(new Term(field, bytes));
+                    query = new WildcardQuery(new Term(field, bytes.toBytesRef()));
                     query.setRewriteMethod(MultiTermQuery.CONSTANT_SCORE_FILTER_REWRITE);
                     return query;
                 case CONTAINS:
-                    bytes = new BytesRef("*");
+                    bytes = new BytesRefBuilder();
+                    bytes.append((byte)'*');
                     bytes.append(key);
-                    bytes.append(new BytesRef("*"));
-                    query = new WildcardQuery(new Term(field, bytes));
+                    bytes.append((byte)'*');
+                    query = new WildcardQuery(new Term(field, bytes.toBytesRef()));
                     query.setRewriteMethod(MultiTermQuery.CONSTANT_SCORE_FILTER_REWRITE);
                     return query;
                 case MATCH:
@@ -210,10 +211,13 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 }
             case Type.DATE_TIME:
             default:
+                if (type == Type.DATE_TIME) {
+                    key = RangeIndexConfigElement.convertToBytes(content);
+                }
                 if (operator == RangeIndex.Operator.LT || operator == RangeIndex.Operator.LE) {
-                    return new TermRangeQuery(field, null, RangeIndexConfigElement.convertToBytes(content), includeLower, includeUpper);
+                    return new TermRangeQuery(field, null, key, includeLower, includeUpper);
                 } else {
-                    return new TermRangeQuery(field, RangeIndexConfigElement.convertToBytes(content), null, includeLower, includeUpper);
+                    return new TermRangeQuery(field, key, null, includeLower, includeUpper);
                 }
         }
     }
@@ -355,14 +359,12 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             writer = index.getWriter();
             for (Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
                 DocumentImpl doc = i.next();
-                BytesRef bytes = new BytesRef(NumericUtils.BUF_SIZE_INT);
+                final BytesRefBuilder bytes = new BytesRefBuilder();
                 NumericUtils.intToPrefixCoded(doc.getDocId(), 0, bytes);
-                Term dt = new Term(FIELD_DOC_ID, bytes);
+                Term dt = new Term(FIELD_DOC_ID, bytes.toBytesRef());
                 writer.deleteDocuments(dt);
             }
-        } catch (IOException e) {
-            LOG.error("Error while removing lucene index: " + e.getMessage(), e);
-        } catch (PermissionDeniedException e) {
+        } catch (IOException | PermissionDeniedException | LockException e) {
             LOG.error("Error while removing lucene index: " + e.getMessage(), e);
         } finally {
             index.releaseWriter(writer);
@@ -383,9 +385,9 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         IndexWriter writer = null;
         try {
             writer = index.getWriter();
-            BytesRef bytes = new BytesRef(NumericUtils.BUF_SIZE_INT);
+            final BytesRefBuilder bytes = new BytesRefBuilder();
             NumericUtils.intToPrefixCoded(docId, 0, bytes);
-            Term dt = new Term(FIELD_DOC_ID, bytes);
+            Term dt = new Term(FIELD_DOC_ID, bytes.toBytesRef());
             writer.deleteDocuments(dt);
         } catch (IOException e) {
             LOG.warn("Error while removing lucene index: " + e.getMessage(), e);
@@ -636,8 +638,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             if (storedDocument == null) {
                 return;
             }
-            BytesRef ref = new BytesRef(buf);
-            this.nodeIdValues.get(doc, ref);
+            final BytesRef ref = this.nodeIdValues.get(doc);
 
             int units = ByteConversion.byteToShort(ref.bytes, ref.offset);
             NodeId nodeId = index.getBrokerPool().getNodeFactory().createFromData(units, ref.bytes, ref.offset + 2);
@@ -674,8 +675,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
         private void getAddress(int doc, NodeHandle storedNode) {
             if (addressValues != null) {
-                BytesRef ref = new BytesRef(buf);
-                addressValues.get(doc, ref);
+                final BytesRef ref = addressValues.get(doc);
                 if (ref.offset < ref.bytes.length) {
                     final long address = ByteConversion.byteToLong(ref.bytes, ref.offset);
                     storedNode.setInternalAddress(address);
@@ -746,7 +746,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 stream.reset();
                 if (stream.incrementToken()) {
                     termAttr.fillBytesRef();
-                    token = termAttr.getBytesRef();
+                    token = BytesRef.deepCopyOf(termAttr.getBytesRef());
                 }
                 stream.end();
             } finally {
@@ -1021,8 +1021,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                             continue;
                         NodeId nodeId = null;
                         if (nodes != null) {
-                            BytesRef nodeIdRef = new BytesRef(buf);
-                            nodeIdValues.get(docsEnum.docID(), nodeIdRef);
+                            final BytesRef nodeIdRef = nodeIdValues.get(docsEnum.docID());
                             int units = ByteConversion.byteToShort(nodeIdRef.bytes, nodeIdRef.offset);
                             nodeId = index.getBrokerPool().getNodeFactory().createFromData(units, nodeIdRef.bytes, nodeIdRef.offset + 2);
                         }

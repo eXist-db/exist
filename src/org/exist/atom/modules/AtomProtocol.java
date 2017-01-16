@@ -59,7 +59,7 @@ import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.UUIDGenerator;
 import org.exist.storage.DBBroker;
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
@@ -207,7 +207,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
 					final IndexInfo info = collection.validateXMLResource(transaction, broker, FEED_DOCUMENT_URI, doc);
 					setPermissions(broker, root, info.getDocument());
 					// TODO : We should probably unlock the collection here
-					collection.store(transaction, broker, info, doc, false);
+					collection.store(transaction, broker, info, doc);
 					transact.commit(transaction);
 					response.setStatusCode(204);
 					response.setHeader("Location", request.getModuleBase() + request.getPath());
@@ -268,7 +268,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
                         final ElementImpl feedRoot = (ElementImpl) feedDoc.getDocumentElement();
 
                         // Lock the feed
-                        feedDoc.getUpdateLock().acquire(Lock.WRITE_LOCK);
+                        feedDoc.getUpdateLock().acquire(LockMode.WRITE_LOCK);
 
                         // Append the entry
                         collection = broker.getOrCreateCollection(transaction, pathUri.append(ENTRY_COLLECTION_URI));
@@ -283,7 +283,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
                         final IndexInfo info = collection.validateXMLResource(transaction, broker, entryURI, doc);
                         setPermissions(broker, root, info.getDocument());
                         // TODO : We should probably unlock the collection here
-                        collection.store(transaction, broker, info, doc, false);
+                        collection.store(transaction, broker, info, doc);
 
                         // Update the updated element
                         DOMDB.replaceTextElement(transaction, feedRoot,
@@ -329,7 +329,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
 					 */
                     } finally {
                         if (feedDoc != null) {
-                            feedDoc.getUpdateLock().release(Lock.WRITE_LOCK);
+                            feedDoc.getUpdateLock().release(LockMode.WRITE_LOCK);
                         }
                     }
                 }
@@ -386,7 +386,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
 					info.getDocument().getMetadata().setMimeType(contentType);
 
 					try(final Reader reader = new InputStreamReader(new FileInputStream(tempFile), charset)) {
-                        collection.store(transaction, broker, info, new InputSource(reader), false);
+                        collection.store(transaction, broker, info, new InputSource(reader));
                     }
 				} else {
 					try(final FileInputStream is = new FileInputStream(tempFile)) {
@@ -396,7 +396,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
 
 				try {
 					LOG.debug("Acquiring lock on feed document...");
-					feedDoc.getUpdateLock().acquire(Lock.WRITE_LOCK);
+					feedDoc.getUpdateLock().acquire(LockMode.WRITE_LOCK);
 					
 					String title = request.getHeader("Title");
 					if (title == null)
@@ -419,7 +419,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
 
 					final IndexInfo info = collection.validateXMLResource(transaction, broker, entryURI, mediaEntry);
 					// TODO : We should probably unlock the collection here
-					collection.store(transaction, broker, info, mediaEntry, false);
+					collection.store(transaction, broker, info, mediaEntry);
 					// Update the updated element
 					DOMDB.replaceTextElement(
 							transaction, feedRoot, Atom.NAMESPACE_STRING, "updated", 
@@ -449,7 +449,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
 					throw new EXistException("Cannot acquire write lock.", ex);
 				} finally {
 					if (feedDoc != null) {
-                        feedDoc.getUpdateLock().release(Lock.WRITE_LOCK);
+                        feedDoc.getUpdateLock().release(LockMode.WRITE_LOCK);
                     }
 				}
 
@@ -562,7 +562,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
 
 				final TransactionManager transact = broker.getBrokerPool().getTransactionManager();
 				try(final Txn transaction = transact.beginTransaction()) {
-					feedDoc.getUpdateLock().acquire(Lock.WRITE_LOCK);
+					feedDoc.getUpdateLock().acquire(LockMode.WRITE_LOCK);
 					final ElementImpl feedRoot = (ElementImpl) feedDoc.getDocumentElement();
 
 					// Modify the feed by merging the new feed-level elements
@@ -579,7 +579,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
 					throw ex;
 				} finally {
 					if (feedDoc != null) {
-                        feedDoc.getUpdateLock().release(Lock.WRITE_LOCK);
+                        feedDoc.getUpdateLock().release(LockMode.WRITE_LOCK);
                     }
 				}
 
@@ -606,7 +606,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
 								"Permission denied to update feed "
 										+ collection.getURI());}
 					
-					feedDoc.getUpdateLock().acquire(Lock.WRITE_LOCK);
+					feedDoc.getUpdateLock().acquire(LockMode.WRITE_LOCK);
 
 					// Find the entry
 					final String uuid = id.substring(9);
@@ -618,7 +618,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
 								"Cannot find entry with id " + id);}
 
 					// Lock the entry
-					entryDoc.getUpdateLock().acquire(Lock.WRITE_LOCK);
+					entryDoc.getUpdateLock().acquire(LockMode.WRITE_LOCK);
 
 					final Element entry = entryDoc.getDocumentElement();
 
@@ -659,11 +659,11 @@ public class AtomProtocol extends AtomFeeds implements Atom {
 					 */
 				} finally {
 					if (feedDoc != null) {
-                        feedDoc.getUpdateLock().release(Lock.WRITE_LOCK);
+                        feedDoc.getUpdateLock().release(LockMode.WRITE_LOCK);
                     }
 
 					if (entryDoc != null) {
-                        entryDoc.getUpdateLock().release(Lock.WRITE_LOCK);
+                        entryDoc.getUpdateLock().release(LockMode.WRITE_LOCK);
                     }
 				}
 
@@ -713,7 +713,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
 
                     try(final Reader reader = new InputStreamReader(new FileInputStream(tempFile), charset)) {
                         collection.store(transaction, broker, info,
-                                new InputSource(reader), false);
+                                new InputSource(reader));
                     }
 				} else {
 					final FileInputStream is = new FileInputStream(tempFile);
@@ -783,7 +783,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
 				{throw new PermissionDeniedException(
 						"Permission denied to update feed "
 								+ collection.getURI());}
-			feedDoc.getUpdateLock().acquire(Lock.WRITE_LOCK);
+			feedDoc.getUpdateLock().acquire(LockMode.WRITE_LOCK);
 
 			// Find the entry
 			final String uuid = id.substring(9);
@@ -836,7 +836,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
 			throw new EXistException("Cannot acquire write lock.", ex);
 		} finally {
 			if (feedDoc != null) {
-				feedDoc.getUpdateLock().release(Lock.WRITE_LOCK);
+				feedDoc.getUpdateLock().release(LockMode.WRITE_LOCK);
 			}
 		}
 
@@ -1036,7 +1036,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
 			final String group = element.getAttribute("group");
 			if (!securityMan.hasGroup(group))
 				try {
-					securityMan.addGroup(group);
+					securityMan.addGroup(broker, group);
 				} catch (final ConfigurationException e) {
 					throw new EXistException(e.getMessage(), e);
 				}
@@ -1075,7 +1075,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
 			final String group = element.getAttribute("group");
 			if (!securityMan.hasGroup(group))
 				try {
-					securityMan.addGroup(group);
+					securityMan.addGroup(broker, group);
 				} catch (final ConfigurationException e) {
 					throw new EXistException(e.getMessage(), e);
 				}

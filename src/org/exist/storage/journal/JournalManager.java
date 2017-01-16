@@ -23,43 +23,50 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.storage.BrokerPool;
+import org.exist.storage.BrokerPoolService;
+import org.exist.storage.BrokerPoolServiceException;
 import org.exist.storage.recovery.RecoveryManager;
+import org.exist.util.Configuration;
 import org.exist.util.ReadOnlyException;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 /**
  * Journal Manager just adds some light-weight
  * wrapping around {@link Journal}
  */
-public class JournalManager {
+public class JournalManager implements BrokerPoolService {
     private static final Logger LOG = LogManager.getLogger(JournalManager.class);
 
-    private final BrokerPool pool;
-    private final Path journalDir;
-    private final boolean groupCommits;
-
+    private Path journalDir;
+    private boolean groupCommits;
     private Journal journal;
     private boolean journallingDisabled = false;
     private boolean initialized = false;
 
-    public JournalManager(final BrokerPool pool, final Path journalDir, final boolean groupCommits) {
-        this.pool = pool;
-        this.journalDir = journalDir;
-        this.groupCommits = groupCommits;
-
+    @Override
+    public void configure(final Configuration configuration) {
+        this.journalDir = (Path) Optional.ofNullable(configuration.getProperty(Journal.PROPERTY_RECOVERY_JOURNAL_DIR))
+                .orElse(configuration.getProperty(BrokerPool.PROPERTY_DATA_DIR));
+        this.groupCommits = configuration.getProperty(BrokerPool.PROPERTY_RECOVERY_GROUP_COMMIT, false);
         if (LOG.isDebugEnabled()) {
             LOG.debug("GroupCommits = " + groupCommits);
         }
     }
 
-    public void initialize() throws EXistException, ReadOnlyException {
+    @Override
+    public void prepare(final BrokerPool pool) throws BrokerPoolServiceException {
         if(!journallingDisabled) {
-            this.journal = new Journal(pool, journalDir);
-            this.journal.initialize();
-            this.initialized = true;
+            try {
+                this.journal = new Journal(pool, journalDir);
+                this.journal.initialize();
+                this.initialized = true;
+            } catch(final EXistException | ReadOnlyException e) {
+                throw new BrokerPoolServiceException(e);
+            }
         }
     }
 

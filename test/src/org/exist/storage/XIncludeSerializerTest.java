@@ -23,7 +23,7 @@ import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
 import org.custommonkey.xmlunit.Diff;
-import org.exist.storage.serializers.XIncludeFilter;
+import org.exist.Namespaces;
 import org.exist.test.ExistWebServer;
 import org.exist.xmldb.XmldbURI;
 import org.junit.BeforeClass;
@@ -63,7 +63,7 @@ public class XIncludeSerializerTest {
     }
 
     private final static String XML_DATA1
-            = "<test xmlns:xi='" + XIncludeFilter.XINCLUDE_NS + "'>"
+            = "<test xmlns:xi='" + Namespaces.XINCLUDE_NS + "'>"
             + "<root>"
             + "<xi:include href='metatags.xml'/>"
             + "</root>"
@@ -77,35 +77,35 @@ public class XIncludeSerializerTest {
             + "</html>";
 
     private final static String XML_DATA3
-            = "<test xmlns:xi='" + XIncludeFilter.XINCLUDE_NS + "'>"
+            = "<test xmlns:xi='" + Namespaces.XINCLUDE_NS + "'>"
             + "<root>"
             + "<xi:include href='../xinclude_test/data/metatags.xml'/>"
             + "</root>"
             + "</test>";
 
     private final static String XML_DATA4
-            = "<test xmlns:xi='" + XIncludeFilter.XINCLUDE_NS + "'>"
+            = "<test xmlns:xi='" + Namespaces.XINCLUDE_NS + "'>"
             + "<root>"
             + "<xi:include href='data/metatags.xml'/>"
             + "</root>"
             + "</test>";
 
     private final static String XML_DATA5
-            = "<test xmlns:xi='" + XIncludeFilter.XINCLUDE_NS + "'>"
+            = "<test xmlns:xi='" + Namespaces.XINCLUDE_NS + "'>"
             + "<root>"
             + "<xi:include href='data/metatags.xml' xpointer='xpointer(//metatag)'/>"
             + "</root>"
             + "</test>";
 
     private final static String XML_DATA6
-            = "<test xmlns:xi='" + XIncludeFilter.XINCLUDE_NS + "'>"
+            = "<test xmlns:xi='" + Namespaces.XINCLUDE_NS + "'>"
             + "<root>"
             + "<xi:include href='data/metatags.xml' xpointer='metatag'/>"
             + "</root>"
             + "</test>";
 
     private final static String XML_DATA7
-            = "<test xmlns:xi='" + XIncludeFilter.XINCLUDE_NS + "'>"
+            = "<test xmlns:xi='" + Namespaces.XINCLUDE_NS + "'>"
             + "<root>"
             + "<xi:include href='data/unknown.xml'>"
             + "<xi:fallback><warning>Not found</warning></xi:fallback>"
@@ -114,13 +114,13 @@ public class XIncludeSerializerTest {
             + "</test>";
 
     private final static String XML_DATA8
-            = "<test xmlns:xi='" + XIncludeFilter.XINCLUDE_NS + "'>"
+            = "<test xmlns:xi='" + Namespaces.XINCLUDE_NS + "'>"
             + "<root>"
             + "<xi:include href='data/unknown.xml'/>"
             + "</root>"
             + "</test>";
 
-    private final static String XML_RESULT = "<test xmlns:xi='" + XIncludeFilter.XINCLUDE_NS + "'>"
+    private final static String XML_RESULT = "<test xmlns:xi='" + Namespaces.XINCLUDE_NS + "'>"
             + "<root>"
             + "<html>"
             + "<head>"
@@ -130,13 +130,13 @@ public class XIncludeSerializerTest {
             + "</root>"
             + "</test>";
 
-    private final static String XML_RESULT_XPOINTER = "<test xmlns:xi='" + XIncludeFilter.XINCLUDE_NS + "'>"
+    private final static String XML_RESULT_XPOINTER = "<test xmlns:xi='" + Namespaces.XINCLUDE_NS + "'>"
             + "<root>"
             + "<metatag xml:id='metatag' name='test' description='test'/>"
             + "</root>"
             + "</test>";
 
-    private final static String XML_RESULT_FALLBACK1 = "<test xmlns:xi='" + XIncludeFilter.XINCLUDE_NS + "'>"
+    private final static String XML_RESULT_FALLBACK1 = "<test xmlns:xi='" + Namespaces.XINCLUDE_NS + "'>"
             + "<root>"
             + "<warning>Not found</warning>"
             + "</root>"

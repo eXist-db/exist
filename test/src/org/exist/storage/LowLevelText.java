@@ -3,7 +3,7 @@ package org.exist.storage;
 import org.exist.EXistException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.source.StringSource;
-import org.exist.util.Configuration;
+import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XPathException;
@@ -11,6 +11,7 @@ import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -27,12 +28,12 @@ public class LowLevelText {
 
 	private static final String TEST_XQUERY_SOURCE = "/test";
 
-	private static final String MY_TEST_INSTANCE = "exist";
+	@ClassRule
+	public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer();
 
-    private BrokerPool brokerPool;
 	private DBBroker broker;
 
-	private XQueryPool pool;
+	private XQueryPool xqueryPool;
 
 	private StringSource stringSource;
 
@@ -40,18 +41,13 @@ public class LowLevelText {
 
 	@Before
 	public void setUp() throws DatabaseConfigurationException, EXistException, XPathException, PermissionDeniedException, IOException {
-
-		Configuration configuration = new Configuration();
-		BrokerPool.configure(MY_TEST_INSTANCE, 1, 1, configuration);
-		brokerPool = BrokerPool.getInstance(MY_TEST_INSTANCE);
-
-		//BUG: need to be released!
-		broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));
-		pool = new XQueryPool(configuration);
+		final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+		broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+		xqueryPool = pool.getXQueryPool();
 		stringSource = new StringSource(TEST_XQUERY_SOURCE);
 
-		XQuery xquery = brokerPool.getXQueryService();
-		XQueryContext context = new XQueryContext(broker.getBrokerPool());
+		final XQuery xquery = pool.getXQueryService();
+		final XQueryContext context = new XQueryContext(broker.getBrokerPool());
 		preCompiledXQuery = xquery.compile(broker, context, stringSource);
 	}
 
@@ -60,19 +56,18 @@ public class LowLevelText {
 		if(broker != null) {
 			broker.close();
 		}
-		BrokerPool.stopAll(false);
 	}
 
 	@Test
 	public void borrowCompiledXQuery1() throws PermissionDeniedException {
 		// put the preCompiledXQuery in cache - NOTE: returnCompiledXQuery() is not a good name
-		pool.returnCompiledXQuery(stringSource, preCompiledXQuery);
+		xqueryPool.returnCompiledXQuery(stringSource, preCompiledXQuery);
 		callAndTestBorrowCompiledXQuery(stringSource);
 	}
 
 	@Test
 	public void borrowCompiledXQuery2() throws PermissionDeniedException {
-		pool.returnCompiledXQuery(stringSource, preCompiledXQuery);
+		xqueryPool.returnCompiledXQuery(stringSource, preCompiledXQuery);
 
 		callAndTestBorrowCompiledXQuery(stringSource);
 		callAndTestBorrowCompiledXQuery(stringSource);
@@ -80,7 +75,7 @@ public class LowLevelText {
 
 	@Test
 	public void borrowCompiledXQuery3() throws PermissionDeniedException {
-		pool.returnCompiledXQuery(stringSource, preCompiledXQuery);
+		xqueryPool.returnCompiledXQuery(stringSource, preCompiledXQuery);
 
 		callAndTestBorrowCompiledXQuery(stringSource);
 		callAndTestBorrowCompiledXQuery(stringSource);
@@ -92,7 +87,7 @@ public class LowLevelText {
 	 */
 	@Test
 	public void borrowCompiledXQueryNewStringSource() throws PermissionDeniedException {
-		pool.returnCompiledXQuery(stringSource, preCompiledXQuery);
+		xqueryPool.returnCompiledXQuery(stringSource, preCompiledXQuery);
 		StringSource localStringSource = new StringSource(TEST_XQUERY_SOURCE);
 
 		callAndTestBorrowCompiledXQuery(localStringSource);
@@ -103,7 +98,7 @@ public class LowLevelText {
 	 */
 	@Test
 	public void borrowCompiledXQueryNewStringSource2() throws PermissionDeniedException {
-		pool.returnCompiledXQuery(stringSource, preCompiledXQuery);
+		xqueryPool.returnCompiledXQuery(stringSource, preCompiledXQuery);
 		StringSource localStringSource = new StringSource(TEST_XQUERY_SOURCE);
 
 		callAndTestBorrowCompiledXQuery(localStringSource);
@@ -111,13 +106,13 @@ public class LowLevelText {
 	}
 
 	private void callAndTestBorrowCompiledXQuery(StringSource stringSourceArg) throws PermissionDeniedException {
-		final CompiledXQuery compiledXQuery = pool.borrowCompiledXQuery(broker, stringSourceArg);
+		final CompiledXQuery compiledXQuery = xqueryPool.borrowCompiledXQuery(broker, stringSourceArg);
 		assertNotNull(
 				"borrowCompiledXQuery should retrieve something for this stringSource",
 				compiledXQuery);
 		assertEquals(
 				"borrowCompiledXQuery should retrieve the preCompiled XQuery for this stringSource",
 				compiledXQuery, preCompiledXQuery);
-        pool.returnCompiledXQuery(stringSourceArg, compiledXQuery);
+		xqueryPool.returnCompiledXQuery(stringSourceArg, compiledXQuery);
 	}
 }

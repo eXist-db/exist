@@ -17,6 +17,8 @@ declare variable $tt:COLLECTION_CONFIG :=
                     <field name="date" match="date2" type="xs:date"/>
                     <field name="int2" match="int2" type="xs:integer"/>
                     <field name="date3" match="date3" type="xs:date" converter="org.exist.indexing.range.conversion.DateConverter"/>
+                    <field name="date5" match="date5" type="xs:date" converter="org.exist.indexing.range.conversion.DateConverter"/>
+                    <field name="date6" match="date6" type="xs:date" converter="org.exist.indexing.range.conversion.DateConverter"/>
                 </create>
                 <create qname="string-lc" type="xs:string" case="no"/>
                 <create qname="string" type="xs:string"/>
@@ -33,6 +35,8 @@ declare variable $tt:XML :=
             <date2>1918-02-11</date2>
             <date3>1918</date3>
             <date4>1918</date4>
+            <date5>-800-02-11</date5>
+            <date6>-800</date6>
             <time>09:00:00Z</time>
             <dateTime>1918-02-11T09:00:00Z</dateTime>
             <string-lc>UPPERCASE</string-lc>
@@ -499,4 +503,18 @@ declare
     %test:assertEquals("E2")
 function tt:date-field-normalized($date as xs:date) {
     collection($tt:COLLECTION)//entry[date4 = $date]/id/string()
+};
+
+declare 
+    %test:args("-0800-02-11")
+    %test:assertEquals("E1")
+function tt:date-field-normalized-bc($date as xs:date) {
+    collection($tt:COLLECTION)//entry[date5 = $date]/id/string()
+};
+
+declare 
+    %test:args("-0800-01-01")
+    %test:assertEquals("E1")
+function tt:date-field-normalized-bc($date as xs:date) {
+    collection($tt:COLLECTION)//entry[date6 = $date]/id/string()
 };

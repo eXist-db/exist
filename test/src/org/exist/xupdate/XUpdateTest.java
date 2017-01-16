@@ -1,12 +1,11 @@
 package org.exist.xupdate;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Reader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -26,6 +25,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.Matchers.*;
 import org.junit.runners.Parameterized.Parameters;
 import org.w3c.dom.Document;
@@ -95,14 +96,15 @@ public class XUpdateTest {
     private final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
     private final static String XUPDATE_COLLECTION = "xupdate_tests";
 
-    static File existDir;
+    static Path existDir;
     static {
         String existHome = System.getProperty("exist.home");
-        existDir = existHome == null ? new File(".") : new File(existHome);
+        existDir = existHome == null ? Paths.get(".") : Paths.get(existHome);
+        existDir = existDir.normalize();
     }
-    private final static String MODIFICATION_DIR  = (new File(existDir, "test/src/org/exist/xupdate/modifications")).getAbsolutePath();
-    private final static String RESTULT_DIR = (new File(existDir, "test/src/org/exist/xupdate/results")).getAbsolutePath();
-    private final static String SOURCE_DIR = (new File(existDir, "test/src/org/exist/xupdate/input")).getAbsolutePath();
+    private final static Path MODIFICATION_DIR  = existDir.resolve("test/src/org/exist/xupdate/modifications").toAbsolutePath();
+    private final static Path RESULT_DIR = existDir.resolve("test/src/org/exist/xupdate/results").toAbsolutePath();
+    private final static Path SOURCE_DIR = existDir.resolve("test/src/org/exist/xupdate/input").toAbsolutePath();
     private final static String XUPDATE_FILE = "xu.xml";       // xlm document name in eXist
 
     private Collection col = null;
@@ -116,7 +118,7 @@ public class XUpdateTest {
         addDocument(sourceFile);
 
         //update input xml file
-        Document xupdateResult = updateDocument(MODIFICATION_DIR + "/" + testName + ".xml");
+        Document xupdateResult = updateDocument(MODIFICATION_DIR.resolve(testName + ".xml"));
         removeWhiteSpace(xupdateResult);
 
         //Read reference xml file
@@ -124,7 +126,7 @@ public class XUpdateTest {
                 = DocumentBuilderFactory.newInstance();
         parserFactory.setNamespaceAware(true);
         DocumentBuilder builder = parserFactory.newDocumentBuilder();
-        Document referenceXML = builder.parse(RESTULT_DIR + "/" + testName + ".xml");
+        Document referenceXML = builder.parse(RESULT_DIR.resolve(testName + ".xml").toFile());
         removeWhiteSpace(referenceXML);
 
         //compare
@@ -139,8 +141,8 @@ public class XUpdateTest {
      */
     public void addDocument(final String sourceFile) throws XMLDBException {
         final XMLResource document = (XMLResource) col.createResource(XUPDATE_FILE, "XMLResource");
-        final File f = new File(SOURCE_DIR + "/" + sourceFile);
-        if (!f.canRead()) {
+        final Path f = SOURCE_DIR.resolve(sourceFile);
+        if (!Files.isReadable(f)) {
             System.err.println("can't read file " + sourceFile);
         }
         document.setContent(f);
@@ -152,16 +154,11 @@ public class XUpdateTest {
         col.removeResource(document);
     }
 
-    private Document updateDocument(final String updateFile) throws XMLDBException, IOException, ParserConfigurationException, SAXException {
+    private Document updateDocument(final Path updateFile) throws XMLDBException, IOException, ParserConfigurationException, SAXException {
         final XUpdateQueryService service = (XUpdateQueryService) col.getService("XUpdateQueryService", "1.0");
 
         // Read XUpdate-Modifcations
-        final File file = new File(updateFile);
-        char[] characters = new char[new Long(file.length()).intValue()];
-        try(final Reader br = new BufferedReader(new FileReader(file))) {
-            br.read(characters, 0, Long.valueOf(file.length()).intValue());
-        }
-        final String xUpdateModifications = new String(characters);
+        final String xUpdateModifications = new String(Files.readAllBytes(updateFile), UTF_8);
         //
 
         service.update(xUpdateModifications);
@@ -176,7 +173,7 @@ public class XUpdateTest {
         final DocumentBuilderFactory parserFactory = DocumentBuilderFactory.newInstance();
         parserFactory.setNamespaceAware(true);
         try(final InputStream is = new ByteArrayInputStream(xmlString.getBytes())) {
-            final InputSource in = new InputSource((InputStream) is);
+            final InputSource in = new InputSource(is);
             final DocumentBuilder builder = parserFactory.newDocumentBuilder();
             return builder.parse(in);
         }

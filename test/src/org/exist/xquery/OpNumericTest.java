@@ -2,7 +2,7 @@ package org.exist.xquery;
 
 import org.exist.EXistException;
 import org.exist.storage.*;
-import org.exist.util.Configuration;
+import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.xquery.Constants.ArithmeticOperator;
 import org.exist.xquery.value.*;
@@ -24,15 +24,15 @@ public class OpNumericTest {
 	private static IntegerValue integer;
 	private static DecimalValue decimal;
 
+	@ClassRule
+	public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer();
+
 	@BeforeClass
 	public static void setUp() throws DatabaseConfigurationException, EXistException, XPathException {
-		Configuration config = new Configuration();
-		BrokerPool.configure(1, 5, config);
-
-		BrokerPool pool = BrokerPool.getInstance();
+		final BrokerPool pool = existEmbeddedServer.getBrokerPool();
 
 		broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
-		context = new XQueryContext(broker.getBrokerPool());
+		context = new XQueryContext(pool);
 
 		dtDuration = new DayTimeDurationValue("P1D");
 		ymDuration = new YearMonthDurationValue("P1Y");
@@ -48,7 +48,6 @@ public class OpNumericTest {
         if(broker != null) {
 			broker.close();
 		}
-        BrokerPool.stopAll(false);
         broker = null;
         context = null;
     }

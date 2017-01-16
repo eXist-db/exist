@@ -179,6 +179,10 @@
                 <exclude name="**/*~"/>
             </fileset>
             <fileset targetdir="$INSTALL_PATH/tools" dir="tools">
+                <include name="jetty/tmp/.DO_NOT_DELETE"/>
+                <include name="yajsw/tmp/.DO_NOT_DELETE"/>
+            </fileset>
+            <fileset targetdir="$INSTALL_PATH/tools" dir="tools">
                 <include name="**/*.jar"/>
                 <include name="yajsw/**"/>
                 <exclude name="yajsw/log/*"/>
@@ -198,6 +202,10 @@
                 <exclude name="ant/lib/svnkit*.jar"/>
                 <include name="jmx/**"/>
                 <exclude name="jmx/classes/**"/>
+            </fileset>
+            <fileset targetdir="$INSTALL_PATH/webapp" dir="webapp">
+                <include name="WEB-INF/data/.DO_NOT_DELETE"/>
+                <include name="WEB-INF/logs/.DO_NOT_DELETE"/>
             </fileset>
             <fileset targetdir="$INSTALL_PATH/webapp" dir="webapp">
                 <exclude name="**/*.dbx"/>
@@ -308,9 +316,7 @@
 
             <singlefile src="tools/yajsw/conf/wrapper.conf.install"
                 target="$INSTALL_PATH/tools/yajsw/conf/wrapper.conf" override="true"/>
-            <parsable targetfile="$INSTALL_PATH/tools/yajsw/conf/wrapper.conf">
-                <os family="windows"/>
-            </parsable>
+            <parsable type="plain" targetfile="$INSTALL_PATH/tools/yajsw/conf/wrapper.conf"/>
 
             <executable targetfile="$INSTALL_PATH/start.jar" stage="never">
                 <os family="unix"/>

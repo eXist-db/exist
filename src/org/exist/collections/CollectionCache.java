@@ -1,31 +1,35 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2015 The eXist Project
- *  http://exist-db.org
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2016 The eXist Project
+ * http://exist-db.org
  *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 package org.exist.collections;
 
 import java.util.Iterator;
 
+import net.jcip.annotations.NotThreadSafe;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.storage.BrokerPool;
+import org.exist.storage.BrokerPoolService;
 import org.exist.storage.CacheManager;
-import org.exist.storage.cache.Cacheable;
 import org.exist.storage.cache.LRUCache;
 import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.util.hashtable.Object2LongHashMap;
 import org.exist.util.hashtable.SequencedLongHashMap;
 import org.exist.xmldb.XmldbURI;
@@ -38,68 +42,75 @@ import org.exist.xmldb.XmldbURI;
  * 
  * @author wolf
  */
-public class CollectionCache extends LRUCache {
+@NotThreadSafe
+public class CollectionCache extends LRUCache<Collection> implements BrokerPoolService {
+    private final static Logger LOG = LogManager.getLogger(CollectionCache.class);
 
-    private Object2LongHashMap names;
-    private BrokerPool pool;
+    private final BrokerPool pool;
+    private Object2LongHashMap<String> names;
 
-    public CollectionCache(BrokerPool pool, int blockBuffers, double growthThreshold) {
-        super(blockBuffers, 2.0, 0.000001, CacheManager.DATA_CACHE);
-        this.names = new Object2LongHashMap(blockBuffers);
+    public CollectionCache(final BrokerPool pool, final int blockBuffers, final double growthThreshold) {
+        super("collection cache", blockBuffers, 2.0, growthThreshold, CacheManager.DATA_CACHE);
         this.pool = pool;
-        setFileName("collection cache");
+        this.names = new Object2LongHashMap<>(blockBuffers);
     }
 
-    public void add(Collection collection) {
+    @Override
+    public void add(final Collection collection) {
         add(collection, 1);
     }
 
-    public void add(Collection collection, int initialRefCount) {
+    @Override
+    public void add(final Collection collection, final int initialRefCount) {
         // don't cache the collection during initialization: SecurityManager is not yet online
-        if(pool.isInitializing()) return;
+        if(!pool.isOperational()) {
+            return;
+        }
 
         super.add(collection, initialRefCount);
         final String name = collection.getURI().getRawCollectionPath();
         names.put(name, collection.getKey());
     }
 
-    public Collection get(Collection collection) {
-        return (Collection) get(collection.getKey());
+    @Override
+    public Collection get(final Collection collection) {
+        return get(collection.getKey());
     }
 
-    public Collection get(XmldbURI name) {
+    public Collection get(final XmldbURI name) {
         final long key = names.get(name.getRawCollectionPath());
         if (key < 0) {
             return null;
         }
-        return (Collection) get(key);
+        return get(key);
     }
 
+    // TODO(AR) we have a mix of concerns here, we should not involve collection locking in the operation of the cache  or invalidating the collectionConfiguration
     /**
      * Overwritten to lock collections before they are removed.
      */
-    protected void removeOne(Cacheable item) {
+    @Override
+    protected void removeOne(final Collection item) {
         boolean removed = false;
-        SequencedLongHashMap.Entry<Cacheable> next = map.getFirstEntry();
+        SequencedLongHashMap.Entry<Collection> next = map.getFirstEntry();
         int tries = 0;
         do {
-            final Cacheable cached = next.getValue();
+            final Collection cached = next.getValue();
             if(cached.getKey() != item.getKey()) {
-                final Collection old = (Collection) cached;
-                final Lock lock = old.getLock();
-                if (lock.attempt(Lock.READ_LOCK)) {
+                final Lock lock = cached.getLock();
+                if (lock.attempt(LockMode.READ_LOCK)) {
                     try {
                         if (cached.allowUnload()) {
-                            if(pool.getConfigurationManager()!=null) { // might be null during db initialization
-                                pool.getConfigurationManager().invalidate(old.getURI(), null);
+                            if(pool.getConfigurationManager() != null) { // might be null during db initialization
+                                pool.getConfigurationManager().invalidate(cached.getURI(), null);
                             }
-                            names.remove(old.getURI().getRawCollectionPath());
+                            names.remove(cached.getURI().getRawCollectionPath());
                             cached.sync(true);
                             map.remove(cached.getKey());
                             removed = true;
                         }
                     } finally {
-                        lock.release(Lock.READ_LOCK);
+                        lock.release(LockMode.READ_LOCK);
                     }
                 }
             }
@@ -117,12 +128,15 @@ public class CollectionCache extends LRUCache {
         cacheManager.requestMem(this);
     }
 
-    public void remove(Cacheable item) {
-        final Collection col = (Collection) item;
+    @Override
+    public void remove(final Collection item) {
         super.remove(item);
-        names.remove(col.getURI().getRawCollectionPath());
-        if(pool.getConfigurationManager() != null) // might be null during db initialization
-           {pool.getConfigurationManager().invalidate(col.getURI(), null);}
+        names.remove(item.getURI().getRawCollectionPath());
+
+        // might be null during db initialization
+        if(pool.getConfigurationManager() != null) {
+            pool.getConfigurationManager().invalidate(item.getURI(), null);
+        }
     }
 
     /**
@@ -135,7 +149,7 @@ public class CollectionCache extends LRUCache {
     public int getRealSize() {
         int size = 0;
         for (final Iterator<Long> i = names.valueIterator(); i.hasNext(); ) {
-            final Collection collection = (Collection) get(i.next());
+            final Collection collection = get(i.next());
             if (collection != null) {
                 size += collection.getMemorySize();
             }
@@ -143,20 +157,20 @@ public class CollectionCache extends LRUCache {
         return size;
     }
 
-    public void resize(int newSize) {
+    @Override
+    public void resize(final int newSize) {
         if (newSize < max) {
             shrink(newSize);
         } else {
-            LOG.debug("Growing collection cache to " + newSize);
-            SequencedLongHashMap<Cacheable> newMap = new SequencedLongHashMap<Cacheable>(newSize * 2);
-            Object2LongHashMap newNames = new Object2LongHashMap(newSize);
-            SequencedLongHashMap.Entry<Cacheable> next = map.getFirstEntry();
-            Cacheable cacheable;
-            while(next != null) {
-                cacheable = next.getValue();
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("Growing collection cache to " + newSize);
+            }
+            final SequencedLongHashMap<Collection> newMap = new SequencedLongHashMap<>(newSize * 2);
+            final Object2LongHashMap<String> newNames = new Object2LongHashMap<>(newSize);
+            for(SequencedLongHashMap.Entry<Collection> next = map.getFirstEntry(); next != null; next = next.getNext()) {
+                final Collection cacheable = next.getValue();
                 newMap.put(cacheable.getKey(), cacheable);
-                newNames.put(((Collection) cacheable).getURI().getRawCollectionPath(), cacheable.getKey());
-                next = next.getNext();
+                newNames.put(cacheable.getURI().getRawCollectionPath(), cacheable.getKey());
             }
             max = newSize;
             map = newMap;
@@ -167,8 +181,8 @@ public class CollectionCache extends LRUCache {
     }
 
     @Override
-    protected void shrink(int newSize) {
+    protected void shrink(final int newSize) {
         super.shrink(newSize);
-        names = new Object2LongHashMap(newSize);
+        names = new Object2LongHashMap<>(newSize);
     }
 }

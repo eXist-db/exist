@@ -59,8 +59,8 @@ public class RenderXXepProcessorAdapter implements ProcessorAdapter {
         if(formatter != null) {
             try{
                 Class formatterImplClazz = Class.forName("com.renderx.xep.FormatterImpl");
-                Method cleanupMethod = formatterImplClazz.getMethod("cleanup", new Class[0]);
-                cleanupMethod.invoke(formatter, new Class[0]);
+                Method cleanupMethod = formatterImplClazz.getMethod("cleanup");
+                cleanupMethod.invoke(formatter);
             } catch(Exception e) {
                 // do nothing
             }

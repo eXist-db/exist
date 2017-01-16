@@ -39,7 +39,7 @@ import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
@@ -95,7 +95,7 @@ public class ExistDocument extends ExistResource {
             DocumentImpl document = null;
             try {
                 // If it is not a collection, check if it is a document
-                document = broker.getXMLResource(xmldbUri, Lock.READ_LOCK);
+                document = broker.getXMLResource(xmldbUri, LockMode.READ_LOCK);
 
                 if (document.getResourceType() == DocumentImpl.XML_FILE) {
                     isXmlDocument = true;
@@ -121,7 +121,7 @@ public class ExistDocument extends ExistResource {
             }  finally {
                 // Cleanup resources
                 if (document != null) {
-                    document.getUpdateLock().release(Lock.READ_LOCK);
+                    document.getUpdateLock().release(LockMode.READ_LOCK);
                 }
             }
         } catch (final EXistException | PermissionDeniedException e) {
@@ -164,7 +164,7 @@ public class ExistDocument extends ExistResource {
             DocumentImpl document = null;
             try {
                 // If it is not a collection, check if it is a document
-                document = broker.getXMLResource(xmldbUri, Lock.READ_LOCK);
+                document = broker.getXMLResource(xmldbUri, LockMode.READ_LOCK);
 
                 if (document.getResourceType() == DocumentImpl.XML_FILE) {
                     // Stream XML document
@@ -197,7 +197,7 @@ public class ExistDocument extends ExistResource {
                 }
             } finally {
                 if (document != null) {
-                    document.getUpdateLock().release(Lock.READ_LOCK);
+                    document.getUpdateLock().release(LockMode.READ_LOCK);
                 }
             }
         } catch (EXistException e) {
@@ -238,7 +238,7 @@ public class ExistDocument extends ExistResource {
             XmldbURI docName = xmldbUri.lastSegment();
 
             // Open collection if possible, else abort
-            collection = broker.openCollection(collName, Lock.WRITE_LOCK);
+            collection = broker.openCollection(collName, LockMode.WRITE_LOCK);
             if (collection == null) {
                 LOG.debug("Collection does not exist");
                 txnManager.abort(txn);
@@ -275,7 +275,7 @@ public class ExistDocument extends ExistResource {
 
             // TODO: check if can be done earlier
             if (collection != null) {
-                collection.release(Lock.WRITE_LOCK);
+                collection.release(LockMode.WRITE_LOCK);
             }
 
             if (LOG.isDebugEnabled()) {
@@ -298,7 +298,7 @@ public class ExistDocument extends ExistResource {
         try(final DBBroker broker = brokerPool.get(Optional.ofNullable(subject))) {
 
             // If it is not a collection, check if it is a document
-            document = broker.getXMLResource(xmldbUri, Lock.READ_LOCK);
+            document = broker.getXMLResource(xmldbUri, LockMode.READ_LOCK);
 
             if (document == null) {
                 LOG.debug("No resource found for path: " + xmldbUri);
@@ -340,7 +340,7 @@ public class ExistDocument extends ExistResource {
         } finally {
 
             if (document != null) {
-                document.getUpdateLock().release(Lock.READ_LOCK);
+                document.getUpdateLock().release(LockMode.READ_LOCK);
             }
 
             if (LOG.isDebugEnabled()) {
@@ -364,7 +364,7 @@ public class ExistDocument extends ExistResource {
         try(final DBBroker broker = brokerPool.get(Optional.ofNullable(subject))) {
 
             // Try to get document (add catch?)
-            document = broker.getXMLResource(xmldbUri, Lock.WRITE_LOCK);
+            document = broker.getXMLResource(xmldbUri, LockMode.WRITE_LOCK);
 
             if (document == null) {
 
@@ -437,7 +437,7 @@ public class ExistDocument extends ExistResource {
 
             // TODO: check if can be done earlier
             if (document != null) {
-                document.getUpdateLock().release(Lock.WRITE_LOCK);
+                document.getUpdateLock().release(LockMode.WRITE_LOCK);
             }
 
             if (LOG.isDebugEnabled()) {
@@ -464,7 +464,7 @@ public class ExistDocument extends ExistResource {
 
 
             // Try to get document (add catch?)
-            document = broker.getXMLResource(xmldbUri, Lock.WRITE_LOCK);
+            document = broker.getXMLResource(xmldbUri, LockMode.WRITE_LOCK);
 
             if (document == null) {
                 final String msg = String.format("No resource found for path: %s", xmldbUri);
@@ -504,7 +504,7 @@ public class ExistDocument extends ExistResource {
             throw new EXistException(e);
 		} finally {
             if (document != null) {
-                document.getUpdateLock().release(Lock.WRITE_LOCK);
+                document.getUpdateLock().release(LockMode.WRITE_LOCK);
             }
 
             if (LOG.isDebugEnabled()) {
@@ -546,7 +546,7 @@ public class ExistDocument extends ExistResource {
             XmldbURI srdDocumentUri = xmldbUri.lastSegment();
 
             // Open collection if possible, else abort
-            srcCollection = broker.openCollection(srcCollectionUri, Lock.WRITE_LOCK);
+            srcCollection = broker.openCollection(srcCollectionUri, LockMode.WRITE_LOCK);
             if (srcCollection == null) {
                 txnManager.abort(txn);
                 return; // TODO throw
@@ -561,7 +561,7 @@ public class ExistDocument extends ExistResource {
             }
 
             // Open collection if possible, else abort
-            destCollection = broker.openCollection(destCollectionUri, Lock.WRITE_LOCK);
+            destCollection = broker.openCollection(destCollectionUri, LockMode.WRITE_LOCK);
             if (destCollection == null) {
                 LOG.debug(String.format("Destination collection %s does not exist.", xmldbUri));
                 txnManager.abort(txn);
@@ -601,11 +601,11 @@ public class ExistDocument extends ExistResource {
 
             // TODO: check if can be done earlier
             if (destCollection != null) {
-                destCollection.release(Lock.WRITE_LOCK);
+                destCollection.release(LockMode.WRITE_LOCK);
             }
 
             if (srcCollection != null) {
-                srcCollection.release(Lock.WRITE_LOCK);
+                srcCollection.release(LockMode.WRITE_LOCK);
             }
 
             if (LOG.isDebugEnabled()) {
@@ -633,7 +633,7 @@ public class ExistDocument extends ExistResource {
         try(final DBBroker broker = brokerPool.get(Optional.ofNullable(subject))) {
 
             // Try to get document (add catch?)
-            document = broker.getXMLResource(xmldbUri, Lock.WRITE_LOCK);
+            document = broker.getXMLResource(xmldbUri, LockMode.WRITE_LOCK);
 
             if (document == null) {
                 if (LOG.isDebugEnabled()) {
@@ -694,7 +694,7 @@ public class ExistDocument extends ExistResource {
 
             // TODO: check if can be done earlier
             if (document != null) {
-                document.getUpdateLock().release(Lock.WRITE_LOCK);
+                document.getUpdateLock().release(LockMode.WRITE_LOCK);
             }
 
             if (LOG.isDebugEnabled()) {

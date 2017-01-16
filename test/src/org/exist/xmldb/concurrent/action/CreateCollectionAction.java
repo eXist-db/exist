@@ -21,8 +21,13 @@
  */
 package org.exist.xmldb.concurrent.action;
 
-import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
 
+import org.exist.util.FileUtils;
 import org.exist.util.MimeTable;
 import org.exist.xmldb.CollectionManagementServiceImpl;
 import org.exist.xmldb.concurrent.DBUtils;
@@ -32,7 +37,7 @@ import org.xmldb.api.base.XMLDBException;
 
 public class CreateCollectionAction extends Action {
 
-    private final static String DIR_PATH = "samples" + File.separatorChar + "shakespeare";
+    private final static String DIR_PATH = "samples" + java.io.File.separatorChar + "shakespeare";
     
     private int collectionCnt = 0;
     
@@ -58,15 +63,18 @@ public class CreateCollectionAction extends Action {
         return false;
     }
 
-    private void addFiles(Collection col) throws XMLDBException {
-        File d = new File(DIR_PATH);
-        if(!(d.canRead() && d.isDirectory()))
+    private void addFiles(final Collection col) throws XMLDBException, IOException {
+        final Path d = Paths.get(DIR_PATH);
+        if(!(Files.isReadable(d) && Files.isDirectory(d))) {
             throw new RuntimeException("Cannot read directory: " + DIR_PATH);
-        File[] files = d.listFiles();
-        for(int i = 0; i < files.length; i++) {
-            if(files[i].isFile()) {
-                if (MimeTable.getInstance().isXMLContent(files[i].getName()))
-                    DBUtils.addXMLResource(col, files[i].getName(), files[i]);
+        }
+
+        final List<Path> files = FileUtils.list(d);
+        for(final Path file : files) {
+            if(Files.isRegularFile(file)) {
+                if (MimeTable.getInstance().isXMLContent(FileUtils.fileName(file))) {
+                    DBUtils.addXMLResource(col, FileUtils.fileName(file), file);
+                }
             }
         }
     }

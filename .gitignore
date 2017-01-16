@@ -1,5 +1,7 @@
 # Alphabetical order
 .exist_history
+.exist_query_history
+.idea/workspace.xml
 /target/
 autodeploy/
 /backup/
@@ -17,6 +19,7 @@ exist.jar
 extensions/**/build/
 extensions/contentextraction/lib/
 extensions/lib/
+extensions/indexes/lucene/lib/
 extensions/modules/lib/
 extensions/security/oauth/lib/
 extensions/security/openid/lib/
@@ -55,6 +58,10 @@ tools/wrapper/conf/log4j2.xml
 tools/wrapper/conf/wrapper.conf
 tools/wrapper/conf/wrapper.conf.install
 tools/wrapper/logs/
+tools/yajsw/conf/log4j2.xml
+tools/yajsw/conf/wrapper.conf
+tools/yajsw/conf/wrapper.conf.install
+tools/yajsw/tmp/
 uninstall/
 VERSION.txt
 webapp/WEB-INF/betterform-config.xml
@@ -65,9 +72,5 @@ webapp/WEB-INF/logs/*.log
 webapp/WEB-INF/logs/*.log.*
 webapp/WEB-INF/web.xml
 webapp/xqts/config.xml
-.exist_query_history
-.idea/workspace.xml
-tools/yajsw/conf/log4j2.xml
-tools/yajsw/conf/wrapper.conf
-tools/yajsw/conf/wrapper.conf.install
-tools/yajsw/tmp/
+tools/yajsw/logs/wrapper.log
+tools/yajsw/logs/wrapper.log.lck

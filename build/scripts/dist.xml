@@ -127,6 +127,11 @@
               <include name="*.jar"/>
             </lib>
 
+            <!-- Include content extraction jars -->
+            <lib dir="extensions/contentextraction/lib">
+              <include name="*.jar"/>
+            </lib>
+
             <!-- Add configuration files to WEB-INF -->
             <webinf dir=".">
                 <include name="client.properties"/>

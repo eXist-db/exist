@@ -141,7 +141,7 @@ public class VariableDeclaration extends AbstractExpression implements Rewritabl
             context.popInScopeNamespaces();
         }
 
-		    return Sequence.EMPTY_SEQUENCE;
+        return null;
 	}
 	
 	/* (non-Javadoc)
@@ -219,8 +219,13 @@ public class VariableDeclaration extends AbstractExpression implements Rewritabl
 	}
 
 	/* END RewritableExpression API */
-	
-	@Override
+
+    @Override
+    public boolean allowMixedNodesInReturn() {
+        return true;
+    }
+
+    @Override
     public void accept(ExpressionVisitor visitor) {
         visitor.visitVariableDeclaration(this);
     }

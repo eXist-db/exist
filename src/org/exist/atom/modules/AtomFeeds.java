@@ -44,7 +44,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.source.URLSource;
 import org.exist.storage.DBBroker;
 import org.exist.storage.XQueryPool;
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
@@ -98,7 +98,7 @@ public class AtomFeeds extends AtomModuleBase implements Atom {
 		final XmldbURI pathUri = XmldbURI.create(request.getPath());
 		try {
 
-			resource = broker.getXMLResource(pathUri, Lock.READ_LOCK);
+			resource = broker.getXMLResource(pathUri, LockMode.READ_LOCK);
 
 			if (resource == null) {
 
@@ -209,7 +209,7 @@ public class AtomFeeds extends AtomModuleBase implements Atom {
 
 		} finally {
 			if (resource != null) {
-				resource.getUpdateLock().release(Lock.READ_LOCK);
+				resource.getUpdateLock().release(LockMode.READ_LOCK);
 			}
 		}
 	}

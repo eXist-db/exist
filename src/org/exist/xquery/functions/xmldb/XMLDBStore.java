@@ -21,15 +21,15 @@
  */
 package org.exist.xquery.functions.xmldb;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.InputStream;;
 import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Properties;
 
 import org.apache.logging.log4j.LogManager;
@@ -37,6 +37,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.exist.dom.QName;
 import org.exist.storage.serializers.EXistOutputKeys;
+import org.exist.util.FileUtils;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
 import org.exist.util.serializer.SAXSerializer;
@@ -60,6 +61,7 @@ import org.xml.sax.SAXException;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.modules.BinaryResource;
 import org.xmldb.api.modules.XMLResource;
 
 /**
@@ -67,277 +69,269 @@ import org.xmldb.api.modules.XMLResource;
  */
 public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 
-	protected static final Logger logger = LogManager.getLogger(XMLDBStore.class);
+    protected static final Logger logger = LogManager.getLogger(XMLDBStore.class);
 
-	protected static final FunctionParameterSequenceType ARG_COLLECTION = new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collection URI");
-	protected static final FunctionParameterSequenceType ARG_RESOURCE_NAME = new FunctionParameterSequenceType("resource-name", Type.STRING, Cardinality.ZERO_OR_ONE, "The resource name");
-	protected static final FunctionParameterSequenceType ARG_CONTENTS = new FunctionParameterSequenceType("contents", Type.ITEM, Cardinality.EXACTLY_ONE, "The contents");
-	protected static final FunctionParameterSequenceType ARG_MIME_TYPE = new FunctionParameterSequenceType("mime-type", Type.STRING, Cardinality.EXACTLY_ONE, "The mime type");
+    protected static final FunctionParameterSequenceType ARG_COLLECTION = new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collection URI");
+    protected static final FunctionParameterSequenceType ARG_RESOURCE_NAME = new FunctionParameterSequenceType("resource-name", Type.STRING, Cardinality.ZERO_OR_ONE, "The resource name");
+    protected static final FunctionParameterSequenceType ARG_CONTENTS = new FunctionParameterSequenceType("contents", Type.ITEM, Cardinality.EXACTLY_ONE, "The contents");
+    protected static final FunctionParameterSequenceType ARG_MIME_TYPE = new FunctionParameterSequenceType("mime-type", Type.STRING, Cardinality.EXACTLY_ONE, "The mime type");
 
-	protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the path to new resource if sucessfully stored, otherwise the emtpty sequence");
+    protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the path to new resource if sucessfully stored, otherwise the emtpty sequence");
 
-	protected static final Properties SERIALIZATION_PROPERTIES = new Properties();
+    protected static final Properties SERIALIZATION_PROPERTIES = new Properties();
 
-	static {
-		SERIALIZATION_PROPERTIES.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, "no");
-	}
+    static {
+        SERIALIZATION_PROPERTIES.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, "no");
+    }
 
-	public final static FunctionSignature signatures[] = {
-			new FunctionSignature(
-					new QName("store", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-					"Stores a new resource into the database. The resource is stored  "
-							+ "in the collection $collection-uri with the name $resource-name. "
-							+ XMLDBModule.COLLECTION_URI
-							// fixit! - security -  if URI and possibly also file object
-							// DBA role should be required/ljo
-							// Of course we need to think of the node case too but it has at
-							// least been passed throught fn:doc() but since the retrieval
-							// happens firstly who knows ...
-							+ " The contents $contents, is either a node, an xs:string, a Java file object or an xs:anyURI. "
-							+ "A node will be serialized to SAX. It becomes the root node of the new "
-							+ "document. If $contents is of type xs:anyURI, the resource is loaded "
-							+ "from that URI. "
-							+ "Returns the path to the new document if successfully stored, "
-							+ "otherwise an XPathException is thrown.",
-					new SequenceType[]{ARG_COLLECTION, ARG_RESOURCE_NAME, ARG_CONTENTS},
-					RETURN_TYPE),
-			new FunctionSignature(
-					new QName("store", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-					"Stores a new resource into the database. The resource is stored  "
-							+ "in the collection $collection-uri with the name $resource-name. "
-							+ XMLDBModule.COLLECTION_URI
-							// fixit! - security -  if URI and possibly also file object
-							// DBA role should be required/ljo
-							// Of course we need to think of the node case too but it has at
-							// least been passed through fn:doc() but since the retrieval
-							// happens firstly who knows ...
-							+ " The contents $contents, is either a node, an xs:string, a Java file object or an xs:anyURI. "
-							+ "A node will be serialized to SAX. It becomes the root node of the new "
-							+ "document. If $contents is of type xs:anyURI, the resource is loaded "
-							+ "from that URI. The final argument $mime-type is used to specify "
-							+ "a mime type.  If the mime-type is not a xml based type, the "
-							+ "resource will be stored as a binary resource."
-							+ "Returns the path to the new document if successfully stored, "
-							+ "otherwise an XPathException is thrown.",
-					new SequenceType[]{ARG_COLLECTION, ARG_RESOURCE_NAME, ARG_CONTENTS, ARG_MIME_TYPE},
-					RETURN_TYPE),
-			new FunctionSignature(
-					new QName("store-as-binary", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-					"Stores a new resource into the database. The resource is stored  "
-							+ "in the collection $collection-uri with the name $resource-name. "
-							+ XMLDBModule.COLLECTION_URI
-							// fixit! - security -  if URI and possibly also file object
-							// DBA role should be required/ljo
-							// Of course we need to think of the node case too but it has at
-							// least been passed throught fn:doc() but since the retrieval
-							// happens firstly who knows ...
-							+ " The contents $contents, is either a node, an xs:string, a Java file object or an xs:anyURI. "
-							+ "A node will be serialized to SAX. It becomes the root node of the new "
-							+ "document. If $contents is of type xs:anyURI, the resource is loaded "
-							+ "from that URI. "
-							+ "Returns the path to the new document if successfully stored, "
-							+ "otherwise an XPathException is thrown.",
-					new SequenceType[]{ARG_COLLECTION, ARG_RESOURCE_NAME, ARG_CONTENTS},
-					RETURN_TYPE)
-	};
+    public final static FunctionSignature signatures[] = {
+            new FunctionSignature(
+                    new QName("store", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
+                    "Stores a new resource into the database. The resource is stored  "
+                            + "in the collection $collection-uri with the name $resource-name. "
+                            + XMLDBModule.COLLECTION_URI
+                            // fixit! - security -  if URI and possibly also file object
+                            // DBA role should be required/ljo
+                            // Of course we need to think of the node case too but it has at
+                            // least been passed throught fn:doc() but since the retrieval
+                            // happens firstly who knows ...
+                            + " The contents $contents, is either a node, an xs:string, a Java file object or an xs:anyURI. "
+                            + "A node will be serialized to SAX. It becomes the root node of the new "
+                            + "document. If $contents is of type xs:anyURI, the resource is loaded "
+                            + "from that URI. "
+                            + "Returns the path to the new document if successfully stored, "
+                            + "otherwise an XPathException is thrown.",
+                    new SequenceType[]{ARG_COLLECTION, ARG_RESOURCE_NAME, ARG_CONTENTS},
+                    RETURN_TYPE),
+            new FunctionSignature(
+                    new QName("store", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
+                    "Stores a new resource into the database. The resource is stored  "
+                            + "in the collection $collection-uri with the name $resource-name. "
+                            + XMLDBModule.COLLECTION_URI
+                            // fixit! - security -  if URI and possibly also file object
+                            // DBA role should be required/ljo
+                            // Of course we need to think of the node case too but it has at
+                            // least been passed through fn:doc() but since the retrieval
+                            // happens firstly who knows ...
+                            + " The contents $contents, is either a node, an xs:string, a Java file object or an xs:anyURI. "
+                            + "A node will be serialized to SAX. It becomes the root node of the new "
+                            + "document. If $contents is of type xs:anyURI, the resource is loaded "
+                            + "from that URI. The final argument $mime-type is used to specify "
+                            + "a mime type.  If the mime-type is not a xml based type, the "
+                            + "resource will be stored as a binary resource."
+                            + "Returns the path to the new document if successfully stored, "
+                            + "otherwise an XPathException is thrown.",
+                    new SequenceType[]{ARG_COLLECTION, ARG_RESOURCE_NAME, ARG_CONTENTS, ARG_MIME_TYPE},
+                    RETURN_TYPE),
+            new FunctionSignature(
+                    new QName("store-as-binary", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
+                    "Stores a new resource into the database. The resource is stored  "
+                            + "in the collection $collection-uri with the name $resource-name. "
+                            + XMLDBModule.COLLECTION_URI
+                            // fixit! - security -  if URI and possibly also file object
+                            // DBA role should be required/ljo
+                            // Of course we need to think of the node case too but it has at
+                            // least been passed throught fn:doc() but since the retrieval
+                            // happens firstly who knows ...
+                            + " The contents $contents, is either a node, an xs:string, a Java file object or an xs:anyURI. "
+                            + "A node will be serialized to SAX. It becomes the root node of the new "
+                            + "document. If $contents is of type xs:anyURI, the resource is loaded "
+                            + "from that URI. "
+                            + "Returns the path to the new document if successfully stored, "
+                            + "otherwise an XPathException is thrown.",
+                    new SequenceType[]{ARG_COLLECTION, ARG_RESOURCE_NAME, ARG_CONTENTS},
+                    RETURN_TYPE)
+    };
 
-	/**
-	 * @param context
-	 * @param signature
-	 */
-	public XMLDBStore(XQueryContext context, FunctionSignature signature) {
-		super(context, signature);
-	}
-
-	/* (non-Javadoc)
-     * @see org.exist.xquery.Expression#eval(org.exist.dom.persistent.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
+    /**
+     * @param context
+     * @param signature
      */
-	public Sequence evalWithCollection(Collection collection, Sequence args[],Sequence contextSequence) throws XPathException {
+    public XMLDBStore(XQueryContext context, FunctionSignature signature) {
+        super(context, signature);
+    }
 
-		String docName = args[1].isEmpty() ? null : args[1].getStringValue();
-		if (docName != null && docName.length() == 0) {
-			docName = null;
-		} else if (docName != null) {
-			docName = new AnyURIValue(docName).toXmldbURI().toString();
-		}
+    @Override
+    public Sequence evalWithCollection(Collection collection, Sequence args[], Sequence contextSequence) throws XPathException {
 
-		final Item item = args[2].itemAt(0);
-		String mimeType = MimeType.XML_TYPE.getName();
-		boolean binary = !Type.subTypeOf(item.getType(), Type.NODE);
+        String docName = args[1].isEmpty() ? null : args[1].getStringValue();
+        if (docName != null && docName.length() == 0) {
+            docName = null;
+        } else if (docName != null) {
+            docName = new AnyURIValue(docName).toXmldbURI().toString();
+        }
 
-		if (getSignature().getArgumentCount() == 4) {
-			mimeType = args[3].getStringValue();
-			final MimeType mime = MimeTable.getInstance().getContentType(mimeType);
-			if (mime != null) {
-				binary = !mime.isXMLType();
-			}
+        final Item item = args[2].itemAt(0);
+        String mimeType = MimeType.XML_TYPE.getName();
+        boolean binary = !Type.subTypeOf(item.getType(), Type.NODE);
 
-		} else if (docName != null) {
-			final MimeType mime = MimeTable.getInstance().getContentTypeFor(docName);
-			if (mime != null) {
-				mimeType = mime.getName();
-				binary = !mime.isXMLType();
-			}
-		}
+        if (getSignature().getArgumentCount() == 4) {
+            mimeType = args[3].getStringValue();
+            final MimeType mime = MimeTable.getInstance().getContentType(mimeType);
+            if (mime != null) {
+                binary = !mime.isXMLType();
+            }
 
-		if(getSignature().getName().getLocalPart().equals("store-as-binary")) {
-			binary = true;
-		}
+        } else if (docName != null) {
+            final MimeType mime = MimeTable.getInstance().getContentTypeFor(docName);
+            if (mime != null) {
+                mimeType = mime.getName();
+                binary = !mime.isXMLType();
+            }
+        }
 
-		Resource resource;
-		try {
-			if (Type.subTypeOf(item.getType(), Type.JAVA_OBJECT)) {
-				final Object obj = ((JavaObjectValue) item).getObject();
-				if (!(obj instanceof File)) {
-					logger.error("Passed java object should be a File");
-					throw new XPathException(this, "Passed java object should be a File");
-				}
-				resource = loadFromFile(collection, (File) obj, docName, binary, mimeType);
+        if (getSignature().getName().getLocalPart().equals("store-as-binary")) {
+            binary = true;
+        }
 
-			} else if (Type.subTypeOf(item.getType(), Type.ANY_URI)) {
-				try {
-					final URI uri = new URI(item.getStringValue());
-					resource = loadFromURI(collection, uri, docName, binary, mimeType);
+        Resource resource;
+        try {
+            if (Type.subTypeOf(item.getType(), Type.JAVA_OBJECT)) {
+                final Object obj = ((JavaObjectValue) item).getObject();
+                if(obj instanceof java.io.File) {
+                    resource = loadFromFile(collection, ((java.io.File)obj).toPath(), docName, binary, mimeType);
+                } else if(obj instanceof java.nio.file.Path) {
+                    resource = loadFromFile(collection, (Path)obj, docName, binary, mimeType);
+                } else {
+                    logger.error("Passed java object should be either a java.nio.file.Path or java.io.File");
+                    throw new XPathException(this, "Passed java object should be either a java.nio.file.Path or java.io.File");
+                }
 
-				} catch (final URISyntaxException e) {
-					logger.error("Invalid URI: " + item.getStringValue());
-					throw new XPathException(this, "Invalid URI: " + item.getStringValue(), e);
-				}
+            } else if (Type.subTypeOf(item.getType(), Type.ANY_URI)) {
+                try {
+                    final URI uri = new URI(item.getStringValue());
+                    resource = loadFromURI(collection, uri, docName, binary, mimeType);
 
-			} else {
-				if (binary) {
-					resource = collection.createResource(docName, "BinaryResource");
-				} else {
-					resource = collection.createResource(docName, "XMLResource");
-				}
+                } catch (final URISyntaxException e) {
+                    logger.error("Invalid URI: " + item.getStringValue());
+                    throw new XPathException(this, "Invalid URI: " + item.getStringValue(), e);
+                }
 
-				if (Type.subTypeOf(item.getType(), Type.STRING)) {
-					resource.setContent(item.getStringValue());
+            } else {
+                if (binary) {
+                    resource = collection.createResource(docName, "BinaryResource");
+                } else {
+                    resource = collection.createResource(docName, "XMLResource");
+                }
 
-				} else if (item.getType() == Type.BASE64_BINARY) {
-					resource.setContent(((BinaryValue) item).toJavaObject());
+                if (Type.subTypeOf(item.getType(), Type.STRING)) {
+                    resource.setContent(item.getStringValue());
 
-				} else if (Type.subTypeOf(item.getType(), Type.NODE)) {
-					if (binary) {
-						final StringWriter writer = new StringWriter();
-						final SAXSerializer serializer = new SAXSerializer();
-						serializer.setOutput(writer, null);
-						item.toSAX(context.getBroker(), serializer, SERIALIZATION_PROPERTIES);
-						resource.setContent(writer.toString());
-					} else {
-						final ContentHandler handler = ((XMLResource) resource).setContentAsSAX();
-						handler.startDocument();
+                } else if (item.getType() == Type.BASE64_BINARY) {
+                    resource.setContent(((BinaryValue) item).toJavaObject());
 
-						item.toSAX(context.getBroker(), handler, SERIALIZATION_PROPERTIES);
-						handler.endDocument();
-					}
-				} else {
-					logger.error("Data should be either a node or a string");
-					throw new XPathException(this, "Data should be either a node or a string");
-				}
+                } else if (Type.subTypeOf(item.getType(), Type.NODE)) {
+                    if (binary) {
+                        final StringWriter writer = new StringWriter();
+                        final SAXSerializer serializer = new SAXSerializer();
+                        serializer.setOutput(writer, null);
+                        item.toSAX(context.getBroker(), serializer, SERIALIZATION_PROPERTIES);
+                        resource.setContent(writer.toString());
+                    } else {
+                        final ContentHandler handler = ((XMLResource) resource).setContentAsSAX();
+                        handler.startDocument();
 
-				((EXistResource) resource).setMimeType(mimeType);
-				collection.storeResource(resource);
-			}
+                        item.toSAX(context.getBroker(), handler, SERIALIZATION_PROPERTIES);
+                        handler.endDocument();
+                    }
+                } else {
+                    logger.error("Data should be either a node or a string");
+                    throw new XPathException(this, "Data should be either a node or a string");
+                }
 
-		} catch (final XMLDBException e) {
-			logger.error(e.getMessage(), e);
-			throw new XPathException(this,
-					"XMLDB reported an exception while storing document" + e, e);
+                ((EXistResource) resource).setMimeType(mimeType);
+                collection.storeResource(resource);
+            }
 
-		} catch (final SAXException e) {
-			logger.error(e.getMessage());
-			throw new XPathException(this, "SAX reported an exception while storing document", e);
-		}
+        } catch (final XMLDBException e) {
+            logger.error(e.getMessage(), e);
+            throw new XPathException(this,
+                    "XMLDB reported an exception while storing document" + e, e);
 
-		if (resource == null) {
-			return Sequence.EMPTY_SEQUENCE;
+        } catch (final SAXException e) {
+            logger.error(e.getMessage());
+            throw new XPathException(this, "SAX reported an exception while storing document", e);
+        }
 
-		} else {
-			try {
-				//TODO : use dedicated function in XmldbURI
-				return new StringValue(collection.getName() + "/" + resource.getId());
-			} catch (final XMLDBException e) {
-				logger.error(e.getMessage());
-				throw new XPathException(this, "XMLDB reported an exception while retrieving the "
-						+ "stored document", e);
-			}
+        if (resource == null) {
+            return Sequence.EMPTY_SEQUENCE;
 
-		}
-	}
+        } else {
+            try {
+                //TODO : use dedicated function in XmldbURI
+                return new StringValue(collection.getName() + "/" + resource.getId());
+            } catch (final XMLDBException e) {
+                logger.error(e.getMessage());
+                throw new XPathException(this, "XMLDB reported an exception while retrieving the "
+                        + "stored document", e);
+            }
 
-	private Resource loadFromURI(Collection collection, URI uri, String docName, boolean binary, String mimeType)
-			throws XPathException {
-		Resource resource;
-		if ("file".equals(uri.getScheme())) {
-			final String path = uri.getPath();
-			if (path == null) {
-				throw new XPathException(this, "Cannot read from URI: " + uri.toASCIIString());
-			}
-			final File file = new File(path);
-			if (!file.canRead()) {
-				throw new XPathException(this, "Cannot read path: " + path);
-			}
-			resource = loadFromFile(collection, file, docName, binary, mimeType);
+        }
+    }
 
-		} else {
-			File temp = null;
-			try {
-				temp = File.createTempFile("existDBS", ".xml");
-				// This is deleted later; is this necessary?
-				temp.deleteOnExit();
-				final OutputStream os = new FileOutputStream(temp);
-				final InputStream is = uri.toURL().openStream();
-				final byte[] data = new byte[1024];
-				int read = 0;
-				while ((read = is.read(data)) > -1) {
-					os.write(data, 0, read);
-				}
-				is.close();
-				os.close();
-				resource = loadFromFile(collection, temp, docName, binary, mimeType);
-				temp.delete();
+    private Resource loadFromURI(Collection collection, URI uri, String docName, boolean binary, String mimeType)
+            throws XPathException {
+        Resource resource;
+        if ("file".equals(uri.getScheme())) {
+            final String path = uri.getPath();
+            if (path == null) {
+                throw new XPathException(this, "Cannot read from URI: " + uri.toASCIIString());
+            }
+            final Path file = Paths.get(path);
+            if (!Files.isReadable(file)) {
+                throw new XPathException(this, "Cannot read path: " + path);
+            }
+            resource = loadFromFile(collection, file, docName, binary, mimeType);
 
-			} catch (final MalformedURLException e) {
-				throw new XPathException(this, "Malformed URL: " + uri.toString(), e);
+        } else {
+            Path temp = null;
+            try {
+                temp = Files.createTempFile("existDBS", ".xml");
+                try(final InputStream is = uri.toURL().openStream()) {
+                    Files.copy(is, temp);
+                    resource = loadFromFile(collection, temp, docName, binary, mimeType);
+                } finally {
+                    if(temp != null) {
+                        FileUtils.deleteQuietly(temp);
+                    }
+                }
+            } catch (final MalformedURLException e) {
+                throw new XPathException(this, "Malformed URL: " + uri.toString(), e);
 
-			} catch (final IOException e) {
-				throw new XPathException(this, "IOException while reading from URL: "
-						+ uri.toString(), e);
-			} finally {
-				if (temp != null) {
-					temp.delete();
-				}
-			}
-		}
-		return resource;
-	}
+            } catch (final IOException e) {
+                throw new XPathException(this, "IOException while reading from URL: "
+                        + uri.toString(), e);
+            }
+        }
+        return resource;
+    }
 
-	private Resource loadFromFile(Collection collection, File file, String docName, boolean binary, String mimeType)
-			throws XPathException {
-		if (file.isFile()) {
-			if (docName == null) {
-				docName = file.getName();
-			}
-			try {
-				Resource resource;
-				if (binary) {
-					resource = collection.createResource(docName, "BinaryResource");
-				} else {
-					resource = collection.createResource(docName, "XMLResource");
-				}
-				((EXistResource) resource).setMimeType(mimeType);
-				resource.setContent(file);
-				collection.storeResource(resource);
-				return resource;
+    private Resource loadFromFile(final Collection collection, final Path file, String docName, final boolean binary, final String mimeType)
+            throws XPathException {
+        if (!Files.isDirectory(file)) {
+            if (docName == null) {
+                docName = FileUtils.fileName(file);
+            }
 
-			} catch (final XMLDBException e) {
-				throw new XPathException(this, "Could not store file " + file.getAbsolutePath()
-						+ ": " + e.getMessage(), e);
-			}
+            try {
+                final Resource resource;
+                if (binary) {
+                    resource = collection.createResource(docName, BinaryResource.RESOURCE_TYPE);
+                } else {
+                    resource = collection.createResource(docName, XMLResource.RESOURCE_TYPE);
+                }
+                ((EXistResource) resource).setMimeType(mimeType);
+                resource.setContent(file);
+                collection.storeResource(resource);
+                return resource;
 
-		} else {
-			throw new XPathException(this, file.getAbsolutePath() + " does not point to a file");
-		}
-	}
+            } catch (final XMLDBException e) {
+                throw new XPathException(this, "Could not store file " + file.toAbsolutePath()
+                        + ": " + e.getMessage(), e);
+            }
+
+        } else {
+            throw new XPathException(this, file.toAbsolutePath() + " does not point to a file");
+        }
+    }
 }

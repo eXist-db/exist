@@ -22,13 +22,16 @@
 
 package org.exist.netedit;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.FileTime;
 import java.util.Properties;
 import java.util.Timer;
 
 import org.apache.commons.httpclient.HttpException;
+import org.exist.util.FileUtils;
 
 /**
  * @author Evgeny Gazdovsky (gazdovsky@gmail.com)
@@ -39,7 +42,7 @@ public class Task{
 	
 	private String downloadFrom;	// URL of file download from
 	private String uploadTo;		// URL for upload file
-	private File tmp;				// Downladed file 
+	private Path tmp;				// Downladed file
 
 	/**
 	 * Create a new task
@@ -60,7 +63,7 @@ public class Task{
 	 * @param tmp path of file stored in local cache
 	 * @param netEdit NetEditApplet
 	 */
-	public Task(String downloadFrom, String uploadTo, File tmp, NetEditApplet netEdit){
+	public Task(String downloadFrom, String uploadTo, Path tmp, NetEditApplet netEdit){
 		this.downloadFrom = downloadFrom;
 		this.uploadTo = uploadTo;
 		this.netEdit = netEdit;
@@ -93,7 +96,7 @@ public class Task{
 	public String getUploadTo(){
 		return uploadTo;
 	}
-	public File getFile(){
+	public Path getFile(){
 		return tmp;
 	}
 	
@@ -105,20 +108,20 @@ public class Task{
 		Properties prop = new Properties();
 		prop.put("download-from", downloadFrom);
 		prop.put("upload-to", uploadTo);
-		prop.put("file", tmp.getAbsolutePath());
-		prop.put("modified", new Long(tmp.lastModified()).toString());
-		File fld = netEdit.getMeta();
-		if (!fld.isDirectory()){
-			fld.mkdirs();
+		prop.put("file", tmp.toAbsolutePath().toString());
+		prop.put("modified", Long.toString(FileUtils.lastModifiedQuietly(tmp).map(FileTime::toMillis).getOrElse(-1l)));
+		Path fld = netEdit.getMeta();
+		if (!Files.isDirectory(fld)){
+			Files.createDirectories(fld);
 		}
 		String name = Integer.toHexString(downloadFrom.hashCode()) + ".xml";
-		File meta = new File(fld,  name);
-		if (!meta.exists()){
-			meta.createNewFile();
+		Path meta = fld.resolve(name);
+		if (!Files.exists(meta)){
+			Files.createFile(meta);
 		}
-		FileOutputStream os = new FileOutputStream(meta);
-		prop.storeToXML(os, "net-edit task description");
-		os.close();
+		try(final OutputStream os = Files.newOutputStream(meta)) {
+			prop.storeToXML(os, "net-edit task description");
+		}
 	}
 	
 }

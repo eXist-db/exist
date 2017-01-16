@@ -22,13 +22,16 @@
 package org.exist.xqj;
 
 import org.exist.EXistException;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
-import org.exist.util.Configuration;
+import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.DatabaseConfigurationException;
+import org.exist.util.LockException;
+import org.exist.util.XMLReaderObjectFactory;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.*;
@@ -39,14 +42,17 @@ import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.NodeProxy;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
+
+import static org.exist.util.PropertiesBuilder.propertiesBuilder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
 import javax.xml.stream.XMLStreamException;
+import java.io.IOException;
 import java.io.StringWriter;
 import java.io.StringReader;
 import java.util.Optional;
@@ -65,8 +71,6 @@ import java.util.Properties;
  */
 public class MarshallerTest {
 
-    private static BrokerPool pool;
-
     private static XmldbURI TEST_COLLECTION_URI = XmldbURI.ROOT_COLLECTION_URI.append("xqjmarhallertest");
 
     private static String TEST_DOC =
@@ -81,6 +85,7 @@ public class MarshallerTest {
     
     @Test
     public void atomicValues() throws EXistException, XPathException, SAXException, XMLStreamException {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             ValueSequence values = new ValueSequence(3);
             values.add(new StringValue("foo"));
@@ -107,6 +112,7 @@ public class MarshallerTest {
 
     @Test
     public void nodes() throws EXistException, PermissionDeniedException, SAXException, XPathException, XMLStreamException {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             DocumentImpl doc = (DocumentImpl) broker.getXMLResource(TEST_COLLECTION_URI.append("test.xml"));
             NodeProxy p = new NodeProxy(doc, pool.getNodeFactory().createFromString("1.1"));
@@ -138,14 +144,13 @@ public class MarshallerTest {
         assertEquals("test",n.getLocalName());
     }
 
+    @ClassRule
+    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer();
+
     @BeforeClass
-    public static void startDB() throws EXistException, DatabaseConfigurationException {
-        final Configuration config = new Configuration();
-        BrokerPool.configure(1, 5, config);
-        pool = BrokerPool.getInstance();
-
+    public static void startDB() throws EXistException, DatabaseConfigurationException, PermissionDeniedException, IOException, SAXException, LockException {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
-
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                 final Txn transaction = transact.beginTransaction()) {
 
@@ -153,27 +158,21 @@ public class MarshallerTest {
             broker.saveCollection(transaction, root);
 
             final IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"), TEST_DOC);
-            root.store(transaction, broker, info, TEST_DOC, false);
+            root.store(transaction, broker, info, TEST_DOC);
 
             transact.commit(transaction);
-        } catch (Exception e) {
-            fail(e.getMessage());
         }
     }
 
     @AfterClass
-    public static void shutdown() {
+    public static void shutdown() throws EXistException, PermissionDeniedException, IOException, TriggerException {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                 final Txn transaction = transact.beginTransaction()) {
             Collection root = broker.getOrCreateCollection(transaction, TEST_COLLECTION_URI);
             broker.removeCollection(transaction, root);
             transact.commit(transaction);
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
         }
-        BrokerPool.stopAll(false);
-        pool = null;
     }
 }

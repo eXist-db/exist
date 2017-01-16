@@ -1068,6 +1068,10 @@ throws XPathException
 		)
 		|
 		#(
+		    "namespace-node" { type.setPrimaryType(Type.NAMESPACE); }
+		)
+		|
+		#(
 			"document-node"
             { type.setPrimaryType(Type.DOCUMENT); }
             (
@@ -2154,6 +2158,14 @@ throws PermissionDeniedException, EXistException, XPathException
                 }
             )?
         )
+        |
+        nt:"namespace-node"
+        {
+            if (axis == Constants.ATTRIBUTE_AXIS)
+                throw new XPathException(n, "Cannot test for namespace-node() on the attribute axis");
+            test= new TypeTest(Type.NAMESPACE);
+            ast = nt;
+        }
 		|
 		dn:"document-node"
 		{

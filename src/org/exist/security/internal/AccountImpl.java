@@ -109,20 +109,20 @@ public class AccountImpl extends AbstractAccount {
      * @param password
      * @throws ConfigurationException
      */
-    public AccountImpl(final AbstractRealm realm, final int id, final String name,final  String password) throws ConfigurationException {
-        super(realm, id, name);
+    public AccountImpl(final DBBroker broker, final AbstractRealm realm, final int id, final String name,final  String password) throws ConfigurationException {
+        super(broker, realm, id, name);
         setPassword(password);
     }
 
-    public AccountImpl(final AbstractRealm realm, final int id, final String name, final String password, final Group group, final boolean hasDbaRole) throws ConfigurationException {
-        super(realm, id, name);
+    public AccountImpl(final DBBroker broker, final AbstractRealm realm, final int id, final String name, final String password, final Group group, final boolean hasDbaRole) throws ConfigurationException {
+        super(broker, realm, id, name);
         setPassword(password);
         this.groups.add(group);
         this.hasDbaRole = hasDbaRole;
     }
 
-    public AccountImpl(final AbstractRealm realm, final int id, final String name, final String password, final Group group) throws ConfigurationException {
-        super(realm, id, name);
+    public AccountImpl(final DBBroker broker, final AbstractRealm realm, final int id, final String name, final String password, final Group group) throws ConfigurationException {
+        super(broker, realm, id, name);
         setPassword(password);
         this.groups.add(group);
     }
@@ -135,8 +135,8 @@ public class AccountImpl extends AbstractAccount {
      *            The account name
      * @throws ConfigurationException
      */
-    public AccountImpl(final AbstractRealm realm, final String name) throws ConfigurationException {
-        super(realm, Account.UNDEFINED_ID, name);
+    public AccountImpl(final DBBroker broker, final AbstractRealm realm, final String name) throws ConfigurationException {
+        super(broker, realm, Account.UNDEFINED_ID, name);
     }
 
 //    /**
@@ -152,10 +152,6 @@ public class AccountImpl extends AbstractAccount {
 //		this(realm, id, name, password);
 //		addGroup(primaryGroup);
 //	}
-    public AccountImpl(final AbstractRealm realm, final int id, final Account from_user) throws ConfigurationException, PermissionDeniedException {
-        super(realm, id, from_user.getName());
-        instantiate(from_user);
-    }
     
     public AccountImpl(final DBBroker broker, final AbstractRealm realm, final int id, final Account from_user) throws ConfigurationException, PermissionDeniedException {
         super(broker, realm, id, from_user.getName());
@@ -200,8 +196,8 @@ public class AccountImpl extends AbstractAccount {
         }
     }
 
-    public AccountImpl(final AbstractRealm realm, final AccountImpl from_user) throws ConfigurationException {
-        super(realm, from_user.id, from_user.name);
+    public AccountImpl(final DBBroker broker, final AbstractRealm realm, final AccountImpl from_user) throws ConfigurationException {
+        super(broker, realm, from_user.id, from_user.name);
 
         //copy metadata
         for(final SchemaType metadataKey : from_user.getMetadataKeys()) {

@@ -27,12 +27,19 @@ declare variable $ot:COLLECTION_CONFIG :=
                     <field name="type" match="@type" type="xs:string"/>
                     <field name="subtype" match="@subtype" type="xs:string"/>
                 </create>
+                <create qname="tei:orth" type="xs:string" collation="?lang=sr&amp;strength=primary" case="no"/>
                 <create match="//address">
+                    <filter class="org.apache.lucene.analysis.core.LowerCaseFilter"/>
                     <field name="address-city" match="city" type="xs:string"/>
                     <field name="address-street" match="street" type="xs:string"/>
                     <field name="address-email" match="contact/email" type="xs:string"/>
+                    <field name="address-name" match="name3" type="xs:string"/>
                 </create>
                 <create match="/test/address/name"/>
+                <create match="/test/address/name2">
+                    <filter class="org.apache.lucene.analysis.core.LowerCaseFilter"/>
+                    <filter class="org.apache.lucene.analysis.miscellaneous.ASCIIFoldingFilter"/>
+                </create>
                 <create match="/test/address/city/@code" type="xs:integer"/>
                 <create qname="@id" type="xs:string"/>
             </range>
@@ -63,6 +70,8 @@ declare variable $ot:DATA :=
     <test>
         <address id="muh">
             <name>Berta Muh</name>
+            <name2>Berta Muh</name2>
+            <name3>Berta Muh</name3>
             <street>Wiesenweg 14</street>
             <city code="65463">Almweide</city>
             <contact>
@@ -71,6 +80,8 @@ declare variable $ot:DATA :=
         </address>
         <address id="rüssel">
             <name>Rudi Rüssel</name>
+            <name2>Rudi Rüssel</name2>
+            <name3>Rudi Rüssel</name3>
             <street>Elefantenweg 67</street>
             <city code="65428">Rüsselsheim</city>
             <contact>
@@ -79,6 +90,8 @@ declare variable $ot:DATA :=
         </address>
         <address id="amsel">
             <name>Albert Amsel</name>
+            <name2>Albert Amsel</name2>
+            <name3>Albert Amsel</name3>
             <street>Birkenstraße 77</street>
             <city code="76878">Waldstadt</city>
             <contact>
@@ -87,6 +100,8 @@ declare variable $ot:DATA :=
         </address>
         <address id="reh">
             <name>Pü Reh</name>
+            <name2>Pü Reh</name2>
+            <name3>Pü Reh</name3>
             <street>Am Waldrand 4</street>
             <city code="89283">Wiesental</city>
             <contact>
@@ -95,6 +110,31 @@ declare variable $ot:DATA :=
         </address>
     </test>;
 
+declare variable $ot:DATA_SR_WITH_DIACRITICS :=
+    <TEI xmlns="http://www.tei-c.org/ns/1.0">
+        <teiHeader>
+            <fileDesc>
+                <titleStmt><title>sr with diacritics</title></titleStmt>
+                <publicationStmt><distributor>sr with diacritics</distributor></publicationStmt>
+                <sourceDesc><listOrg><org><name>test</name></org></listOrg></sourceDesc>
+            </fileDesc>
+        </teiHeader>
+        <text>
+            <body>
+                <div>
+                    <entryFree>
+                        <form type="lemma">
+                            <orth>Мла̀тишума</orth>
+                        </form>
+                        <form type="lemma">
+                            <orth>Млатишума</orth>
+                        </form>
+                    </entryFree>
+                </div>
+            </body>
+        </text>
+    </TEI>;
+    
 declare variable $ot:COLLECTION_NAME := "optimizertest";
 declare variable $ot:COLLECTION := "/db/" || $ot:COLLECTION_NAME;
 
@@ -105,7 +145,8 @@ function ot:setup() {
     xmldb:store("/db/system/config/db/" || $ot:COLLECTION_NAME, "collection.xconf", $ot:COLLECTION_CONFIG),
     xmldb:create-collection("/db", $ot:COLLECTION_NAME),
     xmldb:store($ot:COLLECTION, "test.xml", $ot:DATA),
-    xmldb:store($ot:COLLECTION, "nested.xml", $ot:DATA_NESTED)
+    xmldb:store($ot:COLLECTION, "nested.xml", $ot:DATA_NESTED),
+    xmldb:store($ot:COLLECTION, "diacritics.xml", $ot:DATA_SR_WITH_DIACRITICS)
 };
 
 declare
@@ -450,14 +491,14 @@ function ot:optimize-mixed-op-field($city as xs:string, $street as xs:string) {
 };
 
 declare
-    %test:args("Rüsselsheim", "Elefantenweg 67")
+    %test:args("rüsselsheim", "Elefantenweg 67")
     %test:assertEquals(0)
 function ot:mixed-op-field1($city as xs:string, $street as xs:string) {
     count(collection($ot:COLLECTION)//address[city > $city][street = $street])
 };
 
 declare
-    %test:args("Rüsselsheim", "Elefantenweg 67")
+    %test:args("rüsselsheim", "Elefantenweg 67")
     %test:assertEquals(1)
 function ot:mixed-op-field2($city as xs:string, $street as xs:string) {
     count(collection($ot:COLLECTION)//address[city >= $city][street = $street])
@@ -505,3 +546,109 @@ declare
 function ot:optimize-field-self($type as xs:string, $subtype as xs:string, $name as xs:string) {
     //tei:placeName[@type = $type][@subtype = $subtype][. = $name]/text()
 };
+
+(: Filters :)
+
+declare
+    %test:args("rudi russel")
+    %test:assertEquals("Rudi Rüssel")
+    %test:args("rudi rüssel")
+    %test:assertEquals("Rudi Rüssel")
+function ot:eq-string-filtered($name as xs:string) {
+    collection($ot:COLLECTION)//address[name2 = $name]/name2/text()
+};
+
+declare
+    %test:args("Rudi Russel")
+    %test:assertEquals(3)
+function ot:ne-string-filtered($name as xs:string) {
+    count(collection($ot:COLLECTION)//address[name2 != $name])
+};
+
+declare
+    %test:args("russel")
+    %test:assertEquals("Rudi Rüssel")
+function ot:contains-string-filtered($name as xs:string) {
+    collection($ot:COLLECTION)//address[contains(name2, $name)]/name2/text()
+};
+
+declare
+    %test:args("Rudi Rus")
+    %test:assertEquals("Rudi Rüssel")
+function ot:starts-with-string-filtered($name as xs:string) {
+    collection($ot:COLLECTION)//address[starts-with(name2, $name)]/name2/text()
+};
+
+declare
+    %test:args("ussel")
+    %test:assertEquals("Rudi Rüssel")
+function ot:ends-with-string-filtered($name as xs:string) {
+    collection($ot:COLLECTION)//address[ends-with(name2, $name)]/name2/text()
+};
+
+declare
+    %test:args("Rudi rüssel")
+    %test:assertEquals("Rudi Rüssel")
+    %test:args("rudi rüssel")
+    %test:assertEquals("Rudi Rüssel")
+function ot:eq-field-string-filtered($name as xs:string) {
+    collection($ot:COLLECTION)//address[name3 = $name]/name3/text()
+};
+
+declare
+    %test:args("rudi rüssel")
+    %test:assertEquals(3)
+function ot:ne-field-string-filtered($name as xs:string) {
+    count(collection($ot:COLLECTION)//address[name3 != $name])
+};
+
+declare
+    %test:args("rüssel")
+    %test:assertEquals("Rudi Rüssel")
+function ot:contains-field-string-filtered($name as xs:string) {
+    collection($ot:COLLECTION)//address[contains(name3, $name)]/name3/text()
+};
+
+declare
+    %test:args("rudi rüs")
+    %test:assertEquals("Rudi Rüssel")
+function ot:starts-with-field-string-filtered($name as xs:string) {
+    collection($ot:COLLECTION)//address[starts-with(name3, $name)]/name3/text()
+};
+
+declare
+    %test:args("üssel")
+    %test:assertEquals("Rudi Rüssel")
+function ot:ends-with-field-string-filtered($name as xs:string) {
+    collection($ot:COLLECTION)//address[ends-with(name3, $name)]/name3/text()
+};
+
+(: Collations :)
+
+declare
+    %test:args("Мла̀тишума")
+    %test:assertEquals(2)
+    %test:args("Млатишума")
+    %test:assertEquals(2)
+function ot:eq-string-collation-with-diacritics($name) {
+    count(//tei:form[tei:orth = $name])
+};
+
+declare
+    %test:args("Мла̀тишума")
+    %test:assertError("range:EXXQDYFT0001")
+    %test:args("Млатишума")
+    %test:assertError("range:EXXQDYFT0001")
+function ot:contains-string-collation-with-diacritics($name) {
+    count(//tei:form[contains(tei:orth, $name)])
+};
+
+declare
+    %test:args("Мла̀тишума")
+    %test:assertEquals(0)
+    %test:args("Млатишума")
+    %test:assertEquals(0)
+function ot:ne-string-collation-with-diacritics($name) {
+    count(//tei:form[tei:orth != $name])
+};
+

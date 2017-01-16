@@ -22,6 +22,7 @@
 package org.exist.xmldb;
 
 import org.exist.test.ExistWebServer;
+import org.exist.util.FileUtils;
 import org.exist.xmldb.concurrent.DBUtils;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -33,7 +34,8 @@ import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 
-import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * @author Pierrick Brihaye <pierrick.brihaye@free.fr>
@@ -65,11 +67,11 @@ public class StorageStressTest {
     public void store() throws Exception {
 		String[] wordList = DBUtils.wordList(collection);
 		for (int i = 0; i < 30000; i++) {
-			File f = DBUtils.generateXMLFile(6, 3, wordList, false);
+			Path f = DBUtils.generateXMLFile(6, 3, wordList, false);
 			Resource res = collection.createResource("test_" + i, "XMLResource");
 			res.setContent(f);
 			collection.storeResource(res);
-			f.delete();
+			FileUtils.deleteQuietly(f);
 		}
     }
 
@@ -95,9 +97,10 @@ public class StorageStressTest {
 			this.collection = childCollection;
 		}
 
-			String existHome = System.getProperty("exist.home");
-			File existDir = existHome==null ? new File(".") : new File(existHome);
-		File f = new File(existDir,"samples/shakespeare/hamlet.xml");
+		String existHome = System.getProperty("exist.home");
+		Path existDir = existHome == null ? Paths.get(".") : Paths.get(existHome);
+		existDir = existDir.normalize();
+		Path f = existDir.resolve("samples/shakespeare/hamlet.xml");
 		Resource res = collection.createResource("test1.xml", "XMLResource");
 		res.setContent(f);
 		collection.storeResource(res);

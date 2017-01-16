@@ -27,12 +27,14 @@ import org.apache.commons.io.output.ByteArrayOutputStream;
 
 import java.awt.Image;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Optional;
 
 import javax.imageio.ImageIO;
@@ -47,6 +49,8 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.journal.JournalManager;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.util.FileUtils;
+import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -182,7 +186,7 @@ public class GetThumbnailsFunction extends BasicFunction {
             try (final Txn transaction = transact.beginTransaction()) {
 
                 Collection thumbCollection = null;
-                File thumbDir = null;
+                Path thumbDir = null;
                 if (isSaveToDataBase) {
                     try {
                         thumbCollection = dbbroker.getOrCreateCollection(transaction,
@@ -192,11 +196,11 @@ public class GetThumbnailsFunction extends BasicFunction {
                         throw new XPathException(this, e.getMessage());
                     }
                 } else {
-                    thumbDir = new File(thumbPath.toString());
-                    if (!thumbDir.isDirectory())
+                    thumbDir = Paths.get(thumbPath.toString());
+                    if (!Files.isDirectory(thumbDir))
                         try {
-                            thumbDir.mkdirs();
-                        } catch (Exception e) {
+                            Files.createDirectories(thumbDir);
+                        } catch (IOException e) {
                             throw new XPathException(this, e.getMessage());
                         }
 
@@ -204,7 +208,7 @@ public class GetThumbnailsFunction extends BasicFunction {
 
                 Collection allPictures = null;
                 Collection existingThumbsCol = null;
-                File[] existingThumbsArray = null;
+                List<Path> existingThumbsArray = null;
                 try {
                     allPictures = dbbroker.getCollection(picturePath.toXmldbURI());
 
@@ -215,14 +219,13 @@ public class GetThumbnailsFunction extends BasicFunction {
                     if (isSaveToDataBase) {
                         existingThumbsCol = dbbroker.getCollection(thumbPath.toXmldbURI());
                     } else {
-                        existingThumbsArray = thumbDir.listFiles(new FilenameFilter() {
-                            public boolean accept(File dir, String name) {
-                                return (name.endsWith(".jpeg") || name.endsWith(".jpg"));
-                            }
+                        existingThumbsArray = FileUtils.list(thumbDir, path -> {
+                            final String fileName = FileUtils.fileName(path);
+                            return fileName.endsWith(".jpeg") || fileName.endsWith(".jpg");
                         });
                     }
-                } catch (PermissionDeniedException pde) {
-                    throw new XPathException(pde.getMessage(), pde);
+                } catch (PermissionDeniedException | IOException e) {
+                    throw new XPathException(this, e.getMessage(), e);
                 }
 
                 DocumentImpl docImage = null;
@@ -291,9 +294,9 @@ public class GetThumbnailsFunction extends BasicFunction {
                                                     .write(
                                                             bImage,
                                                             "jpg",
-                                                            new File(thumbPath.toString()
+                                                            Paths.get(thumbPath.toString()
                                                                     + "/" + prefix
-                                                                    + docImage.getFileURI()));
+                                                                    + docImage.getFileURI()).toFile());
                                         } catch (Exception e) {
                                             throw new XPathException(this, e.getMessage());
                                         }
@@ -314,8 +317,8 @@ public class GetThumbnailsFunction extends BasicFunction {
                             result.add(new StringValue(docImage.getFileURI().toString()));
                         }
                     }
-                } catch (PermissionDeniedException pde) {
-                    throw new XPathException(this, pde.getMessage(), pde);
+                } catch (final PermissionDeniedException | LockException e) {
+                    throw new XPathException(this, e.getMessage(), e);
                 }
                 try {
                     transact.commit(transaction);
@@ -339,10 +342,10 @@ public class GetThumbnailsFunction extends BasicFunction {
 		return false;
 	}
 
-	private boolean fileExist(File[] cols, DocumentImpl file, String prefix) {
+	private boolean fileExist(List<Path> cols, DocumentImpl file, String prefix) {
 		if (cols != null)
-            for (File col : cols) {
-                if (col.getName().endsWith(prefix + file.getFileURI())) {
+            for (Path col : cols) {
+                if (FileUtils.fileName(col).endsWith(prefix + file.getFileURI())) {
                     return true;
                 }
             }

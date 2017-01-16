@@ -22,7 +22,7 @@
     <!-- Mime types stored as XML -->
     <mime-type name="application/xml" type="xml">
         <description>XML document</description>
-        <extensions>.xml,.xsd,.rng,.mods,.xmp,.xmi,.xconf,.xmap,.xsp,.wsdl,.x3d,.owl,.dbx,.tei,.xces,.ead,.xqx,.xform,.gml,.fo,.nvdl,.sch,.imdi,.cmdi,.odd</extensions>
+        <extensions>.xml,.xsd,.rng,.mods,.xmp,.xmi,.xconf,.xmap,.xsp,.wsdl,.x3d,.owl,.dbx,.tei,.xces,.ead,.xqx,.xform,.gml,.fo,.nvdl,.sch,.imdi,.cmdi,.odd,.jcmconnect,.ditaval</extensions>
     </mime-type>
     <!-- default is 'application/xml' for .xml This required to resolve 'text/xml' -->
     <mime-type name="text/xml" type="xml">
@@ -68,6 +68,10 @@
     <mime-type name="application/x-dtbncx+xml" type="xml">
         <description>Navigation Control file for XML (NCX) Document</description>
         <extensions>.ncx</extensions>
+    </mime-type>
+    <mime-type name="application/scm+xml" type="xml">
+        <description>Schema Component Model</description>
+        <extensions>.scm</extensions>
     </mime-type>
     
     <!-- Binary mime types -->
@@ -263,16 +267,72 @@
         <description>OOXML Spreadsheet Template</description>
         <extensions>.xltx</extensions>
     </mime-type>
+
+    <mime-type name="application/xml-dtd" type="binary">
+        <description>External DTD subsets</description>
+        <extensions>.dtd,.mod</extensions>
+    </mime-type>
+
+    <mime-type name="application/xml-external-parsed-entity" type="binary">
+        <description>External parsed entities</description>
+        <extensions>.ent</extensions>
+    </mime-type>
     
+    <mime-type name="application/vnd.adobe.flash-movie" type="binary">
+        <description>Adobe Flash Movie</description>
+        <extensions>.swf</extensions>
+    </mime-type>
+
+    <mime-type name="video/vnd.avi" type="binary">
+        <description>Audio Video Interleaved</description>
+        <extensions>.avi</extensions>
+    </mime-type>
+
+    <mime-type name="video/webm" type="binary">
+        <description>WebM</description>
+        <extensions>.webm</extensions>
+    </mime-type>
+
+    <mime-type name="text/x-java-source" type="binary">
+        <description>Java source code</description>
+        <extensions>.java</extensions>
+    </mime-type>
+
+    <mime-type name="application/java-byte-code" type="binary">
+        <description>Java byte code</description>
+        <extensions>.class</extensions>
+    </mime-type>
+
+    <mime-type name="application/relax-ng-compact-syntax" type="binary">
+        <description>RelaxNG compact syntax</description>
+        <extensions>.rnc</extensions>
+    </mime-type>
+
+    <mime-type name="application/prs.aff-dictionary" type="binary">
+        <description>Affix File Format</description>
+        <extensions>.aff</extensions>
+    </mime-type>
+    
+    <mime-type name="application/prs.dictionary" type="binary">
+        <description>Dictionary File Format</description>
+        <extensions>.dic</extensions>
+    </mime-type>
+
+    <mime-type name="text/csv" type="binary">
+        <description>Comma Seperated Values</description>
+        <extensions>.csv</extensions>
+    </mime-type>
     
     <mime-type name="text/plain" type="binary">
         <description>Plain text</description>
-        <extensions>.txt,.text,.java,.dtd,.rnc,.properties</extensions>
+        <extensions>.txt,.text,.properties,.sh</extensions>
     </mime-type>
-    <mime-type name="text/x-markdown" type="binary">
+
+    <mime-type name="text/markdown" type="binary">
         <description>Markdown</description>
         <extensions>.md</extensions>
     </mime-type>
+
     <mime-type name="text/css" type="binary">
         <description>CSS stylesheet</description>
         <extensions>.css</extensions>
@@ -327,7 +387,7 @@
         <description>PostScript Document</description>
         <extensions>.eps,.ps</extensions>
     </mime-type>
-    <mime-type name="application/x-javascript" type="binary">
+    <mime-type name="application/javascript" type="binary">
         <description>JavaScript</description>
         <extensions>.js</extensions>
     </mime-type>

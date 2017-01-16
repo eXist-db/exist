@@ -47,7 +47,6 @@ import org.exist.xquery.value.DateTimeValue;
 import java.net.URISyntaxException;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Observable;
 import java.util.Stack;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -62,7 +61,7 @@ import org.exist.security.ACLPermission.ACE_ACCESS_TYPE;
 import org.exist.security.ACLPermission.ACE_TARGET;
 import org.exist.security.internal.aider.ACEAider;
 import org.exist.storage.DBBroker;
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.xml.sax.XMLReader;
@@ -367,7 +366,7 @@ public class SystemImportHandler extends DefaultHandler {
             
             listener.setCurrentResource(name);
             if(currentCollection != null) {
-                listener.observe(currentCollection);
+                listener.observe(currentCollection.getObservable());
             }
 
 			final TransactionManager txnManager = broker.getDatabase().getTransactionManager();
@@ -392,11 +391,11 @@ public class SystemImportHandler extends DefaultHandler {
 
 					rh.startDocumentRestore(resource, atts);
 
-					currentCollection.store(txn, broker, info, is, false);
+					currentCollection.store(txn, broker, info, is);
 	
 				} else {
 					// store as binary resource
-					resource = currentCollection.validateBinaryResource(txn, broker, docUri, is.getByteStream(), mimetype, is.getByteStreamLength() , date_created, date_modified);
+					resource = currentCollection.validateBinaryResource(txn, broker, docUri);
 					
 					rh.startDocumentRestore(resource, atts);
 
@@ -422,7 +421,7 @@ public class SystemImportHandler extends DefaultHandler {
 				throw new IOException(e);
 			} finally {
 //				if (resource != null)
-//					resource.getUpdateLock().release(Lock.READ_LOCK);
+//					resource.getUpdateLock().release(LockMode.READ_LOCK);
 			}
 
         } catch(final Exception e) {
@@ -542,7 +541,7 @@ public class SystemImportHandler extends DefaultHandler {
         @Override
         public void apply() {
             try {
-            	getTarget().getLock().acquire(Lock.WRITE_LOCK);
+            	getTarget().getLock().acquire(LockMode.WRITE_LOCK);
 
                 final TransactionManager txnManager = broker.getDatabase().getTransactionManager();
                 try(final Txn txn = txnManager.beginTransaction()) {
@@ -561,7 +560,7 @@ public class SystemImportHandler extends DefaultHandler {
 	                
 	                txnManager.commit(txn);
             	} finally {
-                	getTarget().release(Lock.WRITE_LOCK);
+                	getTarget().release(LockMode.WRITE_LOCK);
                 }
                 
             } catch (final Exception xe) {
@@ -581,7 +580,7 @@ public class SystemImportHandler extends DefaultHandler {
         @Override
         public void apply() {
             try {
-            	getTarget().getUpdateLock().acquire(Lock.WRITE_LOCK);
+            	getTarget().getUpdateLock().acquire(LockMode.WRITE_LOCK);
 
             	final TransactionManager txnManager = broker.getDatabase().getTransactionManager();
 
@@ -602,7 +601,7 @@ public class SystemImportHandler extends DefaultHandler {
 	                txnManager.commit(txn);
 	            	
 	            } finally {
-	                getTarget().getUpdateLock().release(Lock.WRITE_LOCK);
+	                getTarget().getUpdateLock().release(LockMode.WRITE_LOCK);
 	            }
             
             } catch (final Exception xe) {

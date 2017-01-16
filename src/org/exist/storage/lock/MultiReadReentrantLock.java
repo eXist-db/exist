@@ -57,7 +57,7 @@ public class MultiReadReentrantLock implements Lock {
 
     private final static Logger LOG = LogManager.getLogger(MultiReadReentrantLock.class);
 
-    private Object id;
+    private final Object id;
 
     /**
      * Number of threads waiting to read.
@@ -67,7 +67,7 @@ public class MultiReadReentrantLock implements Lock {
     /**
      * Number of threads reading.
      */
-    private List<LockOwner> outstandingReadLocks = new ArrayList<LockOwner>(4);
+    private final List<LockOwner> outstandingReadLocks = new ArrayList<>(4);
 
     /**
      * The thread that has the write lock or null.
@@ -84,49 +84,62 @@ public class MultiReadReentrantLock implements Lock {
      * Threads waiting to get a write lock are tracked in this ArrayList to
      * ensure that write locks are issued in the same order they are requested.
      */
-    private List<WaitingThread> waitingForWriteLock = null;
+    private final List<WaitingThread> waitingForWriteLock = new ArrayList<>(3);
 
     /**
      * Default constructor.
      */
-    public MultiReadReentrantLock(Object id) {
+    public MultiReadReentrantLock(final Object id) {
         this.id = id;
     }
 
+    @Override
     public String getId() {
         return id.toString();
     }
 
-    /* @deprecated Use other method
-    * @see org.exist.storage.lock.Lock#acquire()
-    */
-    public boolean acquire() throws LockException {
-        return acquire(Lock.READ_LOCK);
-    }
-
-    public boolean acquire(int mode) throws LockException {
-        if (mode == Lock.NO_LOCK) {
-            LOG.warn("acquired with no lock !");
-            return true;
-        }
-        switch (mode) {
-            case Lock.WRITE_LOCK:
-                return writeLock(true);
-            default:
-                return readLock(true);
-        }
-    }
-
-    /* (non-Javadoc)
-     * @see org.exist.util.Lock#attempt(int)
+    /**
+     * @deprecated Use {@link #acquire(LockMode)}
      */
-    public boolean attempt(int mode) {
+    @Override
+    public boolean acquire() throws LockException {
+        return acquire(LockMode.READ_LOCK);
+    }
+
+    @Override
+    public boolean acquire(final LockMode mode) throws LockException {
+        switch (mode) {
+            case NO_LOCK:
+                LOG.warn("Acquired with LockMode.NO_LOCK!");
+                return true;
+
+            case READ_LOCK:
+                return readLock(true);
+
+            case WRITE_LOCK:
+                return writeLock(true);
+
+            default:
+                throw new IllegalStateException();
+        }
+    }
+
+    @Override
+    public boolean attempt(final LockMode mode) {
         try {
             switch (mode) {
-            case Lock.WRITE_LOCK:
-                return writeLock(false);
-            default:
-                return readLock(false);
+                case NO_LOCK:
+                    LOG.warn("Attempted acquire with LockMode.NO_LOCK!");
+                    return true;
+
+                case READ_LOCK:
+                    return readLock(false);
+
+                case WRITE_LOCK:
+                    return writeLock(false);
+
+                default:
+                    throw new IllegalStateException();
             }
         } catch (final LockException e) {
             return false;
@@ -151,7 +164,7 @@ public class MultiReadReentrantLock implements Lock {
         waitingForReadLock++;
         if (writeLockedThread != null) {
            if (!waitIfNecessary) {return false;}
-            final WaitingThread waiter = new WaitingThread(thisThread, this, this, Lock.READ_LOCK);
+            final WaitingThread waiter = new WaitingThread(thisThread, this, this, LockMode.READ_LOCK);
             DeadlockDetection.addResourceWaiter(thisThread, waiter);
             while (writeLockedThread != null) {
                 //LOG.debug("readLock wait by " + thisThread.getName() + " for " + getId());
@@ -184,12 +197,11 @@ public class MultiReadReentrantLock implements Lock {
                 outstandingWriteLocks++;
                 return true;
             }
-            if (!waitIfNecessary)
-                {return false;}
+            if (!waitIfNecessary) {
+                return false;
+            }
             deadlockCheck();
-            if (waitingForWriteLock == null)
-                {waitingForWriteLock = new ArrayList<WaitingThread>(3);}
-            waiter = new WaitingThread(thisThread, thisThread, this, Lock.WRITE_LOCK);
+            waiter = new WaitingThread(thisThread, thisThread, this, LockMode.WRITE_LOCK);
             addWaitingWrite(waiter);
             DeadlockDetection.addResourceWaiter(thisThread, waiter);
         }
@@ -219,8 +231,9 @@ public class MultiReadReentrantLock implements Lock {
                     }
                 }
             }
-            if (deadlockedThreads == null && exceptionCaught == null)
-                {outstandingWriteLocks++;}
+            if (deadlockedThreads == null && exceptionCaught == null) {
+                outstandingWriteLocks++;
+            }
         }
         synchronized (this) {
             DeadlockDetection.clearResourceWaiter(thisThread);
@@ -251,36 +264,50 @@ public class MultiReadReentrantLock implements Lock {
         }
     }
 
-    /* @deprecated : use other method
-     * @see org.exist.storage.lock.Lock#release()
+    /**
+     * @deprecated Use {@link #release(LockMode)}
      */
     public void release() {
-        release(Lock.READ_LOCK);
+        release(LockMode.READ_LOCK);
     }
 
-    public void release(int mode) {
+    @Override
+    public void release(final LockMode mode) {
         switch (mode) {
-        case Lock.NO_LOCK:
-            break;
-        case Lock.WRITE_LOCK:
-            releaseWrite(1);
-            break;
-        //TODO : use READ_LOCK ? -pb
-        default:
-            releaseRead(1);
-            break;
+            case NO_LOCK:
+                LOG.warn("Released with LockMode.NO_LOCK!");
+                break;
+
+            case READ_LOCK:
+                releaseRead(1);
+                break;
+
+            case WRITE_LOCK:
+                releaseWrite(1);
+                break;
+
+            default:
+                throw new IllegalStateException();
         }
     }
 
-    public void release(int mode, int count) {
+    @Override
+    public void release(final LockMode mode, final int count) {
         switch (mode) {
-        case Lock.WRITE_LOCK:
-            releaseWrite(count);
-            break;
-        //TODO : use READ_LOCK ? -pb
-        default:
-            releaseRead(count);
-            break;
+            case NO_LOCK:
+                LOG.warn("Released with LockMode.NO_LOCK and count=" + count + "!");
+                break;
+
+            case READ_LOCK:
+                releaseRead(count);
+                break;
+
+            case WRITE_LOCK:
+                releaseWrite(count);
+                break;
+
+            default:
+                throw new IllegalStateException();
         }
     }
 
@@ -341,24 +368,29 @@ public class MultiReadReentrantLock implements Lock {
                     "thread was interrupted or it never acquired the lock. " +
                     "Write lock: " + (writeLockedThread != null ? writeLockedThread.getName() : "null"),
                     new Throwable());
-            if (LockOwner.DEBUG)
-                {debugReadLocks("ILLEGAL RELEASE");}
+            if (LockOwner.DEBUG) {
+                debugReadLocks("ILLEGAL RELEASE");
+            }
             //TODO : throw exception ? -pb
         }
     }
 
+    @Override
     public synchronized boolean isLockedForWrite() {
         return writeLockedThread != null || (waitingForWriteLock != null && waitingForWriteLock.size() > 0);
     }
 
+    @Override
     public synchronized boolean hasLock() {
         return !outstandingReadLocks.isEmpty() || isLockedForWrite();
     }
 
+    @Override
     public synchronized boolean isLockedForRead(Thread owner) {
         for (int i = outstandingReadLocks.size() - 1; i > -1; i--) {
-            if ((outstandingReadLocks.get(i)).getOwner() == owner)
-                {return true;}
+            if ((outstandingReadLocks.get(i)).getOwner() == owner) {
+                return true;
+            }
         }
         return false;
     }
@@ -456,10 +488,11 @@ public class MultiReadReentrantLock implements Lock {
      * @param owner the thread
      * @return true if owner has a read lock
      */
-    private boolean hasReadLock(Thread owner) {
+    private boolean hasReadLock(final Thread owner) {
         for (final LockOwner next : outstandingReadLocks) {
-            if (next.getOwner() == owner)
-                {return true;}
+            if (next.getOwner() == owner) {
+                return true;
+            }
         }
         return false;
     }
@@ -475,12 +508,15 @@ public class MultiReadReentrantLock implements Lock {
      * @param owner the thread
      * @return true if owner has a lock
      */
-    public boolean hasLock(Thread owner) {
-        if (writeLockedThread == owner)
-            {return true;}
+    @Override
+    public boolean hasLock(final Thread owner) {
+        if (writeLockedThread == owner) {
+            return true;
+        }
         return hasReadLock(owner);
     }
 
+    @Override
     public void wakeUp() {
         //Nothing to do
     }
@@ -495,7 +531,7 @@ public class MultiReadReentrantLock implements Lock {
      * @return true if the lock request is compatible with all other requests and the
      * lock can be granted.
      */
-    private boolean isCompatible(Thread waiting) {
+    private boolean isCompatible(final Thread waiting) {
         for (final LockOwner next : outstandingReadLocks) {
             //If the read lock is owned by the current thread, all is OK and we continue
             if (next.getOwner() != waiting) {
@@ -510,6 +546,7 @@ public class MultiReadReentrantLock implements Lock {
         return true;
     }
 
+    @Override
     public synchronized LockInfo getLockInfo() {
         LockInfo info;
         String[] readers = new String[0];
@@ -544,7 +581,7 @@ public class MultiReadReentrantLock implements Lock {
     }
 
     @Override
-    public void debug(PrintStream out) {
+    public void debug(final PrintStream out) {
         getLockInfo().debug(out);
     }
 }

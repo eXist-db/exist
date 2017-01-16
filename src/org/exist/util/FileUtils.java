@@ -21,14 +21,16 @@ package org.exist.util;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.exist.util.function.FunctionE;
+
+import com.evolvedbinary.j8fu.Either;
+import com.evolvedbinary.j8fu.function.FunctionE;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.List;
-import java.util.Optional;
+import java.nio.file.attribute.FileTime;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -40,6 +42,37 @@ import java.util.stream.Stream;
 public class FileUtils {
 
     private final static Logger LOG = LogManager.getLogger(FileUtils.class);
+
+    /**
+     * Convert an array of {@link java.io.File}
+     * to an array of {@link java.nio.file.Path}
+     *
+     * @param files An array of {@link java.io.File}
+     *
+     * @return If files is null or empty, then
+     *  an empty array, otherwise an array of corresponding
+     *  {@link java.nio.file.Path}
+     */
+    public static Path[] asPaths(final File[] files) {
+        return asPathsList(files).toArray(new Path[files.length]);
+    }
+
+    /**
+     * Convert an array of {@link java.io.File}
+     * to a List of {@link java.nio.file.Path}
+     *
+     * @param files An array of {@link java.io.File}
+     *
+     * @return If files is null or empty, then
+     *  an empty list, otherwise a list of corresponding
+     *  {@link java.nio.file.Path}
+     */
+    public static List<Path> asPathsList(final File[] files) {
+        return Optional.ofNullable(files)
+                .map(fs -> Arrays.stream(fs).map(File::toPath).collect(Collectors.toList()))
+                .orElse(Collections.EMPTY_LIST);
+    }
+
 
     /**
      * Deletes a path from the filesystem
@@ -114,6 +147,18 @@ public class FileUtils {
     }
 
     /**
+     * Determine the size of a collection of files and/or directories
+     *
+     * @return The size of the files and directories, or -1 if the file size cannot be determined
+     */
+    public static long sizeQuietly(final Collection<Path> paths) {
+        return paths.stream().map(FileUtils::sizeQuietly)
+                .filter(size -> size != -1)
+                .reduce((a, b) -> a + b)
+                .orElse(-1l);
+    }
+
+    /**
      * Determine the size of a file or directory
      *
      * @return The size of the file or directory, or -1 if the file size cannot be determined
@@ -150,6 +195,19 @@ public class FileUtils {
         }
     }
 
+    /**
+     * Determine the last modified time of a file or directory
+     *
+     * @return Eitehr an IOException or the last modified time of the file or directory
+     */
+    public static Either<IOException, FileTime> lastModifiedQuietly(final Path path) {
+        try {
+            return Either.Right(Files.getLastModifiedTime(path));
+        } catch (final IOException e) {
+            return Either.Left(e);
+        }
+    }
+
     private static class DirSizeVisitor extends SimpleFileVisitor<Path> {
 
         private long size = 0;
@@ -162,6 +220,31 @@ public class FileUtils {
 
         public long totalSize() {
             return size;
+        }
+    }
+
+    /**
+     * Makes directories on the filesystem the filesystem
+     *
+     * This method will never throw an IOException, it
+     * instead returns `false` if an error occurs
+     * whilst creating a file or directory
+     *
+     * Note that creation of a directory is not an atomic-operation
+     * and so if an error occurs during creation, some of the directories
+     * descendants may have already been created
+     *
+     * @return false if an error occurred, true otherwise
+     */
+    public static boolean mkdirsQuietly(final Path dir) {
+        try {
+            if (!Files.exists(dir)) {
+                Files.createDirectories(dir);
+            }
+            return true;
+        } catch (final IOException ioe) {
+            LOG.error("Unable to mkdirs: " + dir.toAbsolutePath().toString(), ioe);
+            return false;
         }
     }
 

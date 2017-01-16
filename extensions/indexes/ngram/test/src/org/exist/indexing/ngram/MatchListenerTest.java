@@ -22,11 +22,8 @@ package org.exist.indexing.ngram;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Optional;
 import java.util.Properties;
@@ -52,9 +49,8 @@ import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
-import org.exist.util.Configuration;
-import org.exist.util.ConfigurationHelper;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
@@ -64,6 +60,7 @@ import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -115,12 +112,12 @@ public class MatchListenerTest {
     private static String MATCH_START = "<exist:match xmlns:exist=\"http://exist.sourceforge.net/NS/exist\">";
     private static String MATCH_END = "</exist:match>";
 
-    private static BrokerPool pool;
 
     @Test
     public void nestedContent() throws PermissionDeniedException, IOException, LockException, CollectionConfigurationException, SAXException, EXistException, XPathException {
         configureAndStore(CONF1, XML);
 
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
             final XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
@@ -158,6 +155,7 @@ public class MatchListenerTest {
     public void matchInParent() throws PermissionDeniedException, IOException, LockException, CollectionConfigurationException, SAXException, EXistException, XPathException {
         configureAndStore(CONF1, XML);
 
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
 
             final XQuery xquery = pool.getXQueryService();
@@ -174,6 +172,7 @@ public class MatchListenerTest {
     public void matchInAncestor() throws PermissionDeniedException, IOException, LockException, CollectionConfigurationException, SAXException, EXistException, XPathException {
         configureAndStore(CONF1, XML);
 
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
 
             final XQuery xquery = pool.getXQueryService();
@@ -196,6 +195,7 @@ public class MatchListenerTest {
     public void nestedIndex() throws PermissionDeniedException, IOException, LockException, CollectionConfigurationException, SAXException, EXistException, XPathException {
         configureAndStore(CONF1, XML);
 
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
 
             final XQuery xquery = pool.getXQueryService();
@@ -224,6 +224,7 @@ public class MatchListenerTest {
     public void mixedContentQueries() throws PermissionDeniedException, XPathException, SAXException, EXistException, CollectionConfigurationException, LockException, IOException {
         configureAndStore(CONF1, XML);
 
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
 
             final XQuery xquery = pool.getXQueryService();
@@ -264,6 +265,7 @@ public class MatchListenerTest {
     public void indexOnInnerElement() throws PermissionDeniedException, IOException, LockException, CollectionConfigurationException, SAXException, EXistException, XPathException {
         configureAndStore(CONF2, XML);
 
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
             final XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
@@ -287,6 +289,7 @@ public class MatchListenerTest {
     public void doubleMatch() throws PermissionDeniedException, XPathException, SAXException, EXistException, CollectionConfigurationException, LockException, IOException {
         configureAndStore(CONF1, XML);
 
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
             final XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
@@ -317,6 +320,7 @@ public class MatchListenerTest {
     public void wildcardMatch() throws PermissionDeniedException, IOException, LockException, CollectionConfigurationException, SAXException, EXistException, XPathException, XpathException {
         configureAndStore(CONF1, XML);
 
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
             final XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
@@ -455,6 +459,7 @@ public class MatchListenerTest {
     public void smallStrings() throws PermissionDeniedException, IOException, LockException, CollectionConfigurationException, SAXException, EXistException, XPathException, XpathException {
         configureAndStore(CONF3, XML2);
 
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
             final XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
@@ -479,6 +484,7 @@ public class MatchListenerTest {
     public void constructedNodes() throws PermissionDeniedException, XPathException, SAXException, IOException, XpathException, CollectionConfigurationException, LockException, EXistException {
         configureAndStore(CONF3, XML2);
 
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
             final XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
@@ -501,13 +507,12 @@ public class MatchListenerTest {
         }
     }
 
+    @ClassRule
+    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer();
+
     @BeforeClass
     public static void startDB() throws EXistException, DatabaseConfigurationException, PermissionDeniedException, IOException, TriggerException {
-        final Path confFile = ConfigurationHelper.lookup("conf.xml");
-        final Configuration config = new Configuration(confFile.toAbsolutePath().toString());
-        BrokerPool.configure(1, 5, config);
-        pool = BrokerPool.getInstance();
-
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                 final Txn transaction = transact.beginTransaction()) {
@@ -528,7 +533,7 @@ public class MatchListenerTest {
 
     @AfterClass
     public static void closeDB() throws EXistException, PermissionDeniedException, IOException, TriggerException {
-        final BrokerPool pool = BrokerPool.getInstance();
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
 
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
@@ -545,10 +550,10 @@ public class MatchListenerTest {
 
             transact.commit(transaction);
         }
-        BrokerPool.stopAll(false);
     }
 
     private void configureAndStore(String config, String xml) throws PermissionDeniedException, IOException, SAXException, EXistException, LockException, CollectionConfigurationException {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn transaction = transact.beginTransaction()) {
@@ -560,7 +565,7 @@ public class MatchListenerTest {
 
             final IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("test_matches.xml"), xml);
             assertNotNull(info);
-            root.store(transaction, broker, info, xml, false);
+            root.store(transaction, broker, info, xml);
             
             transact.commit(transaction);
         }

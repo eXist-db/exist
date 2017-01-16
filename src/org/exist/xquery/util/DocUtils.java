@@ -36,7 +36,7 @@ import org.exist.dom.memtree.SAXAdapter;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
@@ -142,7 +142,7 @@ public class DocUtils {
 
 			// check if the loaded documents should remain locked
 			boolean lockOnLoad = context.lockDocumentsOnLoad();
-            final int lockType = lockOnLoad ? Lock.WRITE_LOCK : Lock.READ_LOCK;
+            final LockMode lockType = lockOnLoad ? LockMode.WRITE_LOCK : LockMode.READ_LOCK;
 			DocumentImpl doc = null;
 			try
 			{
@@ -214,7 +214,7 @@ public class DocUtils {
 	 * @return document
 	 * @throws XPathException
 	 */
-	public static org.exist.dom.memtree.DocumentImpl parse(BrokerPool pool, XQueryContext context, InputStream istream) throws XPathException {
+	public static org.exist.dom.memtree.DocumentImpl parse(final BrokerPool pool, final XQueryContext context, final InputStream istream) throws XPathException {
 		// we use eXist's in-memory DOM implementation
         final XMLReader reader = pool.getParserPool().borrowXMLReader();
         final InputSource src = new InputSource(istream);
@@ -223,15 +223,11 @@ public class DocUtils {
         try {
 			reader.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
 			reader.parse(src);
-		} catch (final SAXNotRecognizedException e) {
+		} catch (final SAXNotRecognizedException | SAXNotSupportedException e) {
 			throw new XPathException("Error creating XML parser: " + e.getMessage(), e);
-		} catch (final SAXNotSupportedException e) {
-			throw new XPathException("Error creating XML parser: " + e.getMessage(), e);
-		} catch (final IOException e) {
-			throw new XPathException("Error while parsing XML: " + e.getMessage(), e);
-		} catch (final SAXException e) {
+		} catch (final IOException | SAXException e) {
 			throw new XPathException("Error while parsing XML: " + e.getMessage(), e);
 		}
-        return (org.exist.dom.memtree.DocumentImpl) adapter.getDocument();
+		return adapter.getDocument();
 	}
 }

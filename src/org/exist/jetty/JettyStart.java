@@ -122,8 +122,6 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
             return;
         }
 
-        final boolean registerShutdownHook = System.getProperty("exist.register-shutdown-hook", "true").equals("true");
-
         final Map<String, String> configProperties;
         try {
             configProperties = getConfigProperties(jettyConfig.getParent());
@@ -131,9 +129,6 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
             if (observer != null) {
                 addObserver(observer);
             }
-
-            // configure database
-            logger.info("Configuring eXist from {}", SingleInstanceConfiguration.getPath());
 
             logger.info("Running with Java {} [{} ({}) in {}]",
                 System.getProperty("java.version", "(unknown java.version)"),
@@ -154,11 +149,6 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
             logger.info("[{} : {}]", JETTY_BASE_PROP, configProperties.get(JETTY_BASE_PROP));
             logger.info("[jetty configuration : {}]", jettyConfig.toAbsolutePath().toString());
 
-            if(registerShutdownHook) {
-                // we will register our own shutdown hook
-                BrokerPool.setRegisterShutdownHook(false);
-            }
-
             // configure the database instance
             SingleInstanceConfiguration config;
             if (args.length == 2) {
@@ -166,12 +156,12 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
             } else {
                 config = new SingleInstanceConfiguration();
             }
+            logger.info("Configuring eXist from {}",
+                    config.getConfigFilePath()
+                        .map(Path::normalize).map(Path::toAbsolutePath).map(Path::toString)
+                        .orElse("<UNKNOWN>"));
 
-            if (observer != null) {
-                BrokerPool.registerStatusObserver(observer);
-            }
-
-            BrokerPool.configure(1, 5, config);
+            BrokerPool.configure(1, 5, config, Optional.ofNullable(observer));
 
             // register the XMLDB driver
             final Database xmldb = new DatabaseImpl();
@@ -203,7 +193,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
             }
 
             // start Jetty
-            final Optional<Server> maybeServer = startJetty(configuredObjects, registerShutdownHook);
+            final Optional<Server> maybeServer = startJetty(configuredObjects);
             if(!maybeServer.isPresent()) {
                 logger.error("Unable to find a server to start in jetty configurations");
                 throw new IllegalStateException();
@@ -424,7 +414,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
         }
     }
 
-    private Optional<Server> startJetty(final List<Object> configuredObjects, boolean registerShutdownHook) throws Exception {
+    private Optional<Server> startJetty(final List<Object> configuredObjects) throws Exception {
         // For all objects created by XmlConfigurations, start them if they are lifecycles.
         Optional<Server> server = Optional.empty();
         for (final Object configuredObject : configuredObjects) {
@@ -440,13 +430,11 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
                 _server.addLifeCycleListener(this);
                 BrokerPool.getInstance().registerShutdownListener(new ShutdownListenerImpl(_server));
 
-                if (registerShutdownHook) {
-                    // register a shutdown hook for the server
-                    final BrokerPoolAndJettyShutdownHook brokerPoolAndJettyShutdownHook =
-                            new BrokerPoolAndJettyShutdownHook(_server);
-                    Runtime.getRuntime().addShutdownHook(brokerPoolAndJettyShutdownHook);
-                    this.shutdownHook = Optional.of(brokerPoolAndJettyShutdownHook);
-                }
+                // register a shutdown hook for the server
+                final BrokerPoolAndJettyShutdownHook brokerPoolAndJettyShutdownHook =
+                        new BrokerPoolAndJettyShutdownHook(_server);
+                Runtime.getRuntime().addShutdownHook(brokerPoolAndJettyShutdownHook);
+                this.shutdownHook = Optional.of(brokerPoolAndJettyShutdownHook);
 
                 server = Optional.of(_server);
             }

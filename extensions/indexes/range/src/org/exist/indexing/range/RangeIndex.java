@@ -44,28 +44,34 @@ public class RangeIndex extends LuceneIndex {
      * Enumeration of supported operators and optimized functions.
      */
     public enum Operator {
-        GT ("gt"),
-        LT ("lt"),
-        EQ ("eq"),
-        GE ("ge"),
-        LE ("le"),
-        NE ("ne"),
-        ENDS_WITH ("ends-with"),
-        STARTS_WITH ("starts-with"),
-        CONTAINS ("contains"),
-        MATCH ("matches");
+        GT ("gt", true),
+        LT ("lt", true),
+        EQ ("eq", true),
+        GE ("ge", true),
+        LE ("le", true),
+        NE ("ne", true),
+        ENDS_WITH ("ends-with", false),
+        STARTS_WITH ("starts-with", false),
+        CONTAINS ("contains", false),
+        MATCH ("matches", false);
 
         private final String name;
+        private final boolean supportsCollation;
 
-        Operator(String name) {
+        Operator(String name, boolean supportsCollation) {
             this.name = name;
+            this.supportsCollation = supportsCollation;
         }
 
         @Override
         public String toString() {
             return name;
         }
-    };
+
+        public boolean supportsCollation() {
+            return supportsCollation;
+        }
+    }
 
     private static final String DIR_NAME = "range";
 

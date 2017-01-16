@@ -1,26 +1,26 @@
 package org.exist.numbering;
 
+import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.NodeHandle;
 import org.exist.dom.persistent.NodeProxy;
+import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.StorageAddress;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
-import org.exist.util.Configuration;
+import org.exist.test.ExistEmbeddedServer;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Sequence;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Text;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.IOException;
 import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
@@ -76,7 +76,7 @@ public class DLNStorageTest {
             assertEquals(attr.getNodeName(), "href");
             assertEquals(attr.getName(), "href");
             assertEquals(attr.getValue(), "#");
-             // test DOMFile.getNodeValue()
+            // test DOMFile.getNodeValue()
             assertEquals(href.getStringValue(), "#");
 
             // test text node
@@ -94,15 +94,12 @@ public class DLNStorageTest {
         }
     }
 
-    @Before
-    public void setUp() throws Exception {
-        final String file = "conf.xml";
-        final Optional<Path> home = Optional.ofNullable(System.getProperty("exist.home", System.getProperty("user.dir"))).map(Paths::get);
+    @ClassRule
+    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer();
 
-        final Configuration config = new Configuration(file, home);
-        BrokerPool.configure(1, 5, config);
-
-        BrokerPool pool = BrokerPool.getInstance();
+    @BeforeClass
+    public static void setUp() throws Exception {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn transaction = transact.beginTransaction()) {
@@ -115,14 +112,24 @@ public class DLNStorageTest {
             //TODO : unlock the collection here ?
             assertNotNull(info);
 
-            test.store(transaction, broker, info, TEST_XML, false);
+            test.store(transaction, broker, info, TEST_XML);
 
             transact.commit(transaction);
         }
     }
 
-    @After
-    protected void tearDown() {
-        BrokerPool.stopAll(false);
+    @AfterClass
+    public static void tearDown() throws EXistException, PermissionDeniedException, IOException, TriggerException {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        final TransactionManager transact = pool.getTransactionManager();
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+            final Txn transaction = transact.beginTransaction()) {
+
+            final Collection root = broker.getOrCreateCollection(transaction, XmldbURI.create(XmldbURI.ROOT_COLLECTION + TEST_COLLECTION));
+            assertNotNull(root);
+            broker.removeCollection(transaction, root);
+
+            transact.commit(transaction);
+        }
     }
 }

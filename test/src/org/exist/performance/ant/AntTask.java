@@ -29,7 +29,9 @@ import org.w3c.dom.Document;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class AntTask extends Task {
 
@@ -38,12 +40,14 @@ public class AntTask extends Task {
 
     private String group = null;
 
+    @Override
     public void execute() throws BuildException {
-        File src = new File(source);
-        if (!(src.canRead() && src.isFile()))
+        final Path src = Paths.get(source);
+        if (!(Files.isReadable(src) && Files.isRegularFile(src))) {
             throw new BuildException("Cannot read input file: " + source);
+        }
 
-        File outFile = new File(outputFile);
+        final Path outFile = Paths.get(outputFile);
 
         Runner runner = null;
         try {
@@ -51,11 +55,12 @@ public class AntTask extends Task {
             factory.setNamespaceAware(true);
             factory.setValidating(false);
             DocumentBuilder builder = factory.newDocumentBuilder();
-            Document doc = builder.parse(src);
+            Document doc = builder.parse(src.toFile());
 
-            TestResultWriter writer = new TestResultWriter(outFile.getAbsolutePath());
-            runner = new Runner(doc.getDocumentElement(), writer);
-            runner.run(group);
+            try(final TestResultWriter writer = new TestResultWriter(outFile)) {
+                runner = new Runner(doc.getDocumentElement(), writer);
+                runner.run(group);
+            }
         } catch (Exception e) {
             throw new BuildException("ERROR: " + e.getMessage(), e);
         } finally {

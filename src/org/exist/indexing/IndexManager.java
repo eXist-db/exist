@@ -23,6 +23,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.backup.RawDataBackup;
 import org.exist.storage.BrokerPool;
+import org.exist.storage.BrokerPoolService;
+import org.exist.storage.BrokerPoolServiceException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.btree.DBException;
 import org.exist.util.Configuration;
@@ -37,7 +39,7 @@ import java.util.stream.Collectors;
 /**
  * Manages all custom indexes registered with the database instance.
  */
-public class IndexManager {
+public class IndexManager implements BrokerPoolService {
 
     private final static Logger LOG = LogManager.getLogger(IndexManager.class);
 
@@ -52,8 +54,25 @@ public class IndexManager {
 
     private Map<String, Index> indexers = new HashMap<>();
 
+    private Configuration.IndexModuleConfig modConfigs[];
+    private Path dataDir;
+
     /**
-     * Constructs a new IndexManager and registers the indexes specified in
+     * @param pool   the BrokerPool representing the current database instance
+     */
+    public IndexManager(final BrokerPool pool) {
+        this.pool = pool;
+    }
+
+    @Override
+    public void configure(final Configuration configuration) throws BrokerPoolServiceException {
+        this.modConfigs = (Configuration.IndexModuleConfig[])
+                configuration.getProperty(PROPERTY_INDEXER_MODULES);
+        this.dataDir = (Path) configuration.getProperty(BrokerPool.PROPERTY_DATA_DIR);
+    }
+
+    /**
+     * Registers the indexes specified in
      * the global configuration object, i.e. in the :
      * <pre>
      * &lt;modules&gt;
@@ -61,29 +80,26 @@ public class IndexManager {
      * &lt;/modules&gt;
      * </pre>
      * section of the configuration file.
-     *
-     * @param pool   the BrokerPool representing the current database instance
-     * @param config the configuration object
-     * @throws DatabaseConfigurationException
      */
-    public IndexManager(final BrokerPool pool, final Configuration config) throws DatabaseConfigurationException {
-        this.pool = pool;
-        final Configuration.IndexModuleConfig modConfigs[] = (Configuration.IndexModuleConfig[])
-                config.getProperty(PROPERTY_INDEXER_MODULES);
-        final Path dataDir = (Path) config.getProperty(BrokerPool.PROPERTY_DATA_DIR);
-        if (modConfigs != null) {
-            for (final Configuration.IndexModuleConfig modConfig : modConfigs) {
-                final String className = modConfig.getClassName();
-                initIndex(pool, modConfig.getId(), modConfig.getConfig(), dataDir, className);
+    @Override
+    public void prepare(final BrokerPool brokerPool) throws BrokerPoolServiceException {
+        try {
+            if (modConfigs != null) {
+                for (final Configuration.IndexModuleConfig modConfig : modConfigs) {
+                    final String className = modConfig.getClassName();
+                    initIndex(pool, modConfig.getId(), modConfig.getConfig(), dataDir, className);
+                }
             }
-        }
-        // check if a structural index was configured. If not, create one based on default settings.
-        AbstractIndex structural = (AbstractIndex) indexers.get(StructuralIndex.STRUCTURAL_INDEX_ID);
-        if (structural == null) {
-            structural = initIndex(pool, StructuralIndex.STRUCTURAL_INDEX_ID, null, dataDir, StructuralIndex.DEFAULT_CLASS);
-            if (structural != null) {
-                structural.setName(StructuralIndex.STRUCTURAL_INDEX_ID);
+            // check if a structural index was configured. If not, create one based on default settings.
+            AbstractIndex structural = (AbstractIndex) indexers.get(StructuralIndex.STRUCTURAL_INDEX_ID);
+            if (structural == null) {
+                structural = initIndex(pool, StructuralIndex.STRUCTURAL_INDEX_ID, null, dataDir, StructuralIndex.DEFAULT_CLASS);
+                if (structural != null) {
+                    structural.setName(StructuralIndex.STRUCTURAL_INDEX_ID);
+                }
             }
+        } catch(final DatabaseConfigurationException e) {
+            throw new BrokerPoolServiceException(e);
         }
     }
 

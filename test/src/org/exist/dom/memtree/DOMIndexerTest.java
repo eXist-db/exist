@@ -37,9 +37,8 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
-import org.exist.util.Configuration;
-import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.xmldb.XmldbURI;
@@ -48,8 +47,7 @@ import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
@@ -59,6 +57,9 @@ import org.xml.sax.SAXException;
  * @author wolf
  */
 public class DOMIndexerTest {
+
+    @ClassRule
+    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer();
 
     private final static String XML =
         "<?xml version=\"1.0\"?>" +
@@ -95,18 +96,18 @@ public class DOMIndexerTest {
 
     @Test
     public void store() throws PermissionDeniedException, IOException, EXistException, SAXException, LockException, AuthenticationException {
-    	final BrokerPool pool = BrokerPool.getInstance();
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager txnMgr = pool.getTransactionManager();
 
     	try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().authenticate("admin", "")));
                 final Txn txn = txnMgr.beginTransaction()) {
 
-            Collection collection = broker.getOrCreateCollection(txn, TestConstants.TEST_COLLECTION_URI);
-            IndexInfo info = collection.validateXMLResource(txn, broker, TestConstants.TEST_XML_URI, XML);
+            final Collection collection = broker.getOrCreateCollection(txn, TestConstants.TEST_COLLECTION_URI);
+            final IndexInfo info = collection.validateXMLResource(txn, broker, TestConstants.TEST_XML_URI, XML);
             //TODO : unlock the collection here ?
-            collection.store(txn, broker, info, XML, false);
+            collection.store(txn, broker, info, XML);
             @SuppressWarnings("unused")
-            org.exist.dom.persistent.DocumentImpl doc = info.getDocument();
+            final org.exist.dom.persistent.DocumentImpl doc = info.getDocument();
             broker.flush();
             broker.saveCollection(txn, collection);
             txnMgr.commit(txn);
@@ -114,34 +115,23 @@ public class DOMIndexerTest {
     }
 
     @Test
-    public void xQuery() throws EXistException, PermissionDeniedException, SAXException, XPathException {
-        final BrokerPool pool = BrokerPool.getInstance();
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-            XQuery xquery = broker.getBrokerPool().getXQueryService();
-            Sequence result = xquery.execute(broker, XQUERY, null);
-            int count = result.getItemCount();
-            StringWriter out = new StringWriter();
-            Properties props = new Properties();
+    public void xQuery() throws EXistException, PermissionDeniedException, SAXException, XPathException, IOException {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+                final StringWriter out = new StringWriter()) {
+            final XQuery xquery = pool.getXQueryService();
+            final Sequence result = xquery.execute(broker, XQUERY, null);
+            final int count = result.getItemCount();
+            final Properties props = new Properties();
             props.setProperty(OutputKeys.INDENT, "yes");
-            SAXSerializer serializer = new SAXSerializer(out, props);
+            final SAXSerializer serializer = new SAXSerializer(out, props);
             serializer.startDocument();
-            for (SequenceIterator i = result.iterate(); i.hasNext(); ) {
-                Item next = i.nextItem();
+            for (final SequenceIterator i = result.iterate(); i.hasNext(); ) {
+                final Item next = i.nextItem();
                 next.toSAX(broker, serializer, props);
             }
             serializer.endDocument();
             out.toString();
         }
-    }
-
-    @Before
-    public void setUp() throws DatabaseConfigurationException, EXistException {
-        Configuration config = new Configuration();
-        BrokerPool.configure(1, 5, config);
-    }  
-
-    @After
-    public void tearDown() {
-        BrokerPool.stopAll(false);
     }
 }

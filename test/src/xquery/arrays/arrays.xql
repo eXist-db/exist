@@ -12,7 +12,13 @@ declare namespace json="http://www.json.org";
 declare variable $arr:SERIALIZE_JSON :=
     <output:serialization-parameters>
         <output:method>json</output:method>
-        <output:indent>false</output:indent>
+        <output:indent>no</output:indent>
+    </output:serialization-parameters>;
+
+declare variable $arr:SERIALIZE_JSON_INDENT :=
+    <output:serialization-parameters>
+        <output:method>json</output:method>
+        <output:indent>yes</output:indent>
     </output:serialization-parameters>;
 
 declare variable $arr:COLLECTION_CONF :=
@@ -745,11 +751,19 @@ function arr:serialize-node() {
 };
 
 declare
-    %test:assertEquals('{ "status" : true }')
+    %test:assertEquals('{"status":true}')
 function arr:serialize-old-json-compat() {
     let $xmlJson := <result><status json:literal="true">true</status></result>
     return
         serialize($xmlJson, $arr:SERIALIZE_JSON)
+};
+
+declare
+    %test:assertEquals('{ "status" : true }')
+function arr:serialize-old-json-compat-indent() {
+    let $xmlJson := <result><status json:literal="true">true</status></result>
+    return
+        serialize($xmlJson, $arr:SERIALIZE_JSON_INDENT)
 };
 
 declare

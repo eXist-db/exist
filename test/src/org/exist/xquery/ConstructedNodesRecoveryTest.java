@@ -9,7 +9,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.source.StringSource;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.TransactionManager;
@@ -107,7 +107,7 @@ public class ConstructedNodesRecoveryTest {
             //store test document
             IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create(documentName), testDocument);
             assertNotNull(info);
-            root.store(transaction, broker, info, new InputSource(new StringReader(testDocument)), false);
+            root.store(transaction, broker, info, new InputSource(new StringReader(testDocument)));
 
             //commit the transaction
             transact.commit(transaction);
@@ -138,7 +138,7 @@ public class ConstructedNodesRecoveryTest {
             broker.saveCollection(transaction, root);
 
             //get the test document
-            DocumentImpl doc = root.getDocumentWithLock(broker, XmldbURI.create(documentName), Lock.READ_LOCK);
+            DocumentImpl doc = root.getDocumentWithLock(broker, XmldbURI.create(documentName), LockMode.READ_LOCK);
 
             Serializer serializer = broker.getSerializer();
             serializer.reset();

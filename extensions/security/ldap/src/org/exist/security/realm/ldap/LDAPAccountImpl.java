@@ -8,6 +8,7 @@ import org.exist.security.Group;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.AbstractRealm;
 import org.exist.security.internal.AccountImpl;
+import org.exist.storage.DBBroker;
 
 /**
  *
@@ -20,20 +21,20 @@ public class LDAPAccountImpl extends AccountImpl {
         super(realm, configuration);
     }
 
-    public LDAPAccountImpl(AbstractRealm realm, AccountImpl from_user) throws ConfigurationException {
-        super(realm, from_user);
+    public LDAPAccountImpl(DBBroker broker, AbstractRealm realm, AccountImpl from_user) throws ConfigurationException {
+        super(broker, realm, from_user);
     }
 
-    public LDAPAccountImpl(AbstractRealm realm, int id, Account from_user) throws ConfigurationException, PermissionDeniedException {
-        super(realm, id, from_user);
+    public LDAPAccountImpl(DBBroker broker, AbstractRealm realm, int id, Account from_user) throws ConfigurationException, PermissionDeniedException {
+        super(broker, realm, id, from_user);
     }
 
-    public LDAPAccountImpl(AbstractRealm realm, String name) throws ConfigurationException {
-        super(realm, name);
+    public LDAPAccountImpl(DBBroker broker, AbstractRealm realm, String name) throws ConfigurationException {
+        super(broker, realm, name);
     }
 
-    public LDAPAccountImpl(AbstractRealm realm, int id, String name, String password) throws ConfigurationException {
-        super(realm, id, name, password);
+    public LDAPAccountImpl(DBBroker broker, AbstractRealm realm, int id, String name, String password) throws ConfigurationException {
+        super(broker, realm, id, name, password);
     }
 
     LDAPAccountImpl(AbstractRealm realm, Configuration config, boolean removed) throws ConfigurationException {

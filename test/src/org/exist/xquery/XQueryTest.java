@@ -1345,6 +1345,17 @@ public class XQueryTest {
     }
 
     @Test
+    public void instanceOfNamespaceNode() throws XMLDBException {
+        ResourceSet result = existEmbeddedServer.executeQuery("namespace test { 'test' } instance of namespace-node()");
+        assertEquals(1,result.getSize());
+        assertEquals("true", result.getResource(0).getContent().toString());
+
+        result = existEmbeddedServer.executeQuery("<x/> instance of namespace-node()");
+        assertEquals(1, result.getSize());
+        assertEquals("false", result.getResource(0).getContent().toString());
+    }
+
+    @Test
     public void largeAttributeSimple() throws XMLDBException {
         ResourceSet result;
         String query;
@@ -2774,6 +2785,49 @@ public class XQueryTest {
             + "//@* \n";
         result = service.query(query);
         assertEquals("XQuery: " + query, 3, result.getSize());
+    }
+
+    @Test(expected=XPathException.class)
+    public void pathOperatorContainingNodesAndNonNodes() throws XMLDBException, XPathException {
+        final String query = "declare function local:test() { (1,<n/>) };\n" +
+                "<x/>/local:test()";
+        try {
+            existEmbeddedServer.executeQuery(query);
+        } catch(final XMLDBException e) {
+            if(e.getCause() instanceof XPathException) {
+                final XPathException xpe = (XPathException)e.getCause();
+                assertEquals(ErrorCodes.XPTY0018, xpe.getErrorCode());
+                throw xpe;
+            } else {
+                throw e;
+            }
+        }
+    }
+
+    @Test
+    public void exprContainingNodesAndNonNodes() throws XMLDBException, XPathException {
+        final String query = "declare function local:test() { (1,<n/>) };\n" +
+                "local:test()";
+        final ResourceSet result = existEmbeddedServer.executeQuery(query);
+
+        assertEquals(2, result.getSize());
+        assertEquals("1", result.getResource(0).getContent().toString());
+        assertEquals("<n/>", result.getResource(1).getContent().toString());
+    }
+
+    /**
+     * @see https://github.com/eXist-db/exist/issues/1121
+     */
+    @Test
+    public void multipleExprsContainingNodesAndNonNodes() throws XMLDBException, XPathException {
+        final String query = "declare variable $a := 'a';\n" +
+                "declare function local:test() { (1,<n/>) };\n" +
+                "local:test()";
+        final ResourceSet result = existEmbeddedServer.executeQuery(query);
+
+        assertEquals(2, result.getSize());
+        assertEquals("1", result.getResource(0).getContent().toString());
+        assertEquals("<n/>", result.getResource(1).getContent().toString());
     }
 
     // ======================================

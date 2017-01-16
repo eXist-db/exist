@@ -22,13 +22,15 @@
 package org.exist.xquery.functions.validate;
 
 import org.custommonkey.xmlunit.exceptions.XpathException;
+import org.exist.util.FileUtils;
 import org.junit.*;
 import static org.junit.Assert.*;
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 
-import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.function.Predicate;
 
 import org.exist.test.EmbeddedExistTester;
 
@@ -53,32 +55,31 @@ public class JingSchematronTest extends EmbeddedExistTester {
     public static void prepareResources() throws Exception {
 
         // Switch off validation
-        Collection conf = createCollection(rootCollection, "system/config/db/tournament");
+        final Collection conf = createCollection(rootCollection, "system/config/db/tournament");
         storeResource(conf, "collection.xconf", noValidation.getBytes());
 
         // Create filter
-        FilenameFilter filter = new FilenameFilter() {
-            public boolean accept(File dir, String name) {
-                return (name.startsWith("Tournament") || name.startsWith("tournament"));
-            }
+        final Predicate<Path> filter = path -> {
+            final String fileName = FileUtils.fileName(path);
+            return fileName.startsWith("Tournament") || fileName.startsWith("tournament");
         };
 
         // Store schematron 1.5 test files
-        Collection col15 = createCollection(rootCollection, "tournament/1.5");
-        File sch15 = new File("samples/validation/tournament/1.5");
+        final Collection col15 = createCollection(rootCollection, "tournament/1.5");
+        final Path sch15 = Paths.get("samples/validation/tournament/1.5");
 
-        for (File file : sch15.listFiles(filter)) {
-            byte[] data = readFile(sch15, file.getName());
-            storeResource(col15, file.getName(), data);
+        for (final Path file : FileUtils.list(sch15, filter)) {
+            final byte[] data = readFile(file);
+            storeResource(col15, FileUtils.fileName(file), data);
         }
 
         // Store schematron iso testfiles
-        Collection colISO = createCollection(rootCollection, "tournament/iso");
-        File schISO = new File("samples/validation/tournament/iso");
+        final Collection colISO = createCollection(rootCollection, "tournament/iso");
+        final Path schISO = Paths.get("samples/validation/tournament/iso");
 
-        for (File file : schISO.listFiles(filter)) {
-            byte[] data = readFile(schISO, file.getName());
-            storeResource(colISO, file.getName(), data);
+        for (final Path file : FileUtils.list(schISO, filter)) {
+            final byte[] data = readFile(file);
+            storeResource(colISO, FileUtils.fileName(file), data);
         }
 
     }

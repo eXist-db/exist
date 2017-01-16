@@ -51,8 +51,8 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
-import org.exist.util.function.Consumer2E;
-import org.exist.util.function.ConsumerE;
+import com.evolvedbinary.j8fu.function.Consumer2E;
+import com.evolvedbinary.j8fu.function.ConsumerE;
 import org.exist.xmldb.XmldbURI;
 
 /**
@@ -319,7 +319,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
     }
 
     @Override
-    public Group addGroup(Group group) throws PermissionDeniedException, EXistException {
+    public Group addGroup(final DBBroker broker, final Group group) throws PermissionDeniedException, EXistException {
         
         if(group.getRealmId() == null) {
             throw new ConfigurationException("Group's realmId is null.");
@@ -329,7 +329,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
             throw new ConfigurationException("Group from different realm");
         }
 
-        return getSecurityManager().addGroup(group);
+        return getSecurityManager().addGroup(broker, group);
     }
 
     @Override

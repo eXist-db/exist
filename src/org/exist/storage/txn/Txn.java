@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.exist.Transaction;
 import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.util.LockException;
 
 /**
@@ -60,11 +61,11 @@ public class Txn implements Transaction {
         return id;
     }
     
-    public void registerLock(final Lock lock, final int lockMode) {
+    public void registerLock(final Lock lock, final LockMode lockMode) {
         locksHeld.add(new LockInfo(lock, lockMode));
     }
     
-    public void acquireLock(final Lock lock, final int lockMode) throws LockException {
+    public void acquireLock(final Lock lock, final LockMode lockMode) throws LockException {
         lock.acquire(lockMode);
         locksHeld.add(new LockInfo(lock, lockMode));
     }
@@ -97,9 +98,9 @@ public class Txn implements Transaction {
 
     private static class LockInfo {
         final Lock lock;
-        final int lockMode;
+        final LockMode lockMode;
         
-        public LockInfo(final Lock lock, final int lockMode) {
+        public LockInfo(final Lock lock, final LockMode lockMode) {
             this.lock = lock;
             this.lockMode = lockMode;
         }

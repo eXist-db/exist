@@ -1,0 +1,15 @@
+[Unit]
+Description=eXist-db – Native XML Database – $w_name
+Documentation=http://exist-db.org/exist/apps/doc/
+After=syslog.target
+
+[Service]
+Type=forking
+User=${RUN_AS_USER}
+ExecStart=${JAVA_HOME}/bin/java -Dwrapper.pidfile=$w_wrapper_pid_file -Dwrapper.service=true -Dwrapper.visible=false -Djna_tmpdir=${EXIST_HOME}/tools/yajsw/tmp -jar ${EXIST_HOME}/tools/yajsw/wrapper.jar -tx ${EXIST_HOME}/tools/yajsw/conf/wrapper.conf
+ExecStop=${JAVA_HOME}/bin/java -Dwrapper.pidfile=$w_wrapper_pid_file -Dwrapper.service=true -Dwrapper.visible=false -Djna_tmpdir=${EXIST_HOME}/tools/yajsw/tmp -jar ${EXIST_HOME}/tools/yajsw/wrapper.jar -px ${EXIST_HOME}/tools/yajsw/conf/wrapper.conf
+Restart=on-abort
+StandardOutput=null
+
+[Install]
+WantedBy=multi-user.target

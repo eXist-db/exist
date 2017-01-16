@@ -1,7 +1,9 @@
 package org.exist.storage;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
 import java.util.Optional;
 
 import org.exist.EXistException;
@@ -14,9 +16,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.test.TestConstants;
-import org.exist.util.Configuration;
-import org.exist.util.DatabaseConfigurationException;
-import org.exist.util.LockException;
+import org.exist.util.*;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
@@ -40,11 +40,12 @@ public class ShutdownTest {
 
 	private static String directory = "samples/shakespeare";
     
-    private static File dir = null;
+    private static Path dir = null;
     static {
-       final String existHome = System.getProperty("exist.home");
-       final File existDir = existHome == null ? new File(".") : new File(existHome);
-       dir = new File(existDir, directory);
+        final String existHome = System.getProperty("exist.home");
+        Path existDir = existHome == null ? Paths.get(".") : Paths.get(existHome);
+        existDir = existDir.normalize();
+        dir = existDir.resolve(directory);
     }
 
     @Test
@@ -70,17 +71,16 @@ public class ShutdownTest {
 	            final CollectionConfigurationManager mgr = broker.getBrokerPool().getConfigurationManager();
 	            mgr.addConfiguration(transaction, broker, test, COLLECTION_CONFIG);
 
-	            final File files[] = dir.listFiles((dir1, name) -> name.endsWith(".xml"));
-	            assertNotNull(files);
+	            final List<Path> files = FileUtils.list(dir, XMLFilenameFilter.asPredicate());
 
                 // store some documents.
-	            for(final File f : files) {
+	            for(final Path f : files) {
                     try {
-                        final IndexInfo info = test.validateXMLResource(transaction, broker, XmldbURI.create(f.getName()), new InputSource(f.toURI().toASCIIString()));
+                        final IndexInfo info = test.validateXMLResource(transaction, broker, XmldbURI.create(FileUtils.fileName(f)), new InputSource(f.toUri().toASCIIString()));
                         assertNotNull(info);
-                        test.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
+                        test.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()));
                     } catch (SAXException e) {
-                        System.err.println("Error found while parsing document: " + f.getName() + ": " + e.getMessage());
+                        System.err.println("Error found while parsing document: " + FileUtils.fileName(f) + ": " + e.getMessage());
                     }
                 }
 

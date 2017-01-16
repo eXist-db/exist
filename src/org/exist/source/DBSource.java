@@ -36,7 +36,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.security.internal.aider.UnixStylePermissionAider;
 import org.exist.storage.DBBroker;
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.xmldb.XmldbURI;
 
 /**
@@ -96,7 +96,7 @@ public class DBSource extends AbstractSource {
         DocumentImpl d = null;
         int result;
         try {
-            d = broker.getXMLResource(key, Lock.READ_LOCK);
+            d = broker.getXMLResource(key, LockMode.READ_LOCK);
             
             if(d == null) {
                 result = INVALID;
@@ -109,7 +109,7 @@ public class DBSource extends AbstractSource {
             result = INVALID;
         } finally {
             if(d != null) {
-                d.getUpdateLock().release(Lock.READ_LOCK);
+                d.getUpdateLock().release(LockMode.READ_LOCK);
             }
         }
         

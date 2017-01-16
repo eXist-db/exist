@@ -22,6 +22,7 @@
 package org.exist.xquery.modules.file;
 
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 
 import org.apache.logging.log4j.LogManager;
@@ -41,7 +42,7 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
 /**
- * @see java.io.File#isDirectory() 
+ * @see java.nio.file.Files#isDirectory(Path, LinkOption...)
  * @author Andrzej Taramina
  * @author Loren Cahlander
  *

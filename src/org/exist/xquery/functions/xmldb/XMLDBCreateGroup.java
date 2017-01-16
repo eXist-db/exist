@@ -129,7 +129,7 @@ public class XMLDBCreateGroup extends BasicFunction {
 			}
 
 			// create the group
-			group = sm.addGroup(group);
+			group = sm.addGroup(context.getBroker(), group);
 
             //TEMP - ESCALATE TO DBA :-(
             //START TEMP - we also need to make every manager a member of the group otherwise

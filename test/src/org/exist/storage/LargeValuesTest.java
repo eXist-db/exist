@@ -7,31 +7,31 @@ import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
-import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
+import org.exist.util.FileUtils;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.TestUtils;
-import org.junit.After;
-import static org.junit.Assert.*;
-import org.junit.Test;
+
+import org.junit.*;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Random;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.Assert.*;
 
 /**
  * Test indexing and recovery of large string sequences.
@@ -49,19 +49,113 @@ public class LargeValuesTest {
 
     private static final int KEY_LENGTH = 5000;
 
+    @ClassRule
+    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer();
+
     @Test
     public void storeAndRecover() throws PermissionDeniedException, DatabaseConfigurationException, IOException, LockException, CollectionConfigurationException, SAXException, EXistException {
-        for (int i = 0; i < 1; i++) {
-            storeDocuments();
-            restart();
-            remove();
+        storeDocuments();
+        restart();
+        remove();
+    }
+
+    /**
+     * Store some documents, reindex the collection and crash without commit.
+     */
+    private void storeDocuments() throws EXistException, DatabaseConfigurationException, PermissionDeniedException, IOException, SAXException, CollectionConfigurationException, LockException {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        final TransactionManager transact = pool.getTransactionManager();
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+
+            Collection root;
+
+            try(final Txn transaction = transact.beginTransaction()) {
+
+                root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
+                assertNotNull(root);
+                broker.saveCollection(transaction, root);
+
+                pool.getConfigurationManager().addConfiguration(transaction, broker, root, CONFIG_QNAME);
+
+                transact.commit(transaction);
+            }
+
+            pool.getJournalManager().get().flush(true, false);
+
+            BrokerPool.FORCE_CORRUPTION = true;
+
+            final Path file = createDocument();
+            try(final Txn transaction = transact.beginTransaction()) {
+                final IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"),
+                        new InputSource(file.toUri().toASCIIString()));
+                assertNotNull(info);
+                root.store(transaction, broker, info, new InputSource(file.toUri().toASCIIString()));
+                broker.saveCollection(transaction, root);
+
+                transact.commit(transaction);
+            } finally {
+                FileUtils.deleteQuietly(file);
+            }
+
+            pool.getJournalManager().get().flush(true, false);
         }
     }
 
-    private File createDocument() throws IOException {
-        final File file = File.createTempFile("eXistTest", ".xml");
+    /**
+     * Just recover.
+     */
+    private void restart() throws EXistException, DatabaseConfigurationException, PermissionDeniedException, IOException, SAXException {
 
-        try(final Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "UTF-8"))) {
+        BrokerPool.FORCE_CORRUPTION = false;
+
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
+            final Collection root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, LockMode.READ_LOCK);
+            assertNotNull(root);
+
+            final DocumentImpl doc = root.getDocument(broker, XmldbURI.create("test.xml"));
+            assertNotNull(doc);
+
+            final Serializer serializer = broker.getSerializer();
+            serializer.reset();
+
+            final Path tempFile = Files.createTempFile("eXist", ".xml");
+            try(final Writer writer = Files.newBufferedWriter(tempFile, UTF_8)) {
+                serializer.serialize(doc, writer);
+            }
+            FileUtils.deleteQuietly(tempFile);
+
+//            XQuery xquery = broker.getXQueryService();
+//            DocumentSet docs = broker.getAllXMLResources(new DefaultDocumentSet());
+//            Sequence result = xquery.execute(broker, "//key/@id/string()", docs.docsToNodeSet(), AccessContext.TEST);
+//            assertEquals(KEY_COUNT, result.getItemCount());
+//            for (SequenceIterator i = result.iterate(); i.hasNext();) {
+//                Item item = i.nextItem();
+//                String s = item.getStringValue();
+//                assertTrue(s.length() > 0);
+//                if (s.length() == 0)
+//                    break;
+//            }
+        }
+    }
+
+    private void remove() throws EXistException, PermissionDeniedException, DatabaseConfigurationException, IOException, TriggerException {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        final TransactionManager transact = pool.getTransactionManager();
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+                final Txn transaction = transact.beginTransaction()) {
+
+            final Collection root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, LockMode.READ_LOCK);
+            assertNotNull(root);
+            broker.removeCollection(transaction, root);
+
+            transact.commit(transaction);
+        }
+    }
+
+    private Path createDocument() throws IOException {
+        final Path file = Files.createTempFile("eXistTest", ".xml");
+        try(final Writer writer = Files.newBufferedWriter(file, UTF_8)) {
             final Random r = new Random();
             writer.write("<test>");
             for(int i = 0; i < KEY_COUNT; i++) {
@@ -85,108 +179,8 @@ public class LargeValuesTest {
         return file;
     }
 
-    /**
-     * Store some documents, reindex the collection and crash without commit.
-     */
-    private void storeDocuments() throws EXistException, DatabaseConfigurationException, PermissionDeniedException, IOException, SAXException, CollectionConfigurationException, LockException {
-        final BrokerPool pool = startDB();
-        final TransactionManager transact = pool.getTransactionManager();
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-
-            Collection root;
-
-            try(final Txn transaction = transact.beginTransaction()) {
-
-                root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
-                assertNotNull(root);
-                broker.saveCollection(transaction, root);
-
-                pool.getConfigurationManager().addConfiguration(transaction, broker, root, CONFIG_QNAME);
-
-                transact.commit(transaction);
-            }
-
-            pool.getJournalManager().get().flush(true, false);
-
-            BrokerPool.FORCE_CORRUPTION = true;
-
-            final File file = createDocument();
-            try(final Txn transaction = transact.beginTransaction()) {
-                final IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"),
-                        new InputSource(file.toURI().toASCIIString()));
-                assertNotNull(info);
-                root.store(transaction, broker, info, new InputSource(file.toURI().toASCIIString()), false);
-                broker.saveCollection(transaction, root);
-
-                transact.commit(transaction);
-            }
-
-            pool.getJournalManager().get().flush(true, false);
-            file.delete();
-        }
-    }
-
-    /**
-     * Just recover.
-     */
-    private void restart() throws EXistException, DatabaseConfigurationException, PermissionDeniedException, IOException, SAXException {
-
-        BrokerPool.FORCE_CORRUPTION = false;
-        final BrokerPool pool = startDB();
-
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
-            final Collection root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, Lock.READ_LOCK);
-            assertNotNull(root);
-
-            final DocumentImpl doc = root.getDocument(broker, XmldbURI.create("test.xml"));
-            assertNotNull(doc);
-
-            final Serializer serializer = broker.getSerializer();
-            serializer.reset();
-
-            final File tempFile = File.createTempFile("eXist", ".xml");
-            try(final Writer writer = new OutputStreamWriter(new FileOutputStream(tempFile), "UTF-8")) {
-                serializer.serialize(doc, writer);
-                tempFile.delete();
-            }
-//            XQuery xquery = broker.getXQueryService();
-//            DocumentSet docs = broker.getAllXMLResources(new DefaultDocumentSet());
-//            Sequence result = xquery.execute(broker, "//key/@id/string()", docs.docsToNodeSet(), AccessContext.TEST);
-//            assertEquals(KEY_COUNT, result.getItemCount());
-//            for (SequenceIterator i = result.iterate(); i.hasNext();) {
-//                Item item = i.nextItem();
-//                String s = item.getStringValue();
-//                assertTrue(s.length() > 0);
-//                if (s.length() == 0)
-//                    break;
-//            }
-        }
-    }
-
-    private void remove() throws EXistException, PermissionDeniedException, DatabaseConfigurationException, IOException, TriggerException {
-
-        final BrokerPool pool = startDB();
-        final TransactionManager transact = pool.getTransactionManager();
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
-                final Txn transaction = transact.beginTransaction()) {
-
-            final Collection root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, Lock.READ_LOCK);
-            assertNotNull(root);
-            broker.removeCollection(transaction, root);
-
-            transact.commit(transaction);
-        }
-    }
-
-    @After
-    public void closeDB() {
+    @AfterClass
+    public static void cleanupDb() {
         TestUtils.cleanupDB();
-        BrokerPool.stopAll(false);
-    }
-
-    protected BrokerPool startDB() throws DatabaseConfigurationException, EXistException {
-        final Configuration config = new Configuration();
-        BrokerPool.configure(1, 5, config);
-        return BrokerPool.getInstance();
     }
 }

@@ -11,8 +11,6 @@ import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.persistent.NodeSetIterator;
 import org.exist.indexing.lucene.LuceneUtil;
-import org.exist.numbering.NodeId;
-import org.exist.util.ByteConversion;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -53,7 +51,7 @@ public class NodesFilter extends Filter {
                 BytesRef lowerBound = new BytesRef(LuceneUtil.createId(node.getDoc().getDocId(), node.getNodeId()));
                 BytesRef upperBound = new BytesRef(LuceneUtil.createId(node.getDoc().getDocId(), node.getNodeId().nextSibling()));
 
-                if (termsEnum.seekCeil(lowerBound, false) != TermsEnum.SeekStatus.END) {
+                if (termsEnum.seekCeil(lowerBound) != TermsEnum.SeekStatus.END) {
                     do {
                         BytesRef nextId = termsEnum.term();
                         if (nextId.compareTo(upperBound) < 0) {

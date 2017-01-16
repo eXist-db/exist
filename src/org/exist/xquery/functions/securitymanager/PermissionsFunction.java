@@ -32,7 +32,7 @@ import org.exist.security.PermissionFactory;
 import org.exist.security.SimpleACLPermission;
 import org.exist.security.Subject;
 import org.exist.util.SyntaxException;
-import org.exist.util.function.ConsumerE;
+import com.evolvedbinary.j8fu.function.ConsumerE;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;

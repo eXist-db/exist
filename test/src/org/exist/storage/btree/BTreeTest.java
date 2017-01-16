@@ -1,17 +1,18 @@
 package org.exist.storage.btree;
 
+import org.easymock.EasyMock;
 import org.exist.EXistException;
 import org.exist.storage.BrokerPool;
+import org.exist.storage.DefaultCacheManager;
+import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.*;
 import org.exist.xquery.TerminatedException;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.DoubleValue;
-import org.junit.After;
+import org.junit.*;
+
 import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
-
-import org.junit.Before;
-import org.junit.Test;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -27,17 +28,15 @@ import java.util.TreeMap;
  */
 public class BTreeTest {
 
-    private BrokerPool pool;
     private Path file = null;
 
     private int count = 0;
     private static final int COUNT = 5000;
 
     @Test
-    public void simpleUpdates() {
-        BTree btree = null;
-        try {
-            btree = new BTree(pool, (byte) 0, false, pool.getCacheManager(), file);
+    public void simpleUpdates() throws DBException, IOException, TerminatedException {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        try(final BTree btree = new BTree(pool, (byte) 0, false, pool.getCacheManager(), file)) {
             btree.create((short) -1);
 
             String prefixStr = "K";
@@ -67,29 +66,13 @@ public class BTreeTest {
             btree.query(query, new StringIndexCallback());
             assertEquals(COUNT, count);
             btree.flush();
-        } catch (DBException e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } catch (IOException e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } finally {
-            if (btree != null)
-                try {
-                    btree.close();
-                } catch (DBException e) {
-                }
         }
     }
 
     @Test
-    public void strings() {
-        BTree btree = null;
-        try {
-            btree = new BTree(pool, (byte) 0, false, pool.getCacheManager(), file);
+    public void strings() throws DBException, IOException, TerminatedException {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        try(final BTree btree = new BTree(pool, (byte) 0, false, pool.getCacheManager(), file)) {
             btree.create((short) -1);
 
             String prefixStr = "C";
@@ -138,32 +121,16 @@ public class BTreeTest {
             query = new IndexQuery(IndexQuery.LT, new Value(prefixStr));
             btree.query(query, new StringIndexCallback());
             assertEquals(count, 0);
-        } catch (DBException e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } catch (IOException e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } catch (TerminatedException e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } finally {
-            if (btree != null)
-                try {
-                    btree.close();
-                } catch (DBException e) {
-                }
         }
     }
 
     @Test
-    public void longStrings() {
+    public void longStrings() throws DBException, IOException {
         // Test storage of long keys up to half of the page size (4k)
-        Random rand = new Random(System.currentTimeMillis());
+        final Random rand = new Random(System.currentTimeMillis());
 
-        BTree btree = null;
-        try {
-            btree = new BTree(pool, (byte) 0, false, pool.getCacheManager(), file);
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        try(final BTree btree = new BTree(pool, (byte) 0, false, pool.getCacheManager(), file)) {
             btree.setSplitFactor(0.7);
             btree.create((short) -1);
 
@@ -192,26 +159,13 @@ public class BTreeTest {
                 long p = btree.findValue(new Value(entry.getKey().toString()));
                 assertEquals(p, entry.getValue().intValue());
             }
-        } catch (DBException e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } catch (IOException e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } finally {
-            if (btree != null)
-                try {
-                    btree.close();
-                } catch (DBException e) {
-                }
         }
     }
 
     @Test
-    public void stringsTruncated() {
-        BTree btree = null;
-        try {
-            btree = new BTree(pool, (byte) 0, false, pool.getCacheManager(), file);
+    public void stringsTruncated() throws DBException, IOException, TerminatedException {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        try(BTree btree = new BTree(pool, (byte) 0, false, pool.getCacheManager(), file)) {
             btree.create((short) -1);
 
             char prefix = 'A';
@@ -233,29 +187,13 @@ public class BTreeTest {
                 assertEquals(COUNT, count);
                 prefix++;
             }
-        } catch (DBException e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } catch (IOException e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } catch (TerminatedException e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } finally {
-            if (btree != null)
-                try {
-                    btree.close();
-                } catch (DBException e) {
-                }
         }
     }
 
     @Test
-    public void removeStrings() {
-        BTree btree = null;
-        try {
-            btree = new BTree(pool, (byte) 0, false, pool.getCacheManager(), file);
+    public void removeStrings() throws DBException, IOException, TerminatedException {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        try(final BTree btree = new BTree(pool, (byte) 0, false, pool.getCacheManager(), file)) {
             btree.create((short) -1);
 
             char prefix = 'A';
@@ -286,28 +224,13 @@ public class BTreeTest {
             IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, new Value(Character.toString('D')));
             btree.query(query, new StringIndexCallback());
             assertEquals(0, count);
-        } catch (DBException e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } catch (IOException e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } catch (TerminatedException e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } finally {
-            if (btree != null)
-                try {
-                    btree.close();
-                } catch (DBException e) {
-                }
         }
     }
 
     @Test
-    public void numbers() throws TerminatedException {
-        try {
-            BTree btree = new BTree(pool, (byte) 0, false, pool.getCacheManager(), file);
+    public void numbers() throws TerminatedException, DBException, EXistException, IOException {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        try(final BTree btree = new BTree(pool, (byte) 0, false, pool.getCacheManager(), file)) {
             btree.create((short) -1);
 
             for (int i = 1; i <= COUNT; i++) {
@@ -340,24 +263,13 @@ public class BTreeTest {
                 btree.query(query, new SimpleCallback());
                 assertEquals(COUNT - 1, count);
             }
-
-            btree.close();
-        } catch (DBException e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } catch (IOException e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } catch (EXistException e) {
-            e.printStackTrace();
-            fail(e.getMessage());
         }
     }
 
     @Test
-    public void numbersWithPrefix() {
-        try {
-            BTree btree = new BTree(pool, (byte) 0, false, pool.getCacheManager(), file);
+    public void numbersWithPrefix() throws DBException, EXistException, IOException, TerminatedException {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        try(final BTree btree = new BTree(pool, (byte) 0, false, pool.getCacheManager(), file)) {
             btree.create((short) -1);
 
             for (int i = 1; i <= COUNT; i++) {
@@ -412,49 +324,21 @@ public class BTreeTest {
                 btree.query(query, prefix, new PrefixIndexCallback());
                 assertEquals(COUNT - 1, count);
             }
-
-            btree.close();
-        } catch (DBException e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } catch (IOException e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } catch (TerminatedException e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } catch (EXistException e) {
-            e.printStackTrace();
-            fail(e.getMessage());
         }
     }
 
+    @ClassRule
+    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer();
+
     @Before
     public void initialize() {
-        try {
-            Configuration config = new Configuration();
-            BrokerPool.configure(1, 5, config);
-            pool = BrokerPool.getInstance();
-
-            file = Paths.get(System.getProperty("exist.home", ".")).resolve("test/junit/test.dbx");
-            assertFalse(Files.exists(file));
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        }
+        file = Paths.get(System.getProperty("exist.home", ".")).resolve("test/junit/test.dbx");
+        assertFalse(Files.exists(file));
     }
 
     @After
     public void cleanUp() {
-    	try {
-	        BrokerPool.stopAll(false);
-
-            FileUtils.deleteQuietly(file);
-        } catch (Exception e) {
-	        fail(e.getMessage());
-	    }
-        pool = null;
-        file = null;
+        FileUtils.deleteQuietly(file);
     }
 
     private final class SimpleCallback implements BTreeCallback {
@@ -462,7 +346,8 @@ public class BTreeTest {
         public SimpleCallback() {
             count = 0;
         }
-        
+
+        @Override
         public boolean indexInfo(Value value, long pointer) throws TerminatedException {
             count++;
             return false;
@@ -474,7 +359,8 @@ public class BTreeTest {
         public PrefixIndexCallback() {
             count = 0;
         }
-        
+
+        @Override
         public boolean indexInfo(Value value, long pointer) throws TerminatedException {
             int prefix = ByteConversion.byteToInt(value.data(), value.start());
             assertEquals(99, prefix);
@@ -489,7 +375,8 @@ public class BTreeTest {
         public StringIndexCallback() {
             count = 0;
         }
-        
+
+        @Override
         public boolean indexInfo(Value value, long pointer) throws TerminatedException {
             @SuppressWarnings("unused")
 			XMLString key = UTF8.decode(value.data(), value.start(), value.getLength());

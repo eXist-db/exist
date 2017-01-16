@@ -1,7 +1,9 @@
 package org.exist.examples.xmldb;
 
-import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
+import org.exist.util.FileUtils;
 import org.exist.xmldb.XmldbURI;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -50,9 +52,9 @@ public class Put {
                 (CollectionManagementService)root.getService("CollectionManagementService", "1.0");
             col = mgtService.createCollection(collection.substring((XmldbURI.ROOT_COLLECTION + "/").length()));
         }
-		File f = new File(file);
+		Path f = Paths.get(file);
         // create new XMLResource
-		XMLResource document = (XMLResource)col.createResource(f.getName(), "XMLResource");
+		XMLResource document = (XMLResource)col.createResource(FileUtils.fileName(f), XMLResource.RESOURCE_TYPE);
 		document.setContent(f);
 		System.out.print("storing document " + document.getId() + "...");
 		col.storeResource(document);

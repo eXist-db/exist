@@ -35,13 +35,13 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.Txn;
-import org.exist.util.Configuration;
-import org.exist.util.ConfigurationHelper;
+import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 import org.xmldb.api.DatabaseManager;
@@ -93,12 +93,50 @@ public class SystemExportFiltersTest {
 
     private static String BINARY = "test";
 
-    private static BrokerPool pool;
+    @Rule
+    public final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer();
+
+    @Before
+    public void startDB() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, SAXException, CollectionConfigurationException, LockException, ClassNotFoundException, InstantiationException, XMLDBException, IllegalAccessException {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        pool.getPluginsManager().addPlugin("org.exist.storage.md.Plugin");
+
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+            final Txn txn = pool.getTransactionManager().beginTransaction()) {
+
+            final Collection test = createCollection(txn, broker, TEST_COLLECTION_URI);
+
+            final CollectionConfigurationManager mgr = pool.getConfigurationManager();
+            mgr.addConfiguration(txn, broker, test, COLLECTION_CONFIG);
+
+            storeXMLDocument(txn, broker, test, doc01uri.lastSegment(), XML1);
+            storeXMLDocument(txn, broker, test, doc02uri.lastSegment(), XML2);
+            storeXMLDocument(txn, broker, test, doc03uri.lastSegment(), XML3);
+
+            test.addBinaryResource(txn, broker, doc11uri.lastSegment(), BINARY.getBytes(), null);
+
+            txn.commit();
+        }
+
+        rundb();
+    }
+
+    private void rundb() throws ClassNotFoundException, XMLDBException, IllegalAccessException, InstantiationException {
+        final Class cl = Class.forName("org.exist.xmldb.DatabaseImpl");
+        final Database database = (Database) cl.newInstance();
+        database.setProperty("create-database", "true");
+        DatabaseManager.registerDatabase(database);
+    }
+
+    @After
+    public void cleanup() throws PermissionDeniedException, IOException, TriggerException, EXistException {
+        TestUtils.cleanupDB();
+    }
 
     @Test
     public void exportImport() throws Exception {
         Path file;
-
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             List<String> filters = new ArrayList<>();
@@ -155,36 +193,6 @@ public class SystemExportFiltersTest {
         return serializer.serialize(document);
     }
 
-    @Before
-    public void startDB() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, SAXException, CollectionConfigurationException, LockException, ClassNotFoundException, InstantiationException, XMLDBException, IllegalAccessException {
-
-        final Path confFile = ConfigurationHelper.lookup("conf.xml");
-        final Configuration config = new Configuration(confFile.toAbsolutePath().toString());
-        BrokerPool.configure(1, 5, config);
-        pool = BrokerPool.getInstance();
-        assertNotNull(pool);
-        pool.getPluginsManager().addPlugin("org.exist.storage.md.Plugin");
-
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
-                final Txn txn = pool.getTransactionManager().beginTransaction()) {
-
-            final Collection test = createCollection(txn, broker, TEST_COLLECTION_URI);
-
-            final CollectionConfigurationManager mgr = pool.getConfigurationManager();
-            mgr.addConfiguration(txn, broker, test, COLLECTION_CONFIG);
-
-            storeXMLDocument(txn, broker, test, doc01uri.lastSegment(), XML1);
-            storeXMLDocument(txn, broker, test, doc02uri.lastSegment(), XML2);
-            storeXMLDocument(txn, broker, test, doc03uri.lastSegment(), XML3);
-
-            test.addBinaryResource(txn, broker, doc11uri.lastSegment(), BINARY.getBytes(), null);
-
-            txn.commit();
-        }
-
-        rundb();
-    }
-
     private Collection createCollection(Txn txn, DBBroker broker, XmldbURI uri) throws PermissionDeniedException, IOException, TriggerException {
         final Collection col = broker.getOrCreateCollection(txn, uri);
         assertNotNull(col);
@@ -197,23 +205,8 @@ public class SystemExportFiltersTest {
         IndexInfo info = col.validateXMLResource(txn, broker, name, data);
         assertNotNull(info);
 
-        col.store(txn, broker, info, data, false);
+        col.store(txn, broker, info, data);
 
         return info.getDocument();
-    }
-
-
-    private void rundb() throws ClassNotFoundException, XMLDBException, IllegalAccessException, InstantiationException {
-        final Class cl = Class.forName("org.exist.xmldb.DatabaseImpl");
-        final Database database = (Database) cl.newInstance();
-        database.setProperty("create-database", "true");
-        DatabaseManager.registerDatabase(database);
-    }
-    
-    @After
-    public void cleanup() throws PermissionDeniedException, IOException, TriggerException, EXistException {
-        TestUtils.cleanupDB();
-        BrokerPool.stopAll(false);
-        pool = null;
     }
 }

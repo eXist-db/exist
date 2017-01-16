@@ -36,6 +36,8 @@ import org.exist.util.MimeType;
 import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
+import org.xmldb.api.modules.BinaryResource;
+import org.xmldb.api.modules.XMLResource;
 
 import java.io.File;
 
@@ -44,239 +46,228 @@ import java.util.ArrayList;
 
 /**
  * An Ant task to store a set of files into eXist.
- *
+ * <p>
  * <p/>The task expects a nested fileset element. The files selected by the fileset will be stored into the database.</p>
- *
+ * <p>
  * <p>New collections can be created as needed. It is also possible to specify that files relative to the base directory should be stored into
  * subcollections of the root collection, where the relative path of the directory corresponds to the relative path of the subcollections.</p>
  *
- * @author  wolf
- *
- *          <p>slightly modified by:</p>
- * @author  peter.klotz@blue-elephant-systems.com
+ * @author wolf
+ *         <p>
+ *         <p>slightly modified by:</p>
+ * @author peter.klotz@blue-elephant-systems.com
  */
-public class XMLDBStoreTask extends AbstractXMLDBTask
-{
-    private File               mimeTypesFile        = null;
-    private File               srcFile              = null;
-    private String             targetFile           = null;
-    private ArrayList<FileSet> fileSetList          = null;
-    private boolean            createCollection     = false;
-    private boolean            createSubcollections = false;
-    private boolean            includeEmptyDirs     = true;
-    private String             type                 = null;
-    private String             defaultMimeType      = null;
-    private String             forceMimeType        = null;
-    private MimeTable          mtable               = null;
+public class XMLDBStoreTask extends AbstractXMLDBTask {
+    private File mimeTypesFile = null;
+    private File srcFile = null;
+    private String targetFile = null;
+    private ArrayList<FileSet> fileSetList = null;
+    private boolean createCollection = false;
+    private boolean createSubcollections = false;
+    private boolean includeEmptyDirs = true;
+    private String type = null;
+    private String defaultMimeType = null;
+    private String forceMimeType = null;
+    private MimeTable mtable = null;
 
-    /* (non-Javadoc)
-     * @see org.apache.tools.ant.Task#execute()
-     */
-    public void execute() throws BuildException
-    {
-        if( uri == null ) {
-            throw( new BuildException( "you have to specify an XMLDB collection URI" ) );
+    @Override
+    public void execute() throws BuildException {
+        if (uri == null) {
+            throw new BuildException("you have to specify an XMLDB collection URI");
         }
 
-        if( ( fileSetList == null ) && ( srcFile == null ) ) {
-            throw( new BuildException( "no file set specified" ) );
+        if ((fileSetList == null) && (srcFile == null)) {
+            throw new BuildException("no file set specified");
         }
 
         registerDatabase();
 
-        //try {
-        int p = uri.indexOf( XmldbURI.ROOT_COLLECTION );
-
-        if( p == Constants.STRING_NOT_FOUND ) {
-            throw( new BuildException( "invalid uri: '" + uri + "'" ) );
+        int p = uri.indexOf(XmldbURI.ROOT_COLLECTION);
+        if (p == Constants.STRING_NOT_FOUND) {
+            throw new BuildException("invalid uri: '" + uri + "'");
         }
 
-        final String baseURI = uri.substring( 0, p );
-        String path;
+        final String baseURI = uri.substring(0, p);
 
-        if( p == ( uri.length() - 3 ) ) {
+        final String path;
+        if (p == (uri.length() - 3)) {
             path = "";
         } else {
-            path = uri.substring( p + 3 );
+            path = uri.substring(p + 3);
         }
 
         Collection root = null;
-
         try {
 
-            if( createCollection ) {
-                root = DatabaseManager.getCollection( baseURI + XmldbURI.ROOT_COLLECTION, user, password );
-                root = mkcol( root, baseURI, XmldbURI.ROOT_COLLECTION, path );
+            if (createCollection) {
+                root = DatabaseManager.getCollection(baseURI + XmldbURI.ROOT_COLLECTION, user, password);
+                root = mkcol(root, baseURI, XmldbURI.ROOT_COLLECTION, path);
             } else {
-                root = DatabaseManager.getCollection( uri, user, password );
+                root = DatabaseManager.getCollection(uri, user, password);
             }
-        }
-        catch( final XMLDBException e ) {
+        } catch (final XMLDBException e) {
             final String msg = "XMLDB exception caught: " + e.getMessage();
 
-            if( failonerror ) {
-                throw( new BuildException( msg, e ) );
+            if (failonerror) {
+                throw new BuildException(msg, e);
             } else {
-                log( msg, e, Project.MSG_ERR );
+                log(msg, e, Project.MSG_ERR);
                 return;
             }
         }
 
-        if( root == null ) {
+        if (root == null) {
             final String msg = "Collection " + uri + " could not be found.";
 
-            if( failonerror ) {
-                throw( new BuildException( msg ) );
+            if (failonerror) {
+                throw new BuildException(msg);
             } else {
-                log( msg, Project.MSG_ERR );
+                log(msg, Project.MSG_ERR);
             }
 
         } else {
-            Resource   res;
-            Collection col          = root;
-            String     relDir;
-            String     prevDir      = null;
-            String     resourceType = "XMLResource";
+            Resource res;
+            Collection col = root;
+            String relDir;
+            String prevDir = null;
 
-            if( srcFile != null ) {
-                log( "Storing " + srcFile.getName() );
+            if (srcFile != null) {
+                log("Storing " + srcFile.getName());
 
-                MimeType mime         = getMimeTable().getContentTypeFor( srcFile.getName() );
-                String   baseMimeType;
+                MimeType mime = getMimeTable().getContentTypeFor(srcFile.getName());
+                String baseMimeType;
 
-                if( forceMimeType != null ) {
+                if (forceMimeType != null) {
                     baseMimeType = forceMimeType;
 
-                } else if( mime != null ) {
+                } else if (mime != null) {
                     baseMimeType = mime.getName();
 
                 } else {
                     baseMimeType = defaultMimeType;
                 }
 
-                if( type != null ) {
+                if (type != null) {
 
-                    if( "xml".equals(type) ) {
-                        mime = ( baseMimeType != null ) ? ( new MimeType( baseMimeType, MimeType.XML ) ) : MimeType.XML_TYPE;
-                    } else if( "binary".equals(type) ) {
-                        mime = ( baseMimeType != null ) ? ( new MimeType( baseMimeType, MimeType.BINARY ) ) : MimeType.BINARY_TYPE;
+                    if ("xml".equals(type)) {
+                        mime = (baseMimeType != null) ? (new MimeType(baseMimeType, MimeType.XML)) : MimeType.XML_TYPE;
+                    } else if ("binary".equals(type)) {
+                        mime = (baseMimeType != null) ? (new MimeType(baseMimeType, MimeType.BINARY)) : MimeType.BINARY_TYPE;
                     }
                 }
 
                 // single file
-                if( mime == null ) {
+                if (mime == null) {
                     final String msg = "Cannot guess mime-type kind for " + srcFile.getName() + ". Treating it as a binary.";
-                    log( msg, Project.MSG_ERR );
-                    mime = ( baseMimeType != null ) ? ( new MimeType( baseMimeType, MimeType.BINARY ) ) : MimeType.BINARY_TYPE;
+                    log(msg, Project.MSG_ERR);
+                    mime = (baseMimeType != null) ? (new MimeType(baseMimeType, MimeType.BINARY)) : MimeType.BINARY_TYPE;
                 }
 
-                resourceType = mime.isXMLType() ? "XMLResource" : "BinaryResource";
+                final String resourceType = mime.isXMLType() ? XMLResource.RESOURCE_TYPE : BinaryResource.RESOURCE_TYPE;
 
-                if( targetFile == null ) {
+                if (targetFile == null) {
                     targetFile = srcFile.getName();
                 }
 
                 try {
-                    log( "Creating resource " + targetFile + " in collection " + col.getName() + " of type " + resourceType + " with mime-type: " + mime.getName(), Project.MSG_DEBUG );
-                    res = col.createResource( targetFile, resourceType );
+                    log("Creating resource " + targetFile + " in collection " + col.getName() + " of type " + resourceType + " with mime-type: " + mime.getName(), Project.MSG_DEBUG);
+                    res = col.createResource(targetFile, resourceType);
 
-                    if( srcFile.length() == 0 ) {
+                    if (srcFile.length() == 0) {
                         // note: solves bug id 2429889 when this task hits empty files
                     } else {
-                        res.setContent( srcFile );
-                        ( (EXistResource)res ).setMimeType( mime.getName() );
-                        col.storeResource( res );
+                        res.setContent(srcFile);
+                        ((EXistResource) res).setMimeType(mime.getName());
+                        col.storeResource(res);
                     }
-                    
-                    if( permissions != null ) {
-                    	setPermissions( res );
+
+                    if (permissions != null) {
+                        setPermissions(res);
                     }
-                }
-                catch( final XMLDBException e ) {
+                } catch (final XMLDBException e) {
                     final String msg = "XMLDB exception caught: " + e.getMessage();
 
-                    if( failonerror ) {
-                        throw( new BuildException( msg, e ) );
+                    if (failonerror) {
+                        throw new BuildException(msg, e);
                     } else {
-                        log( msg, e, Project.MSG_ERR );
+                        log(msg, e, Project.MSG_ERR);
                     }
                 }
             } else {
 
-                for( final FileSet fileSet : fileSetList ) {
-                    log( "Storing fileset", Project.MSG_DEBUG );
+                for (final FileSet fileSet : fileSetList) {
+                    log("Storing fileset", Project.MSG_DEBUG);
 
                     // using fileset
-                    final DirectoryScanner scanner = fileSet.getDirectoryScanner( getProject() );
+                    final DirectoryScanner scanner = fileSet.getDirectoryScanner(getProject());
                     scanner.scan();
                     final String[] includedFiles = scanner.getIncludedFiles();
-                    final String[] includedDirs  = scanner.getIncludedDirectories();
-                    log( "Found " + includedDirs.length + " directories and " + includedFiles.length + " files.\n" );
+                    final String[] includedDirs = scanner.getIncludedDirectories();
+                    log("Found " + includedDirs.length + " directories and " + includedFiles.length + " files.\n");
 
                     final File baseDir = scanner.getBasedir();
 
-                    if( includeEmptyDirs && createSubcollections ) {
+                    if (includeEmptyDirs && createSubcollections) {
 
-                        for( final String included : includedDirs ) {
+                        for (final String included : includedDirs) {
 
                             try {
-                                log( "Creating " + included + " ...\n" );
+                                log("Creating " + included + " ...\n");
 
                                 //TODO : use dedicated function in XmldbURI
                                 // check whether the relative file path contains file seps
 
-                                p = included.lastIndexOf( File.separatorChar );
+                                p = included.lastIndexOf(File.separatorChar);
 
-                                if( p != Constants.STRING_NOT_FOUND ) {
-                                    relDir = included.substring( 0, p );
+                                if (p != Constants.STRING_NOT_FOUND) {
+                                    relDir = included.substring(0, p);
 
                                     // It's necessary to do this translation on Windows, and possibly MacOS:
-                                    relDir = relDir.replace( File.separatorChar, '/' );
+                                    relDir = relDir.replace(File.separatorChar, '/');
 
-                                    if( createSubcollections && ( ( prevDir == null ) || ( !relDir.equals( prevDir ) ) ) ) {
+                                    if (createSubcollections && ((prevDir == null) || (!relDir.equals(prevDir)))) {
 
                                         //TODO : use dedicated function in XmldbURI
-                                        col     = mkcol( root, baseURI, XmldbURI.ROOT_COLLECTION + path, relDir );
+                                        col = mkcol(root, baseURI, XmldbURI.ROOT_COLLECTION + path, relDir);
                                         prevDir = relDir;
                                     }
 
                                 } else {
-                                    col = mkcol( root, baseURI, XmldbURI.ROOT_COLLECTION + path, included );
+                                    col = mkcol(root, baseURI, XmldbURI.ROOT_COLLECTION + path, included);
                                 }
-                            }
-                            catch( final XMLDBException e ) {
+                            } catch (final XMLDBException e) {
                                 final String msg = "XMLDB exception caught: " + e.getMessage();
 
-                                if( failonerror ) {
-                                    throw( new BuildException( msg, e ) );
+                                if (failonerror) {
+                                    throw new BuildException(msg, e);
                                 } else {
-                                    log( msg, e, Project.MSG_ERR );
+                                    log(msg, e, Project.MSG_ERR);
                                 }
                             }
                         }
                     }
 
-                    for( final String included : includedFiles ) {
+                    for (final String included : includedFiles) {
 
                         try {
-                            final File file = new File( baseDir, included );
-                            log( "Storing " + included + " ...\n" );
+                            final File file = new File(baseDir, included);
+                            log("Storing " + included + " ...\n");
 
                             //TODO : use dedicated function in XmldbURI
                             // check whether the relative file path contains file seps
 
-                            p = included.lastIndexOf( File.separatorChar );
+                            p = included.lastIndexOf(File.separatorChar);
 
-                            if( p != Constants.STRING_NOT_FOUND ) {
-                                relDir = included.substring( 0, p );
+                            if (p != Constants.STRING_NOT_FOUND) {
+                                relDir = included.substring(0, p);
 
                                 // It's necessary to do this translation on Windows, and possibly MacOS:
-                                relDir = relDir.replace( File.separatorChar, '/' );
+                                relDir = relDir.replace(File.separatorChar, '/');
 
-                                if( createSubcollections && ( ( prevDir == null ) || ( !relDir.equals( prevDir ) ) ) ) {
+                                if (createSubcollections && ((prevDir == null) || (!relDir.equals(prevDir)))) {
 
                                     //TODO : use dedicated function in XmldbURI
-                                    col     = mkcol( root, baseURI, XmldbURI.ROOT_COLLECTION + path, relDir );
+                                    col = mkcol(root, baseURI, XmldbURI.ROOT_COLLECTION + path, relDir);
                                     prevDir = relDir;
                                 }
 
@@ -286,13 +277,13 @@ public class XMLDBStoreTask extends AbstractXMLDBTask
                                 col = root;
                             }
 
-                            MimeType currentMime         = getMimeTable().getContentTypeFor( file.getName() );
-                            String   currentBaseMimeType;
+                            MimeType currentMime = getMimeTable().getContentTypeFor(file.getName());
+                            String currentBaseMimeType;
 
-                            if( forceMimeType != null ) {
+                            if (forceMimeType != null) {
                                 currentBaseMimeType = forceMimeType;
 
-                            } else if( currentMime != null ) {
+                            } else if (currentMime != null) {
                                 currentBaseMimeType = currentMime.getName();
 
                             } else {
@@ -300,40 +291,39 @@ public class XMLDBStoreTask extends AbstractXMLDBTask
 
                             }
 
-                            if( type != null ) {
+                            if (type != null) {
 
-                                if( "xml".equals(type) ) {
-                                    currentMime = ( currentBaseMimeType != null ) ? ( new MimeType( currentBaseMimeType, MimeType.XML ) ) : MimeType.XML_TYPE;
-                                } else if( "binary".equals(type) ) {
-                                    currentMime = ( currentBaseMimeType != null ) ? ( new MimeType( currentBaseMimeType, MimeType.BINARY ) ) : MimeType.BINARY_TYPE;
+                                if ("xml".equals(type)) {
+                                    currentMime = (currentBaseMimeType != null) ? (new MimeType(currentBaseMimeType, MimeType.XML)) : MimeType.XML_TYPE;
+                                } else if ("binary".equals(type)) {
+                                    currentMime = (currentBaseMimeType != null) ? (new MimeType(currentBaseMimeType, MimeType.BINARY)) : MimeType.BINARY_TYPE;
                                 }
                             }
 
-                            if( currentMime == null ) {
+                            if (currentMime == null) {
                                 final String msg = "Cannot find mime-type kind for " + file.getName() + ". Treating it as a binary.";
-                                log( msg, Project.MSG_ERR );
-                                currentMime = ( currentBaseMimeType != null ) ? ( new MimeType( currentBaseMimeType, MimeType.BINARY ) ) : MimeType.BINARY_TYPE;
+                                log(msg, Project.MSG_ERR);
+                                currentMime = (currentBaseMimeType != null) ? (new MimeType(currentBaseMimeType, MimeType.BINARY)) : MimeType.BINARY_TYPE;
                             }
 
-                            resourceType = currentMime.isXMLType() ? "XMLResource" : "BinaryResource";
-                            log( "Creating resource " + file.getName() + " in collection " + col.getName() + " of type " + resourceType + " with mime-type: " + currentMime.getName(), Project.MSG_DEBUG );
-                            res = col.createResource( file.getName(), resourceType );
-                            res.setContent( file );
-                            ( (EXistResource)res ).setMimeType( currentMime.getName() );
-                            col.storeResource( res );
-                            
-                            if( permissions != null ) {
-								setPermissions( res );
-							}
+                            final String resourceType = currentMime.isXMLType() ? XMLResource.RESOURCE_TYPE : BinaryResource.RESOURCE_TYPE;
+                            log("Creating resource " + file.getName() + " in collection " + col.getName() + " of type " + resourceType + " with mime-type: " + currentMime.getName(), Project.MSG_DEBUG);
+                            res = col.createResource(file.getName(), resourceType);
+                            res.setContent(file);
+                            ((EXistResource) res).setMimeType(currentMime.getName());
+                            col.storeResource(res);
 
-                        }
-                        catch( final XMLDBException e ) {
+                            if (permissions != null) {
+                                setPermissions(res);
+                            }
+
+                        } catch (final XMLDBException e) {
                             final String msg = "XMLDB exception caught: " + e.getMessage();
 
-                            if( failonerror ) {
-                                throw( new BuildException( msg, e ) );
+                            if (failonerror) {
+                                throw new BuildException(msg, e);
                             } else {
-                                log( msg, e, Project.MSG_ERR );
+                                log(msg, e, Project.MSG_ERR);
                             }
                         }
                     }
@@ -342,89 +332,66 @@ public class XMLDBStoreTask extends AbstractXMLDBTask
         }
     }
 
-
     /**
      * This method allows more than one Fileset per store task!
      *
-     * @param  set  DOCUMENT ME!
+     * @param set DOCUMENT ME!
      */
-    public void addFileset( FileSet set )
-    {
-        if( fileSetList == null ) {
-            fileSetList = new ArrayList<FileSet>();
+    public void addFileset(final FileSet set) {
+        if (fileSetList == null) {
+            fileSetList = new ArrayList<>();
         }
 
-        fileSetList.add( set );
+        fileSetList.add(set);
     }
 
-
-    public void setSrcFile( File file )
-    {
+    public void setSrcFile(final File file) {
         this.srcFile = file;
     }
 
-
-    public void setTargetFile( String name )
-    {
+    public void setTargetFile(final String name) {
         this.targetFile = name;
     }
 
-
-    public void setCreatecollection( boolean create )
-    {
+    public void setCreatecollection(final boolean create) {
         this.createCollection = create;
     }
 
-
-    public void setCreatesubcollections( boolean create )
-    {
+    public void setCreatesubcollections(final boolean create) {
         this.createSubcollections = create;
     }
 
-
-    public void setIncludeEmptyDirs( boolean create )
-    {
+    public void setIncludeEmptyDirs(final boolean create) {
         this.includeEmptyDirs = create;
     }
 
-
-    public void setMimeTypesFile( File file )
-    {
+    public void setMimeTypesFile(final File file) {
         this.mimeTypesFile = file;
     }
 
-
-    public void setType( String type )
-    {
+    public void setType(final String type) {
         this.type = type;
     }
 
-
-    public void setDefaultMimeType( String mimeType )
-    {
+    public void setDefaultMimeType(final String mimeType) {
         this.defaultMimeType = mimeType;
     }
 
-
-    public void setForceMimeType( String mimeType )
-    {
+    public void setForceMimeType(final String mimeType) {
         this.forceMimeType = mimeType;
     }
 
-
-    private MimeTable getMimeTable() throws BuildException
-    {
-        if( mtable == null ) {
-
-            if( ( mimeTypesFile != null ) && mimeTypesFile.exists() ) {
-                log( "Trying to use MIME Types file " + mimeTypesFile.getAbsolutePath(), Project.MSG_DEBUG );
-                mtable = MimeTable.getInstance( mimeTypesFile.toPath() );
+    private MimeTable getMimeTable() throws BuildException {
+        if (mtable == null) {
+            if (mimeTypesFile != null && mimeTypesFile.exists()) {
+                log("Trying to use MIME Types file " + mimeTypesFile.getAbsolutePath(), Project.MSG_DEBUG);
+                mtable = MimeTable.getInstance(mimeTypesFile.toPath());
             } else {
-                log( "Using default MIME Types resources", Project.MSG_DEBUG );
+                log("Using default MIME Types resources", Project.MSG_DEBUG);
                 mtable = MimeTable.getInstance();
             }
         }
 
-        return( mtable );
+        return mtable;
     }
 }

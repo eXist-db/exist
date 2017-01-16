@@ -24,7 +24,6 @@ package org.exist.ant;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.junit.*;
 
-import static org.junit.Assert.fail;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.ProjectHelper;
 import org.apache.tools.ant.BuildException;
@@ -57,12 +56,12 @@ public class AntUnitTestRunner {
             p.init();
             ProjectHelper helper = ProjectHelper.getProjectHelper();
             p.addReference("ant.projectHelper", helper);
-            helper.parse(p, buildFile);
+            helper.parse(p, buildFile.toFile());
             p.executeTarget(p.getDefaultTarget());
             p.fireBuildFinished(null);
         } catch (final BuildException e) {
             p.fireBuildFinished(e);
-            fail(e.getMessage());            
+            throw e;
         }
     }
 

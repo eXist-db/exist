@@ -27,6 +27,8 @@ import org.exist.EXistException;
 import org.exist.backup.RawDataBackup;
 import org.exist.dom.QName;
 import org.exist.storage.BrokerPool;
+import org.exist.storage.BrokerPoolService;
+import org.exist.storage.BrokerPoolServiceException;
 import org.exist.storage.ElementValue;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteInputStream;
@@ -59,7 +61,7 @@ import java.util.Iterator;
  * @author wolf
  * @author Adam Retter <adam@exist-db.org>
  */
-public class SymbolTable {
+public class SymbolTable implements BrokerPoolService {
 
     private static final Logger LOG = LogManager.getLogger(SymbolTable.class);
 
@@ -114,21 +116,27 @@ public class SymbolTable {
     /**
      * the underlying symbols.dbx file
      */
-    private final Path file;
+    private Path file;
     private final VariableByteOutputStream outBuffer = new VariableByteOutputStream(512);
     private OutputStream os = null;
 
-    public SymbolTable(final Path dataDir) throws EXistException {
-        file = dataDir.resolve(getFileName());
-        if(!Files.isReadable(file)) {
-            saveSymbols();
-        } else {
-            loadSymbols();
-        }
+    @Override
+    public void configure(final Configuration configuration) {
+        final Path dataDir = (Path) configuration.getProperty(BrokerPool.PROPERTY_DATA_DIR);
+        this.file = dataDir.resolve(getFileName());
     }
 
-    public SymbolTable(final Configuration config) throws EXistException {
-        this((Path) config.getProperty(BrokerPool.PROPERTY_DATA_DIR));
+    @Override
+    public void prepare(final BrokerPool pool) throws BrokerPoolServiceException {
+        try {
+            if (!Files.isReadable(file)) {
+                saveSymbols();
+            } else {
+                loadSymbols();
+            }
+        } catch(final EXistException e) {
+            throw new BrokerPoolServiceException(e);
+        }
     }
 
     public static final String getFileName() {

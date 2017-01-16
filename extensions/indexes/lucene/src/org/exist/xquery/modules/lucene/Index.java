@@ -29,7 +29,7 @@ import org.exist.indexing.StreamListener.ReindexMode;
 import org.exist.indexing.lucene.LuceneIndex;
 import org.exist.indexing.lucene.LuceneIndexWorker;
 
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.xmldb.XmldbURI;
 
 import org.exist.xquery.BasicFunction;
@@ -109,7 +109,7 @@ public class Index extends BasicFunction {
 	            String path = args[0].itemAt(0).getStringValue();
 	
 	            // Retrieve document from database
-	            doc = context.getBroker().getXMLResource(XmldbURI.xmldbUriFor(path), Lock.READ_LOCK);
+	            doc = context.getBroker().getXMLResource(XmldbURI.xmldbUriFor(path), LockMode.READ_LOCK);
 	
 	            // Verify the document actually exists
 	            if (doc == null) {
@@ -143,7 +143,7 @@ public class Index extends BasicFunction {
 
         } finally {
             if (doc != null) {
-                doc.getUpdateLock().release(Lock.READ_LOCK);
+                doc.getUpdateLock().release(LockMode.READ_LOCK);
             }
         }
 

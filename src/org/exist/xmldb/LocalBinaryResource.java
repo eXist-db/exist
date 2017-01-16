@@ -24,6 +24,7 @@ import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.util.EXistInputSource;
+import org.exist.util.FileUtils;
 import org.w3c.dom.DocumentType;
 import org.xml.sax.InputSource;
 import org.xml.sax.ext.LexicalHandler;
@@ -31,12 +32,19 @@ import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.BinaryResource;
 
-import java.io.*;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.FileOutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 public class LocalBinaryResource extends AbstractEXistResource implements ExtendedResource, BinaryResource, EXistResource {
 
     protected InputSource inputSource = null;
-    protected File file = null;
+    protected Path file = null;
     protected byte[] rawData = null;
     private boolean isExternal = false;
 
@@ -65,12 +73,14 @@ public class LocalBinaryResource extends AbstractEXistResource implements Extend
     public Object getContent() throws XMLDBException {
         final Object res = getExtendedContent();
         if(res != null) {
-            if(res instanceof File) {
-                    return readFile((File)res);
+            if(res instanceof Path) {
+                return readFile((Path)res);
+            } else if(res instanceof java.io.File) {
+                return readFile(((java.io.File)res).toPath());
             } else if(res instanceof InputSource) {
-                    return readFile((InputSource)res);
+                return readFile((InputSource)res);
             } else if(res instanceof InputStream) {
-                    return readFile((InputStream)res);
+                return readFile((InputStream)res);
             }
         }
 
@@ -79,8 +89,10 @@ public class LocalBinaryResource extends AbstractEXistResource implements Extend
 
     @Override
     public void setContent(final Object value) throws XMLDBException {
-        if(value instanceof File) {
-            file = (File)value;
+        if(value instanceof Path) {
+            file = (Path)value;
+        } else if(value instanceof java.io.File) {
+            file = ((java.io.File)value).toPath();
         } else if(value instanceof InputSource) {
             inputSource = (InputSource)value;
         } else if(value instanceof byte[]) {
@@ -98,14 +110,14 @@ public class LocalBinaryResource extends AbstractEXistResource implements Extend
         final InputStream retval;
         if(file != null) {
             try {
-                retval = new FileInputStream(file);
-            } catch(final FileNotFoundException fnfe) {
+                retval = Files.newInputStream(file);
+            } catch(final IOException fnfe) {
                 // Cannot fire it :-(
                 throw new XMLDBException(ErrorCodes.VENDOR_ERROR, fnfe.getMessage(), fnfe);
             }
-        } else if(inputSource!=null) {
+        } else if(inputSource != null) {
             retval = inputSource.getByteStream();
-        } else if(rawData!=null) {
+        } else if(rawData != null) {
             retval = new ByteArrayInputStream(rawData);
         } else {
             retval = read((document, broker, transaction) -> broker.getBinaryResource(((BinaryDocument) document)));
@@ -115,8 +127,8 @@ public class LocalBinaryResource extends AbstractEXistResource implements Extend
     }
 
     @Override
-    public void getContentIntoAFile(final File tmpFile) throws XMLDBException {
-        try(final OutputStream bos = new BufferedOutputStream(new FileOutputStream(tmpFile))) {
+    public void getContentIntoAFile(final Path tmpFile) throws XMLDBException {
+        try(final OutputStream bos = Files.newOutputStream(tmpFile)) {
             getContentIntoAStream(bos);
         } catch(final IOException ioe) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "error while loading binary resource " + getId(), ioe);
@@ -149,7 +161,7 @@ public class LocalBinaryResource extends AbstractEXistResource implements Extend
         final long retval;
 
         if(file != null) {
-            retval = file.length();
+            retval = FileUtils.sizeQuietly(file);
         } else if(inputSource != null && inputSource instanceof EXistInputSource) {
             retval = ((EXistInputSource)inputSource).getByteStreamLength();
         } else if(rawData != null) {
@@ -161,36 +173,33 @@ public class LocalBinaryResource extends AbstractEXistResource implements Extend
         return retval;
     }
 	
-    private byte[] readFile(final File file) throws XMLDBException {
-        try {
-            return readFile(new FileInputStream(file));
-        } catch (final FileNotFoundException e) {
-            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "file " + file.getAbsolutePath() + " could not be found", e);
+    private byte[] readFile(final Path file) throws XMLDBException {
+        try(final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            Files.copy(file, os);
+            return os.toByteArray();
+        } catch (final IOException e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "file " + file.toAbsolutePath() + " could not be found", e);
         }
     }
 
-    private byte[] readFile(final InputSource is) throws XMLDBException {
-        return readFile(is.getByteStream());
+    private byte[] readFile(final InputSource inSrc) throws XMLDBException {
+        try(final InputStream is = inSrc.getByteStream()) {
+            return readFile(is);
+        } catch (final IOException e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "Could not read InputSource", e);
+        }
     }
 
     private byte[] readFile(final InputStream is) throws XMLDBException {
-        try(final ByteArrayOutputStream bos = new ByteArrayOutputStream(2048)) {
-            final byte[] temp = new byte[1024];
-            int count = 0;
-            while((count = is.read(temp)) > -1) {
-                    bos.write(temp, 0, count);
+        try(final ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+            final byte[] buf = new byte[2048];
+            int read = -1;
+            while((read = is.read(buf)) > -1) {
+                bos.write(buf, 0, read);
             }
             return bos.toByteArray();
-        } catch (final FileNotFoundException e) {
-            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "file " + file.getAbsolutePath() + " could not be found", e);
         } catch (final IOException e) {
-            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "IO exception while reading file " + file.getAbsolutePath(), e);
-        } finally {
-            try {
-                is.close();
-            } catch (final IOException e) {
-                throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "IO exception while closing stream of file " + file.getAbsolutePath(), e);
-            }
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "IO exception while reading file " + file.toAbsolutePath(), e);
         }
     }
 

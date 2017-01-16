@@ -102,10 +102,6 @@ public class XmldbRequestProcessorFactory implements RequestProcessorFactoryFact
     }
 
     public synchronized void shutdown() {
-        try {
-            BrokerPool.stop();
-        } catch (final EXistException e) {
-            LOG.warn("shutdown failed", e);
-        }
+        brokerPool.shutdown();
     }
 }

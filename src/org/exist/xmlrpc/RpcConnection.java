@@ -66,23 +66,13 @@ import org.exist.source.DBSource;
 import org.exist.source.Source;
 import org.exist.source.StringSource;
 import org.exist.storage.*;
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.lock.LockedDocumentMap;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.Txn;
-import org.exist.util.Compressor;
-import org.exist.util.LockException;
-import org.exist.util.MimeTable;
-import org.exist.util.MimeType;
-import org.exist.util.Occurrences;
-import org.exist.util.SyntaxException;
-import org.exist.util.VirtualTempFile;
-import org.exist.util.VirtualTempFileInputSource;
-import org.exist.util.function.Function2E;
-import org.exist.util.function.Function3E;
-import org.exist.util.function.SupplierE;
+import org.exist.util.*;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
 import org.exist.validation.ValidationReport;
@@ -101,6 +91,10 @@ import org.w3c.dom.DocumentType;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
+
+import com.evolvedbinary.j8fu.function.Function2E;
+import com.evolvedbinary.j8fu.function.Function3E;
+import com.evolvedbinary.j8fu.function.SupplierE;
 
 import java.io.*;
 import java.net.URISyntaxException;
@@ -121,11 +115,11 @@ import org.xmldb.api.base.*;
  * {@link org.exist.xmlrpc.RpcAPI}.
  *
  * @author Wolfgang Meier (wolfgang@exist-db.org)
- * Modified by {Marco.Tampucci, Massimo.Martinelli} @isti.cnr.it
+ *         Modified by {Marco.Tampucci, Massimo.Martinelli} @isti.cnr.it
  * @author Adam Retter <adam.retter@googlemail.com>
  */
 public class RpcConnection implements RpcAPI {
-    
+
     private final static Logger LOG = LogManager.getLogger(RpcConnection.class);
 
     private final static int MAX_DOWNLOAD_CHUNK_SIZE = 0x40000;
@@ -227,7 +221,7 @@ public class RpcConnection implements RpcAPI {
                     ok = false;
                 }
 
-                if (collection.hasSubcollection(broker, id)) {
+                if (collection.hasChildCollection(broker, id)) {
                     ok = false;
                 }
 
@@ -237,7 +231,7 @@ public class RpcConnection implements RpcAPI {
     }
 
     protected QueryResult doQuery(final DBBroker broker, final CompiledXQuery compiled,
-            final NodeSet contextSet, final Map<String, Object> parameters) throws XPathException, EXistException, PermissionDeniedException {
+                                  final NodeSet contextSet, final Map<String, Object> parameters) throws XPathException, EXistException, PermissionDeniedException {
         final XQuery xquery = broker.getBrokerPool().getXQueryService();
 
         checkPragmas(compiled.getContext(), parameters);
@@ -274,7 +268,7 @@ public class RpcConnection implements RpcAPI {
             try {
                 final Collection coll = broker.getCollection(XmldbURI.createInternal(protectColl));
                 docs = new DefaultDocumentSet();
-                coll.allDocs(broker, docs, true, lockedDocuments, Lock.WRITE_LOCK);
+                coll.allDocs(broker, docs, true, lockedDocuments, LockMode.WRITE_LOCK);
                 return lockedDocuments;
             } catch (final LockException e) {
                 LOG.debug("Deadlock detected. Starting over again. Docs: " + docs.getDocumentCount() + "; locked: "
@@ -351,7 +345,7 @@ public class RpcConnection implements RpcAPI {
                     compiledQuery.dump(writer);
                     return writer.toString();
                 });
-            } catch(final XPathException e) {
+            } catch (final XPathException e) {
                 throw new EXistException(e);
             }
         });
@@ -419,7 +413,7 @@ public class RpcConnection implements RpcAPI {
 
     protected String formatErrorMsg(final String type, final String message) {
         return ("<exist:result xmlns:exist=\"" + Namespaces.EXIST_NS + "\" ") + "hitCount=\"0\">" +
-                '<' + type + '>' +  message + "</" + type + "></exist:result>";
+                '<' + type + '>' + message + "</" + type + "></exist:result>";
     }
 
     @Override
@@ -434,11 +428,11 @@ public class RpcConnection implements RpcAPI {
         return withDb((broker, transaction) -> {
             Collection collection = null;
             try {
-                collection = broker.openCollection(uri, Lock.READ_LOCK);
+                collection = broker.openCollection(uri, LockMode.READ_LOCK);
                 return collection != null;
             } finally {
                 if (collection != null) {
-                    collection.release(Lock.READ_LOCK);
+                    collection.release(LockMode.READ_LOCK);
                 }
             }
         });
@@ -448,7 +442,7 @@ public class RpcConnection implements RpcAPI {
     public Map<String, Object> getCollectionDesc(final String rootCollection) throws EXistException, PermissionDeniedException {
         try {
             return getCollectionDesc((rootCollection == null) ? XmldbURI.ROOT_COLLECTION_URI : XmldbURI.xmldbUriFor(rootCollection));
-        } catch(final URISyntaxException e) {
+        } catch (final URISyntaxException e) {
             throw new EXistException(e);
         }
     }
@@ -459,7 +453,7 @@ public class RpcConnection implements RpcAPI {
             final List<Map<String, Object>> docs = new ArrayList<>();
             final List<String> collections = new ArrayList<>();
             if (collection.getPermissionsNoLock().validate(user, Permission.READ)) {
-                for (final Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext();) {
+                for (final Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
                     final DocumentImpl doc = i.next();
                     final Permission perms = doc.getPermissions();
 
@@ -471,7 +465,7 @@ public class RpcConnection implements RpcAPI {
                     hash.put("type", doc.getResourceType() == DocumentImpl.BINARY_FILE ? "BinaryResource" : "XMLResource");
                     docs.add(hash);
                 }
-                for (final Iterator<XmldbURI> i = collection.collectionIterator(broker); i.hasNext();) {
+                for (final Iterator<XmldbURI> i = collection.collectionIterator(broker); i.hasNext(); ) {
                     collections.add(i.next().toString());
                 }
             }
@@ -526,7 +520,7 @@ public class RpcConnection implements RpcAPI {
                 hash.put("modified", new Date(document.getMetadata().getLastModified()));
                 return hash;
             });
-        } catch(final EXistException e) {
+        } catch (final EXistException e) {
             LOG.debug(e);
             return new HashMap<>();
         }
@@ -543,16 +537,16 @@ public class RpcConnection implements RpcAPI {
 
     /**
      * The method <code>describeCollection</code>
-     *
+     * <p>
      * Returns details of a collection - collections (list of sub-collections) -
      * name - created - owner - group - permissions - acl
-     *
+     * <p>
      * If you do not have read access on the collection, the list of
      * sub-collections will be empty, an exception will not be thrown!
      *
      * @param collUri a <code>XmldbURI</code> value
      * @return a <code>Map</code> value
-     * @exception Exception if an error occurs
+     * @throws Exception if an error occurs
      */
     private Map<String, Object> describeCollection(final XmldbURI collUri)
             throws EXistException, PermissionDeniedException {
@@ -560,7 +554,7 @@ public class RpcConnection implements RpcAPI {
             final Map<String, Object> desc = new HashMap<>();
             final List<String> collections = new ArrayList<>();
             if (collection.getPermissionsNoLock().validate(user, Permission.READ)) {
-                for (final Iterator<XmldbURI> i = collection.collectionIterator(broker); i.hasNext();) {
+                for (final Iterator<XmldbURI> i = collection.collectionIterator(broker); i.hasNext(); ) {
                     collections.add(i.next().toString());
                 }
             }
@@ -586,11 +580,11 @@ public class RpcConnection implements RpcAPI {
 
         final String xml = getDocumentAsString(name, parameters);
 
-        if(compression) {
+        if (compression) {
             LOG.debug("getDocument with compression");
             try {
                 return Compressor.compress(xml.getBytes(encoding));
-            } catch(final IOException ioe) {
+            } catch (final IOException ioe) {
                 throw new EXistException(ioe);
             }
         } else {
@@ -602,7 +596,7 @@ public class RpcConnection implements RpcAPI {
     public String getDocumentAsString(final String docName, final Map<String, Object> parameters) throws EXistException, PermissionDeniedException {
         try {
             return getDocumentAsString(XmldbURI.xmldbUriFor(docName), parameters);
-        } catch(final URISyntaxException e) {
+        } catch (final URISyntaxException e) {
             throw new EXistException(e);
         }
     }
@@ -621,7 +615,7 @@ public class RpcConnection implements RpcAPI {
         final XmldbURI docUri;
         try {
             docUri = XmldbURI.xmldbUriFor(docName);
-        } catch(final URISyntaxException e) {
+        } catch (final URISyntaxException e) {
             throw new EXistException(e);
         }
 
@@ -844,7 +838,7 @@ public class RpcConnection implements RpcAPI {
                 broker.sync(Sync.MAJOR);
                 return true;
             });
-        } catch(final EXistException | PermissionDeniedException e) {
+        } catch (final EXistException | PermissionDeniedException e) {
             LOG.error(e.getMessage(), e);
             return false;
         }
@@ -883,7 +877,7 @@ public class RpcConnection implements RpcAPI {
                 }
                 return list;
             });
-        } catch(final EXistException e) {
+        } catch (final EXistException e) {
             return Collections.EMPTY_LIST;
         }
     }
@@ -904,7 +898,7 @@ public class RpcConnection implements RpcAPI {
                 }
                 return list;
             });
-        } catch(final EXistException e) {
+        } catch (final EXistException e) {
             LOG.debug(e);
             return Collections.EMPTY_LIST;
         }
@@ -930,7 +924,7 @@ public class RpcConnection implements RpcAPI {
     /**
      * Creates a unique name for a database resource Uniqueness is only
      * guaranteed within the eXist instance
-     *
+     * <p>
      * The name is based on a hex encoded string of a random integer and will
      * have the format xxxxxxxx.xml where x is in the range 0 to 9 and a to f
      *
@@ -949,7 +943,7 @@ public class RpcConnection implements RpcAPI {
                     ok = false;
                 }
 
-                if (collection.hasSubcollection(broker, id)) {
+                if (collection.hasChildCollection(broker, id)) {
                     ok = false;
                 }
 
@@ -981,19 +975,19 @@ public class RpcConnection implements RpcAPI {
         return withDb((broker, transaction) -> {
             Collection collection = null;
             try {
-                collection = broker.openCollection(uri, Lock.READ_LOCK);
+                collection = broker.openCollection(uri, LockMode.READ_LOCK);
                 final Permission perm;
                 if (collection == null) {
                     DocumentImpl doc = null;
                     try {
-                        doc = broker.getXMLResource(uri, Lock.READ_LOCK);
+                        doc = broker.getXMLResource(uri, LockMode.READ_LOCK);
                         if (doc == null) {
                             throw new EXistException("document or collection " + uri + " not found");
                         }
                         perm = doc.getPermissions();
                     } finally {
                         if (doc != null) {
-                            doc.getUpdateLock().release(Lock.READ_LOCK);
+                            doc.getUpdateLock().release(LockMode.READ_LOCK);
                         }
                     }
                 } else {
@@ -1011,7 +1005,7 @@ public class RpcConnection implements RpcAPI {
                 return result;
             } finally {
                 if (collection != null) {
-                    collection.release(Lock.READ_LOCK);
+                    collection.release(LockMode.READ_LOCK);
                 }
             }
         });
@@ -1021,7 +1015,7 @@ public class RpcConnection implements RpcAPI {
     public Map<String, Object> getSubCollectionPermissions(final String parentPath, final String name) throws EXistException, PermissionDeniedException, URISyntaxException {
 
         final XmldbURI uri = XmldbURI.xmldbUriFor(parentPath);
-        final Permission perm = this.<Permission>readCollection(uri).apply((collection, broker, transaction) -> collection.getSubCollectionEntry(broker, name).getPermissions());
+        final Permission perm = this.<Permission>readCollection(uri).apply((collection, broker, transaction) -> collection.getChildCollectionEntry(broker, name).getPermissions());
 
         final Map<String, Object> result = new HashMap<>();
         result.put("owner", perm.getOwner().getName());
@@ -1053,7 +1047,7 @@ public class RpcConnection implements RpcAPI {
     @Override
     public long getSubCollectionCreationTime(final String parentPath, final String name) throws EXistException, PermissionDeniedException, URISyntaxException {
         final XmldbURI uri = XmldbURI.xmldbUriFor(parentPath);
-        return this.<Long>readCollection(uri).apply((collection, broker, transaction) -> collection.getSubCollectionEntry(broker, name).getCreated());
+        return this.<Long>readCollection(uri).apply((collection, broker, transaction) -> collection.getChildCollectionEntry(broker, name).getCreated());
     }
 
     private List<ACEAider> getACEs(final Permission perm) {
@@ -1074,7 +1068,7 @@ public class RpcConnection implements RpcAPI {
     private Map<String, List> listDocumentPermissions(final XmldbURI collUri) throws EXistException, PermissionDeniedException {
         return this.<Map<String, List>>readCollection(collUri).apply((collection, broker, transaction) -> {
             final Map<String, List> result = new HashMap<>(collection.getDocumentCount(broker));
-            for (final Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext();) {
+            for (final Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
                 final DocumentImpl doc = i.next();
                 final Permission perm = doc.getPermissions();
 
@@ -1101,7 +1095,7 @@ public class RpcConnection implements RpcAPI {
             throws EXistException, PermissionDeniedException {
         return this.<Map<XmldbURI, List>>readCollection(collUri).apply((collection, broker, transaction) -> {
             final Map<XmldbURI, List> result = new HashMap<>(collection.getChildCollectionCount(broker));
-            for (final Iterator<XmldbURI> i = collection.collectionIterator(broker); i.hasNext();) {
+            for (final Iterator<XmldbURI> i = collection.collectionIterator(broker); i.hasNext(); ) {
                 final XmldbURI child = i.next();
                 final XmldbURI path = collUri.append(child);
                 final Collection childColl = broker.getCollection(path);
@@ -1286,12 +1280,12 @@ public class RpcConnection implements RpcAPI {
 
     @Override
     public boolean parse(final byte[] xml, final String documentPath,
-            final int overwrite, final Date created, final Date modified) throws URISyntaxException, EXistException, PermissionDeniedException {
+                         final int overwrite, final Date created, final Date modified) throws URISyntaxException, EXistException, PermissionDeniedException {
         return parse(xml, XmldbURI.xmldbUriFor(documentPath), overwrite, created, modified);
     }
 
     private boolean parse(final byte[] xml, final XmldbURI docUri,
-            final int overwrite, final Date created, final Date modified) throws EXistException, PermissionDeniedException {
+                          final int overwrite, final Date created, final Date modified) throws EXistException, PermissionDeniedException {
 
         return this.<Boolean>writeCollection(docUri.removeLastSegment()).apply((collection, broker, transaction) -> {
             if (overwrite == 0) {
@@ -1319,7 +1313,7 @@ public class RpcConnection implements RpcAPI {
                     info.getDocument().getMetadata().setLastModified(modified.getTime());
                 }
 
-                collection.store(transaction, broker, info, source, false);
+                collection.store(transaction, broker, info, source);
 
                 LOG.debug("parsing " + docUri + " took " + (System.currentTimeMillis() - startTime) + "ms.");
                 return true;
@@ -1329,7 +1323,7 @@ public class RpcConnection implements RpcAPI {
 
     /**
      * Parse a file previously uploaded with upload.
-     *
+     * <p>
      * The temporary file will be removed.
      *
      * @param localFile
@@ -1341,14 +1335,14 @@ public class RpcConnection implements RpcAPI {
      * @throws java.net.URISyntaxException
      */
     public boolean parseLocal(final String localFile, final String documentPath,
-            final int overwrite, final String mimeType) throws EXistException, PermissionDeniedException, URISyntaxException {
+                              final int overwrite, final String mimeType) throws EXistException, PermissionDeniedException, URISyntaxException {
         return parseLocal(localFile, documentPath, overwrite, mimeType, null, null);
     }
 
     /**
      * Parse a file previously uploaded with upload, forcing it to XML or
      * Binary.
-     *
+     * <p>
      * The temporary file will be removed.
      *
      * @param localFile
@@ -1361,29 +1355,29 @@ public class RpcConnection implements RpcAPI {
      * @throws java.net.URISyntaxException
      */
     public boolean parseLocalExt(final String localFile, final String documentPath,
-            final int overwrite, final String mimeType, final int isXML) throws EXistException, PermissionDeniedException, URISyntaxException {
+                                 final int overwrite, final String mimeType, final int isXML) throws EXistException, PermissionDeniedException, URISyntaxException {
         return parseLocalExt(localFile, documentPath, overwrite, mimeType, isXML, null, null);
     }
 
     @SuppressWarnings("unused")
     private boolean parseLocal(final String localFile, final XmldbURI docUri,
-            final int overwrite, final String mimeType) throws EXistException, PermissionDeniedException {
+                               final int overwrite, final String mimeType) throws EXistException, PermissionDeniedException {
         return parseLocal(localFile, docUri, overwrite, mimeType, null, null, null);
     }
 
     @SuppressWarnings("unused")
     private boolean parseLocalExt(final String localFile, final XmldbURI docUri,
-            final int overwrite, final String mimeType, final int isXML) throws EXistException, PermissionDeniedException {
+                                  final int overwrite, final String mimeType, final int isXML) throws EXistException, PermissionDeniedException {
         return parseLocal(localFile, docUri, overwrite, mimeType, isXML != 0, null, null);
     }
 
     public boolean parseLocal(final String localFile, final String documentPath, final int overwrite,
-            final String mimeType, final Date created, final Date modified) throws URISyntaxException, EXistException, PermissionDeniedException {
+                              final String mimeType, final Date created, final Date modified) throws URISyntaxException, EXistException, PermissionDeniedException {
         return parseLocal(localFile, XmldbURI.xmldbUriFor(documentPath), overwrite, mimeType, null, created, modified);
     }
 
     public boolean parseLocalExt(final String localFile, final String documentPath, final int overwrite,
-            final String mimeType, final int isXML, final Date created, final Date modified) throws URISyntaxException, EXistException, PermissionDeniedException {
+                                 final String mimeType, final int isXML, final Date created, final Date modified) throws URISyntaxException, EXistException, PermissionDeniedException {
         return parseLocal(localFile, XmldbURI.xmldbUriFor(documentPath), overwrite, mimeType, isXML != 0, created, modified);
     }
 
@@ -1427,7 +1421,7 @@ public class RpcConnection implements RpcAPI {
             }
 
             // parse the source
-            try(final VirtualTempFileInputSource source = sourceSupplier.get()) {
+            try (final VirtualTempFileInputSource source = sourceSupplier.get()) {
                 final MimeType mime = Optional.ofNullable(MimeTable.getInstance().getContentType(mimeType)).orElse(MimeType.BINARY_TYPE);
                 final boolean treatAsXML = (isXML != null && isXML) || (isXML == null && mime.isXMLType());
 
@@ -1439,7 +1433,7 @@ public class RpcConnection implements RpcAPI {
                     if (modified != null) {
                         info.getDocument().getMetadata().setLastModified(modified.getTime());
                     }
-                    collection.store(transaction, broker, info, source, false);
+                    collection.store(transaction, broker, info, source);
                 } else {
                     try (final InputStream is = source.getByteStream()) {
                         final DocumentImpl doc = collection.addBinaryResource(transaction, broker, docUri.lastSegment(), is, mime.getName(), source.getByteStreamLength());
@@ -1458,26 +1452,26 @@ public class RpcConnection implements RpcAPI {
     }
 
     public boolean storeBinary(final byte[] data, final String documentPath, final String mimeType,
-            final int overwrite) throws EXistException, PermissionDeniedException, URISyntaxException {
+                               final int overwrite) throws EXistException, PermissionDeniedException, URISyntaxException {
         return storeBinary(data, documentPath, mimeType, overwrite, null, null);
     }
 
     @SuppressWarnings("unused")
     private boolean storeBinary(final byte[] data, final XmldbURI docUri, final String mimeType,
-            final int overwrite) throws EXistException, PermissionDeniedException {
+                                final int overwrite) throws EXistException, PermissionDeniedException {
         return storeBinary(data, docUri, mimeType, overwrite, null, null);
     }
 
     public boolean storeBinary(final byte[] data, final String documentPath, final String mimeType,
-            final int overwrite, final Date created, final Date modified) throws URISyntaxException, EXistException, PermissionDeniedException {
+                               final int overwrite, final Date created, final Date modified) throws URISyntaxException, EXistException, PermissionDeniedException {
         return storeBinary(data, XmldbURI.xmldbUriFor(documentPath), mimeType, overwrite, created, modified);
     }
 
     private boolean storeBinary(final byte[] data, final XmldbURI docUri, final String mimeType,
-            final int overwrite, final Date created, final Date modified) throws EXistException, PermissionDeniedException {
+                                final int overwrite, final Date created, final Date modified) throws EXistException, PermissionDeniedException {
         return this.<Boolean>writeCollection(docUri.removeLastSegment()).apply((collection, broker, transaction) -> {
             // keep the write lock in the transaction
-            transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);
+            transaction.registerLock(collection.getLock(), LockMode.WRITE_LOCK);
             if (overwrite == 0) {
                 final DocumentImpl old = collection.getDocument(broker, docUri.lastSegment());
                 if (old != null) {
@@ -1533,7 +1527,7 @@ public class RpcConnection implements RpcAPI {
     }
 
     protected String printAll(final DBBroker broker, final Sequence resultSet, int howmany,
-            int start, final Map<String, Object> properties, final long queryTime) throws EXistException, SAXException, XPathException {
+                              int start, final Map<String, Object> properties, final long queryTime) throws EXistException, SAXException, XPathException {
         if (resultSet.isEmpty()) {
             final StringBuilder buf = new StringBuilder();
             final String opt = (String) properties.get(OutputKeys.OMIT_XML_DECLARATION);
@@ -1607,7 +1601,7 @@ public class RpcConnection implements RpcAPI {
     }
 
     public String query(final String xpath, final int howmany, final int start,
-            final Map<String, Object> parameters) throws EXistException, PermissionDeniedException {
+                        final Map<String, Object> parameters) throws EXistException, PermissionDeniedException {
 
         final Source source = new StringSource(xpath);
 
@@ -1626,21 +1620,21 @@ public class RpcConnection implements RpcAPI {
                 }
 
                 return printAll(broker, qr.result, howmany, start, parameters, (System.currentTimeMillis() - startTime));
-            } catch(final XPathException e) {
+            } catch (final XPathException e) {
                 throw new EXistException(e);
             }
         });
     }
 
     public Map<String, Object> queryP(final String xpath, final String documentPath,
-            final String s_id, final Map<String, Object> parameters) throws URISyntaxException, EXistException, PermissionDeniedException {
+                                      final String s_id, final Map<String, Object> parameters) throws URISyntaxException, EXistException, PermissionDeniedException {
         return queryP(xpath,
                 (documentPath == null) ? null : XmldbURI.xmldbUriFor(documentPath),
                 s_id, parameters);
     }
 
     private Map<String, Object> queryP(final String xpath, final XmldbURI docUri,
-            final String s_id, final Map<String, Object> parameters) throws EXistException, PermissionDeniedException {
+                                       final String s_id, final Map<String, Object> parameters) throws EXistException, PermissionDeniedException {
 
         final Source source = new StringSource(xpath);
         final Optional<String> sortBy = Optional.ofNullable(parameters.get(RpcAPI.SORT_EXPR)).map(Object::toString);
@@ -1738,7 +1732,7 @@ public class RpcConnection implements RpcAPI {
                 ret.put("hash", queryResult.hashCode());
                 ret.put("results", result);
                 return ret;
-            } catch(final XPathException e) {
+            } catch (final XPathException e) {
                 throw new EXistException(e);
             }
         });
@@ -1751,7 +1745,7 @@ public class RpcConnection implements RpcAPI {
         final Optional<String> sortBy = Optional.ofNullable(parameters.get(RpcAPI.SORT_EXPR)).map(Object::toString);
 
         return this.<Map<String, Object>>readDocument(XmldbURI.createInternal(pathToQuery)).apply((document, broker, transaction) -> {
-            final BinaryDocument xquery = (BinaryDocument)document;
+            final BinaryDocument xquery = (BinaryDocument) document;
             if (xquery.getResourceType() != DocumentImpl.BINARY_FILE) {
                 throw new EXistException("Document " + pathToQuery + " is not a binary resource");
             }
@@ -1827,7 +1821,7 @@ public class RpcConnection implements RpcAPI {
                 ret.put("hash", queryResult.hashCode());
                 ret.put("results", result);
                 return ret;
-            } catch(final XPathException e) {
+            } catch (final XPathException e) {
                 throw new EXistException(e);
             }
         });
@@ -1855,7 +1849,7 @@ public class RpcConnection implements RpcAPI {
     private boolean remove(final XmldbURI docUri) throws EXistException, PermissionDeniedException {
         return this.<Boolean>writeCollection(docUri.removeLastSegment()).apply((collection, broker, transaction) -> {
             // keep the write lock in the transaction
-            transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);
+            transaction.registerLock(collection.getLock(), LockMode.WRITE_LOCK);
 
             final DocumentImpl doc = collection.getDocument(broker, docUri.lastSegment());
             if (doc == null) {
@@ -1880,11 +1874,11 @@ public class RpcConnection implements RpcAPI {
         try {
             return this.<Boolean>writeCollection(collURI).apply((collection, broker, transaction) -> {
                 // keep the write lock in the transaction
-                transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);
+                transaction.registerLock(collection.getLock(), LockMode.WRITE_LOCK);
                 LOG.debug("removing collection " + collURI);
                 return broker.removeCollection(transaction, collection);
             });
-        } catch(final EXistException e) {
+        } catch (final EXistException e) {
             LOG.debug(e);
             return false;
         }
@@ -1916,12 +1910,12 @@ public class RpcConnection implements RpcAPI {
 
     @Override
     public String retrieveAsString(final String documentPath, final String s_id,
-            final Map<String, Object> parameters) throws URISyntaxException, EXistException, PermissionDeniedException {
+                                   final Map<String, Object> parameters) throws URISyntaxException, EXistException, PermissionDeniedException {
         return retrieve(XmldbURI.xmldbUriFor(documentPath), s_id, parameters);
     }
 
     private String retrieve(final XmldbURI docUri, final String s_id,
-            final Map<String, Object> parameters) throws EXistException, PermissionDeniedException {
+                            final Map<String, Object> parameters) throws EXistException, PermissionDeniedException {
         return this.<String>readDocument(docUri).apply((document, broker, transaction) -> {
             final NodeId nodeId = factory.getBrokerPool().getNodeFactory().createFromString(s_id);
             final NodeProxy node = new NodeProxy(document, nodeId);
@@ -1940,7 +1934,7 @@ public class RpcConnection implements RpcAPI {
         final XmldbURI docUri;
         try {
             docUri = XmldbURI.xmldbUriFor(docName);
-        } catch(final URISyntaxException e) {
+        } catch (final URISyntaxException e) {
             throw new EXistException(e);
         }
 
@@ -2009,11 +2003,11 @@ public class RpcConnection implements RpcAPI {
         final String xml = retrieveAsString(resultId, num, parameters);
 
 
-        if(compression) {
+        if (compression) {
             LOG.debug("retrieve with compression");
             try {
                 return Compressor.compress(xml.getBytes(encoding));
-            } catch(final IOException ioe) {
+            } catch (final IOException ioe) {
                 throw new EXistException(ioe);
             }
         } else {
@@ -2022,7 +2016,7 @@ public class RpcConnection implements RpcAPI {
     }
 
     private String retrieveAsString(final int resultId, final int num,
-            final Map<String, Object> parameters) throws EXistException, PermissionDeniedException {
+                                    final Map<String, Object> parameters) throws EXistException, PermissionDeniedException {
         return withDb((broker, transaction) -> {
             final QueryResult qr = factory.resultSets.getResult(resultId);
             if (qr == null) {
@@ -2097,7 +2091,7 @@ public class RpcConnection implements RpcAPI {
                     } else {
                         writer.write(item.getStringValue());
                     }
-                } catch(final XPathException e) {
+                } catch (final XPathException e) {
                     throw new EXistException(e);
                 }
             } finally {
@@ -2177,11 +2171,11 @@ public class RpcConnection implements RpcAPI {
 
                         value = current.toString().toCharArray();
                         handler.characters(value, 0, value.length);
-                        
+
                         handler.endElement(Namespaces.EXIST_NS, "value", "exist:value");
                     }
                 }
-            } catch(final XPathException e) {
+            } catch (final XPathException e) {
                 throw new EXistException(e);
             }
             handler.endElement(Namespaces.EXIST_NS, "result", "exist:result");
@@ -2254,7 +2248,7 @@ public class RpcConnection implements RpcAPI {
                                 handler.characters(value, 0, value.length);
                             }
                         }
-                    } catch(final XPathException e) {
+                    } catch (final XPathException e) {
                         throw new EXistException(e);
                     }
                     handler.endElement(Namespaces.EXIST_NS, "result", "exist:result");
@@ -2296,7 +2290,7 @@ public class RpcConnection implements RpcAPI {
 
     @Override
     public boolean chgrp(final String resource, final String ownerGroup) throws EXistException, PermissionDeniedException, URISyntaxException {
-        final XmldbURI uri =  XmldbURI.xmldbUriFor(resource);
+        final XmldbURI uri = XmldbURI.xmldbUriFor(resource);
         return withDb((broker, transaction) -> {
             PermissionFactory.updatePermissions(broker, uri, permission -> permission.setGroup(ownerGroup));
             return true;
@@ -2305,7 +2299,7 @@ public class RpcConnection implements RpcAPI {
 
     @Override
     public boolean chown(final String resource, final String owner) throws EXistException, PermissionDeniedException, URISyntaxException {
-        final XmldbURI uri =  XmldbURI.xmldbUriFor(resource);
+        final XmldbURI uri = XmldbURI.xmldbUriFor(resource);
         return withDb((broker, transaction) -> {
             PermissionFactory.updatePermissions(broker, uri, permission -> permission.setOwner(owner));
             return true;
@@ -2314,7 +2308,7 @@ public class RpcConnection implements RpcAPI {
 
     @Override
     public boolean chown(final String resource, final String owner, final String ownerGroup) throws EXistException, PermissionDeniedException, URISyntaxException {
-        final XmldbURI uri =  XmldbURI.xmldbUriFor(resource);
+        final XmldbURI uri = XmldbURI.xmldbUriFor(resource);
         return withDb((broker, transaction) -> {
             PermissionFactory.updatePermissions(broker, uri, permission -> {
                 permission.setOwner(owner);
@@ -2326,7 +2320,7 @@ public class RpcConnection implements RpcAPI {
 
     @Override
     public boolean setPermissions(final String resource, final int permissions) throws EXistException, PermissionDeniedException, URISyntaxException {
-        final XmldbURI uri =  XmldbURI.xmldbUriFor(resource);
+        final XmldbURI uri = XmldbURI.xmldbUriFor(resource);
         return withDb((broker, transaction) -> {
             PermissionFactory.updatePermissions(broker, uri, permission -> permission.setMode(permissions));
             return true;
@@ -2335,7 +2329,7 @@ public class RpcConnection implements RpcAPI {
 
     @Override
     public boolean setPermissions(final String resource, final String permissions) throws EXistException, PermissionDeniedException, URISyntaxException {
-        final XmldbURI uri =  XmldbURI.xmldbUriFor(resource);
+        final XmldbURI uri = XmldbURI.xmldbUriFor(resource);
         return withDb((broker, transaction) -> {
             PermissionFactory.updatePermissions(broker, uri, permission -> {
                 try {
@@ -2350,7 +2344,7 @@ public class RpcConnection implements RpcAPI {
 
     @Override
     public boolean setPermissions(final String resource, final String owner, final String ownerGroup, final String permissions) throws EXistException, PermissionDeniedException, URISyntaxException {
-        final XmldbURI uri =  XmldbURI.xmldbUriFor(resource);
+        final XmldbURI uri = XmldbURI.xmldbUriFor(resource);
         return withDb((broker, transaction) -> {
             PermissionFactory.updatePermissions(broker, uri, permission -> {
                 permission.setOwner(owner);
@@ -2367,7 +2361,7 @@ public class RpcConnection implements RpcAPI {
 
     @Override
     public boolean setPermissions(final String resource, final String owner, final String ownerGroup, final int permissions) throws EXistException, PermissionDeniedException, URISyntaxException {
-        final XmldbURI uri =  XmldbURI.xmldbUriFor(resource);
+        final XmldbURI uri = XmldbURI.xmldbUriFor(resource);
         return withDb((broker, transaction) -> {
             PermissionFactory.updatePermissions(broker, uri, permission -> {
                 permission.setOwner(owner);
@@ -2380,7 +2374,7 @@ public class RpcConnection implements RpcAPI {
 
     @Override
     public boolean setPermissions(final String resource, final String owner, final String group, final int mode, final List<ACEAider> aces) throws EXistException, PermissionDeniedException, URISyntaxException {
-        final XmldbURI uri =  XmldbURI.xmldbUriFor(resource);
+        final XmldbURI uri = XmldbURI.xmldbUriFor(resource);
         return withDb((broker, transaction) -> {
             PermissionFactory.updatePermissions(broker, uri, permission -> {
                 permission.setOwner(owner);
@@ -2487,7 +2481,7 @@ public class RpcConnection implements RpcAPI {
 
         final SecurityManager manager = factory.getBrokerPool().getSecurityManager();
         withDb((broker, transaction) -> manager.updateAccount(account));
-       return true;
+        return true;
     }
 
     @Override
@@ -2511,7 +2505,7 @@ public class RpcConnection implements RpcAPI {
                 }
             }
 
-            withDb((broker, transaction) -> manager.addGroup(role));
+            withDb((broker, transaction) -> manager.addGroup(broker, role));
 
             return true;
         }
@@ -2629,11 +2623,11 @@ public class RpcConnection implements RpcAPI {
 
     /**
      * Added by {Marco.Tampucci, Massimo.Martinelli} @isti.cnr.it
-     *
+     * <p>
      * modified by Chris Tomlinson based on above updateAccount - it appears
      * that this code can rely on the SecurityManager to enforce policy about
      * whether user is or is not permitted to update the Account with name.
-     *
+     * <p>
      * This is called via RemoteUserManagementService.addUserGroup(Account)
      *
      * @param name
@@ -2671,11 +2665,11 @@ public class RpcConnection implements RpcAPI {
 
     /**
      * Added by {Marco.Tampucci, Massimo.Martinelli} @isti.cnr.it
-     *
+     * <p>
      * modified by Chris Tomlinson based on above updateAccount - it appears
      * that this code can rely on the SecurityManager to enforce policy about
      * whether user is or is not permitted to update the Account with name.
-     *
+     * <p>
      * This is called via RemoteUserManagementService.removeGroup(Account,
      * String)
      *
@@ -2871,7 +2865,7 @@ public class RpcConnection implements RpcAPI {
         DocumentType doctype;
         NodeCount counter;
         DoctypeCount doctypeCounter;
-        for (final SequenceIterator i = qr.result.iterate(); i.hasNext();) {
+        for (final SequenceIterator i = qr.result.iterate(); i.hasNext(); ) {
             final Item item = i.nextItem();
             if (Type.subTypeOf(item.getType(), Type.NODE)) {
                 final NodeValue nv = (NodeValue) item;
@@ -2925,12 +2919,12 @@ public class RpcConnection implements RpcAPI {
 
     @Override
     public List<List> getIndexedElements(final String collectionName,
-            final boolean inclusive) throws EXistException, PermissionDeniedException, URISyntaxException {
+                                         final boolean inclusive) throws EXistException, PermissionDeniedException, URISyntaxException {
         return getIndexedElements(XmldbURI.xmldbUriFor(collectionName), inclusive);
     }
 
     private List<List> getIndexedElements(final XmldbURI collUri,
-            final boolean inclusive) throws EXistException, PermissionDeniedException {
+                                          final boolean inclusive) throws EXistException, PermissionDeniedException {
         return this.<List<List>>readCollection(collUri).apply((collection, broker, transaction) -> {
             final Occurrences occurrences[] = broker.getElementIndex().scanIndexedElements(collection,
                     inclusive);
@@ -2998,20 +2992,19 @@ public class RpcConnection implements RpcAPI {
         }
     }
 
-//	FIXME: Check it for possible security hole. Check name.
+    //	FIXME: Check it for possible security hole. Check name.
     @Override
     public byte[] getDocumentChunk(final String name, final int start, final int len)
             throws EXistException, PermissionDeniedException, IOException {
-        final File file = new File(System.getProperty("java.io.tmpdir")
-                + File.separator + name);
-        if (!file.canRead()) {
+        final Path file = Paths.get(System.getProperty("java.io.tmpdir")).resolve(name);
+        if (!Files.isReadable(file)) {
             throw new EXistException("unable to read file " + name);
         }
-        if (file.length() < start + len) {
+        if (FileUtils.sizeQuietly(file) < start + len) {
             throw new EXistException("address too big " + name);
         }
         final byte buffer[] = new byte[len];
-        try(final RandomAccessFile os = new RandomAccessFile(file.getAbsolutePath(), "r")) {
+        try (final RandomAccessFile os = new RandomAccessFile(file.toFile(), "r")) {
             LOG.debug("Read from: " + start + " to: " + (start + len));
             os.seek(start);
             os.read(buffer);
@@ -3020,18 +3013,18 @@ public class RpcConnection implements RpcAPI {
     }
 
     public boolean moveOrCopyResource(final String documentPath, final String destinationPath,
-            final String newName, final boolean move)
+                                      final String newName, final boolean move)
             throws EXistException, PermissionDeniedException, URISyntaxException {
         return moveOrCopyResource(XmldbURI.xmldbUriFor(documentPath),
                 XmldbURI.xmldbUriFor(destinationPath), XmldbURI.xmldbUriFor(newName), move);
     }
 
     private boolean moveOrCopyResource(final XmldbURI docUri, final XmldbURI destUri,
-            final XmldbURI newName, final boolean move)
+                                       final XmldbURI newName, final boolean move)
             throws EXistException, PermissionDeniedException {
 
         return withDb((broker, transaction) ->
-                this.<Boolean>withCollection(move ? Lock.WRITE_LOCK : Lock.READ_LOCK, broker, transaction, docUri.removeLastSegment()).apply((source, broker1, transaction1) ->
+                this.<Boolean>withCollection(move ? LockMode.WRITE_LOCK : LockMode.READ_LOCK, broker, transaction, docUri.removeLastSegment()).apply((source, broker1, transaction1) ->
                         this.<Boolean>writeDocument(broker1, transaction1, source, docUri).apply((document, broker2, transaction2) ->
                                 this.<Boolean>writeCollection(broker2, transaction2, destUri).apply((destination, broker3, transaction3) -> {
                                     if (move) {
@@ -3048,17 +3041,17 @@ public class RpcConnection implements RpcAPI {
     }
 
     public boolean moveOrCopyCollection(final String collectionName, final String destinationPath,
-            final String newName, final boolean move)
+                                        final String newName, final boolean move)
             throws EXistException, PermissionDeniedException, URISyntaxException {
         return moveOrCopyCollection(XmldbURI.xmldbUriFor(collectionName),
                 XmldbURI.xmldbUriFor(destinationPath), XmldbURI.xmldbUriFor(newName), move);
     }
 
     private boolean moveOrCopyCollection(final XmldbURI collUri, final XmldbURI destUri,
-            final XmldbURI newName, final boolean move)
+                                         final XmldbURI newName, final boolean move)
             throws EXistException, PermissionDeniedException {
         return withDb((broker, transaction) ->
-                this.<Boolean>withCollection(move ? Lock.WRITE_LOCK : Lock.READ_LOCK, broker, transaction, collUri).apply((source, broker1, transaction1) ->
+                this.<Boolean>withCollection(move ? LockMode.WRITE_LOCK : LockMode.READ_LOCK, broker, transaction, collUri).apply((source, broker1, transaction1) ->
                         this.<Boolean>writeCollection(broker1, transaction1, destUri).apply((destination, broker2, transaction2) -> {
                             if (move) {
                                 broker2.moveCollection(transaction2, source, destination, newName);
@@ -3090,13 +3083,13 @@ public class RpcConnection implements RpcAPI {
         withDb((broker, transaction) -> {
             DocumentImpl doc = null;
             try {
-                doc = broker.getXMLResource(XmldbURI.create(docUri), Lock.READ_LOCK);
+                doc = broker.getXMLResource(XmldbURI.create(docUri), LockMode.READ_LOCK);
                 broker.reindexXMLResource(transaction, doc, DBBroker.IndexMode.STORE);
                 LOG.debug("document " + docUri + " reindexed");
                 return null;
             } finally {
-                if(doc != null) {
-                    doc.getUpdateLock().release(Lock.READ_LOCK);
+                if (doc != null) {
+                    doc.getUpdateLock().release(LockMode.READ_LOCK);
                 }
             }
         });
@@ -3105,7 +3098,7 @@ public class RpcConnection implements RpcAPI {
 
     @Override
     public boolean backup(final String userbackup, final String password,
-            final String destcollection, final String collection) throws EXistException, PermissionDeniedException {
+                          final String destcollection, final String collection) throws EXistException, PermissionDeniedException {
         try {
             final Backup backup = new Backup(
                     userbackup,
@@ -3126,7 +3119,7 @@ public class RpcConnection implements RpcAPI {
      * @param documentPath Path to XML document in database
      * @return TRUE if document is valid, FALSE if not or errors or.....
      * @throws java.net.URISyntaxException
-     * @throws PermissionDeniedException User is not allowed to perform action.
+     * @throws PermissionDeniedException   User is not allowed to perform action.
      * @throws org.exist.EXistException
      */
     @Override
@@ -3163,7 +3156,7 @@ public class RpcConnection implements RpcAPI {
 
     private List<String> getDocType(final XmldbURI docUri)
             throws PermissionDeniedException, EXistException {
-        return this.<List<String>>readDocument(docUri).apply((document, broker, transaction) ->{
+        return this.<List<String>>readDocument(docUri).apply((document, broker, transaction) -> {
             final List<String> list = new ArrayList<>(3);
 
             if (document.getDoctype() != null) {
@@ -3421,7 +3414,7 @@ public class RpcConnection implements RpcAPI {
     public byte[] getDocument(final String name, final String encoding, final int prettyPrint, final String stylesheet) throws EXistException, PermissionDeniedException {
         final Map<String, Object> parameters = new HashMap<>();
         parameters.put(OutputKeys.INDENT, prettyPrint > 0 ? "yes" : "no");
-        if(stylesheet != null) {
+        if (stylesheet != null) {
             parameters.put(EXistOutputKeys.STYLESHEET, stylesheet);
         }
         parameters.put(OutputKeys.ENCODING, encoding);
@@ -3511,7 +3504,7 @@ public class RpcConnection implements RpcAPI {
             try {
                 compiled = compile(broker, source, parameters);
                 return compiledOp.apply(compiled);
-            } catch(final IOException e) {
+            } catch (final IOException e) {
                 throw new EXistException(e);
             } finally {
                 if (compiled != null) {
@@ -3537,15 +3530,15 @@ public class RpcConnection implements RpcAPI {
     /**
      * Higher-order function for performing read locked operations on a collection
      *
-     * @param broker The broker to use for the operation
+     * @param broker      The broker to use for the operation
      * @param transaction The transaction to use for the operation
-     * @param uri The full XmldbURI of the collection
+     * @param uri         The full XmldbURI of the collection
      * @return A function to receive an operation to perform on the locked database collection
      * @throws org.exist.EXistException
      * @throws org.exist.security.PermissionDeniedException
      */
     private <R> Function2E<XmlRpcCollectionFunction<R>, R, EXistException, PermissionDeniedException> readCollection(final DBBroker broker, final Txn transaction, final XmldbURI uri) throws EXistException, PermissionDeniedException {
-        return withCollection(Lock.READ_LOCK, broker, transaction, uri);
+        return withCollection(LockMode.READ_LOCK, broker, transaction, uri);
     }
 
     /**
@@ -3563,43 +3556,43 @@ public class RpcConnection implements RpcAPI {
     /**
      * Higher-order function for performing write locked operations on a collection
      *
-     * @param broker The broker to use for the operation
+     * @param broker      The broker to use for the operation
      * @param transaction The transaction to use for the operation
-     * @param uri The full XmldbURI of the collection
+     * @param uri         The full XmldbURI of the collection
      * @return A function to receive an operation to perform on the locked database collection
      * @throws org.exist.EXistException
      * @throws org.exist.security.PermissionDeniedException
      */
     private <R> Function2E<XmlRpcCollectionFunction<R>, R, EXistException, PermissionDeniedException> writeCollection(final DBBroker broker, final Txn transaction, final XmldbURI uri) throws EXistException, PermissionDeniedException {
-        return withCollection(Lock.WRITE_LOCK, broker, transaction, uri);
+        return withCollection(LockMode.WRITE_LOCK, broker, transaction, uri);
     }
 
     /**
      * Higher-order function for performing lockable operations on a collection
      *
      * @param lockMode
-     * @param broker The broker to use for the operation
+     * @param broker      The broker to use for the operation
      * @param transaction The transaction to use for the operation
-     * @param uri The full XmldbURI of the collection
+     * @param uri         The full XmldbURI of the collection
      * @return A function to receive an operation to perform on the locked database collection
      * @throws org.exist.EXistException
      * @throws org.exist.security.PermissionDeniedException
      */
-    private <R> Function2E<XmlRpcCollectionFunction<R>, R, EXistException, PermissionDeniedException> withCollection(final int lockMode, final DBBroker broker, final Txn transaction, final XmldbURI uri) throws EXistException, PermissionDeniedException {
+    private <R> Function2E<XmlRpcCollectionFunction<R>, R, EXistException, PermissionDeniedException> withCollection(final LockMode lockMode, final DBBroker broker, final Txn transaction, final XmldbURI uri) throws EXistException, PermissionDeniedException {
         return readOp -> {
             Collection collection = null;
             try {
                 collection = broker.openCollection(uri, lockMode);
                 if (collection == null) {
                     final String msg = "collection " + uri + " not found!";
-                    if(LOG.isDebugEnabled()) {
+                    if (LOG.isDebugEnabled()) {
                         LOG.debug(msg);
                     }
                     throw new EXistException(msg);
                 }
                 return readOp.apply(collection, broker, transaction);
             } finally {
-                if(collection != null) {
+                if (collection != null) {
                     collection.release(lockMode);
                 }
             }
@@ -3621,15 +3614,15 @@ public class RpcConnection implements RpcAPI {
     /**
      * Higher-order function for performing read locked operations on a document
      *
-     * @param broker The broker to use for the operation
+     * @param broker      The broker to use for the operation
      * @param transaction The transaction to use for the operation
-     * @param uri The full XmldbURI of the document
+     * @param uri         The full XmldbURI of the document
      * @return A function to receive an operation to perform on the locked database document
      * @throws org.exist.EXistException
      * @throws org.exist.security.PermissionDeniedException
      */
     private <R> Function2E<XmlRpcDocumentFunction<R>, R, EXistException, PermissionDeniedException> readDocument(final DBBroker broker, final Txn transaction, final XmldbURI uri) throws EXistException, PermissionDeniedException {
-        return withDocument(Lock.READ_LOCK, broker, transaction, uri);
+        return withDocument(LockMode.READ_LOCK, broker, transaction, uri);
     }
 
     /**
@@ -3647,68 +3640,69 @@ public class RpcConnection implements RpcAPI {
     /**
      * Higher-order function for performing write locked operations on a document
      *
-     * @param broker The broker to use for the operation
+     * @param broker      The broker to use for the operation
      * @param transaction The transaction to use for the operation
-     * @param uri The full XmldbURI of the document
+     * @param uri         The full XmldbURI of the document
      * @return A function to receive an operation to perform on the locked database document
      * @throws org.exist.EXistException
      * @throws org.exist.security.PermissionDeniedException
      */
     private <R> Function2E<XmlRpcDocumentFunction<R>, R, EXistException, PermissionDeniedException> writeDocument(final DBBroker broker, final Txn transaction, final XmldbURI uri) throws EXistException, PermissionDeniedException {
-        return withDocument(Lock.WRITE_LOCK, broker, transaction, uri);
+        return withDocument(LockMode.WRITE_LOCK, broker, transaction, uri);
     }
 
     /**
      * Higher-order function for performing write locked operations on a document
      *
-     * @param broker The broker to use for the operation
+     * @param broker      The broker to use for the operation
      * @param transaction The transaction to use for the operation
-     * @param collection The collection in which the document resides
-     * @param uri The full XmldbURI of the document
+     * @param collection  The collection in which the document resides
+     * @param uri         The full XmldbURI of the document
      * @return A function to receive an operation to perform on the locked database document
      * @throws org.exist.EXistException
      * @throws org.exist.security.PermissionDeniedException
      */
     private <R> Function2E<XmlRpcDocumentFunction<R>, R, EXistException, PermissionDeniedException> writeDocument(final DBBroker broker, final Txn transaction, final Collection collection, final XmldbURI uri) throws EXistException, PermissionDeniedException {
-        return withDocument(Lock.WRITE_LOCK, broker, transaction, collection, uri);
+        return withDocument(LockMode.WRITE_LOCK, broker, transaction, collection, uri);
     }
-    
+
     //TODO(AR) consider interleaving the collection and document access, i.e. we could be finished with (and release the lock on) the collection once we have access to a handle to the document
+
     /**
      * Higher-order function for performing lockable operations on a document
      *
      * @param lockMode
-     * @param broker The broker to use for the operation
+     * @param broker      The broker to use for the operation
      * @param transaction The transaction to use for the operation
-     * @param uri The full XmldbURI of the document
+     * @param uri         The full XmldbURI of the document
      * @return A function to receive an operation to perform on the locked database document
      * @throws org.exist.EXistException
      * @throws org.exist.security.PermissionDeniedException
      */
-    private <R> Function2E<XmlRpcDocumentFunction<R>, R, EXistException, PermissionDeniedException> withDocument(final int lockMode, final DBBroker broker, final Txn transaction, final XmldbURI uri) throws EXistException, PermissionDeniedException {
+    private <R> Function2E<XmlRpcDocumentFunction<R>, R, EXistException, PermissionDeniedException> withDocument(final LockMode lockMode, final DBBroker broker, final Txn transaction, final XmldbURI uri) throws EXistException, PermissionDeniedException {
         return withOp -> this.<R>readCollection(broker, transaction, uri.removeLastSegment()).apply((collection, broker1, transaction1) -> this.<R>withDocument(lockMode, broker1, transaction1, collection, uri).apply(withOp));
     }
-    
+
     /**
      * Higher-order function for performing lockable operations on a document
      *
      * @param lockMode
-     * @param broker The broker to use for the operation
+     * @param broker      The broker to use for the operation
      * @param transaction The transaction to use for the operation
-     * @param collection The collection in which the document resides
-     * @param uri The full XmldbURI of the document
+     * @param collection  The collection in which the document resides
+     * @param uri         The full XmldbURI of the document
      * @return A function to receive an operation to perform on the locked database document
      * @throws org.exist.EXistException
      * @throws org.exist.security.PermissionDeniedException
      */
-    private <R> Function2E<XmlRpcDocumentFunction<R>, R, EXistException, PermissionDeniedException> withDocument(final int lockMode, final DBBroker broker, final Txn transaction, final Collection collection, final XmldbURI uri) throws EXistException, PermissionDeniedException {
+    private <R> Function2E<XmlRpcDocumentFunction<R>, R, EXistException, PermissionDeniedException> withDocument(final LockMode lockMode, final DBBroker broker, final Txn transaction, final Collection collection, final XmldbURI uri) throws EXistException, PermissionDeniedException {
         return readOp -> {
             DocumentImpl document = null;
             try {
                 document = collection.getDocumentWithLock(broker, uri.lastSegment(), lockMode);
                 if (document == null) {
                     final String msg = "document " + uri + " not found!";
-                    if(LOG.isDebugEnabled()) {
+                    if (LOG.isDebugEnabled()) {
                         LOG.debug(msg);
                     }
                     throw new EXistException(msg);
@@ -3740,7 +3734,7 @@ public class RpcConnection implements RpcAPI {
     /**
      * Higher-order-function for performing an XMLDB operation on
      * the database.
-     *
+     * <p>
      * Performs the operation as the current user of the RpcConnection
      *
      * @param dbOperation The operation to perform on the database
@@ -3756,7 +3750,7 @@ public class RpcConnection implements RpcAPI {
      * Higher-order-function for performing an XMLDB operation on
      * the database
      *
-     * @param user The user to execute the operation as
+     * @param user        The user to execute the operation as
      * @param dbOperation The operation to perform on the database
      * @param <R>         The return type of the operation
      * @throws org.exist.EXistException

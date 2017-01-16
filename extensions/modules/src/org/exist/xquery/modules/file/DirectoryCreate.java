@@ -24,6 +24,7 @@ package org.exist.xquery.modules.file;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.FileAttribute;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -42,8 +43,8 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
 /**
- * @see java.io.File#mkdir() 
- * @see java.io.File#mkdirs() 
+ * @see java.nio.file.Files#createDirectory(Path, FileAttribute[])
+ * @see java.nio.file.Files#createDirectories(Path, FileAttribute[])
  *
  * @author Dannes Wessels
  *

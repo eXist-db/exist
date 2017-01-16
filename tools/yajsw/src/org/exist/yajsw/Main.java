@@ -11,7 +11,7 @@ import java.util.Observer;
 /**
  *
  */
-public class Main implements Observer {
+public class Main implements Observer, Comparable {
 
     public static final int WAIT_HINT_UPDATE = 10000;
 
@@ -19,7 +19,6 @@ public class Main implements Observer {
     }
 
     public void start(String[] args) {
-        System.setProperty("exist.register-shutdown-hook", "true");
         try {
             // use the bootstrap loader to autodetect EXIST_HOME and
             // construct a correct classpath
@@ -64,5 +63,10 @@ public class Main implements Observer {
     public static void main(String[] args) {
         final Main main = new Main();
         main.start(args);
+    }
+
+    @Override
+    public int compareTo(Object o) {
+        return o == this ? 0 : -1;
     }
 }

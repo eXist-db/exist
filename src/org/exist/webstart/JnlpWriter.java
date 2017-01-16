@@ -20,11 +20,11 @@
 
 package org.exist.webstart;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -35,6 +35,8 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exist.SystemProperties;
+import org.exist.util.FileUtils;
 
 /**
  * Class for writing JNLP file, jar files and image files.
@@ -74,9 +76,9 @@ public class JnlpWriter {
 
         // Perfom sanity checks
         int counter = 0;
-        for (final File jar : jnlpFiles.getAllWebstartJars()) {
+        for (final Path jar : jnlpFiles.getAllWebstartJars()) {
             counter++; // debugging
-            if (jar == null || !jar.exists()) {
+            if (jar == null || !Files.exists(jar)) {
                 response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, String.format("Missing Jar file! (%s)", counter));
                 return;
             }
@@ -97,6 +99,11 @@ public class JnlpWriter {
             writer.writeAttribute("spec", "7.0");
             writer.writeAttribute("codebase", codeBase);
             writer.writeAttribute("href", "exist.jnlp");
+
+            String version = SystemProperties.getInstance().getSystemProperty("product-version", null);
+            if(version!=null){
+                writer.writeAttribute("version", version);
+            }
 
             writer.writeStartElement("information");
 
@@ -167,14 +174,19 @@ public class JnlpWriter {
             writer.writeAttribute("value", "true");
             writer.writeEndElement();
 
+            writer.writeStartElement("property");
+            writer.writeAttribute("name", "java.util.logging.manager");
+            writer.writeAttribute("value", "org.apache.logging.log4j.jul.LogManager");
+            writer.writeEndElement();
+
             writer.writeStartElement("java");
             writer.writeAttribute("version", "1.8+");
             writer.writeEndElement();
 
-            for (final File jar : jnlpFiles.getAllWebstartJars()) {
+            for (final Path jar : jnlpFiles.getAllWebstartJars()) {
                 writer.writeStartElement("jar");
-                writer.writeAttribute("href", jar.getName());
-                writer.writeAttribute("size", "" + jar.length());
+                writer.writeAttribute("href", FileUtils.fileName(jar));
+                writer.writeAttribute("size", "" + FileUtils.sizeQuietly(jar));
                 writer.writeEndElement();
             }
 
@@ -226,20 +238,20 @@ public class JnlpWriter {
 
         LOGGER.debug("Send jar file " + filename);
 
-        final File localFile = jnlpFiles.getJarFile(filename);
-        if (localFile == null || !localFile.exists()) {
+        final Path localFile = jnlpFiles.getJarFile(filename);
+        if (localFile == null || !Files.exists(localFile)) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND, "Jar file '" + filename + "' not found.");
             return;
         }
 
 
-        LOGGER.debug("Actual file " + localFile.getAbsolutePath());
+        LOGGER.debug("Actual file " + localFile.toAbsolutePath());
 
-        if (localFile.getName().endsWith(".jar")) {
+        if (FileUtils.fileName(localFile).endsWith(".jar")) {
             //response.setHeader(CONTENT_ENCODING, JAR_MIME_TYPE);
             response.setContentType(JAR_MIME_TYPE);
 
-        } else if (localFile.getName().endsWith(".jar.pack.gz")) {
+        } else if (FileUtils.fileName(localFile).endsWith(".jar.pack.gz")) {
             response.setHeader(CONTENT_ENCODING, PACK200_GZIP_ENCODING);
             response.setContentType(PACK_MIME_TYPE);
         }
@@ -247,24 +259,12 @@ public class JnlpWriter {
         // It is very improbable that a 64 bit jar is needed, but
         // it is better to be ready
         // response.setContentLength(Integer.parseInt(Long.toString(localFile.length())));
-        response.setHeader("Content-Length", Long.toString(localFile.length()));
-        response.setDateHeader("Last-Modified", localFile.lastModified());
+        response.setHeader("Content-Length", Long.toString(FileUtils.sizeQuietly(localFile)));
+        response.setDateHeader("Last-Modified", Files.getLastModifiedTime(localFile).toMillis());
 
-        try (InputStream is = new FileInputStream(localFile); OutputStream os = response.getOutputStream()) {
-            IOUtils.copy(is, os);
-            os.flush();
-
-        } catch (final IllegalStateException ex) {
-            LOGGER.debug(ex.getMessage());
-            throw new IOException(ex.getMessage());
-
-        } catch (final IOException ex) {
-            LOGGER.debug("Ignore IOException for '" + filename + "'");
-            throw ex;
-
-        }
-
-
+        final OutputStream os = response.getOutputStream();
+        Files.copy(localFile, os);
+        os.flush();
     }
 
     void sendImage(JnlpHelper jh, JnlpJarFiles jf, String filename, HttpServletResponse response) throws IOException {

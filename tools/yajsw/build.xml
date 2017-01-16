@@ -5,17 +5,22 @@
 <!-- ======================================================================= -->
 <project basedir="." default="compile" name="eXistWrapper">
 
-    <property file="../../build.properties" />
-
-    <property name="src" value="./src"/>
-    <property name="lib" value="./lib"/>
-    <property name="classes" value="./classes"/>
-	<property name="conf" value="./conf"/>
-	<property name="bin" value="./bin"/>
-	<property name="logs" value="./logs"/>
-	<property name="work" value="./work"/>
-	<property name="server.dir" value="../.."/>
     <property name="jetty.dir" value="tools/jetty"/>
+    <property name="server.dir" value="${basedir}/../.."/>
+    <property name="wrapper.dir" value="${server.dir}/tools/yajsw"/>
+    <property environment="env"/>
+
+    <property file="${server.dir}/build.properties" />
+    <property file="${server.dir}/vm.properties" />
+
+    <property name="src" value="${wrapper.dir}/src"/>
+    <property name="lib" value="${wrapper.dir}/lib"/>
+    <property name="classes" value="${wrapper.dir}/classes"/>
+    <property name="conf" value="${wrapper.dir}/conf"/>
+    <property name="bin" value="${wrapper.dir}/bin"/>
+    <property name="logs" value="${wrapper.dir}/logs"/>
+    <property name="work" value="${wrapper.dir}/work"/>
+
 
     <property name="build.compiler" value="modern"/>
     
@@ -24,15 +29,43 @@
     	<pathelement path="${server.dir}/start.jar"/>
     	<pathelement path="${server.dir}/exist.jar"/>
     </path>
-    
+
+    <available file="${conf}/wrapper.conf" property="conf.available"/>
+
+    <!-- =================================================================== -->
+    <!-- Creating conf files for installer and direct local repo use         -->
+    <!-- =================================================================== -->
+    <target name="create-conf" unless="conf.available">
+        <echo message="Creating wrapper config files for installer and direct local repo use..."/>
+        
+	    <fail unless="env.EXIST_HOME" message="EXIST_HOME environment variable not set. Please set it and start the build again. If run from commandline just prepend it."/>
+	    <fail unless="env.JAVA_HOME" message="JAVA_HOME environment variable not set. Please set it and start the build again. If run from commandline just prepend it."/>
+
+        <filter token="app.name" value="eXist-db"/>
+        <filter token="app.long.name" value="eXist-db Native XML Database"/>
+        <filter token="app.description" value="eXist-db Database Server"/>
+        <filter token="app.long.description" value="Start and stop the eXist-db Database Server wrapper"/>
+        <filter token="jetty.dir" value="${jetty.dir}"/>
+        <filter token="java.vm" value="${env.JAVA_HOME}/bin/java"/>
+        <filter token="server.dir" value="${env.EXIST_HOME}"/>
+        <filter token="memory.max" value="${memory.max}"/>
+        <copy file="${conf}/wrapper.conf.in" tofile="${conf}/wrapper.conf" filtering="true" overwrite="true" />
+        
+        <filter token="java.vm" value="${JAVA_HOME}/bin/java"/>
+        <filter token="server.dir" value="${INSTALL_PATH}"/>
+        <filter token="memory.max" value="${MAX_MEMORY}"/>
+        <copy file="${conf}/wrapper.conf.in" tofile="${conf}/wrapper.conf.install" filtering="true" overwrite="true"/>
+    </target>
+
+
     <!-- =================================================================== -->
     <!-- Prepare the build                                                   -->
     <!-- =================================================================== -->
-    <target name="prepare">
+    <target name="prepare" depends="create-conf">
     	<echo message="--------------------------------------------------"/>
         <echo message="Setting up Java Service Wrapper"/>
         <echo message="--------------------------------------------------"/>
-        
+       
         <mkdir dir="${classes}"/>
 	    <delete dir="${logs}"/>
 		<mkdir dir="${logs}"/>
@@ -40,18 +73,8 @@
     	<mkdir dir="${work}"/>
         <tstamp/>
 
-        <filter token="app.name" value="eXist-db"/>
-        <filter token="app.long.name" value="eXist-db Native XML Database"/>
-        <filter token="app.description" value="eXist-db Database Server"/>
-        <filter token="app.long.description" value="Start and stop the eXist-db Database Server wrapper"/>
-        <filter token="jetty.dir" value="${jetty.dir}"/>
-        <filter token="java.vm" value="java"/>
-        <copy file="${conf}/wrapper.conf.in" tofile="${conf}/wrapper.conf" filtering="true" overwrite="false" />
-        <filter token="java.vm" value="$JAVA_HOME/bin/java"/>
-        <copy file="${conf}/wrapper.conf.in" tofile="${conf}/wrapper.conf.install" filtering="true"/>
-
         <!-- Create log4j config based on general config file -->
-        <xslt in="${server.dir}/log4j2.xml" out="${conf}/log4j2.xml" style="wrapper-log4j.xsl"/>
+        <xslt in="${server.dir}/log4j2.xml" out="${conf}/log4j2.xml" style="${wrapper.dir}/wrapper-log4j.xsl"/>
     </target>
 
     <!-- =================================================================== -->
@@ -70,5 +93,7 @@
 	
 	<target name="clean">
 		<delete dir="${classes}"/>
+        <delete file="${conf}/wrapper.conf.install"/>
+        <delete file="${conf}/wrapper.conf"/>
 	</target>
 </project>

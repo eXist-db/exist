@@ -41,7 +41,7 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
 /**
- * @see java.io.File#canWrite() 
+ * @see java.nio.file.Files#isWritable(Path)
  * @author Andrzej Taramina
  * @author Loren Cahlander
  *

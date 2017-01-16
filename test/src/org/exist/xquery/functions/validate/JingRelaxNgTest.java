@@ -22,13 +22,15 @@
 package org.exist.xquery.functions.validate;
 
 import org.custommonkey.xmlunit.exceptions.XpathException;
+import org.exist.util.FileUtils;
 import org.junit.*;
 import static org.junit.Assert.*;
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 
-import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.function.Predicate;
 
 import org.exist.test.EmbeddedExistTester;
 
@@ -47,31 +49,25 @@ public class JingRelaxNgTest extends EmbeddedExistTester {
     @BeforeClass
     public static void prepareResources() throws Exception {
 
-        String noValidation = "<?xml version='1.0'?>" +
+        final String noValidation = "<?xml version='1.0'?>" +
                 "<collection xmlns=\"http://exist-db.org/collection-config/1.0" +
                 "\">" +
                 "<validation mode=\"no\"/>" +
                 "</collection>";
 
-        Collection conf = createCollection(rootCollection, "system/config/db/personal");
+        final Collection conf = createCollection(rootCollection, "system/config/db/personal");
         storeResource(conf, "collection.xconf", noValidation.getBytes());
 
-        Collection collection = createCollection(rootCollection, "personal");
+        final Collection collection = createCollection(rootCollection, "personal");
 
-        File directory = new File("samples/validation/personal");
+        final Path directory = Paths.get("samples/validation/personal");
 
-        FilenameFilter filter = new FilenameFilter() {
+        final Predicate<Path> filter = path -> FileUtils.fileName(path).startsWith("personal");
 
-            public boolean accept(File dir, String name) {
-                return (name.startsWith("personal"));
-            }
-        };
-
-        for (File file : directory.listFiles(filter)) {
-            byte[] data = readFile(directory, file.getName());
-            storeResource(collection, file.getName(), data);
+        for (final Path file : FileUtils.list(directory, filter)) {
+            final byte[] data = readFile(file);
+            storeResource(collection, FileUtils.fileName(file), data);
         }
-
     }
 
 

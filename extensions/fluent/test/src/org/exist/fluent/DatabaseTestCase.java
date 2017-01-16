@@ -2,14 +2,12 @@ package org.exist.fluent;
 
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
-import java.io.File;
 import java.lang.annotation.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Iterator;
 
 import org.exist.collections.Collection;
-import org.exist.fluent.Database;
-import org.exist.fluent.DatabaseException;
-import org.exist.fluent.Transaction;
 import org.exist.xmldb.XmldbURI;
 import org.junit.*;
 
@@ -41,14 +39,14 @@ public abstract class DatabaseTestCase {
 		ConfigFile configFileAnnotation = getClass().getAnnotation(ConfigFile.class);
 		if (configFileAnnotation == null)
 			throw new DatabaseException("Missing ConfigFile annotation on DatabaseTestCase subclass");
-		File configFile = new File(configFileAnnotation.value());
+		Path configFile = Paths.get(configFileAnnotation.value());
 		if (!Database.isStarted()) {
-			Database.startup(configFile.toPath());
+			Database.startup(configFile);
 			db = null;
 		}
 		if (db == null) db = Database.login("admin", "");
 		wipeDatabase();
-		Database.configureRootCollection(configFile.toPath());	// config file gets erased by wipeDatabase()
+		Database.configureRootCollection(configFile);	// config file gets erased by wipeDatabase()
 	}
 	
 	@AfterClass public static void shutdownDatabase() throws Exception {

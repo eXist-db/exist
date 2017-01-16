@@ -50,7 +50,7 @@ public class OpAnd extends LogicalOp {
                 {context.getProfiler().message(this, Profiler.START_SEQUENCES,
                     "CONTEXT ITEM", contextItem.toSequence());}
         }
-        Sequence result; 
+        Sequence result;
         if (getLength() == 0) {
             result = Sequence.EMPTY_SEQUENCE;
         } else {
@@ -84,34 +84,13 @@ public class OpAnd extends LogicalOp {
 
             	} else {
             		final Sequence rs = right.eval(contextSequence, null);
-
-	            	if (rs.isPersistentSet()) {
-	                    NodeSet rl = ls.toNodeSet();
-	                    rl = rl.getContextNodes(left.getContextId());
-
-                        if (rl.isEmpty())
-                            {return NodeSet.EMPTY_SET;}
-
-	                    // TODO: optimize and return false if rl.isEmpty() ?
-	                    NodeSet rr = rs.toNodeSet();
-	                    rr = rr.getContextNodes(right.getContextId());
-	                    result = rr.intersection(rl);
-	                    //<test>{() and ()}</test> has to return <test>false</test>    			
-	                    if (getParent() instanceof EnclosedExpr ||
-	                        //First, the intermediate PathExpr
-	                        (getParent() != null && getParent().getParent() == null)) {
-	                        result = result.isEmpty() ? BooleanValue.FALSE : BooleanValue.TRUE;
-	                    }
-	                } else {
-	                    // fall back if right sequence is not persistent
-	                    boolean rl = ls.effectiveBooleanValue();
-	                    if (!rl) {
-	                        result = BooleanValue.FALSE;
-	                    } else {
-	                        final boolean rr = rs.effectiveBooleanValue();
-	                        result = (rl && rr) ? BooleanValue.TRUE : BooleanValue.FALSE;
-	                    }
-	                }
+                    final boolean rl = ls.effectiveBooleanValue();
+                    if (!rl) {
+                        result = BooleanValue.FALSE;
+                    } else {
+                        final boolean rr = rs.effectiveBooleanValue();
+                        result = (rl && rr) ? BooleanValue.TRUE : BooleanValue.FALSE;
+                    }
             	}
             } else {
                 boolean rl = ls.effectiveBooleanValue();

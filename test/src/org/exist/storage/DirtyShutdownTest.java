@@ -14,7 +14,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.xml.sax.InputSource;
 
-import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -62,11 +63,11 @@ public class DirtyShutdownTest {
             for (int i = 0; i < 50; i++) {
                 try(final Txn transaction = transact.beginTransaction()) {
 
-                    File f = new File("samples/shakespeare/macbeth.xml");
+                    Path f = Paths.get("samples/shakespeare/macbeth.xml");
                     IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"),
-                            new InputSource(f.toURI().toASCIIString()));
+                            new InputSource(f.toUri().toASCIIString()));
                     assertNotNull(info);
-                    root.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
+                    root.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()));
 
                     transact.commit(transaction);
                 }
@@ -85,11 +86,11 @@ public class DirtyShutdownTest {
                 assertNotNull(root);
                 broker.saveCollection(transaction, root);
 
-                File f = new File("samples/shakespeare/hamlet.xml");
+                Path f = Paths.get("samples/shakespeare/hamlet.xml");
                 IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"),
-                        new InputSource(f.toURI().toASCIIString()));
+                        new InputSource(f.toUri().toASCIIString()));
                 assertNotNull(info);
-                root.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
+                root.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()));
 
                 transact.commit(transaction);
             }

@@ -37,6 +37,7 @@ import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.util.XMLFilenameFilter;
 import org.junit.*;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNull;
@@ -177,7 +178,7 @@ public class CreateCollectionsTest  {
     private XMLResource storeResourceFromFile(Path file, Collection testCollection) throws XMLDBException, IOException {
         XMLResource res = (XMLResource) testCollection.createResource(file.getFileName().toString(), "XMLResource");
         assertNotNull("storeResourceFromFile", res);
-        String xml = XMLUtil.readFile(file.toFile(), "UTF-8");
+        String xml = XMLUtil.readFile(file, UTF_8);
         res.setContent(xml);
         testCollection.storeResource(res);
         return res;

@@ -21,8 +21,10 @@
  */
 package org.exist.storage;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
 import java.util.Optional;
 
 import org.exist.EXistException;
@@ -30,12 +32,13 @@ import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.security.PermissionDeniedException;
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.test.TestConstants;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
+import org.exist.util.FileUtils;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.junit.After;
@@ -62,7 +65,7 @@ public class RecoveryTest3 {
     
     private static String directory = "/media/Shared/XML/movies";
     
-    private static File dir = new File(directory);
+    private static Path dir = Paths.get(directory);
 
     @Test
     public void store() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, TriggerException, LockException {
@@ -81,23 +84,19 @@ public class RecoveryTest3 {
             assertNotNull(test2);
             broker.saveCollection(transaction, test2);
 
-            File files[] = dir.listFiles();
+            final List<Path> files = FileUtils.list(dir);
             assertNotNull(files);
 
-            File f;
-            IndexInfo info;
-
             // store some documents.
-            for (int i = 0; i < files.length && i < RESOURCE_COUNT; i++) {
-                f = files[i];
-                assertNotNull(f);
+            for (int i = 0; i < files.size() && i < RESOURCE_COUNT; i++) {
+                final Path f = files.get(i);
                 try {
-                    info = test2.validateXMLResource(transaction, broker, XmldbURI.create(f.getName()), new InputSource(f.toURI().toASCIIString()));
+                    final IndexInfo info = test2.validateXMLResource(transaction, broker, XmldbURI.create(FileUtils.fileName(f)), new InputSource(f.toUri().toASCIIString()));
                     assertNotNull(info);
-                    test2.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
-                } catch (SAXException e) {
+                    test2.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()));
+                } catch (final SAXException e) {
                     //TODO : why store invalid documents ?
-                    System.err.println("Error found while parsing document: " + f.getName() + ": " + e.getMessage());
+                    System.err.println("Error found while parsing document: " + FileUtils.fileName(f) + ": " + e.getMessage());
                 }
             }
 
@@ -119,9 +118,9 @@ public class RecoveryTest3 {
 
             try (final Txn transaction = transact.beginTransaction()) {
 
-                root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, Lock.WRITE_LOCK);
+                root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, LockMode.WRITE_LOCK);
                 assertNotNull(root);
-                transaction.registerLock(root.getLock(), Lock.WRITE_LOCK);
+                transaction.registerLock(root.getLock(), LockMode.WRITE_LOCK);
                 broker.removeCollection(transaction, root);
 
                 transact.commit(transaction);
@@ -137,22 +136,17 @@ public class RecoveryTest3 {
                 assertNotNull(test2);
                 broker.saveCollection(transaction, test2);
 
-                File files[] = dir.listFiles();
-                assertNotNull(files);
-
-                File f;
-                IndexInfo info;
+                final List<Path> files = FileUtils.list(dir);
 
                 // store some documents.
-                for (int i = 0; i < files.length && i < RESOURCE_COUNT; i++) {
-                    f = files[i];
-                    assertNotNull(f);
+                for (int i = 0; i < files.size() && i < RESOURCE_COUNT; i++) {
+                    final Path f = files.get(i);
                     try {
-                        info = test2.validateXMLResource(transaction, broker, XmldbURI.create(f.getName()), new InputSource(f.toURI().toASCIIString()));
+                        final IndexInfo info = test2.validateXMLResource(transaction, broker, XmldbURI.create(FileUtils.fileName(f)), new InputSource(f.toUri().toASCIIString()));
                         assertNotNull(info);
-                        test2.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
+                        test2.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()));
                     } catch (SAXException e) {
-                        System.err.println("Error found while parsing document: " + f.getName() + ": " + e.getMessage());
+                        System.err.println("Error found while parsing document: " + FileUtils.fileName(f) + ": " + e.getMessage());
                     }
                 }
 

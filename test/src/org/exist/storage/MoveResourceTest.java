@@ -21,26 +21,32 @@
  */
 package org.exist.storage;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Optional;
 
 import org.exist.EXistException;
+import org.exist.TestUtils;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.test.TestConstants;
 import org.exist.util.Configuration;
+import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xmldb.CollectionManagementServiceImpl;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Test;
+import org.junit.FixMethodOrder;
+import org.junit.runners.MethodSorters;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import org.xml.sax.InputSource;
@@ -50,10 +56,11 @@ import org.xmldb.api.base.Database;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class MoveResourceTest {
 
     @Test
-    public void store() throws LockException, SAXException, PermissionDeniedException, EXistException, IOException {
+    public void store1() throws LockException, SAXException, PermissionDeniedException, EXistException, IOException {
         doStore();
         tearDown();
         doRead();
@@ -76,12 +83,13 @@ public class MoveResourceTest {
             broker.saveCollection(transaction, test2);
 
             final String existHome = System.getProperty("exist.home");
-            final File existDir = existHome==null ? new File(".") : new File(existHome);
-            final File f = new File(existDir,"samples/shakespeare/r_and_j.xml");
+            Path existDir = existHome == null ? Paths.get(".") : Paths.get(existHome);
+            existDir = existDir.normalize();
+            final Path f = existDir.resolve("samples/shakespeare/r_and_j.xml");
 
-            final IndexInfo info = test2.validateXMLResource(transaction, broker, TestConstants.TEST_XML_URI, new InputSource(f.toURI().toASCIIString()));
+            final IndexInfo info = test2.validateXMLResource(transaction, broker, TestConstants.TEST_XML_URI, new InputSource(f.toUri().toASCIIString()));
             assertNotNull(info);
-            test2.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
+            test2.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()));
 
             final DocumentImpl doc = test2.getDocument(broker, TestConstants.TEST_XML_URI);
             assertNotNull(doc);
@@ -101,18 +109,18 @@ public class MoveResourceTest {
             final Serializer serializer = broker.getSerializer();
             serializer.reset();
 
-            final DocumentImpl doc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("test/new_test.xml"), Lock.READ_LOCK);
+            final DocumentImpl doc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("test/new_test.xml"), LockMode.READ_LOCK);
             assertNotNull("Document should not be null", doc);
             final String data = serializer.serialize(doc);
             assertNotNull(data);
-            doc.getUpdateLock().release(Lock.READ_LOCK);
+            doc.getUpdateLock().release(LockMode.READ_LOCK);
 
             final TransactionManager transact = pool.getTransactionManager();
             try(final Txn transaction = transact.beginTransaction()) {
 
-                final Collection root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, Lock.WRITE_LOCK);
+                final Collection root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, LockMode.WRITE_LOCK);
                 assertNotNull(root);
-                transaction.registerLock(root.getLock(), Lock.WRITE_LOCK);
+                transaction.registerLock(root.getLock(), LockMode.WRITE_LOCK);
                 broker.removeCollection(transaction, root);
 
                 transact.commit(transaction);
@@ -121,7 +129,7 @@ public class MoveResourceTest {
     }
 
     @Test
-    public void aborted() throws Exception {
+    public void store3Aborted() throws Exception {
         storeAborted();
         tearDown();
         readAborted();
@@ -141,13 +149,14 @@ public class MoveResourceTest {
                 broker.saveCollection(transaction, test2);
 
                 final String existHome = System.getProperty("exist.home");
-                final File existDir = existHome == null ? new File(".") : new File(existHome);
-                final File f = new File(existDir, "samples/shakespeare/r_and_j.xml");
+                Path existDir = existHome == null ? Paths.get(".") : Paths.get(existHome);
+                existDir = existDir.normalize();
+                final Path f = existDir.resolve("samples/shakespeare/r_and_j.xml");
 
                 final IndexInfo info = test2.validateXMLResource(transaction, broker, XmldbURI.create("new_test2.xml"),
-                        new InputSource(f.toURI().toASCIIString()));
-                test2.store(transaction, broker, info, new InputSource(f.toURI()
-                        .toASCIIString()), false);
+                        new InputSource(f.toUri().toASCIIString()));
+                test2.store(transaction, broker, info, new InputSource(f.toUri()
+                        .toASCIIString()));
 
                 transact.commit(transaction);
             }
@@ -177,19 +186,19 @@ public class MoveResourceTest {
             final Serializer serializer = broker.getSerializer();
             serializer.reset();
 
-            final DocumentImpl doc = broker.getXMLResource(TestConstants.TEST_COLLECTION_URI2.append("new_test2.xml"), Lock.READ_LOCK);
+            final DocumentImpl doc = broker.getXMLResource(TestConstants.TEST_COLLECTION_URI2.append("new_test2.xml"), LockMode.READ_LOCK);
             assertNotNull("Document should not be null", doc);
             final String data = serializer.serialize(doc);
             assertNotNull(data);
 
-            doc.getUpdateLock().release(Lock.READ_LOCK);
+            doc.getUpdateLock().release(LockMode.READ_LOCK);
 
             final TransactionManager transact = pool.getTransactionManager();
             try(final Txn transaction = transact.beginTransaction()) {
 
-                final Collection root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, Lock.WRITE_LOCK);
+                final Collection root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, LockMode.WRITE_LOCK);
                 assertNotNull(root);
-                transaction.registerLock(root.getLock(), Lock.WRITE_LOCK);
+                transaction.registerLock(root.getLock(), LockMode.WRITE_LOCK);
                 broker.removeCollection(transaction, root);
 
                 transact.commit(transaction);
@@ -198,7 +207,7 @@ public class MoveResourceTest {
     }
 
     @Test
-    public void xmldbStore() throws XMLDBException {
+    public void store2XMLDB() throws XMLDBException {
         doXmldbStore();
         tearDown();
         doXmldbRead();
@@ -224,8 +233,9 @@ public class MoveResourceTest {
         }
 
         final String existHome = System.getProperty("exist.home");
-        final File existDir = existHome==null ? new File(".") : new File(existHome);
-        final File f = new File(existDir,"samples/shakespeare/r_and_j.xml");
+        Path existDir = existHome == null ? Paths.get(".") : Paths.get(existHome);
+        existDir = existDir.normalize();
+        final Path f = existDir.resolve("samples/shakespeare/r_and_j.xml");
 
         final Resource res = test2.createResource("test3.xml", "XMLResource");
         res.setContent(f);
@@ -272,5 +282,10 @@ public class MoveResourceTest {
     @After
     public void tearDown() {
         BrokerPool.stopAll(false);
+    }
+
+    @AfterClass
+    public static void cleanup() throws IOException, DatabaseConfigurationException {
+        TestUtils.cleanupDataDir();
     }
 }

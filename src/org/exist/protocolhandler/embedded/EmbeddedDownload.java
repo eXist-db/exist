@@ -38,7 +38,7 @@ import org.exist.protocolhandler.xmldb.XmldbURL;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
 import org.exist.xmldb.XmldbURI;
@@ -110,10 +110,10 @@ public class EmbeddedDownload {
                 DocumentImpl resource = null;
                 Collection collection = null;
                 try {
-                    resource = broker.getXMLResource(path, Lock.READ_LOCK);
+                    resource = broker.getXMLResource(path, LockMode.READ_LOCK);
                     if (resource == null) {
                         // Test for collection
-                        collection = broker.openCollection(path, Lock.READ_LOCK);
+                        collection = broker.openCollection(path, LockMode.READ_LOCK);
                         if (collection == null) {
                             // No collection, no document
                             throw new IOException("Resource " + xmldbURL.getPath() + " not found.");
@@ -140,11 +140,11 @@ public class EmbeddedDownload {
                     }
                 } finally {
                     if(resource != null){
-                        resource.getUpdateLock().release(Lock.READ_LOCK);
+                        resource.getUpdateLock().release(LockMode.READ_LOCK);
                     }
 
                     if(collection != null){
-                        collection.release(Lock.READ_LOCK);
+                        collection.release(LockMode.READ_LOCK);
                     }
                     LOG.debug("End document download");
                 }

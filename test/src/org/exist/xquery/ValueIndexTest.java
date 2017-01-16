@@ -21,7 +21,8 @@
  */
 package org.exist.xquery;
 
-import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.xmldb.IndexQueryService;
@@ -424,8 +425,9 @@ public class ValueIndexTest {
         XMLResource doc = (XMLResource) testCollection.createResource(
                 documentName, "XMLResource");
         String existHome = System.getProperty("exist.home");
-        File existDir = existHome==null ? new File(".") : new File(existHome);
-        File f = new File(existDir,path);
+        Path existDir = existHome == null ? Paths.get(".") : Paths.get(existHome);
+        existDir = existDir.normalize();
+        Path f = existDir.resolve(path);
         doc.setContent(f);
         testCollection.storeResource(doc);
         XPathQueryService service = (XPathQueryService) testCollection

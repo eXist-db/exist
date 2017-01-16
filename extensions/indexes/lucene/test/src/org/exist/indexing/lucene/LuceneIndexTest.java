@@ -19,13 +19,14 @@
  */
 package org.exist.indexing.lucene;
 
+import static org.exist.util.PropertiesBuilder.propertiesBuilder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.ParserConfigurationException;
@@ -50,14 +51,9 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.ElementValue;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
-import org.exist.util.Configuration;
-import org.exist.util.ConfigurationHelper;
-import org.exist.util.DatabaseConfigurationException;
-import org.exist.util.LockException;
-import org.exist.util.MimeTable;
-import org.exist.util.MimeType;
-import org.exist.util.Occurrences;
+import org.exist.util.*;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
@@ -67,11 +63,7 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xupdate.Modification;
 import org.exist.xupdate.XUpdateProcessor;
 
-import org.junit.AfterClass;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -258,14 +250,13 @@ public class LuceneIndexTest {
             "   </index>" +
             "</collection>";
 
-
-    private static BrokerPool pool;
     private static Collection root;
     private Boolean savedConfig;
 
     @Test
     public void simpleQueries() throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, TriggerException, LockException, IOException, XPathException {
         final DocumentSet docs = configureAndStore(COLLECTION_CONFIG1, XML1, "test.xml");
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             checkIndex(docs, broker, new QName[] { new QName("head") }, "title", 1);
@@ -306,6 +297,7 @@ public class LuceneIndexTest {
     @Test
     public void configuration() throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, TriggerException, LockException, IOException, XPathException {
         final DocumentSet docs = configureAndStore(COLLECTION_CONFIG4, XML4, "test.xml");
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             checkIndex(docs, broker, new QName[] { new QName("a") }, "x", 1);
@@ -330,6 +322,7 @@ public class LuceneIndexTest {
     @Test
     public void inlineAndIgnore() throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, TriggerException, LockException, IOException, XPathException {
         final DocumentSet docs = configureAndStore(COLLECTION_CONFIG5, XML5, "test.xml");
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             checkIndex(docs, broker, new QName[] { new QName("head") }, "title", 1);
@@ -407,6 +400,7 @@ public class LuceneIndexTest {
     @Test
     public void attributeMatch() throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, TriggerException, LockException, IOException, XPathException, ParserConfigurationException {
         final DocumentSet docs = configureAndStore(COLLECTION_CONFIG7, XML8, "test.xml");
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                 final Txn transaction = transact.beginTransaction()) {
@@ -477,6 +471,7 @@ public class LuceneIndexTest {
     @Test
     public void boosts() throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, TriggerException, LockException, IOException, XPathException {
         configureAndStore(COLLECTION_CONFIG6, XML6, "test.xml");
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             final XQuery xquery = pool.getXQueryService();
@@ -492,6 +487,7 @@ public class LuceneIndexTest {
     @Test
     public void queryTranslation() throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, TriggerException, LockException, IOException, XPathException {
         configureAndStore(COLLECTION_CONFIG1, XML7, "test.xml");
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             final XQuery xquery = pool.getXQueryService();
@@ -621,6 +617,7 @@ public class LuceneIndexTest {
     @Test
     public void analyzers() throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, TriggerException, LockException, IOException, XPathException {
         final DocumentSet docs = configureAndStore(COLLECTION_CONFIG3, XML3, "test.xml");
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             checkIndex(docs, broker, new QName[] { new QName("head") }, "TITLE", 1);
@@ -642,9 +639,10 @@ public class LuceneIndexTest {
         }
     }
 
-        @Test
+    @Test
     public void MultiTermQueryRewriteMethod() throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, TriggerException, LockException, IOException, XPathException {
         configureAndStore(COLLECTION_CONFIG8, XML9, "test.xml");
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             final XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
@@ -672,6 +670,7 @@ public class LuceneIndexTest {
     @Test
     public void dropSingleDoc() throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, TriggerException, LockException, IOException {
         final DocumentSet docs = configureAndStore(COLLECTION_CONFIG1, XML1, "dropDocument.xml");
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                 final Txn transaction = transact.beginTransaction()) {
@@ -686,6 +685,7 @@ public class LuceneIndexTest {
     @Test
     public void dropDocuments() throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, TriggerException, LockException, IOException, XPathException {
         configureAndStore(COLLECTION_CONFIG1, "samples/shakespeare");
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             final XQuery xquery = pool.getXQueryService();
@@ -718,6 +718,7 @@ public class LuceneIndexTest {
     @Test
     public void removeCollection() throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, TriggerException, LockException, IOException, XPathException {
         final DocumentSet docs = configureAndStore(COLLECTION_CONFIG1, "samples/shakespeare");
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn transaction = transact.beginTransaction()) {
@@ -745,6 +746,7 @@ public class LuceneIndexTest {
     @Test
     public void reindex() throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, TriggerException, LockException, IOException {
         final DocumentSet docs = configureAndStore(COLLECTION_CONFIG1, XML1, "dropDocument.xml");
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             broker.reindexCollection(TestConstants.TEST_COLLECTION_URI);
@@ -768,6 +770,7 @@ public class LuceneIndexTest {
     @Test
     public void xupdateRemove() throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, TriggerException, LockException, IOException, XPathException, ParserConfigurationException {
         final DocumentSet docs = configureAndStore(COLLECTION_CONFIG2, XML2, "xupdate.xml");
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn transaction = transact.beginTransaction()) {
@@ -846,6 +849,7 @@ public class LuceneIndexTest {
     @Test
     public void xupdateInsert() throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, TriggerException, LockException, IOException, XPathException, ParserConfigurationException {
         final DocumentSet docs = configureAndStore(COLLECTION_CONFIG2, XML2, "xupdate.xml");
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn transaction = transact.beginTransaction()) {
@@ -1010,6 +1014,7 @@ public class LuceneIndexTest {
     @Test
     public void xupdateUpdate() throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, TriggerException, LockException, IOException, XPathException, ParserConfigurationException {
         final DocumentSet docs = configureAndStore(COLLECTION_CONFIG2, XML2, "xupdate.xml");
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn transaction = transact.beginTransaction()) {
@@ -1087,6 +1092,7 @@ public class LuceneIndexTest {
     @Test
     public void xupdateReplace() throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, TriggerException, LockException, IOException, XPathException, ParserConfigurationException {
         final DocumentSet docs = configureAndStore(COLLECTION_CONFIG2, XML2, "xupdate.xml");
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn transaction = transact.beginTransaction()) {
@@ -1158,6 +1164,7 @@ public class LuceneIndexTest {
 
     private DocumentSet configureAndStore(final String configuration, final String data, final String docName) throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, TriggerException, LockException, IOException {
         final MutableDocumentSet docs = new DefaultDocumentSet();
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn transaction = transact.beginTransaction()) {
@@ -1169,7 +1176,7 @@ public class LuceneIndexTest {
 
             final IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create(docName), data);
             assertNotNull(info);
-            root.store(transaction, broker, info, data, false);
+            root.store(transaction, broker, info, data);
 
             docs.add(info.getDocument());
             transact.commit(transaction);
@@ -1182,6 +1189,7 @@ public class LuceneIndexTest {
 
         final MutableDocumentSet docs = new DefaultDocumentSet();
 
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                 final Txn transaction = transact.beginTransaction()) {
@@ -1191,17 +1199,17 @@ public class LuceneIndexTest {
                 mgr.addConfiguration(transaction, broker, root, configuration);
             }
 
-            final File file = new File(directory);
-            final File[] files = file.listFiles();
+            final Path file = Paths.get(directory);
+            final List<Path> files = FileUtils.list(file);
             final MimeTable mimeTab = MimeTable.getInstance();
-            for (final File f : files) {
-                MimeType mime = mimeTab.getContentTypeFor(f.getName());
+            for (final Path f : files) {
+                MimeType mime = mimeTab.getContentTypeFor(FileUtils.fileName(f));
                 if(mime != null && mime.isXMLType()) {
-                    InputSource is = new InputSource(f.getAbsolutePath());
-                    final IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create(f.getName()), is);
+                    InputSource is = new FileInputSource(f);
+                    final IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create(FileUtils.fileName(f)), is);
                     assertNotNull(info);
-                    is = new InputSource(f.getAbsolutePath());
-                    root.store(transaction, broker, info, is, false);
+                    is = new FileInputSource(f);
+                    root.store(transaction, broker, info, is);
                     docs.add(info.getDocument());
                 }
             }
@@ -1230,6 +1238,7 @@ public class LuceneIndexTest {
 
     @Before
     public void setup() throws EXistException, PermissionDeniedException, IOException, TriggerException {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn transaction = transact.beginTransaction()) {
@@ -1248,6 +1257,7 @@ public class LuceneIndexTest {
 
     @After
     public void cleanup() throws EXistException, PermissionDeniedException, IOException, TriggerException {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                 final Txn transaction = transact.beginTransaction()) {
@@ -1268,23 +1278,15 @@ public class LuceneIndexTest {
         }
     }
 
-    @BeforeClass
-    public static void startDB() throws DatabaseConfigurationException, EXistException {
-        final Path confFile = ConfigurationHelper.lookup("conf.xml");
-        final Configuration config = new Configuration(confFile.toAbsolutePath().toString());
-        config.setProperty(Indexer.PROPERTY_SUPPRESS_WHITESPACE, "none");
-        config.setProperty(Indexer.PRESERVE_WS_MIXED_CONTENT_ATTRIBUTE, Boolean.TRUE);
-        BrokerPool.configure(1, 5, config);
-        pool = BrokerPool.getInstance();
-        assertNotNull(pool);
-    }
+    @ClassRule
+    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(propertiesBuilder()
+            .set(Indexer.PROPERTY_SUPPRESS_WHITESPACE, "none")
+            .put(Indexer.PRESERVE_WS_MIXED_CONTENT_ATTRIBUTE, Boolean.TRUE)
+            .build());
 
     @AfterClass
-    public static void stopDB() {
+    public static void cleanupDb() {
         TestUtils.cleanupDB();
-        BrokerPool.stopAll(false);
-        pool = null;
-        root = null;
     }
 }
 

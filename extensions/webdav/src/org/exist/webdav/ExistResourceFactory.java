@@ -41,7 +41,7 @@ import org.exist.collections.Collection;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.FileUtils;
 import org.exist.xmldb.XmldbURI;
@@ -83,7 +83,7 @@ public class ExistResourceFactory implements ResourceFactory {
     public ExistResourceFactory() {
 
         try {
-            brokerPool = BrokerPool.getInstance(BrokerPool.DEFAULT_INSTANCE_NAME);
+            brokerPool = BrokerPool.getInstance();
 
         } catch (EXistException e) {
             LOG.error("Unable to initialize WebDAV interface.", e);
@@ -210,20 +210,20 @@ public class ExistResourceFactory implements ResourceFactory {
             }
             
             // First check if resource is a collection
-            collection = broker.openCollection(xmldbUri, Lock.READ_LOCK);
+            collection = broker.openCollection(xmldbUri, LockMode.READ_LOCK);
             if (collection != null) {
                 type = ResourceType.COLLECTION;
-                collection.release(Lock.READ_LOCK);
+                collection.release(LockMode.READ_LOCK);
                 collection = null;
 
             } else {
                 // If it is not a collection, check if it is a document
-                document = broker.getXMLResource(xmldbUri, Lock.READ_LOCK);
+                document = broker.getXMLResource(xmldbUri, LockMode.READ_LOCK);
 
                 if (document != null) {
                     // Document is found
                     type = ResourceType.DOCUMENT;
-                    document.getUpdateLock().release(Lock.READ_LOCK);
+                    document.getUpdateLock().release(LockMode.READ_LOCK);
                     document = null;
 
                 } else {
@@ -241,12 +241,12 @@ public class ExistResourceFactory implements ResourceFactory {
 
             // Clean-up, just in case
             if (collection != null) {
-                collection.release(Lock.READ_LOCK);
+                collection.release(LockMode.READ_LOCK);
             }
 
             // Clean-up, just in case
             if (document != null) {
-                document.getUpdateLock().release(Lock.READ_LOCK);
+                document.getUpdateLock().release(LockMode.READ_LOCK);
             }
         }
 

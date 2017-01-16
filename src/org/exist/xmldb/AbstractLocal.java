@@ -24,9 +24,9 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.txn.Txn;
-import org.exist.util.function.FunctionE;
+import com.evolvedbinary.j8fu.function.FunctionE;
 import org.exist.xmldb.function.LocalXmldbCollectionFunction;
 import org.exist.xmldb.function.LocalXmldbFunction;
 import org.xmldb.api.base.ErrorCodes;
@@ -90,7 +90,7 @@ public abstract class AbstractLocal {
      * @return A function to receive a read-only operation to perform against the collection
      */
     protected <R> FunctionE<LocalXmldbCollectionFunction<R>, R, XMLDBException> read(final DBBroker broker, final Txn transaction, final XmldbURI collectionUri) throws XMLDBException {
-        return this.<R>with(Lock.READ_LOCK, broker, transaction, collectionUri);
+        return this.<R>with(LockMode.READ_LOCK, broker, transaction, collectionUri);
     }
 
     /**
@@ -105,7 +105,7 @@ public abstract class AbstractLocal {
      * @throws XMLDBException if the collection could not be read
      */
     protected <R> FunctionE<LocalXmldbCollectionFunction<R>, R, XMLDBException> read(final DBBroker broker, final Txn transaction, final XmldbURI collectionUri, final int errorCode) throws XMLDBException {
-        return this.<R>with(Lock.READ_LOCK, broker, transaction, collectionUri, errorCode);
+        return this.<R>with(LockMode.READ_LOCK, broker, transaction, collectionUri, errorCode);
     }
 
     /**
@@ -127,7 +127,7 @@ public abstract class AbstractLocal {
      * @return A function to receive a read/write operation to perform against the collection
      */
     protected <R> FunctionE<LocalXmldbCollectionFunction<R>, R, XMLDBException> modify(final DBBroker broker, final Txn transaction, final XmldbURI collectionUri) throws XMLDBException {
-        return this.<R>with(Lock.WRITE_LOCK, broker, transaction, collectionUri);
+        return this.<R>with(LockMode.WRITE_LOCK, broker, transaction, collectionUri);
     }
 
     /**
@@ -143,7 +143,7 @@ public abstract class AbstractLocal {
      * if the collection does not exist, or {@link ErrorCodes#PERMISSION_DENIED} if the caller does not have
      * permission to open the collection.
      */
-    protected <R> FunctionE<LocalXmldbCollectionFunction<R>, R, XMLDBException> with(final int lockMode, final DBBroker broker, final Txn transaction, final XmldbURI collectionUri) throws XMLDBException {
+    protected <R> FunctionE<LocalXmldbCollectionFunction<R>, R, XMLDBException> with(final LockMode lockMode, final DBBroker broker, final Txn transaction, final XmldbURI collectionUri) throws XMLDBException {
         return with(lockMode, broker, transaction, collectionUri, ErrorCodes.INVALID_COLLECTION);
     }
 
@@ -160,7 +160,7 @@ public abstract class AbstractLocal {
      * the collection. The error code of the XMLDBException will be either taken from the `errorCode` param
      * or set to {@link ErrorCodes#PERMISSION_DENIED}
      */
-    protected <R> FunctionE<LocalXmldbCollectionFunction<R>, R, XMLDBException> with(final int lockMode, final DBBroker broker, final Txn transaction, final XmldbURI collectionUri, final int errorCode) throws XMLDBException {
+    protected <R> FunctionE<LocalXmldbCollectionFunction<R>, R, XMLDBException> with(final LockMode lockMode, final DBBroker broker, final Txn transaction, final XmldbURI collectionUri, final int errorCode) throws XMLDBException {
         return collectionOp -> {
             org.exist.collections.Collection coll = null;
             try {

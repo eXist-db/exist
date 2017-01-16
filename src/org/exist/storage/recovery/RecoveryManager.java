@@ -39,7 +39,7 @@ import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.Checkpoint;
 import org.exist.util.FileUtils;
 import org.exist.util.ProgressBar;
-import org.exist.util.function.SupplierE;
+import com.evolvedbinary.j8fu.function.SupplierE;
 import org.exist.util.hashtable.Long2ObjectHashMap;
 import org.exist.util.sanity.SanityCheck;
 

@@ -34,6 +34,7 @@ import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
 import org.exist.util.*;
 import org.exist.xmldb.XmldbURI;
@@ -43,17 +44,16 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.StringValue;
 import org.exist.xupdate.Modification;
 import org.exist.xupdate.XUpdateProcessor;
-import org.junit.AfterClass;
+import org.junit.*;
+
 import static org.junit.Assert.*;
-import org.junit.BeforeClass;
-import org.junit.Test;
+
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.io.StringReader;
-import java.nio.file.Path;
 import java.util.Optional;
 
 public class RangeIndexUpdateTest {
@@ -88,11 +88,11 @@ public class RangeIndexUpdateTest {
 
     private final static QName ITEM_QNAME = new QName("item", "", "");
 
-    private static BrokerPool pool;
     private static MutableDocumentSet docs;
 
     @Test
     public void updates() throws EXistException, PermissionDeniedException, XPathException, ParserConfigurationException, IOException, SAXException, LockException {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                 final Txn transaction = transact.beginTransaction();) {
@@ -171,16 +171,13 @@ public class RangeIndexUpdateTest {
         assertEquals(count, found);
     }
 
+    @ClassRule
+    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer();
+
     @BeforeClass
     public static void startDB() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, SAXException, CollectionConfigurationException, LockException {
-        final Path confFile = ConfigurationHelper.lookup("conf.xml");
-        final Configuration config = new Configuration(confFile.toAbsolutePath().toString());
-        BrokerPool.configure(1, 5, config);
-        pool = BrokerPool.getInstance();
-
-
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
-
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
 	            final Txn transaction = transact.beginTransaction()) {
 
@@ -195,13 +192,13 @@ public class RangeIndexUpdateTest {
 
             IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("test_string.xml"), XML);
             assertNotNull(info);
-            root.store(transaction, broker, info, XML, false);
+            root.store(transaction, broker, info, XML);
 
             docs.add(info.getDocument());
 
             info = root.validateXMLResource(transaction, broker, XmldbURI.create("test_string2.xml"), XML2);
             assertNotNull(info);
-            root.store(transaction, broker, info, XML2, false);
+            root.store(transaction, broker, info, XML2);
 
             docs.add(info.getDocument());
 
@@ -211,6 +208,7 @@ public class RangeIndexUpdateTest {
 
     @AfterClass
     public static void cleanup() throws EXistException, PermissionDeniedException, IOException, TriggerException {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                 final Txn transaction = transact.beginTransaction()) {
@@ -226,8 +224,6 @@ public class RangeIndexUpdateTest {
 
             transact.commit(transaction);
         } finally {
-            BrokerPool.stopAll(false);
-            pool = null;
             docs = null;
         }
     }

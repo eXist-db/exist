@@ -22,11 +22,13 @@
 
 package org.exist.netedit;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.attribute.FileTime;
 import java.util.TimerTask;
 
 import org.apache.commons.httpclient.HttpException;
+import org.exist.util.FileUtils;
 
 /**
  * @author Evgeny Gazdovsky (gazdovsky@gmail.com)
@@ -35,7 +37,7 @@ public class Listener extends TimerTask{
 	
 	private long lastModified;	// time of last file change
 	private Task task;			// listened task 
-	private File file;			// listened file
+	private Path file;			// listened file
 	private NetEditApplet netEdit;	
 	
 	/**
@@ -47,7 +49,7 @@ public class Listener extends TimerTask{
 		this.netEdit = netEdit;
 		this.task = task;
 		this.file = task.getFile();
-		this.lastModified = file.lastModified();
+		this.lastModified = FileUtils.lastModifiedQuietly(file).map(FileTime::toMillis).getOrElse(-1l);
 	}
 	
 	/**
@@ -64,7 +66,7 @@ public class Listener extends TimerTask{
 	}
 	
 	private boolean isModified(){
-		return file.lastModified() > this.lastModified;
+		return FileUtils.lastModifiedQuietly(file).map(FileTime::toMillis).getOrElse(-1l) > this.lastModified;
 	}
 	
 	/**
@@ -73,7 +75,7 @@ public class Listener extends TimerTask{
 	 */
 	public void run() {
 		if (isModified()){
-			this.lastModified = file.lastModified();
+			this.lastModified = FileUtils.lastModifiedQuietly(file).map(FileTime::toMillis).getOrElse(-1l);
 			try {
 				netEdit.upload(file, task.getUploadTo());
 				task.store();

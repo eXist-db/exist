@@ -20,24 +20,22 @@
  */
 package org.exist.xmldb.concurrent;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 
 import org.exist.source.Source;
 import org.exist.source.StringSource;
-import org.exist.util.Occurrences;
 import org.exist.xmldb.DatabaseInstanceManager;
-import org.exist.xmldb.IndexQueryService;
 import org.exist.xmldb.XQueryService;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.*;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XPathQueryService;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Static utility methods used by the tests.
@@ -72,7 +70,7 @@ public class DBUtils {
      * @param wordList
      * @return File
      */
-    public static File generateXMLFile(int elementCnt, int attrCnt, String[] wordList) throws Exception {
+    public static Path generateXMLFile(int elementCnt, int attrCnt, String[] wordList) throws Exception {
         return generateXMLFile(elementCnt, attrCnt, wordList, false);
     }
     
@@ -83,7 +81,7 @@ public class DBUtils {
      * @param namespaces
      * @return File
      */
-    public static File generateXMLFile(int elementCnt, int attrCnt, String[] wordList, boolean namespaces) throws Exception {
+    public static Path generateXMLFile(int elementCnt, int attrCnt, String[] wordList, boolean namespaces) throws Exception {
         return generateXMLFile(3, elementCnt, attrCnt, wordList, false);
     }
     
@@ -95,16 +93,16 @@ public class DBUtils {
      * @param namespaces
      * @return File
      */
-	public static File generateXMLFile(int depth, int elementCnt, int attrCnt, String[] wordList, boolean namespaces) throws Exception {
-		File file = File.createTempFile(Thread.currentThread().getName(), ".xml");
-		if(file.exists() && !file.canWrite())
-			throw new IllegalArgumentException("Cannot write to output file " + file.getAbsolutePath());
+	public static Path generateXMLFile(int depth, int elementCnt, int attrCnt, String[] wordList, boolean namespaces) throws Exception {
+		final Path file = Files.createTempFile(Thread.currentThread().getName(), ".xml");
+		if(Files.exists(file) && !Files.isWritable(file)) {
+			throw new IllegalArgumentException("Cannot write to output file " + file.toAbsolutePath());
+		}
 
-		Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "UTF-8"));
-		
-		XMLGenerator gen = new XMLGenerator(elementCnt, attrCnt, depth, wordList, namespaces);
-		gen.generateXML(writer);
-		writer.close();
+		try(final Writer writer = Files.newBufferedWriter(file, UTF_8)) {
+			XMLGenerator gen = new XMLGenerator(elementCnt, attrCnt, depth, wordList, namespaces);
+			gen.generateXML(writer);
+		}
 		return file;
 	}
 	
@@ -129,7 +127,7 @@ public class DBUtils {
 	            "CollectionManagementService", "1.0");
 	    }
 
-	public static void addXMLResource(Collection col, String resourceId, File file) throws XMLDBException {
+	public static void addXMLResource(Collection col, String resourceId, Path file) throws XMLDBException {
 		XMLResource res = (XMLResource)col.createResource(
 				resourceId, "XMLResource");
 		res.setContent(file);

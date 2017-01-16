@@ -9,7 +9,7 @@ import java.net.ServerSocket;
 import java.util.Random;
 
 /**
- * Exist Jetty Web Server Rule to JUnit
+ * Exist Jetty Web Server Rule for JUnit
  */
 public class ExistWebServer extends ExternalResource {
     private final static int MIN_RANDOM_PORT = 49152;

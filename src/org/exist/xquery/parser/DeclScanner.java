@@ -352,6 +352,7 @@ public DeclScanner(ParserSharedInputState state) {
 		"\"node\"",
 		"\"attribute\"",
 		"\"comment\"",
+		"\"namespace-node\"",
 		"\"processing-instruction\"",
 		"\"document-node\"",
 		"\"document\"",

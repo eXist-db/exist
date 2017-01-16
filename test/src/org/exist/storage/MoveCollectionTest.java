@@ -21,8 +21,9 @@
  */
 package org.exist.storage;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Optional;
 
 import org.exist.EXistException;
@@ -30,7 +31,7 @@ import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
@@ -51,8 +52,33 @@ import org.xmldb.api.base.XMLDBException;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 public class MoveCollectionTest {
+
+    @Test(expected = PermissionDeniedException.class)
+    public void moveToSubCollection() throws Exception {
+        final BrokerPool pool = startDB();
+        final TransactionManager transact = pool.getTransactionManager();
+
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+            final Txn transaction = transact.beginTransaction()) {
+
+            Collection src = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
+            assertNotNull(src);
+            broker.saveCollection(transaction, src);
+
+            Collection dst = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI2);
+            assertNotNull(dst);
+            broker.saveCollection(transaction, dst);
+
+            broker.moveCollection(transaction, src, dst, src.getURI().lastSegment());
+
+            fail("expect PermissionDeniedException: Cannot move collection '/db/test' to it child collection '/db/test/test2'");
+
+            transact.commit(transaction);
+        }
+    }
 
     @Test
     public void store() throws IllegalAccessException, DatabaseConfigurationException, InstantiationException, ClassNotFoundException, XMLDBException, EXistException, PermissionDeniedException, IOException, SAXException, LockException {
@@ -72,12 +98,13 @@ public class MoveCollectionTest {
             broker.saveCollection(transaction, test);
     
             String existHome = System.getProperty("exist.home");
-            File existDir = existHome==null ? new File(".") : new File(existHome);
-            File f = new File(existDir,"samples/biblio.rdf");
+            Path existDir = existHome == null ? Paths.get(".") : Paths.get(existHome);
+            existDir = existDir.normalize();
+            Path f = existDir.resolve("samples/biblio.rdf");
             assertNotNull(f);
-            IndexInfo info = test.validateXMLResource(transaction, broker, TestConstants.TEST_XML_URI, new InputSource(f.toURI().toASCIIString()));
+            IndexInfo info = test.validateXMLResource(transaction, broker, TestConstants.TEST_XML_URI, new InputSource(f.toUri().toASCIIString()));
             assertNotNull(info);
-            test.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
+            test.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()));
             
             Collection dest = broker.getOrCreateCollection(transaction, TestConstants.DESTINATION_COLLECTION_URI);
             assertNotNull(dest);
@@ -97,11 +124,11 @@ public class MoveCollectionTest {
             Serializer serializer = broker.getSerializer();
             serializer.reset();
             
-            DocumentImpl doc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("/destination1/test3/test.xml"), Lock.READ_LOCK);
+            DocumentImpl doc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("/destination1/test3/test.xml"), LockMode.READ_LOCK);
             assertNotNull("Document should not be null", doc);
             String data = serializer.serialize(doc);
             assertNotNull(data);
-            doc.getUpdateLock().release(Lock.READ_LOCK);
+            doc.getUpdateLock().release(LockMode.READ_LOCK);
         }
     }
 
@@ -126,12 +153,13 @@ public class MoveCollectionTest {
                 broker.saveCollection(transaction, test2);
 
                 String existHome = System.getProperty("exist.home");
-                File existDir = existHome == null ? new File(".") : new File(existHome);
-                File f = new File(existDir, "samples/biblio.rdf");
+                Path existDir = existHome == null ? Paths.get(".") : Paths.get(existHome);
+                existDir = existDir.normalize();
+                Path f = existDir.resolve("samples/biblio.rdf");
                 assertNotNull(f);
-                IndexInfo info = test2.validateXMLResource(transaction, broker, TestConstants.TEST_XML_URI, new InputSource(f.toURI().toASCIIString()));
+                IndexInfo info = test2.validateXMLResource(transaction, broker, TestConstants.TEST_XML_URI, new InputSource(f.toUri().toASCIIString()));
                 assertNotNull(info);
-                test2.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
+                test2.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()));
 
                 transact.commit(transaction);
             }
@@ -157,7 +185,7 @@ public class MoveCollectionTest {
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             Serializer serializer = broker.getSerializer();
             serializer.reset();            
-            DocumentImpl doc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("destination2/test3/test.xml"), Lock.READ_LOCK);
+            DocumentImpl doc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("destination2/test3/test.xml"), LockMode.READ_LOCK);
             assertNull("Document should be null", doc);
         }
     }
@@ -184,9 +212,10 @@ public class MoveCollectionTest {
             test2 = mgr.createCollection("test2");
         assertNotNull(test2);
 
-            String existHome = System.getProperty("exist.home");
-            File existDir = existHome==null ? new File(".") : new File(existHome);
-        File f = new File(existDir,"samples/biblio.rdf");
+        String existHome = System.getProperty("exist.home");
+        Path existDir = existHome == null ? Paths.get(".") : Paths.get(existHome);
+        existDir = existDir.normalize();
+        Path f = existDir.resolve("samples/biblio.rdf");
         assertNotNull(f);
         Resource res = test2.createResource("test_xmldb.xml", "XMLResource");
         assertNotNull(res);

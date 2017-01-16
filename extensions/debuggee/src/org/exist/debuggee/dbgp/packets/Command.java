@@ -21,7 +21,6 @@
  */
 package org.exist.debuggee.dbgp.packets;
 
-import java.io.File;
 import java.net.MalformedURLException;
 
 import org.apache.logging.log4j.LogManager;
@@ -197,7 +196,7 @@ public abstract class Command implements Packet {
 //		System.out.println("getFileuri dbgp:"+fileuri.getType()+"://"+fileuri.getKey());
 		if (fileuri.type().toLowerCase().equals("file")) {
 			try {
-				return new File(fileuri.path()).toURI().toURL().toString();
+				return new java.io.File(fileuri.path()).toURI().toURL().toString();
 			} catch (MalformedURLException e) {
 				return "dbgp://"+fileuri.type().toLowerCase()+"/"+fileuri.getKey();
 			}

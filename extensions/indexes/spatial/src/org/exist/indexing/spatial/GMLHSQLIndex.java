@@ -23,17 +23,16 @@
  */
 package org.exist.indexing.spatial;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FilenameFilter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -44,6 +43,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.btree.DBException;
 import org.exist.util.DatabaseConfigurationException;
+import org.exist.util.FileUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -63,7 +63,7 @@ public class GMLHSQLIndex extends AbstractGMLJDBCIndex implements RawBackupSuppo
     }
     
     @Override
-    public void configure(BrokerPool pool, String dataDir, Element config) throws DatabaseConfigurationException {
+    public void configure(BrokerPool pool, Path dataDir, Element config) throws DatabaseConfigurationException {
         super.configure(pool, dataDir, config);
         String param = config.getAttribute("connectionTimeout");
         if (param != null) {
@@ -124,17 +124,16 @@ public class GMLHSQLIndex extends AbstractGMLJDBCIndex implements RawBackupSuppo
     
     @Override
     protected void deleteDatabase() throws DBException {
-        File directory = new File(getDataDir());
-        File[] files = directory.listFiles( 
-            new FilenameFilter() {
-                public boolean accept(File dir, String name) {
-                    return name.startsWith(db_file_name_prefix);
-                }
+        final Path directory = getDataDir();
+        try {
+            final List<Path> files = FileUtils.list(directory, path -> FileUtils.fileName(path).startsWith(db_file_name_prefix));
+            boolean deleted = true;
+            for (final Path file : files) {
+                deleted &= FileUtils.deleteQuietly(file);
             }
-        );
-        boolean deleted = true;
-        for (int i = 0; i < files.length ; i++) {
-            deleted &= files[i].delete();
+        } catch(final IOException e) {
+            LOG.error(e);
+            throw new DBException(e.getMessage());
         }
         //TODO : raise an error if deleted == false ?
     }
@@ -278,24 +277,14 @@ public class GMLHSQLIndex extends AbstractGMLJDBCIndex implements RawBackupSuppo
 
 	@Override
 	public void backupToArchive(RawDataBackup backup) throws IOException {
-        File directory = new File(getDataDir());
-        File[] files = directory.listFiles( 
-            new FilenameFilter() {
-                public boolean accept(File dir, String name) {
-                    return name.startsWith(db_file_name_prefix);
-                }
+        final Path directory = getDataDir();
+        final List<Path> files = FileUtils.list(directory, path -> FileUtils.fileName(path).startsWith(db_file_name_prefix));
+        for (final Path file : files) {
+			try(final OutputStream os = backup.newEntry(FileUtils.fileName(file))) {
+                Files.copy(file, os);
+            } finally {
+                backup.closeEntry();
             }
-        );
-        for (File file : files) {
-			OutputStream os = backup.newEntry(file.getName());
-			InputStream is = new FileInputStream(file);
-	        byte[] buf = new byte[4096];
-	        int len;
-	        while ((len = is.read(buf)) > 0) {
-	            os.write(buf, 0, len);
-	        }
-	        is.close();
-	        backup.closeEntry();
         }
 	}
 	

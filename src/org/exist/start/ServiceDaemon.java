@@ -46,24 +46,16 @@ public class ServiceDaemon {
         /* Dump a message */
         System.err.println("ServiceDaemon: stopping");
         try {
-           final Path homeDir = existMain.detectHome();
-           final String [] noArgs = {};
-           final Classpath classpath = existMain.constructClasspath(homeDir,noArgs);
-           final ClassLoader cl = classpath.getClassLoader(null);
-           Thread.currentThread().setContextClassLoader(cl);
-           final Class<?> brokerPoolClass = cl.loadClass("org.exist.storage.BrokerPool");
-           // This only works in Java 1.5
-           //Method stopAll = brokerPoolClass.getDeclaredMethod("stopAll",java.lang.Boolean.TYPE);
-           //stopAll.invoke(null,Boolean.TRUE);
+            final Path homeDir = existMain.detectHome();
+            final String [] noArgs = {};
+            final Classpath classpath = existMain.constructClasspath(homeDir, noArgs);
+            final ClassLoader cl = classpath.getClassLoader(null);
+            Thread.currentThread().setContextClassLoader(cl);
+            final Class<?> brokerPoolClass = cl.loadClass("org.exist.storage.BrokerPools");
 
-           // This is the ugly Java 1.4 version
-           final Class<?> [] paramTypes = new Class[1];
-           paramTypes[0] = java.lang.Boolean.TYPE;
-           final Method stopAll = brokerPoolClass.getDeclaredMethod("stopAll",paramTypes);
-           final Object [] arguments = new Object[1];
-           arguments[0] = Boolean.TRUE;
-       
-           stopAll.invoke(null,arguments);
+            final Method stopAll = brokerPoolClass.getDeclaredMethod("stopAll", boolean.class);
+            stopAll.setAccessible(true);
+            stopAll.invoke(null, true);
         } catch (final Exception ex) {
            ex.printStackTrace();
         }

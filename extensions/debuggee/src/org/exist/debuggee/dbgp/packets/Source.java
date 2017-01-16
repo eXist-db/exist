@@ -29,7 +29,7 @@ import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.util.Base64Encoder;
 import org.exist.xmldb.XmldbURI;
 
@@ -37,11 +37,11 @@ import java.net.URL;
 import java.net.MalformedURLException;
 import java.net.URLConnection;
 import java.net.URLDecoder;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 /**
  * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
@@ -100,15 +100,15 @@ public class Source extends Command {
         	
         	if (fileURI.toLowerCase().startsWith("dbgp://")) {
         		String uri = fileURI.substring(7);
-        		if (uri.toLowerCase().startsWith("file/")) {
+        		if (uri.toLowerCase().startsWith("file:/")) {
         			uri = fileURI.substring(5);
-        			is = new FileInputStream(new File(uri));
+        			is = Files.newInputStream(Paths.get(uri));
         		} else {
 	        		XmldbURI pathUri = XmldbURI.create( URLDecoder.decode( fileURI.substring(15) , "UTF-8" ) );
 	
 	        		Database db = getJoint().getContext().getDatabase();
 	        		try(final DBBroker broker = db.getBroker()) {
-		    			DocumentImpl resource = broker.getXMLResource(pathUri, Lock.READ_LOCK);
+		    			DocumentImpl resource = broker.getXMLResource(pathUri, LockMode.READ_LOCK);
 		
 		    			if (resource.getResourceType() == DocumentImpl.BINARY_FILE) {
 		    				is = broker.getBinaryResource((BinaryDocument) resource);
@@ -136,11 +136,7 @@ public class Source extends Command {
     		source = baos.toByteArray();
     		success = true;
 
-        } catch (MalformedURLException e) {
-            exception = e;
-        } catch (IOException e) {
-            exception = e;
-        } catch (PermissionDeniedException e) {
+        } catch (PermissionDeniedException | IOException e) {
             exception = e;
         } finally {
         	if (is != null)

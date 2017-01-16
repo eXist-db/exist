@@ -21,11 +21,8 @@
  */
 package org.exist.xquery.xqts;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.Reader;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -39,7 +36,9 @@ import org.exist.dom.persistent.ElementImpl;
 import org.exist.dom.NodeListImpl;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.source.FileSource;
+import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
+import org.exist.util.FileUtils;
 import org.exist.w3c.tests.TestCase;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.CompiledXQuery;
@@ -51,6 +50,8 @@ import org.exist.xquery.value.Sequence;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -137,11 +138,12 @@ public class XQTS_case extends TestCase {
 
         XQuery xquery = null;
 
-        try(final DBBroker broker = db.get(Optional.of(db.getSecurityManager().getSystemSubject()))) {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             broker.getConfiguration().setProperty( XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, true);
 
-            xquery = db.getXQueryService();
+            xquery = pool.getXQueryService();
 
             prepare(broker, xquery);
 
@@ -311,37 +313,28 @@ public class XQTS_case extends TestCase {
                 //collect information if result is wrong
                 if (!ok) {
                     StringBuilder message = new StringBuilder();
-                    StringBuffer exp = new StringBuffer();
+                    StringBuilder exp = new StringBuilder();
                     try {
                         for (int i = 0; i < outputFiles.getLength(); i++) {
                             ElementImpl outputFile = (ElementImpl)outputFiles.item(i);
                             String compare = outputFile.getAttribute("compare");
-                            if (compare != null && compare.equalsIgnoreCase("IGNORE"))
-                            	continue;
+                            if (compare != null && compare.equalsIgnoreCase("IGNORE")) {
+                                continue;
+                            }
                             
-                            File expectedResult = new File(XQTS_folder+"ExpectedTestResults/"+folder, outputFile.getNodeValue());
-                            if (!expectedResult.canRead())
+                            final Path expectedResult = Paths.get(XQTS_folder + "ExpectedTestResults/" + folder, outputFile.getNodeValue());
+                            if (!Files.isReadable(expectedResult)) {
                                 Assert.fail("can't read expected result");
+                            }
                             
                             //avoid to big output
-                            if (expectedResult.length() >= 1024) {
-                            	exp = new StringBuffer();
+                            if (FileUtils.sizeQuietly(expectedResult) >= 1024) {
+                            	exp = new StringBuilder();
                             	exp.append("{TOO BIG}");
                             	break;
                             } else {
 	                            exp.append("{'");
-	                            Reader reader = new BufferedReader(new FileReader(expectedResult));
-	                            char ch;
-	                            try {
-    	                            while (reader.ready()) {
-    	                                ch = (char)reader.read();
-    	                                if (ch == '\r')
-    	                                    ch = (char)reader.read();
-    	                                exp.append(String.valueOf(ch)); 
-    	                            }
-	                            } finally {
-	                                reader.close();
-	                            }
+                                exp.append(new String(Files.readAllBytes(expectedResult), UTF_8));
 	                            exp.append("'}");
                             }
                         }
@@ -361,7 +354,7 @@ public class XQTS_case extends TestCase {
                         String id = inputFile.getNodeValue();
                         data.append(inputFile.getAttribute("variable"));
                         data.append(" = \n");
-                        data.append(readFileAsString(new File(sources.get(id)), 1024));
+                        data.append(readFileAsString(Paths.get(sources.get(id)), 1024));
                         data.append("\n");
                     }
                     message.append("\n");

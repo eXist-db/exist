@@ -35,10 +35,8 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
-import org.exist.util.Configuration;
-import org.exist.util.ConfigurationHelper;
-import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
@@ -49,7 +47,6 @@ import org.junit.*;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
@@ -75,7 +72,6 @@ public class SerializeAttrMatchesTest {
             "<w xml:id=\"VSK.P13.t1.p3.w239\" lemma=\"књига\">књигом</w>\n" +
             "<w xml:id=\"VSK.P13.t1.p3.w241\">пешкешите</w>. –</s></p>";
 
-    private static BrokerPool pool = null;
     private Collection test = null;
 
     @Test
@@ -86,6 +82,7 @@ public class SerializeAttrMatchesTest {
         final String query = "for $hit in collection(\"" + TestConstants.TEST_COLLECTION_URI.toString() + "\")//w[ft:query(@lemma, <query><regex>књиг.*</regex></query>)]\n" +
         "return util:expand($hit, \"highlight-matches=both\")";
 
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             final XQuery xquery = pool.getXQueryService();
             final Sequence seq = xquery.execute(broker, query, null);
@@ -100,6 +97,7 @@ public class SerializeAttrMatchesTest {
 
     private DocumentSet configureAndStore(final String configuration, final String data, final String docName) throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, TriggerException, LockException, IOException {
         final MutableDocumentSet docs = new DefaultDocumentSet();
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn transaction = transact.beginTransaction()) {
@@ -111,7 +109,7 @@ public class SerializeAttrMatchesTest {
 
             final IndexInfo info = test.validateXMLResource(transaction, broker, XmldbURI.create(docName), data);
             assertNotNull(info);
-            test.store(transaction, broker, info, data, false);
+            test.store(transaction, broker, info, data);
 
             docs.add(info.getDocument());
             transact.commit(transaction);
@@ -120,8 +118,12 @@ public class SerializeAttrMatchesTest {
         return docs;
     }
 
+    @ClassRule
+    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer();
+
     @Before
     public void setup() throws EXistException, PermissionDeniedException, IOException, TriggerException {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn transaction = transact.beginTransaction()) {
@@ -135,6 +137,7 @@ public class SerializeAttrMatchesTest {
 
     @After
     public void cleanup() throws EXistException, PermissionDeniedException, IOException, TriggerException {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn transaction = transact.beginTransaction()) {
@@ -150,18 +153,8 @@ public class SerializeAttrMatchesTest {
         }
     }
 
-    @BeforeClass
-    public static void startDB() throws DatabaseConfigurationException, EXistException {
-        final Path confFile = ConfigurationHelper.lookup("conf.xml");
-        final Configuration config = new Configuration(confFile.toAbsolutePath().toString());
-        BrokerPool.configure(1, 5, config);
-        pool = BrokerPool.getInstance();
-    }
-
     @AfterClass
-    public static void stopDB() {
+    public static void cleanupDb() {
         TestUtils.cleanupDB();
-        BrokerPool.stopAll(false);
-        pool = null;
     }
 }

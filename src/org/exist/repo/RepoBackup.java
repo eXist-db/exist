@@ -4,7 +4,7 @@ import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.NativeBroker;
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.util.FileUtils;
 import org.exist.xmldb.XmldbURI;
 
@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -38,7 +37,7 @@ public class RepoBackup {
         final XmldbURI docPath = XmldbURI.createInternal(XmldbURI.ROOT_COLLECTION + "/" + REPO_ARCHIVE);
         DocumentImpl doc = null;
         try {
-            doc = broker.getXMLResource(docPath, Lock.READ_LOCK);
+            doc = broker.getXMLResource(docPath, LockMode.READ_LOCK);
             if (doc == null)
                 {return;}
             if (doc.getResourceType() != DocumentImpl.BINARY_FILE)
@@ -49,7 +48,7 @@ public class RepoBackup {
             unzip(file, directory);
         } finally {
             if (doc != null)
-                {doc.getUpdateLock().release(Lock.READ_LOCK);}
+                {doc.getUpdateLock().release(LockMode.READ_LOCK);}
         }
     }
 

@@ -21,10 +21,8 @@
  */
 package org.exist.w3c.tests;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -32,6 +30,7 @@ import java.io.StringReader;
 import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -51,7 +50,8 @@ import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.EXistOutputKeys;
-import org.exist.util.Configuration;
+import org.exist.test.ExistEmbeddedServer;
+import org.exist.util.FileUtils;
 import org.exist.xmldb.LocalCollection;
 import org.exist.xmldb.LocalXMLResource;
 import org.exist.xmldb.XmldbURI;
@@ -59,10 +59,7 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
+import org.junit.*;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
@@ -77,51 +74,46 @@ import org.xmldb.api.base.XMLDBException;
  *
  */
 public abstract class TestCase {
-	
-    protected static BrokerPool db = null;
     protected static DBBroker broker = null;
     protected static Collection testCollection = null;
 
 	public static final String testLocation = "test/external/";
 
+	@ClassRule
+	public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer();
+
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-	    Configuration configuration = new Configuration();
-        BrokerPool.configure(1, 10, configuration);
-
-        db = BrokerPool.getInstance();
-        
-        broker = db.get(Optional.of(db.getSecurityManager().getSystemSubject()));
+		final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
         Assert.assertNotNull(broker);
 	}
 
-	public abstract void loadTS() throws Exception;
-	
-	@AfterClass
-	public static void tearDownAfterClass() throws Exception {
-		if(broker != null) {
-			broker.close();
-		}
-	}
-
-	/**
-	 * @throws java.lang.Exception
-	 */
 	@Before
 	public void setUp() throws Exception {
 		if (testCollection == null) {
-			synchronized (db) {
+			final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+			synchronized (pool) {
 				if (testCollection == null) {
 					testCollection = broker.getCollection(getCollection());
 					if (testCollection == null) {
 						loadTS();
-	                    testCollection = broker.getCollection(getCollection());
+						testCollection = broker.getCollection(getCollection());
 						if (testCollection == null) {
 							Assert.fail("There is no Test Suite data at database");
 						}
 					}
 				}
 			}
+		}
+	}
+
+	public abstract void loadTS() throws Exception;
+
+	@AfterClass
+	public static void tearDownAfterClass() throws Exception {
+		if(broker != null) {
+			broker.close();
 		}
 	}
 	
@@ -145,17 +137,20 @@ public abstract class TestCase {
 		if (outputFile == null)
 			Assert.fail("no expected result information");
 
-		File expectedResult = new File(testLocation+folder, outputFile.getNodeValue());
-		if (!expectedResult.canRead()) Assert.fail("can't read expected result");
+		Path expectedResult = Paths.get(testLocation+folder, outputFile.getNodeValue());
+		if (!Files.isReadable(expectedResult)) {
+			Assert.fail("can't read expected result");
+		}
 		
 		String compare = outputFile.getAttribute("compare");
 		if (compare == null) compare = "Fragment";
 		compare = compare.toUpperCase();
 
-		try(final Reader reader = new BufferedReader(new FileReader(expectedResult))) {
+		try(final Reader reader = Files.newBufferedReader(expectedResult)) {
 
-			if (result.isEmpty() && expectedResult.length() > 0)
+			if (result.isEmpty() && FileUtils.sizeQuietly(expectedResult) > 0) {
 				return false;
+			}
 			
 			int pos = 0;
 			for(SequenceIterator i = result.iterate(); i.hasNext(); ) {
@@ -171,12 +166,14 @@ public abstract class TestCase {
 				
 				int l;
 				//expected result length is only one result
-				if (result.getItemCount() == 1)
-					l = (int) expectedResult.length();
+				if (result.getItemCount() == 1) {
+					l = (int) FileUtils.sizeQuietly(expectedResult);
+				}
 				
 				//caught-on length on last result
-				else if (!i.hasNext())
-					l = (int) expectedResult.length() - pos;
+				else if (!i.hasNext()) {
+					l = (int) FileUtils.sizeQuietly(expectedResult);
+				}
 				
 				else
 					l = res.length();
@@ -307,14 +304,15 @@ public abstract class TestCase {
 		Subject user = null;
 		
 		LocalXMLResource res = null;
+		final BrokerPool pool = existEmbeddedServer.getBrokerPool();
 		if (r instanceof NodeProxy) {
 			NodeProxy p = (NodeProxy) r;
-			res = new LocalXMLResource(user, db, collection, p);
+			res = new LocalXMLResource(user, pool, collection, p);
 		} else if (r instanceof Node) {
-			res = new LocalXMLResource(user, db, collection, XmldbURI.EMPTY_URI);
+			res = new LocalXMLResource(user, pool, collection, XmldbURI.EMPTY_URI);
 			res.setContentAsDOM((Node)r);
 		} else if (r instanceof AtomicValue) {
-			res = new LocalXMLResource(user, db, collection, XmldbURI.EMPTY_URI);
+			res = new LocalXMLResource(user, pool, collection, XmldbURI.EMPTY_URI);
 			res.setContent(r);
 		} else if (r instanceof LocalXMLResource)
 			res = (LocalXMLResource) r;
@@ -362,7 +360,7 @@ public abstract class TestCase {
 			//workaround BOM
 			if (e.getMessage().equals("Content is not allowed in prolog.")) {
 	            try {
-	            	String xml = readFileAsString(new File(uri));
+	            	String xml = readFileAsString(Paths.get(uri));
 	            	xml = xml.trim().replaceFirst("^([\\W]+)<","<");
 	            	InputSource src = new InputSource(new StringReader(xml));
 					xr.parse(src);
@@ -409,14 +407,12 @@ public abstract class TestCase {
 	public static String readFileAsString(final Path file) throws IOException {
 		return new String(Files.readAllBytes(file));
 	}
-
-	public static String readFileAsString(File file) throws IOException {
-		return readFileAsString(file.toPath());
-	}
 	
-	public static String readFileAsString(File file, long limit) throws IOException {
-		if (file.length() >= limit) return "DATA TOO BIG";
-	    return readFileAsString(file.toPath());
+	public static String readFileAsString(final Path file, final long limit) throws IOException {
+		if (FileUtils.sizeQuietly(file) >= limit) {
+			return "DATA TOO BIG";
+		}
+	    return readFileAsString(file);
 	}
 
 	public String sequenceToString(Sequence seq) {

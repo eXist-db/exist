@@ -35,7 +35,7 @@ import org.exist.security.SecurityManager;
 import org.exist.security.internal.aider.ACEAider;
 import org.exist.security.internal.aider.UserAider;
 import org.exist.storage.BrokerPool;
-import org.exist.util.function.FunctionE;
+import com.evolvedbinary.j8fu.function.FunctionE;
 import org.exist.xmldb.function.LocalXmldbCollectionFunction;
 import org.exist.xmldb.function.LocalXmldbDocumentFunction;
 import org.exist.xmldb.function.LocalXmldbFunction;
@@ -86,7 +86,7 @@ public class LocalUserManagementService extends AbstractLocalService implements 
             if (manager.hasGroup(group.getName())) {
                 throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "group '" + group.getName() + "' already exists");
             } else {
-                return (broker, transaction) -> manager.addGroup(group);
+                return (broker, transaction) -> manager.addGroup(broker, group);
             }
         });
     }
@@ -320,7 +320,7 @@ public class LocalUserManagementService extends AbstractLocalService implements 
     @Override
     public Permission getSubCollectionPermissions(final Collection parent, final String name) throws XMLDBException {
         if(parent instanceof LocalCollection) {
-            return this.<Permission>read(((LocalCollection) parent).getPathURI()).apply((collection, broker, transaction) -> collection.getSubCollectionEntry(broker, name).getPermissions());
+            return this.<Permission>read(((LocalCollection) parent).getPathURI()).apply((collection, broker, transaction) -> collection.getChildCollectionEntry(broker, name).getPermissions());
         } else {
             return null;
         }
@@ -338,7 +338,7 @@ public class LocalUserManagementService extends AbstractLocalService implements 
     @Override
     public Date getSubCollectionCreationTime(final Collection parent, final String name) throws XMLDBException {
         if(parent instanceof LocalCollection) {
-            return this.<Date>read(((LocalCollection) parent).getPathURI()).apply((collection, broker, transaction) -> new Date(collection.getSubCollectionEntry(broker, name).getCreated()));
+            return this.<Date>read(((LocalCollection) parent).getPathURI()).apply((collection, broker, transaction) -> new Date(collection.getChildCollectionEntry(broker, name).getCreated()));
         } else {
             return null;
         }

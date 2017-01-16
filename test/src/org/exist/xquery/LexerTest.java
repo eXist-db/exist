@@ -19,9 +19,8 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
-import org.exist.util.Configuration;
-import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.parser.XQueryLexer;
@@ -30,8 +29,7 @@ import org.exist.xquery.parser.XQueryTreeParser;
 import org.exist.xquery.value.Sequence;
 
 import antlr.collections.AST;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
@@ -45,13 +43,8 @@ public class LexerTest {
 			+ "\u5165\u4E86\u5341\u4E09\u5E74\u65F6\u95F4\u3002</p>"
 			+ "</body></text>";
 
-	/**
-	 * Start a local database instance.
-	 */
-	private void configure() throws DatabaseConfigurationException, EXistException {
-		Configuration config = new Configuration();
-		BrokerPool.configure(1, 5, config);
-	}
+	@ClassRule
+	public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer();
 
 	@Test
 	public void query() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException, RecognitionException, XPathException, TokenStreamException {
@@ -75,7 +68,7 @@ public class LexerTest {
 	
 	            IndexInfo info = collection.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"), xml);
 	            //TODO : unlock the collection here ?
-	            collection.store(transaction, broker, info, xml, false);
+	            collection.store(transaction, broker, info, xml);
 	            transact.commit(transaction);
 			}
 
@@ -107,16 +100,4 @@ public class LexerTest {
             int count = result.getItemCount();
 		}
 	}
-
-    @Before
-	public void setUp() throws EXistException, DatabaseConfigurationException {
-		if (!BrokerPool.isConfigured(BrokerPool.DEFAULT_INSTANCE_NAME)) {
-            configure();
-        }
-	}
-
-    @After
-    public void tearDown() throws Exception {
-        BrokerPool.stopAll(false);
-    }
 }

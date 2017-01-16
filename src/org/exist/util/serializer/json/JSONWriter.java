@@ -2,8 +2,10 @@ package org.exist.util.serializer.json;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.Properties;
-import java.util.Stack;
+import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -62,12 +64,13 @@ public class JSONWriter extends XMLWriter {
 	
     protected JSONNode root;
 	
-    protected final Stack<JSONObject> stack = new Stack<>();
+    protected final Deque<JSONObject> stack = new ArrayDeque<>();
 
     protected boolean useNSPrefix = false;
     
     protected boolean prefixAttributes = false;
     private String jsonp = null;
+    private boolean indent = false;
 	
     public JSONWriter() {
         // empty
@@ -93,6 +96,7 @@ public class JSONWriter extends XMLWriter {
         final String prefixForAttr = properties.getProperty(EXistOutputKeys.JSON_PREFIX_ATTRIBUTES, "no");
         prefixAttributes = prefixForAttr.equalsIgnoreCase("yes");
         jsonp = properties.getProperty(EXistOutputKeys.JSONP);
+        indent = properties.getProperty(OutputKeys.INDENT, "no").equalsIgnoreCase("yes");
     }
 
     @Override
@@ -142,6 +146,7 @@ public class JSONWriter extends XMLWriter {
 
     private void processStartElement(final String localName, boolean simpleValue) {
         final JSONObject obj = new JSONObject(localName);
+        obj.setIndent(indent);
         if(root == null) {
             root = obj;
             stack.push(obj);
@@ -155,6 +160,7 @@ public class JSONWriter extends XMLWriter {
     private void processStartValue() throws TransformerException {
         // a json:value is stored as an unnamed object
         final JSONObject obj = new JSONObject();
+        obj.setIndent(indent);
         if(root == null) {
             root = obj;
             stack.push(obj);
@@ -195,6 +201,7 @@ public class JSONWriter extends XMLWriter {
             default:
                 final String name = prefixAttributes ? "@" + qname : qname;
                 final JSONSimpleProperty obj = new JSONSimpleProperty(name, value);
+                obj.setIndent(indent);
                 parent.addObject(obj);
                 break;
         }
@@ -209,6 +216,7 @@ public class JSONWriter extends XMLWriter {
     public void characters(final CharSequence chars) throws TransformerException {
         final JSONObject parent = stack.peek();
         final JSONNode value = new JSONValue(chars.toString());
+        value.setIndent(indent);
         value.setSerializationType(parent.getSerializationType());
         value.setSerializationDataType(parent.getSerializationDataType());
         parent.addObject(value);
