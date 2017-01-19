@@ -13,15 +13,14 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import java.util.Iterator;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 public class RangeIndexConfig {
 
     private static final String CONFIG_ROOT = "range";
     private static final String CREATE_ELEM = "create";
     private static final String FIELD_ELEM = "field";
+    private final static String CONDITION_ELEM = "condition";
 
     private static final Logger LOG = LogManager.getLogger(RangeIndexConfig.class);
 
@@ -40,13 +39,33 @@ public class RangeIndexConfig {
         this.analyzer = other.analyzer;
     }
 
+    /* find one simple configuration for path */
     public RangeIndexConfigElement find(NodePath path) {
         for (RangeIndexConfigElement rice : paths.values()) {
-            if (rice.find(path)) {
-                return rice;
-            }
+            do {
+                if (rice.find(path) && !rice.isComplex()) {
+                    return rice;
+                }
+                rice = rice.getNext();
+            } while (rice != null);
         }
         return null;
+    }
+
+    /* find all complex configurations for path (that might have different conditions) */
+    public List<ComplexRangeIndexConfigElement> findAll(NodePath path) {
+        ArrayList<ComplexRangeIndexConfigElement> rices = new ArrayList<ComplexRangeIndexConfigElement>();
+
+        for (RangeIndexConfigElement rice : paths.values()) {
+            do {
+                if (rice.find(path) && rice.isComplex()) {
+                    rices.add((ComplexRangeIndexConfigElement)rice);
+                }
+
+                rice = rice.getNext();
+            } while (rice != null);
+        }
+        return rices;
     }
 
     private void parse(NodeList configNodes, Map<String, String> namespaces) {
@@ -64,7 +83,7 @@ public class RangeIndexConfig {
             node = configNodes.item(i);
             if(node.getNodeType() == Node.ELEMENT_NODE && CREATE_ELEM.equals(node.getLocalName())) {
                 try {
-                    NodeList fields = getFields((Element) node);
+                    NodeList fields = getFieldsAndConditions((Element) node);
                     RangeIndexConfigElement newConfig;
                     if (fields.getLength() > 0) {
                         newConfig = new ComplexRangeIndexConfigElement((Element) node, fields, namespaces);
@@ -135,12 +154,12 @@ public class RangeIndexConfig {
         return iterator;
     }
 
-    private NodeList getFields(Element root) {
+    private NodeList getFieldsAndConditions(Element root) {
         NodeListImpl fields = new NodeListImpl();
         NodeList children = root.getChildNodes();
         for (int i = 0; i < children.getLength(); i++) {
             Node node = children.item(i);
-            if (node.getNodeType() == Node.ELEMENT_NODE && FIELD_ELEM.equals(node.getLocalName())) {
+            if (node.getNodeType() == Node.ELEMENT_NODE && (FIELD_ELEM.equals(node.getLocalName()) || CONDITION_ELEM.equals(node.getLocalName()))) {
                 fields.add(node);
             }
         }
