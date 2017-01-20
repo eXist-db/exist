@@ -145,7 +145,7 @@ public XQDocParser(ParserSharedInputState state) {
 					match(SIMPLE_COLON);
 					if ( inputState.guessing==0 ) {
 						
-									if (buf.charAt(buf.length() - 1) != '\n')
+									if (buf.length()>0 && buf.charAt(buf.length() - 1) != '\n')
 										buf.append(':');
 								
 					}
