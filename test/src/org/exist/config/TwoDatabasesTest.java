@@ -104,29 +104,15 @@ public class TwoDatabasesTest {
         final BrokerPool pool1 = existEmbeddedServer1.getBrokerPool();
         user1 = pool1.getSecurityManager().getSystemSubject();
         try(final DBBroker broker1 = pool1.get(Optional.of(user1))) {
-            Collection top1 = null;
-            try {
-                top1 = broker1.getCollection(XmldbURI.create("xmldb:exist:///"));
-                assertTrue(top1 != null);
-            } finally {
-                if (top1 != null) {
-                    top1.getLock().release(LockMode.READ_LOCK);
-                }
-            }
+            final Collection top1 = broker1.getCollection(XmldbURI.create("xmldb:exist:///"));
+            assertTrue(top1 != null);
         }
 
         final BrokerPool pool2 = existEmbeddedServer2.getBrokerPool();
         user2 = pool2.getSecurityManager().getSystemSubject();
         try(final DBBroker broker2 = pool2.get(Optional.of(user2))) {
-            Collection top2 = null;
-            try {
-                top2 = broker2.getCollection(XmldbURI.create("xmldb:exist:///"));
-                assertTrue(top2 != null);
-            } finally {
-                if(top2 != null) {
-                    top2.getLock().release(LockMode.READ_LOCK);
-                }
-            }
+            final Collection top2 = broker2.getCollection(XmldbURI.create("xmldb:exist:///"));
+            assertTrue(top2 != null);
         }
     }
 
