@@ -62,10 +62,8 @@ import org.exist.storage.index.CollectionStore;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.journal.*;
-import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.*;
 import org.exist.storage.lock.Lock.LockMode;
-import org.exist.storage.lock.ManagedLock;
-import org.exist.storage.lock.ReentrantReadWriteLock;
 import org.exist.storage.serializers.NativeSerializer;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.sync.Sync;
@@ -82,6 +80,7 @@ import org.w3c.dom.DocumentType;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import javax.annotation.Nullable;
 import javax.xml.stream.XMLStreamException;
 import java.io.*;
 import java.nio.file.Files;
@@ -752,10 +751,10 @@ public class NativeBroker extends DBBroker {
                 for(int i = 1; i < segments.length; i++) {
                     final XmldbURI temp = segments[i];
                     path = path.append(temp);
-                    if(current.hasChildCollectionNoLock(this, temp)) {
+                    if(current.hasChildCollection(this, temp)) {
                         current = getCollection(path);
                         if(current == null) {
-                            LOG.error("Collection '" + path + "' found in subCollections set but is missing from collections.dbx!");
+                            LOG.error("Collection '{}' found in Collection#subCollections but is missing from collections.dbx!", path);
                         }
                     } else {
 
@@ -906,8 +905,7 @@ public class NativeBroker extends DBBroker {
             } else {
 
                 if(!collection.getURI().equalsInternal(uri)) {
-                    LOG.error("The collection received from the cache is not the requested: " + uri +
-                        "; received: " + collection.getURI());
+                    LOG.error("readCollectionEntry: The Collection received from the cache: {} is not the requested: {}", collection.getURI(), uri);
                     return;
                 }
 
@@ -963,8 +961,7 @@ public class NativeBroker extends DBBroker {
                 }
             } else {
                 if(!collection.getURI().equalsInternal(uri)) {
-                    LOG.error("The collection received from the cache is not the requested: " + uri +
-                        "; received: " + collection.getURI());
+                    LOG.error("openCollection: The Collection received from the cache: {} is not the requested: {}", collection.getURI(), uri);
                 }
                 collectionsCache.add(collection);
 
@@ -1457,265 +1454,251 @@ public class NativeBroker extends DBBroker {
         }
     }
 
-    /**
-     * Removes a collection and all child collections and resources
-     *
-     * We first traverse down the Collection tree to ensure that the Permissions
-     * enable the Collection Tree to be removed. We then return back up the Collection
-     * tree, removing each child as we progresses upwards.
-     *
-     * @param transaction the transaction to use
-     * @param collection  the collection to remove
-     * @return true if the collection was removed, false otherwise
-     * @throws TriggerException
-     */
+
     @Override
     public boolean removeCollection(final Txn transaction, final Collection collection) throws PermissionDeniedException, IOException, TriggerException {
-
         if(isReadOnly()) {
             throw new IOException(DATABASE_IS_READ_ONLY);
         }
+        return _removeCollection(transaction, collection, null);
+    }
 
-        final XmldbURI parentName = collection.getParentURI();
-        final boolean isRoot = parentName == null;
-        final Collection parent = isRoot ? collection : getCollection(parentName);
+    private boolean _removeCollection(final Txn transaction, final Collection collection, @Nullable final ManagedCollectionLock parentCollectionLock) throws PermissionDeniedException, TriggerException, IOException {
+        final XmldbURI collectionUri = collection.getURI();
 
-        //parent collection permissions
-        if(!parent.getPermissionsNoLock().validate(getCurrentSubject(), Permission.WRITE)) {
-            throw new PermissionDeniedException("Account '" + getCurrentSubject().getName() + "' is not allowed to remove collection '" + collection.getURI() + "'");
+        getBrokerPool().getProcessMonitor().startJob(ProcessMonitor.ACTION_REMOVE_COLLECTION, collectionUri);
+
+        // WRITE LOCK the collection and its parent
+        try(final ManagedCollectionLock collectionLock = writeLockCollection(parentCollectionLock, collectionUri, true)) {
+
+            @Nullable final XmldbURI parentCollectionUri = collection.getParentURI();
+            @Nullable final Collection parentCollection = parentCollectionUri == null ? null : getCollection(parentCollectionUri);  // NOTE: we already have a WRITE lock on the parent as part of collectionLock
+
+            // 1) check the current user has permission to delete the Collection
+            //TODO(AR) the below permissions check could be optimised when descending the tree so we don't check the same collection(s) twice in some cases
+            if(!checkRemoveCollectionPermissions(parentCollection, collection)) {
+                throw new PermissionDeniedException("Account '" + getCurrentSubject().getName() + "' is not allowed to remove collection '" + collection.getURI() + "'");
+            }
+
+            final CollectionTrigger colTrigger = new CollectionTriggers(this, parentCollection == null ? collection : parentCollection);
+            colTrigger.beforeDeleteCollection(this, transaction, collection);
+
+            // 2) remove descendant collections
+            for (final Iterator<XmldbURI> subCollectionName = collection.collectionIterator(this); subCollectionName.hasNext(); ) {
+                final XmldbURI subCollectionUri = collectionUri.append(subCollectionName.next());
+                final boolean removedSubCollection = _removeCollection(transaction, getCollection(subCollectionUri), collectionLock);
+                if(!removedSubCollection) {
+                    LOG.error("Unable to remove Collection: {}", subCollectionUri);
+                    return false;
+                }
+            }
+
+            //TODO(AR) this can be executed asynchronously as a task, Do we need to await the completion before unlocking the collection? or just await completion before returning from the first call to _removeCollection?
+            // 3) drop indexes for this Collection
+            notifyDropIndex(collection);
+            getIndexController().removeCollection(collection, this, false);
+
+            // 4) remove this Collection from the parent Collection
+            if(parentCollection != null) {
+                parentCollection.removeCollection(this, collectionUri.lastSegment());
+                saveCollection(transaction, parentCollection);
+            }
+
+            // 5) remove Collection from collections.dbx
+            if(parentCollection != null) {
+                try (final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.WRITE_LOCK)) {
+                    final Value key = new CollectionStore.CollectionKey(collectionUri.getRawCollectionPath());
+                    collectionsDb.remove(transaction, key);
+
+                    //TODO(AR) is this the correct place to invalidate the config?
+                    // Notify the collection configuration manager
+                    final CollectionConfigurationManager manager = pool.getConfigurationManager();
+                    if(manager != null) {
+                        manager.invalidate(collectionUri, getBrokerPool());
+                    }
+
+                    //TODO(AR) invalidating the cache entry and removing from collectionsDb must happen under the same lock... whichever that is
+                    // invalidate the cache entry
+                    final CollectionCache collectionsCache = pool.getCollectionsCache();
+                    try(final ManagedLock collectionsCacheLock = lockCollectionCache(collectionsCache)) {
+                        collectionsCache.remove(collection);
+                    }
+                }
+            } else {
+                // if this is the root collection we just have to save
+                // it to persist the removal of any subCollections to collections.dbx
+                saveCollection(transaction, collection);
+            }
+
+            //TODO(AR) this can be executed asynchronously as a task, we don't need to know when it completes
+            // 6) unlink all documents from the Collection
+            try (final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.WRITE_LOCK)) {
+                final Value docKey = new CollectionStore.DocumentKey(collection.getId());
+                final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, docKey);
+                collectionsDb.removeAll(transaction, query);
+                if(parentCollection != null) {  // we must not free the root collection id!
+                    collectionsDb.freeCollectionId(collection.getId());
+                }
+            } catch(final BTreeException | IOException e) {
+                LOG.warn("Unable to unlink documents from the Collection: {}", collectionUri, e);
+            }
+
+            //TODO(AR) this can be executed asynchronously as a task, we need to await the completion before unlocking the collection
+            // 7) remove the documents nodes of the Collection from dom.dbx
+            removeCollectionsDocumentNodes(transaction, collection);
+
+            //TODO(AR) this can be executed asynchronously as a task, we need to await the completion before unlocking the collection
+            //TODO(AR) could optimise by only calling at the highest level (i.e. the first call to _removeCollection)
+            // 8) remove any binary files that were in the Collection
+            removeCollectionBinaries(transaction, collection);
+
+            colTrigger.afterDeleteCollection(this, transaction, collectionUri);
+
+            return true;
+
+        } catch(final LockException e) {
+            LOG.error("Unable to lock Collection: {}", collectionUri, e);
+            return false;
+        } finally {
+            getBrokerPool().getProcessMonitor().endJob();
+        }
+    }
+
+    private void removeCollectionBinaries(final Txn transaction, final Collection collection) throws IOException {
+        final Path fsSourceDir = getCollectionFile(getFsDir(), collection.getURI(), false);
+        if(fsJournalDir.isPresent()) {
+            final Path fsTargetDir = getCollectionFile(fsJournalDir.get(), transaction, collection.getURI(), true);
+
+            // remove child binary collections
+            if (Files.exists(fsSourceDir)) {
+                Files.createDirectories(fsTargetDir.getParent());
+
+                //TODO(DS) log first, rename second ???
+                //TODO(DW) not sure a Fatal is required here. Copy and delete maybe?
+                Files.move(fsSourceDir, fsTargetDir, StandardCopyOption.ATOMIC_MOVE);
+
+                if (logManager.isPresent()) {
+                    final Loggable loggable = new RenameBinaryLoggable(this, transaction, fsSourceDir, fsTargetDir);
+                    try {
+                        logManager.get().journal(loggable);
+                    } catch (final JournalException e) {
+                        LOG.error(e.getMessage(), e);
+                    }
+                }
+            }
+        } else {
+            FileUtils.delete(fsSourceDir);
+        }
+    }
+
+
+    private void removeCollectionsDocumentNodes(final Txn transaction, final Collection collection) throws TriggerException, PermissionDeniedException, LockException {
+        final DocumentTrigger docTrigger = new DocumentTriggers(this, collection);
+
+        for (final Iterator<DocumentImpl> itDocument = collection.iterator(this); itDocument.hasNext(); ) {
+            final DocumentImpl doc = itDocument.next();
+
+            docTrigger.beforeDeleteDocument(this, transaction, doc);
+
+            //Remove doc's metadata
+            // WM: now removed in one step. see above.
+            //removeResourceMetadata(transaction, doc);
+            //Remove document nodes' index entries
+            new DOMTransaction(this, domDb, LockMode.WRITE_LOCK) {
+                @Override
+                public Object start() {
+                    try {
+                        final Value ref = new NodeRef(doc.getDocId());
+                        final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
+                        domDb.remove(transaction, query, null);
+                    } catch (final BTreeException e) {
+                        LOG.error("btree error while removing document", e);
+                    } catch (final IOException e) {
+                        LOG.error("io error while removing document", e);
+                    } catch (final TerminatedException e) {
+                        LOG.error("method terminated", e);
+                    }
+                    return null;
+                }
+            }.run();
+
+            //Remove nodes themselves
+            new DOMTransaction(this, domDb, LockMode.WRITE_LOCK) {
+                @Override
+                public Object start() {
+                    if (doc.getResourceType() == DocumentImpl.BINARY_FILE) {
+                        final long page = ((BinaryDocument) doc).getPage();
+                        if (page > Page.NO_PAGE) {
+                            domDb.removeOverflowValue(transaction, page);
+                        }
+                    } else {
+                        final NodeHandle node = (NodeHandle) doc.getFirstChild();
+                        domDb.removeAll(transaction, node.getInternalAddress());
+                    }
+                    return null;
+                }
+            }.run();
+
+            docTrigger.afterDeleteDocument(this, transaction, doc.getURI());
+
+            //Make doc's id available again
+            collectionsDb.freeResourceId(doc.getDocId());
+        }
+    }
+
+    /**
+     * Checks that the current user has permissions to remove the Collection
+     *
+     * @param parentCollection The parent Collection or null if we are testing the root Collection
+     * @param collection The Collection to check permissions for removal
+     *
+     * @return true if the current user is allowed to remove the Collection
+     */
+    private boolean checkRemoveCollectionPermissions(@Nullable final Collection parentCollection, final Collection collection) throws PermissionDeniedException {
+        // parent collection permissions
+        if(parentCollection != null) {
+            if (!parentCollection.getPermissionsNoLock().validate(getCurrentSubject(), Permission.WRITE)) {
+                return false;
+            }
+            if (!parentCollection.getPermissionsNoLock().validate(getCurrentSubject(), Permission.EXECUTE)) {
+                return false;
+            }
         }
 
-        if(!parent.getPermissionsNoLock().validate(getCurrentSubject(), Permission.EXECUTE)) {
-            throw new PermissionDeniedException("Account '" + getCurrentSubject().getName() + "' is not allowed to remove collection '" + collection.getURI() + "'");
-        }
-
-        //this collection permissions
+        // collection permissions
         if(!collection.getPermissionsNoLock().validate(getCurrentSubject(), Permission.READ)) {
-            throw new PermissionDeniedException("Account '" + getCurrentSubject().getName() + "' is not allowed to remove collection '" + collection.getURI() + "'");
+            return false;
         }
 
         if(!collection.isEmpty(this)) {
             if(!collection.getPermissionsNoLock().validate(getCurrentSubject(), Permission.WRITE)) {
-                throw new PermissionDeniedException("Account '" + getCurrentSubject().getName() + "' is not allowed to remove collection '" + collection.getURI() + "'");
+                return false;
             }
 
             if(!collection.getPermissionsNoLock().validate(getCurrentSubject(), Permission.EXECUTE)) {
-                throw new PermissionDeniedException("Account '" + getCurrentSubject().getName() + "' is not allowed to remove collection '" + collection.getURI() + "'");
+                return false;
             }
         }
 
-        try {
+        return true;
+    }
 
-            pool.getProcessMonitor().startJob(ProcessMonitor.ACTION_REMOVE_COLLECTION, collection.getURI());
-
-            final CollectionTrigger colTrigger = new CollectionTriggers(this, parent);
-
-            colTrigger.beforeDeleteCollection(this, transaction, collection);
-
-            final long start = System.currentTimeMillis();
-            final CollectionCache collectionsCache = pool.getCollectionsCache();
-
-            try(final ManagedLock collectionsCacheLock = lockCollectionCache(collectionsCache)) {
-                final XmldbURI uri = collection.getURI();
-                final String collName = uri.getRawCollectionPath();
-
-                // Notify the collection configuration manager
-                final CollectionConfigurationManager manager = pool.getConfigurationManager();
-                if(manager != null) {
-                    manager.invalidate(uri, getBrokerPool());
-                }
-
-                if(LOG.isDebugEnabled()) {
-                    LOG.debug("Removing children collections from their parent '" + collName + "'...");
-                }
-
-                try {
-                    for (final Iterator<XmldbURI> i = collection.collectionIterator(this); i.hasNext(); ) {
-                        final XmldbURI childName = i.next();
-                        //TODO : resolve from collection's base URI
-                        //TODO : resolve URIs !!! (uri.resolve(childName))
-                        final Collection childCollection = openCollection(uri.append(childName), LockMode.WRITE_LOCK);
-                        try {
-                            removeCollection(transaction, childCollection);
-                        } catch (final NullPointerException npe) {
-                            LOG.error("childCollection '" + childName + "' is corrupted. Caught NPE to be able to actually remove the parent.");
-                        } finally {
-                            if (childCollection != null) {
-                                childCollection.getLock().release(LockMode.WRITE_LOCK);
-                            } else {
-                                LOG.warn("childCollection is null !");
-                            }
-                        }
-                    }
-                } catch(final LockException e) {
-                    LOG.error("LockException while removing collection '" + collName + "'", e);
-                    return false;
-                }
-
-                //Drop all index entries
-                notifyDropIndex(collection);
-
-                // Drop custom indexes
-                getIndexController().removeCollection(collection, this, false);
-
-                if(!isRoot) {
-                    // remove from parent collection
-                    //TODO : resolve URIs ! (uri.resolve(".."))
-                    Collection parentCollection = null;
-                    try {
-                        parentCollection = openCollection(collection.getParentURI(), LockMode.WRITE_LOCK);
-                        if(parentCollection != null) {
-                            // keep a lock for the transaction
-                            if(transaction != null) {
-                                transaction.acquireLock(parentCollection.getLock(), LockMode.WRITE_LOCK);
-                            }
-
-                            LOG.debug("Removing collection '" + collName + "' from its parent...");
-                            //TODO : resolve from collection's base URI
-                            parentCollection.removeCollection(this, uri.lastSegment());
-                            saveCollection(transaction, parentCollection);
-                        }
-                    } catch(final LockException e) {
-                        LOG.error("LockException while removing collection '" + collName + "'");
-                    } finally {
-                        if(parentCollection != null) {
-                            parentCollection.getLock().release(LockMode.WRITE_LOCK);
-                        }
-                    }
-                }
-
-                //Update current state
-                try(final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.WRITE_LOCK)) {
-                    // remove the metadata of all documents in the collection
-                    final Value docKey = new CollectionStore.DocumentKey(collection.getId());
-                    final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, docKey);
-                    collectionsDb.removeAll(transaction, query);
-                    // if this is not the root collection remove it...
-                    if(!isRoot) {
-                        final Value key = new CollectionStore.CollectionKey(collName);
-                        //... from the disk
-                        collectionsDb.remove(transaction, key);
-                        //... from the cache
-                        collectionsCache.remove(collection);
-                        //and free its id for any further use
-                        collectionsDb.freeCollectionId(collection.getId());
-                    } else {
-                        //Simply save the collection on disk
-                        //It will remain cached
-                        //and its id well never be made available
-                        saveCollection(transaction, collection);
-                    }
-                } catch(final LockException e) {
-                    LOG.error("Failed to acquire lock on '" + FileUtils.fileName(collectionsDb.getFile()) + "'");
-                }
-                //catch(ReadOnlyException e) {
-                //throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
-                //}
-                catch(final BTreeException | IOException e) {
-                    LOG.error("Exception while removing collection: " + e.getMessage(), e);
-                }
-
-                //Remove child resources
-                if(LOG.isDebugEnabled()) {
-                    LOG.debug("Removing resources in '" + collName + "'...");
-                }
-
-                final DocumentTrigger docTrigger = new DocumentTriggers(this, collection);
-
-                try {
-                    for (final Iterator<DocumentImpl> i = collection.iterator(this); i.hasNext(); ) {
-                        final DocumentImpl doc = i.next();
-
-                        docTrigger.beforeDeleteDocument(this, transaction, doc);
-
-                        //Remove doc's metadata
-                        // WM: now removed in one step. see above.
-                        //removeResourceMetadata(transaction, doc);
-                        //Remove document nodes' index entries
-                        new DOMTransaction(this, domDb, LockMode.WRITE_LOCK) {
-                            @Override
-                            public Object start() {
-                                try {
-                                    final Value ref = new NodeRef(doc.getDocId());
-                                    final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
-                                    domDb.remove(transaction, query, null);
-                                } catch (final BTreeException e) {
-                                    LOG.error("btree error while removing document", e);
-                                } catch (final IOException e) {
-                                    LOG.error("io error while removing document", e);
-                                } catch (final TerminatedException e) {
-                                    LOG.error("method terminated", e);
-                                }
-                                return null;
-                            }
-                        }.run();
-                        //Remove nodes themselves
-                        new DOMTransaction(this, domDb, LockMode.WRITE_LOCK) {
-                            @Override
-                            public Object start() {
-                                if (doc.getResourceType() == DocumentImpl.BINARY_FILE) {
-                                    final long page = ((BinaryDocument) doc).getPage();
-                                    if (page > Page.NO_PAGE) {
-                                        domDb.removeOverflowValue(transaction, page);
-                                    }
-                                } else {
-                                    final NodeHandle node = (NodeHandle) doc.getFirstChild();
-                                    domDb.removeAll(transaction, node.getInternalAddress());
-                                }
-                                return null;
-                            }
-                        }.run();
-
-                        docTrigger.afterDeleteDocument(this, transaction, doc.getURI());
-
-                        //Make doc's id available again
-                        collectionsDb.freeResourceId(doc.getDocId());
-                    }
-                } catch(final LockException e) {
-                    LOG.error("LockException while removing documents from collection '" + collection.getURI() + "'.", e);
-                    return false;
-                }
-
-                //now that the database has been updated, update the binary collections on disk
-                final Path fsSourceDir = getCollectionFile(getFsDir(), collection.getURI(), false);
-                if(fsJournalDir.isPresent()) {
-                    final Path fsTargetDir = getCollectionFile(fsJournalDir.get(), transaction, collection.getURI(), true);
-
-                    // remove child binary collections
-                    if (Files.exists(fsSourceDir)) {
-                        Files.createDirectories(fsTargetDir.getParent());
-
-                        //TODO(DS) log first, rename second ???
-                        //TODO(DW) not sure a Fatal is required here. Copy and delete maybe?
-                        Files.move(fsSourceDir, fsTargetDir, StandardCopyOption.ATOMIC_MOVE);
-
-                        if (logManager.isPresent()) {
-                            final Loggable loggable = new RenameBinaryLoggable(this, transaction, fsSourceDir, fsTargetDir);
-                            try {
-                                logManager.get().journal(loggable);
-                            } catch (final JournalException e) {
-                                LOG.error(e.getMessage(), e);
-                            }
-                        }
-                    }
-                } else {
-                    FileUtils.delete(fsSourceDir);
-                }
-
-
-                if(LOG.isDebugEnabled()) {
-                    LOG.debug("Removing collection '" + collName + "' took " + (System.currentTimeMillis() - start));
-                }
-
-                colTrigger.afterDeleteCollection(this, transaction, collection.getURI());
-
-                return true;
-
-            } catch(final LockException e) {
-                throw new IOException(e);
-            }
-        } finally {
-            pool.getProcessMonitor().endJob();
+    /**
+     * Acquires a write lock on a Collection
+     *
+     * @param parentCollectionLock lock that is already held on the parent Collection or null
+     * @param collectionUri The uri of the collection to lock
+     * @param lockParent true if we should also write lock the parent Collection, only
+     *     relevant when {@code parentCollectionLock == null}
+     *
+     * @return A managed lock for the Collection
+     */
+    private ManagedCollectionLock writeLockCollection(@Nullable final ManagedCollectionLock parentCollectionLock, final XmldbURI collectionUri, final boolean lockParent) throws LockException {
+        final LockManager lockManager = getBrokerPool().getLockManager();
+        if(parentCollectionLock != null) {
+            return lockManager.acquireCollectionWriteLock(parentCollectionLock, collectionUri);
+        } else {
+            return lockManager.acquireCollectionWriteLock(collectionUri, lockParent);
         }
     }
 
