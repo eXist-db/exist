@@ -29,6 +29,7 @@ import org.exist.xmldb.XmldbURI;
 import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -188,6 +189,28 @@ public class LockManager {
             final ReentrantReadWriteLock collectionLock = current;
             return new ManagedCollectionLock(Either.Left(collectionLock), () -> collectionLock.release(Lock.LockMode.WRITE_LOCK));
         }
+    }
+
+    /**
+     * Optimized locking method for acquiring a lock on a Collection, when we already hold a lock on the
+     * parent collection. In that instance we can avoid descending the locking tree again
+     */
+    public ManagedCollectionLock acquireCollectionWriteLock(final ManagedCollectionLock parentLock, final XmldbURI collectionPath) throws LockException {
+        if(Objects.isNull(parentLock)) {
+            throw new LockException("Cannot acquire a sub-Collection lock without a lock for the parent");
+        }
+        if(parentLock.isReleased()) {
+            throw new LockException("Cannot acquire a sub-Collection lock without a lock on the parent");
+        }
+        if(!parentLock.getPath().equals(collectionPath.removeLastSegment())) {
+            throw new LockException("Cannot acquire a lock on sub-Collection, as provided parent lock is not the parent");
+        }
+
+        final ReentrantReadWriteLock subCollectionLock = getCollectionLock(collectionPath.getCollectionPath());
+        if(!subCollectionLock.acquire(Lock.LockMode.WRITE_LOCK)) {
+            throw new LockException("Unable to acquire WRITE_LOCK for: " + collectionPath);
+        }
+        return new ManagedCollectionLock(Either.Left(subCollectionLock), () -> subCollectionLock.release(Lock.LockMode.WRITE_LOCK));
     }
 
     /**

@@ -33,6 +33,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class ManagedLock<T> implements AutoCloseable {
     protected final T lock;
     private final Runnable closer;
+    protected volatile boolean closed = false;
 
     ManagedLock(final T lock, final Runnable closer) {
         this.lock = lock;
@@ -152,10 +153,20 @@ public class ManagedLock<T> implements AutoCloseable {
     }
 
     /**
+     * Determines if the lock has already been released
+     *
+     * @return true if the lock has already been released
+     */
+    boolean isReleased() {
+        return closed;
+    }
+
+    /**
      * Releases the lock
      */
     @Override
     public void close() {
         closer.run();
+        this.closed = true;
     }
 }
