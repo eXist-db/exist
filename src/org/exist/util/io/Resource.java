@@ -49,9 +49,8 @@ import org.exist.security.PermissionFactory;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.Lock.LockMode;
-import org.exist.storage.lock.ManagedLock;
+import org.exist.storage.lock.ManagedCollectionLock;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
@@ -884,7 +883,7 @@ public class Resource extends File {
         try {
             final BrokerPool db = BrokerPool.getInstance();
             try (final DBBroker broker = db.getBroker();
-                    final ManagedLock<Lock> collectionLock = ManagedLock.acquire(collection.getLock(), LockMode.READ_LOCK)) {
+                    final ManagedCollectionLock collectionLock = db.getLockManager().acquireCollectionReadLock(collection.getURI())) {
 
                 final File[] children = new File[collection.getChildCollectionCount(broker) +
                         collection.getDocumentCount(broker)];
