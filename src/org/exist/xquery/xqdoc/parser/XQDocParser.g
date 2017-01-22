@@ -44,7 +44,7 @@ contents returns [String content]
 		TRIM { buf.append('\n'); }
 		|
 		SIMPLE_COLON { 
-			if (buf.charAt(buf.length() - 1) != '\n')
+			if (buf.length()>0 && buf.charAt(buf.length() - 1) != '\n')
 				buf.append(':');
 		}
 		|
