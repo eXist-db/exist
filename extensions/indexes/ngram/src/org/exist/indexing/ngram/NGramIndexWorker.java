@@ -334,8 +334,6 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 LOG.warn("Failed to acquire lock for file " + FileUtils.fileName(index.db.getFile()), e);
             } catch (IOException e) {
                 LOG.warn("IO error for file " + FileUtils.fileName(index.db.getFile()), e);
-            } catch (ReadOnlyException e) {
-                LOG.warn("Read-only error for file " + FileUtils.fileName(index.db.getFile()), e);
             } finally {
                 lock.release(LockMode.WRITE_LOCK);
                 os.clear();

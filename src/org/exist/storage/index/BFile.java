@@ -635,9 +635,8 @@ public class BFile extends BTree {
      * @param value value to update
      *
      * @return on success the address of the stored value, else UNKNOWN_ADDRESS
-     * @throws ReadOnlyException
      */
-    public long put(final Value key, final ByteArray value) throws ReadOnlyException {
+    public long put(final Value key, final ByteArray value) {
         return put(key, value, true);
     }
 
@@ -651,9 +650,8 @@ public class BFile extends BTree {
      * @param overwrite if set to true, value will be overwritten if it already exists
      *
      * @return on success the address of the stored value, else UNKNOWN_ADDRESS
-     * @throws ReadOnlyException
      */
-    public long put(final Value key, final ByteArray value, final boolean overwrite) throws ReadOnlyException {
+    public long put(final Value key, final ByteArray value, final boolean overwrite) {
         return put(null, key, value, overwrite);
     }
 

@@ -557,8 +557,6 @@ public class NativeValueIndex implements ContentLoadingObserver {
             } catch (final LockException e) {
                 LOG.warn("Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e);
                 //TODO : return ?
-            } catch (final ReadOnlyException e) {
-                LOG.warn("Read-only error on '" + FileUtils.fileName(dbValues.getFile()) + "'", e);
             } finally {
                 lock.release(LockMode.WRITE_LOCK);
                 os.clear();
@@ -597,7 +595,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
     }
 
     @Override
-    public void dropIndex(final DocumentImpl document) throws ReadOnlyException {
+    public void dropIndex(final DocumentImpl document) {
         final int collectionId = document.getCollection().getId();
         final Lock lock = dbValues.getLock();
         try {
@@ -617,7 +615,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
         }
     }
 
-    private <T> void dropIndex(final int docId, final PendingChanges<T> pending, final FunctionE<T, Value, EXistException> dbKeyFn) throws EXistException, IOException, ReadOnlyException {
+    private <T> void dropIndex(final int docId, final PendingChanges<T> pending, final FunctionE<T, Value, EXistException> dbKeyFn) throws EXistException, IOException {
         for (final Map.Entry<T, List<NodeId>> entry : pending.changes.entrySet()) {
             final T key = entry.getKey();
 
