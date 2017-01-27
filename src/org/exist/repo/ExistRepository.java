@@ -19,6 +19,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
+import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.logging.log4j.LogManager;
@@ -80,6 +81,7 @@ public class ExistRepository extends Observable implements BrokerPoolService {
 
         try {
             final FileSystemStorage storage = new FileSystemStorage(expathDir.toFile());
+            storage.setErrorIfNoContentDir(false);
             this.myParent = new Repository(storage);
             myParent.registerExtension(new ExistPkgExtension());
         } catch(final PackageException e) {
@@ -179,7 +181,7 @@ public class ExistRepository extends Observable implements BrokerPoolService {
             }
             String sysid = null; // declared here to be used in catch
             try {
-                final StreamSource src = pkg.resolve(namespace, URISpace.XQUERY);
+                final Source src = pkg.resolve(namespace, URISpace.XQUERY);
                 if (src != null) {
                     sysid = src.getSystemId();
                     return Paths.get(new URI(sysid));

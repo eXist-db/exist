@@ -26,6 +26,7 @@ import org.expath.pkg.repo.DescriptorExtension;
 import org.expath.pkg.repo.FileSystemStorage.FileSystemResolver;
 import org.expath.pkg.repo.Package;
 import org.expath.pkg.repo.PackageException;
+import org.expath.pkg.repo.Repository;
 import org.expath.pkg.repo.Storage.NotExistException;
 import org.expath.pkg.repo.parser.XMLStreamHelper;
 
@@ -167,6 +168,11 @@ public class ExistPkgExtension
 
     public static final String EXIST_PKG_NS = "http://exist-db.org/ns/expath-pkg";
     private XMLStreamHelper myXSHelper = new XMLStreamHelper(EXIST_PKG_NS);
+
+    @Override
+    public void install(Repository repository, Package pkg) throws PackageException {
+        init(repository, pkg);
+    }
 }
 
 

@@ -265,7 +265,7 @@ public class Deployment {
             // installing the xar into the expath repo
             LOG.info("Installing package " + xar.toAbsolutePath().toString());
             final UserInteractionStrategy interact = new BatchUserInteraction();
-            final org.expath.pkg.repo.Package pkg = repo.get().getParentRepo().installPackage(xar.toFile(), true, interact);
+            final org.expath.pkg.repo.Package pkg = repo.get().getParentRepo().installPackage(xar, true, interact);
             final ExistPkgInfo info = (ExistPkgInfo) pkg.getInfo("exist");
             if (info != null && !info.getJars().isEmpty()) {
                 ClasspathHelper.updateClasspath(broker.getBrokerPool(), pkg);
