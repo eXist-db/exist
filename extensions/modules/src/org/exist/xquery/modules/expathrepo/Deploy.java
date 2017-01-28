@@ -213,7 +213,7 @@ public class Deploy extends BasicFunction {
             return deployment.installAndDeploy(file, loader);
         } catch (PackageException | IOException | PermissionDeniedException e) {
             LOG.error(e.getMessage(), e);
-            throw new XPathException(this, EXPathErrorCode.EXPDY007, e.getMessage());
+            throw new XPathException(this, EXPathErrorCode.EXPDY007, "Package installation failed: " + e.getMessage(), new StringValue(e.getMessage()));
         } finally {
             if (doc != null)
                 doc.getUpdateLock().release(LockMode.READ_LOCK);
@@ -284,6 +284,8 @@ public class Deploy extends BasicFunction {
                 final Path outFile = Files.createTempFile("deploy", "xar");
                 Files.copy(is, outFile, StandardCopyOption.REPLACE_EXISTING);
                 return outFile;
+            } catch (IOException e) {
+                throw new IOException("Failed to install dependency from " + pkgURL + ": " + e.getMessage());
             }
         }
     }
