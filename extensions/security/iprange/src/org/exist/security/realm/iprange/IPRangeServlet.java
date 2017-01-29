@@ -21,86 +21,86 @@
  */
 package org.exist.security.realm.iprange;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-
-import javax.servlet.*;
-import javax.servlet.http.*;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.security.AbstractRealm;
+import org.exist.security.AuthenticationException;
 import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
 import org.exist.xquery.XQueryContext;
-import org.exist.security.AuthenticationException;
+
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import java.io.IOException;
+import java.io.PrintWriter;
 
 /**
  * IPRange authenticator servlet.
- * 
+ *
  * @author <a href="mailto:wshager@gmail.com">Wouter Hager</a>
- * 
  */
 public class IPRangeServlet extends HttpServlet {
 
-	private static final long serialVersionUID = -568037449837549034L;
-
-	protected final static Logger LOG = LogManager.getLogger(IPRangeServlet.class);
-
+    protected final static Logger LOG = LogManager.getLogger(IPRangeServlet.class);
+    private static final long serialVersionUID = -568037449837549034L;
     public static AbstractRealm realm = null;
 
-	public IPRangeServlet() throws ServletException {
-	}
+    public IPRangeServlet() throws ServletException {
+    }
 
     @Override
-	public void init(ServletConfig config) throws ServletException {
-		super.init(config);
-	}
+    public void init(ServletConfig config) throws ServletException {
+        super.init(config);
+    }
 
     @Override
-	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
-			throws ServletException, IOException {
-		doPost(req, resp);
-	}
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        doPost(req, resp);
+    }
 
     @Override
-	protected void doPost(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
-    	
-    	
-    	String ip = request.getHeader("X-Forwarded-For");
-    	
-    	if(ip == null) ip = request.getRemoteAddr();
-    	
-    	LOG.info("GOT IPRangeServlet "+ip);
-    	
-    	String json = "{\"fail\":\"IP range not authenticated\"}";
-    	
-    	try {
-    		SecurityManager secman = IPRangeRealm.instance.getSecurityManager();
-    		Subject user = secman.authenticate(ip,ip);
-    		if(user != null) {
-    			LOG.info("IPRangeServlet user " +user.getUsername()+ " found");
-	    		final HttpSession session = request.getSession();
-	    		// store the user in the session
-	    		if (session != null) {
-	    			json = "{\"user\":\""+user.getUsername()+"\",\"isAdmin\":\""+user.hasDbaRole()+"\"}";
-	    			LOG.info("IPRangeServlet setting session attr "+ XQueryContext.HTTP_SESSIONVAR_XMLDB_USER);
-	    			session.setAttribute(XQueryContext.HTTP_SESSIONVAR_XMLDB_USER, user);
-	    		} else {
-	    			LOG.info("IPRangeServlet session is null");
-	    		}
-    		} else {
-    			LOG.info("IPRangeServlet user not found");
-    		}
-    	} catch(AuthenticationException e){
-    		throw new IOException(e.getMessage());
-    	} finally {
-    		response.setContentType("application/json");
-    		PrintWriter out = response.getWriter();
-    		out.print(json);
-    		out.flush();
-    	}
-	}
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+
+        String ip = request.getHeader("X-Forwarded-For");
+
+        if (ip == null) ip = request.getRemoteAddr();
+
+        LOG.info("GOT IPRangeServlet " + ip);
+
+        String json = "{\"fail\":\"IP range not authenticated\"}";
+
+        try {
+            SecurityManager secman = IPRangeRealm.instance.getSecurityManager();
+            Subject user = secman.authenticate(ip, ip);
+            if (user != null) {
+                LOG.info("IPRangeServlet user " + user.getUsername() + " found");
+                final HttpSession session = request.getSession();
+                // store the user in the session
+                if (session != null) {
+                    json = "{\"user\":\"" + user.getUsername() + "\",\"isAdmin\":\"" + user.hasDbaRole() + "\"}";
+                    LOG.info("IPRangeServlet setting session attr " + XQueryContext.HTTP_SESSIONVAR_XMLDB_USER);
+                    session.setAttribute(XQueryContext.HTTP_SESSIONVAR_XMLDB_USER, user);
+                } else {
+                    LOG.info("IPRangeServlet session is null");
+                }
+            } else {
+                LOG.info("IPRangeServlet user not found");
+            }
+        } catch (AuthenticationException e) {
+            throw new IOException(e.getMessage());
+        } finally {
+            response.setContentType("application/json");
+            PrintWriter out = response.getWriter();
+            out.print(json);
+            out.flush();
+        }
+    }
 
 }

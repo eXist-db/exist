@@ -21,128 +21,120 @@
  */
 package org.exist.security.realm.iprange;
 
-import java.util.Properties;
-import java.util.Optional;
-import java.net.*;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.config.Configuration;
 import org.exist.config.ConfigurationException;
-import org.exist.config.annotation.*;
-import org.exist.security.AbstractAccount;
-import org.exist.security.AbstractRealm;
-import org.exist.security.Account;
-import org.exist.security.AuthenticationException;
-import org.exist.security.Group;
-import org.exist.security.PermissionDeniedException;
-import org.exist.security.Subject;
+import org.exist.config.annotation.ConfigurationClass;
+import org.exist.config.annotation.ConfigurationFieldAsAttribute;
+import org.exist.security.*;
 import org.exist.security.internal.SecurityManagerImpl;
 import org.exist.security.internal.SubjectAccreditedImpl;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.xquery.CompiledXQuery;
+import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.XPathException;
+
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Optional;
+import java.util.Properties;
 
 /**
  * @author <a href="mailto:wshager@gmail.com">Wouter Hager</a>
- *
  */
 @ConfigurationClass("realm") //TODO: id = IPRange
 public class IPRangeRealm extends AbstractRealm {
-	protected final static Logger LOG = LogManager.getLogger(IPRangeRealm.class);
-	
-	protected static IPRangeRealm instance = null;
-	
-	@ConfigurationFieldAsAttribute("id")
-	public final static String ID = "IPRange";
-	
-	@ConfigurationFieldAsAttribute("version")
-	public final static String version = "1.0";
-	
-	public IPRangeRealm(final SecurityManagerImpl sm, Configuration config) throws ConfigurationException {
-		super(sm, config);
-		instance = this;
-	}
+    @ConfigurationFieldAsAttribute("id")
+    public final static String ID = "IPRange";
+    @ConfigurationFieldAsAttribute("version")
+    public final static String version = "1.0";
+    protected final static Logger LOG = LogManager.getLogger(IPRangeRealm.class);
+    protected static IPRangeRealm instance = null;
 
-	@Override
-	public String getId() {
-		return ID;
-	}
-	
+    public IPRangeRealm(final SecurityManagerImpl sm, Configuration config) throws ConfigurationException {
+        super(sm, config);
+        instance = this;
+    }
+
+    private static long ipToLong(InetAddress ip) {
+        byte[] octets = ip.getAddress();
+        long result = 0;
+        for (byte octet : octets) {
+            result <<= 8;
+            result |= octet & 0xff;
+        }
+        return result;
+    }
+
 	/*@Override
-	public void start(DBBroker broker) throws EXistException {
+    public void start(DBBroker broker) throws EXistException {
 		super.start(broker);
 	}*/
-	
-	@Override
-	public boolean deleteAccount(Account account) throws PermissionDeniedException, EXistException, ConfigurationException {
-		// Auto-generated method stub
-		return false;
-	}
 
-	@Override
-	public boolean deleteGroup(Group group) throws PermissionDeniedException, EXistException, ConfigurationException {
-		// Auto-generated method stub
-		return false;
-	}
-	
-	@Override
-	public Subject authenticate(final String ip, Object credentials) throws AuthenticationException {
-		//elevate to system privs
-		try(final DBBroker broker = BrokerPool.getInstance().get(Optional.of(getSecurityManager().getSystemSubject()))) {
-			long ipToTest = ipToLong(InetAddress.getByName(ip));
-			
-			XQuery xquery = broker.getBrokerPool().getXQueryService();
+    @Override
+    public String getId() {
+        return ID;
+    }
 
-			if (xquery == null) {
-				LOG.error("IPRange broker unable to retrieve XQueryService");
-			}
-			
-			String query = "collection('/db/system/security/IPRange/accounts')/account/iprange[" + ipToTest + " ge number(start) and " + ipToTest + " le number(end)]/../name";
-			
-			XQueryContext context = new XQueryContext(broker.getBrokerPool());
+    @Override
+    public boolean deleteAccount(Account account) throws PermissionDeniedException, EXistException, ConfigurationException {
+        // Auto-generated method stub
+        return false;
+    }
 
-			CompiledXQuery compiled = xquery.compile(broker, context, query);
+    @Override
+    public boolean deleteGroup(Group group) throws PermissionDeniedException, EXistException, ConfigurationException {
+        // Auto-generated method stub
+        return false;
+    }
 
-			Properties outputProperties = new Properties();
+    @Override
+    public Subject authenticate(final String ip, Object credentials) throws AuthenticationException {
+        //elevate to system privs
+        try (final DBBroker broker = BrokerPool.getInstance().get(Optional.of(getSecurityManager().getSystemSubject()))) {
+            long ipToTest = ipToLong(InetAddress.getByName(ip));
 
-			Sequence result = xquery.execute(broker, compiled, null, outputProperties);
-			SequenceIterator i = result.iterate();
-			String username = "";
-			if(i.hasNext()) {
-				username = i.nextItem().getStringValue();
-			}
-			Account account = null;
-			if(!"".equals(username)) {
-				account = getSecurityManager().getAccount(username);
-				if(account != null){
-					LOG.info("IPRangeRealm trying "+account.getName());
-					return new SubjectAccreditedImpl((AbstractAccount) account,ip);
-				} else {
-					LOG.info("IPRangeRealm couldn't resolve account for "+username);
-				}
-			} else {
-				LOG.info("IPRangeRealm xquery found no matches");
-			}
-			return null;
-		} catch (EXistException | UnknownHostException | XPathException | PermissionDeniedException e) {
-			throw new AuthenticationException(AuthenticationException.UNNOWN_EXCEPTION, e.getMessage());
-		}
-	}
-	
-	private static long ipToLong(InetAddress ip) {
-		byte[] octets = ip.getAddress();
-		long result = 0;
-		for (byte octet : octets) {
-			result <<= 8;
-			result |= octet & 0xff;
-		}
-		return result;
-	}
+            XQuery xquery = broker.getBrokerPool().getXQueryService();
+
+            if (xquery == null) {
+                LOG.error("IPRange broker unable to retrieve XQueryService");
+            }
+
+            String query = "collection('/db/system/security/IPRange/accounts')/account/iprange[" + ipToTest + " ge number(start) and " + ipToTest + " le number(end)]/../name";
+
+            XQueryContext context = new XQueryContext(broker.getBrokerPool());
+
+            CompiledXQuery compiled = xquery.compile(broker, context, query);
+
+            Properties outputProperties = new Properties();
+
+            Sequence result = xquery.execute(broker, compiled, null, outputProperties);
+            SequenceIterator i = result.iterate();
+            String username = "";
+            if (i.hasNext()) {
+                username = i.nextItem().getStringValue();
+            }
+            Account account = null;
+            if (!"".equals(username)) {
+                account = getSecurityManager().getAccount(username);
+                if (account != null) {
+                    LOG.info("IPRangeRealm trying " + account.getName());
+                    return new SubjectAccreditedImpl((AbstractAccount) account, ip);
+                } else {
+                    LOG.info("IPRangeRealm couldn't resolve account for " + username);
+                }
+            } else {
+                LOG.info("IPRangeRealm xquery found no matches");
+            }
+            return null;
+        } catch (EXistException | UnknownHostException | XPathException | PermissionDeniedException e) {
+            throw new AuthenticationException(AuthenticationException.UNNOWN_EXCEPTION, e.getMessage());
+        }
+    }
 }
