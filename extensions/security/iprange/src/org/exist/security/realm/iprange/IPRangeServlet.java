@@ -85,6 +85,14 @@ public class IPRangeServlet extends HttpServlet {
 
             if (user != null) {
                 LOG.info("IPRangeServlet user " + user.getUsername() + " found");
+
+                // Security check
+                if (user.hasDbaRole()) {
+                    LOG.error("User " + user.getUsername() + " has DBA rights, will not be authorized");
+                    return;
+                }
+
+
                 final HttpSession session = request.getSession();
                 // store the user in the session
                 if (session != null) {

@@ -129,7 +129,7 @@ public class IPRangeRealm extends AbstractRealm {
             // Get FIRST username when present
             final String username = i.hasNext() ? i.nextItem().getStringValue() : "";
 
-            if(i.hasNext()){
+            if (i.hasNext()) {
                 LOG.warn("IP address " + ipAddress + " matched multiple ipranges. Using first result only.");
             }
 
