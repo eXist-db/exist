@@ -104,6 +104,7 @@ public class IPRangeRealm extends AbstractRealm {
 
             if (xquery == null) {
                 LOG.error("IPRange broker unable to retrieve XQueryService");
+                return null;
             }
 
             String query = "collection('/db/system/security/IPRange/accounts')/account/iprange[" + ipToTest + " ge number(start) and " + ipToTest + " le number(end)]/../name";
