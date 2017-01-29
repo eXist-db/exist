@@ -23,33 +23,16 @@ package org.exist.security.realm.iprange;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import javax.servlet.*;
 import javax.servlet.http.*;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.eclipse.jetty.security.DefaultIdentityService;
-import org.eclipse.jetty.server.Authentication;
-import org.eclipse.jetty.server.UserIdentity;
-import org.exist.Database;
-import org.exist.EXistException;
-import org.exist.config.ConfigurationException;
-import org.exist.security.AXSchemaType;
-import org.exist.security.AbstractAccount;
-import org.exist.security.Account;
 import org.exist.security.AbstractRealm;
-import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
-import org.exist.security.internal.HttpSessionAuthentication;
-import org.exist.security.internal.SubjectAccreditedImpl;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.util.HTTPUtils;
 import org.exist.security.AuthenticationException;
 
 /**

@@ -21,44 +21,27 @@
  */
 package org.exist.security.realm.iprange;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 import java.util.Properties;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.net.*;
-
-import javax.servlet.http.HttpSession;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.config.Configuration;
 import org.exist.config.ConfigurationException;
-import org.exist.config.Configurator;
 import org.exist.config.annotation.*;
-import org.exist.dom.persistent.BinaryDocument;
-import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.AbstractAccount;
 import org.exist.security.AbstractRealm;
 import org.exist.security.Account;
 import org.exist.security.AuthenticationException;
 import org.exist.security.Group;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.SchemaType;
 import org.exist.security.Subject;
-import org.exist.security.internal.HttpSessionAuthentication;
 import org.exist.security.internal.SecurityManagerImpl;
 import org.exist.security.internal.SubjectAccreditedImpl;
-import org.exist.security.internal.aider.UserAider;
-import org.exist.security.xacml.AccessContext;
-import org.exist.source.DBSource;
-import org.exist.source.Source;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.storage.lock.Lock;
-import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
@@ -123,7 +106,7 @@ public class IPRangeRealm extends AbstractRealm {
 			
 			String query = "collection('/db/system/security/IPRange/accounts')/account/iprange[" + ipToTest + " ge number(start) and " + ipToTest + " le number(end)]/../name";
 			
-			XQueryContext context = new XQueryContext(broker.getBrokerPool(), AccessContext.REST);
+			XQueryContext context = new XQueryContext(broker.getBrokerPool());
 
 			CompiledXQuery compiled = xquery.compile(broker, context, query);
 
@@ -148,13 +131,7 @@ public class IPRangeRealm extends AbstractRealm {
 				LOG.info("IPRangeRealm xquery found no matches");
 			}
 			return null;
-		} catch (EXistException e) {
-			throw new AuthenticationException(AuthenticationException.UNNOWN_EXCEPTION, e.getMessage());
-		} catch (PermissionDeniedException e) {
-			throw new AuthenticationException(AuthenticationException.UNNOWN_EXCEPTION, e.getMessage());
-		} catch (XPathException e) {
-			throw new AuthenticationException(AuthenticationException.UNNOWN_EXCEPTION, e.getMessage());
-		} catch (UnknownHostException e) {
+		} catch (EXistException | UnknownHostException | XPathException | PermissionDeniedException e) {
 			throw new AuthenticationException(AuthenticationException.UNNOWN_EXCEPTION, e.getMessage());
 		}
 	}
