@@ -119,7 +119,7 @@ public class IPRangeRealm extends AbstractRealm {
 				username = i.nextItem().getStringValue();
 			}
 			Account account = null;
-			if(username!="") {
+			if(!"".equals(username)) {
 				account = getSecurityManager().getAccount(username);
 				if(account != null){
 					LOG.info("IPRangeRealm trying "+account.getName());
