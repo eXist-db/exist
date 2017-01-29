@@ -68,7 +68,7 @@ public class IPRangeServlet extends HttpServlet {
             throws ServletException, IOException {
 
 
-        // Get reverse proxy header when available, otherwise use regular IPaddrss
+        // Get reverse proxy header when available, otherwise use regular IP address
         String ipAddress = request.getHeader("X-Forwarded-For");
         if (ipAddress == null) {
             ipAddress = request.getRemoteAddr();
@@ -80,8 +80,9 @@ public class IPRangeServlet extends HttpServlet {
         String jsonResponse = "{\"fail\":\"IP range not authenticated\"}";
 
         try {
-            final SecurityManager secman = IPRangeRealm.instance.getSecurityManager();
-            final Subject user = secman.authenticate(ipAddress, ipAddress);
+            final SecurityManager securityManager = IPRangeRealm.instance.getSecurityManager();
+            final Subject user = securityManager.authenticate(ipAddress, ipAddress);
+
             if (user != null) {
                 LOG.info("IPRangeServlet user " + user.getUsername() + " found");
                 final HttpSession session = request.getSession();
@@ -95,7 +96,7 @@ public class IPRangeServlet extends HttpServlet {
                 }
 
             } else {
-                LOG.info("IPRangeServlet user not found");
+                LOG.error("IPRangeServlet user not found");
             }
 
         } catch (final AuthenticationException e) {

@@ -98,12 +98,13 @@ public class IPRangeRealm extends AbstractRealm {
     }
 
     @Override
-    public Subject authenticate(final String ip, final Object credentials) throws AuthenticationException {
-        //elevate to system privs
+    public Subject authenticate(final String ipAddress, final Object credentials) throws AuthenticationException {
+
+        // Elevaste to system privileges
         try (final DBBroker broker = BrokerPool.getInstance().get(Optional.of(getSecurityManager().getSystemSubject()))) {
 
             // Convert IP address
-            final long ipToTest = ipToLong(InetAddress.getByName(ip));
+            final long ipToTest = ipToLong(InetAddress.getByName(ipAddress));
 
             // Get xquery service
             final XQuery queryService = broker.getBrokerPool().getXQueryService();
@@ -113,8 +114,8 @@ public class IPRangeRealm extends AbstractRealm {
             }
 
             // Construct XQuery
-            final String query = "collection('/db/system/security/IPRange/accounts')/account/iprange[" + ipToTest + " ge number(start) and " + ipToTest + " le number(end)]/../name";
-
+            final String query = "collection('/db/system/security/IPRange/accounts')/account/" +
+                    "iprange[" + ipToTest + " ge number(start) and " + ipToTest + " le number(end)]/../name";
             final XQueryContext context = new XQueryContext(broker.getBrokerPool());
 
             final CompiledXQuery compiled = queryService.compile(broker, context, query);
@@ -125,14 +126,18 @@ public class IPRangeRealm extends AbstractRealm {
             final Sequence result = queryService.execute(broker, compiled, null, outputProperties);
             final SequenceIterator i = result.iterate();
 
-            // Get username when present
+            // Get FIRST username when present
             final String username = i.hasNext() ? i.nextItem().getStringValue() : "";
+
+            if(i.hasNext()){
+                LOG.warn("IP address " + ipAddress + " matched multiple ipranges. Using first result only.");
+            }
 
             if (!"".equals(username)) {
                 final Account account = getSecurityManager().getAccount(username);
                 if (account != null) {
                     LOG.info("IPRangeRealm trying " + account.getName());
-                    return new SubjectAccreditedImpl((AbstractAccount) account, ip);
+                    return new SubjectAccreditedImpl((AbstractAccount) account, ipAddress);
                 } else {
                     LOG.info("IPRangeRealm couldn't resolve account for " + username);
                 }
