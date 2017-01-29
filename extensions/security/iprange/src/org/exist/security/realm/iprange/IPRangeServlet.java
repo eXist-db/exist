@@ -53,52 +53,58 @@ public class IPRangeServlet extends HttpServlet {
     }
 
     @Override
-    public void init(ServletConfig config) throws ServletException {
+    public void init(final ServletConfig config) throws ServletException {
         super.init(config);
     }
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
+    protected void doGet(final HttpServletRequest req, final HttpServletResponse resp)
             throws ServletException, IOException {
         doPost(req, resp);
     }
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+    protected void doPost(final HttpServletRequest request, final HttpServletResponse response)
             throws ServletException, IOException {
 
 
-        String ip = request.getHeader("X-Forwarded-For");
+        // Get reverse proxy header when available, otherwise use regular IPaddrss
+        String ipAddress = request.getHeader("X-Forwarded-For");
+        if (ipAddress == null) {
+            ipAddress = request.getRemoteAddr();
+        }
 
-        if (ip == null) ip = request.getRemoteAddr();
 
-        LOG.info("GOT IPRangeServlet " + ip);
+        LOG.info("Detected IPaddress " + ipAddress);
 
-        String json = "{\"fail\":\"IP range not authenticated\"}";
+        String jsonResponse = "{\"fail\":\"IP range not authenticated\"}";
 
         try {
-            SecurityManager secman = IPRangeRealm.instance.getSecurityManager();
-            Subject user = secman.authenticate(ip, ip);
+            final SecurityManager secman = IPRangeRealm.instance.getSecurityManager();
+            final Subject user = secman.authenticate(ipAddress, ipAddress);
             if (user != null) {
                 LOG.info("IPRangeServlet user " + user.getUsername() + " found");
                 final HttpSession session = request.getSession();
                 // store the user in the session
                 if (session != null) {
-                    json = "{\"user\":\"" + user.getUsername() + "\",\"isAdmin\":\"" + user.hasDbaRole() + "\"}";
+                    jsonResponse = "{\"user\":\"" + user.getUsername() + "\",\"isAdmin\":\"" + user.hasDbaRole() + "\"}";
                     LOG.info("IPRangeServlet setting session attr " + XQueryContext.HTTP_SESSIONVAR_XMLDB_USER);
                     session.setAttribute(XQueryContext.HTTP_SESSIONVAR_XMLDB_USER, user);
                 } else {
                     LOG.info("IPRangeServlet session is null");
                 }
+
             } else {
                 LOG.info("IPRangeServlet user not found");
             }
-        } catch (AuthenticationException e) {
+
+        } catch (final AuthenticationException e) {
             throw new IOException(e.getMessage());
+
         } finally {
             response.setContentType("application/json");
-            PrintWriter out = response.getWriter();
-            out.print(json);
+            final PrintWriter out = response.getWriter();
+            out.print(jsonResponse);
             out.flush();
         }
     }

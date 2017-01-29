@@ -50,22 +50,25 @@ import java.util.Properties;
  */
 @ConfigurationClass("realm") //TODO: id = IPRange
 public class IPRangeRealm extends AbstractRealm {
+
     @ConfigurationFieldAsAttribute("id")
     public final static String ID = "IPRange";
+
     @ConfigurationFieldAsAttribute("version")
     public final static String version = "1.0";
+
     protected final static Logger LOG = LogManager.getLogger(IPRangeRealm.class);
     protected static IPRangeRealm instance = null;
 
-    public IPRangeRealm(final SecurityManagerImpl sm, Configuration config) throws ConfigurationException {
+    public IPRangeRealm(final SecurityManagerImpl sm, final Configuration config) throws ConfigurationException {
         super(sm, config);
         instance = this;
     }
 
-    private static long ipToLong(InetAddress ip) {
-        byte[] octets = ip.getAddress();
+    private static long ipToLong(final InetAddress ip) {
+        final byte[] octets = ip.getAddress();
         long result = 0;
-        for (byte octet : octets) {
+        for (final byte octet : octets) {
             result <<= 8;
             result |= octet & 0xff;
         }
@@ -83,57 +86,62 @@ public class IPRangeRealm extends AbstractRealm {
     }
 
     @Override
-    public boolean deleteAccount(Account account) throws PermissionDeniedException, EXistException, ConfigurationException {
+    public boolean deleteAccount(final Account account) throws PermissionDeniedException, EXistException, ConfigurationException {
         // Auto-generated method stub
         return false;
     }
 
     @Override
-    public boolean deleteGroup(Group group) throws PermissionDeniedException, EXistException, ConfigurationException {
+    public boolean deleteGroup(final Group group) throws PermissionDeniedException, EXistException, ConfigurationException {
         // Auto-generated method stub
         return false;
     }
 
     @Override
-    public Subject authenticate(final String ip, Object credentials) throws AuthenticationException {
+    public Subject authenticate(final String ip, final Object credentials) throws AuthenticationException {
         //elevate to system privs
         try (final DBBroker broker = BrokerPool.getInstance().get(Optional.of(getSecurityManager().getSystemSubject()))) {
-            long ipToTest = ipToLong(InetAddress.getByName(ip));
 
-            XQuery xquery = broker.getBrokerPool().getXQueryService();
+            // Convert IP address
+            final long ipToTest = ipToLong(InetAddress.getByName(ip));
 
-            if (xquery == null) {
+            // Get xquery service
+            final XQuery queryService = broker.getBrokerPool().getXQueryService();
+            if (queryService == null) {
                 LOG.error("IPRange broker unable to retrieve XQueryService");
                 return null;
             }
 
-            String query = "collection('/db/system/security/IPRange/accounts')/account/iprange[" + ipToTest + " ge number(start) and " + ipToTest + " le number(end)]/../name";
+            // Construct XQuery
+            final String query = "collection('/db/system/security/IPRange/accounts')/account/iprange[" + ipToTest + " ge number(start) and " + ipToTest + " le number(end)]/../name";
 
-            XQueryContext context = new XQueryContext(broker.getBrokerPool());
+            final XQueryContext context = new XQueryContext(broker.getBrokerPool());
 
-            CompiledXQuery compiled = xquery.compile(broker, context, query);
+            final CompiledXQuery compiled = queryService.compile(broker, context, query);
 
-            Properties outputProperties = new Properties();
+            final Properties outputProperties = new Properties();
 
-            Sequence result = xquery.execute(broker, compiled, null, outputProperties);
-            SequenceIterator i = result.iterate();
-            String username = "";
-            if (i.hasNext()) {
-                username = i.nextItem().getStringValue();
-            }
-            Account account = null;
+            // Execute xQuery
+            final Sequence result = queryService.execute(broker, compiled, null, outputProperties);
+            final SequenceIterator i = result.iterate();
+
+            // Get username when present
+            final String username = i.hasNext() ? i.nextItem().getStringValue() : "";
+
             if (!"".equals(username)) {
-                account = getSecurityManager().getAccount(username);
+                final Account account = getSecurityManager().getAccount(username);
                 if (account != null) {
                     LOG.info("IPRangeRealm trying " + account.getName());
                     return new SubjectAccreditedImpl((AbstractAccount) account, ip);
                 } else {
                     LOG.info("IPRangeRealm couldn't resolve account for " + username);
                 }
+
             } else {
                 LOG.info("IPRangeRealm xquery found no matches");
             }
             return null;
+
         } catch (EXistException | UnknownHostException | XPathException | PermissionDeniedException e) {
             throw new AuthenticationException(AuthenticationException.UNNOWN_EXCEPTION, e.getMessage());
         }
