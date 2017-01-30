@@ -64,6 +64,7 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -265,7 +266,7 @@ public class Deployment {
             // installing the xar into the expath repo
             LOG.info("Installing package " + xar.toAbsolutePath().toString());
             final UserInteractionStrategy interact = new BatchUserInteraction();
-            final org.expath.pkg.repo.Package pkg = repo.get().getParentRepo().installPackage(xar.toFile(), true, interact);
+            final org.expath.pkg.repo.Package pkg = repo.get().getParentRepo().installPackage(xar, true, interact);
             final ExistPkgInfo info = (ExistPkgInfo) pkg.getInfo("exist");
             if (info != null && !info.getJars().isEmpty()) {
                 ClasspathHelper.updateClasspath(broker.getBrokerPool(), pkg);
@@ -301,9 +302,18 @@ public class Deployment {
         }
 
         final Path packageDir = maybePackageDir.get();
-
-        final DocumentImpl repoXML = getRepoXML(packageDir);
         final Optional<Package> pkg = getPackage(pkgName, repo);
+        final DocumentImpl repoXML;
+        try {
+            repoXML = getRepoXML(packageDir);
+        } catch (PackageException e) {
+            if (pkg.isPresent()) {
+                uninstall(pkg.get(), Optional.empty());
+            }
+            throw new PackageException("Failed to remove package from database " +
+                    "due to error in repo.xml: " + e.getMessage(), e);
+        }
+
         if (repoXML != null) {
             try {
                 final Optional<ElementImpl> cleanup = findElement(repoXML, CLEANUP_ELEMENT);
@@ -325,7 +335,7 @@ public class Deployment {
         } else {
             // we still may need to remove the copy of the package from /db/system/repo
             if (pkg.isPresent()) {
-		        uninstall(pkg.get(), null);
+		        uninstall(pkg.get(), Optional.empty());
 	        }
         }
         return Optional.empty();
@@ -429,7 +439,8 @@ public class Deployment {
                 final InMemoryNodeSet resources = findElements(repoXML,RESOURCES_ELEMENT);
 
                 // install
-                scanDirectory(packageDir, targetCollection, resources, true, false, requestedPerms);
+                final List<String> errors = scanDirectory(packageDir, targetCollection, resources, true, false,
+                        requestedPerms);
 
                 // run the post-setup query if present
                 final Optional<ElementImpl> postSetup = findElement(repoXML, POST_SETUP_ELEMENT);
@@ -445,6 +456,10 @@ public class Deployment {
                 // has been deployed. Might be enabled after 2.0
                 //cleanup(pkgName, repo);
 
+                if (!errors.isEmpty()) {
+                    throw new PackageException("Deployment incomplete, " + errors.size() + " issues found: " +
+                        errors.stream().collect(Collectors.joining("; ")));
+                }
                 return Optional.ofNullable(targetCollection.getCollectionPath());
             }
         } catch (final XPathException e) {
@@ -675,8 +690,14 @@ public class Deployment {
      * @param directory
      * @param target
      */
-    private void scanDirectory(final Path directory, final XmldbURI target, final InMemoryNodeSet resources,
+    private List<String> scanDirectory(final Path directory, final XmldbURI target, final InMemoryNodeSet resources,
                                final boolean inRootDir, final boolean isResourcesDir, final Optional<RequestedPerms> requestedPerms) {
+        return scanDirectory(directory, target, resources, inRootDir, isResourcesDir, requestedPerms, new ArrayList<>());
+    }
+
+    private List<String> scanDirectory(final Path directory, final XmldbURI target, final InMemoryNodeSet resources,
+                                       final boolean inRootDir, final boolean isResourcesDir, final
+                                       Optional<RequestedPerms> requestedPerms, final List<String> errors) {
         final TransactionManager mgr = broker.getBrokerPool().getTransactionManager();
         Collection collection = null;
         try(final Txn transaction = mgr.beginTransaction()) {
@@ -686,6 +707,7 @@ public class Deployment {
             mgr.commit(transaction);
         } catch (final Exception e) {
             LOG.warn(e);
+            errors.add(e.getMessage());
         }
 
         final boolean isResources = isResourcesDir || isResourceDir(target, resources);
@@ -693,21 +715,22 @@ public class Deployment {
         // the root dir is not allowed to be a resources directory
         if (!inRootDir && isResources) {
             try {
-                storeBinaryResources(directory, collection, requestedPerms);
+                storeBinaryResources(directory, collection, requestedPerms, errors);
             } catch (Exception e) {
                 LOG.error(e.getMessage(), e); 
             }
         } else {
-            storeFiles(directory, collection, inRootDir, requestedPerms);
+            storeFiles(directory, collection, inRootDir, requestedPerms, errors);
         }
 
         // scan sub directories
         try(final Stream<Path> subDirs = Files.find(directory, 1, (path, attrs) -> (!path.equals(directory)) && attrs.isDirectory())) {
             subDirs.forEach(path -> scanDirectory(path, target.append(FileUtils.fileName(path)), resources, false,
-                    isResources, requestedPerms));
+                    isResources, requestedPerms, errors));
         } catch(final IOException ioe) {
             LOG.warn("Unable to scan sub-directories", ioe);
         }
+        return errors;
     }
 
     private boolean isResourceDir(XmldbURI target, InMemoryNodeSet resources) {
@@ -732,12 +755,14 @@ public class Deployment {
      * @param directory
      * @param targetCollection
      */
-    private void storeFiles(final Path directory, final Collection targetCollection, final boolean inRootDir, final Optional<RequestedPerms> requestedPerms) {
+    private void storeFiles(final Path directory, final Collection targetCollection, final boolean inRootDir, final
+        Optional<RequestedPerms> requestedPerms, final List<String> errors) {
         List<Path> files;
         try {
             files = FileUtils.list(directory);
         } catch(final IOException ioe) {
             LOG.error(ioe);
+            errors.add(FileUtils.fileName(directory) + ": " + ioe.getMessage());
             files = Collections.EMPTY_LIST;
         }
 
@@ -770,6 +795,8 @@ public class Deployment {
                             if(mime.getName().equals(MimeType.HTML_TYPE.getName())){
                                 //store it
                                 storeBinary(targetCollection, file, mime, name, requestedPerms, transaction);
+                            } else {
+                                errors.add(FileUtils.fileName(file) + ": " + e.getMessage());
                             }
                         }
                     } else {
@@ -786,7 +813,8 @@ public class Deployment {
                     }
                     mgr.commit(transaction);
                 } catch (final Exception e) {
-                    LOG.error(e.getMessage(), e); 
+                    LOG.error(e.getMessage(), e);
+                    errors.add(FileUtils.fileName(file) + ": " + e.getMessage());
                 }
             }
         }
@@ -806,7 +834,8 @@ public class Deployment {
         }
     }
 
-    private void storeBinaryResources(final Path directory, final Collection targetCollection, final Optional<RequestedPerms> requestedPerms) throws IOException, EXistException,
+    private void storeBinaryResources(final Path directory, final Collection targetCollection, final
+    Optional<RequestedPerms> requestedPerms, final List<String> errors) throws IOException, EXistException,
             PermissionDeniedException, LockException, TriggerException {
         final TransactionManager mgr = broker.getBrokerPool().getTransactionManager();
         try(DirectoryStream<Path> stream = Files.newDirectoryStream(directory)) {
@@ -817,7 +846,8 @@ public class Deployment {
                         storeBinary(targetCollection, entry, MimeType.BINARY_TYPE, name, requestedPerms, transaction);
                         mgr.commit(transaction);
                     } catch (final Exception e) {
-                        LOG.error(e.getMessage(), e); 
+                        LOG.error(e.getMessage(), e);
+                        errors.add(e.getMessage());
                     }
                 }  
             }
