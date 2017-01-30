@@ -41,6 +41,12 @@ public class RangeQueryRewriter extends QueryRewriter {
 
     @Override
     public Pragma rewriteLocationStep(LocationStep locationStep) throws XPathException {
+        int axis = locationStep.getAxis();
+        if (!(axis == Constants.CHILD_AXIS || axis == Constants.DESCENDANT_AXIS ||
+                axis == Constants.DESCENDANT_SELF_AXIS || axis == Constants.ATTRIBUTE_AXIS ||
+                axis == Constants.DESCENDANT_ATTRIBUTE_AXIS || axis == Constants.SELF_AXIS)) {
+            return null;
+        }
         if (locationStep.hasPredicates()) {
             Expression parentExpr = locationStep.getParentExpression();
             if ((parentExpr instanceof RewritableExpression)) {
@@ -69,7 +75,6 @@ public class RangeQueryRewriter extends QueryRewriter {
                     }
 
                     // check if inner steps are on an axis we can optimize
-                    final int axis;
                     if (innerExpr instanceof InternalFunctionCall) {
                         InternalFunctionCall fcall = (InternalFunctionCall) innerExpr;
                         axis = ((Optimizable) fcall.getFunction()).getOptimizeAxis();
