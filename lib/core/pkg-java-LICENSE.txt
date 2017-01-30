@@ -1,0 +1,3 @@
+pkg-java-fork.jar code is licensed under Mozilla Public License v1.1
+
+a copy of which can be found here http://www.mozilla.org/MPL/MPL-1.1.html
