@@ -20,8 +20,17 @@
  */
 package org.exist.xquery.modules.expathrepo;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.OpenOption;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.Optional;
 
+import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 
 import org.exist.dom.QName;
@@ -32,12 +41,7 @@ import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.Base64BinaryDocument;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 import org.expath.pkg.repo.Package;
 import org.expath.pkg.repo.PackageException;
 import org.expath.pkg.repo.Packages;
@@ -69,23 +73,24 @@ public class GetResource extends BasicFunction {
 		Optional<ExistRepository> repo = context.getRepository();
 		if (repo.isPresent()) {
 		    try {
-			for (Packages pp : repo.get().getParentRepo().listPackages()) {
-			    final Package pkg = pp.latest();
-			    if (pkg.getName().equals(pkgName)) {
-				try {
-				    StreamSource source = pkg.getResolver().resolveResource(path);
-				    return Base64BinaryDocument.getInstance(context, source.getInputStream());
-				} catch (Storage.NotExistException ex) {
-				    // nothing
-				}
-			    }
-			}
+                for (Packages pp : repo.get().getParentRepo().listPackages()) {
+                    final Package pkg = pp.latest();
+                    if (pkg.getName().equals(pkgName)) {
+                        try {
+                            // FileSystemResolver already returns an input stream
+                            StreamSource source = (StreamSource) pkg.getResolver().resolveResource(path);
+                            return Base64BinaryDocument.getInstance(context, source.getInputStream());
+                        } catch (Storage.NotExistException ex) {
+                            // nothing
+                        }
+                    }
+                }
 		    } catch (PackageException e) {
-			throw new XPathException(this, ErrorCodes.FOER0000, "Caught package error while reading expath package");
+			    throw new XPathException(this, ErrorCodes.FOER0000, "Caught package error while reading expath package");
 		    }
 		} else {
 		    throw new XPathException("expath repository not available");
 		}
-                return Sequence.EMPTY_SEQUENCE;
+        return Sequence.EMPTY_SEQUENCE;
 	}
 }
