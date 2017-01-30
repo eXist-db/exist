@@ -536,7 +536,7 @@ declare
     %test:args("main", "official", "Dorfprozelten")
     %test:assertEquals("Dorfprozelten")
 function ot:equality-field-nested($type as xs:string, $subtype as xs:string, $name as xs:string) {
-    //tei:placeName[@type = $type][@subtype = $subtype][. = $name]/text()
+    collection($ot:COLLECTION)//tei:placeName[@type = $type][@subtype = $subtype][. = $name]/text()
 };
 
 declare
@@ -544,7 +544,45 @@ declare
     %test:args("main", "official", "Hofthiergarten")
     %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
 function ot:optimize-field-self($type as xs:string, $subtype as xs:string, $name as xs:string) {
-    //tei:placeName[@type = $type][@subtype = $subtype][. = $name]/text()
+    collection($ot:COLLECTION)//tei:placeName[@type = $type][@subtype = $subtype][. = $name]/text()
+};
+
+declare 
+    %test:assertEquals("Rudi Rüssel")
+function ot:parent-attr-equals() {
+    collection($ot:COLLECTION)//name[parent::address/@id = "rüssel"]/text()
+};
+
+declare 
+    %test:stats
+    %test:assertXPath("$result//stats:index[@type = 'range'][@optimization = 0]")
+function ot:optimize-parent-attr-equals() {
+    collection($ot:COLLECTION)//name[parent::address/@id = "rüssel"]/text()
+};
+
+declare 
+    %test:assertEquals("Rudi Rüssel")
+function ot:parent-nested-attr-equals() {
+    collection($ot:COLLECTION)//name[parent::address[@id = "rüssel"]]/text()
+};
+
+declare 
+    %test:stats
+    %test:assertXPath("$result//stats:index[@type = 'range'][@optimization = 0]")
+function ot:optimize-parent-nested-attr-equals() {
+    collection($ot:COLLECTION)//name[parent::address[@id = "rüssel"]]/text()
+};
+
+declare 
+    %test:assertEquals("Rudi Rüssel")
+function ot:self-parent-attr-equals() {
+    collection($ot:COLLECTION)//name[./parent::address/@id = "rüssel"]/text()
+};
+
+declare 
+    %test:assertEquals("Rudi Rüssel")
+function ot:self-parent-nested-attr-equals() {
+    collection($ot:COLLECTION)//name[./parent::address[@id = "rüssel"]]/text()
 };
 
 (: Filters :)
