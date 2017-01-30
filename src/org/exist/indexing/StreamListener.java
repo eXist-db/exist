@@ -43,6 +43,13 @@ public interface StreamListener {
         STORE,
 
         /**
+         * Mode for replacing the nodes of a document with another document
+         * this is really a group mode, which is later followed by {@link #REMOVE_ALL_NODES}
+         * and then {@link #STORE}
+         */
+        REPLACE_DOCUMENT,
+
+        /**
          * Mode for removing all the nodes of a document
          */
         REMOVE_ALL_NODES,
@@ -80,6 +87,30 @@ public interface StreamListener {
      * @return the next listener in the chain.
      */
     StreamListener getNextInChain();
+
+    /**
+     * Starting to replace a document
+     *
+     * After which the sequence of {@link #startIndexDocument(Txn)} / events / {@link #endIndexDocument(Txn)}
+     * will be called twice, first where the index mode will be {@link ReindexMode#REMOVE_ALL_NODES}
+     * and second where the index mode will be {@link ReindexMode#STORE}
+     * this is then finished by {@link #endReplaceDocument(Txn)}
+     *
+     * This can be used in conjunction with {@link #endReplaceDocument(Txn)} in indexes
+     * which support differential updates
+     *
+     * @param transaction The current executing transaction
+     */
+    void startReplaceDocument(Txn transaction);
+
+    /**
+     * Finished replacing a document
+     *
+     * See {@link #startReplaceDocument(Txn)} for details
+     *
+     * @param transaction The current executing transaction
+     */
+    void endReplaceDocument(Txn transaction);
 
     /**
      * Starting to index a document

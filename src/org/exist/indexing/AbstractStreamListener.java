@@ -49,6 +49,20 @@ public abstract class AbstractStreamListener implements StreamListener {
     }
 
     @Override
+    public void startReplaceDocument(final Txn transaction) {
+        if (next != null) {
+            next.startReplaceDocument(transaction);
+        }
+    }
+
+    @Override
+    public void endReplaceDocument(Txn transaction) {
+        if (next != null) {
+            next.endReplaceDocument(transaction);
+        }
+    }
+
+    @Override
     public void startIndexDocument(final Txn transaction) {
         if (next != null) {
             next.startIndexDocument(transaction);
