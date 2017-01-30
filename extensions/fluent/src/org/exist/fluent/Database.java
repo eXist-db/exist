@@ -516,7 +516,7 @@ public class Database {
 		public void dropIndex(Collection collection) {
 			stale(normalizePath(collection.getURI().getCollectionPath()));
 		}
-		public void dropIndex(DocumentImpl doc) throws ReadOnlyException {
+		public void dropIndex(DocumentImpl doc) {
 			stale(normalizePath(doc.getURI().getCollectionPath()));
 		}
                 @Override

@@ -69,9 +69,8 @@ public interface ContentLoadingObserver extends AutoCloseable {
 	 * Drop all index entries for the given document.
 	 * 
 	 * @param doc
-	 * @throws ReadOnlyException
 	 */
-	void dropIndex(DocumentImpl doc) throws ReadOnlyException;
+	void dropIndex(DocumentImpl doc);
 
 	/** remove all pending modifications, for the current document. */
 	void remove();
