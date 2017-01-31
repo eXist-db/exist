@@ -874,9 +874,13 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     } else {
                         while (configIter.hasNext()) {
                             RangeIndexConfigElement configuration = configIter.next();
-                            if (configuration.match(path)) {
+                            boolean match = configuration.match(path);
+                            if (match) {
                                 TextCollector collector = contentStack.pop();
-                                indexText(element, element.getQName(), path, configuration, collector);
+                                match = collector instanceof ComplexTextCollector
+                                        ? match && ((ComplexTextCollector)collector).getConfig().matchConditions(element)
+                                        : match;
+                                if (match) indexText(element, element.getQName(), path, configuration, collector);
                             }
                         }
                     }
