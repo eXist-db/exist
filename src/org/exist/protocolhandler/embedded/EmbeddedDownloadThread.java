@@ -24,6 +24,7 @@ package org.exist.protocolhandler.embedded;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -38,13 +39,15 @@ import org.exist.storage.BrokerPool;
  */
 public class EmbeddedDownloadThread extends Thread {
     
-    private final static Logger logger = LogManager.getLogger(EmbeddedDownloadThread.class);
+    private static final Logger LOG = LogManager.getLogger(EmbeddedDownloadThread.class);
     
-    private XmldbURL xmldbURL;
-    private OutputStream bos;
+    private final XmldbURL xmldbURL;
+    private final OutputStream bos;
     
-    private Subject subject = null;
+    private Subject subject;
     private BrokerPool brokerPool;
+
+    private static final AtomicInteger threadInitNumber = new AtomicInteger();
     
     /**
      *  Constructor of EmbeddedDownloadThread.
@@ -52,15 +55,16 @@ public class EmbeddedDownloadThread extends Thread {
      * @param url Document location in database.
      * @param bos Stream to which the document is written.
      */
-    public EmbeddedDownloadThread(XmldbURL url, OutputStream bos) {
-        xmldbURL = url;
+    public EmbeddedDownloadThread(final XmldbURL url, final OutputStream bos) {
+        super("EmbeddedDownloadThread-" + threadInitNumber.getAndIncrement());
+        this.xmldbURL = url;
         this.bos = bos;
         
         try {
-            BrokerPool pool = BrokerPool.getInstance(url.getInstanceName());
-            subject = pool.getActiveBroker().getCurrentSubject();
-        } catch (Throwable e) {
-            //e.printStackTrace();
+            final BrokerPool pool = BrokerPool.getInstance(url.getInstanceName());
+            this.subject = pool.getActiveBroker().getCurrentSubject();
+        } catch (final Throwable e) {
+            LOG.error(e);
         }
     }
 
@@ -70,41 +74,50 @@ public class EmbeddedDownloadThread extends Thread {
      * @param url Document location in database.
      * @param bos Stream to which the document is written.
      */
-    public EmbeddedDownloadThread(BrokerPool brokerPool, XmldbURL url, OutputStream bos) {
-        xmldbURL = url;
+    public EmbeddedDownloadThread(final BrokerPool brokerPool, final XmldbURL url, final OutputStream bos) {
+        super("EmbeddedDownloadThread-" + threadInitNumber.getAndIncrement());
+        this.xmldbURL = url;
         this.bos = bos;
-        this.brokerPool=brokerPool;
-        
+
         try {
-            if (brokerPool == null)
-                brokerPool = BrokerPool.getInstance(url.getInstanceName());
+            if (brokerPool == null) {
+                this.brokerPool = BrokerPool.getInstance(url.getInstanceName());
+            } else {
+                this.brokerPool = brokerPool;
+            }
             
-            subject = brokerPool.getActiveBroker().getCurrentSubject();
-        } catch (Throwable e) {
-            //e.printStackTrace();
+            this.subject = this.brokerPool.getActiveBroker().getCurrentSubject();
+        } catch (final Throwable e) {
+            LOG.error(e);
         }
     }
     
     /**
      * Write resource to the output stream.
      */
+    @Override
     public void run() {
-        logger.debug("Thread started." );
+        if(LOG.isDebugEnabled()) {
+            LOG.debug("Thread started.");
+        }
+
         try {
             final EmbeddedDownload ed = new EmbeddedDownload();
             ed.setBrokerPool(brokerPool);
             ed.stream(xmldbURL, bos, subject);
-            
-        } catch (IOException ex) {
-            logger.error(ex);
+        } catch (final IOException ex) {
+            LOG.error(ex);
             
         } finally {
             try { // NEEDED!
                 bos.close();
             } catch (final IOException ex) {
-                logger.debug(ex);
+                LOG.warn(ex);
             }
-            logger.debug("Thread stopped." );
+
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("Thread stopped.");
+            }
         }
     }
 

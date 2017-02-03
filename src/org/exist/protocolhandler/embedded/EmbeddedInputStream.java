@@ -33,21 +33,19 @@ import org.apache.logging.log4j.Logger;
 
 import org.exist.protocolhandler.xmldb.XmldbURL;
 import org.exist.storage.BrokerPool;
-import org.exist.storage.io.BlockingInputStream;
-import org.exist.storage.io.BlockingOutputStream;
 
 /**
- * Read document from embedded database as a (input)stream.
+ * Read document from embedded database as an InputStream
  *
  * @author Dannes Wessels
  */
 public class EmbeddedInputStream extends InputStream {
     
-    private final static Logger logger = LogManager.getLogger(EmbeddedInputStream.class);
+    private static final Logger LOG = LogManager.getLogger(EmbeddedInputStream.class);
     
-    private PipedInputStream  bis;
-    private PipedOutputStream bos;
-    private EmbeddedDownloadThread rt;
+    private final PipedInputStream  bis;
+    private final PipedOutputStream bos;
+    private final EmbeddedDownloadThread rt;
     
     /**
      *  Constructor of EmbeddedInputStream. 
@@ -55,44 +53,46 @@ public class EmbeddedInputStream extends InputStream {
      * @param xmldbURL Location of document in database.
      * @throws MalformedURLException Thrown for illegalillegal URLs.
      */
-    public EmbeddedInputStream(XmldbURL xmldbURL) throws IOException {
-        
+    public EmbeddedInputStream(final XmldbURL xmldbURL) throws IOException {
         this(null, xmldbURL);
     }
 
-        /**
+    /**
      *  Constructor of EmbeddedInputStream.
      *
      * @param xmldbURL Location of document in database.
      * @throws MalformedURLException Thrown for illegalillegal URLs.
      */
-    public EmbeddedInputStream(BrokerPool brokerPool, XmldbURL xmldbURL) throws IOException {
+    public EmbeddedInputStream(final BrokerPool brokerPool, final XmldbURL xmldbURL) throws IOException {
 
-        logger.debug("Initializing EmbeddedInputStream");
+        if(LOG.isDebugEnabled()) {
+            LOG.debug("Initializing EmbeddedInputStream");
+        }
 
-        bis = new PipedInputStream(2048);
-        bos = new PipedOutputStream(bis);
+        this.bis = new PipedInputStream(4096);
+        this.bos = new PipedOutputStream(bis);
+        this.rt = new EmbeddedDownloadThread(brokerPool, xmldbURL , bos);
 
-        rt = new EmbeddedDownloadThread(brokerPool, xmldbURL , bos);
+        if(LOG.isDebugEnabled()) {
+            LOG.debug("Initializing EmbeddedInputStream done");
+        }
 
         rt.start();
-
-        logger.debug("Initializing EmbeddedInputStream done");
     }
     
     
     @Override
-    public int read(byte[] b, int off, int len) throws IOException {
+    public int read(final byte[] b, final int off, final int len) throws IOException {
         return bis.read(b, off, len);
     }
     
     @Override
-    public int read(byte[] b) throws IOException {
+    public int read(final byte[] b) throws IOException {
         return bis.read(b, 0, b.length);
     }
     
     @Override
-    public long skip(long n) throws IOException {
+    public long skip(final long n) throws IOException {
         return bis.skip(n);
     }
     
@@ -103,7 +103,6 @@ public class EmbeddedInputStream extends InputStream {
     
     @Override
     public int read() throws IOException {
-        
         return bis.read();
     }
 
@@ -116,5 +115,4 @@ public class EmbeddedInputStream extends InputStream {
     public int available() throws IOException {
         return bis.available();
     }
-
 }
