@@ -1,6 +1,7 @@
 Building eXist from Source
 --------------------------
-eXist itself is written in Java 8. The build system is [Apache Ant](http://ant.apache.org/ "The Apache Ant Project"), which is provided with the source code.
+
+eXist itself is written in Java 8. The build system is [Apache Ant](http://ant.apache.org/ "The Apache Ant Project"), which is provided with the source code. If you're not familiar with Git, we recommend [this excellent online interactive tutorial](http://try.github.io).
 
 To build eXist:
 

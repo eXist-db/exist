@@ -12,8 +12,5 @@ If you're looking to work with the eXist source code, you've come to the right p
 If you're looking for help or discussion, visit the eXist community [mailing lists](http://www.exist-db.org/exist/apps/doc/getting-help.xml "eXist Mailing Lists") or consider purchasing the [eXist book](http://www.jdoqocy.com/click-7654993-11290546?sid=&url=http%3A%2F%2Fshop.oreilly.com%2Fproduct%2F0636920026525.do%3Fcmp%3Daf-webplatform-books-videos-product_cj_auwidget636_0636920026525_%25zp) from O'Reilly.
 
 
-Information for Developers
---------------------------
-If you wish to work on the eXist source code we're now using [Git](http://git-scm.org "Git SCM") (and [GitHub](http://www.github.com)) for our source code management. If you're not familiar with Git, we recommend [this excellent online interactive tutorial](http://try.github.io).
 
 
