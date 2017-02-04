@@ -169,7 +169,7 @@ public class RangeQueryRewriter extends QueryRewriter {
         return null;
     }
 
-    protected static RangeIndex.Operator getOperator(Expression expr) {
+    public static RangeIndex.Operator getOperator(Expression expr) {
         if (expr instanceof InternalFunctionCall) {
             InternalFunctionCall fcall = (InternalFunctionCall) expr;
             Function function = fcall.getFunction();

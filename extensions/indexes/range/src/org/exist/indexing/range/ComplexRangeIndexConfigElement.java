@@ -27,6 +27,7 @@ import org.apache.lucene.analysis.Analyzer;
 import org.exist.dom.QName;
 import org.exist.storage.NodePath;
 import org.exist.util.DatabaseConfigurationException;
+import org.exist.xquery.Predicate;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -66,7 +67,7 @@ public class ComplexRangeIndexConfigElement extends RangeIndexConfigElement {
                     RangeIndexConfigField field = new RangeIndexConfigField(path, (Element) child, namespaces);
                     fields.put(field.getName(), field);
                 } else if (CONDITION_ELEMENT.equals(child.getLocalName())){
-                    conditions.add(new RangeIndexConfigCondition((Element) child, path));
+                    conditions.add(new RangeIndexConfigAttributeCondition((Element) child, path));
                 } else if (FILTER_ELEMENT.equals(child.getLocalName())) {
                     analyzer.addFilter((Element) child);
                 } else {
@@ -162,9 +163,9 @@ public class ComplexRangeIndexConfigElement extends RangeIndexConfigElement {
         return true;
     }
 
-    public boolean findCondition(QName lhe, String rhe, RangeIndex.Operator operator) {
+    public boolean findCondition(Predicate predicate) {
         for (RangeIndexConfigCondition condition : conditions) {
-            if (condition.find(lhe, rhe, operator))
+            if (condition.find(predicate))
                 return true;
         }
 
