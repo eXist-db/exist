@@ -14,9 +14,11 @@
 
  <target name="download-3rd-party" description="Download thirdparty jar files">
   <taskdef name="fetch" classname="nl.ow.dilemma.ant.fetch.FetchTask" classpathref="classpath.core"/>
+
+  <mkdir dir="${lib.dir}"/>
   
   <fetch classpathref="classpath.core" dest="${lib.dir}" usecache="true"
-   url="http://lists.refractions.net/m2/org/opengis/geoapi-nogenerics/2.1.1/geoapi-nogenerics-2.1.1.jar"
+   url="http://download.osgeo.org/webdav/geotools/org/opengis/geoapi-nogenerics/2.1.1/geoapi-nogenerics-2.1.1.jar"
    classname="org.opengis.geometry.Geometry"/>
   <fetch classpathref="classpath.core" dest="${lib.dir}" usecache="true"
    url="http://download.osgeo.org/webdav/geotools/org/geotools/gt2-api/2.4.5/gt2-api-2.4.5.jar"
@@ -49,7 +51,7 @@
    classname="javax.vecmath.GVector"/>
   
   <fetch classpathref="classpath.core" dest="${lib.dir}" 
-   url="http://sourceforge.net/projects/hsqldb/files/hsqldb/hsqldb_1_8_1/hsqldb_1_8_1_3.zip/download" classname="org.hsqldb.Database">
+   url="http://freefr.dl.sourceforge.net/project/hsqldb/hsqldb/hsqldb_1_8_1/hsqldb_1_8_1_3.zip" classname="org.hsqldb.Database">
    
    <patternset>
     <include name="**/hsqldb*.jar"/>

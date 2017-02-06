@@ -34,17 +34,15 @@ import java.util.TreeMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.collections.Collection;
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.ExtArrayNodeSet;
-import org.exist.dom.persistent.NodeProxy;
-import org.exist.dom.persistent.NodeSet;
-import org.exist.dom.persistent.StoredNode;
+import org.exist.dom.persistent.*;
 import org.exist.indexing.spatial.AbstractGMLJDBCIndex.SpatialOperator;
 import org.exist.numbering.DLN;
 import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
+import org.exist.storage.NodePath;
 import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.QueryRewriter;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.BooleanValue;
@@ -393,7 +391,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
             " FROM " + GMLHSQLIndex.TABLE_NAME + 
             " WHERE DOCUMENT_URI = ? AND NODE_ID_UNITS = ? AND NODE_ID = ?;"
         );
-        ps.setString(1, p.getDocument().getURI().toString());
+        ps.setString(1, p.getOwnerDocument().getURI().toString());
         ps.setInt(2, p.getNodeId().units());
         byte[] bytes = new byte[p.getNodeId().size()];
         p.getNodeId().serialize(bytes, 0);
@@ -498,7 +496,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
             " FROM " + GMLHSQLIndex.TABLE_NAME + 
             " WHERE DOCUMENT_URI = ? AND NODE_ID_UNITS = ? AND NODE_ID = ?"
         );
-        ps.setString(1, p.getDocument().getURI().toString());
+        ps.setString(1, p.getOwnerDocument().getURI().toString());
         ps.setInt(2, p.getNodeId().units());
         byte[] bytes = new byte[p.getNodeId().size()];
         p.getNodeId().serialize(bytes, 0);
@@ -731,7 +729,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
                     return false;
                 }
                 NodeId nodeId = new DLN(rs.getInt("NODE_ID_UNITS"), rs.getBytes("NODE_ID"), 0);
-                StoredNode node = broker.objectWith(new NodeProxy(doc, nodeId));
+                IStoredNode node = broker.objectWith(new NodeProxy(doc, nodeId));
                 if (node == null) {
                     LOG.info("Node " + nodeId + "doesn't exist");
                     return false;
@@ -768,5 +766,15 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
             if (ps != null)
                 ps.close();
         }
+    }
+
+    @Override
+    public <T extends IStoredNode> IStoredNode getReindexRoot(IStoredNode<T> node, NodePath path, boolean insert, boolean includeSelf) {
+        return null;
+    }
+
+    @Override
+    public QueryRewriter getQueryRewriter(XQueryContext context) {
+        return null;
     }
 }
