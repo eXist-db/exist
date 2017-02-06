@@ -139,12 +139,11 @@ public class EmbeddedDownload {
                         }
                     }
                 } finally {
-                    if(resource != null){
-                        resource.getUpdateLock().release(LockMode.READ_LOCK);
-                    }
-
                     if(collection != null){
                         collection.release(LockMode.READ_LOCK);
+                    }
+                    if(resource != null){
+                        resource.getUpdateLock().release(LockMode.READ_LOCK);
                     }
                     LOG.debug("End document download");
                 }
