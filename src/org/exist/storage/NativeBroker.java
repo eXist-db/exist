@@ -687,138 +687,196 @@ public class NativeBroker extends DBBroker {
      * @return A tuple whose first boolean value is set to true if the
      * collection was created, or false if the collection already existed
      */
-    private Tuple2<Boolean, Collection> getOrCreateCollectionExplicit(final Txn transaction, XmldbURI name, final Optional<Tuple2<Permission, Long>> creationAttributes) throws PermissionDeniedException, IOException, TriggerException {
-        name = prepend(name.normalizeCollectionPath());
+    private Tuple2<Boolean, Collection> getOrCreateCollectionExplicit(final Txn transaction, final XmldbURI path, final Optional<Tuple2<Permission, Long>> creationAttributes) throws PermissionDeniedException, IOException, TriggerException {
+		final XmldbURI collectionUri = prepend(path.normalizeCollectionPath());
 
         final CollectionCache collectionsCache = pool.getCollectionsCache();
 
-        boolean created = false;
-        try(final ManagedLock collectionsCacheLock = lockCollectionCache(collectionsCache)) {
-            try {
-                //TODO : resolve URIs !
-                final XmldbURI[] segments = name.getPathSegments();
-                XmldbURI path = XmldbURI.ROOT_COLLECTION_URI;
-                Collection sub;
-                Collection current = getCollection(XmldbURI.ROOT_COLLECTION_URI);
-                if(current == null) {
+        try {
 
-                    if(LOG.isDebugEnabled()) {
-                        LOG.debug("Creating root collection '" + XmldbURI.ROOT_COLLECTION_URI + "'");
-                    }
-
-                    final CollectionTrigger trigger = new CollectionTriggers(this);
-                    trigger.beforeCreateCollection(this, transaction, XmldbURI.ROOT_COLLECTION_URI);
-
-                    current = new MutableCollection(this, XmldbURI.ROOT_COLLECTION_URI);
-                    current.setId(getNextCollectionId(transaction));
-
-                    if(transaction != null) {
-                        transaction.acquireLock(current.getLock(), LockMode.WRITE_LOCK);
-                    }
-
-                    //TODO : acquire lock manually if transaction is null ?
-                    saveCollection(transaction, current);
-                    created = true;
-
-                    //adding to make it available @ afterCreateCollection
-                    collectionsCache.add(current);
-
-                    trigger.afterCreateCollection(this, transaction, current);
-
-                    //import an initial collection configuration
-                    try {
-                        final String initCollectionConfig = readInitCollectionConfig();
-                        if(initCollectionConfig != null) {
-                            CollectionConfigurationManager collectionConfigurationManager = pool.getConfigurationManager();
-                            if(collectionConfigurationManager == null) {
-                                if(pool.getConfigurationManager() == null) {
-                                    throw new IllegalStateException();
-                                    //might not yet have been initialised
-                                    //pool.initCollectionConfigurationManager(this);
-                                }
-                                collectionConfigurationManager = pool.getConfigurationManager();
-                            }
-
-                            if(collectionConfigurationManager != null) {
-                                collectionConfigurationManager.addConfiguration(transaction, this, current, initCollectionConfig);
-                            }
-                        }
-                    } catch(final CollectionConfigurationException cce) {
-                        LOG.error("Could not load initial collection configuration for /db: " + cce.getMessage(), cce);
+            // 1) optimize for the existence of the Collection in the cache
+            try (final ManagedCollectionLock collectionLock = readLockCollection(collectionUri)) {
+                try (final ManagedLock collectionsCacheLock = lockCollectionCache(collectionsCache)) {
+                    final Collection collection = collectionsCache.get(collectionUri);
+                    if (collection != null) {
+                        return new Tuple2<>(false, collection);
                     }
                 }
+            }
 
-                for(int i = 1; i < segments.length; i++) {
-                    final XmldbURI temp = segments[i];
-                    path = path.append(temp);
-                    if(current.hasChildCollection(this, temp)) {
-                        current = getCollection(path);
-                        if(current == null) {
-                            LOG.error("Collection '{}' found in Collection#subCollections but is missing from collections.dbx!", path);
+            // 2) try and read the Collection from disk, if not on disk then create it
+            try (final ManagedCollectionLock collectionLock = writeLockCollection(null, collectionUri, true)) {
+
+                // check for preemption between READ -> WRITE lock, is the Collection now in the cache?
+                try (final ManagedLock collectionsCacheLock = lockCollectionCache(collectionsCache)) {
+                    final Collection collection = collectionsCache.get(collectionUri);
+                    if (collection != null) {
+                        return new Tuple2<>(false, collection);
+                    }
+
+                    // is the parent Collection in the cache?
+                    final XmldbURI parentCollectionUri = collectionUri.removeLastSegment();
+                    if (parentCollectionUri == XmldbURI.EMPTY_URI) {
+                        // this is the root collection, so no parent, is the Collection present on disk?
+                        final Collection loadedRootCollection = loadCollection(collectionUri, BFile.UNKNOWN_ADDRESS);
+
+                        if (loadedRootCollection != null) {
+                            // loaded it from disk
+
+                            // add it to the cache and return it
+                            collectionsCache.add(loadedRootCollection);
+                            return new Tuple2<>(false, loadedRootCollection);
+                        } else {
+                            // not on disk, create the root collection
+                            final Collection rootCollection = createCollection(transaction, null, collectionUri, collectionsCache, Optional.empty());
+
+                            //import an initial collection configuration
+                            try {
+                                final String initCollectionConfig = readInitCollectionConfig();
+                                if(initCollectionConfig != null) {
+                                    CollectionConfigurationManager collectionConfigurationManager = pool.getConfigurationManager();
+                                    if(collectionConfigurationManager == null) {
+                                        if(pool.getConfigurationManager() == null) {
+                                            throw new IllegalStateException();
+                                            //might not yet have been initialised
+                                            //pool.initCollectionConfigurationManager(this);
+                                        }
+                                        collectionConfigurationManager = pool.getConfigurationManager();
+                                    }
+
+                                    if(collectionConfigurationManager != null) {
+                                        collectionConfigurationManager.addConfiguration(transaction, this, rootCollection, initCollectionConfig);
+                                    }
+                                }
+                            } catch(final CollectionConfigurationException cce) {
+                                LOG.error("Could not load initial collection configuration for /db: " + cce.getMessage(), cce);
+                            }
+
+                            return new Tuple2<>(true, rootCollection);
                         }
                     } else {
+                        final Collection parentCollection = collectionsCache.get(parentCollectionUri);
+                        if (parentCollection != null) {
+                            // parent collection is in cache, is our Collection present on disk?
+                            final Collection loadedCollection = loadCollection(collectionUri, BFile.UNKNOWN_ADDRESS);
 
-                        if(isReadOnly()) {
-                            throw new IOException(DATABASE_IS_READ_ONLY);
+                            if (loadedCollection != null) {
+                                // loaded it from disk
+
+                                // add it to the cache and return it
+                                collectionsCache.add(loadedCollection);
+                                return new Tuple2<>(false, loadedCollection);
+
+                            } else {
+                                // not on disk, create the collection
+                                return new Tuple2<>(true, createCollection(transaction, parentCollection, collectionUri, collectionsCache, creationAttributes));
+                            }
+
+                        } else {
+                            // no parent collection in cache so we need to call this function for the parent Collection
+                            final Tuple2<Boolean, Collection> newOrExistingParentCollection = getOrCreateCollectionExplicit(transaction, parentCollectionUri, creationAttributes);
+
+                            // is our Collection present on disk?
+                            final Collection loadedCollection = loadCollection(collectionUri, BFile.UNKNOWN_ADDRESS);
+                            if (loadedCollection != null) {
+                                // loaded it from disk
+
+                                if (newOrExistingParentCollection._1) {
+                                    // new parent Collection... ideally this should never happen unless a database inconsistency
+                                    LOG.warn("The Collection already existed on disk: {}, but one of the ancestor Collections did not! Will be re-linked...");
+
+                                    // add it to the parent
+                                    parentCollection.addCollection(this, loadedCollection);
+                                    saveCollection(transaction, parentCollection);
+
+                                    // add it to the cache and return it
+                                    collectionsCache.add(loadedCollection);
+                                    return new Tuple2<>(false, loadedCollection);
+
+                                } else {
+                                    // existing parent, add it to the cache and return it
+                                    collectionsCache.add(loadedCollection);
+                                    return new Tuple2<>(false, loadedCollection);
+                                }
+
+                            } else {
+                                // not on disk, create the collection
+                                return new Tuple2<>(true, createCollection(transaction, newOrExistingParentCollection._2, collectionUri, collectionsCache, creationAttributes));
+                            }
                         }
-
-                        if(!current.getPermissionsNoLock().validate(getCurrentSubject(), Permission.WRITE)) {
-                            LOG.error("Permission denied to create collection '" + path + "'");
-                            throw new PermissionDeniedException("Account '" + getCurrentSubject().getName() + "' not allowed to write to collection '" + current.getURI() + "'");
-                        }
-
-                        if(!current.getPermissionsNoLock().validate(getCurrentSubject(), Permission.EXECUTE)) {
-                            LOG.error("Permission denied to create collection '" + path + "'");
-                            throw new PermissionDeniedException("Account '" + getCurrentSubject().getName() + "' not allowed to execute to collection '" + current.getURI() + "'");
-                        }
-
-                        if(current.hasDocument(this, path.lastSegment())) {
-                            LOG.error("Collection '" + current.getURI() + "' have document '" + path.lastSegment() + "'");
-                            throw new PermissionDeniedException("Collection '" + current.getURI() + "' have document '" + path.lastSegment() + "'.");
-                        }
-
-                        if(LOG.isDebugEnabled()) {
-                            LOG.debug("Creating collection '" + path + "'...");
-                        }
-
-                        final CollectionTrigger trigger = new CollectionTriggers(this, current);
-                        trigger.beforeCreateCollection(this, transaction, path);
-
-                        final XmldbURI subPath = path;
-                        sub = creationAttributes.map(attrs -> new MutableCollection(this, subPath, attrs._1, attrs._2)).orElseGet(() -> new MutableCollection(this, subPath));
-                        //inherit the group to the sub-collection if current collection is setGid
-                        if (current.getPermissions().isSetGid()) {
-                            sub.getPermissions().setGroupFrom(current.getPermissions()); //inherit group
-                            sub.getPermissions().setSetGid(true); //inherit setGid bit
-                        }
-                        sub.setId(getNextCollectionId(transaction));
-
-                        if(transaction != null) {
-                            transaction.acquireLock(sub.getLock(), LockMode.WRITE_LOCK);
-                        }
-
-                        //TODO : acquire lock manually if transaction is null ?
-                        current.addCollection(this, sub);
-                        saveCollection(transaction, current);
-                        created = true;
-
-                        //adding to make it available @ afterCreateCollection
-                        collectionsCache.add(sub);
-
-                        trigger.afterCreateCollection(this, transaction, sub);
-
-                        current = sub;
                     }
                 }
-                return new Tuple2<>(created, current);
-            } catch(final LockException e) {
-                LOG.error("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()));
-                return null;
-            } catch(final ReadOnlyException e) {
-                throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
             }
+
+        } catch(final ReadOnlyException e) {
+            throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
         } catch(final LockException e) {
             throw new IOException(e);
+        }
+    }
+
+    private Collection createCollection(final Txn transaction, @Nullable final Collection parentCollection,
+            final XmldbURI collectionUri, final CollectionCache collectionCache,
+            final Optional<Tuple2<Permission, Long>> creationAttributes)
+            throws TriggerException, ReadOnlyException, PermissionDeniedException, LockException, IOException {
+
+        final CollectionTrigger trigger;
+        if(parentCollection == null) {
+            trigger = new CollectionTriggers(this);
+        } else {
+            trigger = new CollectionTriggers(this, parentCollection);
+        }
+        trigger.beforeCreateCollection(this, transaction, collectionUri);
+
+        final Collection collectionObj = createCollectionObject(transaction, parentCollection, collectionUri, creationAttributes);
+        saveCollection(transaction, collectionObj);
+
+        if(parentCollection != null) {
+            parentCollection.addCollection(this, collectionObj);
+            saveCollection(transaction, parentCollection);
+        }
+
+        collectionCache.add(collectionObj);
+
+        trigger.afterCreateCollection(this, transaction, collectionObj);
+
+        return collectionObj;
+    }
+
+    private Collection createCollectionObject(final Txn transaction, @Nullable final Collection parentCollection,
+            final XmldbURI collectionUri, final Optional<Tuple2<Permission, Long>> creationAttributes) throws ReadOnlyException, PermissionDeniedException {
+
+        final Collection collection = creationAttributes.map(attrs -> new MutableCollection(this, collectionUri, attrs._1, attrs._2)).orElseGet(() -> new MutableCollection(this, collectionUri));
+        collection.setId(getNextCollectionId(transaction));
+
+        //inherit the group to the sub-collection if current collection is setGid
+        if (parentCollection != null && parentCollection.getPermissions().isSetGid()) {
+            collection.getPermissions().setGroupFrom(parentCollection.getPermissions()); //inherit group
+            collection.getPermissions().setSetGid(true); //inherit setGid bit
+        }
+
+        return collection;
+    }
+
+    /**
+     * Loads a Collection from disk
+     *
+     * @return The Collection object loaded from disk, or null if the record does not exist on disk
+     */
+    private @Nullable Collection loadCollection(final XmldbURI collectionUri, final long address) throws PermissionDeniedException, LockException, IOException {
+        try(final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.READ_LOCK)) {
+            VariableByteInput is;
+            if (address == BFile.UNKNOWN_ADDRESS) {
+                final Value key = new CollectionStore.CollectionKey(collectionUri.toString());
+                is = collectionsDb.getAsStream(key);
+            } else {
+                is = collectionsDb.getAsStream(address);
+            }
+            if (is == null) {
+                return null;
+            }
+
+            return MutableCollection.load(this, collectionUri, is);
         }
     }
 
@@ -1177,6 +1235,7 @@ public class NativeBroker extends DBBroker {
                 } else {
                     newDoc = new BinaryDocument(pool, destCollection._2, child.getFileURI());
                 }
+
                 newDoc.copyOf(this, child, oldDoc);
                 newDoc.setDocId(getNextResourceId(transaction, destination));
 
@@ -1707,6 +1766,19 @@ public class NativeBroker extends DBBroker {
         //TODO(AR) at the moment we always exclusively lock the CollectionCache, this can be relaxed once hierarchical Collection locking is in place
         //TODO(AR) once hierarchical locking is in place we don't need to lock the collection cache explicitly i.e. externally, it can become a ConcurrentHashMap or Caffeine
         return ManagedLock.acquire(collectionCache.getLock(), LockMode.WRITE_LOCK);
+    }
+
+    /**
+     * Acquires a READ lock on a Collection
+     *
+     * @param collectionUri The uri of the collection to lock
+     *
+     * @return A managed lock for the Collection
+     */
+    private ManagedCollectionLock readLockCollection(final XmldbURI collectionUri) throws LockException {
+        final LockManager lockManager = getBrokerPool().getLockManager();
+        return lockManager.acquireCollectionReadLock(collectionUri);
+
     }
 
     /**
