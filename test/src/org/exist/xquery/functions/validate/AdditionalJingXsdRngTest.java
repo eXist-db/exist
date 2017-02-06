@@ -21,10 +21,10 @@
  */
 package org.exist.xquery.functions.validate;
 
+import org.exist.test.ExistXmldbEmbeddedServer;
 import org.junit.*;
 import static org.junit.Assert.*;
 
-import org.exist.test.EmbeddedExistTester;
 import org.exist.xquery.XPathException;
 
 import org.xmldb.api.base.ResourceSet;
@@ -36,11 +36,14 @@ import org.xmldb.api.base.XMLDBException;
  * @author jim.fuller@webcomposite.com
  * @author dizzzz@exist-db.org
  */
-public class AdditionalJingXsdRngTest extends EmbeddedExistTester {
+public class AdditionalJingXsdRngTest {
+
+    @ClassRule
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
 
     @Test
     public void testValidateXSDwithJing() throws XMLDBException {
-        String query = "let $v := <doc>\n" +
+        final String query = "let $v := <doc>\n" +
                 "\t<title>Title</title>\n" +
                 "\t<p>Some paragraph.</p>\n" +
                 "      </doc>\n" +
@@ -61,14 +64,14 @@ public class AdditionalJingXsdRngTest extends EmbeddedExistTester {
                 "\n" +
                 "\tvalidation:jing($v,$schema)";
 
-        ResourceSet result = xpxqService.query(query);
-        String r = (String) result.getResource(0).getContent();
+        final ResourceSet result = existEmbeddedServer.executeQuery(query);
+        final String r = (String) result.getResource(0).getContent();
         assertEquals("true", r);
     }
 
     @Test
     public void testValidateXSDwithJing_invalid() throws XMLDBException {
-        String query = "let $v := <doc>\n" +
+        final String query = "let $v := <doc>\n" +
                 "\t<title1>Title</title1>\n" +
                 "\t<p>Some paragraph.</p>\n" +
                 "      </doc>\n" +
@@ -89,14 +92,14 @@ public class AdditionalJingXsdRngTest extends EmbeddedExistTester {
                 "\n" +
                 "\tvalidation:jing($v,$schema)";
 
-        ResourceSet result = executeQuery(query);
-        String r = (String) result.getResource(0).getContent();
+        final ResourceSet result = existEmbeddedServer.executeQuery(query);
+        final String r = (String) result.getResource(0).getContent();
         assertEquals("false", r);
     }
 
     @Test
     public void testValidateRNGwithJing() throws XPathException, XMLDBException {
-        String query = "let $v := <doc>\n" +
+        final String query = "let $v := <doc>\n" +
                 "\t<title>Title</title>\n" +
                 "\t<p>Some paragraph.</p>\n" +
                 "      </doc>\n" +
@@ -129,14 +132,14 @@ public class AdditionalJingXsdRngTest extends EmbeddedExistTester {
                 "\n" +
                 "\tvalidation:jing($v,$schema)";
 
-        ResourceSet result = executeQuery(query);
-        String r = (String) result.getResource(0).getContent();
+        final ResourceSet result = existEmbeddedServer.executeQuery(query);
+        final String r = (String) result.getResource(0).getContent();
         assertEquals("true", r);
     }
 
     @Test
     public void testValidateRNGwithJing_invalid() throws XMLDBException {
-        String query = "let $v := <doc>\n" +
+        final String query = "let $v := <doc>\n" +
                 "\t<title1>Title</title1>\n" +
                 "\t<p>Some paragraph.</p>\n" +
                 "      </doc>\n" +
@@ -169,26 +172,19 @@ public class AdditionalJingXsdRngTest extends EmbeddedExistTester {
                 "\n" +
                 "\tvalidation:jing($v,$schema)";
 
-        ResourceSet result = executeQuery(query);
-        String r = (String) result.getResource(0).getContent();
+        final ResourceSet result = existEmbeddedServer.executeQuery(query);
+        final String r = (String) result.getResource(0).getContent();
         assertEquals("false", r);
     }
 
     @Test
     @Ignore("Looks good, but memory issue")
-    public void repeatTests() {
+    public void repeatTests() throws XMLDBException, XPathException {
         for (int i = 0; i < 1000; i++) {
-            try {
-                testValidateRNGwithJing();
-                testValidateRNGwithJing_invalid();
-                testValidateXSDwithJing();
-                testValidateXSDwithJing_invalid();
-
-            } catch (Exception ex) {
-                fail(ex.getMessage());
-                ex.printStackTrace();
-            }
-
+            testValidateRNGwithJing();
+            testValidateRNGwithJing_invalid();
+            testValidateXSDwithJing();
+            testValidateXSDwithJing_invalid();
         }
     }
 }

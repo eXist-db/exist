@@ -21,13 +21,13 @@
  */
 package org.exist.xquery.functions.validate;
 
+import org.exist.test.ExistXmldbEmbeddedServer;
 import org.junit.*;
 import static org.junit.Assert.*;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 import org.custommonkey.xmlunit.exceptions.XpathException;
 
-import org.exist.test.EmbeddedExistTester;
 import org.exist.xquery.XPathException;
 
 import org.xmldb.api.base.ResourceSet;
@@ -42,7 +42,10 @@ import org.xmldb.api.base.XMLDBException;
  * @author jim.fuller@webcomposite.com
  * @author dizzzz@exist-db.org
  */
-public class JingOnvdlTest extends EmbeddedExistTester {
+public class JingOnvdlTest {
+
+    @ClassRule
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
 
     private final static String RNG_DATA1 =
             "<element  name=\'Book\' xmlns='http://relaxng.org/ns/structure/1.0'  ns=\'http://www.books.org\'> " +
@@ -73,48 +76,36 @@ public class JingOnvdlTest extends EmbeddedExistTester {
             "<Publisher>Anchor Books</Publisher>" +
             "</Book>";
 
-    public JingOnvdlTest() {
-    }
-
     @Before
     public void setUp() throws Exception {
+        final String query = "xmldb:create-collection('xmldb:exist:///db','validate-test')";
+		existEmbeddedServer.executeQuery(query);
 
-        String query = "xmldb:create-collection('xmldb:exist:///db','validate-test')";
-        @SuppressWarnings("unused")
-		ResourceSet result = executeQuery(query);
+        final String query1 = "xmldb:store('/db/validate-test', 'test.nvdl'," + NVDL_DATA1 + ")";
+        existEmbeddedServer.executeQuery(query1);
 
-        String query1 = "xmldb:store('/db/validate-test', 'test.nvdl'," + NVDL_DATA1 + ")";
-        @SuppressWarnings("unused")
-        ResourceSet result1 = executeQuery(query1);
+        final String query2 = "xmldb:store('/db/validate-test', 'Book.rng'," + RNG_DATA1 + ")";
+        existEmbeddedServer.executeQuery(query2);
 
-        String query2 = "xmldb:store('/db/validate-test', 'Book.rng'," + RNG_DATA1 + ")";
-        @SuppressWarnings("unused")
-        ResourceSet result2 = executeQuery(query2);
+        final String data1 = "xmldb:store('/db/validate-test', 'valid.xml'," + XML_DATA1 + ")";
+        existEmbeddedServer.executeQuery(data1);
 
-        String data1 = "xmldb:store('/db/validate-test', 'valid.xml'," + XML_DATA1 + ")";
-        @SuppressWarnings("unused")
-        ResourceSet result3 = executeQuery(data1);
-
-        String data2 = "xmldb:store('/db/validate-test', 'invalid.xml'," + XML_DATA2 + ")";
-        @SuppressWarnings("unused")
-        ResourceSet result4 = executeQuery(data2);
+        final String data2 = "xmldb:store('/db/validate-test', 'invalid.xml'," + XML_DATA2 + ")";
+        existEmbeddedServer.executeQuery(data2);
     }
 
     @Test
     public void onvdl_valid() throws XPathException, IOException, XpathException, SAXException, XMLDBException {
-
-        String query = "let $a := " + XML_DATA1 +
+        final String query = "let $a := " + XML_DATA1 +
                 "let $b := xs:anyURI('/db/validate-test/test.nvdl')" +
                 "return " +
                 "validation:jing-report($a,$b)";
-
         executeAndEvaluate(query,"valid");
     }
 
     @Test
     public void onvdl_invalid() throws XPathException, IOException, XpathException, SAXException, XMLDBException {
-
-        String query = "let $a := <test/>" +
+        final String query = "let $a := <test/>" +
                     "let $b := xs:anyURI('/db/validate-test/test.nvdl')" +
                     "return " +
                     "validation:jing-report($a,$b)";
@@ -124,58 +115,53 @@ public class JingOnvdlTest extends EmbeddedExistTester {
 
     @Test
     public void onvdl_stored_valid() throws XMLDBException, SAXException, XpathException, IOException {
-        String query = "validation:jing-report( " +
+        final String query = "validation:jing-report( " +
                 "doc('/db/validate-test/valid.xml'), " +
                 "doc('/db/validate-test/test.nvdl') )";
-
         executeAndEvaluate(query,"valid");
     }
 
     @Test
     public void onvdl_stored_invalid() throws XMLDBException, SAXException, XpathException, IOException {
-        String query = "validation:jing-report( " +
+        final String query = "validation:jing-report( " +
                 "doc('/db/validate-test/invalid.xml'), " +
                 "doc('/db/validate-test/test.nvdl') )";
-
         executeAndEvaluate(query,"invalid");
     }
 
     @Test
     public void onvdl_anyuri_valid() throws XMLDBException, SAXException, XpathException, IOException {
-        String query = "validation:jing-report( " +
+        final String query = "validation:jing-report( " +
                 "xs:anyURI('xmldb:exist:///db/validate-test/valid.xml'), " +
                 "xs:anyURI('xmldb:exist:///db/validate-test/test.nvdl') )";
-
         executeAndEvaluate(query,"valid");
     }
 
     @Test
     public void onvdl_anyuri_invalid() throws XMLDBException, SAXException, XpathException, IOException {
-        String query = "validation:jing-report( " +
+        final String query = "validation:jing-report( " +
                 "xs:anyURI('xmldb:exist:///db/validate-test/invalid.xml'), " +
                 "xs:anyURI('xmldb:exist:///db/validate-test/test.nvdl') )";
-
         executeAndEvaluate(query,"invalid");
     }
 
     @Test
     public void onvdl_anyuri_valid_boolean() throws XMLDBException {
-        String query = "validation:jing( " +
+        final String query = "validation:jing( " +
                 "xs:anyURI('xmldb:exist:///db/validate-test/valid.xml'), " +
                 "xs:anyURI('xmldb:exist:///db/validate-test/test.nvdl') )";
 
-        ResourceSet results = executeQuery(query);
+        final ResourceSet results = existEmbeddedServer.executeQuery(query);
         assertEquals(1, results.getSize());
         assertEquals(query, "true",
                 results.getResource(0).getContent().toString());
     }
 
-    private void executeAndEvaluate(String query, String expectedValue) throws XMLDBException, SAXException, IOException, XpathException {
-        ResourceSet results = executeQuery(query);
+    private void executeAndEvaluate(final String query, final String expectedValue) throws XMLDBException, SAXException, IOException, XpathException {
+        final ResourceSet results = existEmbeddedServer.executeQuery(query);
         assertEquals(1, results.getSize());
 
-        String r = (String) results.getResource(0).getContent();
-
+        final String r = (String) results.getResource(0).getContent();
         assertXpathEvaluatesTo(expectedValue, "//status/text()", r);
     }
 }
