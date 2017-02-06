@@ -9,6 +9,26 @@ import org.exist.util.hashtable.ObjectHashSet;
  */
 public class XHTML5Writer extends XHTMLWriter {
 
+    protected final static ObjectHashSet<String> EMPTY_TAGS = new ObjectHashSet<>(31);
+    static {
+        //https://www.w3.org/TR/html5/syntax.html#void-elements
+        EMPTY_TAGS.add("area");
+        EMPTY_TAGS.add("base");
+        EMPTY_TAGS.add("br");
+        EMPTY_TAGS.add("col");
+        EMPTY_TAGS.add("embed");
+        EMPTY_TAGS.add("hr");
+        EMPTY_TAGS.add("img");
+        EMPTY_TAGS.add("input");
+        EMPTY_TAGS.add("keygen");
+        EMPTY_TAGS.add("link");
+        EMPTY_TAGS.add("meta");
+        EMPTY_TAGS.add("param");
+        EMPTY_TAGS.add("source");
+        EMPTY_TAGS.add("track");
+        EMPTY_TAGS.add("wbr");
+    }
+
     protected final static ObjectHashSet<String> XHTML_INLINE_TAGS = new ObjectHashSet<String>(31);
     
     static {
