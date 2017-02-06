@@ -25,55 +25,53 @@ import org.xmldb.api.base.XMLDBException;
 
 /**
  * Provides additional methods related to eXist's indexing system.
- * 
- * @author wolf
  *
+ * @author wolf
  */
 public interface IndexQueryService extends Service {
 
-	public void configureCollection(String configData) throws XMLDBException;
-	
+    void configureCollection(String configData) throws XMLDBException;
+
     /**
      * Reindex the current collection, i.e. the collection from which
      * this service has been retrieved.
-     * 
+     *
      * @throws XMLDBException
      */
-    public void reindexCollection() throws XMLDBException;
+    void reindexCollection() throws XMLDBException;
 
     /**
      * Reindex the documemy in the current collection, i.e. the collection from which
      * this service has been retrieved.
      *
      * @param name The name of the document
-     *
      * @throws XMLDBException
      */
     void reindexDocument(final String name) throws XMLDBException;
-    
+
     /**
      * Reindex the collection specified by its path.
-     * 
+     *
      * @param collectionPath
      * @throws XMLDBException
      * @deprecated Use XmldbURI version instead
      */
-    public void reindexCollection(String collectionPath) throws XMLDBException;
-    
+    void reindexCollection(String collectionPath) throws XMLDBException;
+
     /**
      * Reindex the collection specified by its path.
-     * 
+     *
      * @param collectionPath
      * @throws XMLDBException
      */
-    public void reindexCollection(XmldbURI collectionPath) throws XMLDBException;
-    
+    void reindexCollection(XmldbURI collectionPath) throws XMLDBException;
+
     /**
      * Returns frequency statistics on all elements and attributes contained in the
      * structure index for the current collection.
-     * 
+     *
      * @param inclusive
      * @throws XMLDBException
      */
-	public Occurrences[] getIndexedElements(boolean inclusive) throws XMLDBException;
+    Occurrences[] getIndexedElements(boolean inclusive) throws XMLDBException;
 }

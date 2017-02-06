@@ -32,22 +32,22 @@ import org.xmldb.api.base.XMLDBException;
  */
 public interface CollectionImpl extends Collection {
 
-    public boolean isRemoteCollection() throws XMLDBException;
-    
-	/**
-	 * Returns the time of creation of the collection.
-	 */
-	Date getCreationTime() throws XMLDBException;
+    boolean isRemoteCollection() throws XMLDBException;
 
-	/* Alternative methods, especially to be used from jsp */
-	public String[] getChildCollections() throws XMLDBException;
-	
-	public String[] getResources() throws XMLDBException;
-	
-	public void storeResource(Resource res, Date a, Date b) throws XMLDBException;
-	
-	public XmldbURI getPathURI();
-	
-	public void setTriggersEnabled(boolean triggersEnabled) throws XMLDBException;
-	
+    /**
+     * Returns the time of creation of the collection.
+     */
+    Date getCreationTime() throws XMLDBException;
+
+    /* Alternative methods, especially to be used from jsp */
+    String[] getChildCollections() throws XMLDBException;
+
+    String[] getResources() throws XMLDBException;
+
+    void storeResource(Resource res, Date a, Date b) throws XMLDBException;
+
+    XmldbURI getPathURI();
+
+    void setTriggersEnabled(boolean triggersEnabled) throws XMLDBException;
+
 }

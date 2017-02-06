@@ -32,34 +32,36 @@ import org.xmldb.api.base.XMLDBException;
  * An extension to BinaryResource interface, which adds the
  * common methods needed by LocalBinaryResource and RemoteBinaryResource,
  * so they can be streamlined.
- * @author jmfernandez
  *
+ * @author jmfernandez
  */
-public interface ExtendedResource
-{
+public interface ExtendedResource {
+
     /**
      * It returns an object representing the content, in the representation
      * which needs less memory.
      */
-    public Object getExtendedContent()  throws XMLDBException;
+    Object getExtendedContent() throws XMLDBException;
+
     /**
      * It returns an stream to the content, whichever it is its origin
      */
-    public InputStream getStreamContent()  throws XMLDBException;
+    InputStream getStreamContent() throws XMLDBException;
+
     /**
      * It returns the length of the content, whichever it is its origin
      */
-    public long getStreamLength()  throws XMLDBException;
+    long getStreamLength() throws XMLDBException;
 
     /**
      * It saves the resource to the local file given as input parameter.
      * Do NOT confuse with set content.
      */
-    public void getContentIntoAFile(Path localfile)  throws XMLDBException;
+    void getContentIntoAFile(Path localfile) throws XMLDBException;
 
     /**
      * It saves the resource to the local stream given as input parameter.
      * Do NOT confuse with set content.
      */
-    public void getContentIntoAStream(OutputStream os)  throws XMLDBException;
+    void getContentIntoAStream(OutputStream os) throws XMLDBException;
 }
