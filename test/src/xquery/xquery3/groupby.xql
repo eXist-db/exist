@@ -599,3 +599,12 @@ declare
 function groupby:recursive-groupby() {
     groupby:recursive-groupby($groupby:values-recursive/v)
 };
+
+declare
+%test:assertEquals(1, 2)
+function groupby:issue-967() {
+    for $nr at $pos in (1,2)
+    group by $pos
+    return
+    $nr
+};
