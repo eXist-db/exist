@@ -7,6 +7,10 @@ To be able to judge the Pull Request (PR) please be sure the following is presen
 
 Additionally please add a few tests to the PR. The [XQSuite - Annotation-based Test Framework for XQuery](http://exist-db.org/exist/apps/doc/xqsuite.xml) makes it very easy for you to create tests. These tests can be executed from the [eXide editor](http://exist-db.org/exist/apps/eXide/index.html) (XQuery - Run as Test)
 
+> When the PR is filed, the complete PR will be tested using [travis-ci](https://travis-ci.org/eXist-db/exist), the build status is visible in the PR. Note that only a limited number of tests are executed (smoketest).
+
+Please run the *full* junit testsuite before filing the PR! This can be done with `build.sh test` which generates a HTML report.
+
 ------
 
 ### Description:
