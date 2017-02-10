@@ -74,3 +74,4 @@ webapp/WEB-INF/web.xml
 webapp/xqts/config.xml
 tools/yajsw/logs/wrapper.log
 tools/yajsw/logs/wrapper.log.lck
+Project_Default.xml
