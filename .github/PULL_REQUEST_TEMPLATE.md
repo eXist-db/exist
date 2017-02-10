@@ -1,4 +1,4 @@
-Thank you for your contribution to the eXist-db codebase! We will review your changes and pull them in when the project agrees with the project benefits from it, content and quality wise.
+Thank you for your contribution to the eXist-db codebase! We will review your changes and pull them in when the project agrees with them and if the project benefits from it, content and quality wise.
 
 To be able to judge the Pull Request (PR) please be sure the following is present
 
