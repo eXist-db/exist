@@ -249,7 +249,10 @@ public class ZipEntryFunctions extends BasicFunction {
         private BinaryDocument getDoc() throws PermissionDeniedException {
 
             DocumentImpl doc = context.getBroker().getXMLResource(uri, LockMode.READ_LOCK);
-            if(doc == null || doc.getResourceType() != DocumentImpl.BINARY_FILE) {
+            if(doc == null) {
+                return null;
+            } else if (doc.getResourceType() != DocumentImpl.BINARY_FILE) {
+                doc.getUpdateLock().release(LockMode.READ_LOCK);
                 return null;
             }
 
