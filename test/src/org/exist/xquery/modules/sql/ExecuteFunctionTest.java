@@ -7,23 +7,19 @@ import static org.junit.Assert.assertEquals;
 
 import org.exist.EXistException;
 import org.exist.dom.QName;
-import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.*;
 import org.junit.Test;
 import org.w3c.dom.Node;
-import xquery.TestRunner;
 
 import java.sql.*;
-import java.util.Collections;
-import java.util.List;
 
 /**
- * TODO document SQL
+ * Unit Tests for sql:execute
  */
-public class ExecuteFunctionTest extends TestRunner {
+public class ExecuteFunctionTest {
 
     // the function that will be tested
     final static QName functionName = new QName( "execute", SQLModule.NAMESPACE_URI, SQLModule.PREFIX );
@@ -166,11 +162,6 @@ public class ExecuteFunctionTest extends TestRunner {
 
     }
 
-
-    @Override
-    protected String getDirectory() {
-        return "test/src/xquery/modules/sql";
-    }
 
     public  static class XQueryContextStub extends XQueryContext {
         public XQueryContextStub() {
