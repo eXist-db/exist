@@ -154,18 +154,20 @@ public class InstallFunction extends BasicFunction {
       XmldbURI uri = XmldbURI.createInternal(path);
       DocumentImpl doc = context.getBroker().getXMLResource(uri, LockMode.READ_LOCK);
       if (doc == null) {
-        notValidXar(path);
+        throw new XPathException(this, EXPathErrorCode.EXPDY001,
+            path + " is no .xar resource",
+            new StringValue(path)
+        );
       } else if (doc.getResourceType() != DocumentImpl.BINARY_FILE) {
         doc.getUpdateLock().release(LockMode.READ_LOCK);
-        notValidXar(path);
+        throw new XPathException(this, EXPathErrorCode.EXPDY001,
+            path + " is not a valid .xar, it's not a binary resource",
+            new StringValue(path)
+        );
       }
       return (BinaryDocument) doc;
     } catch (PermissionDeniedException e) {
       throw new XPathException(this, EXPathErrorCode.EXPDY003, e.getMessage(), new StringValue(path), e);
     }
-  }
-
-  private void notValidXar(String path) throws XPathException {
-    throw new XPathException(this, EXPathErrorCode.EXPDY001, path + " is not a valid .xar", new StringValue(path));
   }
 }
