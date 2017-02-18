@@ -2822,18 +2822,16 @@ public class NativeBroker extends DBBroker {
         // remove document metadata
         final Lock lock = collectionsDb.getLock();
         try {
-            lock.acquire(LockMode.READ_LOCK);
+            lock.acquire(LockMode.WRITE_LOCK);
             if(LOG.isDebugEnabled()) {
                 LOG.debug("Removing resource metadata for " + document.getDocId());
             }
             final Value key = new CollectionStore.DocumentKey(document.getCollection().getId(), document.getResourceType(), document.getDocId());
             collectionsDb.remove(transaction, key);
-            //} catch (ReadOnlyException e) {
-            //LOG.warn(DATABASE_IS_READ_ONLY);
         } catch(final LockException e) {
             LOG.warn("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()));
         } finally {
-            lock.release(LockMode.READ_LOCK);
+            lock.release(LockMode.WRITE_LOCK);
         }
     }
 
