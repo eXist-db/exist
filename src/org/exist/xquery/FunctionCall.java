@@ -280,7 +280,7 @@ public class FunctionCall extends Function {
         
         if(isRecursive()) {
             //LOG.warn("Tail recursive function: " + functionDef.getSignature().toString());
-            return new DeferredFunctionCallImpl(functionDef.getSignature(), contextSequence, contextItem, seq, contextDocs);
+            return new DeferredFunctionCallImpl(this, contextSequence, contextItem, seq, contextDocs);
         } else {
             
             //XXX: should we have it? org.exist.xquery.UserDefinedFunction do a call -shabanovd
@@ -362,15 +362,20 @@ public class FunctionCall extends Function {
         visitor.visitFunctionCall(this);
     }
 
-    private class DeferredFunctionCallImpl extends DeferredFunctionCall {
+    private static class DeferredFunctionCallImpl extends DeferredFunctionCall {
+
+        private final FunctionCall call;
+
+        private UserDefinedFunction functionDef;
+        private Expression expression;
 
         private Sequence contextSequence;
         private Item contextItem;
         private final Sequence[] seq;
         private final DocumentSet[] contextDocs;
 
-        private DeferredFunctionCallImpl(FunctionSignature signature, Sequence contextSequence, Item contextItem, Sequence[] seq, DocumentSet[] contextDocs) {
-            super(signature);
+        private DeferredFunctionCallImpl(FunctionCall call, Sequence contextSequence, Item contextItem, Sequence[] seq, DocumentSet[] contextDocs) {
+            super(call.mySignature);
             this.contextSequence = contextSequence;
             this.contextItem = contextItem;
             if (seq != null) {
@@ -380,10 +385,40 @@ public class FunctionCall extends Function {
                 this.seq = null;
             }
             this.contextDocs = contextDocs;
+
+            this.call = call;
+            setup();
+        }
+
+        private void setup() {
+            this.functionDef = (UserDefinedFunction) call.functionDef.clone();
+            //this.mySignature = this.functionDef.getSignature();
+            this.expression = this.functionDef;
+            this.functionDef.setCaller(call);
+            final SequenceType returnType = this.functionDef.getSignature().getReturnType();
+
+            final XQueryContext context = call.context;
+
+            // add return type checks
+            if(returnType.getCardinality() != Cardinality.ZERO_OR_MORE) {
+                expression = new DynamicCardinalityCheck(context, returnType.getCardinality(), expression, new Error(Error.FUNC_RETURN_CARDINALITY));
+            }
+
+            if(Type.subTypeOf(returnType.getPrimaryType(), Type.ATOMIC)) {
+                expression = new Atomize(context, expression);
+            }
+
+            if(Type.subTypeOf(returnType.getPrimaryType(), Type.NUMBER)) {
+                expression = new UntypedValueCheck(context, returnType.getPrimaryType(), expression, new Error(Error.FUNC_RETURN_TYPE));
+            } else if(returnType.getPrimaryType() != Type.ITEM) {
+                expression = new DynamicTypeCheck(context, returnType.getPrimaryType(), expression);
+            }
         }
         
         @Override
         protected Sequence execute() throws XPathException {
+            final XQueryContext context = call.context;
+
             context.pushDocumentContext();
             //context.stackEnter(expression);
             context.functionStart(functionDef.getSignature());
@@ -403,9 +438,9 @@ public class FunctionCall extends Function {
             } catch(final XPathException e) {
                 // append location of the function call to the exception message:
                 if(e.getLine() == 0) {
-                    e.setLocation(line, column);
+                    e.setLocation(call.line, call.column);
                 }
-                e.addFunctionCall(functionDef, FunctionCall.this);
+                e.addFunctionCall(functionDef, call);
                 throw e;
             } finally {
                 context.popLocalVariables(mark, returnSeq);
