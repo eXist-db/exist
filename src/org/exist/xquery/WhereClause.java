@@ -54,7 +54,7 @@ public class WhereClause extends AbstractFLWORClause {
                 BindingExpression.setContext(getExpressionId(), in);
             }
             try {
-                final Sequence seq = whereExpr.eval(in);
+                final Sequence seq = in.isEmpty() ? in : whereExpr.eval(in);
                 //But *now*, we are ;-)
                 if (Type.subTypeOf(whereExpr.returnsType(), Type.NODE)) {
                     final NodeSet nodes = seq.toNodeSet();
