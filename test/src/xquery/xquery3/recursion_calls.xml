@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestSet>
+    <testName>xquery3 recursion function calls</testName>
+    <description>
+        <p>Recursion function calls in XQuery 3</p>
+        <author>Dmitiry Shabanov</author>
+        <author>Wouter Hager</author>
+        <author>https://github.com/ptrckb</author>
+    </description>
+    <setup>
+        <create-collection parent="/db" name="xq3-test"/>
+    </setup>
+    <tearDown>
+        <remove-collection collection="/db/xq3-test"/>
+    </tearDown>
+    <test output="xml" id="recursion-function-calls-001">
+        <task></task>
+        <code><![CDATA[xquery version "3.1";
+
+declare function local:test($node) {
+    typeswitch($node)
+    case element() return
+        element { node-name($node) } {
+            fold-left($node/node(), (), function ($previous, $node) {
+                ( $previous, local:test($node) )
+            })
+        }
+    default return $node
+};
+
+local:test(<x><y><z/><x/></y></x>)
+]]></code>
+        <expected><x><y><z/><x/></y></x></expected>
+    </test>
+    <test output="text" id="recursion-function-calls-002">
+        <task></task>
+        <code><![CDATA[xquery version "3.1";
+
+declare function local:join($value){
+    let $args :=
+        array:for-each($value("args"),function($_){
+            if($_ instance of map(xs:string, item()?)) then
+                local:join($_)
+            else
+                $_
+        })
+    let $args2 :=
+        array:fold-left($args,[],function($pre,$cur){
+            array:append($pre,$cur)
+        })
+    return
+        string-join(array:flatten($args2),",")
+};
+
+let $map := map {
+    "args" := [
+        "'a'",
+        map {
+            "args":=["'x'","'y'"]
+        },
+        "'b'"]
+}
+return local:join($map)
+]]></code>
+        <expected>'a','x','y','b'</expected>
+    </test>
+</TestSet>
