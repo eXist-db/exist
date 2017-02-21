@@ -67,6 +67,12 @@ public class DeferredFunctionCallTest {
         //expectations for functionCall.evalFunction
         expect(mockContext.isProfilingEnabled()).andReturn(false);
 
+        //expectations for DeferredFunctionCallImpl.setup
+        expect(mockFunctionSignature.getReturnType()).andReturn(mockReturnType);
+        expect(mockReturnType.getCardinality()).andReturn(Cardinality.ZERO_OR_MORE);
+        expect(mockReturnType.getPrimaryType()).andReturn(Type.NODE).times(4);
+        expect(mockContext.nextExpressionId()).andReturn(nextExpressionId++);
+
         //expectations for DeferredFunctionCall.execute
         mockContext.pushDocumentContext();
         mockContext.functionStart(mockFunctionSignature);
