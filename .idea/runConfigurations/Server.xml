@@ -1,5 +1,7 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Server" type="Application" factoryName="Application">
+  <configuration default="false" name="Server" type="Application" factoryName="Application" show_console_on_std_out="true" show_console_on_std_err="true">
+    <log_file path="$PROJECT_DIR$/webapp/WEB-INF/logs/*.log" checked="true" skipped="true" show_all="true" alias="exist logs" />
+    <log_file path="$PROJECT_DIR$/tools/jetty/logs/*.log" checked="true" skipped="true" show_all="true" alias="jetty logs" />
     <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
     <option name="MAIN_CLASS_NAME" value="org.exist.start.Main" />
     <option name="VM_PARAMETERS" value="" />
