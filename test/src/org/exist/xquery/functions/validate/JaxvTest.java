@@ -27,13 +27,13 @@ import java.nio.file.Paths;
 import java.util.function.Predicate;
 
 import org.custommonkey.xmlunit.exceptions.XpathException;
+import org.exist.TestUtils;
+import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.util.FileUtils;
 import org.junit.*;
 import static org.junit.Assert.*;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
-
-import org.exist.test.EmbeddedExistTester;
 
 import org.xml.sax.SAXException;
 import org.xmldb.api.base.Collection;
@@ -45,99 +45,107 @@ import org.xmldb.api.base.XMLDBException;
  *
  * @author dizzzz@exist-db.org
  */
-public class JaxvTest extends EmbeddedExistTester {
+public class JaxvTest {
+
+    @ClassRule
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
 
     @BeforeClass
     public static void prepareResources() throws Exception {
-
         final String noValidation = "<?xml version='1.0'?>" +
                 "<collection xmlns=\"http://exist-db.org/collection-config/1.0" +
                 "\">" +
                 "<validation mode=\"no\"/>" +
                 "</collection>";
 
-        final Collection conf = createCollection(rootCollection, "system/config/db/personal");
-        storeResource(conf, "collection.xconf", noValidation.getBytes());
+        Collection conf = null;
+        try {
+            conf = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "system/config/db/personal");
+            ExistXmldbEmbeddedServer.storeResource(conf, "collection.xconf", noValidation.getBytes());
+        } finally {
+            if(conf != null) {
+                conf.close();
+            }
+        }
 
-        final Collection collection = createCollection(rootCollection, "personal");
+        Collection collection = null;
+        try {
+            collection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "personal");
 
-        final Path directory = Paths.get("samples/validation/personal");
-
-        final Predicate<Path> filter = path -> FileUtils.fileName(path).startsWith("personal");
-
-        for (final Path file : FileUtils.list(directory, filter)) {
-            final byte[] data = readFile(file);
-            storeResource(collection, FileUtils.fileName(file), data);
+            final Path directory = Paths.get("samples/validation/personal");
+            final Predicate<Path> filter = path -> FileUtils.fileName(path).startsWith("personal");
+            for (final Path file : FileUtils.list(directory, filter)) {
+                final byte[] data = TestUtils.readFile(file);
+                ExistXmldbEmbeddedServer.storeResource(collection, FileUtils.fileName(file), data);
+            }
+        } finally {
+            if(collection != null) {
+                collection.close();
+            }
         }
     }
 
     @Test
     public void xsd_stored_valid() throws XMLDBException {
-        String query = "validation:jaxv( " +
+        final String query = "validation:jaxv( " +
                 "doc('/db/personal/personal-valid.xml'), " +
                 "doc('/db/personal/personal.xsd') )";
 
-            ResourceSet results = executeQuery(query);
-            assertEquals(1, results.getSize());
-            assertEquals(query, "true",
-                    results.getResource(0).getContent().toString());
+        final ResourceSet results = existEmbeddedServer.executeQuery(query);
+        assertEquals(1, results.getSize());
+        assertEquals(query, "true",
+                results.getResource(0).getContent().toString());
     }
 
     @Test
     public void xsd_stored_report_valid() throws XMLDBException, SAXException, IOException, XpathException {
-        String query = "validation:jaxv-report( " +
+        final String query = "validation:jaxv-report( " +
                 "doc('/db/personal/personal-valid.xml'), " +
                 "doc('/db/personal/personal.xsd') )";
 
-        ResourceSet results = executeQuery(query);
+        final ResourceSet results = existEmbeddedServer.executeQuery(query);
         assertEquals(1, results.getSize());
 
-        String r = (String) results.getResource(0).getContent();
-
+        final String r = (String) results.getResource(0).getContent();
         assertXpathEvaluatesTo("valid", "//status/text()", r);
     }
 
-
-
     @Test
     public void xsd_stored_invalid() throws XMLDBException, SAXException, IOException, XpathException {
-        String query = "validation:jaxv-report( " +
+        final String query = "validation:jaxv-report( " +
                 "doc('/db/personal/personal-invalid.xml'), " +
                 "doc('/db/personal/personal.xsd') )";
 
-        ResourceSet results = executeQuery(query);
+        final ResourceSet results = existEmbeddedServer.executeQuery(query);
         assertEquals(1, results.getSize());
 
-        String r = (String) results.getResource(0).getContent();
-
+        final String r = (String) results.getResource(0).getContent();
         assertXpathEvaluatesTo("invalid", "//status/text()", r);
     }
 
     @Test
     public void xsd_anyuri_valid() throws XMLDBException, SAXException, IOException, XpathException {
-        String query = "validation:jaxv-report( " +
+        final String query = "validation:jaxv-report( " +
                 "xs:anyURI('xmldb:exist:///db/personal/personal-valid.xml'), " +
                 "xs:anyURI('xmldb:exist:///db/personal/personal.xsd') )";
 
-        ResourceSet results = executeQuery(query);
+        final ResourceSet results = existEmbeddedServer.executeQuery(query);
         assertEquals(1, results.getSize());
 
-        String r = (String) results.getResource(0).getContent();
-
+        final String r = (String) results.getResource(0).getContent();
         assertXpathEvaluatesTo("valid", "//status/text()", r);
     }
 
     @Test
     public void xsd_anyuri_invalid() throws XMLDBException, SAXException, IOException, XpathException {
-        String query = "validation:jaxv-report( " +
+        final String query = "validation:jaxv-report( " +
                 "xs:anyURI('xmldb:exist:///db/personal/personal-invalid.xml'), " +
                 "xs:anyURI('xmldb:exist:///db/personal/personal.xsd') )";
 
-        ResourceSet results = executeQuery(query);
+        final ResourceSet results = existEmbeddedServer.executeQuery(query);
         assertEquals(1, results.getSize());
 
-        String r = (String) results.getResource(0).getContent();
-
+        final String r = (String) results.getResource(0).getContent();
         assertXpathEvaluatesTo("invalid", "//status/text()", r);
     }
 }

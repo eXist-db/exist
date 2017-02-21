@@ -24,10 +24,9 @@ package org.exist.xmldb;
 import org.xmldb.api.base.XMLDBException;
 
 /**
- *
  * @author Adam Retter <adam.retter@googlemail.com>
  */
 public interface EXistUserManagementService extends UserManagementService {
-    
-    public void setUserPrimaryGroup(final String username, final String groupName) throws XMLDBException;
+
+    void setUserPrimaryGroup(final String username, final String groupName) throws XMLDBException;
 }

@@ -11,6 +11,7 @@ import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.FileUtils;
 import org.exist.xmldb.XmldbURI;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
@@ -68,6 +69,15 @@ public class TestUtils {
             e.printStackTrace();
             fail(e.getMessage());
         }
+    }
+
+    public static byte[] readFile(final Path directory, final String filename) throws IOException {
+        return readFile(directory.resolve(filename));
+    }
+
+    public static byte[] readFile(final Path file) throws IOException {
+        assertTrue(Files.isReadable(file));
+        return Files.readAllBytes(file);
     }
 
 

@@ -149,7 +149,7 @@ public class BTree extends Paged implements Lockable {
     protected final DefaultCacheManager cacheManager;
 
     /** Cache of BTreeNode(s) */
-    protected Cache cache;
+    protected Cache<BTreeNode> cache;
 
     /** File header of a BTree file */
     private final BTreeFileHeader fileHeader;
@@ -240,7 +240,7 @@ public class BTree extends Paged implements Lockable {
     }
 
     protected void initCache() {
-        this.cache = new BTreeCache(FileUtils.fileName(getFile()), cacheManager.getDefaultInitialSize(), 1.5,
+        this.cache = new BTreeCache<>(FileUtils.fileName(getFile()), cacheManager.getDefaultInitialSize(), 1.5,
             0, CacheManager.BTREE_CACHE);
         cacheManager.registerCache(cache);
     }
@@ -460,7 +460,7 @@ public class BTree extends Paged implements Lockable {
      */
     private BTreeNode getBTreeNode(final long pageNum) {
         try {
-            BTreeNode node = (BTreeNode) cache.get(pageNum);
+            BTreeNode node = cache.get(pageNum);
             if (node == null) {
                 final Page page = getPage(pageNum);
                 node = new BTreeNode(page, false);
@@ -505,7 +505,7 @@ public class BTree extends Paged implements Lockable {
      */
     protected BTreeNode getRootNode() {
         try {
-            BTreeNode node = (BTreeNode) cache.get(fileHeader.getRootPage());
+            BTreeNode node = cache.get(fileHeader.getRootPage());
             if (node == null) {
                 final Page page = getPage(fileHeader.getRootPage());
                 node = new BTreeNode(page, false);
@@ -606,7 +606,7 @@ public class BTree extends Paged implements Lockable {
         final long pages = getFileHeader().getTotalCount();
         for (long i = 0; i < pages; i++) {
             // first check if page is in cache. if yes, use it.
-            BTreeNode node = (BTreeNode) cache.get(i);
+            BTreeNode node = cache.get(i);
 
             final Page page;
             if (node != null) {
@@ -763,7 +763,7 @@ public class BTree extends Paged implements Lockable {
     }
 
     protected void redoCreateBTNode(final CreateBTNodeLoggable loggable) throws LogException {
-        BTreeNode node = (BTreeNode) cache.get(loggable.pageNum);
+        BTreeNode node = cache.get(loggable.pageNum);
         if (node == null) {
             // node is not yet loaded. Load it
             try {

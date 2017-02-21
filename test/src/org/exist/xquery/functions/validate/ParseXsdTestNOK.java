@@ -22,6 +22,8 @@
 package org.exist.xquery.functions.validate;
 
 import org.custommonkey.xmlunit.exceptions.XpathException;
+import org.exist.TestUtils;
+import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.util.FileUtils;
 import org.junit.*;
 import static org.junit.Assert.*;
@@ -31,8 +33,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.function.Predicate;
-
-import org.exist.test.EmbeddedExistTester;
 
 import org.xml.sax.SAXException;
 import org.xmldb.api.base.Collection;
@@ -44,7 +44,10 @@ import org.xmldb.api.base.XMLDBException;
  * 
  * @author dizzzz@exist-db.org
  */
-public class ParseXsdTestNOK extends EmbeddedExistTester {
+public class ParseXsdTestNOK {
+
+    @ClassRule
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
 
     private static final String noValidation = "<?xml version='1.0'?>" +
             "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
@@ -55,8 +58,15 @@ public class ParseXsdTestNOK extends EmbeddedExistTester {
     public static void prepareResources() throws Exception {
 
         // Switch off validation
-        final Collection conf = createCollection(rootCollection, "system/config/db/addressbook");
-        storeResource(conf, "collection.xconf", noValidation.getBytes());
+        Collection conf = null;
+        try {
+            conf = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "system/config/db/addressbook");
+            ExistXmldbEmbeddedServer.storeResource(conf, "collection.xconf", noValidation.getBytes());
+        } finally {
+            if(conf != null) {
+                conf.close();
+            }
+        }
 
         // Create filter
         final Predicate<Path> filter = path -> {
@@ -65,65 +75,68 @@ public class ParseXsdTestNOK extends EmbeddedExistTester {
         };
 
         // Store schematron 1.5 test files
-        final Collection collection = createCollection(rootCollection, "addressbook");
-        final Path sources = Paths.get("samples/validation/addressbook");
+        Collection collection = null;
+        try {
+            collection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "addressbook");
 
-        for (final Path file : FileUtils.list(sources, filter)) {
-            final byte[] data = readFile(file);
-            storeResource(collection, FileUtils.fileName(file), data);
+            final Path sources = Paths.get("samples/validation/addressbook");
+            for (final Path file : FileUtils.list(sources, filter)) {
+                final byte[] data = TestUtils.readFile(file);
+                ExistXmldbEmbeddedServer.storeResource(collection, FileUtils.fileName(file), data);
+            }
+        } finally {
+            if(collection != null) {
+                collection.close();
+            }
         }
     }
 
     @Test
     public void xsd_stored_valid() throws XMLDBException, SAXException, IOException, XpathException {
-        String query = "validation:jaxp-report( " +
+        final String query = "validation:jaxp-report( " +
                 "doc('/db/addressbook/addressbook_valid.xml'), " +
                 "xs:anyURI('/db/addressbook/addressbook.xsd'), () )";
 
-        ResourceSet results = executeQuery(query);
+        final ResourceSet results = existEmbeddedServer.executeQuery(query);
         assertEquals(1, results.getSize());
 
-        String r = (String) results.getResource(0).getContent();
-
+        final String r = (String) results.getResource(0).getContent();
         assertXpathEvaluatesTo("valid", "//status/text()", r);
     }
 
     @Test @Ignore("todo")
     public void xsd_stored_invalid() throws XMLDBException, SAXException, IOException, XpathException {
-        String query = "validation:jaxp-report( doc('/db/tournament/1.5/Tournament-invalid.xml'), " +
+        final String query = "validation:jaxp-report( doc('/db/tournament/1.5/Tournament-invalid.xml'), " +
                 "doc('/db/tournament/1.5/tournament-schema.sch') )";
 
-        ResourceSet results = executeQuery(query);
+        final ResourceSet results = existEmbeddedServer.executeQuery(query);
         assertEquals(1, results.getSize());
 
-        String r = (String) results.getResource(0).getContent();
-
+        final String r = (String) results.getResource(0).getContent();
         assertXpathEvaluatesTo("invalid", "//status/text()", r);
     }
 
     @Test @Ignore("todo")
     public void xsd_anyuri_valid() throws XMLDBException, SAXException, IOException, XpathException {
-        String query = "validation:jaxp-report( xs:anyURI('xmldb:exist:///db/tournament/1.5/Tournament-valid.xml'), " +
+        final String query = "validation:jaxp-report( xs:anyURI('xmldb:exist:///db/tournament/1.5/Tournament-valid.xml'), " +
                 "xs:anyURI('xmldb:exist:///db/tournament/1.5/tournament-schema.sch') )";
 
-        ResourceSet results = executeQuery(query);
+        final ResourceSet results = existEmbeddedServer.executeQuery(query);
         assertEquals(1, results.getSize());
 
-        String r = (String) results.getResource(0).getContent();
-
+        final String r = (String) results.getResource(0).getContent();
         assertXpathEvaluatesTo("valid", "//status/text()", r);
     }
 
     @Test @Ignore("todo")
     public void xsd_anyuri_invalid() throws XMLDBException, SAXException, IOException, XpathException {
-        String query = "validation:jaxp-report( xs:anyURI('xmldb:exist:///db/tournament/1.5/Tournament-invalid.xml'), " +
+        final String query = "validation:jaxp-report( xs:anyURI('xmldb:exist:///db/tournament/1.5/Tournament-invalid.xml'), " +
                 "xs:anyURI('xmldb:exist:///db/tournament/1.5/tournament-schema.sch') )";
 
-        ResourceSet results = executeQuery(query);
+        final ResourceSet results = existEmbeddedServer.executeQuery(query);
         assertEquals(1, results.getSize());
 
-        String r = (String) results.getResource(0).getContent();
-
+        final String r = (String) results.getResource(0).getContent();
         assertXpathEvaluatesTo("invalid", "//status/text()", r);
     }
 }

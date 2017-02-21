@@ -28,11 +28,10 @@ import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 
 /**
- * Defines additional methods implemented by XML and binary 
+ * Defines additional methods implemented by XML and binary
  * resources.
- * 
- * @author wolf
  *
+ * @author wolf
  */
 public interface EXistResource extends Resource {
 
@@ -45,16 +44,16 @@ public interface EXistResource extends Resource {
     long getContentLength() throws XMLDBException;
 
     void setLexicalHandler(LexicalHandler handler);
-    
+
     void setMimeType(String mime);
 
     String getMimeType() throws XMLDBException;
-    
+
     DocumentType getDocType() throws XMLDBException;
-    
+
     void setDocType(DocumentType doctype) throws XMLDBException;
 
     void setLastModificationTime(Date lastModificationTime) throws XMLDBException;
-    
+
     void freeResources() throws XMLDBException;
 }

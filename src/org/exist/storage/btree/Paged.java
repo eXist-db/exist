@@ -197,7 +197,7 @@ public abstract class Paged implements AutoCloseable {
         return !fileIsNew;
     }
 
-    /* Flushes {@link org.exist.storage.btree.Paged#flush()dirty data} to the disk and cleans up the cache. 
+    /** Flushes {@link org.exist.storage.btree.Paged#flush()} dirty data to the disk and cleans up the cache.
      * @return <code>true</code> if something has actually been cleaned
      * @throws DBException
      */

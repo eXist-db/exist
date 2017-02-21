@@ -21,98 +21,64 @@
  */
 package org.exist.xquery.functions.xquery3;
 
+import org.exist.test.ExistXmldbEmbeddedServer;
+import org.junit.ClassRule;
 import org.xmldb.api.base.ResourceSet;
 
-import org.exist.test.EmbeddedExistTester;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-
-
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
+import org.xmldb.api.base.XMLDBException;
+
 import static org.junit.Assert.*;
 
 /**
  *
  * @author ljo
  */
-public class SwitchTest extends EmbeddedExistTester {
+public class SwitchTest {
 
-    public SwitchTest() {
-    }
+    @ClassRule
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
 
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
-
-    @After
-    public void tearDown() {
-    }
-
-    // *******************************************
     @Test
-    public void oneCaseCaseMatch() {
-        String query = "xquery version '3.0';"
+    public void oneCaseCaseMatch() throws XMLDBException {
+        final String query = "xquery version '3.0';"
                 + "let $animal := 'Cat' return "
                 + "switch ($animal)"
                 + "case 'Cow' return 'Moo'"
                 + "case 'Cat' return 'Meow'"
                 + "case 'Duck' return 'Quack'"
                 + "default return 'Odd noise!'";
-        try {
-            ResourceSet results = executeQuery(query);
-            String r = (String) results.getResource(0).getContent();
-            assertEquals("Meow", r);
 
-        } catch (Throwable ex) {
-            ex.printStackTrace();
-            fail(ex.getMessage());
-        }
-
+        final ResourceSet results = existEmbeddedServer.executeQuery(query);
+        final String r = (String) results.getResource(0).getContent();
+        assertEquals("Meow", r);
     }
 
     @Test
-    public void twoCaseDefault() {
-        String query = "xquery version '3.0';"
+    public void twoCaseDefault() throws XMLDBException {
+        final String query = "xquery version '3.0';"
                 + "let $animal := 'Cat' return "
                 + "switch ($animal)"
                 + "case 'Cow' case 'Calf' return 'Moo'"
                 + "default return 'No Bull?'";
-        try {
-            ResourceSet results = executeQuery(query);
-            String r = (String) results.getResource(0).getContent();
-            assertEquals("No Bull?", r);
 
-        } catch (Throwable ex) {
-            ex.printStackTrace();
-            fail(ex.getMessage());
-        }
-
+        final ResourceSet results = existEmbeddedServer.executeQuery(query);
+        final String r = (String) results.getResource(0).getContent();
+        assertEquals("No Bull?", r);
     }
 
     @Test
-    public void twoCaseCaseMatch() {
-        String query = "xquery version '3.0';"
+    public void twoCaseCaseMatch() throws XMLDBException {
+        final String query = "xquery version '3.0';"
                 + "let $animal := 'Calf' return "
                 + "switch ($animal)"
                 + "case 'Cow' case 'Calf' return 'Moo'"
                 + "case 'Cat' return 'Meow'"
                 + "case 'Duck' return 'Quack'"
                 + "default return 'Odd noise!'";
-        try {
-            ResourceSet results = executeQuery(query);
-            String r = (String) results.getResource(0).getContent();
-            assertEquals("Moo", r);
 
-        } catch (Throwable ex) {
-            ex.printStackTrace();
-            fail(ex.getMessage());
-        }
-
+        final ResourceSet results = existEmbeddedServer.executeQuery(query);
+        final String r = (String) results.getResource(0).getContent();
+        assertEquals("Moo", r);
     }
 }

@@ -138,7 +138,7 @@ public class BFile extends BTree {
 
     protected final BFileHeader fileHeader;
     protected final int minFree;
-    protected final Cache dataCache;
+    protected final Cache<DataPage> dataCache;
     protected final Lock lock;
     public final int fixedKeyLen = -1;
     protected final int maxValueSize;
@@ -148,7 +148,7 @@ public class BFile extends BTree {
             final double cacheGrowth, final double thresholdData) throws DBException {
         super(pool, fileId, recoveryEnabled, cacheManager, file);
         fileHeader = (BFileHeader) getFileHeader();
-        dataCache = new LRUCache(FileUtils.fileName(file), 64, cacheGrowth, thresholdData, CacheManager.DATA_CACHE);
+        dataCache = new LRUCache<>(FileUtils.fileName(file), 64, cacheGrowth, thresholdData, CacheManager.DATA_CACHE);
         cacheManager.registerCache(dataCache);
         minFree = PAGE_MIN_FREE;
         lock = new ReentrantReadWriteLock(FileUtils.fileName(file));

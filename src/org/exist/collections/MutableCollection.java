@@ -913,7 +913,7 @@ public class MutableCollection implements Collection {
             throws IOException, PermissionDeniedException, LockException {
         collectionId = istream.readInt();
         if (collectionId < 0) {
-            throw new PermissionDeniedException("Internal error reading collection: invalid collection id");
+            throw new IOException("Internal error reading collection: invalid collection id");
         }
         final int collLen = istream.readInt();
 

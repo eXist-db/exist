@@ -21,6 +21,8 @@
  */
 package org.exist.xquery.functions.validate;
 
+import org.exist.TestUtils;
+import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.util.FileUtils;
 import org.junit.*;
 import static org.junit.Assert.*;
@@ -31,7 +33,6 @@ import java.nio.file.Paths;
 import java.util.function.Predicate;
 
 import org.custommonkey.xmlunit.XMLAssert;
-import org.exist.test.EmbeddedExistTester;
 
 import org.xml.sax.SAXException;
 import org.xmldb.api.base.Collection;
@@ -43,7 +44,10 @@ import org.xmldb.api.base.XMLDBException;
  * 
  * @author dizzzz@exist-db.org
  */
-public class JaxpParseTest extends EmbeddedExistTester {
+public class JaxpParseTest {
+
+    @ClassRule
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
 
     private static final String noValidation = "<?xml version='1.0'?>" +
             "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
@@ -54,31 +58,42 @@ public class JaxpParseTest extends EmbeddedExistTester {
     public static void prepareResources() throws Exception {
 
         // Switch off validation
-        final Collection conf = createCollection(rootCollection, "system/config/db/parse_validate");
-        storeResource(conf, "collection.xconf", noValidation.getBytes());
+        Collection conf = null;
+        try {
+            conf = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "system/config/db/parse_validate");
+            ExistXmldbEmbeddedServer.storeResource(conf, "collection.xconf", noValidation.getBytes());
+        } finally {
+            if(conf != null) {
+                conf.close();
+            }
+        }
 
         // Create filter
         final Predicate<Path> filter = path -> FileUtils.fileName(path).startsWith("default");
 
-        final Collection schemasCollection = createCollection(rootCollection, "parse_validate");
-        final Path schemas = Paths.get("samples/validation/parse_validate");
+        Collection schemasCollection = null;
+        try {
+            schemasCollection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "parse_validate");
+            final Path schemas = Paths.get("samples/validation/parse_validate");
 
-        for (final Path file : FileUtils.list(schemas, filter)) {
-            final byte[] data = readFile(file);
-            storeResource(schemasCollection, FileUtils.fileName(file), data);
+            for (final Path file : FileUtils.list(schemas, filter)) {
+                final byte[] data = TestUtils.readFile(file);
+                ExistXmldbEmbeddedServer.storeResource(schemasCollection, FileUtils.fileName(file), data);
+            }
+        } finally {
+            if(schemasCollection != null) {
+                schemasCollection.close();
+            }
         }
 
     }
 
     @Before
     public void clearGrammarCache() throws XMLDBException {
-        ResourceSet results = executeQuery("validation:clear-grammar-cache()");
-        String r = (String) results.getResource(0).getContent();
+        final ResourceSet results = existEmbeddedServer.executeQuery("validation:clear-grammar-cache()");
+        results.getResource(0).getContent();
     }
 
-    /*
-     * ***********************************************************************************
-     */
     @Test
     public void parse_and_fill_defaults() throws XMLDBException, IOException, SAXException {
         String query = "validation:pre-parse-grammar(xs:anyURI('/db/parse_validate/defaultValue.xsd'))";
@@ -97,10 +112,9 @@ public class JaxpParseTest extends EmbeddedExistTester {
         XMLAssert.assertXMLEqual(expected, result);
     }
 
-    private String execute(String query) throws XMLDBException {
-        ResourceSet results = executeQuery(query);
+    private String execute(final String query) throws XMLDBException {
+        final ResourceSet results = existEmbeddedServer.executeQuery(query);
         assertEquals(1, results.getSize());
-
         return (String) results.getResource(0).getContent();
     }
 }

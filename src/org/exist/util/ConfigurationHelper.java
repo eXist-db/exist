@@ -60,38 +60,42 @@ public class ConfigurationHelper {
     		}
     	} catch(final Throwable e) {
             // Catch all potential problems
-            LOG.debug("Could not retrieve instance of brokerpool: " + e.getMessage());
+            LOG.debug("Could not retrieve instance of BrokerPool: {}", e.getMessage());
     	}
     	
         // try exist.home
         if (System.getProperty("exist.home") != null) {
             final Path existHome = ConfigurationHelper.decodeUserHome(System.getProperty("exist.home"));
             if (Files.isDirectory(existHome)) {
-                LOG.debug("Got eXist home from system property 'exist.home': " + existHome.toAbsolutePath().toString());
+                LOG.debug("Got eXist home from system property 'exist.home': {}", existHome.toAbsolutePath().toString());
                 return Optional.of(existHome);
             }
         }
         
         // try user.home
         final Path userHome = Paths.get(System.getProperty("user.home"));
-        if (Files.isDirectory(userHome) && Files.isRegularFile(userHome.resolve(config))) {
-            LOG.debug("Got eXist home from system property 'user.home': " + userHome.toAbsolutePath().toString());
-            return Optional.of(userHome);
+        final Path userHomeRelativeConfig = userHome.resolve(config);
+        if (Files.isDirectory(userHome) && Files.isRegularFile(userHomeRelativeConfig)) {
+            final Path existHome = userHomeRelativeConfig.getParent();
+            LOG.debug("Got eXist home: {} from system property 'user.home': {}", existHome.toAbsolutePath().toString(), userHome.toAbsolutePath().toString());
+            return Optional.of(existHome);
         }
         
         
         // try user.dir
         final Path userDir = Paths.get(System.getProperty("user.dir"));
-        if (Files.isDirectory(userDir) && Files.isRegularFile(userDir.resolve(config))) {
-            LOG.debug("Got eXist home from system property 'user.dir': " + userDir.toAbsolutePath().toString());
-            return Optional.of(userDir);
+        final Path userDirRelativeConfig = userDir.resolve(config);
+        if (Files.isDirectory(userDir) && Files.isRegularFile(userDirRelativeConfig)) {
+            final Path existHome = userDirRelativeConfig.getParent();
+            LOG.debug("Got eXist home: {} from system property 'user.dir': {}", existHome.toAbsolutePath().toString(), userDir.toAbsolutePath().toString());
+            return Optional.of(existHome);
         }
         
         // try classpath
         final URL configUrl = ConfigurationHelper.class.getClassLoader().getResource(config);
         if (configUrl != null) {
             final Path existHome = Paths.get(configUrl.getPath()).getParent();
-            LOG.debug("Got eXist home from classpath: " + existHome.toAbsolutePath().toString());
+            LOG.debug("Got eXist home from classpath: {}", existHome.toAbsolutePath().toString());
             return Optional.of(existHome);
         }
         

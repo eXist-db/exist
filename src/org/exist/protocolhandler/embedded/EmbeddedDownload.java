@@ -44,68 +44,69 @@ import org.exist.storage.serializers.Serializer;
 import org.exist.xmldb.XmldbURI;
 
 /**
- *   Read document from an embedded database and write the data into an
+ * Read document from an embedded database and write the data into an
  * output stream.
  *
  * @author Dannes Wessels
  */
 public class EmbeddedDownload {
-    
+
     private final static Logger LOG = LogManager.getLogger(EmbeddedDownload.class);
 
     private BrokerPool pool;
 
     /**
-     * Set brokerpool for in database resolve of resource.
-     * @param brokerPool 
+     * Set the BrokerPool for resolving the resource
+     *
+     * @param brokerPool A BrokerPool
      */
-    public void setBrokerPool(BrokerPool brokerPool) {
+    public void setBrokerPool(final BrokerPool brokerPool) {
         this.pool = brokerPool;
     }
-    
+
     /**
-     *   Write document referred by URL to an (output)stream.
+     * Write document referred by URL to an (output)stream.
      *
      * @param xmldbURL Document location in database.
-     * @param os Stream to which the document is written.
-     * @throws IOException
+     * @param os       Stream to which the document is written.
      */
-    public void stream(XmldbURL xmldbURL, OutputStream os) throws IOException {
+    public void stream(final XmldbURL xmldbURL, final OutputStream os) throws IOException {
         stream(xmldbURL, os, null);
     }
-    
+
     /**
-     *   Write document referred by URL to an (output)stream as specified user.
+     * Write document referred by URL to an (output)stream as specified user.
      *
-     * @param user Effective user for operation. If NULL the user information
-     * is distilled from the URL.
+     * @param user     Effective user for operation. If NULL the user information
+     *                 is distilled from the URL.
      * @param xmldbURL Document location in database.
-     * @param os Stream to which the document is written.
-     * @throws IOException
+     * @param os       Stream to which the document is written.
      */
-    public void stream(XmldbURL xmldbURL, OutputStream os, Subject user) throws IOException {
-        LOG.debug("Begin document download");
-        
+    public void stream(final XmldbURL xmldbURL, final OutputStream os, Subject user) throws IOException {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Begin document download");
+        }
+
         try {
             final XmldbURI path = XmldbURI.create(xmldbURL.getPath());
 
-            if(pool==null){
+            if (pool == null) {
                 pool = BrokerPool.getInstance();
-            } 
-            
-            if(user==null){
-                if(xmldbURL.hasUserInfo()){
-                    user=EmbeddedUser.authenticate(xmldbURL, pool);
-                    if(user==null){
-                        throw new IOException("Unauthorized user "+xmldbURL.getUsername());
+            }
+
+            if (user == null) {
+                if (xmldbURL.hasUserInfo()) {
+                    user = EmbeddedUser.authenticate(xmldbURL, pool);
+                    if (user == null) {
+                        throw new IOException("Unauthorized user " + xmldbURL.getUsername());
                     }
-                    
+
                 } else {
-                    user=EmbeddedUser.getUserGuest(pool);
+                    user = EmbeddedUser.getUserGuest(pool);
                 }
             }
 
-            try(final DBBroker broker = pool.get(Optional.of(user))) {
+            try (final DBBroker broker = pool.get(Optional.of(user))) {
 
                 DocumentImpl resource = null;
                 Collection collection = null;
@@ -130,32 +131,32 @@ public class EmbeddedDownload {
 
                             // Preserve doctype
                             serializer.setProperty(EXistOutputKeys.OUTPUT_DOCTYPE, "yes");
-                            final Writer w = new OutputStreamWriter(os, "UTF-8");
-                            serializer.serialize(resource, w);
-                            w.close();
+                            try(final Writer w = new OutputStreamWriter(os, "UTF-8")) {
+                                serializer.serialize(resource, w);
+                            }
 
                         } else {
                             broker.readBinaryResource((BinaryDocument) resource, os);
                         }
                     }
                 } finally {
-                    if(resource != null){
+                    if (collection != null) {
+                        collection.release(LockMode.READ_LOCK);
+                    }
+
+                    if (resource != null) {
                         resource.getUpdateLock().release(LockMode.READ_LOCK);
                     }
 
-                    if(collection != null){
-                        collection.release(LockMode.READ_LOCK);
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("End document download");
                     }
-                    LOG.debug("End document download");
                 }
             }
         } catch (final IOException ex) {
-            //ex.printStackTrace();
             LOG.error(ex);
             throw ex;
-            
         } catch (final Exception ex) {
-            //ex.printStackTrace();
             LOG.error(ex);
             throw new IOException(ex.getMessage(), ex);
 
