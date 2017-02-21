@@ -58,7 +58,6 @@ public class JnlpJarFiles {
             "commons-logging-%latest%",
             "commons-pool-%latest%",
             "jargo-%latest%",
-            "guava-%latest%",
             "gnu-crypto-%latest%",
             "j8fu-%latest%",
             "jackson-core-%latest%",
