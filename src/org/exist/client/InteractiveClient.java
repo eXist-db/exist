@@ -1085,10 +1085,19 @@ public class InteractiveClient {
                 //XXX:make it pluggable
             } else if (havePluggableCommands) {
                 final CollectionManagementServiceImpl mgtService = (CollectionManagementServiceImpl) current.getService("CollectionManagementService", "1.0");
-                mgtService.runCommand(args);
+                try {
+                    mgtService.runCommand(args);
+                } catch(final XMLDBException e) {
+                    if(e.getCause() != null && e.getCause().getClass().getName().equals("org.exist.plugin.command.CommandNotFoundException")) {
+                        messageln("unknown command: '" + args[0] + "'");
+                        return true;
+                    } else {
+                        throw e;
+                    }
+                }
                 //****************************************************************
             } else {
-                messageln("unknown command");
+                messageln("unknown command: '" + args[0] + "'");
                 return true;
             }
             path = newPath;
