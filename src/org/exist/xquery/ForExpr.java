@@ -152,8 +152,14 @@ public class ForExpr extends BindingExpression {
             // calling the where expression for each item in the input sequence)
             // This is possible if the input sequence is a node set and has no
             // dependencies on the current context item.
-            if (at == null && returnExpr instanceof FLWORClause && isOuterFor) {
-                in = ((FLWORClause)returnExpr).preEval(in);
+            if (isOuterFor) {
+                if (returnExpr instanceof WhereClause) {
+                    if (at == null) {
+                        in = ((WhereClause) returnExpr).preEval(in);
+                    }
+                } else if (returnExpr instanceof FLWORClause) {
+                    in = ((FLWORClause) returnExpr).preEval(in);
+                }
             }
 
             final IntegerValue atVal = new IntegerValue(1);
