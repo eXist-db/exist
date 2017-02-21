@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestSet>
+    <testName>xquery3 for-where</testName>
+    <description>
+        <p>For-where in XQuery 3</p>
+        <author>Dmitiry Shabanov</author>
+        <author>https://github.com/ptrckb</author>
+    </description>
+    <setup>
+        <create-collection parent="/db" name="xq3-test"/>
+    </setup>
+    <tearDown>
+        <remove-collection collection="/db/xq3-test"/>
+    </tearDown>
+
+    <test output="text" id="for-where-001">
+        <task></task>
+        <code><![CDATA[xquery version "3.1";
+
+let $f := function($x as xs:string) {true()}
+let $words := analyze-string('', '\w+')/fn:match/ text ()
+return for $w in $words where $f($w) return $w
+
+]]></code>
+        <expected></expected>
+    </test>
+
+    <test output="text" id="for-where-002">
+        <task></task>
+        <code><![CDATA[xquery version "3.1";
+
+let $f := function($x as xs:string) {true()}
+let $words := analyze-string('a b', '\w+')/fn:match/ text ()
+return for $w in $words where $f($w) return $w
+
+]]></code>
+        <expected>a b</expected>
+    </test>
+</TestSet>
