@@ -470,7 +470,7 @@ throws PermissionDeniedException, EXistException, XPathException
 			{
 				PathExpr enclosed= new PathExpr(context);
 				SequenceType type= null;
-				QName qn = QName.parse(staticContext, qname.getText());
+				QName qn = QName.parse(staticContext, qname.getText(), null);
 				if (declaredGlobalVars.contains(qn))
 					throw new XPathException(qname, "err:XQST0049: It is a " +
 						"static error if more than one variable declared or " +
