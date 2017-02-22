@@ -137,7 +137,7 @@ public class ExecuteFunction extends BasicFunction
     @Override public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException
     {
         // was a connection and SQL statement specified?
-        if( args[0].isEmpty() || args[1].isEmpty() ) {
+        if( args.length < 2 || args[0].isEmpty() || args[1].isEmpty() ) {
             return( Sequence.EMPTY_SEQUENCE );
         }
 
@@ -284,7 +284,7 @@ public class ExecuteFunction extends BasicFunction
                                     builder.addAttribute( new QName( "null", SQLModule.NAMESPACE_URI, SQLModule.PREFIX ), "true" );
                                 } else {
                                     if(colValue != null) {
-                                        builder.characters(SQLUtils.escapeXmlText( colValue ));
+                                        builder.characters( colValue );
                                     }
                                 }
                             }
@@ -360,7 +360,7 @@ public class ExecuteFunction extends BasicFunction
             builder.endElement();
 
             builder.startElement( new QName( "sql", SQLModule.NAMESPACE_URI, SQLModule.PREFIX ), null );
-            builder.characters( SQLUtils.escapeXmlText( sql ) );
+            builder.characters( sql );
             builder.endElement();
 
             if( stmt instanceof PreparedStatement ) {
@@ -379,7 +379,7 @@ public class ExecuteFunction extends BasicFunction
                         builder.startElement( new QName( PARAM_ELEMENT_NAME, SQLModule.NAMESPACE_URI, SQLModule.PREFIX ), null );
 
                         builder.addAttribute( new QName( TYPE_ATTRIBUTE_NAME, SQLModule.NAMESPACE_URI, SQLModule.PREFIX ), type );
-                        builder.characters( SQLUtils.escapeXmlText( value ) );
+                        builder.characters( value );
 
                         builder.endElement();
                     }
