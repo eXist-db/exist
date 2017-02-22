@@ -9,7 +9,8 @@
     
     <property name="backrest" value="./tools/backrest"/>
     <property name="backrest.src" value="${backrest}/src"/>
-    <property name="backrest.dist" value="${backrest}/dist/${project.name}-backrest-${project.version}"/>
+    <property name="backrest.dist.name" value="${project.name}-backrest-${project.version.numeric}-${project.version.desc}"/>
+    <property name="backrest.dist" value="${backrest}/dist/${backrest.dist.name}"/>
     <property name="backrest.lib" value="${backrest.dist}/lib"/>
     
     
@@ -87,7 +88,7 @@
     
     <target name="backrest" depends="create-backrest" description="Create backrest zip">
         
-        <zip basedir="${backrest}/dist" compress="true" zipfile="${backrest}/${project.name}-backrest-${project.version}.zip"/>
+        <zip basedir="${backrest}/dist" compress="true" zipfile="${backrest}/${backrest.dist.name}.zip"/>
         
     </target>
     

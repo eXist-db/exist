@@ -39,7 +39,7 @@
             displayname="eXist-db"
             identifier="org.exist.start.Main"
             mainclassname="org.exist.start.Main"
-            shortversion="${project.version}"
+            shortversion="${project.version.numeric}"
             icon="${installer.mac.icon}">
             <classpath file="start.jar"/>
             <option value="-Dexist.home=$APP_ROOT/.."/>
@@ -87,7 +87,7 @@
                 <pathelement location="${asocat-exist.jar}"/>
             </classpath>
         </taskdef>
-        <fetch dest="${apps.dir}" url="${apps.repo}/pkg.zip?abbrev=${xar}&amp;zip=yes&amp;processor=${project.version}"
+        <fetch dest="${apps.dir}" url="${apps.repo}/pkg.zip?abbrev=${xar}&amp;zip=yes&amp;processor=${project.version.numeric}"
             failonerror="false" maxtime="360">
             <patternset>
                 <include name="**/*.xar"/>
@@ -125,7 +125,7 @@
             </classpath>
             <param name="apps" expression="${apps.list}"/>
             <param name="project-name" expression="${project.name}"/>
-            <param name="project-version" expression="${project.version}"/>
+            <param name="project-version" expression="${project.version.numeric}"/>
         </xslt>
     </target>
 
@@ -143,7 +143,7 @@
 
     <target depends="git.details, prepare-installer,launcher-exe,commandline-installer" name="installer" description="Create installer">
         <echo message="Calling IzPack to create installer ..."/>
-        <property name="inst-jar" value="installer/${project.name}-setup-${project.version}-${git.commit}.jar"/>
+        <property name="inst-jar" value="installer/${project.name}-setup-${project.version.numeric}-${project.version.desc}-${git.commit}.jar"/>
         <izpack input="installer/install.xml"
             output="${inst-jar}"
             basedir="." izPackDir="${izpack.dir}"
@@ -185,20 +185,21 @@
 		<taskdef name="launch4j"
 			classname="net.sf.launch4j.ant.Launch4jTask"
 			classpath="${launch4j.dir}/launch4j.jar:${launch4j.dir}/lib/xstream.jar" />
-		<property name="inst-jar" value="installer/${project.name}-setup-${project.version}-${git.commit}.jar"/>
-		<property name="inst-exe" value="installer/${project.name}-setup-${project.version}-${git.commit}.exe"/>
+      <property name="dist.name" value="${project.name}-setup-${project.version.numeric}-${project.version.desc}-${git.commit}"/>
+      <property name="inst-jar" value="installer/${dist.name}.jar"/>
+      <property name="inst-exe" value="installer/${dist.name}.exe"/>
 
-      <propertyregex property="ver.major" input="${project.version}" regexp="([0-9]+).*" replace="\1"/>
-      <propertyregex property="ver.minor" input="${project.version}" regexp="[0-9]+\.([0-9]+).*" replace="\1" defaultValue="0"/>
-      <propertyregex property="ver.revision" input="${project.version}" regexp="[0-9]+\.[0-9]+\.([0-9]+).*" replace="\1" defaultValue="0"/>
-      <propertyregex property="ver.build" input="${project.version}" regexp="[0-9]+\.[0-9]+\.[0-9]+\.([0-9]+)" replace="\1" defaultValue="0"/>
+      <propertyregex property="ver.major" input="${project.version.numeric}" regexp="([0-9]+).*" replace="\1"/>
+      <propertyregex property="ver.minor" input="${project.version.numeric}" regexp="[0-9]+\.([0-9]+).*" replace="\1" defaultValue="0"/>
+      <propertyregex property="ver.revision" input="${project.version.numeric}" regexp="[0-9]+\.[0-9]+\.([0-9]+).*" replace="\1" defaultValue="0"/>
+      <propertyregex property="ver.build" input="${project.version.numeric}" regexp="[0-9]+\.[0-9]+\.[0-9]+\.([0-9]+)" replace="\1" defaultValue="0"/>
 
-		<launch4j configFile="installer/launch4j.xml" jar="${inst-jar}"
-			outfile="${inst-exe}"
-			fileVersion="${ver.major}.${ver.minor}.${ver.revision}.${ver.build}"
-			txtFileVersion="${project.version}-${git.commit}"
-			productVersion="${ver.major}.${ver.minor}.${ver.revision}.${ver.build}"
-			txtProductVersion="${project.version}-${git.commit}"/>
+      <launch4j configFile="installer/launch4j.xml" jar="${inst-jar}"
+          outfile="${inst-exe}"
+          fileVersion="${ver.major}.${ver.minor}.${ver.revision}.${ver.build}"
+          txtFileVersion="${project.version.numeric}-${git.commit}"
+          productVersion="${ver.major}.${ver.minor}.${ver.revision}.${ver.build}"
+          txtProductVersion="${project.version.numeric}-${git.commit}"/>
 	</target>
 
     <target name="copy_scripts">

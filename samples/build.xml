@@ -50,7 +50,7 @@
         <jar basedir="${classes}" compress="true" jarfile="${top.dir}/examples.jar" >
             <manifest>
                 <attribute name="Project-Name" value="${project.name}"/>
-                <attribute name="Project-Version" value="${project.version}"/>
+                <attribute name="Project-Version" value="${project.version.numeric}"/>
                 <attribute name="Project-Build" value="${DSTAMP}"/>
                 <attribute name="SVN-Revision" value="${svn.revision}"/>
             </manifest>

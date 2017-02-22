@@ -32,7 +32,7 @@
       <sourceFolder url="file://$MODULE_DIR$/extensions/xUnit/src/test/java" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/autodeploy" />
       <excludeFolder url="file://$MODULE_DIR$/backup" />
-      <excludeFolder url="file://$MODULE_DIR$/build" />
+      <excludeFolder url="file://$MODULE_DIR$/build/classes" />
       <excludeFolder url="file://$MODULE_DIR$/extensions/exquery/modules/request/build" />
       <excludeFolder url="file://$MODULE_DIR$/extensions/exquery/restxq/build" />
       <excludeFolder url="file://$MODULE_DIR$/extensions/modules/src/org/exist/xquery/modules/cqlparser" />

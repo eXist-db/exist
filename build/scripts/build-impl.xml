@@ -36,7 +36,7 @@
     <property name="build.deprecation" value="on"/>
     <property name="jvmarg" value="-Xmx128000k -Xms32000k -Djetty.home=${jetty.dir} -Dexist.home=${basedir}"/>
     <property name="xmldb.src" value="undefined"/>
-    <property name="dist.dir" value="${dist}/${project.name}-${project.version}"/>
+    <property name="dist.dir" value="${dist}/${project.name}-${project.version.numeric}-${project.version.desc}"/>
     
    
 
@@ -117,7 +117,7 @@
         <property file="VERSION.txt"/>
 
         <echo message="-------------------------"/>
-        <echo message="eXist ${project.version} build"/>
+        <echo message="eXist ${project.version.numeric}-${project.version.desc} build"/>
         <echo message="-------------------------"/>
         <echo message="Git commit ID: ${git.commit}"/>
         <echo message=""/>
@@ -130,7 +130,7 @@
         <mkdir dir="${jetty.dir}/logs"/>
         <mkdir dir="${jetty.dir}/work"/>
 
-        <filter token="version" value="${project.version}-:${git.commit}-${DSTAMP}"/>
+        <filter token="version" value="${project.version.numeric}-:${git.commit}-${DSTAMP}"/>
         <filter token="database" value="native"/>
 
         <copy file="${src.webapp}/xqts/config.xml.tmpl" tofile="${src.webapp}/xqts/config.xml"
@@ -275,8 +275,8 @@
     <!-- ================================================================== -->
     <target name="jar" depends="git.details,compile,compile-aspectj"
         description="Create eXist-db unsigned jar files">
-        <filter token="version" value="${project.version}"/>
-        <filter token="semver" value="${project.version}"/>
+        <filter token="version" value="${project.version.numeric}-${project.version.desc}"/>
+        <filter token="semver" value="${project.version.numeric}"/>
         <filter token="source" value="${project.source}"/>
         <filter token="build" value="${DSTAMP}"/>
         <filter token="git.commit" value="${git.commit}"/>
@@ -345,7 +345,7 @@
         <jar basedir="${build.classes}" compress="true" jarfile="exist.jar">
             <manifest>
                 <attribute name="Project-Name" value="${project.name}"/>
-                <attribute name="Project-Version" value="${project.version}"/>
+                <attribute name="Project-Version" value="${project.version.numeric}"/>
                 <attribute name="Project-Build" value="${DSTAMP}"/>
                 <attribute name="Project-CodeName" value="${project.codename}"/>
                 <attribute name="Git-commit" value="${git.commit}"/>
@@ -371,7 +371,7 @@
                 <attribute name="Implementation-Title" value="eXist XML Database"/>
                 <attribute name="Implementation-URL" value="http://exist-db.org"/>
                 <attribute name="Project-Name" value="${project.name}"/>
-                <attribute name="Project-Version" value="${project.version}"/>
+                <attribute name="Project-Version" value="${project.version.numeric}"/>
                 <attribute name="Project-Build" value="${DSTAMP}"/>
                 <attribute name="Project-CodeName" value="${project.codename}"/>
                 <attribute name="Git-commit" value="${git.commit}"/>
@@ -382,7 +382,7 @@
         <jar basedir="${build.classes}" compress="true" jarfile="exist-optional.jar">
             <manifest>
                 <attribute name="Project-Name" value="${project.name}"/>
-                <attribute name="Project-Version" value="${project.version}"/>
+                <attribute name="Project-Version" value="${project.version.numeric}"/>
                 <attribute name="Project-Build" value="${DSTAMP}"/>
                 <attribute name="Project-CodeName" value="${project.codename}"/>
                 <attribute name="Git-commit" value="${git.commit}"/>
