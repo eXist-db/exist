@@ -39,7 +39,7 @@
             displayname="eXist-db"
             identifier="org.exist.start.Main"
             mainclassname="org.exist.start.Main"
-            shortversion="${project.version.numeric}"
+            shortversion="${project.version}"
             icon="${installer.mac.icon}">
             <classpath file="start.jar"/>
             <option value="-Dexist.home=$APP_ROOT/.."/>
@@ -87,7 +87,7 @@
                 <pathelement location="${asocat-exist.jar}"/>
             </classpath>
         </taskdef>
-        <fetch dest="${apps.dir}" url="${apps.repo}/pkg.zip?abbrev=${xar}&amp;zip=yes&amp;processor=${project.version.numeric}"
+        <fetch dest="${apps.dir}" url="${apps.repo}/pkg.zip?abbrev=${xar}&amp;zip=yes&amp;processor=${project.version}"
             failonerror="false" maxtime="360">
             <patternset>
                 <include name="**/*.xar"/>
@@ -176,9 +176,9 @@
             classpath="${launch4j.dir}/launch4j.jar:${launch4j.dir}/lib/xstream.jar" />
 
         <echo message="${git.commit}"/>
-        <launch4j configFile="installer/launch4j-start.xml" fileVersion="${project.version.numeric}.${git.commit}"
+        <launch4j configFile="installer/launch4j-start.xml" fileVersion="${project.version}.${git.commit}"
             txtFileVersion="${project.version}-${git.commit}"
-            productVersion="${project.version.numeric}.${git.commit}"/-->
+            productVersion="${project.version}.${git.commit}"/-->
     </target>
 
 	<target depends="git.details,installer" name="installer-exe" description="Create .exe from installer">
@@ -188,10 +188,10 @@
 		<property name="inst-jar" value="installer/${project.name}-setup-${project.version}-${git.commit}.jar"/>
 		<property name="inst-exe" value="installer/${project.name}-setup-${project.version}-${git.commit}.exe"/>
 
-        <propertyregex property="ver.major" input="${project.version.numeric}" regexp="([0-9]+).*" replace="\1"/>
-	    <propertyregex property="ver.minor" input="${project.version.numeric}" regexp="[0-9]+\.([0-9]+).*" replace="\1" defaultValue="0"/>
-	    <propertyregex property="ver.revision" input="${project.version.numeric}" regexp="[0-9]+\.[0-9]+\.([0-9]+).*" replace="\1" defaultValue="0"/>
-	    <propertyregex property="ver.build" input="${project.version.numeric}" regexp="[0-9]+\.[0-9]+\.[0-9]+\.([0-9]+)" replace="\1" defaultValue="0"/>
+      <propertyregex property="ver.major" input="${project.version}" regexp="([0-9]+).*" replace="\1"/>
+      <propertyregex property="ver.minor" input="${project.version}" regexp="[0-9]+\.([0-9]+).*" replace="\1" defaultValue="0"/>
+      <propertyregex property="ver.revision" input="${project.version}" regexp="[0-9]+\.[0-9]+\.([0-9]+).*" replace="\1" defaultValue="0"/>
+      <propertyregex property="ver.build" input="${project.version}" regexp="[0-9]+\.[0-9]+\.[0-9]+\.([0-9]+)" replace="\1" defaultValue="0"/>
 
 		<launch4j configFile="installer/launch4j.xml" jar="${inst-jar}"
 			outfile="${inst-exe}"

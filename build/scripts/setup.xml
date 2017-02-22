@@ -65,7 +65,7 @@
           <pathelement location="${asocat-exist.jar}"/>
         </classpath>
     </taskdef>
-    <fetch dest="${autostart-dir}" url="${autodeploy.repo}/pkg.zip?abbrev=${xar}&amp;zip=yes&amp;processor=${project.version.numeric}"
+    <fetch dest="${autostart-dir}" url="${autodeploy.repo}/pkg.zip?abbrev=${xar}&amp;zip=yes&amp;processor=${project.version}"
            failonerror="false" maxtime="120">
          <patternset>
              <include name="**/*.xar"/>
