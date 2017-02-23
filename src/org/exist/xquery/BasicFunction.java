@@ -29,62 +29,66 @@ import org.exist.xquery.util.ExpressionDumper;
 /**
  * Abstract base class for simple functions. Subclasses should overwrite
  * method {@link #eval(Sequence[], Sequence)}.
- * 
+ *
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
 public abstract class BasicFunction extends Function {
 
-	public BasicFunction(XQueryContext context, FunctionSignature signature) {
-		super(context, signature);
-	}
+    public BasicFunction(final XQueryContext context, final FunctionSignature signature) {
+        super(context, signature);
+    }
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#eval(org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
-	 */
-	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+    @Override
+    public Sequence eval(Sequence contextSequence, final Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {
-            context.getProfiler().start(this);       
+            context.getProfiler().start(this);
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
-            if (contextSequence != null)
-                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
-            if (contextItem != null)
-                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
+            if (contextSequence != null) {
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+            }
+            if (contextItem != null) {
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+            }
         }
-        
-		if (contextItem != null)
-			{contextSequence = contextItem.toSequence();}
-        
-		final int argCount = getArgumentCount();
-		final Sequence[] args = new Sequence[argCount];
-		for (int i = 0; i < argCount; i++) {
+
+        if (contextItem != null) {
+            contextSequence = contextItem.toSequence();
+        }
+
+        final int argCount = getArgumentCount();
+        final Sequence[] args = new Sequence[argCount];
+        for (int i = 0; i < argCount; i++) {
             try {
                 args[i] = getArgument(i).eval(contextSequence, contextItem);
             } catch (final XPathException e) {
-				if(e.getErrorCode() == null || e.getErrorCode() == ErrorCodes.ERROR) {
-					e.prependMessage(
-							ErrorCodes.XPTY0004,
-							"checking function parameter " + (i + 1) + " in call " + ExpressionDumper.dump(this) + ": ");
-				}
+                if (e.getErrorCode() == null || e.getErrorCode() == ErrorCodes.ERROR) {
+                    e.prependMessage(
+                            ErrorCodes.XPTY0004,
+                            "checking function parameter " + (i + 1) + " in call " + ExpressionDumper.dump(this) + ": ");
+                }
 
                 throw e;
             }
         }
-		       
-        final Sequence result = eval(args, contextSequence);
-        
-        if (context.getProfiler().isEnabled())           
-            {context.getProfiler().end(this, "", result);}   
-     
-        return result;        
-	}
 
-	/**
-	 * Process the function. All arguments are passed in the array args. The number of
-	 * arguments, their type and cardinality have already been checked to match 
-	 * the function signature.
-	 * 
-	 * @param args
-	 * @param contextSequence
-	 */
-	public abstract Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException;
+        final Sequence result = eval(args, contextSequence);
+
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().end(this, "", result);
+        }
+
+        return result;
+    }
+
+    /**
+     * Process the function. All arguments are passed in the array args. The number of
+     * arguments, their type and cardinality have already been checked to match
+     * the function signature.
+     *
+     * @param args The arguments given to the function
+     * @param contextSequence The context sequence for the function or null
+     *
+     * @return The result of the XPath function
+     */
+    public abstract Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException;
 }
