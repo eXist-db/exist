@@ -58,8 +58,8 @@ import java.util.Properties;
 public class AuditTrailSessionListener implements HttpSessionListener {
 
     private static final Logger LOG = LogManager.getLogger(AuditTrailSessionListener.class);
-    private static final String REGISTER_CREATE_XQUERY_SCRIPT_PROPERTY = "org.exist.http.session_create_listener";
-    private static final String REGISTER_DESTROY_XQUERY_SCRIPT_PROPERTY = "org.exist.http.session_destroy_listener";
+    public static final String REGISTER_CREATE_XQUERY_SCRIPT_PROPERTY = "org.exist.http.session_create_listener";
+    public static final String REGISTER_DESTROY_XQUERY_SCRIPT_PROPERTY = "org.exist.http.session_destroy_listener";
 
 
     @Override
