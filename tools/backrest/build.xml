@@ -6,10 +6,11 @@
     
     <!-- import common targets -->
     <import file="../../build.xml"/>
+    <import file="../../build/scripts/git-support.xml"/>
     
     <property name="backrest" value="./tools/backrest"/>
     <property name="backrest.src" value="${backrest}/src"/>
-    <property name="backrest.dist.name" value="${project.name}-backrest-${project.version.numeric}-${project.version.desc}"/>
+    <property name="backrest.dist.name" value="${project.name}-backrest-${project.version.numeric}-${project.version.stage}-${git.commit}"/>
     <property name="backrest.dist" value="${backrest}/dist/${backrest.dist.name}"/>
     <property name="backrest.lib" value="${backrest.dist}/lib"/>
     

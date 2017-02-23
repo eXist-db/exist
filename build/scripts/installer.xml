@@ -9,7 +9,7 @@
 
 	<!-- import common targets -->
 	<import file="../../build.xml"/>
-	<import file="../../build/scripts/macosx.xml"/>
+    <import file="macosx.xml"/>
     <import file="git-support.xml"/>
 
     <taskdef resource="net/sf/antcontrib/antcontrib.properties">
@@ -143,7 +143,7 @@
 
     <target depends="git.details, prepare-installer,launcher-exe,commandline-installer" name="installer" description="Create installer">
         <echo message="Calling IzPack to create installer ..."/>
-        <property name="inst-jar" value="installer/${project.name}-setup-${project.version.numeric}-${project.version.desc}-${git.commit}.jar"/>
+        <property name="inst-jar" value="installer/${project.name}-setup-${project.version.numeric}-${project.version.stage}-${git.commit}.jar"/>
         <izpack input="installer/install.xml"
             output="${inst-jar}"
             basedir="." izPackDir="${izpack.dir}"
@@ -185,7 +185,7 @@
 		<taskdef name="launch4j"
 			classname="net.sf.launch4j.ant.Launch4jTask"
 			classpath="${launch4j.dir}/launch4j.jar:${launch4j.dir}/lib/xstream.jar" />
-      <property name="dist.name" value="${project.name}-setup-${project.version.numeric}-${project.version.desc}-${git.commit}"/>
+      <property name="dist.name" value="${project.name}-setup-${project.version.numeric}-${project.version.stage}-${git.commit}"/>
       <property name="inst-jar" value="installer/${dist.name}.jar"/>
       <property name="inst-exe" value="installer/${dist.name}.exe"/>
 

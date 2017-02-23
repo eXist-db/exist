@@ -36,7 +36,8 @@
     <property name="build.deprecation" value="on"/>
     <property name="jvmarg" value="-Xmx128000k -Xms32000k -Djetty.home=${jetty.dir} -Dexist.home=${basedir}"/>
     <property name="xmldb.src" value="undefined"/>
-    <property name="dist.dir" value="${dist}/${project.name}-${project.version.numeric}-${project.version.desc}"/>
+    <property name="dist.name" value="${project.name}-${project.version.numeric}-${project.version.stage}-${git.commit}"/>
+    <property name="dist.dir" value="${dist}/${dist.name}"/>
     
    
 
@@ -117,7 +118,7 @@
         <property file="VERSION.txt"/>
 
         <echo message="-------------------------"/>
-        <echo message="eXist ${project.version.numeric}-${project.version.desc} build"/>
+        <echo message="eXist ${project.version.numeric}-${project.version.stage} build"/>
         <echo message="-------------------------"/>
         <echo message="Git commit ID: ${git.commit}"/>
         <echo message=""/>
@@ -275,7 +276,7 @@
     <!-- ================================================================== -->
     <target name="jar" depends="git.details,compile,compile-aspectj"
         description="Create eXist-db unsigned jar files">
-        <filter token="version" value="${project.version.numeric}-${project.version.desc}"/>
+        <filter token="version" value="${project.version.numeric}-${project.version.stage}"/>
         <filter token="semver" value="${project.version.numeric}"/>
         <filter token="source" value="${project.source}"/>
         <filter token="build" value="${DSTAMP}"/>
