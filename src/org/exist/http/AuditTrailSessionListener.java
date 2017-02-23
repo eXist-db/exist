@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2010 The eXist Project
+ *  Copyright (C) 2001-2017 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -13,11 +13,9 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *
- * $Id$
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.http;
 
@@ -50,43 +48,37 @@ import java.util.Properties;
  * java option 'org.exist.http.session_create_listener' when an
  * HTTP session is created and 'org.exist.http.session_destroy_listener'
  * when an HTTP session is destroyed.
- *
+ * <p>
  * If the java option is not set, then do nothing.
- *
+ * <p>
  * If the java option is set, then retrieve the script from the file
  * or resource designated by the value of the property.  Execute the
  * XQuery script to record the creation or destruction of a HTTP session.
  */
 public class AuditTrailSessionListener implements HttpSessionListener {
 
-    private final static Logger LOG = LogManager.getLogger(AuditTrailSessionListener.class);
-    private static final String REGISTER_CREATE_XQUERY_SCRIPT_PROPERTY = "org.exist.http.session_create_listener";
-    private static final String REGISTER_DESTROY_XQUERY_SCRIPT_PROPERTY = "org.exist.http.session_destroy_listener";
+    private static final Logger LOG = LogManager.getLogger(AuditTrailSessionListener.class);
+    public static final String REGISTER_CREATE_XQUERY_SCRIPT_PROPERTY = "org.exist.http.session_create_listener";
+    public static final String REGISTER_DESTROY_XQUERY_SCRIPT_PROPERTY = "org.exist.http.session_destroy_listener";
 
-    
 
-    /**
-     *
-     * @param sessionEvent
-     */
-    public void sessionCreated(HttpSessionEvent sessionEvent) {
+    @Override
+    public void sessionCreated(final HttpSessionEvent sessionEvent) {
         final HttpSession session = sessionEvent.getSession();
 
-        LOG.info("session created " + session.getId());
+        LOG.info("Session created " + session.getId());
         final String xqueryResourcePath = System.getProperty(REGISTER_CREATE_XQUERY_SCRIPT_PROPERTY);
         executeXQuery(xqueryResourcePath);
     }
 
-    /**
-     *
-     * @param sessionEvent
-     */
-    public void sessionDestroyed(HttpSessionEvent sessionEvent) {
+    @Override
+    public void sessionDestroyed(final HttpSessionEvent sessionEvent) {
         final HttpSession session = (sessionEvent != null) ? sessionEvent.getSession() : null;
-        if (session != null)
-            {LOG.info("destroy session " + session.getId());}
-        else
-            {LOG.info("destroy session");}
+        if (session != null) {
+            LOG.info("Destroyed session " + session.getId());
+        } else {
+            LOG.info("Destroyed session");
+        }
 
         final String xqueryResourcePath = System.getProperty(REGISTER_DESTROY_XQUERY_SCRIPT_PROPERTY);
         executeXQuery(xqueryResourcePath);
@@ -95,19 +87,15 @@ public class AuditTrailSessionListener implements HttpSessionListener {
     private void executeXQuery(String xqueryResourcePath) {
         if (xqueryResourcePath != null && xqueryResourcePath.length() > 0) {
             xqueryResourcePath = xqueryResourcePath.trim();
-            BrokerPool pool = null;
-            Subject subject = null;
-            
+
             try {
+                final BrokerPool pool = BrokerPool.getInstance();
+                final Subject sysSubject = pool.getSecurityManager().getSystemSubject();
+
                 DocumentImpl resource = null;
-                Source source = null;
-
-                pool = BrokerPool.getInstance();
-                subject = pool.getSecurityManager().getSystemSubject();
-
-                try(final DBBroker broker = pool.get(Optional.of(subject))) {
+                try (final DBBroker broker = pool.get(Optional.of(sysSubject))) {
                     if (broker == null) {
-                        LOG.error("Unable to retrieve DBBroker for " + subject.getName());
+                        LOG.error("Unable to retrieve DBBroker for " + sysSubject.getName());
                         return;
                     }
 
@@ -116,8 +104,11 @@ public class AuditTrailSessionListener implements HttpSessionListener {
 
                     resource = broker.getXMLResource(pathUri, LockMode.READ_LOCK);
 
+                    final Source source;
                     if (resource != null) {
-                        LOG.info("Resource [" + xqueryResourcePath + "] exists.");
+                        if (LOG.isTraceEnabled()) {
+                            LOG.trace("Resource [" + xqueryResourcePath + "] exists.");
+                        }
                         source = new DBSource(broker, (BinaryDocument) resource, true);
                     } else {
                         LOG.error("Resource [" + xqueryResourcePath + "] does not exist.");
@@ -126,7 +117,6 @@ public class AuditTrailSessionListener implements HttpSessionListener {
 
 
                     final XQuery xquery = pool.getXQueryService();
-
                     if (xquery == null) {
                         LOG.error("broker unable to retrieve XQueryService");
                         return;
@@ -134,7 +124,7 @@ public class AuditTrailSessionListener implements HttpSessionListener {
 
                     final XQueryPool xqpool = pool.getXQueryPool();
                     CompiledXQuery compiled = xqpool.borrowCompiledXQuery(broker, source);
-                    XQueryContext context;
+                    final XQueryContext context;
                     if (compiled == null) {
                         context = new XQueryContext(broker.getBrokerPool());
                     } else {
@@ -151,20 +141,25 @@ public class AuditTrailSessionListener implements HttpSessionListener {
                     }
 
                     final Properties outputProperties = new Properties();
-                    Sequence result = null;
 
                     try {
                         final long startTime = System.currentTimeMillis();
-                        result = xquery.execute(broker, compiled, null, outputProperties);
+                        final Sequence result = xquery.execute(broker, compiled, null, outputProperties);
                         final long queryTime = System.currentTimeMillis() - startTime;
-                        LOG.info("XQuery execution results: " + result.toString() + " in " + queryTime + "ms.");
+                        if (LOG.isTraceEnabled()) {
+                            LOG.trace("XQuery execution results: " + result.toString() + " in " + queryTime + "ms.");
+                        }
                     } finally {
                         xqpool.returnCompiledXQuery(source, compiled);
+                    }
+                } finally {
+                    if (resource != null) {
+                        resource.getUpdateLock().release(LockMode.READ_LOCK);
                     }
                 }
 
             } catch (final Exception e) {
-                LOG.error("Exception while executing [" + xqueryResourcePath + "] script for " + subject.getName(), e);
+                LOG.error("Exception while executing [" + xqueryResourcePath + "] script", e);
             }
         }
     }

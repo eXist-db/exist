@@ -153,7 +153,8 @@
             <test fork="yes" name="xquery.numbers.NumberTests" todir="${junit.reports.dat}"/>
             <test fork="yes" name="xquery.modules.compression.CompressionTests" todir="${junit.reports.dat}"/>
 
-            <!--  //-->            
+            <!--  //-->
+            <test fork="yes" name="org.exist.http.AuditTrailSessionListenerTest" todir="${junit.reports.dat}"/>
             <test fork="yes" name="org.exist.util.SortTests" todir="${junit.reports.dat}"/>
             <test fork="yes" name="org.exist.xmldb.XmldbLocalTests" todir="${junit.reports.dat}"/>
             <test fork="yes" name="org.exist.xupdate.XUpdateTest" todir="${junit.reports.dat}"/>
