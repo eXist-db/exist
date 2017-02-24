@@ -27,6 +27,10 @@ public class MapExpr extends AbstractExpression {
     }
 
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+        if(getContext().getXQueryVersion() < 30){
+            throw new XPathException(this, ErrorCodes.EXXQDY0003,
+                "Map is not available before XQuery 3.0");
+        }
         contextInfo.setParent(this);
         for (final Mapping mapping : this.mappings) {
             mapping.key.analyze(contextInfo);

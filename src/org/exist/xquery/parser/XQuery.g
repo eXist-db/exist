@@ -147,6 +147,7 @@ imaginaryTokenDefinitions
 	INLINE_FUNCTION_DECL
 	FUNCTION_INLINE
 	FUNCTION_TEST
+	MAP
 	MAP_TEST
 	LOOKUP
 	ARRAY
@@ -1242,7 +1243,7 @@ primaryExpr throws XPathException
 	|
 	( LPPAREN | ( "array" LCURLY ) ) => arrayConstructor
 	|
-	( "map" LCURLY ) => mapExpr
+	( "map" LCURLY ) => mapConstructor
 	|
 	directConstructor
 	|
@@ -1261,10 +1262,14 @@ primaryExpr throws XPathException
 	literal
 	;
 
-mapExpr throws XPathException
-	:
-	"map"^ LCURLY! ( mapAssignment ( COMMA! mapAssignment )* )? RCURLY!
-	;
+mapConstructor throws XPathException
+    :
+    a:"map"! LCURLY! ( mapAssignment ( COMMA! mapAssignment )* )? RCURLY!
+    {
+        #mapConstructor = #(#[MAP, "map"], #mapConstructor);
+        #mapConstructor.copyLexInfo(#a);
+    }
+    ;
 
 mapAssignment throws XPathException
 	:
