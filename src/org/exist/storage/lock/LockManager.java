@@ -32,6 +32,7 @@ import java.lang.ref.WeakReference;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * A Lock Manager for Locks that are used across
@@ -55,8 +56,12 @@ public class LockManager {
     private static final int INITIAL_COLLECTION_LOCK_CAPACITY = 1000;
     private static final float COLLECTION_LOCK_LOAD_FACTOR = 0.75f;
 
+    private static final boolean USE_FAIR_SCHEDULER = true;  //Java's ReentrantReadWriteLock must use the Fair Scheduler to get FIFO like ordering
+
     private final ReferenceQueue<ReentrantReadWriteLock> collectionLockReferences;
     private final ConcurrentMap<String, WeakReference<ReentrantReadWriteLock>> collectionLocks;
+
+    private final static LockTable lockTable = LockTable.getInstance();
 
     public LockManager(final int concurrencyLevel) {
         this.collectionLocks = new ConcurrentHashMap<>(INITIAL_COLLECTION_LOCK_CAPACITY, COLLECTION_LOCK_LOAD_FACTOR, concurrencyLevel);
@@ -86,7 +91,7 @@ public class LockManager {
                 collectionLocks.compute(collectionPath, (key, value) -> {
                     if(value == null || value.get() == null) {
                         drainClearedReferences(collectionLockReferences, collectionLocks);
-                        return new WeakReference<>(new ReentrantReadWriteLock(key), collectionLockReferences);
+                        return new WeakReference<>(new ReentrantReadWriteLock(USE_FAIR_SCHEDULER), collectionLockReferences);
                     } else {
                         return value;
                     }
@@ -102,16 +107,16 @@ public class LockManager {
         return getCollectionLock(collectionPath);
     }
 
-    //TODO(AR) Collection locks should be switched to Java's ReentrantReadWriteLock and must use the Fair Scheduler to get FIFO like ordering
-
     //See Concurrency of Operations on B-Trees - Bayer and Schkolnick 1977 - Solution 2
     public ManagedCollectionLock acquireCollectionReadLock(final XmldbURI collectionPath) throws LockException {
         final XmldbURI[] segments = collectionPath.getPathSegments();
 
         String path = '/' + segments[0].toString();
         final ReentrantReadWriteLock root = getCollectionLock(path);
-        if(!root.acquire(Lock.LockMode.READ_LOCK)) {
-            throw new LockException("Unable to acquire READ_LOCK for: " + path);
+        try {
+            root.readLock().lockInterruptibly();
+        } catch(final InterruptedException e) {
+            throw new LockException("Unable to acquire READ_LOCK for: " + path, e);
         }
 
         ReentrantReadWriteLock current = root;
@@ -119,18 +124,21 @@ public class LockManager {
         for(int i = 1; i < segments.length; i++) {
             path += '/' + segments[i].toString();
             final ReentrantReadWriteLock son = getCollectionLock(path);
-            if(!son.acquire(Lock.LockMode.READ_LOCK)) {
-                current.release(Lock.LockMode.READ_LOCK);
-                throw new LockException("Unable to acquire READ_LOCK for: " + path);
+
+            try {
+                son.readLock().lockInterruptibly();
+            } catch(final InterruptedException e) {
+                current.readLock().unlock();
+                throw new LockException("Unable to acquire READ_LOCK for: " + path, e);
             }
 
-            current.release(Lock.LockMode.READ_LOCK);
+            current.readLock().unlock();
             current = son;
         }
 
         final ReentrantReadWriteLock collectionReadLock = current;
 
-        return new ManagedCollectionLock(Either.Left(collectionReadLock), () -> collectionReadLock.release(Lock.LockMode.READ_LOCK));
+        return new ManagedCollectionLock(collectionPath, Either.Left(collectionReadLock.readLock()), () -> collectionReadLock.readLock().unlock());
     }
 
     //TODO(AR) there are several reasons we might lock a collection for writes
@@ -149,50 +157,73 @@ public class LockManager {
         final XmldbURI[] segments = collectionPath.getPathSegments();
 
         String path = '/' + segments[0].toString();
-        final Lock.LockMode rootMode = segments.length == 1 || (segments.length == 2 && lockParent) ? Lock.LockMode.WRITE_LOCK : Lock.LockMode.READ_LOCK;
 
         final ReentrantReadWriteLock root = getCollectionLock(path);
-        if(!root.acquire(rootMode)) {
-            throw new LockException("Unable to acquire " + rootMode.name() + " for: " + path);
+
+        final Lock.LockMode rootMode;
+        final java.util.concurrent.locks.Lock rootModeLock;
+        if(segments.length == 1 || (segments.length == 2 && lockParent)) {
+            rootMode = Lock.LockMode.WRITE_LOCK;
+            rootModeLock = root.writeLock();
+        } else {
+            rootMode = Lock.LockMode.READ_LOCK;
+            rootModeLock = root.readLock();
         }
 
-        Lock.LockMode currentMode = rootMode;
-        ReentrantReadWriteLock current = root;
-        ReentrantReadWriteLock parent = null;
+        try {
+            rootModeLock.lockInterruptibly();
+        } catch(final InterruptedException e) {
+            throw new LockException("Unable to acquire " + rootMode.name() + " for: " + path, e);
+        }
+
+        java.util.concurrent.locks.Lock currentModeLock = rootModeLock;
+        java.util.concurrent.locks.Lock parentModeLock = null;
 
         final int lastSegmentIdx = segments.length - 1;
 
         for(int i = 1; i < segments.length; i++) {
             path += '/' + segments[i].toString();
-            final Lock.LockMode sonMode = i == lastSegmentIdx || (i == segments.length - 2 && lockParent) ? Lock.LockMode.WRITE_LOCK : Lock.LockMode.READ_LOCK;
+
             final ReentrantReadWriteLock son = getCollectionLock(path);
-            if(!son.acquire(sonMode)) {
-                current.release(currentMode);
-                throw new LockException("Unable to acquire " + currentMode.name() + " for: " + path);
+
+            final Lock.LockMode sonMode;
+            final java.util.concurrent.locks.Lock sonModeLock;
+            if(i == lastSegmentIdx || (i == segments.length - 2 && lockParent)) {
+                sonMode = Lock.LockMode.WRITE_LOCK;
+                sonModeLock = son.writeLock();
+            } else {
+                sonMode = Lock.LockMode.READ_LOCK;
+                sonModeLock = son.readLock();
+            }
+
+            try {
+                sonModeLock.lockInterruptibly();
+            } catch(final InterruptedException e) {
+                currentModeLock.unlock();
+                throw new LockException("Unable to acquire " + sonMode.name() + " for: " + path, e);
             }
 
             if(!(i == lastSegmentIdx && lockParent)) {
-                current.release(currentMode);
+                currentModeLock.unlock();
             } else {
-                parent = current;
+                parentModeLock = currentModeLock;
             }
 
-            currentMode = sonMode;
-            current = son;
+            currentModeLock = sonModeLock;
         }
 
-        if(lockParent && parent != null) {
+        if(lockParent && parentModeLock != null) {
             //we return two locks as a single managed lock, the first lock is the parent collection and the second is the actual collection
-            final ReentrantReadWriteLock parentCollectionLock = parent;
-            final ReentrantReadWriteLock collectionLock = current;
-            return new ManagedCollectionLock(Either.Right(new Tuple2<>(parentCollectionLock, collectionLock)), () -> {
+            final java.util.concurrent.locks.Lock parentCollectionLock = parentModeLock;
+            final java.util.concurrent.locks.Lock collectionLock = currentModeLock;
+            return new ManagedCollectionLock(collectionPath, Either.Right(new Tuple2<>(parentCollectionLock, collectionLock)), () -> {
                     //TODO(AR) should this order be inverted?
-                    collectionLock.release(Lock.LockMode.WRITE_LOCK);
-                    parentCollectionLock.release(Lock.LockMode.WRITE_LOCK);
+                    collectionLock.unlock();
+                    parentCollectionLock.unlock();
             });
         } else {
-            final ReentrantReadWriteLock collectionLock = current;
-            return new ManagedCollectionLock(Either.Left(collectionLock), () -> collectionLock.release(Lock.LockMode.WRITE_LOCK));
+            final java.util.concurrent.locks.Lock collectionLock = currentModeLock;
+            return new ManagedCollectionLock(collectionPath, Either.Left(collectionLock), () -> collectionLock.unlock());
         }
     }
 
@@ -211,11 +242,16 @@ public class LockManager {
             throw new LockException("Cannot acquire a lock on sub-Collection, as provided parent lock is not the parent");
         }
 
+        //TODO(AR) is this correct do we need to unlock the parentLock's parent, and what about on LockException? -- need tests
         final ReentrantReadWriteLock subCollectionLock = getCollectionLock(collectionPath.getCollectionPath());
-        if(!subCollectionLock.acquire(Lock.LockMode.WRITE_LOCK)) {
-            throw new LockException("Unable to acquire WRITE_LOCK for: " + collectionPath);
+        final java.util.concurrent.locks.Lock subCollectionWriteLock = subCollectionLock.writeLock();
+        try {
+            subCollectionWriteLock.lockInterruptibly();
+        } catch(final InterruptedException e) {
+            throw new LockException("Unable to acquire WRITE_LOCK for: " + collectionPath, e);
         }
-        return new ManagedCollectionLock(Either.Left(subCollectionLock), () -> subCollectionLock.release(Lock.LockMode.WRITE_LOCK));
+
+        return new ManagedCollectionLock(collectionPath, Either.Left(subCollectionWriteLock), () -> subCollectionWriteLock.unlock());
     }
 
     /**

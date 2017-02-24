@@ -108,7 +108,7 @@ public class CollectionCache extends LRUCache<Collection> implements BrokerPoolS
         do {
             final Collection cached = next.getValue();
             if(cached.getKey() != item.getKey()) {
-                try(final ManagedLock<Lock> cachedReadLock = ManagedLock.attempt(cached.getLock(), LockMode.READ_LOCK)) {
+                try(final ManagedLock<java.util.concurrent.locks.ReadWriteLock> cachedReadLock = ManagedLock.attempt(cached.getLock(), LockMode.READ_LOCK)) {
                     if (cached.allowUnload()) {
                         if(pool.getConfigurationManager() != null) { // might be null during db initialization
                             pool.getConfigurationManager().invalidate(cached.getURI(), null);

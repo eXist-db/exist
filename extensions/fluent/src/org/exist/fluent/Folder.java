@@ -840,7 +840,7 @@ public class Folder extends NamedResource implements Cloneable {
 	void release() {
 		if (broker == null || handle == null) throw new IllegalStateException("broker not acquired");
 		if (tx != null) tx.abortIfIncomplete();
-		if (lockMode != LockMode.NO_LOCK) handle.getLock().release(lockMode);
+		if (lockMode != LockMode.NO_LOCK) handle.release(lockMode);
 		if (ownBroker) db.releaseBroker(broker);
 		ownBroker = false;
 		broker = null;
@@ -853,14 +853,23 @@ public class Folder extends NamedResource implements Cloneable {
 		if (lockMode == newLockMode) return;
 		if (lockMode == LockMode.NO_LOCK) {
 			try {
-				handle.getLock().acquire(newLockMode);
+				switch(newLockMode) {
+					case READ_LOCK:
+						handle.getLock().readLock().lockInterruptibly();
+						break;
+					case WRITE_LOCK:
+						handle.getLock().writeLock().lockInterruptibly();
+						break;
+					case NO_LOCK:
+						break;
+				}
 				lockMode = newLockMode;
-			} catch (LockException e) {
+			} catch (InterruptedException e) {
 				throw new DatabaseException(e);
 			}
 		} else {
 			if (newLockMode != LockMode.NO_LOCK) throw new IllegalStateException("cannot change between read and write lock modes");
-			handle.getLock().release(lockMode);
+			handle.release(lockMode);
 			lockMode = newLockMode;
 		}
 	}

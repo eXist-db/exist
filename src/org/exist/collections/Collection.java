@@ -33,6 +33,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Observable;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * Represents a Collection in the database. A collection maintains a list of
@@ -62,7 +63,7 @@ public interface Collection extends Resource, Comparable<Collection>, Cacheable 
      *
      * @return The lock for the Collection
      */
-    Lock getLock();
+    ReentrantReadWriteLock getLock();
 
     /**
      * Closes the Collection, i.e. releases the lock held by

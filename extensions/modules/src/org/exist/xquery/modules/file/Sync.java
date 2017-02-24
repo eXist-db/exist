@@ -162,7 +162,7 @@ public class Sync extends BasicFunction {
 			}
 		} finally {
 			if (collection != null)
-				collection.getLock().release(LockMode.READ_LOCK);
+				collection.release(LockMode.READ_LOCK);
 		}
 		
 		for (final XmldbURI childURI : subcollections) {

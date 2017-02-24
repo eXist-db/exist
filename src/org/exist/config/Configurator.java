@@ -1292,7 +1292,7 @@ public class Configurator {
         try {
             broker.pushSubject(pool.getSecurityManager().getSystemSubject());
             txn = transact.beginTransaction();
-            txn.acquireLock(collection.getLock(), LockMode.WRITE_LOCK);
+            txn.acquireCollectionLock(() -> pool.getLockManager().acquireCollectionWriteLock(collection.getURI(), false));
             final IndexInfo info = collection.validateXMLResource(txn, broker, uri, data);
             final DocumentImpl doc = info.getDocument();
             doc.getMetadata().setMimeType(MimeType.XML_TYPE.getName());

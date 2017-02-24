@@ -101,7 +101,7 @@ public class ReindexTest {
             try {
                 root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, LockMode.WRITE_LOCK);
                 assertNotNull(root);
-                transaction.acquireLock(root.getLock(), LockMode.WRITE_LOCK);
+                transaction.acquireCollectionLock(() -> broker.getBrokerPool().getLockManager().acquireCollectionWriteLock(root.getURI(), false));
                 broker.removeCollection(transaction, root);
                 pool.getJournalManager().get().flush(true, false);
             } finally {

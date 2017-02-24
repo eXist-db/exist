@@ -31,6 +31,8 @@ import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DefaultDocumentSet;
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.locks.*;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
 
 import org.apache.commons.io.input.CloseShieldInputStream;
@@ -52,6 +54,7 @@ import org.exist.storage.index.BFile;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.lock.*;
+import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.Txn;
@@ -90,7 +93,7 @@ public class MutableCollection implements Collection {
     private int collectionId = UNKNOWN_COLLECTION_ID;
     private XmldbURI path;
     private final LockManager lockManager;
-    private final Lock lock;
+    private final java.util.concurrent.locks.ReentrantReadWriteLock lock;
     @GuardedBy("lock") private final Map<String, DocumentImpl> documents = new TreeMap<>();
     @GuardedBy("lock") private ObjectHashSet<XmldbURI> subCollections = new ObjectHashSet<>(19);
     private long address = BFile.UNKNOWN_ADDRESS;  // Storage address of the collection in the BFile
@@ -166,7 +169,7 @@ public class MutableCollection implements Collection {
 
     //TODO(AR) remove this from here and the interface, use LockManager instead
     @Override
-    public Lock getLock() {
+    public ReentrantReadWriteLock getLock() {
         return lock;
     }
 
@@ -250,7 +253,14 @@ public class MutableCollection implements Collection {
     //TODO(AR) remove this from here and the interface, use LockManager instead
     @Override
     public void release(final LockMode mode) {
-        getLock().release(mode);
+        switch(mode) {
+            case READ_LOCK:
+                getLock().readLock().unlock();
+                break;
+            case WRITE_LOCK:
+                getLock().writeLock().unlock();
+                break;
+        }
     }
 
     @Override

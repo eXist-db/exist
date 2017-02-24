@@ -5,15 +5,18 @@ import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.exist.xmldb.XmldbURI;
 
 /**
- * Created by aretter on 21/01/2017.
+ * @author Adam Retter <adam@evolvedbinary.com>
  */
-public class ManagedCollectionLock extends ManagedLock<Either<ReentrantReadWriteLock, Tuple2<ReentrantReadWriteLock, ReentrantReadWriteLock>>> {
+public class ManagedCollectionLock extends ManagedLock<Either<java.util.concurrent.locks.Lock, Tuple2<java.util.concurrent.locks.Lock, java.util.concurrent.locks.Lock>>> {
 
-    public ManagedCollectionLock(final Either<ReentrantReadWriteLock, Tuple2<ReentrantReadWriteLock, ReentrantReadWriteLock>> lock, final Runnable closer) {
+    private final XmldbURI collectionUri;
+
+    public ManagedCollectionLock(final XmldbURI collectionUri, final Either<java.util.concurrent.locks.Lock, Tuple2<java.util.concurrent.locks.Lock, java.util.concurrent.locks.Lock>> lock, final Runnable closer) {
         super(lock, closer);
+        this.collectionUri = collectionUri;
     }
 
     public XmldbURI getPath() {
-        return lock.fold(lock -> XmldbURI.create(lock.getId()), (parentLockAndLock) -> XmldbURI.create(parentLockAndLock._2.getId()));
+        return collectionUri;
     }
 }

@@ -21,11 +21,18 @@ package org.exist.storage.txn;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.Supplier;
 
+import com.evolvedbinary.j8fu.function.SupplierE;
+import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.exist.Transaction;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.Lock.LockMode;
+import org.exist.storage.lock.LockManager;
+import org.exist.storage.lock.ManagedCollectionLock;
 import org.exist.util.LockException;
+import org.exist.xmldb.XmldbURI;
 
 /**
  * @author wolf
@@ -67,18 +74,23 @@ public class Txn implements Transaction {
      */
     @Deprecated
     public void registerLock(final Lock lock, final LockMode lockMode) {
-        locksHeld.add(new LockInfo(lock, lockMode));
+        locksHeld.add(new LockInfo(new Tuple2<>(lock, lockMode), () -> lock.release(lockMode)));
     }
 
     public void acquireLock(final Lock lock, final LockMode lockMode) throws LockException {
         lock.acquire(lockMode);
-        locksHeld.add(new LockInfo(lock, lockMode));
+        locksHeld.add(new LockInfo(new Tuple2<>(lock, lockMode), () -> lock.release(lockMode)));
     }
-    
+
+    public void acquireCollectionLock(final SupplierE<ManagedCollectionLock, LockException> fnLockAcquire) throws LockException {
+        final ManagedCollectionLock lock = fnLockAcquire.get();
+        locksHeld.add(new LockInfo(lock, lock::close));
+    }
+
     public void releaseAll() {
         for (int i = locksHeld.size() - 1; i >= 0; i--) {
             final LockInfo info = locksHeld.get(i);
-            info.lock.release(info.lockMode);
+            info.closer.run();
         }
         locksHeld.clear();
     }
@@ -101,13 +113,13 @@ public class Txn implements Transaction {
         }
     }
 
-    private static class LockInfo {
-        final Lock lock;
-        final LockMode lockMode;
+    private static class LockInfo<T> {
+        final T lock;
+        final Runnable closer;
         
-        public LockInfo(final Lock lock, final LockMode lockMode) {
+        public LockInfo(final T lock, final Runnable closer) {
             this.lock = lock;
-            this.lockMode = lockMode;
+            this.closer = closer;
         }
     }
  

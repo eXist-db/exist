@@ -807,7 +807,7 @@ public class XQueryURLRewrite extends HttpServlet {
             return null;
         } finally {
             if (collection != null) {
-                collection.getLock().release(LockMode.READ_LOCK);
+                collection.release(LockMode.READ_LOCK);
             }
         }
 

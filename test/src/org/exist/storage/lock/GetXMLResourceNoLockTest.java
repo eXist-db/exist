@@ -3,6 +3,7 @@ package org.exist.storage.lock;
 
 import java.io.IOException;
 import java.util.Optional;
+import java.util.concurrent.locks.*;
 
 import org.exist.collections.triggers.TriggerException;
 import org.exist.security.PermissionDeniedException;
@@ -55,11 +56,12 @@ public class GetXMLResourceNoLockTest {
 				    fail("Binary document '" + docPath + " does not exist.");
                 }
 
-			    assertEquals("Collection does not have lock!", true, testCollection.getLock().hasLock());
+				final java.util.concurrent.locks.ReentrantReadWriteLock colLock = testCollection.getLock();
+				assertEquals("Collection does not have lock!", true, colLock.getReadHoldCount() > 0);
 				
 			} finally {
 	    		if(testCollection != null) {
-					testCollection.getLock().release(LockMode.READ_LOCK);
+					testCollection.release(LockMode.READ_LOCK);
 				}
 			}
 		}

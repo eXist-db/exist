@@ -94,7 +94,7 @@ public class NativeBrokerLockingTest {
                 lockTable.registerListener(lockSymmetryListener);
                 registered = true;
                 final Collection collectionA = broker.openCollection(COLLECTION_A, LockMode.READ_LOCK);
-                collectionA.getLock().release(LockMode.READ_LOCK);
+                collectionA.release(LockMode.READ_LOCK);
 
                 transaction.commit();
             }
@@ -219,7 +219,7 @@ public class NativeBrokerLockingTest {
                 registered = true;
                 final XmldbURI collectionC = COLLECTION_B.append("colC");
                 final Collection collectionA = broker.getOrCreateCollection(transaction, collectionC);
-                collectionA.getLock().release(LockMode.READ_LOCK);
+                collectionA.release(LockMode.READ_LOCK);
 
                 transaction.commit();
             }
