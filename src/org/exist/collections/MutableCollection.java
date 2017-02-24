@@ -837,7 +837,9 @@ public class MutableCollection implements Collection {
         }
 
         final int collLen = istream.readInt();
-        try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionWriteLock(path, false)) {
+
+        //TODO(AR) should we WRITE_LOCK the Collection to stop it being loaded from disk concurrently? see NativeBroker#openCollection line 1030 - already has READ_LOCK ;-)
+//        try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionWriteLock(path, false)) {
             subCollections = new ObjectHashSet<>(collLen == 0 ? 19 : collLen); //TODO(AR) why is this number 19?
             for (int i = 0; i < collLen; i++) {
                 subCollections.add(XmldbURI.create(istream.readUTF()));
@@ -871,7 +873,7 @@ public class MutableCollection implements Collection {
                     return col.getId();
                 }
             });
-        }
+//        }
     }
 
     @Override

@@ -1059,9 +1059,15 @@ public class NativeBroker extends DBBroker {
             return null;
         }
 
-        // if we loaded a Collection add it to the cache
+        // if we loaded a Collection add it to the cache (if it isn't already there)
         if(loadedCollection != null) {
             try(final ManagedLock collectionsCacheLock = lockCollectionCache(collectionsCache)) {
+                final Collection collection = collectionsCache.get(collectionUri);
+                if(collection != null) {
+                    return collection;
+                }
+
+                // not present
                 collectionsCache.add(loadedCollection);
             } catch(final LockException e) {
                 unlockFn.run();
