@@ -36,7 +36,7 @@
     <!-- fix - "variable declaration of '$var' cannot be executed because of a circularity"
     <test output="text" id="maps-lookup-001">
         <task></task>
-        <code><![CDATA[xquery version "3.1";
+        <code><![CDATA[xquery version "3.0";
 
 declare variable $var := map { 'a':local:fun#1, 'b':0 };
 declare function local:fun($a) { $var?b = $a };
