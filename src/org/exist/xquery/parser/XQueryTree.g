@@ -1928,7 +1928,9 @@ throws PermissionDeniedException, EXistException, XPathException
 		path.add(step);
 	}
 	|
-	step=mapExpr [path]
+	step=mapConstr [path]
+  step=postfixExpr [step]
+  { path.add(step); }
 	|
 	step=arrayConstr [path]
 	step=postfixExpr [step]
@@ -3160,16 +3162,15 @@ throws XPathException, PermissionDeniedException, EXistException
 	)
 	;
 
-mapExpr [PathExpr path]
+mapConstr [PathExpr path]
 returns [Expression step]
 throws XPathException, PermissionDeniedException, EXistException
 {
 }:
 	#(
-		"map"
+		t:MAP
 		{
 			MapExpr expr = new MapExpr(context);
-			path.add(expr);
 			step = expr;
 		}
 		(
@@ -3179,8 +3180,8 @@ throws XPathException, PermissionDeniedException, EXistException
 					PathExpr key = new PathExpr(context);
 					PathExpr value = new PathExpr(context);
 				}
-				step=expr[key]
-				step=expr[value]
+				expr[key]
+				expr[value]
 				{ expr.map(key, value); }
 			)
 		)*
