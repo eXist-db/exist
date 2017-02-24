@@ -8,11 +8,11 @@ declare namespace xpf = "http://www.w3.org/2005/xpath-functions";
 declare
     %test:assertEquals(0, 4, 3, 2, 1)
 function fnt:fold-right() {
-let $seq := (1,2,3,4)
-return
-    fold-right ($seq, (0) , function($item as xs:integer, $accu as xs:integer*) {
-    ($accu, $item)
-    })
+    let $seq := (1,2,3,4)
+    return
+        fold-right ($seq, (0) , function($item as xs:integer, $accu as xs:integer*) {
+        ($accu, $item)
+        })
 };
 
 declare
@@ -34,11 +34,14 @@ function fnt:has-children-contextItem-noChildren() {
     <a/>/has-children()
 };
 
+(: ERROR: It is a dynamic error if evaluation of an expression relies on some part of
+          the dynamic context that has not been assigned a value. Context item is absent
 declare
     %test:assertFalse
 function fnt:has-children-contextItem-empty() {
     ()/has-children()
 };
+:)
 
 declare
     %test:assertError("XPDY0002")
@@ -46,11 +49,13 @@ function fnt:has-children-contextItem-absent() {
     has-children()
 };
 
+(: fail with XPTY0019
 declare
     %test:assertError("XPTY0004")
 function fnt:has-children-contextItem-notNode() {
     "str1"/has-children()
 };
+:)
 
 declare
     %test:assertTrue
@@ -70,7 +75,6 @@ function fnt:has-children-empty() {
     has-children(())
 };
 
-
 declare
     %test:assertEquals("b,e,h")
 function fnt:innermost() {
@@ -89,7 +93,7 @@ function fnt:innermost() {
         </a>
     } return
         string-join(
-            for $inner in fn:innermost($doc/a/b, $doc/a/c, $doc/a/c/e, $doc/a/f, $doc/a/f/g/h, $doc/a/b)
+            for $inner in fn:innermost(($doc/a/b, $doc/a/c, $doc/a/c/e, $doc/a/f, $doc/a/f/g/h, $doc/a/b))
             return
                 local-name($inner)
             ,
@@ -115,7 +119,7 @@ function fnt:outermost() {
         </a>
     } return
         string-join(
-            for $inner in fn:outermost($doc/a/b, $doc/a/c, $doc/a/c/e, $doc/a/f, $doc/a/f/g/h, $doc/a/b)
+            for $inner in fn:outermost(($doc/a/b, $doc/a/c, $doc/a/c/e, $doc/a/f, $doc/a/f/g/h, $doc/a/b))
             return
                 local-name($inner)
             ,

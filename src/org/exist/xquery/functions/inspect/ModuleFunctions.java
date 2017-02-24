@@ -68,9 +68,7 @@ public class ModuleFunctions extends BasicFunction {
             } catch (final XPathException e) {
                 LOG.debug("Failed to import module: " + args[0].getStringValue() + ": " + e.getMessage(), e);
 
-                if (e.getErrorCode().equals(ErrorCodes.XPST0003)) {
-                    throw new XPathException(this, e.getMessage());
-                }
+                throw new XPathException(this, e.getMessage(), e);
 
             } catch (final Exception e) {
                 LOG.debug("Failed to import module: " + args[0].getStringValue() + ": " + e.getMessage(), e);
