@@ -1,4 +1,4 @@
-xquery version "1.0";
+xquery version "3.1";
 
 module namespace mt="http://exist-db.org/xquery/test/maps";
 
