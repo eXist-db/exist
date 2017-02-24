@@ -42,6 +42,11 @@ import java.util.concurrent.ConcurrentMap;
  * ID will always return the same lock. Different IDs will always
  * receive different locks.
  *
+ * The locking protocol for Collection locks is taken from the paper:
+ *     Concurrency of Operations on B-Trees - Bayer and Schkolnick 1977
+ *     {@see https://link.springer.com/article/10.1007/BF00263762}
+ * specifically we have adopted Solution 2 presented in Section 3 of the paper
+ *
  * @author Adam Retter <adam@evolvedbinary.com>
  */
 public class LockManager {
