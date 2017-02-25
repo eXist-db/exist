@@ -117,15 +117,9 @@ public class EmbeddedUpload {
      */
     public void stream(XmldbURL xmldbURL, File tmp, Subject user) throws IOException {
         LOG.debug("Begin document upload");
-        
-        Collection collection = null;
-        BrokerPool pool =null;
-        
-        boolean collectionLocked = true;
-        
-        
+
         try {
-            pool = BrokerPool.getInstance();
+            final BrokerPool pool = BrokerPool.getInstance();
             
             if(user==null) {
                 if(xmldbURL.hasUserInfo()){
@@ -138,13 +132,14 @@ public class EmbeddedUpload {
                     user=EmbeddedUser.getUserGuest(pool);
                 }
             }
-            
+
+            Collection collection = null;
             try(final DBBroker broker = pool.get(Optional.of(user))) {
 
                 final XmldbURI collectionUri = XmldbURI.create(xmldbURL.getCollection());
                 final XmldbURI documentUri = XmldbURI.create(xmldbURL.getDocumentName());
 
-                collection = broker.openCollection(collectionUri, LockMode.READ_LOCK);
+                collection = broker.openCollection(collectionUri, LockMode.WRITE_LOCK);
 
                 if (collection == null) {
                     throw new IOException("Resource " + collectionUri.toString() + " is not a collection.");
@@ -171,8 +166,6 @@ public class EmbeddedUpload {
                         final IndexInfo info = collection.validateXMLResource(txn, broker, documentUri, inputsource);
                         final DocumentImpl doc = info.getDocument();
                         doc.getMetadata().setMimeType(contentType);
-                        collection.release(LockMode.READ_LOCK);
-                        collectionLocked = false;
                         collection.store(txn, broker, info, inputsource);
                         LOG.debug("done");
 
@@ -186,22 +179,19 @@ public class EmbeddedUpload {
 
                     LOG.debug("commit");
                 }
+            } finally {
+                if(collection != null) {
+                    collection.release(LockMode.WRITE_LOCK);
+                }
             }
         } catch (final IOException ex) {
-            //ex.printStackTrace();
             LOG.debug(ex);
             throw ex;
-            
         } catch (final Exception ex) {
-            //ex.printStackTrace();
             LOG.debug(ex);
             throw new IOException(ex.getMessage(), ex);
-            
         } finally {
             LOG.debug("Done.");
-            if(collectionLocked && collection != null){
-                collection.release(LockMode.READ_LOCK);
-            }
         }
     }
 }
