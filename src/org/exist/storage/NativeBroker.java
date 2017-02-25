@@ -2225,12 +2225,13 @@ public class NativeBroker extends DBBroker {
         //TODO : resolve URIs !
         final XmldbURI collUri = fileName.removeLastSegment();
         final XmldbURI docUri = fileName.lastSegment();
-        final Collection collection = openCollection(collUri, lockMode);
-        if(collection == null) {
-            LOG.debug("collection '" + collUri + "' not found!");
-            return null;
-        }
+        Collection collection = null;
         try {
+            collection = openCollection(collUri, LockMode.READ_LOCK);
+            if(collection == null) {
+                LOG.debug("Collection '" + collUri + "' not found!");
+                return null;
+            }
             //if (!collection.getPermissions().validate(getCurrentSubject(), Permission.EXECUTE)) {
             //    throw new PermissionDeniedException("Permission denied to read collection '" + collUri + "' by " + getCurrentSubject().getName());
             //}
@@ -2254,10 +2255,8 @@ public class NativeBroker extends DBBroker {
             LOG.warn("Could not acquire lock on document " + fileName, e);
             //TODO : exception ? -pb
         } finally {
-            //TODO UNDERSTAND : by whom is this lock acquired ? -pb
-            // If we don't check for the NO_LOCK we'll pop someone else's lock off
-            if(lockMode != LockMode.NO_LOCK) {
-                collection.release(lockMode);
+            if(collection != null) {
+                collection.release(LockMode.READ_LOCK);
             }
         }
         return null;
