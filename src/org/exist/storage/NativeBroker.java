@@ -1187,14 +1187,17 @@ public class NativeBroker extends DBBroker {
         for(final Iterator<XmldbURI> i = collection.collectionIterator(this); i.hasNext(); ) {
             final XmldbURI childName = i.next();
             //TODO : resolve URIs ! collection.getURI().resolve(childName)
-            final Collection child = openCollection(name.append(childName), LockMode.WRITE_LOCK);
-            if(child == null) {
-                LOG.warn("Child collection '" + childName + "' not found");
-            } else {
-                try {
+            Collection child = null;
+            try {
+                child = openCollection(name.append(childName), LockMode.READ_LOCK);
+                if (child == null) {
+                    LOG.warn("Child collection '" + childName + "' not found");
+                } else {
                     doCopyCollection(transaction, trigger, child, destCollection._2, childName, true);
-                } finally {
-                    child.release(LockMode.WRITE_LOCK);
+                }
+            } finally {
+                if(child != null) {
+                    child.release(LockMode.READ_LOCK);
                 }
             }
         }
