@@ -384,9 +384,10 @@ public class Database {
                     if (broker.getCollection(XmldbURI.create(path)) != null) return true;
                     String folderPath = path.substring(0, i);
                     String name = path.substring(i+1);			
-                    Collection collection = broker.openCollection(XmldbURI.create(folderPath), LockMode.NO_LOCK);
-                    if (collection == null) return false;
-                    return collection.getDocument(broker, XmldbURI.create(name)) != null;
+                    try(final Collection collection = broker.openCollection(XmldbURI.create(folderPath), LockMode.NO_LOCK)) {
+						if (collection == null) return false;
+						return collection.getDocument(broker, XmldbURI.create(name)) != null;
+					}
                 } catch(PermissionDeniedException pde) {
                     throw new DatabaseException(pde.getMessage(), pde);
                 } finally {

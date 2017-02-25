@@ -240,20 +240,19 @@ public class ExistDocument extends ExistResource {
             LOG.debug(String.format("Deleting %s", xmldbUri));
         }
 
-        Collection collection = null;
         DocumentImpl resource = null;
+
+        // Need to split path into collection and document name
+        final XmldbURI collName = xmldbUri.removeLastSegment();
+        final XmldbURI docName = xmldbUri.lastSegment();
 
         final TransactionManager txnManager = brokerPool.getTransactionManager();
 
         try (final DBBroker broker = brokerPool.get(Optional.ofNullable(subject));
-             final Txn txn = txnManager.beginTransaction()) {
-
-            // Need to split path into collection and document name
-            XmldbURI collName = xmldbUri.removeLastSegment();
-            XmldbURI docName = xmldbUri.lastSegment();
+            final Txn txn = txnManager.beginTransaction();
+            final Collection collection = broker.openCollection(collName, LockMode.WRITE_LOCK)) {
 
             // Open collection if possible, else abort
-            collection = broker.openCollection(collName, LockMode.WRITE_LOCK);
             if (collection == null) {
                 LOG.debug("Collection does not exist");
                 txnManager.abort(txn);
@@ -287,12 +286,6 @@ public class ExistDocument extends ExistResource {
         } catch (final EXistException | IOException | TriggerException | PermissionDeniedException e) {
             LOG.error(e);
         } finally {
-
-            // TODO: check if can be done earlier
-            if (collection != null) {
-                collection.release(LockMode.WRITE_LOCK);
-            }
-
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Finished delete");
             }
@@ -545,26 +538,22 @@ public class ExistDocument extends ExistResource {
             throw new EXistException(ex.getMessage());
         }
 
-        Collection srcCollection = null;
         // use WRITE_LOCK if moving or if src and dest collection are the same
         final LockMode srcCollectionLockMode = mode == Mode.MOVE
                 || destCollectionUri.equals(xmldbUri.removeLastSegment()) ? LockMode.WRITE_LOCK : LockMode.READ_LOCK;
         DocumentImpl srcDocument = null;
 
-        Collection destCollection = null;
-
+        // Need to split path into collection and document name
+        final XmldbURI srcCollectionUri = xmldbUri.removeLastSegment();
+        final XmldbURI srdDocumentUri = xmldbUri.lastSegment();
 
         final TransactionManager txnManager = brokerPool.getTransactionManager();
 
         try (final DBBroker broker = brokerPool.get(Optional.ofNullable(subject));
-             final Txn txn = txnManager.beginTransaction()) {
-
-            // Need to split path into collection and document name
-            XmldbURI srcCollectionUri = xmldbUri.removeLastSegment();
-            XmldbURI srdDocumentUri = xmldbUri.lastSegment();
+                final Txn txn = txnManager.beginTransaction();
+                final Collection srcCollection = broker.openCollection(srcCollectionUri, srcCollectionLockMode)) {
 
             // Open collection if possible, else abort
-            srcCollection = broker.openCollection(srcCollectionUri, srcCollectionLockMode);
             if (srcCollection == null) {
                 txnManager.abort(txn);
                 return; // TODO throw
@@ -579,30 +568,30 @@ public class ExistDocument extends ExistResource {
             }
 
             // Open collection if possible, else abort
-            destCollection = broker.openCollection(destCollectionUri, LockMode.WRITE_LOCK);
-            if (destCollection == null) {
-                LOG.debug(String.format("Destination collection %s does not exist.", xmldbUri));
-                txnManager.abort(txn);
-                return;
+            try (final Collection destCollection = broker.openCollection(destCollectionUri, LockMode.WRITE_LOCK)) {
+                if (destCollection == null) {
+                    LOG.debug(String.format("Destination collection %s does not exist.", xmldbUri));
+                    txnManager.abort(txn);
+                    return;
+                }
+
+
+                // Perform actial move/copy
+                if (mode == Mode.COPY) {
+                    broker.copyResource(txn, srcDocument, destCollection, newNameUri);
+
+                } else {
+                    broker.moveResource(txn, srcDocument, destCollection, newNameUri);
+                }
+
+
+                // Commit change
+                txnManager.commit(txn);
+
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug(String.format("Document %sd successfully", mode));
+                }
             }
-
-
-            // Perform actial move/copy
-            if (mode == Mode.COPY) {
-                broker.copyResource(txn, srcDocument, destCollection, newNameUri);
-
-            } else {
-                broker.moveResource(txn, srcDocument, destCollection, newNameUri);
-            }
-
-
-            // Commit change
-            txnManager.commit(txn);
-
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(String.format("Document %sd successfully", mode));
-            }
-
         } catch (LockException e) {
             LOG.error("Resource is locked.", e);
             throw new EXistException(e.getMessage());
@@ -616,16 +605,6 @@ public class ExistDocument extends ExistResource {
             throw new EXistException(e.getMessage());
 
         } finally {
-
-            // TODO: check if can be done earlier
-            if (destCollection != null) {
-                destCollection.release(LockMode.WRITE_LOCK);
-            }
-
-            if (srcCollection != null) {
-                srcCollection.release(srcCollectionLockMode);
-            }
-
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Finished " + mode);
             }

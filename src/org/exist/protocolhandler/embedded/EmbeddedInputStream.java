@@ -147,7 +147,7 @@ public class EmbeddedInputStream extends InputStream {
                     }
                 } finally {
                     if (collection != null) {
-                        collection.release(Lock.LockMode.READ_LOCK);
+                        collection.close();
                     }
 
                     if (resource != null) {

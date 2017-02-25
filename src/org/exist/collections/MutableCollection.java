@@ -93,9 +93,8 @@ public class MutableCollection implements Collection {
     private int collectionId = UNKNOWN_COLLECTION_ID;
     private XmldbURI path;
     private final LockManager lockManager;
-    private final java.util.concurrent.locks.ReentrantReadWriteLock lock;
-    @GuardedBy("lock") private final Map<String, DocumentImpl> documents = new TreeMap<>();
-    @GuardedBy("lock") private ObjectHashSet<XmldbURI> subCollections = new ObjectHashSet<>(19);
+    @GuardedBy("LockManager") private final Map<String, DocumentImpl> documents = new TreeMap<>();
+    @GuardedBy("LockManager") private ObjectHashSet<XmldbURI> subCollections = new ObjectHashSet<>(19);
     private long address = BFile.UNKNOWN_ADDRESS;  // Storage address of the collection in the BFile
     private long created = 0;
     private boolean triggersEnabled = true;
@@ -132,7 +131,6 @@ public class MutableCollection implements Collection {
         this.permissions = permissions != null ? permissions : PermissionFactory.getDefaultCollectionPermission(broker.getBrokerPool().getSecurityManager());
         this.created = created > 0 ? created : System.currentTimeMillis();
         this.lockManager = broker.getBrokerPool().getLockManager();
-        this.lock = lockManager.getCollectionLock(path.toString());
         this.collectionMetadata = new CollectionMetadata(this);
     }
 
@@ -165,12 +163,6 @@ public class MutableCollection implements Collection {
         //TODO : see if the URI resolves against DBBroker.TEMP_COLLECTION
         this.isTempCollection = path.getRawCollectionPath().equals(XmldbURI.TEMP_COLLECTION);
         this.path = path;
-    }
-
-    //TODO(AR) remove this from here and the interface, use LockManager instead
-    @Override
-    public ReentrantReadWriteLock getLock() {
-        return lock;
     }
 
     @Override
@@ -248,19 +240,6 @@ public class MutableCollection implements Collection {
     @Override
     public boolean isTempCollection() {
         return isTempCollection;
-    }
-
-    //TODO(AR) remove this from here and the interface, use LockManager instead
-    @Override
-    public void release(final LockMode mode) {
-        switch(mode) {
-            case READ_LOCK:
-                getLock().readLock().unlock();
-                break;
-            case WRITE_LOCK:
-                getLock().writeLock().unlock();
-                break;
-        }
     }
 
     @Override
@@ -402,8 +381,7 @@ public class MutableCollection implements Collection {
             // process the child collections
             for(final XmldbURI childName : subColls) {
                 //TODO : resolve URI !
-                try {
-                    final Collection child = broker.openCollection(path.appendInternal(childName), LockMode.NO_LOCK);
+                try(final Collection child = broker.openCollection(path.appendInternal(childName), LockMode.NO_LOCK)) {
                     //A collection may have been removed in the meantime, so check first
                     if(child != null) {
                         child.allDocs(broker, docs, recursive, lockMap);
@@ -443,8 +421,7 @@ public class MutableCollection implements Collection {
             //Process the child collections
             for (XmldbURI uri : uris) {
                 //TODO : resolve URI !
-                try {
-                    final Collection child = broker.openCollection(uri, LockMode.NO_LOCK);
+                try(final Collection child = broker.openCollection(uri, LockMode.NO_LOCK)) {
                     // a collection may have been removed in the meantime, so check first
                     if (child != null) {
                         child.allDocs(broker, docs, recursive, lockMap, lockType);
@@ -830,7 +807,12 @@ public class MutableCollection implements Collection {
         permissions.write(outputStream);
         outputStream.writeLong(created);
     }
-    
+
+    @Override
+    public void close() {
+        //no-op
+    }
+
     /**
      * Read collection contents from the stream
      *
@@ -1259,7 +1241,7 @@ public class MutableCollection implements Collection {
         
         return protectedInputSource;
     }
-    
+
     private static class CloseShieldReader extends Reader {
         private final Reader reader;
         public CloseShieldReader(final Reader reader) {

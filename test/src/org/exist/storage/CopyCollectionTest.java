@@ -210,89 +210,44 @@ public class CopyCollectionTest {
 
         final BrokerPool pool = existWebServer.getBrokerPool();
         try (final DBBroker broker = pool.get(Optional.of(execAsUser));
-                final Txn transaction = pool.getTransactionManager().beginTransaction()) {
+                final Txn transaction = pool.getTransactionManager().beginTransaction();
+                final Collection srcCol = broker.openCollection(src, LockMode.READ_LOCK);
+                final Collection destCol = broker.openCollection(dest.removeLastSegment(), LockMode.WRITE_LOCK)) {
 
-            Collection srcCol = null;
-            try {
-                srcCol = broker.openCollection(src, LockMode.READ_LOCK);
-
-                Collection destCol = null;
-                try {
-                    destCol = broker.openCollection(dest.removeLastSegment(), LockMode.WRITE_LOCK);
-
-                    broker.copyCollection(transaction, srcCol, destCol, dest.lastSegment(), preserve);
-
-                } finally {
-                    if (destCol != null) {
-                        destCol.getLock().release(LockMode.WRITE_LOCK);
-                    }
-                }
-            } finally {
-                if (srcCol != null) {
-                    srcCol.getLock().release(LockMode.READ_LOCK);
-                }
-            }
+            broker.copyCollection(transaction, srcCol, destCol, dest.lastSegment(), preserve);
 
             transaction.commit();
         }
 
-
         // basic shallow check that copy of the collection is the same as the original
-        try (final DBBroker broker = pool.get(Optional.of(execAsUser))) {
+        try (final DBBroker broker = pool.get(Optional.of(execAsUser));
+                final Collection original = broker.openCollection(src, LockMode.READ_LOCK);
+                final Collection copy = broker.openCollection(dest, LockMode.READ_LOCK)) {
 
-            Collection original = null;
-            Collection copy = null;
-            try {
-                original = broker.openCollection(src, LockMode.READ_LOCK);
-                copy = broker.openCollection(dest, LockMode.READ_LOCK);
-
-                assertEquals(original.getDocumentCount(broker), copy.getDocumentCount(broker));
-                assertEquals(original.getChildCollectionCount(broker), copy.getChildCollectionCount(broker));
-            } finally {
-                if (copy != null) {
-                    copy.getLock().release(LockMode.READ_LOCK);
-                }
-                if (original != null) {
-                    original.getLock().release(LockMode.READ_LOCK);
-                }
-            }
-
+            assertEquals(original.getDocumentCount(broker), copy.getDocumentCount(broker));
+            assertEquals(original.getChildCollectionCount(broker), copy.getChildCollectionCount(broker));
         }
     }
 
     private long getCreated(final XmldbURI colName) throws EXistException, PermissionDeniedException {
         final BrokerPool pool = existWebServer.getBrokerPool();
-        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-            Collection col = null;
-            try {
-                col = broker.openCollection(TEST_COLLECTION_URI.append(colName), LockMode.READ_LOCK);
-                return col.getMetadata().getCreated();
-            } finally {
-                if (col != null) {
-                    col.getLock().release(LockMode.READ_LOCK);
-                }
-            }
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+                final Collection col = broker.openCollection(TEST_COLLECTION_URI.append(colName), LockMode.READ_LOCK)) {
+            return col.getMetadata().getCreated();
         }
     }
 
     private void checkAttributes(final XmldbURI colName, final String expectedOwner, final String expectedGroup, final int expectedMode, final Matcher<Long> expectedCreated) throws EXistException, PermissionDeniedException {
         final BrokerPool pool = existWebServer.getBrokerPool();
-        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-            Collection col = null;
-            try {
-                col = broker.openCollection(TEST_COLLECTION_URI.append(colName), LockMode.READ_LOCK);
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+                final Collection col = broker.openCollection(TEST_COLLECTION_URI.append(colName), LockMode.READ_LOCK)) {
 
-                final Permission permission = col.getPermissions();
-                assertEquals("Owner value was not expected", expectedOwner, permission.getOwner().getName());
-                assertEquals("Group value was not expected", expectedGroup, permission.getGroup().getName());
-                assertEquals("Mode value was not expected", expectedMode, permission.getMode());
+            final Permission permission = col.getPermissions();
+            assertEquals("Owner value was not expected", expectedOwner, permission.getOwner().getName());
+            assertEquals("Group value was not expected", expectedGroup, permission.getGroup().getName());
+            assertEquals("Mode value was not expected", expectedMode, permission.getMode());
 
-                assertThat("Created value is not correct", col.getMetadata().getCreated(), expectedCreated);
-            } finally {
-                if (col != null) {
-                    col.getLock().release(LockMode.READ_LOCK);
-                }
-            }
+            assertThat("Created value is not correct", col.getMetadata().getCreated(), expectedCreated);
         }
     }
 
@@ -301,7 +256,7 @@ public class CopyCollectionTest {
         final BrokerPool pool = existWebServer.getBrokerPool();
         final SecurityManager sm = pool.getSecurityManager();
         try (final DBBroker broker = pool.get(Optional.of(sm.getSystemSubject()));
-             final Txn transaction = pool.getTransactionManager().beginTransaction()) {
+                final Txn transaction = pool.getTransactionManager().beginTransaction()) {
             final Collection collection = broker.getOrCreateCollection(transaction, TEST_COLLECTION_URI);
             chmod(broker, collection.getURI(), 511);
             broker.saveCollection(transaction, collection);
@@ -320,48 +275,32 @@ public class CopyCollectionTest {
         // create user1 resources
         final Subject user1 = pool.getSecurityManager().authenticate(USER1_NAME, USER1_PWD);
         try (final DBBroker broker = pool.get(Optional.of(user1));
-             final Txn transaction = pool.getTransactionManager().beginTransaction()) {
-            Collection collection = null;
-            try {
-                collection = broker.openCollection(TEST_COLLECTION_URI, LockMode.WRITE_LOCK);
+                final Txn transaction = pool.getTransactionManager().beginTransaction();
+                final Collection collection = broker.openCollection(TEST_COLLECTION_URI, LockMode.WRITE_LOCK)) {
 
-                final Collection u1c1 = broker.getOrCreateCollection(transaction, TEST_COLLECTION_URI.append(USER1_COL1));
-                chmod(broker, TEST_COLLECTION_URI.append(USER1_COL1), USER1_COL1_MODE);
+            final Collection u1c1 = broker.getOrCreateCollection(transaction, TEST_COLLECTION_URI.append(USER1_COL1));
+            chmod(broker, TEST_COLLECTION_URI.append(USER1_COL1), USER1_COL1_MODE);
 
-                final Collection u1c2 = broker.getOrCreateCollection(transaction, TEST_COLLECTION_URI.append(USER1_COL2));
-                chmod(broker, TEST_COLLECTION_URI.append(USER1_COL2), USER1_COL2_MODE);
+            final Collection u1c2 = broker.getOrCreateCollection(transaction, TEST_COLLECTION_URI.append(USER1_COL2));
+            chmod(broker, TEST_COLLECTION_URI.append(USER1_COL2), USER1_COL2_MODE);
 
-                broker.saveCollection(transaction, collection);
+            broker.saveCollection(transaction, collection);
 
-                transaction.commit();
-
-            } finally {
-                if (collection != null) {
-                    collection.getLock().release(LockMode.WRITE_LOCK);
-                }
-            }
+            transaction.commit();
         }
 
         // create user2 resources
         final Subject user2 = pool.getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
         try (final DBBroker broker = pool.get(Optional.of(user2));
-             final Txn transaction = pool.getTransactionManager().beginTransaction()) {
-            Collection collection = null;
-            try {
-                collection = broker.openCollection(TEST_COLLECTION_URI, LockMode.WRITE_LOCK);
+                final Txn transaction = pool.getTransactionManager().beginTransaction();
+                final Collection collection = broker.openCollection(TEST_COLLECTION_URI, LockMode.WRITE_LOCK)) {
 
-                final Collection u2c2 = broker.getOrCreateCollection(transaction, TEST_COLLECTION_URI.append(USER2_COL2));
-                chmod(broker, TEST_COLLECTION_URI.append(USER2_COL2), USER2_COL2_MODE);
+            final Collection u2c2 = broker.getOrCreateCollection(transaction, TEST_COLLECTION_URI.append(USER2_COL2));
+            chmod(broker, TEST_COLLECTION_URI.append(USER2_COL2), USER2_COL2_MODE);
 
-                broker.saveCollection(transaction, collection);
+            broker.saveCollection(transaction, collection);
 
-                transaction.commit();
-
-            } finally {
-                if (collection != null) {
-                    collection.getLock().release(LockMode.WRITE_LOCK);
-                }
-            }
+            transaction.commit();
         }
     }
 
@@ -421,17 +360,10 @@ public class CopyCollectionTest {
     }
 
     private static void removeCollection(final DBBroker broker, final Txn transaction, final XmldbURI collectionUri) throws PermissionDeniedException, IOException, TriggerException {
-        Collection collection = null;
-        try {
-            collection = broker.openCollection(collectionUri, LockMode.WRITE_LOCK);
+        try (final Collection collection = broker.openCollection(collectionUri, LockMode.WRITE_LOCK)) {
             if (collection != null) {
                 broker.removeCollection(transaction, collection);
-            }
-        } finally {
-            if (collection != null) {
-                collection.getLock().release(LockMode.WRITE_LOCK);
             }
         }
     }
 }
-

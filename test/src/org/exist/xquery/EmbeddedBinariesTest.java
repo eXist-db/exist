@@ -73,16 +73,10 @@ public class EmbeddedBinariesTest extends AbstractBinariesTest<Sequence, Item, I
     protected void removeCollection(final XmldbURI collectionUri) throws Exception {
         final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));
-            final Txn transaction = brokerPool.getTransactionManager().beginTransaction()) {
-
-            final Collection collection = broker.getCollection(collectionUri);
+            final Txn transaction = brokerPool.getTransactionManager().beginTransaction();
+            final Collection collection = broker.openCollection(collectionUri, Lock.LockMode.WRITE_LOCK)) {
             if(collection != null) {
-                collection.getLock().acquire(Lock.LockMode.WRITE_LOCK);
-                try {
-                    broker.removeCollection(transaction, collection);
-                } finally {
-                    collection.release(Lock.LockMode.WRITE_LOCK);
-                }
+                broker.removeCollection(transaction, collection);
             }
 
             transaction.commit();

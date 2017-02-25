@@ -375,16 +375,10 @@ public class CopyResourceTest {
             try {
                 srcDoc = broker.getXMLResource(src, LockMode.READ_LOCK);
 
-                Collection destCol = null;
-                try {
-                    destCol = broker.openCollection(dest.removeLastSegment(), LockMode.WRITE_LOCK);
+                try (final Collection destCol = broker.openCollection(dest.removeLastSegment(), LockMode.WRITE_LOCK)) {
 
                     broker.copyResource(transaction, srcDoc, destCol, dest.lastSegment(), preserve);
 
-                } finally {
-                    if (destCol != null) {
-                        destCol.getLock().release(LockMode.WRITE_LOCK);
-                    }
                 }
             } finally {
                 if (srcDoc != null) {
@@ -500,66 +494,50 @@ public class CopyResourceTest {
         // create user1 resources
         final Subject user1 = pool.getSecurityManager().authenticate(USER1_NAME, USER1_PWD);
         try (final DBBroker broker = pool.get(Optional.of(user1));
-             final Txn transaction = pool.getTransactionManager().beginTransaction()) {
-            Collection collection = null;
-            try {
-                collection = broker.openCollection(TEST_COLLECTION_URI, LockMode.WRITE_LOCK);
+                final Txn transaction = pool.getTransactionManager().beginTransaction();
+                final Collection collection = broker.openCollection(TEST_COLLECTION_URI, LockMode.WRITE_LOCK)) {
 
-                final String u1d1xml = "<empty1/>";
-                final IndexInfo u1d1ii = collection.validateXMLResource(transaction, broker, USER1_DOC1, u1d1xml);
-                collection.store(transaction, broker, u1d1ii, u1d1xml);
-                chmod(broker, TEST_COLLECTION_URI.append(USER1_DOC1), USER1_DOC1_MODE);
+            final String u1d1xml = "<empty1/>";
+            final IndexInfo u1d1ii = collection.validateXMLResource(transaction, broker, USER1_DOC1, u1d1xml);
+            collection.store(transaction, broker, u1d1ii, u1d1xml);
+            chmod(broker, TEST_COLLECTION_URI.append(USER1_DOC1), USER1_DOC1_MODE);
 
-                final String u1d2xml = "<empty2/>";
-                final IndexInfo u1d2ii = collection.validateXMLResource(transaction, broker, USER1_DOC2, u1d2xml);
-                collection.store(transaction, broker, u1d2ii, u1d2xml);
-                chmod(broker, TEST_COLLECTION_URI.append(USER1_DOC2), USER1_DOC2_MODE);
+            final String u1d2xml = "<empty2/>";
+            final IndexInfo u1d2ii = collection.validateXMLResource(transaction, broker, USER1_DOC2, u1d2xml);
+            collection.store(transaction, broker, u1d2ii, u1d2xml);
+            chmod(broker, TEST_COLLECTION_URI.append(USER1_DOC2), USER1_DOC2_MODE);
 
-                final String u1d1bin = "bin1";
-                collection.addBinaryResource(transaction, broker, USER1_BIN_DOC1, u1d1bin.getBytes(UTF_8), "text/plain");
-                chmod(broker, TEST_COLLECTION_URI.append(USER1_BIN_DOC1), USER1_BIN_DOC1_MODE);
+            final String u1d1bin = "bin1";
+            collection.addBinaryResource(transaction, broker, USER1_BIN_DOC1, u1d1bin.getBytes(UTF_8), "text/plain");
+            chmod(broker, TEST_COLLECTION_URI.append(USER1_BIN_DOC1), USER1_BIN_DOC1_MODE);
 
-                final String u1d2bin = "bin2";
-                collection.addBinaryResource(transaction, broker, USER1_BIN_DOC2, u1d2bin.getBytes(UTF_8), "text/plain");
-                chmod(broker, TEST_COLLECTION_URI.append(USER1_BIN_DOC2), USER1_BIN_DOC2_MODE);
+            final String u1d2bin = "bin2";
+            collection.addBinaryResource(transaction, broker, USER1_BIN_DOC2, u1d2bin.getBytes(UTF_8), "text/plain");
+            chmod(broker, TEST_COLLECTION_URI.append(USER1_BIN_DOC2), USER1_BIN_DOC2_MODE);
 
-                broker.saveCollection(transaction, collection);
+            broker.saveCollection(transaction, collection);
 
-                transaction.commit();
-
-            } finally {
-                if (collection != null) {
-                    collection.getLock().release(LockMode.WRITE_LOCK);
-                }
-            }
+            transaction.commit();
         }
 
         // create user2 resources
         final Subject user2 = pool.getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
         try (final DBBroker broker = pool.get(Optional.of(user2));
-             final Txn transaction = pool.getTransactionManager().beginTransaction()) {
-            Collection collection = null;
-            try {
-                collection = broker.openCollection(TEST_COLLECTION_URI, LockMode.WRITE_LOCK);
+                final Txn transaction = pool.getTransactionManager().beginTransaction();
+                final Collection collection = broker.openCollection(TEST_COLLECTION_URI, LockMode.WRITE_LOCK)) {
 
-                final String u2d2xml = "<empty2/>";
-                final IndexInfo u2d2ii = collection.validateXMLResource(transaction, broker, USER2_DOC2, u2d2xml);
-                collection.store(transaction, broker, u2d2ii, u2d2xml);
-                chmod(broker, TEST_COLLECTION_URI.append(USER2_DOC2), USER2_DOC2_MODE);
+            final String u2d2xml = "<empty2/>";
+            final IndexInfo u2d2ii = collection.validateXMLResource(transaction, broker, USER2_DOC2, u2d2xml);
+            collection.store(transaction, broker, u2d2ii, u2d2xml);
+            chmod(broker, TEST_COLLECTION_URI.append(USER2_DOC2), USER2_DOC2_MODE);
 
-                final String u2d2bin = "bin2";
-                collection.addBinaryResource(transaction, broker, USER2_BIN_DOC2, u2d2bin.getBytes(UTF_8), "text/plain");
-                chmod(broker, TEST_COLLECTION_URI.append(USER2_BIN_DOC2), USER2_BIN_DOC2_MODE);
+            final String u2d2bin = "bin2";
+            collection.addBinaryResource(transaction, broker, USER2_BIN_DOC2, u2d2bin.getBytes(UTF_8), "text/plain");
+            chmod(broker, TEST_COLLECTION_URI.append(USER2_BIN_DOC2), USER2_BIN_DOC2_MODE);
 
-                broker.saveCollection(transaction, collection);
+            broker.saveCollection(transaction, collection);
 
-                transaction.commit();
-
-            } finally {
-                if (collection != null) {
-                    collection.getLock().release(LockMode.WRITE_LOCK);
-                }
-            }
+            transaction.commit();
         }
     }
 
@@ -626,9 +604,7 @@ public class CopyResourceTest {
     }
 
     private static void removeDocument(final DBBroker broker, final Txn transaction, final XmldbURI documentUri) throws PermissionDeniedException, LockException, IOException, TriggerException {
-        Collection collection = null;
-        try {
-            collection = broker.openCollection(documentUri.removeLastSegment(), LockMode.WRITE_LOCK);
+        try (final Collection collection = broker.openCollection(documentUri.removeLastSegment(), LockMode.WRITE_LOCK)) {
 
             final DocumentImpl doc = collection.getDocument(broker, documentUri.lastSegment());
             if (doc != null) {
@@ -636,23 +612,14 @@ public class CopyResourceTest {
             }
 
             broker.saveCollection(transaction, collection);
-        } finally {
-            if (collection != null) {
-                collection.getLock().release(LockMode.WRITE_LOCK);
-            }
         }
     }
 
     private static void removeCollection(final DBBroker broker, final Txn transaction, final XmldbURI collectionUri) throws PermissionDeniedException, IOException, TriggerException {
-        Collection collection = null;
-        try {
-            collection = broker.openCollection(collectionUri, LockMode.WRITE_LOCK);
+        try (final Collection collection = broker.openCollection(collectionUri, LockMode.WRITE_LOCK)) {
+
             if (collection != null) {
                 broker.removeCollection(transaction, collection);
-            }
-        } finally {
-            if (collection != null) {
-                collection.getLock().release(LockMode.WRITE_LOCK);
             }
         }
     }

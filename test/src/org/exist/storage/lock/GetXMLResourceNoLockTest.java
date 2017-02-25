@@ -37,33 +37,27 @@ public class GetXMLResourceNoLockTest {
     private static XmldbURI DOCUMENT_NAME_URI = XmldbURI.create("empty.txt");
 	
 	@Test
-	public void testCollectionMaintainsLockWhenResourceIsSelectedNoLock() throws EXistException, InterruptedException, PermissionDeniedException, LockException, IOException, TriggerException {
+	public void testCollectionMaintainsLockWhenResourceIsSelectedNoLock() throws EXistException, InterruptedException, LockException, TriggerException, PermissionDeniedException, IOException {
 
 		storeTestResource();
 
         final BrokerPool pool = BrokerPool.getInstance();
 
-		try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-			final Collection testCollection = broker.openCollection(TestConstants.TEST_COLLECTION_URI, LockMode.READ_LOCK);
-			try {
+		try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+				final Collection testCollection = broker.openCollection(TestConstants.TEST_COLLECTION_URI, LockMode.READ_LOCK)) {
 
-		    	final XmldbURI docPath = TestConstants.TEST_COLLECTION_URI.append(DOCUMENT_NAME_URI);
+            final XmldbURI docPath = TestConstants.TEST_COLLECTION_URI.append(DOCUMENT_NAME_URI);
 
-	    		final BinaryDocument binDoc = (BinaryDocument) broker.getXMLResource(docPath, LockMode.NO_LOCK);
+            final BinaryDocument binDoc = (BinaryDocument) broker.getXMLResource(docPath, LockMode.NO_LOCK);
 
-    			// if document is not present, null is returned
-			    if(binDoc == null) {
-				    fail("Binary document '" + docPath + " does not exist.");
-                }
+			// if document is not present, null is returned
+			if(binDoc == null) {
+				fail("Binary document '" + docPath + " does not exist.");
+            }
 
-				final java.util.concurrent.locks.ReentrantReadWriteLock colLock = testCollection.getLock();
-				assertEquals("Collection does not have lock!", true, colLock.getReadHoldCount() > 0);
-				
-			} finally {
-	    		if(testCollection != null) {
-					testCollection.release(LockMode.READ_LOCK);
-				}
-			}
+			final LockManager lockManager = broker.getBrokerPool().getLockManager();
+			final java.util.concurrent.locks.ReentrantReadWriteLock colLock = lockManager.getCollectionLock(testCollection.getURI().toString());
+			assertEquals("Collection does not have lock!", true, colLock.getReadHoldCount() > 0);
 		}
 	}
 

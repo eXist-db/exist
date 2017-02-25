@@ -28,10 +28,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.BrokerPoolService;
 import org.exist.storage.CacheManager;
 import org.exist.storage.cache.LRUCache;
-import org.exist.storage.lock.Lock;
-import org.exist.storage.lock.Lock.LockMode;
-import org.exist.storage.lock.ManagedLock;
-import org.exist.storage.lock.ReentrantReadWriteLock;
+import org.exist.storage.lock.*;
 import org.exist.util.LockException;
 import org.exist.util.hashtable.Object2LongHashMap;
 import org.exist.util.hashtable.SequencedLongHashMap;
@@ -72,11 +69,14 @@ public class CollectionCache extends LRUCache<Collection> implements BrokerPoolS
     }
 
     @Override
-    public void add(final Collection collection, final int initialRefCount) {
+    public void add(final Collection c, final int initialRefCount) {
         // don't cache the collection during initialization: SecurityManager is not yet online
         if(!pool.isOperational()) {
             return;
         }
+
+        //NOTE: We must not store LockedCollections in the CollectionCache! So we call LockedCollection#unwrapLocked
+        final Collection collection = LockedCollection.unwrapLocked(c);
 
         super.add(collection, initialRefCount);
         final String name = collection.getURI().getRawCollectionPath();
@@ -108,7 +108,8 @@ public class CollectionCache extends LRUCache<Collection> implements BrokerPoolS
         do {
             final Collection cached = next.getValue();
             if(cached.getKey() != item.getKey()) {
-                try(final ManagedLock<java.util.concurrent.locks.ReadWriteLock> cachedReadLock = ManagedLock.attempt(cached.getLock(), LockMode.READ_LOCK)) {
+                final LockManager lockManager = pool.getLockManager();
+                try(final ManagedCollectionLock cachedReadLock = lockManager.tryCollectionReadLock(cached.getURI())) {
                     if (cached.allowUnload()) {
                         if(pool.getConfigurationManager() != null) { // might be null during db initialization
                             pool.getConfigurationManager().invalidate(cached.getURI(), null);
@@ -119,7 +120,7 @@ public class CollectionCache extends LRUCache<Collection> implements BrokerPoolS
                         removed = true;
                     }
                 } catch(final LockException e) {
-                    // not a problem, we only attempted the lock!
+                    // not a problem, we only attempted the lock with `tryCollectionReadLock`!
                 }
             }
             if (!removed) {

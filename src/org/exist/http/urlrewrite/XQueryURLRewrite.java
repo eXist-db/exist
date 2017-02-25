@@ -786,9 +786,7 @@ public class XQueryURLRewrite extends HttpServlet {
             return null;
         }
 
-        Collection collection = null;
-        try {
-            collection = broker.openCollection(resourceUri, LockMode.READ_LOCK);
+        try (final Collection collection = broker.openCollection(resourceUri, LockMode.READ_LOCK)) {
             if (collection != null) {
                 final DocumentImpl doc = collection.getDocumentWithLock(broker, XQUERY_CONTROLLER_URI, LockMode.READ_LOCK);
                 if (doc != null) {
@@ -805,10 +803,6 @@ public class XQueryURLRewrite extends HttpServlet {
                 LOG.debug("LockException while scanning for XQueryURLRewrite controllers: " + e.getMessage(), e);
             }
             return null;
-        } finally {
-            if (collection != null) {
-                collection.release(LockMode.READ_LOCK);
-            }
         }
 
         if(resourceUri.numSegments() == 2) {

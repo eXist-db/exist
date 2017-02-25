@@ -404,9 +404,8 @@ public class CollectionConfigurationManager implements BrokerPoolService {
 
         final TransactionManager transact = broker.getDatabase().getTransactionManager();
         try(final Txn txn = transact.beginTransaction()) {
-            Collection collection = null;
-            try {
-                collection = broker.openCollection(XmldbURI.ROOT_COLLECTION_URI, LockMode.READ_LOCK);
+
+            try(final Collection collection = broker.openCollection(XmldbURI.ROOT_COLLECTION_URI, LockMode.READ_LOCK)) {
                 if (collection == null) {
                     transact.abort(txn);
                     throw new EXistException("collection " + XmldbURI.ROOT_COLLECTION_URI + " not found!");
@@ -420,15 +419,14 @@ public class CollectionConfigurationManager implements BrokerPoolService {
                         return;
                     }
                 }
-            } finally {
-                if (collection != null) {
-                    collection.release(LockMode.READ_LOCK);
-                }
+
+                // Configure the root collection
+                addConfiguration(txn, broker, collection, configuration);
+                LOG.info("Configured '" + collection.getURI() + "'");
             }
-            // Configure the root collection
-            addConfiguration(txn, broker, collection, configuration);
+
             transact.commit(txn);
-            LOG.info("Configured '" + collection.getURI() + "'");
+
         } catch (final CollectionConfigurationException e) {
             throw new EXistException(e.getMessage());
         }

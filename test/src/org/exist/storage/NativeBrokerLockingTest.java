@@ -93,8 +93,9 @@ public class NativeBrokerLockingTest {
 
                 lockTable.registerListener(lockSymmetryListener);
                 registered = true;
-                final Collection collectionA = broker.openCollection(COLLECTION_A, LockMode.READ_LOCK);
-                collectionA.release(LockMode.READ_LOCK);
+                try(final Collection collectionA = broker.openCollection(COLLECTION_A, LockMode.READ_LOCK)) {
+                    //no -op
+                }
 
                 transaction.commit();
             }
@@ -124,8 +125,9 @@ public class NativeBrokerLockingTest {
 
                 lockTable.registerListener(lockSymmetryListener);
                 registered = true;
-                final Collection collectionNone = broker.openCollection(COLLECTION_A.append("none"), LockMode.READ_LOCK);
-                assertNull(collectionNone);
+                try(final Collection collectionNone = broker.openCollection(COLLECTION_A.append("none"), LockMode.READ_LOCK)) {
+                    assertNull(collectionNone);
+                }
 
                 transaction.commit();
             }
@@ -218,8 +220,9 @@ public class NativeBrokerLockingTest {
                 lockTable.registerListener(lockSymmetryListener);
                 registered = true;
                 final XmldbURI collectionC = COLLECTION_B.append("colC");
-                final Collection collectionA = broker.getOrCreateCollection(transaction, collectionC);
-                collectionA.release(LockMode.READ_LOCK);
+                try(final Collection collectionA = broker.getOrCreateCollection(transaction, collectionC)) {
+                    // no-op
+                }
 
                 transaction.commit();
             }

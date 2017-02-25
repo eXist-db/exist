@@ -25,6 +25,8 @@ import java.io.IOException;
 
 import org.exist.security.PermissionFactory;
 import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.LockManager;
+import org.exist.storage.lock.ManagedCollectionLock;
 import org.exist.storage.lock.ManagedLock;
 import org.w3c.dom.DocumentType;
 import org.xml.sax.Attributes;
@@ -544,8 +546,9 @@ public class SystemImportHandler extends DefaultHandler {
         @Override
         public void apply() {
             final TransactionManager txnManager = broker.getDatabase().getTransactionManager();
+            final LockManager lockManager = broker.getBrokerPool().getLockManager();
 
-            try(final ManagedLock<java.util.concurrent.locks.ReadWriteLock> targetLock = ManagedLock.acquire(getTarget().getLock(), LockMode.WRITE_LOCK);
+            try(final ManagedCollectionLock targetLock = lockManager.acquireCollectionWriteLock(getTarget().getURI(), false);
                 final Txn txn = txnManager.beginTransaction()) {
                 final Permission permission = getTarget().getPermissions();
                 PermissionFactory.chown(broker, permission, Optional.ofNullable(getOwner()), Optional.ofNullable(getGroup()));

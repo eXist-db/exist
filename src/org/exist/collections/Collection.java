@@ -41,9 +41,9 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  *
  * Collections are shared between {@link org.exist.storage.DBBroker} instances. The caller
  * is responsible to lock/unlock the collection. Call {@link DBBroker#openCollection(XmldbURI, LockMode)}
- * to get a collection with a read or write lock and {@link #release(LockMode)} to release the lock.
+ * to get a collection with a read or write lock and {@link #close()} to release the lock.
  */
-public interface Collection extends Resource, Comparable<Collection>, Cacheable {
+public interface Collection extends Resource, Comparable<Collection>, AutoCloseable, Cacheable {
 
     /**
      * The length in bytes of the Collection ID
@@ -54,26 +54,6 @@ public interface Collection extends Resource, Comparable<Collection>, Cacheable 
      * The ID of an unknown Collection
      */
     int UNKNOWN_COLLECTION_ID = -1;
-
-    /**
-     * Get's the lock for this Collection
-     * <p>
-     * Note - this does not actually acquire the lock
-     * for that you must subsequently call {@link Lock#acquire(LockMode)}
-     *
-     * @return The lock for the Collection
-     */
-    ReentrantReadWriteLock getLock();
-
-    /**
-     * Closes the Collection, i.e. releases the lock held by
-     * the current thread.
-     * <p>
-     * This is a shortcut for {@code getLock().release(LockMode)}
-     *
-     * @param mode The mode of the Lock to release
-     */
-    void release(LockMode mode);
 
     /**
      * Get the internal id.
@@ -867,6 +847,8 @@ public interface Collection extends Resource, Comparable<Collection>, Cacheable 
      * @param outputStream The output stream to write the collection contents to
      */
     void serialize(final VariableByteOutputStream outputStream) throws IOException, LockException;
+
+    @Override void close();
 
     //TODO(AR) consider a better separation between Broker and Collection, possibly introduce a CollectionManager object
     interface InternalAccess {

@@ -84,8 +84,7 @@ public class LockManager {
      *
      * @return A lock for the Collection
      */
-    //TODO(AR) make package private / protected
-    public ReentrantReadWriteLock getCollectionLock(final String collectionPath) {
+    ReentrantReadWriteLock getCollectionLock(final String collectionPath) {
         // calculate a value if not present or if the weak reference has expired
         final WeakReference<ReentrantReadWriteLock> collectionLockRef =
                 collectionLocks.compute(collectionPath, (key, value) -> {
@@ -130,6 +129,40 @@ public class LockManager {
             } catch(final InterruptedException e) {
                 current.readLock().unlock();
                 throw new LockException("Unable to acquire READ_LOCK for: " + path, e);
+            }
+
+            current.readLock().unlock();
+            current = son;
+        }
+
+        final ReentrantReadWriteLock collectionReadLock = current;
+
+        return new ManagedCollectionLock(collectionPath, Either.Left(collectionReadLock.readLock()), () -> collectionReadLock.readLock().unlock());
+    }
+
+    /**
+     * Similar to {@link #acquireCollectionReadLock(XmldbURI)} but non-waiting.
+     * We only acquire the read lock if the write lock is not held by
+     * another thread at the time of invocation.
+     */
+    public ManagedCollectionLock tryCollectionReadLock(final XmldbURI collectionPath) throws LockException {
+        final XmldbURI[] segments = collectionPath.getPathSegments();
+
+        String path = '/' + segments[0].toString();
+        final ReentrantReadWriteLock root = getCollectionLock(path);
+        if(!root.readLock().tryLock()) {
+            throw new LockException("Unable to acquire READ_LOCK for: " + path);
+        }
+
+        ReentrantReadWriteLock current = root;
+
+        for(int i = 1; i < segments.length; i++) {
+            path += '/' + segments[i].toString();
+            final ReentrantReadWriteLock son = getCollectionLock(path);
+
+            if(!son.readLock().tryLock()) {
+                current.readLock().unlock();
+                throw new LockException("Unable to acquire READ_LOCK for: " + path);
             }
 
             current.readLock().unlock();

@@ -163,7 +163,6 @@ public class ExistResourceFactory implements ResourceFactory {
      */
     private ResourceType getResourceType(BrokerPool brokerPool, XmldbURI xmldbUri) {
 
-        Collection collection = null;
         DocumentImpl document = null;
         ResourceType type = ResourceType.NOT_EXISTING;
 
@@ -183,18 +182,15 @@ public class ExistResourceFactory implements ResourceFactory {
         // Try to read as system user. Note that the actual user is not know
         // yet. In MiltonResource the actual authentication and authorization
         // is performed.
-        try (final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()))) {
+        try (final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));
+        final Collection collection = broker.openCollection(xmldbUri, LockMode.READ_LOCK);) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug(String.format("Path: %s", xmldbUri.toString()));
             }
 
             // First check if resource is a collection
-            collection = broker.openCollection(xmldbUri, LockMode.READ_LOCK);
             if (collection != null) {
                 type = ResourceType.COLLECTION;
-                collection.release(LockMode.READ_LOCK);
-                collection = null;
-
             } else {
                 // If it is not a collection, check if it is a document
                 document = broker.getXMLResource(xmldbUri, LockMode.READ_LOCK);
@@ -217,12 +213,6 @@ public class ExistResourceFactory implements ResourceFactory {
             type = ResourceType.NOT_EXISTING;
 
         } finally {
-
-            // Clean-up, just in case
-            if (collection != null) {
-                collection.release(LockMode.READ_LOCK);
-            }
-
             // Clean-up, just in case
             if (document != null) {
                 document.getUpdateLock().release(LockMode.READ_LOCK);

@@ -162,9 +162,7 @@ public abstract class AbstractLocal {
      */
     protected <R> FunctionE<LocalXmldbCollectionFunction<R>, R, XMLDBException> with(final LockMode lockMode, final DBBroker broker, final Txn transaction, final XmldbURI collectionUri, final int errorCode) throws XMLDBException {
         return collectionOp -> {
-            org.exist.collections.Collection coll = null;
-            try {
-                coll = broker.openCollection(collectionUri, lockMode);
+            try(org.exist.collections.Collection coll = broker.openCollection(collectionUri, lockMode)) {
                 if (coll == null) {
                     throw new XMLDBException(errorCode, "Collection " + collectionUri.toString() + " not found");
                 }
@@ -173,10 +171,6 @@ public abstract class AbstractLocal {
                 return result;
             } catch (final PermissionDeniedException e) {
                 throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e.getMessage(), e);
-            } finally {
-                if (coll != null) {
-                    coll.release(lockMode);
-                }
             }
         };
     }

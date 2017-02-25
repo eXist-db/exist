@@ -582,9 +582,7 @@ public interface TransactionTestDSL {
                 listener.event("Deleting document: " + doc.getDocumentURI());
 
                 final XmldbURI collectionUri = doc.getURI().removeLastSegment();
-                Collection collection = null;
-                try {
-                    collection = broker.openCollection(collectionUri, Lock.LockMode.WRITE_LOCK);
+                try(final Collection collection = broker.openCollection(collectionUri, Lock.LockMode.WRITE_LOCK)) {
                     if (collection == null) {
                         throw new EXistException("No such collection: " + collectionUri);
                     }
@@ -593,10 +591,6 @@ public interface TransactionTestDSL {
                         collection.removeXMLResource(transaction, broker, doc.getFileURI());
                     } else {
                         collection.removeBinaryResource(transaction, broker, doc.getFileURI());
-                    }
-                } finally {
-                    if (collection != null) {
-                        collection.release(Lock.LockMode.WRITE_LOCK);
                     }
                 }
 

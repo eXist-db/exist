@@ -27,12 +27,14 @@ import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
+import org.exist.collections.LockedCollection;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.protocolhandler.xmldb.XmldbURL;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.Lock.LockMode;
+import org.exist.storage.lock.LockManager;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.MimeTable;
@@ -76,20 +78,15 @@ public class InMemoryOutputStream extends FastByteArrayOutputStream {
       final XmldbURI documentUri = XmldbURI.create(xmldbURL.getDocumentName());
 
       final TransactionManager transact = db.getTransactionManager();
-      try (final Txn txn = transact.beginTransaction()) {
-
-//        Collection collection = broker.openCollection(collectionUri, LockMode.WRITE_LOCK);
-        Collection collection = broker.getOrCreateCollection(txn, collectionUri);
+      try (final Txn txn = transact.beginTransaction();
+            final Collection collection = broker.getOrCreateCollection(txn, collectionUri)) {
 
         if (collection == null) {
           throw new IOException("Resource " + collectionUri.toString() + " is not a collection.");
         }
 
-
-        Lock lock = collection.getLock();
-        if (!lock.isLockedForWrite()) {
-          txn.acquireLock(lock, LockMode.WRITE_LOCK);
-        }
+        final LockManager lockManager = db.getLockManager();
+        txn.acquireCollectionLock(() -> lockManager.acquireCollectionWriteLock(collectionUri, false));
 
         if (collection.hasChildCollection(broker, documentUri)) {
           throw new IOException("Resource " + documentUri.toString() + " is a collection.");

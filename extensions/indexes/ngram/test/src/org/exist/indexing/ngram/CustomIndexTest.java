@@ -496,10 +496,10 @@ public class CustomIndexTest {
             checkIndex(broker, docs, "cha", 1);
             checkIndex(broker, docs, "le8", 1);
 
-            Collection root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, LockMode.WRITE_LOCK);
-            assertNotNull(root);
-
-            root.removeXMLResource(transaction, broker, XmldbURI.create("test_string.xml"));
+            try(final Collection root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, LockMode.WRITE_LOCK)) {
+                assertNotNull(root);
+                root.removeXMLResource(transaction, broker, XmldbURI.create("test_string.xml"));
+            }
 
             checkIndex(broker, docs, "cha", 0);
 

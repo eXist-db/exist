@@ -93,7 +93,7 @@ public class InMemoryInputStream {
           }
         } finally {
           if (collection != null) {
-            collection.release(LockMode.READ_LOCK);
+            collection.close();
           }
 
           if (resource != null) {

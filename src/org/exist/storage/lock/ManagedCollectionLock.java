@@ -19,4 +19,8 @@ public class ManagedCollectionLock extends ManagedLock<Either<java.util.concurre
     public XmldbURI getPath() {
         return collectionUri;
     }
+
+    public static ManagedCollectionLock notLocked(final XmldbURI collectionUri) {
+        return new ManagedCollectionLock(collectionUri, null, () -> {});
+    }
 }

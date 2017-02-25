@@ -276,21 +276,18 @@ public class EntryFunctions extends BasicFunction {
                     mkcols(destPath.removeLastSegment());
                     if (data.isPresent()) {
                         // store the resource
-                        Collection collection = null;
                         try (final Txn transaction = context.getBroker().getBrokerPool().getTransactionManager().beginTransaction()) {
-                            collection = context.getBroker().openCollection(destPath.removeLastSegment(), Lock.LockMode.WRITE_LOCK);
-                            final BinaryValue binaryValue = (BinaryValue)data.get();
-                            final String mediaType = MimeTable.getInstance().getContentTypeFor(destPath.lastSegment()).getName();
-                            try (final InputStream is = binaryValue.getInputStream()) {
-                                collection.addBinaryResource(transaction, context.getBroker(), destPath.lastSegment(), is, mediaType, -1);
+
+                            try (final Collection collection = context.getBroker().openCollection(destPath.removeLastSegment(), Lock.LockMode.WRITE_LOCK)) {
+                                final BinaryValue binaryValue = (BinaryValue) data.get();
+                                final String mediaType = MimeTable.getInstance().getContentTypeFor(destPath.lastSegment()).getName();
+                                try (final InputStream is = binaryValue.getInputStream()) {
+                                    collection.addBinaryResource(transaction, context.getBroker(), destPath.lastSegment(), is, mediaType, -1);
+                                }
                             }
                             transaction.commit();
                         } catch (final IOException | PermissionDeniedException | EXistException | LockException | TriggerException e) {
                             throw new XPathException(this, "Cannot serialize file. A problem occurred while serializing the binary data: " + e.getMessage(), e);
-                        } finally {
-                            if (collection != null) {
-                                collection.getLock().release(Lock.LockMode.WRITE_LOCK);
-                            }
                         }
                     }
                     break;

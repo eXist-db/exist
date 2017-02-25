@@ -986,21 +986,23 @@ public class NativeBroker extends DBBroker {
     private @Nullable Collection openCollection(final XmldbURI path, final long address, final LockMode lockMode) throws PermissionDeniedException {
         final XmldbURI collectionUri = prepend(path.normalizeCollectionPath());
 
+        final ManagedCollectionLock collectionLock;
         final Runnable unlockFn;    // we unlock on error, or if there is no Collection
         try {
             switch (lockMode) {
                 case WRITE_LOCK:
-                    final ManagedCollectionLock collectionWriteLock = writeLockCollection(null, collectionUri, false);
-                    unlockFn = collectionWriteLock::close;
+                    collectionLock = writeLockCollection(null, collectionUri, false);
+                    unlockFn = collectionLock::close;
                     break;
 
                 case READ_LOCK:
-                    final ManagedCollectionLock collectionReadLock = readLockCollection(collectionUri);
-                    unlockFn = collectionReadLock::close;
+                    collectionLock = readLockCollection(collectionUri);
+                    unlockFn = collectionLock::close;
                     break;
 
                 case NO_LOCK:
                 default:
+                    collectionLock = ManagedCollectionLock.notLocked(collectionUri);
                     unlockFn = () -> {};
             }
         } catch(final LockException e) {
@@ -1026,7 +1028,7 @@ public class NativeBroker extends DBBroker {
                     throw new PermissionDeniedException("Permission denied to open collection: " + collection.getURI().toString() + " by " + getCurrentSubject().getName());
                 }
 
-                return collection;
+                return new LockedCollection(collectionLock, collection);
             }
         } catch(final LockException e) {
             unlockFn.run();
@@ -1064,7 +1066,7 @@ public class NativeBroker extends DBBroker {
             try(final ManagedLock collectionsCacheLock = lockCollectionCache(collectionsCache)) {
                 final Collection collection = collectionsCache.get(collectionUri);
                 if(collection != null) {
-                    return collection;
+                    return new LockedCollection(collectionLock, collection);
                 }
 
                 // not present
@@ -1077,9 +1079,10 @@ public class NativeBroker extends DBBroker {
 
         if(loadedCollection == null) {
             unlockFn.run();
+            return null;
+        } else {
+            return new LockedCollection(collectionLock, loadedCollection);
         }
-
-        return loadedCollection;
     }
 
     /**
@@ -1312,17 +1315,11 @@ public class NativeBroker extends DBBroker {
         for(final Iterator<XmldbURI> i = collection.collectionIterator(this); i.hasNext(); ) {
             final XmldbURI childName = i.next();
             //TODO : resolve URIs ! collection.getURI().resolve(childName)
-            Collection child = null;
-            try {
-                child = openCollection(name.append(childName), LockMode.READ_LOCK);
+            try (final Collection child = openCollection(name.append(childName), LockMode.READ_LOCK)) {
                 if (child == null) {
                     LOG.error("Child collection '" + childName + "' not found");
                 } else {
                     doCopyCollection(transaction, trigger, child, destCollection._2, childName, true, preserve);
-                }
-            } finally {
-                if(child != null) {
-                    child.release(LockMode.READ_LOCK);
                 }
             }
         }
@@ -1497,33 +1494,28 @@ public class NativeBroker extends DBBroker {
             }
 
             final XmldbURI parentName = collection.getParentURI();
-            final Collection parent = openCollection(parentName, LockMode.WRITE_LOCK);
-
-            if(parent != null) {
-                try {
-                    //TODO : resolve URIs
+            try(final Collection parent = openCollection(parentName, LockMode.WRITE_LOCK)) {
+                if (parent != null) {
                     parent.removeCollection(this, uri.lastSegment());
-                } finally {
-                    parent.release(LockMode.WRITE_LOCK);
                 }
-            }
 
-            try(final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.WRITE_LOCK)) {
-                collectionsCache.remove(collection);
-                final Value key = new CollectionStore.CollectionKey(uri.toString());
-                collectionsDb.remove(transaction, key);
-                //TODO : resolve URIs destination.getURI().resolve(newName)
-                collection.setPath(destination.getURI().append(newName));
-                destination.addCollection(this, collection);
-                if(parent != null) {
-                    saveCollection(transaction, parent);
+                try (final ManagedLock<Lock> collectionsDbLock = ManagedLock.acquire(collectionsDb.getLock(), LockMode.WRITE_LOCK)) {
+                    collectionsCache.remove(collection);
+                    final Value key = new CollectionStore.CollectionKey(uri.toString());
+                    collectionsDb.remove(transaction, key);
+                    //TODO : resolve URIs destination.getURI().resolve(newName)
+                    collection.setPath(destination.getURI().append(newName));
+                    destination.addCollection(this, collection);
+                    if (parent != null) {
+                        saveCollection(transaction, parent);
+                    }
+                    if (parent != destination) {
+                        saveCollection(transaction, destination);
+                    }
+                    saveCollection(transaction, collection);
+                    //} catch (ReadOnlyException e) {
+                    //throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
                 }
-                if(parent != destination) {
-                    saveCollection(transaction, destination);
-                }
-                saveCollection(transaction, collection);
-                //} catch (ReadOnlyException e) {
-                //throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
             }
 
             if(fireTrigger) {
@@ -1533,14 +1525,11 @@ public class NativeBroker extends DBBroker {
             for(final Iterator<XmldbURI> i = collection.collectionIterator(this); i.hasNext(); ) {
                 final XmldbURI childName = i.next();
                 //TODO : resolve URIs !!! name.resolve(childName)
-                final Collection child = openCollection(uri.append(childName), LockMode.WRITE_LOCK);
-                if(child == null) {
-                    LOG.error("Child collection " + childName + " not found");
-                } else {
-                    try {
+                try (final Collection child = openCollection(uri.append(childName), LockMode.WRITE_LOCK)) {
+                    if (child == null) {
+                        LOG.error("Child collection " + childName + " not found");
+                    } else {
                         moveCollectionRecursive(transaction, trigger, child, collection, childName, true);
-                    } finally {
-                        child.release(LockMode.WRITE_LOCK);
                     }
                 }
             }
@@ -2038,17 +2027,24 @@ public class NativeBroker extends DBBroker {
             final XmldbURI docName = XmldbURI.create(MessageDigester.md5(Thread.currentThread().getName() + Long.toString(System.currentTimeMillis()), false) + ".xml");
 
             //get the temp collection
-            Collection temp = null;
-            boolean openedWithLock = true;
+            try(final Txn transaction = transact.beginTransaction();
+                    final Collection existingTemp = openCollection(XmldbURI.TEMP_COLLECTION_URI, LockMode.WRITE_LOCK)) {
 
-            try (final Txn transaction = transact.beginTransaction()) {
-                temp = openCollection(XmldbURI.TEMP_COLLECTION_URI, LockMode.WRITE_LOCK);
-
-                // if temp collection does not exist
-                if (temp == null) {
-                    final Tuple2<Boolean, Collection> tuple = getOrCreateTempCollection(transaction);
-                    temp = tuple._2;
-                    openedWithLock = false;
+                final boolean created;
+                final Collection temp;
+                if (existingTemp != null) {
+                    temp = existingTemp;
+                    created = false;
+                } else {
+                    // // if temp collection does not exist, creates temp collection (with write lock in Txn)
+                    final Tuple2<Boolean, Collection> createdOrExistingTemp = getOrCreateTempCollection(transaction);
+                    if (createdOrExistingTemp == null) {
+                        LOG.error("Failed to create temporary collection");
+                        transact.abort(transaction);
+                        return null;
+                    }
+                    temp = createdOrExistingTemp._2;
+                    created = createdOrExistingTemp._1;
                 }
 
                 //create a temporary document
@@ -2068,6 +2064,11 @@ public class NativeBroker extends DBBroker {
                 //store the temporary document
                 temp.addDocument(transaction, this, targetDoc); //NULL transaction, so temporary fragment is not journalled - AR
 
+                // if we opened the Collection rather than creating it, obtain a lock in the transaction
+                if (!created && transaction != null) {
+                    transaction.acquireCollectionLock(() -> pool.getLockManager().acquireCollectionWriteLock(temp.getURI(), false));
+                }
+
                 storeXMLResource(transaction, targetDoc);
 
                 saveCollection(transaction, temp);
@@ -2079,11 +2080,6 @@ public class NativeBroker extends DBBroker {
                 return targetDoc;
             } catch (final Exception e) {
                 LOG.error("Failed to store temporary fragment: " + e.getMessage(), e);
-                //abort the transaction
-            } finally {
-                if(openedWithLock && temp != null) {
-                    temp.release(LockMode.WRITE_LOCK);
-                }
             }
         } finally {
             //restore the user
@@ -2346,38 +2342,34 @@ public class NativeBroker extends DBBroker {
         //TODO : resolve URIs !
         final XmldbURI collUri = fileName.removeLastSegment();
         final XmldbURI docUri = fileName.lastSegment();
-        Collection collection = null;
-        try {
-            collection = openCollection(collUri, LockMode.READ_LOCK);
-            if(collection == null) {
+        try(final Collection collection = openCollection(collUri, LockMode.READ_LOCK)) {
+            if (collection == null) {
                 LOG.debug("Collection '" + collUri + "' not found!");
                 return null;
             }
-            //if (!collection.getPermissions().validate(getCurrentSubject(), Permission.EXECUTE)) {
-            //    throw new PermissionDeniedException("Permission denied to read collection '" + collUri + "' by " + getCurrentSubject().getName());
-            //}
-            final DocumentImpl doc = collection.getDocumentWithLock(this, docUri, lockMode);
-            if(doc == null) {
-                //LOG.debug("document '" + fileName + "' not found!");
-                return null;
-            }
-            //if (!doc.getMode().validate(getUser(), Permission.READ))
-            //throw new PermissionDeniedException("not allowed to read document");
-            if(doc.getResourceType() == DocumentImpl.BINARY_FILE) {
-                final BinaryDocument bin = (BinaryDocument) doc;
-                try {
-                    bin.setContentLength(getBinaryResourceSize(bin));
-                } catch(final IOException ex) {
-                    LOG.fatal("Cannot get content size for " + bin.getURI(), ex);
+            try {
+                //if (!collection.getPermissions().validate(getCurrentSubject(), Permission.EXECUTE)) {
+                //    throw new PermissionDeniedException("Permission denied to read collection '" + collUri + "' by " + getCurrentSubject().getName());
+                //}
+                final DocumentImpl doc = collection.getDocumentWithLock(this, docUri, lockMode);
+                if (doc == null) {
+                    //LOG.debug("document '" + fileName + "' not found!");
+                    return null;
                 }
-            }
-            return doc;
-        } catch(final LockException e) {
-            LOG.error("Could not acquire lock on document " + fileName, e);
-            //TODO : exception ? -pb
-        } finally {
-            if(collection != null) {
-                collection.release(LockMode.READ_LOCK);
+                //if (!doc.getMode().validate(getUser(), Permission.READ))
+                //throw new PermissionDeniedException("not allowed to read document");
+                if (doc.getResourceType() == DocumentImpl.BINARY_FILE) {
+                    final BinaryDocument bin = (BinaryDocument) doc;
+                    try {
+                        bin.setContentLength(getBinaryResourceSize(bin));
+                    } catch (final IOException ex) {
+                        LOG.fatal("Cannot get content size for " + bin.getURI(), ex);
+                    }
+                }
+                return doc;
+            } catch (final LockException e) {
+                LOG.error("Could not acquire lock on document " + fileName, e);
+                //TODO : exception ? -pb
             }
         }
         return null;
@@ -2486,9 +2478,7 @@ public class NativeBroker extends DBBroker {
     @Override
     public MutableDocumentSet getAllXMLResources(final MutableDocumentSet docs) throws PermissionDeniedException {
         final long start = System.currentTimeMillis();
-        Collection rootCollection = null;
-        try {
-            rootCollection = openCollection(XmldbURI.ROOT_COLLECTION_URI, LockMode.READ_LOCK);
+        try(final Collection rootCollection = openCollection(XmldbURI.ROOT_COLLECTION_URI, LockMode.READ_LOCK)) {
             rootCollection.allDocs(this, docs, true);
             if(LOG.isDebugEnabled()) {
                 LOG.debug("getAllDocuments(DocumentSet) - end - "
@@ -2499,10 +2489,6 @@ public class NativeBroker extends DBBroker {
                     + "ms.");
             }
             return docs;
-        } finally {
-            if(rootCollection != null) {
-                rootCollection.release(LockMode.READ_LOCK);
-            }
         }
     }
 

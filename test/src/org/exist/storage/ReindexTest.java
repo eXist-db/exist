@@ -97,17 +97,11 @@ public class ReindexTest {
 
             BrokerPool.FORCE_CORRUPTION = true;
 
-            Collection root = null;
-            try {
-                root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, LockMode.WRITE_LOCK);
+            try(final Collection root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, LockMode.WRITE_LOCK)) {
                 assertNotNull(root);
                 transaction.acquireCollectionLock(() -> broker.getBrokerPool().getLockManager().acquireCollectionWriteLock(root.getURI(), false));
                 broker.removeCollection(transaction, root);
                 pool.getJournalManager().get().flush(true, false);
-            } finally {
-                if(root != null) {
-                    root.release(LockMode.WRITE_LOCK);
-                }
             }
             transact.commit(transaction);
         } catch (Exception e) {
@@ -122,8 +116,8 @@ public class ReindexTest {
     public void restart() throws EXistException, PermissionDeniedException, IOException, DatabaseConfigurationException {
         BrokerPool.FORCE_CORRUPTION = false;
         final BrokerPool pool = startDb();
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-            Collection root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, LockMode.READ_LOCK);
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+                final Collection root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, LockMode.READ_LOCK)) {
             assertNull("Removed collection does still exist", root);
         }
     }

@@ -351,7 +351,7 @@ public class Folder extends NamedResource implements Cloneable {
 					try {
 						name.setContext(handle);
 						IndexInfo info = handle.validateXMLResource(tx.tx, broker, XmldbURI.create(name.get()), node);
-						changeLock(LockMode.NO_LOCK);
+						//changeLock(LockMode.NO_LOCK);
 						handle.store(tx.tx, broker, info, node);
 						commit();
 					} catch (EXistException e) {
@@ -415,7 +415,7 @@ public class Folder extends NamedResource implements Cloneable {
 				source.applyOldName(name);
 				name.setContext(handle);
 				IndexInfo info = handle.validateXMLResource(tx.tx, broker, XmldbURI.create(name.get()), source.toInputSource());
-				changeLock(LockMode.NO_LOCK);
+				//changeLock(LockMode.NO_LOCK);
 				handle.store(tx.tx, broker, info, source.toInputSource());
 				commit();
 			} catch (EXistException e) {
@@ -840,7 +840,7 @@ public class Folder extends NamedResource implements Cloneable {
 	void release() {
 		if (broker == null || handle == null) throw new IllegalStateException("broker not acquired");
 		if (tx != null) tx.abortIfIncomplete();
-		if (lockMode != LockMode.NO_LOCK) handle.release(lockMode);
+		handle.close();
 		if (ownBroker) db.releaseBroker(broker);
 		ownBroker = false;
 		broker = null;
@@ -855,21 +855,21 @@ public class Folder extends NamedResource implements Cloneable {
 			try {
 				switch(newLockMode) {
 					case READ_LOCK:
-						handle.getLock().readLock().lockInterruptibly();
+						broker.getBrokerPool().getLockManager().acquireCollectionReadLock(handle.getURI());
 						break;
 					case WRITE_LOCK:
-						handle.getLock().writeLock().lockInterruptibly();
+						broker.getBrokerPool().getLockManager().acquireCollectionWriteLock(handle.getURI(), false);
 						break;
 					case NO_LOCK:
 						break;
 				}
 				lockMode = newLockMode;
-			} catch (InterruptedException e) {
+			} catch (LockException e) {
 				throw new DatabaseException(e);
 			}
 		} else {
 			if (newLockMode != LockMode.NO_LOCK) throw new IllegalStateException("cannot change between read and write lock modes");
-			handle.release(lockMode);
+			handle.close();
 			lockMode = newLockMode;
 		}
 	}

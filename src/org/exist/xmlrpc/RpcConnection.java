@@ -437,14 +437,8 @@ public class RpcConnection implements RpcAPI {
         }
 
         return withDb((broker, transaction) -> {
-            Collection collection = null;
-            try {
-                collection = broker.openCollection(uri, LockMode.READ_LOCK);
+            try(final Collection collection = broker.openCollection(uri, LockMode.READ_LOCK)) {
                 return collection != null;
-            } finally {
-                if (collection != null) {
-                    collection.release(LockMode.READ_LOCK);
-                }
             }
         });
     }
@@ -1018,9 +1012,7 @@ public class RpcConnection implements RpcAPI {
 
     private Map<String, Object> getPermissions(final XmldbURI uri) throws EXistException, PermissionDeniedException {
         return withDb((broker, transaction) -> {
-            Collection collection = null;
-            try {
-                collection = broker.openCollection(uri, LockMode.READ_LOCK);
+            try(final Collection collection = broker.openCollection(uri, LockMode.READ_LOCK);) {
                 final Permission perm;
                 if (collection == null) {
                     DocumentImpl doc = null;
@@ -1048,10 +1040,6 @@ public class RpcConnection implements RpcAPI {
                     result.put("acl", getACEs(perm));
                 }
                 return result;
-            } finally {
-                if (collection != null) {
-                    collection.release(LockMode.READ_LOCK);
-                }
             }
         });
     }
@@ -3740,9 +3728,7 @@ public class RpcConnection implements RpcAPI {
      */
     private <R> Function2E<XmlRpcCollectionFunction<R>, R, EXistException, PermissionDeniedException> withCollection(final LockMode lockMode, final DBBroker broker, final Txn transaction, final XmldbURI uri) throws EXistException, PermissionDeniedException {
         return readOp -> {
-            Collection collection = null;
-            try {
-                collection = broker.openCollection(uri, lockMode);
+            try(final Collection collection = broker.openCollection(uri, lockMode)) {
                 if (collection == null) {
                     final String msg = "collection " + uri + " not found!";
                     if (LOG.isDebugEnabled()) {
@@ -3751,10 +3737,6 @@ public class RpcConnection implements RpcAPI {
                     throw new EXistException(msg);
                 }
                 return readOp.apply(collection, broker, transaction);
-            } finally {
-                if (collection != null) {
-                    collection.release(lockMode);
-                }
             }
         };
     }

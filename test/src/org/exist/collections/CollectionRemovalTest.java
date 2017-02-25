@@ -116,41 +116,28 @@ public class CollectionRemovalTest {
 
     private void removeCollection(final String user, final String password, final XmldbURI uri)
             throws AuthenticationException, EXistException, PermissionDeniedException, IOException, TriggerException {
-        Collection test = null;
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().authenticate(user, password)));
-            final Txn transaction = transact.beginTransaction()) {
-
-            test = broker.openCollection(uri, LockMode.WRITE_LOCK);
+            final Txn transaction = transact.beginTransaction();
+            final Collection test = broker.openCollection(uri, LockMode.WRITE_LOCK)) {
             broker.removeCollection(transaction, test);
             transact.commit(transaction);
-		} finally {
-            if (test != null) {
-                test.release(LockMode.WRITE_LOCK);
-            }
 		}
     }
 
     private void retrieveDoc(final XmldbURI uri) throws EXistException, PermissionDeniedException, SAXException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-            Collection test = null;
-            try {
-                test = broker.openCollection(uri, LockMode.WRITE_LOCK);
-                assertNotNull(test);
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+                final Collection test = broker.openCollection(uri, LockMode.WRITE_LOCK)) {
+            assertNotNull(test);
 
-                DocumentImpl doc = test.getDocument(broker, XmldbURI.createInternal("document.xml"));
-                assertNotNull(doc);
+            DocumentImpl doc = test.getDocument(broker, XmldbURI.createInternal("document.xml"));
+            assertNotNull(doc);
 
-                Serializer serializer = broker.getSerializer();
-                serializer.reset();
-                String xml = serializer.serialize(doc);
-            } finally {
-                if (test != null) {
-                    test.release(LockMode.WRITE_LOCK);
-                }
-            }
+            Serializer serializer = broker.getSerializer();
+            serializer.reset();
+            String xml = serializer.serialize(doc);
         }
     }
 

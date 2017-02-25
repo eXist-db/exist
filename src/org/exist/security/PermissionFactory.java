@@ -127,9 +127,7 @@ public class PermissionFactory {
         final BrokerPool brokerPool = broker.getBrokerPool();
         final TransactionManager transact = brokerPool.getTransactionManager();
         try(final Txn transaction = transact.beginTransaction()) {
-            Collection collection = null;
-            try {
-                collection = broker.openCollection(pathUri, LockMode.WRITE_LOCK);
+            try(final Collection collection = broker.openCollection(pathUri, LockMode.WRITE_LOCK)) {
                 if (collection == null) {
                     DocumentImpl doc = null;
                     try {
@@ -163,10 +161,6 @@ public class PermissionFactory {
 
                 transact.commit(transaction);
                 broker.flush();
-            } finally {
-                if(collection != null) {
-                    collection.release(LockMode.WRITE_LOCK);
-                }
             }
         } catch(final XPathException | PermissionDeniedException | IOException | TriggerException | TransactionException | LockException e) {
             throw new PermissionDeniedException("Permission to modify permissions is denied for user '" + broker.getCurrentSubject().getName() + "' on '" + pathUri.toString() + "': " + e.getMessage(), e);

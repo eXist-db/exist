@@ -117,62 +117,58 @@ public class EmbeddedOutputStream extends OutputStream {
     }
 
     private static void uploadToDb(final BrokerPool pool, final XmldbURL url, final Path tempFile) throws IOException {
-        Collection collection = null;
         try(final DBBroker broker = pool.getBroker()) {
 
             final XmldbURI collectionUri = XmldbURI.create(url.getCollection());
             final XmldbURI documentUri = XmldbURI.create(url.getDocumentName());
 
-            collection = broker.openCollection(collectionUri, Lock.LockMode.WRITE_LOCK);
+            try(final Collection collection = broker.openCollection(collectionUri, Lock.LockMode.WRITE_LOCK)) {
 
-            if (collection == null) {
-                throw new IOException("Resource " + collectionUri.toString() + " is not a collection.");
-            }
-
-            if (collection.hasChildCollection(broker, documentUri)) {
-                throw new IOException("Resource " + documentUri.toString() + " is a collection.");
-            }
-
-            MimeType mime = MimeTable.getInstance().getContentTypeFor(documentUri);
-            String contentType = null;
-            if (mime != null) {
-                contentType = mime.getName();
-            } else {
-                mime = MimeType.BINARY_TYPE;
-            }
-
-            final TransactionManager transact = pool.getTransactionManager();
-            try (final Txn txn = transact.beginTransaction()) {
-
-                if (mime.isXMLType()) {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("Storing XML resource");
-                    }
-                    final InputSource inputsource = new FileInputSource(tempFile);
-                    final IndexInfo info = collection.validateXMLResource(txn, broker, documentUri, inputsource);
-                    final DocumentImpl doc = info.getDocument();
-                    doc.getMetadata().setMimeType(contentType);
-                    collection.store(txn, broker, info, inputsource);
-
-                } else {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("Storing Binary resource");
-                    }
-                    try (final InputStream is = Files.newInputStream(tempFile)) {
-                        collection.addBinaryResource(txn, broker, documentUri, is, contentType, FileUtils.sizeQuietly(tempFile));
-                    }
+                if (collection == null) {
+                    throw new IOException("Resource " + collectionUri.toString() + " is not a collection.");
                 }
 
-                txn.commit();
+                if (collection.hasChildCollection(broker, documentUri)) {
+                    throw new IOException("Resource " + documentUri.toString() + " is a collection.");
+                }
+
+                MimeType mime = MimeTable.getInstance().getContentTypeFor(documentUri);
+                String contentType = null;
+                if (mime != null) {
+                    contentType = mime.getName();
+                } else {
+                    mime = MimeType.BINARY_TYPE;
+                }
+
+                final TransactionManager transact = pool.getTransactionManager();
+                try (final Txn txn = transact.beginTransaction()) {
+
+                    if (mime.isXMLType()) {
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug("Storing XML resource");
+                        }
+                        final InputSource inputsource = new FileInputSource(tempFile);
+                        final IndexInfo info = collection.validateXMLResource(txn, broker, documentUri, inputsource);
+                        final DocumentImpl doc = info.getDocument();
+                        doc.getMetadata().setMimeType(contentType);
+                        collection.store(txn, broker, info, inputsource);
+
+                    } else {
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug("Storing Binary resource");
+                        }
+                        try (final InputStream is = Files.newInputStream(tempFile)) {
+                            collection.addBinaryResource(txn, broker, documentUri, is, contentType, FileUtils.sizeQuietly(tempFile));
+                        }
+                    }
+
+                    txn.commit();
+                }
             }
         } catch (final EXistException | PermissionDeniedException | LockException | SAXException e) {
             LOG.error(e);
             throw new IOException(e.getMessage(), e);
         } finally {
-            if(collection != null) {
-                collection.release(Lock.LockMode.WRITE_LOCK);
-            }
-
             if (LOG.isDebugEnabled()) {
                 LOG.debug("End document upload");
             }

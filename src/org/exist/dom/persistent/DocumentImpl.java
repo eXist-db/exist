@@ -24,6 +24,7 @@ package org.exist.dom.persistent;
 import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.exist.EXistException;
 import org.exist.Resource;
+import org.exist.collections.LockedCollection;
 import org.exist.dom.QName;
 import org.exist.dom.QName.IllegalQNameException;
 import org.exist.collections.Collection;
@@ -159,7 +160,10 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
 
     private DocumentImpl(final BrokerPool pool, final Collection collection, final XmldbURI fileURI, final Permission permissions) {
         this.pool = pool;
-        this.collection = collection;
+
+        // NOTE: We must not keep a reference to a LockedCollection in the Document object!
+        this.collection = LockedCollection.unwrapLocked(collection);
+
         this.fileURI = fileURI;
         this.permissions = permissions;
 

@@ -109,8 +109,8 @@ public class LargeValuesTest {
         BrokerPool.FORCE_CORRUPTION = false;
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-            final Collection root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, LockMode.READ_LOCK);
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+                final Collection root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, LockMode.READ_LOCK)) {
             assertNotNull(root);
 
             final DocumentImpl doc = root.getDocument(broker, XmldbURI.create("test.xml"));
@@ -142,19 +142,13 @@ public class LargeValuesTest {
     private void remove() throws EXistException, PermissionDeniedException, DatabaseConfigurationException, IOException, TriggerException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
-        Collection root = null;
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
-                final Txn transaction = transact.beginTransaction()) {
-
-            root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, LockMode.WRITE_LOCK);
+                final Txn transaction = transact.beginTransaction();
+                final Collection root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, LockMode.WRITE_LOCK)) {
             assertNotNull(root);
             broker.removeCollection(transaction, root);
 
             transact.commit(transaction);
-        } finally {
-            if(root != null) {
-                root.release(LockMode.WRITE_LOCK);
-            }
         }
     }
 
