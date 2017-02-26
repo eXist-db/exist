@@ -3,6 +3,7 @@ package org.exist.xquery.functions.inspect;
 import org.exist.dom.QName;
 import org.exist.xquery.*;
 import org.exist.xquery.functions.fn.FunOnFunctions;
+import org.exist.xquery.functions.fn.LoadXQueryModule;
 import org.exist.xquery.parser.XQueryAST;
 import org.exist.xquery.value.*;
 
@@ -79,48 +80,11 @@ public class ModuleFunctions extends BasicFunction {
             if (module == null) {
                 return Sequence.EMPTY_SEQUENCE;
             }
-            addFunctionRefsFromModule(tempContext, list, module);
+            LoadXQueryModule.addFunctionRefsFromModule(this, tempContext, list, module);
         } else {
             addFunctionRefsFromContext(list);
         }
         return list;
-    }
-
-    private void addFunctionRefsFromModule(XQueryContext tempContext, ValueSequence resultSeq, Module module) throws XPathException {
-        final FunctionSignature signatures[] = module.listFunctions();
-        for (final FunctionSignature signature : signatures) {
-            if (!signature.isPrivate()) {
-                if (module.isInternalModule()) {
-                    int arity;
-                    if (signature.isOverloaded())
-                        {arity = signature.getArgumentTypes().length;}
-                    else
-                        {arity = signature.getArgumentCount();}
-                    final FunctionDef def = ((InternalModule)module).getFunctionDef(signature.getName(), arity);
-                    final XQueryAST ast = new XQueryAST();
-                    ast.setLine(getLine());
-                    ast.setColumn(getColumn());
-                    final List<Expression> args = new ArrayList<Expression>(arity);
-                    for (int i = 0; i < arity; i++) {
-                        args.add(new Function.Placeholder(context));
-                    }
-                    final Function fn = Function.createFunction(tempContext, ast, def);
-                    fn.setArguments(args);
-                    final InternalFunctionCall call = new InternalFunctionCall(fn);
-                    final FunctionCall ref = FunctionFactory.wrap(tempContext, call);
-                    resultSeq.addAll(new FunctionReference(ref));
-                } else {
-                    final UserDefinedFunction func = ((ExternalModule) module).getFunction(signature.getName(), signature.getArgumentCount(), tempContext);
-                    // could be null if private function
-                    if (func != null) {
-                        // create function reference
-                        final FunctionCall funcCall = new FunctionCall(tempContext, func);
-                        funcCall.setLocation(getLine(), getColumn());
-                        resultSeq.add(new FunctionReference(funcCall));
-                    }
-                }
-            }
-        }
     }
 
     private void addFunctionRefsFromContext(ValueSequence resultSeq) throws XPathException {
