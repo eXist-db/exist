@@ -1951,11 +1951,17 @@ public class NativeBroker extends DBBroker {
             final XmldbURI docName = XmldbURI.create(MessageDigester.md5(Thread.currentThread().getName() + Long.toString(System.currentTimeMillis()), false) + ".xml");
 
             //get the temp collection
+            Collection temp = null;
+            boolean openedWithLock = true;
+
             try (final Txn transaction = transact.beginTransaction()) {
-                Tuple2<Boolean, Collection> tuple = getOrCreateTempCollection(transaction);
-                Collection temp = tuple._2;
-                if (!tuple._1) {
-                    transaction.acquireLock(temp.getLock(), LockMode.WRITE_LOCK);
+                temp = openCollection(XmldbURI.TEMP_COLLECTION_URI, LockMode.WRITE_LOCK);
+
+                // if temp collection does not exist
+                if (temp == null) {
+                    final Tuple2<Boolean, Collection> tuple = getOrCreateTempCollection(transaction);
+                    temp = tuple._2;
+                    openedWithLock = false;
                 }
 
                 //create a temporary document
@@ -1968,14 +1974,12 @@ public class NativeBroker extends DBBroker {
                 metadata.setCreated(now);
                 targetDoc.setMetadata(metadata);
                 targetDoc.setDocId(getNextResourceId(transaction, temp));
-
                 //index the temporary document
                 final DOMIndexer indexer = new DOMIndexer(this, transaction, doc, targetDoc);
                 indexer.scan();
                 indexer.store();
-
                 //store the temporary document
-                temp.addDocument(transaction, this, targetDoc);
+                temp.addDocument(transaction, this, targetDoc); //NULL transaction, so temporary fragment is not journalled - AR
 
                 storeXMLResource(transaction, targetDoc);
 
@@ -1989,6 +1993,10 @@ public class NativeBroker extends DBBroker {
             } catch (final Exception e) {
                 LOG.error("Failed to store temporary fragment: " + e.getMessage(), e);
                 //abort the transaction
+            } finally {
+                if(openedWithLock && temp != null) {
+                    temp.release(LockMode.WRITE_LOCK);
+                }
             }
         } finally {
             //restore the user
