@@ -100,11 +100,18 @@ public class ReindexTest {
 
             BrokerPool.FORCE_CORRUPTION = true;
 
-            Collection root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, LockMode.WRITE_LOCK);
-            assertNotNull(root);
-            transaction.registerLock(root.getLock(), LockMode.WRITE_LOCK);
-            broker.removeCollection(transaction, root);
-            pool.getJournalManager().get().flush(true, false);
+            Collection root = null;
+            try {
+                root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, LockMode.WRITE_LOCK);
+                assertNotNull(root);
+                transaction.acquireLock(root.getLock(), LockMode.WRITE_LOCK);
+                broker.removeCollection(transaction, root);
+                pool.getJournalManager().get().flush(true, false);
+            } finally {
+                if(root != null) {
+                    root.release(LockMode.WRITE_LOCK);
+                }
+            }
             transact.commit(transaction);
         } catch (Exception e) {
             e.printStackTrace();

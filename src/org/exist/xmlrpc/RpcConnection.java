@@ -1486,8 +1486,8 @@ public class RpcConnection implements RpcAPI {
     private boolean storeBinary(final byte[] data, final XmldbURI docUri, final String mimeType,
                                 final int overwrite, final Date created, final Date modified) throws EXistException, PermissionDeniedException {
         return this.<Boolean>writeCollection(docUri.removeLastSegment()).apply((collection, broker, transaction) -> {
-            // keep the write lock in the transaction
-            transaction.registerLock(collection.getLock(), LockMode.WRITE_LOCK);
+            // keep a write lock in the transaction
+            transaction.acquireLock(collection.getLock(), LockMode.WRITE_LOCK);
             if (overwrite == 0) {
                 final DocumentImpl old = collection.getDocument(broker, docUri.lastSegment());
                 if (old != null) {
@@ -1880,8 +1880,8 @@ public class RpcConnection implements RpcAPI {
 
     private boolean remove(final XmldbURI docUri) throws EXistException, PermissionDeniedException {
         return this.<Boolean>writeCollection(docUri.removeLastSegment()).apply((collection, broker, transaction) -> {
-            // keep the write lock in the transaction
-            transaction.registerLock(collection.getLock(), LockMode.WRITE_LOCK);
+            // keep a write lock in the transaction
+            transaction.acquireLock(collection.getLock(), LockMode.WRITE_LOCK);
 
             final DocumentImpl doc = collection.getDocument(broker, docUri.lastSegment());
             if (doc == null) {
@@ -1905,8 +1905,8 @@ public class RpcConnection implements RpcAPI {
     private boolean removeCollection(final XmldbURI collURI) throws EXistException, PermissionDeniedException {
         try {
             return this.<Boolean>writeCollection(collURI).apply((collection, broker, transaction) -> {
-                // keep the write lock in the transaction
-                transaction.registerLock(collection.getLock(), LockMode.WRITE_LOCK);
+                // keep a write lock in the transaction
+                transaction.acquireLock(collection.getLock(), LockMode.WRITE_LOCK);
                 if(LOG.isDebugEnabled()) {
                     LOG.debug("removing collection " + collURI);
                 }

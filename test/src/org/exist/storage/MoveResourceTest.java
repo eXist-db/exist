@@ -142,11 +142,17 @@ public class MoveResourceTest {
             final TransactionManager transact = pool.getTransactionManager();
             try(final Txn transaction = transact.beginTransaction()) {
 
-                final Collection root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, LockMode.WRITE_LOCK);
-                assertNotNull(root);
-                transaction.registerLock(root.getLock(), LockMode.WRITE_LOCK);
-                broker.removeCollection(transaction, root);
-
+                Collection root = null;
+                try {
+                    root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, LockMode.WRITE_LOCK);
+                    assertNotNull(root);
+                    transaction.acquireLock(root.getLock(), LockMode.WRITE_LOCK);
+                    broker.removeCollection(transaction, root);
+                } finally {
+                    if(root != null) {
+                        root.release(LockMode.WRITE_LOCK);
+                    }
+                }
                 transact.commit(transaction);
             }
         }
@@ -203,10 +209,17 @@ public class MoveResourceTest {
             final TransactionManager transact = pool.getTransactionManager();
             try(final Txn transaction = transact.beginTransaction()) {
 
-                final Collection root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, LockMode.WRITE_LOCK);
-                assertNotNull(root);
-                transaction.registerLock(root.getLock(), LockMode.WRITE_LOCK);
-                broker.removeCollection(transaction, root);
+                Collection root = null;
+                try {
+                    root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, LockMode.WRITE_LOCK);
+                    assertNotNull(root);
+                    transaction.acquireLock(root.getLock(), LockMode.WRITE_LOCK);
+                    broker.removeCollection(transaction, root);
+                } finally {
+                    if(root != null) {
+                        root.release(LockMode.WRITE_LOCK);
+                    }
+                }
 
                 transact.commit(transaction);
             }
