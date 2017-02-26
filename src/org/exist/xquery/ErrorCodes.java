@@ -214,6 +214,7 @@ public class ErrorCodes {
     public static final ErrorCode FOJS0003 = new W3CErrorCode("FOJS0003", "JSON duplicate keys.");
 
     public static final ErrorCode FOUT1170 = new W3CErrorCode("FOUT1170", "Invalid $href argument to fn:unparsed-text() (etc.)");
+    public static final ErrorCode FOQM0002 = new W3CErrorCode("FOQM0002", "Module URI not found.");
     
     /* eXist specific XQuery and XPath errors
      *
