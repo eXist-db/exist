@@ -23,25 +23,25 @@ public class ArrowOperator extends AbstractExpression {
     private List<Expression> parameters;
     private AnalyzeContextInfo cachedContextInfo;
 
-    public ArrowOperator(XQueryContext context, Expression leftExpr, String fname, List<Expression> params) throws
+    public ArrowOperator(final XQueryContext context, final Expression leftExpr) throws
             XPathException {
         super(context);
         this.leftExpr = leftExpr;
+    }
+
+    public void setArrowFunction(final String fname, final List<Expression> params) throws XPathException {
         final QName name = QName.parse(context, fname, context.getDefaultFunctionNamespace());
         this.fcall = NamedFunctionReference.lookupFunction(this, context, name, params.size() + 1);
         this.parameters = params;
     }
 
-    public ArrowOperator(XQueryContext context, Expression leftExpr, PathExpr funcSpec, List<Expression> params) throws
-            XPathException {
-        super(context);
-        this.leftExpr = leftExpr;
-        this.funcSpec = funcSpec;
+    public void setArrowFunction(final PathExpr funcSpec, final List<Expression> params) {
+        this.funcSpec = funcSpec.simplify();
         this.parameters = params;
     }
 
     @Override
-    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+    public void analyze(final AnalyzeContextInfo contextInfo) throws XPathException {
         this.cachedContextInfo = contextInfo;
         leftExpr.analyze(contextInfo);
         if (fcall != null) {
@@ -53,7 +53,7 @@ public class ArrowOperator extends AbstractExpression {
     }
 
     @Override
-    public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+    public Sequence eval(Sequence contextSequence, final Item contextItem) throws XPathException {
         if (contextItem != null) {
             contextSequence = contextItem.toSequence();
         }
@@ -100,7 +100,7 @@ public class ArrowOperator extends AbstractExpression {
     }
 
     @Override
-    public void dump(ExpressionDumper dumper) {
+    public void dump(final ExpressionDumper dumper) {
         leftExpr.dump(dumper);
         dumper.display(" => ");
         if (fcall != null) {
@@ -136,7 +136,7 @@ public class ArrowOperator extends AbstractExpression {
 
         private Sequence sequence;
 
-        public ContextParam(XQueryContext context, Sequence sequence) {
+        ContextParam(XQueryContext context, Sequence sequence) {
             super(context);
             this.sequence = sequence;
         }

@@ -954,7 +954,7 @@ castableExpr throws XPathException
 
 castExpr throws XPathException
 :
-	unaryExpr ( "cast"^ "as"! singleType )?
+	arrowExpr ( "cast"^ "as"! singleType )?
 	;
 
 comparisonExpr throws XPathException
@@ -1188,15 +1188,13 @@ postfixExpr throws XPathException:
 		(LPAREN) => dynamicFunCall
 		|
 		(QUESTION) => lookup
-		|
-		(ARROW_OP) => arrowPostfix
 	)*
 	;
 
-arrowPostfix throws XPathException:
-    ARROW_OP^ arrowFunctionSpecifier argumentList
+arrowExpr throws XPathException:
+    unaryExpr ( ARROW_OP^ arrowFunctionSpecifier argumentList )*
     ;
-
+    
 arrowFunctionSpecifier throws XPathException
 { String name= null; }:
     name=n:eqName
