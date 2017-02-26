@@ -47,6 +47,10 @@ public class StringConstructor extends AbstractExpression {
 
     @Override
     public void analyze(final AnalyzeContextInfo contextInfo) throws XPathException {
+        if(getContext().getXQueryVersion() < 31) {
+            throw new XPathException(this, ErrorCodes.EXXQDY0003, "string constructors are not available before " +
+                    "XQuery 3.1");
+        }
         for (final StringConstructorPart p: content) {
             p.analyze(contextInfo);
         }
