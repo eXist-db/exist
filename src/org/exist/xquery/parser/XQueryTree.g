@@ -1139,6 +1139,8 @@ throws PermissionDeniedException, EXistException, XPathException
 
         }
     |
+    step=arrowOp [path]
+    |
 	step=typeCastExpr [path]
 	|
 	// sequence constructor:
@@ -3035,16 +3037,60 @@ throws PermissionDeniedException, EXistException, XPathException
 	)
 	;
 
+arrowOp [PathExpr path]
+returns [Expression step]
+throws PermissionDeniedException, EXistException, XPathException
+{
+	step= null;
+}:
+	#(
+		arrowAST:ARROW_OP
+		{
+			PathExpr leftExpr = new PathExpr(context);
+		}
+		expr [leftExpr]
+		{
+			ArrowOperator op = new ArrowOperator(context, leftExpr.simplify());
+			op.setASTNode(arrowAST);
+			path.add(op);
+			step = op;
+			
+			PathExpr nameExpr = new PathExpr(context);
+			String name = null;
+		}
+		(
+			eq:EQNAME
+			{ name = eq.toString(); }
+			|
+			expr [nameExpr]
+		)
+		{ List<Expression> params = new ArrayList<Expression>(5); }
+		(
+			{ PathExpr pathExpr = new PathExpr(context); }
+			expr [pathExpr] { params.add(pathExpr.simplify()); }
+		)*
+		{
+			if (name == null) {
+				op.setArrowFunction(nameExpr, params);
+			} else {
+				op.setArrowFunction(name, params);
+			}
+		}
+	)
+	;
+
 typeCastExpr [PathExpr path]
 returns [Expression step]
 throws PermissionDeniedException, EXistException, XPathException
 {
 	step= null;
-	PathExpr expr= new PathExpr(context);
-	int cardinality= Cardinality.EXACTLY_ONE;
 }:
 	#(
 		castAST:"cast"
+		{
+			PathExpr expr= new PathExpr(context);
+			int cardinality= Cardinality.EXACTLY_ONE;
+		}
 		step=expr [expr]
 		t:ATOMIC_TYPE
 		(
@@ -3063,6 +3109,10 @@ throws PermissionDeniedException, EXistException, XPathException
 	|
 	#(
 		castableAST:"castable"
+		{
+			PathExpr expr= new PathExpr(context);
+			int cardinality= Cardinality.EXACTLY_ONE;
+		}
 		step=expr [expr]
 		t2:ATOMIC_TYPE
 		(

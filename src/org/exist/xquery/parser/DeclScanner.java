@@ -374,6 +374,7 @@ public DeclScanner(ParserSharedInputState state) {
 		"\"ancestor\"",
 		"\"ancestor-or-self\"",
 		"\"preceding-sibling\"",
+		"arrow operator",
 		"INTEGER_LITERAL",
 		"DOUBLE_LITERAL",
 		"DECIMAL_LITERAL",
