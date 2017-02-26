@@ -19,7 +19,7 @@ function ao:func-by-name2() {
 declare
     %test:assertEquals(3)
 function ao:func-inline() {
-    ('A', 'B', 'C') => (function( $sequence) { count( $sequence)})()
+    ('A', 'B', 'C') => (function($sequence) { count($sequence)})()
 };
 
 declare
@@ -29,9 +29,9 @@ function ao:func-in-sequence1() {
 };
 
 declare
-    %test:assertEquals("HELLO", "WORLD")
+    %test:assertEquals("123", "ABC", "dl")
 function ao:func-in-sequence2() {
-    "hello world"=>upper-case()=>normalize-unicode()=>tokenize("\s+")
+    "123 abc ㎗" => upper-case() => normalize-unicode('NFKC') => tokenize("\s+")
 };
 
 declare
@@ -44,4 +44,56 @@ declare
     %test:assertEquals("HELLO", "WORLD")
 function ao:func-in-sequence-inner() {
     "hello world"=>(function($in) { $in=>upper-case()=>tokenize("\s+") })()
+};
+
+declare 
+    %test:assertEquals(11)
+function ao:var() {
+    let $fn := string-length#1
+    return
+        "Hello" => concat(" world") => $fn()
+};
+
+declare 
+    %test:assertEquals("HELLO", "WORLD")
+function ao:var-partial() {
+    let $fn1 := upper-case#1
+    let $fn2 := tokenize(?, "\s+")
+    return
+        "Hello" => concat(" world") => $fn1() => $fn2()
+};
+
+declare 
+    %test:assertEquals("a=1", "b=2", "c=3")
+function ao:func-as-input1() {
+    function($k, $v) {
+        $k || "=" || $v
+    } =>
+    (
+        map:for-each(
+            map {
+                "a" : "1",
+                "b" : "2",
+                "c" : "3"
+            },
+            ?
+        )
+    )()
+};
+
+declare 
+    %test:assertEquals("a=1", "b=2", "c=3")
+function ao:func-as-input2() {
+    let $me := map:for-each(
+        map {
+            "a" : "1",
+            "b" : "2",
+            "c" : "3"
+        },
+        ?
+    )
+    return
+        function($k, $v) {
+            $k || "=" || $v
+        } => $me()
 };

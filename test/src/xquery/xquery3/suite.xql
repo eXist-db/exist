@@ -12,6 +12,5 @@ test:suite((
     inspect:module-functions(xs:anyURI("typeswitch.xql")),
     inspect:module-functions(xs:anyURI("fn.xql")),
     inspect:module-functions(xs:anyURI("fnRefs.xql")),
-    inspect:module-functions(xs:anyURI("fn.xql")),
     inspect:module-functions(xs:anyURI("arrowop.xql"))
 ))
