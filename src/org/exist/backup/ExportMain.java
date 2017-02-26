@@ -26,6 +26,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
+import org.exist.util.SystemExitCodes;
 import org.exist.xquery.TerminatedException;
 
 import java.io.File;
@@ -123,7 +124,7 @@ public class ExportMain {
             process(arguments);
         } catch (final ArgumentException e) {
             System.out.println(e.getMessageAndUsage());
-            System.exit(2);
+            System.exit(SystemExitCodes.INVALID_ARGUMENT_EXIT_CODE);
 
         }
     }
@@ -144,7 +145,7 @@ public class ExportMain {
         final BrokerPool pool = startDB(dbConfig);
 
         if (pool == null) {
-            System.exit(1);
+            System.exit(SystemExitCodes.CATCH_ALL_GENERAL_ERROR_EXIT_CODE);
         }
         int retval = 0; // return value
 
@@ -175,16 +176,16 @@ public class ExportMain {
             }
         } catch (final EXistException e) {
             System.err.println("ERROR: Failed to retrieve database broker: " + e.getMessage());
-            retval = 2;
+            retval = SystemExitCodes.NO_BROKER_EXIT_CODE;
         } catch (final TerminatedException e) {
             System.err.println("WARN: Export was terminated by db.");
-            retval = 3;
+            retval = SystemExitCodes.TERMINATED_EARLY_EXIT_CODE;
         } catch (final PermissionDeniedException pde) {
             System.err.println("ERROR: Failed to retrieve database data: " + pde.getMessage());
-            retval = 4;
-        } catch (final IOException pde) {
-            System.err.println("ERROR: Failed to retrieve database data: " + pde.getMessage());
-            retval = 5;
+            retval = SystemExitCodes.PERMISSION_DENIED_EXIT_CODE;
+        } catch (final IOException ioe) {
+            System.err.println("ERROR: Failed to retrieve database data: " + ioe.getMessage());
+            retval = SystemExitCodes.IO_ERROR_EXIT_CODE;
         } finally {
             BrokerPool.stopAll(false);
         }

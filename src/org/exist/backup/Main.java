@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 
+import org.exist.util.SystemExitCodes;
 import org.xml.sax.SAXException;
 
 import org.xmldb.api.DatabaseManager;
@@ -256,7 +257,7 @@ public class Main {
         } catch (final Exception e) {
             reportError(e);
         }
-        System.exit(0);
+        System.exit(SystemExitCodes.OK_EXIT_CODE);
     }
 
     private static void restoreWithoutGui(final String username, final String password, final Optional<String> dbaPassword, final Path f,
@@ -365,7 +366,7 @@ public class Main {
     }
 
 
-    private static void reportError(Throwable e) {
+    private static void reportError(final Throwable e) {
         e.printStackTrace();
 
         if (e.getCause() != null) {
@@ -373,10 +374,10 @@ public class Main {
             e.getCause().printStackTrace();
         }
 
-        System.exit(1);
+        System.exit(SystemExitCodes.CATCH_ALL_GENERAL_ERROR_EXIT_CODE);
     }
 
-    private static void shutdown(Collection root) {
+    private static void shutdown(final Collection root) {
         try {
             final DatabaseInstanceManager mgr = (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
 
@@ -405,11 +406,11 @@ public class Main {
             process(arguments);
         } catch(final ArgumentException e) {
             System.out.println(e.getMessageAndUsage());
-            System.exit(2);
+            System.exit(SystemExitCodes.INVALID_ARGUMENT_EXIT_CODE);
 
         } catch (final Throwable e) {
             e.printStackTrace();
-            System.exit(1);
+            System.exit(SystemExitCodes.CATCH_ALL_GENERAL_ERROR_EXIT_CODE);
         }
     }
 }

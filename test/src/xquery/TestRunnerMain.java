@@ -37,6 +37,7 @@ import java.util.stream.Collectors;
 import org.exist.source.FileSource;
 import org.exist.source.Source;
 import org.exist.util.FileUtils;
+import org.exist.util.SystemExitCodes;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.XQueryService;
 import org.exist.xmldb.XmldbURI;
@@ -83,7 +84,7 @@ public class TestRunnerMain {
 			process(arguments);
 		} catch (final ArgumentException e) {
 			System.out.println(e.getMessageAndUsage());
-			System.exit(2);
+			System.exit(SystemExitCodes.INVALID_ARGUMENT_EXIT_CODE);
 
 		}
 	}

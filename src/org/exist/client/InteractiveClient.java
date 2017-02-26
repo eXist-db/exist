@@ -243,16 +243,16 @@ public class InteractiveClient {
 
             final InteractiveClient client = new InteractiveClient(options);
             if (!client.run()) {
-                System.exit(1); // return non-zero exit status on failure
+                System.exit(SystemExitCodes.CATCH_ALL_GENERAL_ERROR_EXIT_CODE); // return non-zero exit status on failure
             }
 
         } catch(final ArgumentException e) {
             System.out.println(e.getMessageAndUsage());
-            System.exit(2);
+            System.exit(SystemExitCodes.INVALID_ARGUMENT_EXIT_CODE);
 
         } catch (final Exception e) {
             e.printStackTrace();
-            System.exit(1); // return non-zero exit status on exception
+            System.exit(SystemExitCodes.CATCH_ALL_GENERAL_ERROR_EXIT_CODE); // return non-zero exit status on exception
         }
     }
 
@@ -2092,7 +2092,7 @@ public class InteractiveClient {
                 System.err.println("Connection to database failed; message: " + cnf.getMessage());
             }
             cnf.printStackTrace();
-            System.exit(1);
+            System.exit(SystemExitCodes.CATCH_ALL_GENERAL_ERROR_EXIT_CODE);
         }
     }
 

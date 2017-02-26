@@ -7,6 +7,7 @@ package org.exist.jetty;
 
 import org.apache.xmlrpc.XmlRpcException;
 import org.exist.util.ConfigurationHelper;
+import org.exist.util.SystemExitCodes;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.XmldbURI;
 
@@ -66,7 +67,7 @@ public class ServerShutdown {
             process(arguments);
         } catch (final ArgumentException e) {
             System.out.println(e.getMessageAndUsage());
-            System.exit(2);
+            System.exit(SystemExitCodes.INVALID_ARGUMENT_EXIT_CODE);
 
         }
     }

@@ -32,6 +32,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.util.ConfigurationHelper;
 import org.exist.util.FileUtils;
+import org.exist.util.SystemExitCodes;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Sequence;
@@ -177,7 +178,7 @@ public class Launcher extends Observable implements Observer {
                     }
                 } catch (final Exception e) {
                     showMessageAndExit("Error Occurred", "An error occurred during eXist-db startup. Please check console output and logs.", true);
-                    System.exit(1);
+                    System.exit(SystemExitCodes.CATCH_ALL_GENERAL_ERROR_EXIT_CODE);
                 }
             }
         }.start();
@@ -525,7 +526,7 @@ public class Launcher extends Observable implements Observer {
                         wrapper.launch();
                     }
                 }
-                System.exit(0);
+                System.exit(SystemExitCodes.OK_EXIT_CODE);
             }
         });
     }
@@ -713,7 +714,7 @@ public class Launcher extends Observable implements Observer {
         utilityPanel.setVisible(true);
 
         JOptionPane.showMessageDialog(splash, panel, title, JOptionPane.WARNING_MESSAGE);
-        //System.exit(1);
+        //System.exit(SystemExitCodes.CATCH_ALL_GENERAL_ERROR_EXIT_CODE);
     }
 
     protected void showTrayMessage(String message, TrayIcon.MessageType type) {

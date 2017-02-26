@@ -23,6 +23,7 @@ package org.exist.backup;
 
 import org.exist.util.FileUtils;
 import com.evolvedbinary.j8fu.function.FunctionE;
+import org.exist.util.SystemExitCodes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
@@ -449,7 +450,7 @@ public class Backup
         }
         catch( final Throwable e ) {
             e.printStackTrace();
-            System.exit(1);
+            System.exit(SystemExitCodes.CATCH_ALL_GENERAL_ERROR_EXIT_CODE);
         }
     }
 

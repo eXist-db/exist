@@ -24,6 +24,7 @@ package org.exist.performance;
 
 import org.exist.source.ClassLoaderSource;
 import org.exist.util.FileUtils;
+import org.exist.util.SystemExitCodes;
 import org.exist.util.XMLFilenameFilter;
 import org.exist.xmldb.XQueryService;
 import org.w3c.dom.Document;
@@ -84,7 +85,7 @@ public class Main {
             process(arguments);
         } catch (final ArgumentException e) {
             System.out.println(e.getMessageAndUsage());
-            System.exit(2);
+            System.exit(SystemExitCodes.INVALID_ARGUMENT_EXIT_CODE);
 
         }
     }
@@ -97,18 +98,18 @@ public class Main {
 
         if (xmlFile == null || !Files.isReadable(xmlFile)) {
             System.err.println("Cannot read test definition file: " + xmlFile.toAbsolutePath());
-            System.exit(1);
+            System.exit(SystemExitCodes.INVALID_ARGUMENT_EXIT_CODE);
         }
         if (outputDir == null || !Files.isWritable(outputDir)) {
             System.err.println("No or not writable output directory specified. Please provide a " +
                 "writable directory with option -d");
-            System.exit(1);
+            System.exit(SystemExitCodes.INVALID_ARGUMENT_EXIT_CODE);
         }
 
-        for (String group: groups) {
+        for (final String group: groups) {
             Runner runner = null;
             try {
-                Path outFile = outputDir.resolve(group + ".xml");
+                final Path outFile = outputDir.resolve(group + ".xml");
                 runner = configure(xmlFile, outFile);
                 runner.run(group);
             } catch (Exception e) {
