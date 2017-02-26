@@ -1989,6 +1989,36 @@ throws PermissionDeniedException, EXistException, XPathException
 	step = lookup [null]
 	step=postfixExpr [step]
 	{ path.add(step); }
+	|
+	#( 
+		scAST:STRING_CONSTRUCTOR_START
+		{ 
+			StringConstructor sc = new StringConstructor(context); 
+			sc.setASTNode(scAST);
+		}
+		(
+			content:STRING_CONSTRUCTOR_CONTENT
+			{
+				sc.addContent(content.getText());
+			}
+			|
+			#( i:STRING_CONSTRUCTOR_INTERPOLATION_START
+				{
+					PathExpr interpolation = new PathExpr(context);
+				}
+				( 
+					expr[interpolation]
+					{
+						sc.addInterpolation(interpolation.simplify());
+					}
+				)?
+			)
+		)*
+		{
+			path.add(sc);
+			step = sc;
+		}
+	)
 	;
 
 pathExpr [PathExpr path]

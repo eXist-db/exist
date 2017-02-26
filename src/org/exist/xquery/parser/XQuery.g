@@ -1084,13 +1084,14 @@ stepExpr throws XPathException
 	=> axisStep
 	|
 	( ( "element" | "attribute" | "text" | "document" | "comment" |
-	  "namespace-node" | "processing-instruction" | "namespace" | "ordered" | "unordered" | "map" | "array" ) LCURLY ) =>
+	  "namespace-node" | "processing-instruction" | "namespace" | "ordered" | 
+	  "unordered" | "map" | "array" ) LCURLY ) =>
 	postfixExpr
 	|
 	( ( "element" | "attribute" | "processing-instruction" | "namespace" ) eqName LCURLY ) => postfixExpr
 	|
 	( MOD | DOLLAR | ( eqName ( LPAREN | HASH ) ) | SELF | LPAREN | literal | XML_COMMENT | LT |
-	  XML_PI | QUESTION | LPPAREN)
+	  XML_PI | QUESTION | LPPAREN | STRING_CONSTRUCTOR_START )
 	=> postfixExpr
 	|
 	axisStep
@@ -1270,6 +1271,8 @@ primaryExpr throws XPathException
 	|
 	( QUESTION ) => lookup
 	|
+	( STRING_CONSTRUCTOR_START ) => stringConstructor
+	|
 	contextItemExpr
 	|
 	parenthesizedExpr
@@ -1277,6 +1280,29 @@ primaryExpr throws XPathException
 	varRef
 	|
 	literal
+	;
+
+stringConstructor throws XPathException
+	:
+	STRING_CONSTRUCTOR_START^ 
+	{ lexer.inStringConstructor = true; } 
+	stringConstructorContent 
+	{ lexer.inStringConstructor = false; } 
+	STRING_CONSTRUCTOR_END!
+	;
+	
+stringConstructorContent throws XPathException
+	:
+	( STRING_CONSTRUCTOR_CONTENT | stringConstructorInterpolation )*
+	;
+
+stringConstructorInterpolation throws XPathException
+	:
+	STRING_CONSTRUCTOR_INTERPOLATION_START^
+	{ lexer.inStringConstructor = false; }
+	( expr )?
+	STRING_CONSTRUCTOR_INTERPOLATION_END!
+	{ lexer.inStringConstructor = true; }
 	;
 
 mapConstructor throws XPathException
@@ -2067,6 +2093,7 @@ options {
 {
 	protected boolean wsExplicit= false;
 	protected boolean parseStringLiterals= true;
+	protected boolean inStringConstructor = false;
 	protected boolean inElementContent= false;
 	protected boolean inAttributeContent= false;
 	protected char attrDelimChar = '"';
@@ -2197,7 +2224,7 @@ options {
 	paraphrase="XQuery XQDoc comment";
 }
 :
-	"(:~" ( options { greedy=false; }: ( . | EXPR_COMMENT ) )* ":)"
+	"(:~" ( options { greedy=false; }: ( EXPR_COMMENT | . ) )* ":)"
 	;
 
 protected EXPR_COMMENT
@@ -2206,7 +2233,7 @@ options {
 	paraphrase="XQuery comment";
 }
 :
-	"(:" ( options { greedy=false; }: ( . | EXPR_COMMENT ) )* ":)"
+	"(:" ( options { greedy=false; }: ( EXPR_COMMENT | . ) )* ":)"
 	;
 
 protected INTEGER_LITERAL :
@@ -2245,6 +2272,28 @@ options {
 	|
 	'\''! ( PREDEFINED_ENTITY_REF | CHAR_REF | ( '\''! '\'' ) | ~ ( '\'' | '&' ) )*
 	'\''!
+	;
+
+protected STRING_CONSTRUCTOR_START options { paraphrase="start of string constructor"; }: "``[";
+protected STRING_CONSTRUCTOR_END options { paraphrase="start of string constructor"; }: "]``";
+protected STRING_CONSTRUCTOR_INTERPOLATION_START 
+options { paraphrase="start of interpolated expression"; }: "`{";
+protected STRING_CONSTRUCTOR_INTERPOLATION_END
+options { paraphrase="end of interpolated expression"; }: "}`";
+
+protected STRING_CONSTRUCTOR_CONTENT
+options {
+	testLiterals = false;
+	paraphrase = "string constructor content";
+}
+:
+	(
+		( '&' ) => ( PREDEFINED_ENTITY_REF | CHAR_REF ) |
+		( ( ']' '`' ) ~ ( '`' ) ) => ( ']' '`' ) |
+		( ']' ~ ( '`' ) ) => ']' |
+		( '`' ~ ( '{') ) => '`' |
+		~ ( ']' | '`')
+	)+
 	;
 
 protected BRACED_URI_LITERAL
@@ -2355,6 +2404,27 @@ options {
 	testLiterals = false;
 }
 :
+	{ !inStringConstructor }?
+	STRING_CONSTRUCTOR_START {
+		$setType(STRING_CONSTRUCTOR_START);
+	}
+	|
+	{ inStringConstructor }?
+	STRING_CONSTRUCTOR_END {
+		$setType(STRING_CONSTRUCTOR_END);
+	}
+	|
+	{ inStringConstructor }?
+	STRING_CONSTRUCTOR_INTERPOLATION_START {
+		$setType(STRING_CONSTRUCTOR_INTERPOLATION_START);
+	}
+	|
+	{ !inStringConstructor }?
+	STRING_CONSTRUCTOR_INTERPOLATION_END {
+		$setType(STRING_CONSTRUCTOR_INTERPOLATION_END);
+	}
+	|
+	{ !inStringConstructor }?
 	XML_COMMENT
 	{
 		String data = $getText;
@@ -2365,8 +2435,10 @@ options {
 	( XML_PI_START )
 	=> XML_PI { $setType(XML_PI); }
 	|
+	{ !inStringConstructor }?
 	XML_CDATA { $setType(XML_CDATA);  }
 	|
+	{ !inStringConstructor }?
 	END_TAG_START
 	{
 		inElementContent= false;
@@ -2374,16 +2446,20 @@ options {
 		$setType(END_TAG_START);
 	}
 	|
+	{ !inStringConstructor }?
 	BEFORE { $setType(BEFORE); }
 	|
+	{ !inStringConstructor }?
 	LT
 	{
 		inElementContent= false;
 		$setType(LT);
 	}
 	|
+	{ !inStringConstructor }?
 	LTEQ { $setType(LTEQ); }
 	|
+	{ !inStringConstructor }?
 	LCURLY
 	{
 		inElementContent= false;
@@ -2391,6 +2467,7 @@ options {
 		$setType(LCURLY);
 	}
 	|
+	{ !inStringConstructor }?
 	RCURLY { $setType(RCURLY); }
 	|
 	{ inAttributeContent && attrDelimChar == '\'' }?
@@ -2417,7 +2494,7 @@ options {
 	ELEMENT_CONTENT
 	{ $setType(ELEMENT_CONTENT); }
 	|
-	{ !inPragma }?
+	{ !(inPragma || inStringConstructor) }?
 	WS
 	{
 		if (wsExplicit) {
@@ -2446,6 +2523,11 @@ options {
 				newline();
 		}
 		$setType(Token.SKIP);
+	}
+	|
+	{ inStringConstructor }?
+	STRING_CONSTRUCTOR_CONTENT {
+		$setType(STRING_CONSTRUCTOR_CONTENT);
 	}
 	|
 	ncname:NCNAME { $setType(ncname.getType()); }
