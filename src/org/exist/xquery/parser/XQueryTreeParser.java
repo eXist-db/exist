@@ -297,6 +297,12 @@ public XQueryTreeParser() {
 			
 			break;
 		}
+		case ARROW_OP:
+		{
+			step=arrowOp(_t,path);
+			_t = _retTree;
+			break;
+		}
 		case LITERAL_castable:
 		case LITERAL_cast:
 		{
@@ -571,6 +577,7 @@ public XQueryTreeParser() {
 					case LITERAL_ancestor:
 					case 210:
 					case 211:
+					case ARROW_OP:
 					case INTEGER_LITERAL:
 					case DOUBLE_LITERAL:
 					case DECIMAL_LITERAL:
@@ -760,6 +767,7 @@ public XQueryTreeParser() {
 					case LITERAL_ancestor:
 					case 210:
 					case 211:
+					case ARROW_OP:
 					case INTEGER_LITERAL:
 					case DOUBLE_LITERAL:
 					case DECIMAL_LITERAL:
@@ -987,6 +995,7 @@ public XQueryTreeParser() {
 							case LITERAL_ancestor:
 							case 210:
 							case 211:
+							case ARROW_OP:
 							case INTEGER_LITERAL:
 							case DOUBLE_LITERAL:
 							case DECIMAL_LITERAL:
@@ -1101,6 +1110,7 @@ public XQueryTreeParser() {
 						case LITERAL_ancestor:
 						case 210:
 						case 211:
+						case ARROW_OP:
 						case INTEGER_LITERAL:
 						case DOUBLE_LITERAL:
 						case DECIMAL_LITERAL:
@@ -1215,6 +1225,7 @@ public XQueryTreeParser() {
 					case LITERAL_ancestor:
 					case 210:
 					case 211:
+					case ARROW_OP:
 					case INTEGER_LITERAL:
 					case DOUBLE_LITERAL:
 					case DECIMAL_LITERAL:
@@ -1408,6 +1419,7 @@ public XQueryTreeParser() {
 							case LITERAL_ancestor:
 							case 210:
 							case 211:
+							case ARROW_OP:
 							case INTEGER_LITERAL:
 							case DOUBLE_LITERAL:
 							case DECIMAL_LITERAL:
@@ -1532,6 +1544,7 @@ public XQueryTreeParser() {
 							case LITERAL_ancestor:
 							case 210:
 							case 211:
+							case ARROW_OP:
 							case INTEGER_LITERAL:
 							case DOUBLE_LITERAL:
 							case DECIMAL_LITERAL:
@@ -1655,6 +1668,7 @@ public XQueryTreeParser() {
 							case LITERAL_ancestor:
 							case 210:
 							case 211:
+							case ARROW_OP:
 							case INTEGER_LITERAL:
 							case DOUBLE_LITERAL:
 							case DECIMAL_LITERAL:
@@ -1826,6 +1840,7 @@ public XQueryTreeParser() {
 							case LITERAL_ancestor:
 							case 210:
 							case 211:
+							case ARROW_OP:
 							case INTEGER_LITERAL:
 							case DOUBLE_LITERAL:
 							case DECIMAL_LITERAL:
@@ -1986,6 +2001,7 @@ public XQueryTreeParser() {
 							case LITERAL_ancestor:
 							case 210:
 							case 211:
+							case ARROW_OP:
 							case INTEGER_LITERAL:
 							case DOUBLE_LITERAL:
 							case DECIMAL_LITERAL:
@@ -2218,6 +2234,7 @@ public XQueryTreeParser() {
 							case LITERAL_ancestor:
 							case 210:
 							case 211:
+							case ARROW_OP:
 							case INTEGER_LITERAL:
 							case DOUBLE_LITERAL:
 							case DECIMAL_LITERAL:
@@ -2376,6 +2393,7 @@ public XQueryTreeParser() {
 							case LITERAL_ancestor:
 							case 210:
 							case 211:
+							case ARROW_OP:
 							case INTEGER_LITERAL:
 							case DOUBLE_LITERAL:
 							case DECIMAL_LITERAL:
@@ -2505,6 +2523,7 @@ public XQueryTreeParser() {
 							case LITERAL_ancestor:
 							case 210:
 							case 211:
+							case ARROW_OP:
 							case INTEGER_LITERAL:
 							case DOUBLE_LITERAL:
 							case DECIMAL_LITERAL:
@@ -2981,6 +3000,7 @@ public XQueryTreeParser() {
 			case LITERAL_ancestor:
 			case 210:
 			case 211:
+			case ARROW_OP:
 			case INTEGER_LITERAL:
 			case DOUBLE_LITERAL:
 			case DECIMAL_LITERAL:
@@ -3234,6 +3254,7 @@ public XQueryTreeParser() {
 			case LITERAL_ancestor:
 			case 210:
 			case 211:
+			case ARROW_OP:
 			case INTEGER_LITERAL:
 			case DOUBLE_LITERAL:
 			case DECIMAL_LITERAL:
@@ -3369,6 +3390,7 @@ public XQueryTreeParser() {
 			case LITERAL_ancestor:
 			case 210:
 			case 211:
+			case ARROW_OP:
 			case INTEGER_LITERAL:
 			case DOUBLE_LITERAL:
 			case DECIMAL_LITERAL:
@@ -3768,6 +3790,7 @@ public XQueryTreeParser() {
 		case LITERAL_ancestor:
 		case 210:
 		case 211:
+		case ARROW_OP:
 		case INTEGER_LITERAL:
 		case DOUBLE_LITERAL:
 		case DECIMAL_LITERAL:
@@ -3904,6 +3927,7 @@ public XQueryTreeParser() {
 		case LITERAL_ancestor:
 		case 210:
 		case 211:
+		case ARROW_OP:
 		case INTEGER_LITERAL:
 		case DOUBLE_LITERAL:
 		case DECIMAL_LITERAL:
@@ -4498,6 +4522,7 @@ public XQueryTreeParser() {
 				case LITERAL_ancestor:
 				case 210:
 				case 211:
+				case ARROW_OP:
 				case INTEGER_LITERAL:
 				case DOUBLE_LITERAL:
 				case DECIMAL_LITERAL:
@@ -4613,6 +4638,7 @@ public XQueryTreeParser() {
 				case LITERAL_ancestor:
 				case 210:
 				case 211:
+				case ARROW_OP:
 				case INTEGER_LITERAL:
 				case DOUBLE_LITERAL:
 				case DECIMAL_LITERAL:
@@ -5357,11 +5383,11 @@ public XQueryTreeParser() {
 				_t = _t.getNextSibling();
 				break;
 			}
-			case 215:
+			case 216:
 			{
 				AST __t127 = _t;
 				org.exist.xquery.parser.XQueryAST tmp77_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
-				match(_t,215);
+				match(_t,216);
 				_t = _t.getFirstChild();
 				org.exist.xquery.parser.XQueryAST tmp78_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
 				match(_t,EQNAME);
@@ -6307,6 +6333,83 @@ public XQueryTreeParser() {
 		_retTree = _t;
 	}
 	
+	public final Expression  arrowOp(AST _t,
+		PathExpr path
+	) throws RecognitionException, PermissionDeniedException,EXistException,XPathException {
+		Expression step;
+		
+		org.exist.xquery.parser.XQueryAST arrowOp_AST_in = (_t == ASTNULL) ? null : (org.exist.xquery.parser.XQueryAST)_t;
+		org.exist.xquery.parser.XQueryAST arrowAST = null;
+		org.exist.xquery.parser.XQueryAST eq = null;
+		
+			step= null;
+		
+		
+		AST __t339 = _t;
+		arrowAST = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
+		match(_t,ARROW_OP);
+		_t = _t.getFirstChild();
+		
+					PathExpr leftExpr = new PathExpr(context);
+				
+		expr(_t,leftExpr);
+		_t = _retTree;
+		
+					ArrowOperator op = new ArrowOperator(context, leftExpr.simplify());
+					op.setASTNode(arrowAST);
+					path.add(op);
+					step = op;
+					
+					PathExpr nameExpr = new PathExpr(context);
+					String name = null;
+				
+		{
+		if (_t==null) _t=ASTNULL;
+		if ((_t.getType()==EQNAME)) {
+			eq = (org.exist.xquery.parser.XQueryAST)_t;
+			match(_t,EQNAME);
+			_t = _t.getNextSibling();
+			name = eq.toString();
+		}
+		else if ((_tokenSet_0.member(_t.getType()))) {
+			expr(_t,nameExpr);
+			_t = _retTree;
+		}
+		else {
+			throw new NoViableAltException(_t);
+		}
+		
+		}
+		List<Expression> params = new ArrayList<Expression>(5);
+		{
+		_loop342:
+		do {
+			if (_t==null) _t=ASTNULL;
+			if ((_tokenSet_0.member(_t.getType()))) {
+				PathExpr pathExpr = new PathExpr(context);
+				expr(_t,pathExpr);
+				_t = _retTree;
+				params.add(pathExpr.simplify());
+			}
+			else {
+				break _loop342;
+			}
+			
+		} while (true);
+		}
+		
+					if (name == null) {
+						op.setArrowFunction(nameExpr, params);
+					} else {
+						op.setArrowFunction(name, params);
+					}
+				
+		_t = __t339;
+		_t = _t.getNextSibling();
+		_retTree = _t;
+		return step;
+	}
+	
 	public final Expression  typeCastExpr(AST _t,
 		PathExpr path
 	) throws RecognitionException, PermissionDeniedException,EXistException,XPathException {
@@ -6319,18 +6422,20 @@ public XQueryTreeParser() {
 		org.exist.xquery.parser.XQueryAST t2 = null;
 		
 			step= null;
-			PathExpr expr= new PathExpr(context);
-			int cardinality= Cardinality.EXACTLY_ONE;
 		
 		
 		if (_t==null) _t=ASTNULL;
 		switch ( _t.getType()) {
 		case LITERAL_cast:
 		{
-			AST __t339 = _t;
+			AST __t344 = _t;
 			castAST = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,LITERAL_cast);
 			_t = _t.getFirstChild();
+			
+						PathExpr expr= new PathExpr(context);
+						int cardinality= Cardinality.EXACTLY_ONE;
+					
 			step=expr(_t,expr);
 			_t = _retTree;
 			t = (org.exist.xquery.parser.XQueryAST)_t;
@@ -6365,16 +6470,20 @@ public XQueryTreeParser() {
 						path.add(castExpr);
 						step = castExpr;
 					
-			_t = __t339;
+			_t = __t344;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case LITERAL_castable:
 		{
-			AST __t341 = _t;
+			AST __t346 = _t;
 			castableAST = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,LITERAL_castable);
 			_t = _t.getFirstChild();
+			
+						PathExpr expr= new PathExpr(context);
+						int cardinality= Cardinality.EXACTLY_ONE;
+					
 			step=expr(_t,expr);
 			_t = _retTree;
 			t2 = (org.exist.xquery.parser.XQueryAST)_t;
@@ -6409,7 +6518,7 @@ public XQueryTreeParser() {
 						path.add(castExpr);
 						step = castExpr;
 					
-			_t = __t341;
+			_t = __t346;
 			_t = _t.getNextSibling();
 			break;
 		}
@@ -6958,6 +7067,7 @@ public XQueryTreeParser() {
 			case LITERAL_ancestor:
 			case 210:
 			case 211:
+			case ARROW_OP:
 			case INTEGER_LITERAL:
 			case DOUBLE_LITERAL:
 			case DECIMAL_LITERAL:
@@ -7594,10 +7704,10 @@ public XQueryTreeParser() {
 					_t = __t237;
 					_t = _t.getNextSibling();
 				}
-				else if ((_t.getType()==215)) {
+				else if ((_t.getType()==216)) {
 					AST __t240 = _t;
 					org.exist.xquery.parser.XQueryAST tmp102_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
-					match(_t,215);
+					match(_t,216);
 					_t = _t.getFirstChild();
 					org.exist.xquery.parser.XQueryAST tmp103_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
 					match(_t,EQNAME);
@@ -7915,6 +8025,7 @@ public XQueryTreeParser() {
 			case LITERAL_ancestor:
 			case 210:
 			case 211:
+			case ARROW_OP:
 			case INTEGER_LITERAL:
 			case DOUBLE_LITERAL:
 			case DECIMAL_LITERAL:
@@ -8065,6 +8176,7 @@ public XQueryTreeParser() {
 			case LITERAL_ancestor:
 			case 210:
 			case 211:
+			case ARROW_OP:
 			case INTEGER_LITERAL:
 			case DOUBLE_LITERAL:
 			case DECIMAL_LITERAL:
@@ -8143,12 +8255,12 @@ public XQueryTreeParser() {
 		
 		
 		{
-		int _cnt347=0;
-		_loop347:
+		int _cnt352=0;
+		_loop352:
 		do {
 			if (_t==null) _t=ASTNULL;
 			if ((_t.getType()==PRAGMA)) {
-				AST __t345 = _t;
+				AST __t350 = _t;
 				p = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 				match(_t,PRAGMA);
 				_t = _t.getFirstChild();
@@ -8180,14 +8292,14 @@ public XQueryTreeParser() {
 									ext.addPragma(pragma);
 								}
 							
-				_t = __t345;
+				_t = __t350;
 				_t = _t.getNextSibling();
 			}
 			else {
-				if ( _cnt347>=1 ) { break _loop347; } else {throw new NoViableAltException(_t);}
+				if ( _cnt352>=1 ) { break _loop352; } else {throw new NoViableAltException(_t);}
 			}
 			
-			_cnt347++;
+			_cnt352++;
 		} while (true);
 		}
 		expr(_t,pathExpr);
@@ -8405,7 +8517,7 @@ public XQueryTreeParser() {
 		
 		
 		
-		AST __t349 = _t;
+		AST __t354 = _t;
 		updateAST = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 		match(_t,LITERAL_update);
 		_t = _t.getFirstChild();
@@ -8595,6 +8707,7 @@ public XQueryTreeParser() {
 		case LITERAL_ancestor:
 		case 210:
 		case 211:
+		case ARROW_OP:
 		case INTEGER_LITERAL:
 		case DOUBLE_LITERAL:
 		case DECIMAL_LITERAL:
@@ -8630,7 +8743,7 @@ public XQueryTreeParser() {
 					path.add(mod);
 					step = mod;
 				
-		_t = __t349;
+		_t = __t354;
 		_t = _t.getNextSibling();
 		_retTree = _t;
 		return step;
@@ -8826,6 +8939,7 @@ public XQueryTreeParser() {
 			case LITERAL_ancestor:
 			case 210:
 			case 211:
+			case ARROW_OP:
 			case INTEGER_LITERAL:
 			case DOUBLE_LITERAL:
 			case DECIMAL_LITERAL:
@@ -8979,6 +9093,7 @@ public XQueryTreeParser() {
 			case LITERAL_ancestor:
 			case 210:
 			case 211:
+			case ARROW_OP:
 			case INTEGER_LITERAL:
 			case DOUBLE_LITERAL:
 			case DECIMAL_LITERAL:
@@ -9127,6 +9242,7 @@ public XQueryTreeParser() {
 			case LITERAL_ancestor:
 			case 210:
 			case 211:
+			case ARROW_OP:
 			case INTEGER_LITERAL:
 			case DOUBLE_LITERAL:
 			case DECIMAL_LITERAL:
@@ -9571,6 +9687,7 @@ public XQueryTreeParser() {
 						case LITERAL_ancestor:
 						case 210:
 						case 211:
+						case ARROW_OP:
 						case INTEGER_LITERAL:
 						case DOUBLE_LITERAL:
 						case DECIMAL_LITERAL:
@@ -9628,7 +9745,7 @@ public XQueryTreeParser() {
 		
 		
 		
-		AST __t354 = _t;
+		AST __t359 = _t;
 		t = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 		match(_t,MAP);
 		_t = _t.getFirstChild();
@@ -9637,11 +9754,11 @@ public XQueryTreeParser() {
 					step = expr;
 				
 		{
-		_loop357:
+		_loop362:
 		do {
 			if (_t==null) _t=ASTNULL;
 			if ((_t.getType()==COLON)) {
-				AST __t356 = _t;
+				AST __t361 = _t;
 				org.exist.xquery.parser.XQueryAST tmp125_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
 				match(_t,COLON);
 				_t = _t.getFirstChild();
@@ -9654,16 +9771,16 @@ public XQueryTreeParser() {
 				expr(_t,value);
 				_t = _retTree;
 				expr.map(key, value);
-				_t = __t356;
+				_t = __t361;
 				_t = _t.getNextSibling();
 			}
 			else {
-				break _loop357;
+				break _loop362;
 			}
 			
 		} while (true);
 		}
-		_t = __t354;
+		_t = __t359;
 		_t = _t.getNextSibling();
 		_retTree = _t;
 		return step;
@@ -9679,7 +9796,7 @@ public XQueryTreeParser() {
 		
 		
 		
-		AST __t359 = _t;
+		AST __t364 = _t;
 		t = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 		match(_t,ARRAY);
 		_t = _t.getFirstChild();
@@ -9694,7 +9811,7 @@ public XQueryTreeParser() {
 				    step = array;
 				
 		{
-		_loop361:
+		_loop366:
 		do {
 			if (_t==null) _t=ASTNULL;
 			if ((_tokenSet_0.member(_t.getType()))) {
@@ -9704,12 +9821,12 @@ public XQueryTreeParser() {
 				array.addArgument(arg);
 			}
 			else {
-				break _loop361;
+				break _loop366;
 			}
 			
 		} while (true);
 		}
-		_t = __t359;
+		_t = __t364;
 		_t = _t.getNextSibling();
 		_retTree = _t;
 		return step;
@@ -9852,6 +9969,7 @@ public XQueryTreeParser() {
 				case LITERAL_ancestor:
 				case 210:
 				case 211:
+				case ARROW_OP:
 				case INTEGER_LITERAL:
 				case DOUBLE_LITERAL:
 				case DECIMAL_LITERAL:
@@ -10057,6 +10175,7 @@ public XQueryTreeParser() {
 		case LITERAL_ancestor:
 		case 210:
 		case 211:
+		case ARROW_OP:
 		case INTEGER_LITERAL:
 		case DOUBLE_LITERAL:
 		case DECIMAL_LITERAL:
@@ -10460,6 +10579,7 @@ public XQueryTreeParser() {
 		"\"ancestor\"",
 		"\"ancestor-or-self\"",
 		"\"preceding-sibling\"",
+		"arrow operator",
 		"INTEGER_LITERAL",
 		"DOUBLE_LITERAL",
 		"DECIMAL_LITERAL",
@@ -10506,7 +10626,7 @@ public XQueryTreeParser() {
 		data[0]=-18013496546836702L;
 		data[1]=-140736354416849903L;
 		data[2]=-31542789728629376L;
-		data[3]=17188257403L;
+		data[3]=34376515195L;
 		return data;
 	}
 	public static final BitSet _tokenSet_0 = new BitSet(mk_tokenSet_0());
@@ -10524,7 +10644,7 @@ public XQueryTreeParser() {
 		data[0]=-18013495473094878L;
 		data[1]=-140657189579650031L;
 		data[2]=-31542789728629376L;
-		data[3]=17188257403L;
+		data[3]=34376515195L;
 		return data;
 	}
 	public static final BitSet _tokenSet_2 = new BitSet(mk_tokenSet_2());
@@ -10533,7 +10653,7 @@ public XQueryTreeParser() {
 		data[0]=-18013496546836702L;
 		data[1]=-140657189579650031L;
 		data[2]=-31542789728629376L;
-		data[3]=17188257403L;
+		data[3]=34376515195L;
 		return data;
 	}
 	public static final BitSet _tokenSet_3 = new BitSet(mk_tokenSet_3());
@@ -10550,7 +10670,7 @@ public XQueryTreeParser() {
 	private static final long[] mk_tokenSet_6() {
 		long[] data = new long[8];
 		data[1]=2048L;
-		data[3]=7340032L;
+		data[3]=14680064L;
 		return data;
 	}
 	public static final BitSet _tokenSet_6 = new BitSet(mk_tokenSet_6());
@@ -10569,7 +10689,7 @@ public XQueryTreeParser() {
 		data[0]=-18003429143494806L;
 		data[1]=-135388329557357551L;
 		data[2]=-31542789726138432L;
-		data[3]=17188257403L;
+		data[3]=34376515195L;
 		return data;
 	}
 	public static final BitSet _tokenSet_9 = new BitSet(mk_tokenSet_9());
@@ -10578,7 +10698,7 @@ public XQueryTreeParser() {
 		data[0]=-18013496546836694L;
 		data[1]=-140736354416849903L;
 		data[2]=-31542789728629376L;
-		data[3]=17188257403L;
+		data[3]=34376515195L;
 		return data;
 	}
 	public static final BitSet _tokenSet_10 = new BitSet(mk_tokenSet_10());
@@ -10586,7 +10706,7 @@ public XQueryTreeParser() {
 		long[] data = new long[8];
 		data[0]=4575657221427298304L;
 		data[1]=1099511627776L;
-		data[3]=17179869280L;
+		data[3]=34359738464L;
 		return data;
 	}
 	public static final BitSet _tokenSet_11 = new BitSet(mk_tokenSet_11());
@@ -10595,7 +10715,7 @@ public XQueryTreeParser() {
 		data[0]=-18013496546836702L;
 		data[1]=-140173404463428591L;
 		data[2]=-31542789728629376L;
-		data[3]=17188257403L;
+		data[3]=34376515195L;
 		return data;
 	}
 	public static final BitSet _tokenSet_12 = new BitSet(mk_tokenSet_12());
