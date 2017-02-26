@@ -10,5 +10,6 @@ test:suite((
     inspect:module-functions(xs:anyURI("groupby.xql")),
     inspect:module-functions(xs:anyURI("flwor.xql")),
     inspect:module-functions(xs:anyURI("typeswitch.xql")),
-    inspect:module-functions(xs:anyURI("fn.xql"))
+    inspect:module-functions(xs:anyURI("fn.xql")),
+    inspect:module-functions(xs:anyURI("fnRefs.xql"))
 ))
