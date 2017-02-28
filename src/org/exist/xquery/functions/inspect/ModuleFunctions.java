@@ -56,27 +56,18 @@ public class ModuleFunctions extends BasicFunction {
             final XQueryContext tempContext = new XQueryContext(context.getBroker().getBrokerPool());
             tempContext.setModuleLoadPath(context.getModuleLoadPath());
 
-            Module module = null;
+            Module module;
 
-            try {
-                if (isCalledAs("module-functions-by-uri")) {
-                    module = tempContext.importModule(args[0].getStringValue(), null, null);
-                } else {
-                    module = tempContext.importModule(null, null, args[0].getStringValue());
-                }
-                
-            } catch (final XPathException e) {
-                LOG.debug("Failed to import module: " + args[0].getStringValue() + ": " + e.getMessage(), e);
-
-                throw new XPathException(this, e.getMessage(), e);
-
-            } catch (final Exception e) {
-                LOG.debug("Failed to import module: " + args[0].getStringValue() + ": " + e.getMessage(), e);
+            if (isCalledAs("module-functions-by-uri")) {
+                module = tempContext.importModule(args[0].getStringValue(), null, null);
+            } else {
+                module = tempContext.importModule(null, null, args[0].getStringValue());
             }
-            
+                
             if (module == null) {
                 return Sequence.EMPTY_SEQUENCE;
             }
+
             addFunctionRefsFromModule(tempContext, list, module);
         } else {
             addFunctionRefsFromContext(list);

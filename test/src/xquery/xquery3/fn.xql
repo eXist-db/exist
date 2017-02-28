@@ -36,12 +36,13 @@ function fnt:has-children-contextItem-noChildren() {
 
 (: ERROR: It is a dynamic error if evaluation of an expression relies on some part of
           the dynamic context that has not been assigned a value. Context item is absent
+:)
 declare
     %test:assertFalse
+    %test:pending
 function fnt:has-children-contextItem-empty() {
     ()/has-children()
 };
-:)
 
 declare
     %test:assertError("XPDY0002")
@@ -49,13 +50,13 @@ function fnt:has-children-contextItem-absent() {
     has-children()
 };
 
-(: fail with XPTY0019
+(: fail with XPTY0019 :)
 declare
     %test:assertError("XPTY0004")
+    %test:pending
 function fnt:has-children-contextItem-notNode() {
     "str1"/has-children()
 };
-:)
 
 declare
     %test:assertTrue
