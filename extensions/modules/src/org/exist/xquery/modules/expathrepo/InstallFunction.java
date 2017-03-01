@@ -155,7 +155,7 @@ public class InstallFunction extends BasicFunction {
       DocumentImpl doc = context.getBroker().getXMLResource(uri, LockMode.READ_LOCK);
       if (doc == null) {
         throw new XPathException(this, EXPathErrorCode.EXPDY001,
-            path + " is no .xar resource",
+            path + " is not .xar resource",
             new StringValue(path)
         );
       } else if (doc.getResourceType() != DocumentImpl.BINARY_FILE) {
