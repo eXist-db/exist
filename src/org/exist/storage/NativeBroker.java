@@ -1187,14 +1187,17 @@ public class NativeBroker extends DBBroker {
         for(final Iterator<XmldbURI> i = collection.collectionIterator(this); i.hasNext(); ) {
             final XmldbURI childName = i.next();
             //TODO : resolve URIs ! collection.getURI().resolve(childName)
-            final Collection child = openCollection(name.append(childName), LockMode.WRITE_LOCK);
-            if(child == null) {
-                LOG.warn("Child collection '" + childName + "' not found");
-            } else {
-                try {
+            Collection child = null;
+            try {
+                child = openCollection(name.append(childName), LockMode.READ_LOCK);
+                if (child == null) {
+                    LOG.warn("Child collection '" + childName + "' not found");
+                } else {
                     doCopyCollection(transaction, trigger, child, destCollection._2, childName, true);
-                } finally {
-                    child.release(LockMode.WRITE_LOCK);
+                }
+            } finally {
+                if(child != null) {
+                    child.release(LockMode.READ_LOCK);
                 }
             }
         }
@@ -2222,12 +2225,13 @@ public class NativeBroker extends DBBroker {
         //TODO : resolve URIs !
         final XmldbURI collUri = fileName.removeLastSegment();
         final XmldbURI docUri = fileName.lastSegment();
-        final Collection collection = openCollection(collUri, lockMode);
-        if(collection == null) {
-            LOG.debug("collection '" + collUri + "' not found!");
-            return null;
-        }
+        Collection collection = null;
         try {
+            collection = openCollection(collUri, LockMode.READ_LOCK);
+            if(collection == null) {
+                LOG.debug("Collection '" + collUri + "' not found!");
+                return null;
+            }
             //if (!collection.getPermissions().validate(getCurrentSubject(), Permission.EXECUTE)) {
             //    throw new PermissionDeniedException("Permission denied to read collection '" + collUri + "' by " + getCurrentSubject().getName());
             //}
@@ -2251,10 +2255,8 @@ public class NativeBroker extends DBBroker {
             LOG.warn("Could not acquire lock on document " + fileName, e);
             //TODO : exception ? -pb
         } finally {
-            //TODO UNDERSTAND : by whom is this lock acquired ? -pb
-            // If we don't check for the NO_LOCK we'll pop someone else's lock off
-            if(lockMode != LockMode.NO_LOCK) {
-                collection.release(lockMode);
+            if(collection != null) {
+                collection.release(LockMode.READ_LOCK);
             }
         }
         return null;

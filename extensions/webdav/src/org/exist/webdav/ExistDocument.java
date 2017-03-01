@@ -531,6 +531,7 @@ public class ExistDocument extends ExistResource {
         }
 
         Collection srcCollection = null;
+        final LockMode srcCollectionLockMode = (mode == Mode.COPY ? LockMode.READ_LOCK : LockMode.WRITE_LOCK);
         DocumentImpl srcDocument = null;
 
         Collection destCollection = null;
@@ -546,7 +547,7 @@ public class ExistDocument extends ExistResource {
             XmldbURI srdDocumentUri = xmldbUri.lastSegment();
 
             // Open collection if possible, else abort
-            srcCollection = broker.openCollection(srcCollectionUri, LockMode.WRITE_LOCK);
+            srcCollection = broker.openCollection(srcCollectionUri, srcCollectionLockMode);
             if (srcCollection == null) {
                 txnManager.abort(txn);
                 return; // TODO throw
@@ -582,7 +583,7 @@ public class ExistDocument extends ExistResource {
             txnManager.commit(txn);
 
             if (LOG.isDebugEnabled()) {
-                LOG.debug(String.format("Document %sd sucessfully", mode));
+                LOG.debug(String.format("Document %sd successfully", mode));
             }
 
         } catch (LockException e) {
@@ -605,7 +606,7 @@ public class ExistDocument extends ExistResource {
             }
 
             if (srcCollection != null) {
-                srcCollection.release(LockMode.WRITE_LOCK);
+                srcCollection.release(srcCollectionLockMode);
             }
 
             if (LOG.isDebugEnabled()) {

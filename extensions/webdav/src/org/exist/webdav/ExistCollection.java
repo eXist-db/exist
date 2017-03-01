@@ -443,6 +443,7 @@ public class ExistCollection extends ExistResource {
         }
 
         Collection srcCollection = null;
+        final LockMode srcCollectionLockMode = (mode == Mode.COPY ? LockMode.READ_LOCK : LockMode.WRITE_LOCK);
         Collection destCollection = null;
 
         final TransactionManager txnManager = brokerPool.getTransactionManager();
@@ -454,7 +455,7 @@ public class ExistCollection extends ExistResource {
             XmldbURI srcCollectionUri = xmldbUri;
 
             // Open collection if possible, else abort
-            srcCollection = broker.openCollection(srcCollectionUri, LockMode.WRITE_LOCK);
+            srcCollection = broker.openCollection(srcCollectionUri, srcCollectionLockMode);
             if (srcCollection == null) {
                 txnManager.abort(txn);
                 return; // TODO throw
@@ -481,7 +482,7 @@ public class ExistCollection extends ExistResource {
             txnManager.commit(txn);
 
             if(LOG.isDebugEnabled()) {
-                LOG.debug(String.format("Collection %sd sucessfully", mode));
+                LOG.debug(String.format("Collection %sd successfully", mode));
             }
 
         } catch (LockException e) {
@@ -500,7 +501,7 @@ public class ExistCollection extends ExistResource {
             }
 
             if (srcCollection != null) {
-                srcCollection.release(LockMode.WRITE_LOCK);
+                srcCollection.release(srcCollectionLockMode);
             }
 
             if (LOG.isDebugEnabled()) {

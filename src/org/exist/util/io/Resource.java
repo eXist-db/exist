@@ -579,7 +579,7 @@ public class Resource extends File {
 
         try (final DBBroker broker = db.getBroker()) {
 
-            collection = broker.openCollection(uri.removeLastSegment(), LockMode.NO_LOCK);
+            collection = broker.openCollection(uri.removeLastSegment(), LockMode.WRITE_LOCK);
             if (collection == null) {
                 return false;
             }
@@ -605,6 +605,10 @@ public class Resource extends File {
         } catch (final EXistException | IOException | PermissionDeniedException | LockException | TriggerException e) {
             LOG.error(e);
             return false;
+        } finally {
+            if(collection != null) {
+                collection.release(LockMode.WRITE_LOCK);
+            }
         }
     }
 
