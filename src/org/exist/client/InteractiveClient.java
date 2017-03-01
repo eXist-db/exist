@@ -181,14 +181,9 @@ public class InteractiveClient {
 
     //*************************************
 
-    private final CommandlineOptions options;
+    private CommandlineOptions options;
     protected XmldbURI path = XmldbURI.ROOT_COLLECTION_URI;
     private Optional<Writer> lazyTraceWriter = Optional.empty();
-
-    public InteractiveClient(final CommandlineOptions options) {
-        this.options = options;
-        this.path = options.setCol.orElse(XmldbURI.ROOT_COLLECTION_URI);
-    }
 
     /**
      * Display help on commands
@@ -238,11 +233,8 @@ public class InteractiveClient {
      */
     public static void main(final String[] args) {
         try {
-            // parse command-line options
-            final CommandlineOptions options = CommandlineOptions.parse(args);
-
-            final InteractiveClient client = new InteractiveClient(options);
-            if (!client.run()) {
+            final InteractiveClient client = new InteractiveClient();
+            if (!client.run(args)) {
                 System.exit(SystemExitCodes.CATCH_ALL_GENERAL_ERROR_EXIT_CODE); // return non-zero exit status on failure
             }
 
@@ -2101,7 +2093,12 @@ public class InteractiveClient {
      *
      * @return true on success, false on failure
      */
-    public boolean run() throws Exception {
+    public boolean run(final String args[]) throws Exception {
+
+        // parse command-line options
+        this.options = CommandlineOptions.parse(args);
+        this.path = options.setCol.orElse(XmldbURI.ROOT_COLLECTION_URI);
+
         // Get exist home directory
         final Optional<Path> home = ConfigurationHelper.getExistHome();
 
