@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2011 The eXist Project
+ *  Copyright (C) 2017 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -16,8 +16,6 @@
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- *  $Id$
  */
 package org.exist.security.realm.iprange;
 
@@ -57,12 +55,16 @@ public class IPRangeRealm extends AbstractRealm {
     @ConfigurationFieldAsAttribute("version")
     public final static String version = "1.0";
 
-    protected final static Logger LOG = LogManager.getLogger(IPRangeRealm.class);
-    protected static IPRangeRealm instance = null;
+    private final static Logger LOG = LogManager.getLogger(IPRangeRealm.class);
+    private static IPRangeRealm instance = null;
 
     public IPRangeRealm(final SecurityManagerImpl sm, final Configuration config) throws ConfigurationException {
         super(sm, config);
         instance = this;
+    }
+
+    static IPRangeRealm getInstance(){
+        return instance;
     }
 
     private static long ipToLong(final InetAddress ip) {
@@ -101,7 +103,7 @@ public class IPRangeRealm extends AbstractRealm {
     public Subject authenticate(final String ipAddress, final Object credentials) throws AuthenticationException {
 
         // Elevaste to system privileges
-        try (final DBBroker broker = BrokerPool.getInstance().get(Optional.of(getSecurityManager().getSystemSubject()))) {
+        try (final DBBroker broker = getSecurityManager().database().get(Optional.of(getSecurityManager().getSystemSubject()))) {
 
             // Convert IP address
             final long ipToTest = ipToLong(InetAddress.getByName(ipAddress));
@@ -114,7 +116,7 @@ public class IPRangeRealm extends AbstractRealm {
             }
 
             // Construct XQuery
-            final String query = "collection('/db/system/security/IPRange/accounts')/account/" +
+            final String query = "collection('/db/system/security/iprange/accounts')/account/" +
                     "iprange[" + ipToTest + " ge number(start) and " + ipToTest + " le number(end)]/../name";
             final XQueryContext context = new XQueryContext(broker.getBrokerPool());
 
@@ -133,7 +135,7 @@ public class IPRangeRealm extends AbstractRealm {
                 LOG.warn("IP address " + ipAddress + " matched multiple ipranges. Using first result only.");
             }
 
-            if (!"".equals(username)) {
+            if (!username.isEmpty()) {
                 final Account account = getSecurityManager().getAccount(username);
                 if (account != null) {
                     LOG.info("IPRangeRealm trying " + account.getName());
@@ -147,7 +149,7 @@ public class IPRangeRealm extends AbstractRealm {
             }
             return null;
 
-        } catch (EXistException | UnknownHostException | XPathException | PermissionDeniedException e) {
+        } catch (final EXistException | UnknownHostException | XPathException | PermissionDeniedException e) {
             throw new AuthenticationException(AuthenticationException.UNNOWN_EXCEPTION, e.getMessage());
         }
     }

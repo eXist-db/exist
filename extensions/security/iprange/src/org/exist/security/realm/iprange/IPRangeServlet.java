@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2009-2011 The eXist Project
+ *  Copyright (C) 2009-2017 The eXist Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -16,8 +16,6 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *  
- *  $Id$
  */
 package org.exist.security.realm.iprange;
 
@@ -47,10 +45,6 @@ public class IPRangeServlet extends HttpServlet {
 
     protected final static Logger LOG = LogManager.getLogger(IPRangeServlet.class);
     private static final long serialVersionUID = -568037449837549034L;
-    public static AbstractRealm realm = null;
-
-    public IPRangeServlet() throws ServletException {
-    }
 
     @Override
     public void init(final ServletConfig config) throws ServletException {
@@ -80,7 +74,7 @@ public class IPRangeServlet extends HttpServlet {
         String jsonResponse = "{\"fail\":\"IP range not authenticated\"}";
 
         try {
-            final SecurityManager securityManager = IPRangeRealm.instance.getSecurityManager();
+            final SecurityManager securityManager = IPRangeRealm.getInstance().getSecurityManager();
             final Subject user = securityManager.authenticate(ipAddress, ipAddress);
 
             if (user != null) {
