@@ -1530,12 +1530,12 @@ public class NativeBroker extends DBBroker {
                     // remove from parent collection
                     //TODO : resolve URIs ! (uri.resolve(".."))
                     final Collection parentCollection = openCollection(collection.getParentURI(), LockMode.WRITE_LOCK);
-                    // keep the lock for the transaction
-                    if(transaction != null) {
-                        transaction.registerLock(parentCollection.getLock(), LockMode.WRITE_LOCK);
-                    }
-
                     if(parentCollection != null) {
+                        // keep the lock for the transaction
+                        if(transaction != null) {
+                            transaction.registerLock(parentCollection.getLock(), LockMode.WRITE_LOCK);
+                        }
+
                         try {
                             LOG.debug("Removing collection '" + collName + "' from its parent...");
                             //TODO : resolve from collection's base URI
