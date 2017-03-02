@@ -626,10 +626,12 @@ public class NativeBroker extends DBBroker {
         throws LockException, PermissionDeniedException, IOException, TriggerException {
         try {
             pushSubject(pool.getSecurityManager().getSystemSubject());
-            final Collection temp = getOrCreateCollection(transaction, XmldbURI.TEMP_COLLECTION_URI);
-            temp.setPermissions(0771);
-            saveCollection(transaction, temp);
-            return temp;
+            final Tuple2<Boolean, Collection> temp = getOrCreateCollectionExplicit(transaction, XmldbURI.TEMP_COLLECTION_URI);
+            if (temp._1) {
+                temp._2.setPermissions(0771);
+                saveCollection(transaction, temp._2);
+            }
+            return temp._2;
         } finally {
             popSubject();
         }
